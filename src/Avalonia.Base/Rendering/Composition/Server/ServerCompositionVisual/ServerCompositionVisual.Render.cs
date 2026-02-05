@@ -81,9 +81,11 @@ partial class ServerCompositionVisual
             if (visual._ownClipRect != null) 
                 effectiveClip = effectiveClip.IntersectOrEmpty(visual._ownClipRect.Value.TransformToAABB(effectiveNewTransform));
 
-
-            if (!effectiveClip.Intersects(visual._transformedSubTreeBounds.Value.TransformToAABB(_walkContext.Transform)))
+            var worldBounds = visual._transformedSubTreeBounds.Value.TransformToAABB(_walkContext.Transform);
+            if (!effectiveClip.Intersects(worldBounds) 
+                || _dirtyRects?.Intersects(worldBounds) == false)
                 return false;
+            
             
             RenderedVisuals++;
             
@@ -149,6 +151,9 @@ partial class ServerCompositionVisual
 
             if(visual.RenderOptions != default)
                 _canvas.PushRenderOptions(visual.RenderOptions);
+            
+            if (visual.TextOptions != default)
+                _canvas.PushTextOptions(visual.TextOptions);
 
             if (visual.OpacityMaskBrush != null)
                 _canvas.PushOpacityMask(visual.OpacityMaskBrush, visual._subTreeBounds!.Value.ToRect());
@@ -180,6 +185,9 @@ partial class ServerCompositionVisual
                 if (visual.OpacityMaskBrush != null)
                     _canvas.PopOpacityMask();
 
+                if (visual.TextOptions != default)
+                    _canvas.PopTextOptions();
+                
                 if (visual.RenderOptions != default)
                     _canvas.PopRenderOptions();
             }

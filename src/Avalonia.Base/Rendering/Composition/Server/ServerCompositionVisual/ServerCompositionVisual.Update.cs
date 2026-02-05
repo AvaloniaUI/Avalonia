@@ -69,7 +69,8 @@ internal partial class ServerCompositionVisual
                 node._isDirtyForRender = true;
             
             // Special handling for effects: just add the entire node's old subtree bounds as a dirty region
-            // WPF does this because they had legacy effects with non-affine transforms, we do this because TBD
+            // WPF does this because they had legacy effects with non-affine transforms, we do this because 
+            // it's something to be done in the future (maybe)
             if (node._isDirtyForRender || node is { _isDirtyForRenderInSubgraph: true, HasEffect: true })
             {
                 // If bounds haven't actually changed, there is no point in adding them now since they will be added
@@ -157,7 +158,8 @@ internal partial class ServerCompositionVisual
             }
             
             // Special handling for effects: just add the entire node's old subtree bounds as a dirty region
-            // WPF does this because they had legacy effects with non-affine transforms, we do this because TBD
+            // WPF does this because they had legacy effects with non-affine transforms, we do this because  
+            // it's something to be done in the future (maybe)
             if(node._isDirtyForRender || node is { _isDirtyForRenderInSubgraph: true, Effect: not null })
             {
                 _dirtyRegionDisableCount--;

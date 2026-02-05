@@ -9,7 +9,7 @@ partial class ServerCompositionVisual
     // Support for adorners is a rather cancerou^W invasive thing, so we isolate all related code in this file
     // and prefix it with AdornerHelper_.
     
-    private void ActHelper_OnAdornedVisualWorldTransformChanged() => AdornerHelper_EnqueueForAdornerUpdate();
+    private void AttHelper_OnAdornedVisualWorldTransformChanged() => AdornerHelper_EnqueueForAdornerUpdate();
 
     private void AdornerHelper_AttachedToRoot()
     {
@@ -19,7 +19,7 @@ partial class ServerCompositionVisual
 
     public void AdornerHelper_EnqueueForAdornerUpdate()
     {
-        var helper = GetActHelper();
+        var helper = GetAttHelper();
         if(helper.EnqueuedForAdornerUpdate)
             return;
         Compositor.EnqueueAdornerUpdate(this);
@@ -27,11 +27,11 @@ partial class ServerCompositionVisual
     }
     
     partial void OnAdornedVisualChanging() =>
-        AdornedVisual?.ActHelper_UnsubscribeFromActNotification(GetActHelper().AdornedVisualActSubscriptionAction);
+        AdornedVisual?.AttHelper_UnsubscribeFromActNotification(GetAttHelper().AdornedVisualActSubscriptionAction);
 
     partial void OnAdornedVisualChanged()
     {
-        AdornedVisual?.ActHelper_SubscribeToActNotification(GetActHelper().AdornedVisualActSubscriptionAction);
+        AdornedVisual?.AttHelper_SubscribeToActNotification(GetAttHelper().AdornedVisualActSubscriptionAction);
         AdornerHelper_EnqueueForAdornerUpdate();
     }
 
@@ -45,7 +45,7 @@ partial class ServerCompositionVisual
     
     public void UpdateAdorner()
     {
-        GetActHelper().EnqueuedForAdornerUpdate = false;
+        GetAttHelper().EnqueuedForAdornerUpdate = false;
         var ownTransform = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint, TransformMatrix, Scale,
             RotationAngle, Orientation, Offset);
 

@@ -17,6 +17,11 @@ public class CompositionOptions
     /// </summary>
     public int? MaxDirtyRects { get; set; }
 
+    
+    /// <summary>
+    /// Controls the eagerness of merging dirty rects. WPF uses 50000, Avalonia currently has a different default
+    /// that's a subject to change. You can play with this property to find the best value for your application.
+    /// </summary>
     [Unstable]
     public double? DirtyRectMergeEagerness { get; set; }
     

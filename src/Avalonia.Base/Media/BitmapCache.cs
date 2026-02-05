@@ -3,12 +3,15 @@ using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Media;
 
+/// <summary>
+/// Represents the behavior of caching a visual element or tree of elements as bitmap surfaces.
+/// </summary>
 public class BitmapCache : CacheMode
 {
     private CompositionBitmapCache? _current;
     
     public static readonly StyledProperty<double> RenderAtScaleProperty = AvaloniaProperty.Register<BitmapCache, double>(
-        "RenderAtScale", 1);
+        nameof(RenderAtScale), 1);
 
     /// <summary>
     /// Use the RenderAtScale property to render the BitmapCache at a multiple of the normal bitmap size.
@@ -31,7 +34,7 @@ public class BitmapCache : CacheMode
     }
     
     public static readonly StyledProperty<bool> SnapsToDevicePixelsProperty = AvaloniaProperty.Register<BitmapCache, bool>(
-        "SnapsToDevicePixels");
+        nameof(SnapsToDevicePixels));
     
     /// <summary>
     /// Set the SnapsToDevicePixels property when the cache displays content that requires pixel-alignment to render correctly.
@@ -55,8 +58,22 @@ public class BitmapCache : CacheMode
     }
 
     public static readonly StyledProperty<bool> EnableClearTypeProperty = AvaloniaProperty.Register<BitmapCache, bool>(
-        "EnableClearType");
+        nameof(EnableClearType));
 
+    /// <summary>
+    /// Set the EnableClearType property to allow subpixel text to be rendered in the cache.
+    /// When the EnableClearType property is true, your application MUST render all
+    /// of its subpixel text on an opaque background.
+    ///
+    /// When the EnableClearType property is false, text in the cache is rendered with grayscale antialiasing.
+    ///
+    /// ClearType text requires correct pixel alignment of rendered characters,
+    /// so you should set the SnapsToDevicePixels property to true.
+    /// If you do not set this property, the content may not blend correctly.
+    ///
+    /// Use the EnableClearType property when you know the cache is rendered on pixel boundaries,
+    /// so it is safe to cache ClearType text. This situation occurs commonly in text-scrolling scenarios.
+    /// </summary>
     public bool EnableClearType
     {
         get => GetValue(EnableClearTypeProperty);

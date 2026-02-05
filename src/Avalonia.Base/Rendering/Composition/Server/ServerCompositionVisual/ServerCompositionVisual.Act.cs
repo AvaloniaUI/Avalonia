@@ -5,13 +5,13 @@ namespace Avalonia.Rendering.Composition.Server;
 
 partial class ServerCompositionVisual
 {
-    // ACT = Ancestor Transform Tracker
+    // ATT = Ancestor Transform Tracker
     // While we generally avoid dealing with keeping world transforms up to date,
     // we still need it for cases like adorners.
     // Instead of updating world transforms eagerly, we use a subscription model where
     // visuals can subscribe to notifications when any ancestor's world transform changes.
     
-    class ActHelper
+    class AttHelper
     {
         public readonly HashSet<Action> AncestorChainTransformSubscribers = new();
         public required Action ParentActSubscriptionAction;
@@ -21,51 +21,51 @@ partial class ServerCompositionVisual
         public bool EnqueuedForAdornerUpdate;
     }
     
-    private ActHelper? _actHelper;
+    private AttHelper? _AttHelper;
     
-    private ActHelper GetActHelper() => _actHelper ??= new()
+    private AttHelper GetAttHelper() => _AttHelper ??= new()
     {
-        ParentActSubscriptionAction = ActHelper_CombinedTransformChanged,
-        AdornedVisualActSubscriptionAction = ActHelper_OnAdornedVisualWorldTransformChanged
+        ParentActSubscriptionAction = AttHelper_CombinedTransformChanged,
+        AdornedVisualActSubscriptionAction = AttHelper_OnAdornedVisualWorldTransformChanged
     };
 
-    private void ActHelper_CombinedTransformChanged()
+    private void AttHelper_CombinedTransformChanged()
     {
-        if(_actHelper == null || _actHelper.AncestorChainTransformSubscribers.Count == 0)
+        if(_AttHelper == null || _AttHelper.AncestorChainTransformSubscribers.Count == 0)
             return;
-        foreach (var sub in _actHelper.AncestorChainTransformSubscribers)
+        foreach (var sub in _AttHelper.AncestorChainTransformSubscribers)
             sub();
     }
     
-    private void ActHelper_ParentChanging()
+    private void AttHelper_ParentChanging()
     {
-        if(Parent != null && _actHelper?.AncestorChainTransformSubscribers.Count > 0)
-            Parent.ActHelper_UnsubscribeFromActNotification(_actHelper.ParentActSubscriptionAction);
+        if(Parent != null && _AttHelper?.AncestorChainTransformSubscribers.Count > 0)
+            Parent.AttHelper_UnsubscribeFromActNotification(_AttHelper.ParentActSubscriptionAction);
     }
 
-    private void ActHelper_ParentChanged()
+    private void AttHelper_ParentChanged()
     {
-        if(Parent != null && _actHelper?.AncestorChainTransformSubscribers.Count > 0)
-            Parent.ActHelper_SubscribeToActNotification(_actHelper.ParentActSubscriptionAction);
+        if(Parent != null && _AttHelper?.AncestorChainTransformSubscribers.Count > 0)
+            Parent.AttHelper_SubscribeToActNotification(_AttHelper.ParentActSubscriptionAction);
         if(Parent != null && AdornedVisual != null)
             AdornerHelper_EnqueueForAdornerUpdate();
     }
     
-    protected void ActHelper_SubscribeToActNotification(Action cb)
+    protected void AttHelper_SubscribeToActNotification(Action cb)
     {
-        var h = GetActHelper();
+        var h = GetAttHelper();
         
         (h.AncestorChainTransformSubscribers).Add(cb);
         if (h.AncestorChainTransformSubscribers.Count == 1)
-            Parent?.ActHelper_SubscribeToActNotification(h.ParentActSubscriptionAction);
+            Parent?.AttHelper_SubscribeToActNotification(h.ParentActSubscriptionAction);
     }
     
-    protected void ActHelper_UnsubscribeFromActNotification(Action cb)
+    protected void AttHelper_UnsubscribeFromActNotification(Action cb)
     {
-        var h = GetActHelper();
+        var h = GetAttHelper();
         h.AncestorChainTransformSubscribers.Remove(cb);
         if(h.AncestorChainTransformSubscribers.Count == 0)
-            Parent?.ActHelper_UnsubscribeFromActNotification(h.ParentActSubscriptionAction);
+            Parent?.AttHelper_UnsubscribeFromActNotification(h.ParentActSubscriptionAction);
     }
     
     protected static bool ComputeTransformFromAncestor(ServerCompositionVisual visual,

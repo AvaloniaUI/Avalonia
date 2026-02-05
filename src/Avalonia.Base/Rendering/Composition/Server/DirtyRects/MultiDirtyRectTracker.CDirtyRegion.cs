@@ -17,7 +17,6 @@ partial class MultiDirtyRectTracker
         private readonly double[,] _overhead = new double[MaxDirtyRegionCount + 1, MaxDirtyRegionCount];
         private LtrbRect _surfaceBounds;
         private double _allowedDirtyRegionOverhead;
-        private double _accumulatedOverhead;
         private int _regionCount;
         private bool _optimized;
         private bool _maxSurfaceFallback;
@@ -25,6 +24,7 @@ partial class MultiDirtyRectTracker
         private readonly struct UnionResult
         {
             public readonly double Overhead;
+            // Left here for debugging purposes
             public readonly double Area;
             public readonly LtrbRect Union;
 
@@ -120,7 +120,6 @@ partial class MultiDirtyRectTracker
             _allowedDirtyRegionOverhead = allowedDirtyRegionOverhead;
             Array.Clear(_dirtyRegions);
             Array.Clear(_overhead);
-            _accumulatedOverhead = 0;
             _optimized = false;
             _maxSurfaceFallback = false;
             _regionCount = 0;
@@ -236,7 +235,6 @@ partial class MultiDirtyRectTracker
                     return;
                 }
 
-                _accumulatedOverhead += ur.Overhead;
                 _dirtyRegions[bestMatchK] = unioned;
                 UpdateOverhead(bestMatchK);
             }
@@ -244,7 +242,6 @@ partial class MultiDirtyRectTracker
             {
                 // Case B: Merge region N with region K, store new region slot K
                 var ur = ComputeUnion(_dirtyRegions[bestMatchN], _dirtyRegions[bestMatchK]);
-                _accumulatedOverhead += ur.Overhead;
                 _dirtyRegions[bestMatchN] = ur.Union;
                 _dirtyRegions[bestMatchK] = clippedNewRegion;
                 UpdateOverhead(bestMatchN);

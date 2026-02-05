@@ -141,9 +141,6 @@ internal class ServerCompositionVisualCache
     
     public (int visitedVisuals, int renderedVisuals) Draw(IDrawingContextImpl outerCanvas)
     {
-        if (TargetVisual == null)
-            return default;
-
         if (TargetVisual.SubTreeBounds == null)
             return default;
         
@@ -191,7 +188,7 @@ internal class ServerCompositionVisualCache
             _needToFinalizeFrame = false;
         }
 
-        var visualLocalBounds = TargetVisual.SubTreeBounds.Value;
+        var visualLocalBounds = TargetVisual.SubTreeBounds.Value.ToRect();
         (int, int) rv = default;
         // Render to layer if needed
         if (!_dirtyRectTracker.IsEmpty)
@@ -205,12 +202,11 @@ internal class ServerCompositionVisualCache
             }
         }
         _needsFullReRender = false;
-
-        var renderBitmapAtBounds = TargetVisual.SubTreeBounds.Value.ToRect();
+        
         var originalTransform = outerCanvas.Transform;
         if (SnapsToDevicePixels)
         {
-            var worldBounds = renderBitmapAtBounds.TransformToAABB(originalTransform);
+            var worldBounds = visualLocalBounds.TransformToAABB(originalTransform);
             var snapOffsetX = worldBounds.Left - Math.Floor(worldBounds.Left);
             var snapOffsetY = worldBounds.Top - Math.Floor(worldBounds.Top);
             outerCanvas.Transform = originalTransform * Matrix.CreateTranslation(-snapOffsetX, -snapOffsetY);
@@ -218,7 +214,7 @@ internal class ServerCompositionVisualCache
         
         //TODO: Maybe adjust for that extra pixel added due to rounding?
         outerCanvas.DrawBitmap(_layer, 1, new Rect(0,0, _layer.PixelSize.Width, _layer.PixelSize.Height),
-            TargetVisual.SubTreeBounds.Value.ToRect());
+           visualLocalBounds);
         if (SnapsToDevicePixels)
             outerCanvas.Transform = originalTransform;
         

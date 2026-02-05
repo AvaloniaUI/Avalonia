@@ -87,27 +87,27 @@ partial class ServerCompositionVisual
     //  ReplaceChild     |   Y           |   Y             |   Y(N)
     //  -----------------+---------------+-----------------+-----------------------
     //  RemoveChild      |   Y           |   Y             |   Y(N)
-    private void PropagateFlags(bool fNeedsBoundingBoxUpdate, bool fDirtyForRender, bool fAdditionalDirtyRegion = false)
+    private void PropagateFlags(bool needsBoundingBoxUpdate, bool dirtyForRender, bool additionalDirtyRegion = false)
     {
         Root?.RequestUpdate();
         
         var parent = Parent;
-        var setIsDirtyForRenderInSubgraph = fAdditionalDirtyRegion || fDirtyForRender;
+        var setIsDirtyForRenderInSubgraph = additionalDirtyRegion || dirtyForRender;
         while (parent != null &&
-               ((fNeedsBoundingBoxUpdate && !parent._needsBoundingBoxUpdate) ||
+               ((needsBoundingBoxUpdate && !parent._needsBoundingBoxUpdate) ||
                 (setIsDirtyForRenderInSubgraph && !parent._isDirtyForRenderInSubgraph)))
         {
-            parent._needsBoundingBoxUpdate |= fNeedsBoundingBoxUpdate;
+            parent._needsBoundingBoxUpdate |= needsBoundingBoxUpdate;
             parent._isDirtyForRenderInSubgraph |= setIsDirtyForRenderInSubgraph;
 
             parent = parent.Parent;
         }
 
-        _needsBoundingBoxUpdate |= fNeedsBoundingBoxUpdate;
-        _isDirtyForRender |= fDirtyForRender;
+        _needsBoundingBoxUpdate |= needsBoundingBoxUpdate;
+        _isDirtyForRender |= dirtyForRender;
         
         // If node itself is dirty for render, we don't need to keep track of extra dirty rects
-        _hasExtraDirtyRect = !fDirtyForRender && (_hasExtraDirtyRect || fAdditionalDirtyRegion);
+        _hasExtraDirtyRect = !dirtyForRender && (_hasExtraDirtyRect || additionalDirtyRegion);
     }
     
     public void RecomputeOwnProperties()
@@ -152,7 +152,7 @@ partial class ServerCompositionVisual
             
             setDirtyForRender = setDirtyBounds = true;
             
-            ActHelper_CombinedTransformChanged();
+            AttHelper_CombinedTransformChanged();
         }
 
         

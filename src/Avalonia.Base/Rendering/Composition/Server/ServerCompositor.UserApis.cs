@@ -65,10 +65,7 @@ internal partial class ServerCompositor
                 using (var canvas = target.CreateDrawingContext(false))
                 {
                     canvas.Transform = scaleTransform;
-                    visual.Render(canvas,
-                        new LtrbRect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity,
-                            double.PositiveInfinity),
-                        null, renderChildren);
+                    visual.Render(canvas, LtrbRect.Infinite, null, renderChildren);
                 }
 
                 if (target is IDrawingContextLayerWithRenderContextAffinityImpl affined

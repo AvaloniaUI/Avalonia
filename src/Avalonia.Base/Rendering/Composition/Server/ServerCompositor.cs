@@ -217,7 +217,7 @@ namespace Avalonia.Rendering.Composition.Server
 
         private TimeSpan ExecuteGlobalPasses()
         {
-            var compositorGlobalPassesStopwatch = Stopwatch.StartNew();
+            var compositorGlobalPassesStarted = Stopwatch.GetTimestamp();
             ApplyPendingBatches();
             NotifyBatchesProcessed();
 
@@ -231,7 +231,7 @@ namespace Avalonia.Rendering.Composition.Server
             // because they may depend on ancestor's transform chain to be consistent
             AdornerUpdatePass();
 
-            return compositorGlobalPassesStopwatch.Elapsed;
+            return Stopwatch.GetElapsedTime(compositorGlobalPassesStarted);
         }
         
         private void RenderCore(bool catchExceptions)

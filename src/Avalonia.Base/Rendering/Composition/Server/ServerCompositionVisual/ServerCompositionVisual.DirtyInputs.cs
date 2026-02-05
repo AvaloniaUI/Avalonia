@@ -148,7 +148,7 @@ partial class ServerCompositionVisual
     {
         if (Parent != null && _transformedSubTreeBounds.HasValue)
             Parent.AddExtraDirtyRect(_transformedSubTreeBounds.Value);
-        ActHelper_ParentChanging();
+        AttHelper_ParentChanging();
     }
     
     partial void OnParentChanged()
@@ -158,7 +158,7 @@ partial class ServerCompositionVisual
             _delayPropagateNeedsBoundsUpdate = _delayPropagateIsDirtyForRender = true;
             EnqueueOwnPropertiesRecompute();
         }
-        ActHelper_ParentChanged();
+        AttHelper_ParentChanged();
     }
     
     protected void AddExtraDirtyRect(LtrbRect rect)

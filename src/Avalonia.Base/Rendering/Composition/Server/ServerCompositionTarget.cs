@@ -31,7 +31,7 @@ namespace Avalonia.Rendering.Composition.Server
         private bool _fullRedrawRequested;
         private bool _disposed;
         private readonly HashSet<ServerCompositionVisual> _attachedVisuals = new();
-        public readonly IDirtyRectTracker DirtyRects;
+        public IDirtyRectTracker DirtyRects { get; }
 
         public long Id { get; }
         public ulong Revision { get; private set; }
