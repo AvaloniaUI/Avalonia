@@ -148,11 +148,14 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
                  method.DeclaringType == typeof(StreamBindingExtensions))
         {
             var instance = node.Method.IsStatic ? node.Arguments[0] : node.Object;
+            var instanceType = instance?.Type;
             var genericArgs = method.GetGenericArguments();
             var genericArg = genericArgs.Length > 0 ? genericArgs[0] : typeof(object);
 
-            if (typeof(Task<>).MakeGenericType(genericArg).IsAssignableFrom(instance?.Type) ||
-                (genericArg == typeof(object) && typeof(Task).IsAssignableFrom(instance?.Type ?? typeof(void))))
+            if (instanceType == typeof(Task) ||
+                (instanceType?.IsGenericType == true &&
+                 instanceType.GetGenericTypeDefinition() == typeof(Task<>) &&
+                 genericArg.IsAssignableFrom(instanceType.GetGenericArguments()[0])))
             {
                 var builderMethod = typeof(CompiledBindingPathBuilder)
                     .GetMethod(nameof(CompiledBindingPathBuilder.StreamTask))!
@@ -391,7 +394,7 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
 
         public override bool SetValue(object? value, BindingPriority priority)
         {
-            if (!_property.IsReadOnly && _reference.TryGetTarget(out var instance) && instance is not null)
+            if (!_property.IsReadOnly && _reference.TryGetTarget(out var instance))
             {
                 instance.SetValue(_property, value, priority);
                 return true;
