@@ -101,11 +101,7 @@ namespace Avalonia.Controls
         /// Gets the <see cref="ItemContainerGenerator"/> for the control.
         /// </summary>
         public ItemContainerGenerator ItemContainerGenerator
-        {
-#pragma warning disable CS0612 // Type or member is obsolete
-            get => _itemContainerGenerator ??= CreateItemContainerGenerator();
-#pragma warning restore CS0612 // Type or member is obsolete
-        }
+            => _itemContainerGenerator ??= new ItemContainerGenerator(this);
 
         /// <summary>
         /// Gets the items to display.
@@ -657,20 +653,6 @@ namespace Avalonia.Controls
             }
 
             ItemCount = ItemsView.Count;
-        }
-
-        /// <summary>
-        /// Creates the <see cref="ItemContainerGenerator"/>
-        /// </summary>
-        /// <remarks>
-        /// This method is only present for backwards compatibility with 0.10.x in order for
-        /// TreeView to be able to create a <see cref="TreeItemContainerGenerator"/>. Can be
-        /// removed in 12.0.
-        /// </remarks>
-        [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
-        private protected virtual ItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new ItemContainerGenerator(this);
         }
 
         internal void AddLogicalChild(Control c)
