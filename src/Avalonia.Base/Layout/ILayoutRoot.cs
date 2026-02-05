@@ -5,14 +5,8 @@ namespace Avalonia.Layout
     /// <summary>
     /// Defines the root of a layoutable tree.
     /// </summary>
-    [PrivateApi]
-    public interface ILayoutRoot
+    internal interface ILayoutRoot
     {
-        /// <summary>
-        /// The size available to lay out the controls.
-        /// </summary>
-        Size ClientSize { get; }
-
         /// <summary>
         /// The scaling factor to use in layout.
         /// </summary>
