@@ -313,25 +313,25 @@ namespace Avalonia.Headless
                     _parent.Bounds = CalculateBounds();
                 }
 
-                public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
+                public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked = true)
                     => Track(point);
 
                 public void BeginFigure(Point startPoint, bool isFilled = true) => Track(startPoint);
 
-                public void CubicBezierTo(Point point1, Point point2, Point point3)
+                public void CubicBezierTo(Point point1, Point point2, Point point3, bool isStroked = true)
                 {
                     Track(point1);
                     Track(point2);
                     Track(point3);
                 }
 
-                public void QuadraticBezierTo(Point control, Point endPoint)
+                public void QuadraticBezierTo(Point control, Point endPoint, bool isStroked = true)
                 {
                     Track(control);
                     Track(endPoint);
                 }
 
-                public void LineTo(Point point) => Track(point);
+                public void LineTo(Point point, bool isStroked = true) => Track(point);
 
                 public void EndFigure(bool isClosed)
                 {
@@ -414,8 +414,8 @@ namespace Avalonia.Headless
 
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
-            public PixelFormat? Format { get; }
-            public AlphaFormat? AlphaFormat { get; }
+            public PixelFormat? Format => PixelFormat.Rgba8888;
+            public AlphaFormat? AlphaFormat => Platform.AlphaFormat.Premul;
             public int Version { get; set; }
 
             public void Save(string fileName, int? quality = null)
@@ -434,7 +434,7 @@ namespace Avalonia.Headless
                 Version++;
                 var mem = Marshal.AllocHGlobal(PixelSize.Width * PixelSize.Height * 4);
                 return new LockedFramebuffer(mem, PixelSize, PixelSize.Width * 4, Dpi, PixelFormat.Rgba8888,
-                    () => Marshal.FreeHGlobal(mem));
+                    Platform.AlphaFormat.Premul, () => Marshal.FreeHGlobal(mem));
             }
         }
 
@@ -559,12 +559,22 @@ namespace Avalonia.Headless
 
             public void PushRenderOptions(RenderOptions renderOptions)
             {
-               
+                
             }
 
             public void PopRenderOptions()
             {
-               
+                
+            }
+
+            public void PushTextOptions(TextOptions textOptions)
+            {
+                // No-op in headless stub
+            }
+
+            public void PopTextOptions()
+            {
+                // No-op in headless stub
             }
         }
 

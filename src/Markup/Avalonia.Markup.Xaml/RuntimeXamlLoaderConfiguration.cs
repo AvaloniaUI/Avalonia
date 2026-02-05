@@ -23,6 +23,12 @@ public class RuntimeXamlLoaderConfiguration
     public bool DesignMode { get; set; } = false;
 
     /// <summary>
+    /// When enabled, the XAML compiler embeds SourceInfo metadata (file path, line, and column) into generated code.
+    /// Default is 'false'.
+    /// </summary>
+    public bool CreateSourceInfo { get; set; } = false;
+
+    /// <summary>
     /// XAML diagnostics handler.
     /// </summary>
     /// <returns>

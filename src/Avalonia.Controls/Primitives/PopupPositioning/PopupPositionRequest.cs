@@ -4,7 +4,6 @@ using Avalonia.Metadata;
 namespace Avalonia.Controls.Primitives.PopupPositioning;
 
 [PrivateApi]
-[Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
 public class PopupPositionRequest
 {
     internal PopupPositionRequest(Visual target, PlacementMode placement)

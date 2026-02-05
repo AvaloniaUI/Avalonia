@@ -43,7 +43,7 @@ namespace Avalonia.Native.Interop.Impl
         private void UpdateIsVisible(bool isVisible) => SetIsVisible(isVisible.AsComBool());
         private void UpdateIsChecked(bool isChecked) => SetIsChecked(isChecked.AsComBool());
 
-        private void UpdateToggleType(NativeMenuItemToggleType toggleType)
+        private void UpdateToggleType(MenuItemToggleType toggleType)
         {
             SetToggleType((AvnMenuItemToggleType)toggleType);
         }
