@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 
 
@@ -50,5 +52,16 @@ namespace Avalonia.Skia.RenderTests
         public Point PointToClient(PixelPoint point) => point.ToPoint(RenderScaling);
 
         public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling);
+        IPresentationSource IRenderRoot.PresentationSource { get; } = new FakeSource();
+
+        class FakeSource : IPresentationSource
+        {
+            public IKeyboardNavigationHandler? KeyboardNavigationHandler { get; }
+            public IFocusManager? FocusManager { get; }
+            public IPlatformSettings? PlatformSettings { get; }
+            public IInputElement? PointerOverElement { get; set; }
+            public ITextInputMethodImpl? InputMethod { get; }
+            public InputElement RootElement { get; }
+        }
     }
 }

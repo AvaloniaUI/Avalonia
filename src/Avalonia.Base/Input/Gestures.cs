@@ -257,7 +257,7 @@ namespace Avalonia.Input
                     s_lastPressPoint = e.GetPosition((Visual)source);
                     s_holdCancellationToken = new CancellationTokenSource();
                     var token = s_holdCancellationToken.Token;
-                    var settings = ((IInputRoot?)visual.GetVisualRoot())?.PlatformSettings;
+                    var settings = visual.GetPlatformSettings();
 
                     if (settings != null)
                     {
@@ -298,7 +298,7 @@ namespace Avalonia.Input
                 source is Interactive i)
                 {
                     var point = e.GetCurrentPoint((Visual)target);
-                    var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
+                    var settings = i.GetPlatformSettings();
                     var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
                     var tapRect = new Rect(s_lastPressPoint, new Size())
                         .Inflate(new Thickness(tapSize.Width, tapSize.Height));
@@ -340,7 +340,6 @@ namespace Avalonia.Input
                     if (e.Pointer == s_gestureState?.Pointer && source is Interactive i)
                     {
                         var point = e.GetCurrentPoint((Visual)target);
-                        var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
                         var holdSize = new Size(4, 4);
                         var holdRect = new Rect(s_lastPressPoint, new Size())
                             .Inflate(new Thickness(holdSize.Width, holdSize.Height));

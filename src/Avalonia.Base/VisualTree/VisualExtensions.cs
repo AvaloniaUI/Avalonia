@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
 
@@ -469,6 +470,13 @@ namespace Avalonia.VisualTree
 
             return visual as IRenderRoot ?? visual.VisualRoot;
         }
+
+        /// <summary>
+        /// Attempts to obtain platform settings from the visual's root.
+        /// This will return null if the visual is not attached to a visual root.
+        /// </summary>
+        public static IPlatformSettings? GetPlatformSettings(this Visual visual) =>
+            visual.GetVisualRoot()?.PresentationSource.PlatformSettings;
 
         /// <summary>
         /// Returns a value indicating whether this control is attached to a visual root.

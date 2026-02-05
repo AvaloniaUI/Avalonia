@@ -5,7 +5,7 @@ namespace Avalonia.Layout
     /// <summary>
     /// Defines the root of a layoutable tree.
     /// </summary>
-    [NotClientImplementable]
+    [PrivateApi]
     public interface ILayoutRoot
     {
         /// <summary>

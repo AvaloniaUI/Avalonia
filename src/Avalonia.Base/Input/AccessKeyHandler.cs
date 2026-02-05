@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
@@ -31,6 +32,12 @@ namespace Avalonia.Input
                 typeof(AccessKeyHandler));
 
         /// <summary>
+        /// Defines the <see cref="ShowAccessKey"/> attached property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> ShowAccessKeyProperty =
+            AvaloniaProperty.RegisterAttached<AccessKeyHandler, Visual, bool>("ShowAccessKey", inherits: true);
+        
+        /// <summary>
         /// The registered access keys.
         /// </summary>
         private readonly List<AccessKeyRegistration> _registrations = [];
@@ -40,7 +47,7 @@ namespace Avalonia.Input
         /// <summary>
         /// The window to which the handler belongs.
         /// </summary>
-        private IInputRoot? _owner;
+        private InputElement? _owner;
 
         /// <summary>
         /// Whether access keys are currently being shown;
@@ -96,7 +103,7 @@ namespace Avalonia.Input
         /// <remarks>
         /// This method can only be called once, typically by the owner itself on creation.
         /// </remarks>
-        public void SetOwner(IInputRoot owner)
+        public void SetOwner(InputElement owner)
         {
             if (_owner != null)
             {
@@ -113,7 +120,7 @@ namespace Avalonia.Input
             OnSetOwner(owner);
         }
 
-        protected virtual void OnSetOwner(IInputRoot owner)
+        protected virtual void OnSetOwner(InputElement owner)
         {
         }
 
@@ -159,6 +166,9 @@ namespace Avalonia.Input
             }
         }
 
+        static void SetShowAccessKeys(AvaloniaObject target, bool value) =>
+            target.SetValue(ShowAccessKeyProperty, value);
+        
         /// <summary>
         /// Called when a key is pressed in the owner window.
         /// </summary>
@@ -188,7 +198,7 @@ namespace Avalonia.Input
 
                     // When Alt is pressed without a main menu, or with a closed main menu, show
                     // access key markers in the window (i.e. "_File").
-                    _owner!.ShowAccessKeys = _showingAccessKeys = isFocusWithinOwner;
+                    SetShowAccessKeys(_owner!, _showingAccessKeys = isFocusWithinOwner);
                 }
                 else
                 {
@@ -265,7 +275,7 @@ namespace Avalonia.Input
         {
             if (_showingAccessKeys)
             {
-                _owner!.ShowAccessKeys = false;
+                SetShowAccessKeys(_owner!, false);
             }
         }
 
@@ -275,12 +285,12 @@ namespace Avalonia.Input
         private void CloseMenu()
         {
             MainMenu!.Close();
-            _owner!.ShowAccessKeys = _showingAccessKeys = false;
+            SetShowAccessKeys(_owner!, _showingAccessKeys = false);
         }
 
         private void MainMenuClosed(object? sender, EventArgs e)
         {
-            _owner!.ShowAccessKeys = false;
+            SetShowAccessKeys(_owner!, false);
         }
 
         /// <summary>
@@ -444,7 +454,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="owner">The owner to check.</param>
         /// <returns>If focused element is decendant of owner <c>true</c>, otherwise <c>false</c>. </returns>
-        private static bool IsFocusWithinOwner(IInputRoot owner)
+        private static bool IsFocusWithinOwner(IInputElement owner)
         {
             var focusedElement = KeyboardDevice.Instance?.FocusedElement;
             if (focusedElement is not InputElement inputElement)
