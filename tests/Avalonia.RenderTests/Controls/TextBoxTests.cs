@@ -29,6 +29,9 @@ namespace Avalonia.Skia.RenderTests
 
                 var panel = new Panel();
 
+                // Use Antialias mode
+                TextOptions.SetTextRenderingMode(panel, TextRenderingMode.Antialias);
+
                 var placeholder = new TextBlock
                 {
                     Name = "PART_Placeholder",
