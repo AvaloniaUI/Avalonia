@@ -1,4 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
+// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
@@ -24,8 +24,37 @@ namespace Avalonia.Controls
                 defaultValue: 0,
                 defaultBindingMode: BindingMode.TwoWay));
 
-        public static readonly StyledProperty<string?> WatermarkProperty =
-            TextBox.WatermarkProperty.AddOwner<AutoCompleteBox>();
+        /// <summary>
+        /// Defines the <see cref="PlaceholderText"/> property.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1013",
+            Justification = "We keep WatermarkProperty for backward compatibility.")]
+        public static readonly StyledProperty<string?> PlaceholderTextProperty =
+            TextBox.PlaceholderTextProperty.AddOwner<AutoCompleteBox>();
+
+        /// <summary>
+        /// Defines the <see cref="Watermark"/> property.
+        /// </summary>
+        [Obsolete("Use PlaceholderTextProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1013",
+            Justification = "We keep WatermarkForegroundProperty for backward compatibility.")]
+        public static readonly StyledProperty<Media.IBrush?> PlaceholderForegroundProperty =
+            TextBox.PlaceholderForegroundProperty.AddOwner<AutoCompleteBox>();
+
+        /// <summary>
+        /// Defines the <see cref="WatermarkForeground"/> property.
+        /// </summary>
+        [Obsolete("Use PlaceholderForegroundProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
         /// Identifies the <see cref="MinimumPrefixLength" /> property.
@@ -406,10 +435,46 @@ namespace Avalonia.Controls
             set => SetValue(FilterModeProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the placeholder or descriptive text that is displayed even if the text is not yet set.
+        /// </summary>
+        public string? PlaceholderText
+        {
+            get => GetValue(PlaceholderTextProperty);
+            set => SetValue(PlaceholderTextProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the placeholder or descriptive text that is displayed even if the text is not yet set.
+        /// </summary>
+        [Obsolete("Use PlaceholderText instead.", false)]
         public string? Watermark
         {
-            get => GetValue(WatermarkProperty);
-            set => SetValue(WatermarkProperty, value);
+            get => PlaceholderText;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => PlaceholderText = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        public Media.IBrush? PlaceholderForeground
+        {
+            get => GetValue(PlaceholderForegroundProperty);
+            set => SetValue(PlaceholderForegroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        [Obsolete("Use PlaceholderForeground instead.", false)]
+        public Media.IBrush? WatermarkForeground
+        {
+            get => PlaceholderForeground;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => PlaceholderForeground = value;
         }
 
         /// <summary>

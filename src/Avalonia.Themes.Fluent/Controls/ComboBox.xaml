@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="using:System"
                     x:ClassModifier="internal">
@@ -16,7 +16,7 @@
           <ComboBoxItem>Item 1</ComboBoxItem>
           <ComboBoxItem>Item 2</ComboBoxItem>
         </ComboBox>
-        
+
         <ComboBox PlaceholderText="Error">
           <DataValidationErrors.Error>
             <sys:Exception>
@@ -126,7 +126,7 @@
                      Foreground="{TemplateBinding Foreground}"
                      Background="Transparent"
                      Text="{TemplateBinding Text, Mode=TwoWay}"
-                     Watermark="{TemplateBinding PlaceholderText}"
+                     PlaceholderText="{TemplateBinding PlaceholderText}"
                      BorderThickness="0"
                      IsVisible="{TemplateBinding IsEditable}">
               <TextBox.Resources>
