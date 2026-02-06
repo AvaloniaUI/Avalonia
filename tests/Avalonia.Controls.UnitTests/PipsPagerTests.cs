@@ -3,7 +3,6 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using System.Linq;
@@ -71,7 +70,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(raised);
         }
-        
+
         [Fact]
         public void Next_Button_Should_Increment_Index()
         {
@@ -84,15 +83,15 @@ namespace Avalonia.Controls.UnitTests
                 IsNextButtonVisible = true,
                 Template = GetTemplate()
             };
-            
+
             var root = new TestRoot(target);
             target.ApplyTemplate();
-            
+
             var nextButton = target.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "PART_NextButton");
             Assert.NotNull(nextButton);
-            
+
             nextButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            
+
             Assert.Equal(2, target.SelectedPageIndex);
         }
 
@@ -108,15 +107,15 @@ namespace Avalonia.Controls.UnitTests
                 IsPreviousButtonVisible = true,
                 Template = GetTemplate()
             };
-            
+
             var root = new TestRoot(target);
             target.ApplyTemplate();
-            
+
             var prevButton = target.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "PART_PreviousButton");
             Assert.NotNull(prevButton);
-            
+
             prevButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-            
+
             Assert.Equal(2, target.SelectedPageIndex);
         }
 
@@ -131,10 +130,10 @@ namespace Avalonia.Controls.UnitTests
                 SelectedPageIndex = 1,
                 Orientation = Orientation.Horizontal
             };
-            
+
             var root = new TestRoot(target);
             target.ApplyTemplate();
-            
+
             target.RaiseEvent(new KeyEventArgs { Key = Key.Right, RoutedEvent = InputElement.KeyDownEvent });
             Assert.Equal(2, target.SelectedPageIndex);
 
@@ -142,7 +141,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, target.SelectedPageIndex);
 
             target.Orientation = Orientation.Vertical;
-            
+
             target.RaiseEvent(new KeyEventArgs { Key = Key.Down, RoutedEvent = InputElement.KeyDownEvent });
             Assert.Equal(2, target.SelectedPageIndex);
 
@@ -172,7 +171,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.SelectedPageIndex = 10;
             Assert.Equal(4, target.SelectedPageIndex);
-            
+
             target.SelectedPageIndex = -5;
             Assert.Equal(0, target.SelectedPageIndex);
         }
@@ -189,10 +188,10 @@ namespace Avalonia.Controls.UnitTests
                 IsNextButtonVisible = false,
                 Template = GetTemplate()
             };
-            
+
             var root = new TestRoot(target);
             target.ApplyTemplate();
-            
+
             Assert.False(target.IsPreviousButtonVisible);
             Assert.False(target.IsNextButtonVisible);
 
@@ -248,10 +247,10 @@ namespace Avalonia.Controls.UnitTests
                 Orientation = Orientation.Horizontal,
                 Template = GetTemplate()
             };
-            
+
             var root = new TestRoot(target);
             target.ApplyTemplate();
-            
+
             var pipsList = target.GetVisualDescendants().OfType<ItemsControl>().First(i => i.Name == "PART_PipsPagerList");
 
             Assert.Equal(60, pipsList.Width);
@@ -266,7 +265,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new PipsPager();
             target.NumberOfPages = 10;
             target.SelectedPageIndex = 8;
-            
+
             target.NumberOfPages = 5;
             Assert.Equal(4, target.SelectedPageIndex);
         }
@@ -300,10 +299,10 @@ namespace Avalonia.Controls.UnitTests
                 NumberOfPages = 3,
                 Template = GetTemplate()
             };
-            
+
             var root = new TestRoot(target);
             target.ApplyTemplate();
-            
+
             var prevButton = target.GetVisualDescendants().OfType<Button>().First(b => b.Name == "PART_PreviousButton");
             var nextButton = target.GetVisualDescendants().OfType<Button>().First(b => b.Name == "PART_NextButton");
 
@@ -364,6 +363,167 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(0, target.SelectedPageIndex);
         }
 
+        [Fact]
+        public void Home_Key_Should_Navigate_To_First_Page()
+        {
+            var target = new PipsPager
+            {
+                NumberOfPages = 10,
+                SelectedPageIndex = 7,
+                Orientation = Orientation.Horizontal
+            };
+
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Home });
+
+            Assert.Equal(0, target.SelectedPageIndex);
+        }
+
+        [Fact]
+        public void End_Key_Should_Navigate_To_Last_Page()
+        {
+            var target = new PipsPager
+            {
+                NumberOfPages = 10,
+                SelectedPageIndex = 3,
+                Orientation = Orientation.Horizontal
+            };
+
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.End });
+
+            Assert.Equal(9, target.SelectedPageIndex);
+        }
+
+        [Fact]
+        public void Home_End_Keys_Should_Work_In_Vertical_Orientation()
+        {
+            var target = new PipsPager
+            {
+                NumberOfPages = 10,
+                SelectedPageIndex = 5,
+                Orientation = Orientation.Vertical
+            };
+
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Home });
+            Assert.Equal(0, target.SelectedPageIndex);
+
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.End });
+            Assert.Equal(9, target.SelectedPageIndex);
+        }
+
+        [Fact]
+        public void Negative_NumberOfPages_Should_Be_Coerced_To_Zero()
+        {
+            var target = new PipsPager();
+
+            target.NumberOfPages = -5;
+
+            Assert.Equal(0, target.NumberOfPages);
+            Assert.Equal(0, target.TemplateSettings.Pips.Count);
+        }
+
+        [Fact]
+        public void Next_Button_At_Last_Page_Should_Not_Change_Index()
+        {
+            using var unittestApplication = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new PipsPager
+            {
+                NumberOfPages = 3,
+                SelectedPageIndex = 2,
+                Template = GetTemplate()
+            };
+
+            var root = new TestRoot(target);
+            target.ApplyTemplate();
+
+            var nextButton = target.GetVisualDescendants().OfType<Button>().First(b => b.Name == "PART_NextButton");
+            nextButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+            Assert.Equal(2, target.SelectedPageIndex);
+        }
+
+        [Fact]
+        public void Previous_Button_At_First_Page_Should_Not_Change_Index()
+        {
+            using var unittestApplication = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new PipsPager
+            {
+                NumberOfPages = 3,
+                SelectedPageIndex = 0,
+                Template = GetTemplate()
+            };
+
+            var root = new TestRoot(target);
+            target.ApplyTemplate();
+
+            var prevButton = target.GetVisualDescendants().OfType<Button>().First(b => b.Name == "PART_PreviousButton");
+            prevButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+            Assert.Equal(0, target.SelectedPageIndex);
+        }
+
+        [Fact]
+        public void Arrow_Keys_At_Boundaries_Should_Not_Change_Index()
+        {
+            var target = new PipsPager
+            {
+                NumberOfPages = 5,
+                SelectedPageIndex = 0,
+                Orientation = Orientation.Horizontal
+            };
+
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Left });
+            Assert.Equal(0, target.SelectedPageIndex);
+
+            target.SelectedPageIndex = 4;
+            target.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Right });
+            Assert.Equal(4, target.SelectedPageIndex);
+        }
+
+        [Fact]
+        public void SelectedPageIndex_Default_Binding_Mode_Should_Be_TwoWay()
+        {
+            Assert.Equal(Data.BindingMode.TwoWay, PipsPager.SelectedPageIndexProperty.GetMetadata(typeof(PipsPager)).DefaultBindingMode);
+        }
+
+        [Fact]
+        public void TemplateSettings_Should_Not_Be_Externally_Settable()
+        {
+            var target = new PipsPager();
+
+            // TemplateSettings property should have a private setter (compile-time enforcement).
+            // Verify the property is readable and initialized.
+            Assert.NotNull(target.TemplateSettings);
+            Assert.IsType<PipsPagerTemplateSettings>(target.TemplateSettings);
+        }
+
+        [Fact]
+        public void NumberOfPages_To_Zero_Should_Clamp_SelectedPageIndex()
+        {
+            var target = new PipsPager();
+            target.NumberOfPages = 5;
+            target.SelectedPageIndex = 3;
+
+            target.NumberOfPages = 0;
+
+            Assert.Equal(0, target.SelectedPageIndex);
+            Assert.Equal(0, target.TemplateSettings.Pips.Count);
+        }
+
+        [Fact]
+        public void Negative_NumberOfPages_After_Having_Pages_Should_Coerce()
+        {
+            var target = new PipsPager();
+            target.NumberOfPages = 5;
+            Assert.Equal(5, target.TemplateSettings.Pips.Count);
+
+            target.NumberOfPages = -1;
+
+            Assert.Equal(0, target.NumberOfPages);
+            Assert.Equal(0, target.TemplateSettings.Pips.Count);
+        }
+
         private static FuncControlTemplate<PipsPager> GetTemplate()
         {
             return new FuncControlTemplate<PipsPager>((parent, scope) =>
@@ -374,32 +534,6 @@ namespace Avalonia.Controls.UnitTests
                     {
                         new Button { Name = "PART_PreviousButton" }.RegisterInNameScope(scope),
                         new ItemsControl { Name = "PART_PipsPagerList" }.RegisterInNameScope(scope),
-                        new Button { Name = "PART_NextButton" }.RegisterInNameScope(scope)
-                    }
-                };
-            });
-        }
-
-        private static FuncControlTemplate<PipsPager> GetScrollableTemplate()
-        {
-            return new FuncControlTemplate<PipsPager>((parent, scope) =>
-            {
-                return new StackPanel
-                {
-                    Children =
-                    {
-                        new Button { Name = "PART_PreviousButton" }.RegisterInNameScope(scope),
-                        new ItemsControl 
-                        { 
-                            Name = "PART_PipsPagerList",
-                            Template = new FuncControlTemplate<ItemsControl>((p, s) => 
-                                new ScrollViewer 
-                                { 
-                                    Name = "PART_ScrollViewer",
-                                    Content = new ItemsPresenter { Name = "PART_ItemsPresenter" }.RegisterInNameScope(s),
-                                    HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
-                                }.RegisterInNameScope(s))
-                        }.RegisterInNameScope(scope),
                         new Button { Name = "PART_NextButton" }.RegisterInNameScope(scope)
                     }
                 };
