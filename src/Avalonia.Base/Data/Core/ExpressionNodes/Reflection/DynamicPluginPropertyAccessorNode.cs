@@ -103,7 +103,7 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
     private void OnValueChanged(object? newValue)
     {
         var dataValidationError = _dataValidator?.GetDataValidationError();
-        SetValue(newValue, dataValidationError);
+        SetValue(BindingNotification.ExtractValue(newValue), dataValidationError);
     }
 
     private IPropertyAccessorPlugin? GetPlugin(object? source)
