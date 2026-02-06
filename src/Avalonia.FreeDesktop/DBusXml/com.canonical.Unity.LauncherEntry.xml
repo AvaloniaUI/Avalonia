@@ -1,0 +1,9 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="com.canonical.Unity.LauncherEntry">
+    <signal name="Update">
+      <arg name="app_uri" type="s" direction="out"/>
+      <arg name="properties" type="a{sv}" direction="out"/>
+    </signal>
+  </interface>
+</node>

@@ -152,6 +152,18 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, bool>(nameof(ShowInTaskbar), true);
 
         /// <summary>
+        /// Defines the <see cref="TaskbarProgressState"/> property.
+        /// </summary>
+        public static readonly StyledProperty<TaskbarProgressState> TaskbarProgressStateProperty =
+            AvaloniaProperty.Register<Window, TaskbarProgressState>(nameof(TaskbarProgressState), TaskbarProgressState.None);
+
+        /// <summary>
+        /// Defines the <see cref="TaskbarProgressValue"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> TaskbarProgressValueProperty =
+            AvaloniaProperty.Register<Window, double>(nameof(TaskbarProgressValue), 0.0);
+
+        /// <summary>
         /// Defines the <see cref="ClosingBehavior"/> property.
         /// </summary>
         public static readonly StyledProperty<WindowClosingBehavior> ClosingBehaviorProperty =
@@ -254,6 +266,8 @@ namespace Avalonia.Controls
             CreatePlatformImplBinding(CanMinimizeProperty, canMinimize => PlatformImpl!.SetCanMinimize(canMinimize));
             CreatePlatformImplBinding(CanMaximizeProperty, canMaximize => PlatformImpl!.SetCanMaximize(canMaximize));
             CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
+            CreatePlatformImplBinding(TaskbarProgressStateProperty, state => PlatformImpl!.SetTaskbarProgressState(state));
+            CreatePlatformImplBinding(TaskbarProgressValueProperty, value => PlatformImpl!.SetTaskbarProgressValue((ulong)(Math.Clamp(value, 0.0, 1.0) * 1000), 1000));
 
             CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
             CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, hint => PlatformImpl!.SetExtendClientAreaToDecorationsHint(hint));
@@ -389,11 +403,29 @@ namespace Avalonia.Controls
         /// <summary>
         /// Enables or disables the taskbar icon
         /// </summary>
-        /// 
+        ///
         public bool ShowInTaskbar
         {
             get => GetValue(ShowInTaskbarProperty);
             set => SetValue(ShowInTaskbarProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the taskbar progress indicator state for this window.
+        /// </summary>
+        public TaskbarProgressState TaskbarProgressState
+        {
+            get => GetValue(TaskbarProgressStateProperty);
+            set => SetValue(TaskbarProgressStateProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the taskbar progress indicator value (0.0 to 1.0) for this window.
+        /// </summary>
+        public double TaskbarProgressValue
+        {
+            get => GetValue(TaskbarProgressValueProperty);
+            set => SetValue(TaskbarProgressValueProperty, value);
         }
 
         /// <summary>

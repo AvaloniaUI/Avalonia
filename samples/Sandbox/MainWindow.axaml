@@ -1,4 +1,24 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        x:Class="Sandbox.MainWindow">
+        x:Class="Sandbox.MainWindow"
+        Title="Taskbar Progress Demo"
+        Width="400" Height="350">
+    <StackPanel Margin="20" Spacing="12">
+        <TextBlock Text="Taskbar Progress Demo" FontSize="20" FontWeight="Bold"/>
+
+        <TextBlock Text="State:" Margin="0,10,0,0"/>
+        <ComboBox x:Name="StateCombo" SelectedIndex="0">
+            <ComboBoxItem Content="None"/>
+            <ComboBoxItem Content="Indeterminate"/>
+            <ComboBoxItem Content="Normal"/>
+            <ComboBoxItem Content="Error"/>
+            <ComboBoxItem Content="Paused"/>
+        </ComboBox>
+
+        <TextBlock x:Name="ValueLabel" Text="Value: 0%" Margin="0,10,0,0"/>
+        <Slider x:Name="ProgressSlider" Minimum="0" Maximum="100" Value="0"/>
+
+        <Button x:Name="AnimateBtn" Content="Animate 0 -> 100%" Margin="0,10,0,0"/>
+        <Button x:Name="ResetBtn" Content="Reset"/>
+    </StackPanel>
 </Window>

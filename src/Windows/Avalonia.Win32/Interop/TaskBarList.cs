@@ -14,6 +14,8 @@ namespace Avalonia.Win32.Interop
         private static HrInit? s_hrInitDelegate;
         private static MarkFullscreenWindow? s_markFullscreenWindowDelegate;
         private static SetOverlayIcon? s_setOverlayIconDelegate;
+        private static SetProgressValue? s_setProgressValueDelegate;
+        private static SetProgressState? s_setProgressStateDelegate;
 
         private static unsafe IntPtr Init()
         {
@@ -70,6 +72,36 @@ namespace Avalonia.Win32.Interop
                     Marshal.GetDelegateForFunctionPointer<SetOverlayIcon>((*ptr)->SetOverlayIcon);
 
                 s_setOverlayIconDelegate(s_taskBarList, hwnd, hIcon, description);
+            }
+        }
+
+        public static unsafe void SetProgressValue(IntPtr hwnd, ulong completed, ulong total)
+        {
+            LazyInit();
+
+            if (s_taskBarList != IntPtr.Zero)
+            {
+                var ptr = (ITaskBarList3VTable**)s_taskBarList.ToPointer();
+
+                s_setProgressValueDelegate ??=
+                    Marshal.GetDelegateForFunctionPointer<SetProgressValue>((*ptr)->SetProgressValue);
+
+                s_setProgressValueDelegate(s_taskBarList, hwnd, completed, total);
+            }
+        }
+
+        public static unsafe void SetProgressState(IntPtr hwnd, int flags)
+        {
+            LazyInit();
+
+            if (s_taskBarList != IntPtr.Zero)
+            {
+                var ptr = (ITaskBarList3VTable**)s_taskBarList.ToPointer();
+
+                s_setProgressStateDelegate ??=
+                    Marshal.GetDelegateForFunctionPointer<SetProgressState>((*ptr)->SetProgressState);
+
+                s_setProgressStateDelegate(s_taskBarList, hwnd, flags);
             }
         }
     }

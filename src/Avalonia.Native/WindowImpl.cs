@@ -226,6 +226,17 @@ namespace Avalonia.Native
             // NO OP On OSX
         }
 
+        public void SetTaskbarProgressState(TaskbarProgressState state)
+        {
+            _native.SetDockProgressState((int)state);
+        }
+
+        public void SetTaskbarProgressValue(ulong completed, ulong total)
+        {
+            var progress = total > 0 ? (double)completed / total : 0;
+            _native.SetDockProgressValue(progress);
+        }
+
         public void SetIcon(IWindowIconImpl? icon)
         {
             // NO OP on OSX

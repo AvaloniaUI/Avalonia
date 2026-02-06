@@ -70,6 +70,10 @@ BEGIN_INTERFACE_MAP()
     
     virtual HRESULT GetWindowZOrder (long* zOrder) override;
 
+    virtual HRESULT SetDockProgressState (int state) override;
+
+    virtual HRESULT SetDockProgressValue (double progress) override;
+
     void EnterFullScreenMode ();
 
     void ExitFullScreenMode ();

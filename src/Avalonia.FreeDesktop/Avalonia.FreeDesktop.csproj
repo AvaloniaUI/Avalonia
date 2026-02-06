@@ -43,6 +43,8 @@
 
     <AdditionalFiles Include="DBusXml/org.kde.StatusNotifierWatcher.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.kde.StatusNotifierItem.xml" DBusGeneratorMode="Handler" />
+
+    <AdditionalFiles Include="DBusXml/com.canonical.Unity.LauncherEntry.xml" DBusGeneratorMode="Handler" />
   </ItemGroup>
 
 </Project>

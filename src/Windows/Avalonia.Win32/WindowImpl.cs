@@ -867,6 +867,16 @@ namespace Avalonia.Win32
             UpdateWindowProperties(newWindowProperties);
         }
 
+        public void SetTaskbarProgressState(TaskbarProgressState state)
+        {
+            TaskBarList.SetProgressState(_hwnd, (int)state);
+        }
+
+        public void SetTaskbarProgressValue(ulong completed, ulong total)
+        {
+            TaskBarList.SetProgressValue(_hwnd, completed, total);
+        }
+
         public void CanResize(bool value)
         {
             var newWindowProperties = _windowProperties;

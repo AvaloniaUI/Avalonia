@@ -60,6 +60,16 @@ namespace Avalonia.Platform
         void ShowTaskbarIcon(bool value);
 
         /// <summary>
+        /// Sets the taskbar progress indicator state for this window.
+        /// </summary>
+        void SetTaskbarProgressState(TaskbarProgressState state);
+
+        /// <summary>
+        /// Sets the taskbar progress indicator value for this window.
+        /// </summary>
+        void SetTaskbarProgressValue(ulong completed, ulong total);
+
+        /// <summary>
         /// Enables or disables resizing of the window
         /// </summary>
         void CanResize(bool value);
