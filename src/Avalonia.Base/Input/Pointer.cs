@@ -108,7 +108,7 @@ namespace Avalonia.Input
             }
         }
 
-        static IInputElement? GetNextCapture(Visual parent)
+        static IInputElement? GetNextCapture(Visual? parent)
         {
             return parent as IInputElement ?? parent.FindAncestorOfType<IInputElement>();
         }

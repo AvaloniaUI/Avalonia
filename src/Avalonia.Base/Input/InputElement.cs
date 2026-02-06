@@ -583,7 +583,8 @@ namespace Avalonia.Input
 
             if (IsFocused)
             {
-                FocusManager.GetFocusManager(e.Root as IInputElement)?.ClearFocusOnElementRemoved(this, e.Parent);
+                ((FocusManager?)e.PresentationSource.InputRoot.FocusManager)?.ClearFocusOnElementRemoved(this,
+                    e.Parent ?? e.Root);
             }
 
             IsKeyboardFocusWithin = false;
