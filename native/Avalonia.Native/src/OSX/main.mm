@@ -475,14 +475,23 @@ public:
         return *ppv != nullptr ? S_OK : E_FAIL;
     }
     
-    HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement **ppv) override { 
+    HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement **ppv) override {
         START_COM_CALL;
         *ppv = ::CreateMemoryManagementHelper();
         return S_OK;
     }
-    
-    
-    
+
+    virtual HRESULT SetDockMenu(IAvnMenu* dockMenu) override
+    {
+        START_COM_CALL;
+
+        @autoreleasepool
+        {
+            ::SetDockMenu(dockMenu);
+            return S_OK;
+        }
+    }
+
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()

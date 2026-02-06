@@ -38,6 +38,8 @@ extern void SetAppMenu(IAvnMenu *menu);
 extern void SetServicesMenu (IAvnMenu* menu);
 extern IAvnMenu* GetAppMenu ();
 extern NSMenuItem* GetAppMenuItem ();
+extern void SetDockMenu(IAvnMenu* menu);
+extern IAvnMenu* GetDockMenu();
 
 extern void InitializeAvnApp(IAvnApplicationEvents* events, bool disableAppDelegate);
 extern void ReleaseAvnAppEvents();

@@ -1,5 +1,6 @@
 #include "common.h"
 #include "AvnString.h"
+#include "menu.h"
 @interface AvnAppDelegate : NSObject<NSApplicationDelegate>
 -(AvnAppDelegate* _Nonnull) initWithEvents: (IAvnApplicationEvents* _Nonnull) events;
 -(void) releaseEvents;
@@ -84,6 +85,21 @@ ComPtr<IAvnApplicationEvents> _events;
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
     return _events->TryShutdown() ? NSTerminateNow : NSTerminateCancel;
+}
+
+- (NSMenu *)applicationDockMenu:(NSApplication *)sender
+{
+    auto dockMenu = GetDockMenu();
+    if (dockMenu != nullptr)
+    {
+        auto nativeMenu = dynamic_cast<AvnAppMenu*>(dockMenu);
+        if (nativeMenu != nullptr)
+        {
+            nativeMenu->RaiseNeedsUpdate();
+            return nativeMenu->GetNative();
+        }
+    }
+    return nil;
 }
 
 @end
