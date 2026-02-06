@@ -9,7 +9,31 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Headless.HeadlessWindowExtensions.KeyPress(Avalonia.Controls.TopLevel,Avalonia.Input.Key,Avalonia.Input.RawInputModifiers)</Target>
+    <Left>baseline/Avalonia.Headless/lib/net10.0/Avalonia.Headless.dll</Left>
+    <Right>current/Avalonia.Headless/lib/net10.0/Avalonia.Headless.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Headless.HeadlessWindowExtensions.KeyRelease(Avalonia.Controls.TopLevel,Avalonia.Input.Key,Avalonia.Input.RawInputModifiers)</Target>
+    <Left>baseline/Avalonia.Headless/lib/net10.0/Avalonia.Headless.dll</Left>
+    <Right>current/Avalonia.Headless/lib/net10.0/Avalonia.Headless.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Headless.HeadlessWindowExtensions.DragDrop(Avalonia.Controls.TopLevel,Avalonia.Point,Avalonia.Input.Raw.RawDragEventType,Avalonia.Input.IDataObject,Avalonia.Input.DragDropEffects,Avalonia.Input.RawInputModifiers)</Target>
+    <Left>baseline/Avalonia.Headless/lib/net8.0/Avalonia.Headless.dll</Left>
+    <Right>current/Avalonia.Headless/lib/net8.0/Avalonia.Headless.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Headless.HeadlessWindowExtensions.KeyPress(Avalonia.Controls.TopLevel,Avalonia.Input.Key,Avalonia.Input.RawInputModifiers)</Target>
+    <Left>baseline/Avalonia.Headless/lib/net8.0/Avalonia.Headless.dll</Left>
+    <Right>current/Avalonia.Headless/lib/net8.0/Avalonia.Headless.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Headless.HeadlessWindowExtensions.KeyRelease(Avalonia.Controls.TopLevel,Avalonia.Input.Key,Avalonia.Input.RawInputModifiers)</Target>
     <Left>baseline/Avalonia.Headless/lib/net8.0/Avalonia.Headless.dll</Left>
     <Right>current/Avalonia.Headless/lib/net8.0/Avalonia.Headless.dll</Right>
   </Suppression>
