@@ -1614,38 +1614,6 @@ namespace Avalonia.Win32
         }
 
         /// <inheritdoc/>
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
-        {
-            var handlesToIndex = new Dictionary<IntPtr, int>(windows.Length);
-            var outputArray = new long[windows.Length];
-
-            for (int i = 0; i < windows.Length; i++)
-            {
-                if (windows[i].PlatformImpl is WindowImpl platformImpl)
-                    handlesToIndex.Add(platformImpl.Handle.Handle, i);
-            }
-
-            long nextZOrder = 0;
-            bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam)
-            {
-                if (handlesToIndex.TryGetValue(hWnd, out var index))
-                {
-                    // We negate the z-order so that the topmost window has the highest number.
-                    outputArray[index] = -nextZOrder;
-                    nextZOrder++;
-                }
-                return nextZOrder < outputArray.Length;
-            }
-
-            EnumChildWindows(IntPtr.Zero, EnumWindowsProc, IntPtr.Zero);
-
-            for (int i = 0; i < windows.Length; i++)
-            {
-                zOrder[i] = outputArray[i];
-            }
-        }
-
-        /// <inheritdoc/>
         public bool IsClientAreaExtendedToDecorations => _isClientAreaExtended;
 
         /// <inheritdoc/>
