@@ -16,9 +16,10 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new IndeiValidationPlugin();
             var data = new Data { Maximum = 5 };
-            var accessor = inpcAccessorPlugin.Start(new WeakReference<object>(data), nameof(data.Value));
-            var validator = validatorPlugin.Start(new WeakReference<object>(data), nameof(data.Value), accessor);
-            var result = new List<object>();
+            var accessor = inpcAccessorPlugin.Start(new WeakReference<object?>(data), nameof(data.Value));
+            Assert.NotNull(accessor);
+            var validator = validatorPlugin.Start(new WeakReference<object?>(data), nameof(data.Value), accessor);
+            var result = new List<object?>();
 
             validator.Subscribe(x => result.Add(x));
             validator.SetValue(5, BindingPriority.LocalValue);
@@ -51,15 +52,16 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var inpcAccessorPlugin = new InpcPropertyAccessorPlugin();
             var validatorPlugin = new IndeiValidationPlugin();
             var data = new Data { Maximum = 5 };
-            var accessor = inpcAccessorPlugin.Start(new WeakReference<object>(data), nameof(data.Value));
-            var validator = validatorPlugin.Start(new WeakReference<object>(data), nameof(data.Value), accessor);
+            var accessor = inpcAccessorPlugin.Start(new WeakReference<object?>(data), nameof(data.Value));
+            Assert.NotNull(accessor);
+            var validator = validatorPlugin.Start(new WeakReference<object?>(data), nameof(data.Value), accessor);
 
             Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
             validator.Subscribe(_ => { });
             Assert.Equal(1, data.ErrorsChangedSubscriptionCount);
             validator.Unsubscribe();
             // Forces WeakEvent compact
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
         }
 
@@ -67,7 +69,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
         {
             private int _value;
             private int _maximum;
-            private string _error;
+            private string? _error;
 
             public override bool HasErrors => _error != null;
 
@@ -92,14 +94,14 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
                 }
             }
 
-            public override IEnumerable GetErrors(string propertyName)
+            public override IEnumerable GetErrors(string? propertyName)
             {
                 if (propertyName == nameof(Value) && _error != null)
                 {
                     return new[] { _error };
                 }
 
-                return null;
+                return Array.Empty<string?>();
             }
 
             private void UpdateError()

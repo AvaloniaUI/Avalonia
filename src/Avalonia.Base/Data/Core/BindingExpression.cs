@@ -23,7 +23,7 @@ namespace Avalonia.Data.Core;
 /// A <see cref="BindingExpression"/> represents a untyped binding which has been
 /// instantiated on an object.
 /// </remarks>
-internal partial class BindingExpression : UntypedBindingExpressionBase, IDescription, IDisposable
+internal class BindingExpression : UntypedBindingExpressionBase, IDescription, IDisposable
 {
     private static readonly List<ExpressionNode> s_emptyExpressionNodes = new();
     private readonly WeakReference<object?>? _source;
@@ -138,7 +138,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         get
         {
             var b = new StringBuilder();
-            LeafNode.BuildString(b, _nodes);
+            LeafNode?.BuildString(b, _nodes);
             return b.ToString();
         }
     }
@@ -149,7 +149,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
     public CultureInfo ConverterCulture => _uncommon?._converterCulture ?? CultureInfo.CurrentCulture;
     public object? ConverterParameter => _uncommon?._converterParameter;
     public object? FallbackValue => _uncommon is not null ? _uncommon._fallbackValue : AvaloniaProperty.UnsetValue;
-    public ExpressionNode LeafNode => _nodes[_nodes.Count - 1];
+    public ExpressionNode? LeafNode => _nodes.Count > 0 ? _nodes[_nodes.Count - 1] : null;
     public string? StringFormat => _uncommon?._stringFormat;
     public object? TargetNullValue => _uncommon?._targetNullValue ?? AvaloniaProperty.UnsetValue;
     public UpdateSourceTrigger UpdateSourceTrigger => _uncommon?._updateSourceTrigger ?? UpdateSourceTrigger.PropertyChanged;
@@ -171,59 +171,6 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
             _nodes[i].SetSource(AvaloniaProperty.UnsetValue, null);
 
         _nodes[0].SetSource(source, null);
-    }
-
-    /// <summary>
-    /// Creates an <see cref="BindingExpression"/> from an expression tree.
-    /// </summary>
-    /// <typeparam name="TIn">The input type of the binding expression.</typeparam>
-    /// <typeparam name="TOut">The output type of the binding expression.</typeparam>
-    /// <param name="source">The source from which the binding value will be read.</param>
-    /// <param name="expression">The expression representing the binding path.</param>
-    /// <param name="converter">The converter to use.</param>
-    /// <param name="converterCulture">The converter culture to use.</param>
-    /// <param name="converterParameter">The converter parameter.</param>
-    /// <param name="enableDataValidation">Whether data validation should be enabled for the binding.</param>
-    /// <param name="fallbackValue">The fallback value.</param>
-    /// <param name="mode">The binding mode.</param>
-    /// <param name="priority">The binding priority.</param>
-    /// <param name="targetNullValue">The null target value.</param>
-    /// <param name="allowReflection">Whether to allow reflection for target type conversion.</param>
-    [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
-#if NET8_0_OR_GREATER
-    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
-#endif
-    internal static BindingExpression Create<TIn, TOut>(
-        TIn source,
-        Expression<Func<TIn, TOut>> expression,
-        IValueConverter? converter = null,
-        CultureInfo? converterCulture = null,
-        object? converterParameter = null,
-        bool enableDataValidation = false,
-        Optional<object?> fallbackValue = default,
-        BindingMode mode = BindingMode.OneWay,
-        BindingPriority priority = BindingPriority.LocalValue,
-        object? targetNullValue = null,
-        bool allowReflection = true)
-            where TIn : class?
-    {
-        var nodes = BindingExpressionVisitor<TIn>.BuildNodes(expression, enableDataValidation);
-        var fallback = fallbackValue.HasValue ? fallbackValue.Value : AvaloniaProperty.UnsetValue;
-
-        return new BindingExpression(
-            source,
-            nodes,
-            fallback,
-            converter: converter,
-            converterCulture: converterCulture,
-            converterParameter: converterParameter,
-            enableDataValidation: enableDataValidation,
-            mode: mode,
-            priority: priority,
-            targetNullValue: targetNullValue,
-            targetTypeConverter: allowReflection ?
-                TargetTypeConverter.GetReflectionConverter() :
-                TargetTypeConverter.GetDefaultConverter());
     }
 
     /// <summary>
@@ -360,7 +307,7 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
 
         // Don't set the value if it's unchanged. If there is a binding error, we still have to set the value
         // in order to clear the error.
-        if (TypeUtilities.IdentityEquals(LeafNode.Value, value, type) && ErrorType == BindingErrorType.None)
+        if (TypeUtilities.IdentityEquals(LeafNode!.Value, value, type) && ErrorType == BindingErrorType.None)
             return true;
 
         try
@@ -515,7 +462,8 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         if (TryGetTarget(out var target) &&
             TargetProperty is not null &&
             target.GetValue(TargetProperty) is var value &&
-            !TypeUtilities.IdentityEquals(value, LeafNode.Value, TargetType))
+            LeafNode is { } leafNode &&
+            !TypeUtilities.IdentityEquals(value, leafNode.Value, TargetType))
         {
             WriteValueToSource(value);
         }

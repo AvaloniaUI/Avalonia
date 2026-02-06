@@ -182,7 +182,7 @@ public partial class BindingExpressionTests
         data.Foo["foo"] = "bar2";
 
         // Forces WeakEvent compact
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
         Assert.Equal("bar2", target.String);
 

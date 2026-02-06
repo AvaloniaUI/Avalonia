@@ -1,14 +1,7 @@
 using System;
-using System.Diagnostics;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls.ApplicationLifetimes;
-
-[NotClientImplementable]
-[Obsolete("This interface has no effect. Instead use Application.Current.TryGetFeature<IActivatableLifetime>().", true)]
-public interface IActivatableApplicationLifetime : IActivatableLifetime {
-
-}
 
 /// <summary>
 /// An interface for ApplicationLifetimes where the application can be Activated and Deactivated.

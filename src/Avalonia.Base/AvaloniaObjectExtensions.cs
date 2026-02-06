@@ -11,12 +11,12 @@ namespace Avalonia
     public static class AvaloniaObjectExtensions
     {
         /// <summary>
-        /// Converts an <see cref="IObservable{T}"/> to an <see cref="IBinding"/>.
+        /// Converts an <see cref="IObservable{T}"/> to an <see cref="BindingBase"/>.
         /// </summary>
         /// <typeparam name="T">The type produced by the observable.</typeparam>
         /// <param name="source">The observable</param>
-        /// <returns>An <see cref="IBinding"/>.</returns>
-        public static IBinding ToBinding<T>(this IObservable<T> source)
+        /// <returns>An <see cref="BindingBase"/>.</returns>
+        public static BindingBase ToBinding<T>(this IObservable<T> source)
         {
             return new BindingAdaptor(
                 typeof(T).IsValueType
@@ -228,33 +228,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Binds a property on an <see cref="AvaloniaObject"/> to an <see cref="IBinding"/>.
-        /// </summary>
-        /// <param name="target">The object.</param>
-        /// <param name="property">The property to bind.</param>
-        /// <param name="binding">The binding.</param>
-        /// <param name="anchor">
-        /// An optional anchor from which to locate required context. When binding to objects that
-        /// are not in the logical tree, certain types of binding need an anchor into the tree in 
-        /// order to locate named controls or resources. The <paramref name="anchor"/> parameter 
-        /// can be used to provide this context.
-        /// </param>
-        /// <returns>An <see cref="IDisposable"/> which can be used to cancel the binding.</returns>
-        [Obsolete("Use AvaloniaObject.Bind(AvaloniaProperty, IBinding")]
-        public static IDisposable Bind(
-            this AvaloniaObject target,
-            AvaloniaProperty property,
-            IBinding binding,
-            object? anchor = null)
-        {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            binding = binding ?? throw new ArgumentNullException(nameof(binding));
-
-            return target.Bind(property, binding);
-        }
-
-        /// <summary>
         /// Gets a <see cref="AvaloniaProperty"/> value.
         /// </summary>
         /// <typeparam name="T">The type of the property.</typeparam>
@@ -359,7 +332,7 @@ namespace Avalonia
             return observable.Subscribe(new ClassHandlerObserver<TTarget, TValue>(action));
         }
 
-        private class BindingAdaptor : IBinding2
+        private class BindingAdaptor : BindingBase
         {
             private readonly IObservable<object?> _source;
 
@@ -368,17 +341,10 @@ namespace Avalonia
                 this._source = source;
             }
 
-            public InstancedBinding? Initiate(
+            internal override BindingExpressionBase CreateInstance(
                 AvaloniaObject target,
-                AvaloniaProperty? targetProperty,
-                object? anchor = null,
-                bool enableDataValidation = false)
-            {
-                var expression = new UntypedObservableBindingExpression(_source, BindingPriority.LocalValue);
-                return new InstancedBinding(expression, BindingMode.OneWay, BindingPriority.LocalValue);
-            }
-
-            BindingExpressionBase IBinding2.Instance(AvaloniaObject target, AvaloniaProperty? property, object? anchor)
+                AvaloniaProperty? property,
+                object? anchor)
             {
                 return new UntypedObservableBindingExpression(_source, BindingPriority.LocalValue);
             }

@@ -211,7 +211,7 @@ namespace Avalonia.Automation
         /// Defines the AutomationProperties.LiveSetting attached property.
         /// </summary>
         /// <remarks>
-        /// This property currently has no effect.
+        /// This property affects the default value for <see cref="AutomationPeer.GetLiveSetting"/> and controls whether live region changed events are emitted.
         /// </remarks>
         public static readonly AttachedProperty<AutomationLiveSetting> LiveSettingProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, AutomationLiveSetting>(

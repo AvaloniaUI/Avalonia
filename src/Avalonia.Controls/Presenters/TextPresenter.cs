@@ -346,16 +346,29 @@ namespace Avalonia.Controls.Presenters
         private TextLayout CreateTextLayoutInternal(Size constraint, string? text, Typeface typeface,
             IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides)
         {
-            var foreground = Foreground;
             var maxWidth = MathUtilities.IsZero(constraint.Width) ? double.PositiveInfinity : constraint.Width;
             var maxHeight = MathUtilities.IsZero(constraint.Height) ? double.PositiveInfinity : constraint.Height;
 
             var effectiveFontSize = TextScaling.GetScaledFontSize(this, FontSize);
             var fontScaleFactor = effectiveFontSize / FontSize;
 
-            var textLayout = new TextLayout(text, typeface, FontFeatures, effectiveFontSize, foreground, TextAlignment,
-                TextWrapping, maxWidth: maxWidth, maxHeight: maxHeight, textStyleOverrides: textStyleOverrides,
-                flowDirection: FlowDirection, lineHeight: LineHeight * fontScaleFactor, letterSpacing: LetterSpacing * fontScaleFactor);
+            var textLayout = new TextLayout(
+                text,
+                typeface,
+                effectiveFontSize,
+                Foreground,
+                TextAlignment,
+                TextWrapping,
+                null,
+                null,
+                FlowDirection,
+                maxWidth,
+                maxHeight,
+                LineHeight * fontScaleFactor,
+                LetterSpacing * fontScaleFactor,
+                0,
+                FontFeatures,
+                textStyleOverrides);
 
             return textLayout;
         }
@@ -557,9 +570,12 @@ namespace Avalonia.Controls.Presenters
             if (!string.IsNullOrEmpty(preeditText))
             {
                 var preeditHighlight = new ValueSpan<TextRunProperties>(caretIndex, preeditText.Length,
-                        new GenericTextRunProperties(typeface, FontFeatures, effectiveFontSize,
-                        foregroundBrush: foreground,
-                        textDecorations: TextDecorations.Underline));
+                        new GenericTextRunProperties(
+                            typeface,
+                            effectiveFontSize,
+                            TextDecorations.Underline,
+                            foreground,
+                            fontFeatures: FontFeatures));
 
                 textStyleOverrides = new[]
                 {
@@ -573,8 +589,11 @@ namespace Avalonia.Controls.Presenters
                     textStyleOverrides = new[]
                     {
                         new ValueSpan<TextRunProperties>(start, length,
-                        new GenericTextRunProperties(typeface, FontFeatures, effectiveFontSize,
-                            foregroundBrush: SelectionForegroundBrush))
+                        new GenericTextRunProperties(
+                            typeface,
+                            effectiveFontSize,
+                            foregroundBrush: SelectionForegroundBrush,
+                            fontFeatures: FontFeatures))
                     };
                 }
             }

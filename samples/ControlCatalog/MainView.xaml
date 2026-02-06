@@ -35,6 +35,9 @@
       <TabItem Header="Border">
         <pages:BorderPage />
       </TabItem>
+      <TabItem Header="BitmapCache">
+        <pages:BitmapCachePage />
+      </TabItem>
       <TabItem Header="Buttons">
         <pages:ButtonsPage />
       </TabItem>

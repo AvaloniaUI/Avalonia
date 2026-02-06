@@ -11,10 +11,6 @@
     <ProjectReference Include="..\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="../../Avalonia.Base/Diagnostics/TrimmingMessages.cs" Link="Diagnostics/AvaloniaTrimmingMessages.cs" />
-  </ItemGroup>
-
   <Import Project="IncludeXamlIlSre.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />

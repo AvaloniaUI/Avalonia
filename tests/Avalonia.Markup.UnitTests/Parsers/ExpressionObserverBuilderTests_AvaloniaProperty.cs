@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Avalonia.Diagnostics;
 using Avalonia.Data.Core;
 using Xunit;
-using Avalonia.Markup.Parsers;
 using Avalonia.Utilities;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.UnitTests;
+using Avalonia.Data.Core.Parsers;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
@@ -36,7 +36,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var data = new Class1();
             var target = Build(data, "Foo");
-            var result = new List<object>();
+            var result = new List<object?>();
 
             var sub = target.ToObservable().Subscribe(x => result.Add(x));
             data.SetValue(Class1.FooProperty, "bar");

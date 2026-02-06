@@ -200,6 +200,7 @@ namespace Avalonia.Headless
             public int RowBytes => _fb.RowBytes;
             public Vector Dpi => _fb.Dpi;
             public PixelFormat Format => _fb.Format;
+            public AlphaFormat AlphaFormat => _fb.AlphaFormat;
         }
 
         public ILockedFramebuffer Lock()
@@ -346,13 +347,6 @@ namespace Avalonia.Headless
         {
             Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, InputRoot!,
                 point, delta, modifiers));
-        }
-
-        [Obsolete($"Use the overload accepting a {nameof(IDataTransfer)} instance instead.")]
-        void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
-        {
-            var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
-            Input?.Invoke(new RawDragEvent(device, type, InputRoot!, point, new DataObjectToDataTransferWrapper(data), effects, modifiers));
         }
 
         void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataTransfer data, DragDropEffects effects, RawInputModifiers modifiers)

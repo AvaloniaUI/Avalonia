@@ -1,0 +1,50 @@
+{
+  "Packages":
+  [
+    {
+      "Id": "Avalonia",
+      "MergeAll": true,
+      "Exclude": ["Avalonia.Remote.Protocol"],
+      "IncomingIncludeAssetsOverride": "",
+      "Merge": [
+        {
+          "Id": "Avalonia.Build.Tasks",
+          "IgnoreMissingFrameworkBinaries": true,
+          "DoNotMergeDependencies": true
+        },
+        {
+          "Id": "Avalonia.Generators",
+          "IgnoreMissingFrameworkBinaries": true,
+          "DoNotMergeDependencies": true
+        },
+        {
+          "Id": "Avalonia.Analyzers.CSharp",
+          "IgnoreMissingFrameworkBinaries": true,
+          "DoNotMergeDependencies": true
+        },
+        {
+          "Id": "Avalonia.Analyzers.VisualBasic",
+          "IgnoreMissingFrameworkBinaries": true,
+          "DoNotMergeDependencies": true
+        },
+        {
+          "Id": "Avalonia.Analyzers.CodeFixes.CSharp",
+          "IgnoreMissingFrameworkBinaries": true,
+          "DoNotMergeDependencies": true
+        }
+      ]
+    },
+    {
+      "Id": "Avalonia.Win32",
+      "MergeAll": false,
+      "IncomingIncludeAssetsOverride": "",
+      "Merge": [
+        {
+          "Id": "Avalonia.Win32.Automation",
+          "IgnoreMissingFrameworkBinaries": true,
+          "DoNotMergeDependencies": true
+        }
+      ]
+    }
+  ]
+}

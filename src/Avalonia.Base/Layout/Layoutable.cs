@@ -470,7 +470,10 @@ namespace Avalonia.Layout
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Called when a child control's desired size changes.
+        /// </summary>
+        /// <param name="control">The child control.</param>
         internal void ChildDesiredSizeChanged(Layoutable control)
         {
             if (!_measuring)
@@ -947,18 +950,6 @@ namespace Avalonia.Layout
         private static Size NonNegative(Size size)
         {
             return new Size(Math.Max(size.Width, 0), Math.Max(size.Height, 0));
-        }
-
-        internal override void SynchronizeCompositionProperties()
-        {
-            base.SynchronizeCompositionProperties();
-
-            if (CompositionVisual is { } visual)
-            {
-                // If the visual isn't using layout rounding, it's possible that antialiasing renders to pixels
-                // outside the current bounds. Extend the dirty rect by 1px in all directions in this case.
-                visual.ShouldExtendDirtyRect = !UseLayoutRounding;
-            }
         }
     }
 }

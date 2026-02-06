@@ -12,8 +12,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
     public class ResourceIncludeTests : XamlTestBase
     {
-        [Fact]
-        public void ResourceInclude_Loads_ResourceDictionary()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void ResourceInclude_Loads_ResourceDictionary(bool createSourceInfo)
         {
             var documents = new[]
             {
@@ -37,9 +39,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </UserControl>")
             };
 
+            var config = new RuntimeXamlLoaderConfiguration { CreateSourceInfo = createSourceInfo };
+            
             using (StartWithResources())
             {
-                var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+                var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents, config);
                 var userControl = Assert.IsType<UserControl>(compiled[1]);
                 var border = userControl.GetControl<Border>("border");
 

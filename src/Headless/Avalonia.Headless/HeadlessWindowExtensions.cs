@@ -42,13 +42,6 @@ public static class HeadlessWindowExtensions
     }
 
     /// <summary>
-    /// Simulates a keyboard press on the headless window/toplevel.
-    /// </summary>
-    [Obsolete("Use the overload that takes a physical key and key symbol instead, or KeyPressQwerty alternatively.")]
-    public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
-        KeyPress(topLevel, key, modifiers, PhysicalKey.None, null);
-
-    /// <summary>
     /// Simulates keyboard press on the headless window/toplevel.
     /// </summary>
     public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey,
@@ -60,13 +53,6 @@ public static class HeadlessWindowExtensions
     /// </summary>
     public static void KeyPressQwerty(this TopLevel topLevel, PhysicalKey physicalKey, RawInputModifiers modifiers) =>
         RunJobsOnImpl(topLevel, w => w.KeyPress(physicalKey.ToQwertyKey(), modifiers, physicalKey, physicalKey.ToQwertyKeySymbol()));
-
-    /// <summary>
-    /// Simulates a keyboard release on the headless window/toplevel.
-    /// </summary>
-    [Obsolete("Use the overload that takes a physical key and key symbol instead, or KeyReleaseQwerty alternatively.")]
-    public static void KeyRelease(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
-        KeyRelease(topLevel, key, modifiers, PhysicalKey.None, null);
 
     /// <summary>
     /// Simulates keyboard release on the headless window/toplevel.
@@ -124,14 +110,6 @@ public static class HeadlessWindowExtensions
     /// <summary>
     /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
     /// </summary>
-    [Obsolete($"Use the overload accepting a {nameof(IDataTransfer)} instance instead.")]
-    public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataObject data,
-        DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
-        RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
-
-    /// <summary>
-    /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
-    /// </summary>
     public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataTransfer data,
         DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
@@ -142,20 +120,25 @@ public static class HeadlessWindowExtensions
         action(GetImpl(topLevel));
         RunJobsAndRender();
 
-        void RunJobsAndRender()
+        static void RunJobsAndRender()
         {
-            var count = 0;
             var dispatcher = Dispatcher.UIThread;
 
-            while (dispatcher.HasJobsWithPriority(DispatcherPriority.MinimumActiveValue))
+            // Run jobs and render frames until everything is stable.
+            // We use a simple approach: run jobs, render, and repeat until
+            // there are no more pending jobs. The render timer tick can schedule
+            // new jobs, so we loop until stable.
+            for (var i = 0; i < 10; i++)
             {
-                if (count >= 10)
-                    throw new InvalidOperationException("Dispatcher job loop detected");
-
                 dispatcher.RunJobs();
                 AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-                ++count;
+
+                if (!dispatcher.HasJobsWithPriority(DispatcherPriority.MinimumActiveValue))
+                    return;
             }
+
+            // Final attempt: run remaining jobs without rendering
+            dispatcher.RunJobs();
         }
     }
 

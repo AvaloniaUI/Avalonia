@@ -13,7 +13,7 @@ namespace Avalonia.Media.TextFormatting
         private GlyphInfo[]? _rentedBuffer;
         private ArraySlice<GlyphInfo> _glyphInfos;
 
-        public ShapedBuffer(ReadOnlyMemory<char> text, int bufferLength, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
+        public ShapedBuffer(ReadOnlyMemory<char> text, int bufferLength, GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
         {
             Text = text;
             _rentedBuffer = ArrayPool<GlyphInfo>.Shared.Rent(bufferLength);
@@ -23,7 +23,7 @@ namespace Avalonia.Media.TextFormatting
             BidiLevel = bidiLevel;
         }
 
-        internal ShapedBuffer(ReadOnlyMemory<char> text, ArraySlice<GlyphInfo> glyphInfos, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
+        internal ShapedBuffer(ReadOnlyMemory<char> text, ArraySlice<GlyphInfo> glyphInfos, GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
         {
             Text = text;
             _glyphInfos = glyphInfos;
@@ -40,7 +40,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// The buffer's glyph typeface.
         /// </summary>
-        public IGlyphTypeface GlyphTypeface { get; }
+        public GlyphTypeface GlyphTypeface { get; }
 
         /// <summary>
         /// The buffers font rendering em size.

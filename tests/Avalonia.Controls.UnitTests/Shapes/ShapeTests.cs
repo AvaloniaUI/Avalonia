@@ -1,3 +1,5 @@
+#nullable enable
+
 using Avalonia.Collections;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
@@ -22,7 +24,7 @@ public class ShapeTests : ScopedTestBase
         });
 
         Assert.NotNull(pen);
-        Assert.Equal(10, pen!.MiterLimit);
+        Assert.Equal(10, pen.MiterLimit);
     }
 
     [Fact]
@@ -40,7 +42,7 @@ public class ShapeTests : ScopedTestBase
         var pen = RenderAndGetPen(shape);
 
         Assert.NotNull(pen);
-        Assert.Equal(2, pen!.MiterLimit);
+        Assert.Equal(2, pen.MiterLimit);
     }
 
     [Fact]
@@ -54,7 +56,7 @@ public class ShapeTests : ScopedTestBase
         });
 
         Assert.NotNull(pen);
-        Assert.Equal(6, pen!.Thickness);
+        Assert.Equal(6, pen.Thickness);
     }
 
     [Fact]
@@ -70,7 +72,7 @@ public class ShapeTests : ScopedTestBase
         });
 
         Assert.NotNull(pen);
-        Assert.Equal(PenLineCap.Round, pen!.LineCap);
+        Assert.Equal(PenLineCap.Round, pen.LineCap);
         Assert.Equal(PenLineJoin.Bevel, pen.LineJoin);
     }
 
@@ -87,8 +89,8 @@ public class ShapeTests : ScopedTestBase
         });
 
         Assert.NotNull(pen);
-        Assert.NotNull(pen!.DashStyle);
-        Assert.Equal(3, pen.DashStyle!.Dashes.Count);
+        Assert.NotNull(pen.DashStyle);
+        Assert.Equal(3, pen.DashStyle!.Dashes!.Count);
         Assert.Equal(1, pen.DashStyle.Dashes[0]);
         Assert.Equal(2, pen.DashStyle.Dashes[1]);
         Assert.Equal(3, pen.DashStyle.Dashes[2]);
@@ -117,7 +119,7 @@ public class ShapeTests : ScopedTestBase
 
     private class TestShape : Shape
     {
-        protected override Geometry? CreateDefiningGeometry() =>
+        protected override Geometry CreateDefiningGeometry() =>
             new RectangleGeometry(new Rect(0, 0, 20, 20));
     }
 
@@ -180,6 +182,10 @@ public class ShapeTests : ScopedTestBase
         {
         }
 
+          protected override void PushTextOptionsCore(TextOptions textOptions)
+        {
+        }
+
         protected override void PushTransformCore(Matrix matrix)
         {
         }
@@ -205,6 +211,10 @@ public class ShapeTests : ScopedTestBase
         }
 
         protected override void PopRenderOptionsCore()
+        {
+        }
+
+        protected override void PopTextOptionsCore()
         {
         }
 

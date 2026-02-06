@@ -223,25 +223,11 @@ namespace Avalonia.DesignerSupport.Remote
 
     class ClipboardStub : IClipboard
     {
-        public Task<string?> GetTextAsync() => Task.FromResult<string?>(null);
-
-        public Task SetTextAsync(string? text) => Task.CompletedTask;
-
         public Task ClearAsync() => Task.CompletedTask;
-
-        [Obsolete($"Use {nameof(SetDataAsync)} instead.")]
-        public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
 
         public Task SetDataAsync(IAsyncDataTransfer? dataTransfer) => Task.CompletedTask;
 
-        public Task<string[]> GetFormatsAsync() => Task.FromResult<string[]>([]);
-
-        public Task<object?> GetDataAsync(string format) => Task.FromResult<object?>(null);
-
         public Task<IAsyncDataTransfer?> TryGetDataAsync() => Task.FromResult<IAsyncDataTransfer?>(null);
-
-        [Obsolete($"Use {nameof(TryGetInProcessDataAsync)} instead.")]
-        public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult<IDataObject?>(null);
 
         public Task FlushAsync() => Task.CompletedTask;
 
@@ -309,7 +295,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public override Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
         {
-            return Task.FromResult<SaveFilePickerResult>(new SaveFilePickerResult(null));
+            return Task.FromResult(new SaveFilePickerResult());
         }
 
         public override bool CanPickFolder => false;

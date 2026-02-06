@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -30,7 +31,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 DateTimeOffset value = new DateTimeOffset(2000, 10, 10, 0, 0, 0, TimeSpan.Zero);
                 datePicker.SelectedDate = value;
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.True(handled);
             }
         }
@@ -46,17 +47,14 @@ namespace Avalonia.Controls.UnitTests
                     DayVisible = false
                 };
                 datePicker.ApplyTemplate();
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 var desc = datePicker.GetVisualDescendants();
                 Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
-                TextBlock dayText = null;
-                Grid container = null;
+                TextBlock? dayText = null;
 
-                Assert.True(desc.ElementAt(1) is Button);
-
-                container = (desc.ElementAt(1) as Button).Content as Grid;
-                Assert.True(container != null);
+                var button = Assert.IsAssignableFrom<Button>(desc.ElementAt(1));
+                var container = Assert.IsAssignableFrom<Grid>(button.Content);
 
                 for(int i = 0; i < container.Children.Count; i++)
                 {
@@ -67,9 +65,9 @@ namespace Avalonia.Controls.UnitTests
                     }
                 }
 
-                Assert.True(dayText != null);
-                Assert.True(!dayText.IsVisible);
-                Assert.True(container.ColumnDefinitions.Count == 3);
+                Assert.NotNull(dayText);
+                Assert.False(dayText.IsVisible);
+                Assert.Equal(3, container.ColumnDefinitions.Count);
             }
         }
 
@@ -84,17 +82,14 @@ namespace Avalonia.Controls.UnitTests
                     MonthVisible = false
                 };
                 datePicker.ApplyTemplate();
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 var desc = datePicker.GetVisualDescendants();
                 Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
-                TextBlock monthText = null;
-                Grid container = null;
+                TextBlock? monthText = null;
 
-                Assert.True(desc.ElementAt(1) is Button);
-
-                container = (desc.ElementAt(1) as Button).Content as Grid;
-                Assert.True(container != null);
+                var button = Assert.IsAssignableFrom<Button>(desc.ElementAt(1));
+                var container = Assert.IsAssignableFrom<Grid>(button.Content);
 
                 for (int i = 0; i < container.Children.Count; i++)
                 {
@@ -105,9 +100,9 @@ namespace Avalonia.Controls.UnitTests
                     }
                 }
 
-                Assert.True(monthText != null);
-                Assert.True(!monthText.IsVisible);
-                Assert.True(container.ColumnDefinitions.Count == 3);
+                Assert.NotNull(monthText);
+                Assert.False(monthText.IsVisible);
+                Assert.Equal(3, container.ColumnDefinitions.Count);
             }
         }
 
@@ -122,17 +117,14 @@ namespace Avalonia.Controls.UnitTests
                     YearVisible = false
                 };
                 datePicker.ApplyTemplate();
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 var desc = datePicker.GetVisualDescendants();
                 Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
-                TextBlock yearText = null;
-                Grid container = null;
+                TextBlock? yearText = null;
 
-                Assert.True(desc.ElementAt(1) is Button);
-
-                container = (desc.ElementAt(1) as Button).Content as Grid;
-                Assert.True(container != null);
+                var button = Assert.IsAssignableFrom<Button>(desc.ElementAt(1));
+                var container = Assert.IsAssignableFrom<Grid>(button.Content);
 
                 for (int i = 0; i < container.Children.Count; i++)
                 {
@@ -143,9 +135,9 @@ namespace Avalonia.Controls.UnitTests
                     }
                 }
 
-                Assert.True(yearText != null);
-                Assert.True(!yearText.IsVisible);
-                Assert.True(container.ColumnDefinitions.Count == 3);
+                Assert.NotNull(yearText);
+                Assert.False(yearText.IsVisible);
+                Assert.Equal(3, container.ColumnDefinitions.Count);
             }
         }
 
@@ -160,19 +152,16 @@ namespace Avalonia.Controls.UnitTests
                     YearVisible = false
                 };
                 datePicker.ApplyTemplate();
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 var desc = datePicker.GetVisualDescendants();
                 Assert.True(desc.Count() > 1);//Should be layoutroot grid & button
-                TextBlock yearText = null;
-                TextBlock monthText = null;
-                TextBlock dayText = null;
-                Grid container = null;
+                TextBlock? yearText = null;
+                TextBlock? monthText = null;
+                TextBlock? dayText = null;
 
-                Assert.True(desc.ElementAt(1) is Button);
-
-                container = (desc.ElementAt(1) as Button).Content as Grid;
-                Assert.True(container != null);
+                var button = Assert.IsAssignableFrom<Button>(desc.ElementAt(1));
+                var container = Assert.IsAssignableFrom<Grid>(button.Content);
 
                 for (int i = 0; i < container.Children.Count; i++)
                 {
@@ -189,6 +178,10 @@ namespace Avalonia.Controls.UnitTests
                         dayText = tb2;
                     }
                 }
+
+                Assert.NotNull(dayText);
+                Assert.NotNull(monthText);
+                Assert.NotNull(yearText);
 
                 DateTimeOffset value = new DateTimeOffset(2000, 10, 10, 0, 0, 0, TimeSpan.Zero);
                 datePicker.SelectedDate = value;
@@ -240,7 +233,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(DataValidationErrors.GetHasErrors(datePicker));
 
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             datePicker.SelectedDate = new DateTimeOffset(2005, 5, 10, 11, 12, 13, TimeSpan.Zero);
             Assert.True(handled);
         }
@@ -282,7 +275,7 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new HeadlessFontManagerStub(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            textShaperImpl: new HeadlessTextShaperStub(),
+            textShaperImpl: new HarfBuzzTextShaper(),
             renderInterface: new HeadlessPlatformRenderInterface());
 
         private static IControlTemplate CreateTemplate()

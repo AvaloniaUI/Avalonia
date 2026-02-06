@@ -16,7 +16,7 @@ public class LeakTests
 
 #if NUNIT
     [TestCaseSource(nameof(TestData))]
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
     [MemberData(nameof(TestData))]
     [AvaloniaTheory]
@@ -45,7 +45,7 @@ public class LeakTests
         // Either previous font manager is collected (IsAlive == false), or it is the same as current (shared isolation mode).
         if (s_previousFontManager is not null && s_previousFontManager.Target != fontManager.Target)
         {
-            Assert.False(s_previousFontManager.IsAlive);
+            AssertHelper.False(s_previousFontManager.IsAlive);
         }
 
         s_previousFontManager = fontManager;

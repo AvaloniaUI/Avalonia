@@ -5,16 +5,16 @@ using System.Threading.Tasks;
 using Avalonia.Diagnostics;
 using Avalonia.Data.Core;
 using Xunit;
-using Avalonia.Markup.Parsers;
 using Avalonia.Utilities;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.UnitTests;
+using Avalonia.Data.Core.Parsers;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
     public class ExpressionObserverBuilderTests_AttachedProperty : ScopedTestBase
     {
-        private readonly Func<string, string, Type> _typeResolver;
+        private readonly Func<string?, string, Type?> _typeResolver;
 
         public ExpressionObserverBuilderTests_AttachedProperty()
         {
@@ -87,7 +87,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var data = new Class1();
             var target = Build(data, "(Owner.Foo)", typeResolver: _typeResolver);
-            var result = new List<object>();
+            var result = new List<object?>();
 
             var sub = target.Subscribe(x => result.Add(x));
             data.SetValue(Owner.FooProperty, "bar");
@@ -111,7 +111,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             };
 
             var target = Build(data, "Next.(Owner.Foo)", typeResolver: _typeResolver);
-            var result = new List<object>();
+            var result = new List<object?>();
 
             var sub = target.Subscribe(x => result.Add(x));
             data.Next.SetValue(Owner.FooProperty, "bar");
@@ -126,15 +126,15 @@ namespace Avalonia.Markup.UnitTests.Parsers
         [Fact]
         public void Should_Not_Keep_Source_Alive()
         {
-            Func<Tuple<IObservable<object>, WeakReference>> run = () =>
+            var run = () =>
             {
                 var source = new Class1();
                 var target = Build(source, "(Owner.Foo)", typeResolver: _typeResolver);
-                return Tuple.Create(target, new WeakReference(source));
+                return (target, source: new WeakReference(source));
             };
 
             var result = run();
-            result.Item1.Subscribe(x => { });
+            result.target.Subscribe(x => { });
 
             // Mono trickery
             GC.Collect(2);
@@ -142,7 +142,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             GC.WaitForPendingFinalizers();
             GC.Collect(2);
 
-            Assert.Null(result.Item2.Target);
+            Assert.Null(result.source.Target);
         }
 
         [Fact]
@@ -161,7 +161,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             Assert.Throws<ExpressionParseException>(() => Build(data, "(Owner.Foo.Bar)", typeResolver: _typeResolver));
         }
 
-        private static IObservable<object> Build(object source, string path, Func<string, string, Type> typeResolver)
+        private static IObservable<object?> Build(object source, string path, Func<string?, string, Type?> typeResolver)
         {
             var r = new CharacterReader(path);
             var grammar = BindingExpressionGrammar.Parse(ref r).Nodes;

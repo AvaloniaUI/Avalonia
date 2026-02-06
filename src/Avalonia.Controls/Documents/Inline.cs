@@ -10,11 +10,10 @@ namespace Avalonia.Controls.Documents
     /// </summary>
     public abstract class Inline : TextElement
     {
-        // TODO12: change the field type to an AttachedProperty for consistency (breaking change)
         /// <summary>
         /// AvaloniaProperty for <see cref="TextDecorations" /> property.
         /// </summary>
-        public static readonly StyledProperty<TextDecorationCollection?> TextDecorationsProperty =
+        public static readonly AttachedProperty<TextDecorationCollection?> TextDecorationsProperty =
             AvaloniaProperty.RegisterAttached<Inline, Inline, TextDecorationCollection?>(
                 nameof(TextDecorations),
                 inherits: true);
@@ -82,12 +81,13 @@ namespace Avalonia.Controls.Documents
 
             return new GenericTextRunProperties(
                 typeface,
-                FontFeatures, 
                 InlineHost is Visual hostVisual ? TextScaling.GetScaledFontSize(hostVisual, FontSize) : FontSize,
-                TextDecorations, 
+                TextDecorations,
                 Foreground,
                 parentOrSelfBackground,
-                BaselineAlignment);
+                BaselineAlignment,
+                null,
+                FontFeatures);
         }
 
         /// <summary>

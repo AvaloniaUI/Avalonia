@@ -77,12 +77,6 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(Placement), defaultValue: PlacementMode.Bottom);
 
         /// <summary>
-        /// Defines the <see cref="PlacementMode"/> property.
-        /// </summary>
-        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
-        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
-
-        /// <summary>
         /// Defines the <see cref="PlacementRect"/> property.
         /// </summary>
         public static readonly StyledProperty<Rect?> PlacementRectProperty =
@@ -275,14 +269,6 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(PlacementGravityProperty);
             set => SetValue(PlacementGravityProperty, value);
-        }
-
-        /// <inheritdoc cref="Placement"/>
-        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
-        public PlacementMode PlacementMode
-        {
-            get => GetValue(PlacementProperty);
-            set => SetValue(PlacementProperty, value);
         }
 
         /// <summary>

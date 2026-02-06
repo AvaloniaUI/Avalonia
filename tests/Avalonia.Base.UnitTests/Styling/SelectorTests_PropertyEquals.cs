@@ -17,13 +17,13 @@ namespace Avalonia.Base.UnitTests.Styling
 
         class Auth
         {
-            public readonly static AttachedProperty<string> NameProperty =
-                AvaloniaProperty.RegisterAttached<Auth, AvaloniaObject, string>("Name");
+            public readonly static AttachedProperty<string?> NameProperty =
+                AvaloniaProperty.RegisterAttached<Auth, AvaloniaObject, string?>("Name");
 
-            public static string GetName(AvaloniaObject avaloniaObject) =>
+            public static string? GetName(AvaloniaObject avaloniaObject) =>
                 avaloniaObject.GetValue(NameProperty);
 
-            public static void SetName(AvaloniaObject avaloniaObject, string value) =>
+            public static void SetName(AvaloniaObject avaloniaObject, string? value) =>
                 avaloniaObject.SetValue(NameProperty, value);
         }
 
@@ -39,16 +39,19 @@ namespace Avalonia.Base.UnitTests.Styling
                     _ => null
                 };
             }).Parse("TextBlock[(Grid.Column)=1]");
-            
+
+            Assert.NotNull(target);
 
             var control = new TextBlock();
-            var activator = target.Match(control).Activator.ToObservable();
+            var activator = target.Match(control).Activator;
+            Assert.NotNull(activator);
+            var observable = activator.ToObservable();
 
-            Assert.False(await activator.Take(1));
+            Assert.False(await observable.Take(1));
             Grid.SetColumn(control, 1);
-            Assert.True(await activator.Take(1));
+            Assert.True(await observable.Take(1));
             Grid.SetColumn(control, 0);
-            Assert.False(await activator.Take(1));
+            Assert.False(await observable.Take(1));
         }
 
         [Fact]
@@ -64,15 +67,19 @@ namespace Avalonia.Base.UnitTests.Styling
                 };
             }).Parse("TextBlock[(l|Auth.Name)=Admin]");
 
+            Assert.NotNull(target);
+
 
             var control = new TextBlock();
-            var activator = target.Match(control).Activator.ToObservable();
+            var activator = target.Match(control).Activator;
+            Assert.NotNull(activator);
+            var observable = activator.ToObservable();
 
-            Assert.False(await activator.Take(1));
+            Assert.False(await observable.Take(1));
             Auth.SetName(control, "Admin");
-            Assert.True(await activator.Take(1));
+            Assert.True(await observable.Take(1));
             Auth.SetName(control, null);
-            Assert.False(await activator.Take(1));
+            Assert.False(await observable.Take(1));
         }
 
         [Fact]
@@ -80,13 +87,15 @@ namespace Avalonia.Base.UnitTests.Styling
         {
             var control = new TextBlock();
             var target = default(Selector).PropertyEquals(TextBlock.TextProperty, "foo");
-            var activator = target.Match(control).Activator.ToObservable();
+            var activator = target.Match(control).Activator;
+            Assert.NotNull(activator);
+            var observable = activator.ToObservable();
 
-            Assert.False(await activator.Take(1));
+            Assert.False(await observable.Take(1));
             control.Text = "foo";
-            Assert.True(await activator.Take(1));
+            Assert.True(await observable.Take(1));
             control.Text = null;
-            Assert.False(await activator.Take(1));
+            Assert.False(await observable.Take(1));
         }
 
         [Theory]
@@ -97,13 +106,15 @@ namespace Avalonia.Base.UnitTests.Styling
         {
             var control = new TextBlock();
             var target = default(Selector).PropertyEquals(TextBlock.TagProperty, literal);
-            var activator = target.Match(control).Activator.ToObservable();
+            var activator = target.Match(control).Activator;
+            Assert.NotNull(activator);
+            var observable = activator.ToObservable();
 
-            Assert.False(await activator.Take(1));
+            Assert.False(await observable.Take(1));
             control.Tag = value;
-            Assert.True(await activator.Take(1));
+            Assert.True(await observable.Take(1));
             control.Tag = null;
-            Assert.False(await activator.Take(1));
+            Assert.False(await observable.Take(1));
         }
 
         [Fact]

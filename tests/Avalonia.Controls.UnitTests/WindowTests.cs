@@ -116,7 +116,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
                 Assert.True(window.IsVisible);
 
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
 
                 Assert.False(window.IsVisible);
             }
@@ -196,7 +196,7 @@ namespace Avalonia.Controls.UnitTests
                 }
                 else
                 {
-                    var cancel = window.PlatformImpl.Closing(WindowCloseReason.WindowClosing);
+                    var cancel = window.PlatformImpl!.Closing!(WindowCloseReason.WindowClosing);
 
                     Assert.Equal(false, cancel);
                 }
@@ -258,7 +258,7 @@ namespace Avalonia.Controls.UnitTests
                 }
                 else
                 {
-                    var cancel = window.PlatformImpl.Closing(WindowCloseReason.WindowClosing);
+                    var cancel = window.PlatformImpl!.Closing!(WindowCloseReason.WindowClosing);
 
                     Assert.Equal(true, cancel);
                 }
@@ -344,7 +344,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent);
 
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
 
                 var result = await task;
                 Assert.False(result);
@@ -387,7 +387,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window(windowImpl.Object);
                 var task = target.ShowDialog<bool>(parent);
 
-                windowImpl.Object.Closed();
+                windowImpl.Object.Closed!();
                 await task;
 
                 var openedRaised = false;
@@ -518,11 +518,11 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Not_Be_Centered_When_WindowStartupLocation_Is_CenterScreen_And_Window_Is_Hidden_And_Shown()
         {
-            var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
+            var screen1 = new MockScreen(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
 
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
-            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1 });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1);
 
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
@@ -553,12 +553,12 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
-            var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
-            var screen2 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1366, 768)), new PixelRect(new PixelSize(1366, 728)), false);
+            var screen1 = new MockScreen(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
+            var screen2 = new MockScreen(1.0, new PixelRect(new PixelSize(1366, 768)), new PixelRect(new PixelSize(1366, 728)), false);
 
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object, screen2.Object });
-            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1, screen2 });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1);
             
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
@@ -576,8 +576,8 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
 
                 var expectedPosition = new PixelPoint(
-                    (int)(screen1.Object.WorkingArea.Size.Width / 2 - window.ClientSize.Width / 2),
-                    (int)(screen1.Object.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2));
+                    (int)(screen1.WorkingArea.Size.Width / 2 - window.ClientSize.Width / 2),
+                    (int)(screen1.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2));
 
                 Assert.Equal(window.Position, expectedPosition);
             }
@@ -586,10 +586,10 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Be_Sized_To_MinSize_If_InitialSize_Less_Than_MinSize()
         {
-            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
-            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1 });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1);
             
             var windowImpl = MockWindowingPlatform.CreateWindowMock(400, 300);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1.75);
@@ -718,7 +718,7 @@ namespace Avalonia.Controls.UnitTests
                     target.Width = 120;
                     target.Height = 70;
 
-                    Dispatcher.UIThread.RunJobs();
+                    Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                     Assert.Equal(1, child.MeasureSizes.Count);
                     Assert.Equal(new Size(120, 70), child.MeasureSizes[0]);
@@ -927,8 +927,8 @@ namespace Avalonia.Controls.UnitTests
 
                     // Size before and after DPI change is a real-world example, with size after DPI
                     // change coming from Win32 WM_DPICHANGED.
-                    target.PlatformImpl.ScalingChanged(1.5);
-                    target.PlatformImpl.Resized(
+                    target.PlatformImpl!.ScalingChanged!(1.5);
+                    target.PlatformImpl!.Resized!(
                         new Size(210.66666666666666, 118.66666666666667),
                         WindowResizeReason.DpiChange);
 
@@ -987,7 +987,7 @@ namespace Avalonia.Controls.UnitTests
                     target.Width = 410;
                     target.LayoutManager.ExecuteLayoutPass();
 
-                    var windowImpl = Mock.Get(target.PlatformImpl);
+                    var windowImpl = Mock.Get(target.PlatformImpl!);
                     windowImpl.Verify(x => x.Resize(new Size(410, 800), WindowResizeReason.Application));
                     Assert.Equal(410, target.Width);
                 }
@@ -1013,7 +1013,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(410, 800), WindowResizeReason.User);
+                    target.PlatformImpl!.Resized!(new Size(410, 800), WindowResizeReason.User);
 
                     Assert.Equal(410, target.Width);
                     Assert.Equal(800, target.Height);
@@ -1040,7 +1040,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(400, 810), WindowResizeReason.User);
+                    target.PlatformImpl!.Resized!(new Size(400, 810), WindowResizeReason.User);
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(810, target.Height);
@@ -1068,7 +1068,7 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
 
-                    target.PlatformImpl.Resized(new Size(410, 810), WindowResizeReason.Unspecified);
+                    target.PlatformImpl!.Resized!(new Size(410, 810), WindowResizeReason.Unspecified);
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
@@ -1146,9 +1146,9 @@ namespace Avalonia.Controls.UnitTests
 
         private static Mock<IWindowImpl> CreateImpl()
         {
-            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1);
 
             var windowImpl = new Mock<IWindowImpl>();
             windowImpl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());

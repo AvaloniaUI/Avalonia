@@ -42,7 +42,8 @@
 - (void) updateRenderTarget
 {
     if(_currentRenderTarget) {
-        [_currentRenderTarget resize:_lastPixelSize withScale:static_cast<float>([[self window] backingScaleFactor])];
+        AvnPixelSize size { MAX(_lastPixelSize.Width, 1), MAX(_lastPixelSize.Height, 1) };
+        [_currentRenderTarget resize:size withScale:static_cast<float>([[self window] backingScaleFactor])];
         [self setNeedsDisplayInRect:[self frame]];
     }
 }
@@ -854,9 +855,10 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
 {
-    auto localPoint = [self convertPoint:[info draggingLocation] toView:self];
-    auto avnPoint = ToAvnPoint(localPoint);
-    auto point = [self translateLocalPoint:avnPoint];
+    NSPoint eventLocation = [info draggingLocation];
+    auto viewLocation = [self convertPoint:NSMakePoint(0, 0) toView:nil];
+    auto localPoint = NSMakePoint(eventLocation.x - viewLocation.x, viewLocation.y - eventLocation.y);
+    auto point = ToAvnPoint(localPoint);
     auto modifiers = [self getModifiers:[[NSApp currentEvent] modifierFlags]];
     NSDragOperation nsop = [info draggingSourceOperationMask];
 

@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -294,7 +292,7 @@ namespace Avalonia.LeakTests
                             {
                                 new FuncTreeDataTemplate<Node>(
                                     (x, _) => new TextBlock { Text = x.Name },
-                                    x => x.Children)
+                                    x => x.Children ?? [])
                             },
                             ItemsSource = nodes
                         }
@@ -404,12 +402,12 @@ namespace Avalonia.LeakTests
         {
             using (Start())
             {
-                var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+                var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
                 var screens = new Mock<IScreenImpl>();
-                screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+                screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1);
 
                 var impl = new Mock<IWindowImpl>();
-                impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
+                impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns((object?)null);
                 impl.SetupGet(x => x.RenderScaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
                 impl.Setup(x => x.Compositor).Returns(RendererMocks.CreateDummyCompositor());
@@ -516,7 +514,7 @@ namespace Avalonia.LeakTests
                 Assert.True(weakMenuItem2.IsAlive);
                 Assert.True(weakContextMenu.IsAlive);
 
-                Mock.Get(window.PlatformImpl).Invocations.Clear();
+                Mock.Get(window.PlatformImpl!).Invocations.Clear();
                 CollectGarbage();
 
                 Assert.False(weakMenuItem1.IsAlive);
@@ -605,7 +603,7 @@ namespace Avalonia.LeakTests
                 Assert.True(weakMenuItem4.IsAlive);
                 Assert.True(weakContextMenu2.IsAlive);
 
-                Mock.Get(window.PlatformImpl).Invocations.Clear();
+                Mock.Get(window.PlatformImpl!).Invocations.Clear();
                 CollectGarbage();
 
                 Assert.False(weakMenuItem1.IsAlive);
@@ -930,7 +928,7 @@ namespace Avalonia.LeakTests
                     window.Content = null;
                     
                     // Mock keep reference on a Popup via InvocationsCollection. So let's clear it before. 
-                    Mock.Get(window.PlatformImpl).Invocations.Clear();
+                    Mock.Get(window.PlatformImpl!).Invocations.Clear();
                     
                     return (new WeakReference(toolTip), new WeakReference(textBlock));
                 }
@@ -984,7 +982,7 @@ namespace Avalonia.LeakTests
                     window.Content = null;
 
                     // Mock keep reference on a Popup via InvocationsCollection. So let's clear it before. 
-                    Mock.Get(window.PlatformImpl).Invocations.Clear();
+                    Mock.Get(window.PlatformImpl!).Invocations.Clear();
                     
                     return (new WeakReference(flyout), new WeakReference(textBlock));
                 }
@@ -1093,8 +1091,8 @@ namespace Avalonia.LeakTests
 
         private class Node
         {
-            public string Name { get; set; }
-            public IEnumerable<Node> Children { get; set; }
+            public string? Name { get; set; }
+            public IEnumerable<Node>? Children { get; set; }
         }
 
     }

@@ -11,10 +11,6 @@ namespace Avalonia.Platform
     [Unstable]
     public interface IGlyphRunImpl : IDisposable
     {
-        /// <summary>
-        ///     Gets the <see cref="IGlyphTypeface"/> for the <see cref="IGlyphRunImpl"/>.
-        /// </summary>
-        IGlyphTypeface GlyphTypeface { get; }
 
         /// <summary>
         ///     Gets the em size used for rendering the <see cref="IGlyphRunImpl"/>.

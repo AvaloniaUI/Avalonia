@@ -20,13 +20,15 @@ namespace Avalonia.Android;
 /// Common implementation of android activity that is integrated with Avalonia views.
 /// If you need a base class for main activity of Avalonia app, see <see cref="AvaloniaMainActivity"/>.  
 /// </summary>
-public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity, IOnBackInvokedCallback
+public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
 {
     private EventHandler<ActivatedEventArgs>? _onActivated, _onDeactivated;
     private GlobalLayoutListener? _listener;
     private object? _content;
     private bool _contentViewSet;
     internal AvaloniaView? _view;
+    private BackPressedCallback? _currentBackPressedCallback;
+    private bool _shouldNavigateBack;
 
     public Action<int, Result, Intent?>? ActivityResult { get; set; }
     public Action<int, string[], Permission[]>? RequestPermissionsResult { get; set; }
@@ -60,6 +62,20 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity, IOnBackInv
                     _view.Content = _content;
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Gets whether to call the default back handler after our back handler is called.
+    /// </summary>
+    internal bool ShouldNavigateBack
+    {
+        get
+        {
+            var goBack = _shouldNavigateBack;
+            _shouldNavigateBack = false;
+
+            return goBack;
         }
     }
 
@@ -103,22 +119,14 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity, IOnBackInv
             activatableLifetime.CurrentIntendActivity = this;
         }
 
-        if (Intent?.Data is { } androidUri
-            && androidUri.IsAbsolute
-            && Uri.TryCreate(androidUri.ToString(), UriKind.Absolute, out var uri))
-        {
-            if (uri.Scheme == Uri.UriSchemeFile)
-            {
-                if (AndroidStorageItem.CreateItem(this, androidUri) is { } item)
-                {
-                    _onActivated?.Invoke(this, new FileActivatedEventArgs(new [] { item }));
-                }
-            }
-            else
-            {
-                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));
-            }
-        }
+        HandleIntent(Intent);
+    }
+
+    protected override void OnNewIntent(Intent? intent)
+    {
+        base.OnNewIntent(intent);
+
+        HandleIntent(intent);
     }
 
     protected override void OnStop()
@@ -127,7 +135,8 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity, IOnBackInv
 
         if (OperatingSystem.IsAndroidVersionAtLeast(33))
         {
-            OnBackInvokedDispatcher.UnregisterOnBackInvokedCallback(this);
+            _currentBackPressedCallback?.Remove();
+            _currentBackPressedCallback = null;
         }
         base.OnStop();
     }
@@ -138,7 +147,8 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity, IOnBackInv
 
         if (OperatingSystem.IsAndroidVersionAtLeast(33))
         {
-            OnBackInvokedDispatcher.RegisterOnBackInvokedCallback(IOnBackInvokedDispatcher.PriorityDefault, this);
+            _currentBackPressedCallback = new BackPressedCallback(this);
+            OnBackPressedDispatcher.AddCallback(this, _currentBackPressedCallback);
         }
         base.OnStart();
     }
@@ -200,11 +210,33 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity, IOnBackInv
         _view = new AvaloniaView(this) { Content = initialContent };
     }
 
+    private void HandleIntent(Intent? intent)
+    {
+        if (intent?.Data is { } androidUri
+            && androidUri.IsAbsolute
+            && Uri.TryCreate(androidUri.ToString(), UriKind.Absolute, out var uri))
+        {
+            if (uri.Scheme == Uri.UriSchemeFile || uri.Scheme == "content")
+            {
+                if (AndroidStorageItem.CreateItem(this, androidUri) is { } item)
+                {
+                    _onActivated?.Invoke(this, new FileActivatedEventArgs(new[] { item }));
+                }
+            }
+            else
+            {
+                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));
+            }
+        }
+    }
+
     public void OnBackInvoked()
     {
         var eventArgs = new AndroidBackRequestedEventArgs();
 
         BackRequested?.Invoke(this, eventArgs);
+
+        _shouldNavigateBack = !eventArgs.Handled;
     }
 
     private class GlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
