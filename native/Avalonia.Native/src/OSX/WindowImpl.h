@@ -70,6 +70,10 @@ BEGIN_INTERFACE_MAP()
     
     virtual HRESULT GetWindowZOrder (long* zOrder) override;
 
+    virtual HRESULT SetDockProgressState (int state) override;
+
+    virtual HRESULT SetDockProgressValue (double progress) override;
+
     void EnterFullScreenMode ();
 
     void ExitFullScreenMode ();
@@ -112,6 +116,8 @@ private:
     bool _isClientAreaExtended;
     AvnExtendClientAreaChromeHints _extendClientHints;
     bool _isModal;
+    static NSProgressIndicator* s_dockProgressIndicator;
+    static NSView* s_dockContentView;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWIMPL_H

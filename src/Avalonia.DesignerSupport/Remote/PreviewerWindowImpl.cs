@@ -135,6 +135,14 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetTaskbarProgressState(TaskbarProgressState state)
+        {
+        }
+
+        public void SetTaskbarProgressValue(ulong completed, ulong total)
+        {
+        }
+
         public void CanResize(bool value)
         {
         }

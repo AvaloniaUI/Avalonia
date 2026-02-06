@@ -635,6 +635,71 @@ void WindowImpl::UpdateAppearance() {
     [zoomButton setEnabled:CanZoom() || (([Window styleMask] & NSWindowStyleMaskFullScreen) != 0 && _isEnabled)];
 }
 
+NSProgressIndicator* WindowImpl::s_dockProgressIndicator = nullptr;
+NSView* WindowImpl::s_dockContentView = nullptr;
+
+static void EnsureDockProgressIndicator() {
+    if (WindowImpl::s_dockProgressIndicator == nullptr) {
+        NSDockTile *dockTile = [[NSApplication sharedApplication] dockTile];
+        NSImageView *iconView = [[NSImageView alloc] init];
+        [iconView setImage:[NSApplication sharedApplication].applicationIconImage];
+
+        NSRect frame = NSMakeRect(0, 0, dockTile.size.width, 15);
+        WindowImpl::s_dockProgressIndicator = [[NSProgressIndicator alloc] initWithFrame:frame];
+        [WindowImpl::s_dockProgressIndicator setStyle:NSProgressIndicatorStyleBar];
+        [WindowImpl::s_dockProgressIndicator setMinValue:0.0];
+        [WindowImpl::s_dockProgressIndicator setMaxValue:1.0];
+        [WindowImpl::s_dockProgressIndicator setDoubleValue:0.0];
+        [WindowImpl::s_dockProgressIndicator setHidden:YES];
+
+        WindowImpl::s_dockContentView = [[NSView alloc] init];
+        [WindowImpl::s_dockContentView addSubview:iconView];
+        [WindowImpl::s_dockContentView addSubview:WindowImpl::s_dockProgressIndicator];
+
+        [iconView setFrame:NSMakeRect(0, 0, dockTile.size.width, dockTile.size.height)];
+
+        [dockTile setContentView:WindowImpl::s_dockContentView];
+    }
+}
+
+HRESULT WindowImpl::SetDockProgressState(int state) {
+    START_COM_CALL;
+
+    @autoreleasepool {
+        EnsureDockProgressIndicator();
+
+        if (state == 0) {
+            // None
+            [s_dockProgressIndicator setHidden:YES];
+            [s_dockProgressIndicator setIndeterminate:NO];
+        } else if (state == 1) {
+            // Indeterminate
+            [s_dockProgressIndicator setHidden:NO];
+            [s_dockProgressIndicator setIndeterminate:YES];
+            [s_dockProgressIndicator startAnimation:nil];
+        } else {
+            // Normal, Error, Paused - all show the bar
+            [s_dockProgressIndicator setHidden:NO];
+            [s_dockProgressIndicator setIndeterminate:NO];
+        }
+
+        [[[NSApplication sharedApplication] dockTile] display];
+        return S_OK;
+    }
+}
+
+HRESULT WindowImpl::SetDockProgressValue(double progress) {
+    START_COM_CALL;
+
+    @autoreleasepool {
+        EnsureDockProgressIndicator();
+
+        [s_dockProgressIndicator setDoubleValue:progress];
+        [[[NSApplication sharedApplication] dockTile] display];
+        return S_OK;
+    }
+}
+
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
 {
     @autoreleasepool

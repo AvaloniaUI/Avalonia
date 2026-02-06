@@ -813,6 +813,8 @@ interface IAvnWindow : IAvnWindowBase
      HRESULT GetExtendTitleBarHeight(double*ret);
      HRESULT SetExtendTitleBarHeight(double value);
      HRESULT GetWindowZOrder(long*ret);
+     HRESULT SetDockProgressState(int state);
+     HRESULT SetDockProgressValue(double progress);
 }
 
 [uuid(fda9c1b3-69e0-43d7-9459-8cc97cb41f6a)]

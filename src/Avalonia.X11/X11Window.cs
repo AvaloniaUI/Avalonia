@@ -50,6 +50,8 @@ namespace Avalonia.X11
         private readonly ITopLevelNativeMenuExporter? _nativeMenuExporter;
         private readonly IStorageProvider _storageProvider;
         private readonly X11NativeControlHost _nativeControlHost;
+        private static DBusUnityLauncher? s_unityLauncher;
+        private TaskbarProgressState _taskbarProgressState;
         private PixelPoint? _position;
         private PixelSize _realSize;
         private bool _cleaningUp;
@@ -1465,6 +1467,28 @@ namespace Avalonia.X11
         public void ShowTaskbarIcon(bool value)
         {
             ChangeWMAtoms(!value, _x11.Atoms._NET_WM_STATE_SKIP_TASKBAR);
+        }
+
+        public void SetTaskbarProgressState(TaskbarProgressState state)
+        {
+            _taskbarProgressState = state;
+            s_unityLauncher ??= DBusUnityLauncher.TryCreate();
+            if (s_unityLauncher is null)
+                return;
+
+            if (state == TaskbarProgressState.None)
+                s_unityLauncher.SetProgress(0, false);
+        }
+
+        public void SetTaskbarProgressValue(ulong completed, ulong total)
+        {
+            s_unityLauncher ??= DBusUnityLauncher.TryCreate();
+            if (s_unityLauncher is null)
+                return;
+
+            var progress = total > 0 ? (double)completed / total : 0;
+            var visible = _taskbarProgressState != TaskbarProgressState.None;
+            s_unityLauncher.SetProgress(progress, visible);
         }
 
         private void ChangeWMAtoms(bool enable, params IntPtr[] atoms)

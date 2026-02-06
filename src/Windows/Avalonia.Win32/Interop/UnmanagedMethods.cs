@@ -2608,6 +2608,8 @@ namespace Avalonia.Win32.Interop
 
         public delegate void MarkFullscreenWindow(IntPtr This, IntPtr hwnd, [MarshalAs(UnmanagedType.Bool)] bool fullscreen);
         public delegate void SetOverlayIcon(IntPtr This, IntPtr hWnd, IntPtr hIcon, [MarshalAs(UnmanagedType.LPWStr)] string? pszDescription);
+        public delegate HRESULT SetProgressValue(IntPtr This, IntPtr hwnd, ulong ullCompleted, ulong ullTotal);
+        public delegate HRESULT SetProgressState(IntPtr This, IntPtr hwnd, int tbpfFlags);
         public delegate HRESULT HrInit(IntPtr This);
 
         public struct ITaskBarList3VTable
