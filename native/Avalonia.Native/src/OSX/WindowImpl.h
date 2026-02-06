@@ -116,8 +116,6 @@ private:
     bool _isClientAreaExtended;
     AvnExtendClientAreaChromeHints _extendClientHints;
     bool _isModal;
-    static NSProgressIndicator* s_dockProgressIndicator;
-    static NSView* s_dockContentView;
 };
 
 #endif //AVALONIA_NATIVE_OSX_WINDOWIMPL_H

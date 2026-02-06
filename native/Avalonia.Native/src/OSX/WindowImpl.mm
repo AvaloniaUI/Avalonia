@@ -635,31 +635,32 @@ void WindowImpl::UpdateAppearance() {
     [zoomButton setEnabled:CanZoom() || (([Window styleMask] & NSWindowStyleMaskFullScreen) != 0 && _isEnabled)];
 }
 
-NSProgressIndicator* WindowImpl::s_dockProgressIndicator = nullptr;
-NSView* WindowImpl::s_dockContentView = nullptr;
+static NSProgressIndicator* s_dockProgressIndicator = nullptr;
+static NSView* s_dockContentView = nullptr;
 
 static void EnsureDockProgressIndicator() {
-    if (WindowImpl::s_dockProgressIndicator == nullptr) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         NSDockTile *dockTile = [[NSApplication sharedApplication] dockTile];
         NSImageView *iconView = [[NSImageView alloc] init];
         [iconView setImage:[NSApplication sharedApplication].applicationIconImage];
 
         NSRect frame = NSMakeRect(0, 0, dockTile.size.width, 15);
-        WindowImpl::s_dockProgressIndicator = [[NSProgressIndicator alloc] initWithFrame:frame];
-        [WindowImpl::s_dockProgressIndicator setStyle:NSProgressIndicatorStyleBar];
-        [WindowImpl::s_dockProgressIndicator setMinValue:0.0];
-        [WindowImpl::s_dockProgressIndicator setMaxValue:1.0];
-        [WindowImpl::s_dockProgressIndicator setDoubleValue:0.0];
-        [WindowImpl::s_dockProgressIndicator setHidden:YES];
+        s_dockProgressIndicator = [[NSProgressIndicator alloc] initWithFrame:frame];
+        [s_dockProgressIndicator setStyle:NSProgressIndicatorStyleBar];
+        [s_dockProgressIndicator setMinValue:0.0];
+        [s_dockProgressIndicator setMaxValue:1.0];
+        [s_dockProgressIndicator setDoubleValue:0.0];
+        [s_dockProgressIndicator setHidden:YES];
 
-        WindowImpl::s_dockContentView = [[NSView alloc] init];
-        [WindowImpl::s_dockContentView addSubview:iconView];
-        [WindowImpl::s_dockContentView addSubview:WindowImpl::s_dockProgressIndicator];
+        s_dockContentView = [[NSView alloc] init];
+        [s_dockContentView addSubview:iconView];
+        [s_dockContentView addSubview:s_dockProgressIndicator];
 
         [iconView setFrame:NSMakeRect(0, 0, dockTile.size.width, dockTile.size.height)];
 
-        [dockTile setContentView:WindowImpl::s_dockContentView];
-    }
+        [dockTile setContentView:s_dockContentView];
+    });
 }
 
 HRESULT WindowImpl::SetDockProgressState(int state) {

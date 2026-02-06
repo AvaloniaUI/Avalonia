@@ -267,7 +267,7 @@ namespace Avalonia.Controls
             CreatePlatformImplBinding(CanMaximizeProperty, canMaximize => PlatformImpl!.SetCanMaximize(canMaximize));
             CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
             CreatePlatformImplBinding(TaskbarProgressStateProperty, state => PlatformImpl!.SetTaskbarProgressState(state));
-            CreatePlatformImplBinding(TaskbarProgressValueProperty, value => PlatformImpl!.SetTaskbarProgressValue((ulong)(value * 1000), 1000));
+            CreatePlatformImplBinding(TaskbarProgressValueProperty, value => PlatformImpl!.SetTaskbarProgressValue((ulong)(Math.Clamp(value, 0.0, 1.0) * 1000), 1000));
 
             CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
             CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, hint => PlatformImpl!.SetExtendClientAreaToDecorationsHint(hint));

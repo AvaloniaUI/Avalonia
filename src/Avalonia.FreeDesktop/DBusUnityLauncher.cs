@@ -21,11 +21,14 @@ namespace Avalonia.FreeDesktop
 
         public override Connection Connection { get; }
 
+        public double LastProgress { get; private set; }
+
         public void SetProgress(double progress, bool visible)
         {
+            LastProgress = progress;
             EmitUpdate(_desktopUri, new Dictionary<string, VariantValue>
             {
-                ["progress"] = (double)progress,
+                ["progress"] = progress,
                 ["progress-visible"] = visible,
             });
         }
