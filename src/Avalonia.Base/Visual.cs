@@ -821,13 +821,13 @@ namespace Avalonia
                 if (presentationSource != null)
                     throw new InvalidOperationException(
                         "Visual is already attached to a presentation source. Only one presentation source can be attached to a visual tree.");
-                OnDetachedFromVisualTreeCore(new(this, PresentationSource));
+                OnDetachedFromVisualTreeCore(new(null, PresentationSource));
             }
 
             PresentationSource = presentationSource;
             if(PresentationSource != null)
             {
-                var e = new VisualTreeAttachmentEventArgs(this, PresentationSource);
+                var e = new VisualTreeAttachmentEventArgs(null, PresentationSource);
                 OnAttachedToVisualTreeCore(e);
             }
         }
