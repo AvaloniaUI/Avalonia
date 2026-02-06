@@ -497,53 +497,54 @@ namespace Avalonia.Controls
                  return;
 
              _updatingPagerSize = true;
+             
              try
              {
-             double pipSize = 12.0;
+                 double pipSize = 12.0;
 
-             // Try to detect the actual size from a realized container
-             var container = _pipsPagerList.ContainerFromIndex(SelectedPageIndex) as Layoutable;
+                 // Try to detect the actual size from a realized container
+                 var container = _pipsPagerList.ContainerFromIndex(SelectedPageIndex) as Layoutable;
           
-             if (container == null && _pipsPagerList.Items.Count > 0)
-                 container = _pipsPagerList.ContainerFromIndex(0);
+                 if (container == null && _pipsPagerList.Items.Count > 0)
+                     container = _pipsPagerList.ContainerFromIndex(0);
 
-             if (container != null)
-             {
-                 var margin = container.Margin;
-                 var size = Orientation == Orientation.Horizontal ? 
-                     container.Bounds.Width + margin.Left + margin.Right : 
-                     container.Bounds.Height + margin.Top + margin.Bottom;
+                 if (container != null)
+                 {
+                     var margin = container.Margin;
+                     var size = Orientation == Orientation.Horizontal ? 
+                         container.Bounds.Width + margin.Left + margin.Right : 
+                         container.Bounds.Height + margin.Top + margin.Bottom;
                
-                 if (size > 0) 
-                     pipSize = size;
-             }
+                     if (size > 0) 
+                         pipSize = size;
+                 }
 
-             double spacing = 0.0;
+                 double spacing = 0.0;
              
-             if (_pipsPagerList.ItemsPanelRoot is StackPanel itemsPanel)
-             {
-                 spacing = itemsPanel.Spacing;
-             }
+                 if (_pipsPagerList.ItemsPanelRoot is StackPanel itemsPanel)
+                 {
+                     spacing = itemsPanel.Spacing;
+                 }
 
-             var visibleCount = Math.Min(NumberOfPages, MaxVisiblePips);
+                 var visibleCount = Math.Min(NumberOfPages, MaxVisiblePips);
              
-             if (visibleCount <= 0)
-                 return;
+                 if (visibleCount <= 0)
+                     return;
 
-             var extent = (visibleCount * pipSize) + ((visibleCount - 1) * spacing);
+                 var extent = (visibleCount * pipSize) + ((visibleCount - 1) * spacing);
 
-             if (Orientation == Orientation.Horizontal)
-             {
-                 _pipsPagerList.Width = extent;
-                 _pipsPagerList.Height = double.NaN;
-             }
-             else
-             {
-                 _pipsPagerList.Height = extent;
-                 _pipsPagerList.Width = double.NaN;
-             }
+                 if (Orientation == Orientation.Horizontal)
+                 {
+                     _pipsPagerList.Width = extent;
+                     _pipsPagerList.Height = double.NaN;
+                 }
+                 else
+                 {
+                     _pipsPagerList.Height = extent;
+                     _pipsPagerList.Width = double.NaN;
+                 }
              
-             RequestScrollToSelectedPip();
+                 RequestScrollToSelectedPip();
              }
              finally
              {
@@ -554,7 +555,7 @@ namespace Avalonia.Controls
         private void UpdateNavigationButtonIcons()
         {
             var isVertical = Orientation == Orientation.Vertical;
-            
+
             if (_previousButton != null)
             {
                 if (isVertical)
@@ -562,7 +563,7 @@ namespace Avalonia.Controls
                 else
                     _previousButton.Classes.Remove("vertical");
             }
-            
+
             if (_nextButton != null)
             {
                 if (isVertical)
