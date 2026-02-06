@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Avalonia.Data;
+using Avalonia.Data.Core.Plugins;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -273,6 +275,9 @@ public partial class BindingExpressionTests
     [Fact]
     public void Updates_Data_Validation_For_Required_DataAnnotation()
     {
+        if (!BindingPlugins.DataValidators.Any(x => x is DataAnnotationsValidationPlugin))
+            BindingPlugins.DataValidators.Insert(0, new DataAnnotationsValidationPlugin());
+
         var data = new DataAnnotationsViewModel();
         var target = CreateTargetWithSource(
             data,

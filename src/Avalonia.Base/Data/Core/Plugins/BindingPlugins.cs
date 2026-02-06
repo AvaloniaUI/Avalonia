@@ -17,7 +17,6 @@ namespace Avalonia.Data.Core.Plugins
 
         internal static readonly List<IDataValidationPlugin> s_dataValidators = new()
         {
-            new DataAnnotationsValidationPlugin(),
             new IndeiValidationPlugin(),
             new ExceptionValidationPlugin(),
         };

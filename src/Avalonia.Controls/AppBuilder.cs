@@ -8,6 +8,7 @@ using Avalonia.Platform;
 using Avalonia.Media.Fonts;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia
 {
@@ -272,6 +273,17 @@ namespace Avalonia
         public AppBuilder With<T>(Func<T> options)
         {
             _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToFunc(options); };
+            return Self;
+        }
+
+        /// <summary>
+        /// Adds support for validation using <c>System.ComponentModel.DataAnnotations</c>.
+        /// </summary>
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
+        public AppBuilder WithDataAnnotationsValidation()
+        {
+            if (!BindingPlugins.DataValidators.Any(x => x is DataAnnotationsValidationPlugin))
+                BindingPlugins.DataValidators.Insert(0, new DataAnnotationsValidationPlugin());
             return Self;
         }
 
