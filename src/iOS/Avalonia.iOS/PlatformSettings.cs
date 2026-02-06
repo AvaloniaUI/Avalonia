@@ -93,7 +93,7 @@ internal class PlatformSettings : DefaultPlatformSettings
         if (!_fontScaleCache.TryGetValue(baseFontSize, out var scaledSize))
         {
             var font = UIFont.SystemFontOfSize((nfloat)baseFontSize);
-            scaledSize = UIFontMetrics.DefaultMetrics.GetScaledFont(font).PointSize;
+            scaledSize = _fontScaleCache[baseFontSize] = UIFontMetrics.DefaultMetrics.GetScaledFont(font).PointSize;
         }
 
         return scaledSize;
