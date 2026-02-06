@@ -75,7 +75,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IMenuInteractionHandler IMenu.InteractionHandler => InteractionHandler;
 
-        IRenderRoot? IMenu.VisualRoot => VisualRoot;
+        TopLevel? IMenu.VisualRoot => TopLevel.GetTopLevel(this);
         
         /// <inheritdoc/>
         IMenuItem? IMenuElement.SelectedItem

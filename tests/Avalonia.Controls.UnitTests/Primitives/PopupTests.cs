@@ -657,13 +657,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 button.Focus();
 
-                var inputRoot = Assert.IsAssignableFrom<IInputRoot>(popup.Host);
+                var inputRoot = ((Visual)popup.Host).GetInputRoot();
 
                 var focusManager = inputRoot.FocusManager!;
                 Assert.Same(button, focusManager.GetFocusedElement());
 
                 //Ensure focus remains in the popup
-                inputRoot.KeyboardNavigationHandler!.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
+                popup.Host.Tests_KeyboardNavigationHandler.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
                 Assert.Same(textBox, focusManager.GetFocusedElement());
 
                 popup.Close();
@@ -702,7 +702,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 button.Focus();
 
-                var inputRoot = Assert.IsAssignableFrom<IInputRoot>(popup.Host);
+                var inputRoot = ((Visual)popup.Host).GetInputRoot();
 
                 var focusManager = inputRoot.FocusManager!;
                 Assert.Same(button, focusManager.GetFocusedElement());

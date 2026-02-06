@@ -208,7 +208,7 @@ namespace Avalonia.Controls.UnitTests
                 var input = new RawKeyEventArgs(
                     new Mock<IKeyboardDevice>().Object,
                     0,
-                    target,
+                    target.InputRoot,
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.None,
@@ -222,7 +222,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Adding_Top_Level_As_Child_Should_Throw_Exception()
+        public void Adding_Top_Level_As_Child_Should_Not_Exception()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -234,7 +234,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Content = child;
                 target.ApplyTemplate();
 
-                Assert.Throws<InvalidOperationException>(() => target.Presenter!.ApplyTemplate());
+                target.Presenter!.ApplyTemplate();
             }
         }
 

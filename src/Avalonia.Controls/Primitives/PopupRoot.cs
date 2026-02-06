@@ -2,6 +2,7 @@ using System;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Diagnostics;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -146,6 +147,10 @@ namespace Avalonia.Controls.Primitives
         public void SetChild(Control? control) => Content = control;
 
         public void TakeFocus() => PlatformImpl?.TakeFocus();
+        
+        [Obsolete("For unit tests only")]
+        IKeyboardNavigationHandler IPopupHost.Tests_KeyboardNavigationHandler => base.Tests_KeyboardNavigationHandler;
+
 
         Visual IPopupHost.HostedVisualTreeRoot => this;
         

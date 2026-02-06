@@ -132,7 +132,7 @@ namespace Avalonia.Input.TextInput
                 InputMethod.AddTextInputMethodClientRequeryRequestedHandler(_visualRoot,
                     TextInputMethodClientRequeryRequested);
             
-            var inputMethod = ((element as Visual)?.VisualRoot as ITextInputMethodRoot)?.InputMethod;
+            var inputMethod = ((element as Visual)?.GetInputRoot())?.InputMethod;
 
             if (_im != inputMethod)
             {

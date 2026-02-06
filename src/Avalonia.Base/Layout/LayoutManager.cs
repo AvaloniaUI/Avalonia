@@ -17,8 +17,7 @@ namespace Avalonia.Layout
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
-    [PrivateApi]
-    public class LayoutManager : ILayoutManager, IDisposable
+    internal class LayoutManager : ILayoutManager, IDisposable
     {
         private const int MaxPasses = 10;
         private readonly Layoutable _owner;
@@ -329,9 +328,7 @@ namespace Avalonia.Layout
 
             if (!control.IsArrangeValid)
             {
-                if (control is IEmbeddedLayoutRoot embeddedRoot)
-                    control.Arrange(new Rect(embeddedRoot.AllocatedSize));
-                else if (control is ILayoutRoot root)
+                if (control is ILayoutRoot root)
                     control.Arrange(new Rect(control.DesiredSize));
                 else if (control.PreviousArrange != null)
                 {

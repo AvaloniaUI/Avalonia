@@ -51,7 +51,7 @@ namespace Avalonia.Input
                 pointer.Capture(hit);
             }
 
-            var target = pointer.Captured ?? args.InputHitTestResult.firstEnabledAncestor ?? args.Root;
+            var target = pointer.Captured ?? args.InputHitTestResult.firstEnabledAncestor ?? args.Root.RootElement;
             var gestureTarget = pointer.CapturedGestureRecognizer?.Target;
             var updateKind = args.Type.ToUpdateKind();
             var keyModifier = args.InputModifiers.ToKeyModifiers();
@@ -66,7 +66,7 @@ namespace Avalonia.Input
                 }
                 else
                 {
-                    var settings = ((IInputRoot?)(target as Interactive)?.GetVisualRoot())?.PlatformSettings;
+                    var settings = (target as Interactive)?.GetPlatformSettings();
                     if (settings is not null)
                     {
                         var doubleClickTime = settings.GetDoubleTapTime(PointerType.Touch).TotalMilliseconds;
@@ -86,7 +86,7 @@ namespace Avalonia.Input
                 }
 
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
-                    (Visual)args.Root, args.Position, ev.Timestamp,
+                    args.Root.RootElement, args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind, args.Point),
                     keyModifier, _clickCount));
             }
@@ -98,7 +98,7 @@ namespace Avalonia.Input
                 {
                     target = gestureTarget ?? target;
                     var e = new PointerReleasedEventArgs(target, pointer,
-                            (Visual)args.Root, args.Position, ev.Timestamp,
+                            args.Root.RootElement, args.Position, ev.Timestamp,
                             new PointerPointProperties(GetModifiers(args.InputModifiers, false), updateKind, args.Point),
                             keyModifier, MouseButton.Left);
                     if (gestureTarget != null)
@@ -127,7 +127,7 @@ namespace Avalonia.Input
             if (args.Type == RawPointerEventType.TouchUpdate)
             {
                 target = gestureTarget ?? target;
-                var e = new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer!, (Visual)args.Root,
+                var e = new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer!, args.Root.RootElement,
                     args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind, args.Point),
                     keyModifier, args.IntermediatePoints);

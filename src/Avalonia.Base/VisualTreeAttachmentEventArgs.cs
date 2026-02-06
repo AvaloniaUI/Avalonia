@@ -12,22 +12,30 @@ namespace Avalonia
         /// <summary>
         /// Initializes a new instance of the <see cref="VisualTreeAttachmentEventArgs"/> class.
         /// </summary>
-        /// <param name="parent">The parent that the visual is being attached to or detached from.</param>
-        /// <param name="root">The root visual.</param>
-        public VisualTreeAttachmentEventArgs(Visual parent, IRenderRoot root)
+        /// <param name="attachmentPoint">The parent that the visual's tree is being attached to or detached from.</param>
+        /// <param name="presentationSource">Presentation source this visual is being attached to.</param>
+        public VisualTreeAttachmentEventArgs(Visual? attachmentPoint, IPresentationSource presentationSource)
         {
-            Parent = parent ?? throw new ArgumentNullException(nameof(parent));
-            Root = root ?? throw new ArgumentNullException(nameof(root));
+            AttachmentPoint = attachmentPoint;
+            PresentationSource = presentationSource ?? throw new ArgumentNullException(nameof(presentationSource));
         }
 
         /// <summary>
-        /// Gets the parent that the visual is being attached to or detached from.
+        /// Gets the parent that the visual's tree is being attached to or detached from, null means that
+        /// the entire tree is being attached to a PresentationSource
         /// </summary>
-        public Visual Parent { get; }
+        public Visual? AttachmentPoint { get; }
+
+        [Obsolete("Use " + nameof(AttachmentPoint))]
+        public Visual? Parent => AttachmentPoint;
 
         /// <summary>
         /// Gets the root of the visual tree that the visual is being attached to or detached from.
         /// </summary>
-        public IRenderRoot Root { get; }
+        public IPresentationSource PresentationSource { get; }
+
+        [Obsolete("Don't use")]
+        // TODO: Remove all usages from the codebase, write docs explaining that this is not necessary a TopLevel
+        public Visual Root => PresentationSource.RootVisual!;
     }
 }

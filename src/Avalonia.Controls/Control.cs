@@ -509,7 +509,7 @@ namespace Avalonia.Controls
             if (e.Source == this
                 && !e.Handled)
             {
-                var keymap = TopLevel.GetTopLevel(this)?.PlatformSettings?.HotkeyConfiguration.OpenContextMenu;
+                var keymap = this.GetPlatformSettings()?.HotkeyConfiguration.OpenContextMenu;
 
                 if (keymap is null)
                 {
