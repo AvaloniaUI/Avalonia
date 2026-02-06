@@ -363,7 +363,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        private class IndeiValidatingModel : INotifyDataErrorInfo
+        private class IndeiValidatingModel : NotifyingBase, INotifyDataErrorInfo
         {
             public const int MaxValue = 100;
             private bool _hasErrors;
@@ -376,6 +376,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 {
                     _value = value;
                     HasErrors = value > MaxValue;
+                    RaisePropertyChanged();
                 }
             }
 
