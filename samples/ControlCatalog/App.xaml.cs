@@ -64,6 +64,23 @@ namespace ControlCatalog
             base.OnFrameworkInitializationCompleted();
         }
 
+        public void OnDockNewWindowClicked(object? sender, EventArgs e)
+        {
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime)
+            {
+                var window = new MainWindow();
+                window.Show();
+            }
+        }
+
+        public void OnDockShowMainWindowClicked(object? sender, EventArgs e)
+        {
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
+            {
+                desktopLifetime.MainWindow?.Activate();
+            }
+        }
+
         private CatalogTheme _prevTheme;
         public static CatalogTheme CurrentTheme => ((App)Current!)._prevTheme; 
         public static void SetCatalogThemes(CatalogTheme theme)
