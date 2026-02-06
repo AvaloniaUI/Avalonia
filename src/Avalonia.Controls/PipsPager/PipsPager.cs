@@ -4,6 +4,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -24,6 +25,8 @@ namespace Avalonia.Controls
         private Button? _nextButton;
         private ItemsControl? _pipsPagerList;
         private bool _scrollPending;
+        private bool _updatingPagerSize;
+        private PipsPagerTemplateSettings _templateSettings = new PipsPagerTemplateSettings();
 
         /// <summary>
         /// Defines the <see cref="MaxVisiblePips"/> property.
@@ -59,13 +62,15 @@ namespace Avalonia.Controls
         /// Defines the <see cref="SelectedPageIndex"/> property.
         /// </summary>
         public static readonly StyledProperty<int> SelectedPageIndexProperty =
-            AvaloniaProperty.Register<PipsPager, int>(nameof(SelectedPageIndex));
+            AvaloniaProperty.Register<PipsPager, int>(nameof(SelectedPageIndex),
+                defaultBindingMode: BindingMode.TwoWay);
         
         /// <summary>
         /// Defines the <see cref="TemplateSettings"/> property.
         /// </summary>
-        public static readonly StyledProperty<PipsPagerTemplateSettings> TemplateSettingsProperty =
-            AvaloniaProperty.Register<PipsPager, PipsPagerTemplateSettings>(nameof(TemplateSettings));
+        public static readonly DirectProperty<PipsPager, PipsPagerTemplateSettings> TemplateSettingsProperty =
+            AvaloniaProperty.RegisterDirect<PipsPager, PipsPagerTemplateSettings>(nameof(TemplateSettings),
+                x => x.TemplateSettings);
 
         /// <summary>
         /// Defines the <see cref="PreviousButtonStyle"/> property.
@@ -96,7 +101,6 @@ namespace Avalonia.Controls
 
         public PipsPager()
         {
-            SetValue(TemplateSettingsProperty, new PipsPagerTemplateSettings());
             UpdatePseudoClasses();
         }
 
@@ -159,8 +163,8 @@ namespace Avalonia.Controls
         /// </summary>
         public PipsPagerTemplateSettings TemplateSettings
         {
-            get => GetValue(TemplateSettingsProperty);
-            set => SetValue(TemplateSettingsProperty, value);
+            get => _templateSettings;
+            private set => SetAndRaise(TemplateSettingsProperty, ref _templateSettings, value);
         }
 
         /// <summary>
@@ -248,7 +252,7 @@ namespace Avalonia.Controls
         {
             base.OnKeyDown(e);
 
-            if (e.Handled) 
+            if (e.Handled)
                 return;
 
             if (Orientation == Orientation.Horizontal)
@@ -257,7 +261,7 @@ namespace Avalonia.Controls
                 {
                     if (SelectedPageIndex > 0)
                     {
-                        SelectedPageIndex--;
+                        SetCurrentValue(SelectedPageIndexProperty, SelectedPageIndex - 1);
                         e.Handled = true;
                     }
                 }
@@ -265,7 +269,7 @@ namespace Avalonia.Controls
                 {
                     if (SelectedPageIndex < NumberOfPages - 1)
                     {
-                        SelectedPageIndex++;
+                        SetCurrentValue(SelectedPageIndexProperty, SelectedPageIndex + 1);
                         e.Handled = true;
                     }
                 }
@@ -276,7 +280,7 @@ namespace Avalonia.Controls
                 {
                     if (SelectedPageIndex > 0)
                     {
-                        SelectedPageIndex--;
+                        SetCurrentValue(SelectedPageIndexProperty, SelectedPageIndex - 1);
                         e.Handled = true;
                     }
                 }
@@ -284,7 +288,24 @@ namespace Avalonia.Controls
                 {
                     if (SelectedPageIndex < NumberOfPages - 1)
                     {
-                        SelectedPageIndex++;
+                        SetCurrentValue(SelectedPageIndexProperty, SelectedPageIndex + 1);
+                        e.Handled = true;
+                    }
+                }
+            }
+
+            if (!e.Handled)
+            {
+                if (e.Key == Key.Home)
+                {
+                    SetCurrentValue(SelectedPageIndexProperty, 0);
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.End)
+                {
+                    if (NumberOfPages > 0)
+                    {
+                        SetCurrentValue(SelectedPageIndexProperty, NumberOfPages - 1);
                         e.Handled = true;
                     }
                 }
@@ -328,13 +349,15 @@ namespace Avalonia.Controls
 
         private void OnNumberOfPagesChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var pips = TemplateSettings.Pips;
             var newValue = (int)e.NewValue!;
 
             if (newValue < 0)
             {
+                SetCurrentValue(NumberOfPagesProperty, 0);
                 return;
             }
+
+            var pips = TemplateSettings.Pips;
 
             if (pips.Count < newValue)
             {
@@ -348,9 +371,13 @@ namespace Avalonia.Controls
                 pips.RemoveRange(newValue, pips.Count - newValue);
             }
 
-            if (SelectedPageIndex >= newValue && newValue > 0)
+            if (newValue > 0 && SelectedPageIndex >= newValue)
             {
                 SetCurrentValue(SelectedPageIndexProperty, newValue - 1);
+            }
+            else if (newValue == 0 && SelectedPageIndex > 0)
+            {
+                SetCurrentValue(SelectedPageIndexProperty, 0);
             }
             
             UpdateButtonsState();
@@ -385,7 +412,7 @@ namespace Avalonia.Controls
         {
             if (SelectedPageIndex > 0)
             {
-                SelectedPageIndex--;
+                SetCurrentValue(SelectedPageIndexProperty, SelectedPageIndex - 1);
             }
         }
 
@@ -393,7 +420,7 @@ namespace Avalonia.Controls
         {
             if (SelectedPageIndex < NumberOfPages - 1)
             {
-                SelectedPageIndex++;
+                SetCurrentValue(SelectedPageIndexProperty, SelectedPageIndex + 1);
             }
         }
 
@@ -416,7 +443,8 @@ namespace Avalonia.Controls
 
         private void OnPipsPagerListSizeChanged(object? sender, SizeChangedEventArgs e)
         {
-            UpdatePagerSize();
+            if (!_updatingPagerSize)
+                UpdatePagerSize();
         }
 
         private void OnContainerPrepared(object? sender, ContainerPreparedEventArgs e)
@@ -465,9 +493,12 @@ namespace Avalonia.Controls
 
         private void UpdatePagerSize()
         {
-             if (_pipsPagerList == null) 
+             if (_pipsPagerList == null)
                  return;
-             
+
+             _updatingPagerSize = true;
+             try
+             {
              double pipSize = 12.0;
 
              // Try to detect the actual size from a realized container
@@ -487,7 +518,6 @@ namespace Avalonia.Controls
                      pipSize = size;
              }
 
-             const double crossSize = 24.0;
              double spacing = 0.0;
              
              if (_pipsPagerList.ItemsPanelRoot is StackPanel itemsPanel)
@@ -514,6 +544,11 @@ namespace Avalonia.Controls
              }
              
              RequestScrollToSelectedPip();
+             }
+             finally
+             {
+                 _updatingPagerSize = false;
+             }
         }
 
         private void UpdateNavigationButtonIcons()

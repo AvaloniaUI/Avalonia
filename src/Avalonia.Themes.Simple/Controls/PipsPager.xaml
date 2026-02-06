@@ -9,6 +9,7 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="IsTabStop" Value="False" />
     <Setter Property="Template">
       <ControlTemplate>
         <StackPanel Name="PART_RootPanel" 
@@ -40,6 +41,7 @@
                      ScrollViewer.VerticalScrollBarVisibility="Hidden"
                      ItemsSource="{Binding TemplateSettings.Pips, RelativeSource={RelativeSource TemplatedParent}}"
                      SelectedIndex="{Binding SelectedPageIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                     AutoScrollToSelectedItem="False"
                      ClipToBounds="False">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
