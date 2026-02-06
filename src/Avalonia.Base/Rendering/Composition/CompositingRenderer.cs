@@ -180,11 +180,12 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
         CompositionTarget.PixelSize = PixelSize.FromSizeRounded(_root.ClientSize, _root.RenderScaling);
         CompositionTarget.Scaling = _root.RenderScaling;
         
-        var commit = _compositor.RequestCommitAsync();
+        var commit = _compositor.RequestCompositionBatchCommitAsync();
         if (!_queuedSceneInvalidation)
         {
             _queuedSceneInvalidation = true;
-            commit.ContinueWith(_ => Dispatcher.UIThread.Post(() =>
+            // Updated hit-test information is available after full render
+            commit.Rendered.ContinueWith(_ => Dispatcher.UIThread.Post(() =>
             {
                 _queuedSceneInvalidation = false;
                 SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
