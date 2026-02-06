@@ -724,6 +724,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreatePlatformRenderTimer(IAvnPlatformRenderTimer** ppv);
      HRESULT ImportMTLSharedEvent([intptr]void* idMtlSharedEvent, IAvnMTLSharedEvent** ppv);
      HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement** ppv);
+     HRESULT SetDockMenu(IAvnMenu* menu);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]

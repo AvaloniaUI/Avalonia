@@ -10,7 +10,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
-    internal class AvaloniaNativeMenuExporter : ITopLevelNativeMenuExporter
+    internal class AvaloniaNativeMenuExporter : ITopLevelNativeMenuExporter, INativeMenuExporterResetHandler
     {
         private readonly IAvaloniaNativeFactory _factory;
         private bool _resetQueued = true;
@@ -57,7 +57,7 @@ namespace Avalonia.Native
             DoLayoutReset(true);
         }
 
-        internal void UpdateIfNeeded()
+        public void UpdateIfNeeded()
         {
             if (_resetQueued)
             {
@@ -199,7 +199,7 @@ namespace Avalonia.Native
             }
         }
 
-        internal void QueueReset()
+        public void QueueReset()
         {
             if (_resetQueued)
                 return;

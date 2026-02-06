@@ -65,6 +65,11 @@ namespace Avalonia.Native
             var exporter = new AvaloniaNativeMenuExporter(_factory);
         }
 
+        public void SetupApplicationDockMenuExporter()
+        {
+            _ = new AvaloniaNativeDockMenuExporter(_factory);
+        }
+
         public void SetupApplicationName()
         {
             if (!string.IsNullOrWhiteSpace(Application.Current!.Name))

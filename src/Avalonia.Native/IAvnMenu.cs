@@ -5,6 +5,7 @@ using Avalonia.Compatibility;
 using Avalonia.Reactive;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Native;
 
 namespace Avalonia.Native.Interop
 {
@@ -45,7 +46,7 @@ namespace Avalonia.Native.Interop.Impl
 {
     partial class __MicroComIAvnMenuProxy
     {
-        private AvaloniaNativeMenuExporter _exporter;
+        private INativeMenuExporterResetHandler _exporter;
         private List<__MicroComIAvnMenuItemProxy> _menuItems = new List<__MicroComIAvnMenuItemProxy>();
         private Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy> _menuItemLookup = new Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy>();
 
@@ -136,7 +137,7 @@ namespace Avalonia.Native.Interop.Impl
             return nativeItem;
         }
 
-        internal void Initialize(AvaloniaNativeMenuExporter exporter, NativeMenu managedMenu, string? title)
+        internal void Initialize(INativeMenuExporterResetHandler exporter, NativeMenu managedMenu, string? title)
         {
             _exporter = exporter;
             ManagedMenu = managedMenu;

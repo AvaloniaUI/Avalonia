@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Interop;
+using Avalonia.Native;
 
 namespace Avalonia.Native.Interop
 {
@@ -164,7 +165,7 @@ namespace Avalonia.Native.Interop.Impl
             _currentActionDisposable?.Dispose();
         }
 
-        internal void Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenuItem item)
+        internal void Update(INativeMenuExporterResetHandler exporter, IAvaloniaNativeFactory factory, NativeMenuItem item)
         {
             if (item != ManagedMenuItem)
             {
