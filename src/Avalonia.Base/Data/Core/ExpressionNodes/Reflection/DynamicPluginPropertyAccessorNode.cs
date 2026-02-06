@@ -61,6 +61,7 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
         if (GetPlugin(source) is { } plugin &&
             plugin.Start(reference, PropertyName) is { } accessor)
         {
+            UpdateDataValidator(source);
             _accessor = accessor;
             _accessor.Subscribe(_onValueChanged);
         }
@@ -69,17 +70,16 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
             SetError(
                 $"Could not find a matching property accessor for '{PropertyName}' on '{source.GetType()}'.");
         }
-
-        UpdateDataValidator(source);
     }
 
     protected override void Unsubscribe(object oldSource)
     {
         _accessor?.Dispose();
         _accessor = null;
+        UpdateDataValidator(null);
     }
 
-    private void UpdateDataValidator(object source)
+    private void UpdateDataValidator(object? source)
     {
         if (!_enableDataValidation)
             return;
@@ -87,7 +87,9 @@ internal sealed class DynamicPluginPropertyAccessorNode : ExpressionNode, IPrope
         if (_dataValidator?.RaisesEvents == true)
             _dataValidator.DataValidationChanged -= OnDataValidationChanged;
 
-        _dataValidator = DataValidationPlugin.GetDataValidator(source, PropertyName);
+        _dataValidator = source is not null ?
+            DataValidationPlugin.GetDataValidator(source, PropertyName) :
+            null;
 
         if (_dataValidator?.RaisesEvents == true)
             _dataValidator.DataValidationChanged += OnDataValidationChanged;

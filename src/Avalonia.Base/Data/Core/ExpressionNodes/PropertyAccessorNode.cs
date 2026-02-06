@@ -66,6 +66,7 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
 
         if (_plugin.Start(reference, PropertyName) is { } accessor)
         {
+            UpdateDataValidator(source);
             _accessor = accessor;
             _accessor.Subscribe(_onValueChanged);
         }
@@ -73,20 +74,16 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
         {
             ClearValue();
         }
-
-        UpdateDataValidator(source);
     }
 
     protected override void Unsubscribe(object oldSource)
     {
         _accessor?.Dispose();
         _accessor = null;
-
-        if (_dataValidator is not null)
-            _dataValidator.DataValidationChanged -= OnDataValidationChanged;
+        UpdateDataValidator(null);
     }
 
-    private void UpdateDataValidator(object source)
+    private void UpdateDataValidator(object? source)
     {
         if (!_enableDataValidation)
             return;
@@ -94,7 +91,9 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
         if (_dataValidator?.RaisesEvents == true)
             _dataValidator.DataValidationChanged -= OnDataValidationChanged;
 
-        _dataValidator = DataValidationPlugin.GetDataValidator(source, PropertyName);
+        _dataValidator = source is not null ?
+            DataValidationPlugin.GetDataValidator(source, PropertyName) :
+            null;
 
         if (_dataValidator?.RaisesEvents == true)
             _dataValidator.DataValidationChanged += OnDataValidationChanged;
@@ -108,6 +107,6 @@ internal sealed class PropertyAccessorNode : ExpressionNode, IPropertyAccessorNo
     private void OnValueChanged(object? newValue)
     {
         var dataValidationError = _dataValidator?.GetDataValidationError();
-        SetValue(newValue, dataValidationError);
+        SetValue(BindingNotification.ExtractValue(newValue), dataValidationError);
     }
 }

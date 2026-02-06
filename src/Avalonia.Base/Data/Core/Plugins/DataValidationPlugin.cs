@@ -6,7 +6,8 @@ public abstract class DataValidationPlugin
 {
     private static readonly List<DataValidationPlugin> s_registered =
     [
-        new IndeiDataValidationPlugin()
+        new IndeiDataValidationPlugin(),
+        new DataAnnotationsValidationPlugin(),
     ];
 
     /// <summary>
