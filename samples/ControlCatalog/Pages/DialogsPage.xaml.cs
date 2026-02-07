@@ -1,23 +1,14 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Security;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Dialogs;
 using Avalonia.Layout;
-using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
-using Avalonia.Platform.Storage.FileIO;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-#nullable enable
 
 namespace ControlCatalog.Pages
 {
@@ -69,14 +60,6 @@ namespace ControlCatalog.Pages
                 }
             };
 
-
-            List<FileDialogFilter> GetFilters()
-            {
-                return GetFileTypes()?.Select(f => new FileDialogFilter
-                {
-                    Name = f.Name, Extensions = f.Patterns!.ToList()
-                }).ToList() ?? new List<FileDialogFilter>();
-            }
 
             List<FilePickerFileType>? BuildFileTypes()
             {
@@ -168,88 +151,12 @@ namespace ControlCatalog.Pages
             void UpdateSuggestedFilterSelectorState() =>
                 suggestedFilterSelector.IsEnabled = useSuggestedFilter.IsChecked == true;
 
-            useSuggestedFilter.Checked += (_, _) => UpdateSuggestedFilterSelectorState();
-            useSuggestedFilter.Unchecked += (_, _) => UpdateSuggestedFilterSelectorState();
+            useSuggestedFilter.IsCheckedChanged += (_, _) => UpdateSuggestedFilterSelectorState();
             UpdateSuggestedFilterSelectorState();
 
             FilterSelector.SelectionChanged += (_, _) => UpdateSuggestedFilterSelector(BuildFileTypes());
             UpdateSuggestedFilterSelector(BuildFileTypes());
 
-            OpenFile.Click += async delegate
-            {
-                // Almost guaranteed to exist
-                var uri = Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName;
-                var initialFileName = uri == null ? null : System.IO.Path.GetFileName(uri);
-                var initialDirectory = uri == null ? null : System.IO.Path.GetDirectoryName(uri);
-
-                var result = await new OpenFileDialog()
-                {
-                    Title = "Open file",
-                    Filters = GetFilters(),
-                    Directory = initialDirectory,
-                    InitialFileName = initialFileName
-                }.ShowAsync(GetWindow());
-                results.ItemsSource = result;
-                resultsVisible.IsVisible = result?.Any() == true;
-            };
-            OpenMultipleFiles.Click += async delegate
-            {
-                var result = await new OpenFileDialog()
-                {
-                    Title = "Open multiple files",
-                    Filters = GetFilters(),
-                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
-                    AllowMultiple = true
-                }.ShowAsync(GetWindow());
-                results.ItemsSource = result;
-                resultsVisible.IsVisible = result?.Any() == true;
-            };
-            SaveFile.Click += async delegate
-            {
-                var filters = GetFilters();
-                var result = await new SaveFileDialog()
-                {
-                    Title = "Save file",
-                    Filters = filters,
-                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
-                    DefaultExtension = filters?.Any() == true ? "txt" : null,
-                    InitialFileName = "test.txt"
-                }.ShowAsync(GetWindow());
-                results.ItemsSource = new[] { result };
-                resultsVisible.IsVisible = result != null;
-            };
-            SelectFolder.Click += async delegate
-            {
-                var result = await new OpenFolderDialog()
-                {
-                    Title = "Select folder",
-                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
-                }.ShowAsync(GetWindow());
-                if (string.IsNullOrEmpty(result))
-                {
-                    resultsVisible.IsVisible = false;
-                }
-                else
-                {
-                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result!));
-                    results.ItemsSource = new[] { result };
-                    resultsVisible.IsVisible = true;
-                }
-            };
-            OpenBoth.Click += async delegate
-            {
-                var result = await new OpenFileDialog()
-                {
-                    Title = "Select both",
-                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
-                    AllowMultiple = true
-                }.ShowManagedAsync(GetWindow(), new ManagedFileDialogOptions
-                {
-                    AllowDirectorySelection = true
-                });
-                results.ItemsSource = result;
-                resultsVisible.IsVisible = result?.Any() == true;
-            };
             DecoratedWindow.Click += delegate
             {
                 new DecoratedWindow().Show();

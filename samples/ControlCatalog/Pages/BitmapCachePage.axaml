@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.BitmapCachePage">
+    <DockPanel>
+        <DockPanel.Resources>
+            <BitmapCache x:Key="Cache"/>
+            <ScaleTransform x:Key="Transform" ScaleX="1" ScaleY="{Binding $self.ScaleX, Mode=OneWay}"/>
+            <TranslateTransform x:Key="SubPixelTransform"/>
+        </DockPanel.Resources>
+        <StackPanel DockPanel.Dock="Right" ZIndex="1">
+            <TextBlock>Render at scale</TextBlock>
+            <Slider Minimum="0.1" Maximum="4" Value="{Binding Source={StaticResource Cache}, Path=RenderAtScale, Mode=TwoWay}" Width="200"/>
+            <TextBlock>Scale</TextBlock>
+            <Slider Minimum="0.1" Maximum="4" Value="{Binding Source={StaticResource Transform}, Path=ScaleX, Mode=TwoWay}" Width="200"/>
+            <CheckBox IsChecked="{Binding Source={StaticResource Cache}, Path=EnableClearType, Mode=TwoWay}">Enable clear type</CheckBox>
+
+            <CheckBox IsChecked="{Binding Source={StaticResource Cache}, Path=SnapsToDevicePixels, Mode=TwoWay}">Snap to device pixels</CheckBox>
+            <TextBlock>Subpixel offset X</TextBlock>
+            <Slider Minimum="0" Maximum="1" Value="{Binding Source={StaticResource SubPixelTransform}, Path=X, Mode=TwoWay}" Width="200"/>
+        </StackPanel>
+        <Decorator RenderTransform="{StaticResource SubPixelTransform}">
+            <Border Background="Beige" Margin="10"
+                    RenderTransform="{StaticResource Transform}"
+                    RenderTransformOrigin="0.5,0.5">
+                <Border Margin="10"
+                    CacheMode="{StaticResource Cache}"
+                    TextElement.Foreground="Black">
+                    <Border
+                        Margin="10"
+                        BorderThickness="2"
+                        BorderBrush="Black"
+                        Background="White">
+                        <StackPanel>
+                            <Slider MinWidth="200"/>
+                            <TextBlock TextWrapping="Wrap">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</TextBlock>
+                        </StackPanel>
+                    </Border>
+                </Border>
+            </Border>
+        </Decorator>
+    </DockPanel>
+</UserControl>

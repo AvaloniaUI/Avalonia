@@ -35,17 +35,18 @@
         <Property Name="Effect" Type="Avalonia.Media.IImmutableEffect?" Internal="true" />
         <Property Name="RenderOptions" Type="Avalonia.Media.RenderOptions" />
         <Property Name="TextOptions" Type="Avalonia.Media.TextOptions" />
-        <Property Name="ShouldExtendDirtyRect" Type="bool" Internal="true" />
+        <Property Name="CacheMode" Type="CompositionCacheMode?" Internal="true" />
     </Object>
     <Object Name="CompositionContainerVisual" Inherits="CompositionVisual"/>
-    <Object Name="CompositionSolidColorVisual" Inherits="CompositionContainerVisual">
+    <Object Name="CompositionSolidColorVisual" Inherits="CompositionContainerVisual" ServerBase="ServerSizeDependantVisual">
         <Property Name="Color" Type="Avalonia.Media.Color" Animated="true" />
     </Object>
-    <Object Name="CompositionSurfaceVisual" Inherits="CompositionContainerVisual">
+    <Object Name="CompositionSurfaceVisual" Inherits="CompositionContainerVisual" ServerBase="ServerSizeDependantVisual">
         <Property Name="Surface" Type="CompositionSurface?" />
     </Object>
     <Manual Name="CompositionDrawListVisual" />
-    <Object Name="CompositionExperimentalAcrylicVisual" Inherits="CompositionDrawListVisual" Internal="true" CustomCtor="true" CustomServerCtor="true">
+    <Object Name="CompositionExperimentalAcrylicVisual" Inherits="CompositionDrawListVisual"
+            Internal="true" CustomCtor="true" CustomServerCtor="true">
         <Property Name="Material" Type="Avalonia.Media.ImmutableExperimentalAcrylicMaterial" />
         <Property Name="CornerRadius" Type="CornerRadius" />
     </Object>
@@ -109,5 +110,12 @@
         <Property Name="SourceRect" Type="Avalonia.RelativeRect" />
         <Property Name="Stretch" Type="Avalonia.Media.Stretch" />
         <Property Name="TileMode" Type="Avalonia.Media.TileMode" />
+    </Object>
+    <Object Name="CompositionCacheMode" Internal="true">
+    </Object>
+    <Object Name="CompositionBitmapCache" Internal="true" Inherits="CompositionCacheMode">
+        <Property Name="RenderAtScale" Type="double" Animated="true" DefaultValue="1.0"/>
+        <Property Name="SnapsToDevicePixels" Type="bool" Animated="true" DefaultValue="false"/>
+        <Property Name="EnableClearType" Type="bool" Animated="true" DefaultValue="false"/>
     </Object>
 </NComposition>

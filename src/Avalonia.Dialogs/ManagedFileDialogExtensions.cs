@@ -1,11 +1,7 @@
 using System;
-using System.ComponentModel;
-using System.Linq;
 using System.Runtime.Versioning;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Primitives;
 using Avalonia.Platform.Storage;
 
 namespace Avalonia.Dialogs
@@ -39,22 +35,6 @@ namespace Avalonia.Dialogs
             where TWindow : Window, new()
         {
             return builder.UseManagedSystemDialogs(() => new TWindow());
-        }
-
-        [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API"), EditorBrowsable(EditorBrowsableState.Never)]
-        public static Task<string[]> ShowManagedAsync(this OpenFileDialog dialog, Window parent,
-            ManagedFileDialogOptions? options = null) => ShowManagedAsync<Window>(dialog, parent, options);
-
-        [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API"), EditorBrowsable(EditorBrowsableState.Never)]
-        public static async Task<string[]> ShowManagedAsync<TWindow>(this OpenFileDialog dialog, Window parent,
-            ManagedFileDialogOptions? options = null) where TWindow : Window, new()
-        {
-            var impl = new ManagedStorageProvider(parent, PrepareOptions(options, () => new TWindow()));
-
-            var files = await impl.OpenFilePickerAsync(dialog.ToFilePickerOpenOptions());
-            return files
-                .Select(file => file.TryGetLocalPath() ?? file.Name)
-                .ToArray();
         }
 
         private static ManagedFileDialogOptions? PrepareOptions(
