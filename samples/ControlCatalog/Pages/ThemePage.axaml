@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="ControlCatalog.Pages.ThemePage"
+<UserControl x:Class="ControlCatalog.Pages.ThemePage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -70,8 +70,8 @@
         </ComboBox>
         <TextBlock Grid.Column="0" Grid.Row="2" Text="Username:" VerticalAlignment="Center" />
         <TextBlock Grid.Column="0" Grid.Row="4" Text="Password:" VerticalAlignment="Center" />
-        <TextBox Grid.Column="1" Grid.Row="2" Watermark="Input here" HorizontalAlignment="Stretch" />
-        <TextBox Grid.Column="1" Grid.Row="4" Watermark="Input here" HorizontalAlignment="Stretch" />
+        <TextBox Grid.Column="1" Grid.Row="2" PlaceholderText="Input here" HorizontalAlignment="Stretch" />
+        <TextBox Grid.Column="1" Grid.Row="4" PlaceholderText="Input here" HorizontalAlignment="Stretch" />
         <Button Grid.Column="1" Grid.Row="6" Content="Login" HorizontalAlignment="Stretch" />
       </Grid>
     </Border>

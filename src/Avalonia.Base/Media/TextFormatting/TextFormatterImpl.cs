@@ -290,9 +290,13 @@ namespace Avalonia.Media.TextFormatting
                                 }
 
                                 var shaperOptions = new TextShaperOptions(
-                                    properties.CachedGlyphTypeface, properties.FontFeatures,
-                                    properties.FontRenderingEmSize, shapeableRun.BidiLevel, properties.CultureInfo,
-                                    paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
+                                    properties.CachedGlyphTypeface,
+                                    properties.FontRenderingEmSize,
+                                    shapeableRun.BidiLevel,
+                                    properties.CultureInfo,
+                                    paragraphProperties.DefaultIncrementalTab,
+                                    paragraphProperties.LetterSpacing,
+                                    properties.FontFeatures);
 
                                 ShapeTogether(groupedRuns, text, shaperOptions, textShaper, shapedRuns);
 

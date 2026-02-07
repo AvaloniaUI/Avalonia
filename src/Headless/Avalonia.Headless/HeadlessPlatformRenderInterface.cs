@@ -56,11 +56,13 @@ namespace Avalonia.Headless
             => new HeadlessGeometryStub(g1.Bounds.Union(g2.Bounds));
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
-        public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, double scaling) => 
-            new HeadlessBitmapStub(pixelSize, new Vector(96 * scaling, 96 * scaling));
+        public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, Vector scaling,
+            bool enableTextAntialiasing) => 
+            new HeadlessBitmapStub(pixelSize, scaling * 96);
 
         public bool IsLost => false;
         public IReadOnlyDictionary<Type, object> PublicFeatures { get; } = new Dictionary<Type, object>();
+        public PixelSize? MaxOffscreenRenderTargetPixelSize => null;
         public object? TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
@@ -423,8 +425,8 @@ namespace Avalonia.Headless
 
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
-            public PixelFormat? Format { get; }
-            public AlphaFormat? AlphaFormat { get; }
+            public PixelFormat? Format => PixelFormat.Rgba8888;
+            public AlphaFormat? AlphaFormat => Platform.AlphaFormat.Premul;
             public int Version { get; set; }
 
             public void Save(string fileName, int? quality = null)
@@ -443,7 +445,7 @@ namespace Avalonia.Headless
                 Version++;
                 var mem = Marshal.AllocHGlobal(PixelSize.Width * PixelSize.Height * 4);
                 return new LockedFramebuffer(mem, PixelSize, PixelSize.Width * 4, Dpi, PixelFormat.Rgba8888,
-                    () => Marshal.FreeHGlobal(mem));
+                    Platform.AlphaFormat.Premul, () => Marshal.FreeHGlobal(mem));
             }
         }
 

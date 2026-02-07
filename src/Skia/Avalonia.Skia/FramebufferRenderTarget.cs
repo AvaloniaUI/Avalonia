@@ -67,7 +67,7 @@ namespace Avalonia.Skia
             var framebuffer = _renderTargetWithProperties?.Lock(out lockProperties) ?? _renderTarget.Lock();
             var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
                 framebuffer.Format.ToSkColorType(),
-                framebuffer.Format == PixelFormat.Rgb565 ? SKAlphaType.Opaque : SKAlphaType.Premul);
+                framebuffer.AlphaFormat.ToSkAlphaType());
 
             CreateSurface(framebufferImageInfo, framebuffer);
             _hadConversionShim |= _conversionShim != null;
@@ -124,6 +124,14 @@ namespace Avalonia.Skia
             FreeSurface();
             
             _currentFramebufferAddress = framebuffer.Address;
+
+            // A surface with a width/height of 0 is invalid and can't be created
+            if (desiredImageInfo.Width <= 0 || desiredImageInfo.Height <= 0)
+            {
+                throw new ArgumentException(
+                    $"Unable to create a surface with size {desiredImageInfo.Width}x{desiredImageInfo.Height}",
+                    nameof(desiredImageInfo));
+            }
 
             var surface = SKSurface.Create(desiredImageInfo, _currentFramebufferAddress, 
                 framebuffer.RowBytes, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));

@@ -3,7 +3,6 @@ using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 
-#nullable enable
 namespace Avalonia.Controls.Platform
 {
     [NotClientImplementable]
@@ -18,13 +17,6 @@ namespace Avalonia.Controls.Platform
         /// Gets or sets whether the window draws edge to edge. behind any visible system bars.
         /// </summary>
         bool DisplayEdgeToEdgePreference { get; set; }
-
-
-        /// <summary>
-        /// Gets or sets whether the window draws edge to edge. behind any visible system bars.
-        /// </summary>
-        [Obsolete("Use DisplayEdgeToEdgePreference")]
-        bool DisplayEdgeToEdge { get; set; }
 
         /// <summary>
         /// Gets whether the window is currently displaying edge to edge.
@@ -52,7 +44,6 @@ namespace Avalonia.Controls.Platform
     {
         public virtual bool? IsSystemBarVisible { get; set; }
         public virtual bool DisplayEdgeToEdgePreference { get; set; }
-        public virtual bool DisplayEdgeToEdge { get => DisplaysEdgeToEdge; set => DisplayEdgeToEdgePreference = value; }
         public virtual Thickness SafeAreaPadding { get; protected set; }
         public virtual Color? SystemBarColor { get; set; }
         public virtual bool DisplaysEdgeToEdge => DisplayEdgeToEdgePreference;

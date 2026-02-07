@@ -255,12 +255,15 @@ namespace TextTestApp
         private GenericTextRunProperties CreateTextRunProperties()
         {
             Typeface typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
-            return new GenericTextRunProperties(typeface, FontFeatures, FontSize,
+            return new GenericTextRunProperties(
+                typeface,
+                FontSize,
                 textDecorations: null,
                 foregroundBrush: Brushes.Black,
                 backgroundBrush: null,
                 baselineAlignment: BaselineAlignment.Baseline,
-                cultureInfo: null);
+                cultureInfo: null,
+                fontFeatures: FontFeatures);
         }
 
         // TextParagraphProperties
