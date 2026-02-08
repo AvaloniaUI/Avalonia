@@ -14,7 +14,7 @@ namespace Avalonia.Native
         {
             _native = factory.CreateTrayIcon();
 
-            MenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
+            MenuExporter = new AvaloniaNativeMenuExporter(factory, menu => _native.SetMenu(menu));
         }
 
         public Action? OnClicked { get; set; }

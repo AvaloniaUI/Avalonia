@@ -18,7 +18,7 @@ namespace Avalonia.Native
         private readonly IAvnWindow? _nativeWindow;
         private NativeMenu? _menu;
         private __MicroComIAvnMenuProxy? _nativeMenu;
-        private readonly IAvnTrayIcon? _trayIcon;
+        private readonly Action<IAvnMenu>? _setMenuAction;
         private readonly IAvnApplicationCommands _applicationCommands;
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
@@ -38,10 +38,10 @@ namespace Avalonia.Native
             DoLayoutReset();
         }
 
-        public AvaloniaNativeMenuExporter(IAvnTrayIcon trayIcon, IAvaloniaNativeFactory factory)
+        public AvaloniaNativeMenuExporter(IAvaloniaNativeFactory factory, Action<IAvnMenu> setMenuAction)
         {
             _factory = factory;
-            _trayIcon = trayIcon;
+            _setMenuAction = setMenuAction;
             _applicationCommands = _factory.CreateApplicationCommands();
 
             DoLayoutReset();
@@ -167,7 +167,7 @@ namespace Avalonia.Native
 
                 if (_nativeWindow is null)
                 {
-                    if (_trayIcon is null)
+                    if (_setMenuAction is null)
                     {
                         var app = Application.Current;
                         var appMenu = app is null ? null : NativeMenu.GetMenu(app);
@@ -184,7 +184,7 @@ namespace Avalonia.Native
                     }
                     else if (_menu != null)
                     {
-                        SetMenu(_trayIcon, _menu);
+                        SetMenu(_setMenuAction, _menu);
                     }
                 }
                 else
@@ -274,7 +274,7 @@ namespace Avalonia.Native
             }
         }
 
-        private void SetMenu(IAvnTrayIcon trayIcon, NativeMenu menu)
+        private void SetMenu(Action<IAvnMenu> setMenuAction, NativeMenu menu)
         {
             var setMenu = false;
 
@@ -291,7 +291,7 @@ namespace Avalonia.Native
 
             if(setMenu)
             {
-                trayIcon.SetMenu(_nativeMenu);
+                setMenuAction(_nativeMenu);
             }
         }
     }

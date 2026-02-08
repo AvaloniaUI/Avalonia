@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Compatibility;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Reactive;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -67,7 +69,32 @@ namespace Avalonia.Native
 
         public void SetupApplicationDockMenuExporter()
         {
-            _ = new AvaloniaNativeDockMenuExporter(_factory);
+            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
+
+            if (macOpts.DisableNativeMenus)
+            {
+                return;
+            }
+
+            var exporter = new AvaloniaNativeMenuExporter(_factory, menu => _factory.SetDockMenu(menu));
+
+            NativeMenu.DockMenuProperty.Changed.Subscribe(args =>
+            {
+                if (args.Sender is Application)
+                {
+                    exporter.SetNativeMenu(args.NewValue.GetValueOrDefault());
+                }
+            });
+
+            var app = Application.Current;
+            if (app is not null)
+            {
+                var dockMenu = NativeMenu.GetDockMenu(app);
+                if (dockMenu is not null)
+                {
+                    exporter.SetNativeMenu(dockMenu);
+                }
+            }
         }
 
         public void SetupApplicationName()
