@@ -1,4 +1,6 @@
-﻿using System.Threading;
+﻿using System.Diagnostics;
+using System.IO;
+using System.Threading;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
@@ -90,6 +92,8 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class DockMenuTests : TestBase
     {
+        private const string DockAppName = "IntegrationTestApp";
+
         public DockMenuTests(DefaultAppFixture fixture)
             : base(fixture, "DesktopPage")
         {
@@ -115,6 +119,61 @@ namespace Avalonia.IntegrationTests.Appium
 
             countText = Session.FindElementByAccessibilityId("DockMenuItemCount");
             Assert.Equal("3", countText.Text);
+        }
+
+        [PlatformFact(TestPlatforms.MacOS)]
+        public void MacOS_DockMenu_Show_Main_Window_Sets_Checkbox()
+        {
+            var checkbox = Session.FindElementByAccessibilityId("DockMenuShowMainWindow");
+            Assert.Equal(false, checkbox.GetIsChecked());
+
+            ClickDockMenuItem(DockAppName, "Show Main Window");
+
+            Thread.Sleep(2000);
+
+            checkbox = Session.FindElementByAccessibilityId("DockMenuShowMainWindow");
+            Assert.Equal(true, checkbox.GetIsChecked());
+        }
+
+        private static void ClickDockMenuItem(string appName, string menuItemName)
+        {
+            // Create the AppleScript to click the dock menu item.
+            // Trying to get Appium to talk to the Dock directly is _pain_.
+             
+            var script = $@"
+tell application ""System Events""
+    tell process ""Dock""
+        tell list 1
+            perform action ""AXShowMenu"" of UI element ""{appName}""
+            delay 0.5
+            click menu item ""{menuItemName}"" of menu 1 of UI element ""{appName}""
+        end tell
+    end tell
+end tell";
+
+            var tempFile = Path.GetTempFileName();
+            File.WriteAllText(tempFile, script);
+            try
+            {
+                var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "osascript",
+                        Arguments = tempFile,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+                process.Start();
+                process.WaitForExit(10000);
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
         }
     }
 }
