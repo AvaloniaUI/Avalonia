@@ -64,6 +64,8 @@
       <NativeMenuItem Header="New Window" Click="OnDockNewWindowClicked"/>
       <NativeMenuItemSeparator/>
       <NativeMenuItem Header="Show Main Window" Click="OnDockShowMainWindowClicked"/>
+      <NativeMenuItemSeparator/>
+      <NativeMenuItem Header="Add Dock Menu Item" Click="OnDockAddItemClicked"/>
     </NativeMenu>
   </NativeMenu.DockMenu>
   <TrayIcon.Icons>

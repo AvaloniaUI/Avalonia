@@ -81,6 +81,23 @@ namespace ControlCatalog
             }
         }
 
+        private int _dockMenuItemCount;
+
+        public void OnDockAddItemClicked(object? sender, EventArgs e)
+        {
+            var dockMenu = NativeMenu.GetDockMenu(this);
+            if (dockMenu is not null)
+            {
+                _dockMenuItemCount++;
+                var item = new NativeMenuItem($"New item {_dockMenuItemCount}");
+                item.Click += (_, _) =>
+                {
+                    dockMenu.Items.Remove(item);
+                };
+                dockMenu.Items.Insert(0, item);
+            }
+        }
+
         private CatalogTheme _prevTheme;
         public static CatalogTheme CurrentTheme => ((App)Current!)._prevTheme; 
         public static void SetCatalogThemes(CatalogTheme theme)
