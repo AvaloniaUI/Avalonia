@@ -5,7 +5,6 @@ using Avalonia.Compatibility;
 using Avalonia.Reactive;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Native;
 
 namespace Avalonia.Native.Interop
 {
@@ -46,7 +45,8 @@ namespace Avalonia.Native.Interop.Impl
 {
     partial class __MicroComIAvnMenuProxy
     {
-        private INativeMenuExporterResetHandler _exporter;
+        private Action _queueReset = null!;
+        private Action _updateIfNeeded = null!;
         private List<__MicroComIAvnMenuItemProxy> _menuItems = new List<__MicroComIAvnMenuItemProxy>();
         private Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy> _menuItemLookup = new Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy>();
 
@@ -68,7 +68,7 @@ namespace Avalonia.Native.Interop.Impl
         {
             (ManagedMenu as INativeMenuExporterEventsImplBridge).RaiseNeedsUpdate();
 
-            _exporter.UpdateIfNeeded();
+            _updateIfNeeded();
         }
 
         public void RaiseOpening()
@@ -137,9 +137,10 @@ namespace Avalonia.Native.Interop.Impl
             return nativeItem;
         }
 
-        internal void Initialize(INativeMenuExporterResetHandler exporter, NativeMenu managedMenu, string? title)
+        internal void Initialize(Action queueReset, Action updateIfNeeded, NativeMenu managedMenu, string? title)
         {
-            _exporter = exporter;
+            _queueReset = queueReset;
+            _updateIfNeeded = updateIfNeeded;
             ManagedMenu = managedMenu;
 
             ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged += OnMenuItemsChanged;
@@ -188,7 +189,7 @@ namespace Avalonia.Native.Interop.Impl
 
                 if (menu.Items[i] is NativeMenuItem nmi)
                 {
-                    nativeItem.Update(_exporter, factory, nmi);
+                    nativeItem.Update(_queueReset, _updateIfNeeded, factory, nmi);
                 }
             }
 
@@ -200,7 +201,7 @@ namespace Avalonia.Native.Interop.Impl
 
         private void OnMenuItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            _exporter.QueueReset();
+            _queueReset();
         }
     }
 }

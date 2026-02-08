@@ -10,7 +10,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
-    internal class AvaloniaNativeMenuExporter : ITopLevelNativeMenuExporter, INativeMenuExporterResetHandler
+    internal class AvaloniaNativeMenuExporter : ITopLevelNativeMenuExporter
     {
         private readonly IAvaloniaNativeFactory _factory;
         private bool _resetQueued = true;
@@ -18,7 +18,7 @@ namespace Avalonia.Native
         private readonly IAvnWindow? _nativeWindow;
         private NativeMenu? _menu;
         private __MicroComIAvnMenuProxy? _nativeMenu;
-        private readonly Action<IAvnMenu>? _setMenuAction;
+        private readonly IAvnTrayIcon? _trayIcon;
         private readonly IAvnApplicationCommands _applicationCommands;
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
@@ -38,10 +38,10 @@ namespace Avalonia.Native
             DoLayoutReset();
         }
 
-        public AvaloniaNativeMenuExporter(IAvaloniaNativeFactory factory, Action<IAvnMenu> setMenuAction)
+        public AvaloniaNativeMenuExporter(IAvnTrayIcon trayIcon, IAvaloniaNativeFactory factory)
         {
             _factory = factory;
-            _setMenuAction = setMenuAction;
+            _trayIcon = trayIcon;
             _applicationCommands = _factory.CreateApplicationCommands();
 
             DoLayoutReset();
@@ -70,7 +70,7 @@ namespace Avalonia.Native
             var result = new NativeMenu();
 
             var aboutItem = new NativeMenuItem("About Avalonia");
-            
+
             aboutItem.Click += async (_, _) =>
             {
                 var dialog = new AboutAvaloniaDialog();
@@ -78,14 +78,14 @@ namespace Avalonia.Native
                 if (Application.Current is
                     { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime { MainWindow: { IsVisible: true } mainWindow } })
                 {
-                    await dialog.ShowDialog(mainWindow);   
+                    await dialog.ShowDialog(mainWindow);
                 }
                 else
                 {
                     dialog.Show();
                 }
             };
-            
+
             result.Add(aboutItem);
 
             return result;
@@ -167,7 +167,7 @@ namespace Avalonia.Native
 
                 if (_nativeWindow is null)
                 {
-                    if (_setMenuAction is null)
+                    if (_trayIcon is null)
                     {
                         var app = Application.Current;
                         var appMenu = app is null ? null : NativeMenu.GetMenu(app);
@@ -184,7 +184,7 @@ namespace Avalonia.Native
                     }
                     else if (_menu != null)
                     {
-                        SetMenu(_setMenuAction, _menu);
+                        SetMenu(_trayIcon, _menu);
                     }
                 }
                 else
@@ -233,7 +233,7 @@ namespace Avalonia.Native
             {
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialize(this, appMenuHolder, "");
+                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded,appMenuHolder, "");
 
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
 
@@ -261,7 +261,7 @@ namespace Avalonia.Native
             {
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialize(this, menu, "");
+                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded,menu, "");
 
                 setMenu = true;
             }
@@ -274,7 +274,7 @@ namespace Avalonia.Native
             }
         }
 
-        private void SetMenu(Action<IAvnMenu> setMenuAction, NativeMenu menu)
+        private void SetMenu(IAvnTrayIcon trayIcon, NativeMenu menu)
         {
             var setMenu = false;
 
@@ -282,7 +282,7 @@ namespace Avalonia.Native
             {
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialize(this, menu, "");
+                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded,menu, "");
 
                 setMenu = true;
             }
@@ -291,7 +291,7 @@ namespace Avalonia.Native
 
             if(setMenu)
             {
-                setMenuAction(_nativeMenu);
+                trayIcon.SetMenu(_nativeMenu);
             }
         }
     }
