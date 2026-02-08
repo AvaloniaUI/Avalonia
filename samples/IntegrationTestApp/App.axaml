@@ -7,6 +7,13 @@
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
+    <NativeMenu.DockMenu>
+        <NativeMenu>
+            <NativeMenuItem Header="Show Main Window"
+                            Command="{Binding DockMenuCommand}"
+                            CommandParameter="DockMenuShowMainWindow"/>
+        </NativeMenu>
+    </NativeMenu.DockMenu>
     <TrayIcon.Icons>
         <TrayIcons>
             <TrayIcon Icon="/Assets/icon.ico"

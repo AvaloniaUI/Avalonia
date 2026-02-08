@@ -18,9 +18,9 @@ namespace Avalonia.IntegrationTests.Appium
             var buttonTab = tabs.FindElementByName("Button");
             var menuBar = Session.FindElementByXPath("/XCUIElementTypeApplication/XCUIElementTypeMenuBar");
             var viewMenu = menuBar.FindElementByName("View");
-            
+
             Assert.False(buttonTab.Selected);
-            
+
             viewMenu.Click();
             var buttonMenu = viewMenu.FindElementByName("Button");
             buttonMenu.Click();
@@ -84,6 +84,37 @@ namespace Avalonia.IntegrationTests.Appium
 
             var toolTipCandidates = Session.FindElementsByClassName("XCUIElementTypeStaticText");
             Assert.Contains(toolTipCandidates, x => x.Text == "Tip:Button");
+        }
+    }
+
+    [Collection("Default")]
+    public class DockMenuTests : TestBase
+    {
+        public DockMenuTests(DefaultAppFixture fixture)
+            : base(fixture, "DesktopPage")
+        {
+        }
+
+        [PlatformFact(TestPlatforms.MacOS)]
+        public void MacOS_DockMenu_Can_Add_Items_Dynamically()
+        {
+            var countText = Session.FindElementByAccessibilityId("DockMenuItemCount");
+            Assert.Equal("0", countText.Text);
+
+            var addButton = Session.FindElementByAccessibilityId("AddDockMenuItem");
+            addButton.Click();
+
+            Thread.Sleep(500);
+
+            countText = Session.FindElementByAccessibilityId("DockMenuItemCount");
+            Assert.Equal("2", countText.Text);
+
+            addButton.Click();
+
+            Thread.Sleep(500);
+
+            countText = Session.FindElementByAccessibilityId("DockMenuItemCount");
+            Assert.Equal("3", countText.Text);
         }
     }
 }
