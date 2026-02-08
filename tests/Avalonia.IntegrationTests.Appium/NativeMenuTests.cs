@@ -121,7 +121,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("3", countText.Text);
         }
 
-        [PlatformFact(TestPlatforms.MacOS)]
+        [PlatformFact(TestPlatforms.MacOS, Skip = "Requires runner to have accessibility permissions")]
         public void MacOS_DockMenu_Show_Main_Window_Sets_Checkbox()
         {
             var checkbox = Session.FindElementByAccessibilityId("DockMenuShowMainWindow");
