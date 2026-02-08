@@ -534,19 +534,4 @@ extern NSMenuItem* GetAppMenuItem ()
     return s_appMenuItem;
 }
 
-static IAvnMenu* s_dockMenu = nullptr;
-
-extern void SetDockMenu(IAvnMenu* menu)
-{
-    if (s_dockMenu != nullptr)
-        s_dockMenu->Release();
-    s_dockMenu = menu;
-    if (s_dockMenu != nullptr)
-        s_dockMenu->AddRef();
-}
-
-extern IAvnMenu* GetDockMenu()
-{
-    return s_dockMenu;
-}
 

@@ -7,6 +7,7 @@
 @end
 
 NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationActivationPolicyRegular;
+static NSMenu* s_dockMenu = nil;
 
 @implementation AvnAppDelegate
 ComPtr<IAvnApplicationEvents> _events;
@@ -89,17 +90,7 @@ ComPtr<IAvnApplicationEvents> _events;
 
 - (NSMenu *)applicationDockMenu:(NSApplication *)sender
 {
-    auto dockMenu = GetDockMenu();
-    if (dockMenu != nullptr)
-    {
-        auto nativeMenu = dynamic_cast<AvnAppMenu*>(dockMenu);
-        if (nativeMenu != nullptr)
-        {
-            nativeMenu->RaiseNeedsUpdate();
-            return nativeMenu->GetNative();
-        }
-    }
-    return nil;
+    return s_dockMenu;
 }
 
 @end
@@ -195,4 +186,9 @@ HRESULT AvnApplicationCommands::HideOthers()
 extern IAvnApplicationCommands* CreateApplicationCommands()
 {
     return new AvnApplicationCommands();
+}
+
+extern void SetDockMenu(NSMenu* menu)
+{
+    s_dockMenu = menu;
 }
