@@ -61,19 +61,21 @@ namespace Avalonia.Input
                 return;
 
             var oldVisual = oldCapture as Visual;
+            var newVisual = control as Visual;
 
             IInputElement? commonParent = null;
-            if (oldVisual != null)
+            if (oldVisual != null || newVisual != null)
             {
                 commonParent = FindCommonParent(control, oldCapture);
-                foreach (var notifyTarget in oldVisual.GetSelfAndVisualAncestors().OfType<IInputElement>())
+                var visual = oldVisual ?? newVisual!; // We want the capture to be cancellable even if there is no currently captured element.
+                foreach (var notifyTarget in visual.GetSelfAndVisualAncestors().OfType<IInputElement>())
                 {
-                    if (notifyTarget == commonParent)
-                        break;
                     var args = new PointerCaptureChangingEventArgs(notifyTarget, this, control, source);
                     notifyTarget.RaiseEvent(args);
                     if (args.Handled)
                         return;
+                    if (notifyTarget == commonParent)
+                        break;
                 }
             }
 
@@ -94,7 +96,7 @@ namespace Avalonia.Input
                     notifyTarget.RaiseEvent(new PointerCaptureLostEventArgs(notifyTarget, this));
                 }
 
-            if (Captured is Visual newVisual)
+            if (newVisual != null)
                 newVisual.DetachedFromVisualTree += OnCaptureDetached;
 
             if (Captured != null)
