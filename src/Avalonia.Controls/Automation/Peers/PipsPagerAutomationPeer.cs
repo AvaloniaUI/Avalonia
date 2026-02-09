@@ -61,7 +61,7 @@ namespace Avalonia.Automation.Peers
         /// <inheritdoc/>
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
-            return AutomationControlType.Menu;
+            return AutomationControlType.List;
         }
 
         /// <inheritdoc/>
