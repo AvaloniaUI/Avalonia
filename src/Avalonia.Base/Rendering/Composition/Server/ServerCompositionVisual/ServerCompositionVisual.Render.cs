@@ -110,7 +110,7 @@ partial class ServerCompositionVisual
                 _walkContext.PushClip(effectiveClip);
 
             if (visual.ClipToBounds)
-                _canvas.PushClip(new Rect(0, 0, visual.Size.X, visual.Size.Y));
+                visual.PushClipToBounds(_canvas);
 
             if (visual.Clip != null)
                 _canvas.PushGeometryClip(visual.Clip);
