@@ -55,6 +55,8 @@ namespace Avalonia.Input
         {
             var oldCapture = Captured;
             var oldSource = CaptureSource;
+
+            // If a handler marks Implicit capture as handled, we still want them to have another chance if the element is captured explicitly.
             if (oldCapture == control && oldSource == source)
                 return;
 
@@ -80,7 +82,8 @@ namespace Avalonia.Input
             Captured = control;
             CaptureSource = source;
 
-            if (source != CaptureSource.Platform)
+            // However, we still want to notify the platform only if the captured element actually changed.
+            if (oldCapture != control && source != CaptureSource.Platform)
                 PlatformCapture(control);
 
             if (oldVisual != null)
