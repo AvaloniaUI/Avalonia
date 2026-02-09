@@ -21,7 +21,7 @@ namespace Avalonia.X11.Glx
             return new RenderTarget((GlxContext)context, _info);
         }
 
-        private class RenderTarget : IGlPlatformSurfaceRenderTarget2
+        private class RenderTarget : IGlPlatformSurfaceRenderTarget
         {
             private readonly GlxContext _context;
             private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
@@ -39,9 +39,8 @@ namespace Avalonia.X11.Glx
             }
             
             public bool IsCorrupted => false;
-            public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize size) => BeginDrawCore(size);
-            public IGlPlatformSurfaceRenderingSession BeginDraw() => BeginDrawCore(null);
-            public IGlPlatformSurfaceRenderingSession BeginDrawCore(PixelSize? expectedSize)
+
+            public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedSize)
             {
                 var size = expectedSize ?? _info.Size;
                 if (expectedSize.HasValue)

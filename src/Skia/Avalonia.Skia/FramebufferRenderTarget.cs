@@ -10,7 +10,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that renders to a framebuffer surface. No gpu acceleration available.
     /// </summary>
-    internal class FramebufferRenderTarget : IRenderTarget2
+    internal class FramebufferRenderTarget : IRenderTarget
     {
         private SKImageInfo _currentImageInfo;
         private IntPtr _currentFramebufferAddress;

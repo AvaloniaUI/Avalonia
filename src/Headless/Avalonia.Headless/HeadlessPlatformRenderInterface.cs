@@ -400,10 +400,19 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(bool _)
+            public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
             {
                 return new HeadlessDrawingContextStub();
             }
+
+            public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
+                out RenderTargetDrawingContextProperties properties)
+            {
+                properties = default;
+                return new HeadlessDrawingContextStub();
+            }
+
+            public RenderTargetProperties Properties => default;
 
             public bool IsCorrupted => false;
 
@@ -582,13 +591,22 @@ namespace Avalonia.Headless
 
         private class HeadlessRenderTarget : IRenderTarget
         {
+            public RenderTargetProperties Properties => default;
+
             public void Dispose()
             {
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(bool _)
+            public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
             {
+                return new HeadlessDrawingContextStub();
+            }
+
+            public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
+                out RenderTargetDrawingContextProperties properties)
+            {
+                properties = default;
                 return new HeadlessDrawingContextStub();
             }
 
