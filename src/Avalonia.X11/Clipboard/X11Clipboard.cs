@@ -53,6 +53,8 @@ namespace Avalonia.X11.Clipboard
                 // We night have already regained the clipboard ownership by the time a SelectionClear message arrives.
                 if (GetOwner() != _handle)
                     _storedDataTransfer = null;
+
+                _storeAtomTcs?.TrySetResult(true);
             }
 
             else if (ev.type == XEventName.SelectionRequest)
