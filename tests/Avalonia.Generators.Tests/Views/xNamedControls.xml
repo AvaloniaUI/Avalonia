@@ -3,11 +3,11 @@
         x:Class="Sample.App.xNamedControls">
     <StackPanel>
         <TextBox x:Name="UserNameTextBox"
-                 Watermark="Username input"
-                 UseFloatingWatermark="True" />
+                 Placeholder="Username input"
+                 UseFloatingPlaceholder="True" />
         <TextBox x:Name="PasswordTextBox"
-                 Watermark="Password input"
-                 UseFloatingWatermark="True" />
+                 Placeholder="Password input"
+                 UseFloatingPlaceholder="True" />
         <!-- Name generator should still generate members, even if XAML is invalid -->
         <Button x:Name="SignUpButton"
                 Content="{x:Static NonExistent.Member}" />

@@ -12,17 +12,6 @@ partial class Animation
     /// </summary>
     /// <param name="setter">The animation setter.</param>
     /// <param name="value">The property animator value.</param>
-    [Obsolete("CustomAnimatorBase will be removed before 11.0, use InterpolatingAnimator<T>", true)]
-    public static void SetAnimator(IAnimationSetter setter, CustomAnimatorBase value)
-    {
-        s_animators[setter] = (value.WrapperType, value.CreateWrapper);
-    }
-
-    /// <summary>
-    /// Sets the value of the Animator attached property for a setter.
-    /// </summary>
-    /// <param name="setter">The animation setter.</param>
-    /// <param name="value">The property animator value.</param>
     public static void SetAnimator(IAnimationSetter setter, ICustomAnimator value)
     {
         s_animators[setter] = (value.WrapperType, value.CreateWrapper);

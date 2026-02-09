@@ -30,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IResourceHost, IApplicationPlatformEvents, IOptionalFeatureProvider
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IResourceHost, IOptionalFeatureProvider
     {
         /// <summary>
         /// The application-global data templates.
@@ -60,9 +60,6 @@ namespace Avalonia
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
-
-        [Obsolete("Use Application.Current.TryGetFeature<IActivatableLifetime>() instead.")]
-        public event EventHandler<UrlOpenedEventArgs>? UrlsOpened;
 
         /// <inheritdoc/>
         public event EventHandler? ActualThemeVariantChanged;
@@ -177,8 +174,8 @@ namespace Avalonia
         /// Currently supported lifetimes are:
         /// - <see cref="IClassicDesktopStyleApplicationLifetime"/>
         /// - <see cref="ISingleViewApplicationLifetime"/>
-        /// - <see cref="IControlledApplicationLifetime"/> 
-        /// - <see cref="IActivatableApplicationLifetime"/> 
+        /// - <see cref="ISingleTopLevelApplicationLifetime"/>
+        /// - <see cref="IControlledApplicationLifetime"/>
         /// </summary>
         public IApplicationLifetime? ApplicationLifetime
         {
@@ -282,11 +279,6 @@ namespace Avalonia
 
         public virtual void OnFrameworkInitializationCompleted()
         {
-        }
-        
-        void IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
-        {
-            UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
         }
 
         private string? _name;

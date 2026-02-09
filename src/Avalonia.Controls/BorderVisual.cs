@@ -70,27 +70,24 @@ class CompositionBorderVisual : CompositionDrawListVisual
 
         protected override void RenderCore(ServerVisualRenderContext ctx, LtrbRect currentTransformedClip)
         {
-            var canvas = ctx.Canvas;
-            RenderOwnContent(ctx, currentTransformedClip);
-
-            if (ClipToBounds)
+            if (ClipToBounds && Clip == null)
             {
-                var clipRect = Root!.SnapToDevicePixels(new Rect(new Size(Size.X, Size.Y)));
+                var canvas = ctx.Canvas;
+                canvas.PopClip();
+                base.RenderCore(ctx, currentTransformedClip);
+
+                var clipRect = new Rect(new Size(Size.X, Size.Y));
                 var keypoints = GeometryBuilder.CalculateRoundedCornersRectangleWinUI(
                     clipRect,
                     _borderThickness,
                     _cornerRadius,
                     BackgroundSizing.InnerBorderEdge);
                 canvas.PushClip(keypoints.ToRoundedRect());
+                return;
             }
 
-            RenderChildren(ctx, currentTransformedClip);
-
-            if (ClipToBounds)
-                canvas.PopClip();
-            
+            base.RenderCore(ctx, currentTransformedClip);
         }
-
         protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
         {
             base.DeserializeChangesCore(reader, committedAt);
@@ -100,7 +97,18 @@ class CompositionBorderVisual : CompositionDrawListVisual
                 _borderThickness = reader.Read<Thickness>();
         }
 
-        protected override bool HandlesClipToBounds => true;
+
+        protected override void PushClipToBounds(IDrawingContextImpl canvas)
+        {
+            var clipRect = new Rect(new Size(Size.X, Size.Y));
+            var keypoints = GeometryBuilder.CalculateRoundedCornersRectangleWinUI(
+                clipRect,
+                _borderThickness,
+                _cornerRadius,
+                BackgroundSizing.InnerBorderEdge);
+            canvas.PushClip(keypoints.ToRoundedRect());
+        }
+
     }
 
 }

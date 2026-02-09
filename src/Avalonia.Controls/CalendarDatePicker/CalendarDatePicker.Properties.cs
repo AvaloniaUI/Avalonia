@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Layout;
@@ -53,7 +53,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<DateTime?> SelectedDateProperty =
             AvaloniaProperty.Register<CalendarDatePicker, DateTime?>(
                 nameof(SelectedDate),
-                enableDataValidation: true, 
+                enableDataValidation: true,
                 defaultBindingMode:BindingMode.TwoWay);
 
         /// <summary>
@@ -81,16 +81,52 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<CalendarDatePicker, string?>(nameof(Text));
 
         /// <summary>
+        /// Defines the <see cref="PlaceholderText"/> property.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1013",
+            Justification = "We keep WatermarkProperty for backward compatibility.")]
+        public static readonly StyledProperty<string?> PlaceholderTextProperty =
+            TextBox.PlaceholderTextProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
         /// Defines the <see cref="Watermark"/> property.
         /// </summary>
-        public static readonly StyledProperty<string?> WatermarkProperty =
-            TextBox.WatermarkProperty.AddOwner<CalendarDatePicker>();
+        [Obsolete("Use PlaceholderTextProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
+
+        /// <summary>
+        /// Defines the <see cref="UseFloatingPlaceholder"/> property.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1013",
+            Justification = "We keep UseFloatingWatermarkProperty for backward compatibility.")]
+        public static readonly StyledProperty<bool> UseFloatingPlaceholderProperty =
+            TextBox.UseFloatingPlaceholderProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
         /// Defines the <see cref="UseFloatingWatermark"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
-            TextBox.UseFloatingWatermarkProperty.AddOwner<CalendarDatePicker>();
+        [Obsolete("Use UseFloatingPlaceholderProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty = UseFloatingPlaceholderProperty;
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1013",
+            Justification = "We keep WatermarkForegroundProperty for backward compatibility.")]
+        public static readonly StyledProperty<Media.IBrush?> PlaceholderForegroundProperty =
+            TextBox.PlaceholderForegroundProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
+        /// Defines the <see cref="WatermarkForeground"/> property.
+        /// </summary>
+        [Obsolete("Use PlaceholderForegroundProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
@@ -130,7 +166,7 @@ namespace Avalonia.Controls
             get => GetValue(DisplayDateProperty);
             set => SetValue(DisplayDateProperty, value);
         }
-        
+
         /// <summary>
         /// Gets or sets the first date to be displayed.
         /// </summary>
@@ -254,18 +290,55 @@ namespace Avalonia.Controls
             set => SetValue(TextProperty, value);
         }
 
+        /// <inheritdoc cref="TextBox.PlaceholderText"/>
+        public string? PlaceholderText
+        {
+            get => GetValue(PlaceholderTextProperty);
+            set => SetValue(PlaceholderTextProperty, value);
+        }
+
         /// <inheritdoc cref="TextBox.Watermark"/>
+        [Obsolete("Use PlaceholderText instead.", false)]
         public string? Watermark
         {
-            get => GetValue(WatermarkProperty);
-            set => SetValue(WatermarkProperty, value);
+            get => PlaceholderText;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => PlaceholderText = value;
+        }
+
+        /// <inheritdoc cref="TextBox.UseFloatingPlaceholder"/>
+        public bool UseFloatingPlaceholder
+        {
+            get => GetValue(UseFloatingPlaceholderProperty);
+            set => SetValue(UseFloatingPlaceholderProperty, value);
         }
 
         /// <inheritdoc cref="TextBox.UseFloatingWatermark"/>
+        [Obsolete("Use UseFloatingPlaceholder instead.", false)]
         public bool UseFloatingWatermark
         {
-            get => GetValue(UseFloatingWatermarkProperty);
-            set => SetValue(UseFloatingWatermarkProperty, value);
+            get => UseFloatingPlaceholder;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => UseFloatingPlaceholder = value;
+        }
+
+        /// <inheritdoc cref="TextBox.PlaceholderForeground"/>
+        public Media.IBrush? PlaceholderForeground
+        {
+            get => GetValue(PlaceholderForegroundProperty);
+            set => SetValue(PlaceholderForegroundProperty, value);
+        }
+
+        /// <inheritdoc cref="TextBox.WatermarkForeground"/>
+        [Obsolete("Use PlaceholderForeground instead.", false)]
+        public Media.IBrush? WatermarkForeground
+        {
+            get => PlaceholderForeground;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => PlaceholderForeground = value;
         }
 
         /// <summary>

@@ -56,11 +56,13 @@ namespace Avalonia.Headless
             => new HeadlessGeometryStub(g1.Bounds.Union(g2.Bounds));
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
-        public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, double scaling) => 
-            new HeadlessBitmapStub(pixelSize, new Vector(96 * scaling, 96 * scaling));
+        public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, Vector scaling,
+            bool enableTextAntialiasing) => 
+            new HeadlessBitmapStub(pixelSize, scaling * 96);
 
         public bool IsLost => false;
         public IReadOnlyDictionary<Type, object> PublicFeatures { get; } = new Dictionary<Type, object>();
+        public PixelSize? MaxOffscreenRenderTargetPixelSize => null;
         public object? TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
@@ -398,10 +400,19 @@ namespace Avalonia.Headless
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(bool _)
+            public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
             {
                 return new HeadlessDrawingContextStub();
             }
+
+            public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
+                out RenderTargetDrawingContextProperties properties)
+            {
+                properties = default;
+                return new HeadlessDrawingContextStub();
+            }
+
+            public RenderTargetProperties Properties => default;
 
             public bool IsCorrupted => false;
 
@@ -580,13 +591,22 @@ namespace Avalonia.Headless
 
         private class HeadlessRenderTarget : IRenderTarget
         {
+            public RenderTargetProperties Properties => default;
+
             public void Dispose()
             {
 
             }
 
-            public IDrawingContextImpl CreateDrawingContext(bool _)
+            public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
             {
+                return new HeadlessDrawingContextStub();
+            }
+
+            public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
+                out RenderTargetDrawingContextProperties properties)
+            {
+                properties = default;
                 return new HeadlessDrawingContextStub();
             }
 

@@ -69,6 +69,12 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, IBrush?>(nameof(OpacityMask));
 
         /// <summary>
+        /// Defines the <see cref="CacheMode"/> property.
+        /// </summary>
+        public static readonly StyledProperty<CacheMode?> CacheModeProperty = AvaloniaProperty.Register<Visual, CacheMode?>(
+            nameof(CacheMode));
+
+        /// <summary>
         /// Defines the <see cref="Effect"/> property.
         /// </summary>
         public static readonly StyledProperty<IEffect?> EffectProperty =
@@ -257,6 +263,15 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets or sets the cache mode of the visual.
+        /// </summary>
+        public CacheMode? CacheMode
+        {
+            get => GetValue(CacheModeProperty);
+            set => SetValue(CacheModeProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the effect of the control.
         /// </summary>
         public IEffect? Effect
@@ -326,11 +341,11 @@ namespace Avalonia
         /// </summary>
         protected internal IRenderRoot? VisualRoot => _visualRoot;
 
-        internal RenderOptions RenderOptions 
-        { 
+        internal RenderOptions RenderOptions
+        {
             get => _renderOptions;
-            set 
-            { 
+            set
+            {
                 _renderOptions = value;
                 InvalidateVisual();
             }
