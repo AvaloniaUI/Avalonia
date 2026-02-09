@@ -54,7 +54,8 @@ namespace Avalonia.Input
         internal void Capture(IInputElement? control, CaptureSource source)
         {
             var oldCapture = Captured;
-            if (oldCapture == control)
+            var oldSource = CaptureSource;
+            if (oldCapture == control && oldSource == source)
                 return;
 
             var oldVisual = oldCapture as Visual;
