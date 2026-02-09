@@ -92,7 +92,7 @@ partial class ServerCompositionVisual
             
             if (visual.ClipToBounds)
             {
-                _canvas.PushClip(new Rect(0, 0, visual.Size.X, visual.Size.Y));
+                visual.PushClipToBounds(_canvas);
                 _adornerPushedClipStack!.Push((int)Op.PopClip);
             }
             
