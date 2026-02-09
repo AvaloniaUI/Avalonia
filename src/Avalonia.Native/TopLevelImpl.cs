@@ -65,8 +65,8 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     private NativeControlHostImpl? _nativeControlHost;
     private PlatformBehaviorInhibition? _platformBehaviorInhibition;
 
-    private readonly MouseDevice? _mouse;
-    private readonly PenDevice? _pen;
+    private readonly MouseDevice _mouse;
+    private readonly PenDevice _pen;
 
     private readonly IKeyboardDevice? _keyboard;
     private readonly ICursorFactory? _cursorFactory;
@@ -480,6 +480,18 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         void IAvnTopLevelEvents.LostFocus()
         {
             _parent.LostFocus?.Invoke();
+
+            // macOS doesn't have the concept of mouse capture. If we're losing the focus during an implicit capture
+            // (standard mouse down), we should release it to avoid mouse events going to an old window.
+            var mouse = _parent._mouse;
+            var captured = mouse.Pointer.Captured;
+
+            if (captured is not null &&
+                mouse.Pointer.CaptureSource == CaptureSource.Implicit &&
+                TopLevel.GetTopLevel(captured as Visual)?.PlatformImpl == _parent)
+            {
+                mouse.PlatformCaptureLost();
+            }
         }
 
         AvnDragDropEffects IAvnTopLevelEvents.DragEvent(AvnDragEventType type, AvnPoint position,
@@ -554,8 +566,8 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         {
             ObjectDisposedException.ThrowIf(_target is null, this);
 
-            var w = _parent._savedLogicalSize.Width * _parent._savedScaling;
-            var h = _parent._savedLogicalSize.Height * _parent._savedScaling;
+            var w = Math.Max(_parent._savedLogicalSize.Width * _parent._savedScaling, 1);
+            var h = Math.Max(_parent._savedLogicalSize.Height * _parent._savedScaling, 1);
             var dpi = _parent._savedScaling * 96;
             return new DeferredFramebuffer(_target, cb =>
             {

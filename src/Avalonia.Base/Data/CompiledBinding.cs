@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq.Expressions;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
+using Avalonia.Metadata;
 
 namespace Avalonia.Data;
 
@@ -26,6 +29,95 @@ public class CompiledBinding : BindingBase
     /// <param name="path">The binding path.</param>
     public CompiledBinding(CompiledBindingPath path) => Path = path;
     
+    /// <summary>
+    /// Creates a <see cref="CompiledBinding"/> from a lambda expression.
+    /// </summary>
+    /// <typeparam name="TIn">The input type of the binding expression.</typeparam>
+    /// <typeparam name="TOut">The output type of the binding expression.</typeparam>
+    /// <param name="expression">
+    /// The lambda expression representing the binding path
+    /// (e.g., <c>vm => vm.PropertyName</c>).
+    /// </param>
+    /// <param name="source"
+    /// >The source object for the binding. If null, uses the target's DataContext.
+    /// </param>
+    /// <param name="converter">
+    /// Optional value converter to transform values between source and target.
+    /// </param>
+    /// <param name="mode">
+    /// The binding mode. Default is <see cref="BindingMode.Default"/> which resolves to the
+    /// property's default binding mode.
+    /// </param>
+    /// <param name="priority">The binding priority.</param>
+    /// <param name="converterCulture">The culture in which to evaluate the converter.</param>
+    /// <param name="converterParameter">A parameter to pass to the converter.</param>
+    /// <param name="fallbackValue">
+    /// The value to use when the binding is unable to produce a value.
+    /// </param>
+    /// <param name="stringFormat">The string format for the binding result.</param>
+    /// <param name="targetNullValue">The value to use when the binding result is null.</param>
+    /// <param name="updateSourceTrigger">
+    /// The timing of binding source updates for TwoWay/OneWayToSource bindings.
+    /// </param>
+    /// <param name="delay">
+    /// The amount of time, in milliseconds, to wait before updating the binding source.
+    /// </param>
+    /// <returns>
+    /// A configured <see cref="CompiledBinding"/> instance ready to be applied to a property.
+    /// </returns>
+    /// <exception cref="ExpressionParseException">
+    /// Thrown when the expression contains unsupported operations or invalid syntax for binding
+    /// expressions.
+    /// </exception>
+    /// <remarks>
+    /// This builds a <see cref="CompiledBinding"/> with a path described by a lambda expression.
+    /// The resulting binding avoids reflection for property access, providing better performance
+    /// than reflection-based bindings.
+    ///
+    /// Supported expressions include:
+    /// <list type="bullet">
+    /// <item>Property access: <c>x => x.Property</c></item>
+    /// <item>Nested properties: <c>x => x.Property.Nested</c></item>
+    /// <item>Indexers: <c>x => x.Items[0]</c></item>
+    /// <item>Type casts: <c>x => ((DerivedType)x).Property</c></item>
+    /// <item>Logical NOT: <c>x => !x.BoolProperty</c></item>
+    /// <item>Stream bindings: <c>x => x.TaskProperty</c> (Task/Observable)</item>
+    /// <item>AvaloniaProperty access: <c>x => x[MyProperty]</c></item>
+    /// </list>
+    /// </remarks>
+    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
+    public static CompiledBinding Create<TIn, TOut>(
+        Expression<Func<TIn, TOut>> expression,
+        object? source = null,
+        IValueConverter? converter = null,
+        BindingMode mode = BindingMode.Default,
+        BindingPriority priority = BindingPriority.LocalValue,
+        CultureInfo? converterCulture = null,
+        object? converterParameter = null,
+        object? fallbackValue = null,
+        string? stringFormat = null,
+        object? targetNullValue = null,
+        UpdateSourceTrigger updateSourceTrigger = UpdateSourceTrigger.Default,
+        int delay = 0)
+    {
+        var path = BindingExpressionVisitor<TIn>.BuildPath(expression);
+        return new CompiledBinding(path)
+        {
+            Source = source ?? AvaloniaProperty.UnsetValue,
+            Converter = converter,
+            ConverterCulture = converterCulture,
+            ConverterParameter = converterParameter,
+            FallbackValue = fallbackValue ?? AvaloniaProperty.UnsetValue,
+            Mode = mode,
+            Priority = priority,
+            StringFormat = stringFormat,
+            TargetNullValue = targetNullValue ?? AvaloniaProperty.UnsetValue,
+            UpdateSourceTrigger = updateSourceTrigger,
+            Delay = delay
+        };
+    }
+
     /// <summary>
     /// Gets or sets the amount of time, in milliseconds, to wait before updating the binding 
     /// source after the value on the target changes.
@@ -70,6 +162,7 @@ public class CompiledBinding : BindingBase
     /// <summary>
     /// Gets or sets the binding path.
     /// </summary>
+    [ConstructorArgument("path")]
     public CompiledBindingPath? Path { get; set; }
 
     /// <summary>

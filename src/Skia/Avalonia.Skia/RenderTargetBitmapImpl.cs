@@ -1,6 +1,4 @@
-using System.IO;
 using Avalonia.Controls.Platform.Surfaces;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -19,8 +17,17 @@ internal class RenderTargetBitmapImpl : WriteableBitmapImpl,
         _renderTarget = new FramebufferRenderTarget(this);
     }
 
+    public RenderTargetProperties Properties => default;
+
     IDrawingContextImpl IRenderTarget.CreateDrawingContext(bool useScaledDrawing) =>
         _renderTarget.CreateDrawingContext(useScaledDrawing);
+
+    IDrawingContextImpl IRenderTarget.CreateDrawingContext(PixelSize expectedPixelSize,
+        out RenderTargetDrawingContextProperties properties)
+    {
+        properties = default;
+        return _renderTarget.CreateDrawingContext(false);
+    }
 
     public bool IsCorrupted => false;
     

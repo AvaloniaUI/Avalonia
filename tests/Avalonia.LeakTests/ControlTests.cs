@@ -402,9 +402,9 @@ namespace Avalonia.LeakTests
         {
             using (Start())
             {
-                var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+                var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
                 var screens = new Mock<IScreenImpl>();
-                screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+                screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1);
 
                 var impl = new Mock<IWindowImpl>();
                 impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns((object?)null);

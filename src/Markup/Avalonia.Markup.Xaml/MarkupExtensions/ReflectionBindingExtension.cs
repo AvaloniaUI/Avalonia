@@ -22,13 +22,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         /// <param name="path">The binding path.</param>
         public ReflectionBindingExtension(string path) : base(path) { }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ReflectionBinding"/> class.
-        /// </summary>
-        /// <param name="path">The binding path.</param>
-        /// <param name="mode">The binding mode.</param>
-        public ReflectionBindingExtension(string path, BindingMode mode) : base(path, mode) { }
-
         public ReflectionBinding ProvideValue(IServiceProvider serviceProvider)
         {
             return new ReflectionBinding

@@ -47,7 +47,7 @@ partial class BrowserSoftwareRenderTarget : BrowserRenderTarget, IFramebufferPla
             {
                 _fb?.Dispose();
                 _fb = null;
-                _fb = new RetainedFramebuffer(size, PixelFormat.Rgba8888);
+                _fb = new RetainedFramebuffer(size, PixelFormat.Rgba8888, AlphaFormat.Premul);
             }
 
             return _fb.Lock(new Vector(scaling * 96, scaling * 96), _parent._blit);

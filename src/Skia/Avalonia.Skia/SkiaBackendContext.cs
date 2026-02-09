@@ -5,7 +5,6 @@ using System.Linq;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
-using SkiaSharp;
 
 namespace Avalonia.Skia;
 
@@ -29,6 +28,13 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
             // TODO12: extend ISkiaGpu with PublicFeatures instead
             TryFeature<IOpenGlTextureSharingRenderInterfaceContextFeature>();
             TryFeature<IExternalObjectsRenderInterfaceContextFeature>();
+            using (var gr = gpu.TryGetGrContext())
+            {
+                var renderTargetSize = gr?.Value.MaxRenderTargetSize;
+                if (renderTargetSize.HasValue)
+                    MaxOffscreenRenderTargetPixelSize =
+                        new PixelSize(renderTargetSize.Value, renderTargetSize.Value);
+            }
         }
 
         PublicFeatures = features;
@@ -61,17 +67,21 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
             "Don't know how to create a Skia render target from any of provided surfaces");
     }
 
-    public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, double scaling)
+
+    public PixelSize? MaxOffscreenRenderTargetPixelSize { get; }
+    
+    public IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, Vector scaling,
+        bool enableTextAntialiasing)
     {
-        using (var gr = (_gpu as ISkiaGpuWithPlatformGraphicsContext)?.TryGetGrContext())
+        using (var gr = _gpu?.TryGetGrContext())
         {
             var createInfo = new SurfaceRenderTarget.CreateInfo
             {
                 Width = pixelSize.Width,
                 Height = pixelSize.Height,
-                Dpi = new Vector(96 * scaling, 96 * scaling),
+                Dpi = scaling * 96,
                 Format = null,
-                DisableTextLcdRendering = false,
+                DisableTextLcdRendering = !enableTextAntialiasing,
                 GrContext = gr?.Value,
                 Gpu = _gpu,
                 DisableManualFbo = true,
