@@ -1,4 +1,6 @@
 using System;
+using Avalonia;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Server;
@@ -11,6 +13,8 @@ class CompositionBorderVisual : CompositionDrawListVisual
 {
     private CornerRadius _cornerRadius;
     private bool _cornerRadiusChanged;
+    private Thickness _borderThickness;
+    private bool _borderThicknessChanged;
     
     public CompositionBorderVisual(Compositor compositor, Visual visual) : base(compositor,
         new ServerBorderVisual(compositor.Server, visual), visual)
@@ -31,17 +35,35 @@ class CompositionBorderVisual : CompositionDrawListVisual
         }
     }
 
+    public Thickness BorderThickness
+    {
+        get => _borderThickness;
+        set
+        {
+            if (_borderThickness != value)
+            {
+                _borderThicknessChanged = true;
+                _borderThickness = value;
+                RegisterForSerialization();
+            }
+        }
+    }
+
     private protected override void SerializeChangesCore(BatchStreamWriter writer)
     {
         base.SerializeChangesCore(writer);
         writer.Write(_cornerRadiusChanged);
         if (_cornerRadiusChanged)
             writer.Write(_cornerRadius);
+        writer.Write(_borderThicknessChanged);
+        if (_borderThicknessChanged)
+            writer.Write(_borderThickness);
     }
 
     class ServerBorderVisual : ServerCompositionDrawListVisual
     {
         private CornerRadius _cornerRadius;
+        private Thickness _borderThickness;
         public ServerBorderVisual(ServerCompositor compositor, Visual v) : base(compositor, v)
         {
         }
@@ -49,18 +71,22 @@ class CompositionBorderVisual : CompositionDrawListVisual
         protected override void RenderCore(ServerVisualRenderContext ctx, LtrbRect currentTransformedClip)
         {
             var canvas = ctx.Canvas;
+            RenderOwnContent(ctx, currentTransformedClip);
+
             if (ClipToBounds)
             {
                 var clipRect = Root!.SnapToDevicePixels(new Rect(new Size(Size.X, Size.Y)));
-                if (_cornerRadius == default)
-                    canvas.PushClip(clipRect);
-                else
-                    canvas.PushClip(new RoundedRect(clipRect, _cornerRadius));
+                var keypoints = GeometryBuilder.CalculateRoundedCornersRectangleWinUI(
+                    clipRect,
+                    _borderThickness,
+                    _cornerRadius,
+                    BackgroundSizing.InnerBorderEdge);
+                canvas.PushClip(keypoints.ToRoundedRect());
             }
 
-            base.RenderCore(ctx, currentTransformedClip);
-            
-            if(ClipToBounds)
+            RenderChildren(ctx, currentTransformedClip);
+
+            if (ClipToBounds)
                 canvas.PopClip();
             
         }
@@ -70,6 +96,8 @@ class CompositionBorderVisual : CompositionDrawListVisual
             base.DeserializeChangesCore(reader, committedAt);
             if (reader.Read<bool>())
                 _cornerRadius = reader.Read<CornerRadius>();
+            if (reader.Read<bool>())
+                _borderThickness = reader.Read<Thickness>();
         }
 
         protected override bool HandlesClipToBounds => true;

@@ -97,15 +97,28 @@ namespace Avalonia.Rendering.Composition
             if (!TryTransformTo(visual, globalPoint, out var point))
                 return;
 
-            if (visual.ClipToBounds
-                && (point.X < 0 || point.Y < 0 || point.X > visual.Size.X || point.Y > visual.Size.Y))
-                return;
+            var allowChildren = true;
+            if (visual.ClipToBounds)
+            {
+                if (visual is CompositionDrawListVisual { Visual: IVisualWithChildClip childClipProvider }
+                    && childClipProvider.TryGetChildClip(out var childClip))
+                {
+                    if (point.X < 0 || point.Y < 0 || point.X > visual.Size.X || point.Y > visual.Size.Y)
+                        return;
+                    if (!childClip.ContainsExclusive(point))
+                        allowChildren = false;
+                }
+                else if (point.X < 0 || point.Y < 0 || point.X > visual.Size.X || point.Y > visual.Size.Y)
+                {
+                    return;
+                }
+            }
 
             if (visual.Clip?.FillContains(point) == false)
                 return;
             
             // Inspect children
-            if (visual is CompositionContainerVisual cv)
+            if (allowChildren && visual is CompositionContainerVisual cv)
                 for (var c = cv.Children.Count - 1; c >= 0; c--)
                 {
                     var ch = cv.Children[c];

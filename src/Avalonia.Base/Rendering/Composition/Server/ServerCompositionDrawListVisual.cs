@@ -40,15 +40,24 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         base.DeserializeChangesCore(reader, committedAt);
     }
 
-    protected override void RenderCore(ServerVisualRenderContext context, LtrbRect currentTransformedClip)
+    protected void RenderOwnContent(ServerVisualRenderContext context, LtrbRect currentTransformedClip)
     {
-        if (_renderCommands != null 
+        if (_renderCommands != null
             && context.ShouldRenderOwnContent(this, currentTransformedClip))
         {
             _renderCommands.Render(context.Canvas);
         }
+    }
 
+    protected void RenderChildren(ServerVisualRenderContext context, LtrbRect currentTransformedClip)
+    {
         base.RenderCore(context, currentTransformedClip);
+    }
+
+    protected override void RenderCore(ServerVisualRenderContext context, LtrbRect currentTransformedClip)
+    {
+        RenderOwnContent(context, currentTransformedClip);
+        RenderChildren(context, currentTransformedClip);
     }
     
     public void DependencyQueuedInvalidate(IServerRenderResource sender) => ValuesInvalidated();
