@@ -180,6 +180,99 @@ namespace Avalonia.Skia.RenderTests
             CompareImages();
         }
 
+        [Fact]
+        public async Task Border_InnerRoundedClip_Clips_Child()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 320,
+                Height = 200,
+                Child = new Border
+                {
+                    Width = 200,
+                    Height = 100,
+                    Background = Brushes.Red,
+                    BorderBrush = Brushes.Green,
+                    BorderThickness = new Thickness(2),
+                    CornerRadius = new CornerRadius(8),
+                    ClipToBounds = true,
+                    Child = new Border
+                    {
+                        Width = 80,
+                        Height = 100,
+                        Background = Brushes.Blue,
+                        HorizontalAlignment = HorizontalAlignment.Right
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Border_NoClip_RoundedChild_Overlaps_Corners()
+        {
+            // Expected: child overlaps rounded corners when ClipToBounds is off.
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 320,
+                Height = 200,
+                Child = new Border
+                {
+                    Width = 200,
+                    Height = 100,
+                    Background = Brushes.Red,
+                    BorderBrush = Brushes.Green,
+                    BorderThickness = new Thickness(2),
+                    CornerRadius = new CornerRadius(16),
+                    Child = new Border
+                    {
+                        Width = 80,
+                        Height = 100,
+                        Background = Brushes.Blue,
+                        HorizontalAlignment = HorizontalAlignment.Right
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Border_ThickBorder_RoundedClip_Clips_Child()
+        {
+            // Expected: child is clipped to the inner rounded edge.
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 320,
+                Height = 200,
+                Child = new Border
+                {
+                    Width = 240,
+                    Height = 120,
+                    Background = Brushes.LightGray,
+                    BorderBrush = Brushes.Black,
+                    BorderThickness = new Thickness(6),
+                    CornerRadius = new CornerRadius(16),
+                    ClipToBounds = true,
+                    Child = new Border
+                    {
+                        Background = Brushes.Orange,
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Stretch
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
 
         [Win32Fact("Has text")]
         public async Task Border_Centers_Content_Horizontally()
