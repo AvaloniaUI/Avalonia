@@ -179,19 +179,19 @@ internal static class OleDataObjectHelper
                 var data = ReadBytesFromHGlobal(hGlobal);
                 fixed (byte* ptr = data)
                 {
-                    var bitmapInfo = Marshal.PtrToStructure<BITMAPINFO>((IntPtr)ptr);
+                    var sourceHeader = Marshal.PtrToStructure<BITMAPINFOHEADER>((IntPtr)ptr);
 
-                    var bitmapInfoHeader = new BITMAPINFOHEADER()
+                    var destHeader = new BITMAPINFOHEADER()
                     {
-                        biWidth = bitmapInfo.biWidth,
-                        biHeight = bitmapInfo.biHeight,
-                        biPlanes = bitmapInfo.biPlanes,
+                        biWidth = sourceHeader.biWidth,
+                        biHeight = sourceHeader.biHeight,
+                        biPlanes = sourceHeader.biPlanes,
                         biBitCount = 32,
-                        biCompression = 0,
-                        biSizeImage = (uint)(bitmapInfo.biWidth * 4 * Math.Abs(bitmapInfo.biHeight))
+                        biCompression = BitmapCompressionMode.BI_RGB,
+                        biSizeImage = (uint)(sourceHeader.biWidth * 4 * Math.Abs(sourceHeader.biHeight))
                     };
 
-                    bitmapInfoHeader.Init();
+                    destHeader.Init();
 
                     IntPtr hdc = IntPtr.Zero, compatDc = IntPtr.Zero, section = IntPtr.Zero;
                     try
@@ -204,31 +204,33 @@ internal static class OleDataObjectHelper
                         if (compatDc == IntPtr.Zero)
                             return null;
 
-                        section = CreateDIBSection(compatDc, ref bitmapInfoHeader, 0, out var lbBits, IntPtr.Zero, 0);
+                        section = CreateDIBSection(compatDc, ref destHeader, 0, out var lbBits, IntPtr.Zero, 0);
                         if (section == IntPtr.Zero)
                             return null;
+
+                        var extraSourceHeaderSize = GetExtraHeaderSize(sourceHeader);
 
                         SelectObject(compatDc, section);
                         if (StretchDIBits(compatDc,
                                 0,
-                                bitmapInfo.biHeight,
-                                bitmapInfo.biWidth,
-                                -bitmapInfo.biHeight,
+                                sourceHeader.biHeight - 1,
+                                sourceHeader.biWidth,
+                                -sourceHeader.biHeight,
                                 0,
                                 0,
-                                bitmapInfoHeader.biWidth,
-                                bitmapInfoHeader.biHeight,
-                                (IntPtr)(ptr + bitmapInfo.biSize),
-                                ref bitmapInfo,
+                                destHeader.biWidth,
+                                destHeader.biHeight,
+                                (IntPtr)(ptr + (sourceHeader.biSize + extraSourceHeaderSize)),
+                                (IntPtr)ptr,
                                 0,
                                 SRCCOPY
                                 ) != 0)
                             return new Bitmap(Platform.PixelFormats.Bgra8888,
                                 Platform.AlphaFormat.Opaque,
                                 lbBits,
-                                new PixelSize(bitmapInfoHeader.biWidth, bitmapInfoHeader.biHeight),
+                                new PixelSize(destHeader.biWidth, destHeader.biHeight),
                                 new Vector(96, 96),
-                                bitmapInfoHeader.biWidth * 4);
+                                destHeader.biWidth * 4);
                     }
                     finally
                     {
@@ -258,6 +260,30 @@ internal static class OleDataObjectHelper
             return ReadBytesFromHGlobal(hGlobal);
 
         return null;
+    }
+
+    private static int GetExtraHeaderSize(in BITMAPINFOHEADER header)
+    {
+        // https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
+        switch (header.biCompression)
+        {
+            // If biCompression equals BI_RGB and the bitmap uses 8 bpp or less, the bitmap has a color table immediately
+            // following the BITMAPINFOHEADER structure. The color table consists of an array of RGBQUAD values. The size
+            // of the array is given by the biClrUsed member.
+            // If biClrUsed is zero, the array contains the maximum number of colors for the given bitdepth; that is,
+            // 2^biBitCount colors.
+            case BitmapCompressionMode.BI_RGB when header.biBitCount <= 8:
+                return (header.biClrUsed == 0 ? 1 << header.biBitCount : (int)header.biClrUsed) * 4;
+
+            // If biCompression equals BI_BITFIELDS, the bitmap uses three DWORD color masks (red, green, and blue,
+            // respectively), which specify the byte layout of the pixels. The 1 bits in each mask indicate the bits for
+            // that color within the pixel.
+            case BitmapCompressionMode.BI_BITFIELDS:
+                return 3 * 4;
+
+            default:
+                return 0;
+        }
     }
 
     private static string? ReadStringFromHGlobal(IntPtr hGlobal)
