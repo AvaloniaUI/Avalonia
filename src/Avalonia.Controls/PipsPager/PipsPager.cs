@@ -9,6 +9,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using System.Collections.Generic;
 
 namespace Avalonia.Controls
 {
@@ -361,10 +362,14 @@ namespace Avalonia.Controls
 
             if (pips.Count < newValue)
             {
-                for (int i = pips.Count; i < newValue; i++)
+                var start = pips.Count + 1;
+                var count = newValue - pips.Count;
+                var toAdd = new List<int>(count);
+                for (int i = 0; i < count; i++)
                 {
-                    pips.Add(i + 1);
+                    toAdd.Add(start + i);
                 }
+                pips.AddRange(toAdd);
             }
             else if (pips.Count > newValue)
             {
