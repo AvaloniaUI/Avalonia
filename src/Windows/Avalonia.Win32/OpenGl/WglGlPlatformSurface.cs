@@ -28,6 +28,7 @@ namespace Avalonia.Win32.OpenGl
             private readonly WglContext _context;
             private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
             private IntPtr _hdc;
+
             public RenderTarget(WglContext context,  EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info)
             {
                 _context = context;
@@ -35,13 +36,16 @@ namespace Avalonia.Win32.OpenGl
                 _hdc = context.CreateConfiguredDeviceContext(info.Handle);
             }
 
+            public bool IsCorrupted => false;
+
             public void Dispose()
             {
                 WglGdiResourceManager.ReleaseDC(_info.Handle, _hdc);
             }
 
-            public IGlPlatformSurfaceRenderingSession BeginDraw()
+            public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedPixelSize)
             {
+                // TODO: use expectedPixelSize
                 var oldContext = _context.MakeCurrent(_hdc);
                 
                 // Reset to default FBO first
