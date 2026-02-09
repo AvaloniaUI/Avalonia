@@ -160,16 +160,13 @@ namespace Avalonia.Rendering.Composition.Server
 
             if (!_redrawRequested)
                 return;
-
-            var renderTargetWithProperties = _renderTarget as IRenderTarget2;
-
             
             var needLayer = _overlays.RequireLayer // Check if we don't need overlays
                             // Check if render target can be rendered to directly and preserves the previous frame
-                            || !(renderTargetWithProperties?.Properties.RetainsPreviousFrameContents == true
-                                && renderTargetWithProperties?.Properties.IsSuitableForDirectRendering == true);
+                            || !(_renderTarget.Properties.RetainsPreviousFrameContents
+                                 && _renderTarget.Properties.IsSuitableForDirectRendering);
             
-            using (var renderTargetContext = _renderTarget.CreateDrawingContextWithProperties(
+            using (var renderTargetContext = _renderTarget.CreateDrawingContext(
                        this.PixelSize, out var properties))
             using (var renderTiming = Diagnostic.BeginCompositorRenderPass())
             {
