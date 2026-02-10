@@ -11,7 +11,7 @@ namespace Avalonia.Controls
     /// A control which decorates a child with a border and background.
     /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
-    public partial class Border : Decorator, IVisualWithRoundRectClip, IVisualWithChildClip
+    public partial class Border : Decorator, IVisualWithRoundRectClip
 #pragma warning restore CS0618 // Type or member is obsolete
     {
         /// <summary>
@@ -221,8 +221,15 @@ namespace Avalonia.Controls
 
         public CornerRadius ClipToBoundsRadius => CornerRadius;
 
-        bool IVisualWithChildClip.TryGetChildClip(out RoundedRect clip)
+        protected override bool TryGetChildClipCore(out RoundedRect clip, out Geometry? geometryClip)
         {
+            if (!ClipToBounds)
+            {
+                clip = default;
+                geometryClip = null;
+                return false;
+            }
+
             var bounds = new Rect(Bounds.Size);
             var keypoints = GeometryBuilder.CalculateRoundedCornersRectangleWinUI(
                 bounds,
@@ -230,6 +237,7 @@ namespace Avalonia.Controls
                 CornerRadius,
                 BackgroundSizing.InnerBorderEdge);
             clip = keypoints.ToRoundedRect();
+            geometryClip = null;
             return true;
         }
     }
