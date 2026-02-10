@@ -38,7 +38,7 @@
                            Orientation="Vertical" />
             </StackPanel>
 
-            <!-- Integration with Carousel (FlipView equivalent) -->
+            <!-- Integration with Carousel -->
             <StackPanel Spacing="10">
                 <TextBlock Text="Integration with Carousel (Gallery)" FontWeight="SemiBold" FontSize="16"/>
                 <Grid RowDefinitions="*,Auto" Height="300">
@@ -61,7 +61,7 @@
                 </Grid>
             </StackPanel>
             
-            <!-- Infinite PipsPager -->
+            <!-- Using MaxVisiblePips -->
             <StackPanel Spacing="10">
                 <TextBlock Text="Large Number of Pages (MaxVisiblePips=7)" FontWeight="SemiBold" FontSize="16"/>
                 <PipsPager Name="LargePager"
