@@ -70,13 +70,6 @@ class CompositionBorderVisual : CompositionDrawListVisual
 
         protected override void RenderCore(ServerVisualRenderContext ctx, LtrbRect currentTransformedClip)
         {
-            if (ClipToBounds && Clip == null)
-            {
-                base.RenderCore(ctx, currentTransformedClip);
-                ReplaceBoundsClipWithChildClip(ctx.Canvas);
-                return;
-            }
-
             base.RenderCore(ctx, currentTransformedClip);
         }
         protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
@@ -92,19 +85,6 @@ class CompositionBorderVisual : CompositionDrawListVisual
         protected override void PushClipToBounds(IDrawingContextImpl canvas)
         {
             canvas.PushClip(new Rect(0, 0, Size.X, Size.Y));
-        }
-
-        private void ReplaceBoundsClipWithChildClip(IDrawingContextImpl canvas)
-        {
-            canvas.PopClip();
-
-            var clipRect = new Rect(new Size(Size.X, Size.Y));
-            var keypoints = GeometryBuilder.CalculateRoundedCornersRectangleWinUI(
-                clipRect,
-                _borderThickness,
-                _cornerRadius,
-                BackgroundSizing.InnerBorderEdge);
-            canvas.PushClip(keypoints.ToRoundedRect());
         }
 
     }

@@ -50,9 +50,12 @@ internal class ImmediateRenderer
             transform = Matrix.CreateTranslation(bounds.Position);
         }
 
-        var childClipProvider = visual.ClipToBounds ? visual as IVisualWithChildClip : null;
+        var childClipProvider = visual;
         RoundedRect childClip = default;
-        var hasChildClip = childClipProvider != null && childClipProvider.TryGetChildClip(out childClip);
+        Geometry? childClipGeometry = null;
+        var hasChildClip = childClipProvider != null &&
+            childClipProvider.TryGetChildClip(out childClip, out childClipGeometry);
+        var useGeometryClip = hasChildClip && childClipGeometry != null;
 
         using (visual.TextOptions != default ? context.PushTextOptions(visual.TextOptions) : default(DrawingContext.PushedState?))
         using (visual.RenderOptions != default ? context.PushRenderOptions(visual.RenderOptions) : default(DrawingContext.PushedState?))
@@ -83,10 +86,19 @@ internal class ImmediateRenderer
             if (visual.ClipToBounds)
             {
                 totalTransform = Matrix.Identity;
-                clipRect = hasChildClip ? childClip.Rect : rect;
+                clipRect = hasChildClip
+                    ? (useGeometryClip ? rect : childClip.Rect)
+                    : rect;
             }
 
-            using (hasChildClip ? context.PushClip(childClip) : default(DrawingContext.PushedState?))
+            using (hasChildClip && useGeometryClip && visual.ClipToBounds
+                ? context.PushClip(rect)
+                : default(DrawingContext.PushedState?))
+            using (hasChildClip
+                ? (useGeometryClip
+                    ? context.PushGeometryClip(childClipGeometry!)
+                    : context.PushClip(childClip))
+                : default(DrawingContext.PushedState?))
             {
                 foreach (var child in childrenEnumerable)
                 {

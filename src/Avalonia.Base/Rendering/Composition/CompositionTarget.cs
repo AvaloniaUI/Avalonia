@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Avalonia.Media;
 using Avalonia.Collections.Pooled;
 using Avalonia.VisualTree;
 
@@ -72,20 +73,19 @@ namespace Avalonia.Rendering.Composition
 
             var point = parentPoint.Transform(invMatrix);
             var allowChildren = true;
-            if (visual.ClipToBounds)
+            if (visual is CompositionDrawListVisual { Visual: Visual childClipProvider }
+                && childClipProvider.TryGetChildClip(out var childClip, out var childClipGeometry))
             {
-                if (visual is CompositionDrawListVisual { Visual: IVisualWithChildClip childClipProvider }
-                    && childClipProvider.TryGetChildClip(out var childClip))
-                {
-                    if (point.X < 0 || point.Y < 0 || point.X > visual.Size.X || point.Y > visual.Size.Y)
-                        return;
-                    if (!childClip.ContainsExclusive(point))
-                        allowChildren = false;
-                }
-                else if (point.X < 0 || point.Y < 0 || point.X > visual.Size.X || point.Y > visual.Size.Y)
-                {
-                    return;
-                }
+                var clipContains = childClipGeometry == null
+                    ? childClip.ContainsExclusive(point)
+                    : childClipGeometry.FillContains(point);
+                if (!clipContains)
+                    allowChildren = false;
+            }
+            else if (visual.ClipToBounds &&
+                     (point.X < 0 || point.Y < 0 || point.X > visual.Size.X || point.Y > visual.Size.Y))
+            {
+                return;
             }
 
             if (visual.Clip?.FillContains(point) == false)
