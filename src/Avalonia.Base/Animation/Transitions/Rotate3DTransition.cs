@@ -118,4 +118,58 @@ public class Rotate3DTransition: PageSlide
             }
         }
     }
+
+    /// <inheritdoc/>
+    public override void Update(double progress, Visual? from, Visual? to, bool forward, SlideAxis orientation, Size size)
+    {
+        var center = orientation == SlideAxis.Horizontal ? size.Width : size.Height;
+        var depth = Depth ?? center;
+        var centerZ = -center / 2;
+
+        if (from != null)
+        {
+            var fromAngle = (forward ? -1 : 1) * progress * 90;
+            var fromTransform = from.RenderTransform as Rotate3DTransform ?? new Rotate3DTransform();
+            fromTransform.Depth = depth;
+            fromTransform.CenterZ = centerZ;
+
+            if (orientation == SlideAxis.Horizontal)
+            {
+                fromTransform.AngleY = fromAngle;
+                fromTransform.AngleX = 0;
+            }
+            else
+            {
+                fromTransform.AngleX = fromAngle;
+                fromTransform.AngleY = 0;
+            }
+
+            from.RenderTransform = fromTransform;
+            from.IsVisible = true;
+            from.ZIndex = progress < 0.5 ? 2 : 1;
+        }
+
+        if (to != null)
+        {
+            var toAngle = (forward ? 1 : -1) * (1 - progress) * 90;
+            var toTransform = to.RenderTransform as Rotate3DTransform ?? new Rotate3DTransform();
+            toTransform.Depth = depth;
+            toTransform.CenterZ = centerZ;
+
+            if (orientation == SlideAxis.Horizontal)
+            {
+                toTransform.AngleY = toAngle;
+                toTransform.AngleX = 0;
+            }
+            else
+            {
+                toTransform.AngleX = toAngle;
+                toTransform.AngleY = 0;
+            }
+
+            to.RenderTransform = toTransform;
+            to.IsVisible = true;
+            to.ZIndex = progress >= 0.5 ? 2 : 1;
+        }
+    }
 }

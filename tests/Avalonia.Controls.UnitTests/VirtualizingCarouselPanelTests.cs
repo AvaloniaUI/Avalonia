@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
@@ -9,6 +9,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -460,6 +461,108 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, carousel.SelectedIndex);
             }
         }
-    }
 
+        public class Gestures : ScopedTestBase
+        {
+            [Fact]
+            public void Swiping_Forward_Realizes_Next_Item()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar" };
+                var (panel, carousel) = CreateTarget(items);
+                carousel.IsSwipeEnabled = true;
+
+                // Simulate swipe start (delta X > 0)
+                var e = new SwipeGestureEventArgs(1, new Vector(10, 0));
+                panel.RaiseEvent(e);
+
+                Assert.True(carousel.IsSwiping);
+                Assert.Equal(2, panel.Children.Count);
+                var target = panel.Children[1] as Control;
+                Assert.NotNull(target);
+                Assert.True(target.IsVisible);
+                Assert.Equal("bar", ((target as ContentPresenter)?.Content));
+            }
+
+            [Fact]
+            public void Swiping_Backward_At_Start_Is_Blocked_When_WrapSelection_False()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar" };
+                var (panel, carousel) = CreateTarget(items);
+                carousel.IsSwipeEnabled = true;
+                carousel.WrapSelection = false;
+
+                // Simulate swipe start (delta X < 0)
+                var e = new SwipeGestureEventArgs(1, new Vector(-10, 0));
+                panel.RaiseEvent(e);
+
+                Assert.False(carousel.IsSwiping);
+                Assert.Single(panel.Children);
+            }
+
+            [Fact]
+            public void Swiping_Backward_At_Start_Wraps_When_WrapSelection_True()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var (panel, carousel) = CreateTarget(items);
+                carousel.IsSwipeEnabled = true;
+                carousel.WrapSelection = true;
+
+                // Simulate swipe start (delta X < 0)
+                var e = new SwipeGestureEventArgs(1, new Vector(-10, 0));
+                panel.RaiseEvent(e);
+
+                Assert.True(carousel.IsSwiping);
+                Assert.Equal(2, panel.Children.Count);
+                var target = panel.Children[1] as Control;
+                Assert.Equal("baz", ((target as ContentPresenter)?.Content));
+            }
+
+            [Fact]
+            public void Swiping_Forward_At_End_Is_Blocked_When_WrapSelection_False()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar" };
+                var (panel, carousel) = CreateTarget(items);
+                carousel.IsSwipeEnabled = true;
+                carousel.WrapSelection = false;
+                carousel.SelectedIndex = 1;
+
+                Layout(panel);
+                Layout(panel);
+
+                Assert.Equal(2, ((IReadOnlyList<string>?)carousel.ItemsSource)?.Count);
+                Assert.Equal(1, carousel.SelectedIndex);
+                Assert.False(carousel.WrapSelection, "WrapSelection should be false");
+
+                // Verify the correct item is realized at index 1 before the swipe
+                var container = Assert.IsType<ContentPresenter>(panel.Children[0]);
+                Assert.Equal("bar", container.Content);
+
+                // Simulate swipe start (delta X > 0)
+                var e = new SwipeGestureEventArgs(1, new Vector(10, 0));
+                panel.RaiseEvent(e);
+
+                Assert.False(carousel.IsSwiping, "Carousel should NOT be swiping at the end boundary");
+                Assert.Single(panel.Children);
+            }
+
+            [Fact]
+            public void Swiping_Locks_To_Dominant_Axis()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar" };
+                var (panel, carousel) = CreateTarget(items, new CrossFade(TimeSpan.FromSeconds(1)));
+                carousel.IsSwipeEnabled = true;
+
+                // Simulate swipe with more X than Y
+                var e = new SwipeGestureEventArgs(1, new Vector(10, 2));
+                panel.RaiseEvent(e);
+                
+                Assert.True(carousel.IsSwiping);
+            }
+        }
+    }
 }

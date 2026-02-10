@@ -10,7 +10,7 @@
       <Button Name="left" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="10,20" Margin="4">
         <Path Name="leftArrow" Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Fill="Black"/>
       </Button>
-      <Carousel Name="carousel" Grid.Column="1" Grid.Row="1" Background="Transparent" Height="400">
+      <Carousel Name="carousel" Grid.Column="1" Grid.Row="1" Background="Transparent" Height="400" Focusable="True">
         <Carousel.PageTransition>
           <PageSlide Duration="0.25" Orientation="Horizontal" />
         </Carousel.PageTransition>
@@ -64,6 +64,7 @@
 
     <StackPanel Orientation="Horizontal" Spacing="24" Margin="0 4" MaxWidth="660" HorizontalAlignment="Left">
       <CheckBox Name="wrapSelection">Wrap Selection</CheckBox>
+      <CheckBox Name="swipeEnabled">Swipe Enabled</CheckBox>
     </StackPanel>
 
     <Separator Margin="0 8"/>

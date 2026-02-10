@@ -23,6 +23,12 @@ namespace ControlCatalog.Pages
                 carousel.WrapSelection = wrapSelection.IsChecked ?? false;
                 UpdateButtonState();
             };
+
+            swipeEnabled.IsChecked = carousel.IsSwipeEnabled;
+            swipeEnabled.IsCheckedChanged += (s, e) =>
+            {
+                carousel.IsSwipeEnabled = swipeEnabled.IsChecked ?? false;
+            };
             
             carousel.PropertyChanged += (s, e) =>
             {

@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
+using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -31,6 +34,24 @@ namespace Avalonia.Controls
         private EventHandler? _scrollInvalidated;
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
+
+        private SwipeGestureRecognizer? _swipeGestureRecognizer;
+        private bool _isDragging;
+        private double _totalDelta;
+        private bool _isForward;
+        private Control? _swipeTarget;
+        private int _swipeTargetIndex = -1;
+        private PageSlide.SlideAxis? _swipeAxis;
+        private PageSlide.SlideAxis _lockedAxis;
+
+        private const double SwipeCommitThreshold = 0.25;
+
+        private DispatcherTimer? _completionTimer;
+        private double _completionStartProgress;
+        private double _completionEndProgress;
+        private DateTime _completionStartTime;
+        private static readonly TimeSpan CompletionDuration = TimeSpan.FromMilliseconds(250);
+
 
         bool ILogicalScrollable.CanHorizontallyScroll
         {
@@ -98,6 +119,12 @@ namespace Avalonia.Controls
         bool ILogicalScrollable.BringIntoView(Control target, Rect targetRect) => false;
         Control? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, Control? from) => null;
         void ILogicalScrollable.RaiseScrollInvalidated(EventArgs e) => _scrollInvalidated?.Invoke(this, e);
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            RefreshGestureRecognizer();
+        }
 
         protected override Size MeasureOverride(Size availableSize)
         {
@@ -411,6 +438,237 @@ namespace Avalonia.Controls
             _transition = null;
             _transitionFrom = null;
             _transitionFromIndex = -1;
+        }
+
+        /// <summary>
+        /// Refreshes the gesture recognizer based on the carousel's IsSwipeEnabled and PageTransition settings.
+        /// </summary>
+        internal void RefreshGestureRecognizer()
+        {
+            TeardownGestureRecognizer();
+
+            if (ItemsControl is not Carousel carousel || !carousel.IsSwipeEnabled)
+                return;
+
+            _swipeAxis = carousel.GetTransitionAxis();
+
+            _swipeGestureRecognizer = new SwipeGestureRecognizer
+            {
+                CanHorizontallySwipe = _swipeAxis != PageSlide.SlideAxis.Vertical,
+                CanVerticallySwipe = _swipeAxis != PageSlide.SlideAxis.Horizontal,
+            };
+
+            GestureRecognizers.Add(_swipeGestureRecognizer);
+            AddHandler(Gestures.SwipeGestureEvent, OnSwipeGesture);
+            AddHandler(Gestures.SwipeGestureEndedEvent, OnSwipeGestureEnded);
+        }
+
+        private void TeardownGestureRecognizer()
+        {
+            if (_swipeGestureRecognizer is not null)
+            {
+                GestureRecognizers.Remove(_swipeGestureRecognizer);
+                _swipeGestureRecognizer = null;
+            }
+
+            RemoveHandler(Gestures.SwipeGestureEvent, OnSwipeGesture);
+            RemoveHandler(Gestures.SwipeGestureEndedEvent, OnSwipeGestureEnded);
+            ResetSwipeState();
+        }
+
+        private void OnSwipeGesture(object? sender, SwipeGestureEventArgs e)
+        {
+            if (ItemsControl is not Carousel carousel || !carousel.IsSwipeEnabled)
+                return;
+
+            if (!_isDragging)
+            {
+                // Lock the axis on gesture start. Use the configured axis, or detect from the first delta
+                _lockedAxis = _swipeAxis ?? (Math.Abs(e.Delta.X) >= Math.Abs(e.Delta.Y) ?
+                    PageSlide.SlideAxis.Horizontal :
+                    PageSlide.SlideAxis.Vertical);
+            }
+
+            var delta = _lockedAxis == PageSlide.SlideAxis.Horizontal ? e.Delta.X : e.Delta.Y;
+
+            if (!_isDragging)
+            {
+                _isForward = delta > 0;
+                var currentIndex = _realizedIndex;
+                var targetIndex = _isForward ? currentIndex + 1 : currentIndex - 1;
+
+                // Handle wrapping and boundary check
+                if (targetIndex >= Items.Count)
+                {
+                    if (carousel.WrapSelection)
+                        targetIndex = 0;
+                    else
+                        return;
+                }
+                else if (targetIndex < 0)
+                {
+                    if (carousel.WrapSelection)
+                        targetIndex = Items.Count - 1;
+                    else
+                        return;
+                }
+
+                if (targetIndex == currentIndex || targetIndex < 0 || targetIndex >= Items.Count)
+                    return;
+
+                _isDragging = true;
+                _totalDelta = 0;
+                _swipeTargetIndex = targetIndex;
+                carousel.IsSwiping = true;
+
+                // Cancel any running transition
+                if (_transition is not null)
+                {
+                    _transition.Cancel();
+                    _transition = null;
+                    if (_transitionFrom is not null)
+                        RecycleElement(_transitionFrom);
+                    _transitionFrom = null;
+                    _transitionFromIndex = -1;
+                }
+
+                // Realize the target item
+                _swipeTarget = GetOrCreateElement(Items, _swipeTargetIndex);
+                _swipeTarget.Measure(Bounds.Size);
+                _swipeTarget.Arrange(new Rect(Bounds.Size));
+                _swipeTarget.IsVisible = true;
+            }
+
+            _totalDelta += delta;
+
+            // If direction changed, reset the gesture
+            if ((_isForward && _totalDelta < 0) || (!_isForward && _totalDelta > 0))
+            {
+                ResetSwipeState();
+                return;
+            }
+            
+            var size = _lockedAxis == PageSlide.SlideAxis.Horizontal ? Bounds.Width : Bounds.Height;
+            if (size <= 0) return;
+
+            var progress = Math.Clamp(Math.Abs(_totalDelta) / size, 0, 1);
+
+            // Drive the interactive transition if supported; otherwise swipe still navigates on release
+            if (GetTransition() is IInteractivePageTransition interactive)
+            {
+                interactive.Update(progress, _realized, _swipeTarget, _isForward, _lockedAxis, Bounds.Size);
+            }
+
+            e.Handled = true;
+        }
+
+        private void OnSwipeGestureEnded(object? sender, SwipeGestureEndedEventArgs e)
+        {
+            if (!_isDragging || ItemsControl is not Carousel carousel)
+                return;
+
+            var size = _lockedAxis == PageSlide.SlideAxis.Horizontal ? Bounds.Width : Bounds.Height;
+            var currentProgress = size > 0 ? Math.Abs(_totalDelta) / size : 0;
+            var commit = currentProgress >= SwipeCommitThreshold && _swipeTarget is not null;
+
+            _completionStartProgress = currentProgress;
+            _completionEndProgress = commit ? 1.0 : 0.0;
+            _completionStartTime = DateTime.UtcNow;
+
+            _completionTimer?.Stop();
+            _completionTimer = new DispatcherTimer(
+                TimeSpan.FromMilliseconds(16),
+                DispatcherPriority.Render,
+                (s, e) => OnCompletionTimerTick(carousel));
+            _completionTimer.Start();
+
+            _isDragging = false;
+        }
+
+        private void OnCompletionTimerTick(Carousel carousel)
+        {
+            var elapsed = DateTime.UtcNow - _completionStartTime;
+            var ratio = Math.Min(1.0, elapsed.TotalMilliseconds / CompletionDuration.TotalMilliseconds);
+            
+            var easedRatio = 1 - Math.Pow(1 - ratio, 3);
+            var progress = _completionStartProgress + (_completionEndProgress - _completionStartProgress) * easedRatio;
+
+            if (GetTransition() is IInteractivePageTransition interactive)
+            {
+                interactive.Update(progress, _realized, _swipeTarget, _isForward, _lockedAxis, Bounds.Size);
+            }
+
+            if (ratio >= 1.0)
+            {
+                _completionTimer?.Stop();
+                _completionTimer = null;
+
+                var commit = _completionEndProgress > 0.5;
+
+                if (commit && _swipeTarget is not null)
+                {
+                    // Snap to the new state
+                    var targetIndex = _swipeTargetIndex;
+                    var targetElement = _swipeTarget;
+
+                    // Swap the realized element before setting SelectedIndex
+                    // to prevent MeasureOverride from starting a NEW transition.
+                    if (_realized != null)
+                    {
+                        ResetVisualState(_realized);
+                        _realized.IsVisible = false;
+                        RecycleElement(_realized);
+                    }
+
+                    _realized = targetElement;
+                    _realizedIndex = targetIndex;
+                    ResetVisualState(_realized);
+                    
+                    carousel.SelectedIndex = targetIndex;
+                }
+                else
+                {
+                    // Snap back
+                    ResetVisualState(_realized);
+                    if (_swipeTarget is not null)
+                    {
+                        ResetVisualState(_swipeTarget);
+                        RecycleElement(_swipeTarget);
+                    }
+                }
+
+                _totalDelta = 0;
+                _swipeTarget = null;
+                _swipeTargetIndex = -1;
+                carousel.IsSwiping = false;
+            }
+        }
+
+        private void ResetSwipeState()
+        {
+            if (ItemsControl is Carousel carousel)
+                carousel.IsSwiping = false;
+
+            ResetVisualState(_realized);
+
+            if (_swipeTarget is not null)
+            {
+                ResetVisualState(_swipeTarget);
+                RecycleElement(_swipeTarget);
+            }
+
+            _isDragging = false;
+            _totalDelta = 0;
+            _swipeTarget = null;
+            _swipeTargetIndex = -1;
+        }
+
+        private static void ResetVisualState(Control? control)
+        {
+            if (control is null) return;
+            control.RenderTransform = null;
+            control.Opacity = 1;
+            control.ZIndex = 0;
         }
     }
 }
