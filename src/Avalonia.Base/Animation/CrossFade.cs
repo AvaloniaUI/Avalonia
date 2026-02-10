@@ -177,15 +177,18 @@ namespace Avalonia.Animation
         /// <inheritdoc/>
         public void Update(double progress, Visual? from, Visual? to, bool forward, PageSlide.SlideAxis orientation, Size size)
         {
+            // Apply an ease-out curve
+            var eased = 1 - (1 - progress) * (1 - progress);
+
             if (from != null)
             {
-                from.Opacity = 1.0 - progress;
+                from.Opacity = 1.0 - eased;
                 from.IsVisible = true;
             }
 
             if (to != null)
             {
-                to.Opacity = progress;
+                to.Opacity = eased;
                 to.IsVisible = true;
             }
         }
