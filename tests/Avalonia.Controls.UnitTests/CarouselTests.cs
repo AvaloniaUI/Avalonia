@@ -326,6 +326,95 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, target.SelectedIndex);
         }
 
+        public class WrapSelectionTests : ScopedTestBase
+        {
+            [Fact]
+            public void Next_Loops_When_WrapSelection_Is_True()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var target = new Carousel
+                {
+                    Template = CarouselTemplate(),
+                    ItemsSource = items,
+                    WrapSelection = true,
+                    SelectedIndex = 2
+                };
+
+                Prepare(target);
+
+                target.Next();
+                Layout(target);
+
+                Assert.Equal(0, target.SelectedIndex);
+            }
+
+            [Fact]
+            public void Previous_Loops_When_WrapSelection_Is_True()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var target = new Carousel
+                {
+                    Template = CarouselTemplate(),
+                    ItemsSource = items,
+                    WrapSelection = true,
+                    SelectedIndex = 0
+                };
+
+                Prepare(target);
+
+                target.Previous();
+                Layout(target);
+
+                Assert.Equal(2, target.SelectedIndex);
+            }
+
+            [Fact]
+            public void Next_Does_Not_Loop_When_WrapSelection_Is_False()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var target = new Carousel
+                {
+                    Template = CarouselTemplate(),
+                    ItemsSource = items,
+                    WrapSelection = false,
+                    SelectedIndex = 2
+                };
+
+                Prepare(target);
+
+                target.Next();
+                Layout(target);
+
+                Assert.Equal(2, target.SelectedIndex);
+            }
+
+            [Fact]
+            public void Previous_Does_Not_Loop_When_WrapSelection_Is_False()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var target = new Carousel
+                {
+                    Template = CarouselTemplate(),
+                    ItemsSource = items,
+                    WrapSelection = false,
+                    SelectedIndex = 0
+                };
+
+                Prepare(target);
+
+                target.Previous();
+                Layout(target);
+
+                Assert.Equal(0, target.SelectedIndex);
+            }
+        }
+
+
+
         private static IDisposable Start() => UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
         private static void Prepare(Carousel target)

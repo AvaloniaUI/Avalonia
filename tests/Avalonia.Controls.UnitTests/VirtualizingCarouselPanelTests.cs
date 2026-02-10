@@ -345,5 +345,121 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static void Layout(Control c) => ((ILayoutRoot)c.GetVisualRoot()!).LayoutManager.ExecuteLayoutPass();
+
+        public class WrapSelectionTests : ScopedTestBase
+        {
+            [Fact]
+            public void Next_Wraps_To_First_Item_When_WrapSelection_Enabled()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var (target, carousel) = CreateTarget(items);
+
+                carousel.WrapSelection = true;
+                carousel.SelectedIndex = 2; // Last item
+                Layout(target);
+
+                carousel.Next();
+                Layout(target);
+
+                Assert.Equal(0, carousel.SelectedIndex);
+            }
+
+            [Fact]
+            public void Next_Does_Not_Wrap_When_WrapSelection_Disabled()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var (target, carousel) = CreateTarget(items);
+
+                carousel.WrapSelection = false;
+                carousel.SelectedIndex = 2; // Last item
+                Layout(target);
+
+                carousel.Next();
+                Layout(target);
+
+                Assert.Equal(2, carousel.SelectedIndex); // Should stay at last item
+            }
+
+            [Fact]
+            public void Previous_Wraps_To_Last_Item_When_WrapSelection_Enabled()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var (target, carousel) = CreateTarget(items);
+
+                carousel.WrapSelection = true;
+                carousel.SelectedIndex = 0; // First item
+                Layout(target);
+
+                carousel.Previous();
+                Layout(target);
+
+                Assert.Equal(2, carousel.SelectedIndex); // Should wrap to last item
+            }
+
+            [Fact]
+            public void Previous_Does_Not_Wrap_When_WrapSelection_Disabled()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var (target, carousel) = CreateTarget(items);
+
+                carousel.WrapSelection = false;
+                carousel.SelectedIndex = 0; // First item
+                Layout(target);
+
+                carousel.Previous();
+                Layout(target);
+
+                Assert.Equal(0, carousel.SelectedIndex); // Should stay at first item
+            }
+
+            [Fact]
+            public void WrapSelection_Works_With_Two_Items()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar" };
+                var (target, carousel) = CreateTarget(items);
+
+                carousel.WrapSelection = true;
+                carousel.SelectedIndex = 1;
+                Layout(target);
+
+                carousel.Next();
+                Layout(target);
+
+                Assert.Equal(0, carousel.SelectedIndex);
+
+                carousel.Previous();
+                Layout(target);
+
+                Assert.Equal(1, carousel.SelectedIndex);
+            }
+
+            [Fact]
+            public void WrapSelection_Does_Not_Apply_To_Single_Item()
+            {
+                using var app = Start();
+                var items = new[] { "foo" };
+                var (target, carousel) = CreateTarget(items);
+
+                carousel.WrapSelection = true;
+                carousel.SelectedIndex = 0;
+                Layout(target);
+
+                carousel.Next();
+                Layout(target);
+
+                Assert.Equal(0, carousel.SelectedIndex);
+
+                carousel.Previous();
+                Layout(target);
+
+                Assert.Equal(0, carousel.SelectedIndex);
+            }
+        }
     }
+
 }

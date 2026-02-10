@@ -62,6 +62,12 @@
 
     <Separator Margin="0 8"/>
 
+    <StackPanel Orientation="Horizontal" Spacing="24" Margin="0 4" MaxWidth="660" HorizontalAlignment="Left">
+      <CheckBox Name="wrapSelection">Wrap Selection</CheckBox>
+    </StackPanel>
+
+    <Separator Margin="0 8"/>
+
     <StackPanel Spacing="12" MaxWidth="660" HorizontalAlignment="Left">
       <StackPanel Orientation="Horizontal" Spacing="24">
         <StackPanel Orientation="Horizontal" Spacing="8">

@@ -16,6 +16,13 @@ namespace ControlCatalog.Pages
             right.Click += (s, e) => carousel.Next();
             transition.SelectionChanged += TransitionChanged;
             orientation.SelectionChanged += TransitionChanged;
+
+            wrapSelection.IsChecked = carousel.WrapSelection;
+            wrapSelection.IsCheckedChanged += (s, e) =>
+            {
+                carousel.WrapSelection = wrapSelection.IsChecked ?? false;
+                UpdateButtonState();
+            };
             
             carousel.PropertyChanged += (s, e) =>
             {
@@ -33,9 +40,11 @@ namespace ControlCatalog.Pages
             itemsCountIndicator.Text = carousel.ItemCount.ToString();
             selectedIndexIndicator.Text = carousel.SelectedIndex.ToString();
 
-            left.IsEnabled = carousel.SelectedIndex > 0;
-            right.IsEnabled = carousel.SelectedIndex < carousel.ItemCount - 1;
+            var wrap = carousel.WrapSelection;
+            left.IsEnabled = wrap || carousel.SelectedIndex > 0;
+            right.IsEnabled = wrap || carousel.SelectedIndex < carousel.ItemCount - 1;
         }
+
 
         private void TransitionChanged(object? sender, SelectionChangedEventArgs e)
         {
