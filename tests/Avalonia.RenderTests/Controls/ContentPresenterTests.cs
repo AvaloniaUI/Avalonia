@@ -44,4 +44,28 @@ public class ContentPresenterTests : TestBase
         await RenderToFile(target);
         CompareImages();
     }
+
+    [Fact]
+    public async Task ContentPresenter_BackgroundSizing_OuterBorderEdge()
+    {
+        Decorator target = new Decorator
+        {
+            Padding = new Thickness(8),
+            Width = 240,
+            Height = 200,
+            Child = new ContentPresenter
+            {
+                Width = 160,
+                Height = 120,
+                Background = Brushes.CornflowerBlue,
+                BackgroundSizing = BackgroundSizing.OuterBorderEdge,
+                BorderBrush = Brushes.Black,
+                BorderThickness = new Thickness(20),
+                CornerRadius = new CornerRadius(24)
+            }
+        };
+
+        await RenderToFile(target);
+        CompareImages();
+    }
 }
