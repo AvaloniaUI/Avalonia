@@ -19,7 +19,7 @@ namespace Avalonia.Controls
     public class VirtualizingCarouselPanel : VirtualizingPanel, ILogicalScrollable
     {
         private static readonly AttachedProperty<object?> RecycleKeyProperty =
-            AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, object?>("RecycleKey");
+            AvaloniaProperty.RegisterAttached<VirtualizingCarouselPanel, Control, object?>("RecycleKey");
 
         private static readonly object s_itemIsItsOwnContainer = new object();
         private Size _extent;
