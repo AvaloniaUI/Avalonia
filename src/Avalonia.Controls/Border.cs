@@ -81,6 +81,10 @@ namespace Avalonia.Controls
                 case nameof(BorderThickness):
                     _layoutThickness = null;
                     break;
+                case nameof(BackgroundSizing):
+                    if (_borderVisual != null)
+                        _borderVisual.BackgroundSizing = BackgroundSizing;
+                    break;
                 case nameof(CornerRadius):
                     if (_borderVisual != null)
                         _borderVisual.CornerRadius = CornerRadius;
@@ -215,6 +219,7 @@ namespace Avalonia.Controls
         {
             return _borderVisual = new CompositionBorderVisual(compositor, this)
             {
+                BackgroundSizing = BackgroundSizing,
                 CornerRadius = CornerRadius
             };
         }
