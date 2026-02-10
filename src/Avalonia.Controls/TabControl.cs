@@ -170,15 +170,10 @@ namespace Avalonia.Controls
             {
                 tabItem.TabStripPlacement = TabStripPlacement;
             }
-        }
-
-        protected internal override void ContainerForItemPreparedOverride(Control container, object? item, int index)
-        {
-            base.ContainerForItemPreparedOverride(container, item, index);
             
             if (index == SelectedIndex)
             {
-                UpdateSelectedContent(container);
+                UpdateSelectedContent(element);
             }
         }
 
@@ -241,16 +236,17 @@ namespace Avalonia.Controls
                             var contentDataContext = contentElement?.DataContext;
                             SelectedContent = content;
 
-                            // Reset the TabItem Content's DataContext since it gets set to TabControl's DataContext
-                            // when SelectedContent is set to TabItem's Content. Happens when the content's parent
-                            // is set to ContentPart (ContentPresenter) and the DataContext property is inherited.
+                            // When the ContentPresenter (ContentPart) displays content that is a Control, it doesn't
+                            // set its DataContext to that of the Control's. If the content doesn't set a DataContext,
+                            // then it gets inherited from the TabControl. Work around this issue by setting the
+                            // DataContext of the ContentPart to the content's original DataContext (inherited from
+                            // container).
                             if (contentElement is not null &&
-                                contentElement.DataContext != contentDataContext)
+                                contentElement.DataContext != contentDataContext &&
+                                ContentPart is not null)
                             {
-                                // Unfortunately this forces the property to go from inherited to set with local
-                                // priority
                                 Debug.Assert(!contentElement.IsSet(DataContextProperty));
-                                contentElement.DataContext = contentDataContext;
+                                ContentPart.DataContext = contentDataContext;
                             }
                         }),
                         container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v => SelectedContentTemplate = SelectContentTemplate(v)));
