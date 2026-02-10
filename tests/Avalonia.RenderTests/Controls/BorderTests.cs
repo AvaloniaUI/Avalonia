@@ -517,5 +517,38 @@ namespace Avalonia.Skia.RenderTests
             await RenderToFile(target);
             CompareImages();
         }
+
+        [Theory, 
+         InlineData(true), 
+         InlineData(false)]
+        public async Task Border_Clips_To_Round_Bounds(bool uniform)
+        {
+            var cornerRadius = uniform
+                ? new CornerRadius(20)
+                : new CornerRadius(20, 10, 30, 5);
+
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Border
+                {
+                    CornerRadius = cornerRadius,
+                    Background = Brushes.LightBlue,
+                    ClipToBounds = true,
+                    Child = new Border
+                    {
+                        Width = 300,
+                        Height = 300,
+                        Background = Brushes.Red,
+                    }
+                }
+            };
+
+            var testSuffix = nameof(Border_Clips_To_Round_Bounds) + "_" + (uniform ? "Uniform" : "NonUniform");
+            await RenderToFile(target, testSuffix);
+            CompareImages(testSuffix);
+        }
     }
 }
