@@ -130,6 +130,12 @@ namespace Avalonia.Controls
             RefreshGestureRecognizer();
         }
 
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            TeardownGestureRecognizer();
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             var items = Items;
@@ -471,6 +477,8 @@ namespace Avalonia.Controls
 
         private void TeardownGestureRecognizer()
         {
+            _completionTimer?.Stop();
+
             if (_swipeGestureRecognizer is not null)
             {
                 GestureRecognizers.Remove(_swipeGestureRecognizer);
@@ -500,7 +508,6 @@ namespace Avalonia.Controls
                     if (_realized != null)
                     {
                         ResetVisualState(_realized);
-                        _realized.IsVisible = false;
                         RecycleElement(_realized);
                     }
 
@@ -668,7 +675,6 @@ namespace Avalonia.Controls
                     if (_realized != null)
                     {
                         ResetVisualState(_realized);
-                        _realized.IsVisible = false;
                         RecycleElement(_realized);
                     }
 
