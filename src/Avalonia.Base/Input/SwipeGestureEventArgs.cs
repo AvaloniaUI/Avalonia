@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Input
@@ -37,9 +38,9 @@ namespace Avalonia.Input
         /// </summary>
         public Vector Velocity { get; }
 
-        private static int s_nextId = 1;
+        private static int s_nextId;
 
-        internal static int GetNextFreeId() => s_nextId++;
+        internal static int GetNextFreeId() => Interlocked.Increment(ref s_nextId);
     }
 
     /// <summary>

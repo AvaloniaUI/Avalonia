@@ -36,6 +36,7 @@ namespace Avalonia.Controls
         private bool _canVerticallyScroll;
 
         private SwipeGestureRecognizer? _swipeGestureRecognizer;
+        private int _swipeGestureId;
         private bool _isDragging;
         private double _totalDelta;
         private bool _isForward;
@@ -519,6 +520,10 @@ namespace Avalonia.Controls
                 _totalDelta = 0;
             }
 
+            // Ignore events from a different gesture sequence.
+            if (_isDragging && e.GestureId != _swipeGestureId)
+                return;
+
             if (!_isDragging)
             {
                 // Lock the axis on gesture start. Use the configured axis, or detect from the first delta
@@ -555,6 +560,7 @@ namespace Avalonia.Controls
                     return;
 
                 _isDragging = true;
+                _swipeGestureId = e.GestureId;
                 _totalDelta = 0;
                 _swipeTargetIndex = targetIndex;
                 carousel.IsSwiping = true;
@@ -602,7 +608,7 @@ namespace Avalonia.Controls
 
         private void OnSwipeGestureEnded(object? sender, SwipeGestureEndedEventArgs e)
         {
-            if (!_isDragging || ItemsControl is not Carousel carousel)
+            if (!_isDragging || e.GestureId != _swipeGestureId || ItemsControl is not Carousel carousel)
                 return;
 
             var size = _lockedAxis == PageSlide.SlideAxis.Horizontal ? Bounds.Width : Bounds.Height;
