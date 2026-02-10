@@ -445,6 +445,9 @@ namespace Avalonia.Controls
             if (task.IsCanceled)
                 return;
 
+            if (task.IsFaulted)
+                _ = task.Exception;
+            
             if (_transitionFrom is not null)
                 RecycleElement(_transitionFrom);
             _transition = null;
