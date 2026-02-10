@@ -30,25 +30,9 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
             _current = current;
         }
 
-        public FormatEnumerator(IReadOnlyList<DataFormat> dataFormats)
+        public FormatEnumerator(ushort[] formatIds)
         {
-            List<FORMATETC> formats = new List<FORMATETC>();
-
-            if (dataFormats.Contains(DataFormat.Bitmap))
-            {
-                // We add extra formats for bitmaps
-                formats.Add(OleDataObjectHelper.ToFormatEtc(ClipboardFormatRegistry.PngMimeDataFormat));
-                formats.Add(OleDataObjectHelper.ToFormatEtc(ClipboardFormatRegistry.PngSystemDataFormat));
-                formats.Add(OleDataObjectHelper.ToFormatEtc(ClipboardFormatRegistry.DibDataFormat));
-                formats.Add(OleDataObjectHelper.ToFormatEtc(ClipboardFormatRegistry.DibV5DataFormat));
-                formats.Add(OleDataObjectHelper.ToFormatEtc(ClipboardFormatRegistry.HBitmapDataFormat, true));
-            }
-            else
-            {
-                formats.AddRange(dataFormats.Select(x => OleDataObjectHelper.ToFormatEtc(x)));
-            }
-
-            _formats = formats.ToArray();
+            _formats = formatIds.Select(OleDataObjectHelper.ToFormatEtc).ToArray();
             _current = 0;
         }
 
@@ -93,10 +77,15 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
         }
     }
 
+    private ushort[]? _formatIds;
+
     public IDataTransfer? DataTransfer { get; private set; } = dataTransfer;
 
     public bool IsDisposed
         => DataTransfer is null;
+
+    private ushort[] FormatIds
+        => _formatIds ??= CalcFormatIds();
 
     public event Action? OnDestroyed;
 
@@ -115,7 +104,7 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
             throw new COMException(nameof(COR_E_OBJECTDISPOSED), unchecked((int)HRESULT.E_NOTIMPL));
 
         if ((DATADIR)direction == DATADIR.DATADIR_GET)
-            return new FormatEnumerator(DataTransfer.Formats);
+            return new FormatEnumerator(FormatIds);
 
         throw new COMException(nameof(HRESULT.E_NOTIMPL), unchecked((int)HRESULT.E_NOTIMPL));
     }
@@ -166,7 +155,8 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
     {
         dataFormat = null;
 
-        if (!(format->tymed.HasAllFlags(TYMED.TYMED_HGLOBAL) || format->cfFormat == (ushort)ClipboardFormat.CF_BITMAP && format->tymed == TYMED.TYMED_GDI))
+        if (!(format->tymed == TYMED.TYMED_HGLOBAL ||
+            (format->tymed == TYMED.TYMED_GDI && format->cfFormat == (ushort)ClipboardFormat.CF_BITMAP)))
         {
             result = DV_E_TYMED;
             dataFormat = null;
@@ -185,15 +175,36 @@ internal class DataTransferToOleDataObjectWrapper(IDataTransfer dataTransfer)
             return false;
         }
 
-        dataFormat = ClipboardFormatRegistry.GetFormatById(format->cfFormat);
-        if (!DataTransfer.Contains(dataFormat) && !ClipboardFormatRegistry.ImageFormats.Contains(dataFormat))
+        if (!FormatIds.Contains(format->cfFormat))
         {
             result = DV_E_FORMATETC;
             return false;
         }
 
+        dataFormat = ClipboardFormatRegistry.GetOrAddFormat(format->cfFormat);
         result = (uint)HRESULT.S_OK;
         return true;
+    }
+
+    private ushort[] CalcFormatIds()
+    {
+        if (DataTransfer is null)
+            return [];
+
+        var formatIds = new List<ushort>(DataTransfer.Formats.Count);
+
+        foreach (var dataFormat in DataTransfer.Formats)
+        {
+            if (DataFormat.Bitmap.Equals(dataFormat))
+            {
+                // We add extra formats for bitmaps
+                formatIds.AddRange(ClipboardFormatRegistry.ImageFormats.Select(ClipboardFormatRegistry.GetOrAddFormat));
+            }
+            else
+                formatIds.Add(ClipboardFormatRegistry.GetOrAddFormat(dataFormat));
+        }
+
+        return formatIds.ToArray();
     }
 
     unsafe uint Win32Com.IDataObject.SetData(FORMATETC* pformatetc, STGMEDIUM* pmedium, int fRelease)
