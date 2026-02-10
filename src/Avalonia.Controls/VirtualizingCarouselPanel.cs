@@ -406,6 +406,8 @@ namespace Avalonia.Controls
             var recycleKey = element.GetValue(RecycleKeyProperty);
             Debug.Assert(recycleKey is not null);
 
+            ResetVisualState(element);
+
             if (recycleKey == s_itemIsItsOwnContainer)
             {
                 element.IsVisible = false;
@@ -480,6 +482,9 @@ namespace Avalonia.Controls
         {
             if (ItemsControl is not Carousel carousel || !carousel.IsSwipeEnabled)
                 return;
+
+            _completionTimer?.Stop();
+            _completionTimer = null;
 
             if (!_isDragging)
             {
@@ -629,12 +634,7 @@ namespace Avalonia.Controls
                 else
                 {
                     // Snap back
-                    ResetVisualState(_realized);
-                    if (_swipeTarget is not null)
-                    {
-                        ResetVisualState(_swipeTarget);
-                        RecycleElement(_swipeTarget);
-                    }
+                    ResetSwipeState();
                 }
 
                 _totalDelta = 0;
@@ -669,6 +669,7 @@ namespace Avalonia.Controls
             control.RenderTransform = null;
             control.Opacity = 1;
             control.ZIndex = 0;
+            control.Clip = null;
         }
     }
 }

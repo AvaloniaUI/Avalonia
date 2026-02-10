@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using ControlCatalog.Pages.Transitions;
 
 namespace ControlCatalog.Pages
 {
@@ -70,6 +71,12 @@ namespace ControlCatalog.Pages
                     break;
                 case 3:
                     carousel.PageTransition = new Rotate3DTransition(TimeSpan.FromSeconds(0.5), axis);
+                    break;
+                case 4:
+                    carousel.PageTransition = new CardStackPageTransition(TimeSpan.FromSeconds(0.5), axis);
+                    break;
+                case 5:
+                    carousel.PageTransition = new WaveRevealPageTransition(TimeSpan.FromSeconds(0.8), axis);
                     break;
             }
             

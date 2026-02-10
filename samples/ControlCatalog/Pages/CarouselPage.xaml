@@ -46,11 +46,13 @@
     <Grid ColumnDefinitions="100, *" RowDefinitions="Auto, Auto" RowSpacing="8" 
           Margin="0 4" MaxWidth="660" HorizontalAlignment="Left">
       <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Transition</TextBlock>
-      <ComboBox Name="transition" Grid.Row="0" Grid.Column="1" SelectedIndex="1" HorizontalAlignment="Stretch">
+      <ComboBox SelectedIndex="1" Name="transition" Grid.Column="1" Grid.Row="0">
         <ComboBoxItem>None</ComboBoxItem>
-        <ComboBoxItem>Slide</ComboBoxItem>
-        <ComboBoxItem>Crossfade</ComboBoxItem>
-        <ComboBoxItem>3D Rotation</ComboBoxItem>
+        <ComboBoxItem>Page Slide</ComboBoxItem>
+        <ComboBoxItem>Cross Fade</ComboBoxItem>
+        <ComboBoxItem>Rotate 3D</ComboBoxItem>
+        <ComboBoxItem>Card Stack</ComboBoxItem>
+        <ComboBoxItem>Wave Reveal</ComboBoxItem>
       </ComboBox>
 
       <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center">Orientation</TextBlock>
