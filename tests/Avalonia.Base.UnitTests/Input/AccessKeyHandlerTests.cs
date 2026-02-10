@@ -122,7 +122,7 @@ namespace Avalonia.Base.UnitTests.Input
             var events = new List<string>();
 
             target.SetOwner(root);
-            target.Register('A', button);
+            target.Register("A", button);
             root.KeyDown += (s, e) => events.Add($"KeyDown {e.Key}");
             root.KeyUp += (s, e) => events.Add($"KeyUp {e.Key}");
 
@@ -154,7 +154,7 @@ namespace Avalonia.Base.UnitTests.Input
                 KeyboardDevice.Instance?.SetFocusedElement(button, NavigationMethod.Unspecified, KeyModifiers.None);
 
                 target.SetOwner(root);
-                target.Register('A', button);
+                target.Register("A", button);
                 button.AddHandler(AccessKeyHandler.AccessKeyEvent, (s, e) => ++raised);
 
                 KeyDown(root, Key.LeftAlt);
@@ -185,7 +185,7 @@ namespace Avalonia.Base.UnitTests.Input
                 KeyboardDevice.Instance?.SetFocusedElement(button, NavigationMethod.Unspecified, KeyModifiers.None);
                 
                 target.SetOwner(root);
-                target.Register('A', button);
+                target.Register("A", button);
                 button.AddHandler(AccessKeyHandler.AccessKeyEvent, (s, e) => ++raised);
 
                 KeyDown(root, Key.LeftAlt);

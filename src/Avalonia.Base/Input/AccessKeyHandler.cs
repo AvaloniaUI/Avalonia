@@ -122,9 +122,11 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="accessKey">The access key.</param>
         /// <param name="element">The input element.</param>
-        public void Register(char accessKey, IInputElement element)
+        public void Register(string accessKey, IInputElement element)
         {
-            var key = NormalizeKey(accessKey.ToString());
+            ArgumentException.ThrowIfNullOrEmpty(accessKey);
+
+            var key = NormalizeKey(accessKey);
             
             // remove dead elements with matching key
             for (var i = _registrations.Count - 1; i >= 0; i--)
