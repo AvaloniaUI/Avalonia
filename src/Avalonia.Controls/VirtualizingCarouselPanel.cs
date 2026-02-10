@@ -49,10 +49,11 @@ namespace Avalonia.Controls
         private const double MinSwipeDistanceForVelocityCommit = 0.05;
 
         private DispatcherTimer? _completionTimer;
+        private Carousel? _completionCarousel;
         private double _completionStartProgress;
         private double _completionEndProgress;
-        private DateTime _completionStartTime;
-        private static readonly TimeSpan CompletionDuration = TimeSpan.FromMilliseconds(250);
+        private long _completionStartTimestamp;
+        private static readonly long CompletionDurationTicks = Stopwatch.Frequency / 4; // 250ms
 
 
         bool ILogicalScrollable.CanHorizontallyScroll
@@ -485,10 +486,9 @@ namespace Avalonia.Controls
             if (ItemsControl is not Carousel carousel || !carousel.IsSwipeEnabled)
                 return;
 
-            if (_completionTimer is not null)
+            if (_completionTimer is { IsEnabled: true })
             {
                 _completionTimer.Stop();
-                _completionTimer = null;
 
                 // A new swipe interrupted the completion animation.
                 // Finalize the previous gesture before starting a new one.
@@ -616,22 +616,26 @@ namespace Avalonia.Controls
 
             _completionStartProgress = currentProgress;
             _completionEndProgress = commit ? 1.0 : 0.0;
-            _completionStartTime = DateTime.UtcNow;
+            _completionStartTimestamp = Stopwatch.GetTimestamp();
+            _completionCarousel = carousel;
 
-            _completionTimer?.Stop();
-            _completionTimer = new DispatcherTimer(
-                TimeSpan.FromMilliseconds(16),
-                DispatcherPriority.Render,
-                (s, e) => OnCompletionTimerTick(carousel));
+            if (_completionTimer is null)
+            {
+                _completionTimer = new DispatcherTimer(
+                    TimeSpan.FromMilliseconds(16),
+                    DispatcherPriority.Render,
+                    OnCompletionTimerTick);
+            }
             _completionTimer.Start();
 
             _isDragging = false;
         }
 
-        private void OnCompletionTimerTick(Carousel carousel)
+        private void OnCompletionTimerTick(object? sender, EventArgs e)
         {
-            var elapsed = DateTime.UtcNow - _completionStartTime;
-            var ratio = Math.Min(1.0, elapsed.TotalMilliseconds / CompletionDuration.TotalMilliseconds);
+            var carousel = _completionCarousel!;
+            var elapsedTicks = Stopwatch.GetTimestamp() - _completionStartTimestamp;
+            var ratio = Math.Min(1.0, (double)elapsedTicks / CompletionDurationTicks);
             
             var easedRatio = 1 - Math.Pow(1 - ratio, 3);
             var progress = _completionStartProgress + (_completionEndProgress - _completionStartProgress) * easedRatio;
@@ -644,7 +648,6 @@ namespace Avalonia.Controls
             if (ratio >= 1.0)
             {
                 _completionTimer?.Stop();
-                _completionTimer = null;
 
                 var commit = _completionEndProgress > 0.5;
 
