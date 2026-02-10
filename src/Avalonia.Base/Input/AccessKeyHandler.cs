@@ -226,7 +226,7 @@ namespace Avalonia.Input
                 MainMenu?.IsOpen != true)
                 return;
 
-            e.Handled = ProcessKey(e.Key.ToString(), e.Source as IInputElement);
+            e.Handled = ProcessKey(e.KeySymbol, e.Source as IInputElement);
         }
 
 
@@ -289,8 +289,11 @@ namespace Avalonia.Input
         /// <param name="key">The access key to process.</param>
         /// <param name="element">The element to get the targets which are in scope.</param>
         /// <returns>If there matches <c>true</c>, otherwise <c>false</c>.</returns>
-        protected bool ProcessKey(string key, IInputElement? element)
+        protected bool ProcessKey(string? key, IInputElement? element)
         {
+            if (string.IsNullOrEmpty(key))
+                return false;
+
             key = NormalizeKey(key);
             var senderInfo = GetTargetForElement(element, key);
             // Find the possible targets matching the access key
@@ -506,19 +509,10 @@ namespace Avalonia.Input
     internal class AccessKeyPressedEventArgs : RoutedEventArgs
     {
         /// <summary>
-        /// The constructor for AccessKeyPressed event args
-        /// </summary>
-        public AccessKeyPressedEventArgs()
-        {
-            RoutedEvent = AccessKeyHandler.AccessKeyPressedEvent;
-            Key = null;
-        }
-
-        /// <summary>
         /// Constructor for AccessKeyPressed event args
         /// </summary>
         /// <param name="key"></param>
-        public AccessKeyPressedEventArgs(string key) : this()
+        public AccessKeyPressedEventArgs(string key)
         {
             RoutedEvent = AccessKeyHandler.AccessKeyPressedEvent;
             Key = key;
