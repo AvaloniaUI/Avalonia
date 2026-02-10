@@ -1,8 +1,8 @@
 using System;
-using Avalonia;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
@@ -14,7 +14,7 @@ namespace ControlCatalog.Pages.Transitions;
 /// Transitions between two pages with a card-stack effect:
 /// the top page moves/rotates away while the next page scales up underneath.
 /// </summary>
-public class CardStackPageTransition : PageSlide, IInteractivePageTransition
+public class CardStackPageTransition : PageSlide
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="CardStackPageTransition"/> class.

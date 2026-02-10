@@ -12,7 +12,7 @@ namespace ControlCatalog.Pages.Transitions;
 /// <summary>
 /// Transitions between two pages using a wave clip that reveals the next page.
 /// </summary>
-public class WaveRevealPageTransition : PageSlide, IInteractivePageTransition
+public class WaveRevealPageTransition : PageSlide
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="WaveRevealPageTransition"/> class.
