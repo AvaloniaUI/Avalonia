@@ -104,16 +104,20 @@ namespace Avalonia.Input.GestureRecognizers
 
                 if (!_swiping)
                 {
-                    if (CanHorizontallySwipe && Math.Abs(_trackedRootPoint.X - rootPoint.X) > SwipeStartDistance)
-                        _swiping = true;
-                    if (CanVerticallySwipe && Math.Abs(_trackedRootPoint.Y - rootPoint.Y) > SwipeStartDistance)
-                        _swiping = true;
+                    var horizontalTriggered = CanHorizontallySwipe && Math.Abs(_trackedRootPoint.X - rootPoint.X) > SwipeStartDistance;
+                    var verticalTriggered = CanVerticallySwipe && Math.Abs(_trackedRootPoint.Y - rootPoint.Y) > SwipeStartDistance;
 
-                    if (_swiping)
+                    if (horizontalTriggered || verticalTriggered)
                     {
+                        _swiping = true;
+                        
                         _trackedRootPoint = new Point(
-                            _trackedRootPoint.X - (_trackedRootPoint.X >= rootPoint.X ? SwipeStartDistance : -SwipeStartDistance),
-                            _trackedRootPoint.Y - (_trackedRootPoint.Y >= rootPoint.Y ? SwipeStartDistance : -SwipeStartDistance));
+                            horizontalTriggered
+                                ? _trackedRootPoint.X - (_trackedRootPoint.X >= rootPoint.X ? SwipeStartDistance : -SwipeStartDistance)
+                                : rootPoint.X,
+                            verticalTriggered
+                                ? _trackedRootPoint.Y - (_trackedRootPoint.Y >= rootPoint.Y ? SwipeStartDistance : -SwipeStartDistance)
+                                : rootPoint.Y);
 
                         Capture(e.Pointer);
                     }
