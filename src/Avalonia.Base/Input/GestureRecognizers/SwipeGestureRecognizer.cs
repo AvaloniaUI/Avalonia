@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Avalonia.Platform;
 
 namespace Avalonia.Input.GestureRecognizers
@@ -24,6 +25,9 @@ namespace Avalonia.Input.GestureRecognizers
         private Point _trackedRootPoint;
         private IPointer? _tracking;
         private int _gestureId;
+
+        private Vector _velocity;
+        private long _lastTimestamp;
 
         /// <summary>
         /// Defines the <see cref="CanHorizontallySwipe"/> property.
@@ -86,6 +90,8 @@ namespace Avalonia.Input.GestureRecognizers
                 _tracking = e.Pointer;
                 _gestureId = SwipeGestureEventArgs.GetNextFreeId();
                 _trackedRootPoint = point.Position;
+                _velocity = default;
+                _lastTimestamp = 0;
             }
         }
 
@@ -116,7 +122,20 @@ namespace Avalonia.Input.GestureRecognizers
                 if (_swiping)
                 {
                     var delta = _trackedRootPoint - rootPoint;
-                    Target!.RaiseEvent(new SwipeGestureEventArgs(_gestureId, delta));
+
+                    var now = Stopwatch.GetTimestamp();
+                    if (_lastTimestamp > 0)
+                    {
+                        var elapsedSeconds = (double)(now - _lastTimestamp) / Stopwatch.Frequency;
+                        if (elapsedSeconds > 0)
+                        {
+                            var instantVelocity = delta / elapsedSeconds;
+                            _velocity = _velocity * 0.5 + instantVelocity * 0.5;
+                        }
+                    }
+                    _lastTimestamp = now;
+
+                    Target!.RaiseEvent(new SwipeGestureEventArgs(_gestureId, delta, _velocity));
                     _trackedRootPoint = rootPoint;
                     e.Handled = true;
                 }
@@ -146,7 +165,9 @@ namespace Avalonia.Input.GestureRecognizers
             if (_swiping)
             {
                 _swiping = false;
-                Target!.RaiseEvent(new SwipeGestureEndedEventArgs(_gestureId));
+                Target!.RaiseEvent(new SwipeGestureEndedEventArgs(_gestureId, _velocity));
+                _velocity = default;
+                _lastTimestamp = 0;
                 _gestureId = 0;
             }
         }

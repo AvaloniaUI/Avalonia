@@ -45,6 +45,8 @@ namespace Avalonia.Controls
         private PageSlide.SlideAxis _lockedAxis;
 
         private const double SwipeCommitThreshold = 0.25;
+        private const double VelocityCommitThreshold = 800;
+        private const double MinSwipeDistanceForVelocityCommit = 0.05;
 
         private DispatcherTimer? _completionTimer;
         private double _completionStartProgress;
@@ -483,8 +485,39 @@ namespace Avalonia.Controls
             if (ItemsControl is not Carousel carousel || !carousel.IsSwipeEnabled)
                 return;
 
-            _completionTimer?.Stop();
-            _completionTimer = null;
+            if (_completionTimer is not null)
+            {
+                _completionTimer.Stop();
+                _completionTimer = null;
+
+                // A new swipe interrupted the completion animation.
+                // Finalize the previous gesture before starting a new one.
+                var wasCommit = _completionEndProgress > 0.5;
+                if (wasCommit && _swipeTarget is not null)
+                {
+                    // The previous gesture was committing, finish it immediately.
+                    if (_realized != null)
+                    {
+                        ResetVisualState(_realized);
+                        _realized.IsVisible = false;
+                        RecycleElement(_realized);
+                    }
+
+                    _realized = _swipeTarget;
+                    _realizedIndex = _swipeTargetIndex;
+                    ResetVisualState(_realized);
+                    carousel.SelectedIndex = _swipeTargetIndex;
+                }
+                else
+                {
+                    // The previous gesture was snapping back — discard the target.
+                    ResetSwipeState();
+                }
+
+                _swipeTarget = null;
+                _swipeTargetIndex = -1;
+                _totalDelta = 0;
+            }
 
             if (!_isDragging)
             {
@@ -546,12 +579,12 @@ namespace Avalonia.Controls
 
             _totalDelta += delta;
 
-            // If direction changed, reset the gesture
-            if ((_isForward && _totalDelta < 0) || (!_isForward && _totalDelta > 0))
-            {
-                ResetSwipeState();
-                return;
-            }
+            // Clamp totalDelta so it cannot cross zero — absorbs touch jitter
+            // without cancelling the entire gesture.
+            if (_isForward)
+                _totalDelta = Math.Max(0, _totalDelta);
+            else
+                _totalDelta = Math.Min(0, _totalDelta);
             
             var size = _lockedAxis == PageSlide.SlideAxis.Horizontal ? Bounds.Width : Bounds.Height;
             if (size <= 0) return;
@@ -574,7 +607,12 @@ namespace Avalonia.Controls
 
             var size = _lockedAxis == PageSlide.SlideAxis.Horizontal ? Bounds.Width : Bounds.Height;
             var currentProgress = size > 0 ? Math.Abs(_totalDelta) / size : 0;
-            var commit = currentProgress >= SwipeCommitThreshold && _swipeTarget is not null;
+            var velocity = _lockedAxis == PageSlide.SlideAxis.Horizontal
+                ? Math.Abs(e.Velocity.X)
+                : Math.Abs(e.Velocity.Y);
+            var commit = (currentProgress >= SwipeCommitThreshold ||
+                         (velocity > VelocityCommitThreshold && currentProgress >= MinSwipeDistanceForVelocityCommit))
+                         && _swipeTarget is not null;
 
             _completionStartProgress = currentProgress;
             _completionEndProgress = commit ? 1.0 : 0.0;

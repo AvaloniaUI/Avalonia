@@ -473,7 +473,7 @@ namespace Avalonia.Controls.UnitTests
                 carousel.IsSwipeEnabled = true;
 
                 // Simulate swipe start (delta X > 0)
-                var e = new SwipeGestureEventArgs(1, new Vector(10, 0));
+                var e = new SwipeGestureEventArgs(1, new Vector(10, 0), default);
                 panel.RaiseEvent(e);
 
                 Assert.True(carousel.IsSwiping);
@@ -494,7 +494,7 @@ namespace Avalonia.Controls.UnitTests
                 carousel.WrapSelection = false;
 
                 // Simulate swipe start (delta X < 0)
-                var e = new SwipeGestureEventArgs(1, new Vector(-10, 0));
+                var e = new SwipeGestureEventArgs(1, new Vector(-10, 0), default);
                 panel.RaiseEvent(e);
 
                 Assert.False(carousel.IsSwiping);
@@ -511,7 +511,7 @@ namespace Avalonia.Controls.UnitTests
                 carousel.WrapSelection = true;
 
                 // Simulate swipe start (delta X < 0)
-                var e = new SwipeGestureEventArgs(1, new Vector(-10, 0));
+                var e = new SwipeGestureEventArgs(1, new Vector(-10, 0), default);
                 panel.RaiseEvent(e);
 
                 Assert.True(carousel.IsSwiping);
@@ -542,7 +542,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal("bar", container.Content);
 
                 // Simulate swipe start (delta X > 0)
-                var e = new SwipeGestureEventArgs(1, new Vector(10, 0));
+                var e = new SwipeGestureEventArgs(1, new Vector(10, 0), default);
                 panel.RaiseEvent(e);
 
                 Assert.False(carousel.IsSwiping, "Carousel should NOT be swiping at the end boundary");
@@ -558,7 +558,7 @@ namespace Avalonia.Controls.UnitTests
                 carousel.IsSwipeEnabled = true;
 
                 // Simulate swipe with more X than Y
-                var e = new SwipeGestureEventArgs(1, new Vector(10, 2));
+                var e = new SwipeGestureEventArgs(1, new Vector(10, 2), default);
                 panel.RaiseEvent(e);
                 
                 Assert.True(carousel.IsSwiping);
