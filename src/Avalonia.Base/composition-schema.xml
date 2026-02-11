@@ -120,7 +120,6 @@
         <Property Name="SnapsToDevicePixels" Type="bool" Animated="true" DefaultValue="false"/>
         <Property Name="EnableClearType" Type="bool" Animated="true" DefaultValue="false"/>
     </Object>
-</NComposition>
     <Object Name="CompositionBrush" ServerBase="ServerRenderResource">
         <Property Name="Opacity" Type="double" Animated="true" DefaultValue="1"/>
         <Property Name="TransformOrigin" Type="RelativePoint" />
