@@ -1,4 +1,4 @@
-using System.Linq;
+using System.Diagnostics;
 using Avalonia.Collections;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Presenters;
@@ -7,7 +7,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
-using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
 using Avalonia.Reactive;
@@ -76,7 +75,7 @@ namespace Avalonia.Controls
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
-            SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, e) => x.UpdateSelectedContent());
+            SelectedItemProperty.Changed.AddClassHandler<TabControl>((x, _) => x.UpdateSelectedContent());
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabControl>(AutomationControlType.Tab);
         }
 
@@ -231,7 +230,25 @@ namespace Avalonia.Controls
                     }
 
                     _selectedItemSubscriptions = new CompositeDisposable(
-                        container.GetObservable(ContentControl.ContentProperty).Subscribe(v => SelectedContent = v),
+                        container.GetObservable(ContentControl.ContentProperty).Subscribe(content =>
+                        {
+                            var contentElement = content as StyledElement;
+                            var contentDataContext = contentElement?.DataContext;
+                            SelectedContent = content;
+
+                            // When the ContentPresenter (ContentPart) displays content that is a Control, it doesn't
+                            // set its DataContext to that of the Control's. If the content doesn't set a DataContext,
+                            // then it gets inherited from the TabControl. Work around this issue by setting the
+                            // DataContext of the ContentPart to the content's original DataContext (inherited from
+                            // container).
+                            if (contentElement is not null &&
+                                contentElement.DataContext != contentDataContext &&
+                                ContentPart is not null)
+                            {
+                                Debug.Assert(!contentElement.IsSet(DataContextProperty));
+                                ContentPart.DataContext = contentDataContext;
+                            }
+                        }),
                         container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v => SelectedContentTemplate = SelectContentTemplate(v)));
 
                     // Note how we fall back to our own ContentTemplate if the container doesn't specify one
