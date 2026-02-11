@@ -283,6 +283,13 @@ namespace Avalonia.Automation.Peers
             {
                 InvalidateParent();
             }
+            else if (e.Property == AutomationProperties.ItemStatusProperty)
+            {
+                RaisePropertyChangedEvent(
+                    AutomationElementIdentifiers.ItemStatusProperty,
+                    e.OldValue,
+                    e.NewValue);
+            }
         }
 
 
