@@ -162,5 +162,8 @@ namespace Avalonia.UnitTests
         {
             return null;
         }
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+            => zOrder.Clear();
     }
 }

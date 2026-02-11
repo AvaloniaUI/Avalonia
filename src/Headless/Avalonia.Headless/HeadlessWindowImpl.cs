@@ -25,7 +25,6 @@ namespace Avalonia.Headless
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
         private readonly PixelFormat _frameBufferFormat;
-        private int _zOrder;
         public bool IsPopup { get; }
 
         public HeadlessWindowImpl(bool isPopup, PixelFormat frameBufferFormat)
@@ -59,6 +58,8 @@ namespace Avalonia.Headless
 
         public Compositor Compositor => AvaloniaHeadlessPlatform.Compositor!;
 
+        public int ZOrder { get; private set; }
+
         public void SetInputRoot(IInputRoot inputRoot)
         {
             InputRoot = inputRoot;
@@ -82,7 +83,7 @@ namespace Avalonia.Headless
         {
             if (activate)
             {
-                _zOrder = _nextGlobalZOrder++;
+                ZOrder = _nextGlobalZOrder++;
                 Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);
             }
         }
@@ -96,7 +97,7 @@ namespace Avalonia.Headless
         public Action<PixelPoint>? PositionChanged { get; set; }
         public void Activate()
         {
-            _zOrder = _nextGlobalZOrder++;
+            ZOrder = _nextGlobalZOrder++;
             Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);
         }
 
@@ -428,15 +429,6 @@ namespace Avalonia.Headless
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             
-        }
-
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
-        {
-            for (int i = 0; i < windows.Length; ++i)
-            {
-                if (windows[i].PlatformImpl is HeadlessWindowImpl headlessWindowImpl)
-                    zOrder[i] = headlessWindowImpl._zOrder;
-            }
         }
 
         public void TakeFocus() 
