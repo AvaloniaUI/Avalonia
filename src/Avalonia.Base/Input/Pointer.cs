@@ -54,23 +54,28 @@ namespace Avalonia.Input
         internal void Capture(IInputElement? control, CaptureSource source)
         {
             var oldCapture = Captured;
-            if (oldCapture == control)
+            var oldSource = CaptureSource;
+
+            // If a handler marks Implicit capture as handled, we still want them to have another chance if the element is captured explicitly.
+            if (oldCapture == control && oldSource == source)
                 return;
 
             var oldVisual = oldCapture as Visual;
+            var newVisual = control as Visual;
 
             IInputElement? commonParent = null;
-            if (oldVisual != null)
+            if (oldVisual != null || newVisual != null)
             {
                 commonParent = FindCommonParent(control, oldCapture);
-                foreach (var notifyTarget in oldVisual.GetSelfAndVisualAncestors().OfType<IInputElement>())
+                var visual = oldVisual ?? newVisual!; // We want the capture to be cancellable even if there is no currently captured element.
+                foreach (var notifyTarget in visual.GetSelfAndVisualAncestors().OfType<IInputElement>())
                 {
-                    if (notifyTarget == commonParent)
-                        break;
                     var args = new PointerCaptureChangingEventArgs(notifyTarget, this, control, source);
                     notifyTarget.RaiseEvent(args);
                     if (args.Handled)
                         return;
+                    if (notifyTarget == commonParent)
+                        break;
                 }
             }
 
@@ -79,7 +84,8 @@ namespace Avalonia.Input
             Captured = control;
             CaptureSource = source;
 
-            if (source != CaptureSource.Platform)
+            // However, we still want to notify the platform only if the captured element actually changed.
+            if (oldCapture != control && source != CaptureSource.Platform)
                 PlatformCapture(control);
 
             if (oldVisual != null)
@@ -90,7 +96,7 @@ namespace Avalonia.Input
                     notifyTarget.RaiseEvent(new PointerCaptureLostEventArgs(notifyTarget, this));
                 }
 
-            if (Captured is Visual newVisual)
+            if (newVisual != null)
                 newVisual.DetachedFromVisualTree += OnCaptureDetached;
 
             if (Captured != null)

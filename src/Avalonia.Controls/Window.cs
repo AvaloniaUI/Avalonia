@@ -903,24 +903,25 @@ namespace Avalonia.Controls
         /// <summary>
         /// Sorts the windows ascending by their Z order - the topmost window will be the last in the list.
         /// </summary>
-        /// <param name="windows"></param>
-        public static void SortWindowsByZOrder(Window[] windows)
+        /// <param name="windows">The windows to sort.</param>
+        public static void SortWindowsByZOrder(Span<Window> windows)
         {
-            if (windows.Length == 0)
+            if (windows.Length <= 1)
                 return;
 
-            if (windows[0].PlatformImpl is not { } platformImpl)
-                throw new InvalidOperationException("Window.PlatformImpl is null");
+            var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
 
-#if NET5_0_OR_GREATER
-            Span<long> zOrder = stackalloc long[windows.Length];
-            platformImpl.GetWindowsZOrder(windows, zOrder);
-            zOrder.Sort(windows.AsSpan());
-#else
-            long[] zOrder = new long[windows.Length];
-            platformImpl.GetWindowsZOrder(windows, zOrder);
-            Array.Sort(zOrder, windows);
-#endif
+            var windowImpls = new IWindowImpl[windows.Length];
+            for (var i = 0; i < windows.Length; ++i)
+            {
+                windowImpls[i] = windows[i].PlatformImpl ??
+                                 throw new ArgumentException($"Invalid window at index {i}", nameof(windows));
+            }
+
+            const int stackAllocThreshold = 128;
+            var zOrder = windows.Length > stackAllocThreshold ? new long[windows.Length] : stackalloc long[windows.Length];
+            platform.GetWindowsZOrder(windowImpls, zOrder);
+            zOrder.Sort(windows);
         }
 
         private void UpdateEnabled()
