@@ -40,12 +40,22 @@ namespace Avalonia.Controls
         Justify,
 
         /// <summary>
+        /// Items are stretched evenly to fill the entire height/width of each column/row (last column/row excluded).
+        /// </summary>
+        /// <remarks>
+        /// <see cref="WrapPanel.ItemWidth"/> or <see cref="WrapPanel.ItemHeight"/> is become the minimum size of items,
+        /// </remarks>
+        Stretch,
+
+        /*
+        /// <summary>
         /// Items are stretched evenly to fill the entire height/width of each column/row.
         /// </summary>
         /// <remarks>
         /// <see cref="WrapPanel.ItemWidth"/> or <see cref="WrapPanel.ItemHeight"/> is become the minimum size of items,
         /// </remarks>
-        Stretch
+        StretchAll
+        */
     }
 
     /// <summary>
@@ -236,8 +246,8 @@ namespace Avalonia.Controls
             // If we have infinite space on minor axis, we always use Start alignment to avoid strange behavior
             if (this.Minor(constraint) is double.PositiveInfinity)
                 itemsAlignment = WrapPanelItemsAlignment.Start;
-            // Stretch/Justify need to measure with full constraint on minor axis
-            if (itemsAlignment is WrapPanelItemsAlignment.Stretch or WrapPanelItemsAlignment.Justify)
+            // Justify/StretchAll need to measure with full constraint on minor axis
+            if (itemsAlignment is WrapPanelItemsAlignment.Justify /*or WrapPanelItemsAlignment.StretchAll*/)
                 this.SetMinor(ref panelSize, this.Minor(constraint));
 
             var childConstraint = new Size(
@@ -273,6 +283,10 @@ namespace Avalonia.Controls
                     itemExists |= child.IsVisible; // keep true
                 }
             }
+
+            // Stretch need to measure with full constraint on minor axis if multiple lines
+            if (lineExists && itemsAlignment is WrapPanelItemsAlignment.Stretch)
+                this.SetMinor(ref panelSize, this.Minor(constraint));
 
             // The last line size, if any should be added
             panelSize = this.MinorMajorSize(
@@ -351,8 +365,12 @@ namespace Avalonia.Controls
                 var minorSpacingCount = -1;
                 double totalMinor = 0d;
                 double minorStretchRatio = 1d;
+                var tempItemsAlignment = itemsAlignment;
+                if (itemsAlignment is WrapPanelItemsAlignment.Stretch && endExcluded == children.Count)
+                    // Don't stretch the last line
+                    tempItemsAlignment = WrapPanelItemsAlignment.Start;
 
-                if (itemsAlignment is not WrapPanelItemsAlignment.Start)
+                if (tempItemsAlignment is not WrapPanelItemsAlignment.Start)
                 {
                     for (int i = start; i < endExcluded; ++i)
                     {
@@ -364,7 +382,7 @@ namespace Avalonia.Controls
 
                 Debug.Assert(this.Minor(finalSize) >= totalMinor + minorSpacing * minorSpacingCount);
 
-                switch (itemsAlignment)
+                switch (tempItemsAlignment)
                 {
                     case WrapPanelItemsAlignment.Start:
                         break;
@@ -381,7 +399,7 @@ namespace Avalonia.Controls
                         if (minorSpacingCount > 0)
                             minorSpacing = totalMinorSpacing / minorSpacingCount;
                         break;
-                    case WrapPanelItemsAlignment.Stretch:
+                    case WrapPanelItemsAlignment.Stretch /*or WrapPanelItemsAlignment.StretchAll*/:
                         var finalMinorWithoutSpacing = this.Minor(finalSize) - minorSpacing * minorSpacingCount - 0.01; // small epsilon to avoid rounding issues
                         minorStretchRatio = finalMinorWithoutSpacing / totalMinor;
                         break;
