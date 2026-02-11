@@ -345,16 +345,17 @@ namespace Avalonia.Controls.UnitTests
 
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
-            var accessKey = Key.A;
+            const Key accessKey = Key.A;
+            const string accessKeySymbol = "a";
             target.CommandParameter = true;
 
-            RaiseAccessKey(root, accessKey);
+            RaiseAccessKey(root, accessKey, accessKeySymbol);
 
             Assert.Equal(1, raised);
 
             target.CommandParameter = false;
 
-            RaiseAccessKey(root, accessKey);
+            RaiseAccessKey(root, accessKey, accessKeySymbol);
 
             Assert.Equal(1, raised);
             
@@ -379,30 +380,32 @@ namespace Avalonia.Controls.UnitTests
                 return topLevel;
             }
 
-            static void RaiseAccessKey(IInputElement target, Key accessKey)
+            static void RaiseAccessKey(IInputElement target, Key accessKey, string keySymbol)
             {
                 KeyDown(target, Key.LeftAlt);
-                KeyDown(target, accessKey, KeyModifiers.Alt);
-                KeyUp(target, accessKey, KeyModifiers.Alt);
-                KeyUp(target, Key.LeftAlt);
+                KeyDown(target, accessKey, keySymbol, KeyModifiers.Alt);
+                KeyUp(target, accessKey, keySymbol, KeyModifiers.Alt);
+                KeyUp(target, Key.LeftAlt, null);
             }
 
-            static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            static void KeyDown(IInputElement target, Key key, string? keySymbol = null, KeyModifiers modifiers = KeyModifiers.None)
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
                     RoutedEvent = InputElement.KeyDownEvent,
                     Key = key,
+                    KeySymbol = keySymbol,
                     KeyModifiers = modifiers,
                 });
             }
 
-            static void KeyUp(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            static void KeyUp(IInputElement target, Key key, string? keySymbol = null, KeyModifiers modifiers = KeyModifiers.None)
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
                     RoutedEvent = InputElement.KeyUpEvent,
                     Key = key,
+                    KeySymbol = keySymbol,
                     KeyModifiers = modifiers,
                 });
             }

@@ -719,10 +719,10 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(Key.A, 1)]
-        [InlineData(Key.L, 2)]
-        [InlineData(Key.D, 0)]
-        public void Should_TabControl_Recognizes_AccessKey(Key accessKey, int selectedTabIndex)
+        [InlineData(Key.A, "a", 1)]
+        [InlineData(Key.L, "l", 2)]
+        [InlineData(Key.D, "d", 0)]
+        public void Should_TabControl_Recognizes_AccessKey(Key accessKey, string accessKeySymbol, int selectedTabIndex)
         {
             var ah = new AccessKeyHandler();
             var kd = new KeyboardDevice();
@@ -761,8 +761,8 @@ namespace Avalonia.Controls.UnitTests
                 ApplyTemplate(tabControl);
 
                 KeyDown(root, Key.LeftAlt);
-                KeyDown(root, accessKey, KeyModifiers.Alt);
-                KeyUp(root, accessKey, KeyModifiers.Alt);
+                KeyDown(root, accessKey, accessKeySymbol, KeyModifiers.Alt);
+                KeyUp(root, accessKey, accessKeySymbol, KeyModifiers.Alt);
                 KeyUp(root, Key.LeftAlt);
 
                 Assert.Equal(selectedTabIndex, tabControl.SelectedIndex);
@@ -789,22 +789,24 @@ namespace Avalonia.Controls.UnitTests
                 return topLevel;
             }
 
-            static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            static void KeyDown(IInputElement target, Key key, string? keySymbol = null, KeyModifiers modifiers = KeyModifiers.None)
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
                     RoutedEvent = InputElement.KeyDownEvent,
                     Key = key,
+                    KeySymbol = keySymbol,
                     KeyModifiers = modifiers,
                 });
             }
 
-            static void KeyUp(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            static void KeyUp(IInputElement target, Key key, string? keySymbol = null, KeyModifiers modifiers = KeyModifiers.None)
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
                     RoutedEvent = InputElement.KeyUpEvent,
                     Key = key,
+                    KeySymbol = keySymbol,
                     KeyModifiers = modifiers,
                 });
             }
