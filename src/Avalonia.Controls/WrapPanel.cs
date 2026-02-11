@@ -165,9 +165,9 @@ namespace Avalonia.Controls
             set => SetValue(ItemHeightProperty, value);
         }
 
-        private ScrollOrientation ScrollOrientation { get; set; } = ScrollOrientation.Vertical;
+        private Orientation ScrollOrientation { get; set; } = Orientation.Vertical;
 
-        ScrollOrientation IOrientationBasedMeasures.ScrollOrientation => ScrollOrientation;
+        Orientation IOrientationBasedMeasures.ScrollOrientation => ScrollOrientation;
 
         /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -175,8 +175,8 @@ namespace Avalonia.Controls
             base.OnPropertyChanged(change);
             if (change.Property == OrientationProperty)
                 ScrollOrientation = Orientation is Orientation.Horizontal ?
-                    ScrollOrientation.Vertical :
-                    ScrollOrientation.Horizontal;
+                    Orientation.Vertical :
+                    Orientation.Horizontal;
         }
 
         /// <summary>

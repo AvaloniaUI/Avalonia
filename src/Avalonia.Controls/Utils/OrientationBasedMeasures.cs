@@ -1,16 +1,12 @@
-﻿namespace Avalonia.Controls.Utils;
+﻿using Avalonia.Layout;
 
-internal enum ScrollOrientation
-{
-    Horizontal,
-    Vertical
-}
+namespace Avalonia.Controls.Utils;
 
 internal interface IOrientationBasedMeasures
 {
-    ScrollOrientation ScrollOrientation { get; }
+    Orientation ScrollOrientation { get; }
 
-    bool IsVertical => ScrollOrientation is ScrollOrientation.Vertical;
+    bool IsVertical => ScrollOrientation is Orientation.Vertical;
 }
 
 internal static class OrientationBasedMeasuresExt
