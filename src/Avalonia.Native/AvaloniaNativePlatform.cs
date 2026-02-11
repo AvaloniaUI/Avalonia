@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Compatibility;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -209,6 +210,14 @@ namespace Avalonia.Native
         public ITopLevelImpl CreateEmbeddableTopLevel()
         {
             return new EmbeddableTopLevelImpl(_factory);
+        }
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+        {
+            for (var i = 0; i < windows.Length; i++)
+            {
+                zOrder[i] = (windows[i] as WindowImpl)?.ZOrder?.ToInt64() ?? 0;
+            }
         }
     }
 }

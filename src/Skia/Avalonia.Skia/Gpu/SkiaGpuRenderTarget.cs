@@ -5,7 +5,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Adapts <see cref="ISkiaGpuRenderTarget"/> to be used within our rendering pipeline.
     /// </summary>
-    internal class SkiaGpuRenderTarget : IRenderTarget2
+    internal class SkiaGpuRenderTarget : IRenderTarget
     {
         private readonly ISkiaGpu _skiaGpu;
         private readonly ISkiaGpuRenderTarget _renderTarget;
@@ -34,10 +34,7 @@ namespace Avalonia.Skia
             out RenderTargetDrawingContextProperties properties)
         {
             properties = default;
-            var session =
-                expectedPixelSize.HasValue && _renderTarget is ISkiaGpuRenderTarget2 target2
-                    ? target2.BeginRenderingSession(expectedPixelSize.Value)
-                    : _renderTarget.BeginRenderingSession();
+            var session = _renderTarget.BeginRenderingSession(expectedPixelSize);
 
             var nfo = new DrawingContextImpl.CreateInfo
             {

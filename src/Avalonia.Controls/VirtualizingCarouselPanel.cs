@@ -29,9 +29,23 @@ namespace Avalonia.Controls
         private int _transitionFromIndex = -1;
         private CancellationTokenSource? _transition;
         private EventHandler? _scrollInvalidated;
+        private bool _canHorizontallyScroll;
+        private bool _canVerticallyScroll;
 
-        bool ILogicalScrollable.CanHorizontallyScroll { get; set; }
-        bool ILogicalScrollable.CanVerticallyScroll { get; set; }
+        bool ILogicalScrollable.CanHorizontallyScroll
+        {
+            get => _canHorizontallyScroll;
+            set => _canHorizontallyScroll = value;
+        }
+
+        bool ILogicalScrollable.CanVerticallyScroll
+        {
+            get => _canVerticallyScroll;
+            set => _canVerticallyScroll = value;
+        }
+
+        bool IScrollable.CanHorizontallyScroll => _canHorizontallyScroll;
+        bool IScrollable.CanVerticallyScroll => _canVerticallyScroll;
         bool ILogicalScrollable.IsLogicalScrollEnabled => true;
         Size ILogicalScrollable.ScrollSize => new(1, 1);
         Size ILogicalScrollable.PageScrollSize => new(1, 1);

@@ -238,6 +238,8 @@ namespace Avalonia.Skia
             public Vector Dpi => _parent.Dpi;
             /// <inheritdoc />
             public PixelFormat Format => _bitmap.ColorType.ToPixelFormat();
+
+            public AlphaFormat AlphaFormat => _bitmap.AlphaType.ToAlphaFormat();
         }
     }
 }

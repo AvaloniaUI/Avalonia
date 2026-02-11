@@ -55,10 +55,9 @@ namespace Avalonia.X11.Clipboard
                     _storedDataTransfer = null;
 
                 _storeAtomTcs?.TrySetResult(true);
-                return;
             }
 
-            if (ev.type == XEventName.SelectionRequest)
+            else if (ev.type == XEventName.SelectionRequest)
             {
                 var sel = ev.SelectionRequestEvent;
                 var resp = new XEvent
@@ -81,6 +80,17 @@ namespace Avalonia.X11.Clipboard
                 }
 
                 XSendEvent(_x11.Display, sel.requestor, false, new IntPtr((int)EventMask.NoEventMask), ref resp);
+            }
+
+            else if (ev.type == XEventName.SelectionNotify)
+            {
+                if (ev.SelectionEvent.selection == _x11.Atoms.CLIPBOARD_MANAGER &&
+                    ev.SelectionEvent.target == _x11.Atoms.SAVE_TARGETS &&
+                    _x11.Atoms.CLIPBOARD_MANAGER != IntPtr.Zero &&
+                    _x11.Atoms.SAVE_TARGETS != IntPtr.Zero)
+                {
+                    _storeAtomTcs?.TrySetResult(true);
+                }
             }
 
             IntPtr WriteTargetToProperty(IntPtr target, IntPtr window, IntPtr property)

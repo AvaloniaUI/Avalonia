@@ -39,6 +39,7 @@ namespace Avalonia.Android
             OnConfigurationChanged();
 
             _view.InternalView.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+            _view.InternalView.SurfaceWindowDestroyed += InternalView_SurfaceWindowDestroyed;
 
             _accessHelper = new AvaloniaAccessHelper(this);
             ViewCompat.SetAccessibilityDelegate(this, _accessHelper);
@@ -51,7 +52,16 @@ namespace Avalonia.Android
             if (Visibility == ViewStates.Visible)
             {
                 OnVisibilityChanged(true);
+
+                _root?.InvalidateMeasure();
+                Invalidate();
             }
+        }
+
+        private void InternalView_SurfaceWindowDestroyed(object? sender, EventArgs e)
+        {
+            OnVisibilityChanged(false);
+            _surfaceCreated = false;
         }
 
         internal TopLevelImpl TopLevelImpl => _view;

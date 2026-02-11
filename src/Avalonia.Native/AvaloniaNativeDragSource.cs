@@ -32,13 +32,6 @@ namespace Avalonia.Native
             }
         }
 
-        [Obsolete($"Use {nameof(DoDragDropAsync)} instead.")]
-        Task<DragDropEffects> IPlatformDragSource.DoDragDrop(
-            PointerEventArgs triggerEvent,
-            IDataObject data,
-            DragDropEffects allowedEffects)
-            => DoDragDropAsync(triggerEvent, new DataObjectToDataTransferWrapper(data), allowedEffects);
-
         public Task<DragDropEffects> DoDragDropAsync(
             PointerEventArgs triggerEvent,
             IDataTransfer dataTransfer,

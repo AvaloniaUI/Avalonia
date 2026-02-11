@@ -1,6 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
-using Avalonia.Metadata;
 using Avalonia.Platform.Internal;
 
 namespace Avalonia.Platform;
@@ -10,6 +8,7 @@ internal class RetainedFramebuffer : IDisposable
     public PixelSize Size { get; }
     public  int RowBytes { get; }
     public PixelFormat Format { get; }
+    public AlphaFormat AlphaFormat { get; }
     public IntPtr Address => _blob?.Address ?? throw new ObjectDisposedException(nameof(RetainedFramebuffer));
     private UnmanagedBlob? _blob;
 
@@ -17,13 +16,13 @@ internal class RetainedFramebuffer : IDisposable
         ? format
         : throw new ArgumentOutOfRangeException(nameof(format));
 
-    public RetainedFramebuffer(PixelSize size, PixelFormat format) : this(size, ValidateKnownFormat(format),
-        format.BitsPerPixel / 8 * size.Width)
+    public RetainedFramebuffer(PixelSize size, PixelFormat format, AlphaFormat alphaFormat)
+        : this(size, ValidateKnownFormat(format), alphaFormat, format.BitsPerPixel / 8 * size.Width)
     {
         
     }
     
-    public RetainedFramebuffer(PixelSize size, PixelFormat format, int rowBytes)
+    public RetainedFramebuffer(PixelSize size, PixelFormat format, AlphaFormat alphaFormat, int rowBytes)
     {
         if (size.Width <= 0 || size.Height <= 0)
             throw new ArgumentOutOfRangeException(nameof(size));
@@ -32,6 +31,7 @@ internal class RetainedFramebuffer : IDisposable
         Size = size;
         RowBytes = rowBytes;
         Format = format;
+        AlphaFormat = alphaFormat;
         _blob = new UnmanagedBlob(RowBytes * size.Height);
     }
 
@@ -39,7 +39,7 @@ internal class RetainedFramebuffer : IDisposable
     {
         if (_blob == null)
             throw new ObjectDisposedException(nameof(RetainedFramebuffer));
-        return  new LockedFramebuffer(_blob.Address, Size, RowBytes, dpi, Format, () =>
+        return  new LockedFramebuffer(_blob.Address, Size, RowBytes, dpi, Format, AlphaFormat, () =>
         {
             blit(this);
             GC.KeepAlive(this);
