@@ -58,13 +58,6 @@ namespace Avalonia.Controls
 
         public static NativeMenu? GetMenu(AvaloniaObject o) => o.GetValue(MenuProperty);
 
-        public static readonly AttachedProperty<NativeMenu?> DockMenuProperty
-            = AvaloniaProperty.RegisterAttached<NativeMenu, AvaloniaObject, NativeMenu?>("DockMenu");
-
-        public static void SetDockMenu(AvaloniaObject o, NativeMenu? menu) => o.SetValue(DockMenuProperty, menu);
-
-        public static NativeMenu? GetDockMenu(AvaloniaObject o) => o.GetValue(DockMenuProperty);
-        
         static NativeMenu()
         {
             // This is needed because of the lack of attached direct properties

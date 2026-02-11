@@ -50,7 +50,7 @@ namespace IntegrationTestApp
 
         public void AddDockMenuItem(string header)
         {
-            var dockMenu = NativeMenu.GetDockMenu(this);
+            var dockMenu = NativeDock.GetMenu(this);
             if (dockMenu is not null)
             {
                 dockMenu.Items.Insert(0, new NativeMenuItem(header));
@@ -59,7 +59,7 @@ namespace IntegrationTestApp
 
         public int GetDockMenuItemCount()
         {
-            var dockMenu = NativeMenu.GetDockMenu(this);
+            var dockMenu = NativeDock.GetMenu(this);
             return dockMenu?.Items.Count ?? 0;
         }
     }

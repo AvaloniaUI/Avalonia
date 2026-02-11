@@ -25,7 +25,7 @@ namespace Avalonia.Native
                 return;
             }
 
-            NativeMenu.DockMenuProperty.Changed.Subscribe(args =>
+            NativeDock.MenuProperty.Changed.Subscribe(args =>
             {
                 if (args.Sender is Application)
                 {
@@ -36,7 +36,7 @@ namespace Avalonia.Native
             var app = Application.Current;
             if (app is not null)
             {
-                var dockMenu = NativeMenu.GetDockMenu(app);
+                var dockMenu = NativeDock.GetMenu(app);
                 if (dockMenu is not null)
                 {
                     SetNativeMenu(dockMenu);

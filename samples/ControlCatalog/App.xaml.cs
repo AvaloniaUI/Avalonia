@@ -85,7 +85,7 @@ namespace ControlCatalog
 
         public void OnDockAddItemClicked(object? sender, EventArgs e)
         {
-            var dockMenu = NativeMenu.GetDockMenu(this);
+            var dockMenu = NativeDock.GetMenu(this);
             if (dockMenu is not null)
             {
                 _dockMenuItemCount++;
