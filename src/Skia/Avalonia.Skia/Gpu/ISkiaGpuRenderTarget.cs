@@ -1,6 +1,4 @@
 using System;
-using Avalonia.Metadata;
-using SkiaSharp;
 
 namespace Avalonia.Skia
 {
@@ -12,16 +10,10 @@ namespace Avalonia.Skia
         /// <summary>
         /// Start rendering to this render target.
         /// </summary>
-        /// <returns></returns>
-        ISkiaGpuRenderSession BeginRenderingSession();
+        /// <param name="expectedPixelSize">The expected size.</param>
+        /// <returns>A render session instance.</returns>
+        ISkiaGpuRenderSession BeginRenderingSession(PixelSize? expectedPixelSize);
         
         bool IsCorrupted { get; }
-    }
-
-    [PrivateApi]
-    //TODO12: Merge with ISkiaGpuRenderTarget
-    public interface ISkiaGpuRenderTarget2 : ISkiaGpuRenderTarget
-    {
-        ISkiaGpuRenderSession BeginRenderingSession(PixelSize pixelSize);
     }
 }

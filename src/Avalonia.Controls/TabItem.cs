@@ -71,11 +71,6 @@ namespace Avalonia.Controls
 
         protected override AutomationPeer OnCreateAutomationPeer() => new ListItemAutomationPeer(this);
 
-        [Obsolete("Owner manages its children properties by itself")]
-        protected void SubscribeToOwnerProperties(AvaloniaObject owner)
-        {
-        }
-
         private static void OnAccessKeyPressed(TabItem tabItem, AccessKeyPressedEventArgs e)
         {
             if (e.Handled || (e.Target != null && tabItem.IsSelected))

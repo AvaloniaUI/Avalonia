@@ -20,7 +20,7 @@ namespace Avalonia.OpenGL
 //        public const int GL_LINE_STRIP = 0x0003;
         public const int GL_TRIANGLES = 0x0004;
 //        public const int GL_TRIANGLE_STRIP = 0x0005;
-//        public const int GL_TRIANGLE_FAN = 0x0006;
+        public const int GL_TRIANGLE_FAN = 0x0006;
 //        public const int GL_QUADS = 0x0007;
 //        public const int GL_QUAD_STRIP = 0x0008;
 //        public const int GL_POLYGON = 0x0009;

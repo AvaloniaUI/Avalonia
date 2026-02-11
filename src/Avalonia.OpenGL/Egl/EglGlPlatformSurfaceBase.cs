@@ -8,7 +8,7 @@ namespace Avalonia.OpenGL.Egl
         public abstract IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context);
     }
 
-    public abstract class EglPlatformSurfaceRenderTargetBase : IGlPlatformSurfaceRenderTargetWithCorruptionInfo
+    public abstract class EglPlatformSurfaceRenderTargetBase : IGlPlatformSurfaceRenderTarget
     {
         protected EglContext Context { get; }
 
@@ -22,17 +22,17 @@ namespace Avalonia.OpenGL.Egl
             
         }
 
-        public IGlPlatformSurfaceRenderingSession BeginDraw()
+        public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedPixelSize)
         {
             if (Context.IsLost)
                 throw new RenderTargetCorruptedException();
             
-            return BeginDrawCore();
+            return BeginDrawCore(expectedPixelSize);
         }
 
         private protected virtual bool SkipWaits => false;
 
-        public abstract IGlPlatformSurfaceRenderingSession BeginDrawCore();
+        public abstract IGlPlatformSurfaceRenderingSession BeginDrawCore(PixelSize? expectedPixelSize);
 
         protected IGlPlatformSurfaceRenderingSession BeginDraw(EglSurface surface,
             PixelSize size, double scaling, Action? onFinish = null, bool isYFlipped = false)
