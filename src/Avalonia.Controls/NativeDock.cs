@@ -1,9 +1,9 @@
 namespace Avalonia.Controls
 {
-    public class NativeDock
+    public static class NativeDock
     {
-        public static readonly AttachedProperty<NativeMenu?> MenuProperty
-            = AvaloniaProperty.RegisterAttached<NativeDock, AvaloniaObject, NativeMenu?>("Menu");
+        public static readonly AttachedProperty<NativeMenu?> MenuProperty =
+            AvaloniaProperty.RegisterAttached<AvaloniaObject, NativeMenu?>("Menu", typeof(NativeDock));
 
         public static void SetMenu(AvaloniaObject o, NativeMenu? menu) => o.SetValue(MenuProperty, menu);
 
