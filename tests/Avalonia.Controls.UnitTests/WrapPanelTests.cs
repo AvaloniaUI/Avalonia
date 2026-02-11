@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using Avalonia.Layout;
 using Avalonia.UnitTests;
 using Xunit;
@@ -65,46 +66,74 @@ namespace Avalonia.Controls.UnitTests
         [Theory, MemberData(nameof(GetItemsAlignmentValues))]
         public void Lays_Out_With_Items_Alignment(Orientation orientation, WrapPanelItemsAlignment itemsAlignment)
         {
+            var lineHeight = 50d;
             var target = new WrapPanel
             {
                 Width = 200,
                 Height = 200,
-                ItemHeight = 50,
-                ItemWidth = 50,
                 Orientation = orientation,
                 ItemsAlignment = itemsAlignment,
-                Children =
-                {
-                    new Border(),
-                    new Border(),
-                }
+                UseLayoutRounding = false
             };
+
+            if (orientation is Orientation.Horizontal)
+            {
+                target.ItemHeight = lineHeight;
+                target.Children.Add(new Border { MinWidth = 50 });
+                target.Children.Add(new Border { MinWidth = 100 });
+                target.Children.Add(new Border { MinWidth = 150 });
+            }
+            else
+            {
+                target.ItemWidth = lineHeight;
+                target.Children.Add(new Border { MinHeight = 50 });
+                target.Children.Add(new Border { MinHeight = 100 });
+                target.Children.Add(new Border { MinHeight = 150 });
+            }
 
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
 
             Assert.Equal(new Size(200, 200), target.Bounds.Size);
 
-            var rowBounds = target.Children[0].Bounds.Union(target.Children[1].Bounds);
+            var row1Bounds = target.Children[0].Bounds.Union(target.Children[1].Bounds);
+            var row2Bounds = target.Children[2].Bounds;
 
-            Assert.Equal((orientation, itemsAlignment) switch
-            {
-                (Orientation.Horizontal, WrapPanelItemsAlignment.Stretch or WrapPanelItemsAlignment.Justify) => new(200, 50),
-                (Orientation.Vertical, WrapPanelItemsAlignment.Stretch or WrapPanelItemsAlignment.Justify) => new(50, 200),
-                (Orientation.Horizontal, _) => new(100, 50),
-                (Orientation.Vertical, _) => new(50, 100),
-                _ => throw new ArgumentOutOfRangeException(nameof(orientation))
-            }, rowBounds.Size);
+            // fix layout rounding
+            row1Bounds = new Rect(
+                Math.Round(row1Bounds.X),
+                Math.Round(row1Bounds.Y),
+                Math.Round(row1Bounds.Width),
+                Math.Round(row1Bounds.Height));
 
-            Assert.Equal((orientation, itemsAlignment) switch
+            if (orientation is Orientation.Vertical)
             {
-                (_, WrapPanelItemsAlignment.Start or WrapPanelItemsAlignment.Justify or WrapPanelItemsAlignment.Stretch) => new(0, 0),
-                (Orientation.Horizontal, WrapPanelItemsAlignment.Center) => new(50, 0),
-                (Orientation.Vertical, WrapPanelItemsAlignment.Center) => new(0, 50),
-                (Orientation.Horizontal, WrapPanelItemsAlignment.End) => new(100, 0),
-                (Orientation.Vertical, WrapPanelItemsAlignment.End) => new(0, 100),
-                _ => throw new ArgumentOutOfRangeException(),
-            }, rowBounds.Position);
+                // X <=> Y, Width <=> Height
+                var reflectionMatrix = new Matrix4x4(
+                    0, 1, 0, 0,  // X' = Y
+                    1, 0, 0, 0,  // Y' = X
+                    0, 0, 1, 0,  // Z' = Z
+                    0, 0, 0, 1   // W' = W
+                );
+                row1Bounds = row1Bounds.TransformToAABB(reflectionMatrix);
+                row2Bounds = row2Bounds.TransformToAABB(reflectionMatrix);
+            }
+
+            Assert.Equal(itemsAlignment switch
+            {
+                WrapPanelItemsAlignment.Stretch or WrapPanelItemsAlignment.Justify /*or WrapPanelItemsAlignment.StretchAll*/ => new(0, 0, 200, lineHeight),
+                WrapPanelItemsAlignment.Center => new(25, 0, 150, lineHeight),
+                WrapPanelItemsAlignment.End => new(50, 0, 150, lineHeight),
+                _ => new(0, 0, 150, lineHeight)
+            }, row1Bounds);
+
+            Assert.Equal(itemsAlignment switch
+            {
+                // WrapPanelItemsAlignment.StretchAll => new(0, lineHeight, 200, lineHeight),
+                WrapPanelItemsAlignment.Center => new(25, lineHeight, 150, lineHeight),
+                WrapPanelItemsAlignment.End => new(50, lineHeight, 150, lineHeight),
+                _ => new(0, 50, 150, 50)
+            }, row2Bounds);
         }
 
         [Fact]
