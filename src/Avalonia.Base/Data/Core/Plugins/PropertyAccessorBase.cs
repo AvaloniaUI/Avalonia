@@ -5,7 +5,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Defines a default base implementation for a <see cref="IPropertyAccessor"/>.
     /// </summary>
-    public abstract class PropertyAccessorBase : IPropertyAccessor
+    internal abstract class PropertyAccessorBase : IPropertyAccessor
     {
         private Action<object?>? _listener;
 
