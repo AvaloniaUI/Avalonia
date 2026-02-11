@@ -61,6 +61,8 @@ namespace Avalonia.iOS.Eagl
                 _fbo = fbo;
             }
 
+            public bool IsCorrupted => false;
+
             public void Dispose()
             {
                 CheckThread();
@@ -68,8 +70,9 @@ namespace Avalonia.iOS.Eagl
                     _fbo.Dispose();
             }
 
-            public IGlPlatformSurfaceRenderingSession BeginDraw()
+            public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedPixelSize)
             {
+                // TODO: use expectedPixelSize
                 CheckThread();
                 var restoreContext = _ctx.MakeCurrent();
                 _fbo.Bind();

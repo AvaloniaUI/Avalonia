@@ -4,13 +4,13 @@ namespace Avalonia.Rendering.Composition
 {
     static class MatrixUtils
     {
-        public static Matrix ComputeTransform(Vector size, Vector anchorPoint, Vector3D centerPoint,
+        public static Matrix? ComputeTransform(Vector size, Vector anchorPoint, Vector3D centerPoint,
             Matrix transformMatrix, Vector3D scale, float rotationAngle, Quaternion orientation, Vector3D offset)
         {
             // The math here follows the *observed* UWP behavior since there are no docs on how it's supposed to work
 
             var anchor = Vector.Multiply(size, anchorPoint);
-            var  mat = Matrix.CreateTranslation(-anchor.X, -anchor.Y);
+            var mat = Matrix.CreateTranslation(-anchor.X, -anchor.Y);
 
             var center = new Vector3D(centerPoint.X, centerPoint.Y, centerPoint.Z);
 
@@ -45,6 +45,8 @@ namespace Avalonia.Rendering.Composition
                     mat *= ToMatrix(Matrix4x4.CreateTranslation(offset.ToVector3()));
             }
 
+            if (mat.IsIdentity)
+                return null;
             return mat;
         }
 

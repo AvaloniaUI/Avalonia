@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Threading;
@@ -10,13 +9,6 @@ namespace Avalonia.Win32
 {
     internal sealed class DragSource : IPlatformDragSource
     {
-        [Obsolete($"Use {nameof(DoDragDropAsync)} instead.")]
-        Task<DragDropEffects> IPlatformDragSource.DoDragDrop(
-            PointerEventArgs triggerEvent,
-            IDataObject data,
-            DragDropEffects allowedEffects)
-            => DoDragDropAsync(triggerEvent, new DataObjectToDataTransferWrapper(data), allowedEffects);
-
         public Task<DragDropEffects> DoDragDropAsync(
             PointerEventArgs triggerEvent,
             IDataTransfer dataTransfer,

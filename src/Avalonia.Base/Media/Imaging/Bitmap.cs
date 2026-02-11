@@ -291,9 +291,7 @@ namespace Avalonia.Media.Imaging
         {
             get
             {
-                // TODO12: We should probably make PlatformImpl to be nullable or make it possible to check
-                // and fix IRef<T> in general (right now Item is not nullable while it internally is)
-                if (PlatformImpl.Item == null!)
+                if (!PlatformImpl.IsAlive)
                     return null;
                 return PlatformImpl;
             }

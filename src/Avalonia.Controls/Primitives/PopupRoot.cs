@@ -136,17 +136,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        [Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
-        public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
-            PopupAnchor anchor = PopupAnchor.None,
-            PopupGravity gravity = PopupGravity.None,
-            PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
-            Rect? rect = null)
-        {
-            ((IPopupHost)this).ConfigurePosition(new PopupPositionRequest(target, placement, offset, anchor, gravity,
-                constraintAdjustment, rect, null));
-        }
-
         void IPopupHost.ConfigurePosition(PopupPositionRequest request)
         {
             _popupPositionRequest = request;

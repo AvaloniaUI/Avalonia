@@ -16,5 +16,7 @@
       </Popup>
     </StackPanel>
     <Button Name="Reset" Click="Reset_Click">Reset</Button>
+    <Button Name="RunNativeModalSession" Click="RunNativeModalSession_OnClick">Open Native Modal</Button>
+    <TextBox Name="ModalResultTextBox" />
   </StackPanel>
 </UserControl>

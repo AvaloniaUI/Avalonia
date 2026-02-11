@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -58,7 +58,7 @@ namespace Avalonia.Controls.UnitTests
             var spinner = GetSpinner(control);
 
             spinner.RaiseEvent(new SpinEventArgs(Spinner.SpinEvent, direction));
-            
+
             Assert.Equal(control.Value, expected);
         }
 
@@ -105,16 +105,16 @@ namespace Avalonia.Controls.UnitTests
             // if min and max are not defined and value was null, 0 should be ne new value after spin
             yield return [decimal.MinValue, decimal.MaxValue, null, SpinDirection.Decrease, 0m];
             yield return [decimal.MinValue, decimal.MaxValue, null, SpinDirection.Increase, 0m];
-            
+
             // if no value was defined, but Min or Max are defined, use these as the new value
             yield return [-400m, -200m, null, SpinDirection.Decrease, -200m];
             yield return [200m, 400m, null, SpinDirection.Increase, 200m];
-            
+
             // Value should be clamped to Min / Max after spinning
             yield return [200m, 400m, 5m, SpinDirection.Increase, 200m];
             yield return [200m, 400m, 200m, SpinDirection.Decrease, 200m];
         }
-        
+
         private void RunTest(Action<NumericUpDown, TextBox> test)
         {
             using (UnitTestApplication.Start(Services))
@@ -148,14 +148,14 @@ namespace Avalonia.Controls.UnitTests
                           .OfType<TextBox>()
                           .First();
         }
-        
+
         private static ButtonSpinner GetSpinner(NumericUpDown control)
         {
             return control.GetTemplateChildren()
                 .OfType<ButtonSpinner>()
                 .First();
         }
-        
+
         private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<NumericUpDown>((control, scope) =>
@@ -180,14 +180,27 @@ namespace Avalonia.Controls.UnitTests
             {
                 // Set TabIndex on NumericUpDown
                 control.TabIndex = 5;
-                
+
                 // The inner TextBox should inherit the same TabIndex
                 Assert.Equal(5, textbox.TabIndex);
-                
+
                 // Change TabIndex and verify it gets synchronized
                 control.TabIndex = 10;
                 Assert.Equal(10, textbox.TabIndex);
             });
+        }
+
+        [Fact]
+        public void PlaceholderForeground_Can_Be_Set()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var control = CreateControl();
+                control.PlaceholderText = "Enter value";
+                control.PlaceholderForeground = Media.Brushes.Red;
+
+                Assert.Equal(Media.Brushes.Red, control.PlaceholderForeground);
+            }
         }
     }
 }
