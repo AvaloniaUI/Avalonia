@@ -370,6 +370,41 @@ namespace Avalonia.Controls.Presenters
             return textLayout;
         }
 
+        private double GetLineOffsetX(TextLine line, double controlWidth, TextAlignment textAlignment)
+        {
+            var lineInkStartOffset = line.OverhangLeading;
+            var lineTrailingOverhang = -Math.Min(0, line.OverhangTrailing);
+            var lineLeadingOverhang = -Math.Min(0, line.OverhangLeading);
+            var lineInkWidth = line.WidthIncludingTrailingWhitespace + lineLeadingOverhang + lineTrailingOverhang;
+            
+            switch (textAlignment)
+            {
+                case TextAlignment.Center:
+                    return (controlWidth - lineInkWidth) / 2 - lineInkStartOffset - line.Start;
+                
+                case TextAlignment.Right:
+                    return controlWidth - line.WidthIncludingTrailingWhitespace - lineTrailingOverhang - line.Start;
+                
+                default: // Left, Justify
+                    return -lineInkStartOffset - line.Start;
+            }
+        }
+        
+        private TextAlignment GetResolvedTextAlignment()
+        {
+            var textAlignment = TextAlignment;
+            var flowDirection = FlowDirection;
+            
+            if (textAlignment == TextAlignment.Start)
+                return flowDirection == FlowDirection.LeftToRight ? TextAlignment.Left : TextAlignment.Right;
+            else if (textAlignment == TextAlignment.End)
+                return flowDirection == FlowDirection.RightToLeft ? TextAlignment.Left : TextAlignment.Right;
+            else if (textAlignment == TextAlignment.DetectFromContent)
+                return TextAlignment.Left;
+            
+            return textAlignment;
+        }
+
         /// <summary>
         /// Renders the <see cref="TextPresenter"/> to a drawing context.
         /// </summary>
@@ -383,8 +418,12 @@ namespace Avalonia.Controls.Presenters
                 context.FillRectangle(background, new Rect(Bounds.Size));
             }
 
+            if (TextLayout.TextLines.Count == 0)
+            {
+                return;
+            }
+
             var top = 0d;
-            var left = 0.0;
 
             var textHeight = TextLayout.Height;
 
@@ -402,7 +441,17 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
-            TextLayout.Draw(context, new Point(left, top));
+            var controlWidth = Bounds.Width;
+            var textAlignment = GetResolvedTextAlignment();
+            
+            var currentY = top;
+            
+            foreach (var line in TextLayout.TextLines)
+            {
+                var offsetX = GetLineOffsetX(line, controlWidth, textAlignment);
+                line.Draw(context, new Point(offsetX, currentY));
+                currentY += line.Height;
+            }
         }
 
         public sealed override void Render(DrawingContext context)
@@ -417,10 +466,35 @@ namespace Avalonia.Controls.Presenters
                 var length = Math.Max(selectionStart, selectionEnd) - start;
 
                 var rects = TextLayout.HitTestTextRange(start, length);
+                
+                var controlWidth = Bounds.Width;
+                var textAlignment = GetResolvedTextAlignment();
 
                 foreach (var rect in rects)
                 {
-                    context.FillRectangle(selectionBrush, PixelRect.FromRect(rect, 1).ToRect(1));
+                    var currentY = 0d;
+                    TextLine? targetLine = null;
+                    
+                    foreach (var line in TextLayout.TextLines)
+                    {
+                        if (currentY + line.Height > rect.Y)
+                        {
+                            targetLine = line;
+                            break;
+                        }
+                        currentY += line.Height;
+                    }
+                    
+                    if (targetLine != null)
+                    {
+                        var offsetX = GetLineOffsetX(targetLine, controlWidth, textAlignment);
+                        var transformedRect = rect.WithX(rect.X + offsetX);
+                        context.FillRectangle(selectionBrush, PixelRect.FromRect(transformedRect, 1).ToRect(1));
+                    }
+                    else
+                    {
+                        context.FillRectangle(selectionBrush, PixelRect.FromRect(rect, 1).ToRect(1));
+                    }
                 }
             }
 
@@ -472,11 +546,18 @@ namespace Avalonia.Controls.Presenters
             var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, _lastCharacterHit.TrailingLength > 0);
             var textLine = TextLayout.TextLines[lineIndex];
 
-            var x = Math.Floor(_caretBounds.X) + 0.5;
+            var caretX = Math.Max(0, _caretBounds.X);
+            
+            var x = Math.Floor(caretX) + 0.5;
             var y = Math.Floor(_caretBounds.Y) + 0.5;
             var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
 
-            if (_caretBounds.X > 0 && _caretBounds.X >= textLine.WidthIncludingTrailingWhitespace)
+            var controlWidth = Bounds.Width;
+            var textAlignment = GetResolvedTextAlignment();
+            var offsetX = GetLineOffsetX(textLine, controlWidth, textAlignment);
+            var lineEndX = textLine.WidthIncludingTrailingWhitespace + offsetX + textLine.Start;
+            
+            if (caretX > 0 && caretX >= lineEndX)
             {
                 x -= 1;
             }
@@ -646,8 +727,17 @@ namespace Avalonia.Controls.Presenters
 
             InvalidateArrange();
 
-            // The textWidth used here is matching that TextBlock uses to measure the text.
-            var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+            var maxLeadingOverhang = 0.0;
+            var maxTrailingOverhang = 0.0;
+            
+            foreach (var line in TextLayout.TextLines)
+            {
+                maxLeadingOverhang = Math.Max(maxLeadingOverhang, -Math.Min(0, line.OverhangLeading));
+                maxTrailingOverhang = Math.Max(maxTrailingOverhang, -Math.Min(0, line.OverhangTrailing));
+            }
+            
+            var textWidth = TextLayout.WidthIncludingTrailingWhitespace + maxLeadingOverhang + maxTrailingOverhang;
+            
             return new Size(textWidth, TextLayout.Height);
         }
 
@@ -655,8 +745,16 @@ namespace Avalonia.Controls.Presenters
         {
             var finalWidth = finalSize.Width;
 
-            var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
-            textWidth = Math.Ceiling(textWidth);
+            var maxLeadingOverhang = 0.0;
+            var maxTrailingOverhang = 0.0;
+            
+            foreach (var line in TextLayout.TextLines)
+            {
+                maxLeadingOverhang = Math.Max(maxLeadingOverhang, -Math.Min(0, line.OverhangLeading));
+                maxTrailingOverhang = Math.Max(maxTrailingOverhang, -Math.Min(0, line.OverhangTrailing));
+            }
+            
+            var textWidth = Math.Ceiling(TextLayout.WidthIncludingTrailingWhitespace + maxLeadingOverhang + maxTrailingOverhang);
 
             if (finalSize.Width < textWidth)
             {
@@ -715,13 +813,45 @@ namespace Avalonia.Controls.Presenters
 
         public void MoveCaretToPoint(Point point)
         {
-            var hit = TextLayout.HitTestPoint(point);
+            var transformedPoint = TransformPointToTextLayout(point);
+            
+            var hit = TextLayout.HitTestPoint(transformedPoint);
 
             UpdateCaret(hit.CharacterHit);
 
             _navigationPosition = _caretBounds.Position;
 
             CaretChanged();
+        }
+        
+        private Point TransformPointToTextLayout(Point point)
+        {
+            if (TextLayout.TextLines.Count == 0)
+            {
+                return point;
+            }
+            
+            var controlWidth = Bounds.Width;
+            var textAlignment = GetResolvedTextAlignment();
+            
+            var currentY = 0d;
+            TextLine? targetLine = null;
+            
+            foreach (var line in TextLayout.TextLines)
+            {
+                if (currentY + line.Height > point.Y)
+                {
+                    targetLine = line;
+                    break;
+                }
+                currentY += line.Height;
+            }
+            
+            targetLine ??= TextLayout.TextLines[TextLayout.TextLines.Count - 1];
+            
+            var offsetX = GetLineOffsetX(targetLine, controlWidth, textAlignment);
+            
+            return new Point(point.X - offsetX, point.Y);
         }
 
         public void MoveCaretVertical(LogicalDirection direction = LogicalDirection.Forward)
@@ -917,7 +1047,11 @@ namespace Avalonia.Controls.Presenters
                 distanceY += currentLine.Height;
             }
 
-            var caretBounds = new Rect(distanceX, distanceY, 0, textLine.Height);
+            var controlWidth = Bounds.Width;
+            var textAlignment = GetResolvedTextAlignment();
+            var offsetX = GetLineOffsetX(textLine, controlWidth, textAlignment);
+            
+            var caretBounds = new Rect(distanceX + offsetX, distanceY, 0, textLine.Height);
 
             if (caretBounds != _caretBounds)
             {

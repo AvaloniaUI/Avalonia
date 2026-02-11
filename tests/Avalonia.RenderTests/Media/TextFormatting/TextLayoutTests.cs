@@ -178,7 +178,7 @@ namespace Avalonia.Skia.RenderTests
 
         [Theory]
         [InlineData("x", 0, 200, 200 - 7.20, 0, 7.20, FontSizeHeight)]
-        [InlineData(stringword, 0, 200, 171.20, 0, 7.20, FontSizeHeight)]
+        [InlineData(stringword, 0, 200, 170.20, 0, 8.20, FontSizeHeight)]
         [InlineData(stringword, 3, 200, 200 - 7.20, 0, 7.20, FontSizeHeight)]
         public void Should_HitTestPosition_RightAlign_Correctly(
                                                     string input, int index, double widthConstraint,
@@ -197,7 +197,7 @@ namespace Avalonia.Skia.RenderTests
 
         [Theory]
         [InlineData("x", 0, 200, 100 - 7.20 / 2, 0, 7.20, FontSizeHeight)]
-        [InlineData(stringword, 0, 200, 85.6, 0, 7.20, FontSizeHeight)]
+        [InlineData(stringword, 0, 200, 84.6, 0, 8.20, FontSizeHeight)]
         [InlineData(stringword, 3, 200, 100 + 7.20, 0, 7.20, FontSizeHeight)]
         public void Should_HitTestPosition_CenterAlign_Correctly(
                                                     string input, int index, double widthConstraint,
