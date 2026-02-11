@@ -33,6 +33,7 @@ namespace Avalonia.Skia.RenderTests
                 },
                 Width = 76,
                 Height = 76,
+                Background = Brushes.Transparent,
                 Children =
                 {
                     new Path
@@ -70,6 +71,7 @@ namespace Avalonia.Skia.RenderTests
                 RenderTransform = new RotateTransform(90),
                 Width = 76,
                 Height = 76,
+                Background = Brushes.Transparent,
                 Children =
                 {
                     new Path

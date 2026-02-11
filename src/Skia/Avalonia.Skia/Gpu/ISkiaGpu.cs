@@ -1,16 +1,22 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Metadata;
 using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
+    //TODO12: Make it private
+    
     /// <summary>
     /// Custom Skia gpu instance.
     /// </summary>
     public interface ISkiaGpu : IPlatformGraphicsContext
     {
+        /// <summary>
+        /// Gets the platform graphics context.
+        /// </summary>
+        IPlatformGraphicsContext? PlatformGraphicsContext { get; }
+
         /// <summary>
         /// Attempts to create custom render target from given surfaces.
         /// </summary>
@@ -24,13 +30,11 @@ namespace Avalonia.Skia
         /// <param name="size">size in pixels.</param>
         /// <param name="session">An optional custom render session.</param>
         ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession? session);
-    }
 
-    //TODO12: Merge into ISkiaGpu
-    [Unstable]
-    public interface ISkiaGpuWithPlatformGraphicsContext : ISkiaGpu
-    {
-        IPlatformGraphicsContext? PlatformGraphicsContext { get; }
+        /// <summary>
+        /// Tries to get a <see cref="GRContext"/>.
+        /// </summary>
+        /// <returns>A <see cref="GRContext"/>.</returns>
         IScopedResource<GRContext>? TryGetGrContext();
     }
     

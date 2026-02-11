@@ -44,6 +44,9 @@ namespace Avalonia.DesignerSupport.Remote
             return s_lastWindow;
         }
 
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+            => zOrder.Clear();
+
         public static void Initialize(IAvaloniaRemoteTransportConnection transport)
         {
             s_transport = transport;

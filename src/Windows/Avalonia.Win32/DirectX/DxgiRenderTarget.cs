@@ -76,8 +76,9 @@ namespace Avalonia.Win32.DirectX
         }
 
         /// <inheritdoc />
-        public override IGlPlatformSurfaceRenderingSession BeginDrawCore()
+        public override IGlPlatformSurfaceRenderingSession BeginDrawCore(PixelSize? expectedPixelSize)
         {
+            // TODO: use expectedPixelSize
             if (_swapChain is null)
             {
                 throw new InvalidOperationException("No chain to draw on");

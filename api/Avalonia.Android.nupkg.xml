@@ -2,6 +2,12 @@
 <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Android.Platform.Specific.IAndroidView</Target>
+    <Left>baseline/Avalonia.Android/lib/net10.0-android36.0/Avalonia.Android.dll</Left>
+    <Right>current/Avalonia.Android/lib/net10.0-android36.0/Avalonia.Android.dll</Right>
+  </Suppression>
+  <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:Avalonia.Android.AvaloniaActivity</Target>
     <Left>baseline/Avalonia.Android/lib/net10.0-android36.0/Avalonia.Android.dll</Left>
