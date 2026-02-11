@@ -148,6 +148,19 @@ namespace Avalonia.VisualTree
         /// <returns>First ancestor of given type.</returns>
         public static T? FindAncestorOfType<T>(this Visual? visual, bool includeSelf = false) where T : class
         {
+            return FindAncestorOfType<T>(visual, includeSelf, predicate: null);
+        }
+
+        /// <summary>
+        /// Finds first ancestor of given type that matches a predicate.
+        /// </summary>
+        /// <typeparam name="T">Ancestor type.</typeparam>
+        /// <param name="visual">The visual.</param>
+        /// <param name="includeSelf">If given visual should be included in search.</param>
+        /// <param name="predicate">The predicate that the ancestor must match.</param>
+        /// <returns>First ancestor of given type.</returns>
+        public static T? FindAncestorOfType<T>(this Visual? visual, bool includeSelf, Predicate<T>? predicate) where T : class
+        {
             if (visual is null)
             {
                 return null;
@@ -159,7 +172,10 @@ namespace Avalonia.VisualTree
             {
                 if (parent is T result)
                 {
-                    return result;
+                    if (predicate == null || predicate(result))
+                    {
+                        return result;
+                    }
                 }
 
                 parent = parent.VisualParent;
@@ -177,17 +193,30 @@ namespace Avalonia.VisualTree
         /// <returns>First descendant of given type.</returns>
         public static T? FindDescendantOfType<T>(this Visual? visual, bool includeSelf = false) where T : class
         {
+            return FindDescendantOfType<T>(visual, includeSelf, predicate: null);
+        }
+
+        /// <summary>
+        /// Finds first descendant of given type that matches given predicate.
+        /// </summary>
+        /// <typeparam name="T">Descendant type.</typeparam>
+        /// <param name="visual">The visual.</param>
+        /// <param name="includeSelf">If given visual should be included in search.</param>
+        /// <param name="predicate">The predicate that the descendant must match.</param>
+        /// <returns>First descendant of given type that matches given predicate.</returns>
+        public static T? FindDescendantOfType<T>(this Visual? visual, bool includeSelf, Predicate<T>? predicate) where T : class
+        {
             if (visual is null)
             {
                 return null;
             }
 
-            if (includeSelf && visual is T result)
+            if (includeSelf && visual is T result && (predicate == null || predicate(result)))
             {
                 return result;
             }
 
-            return FindDescendantOfTypeCore<T>(visual);
+            return FindDescendantOfTypeCore<T>(visual, predicate);
         }
 
         /// <summary>
@@ -492,7 +521,7 @@ namespace Avalonia.VisualTree
                 .Select(x => x.Element!);
         }
 
-        private static T? FindDescendantOfTypeCore<T>(Visual visual) where T : class
+        private static T? FindDescendantOfTypeCore<T>(Visual visual, Predicate<T>? predicate) where T : class
         {
             var visualChildren = visual.VisualChildren;
             var visualChildrenCount = visualChildren.Count;
@@ -503,10 +532,13 @@ namespace Avalonia.VisualTree
 
                 if (child is T result)
                 {
-                    return result;
+                    if (predicate == null || predicate(result))
+                    {
+                        return result;
+                    }
                 }
 
-                var childResult = FindDescendantOfTypeCore<T>(child);
+                var childResult = FindDescendantOfTypeCore<T>(child, predicate);
 
                 if (!(childResult is null))
                 {
