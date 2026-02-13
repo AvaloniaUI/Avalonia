@@ -45,8 +45,7 @@ namespace Avalonia.Native.Interop.Impl
 {
     partial class __MicroComIAvnMenuProxy
     {
-        private Action _queueReset = null!;
-        private Action _updateIfNeeded = null!;
+        private AvaloniaNativeMenuExporter _exporter;
         private List<__MicroComIAvnMenuItemProxy> _menuItems = new List<__MicroComIAvnMenuItemProxy>();
         private Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy> _menuItemLookup = new Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy>();
 
@@ -68,7 +67,7 @@ namespace Avalonia.Native.Interop.Impl
         {
             (ManagedMenu as INativeMenuExporterEventsImplBridge).RaiseNeedsUpdate();
 
-            _updateIfNeeded();
+            _exporter.UpdateIfNeeded();
         }
 
         public void RaiseOpening()
@@ -137,10 +136,9 @@ namespace Avalonia.Native.Interop.Impl
             return nativeItem;
         }
 
-        internal void Initialize(Action queueReset, Action updateIfNeeded, NativeMenu managedMenu, string? title)
+        internal void Initialize(AvaloniaNativeMenuExporter exporter, NativeMenu managedMenu, string? title)
         {
-            _queueReset = queueReset;
-            _updateIfNeeded = updateIfNeeded;
+            _exporter = exporter;
             ManagedMenu = managedMenu;
 
             ((INotifyCollectionChanged)ManagedMenu.Items).CollectionChanged += OnMenuItemsChanged;
@@ -159,7 +157,7 @@ namespace Avalonia.Native.Interop.Impl
             }
         }
 
-        internal void Update(IAvaloniaNativeFactory factory, NativeMenu menu)
+        internal void Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenu menu)
         {
             if (menu != ManagedMenu)
             {
@@ -189,7 +187,7 @@ namespace Avalonia.Native.Interop.Impl
 
                 if (menu.Items[i] is NativeMenuItem nmi)
                 {
-                    nativeItem.Update(_queueReset, _updateIfNeeded, factory, nmi);
+                    nativeItem.Update(exporter, factory, nmi);
                 }
             }
 
@@ -201,7 +199,7 @@ namespace Avalonia.Native.Interop.Impl
 
         private void OnMenuItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            _queueReset();
+            _exporter.QueueReset();
         }
     }
 }

@@ -108,7 +108,7 @@ namespace Avalonia.Native
             }
         }
 
-        private void UpdateIfNeeded()
+        internal void UpdateIfNeeded()
         {
             if (_resetQueued)
             {
@@ -267,7 +267,7 @@ namespace Avalonia.Native
             }
         }
 
-        private void QueueReset()
+        internal void QueueReset()
         {
             if (_resetQueued)
                 return;
@@ -301,7 +301,7 @@ namespace Avalonia.Native
             {
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded, appMenuHolder, "");
+                _nativeMenu.Initialize(this, appMenuHolder, "");
 
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
 
@@ -313,7 +313,7 @@ namespace Avalonia.Native
                 setMenu = true;
             }
 
-            _nativeMenu.Update(_factory, appMenuHolder);
+            _nativeMenu.Update(this, _factory, appMenuHolder);
 
             if (setMenu)
             {
@@ -329,12 +329,12 @@ namespace Avalonia.Native
             {
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded, menu, "");
+                _nativeMenu.Initialize(this, menu, "");
 
                 setMenu = true;
             }
 
-            _nativeMenu.Update(_factory, menu);
+            _nativeMenu.Update(this, _factory, menu);
 
             if(setMenu)
             {
@@ -350,12 +350,12 @@ namespace Avalonia.Native
             {
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded, menu, "");
+                _nativeMenu.Initialize(this, menu, "");
 
                 setMenu = true;
             }
 
-            _nativeMenu.Update(_factory, menu);
+            _nativeMenu.Update(this, _factory, menu);
 
             if(setMenu)
             {
@@ -371,12 +371,12 @@ namespace Avalonia.Native
             {
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded, menu, "");
+                _nativeMenu.Initialize(this, menu, "");
 
                 setMenu = true;
             }
 
-            _nativeMenu.Update(_factory, menu);
+            _nativeMenu.Update(this, _factory, menu);
 
             if (setMenu)
             {
