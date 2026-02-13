@@ -57,7 +57,7 @@ namespace Avalonia.Controls
         public static void SetMenu(AvaloniaObject o, NativeMenu? menu) => o.SetValue(MenuProperty, menu);
 
         public static NativeMenu? GetMenu(AvaloniaObject o) => o.GetValue(MenuProperty);
-
+        
         static NativeMenu()
         {
             // This is needed because of the lack of attached direct properties
