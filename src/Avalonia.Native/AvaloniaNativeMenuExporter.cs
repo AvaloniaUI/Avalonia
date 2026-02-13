@@ -313,7 +313,7 @@ namespace Avalonia.Native
                 setMenu = true;
             }
 
-            _nativeMenu.Update(this, _factory, appMenuHolder);
+            _nativeMenu.Update(_factory, appMenuHolder);
 
             if (setMenu)
             {
@@ -334,7 +334,7 @@ namespace Avalonia.Native
                 setMenu = true;
             }
 
-            _nativeMenu.Update(this, _factory, menu);
+            _nativeMenu.Update(_factory, menu);
 
             if(setMenu)
             {
@@ -355,7 +355,7 @@ namespace Avalonia.Native
                 setMenu = true;
             }
 
-            _nativeMenu.Update(this, _factory, menu);
+            _nativeMenu.Update(_factory, menu);
 
             if(setMenu)
             {
@@ -376,7 +376,7 @@ namespace Avalonia.Native
                 setMenu = true;
             }
 
-            _nativeMenu.Update(this, _factory, menu);
+            _nativeMenu.Update(_factory, menu);
 
             if (setMenu)
             {
