@@ -6,7 +6,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Interop;
-using Avalonia.Native;
 
 namespace Avalonia.Native.Interop
 {
@@ -188,7 +187,7 @@ namespace Avalonia.Native.Interop.Impl
                     SetSubMenu(_subMenu);
                 }
 
-                _subMenu.Update(exporter, factory, item.Menu);
+                _subMenu.Update(factory, item.Menu);
             }
 
             if (item.Menu == null && _subMenu != null)

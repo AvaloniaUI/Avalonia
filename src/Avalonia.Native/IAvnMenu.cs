@@ -157,7 +157,7 @@ namespace Avalonia.Native.Interop.Impl
             }
         }
 
-        internal void Update(AvaloniaNativeMenuExporter exporter, IAvaloniaNativeFactory factory, NativeMenu menu)
+        internal void Update(IAvaloniaNativeFactory factory, NativeMenu menu)
         {
             if (menu != ManagedMenu)
             {
@@ -187,7 +187,7 @@ namespace Avalonia.Native.Interop.Impl
 
                 if (menu.Items[i] is NativeMenuItem nmi)
                 {
-                    nativeItem.Update(exporter, factory, nmi);
+                    nativeItem.Update(_exporter, factory, nmi);
                 }
             }
 
