@@ -429,6 +429,7 @@ namespace Avalonia.Layout
                 Logger.TryGet(LogEventLevel.Verbose, LogArea.Layout)?.Log(this, "Arrange to {Rect} ", rect);
 
                 IsArrangeValid = true;
+                SetLayoutSlotSize(rect.Size);
                 ArrangeCore(rect);
                 _previousArrange = rect;
             }

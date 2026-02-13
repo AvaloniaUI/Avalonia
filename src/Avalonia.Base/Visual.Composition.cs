@@ -140,6 +140,18 @@ public partial class Visual
         comp.Opacity = (float)Opacity;
         comp.ClipToBounds = ClipToBounds;
         comp.Clip = Clip?.PlatformImpl;
+
+        if (comp is CompositionDrawListVisual drawListVisual)
+        {
+            if (TryGetChildClip(out var childClip, out var childClipGeometry))
+            {
+                drawListVisual.SetChildClip(childClip, childClipGeometry?.PlatformImpl);
+            }
+            else
+            {
+                drawListVisual.ClearChildClip();
+            }
+        }
         
         if (!Equals(comp.OpacityMask, OpacityMask))
             comp.OpacityMask = OpacityMask;

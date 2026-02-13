@@ -81,6 +81,10 @@ namespace Avalonia.Controls
                 case nameof(BorderThickness):
                     _layoutThickness = null;
                     break;
+                case nameof(BackgroundSizing):
+                    if (_borderVisual != null)
+                        _borderVisual.BackgroundSizing = BackgroundSizing;
+                    break;
                 case nameof(CornerRadius):
                     if (_borderVisual != null)
                         _borderVisual.CornerRadius = CornerRadius;
@@ -178,6 +182,8 @@ namespace Avalonia.Controls
         /// <param name="context">The drawing context.</param>
         public sealed override void Render(DrawingContext context)
         {
+            if (_borderVisual != null)
+                _borderVisual.BorderThickness = LayoutThickness;
             _borderRenderHelper.Render(
                 context,
                 Bounds.Size,
@@ -213,10 +219,31 @@ namespace Avalonia.Controls
         {
             return _borderVisual = new CompositionBorderVisual(compositor, this)
             {
+                BackgroundSizing = BackgroundSizing,
                 CornerRadius = CornerRadius
             };
         }
 
         public CornerRadius ClipToBoundsRadius => CornerRadius;
+
+        protected override bool TryGetChildClipCore(out RoundedRect clip, out Geometry? geometryClip)
+        {
+            if (!ClipToBounds)
+            {
+                clip = default;
+                geometryClip = null;
+                return false;
+            }
+
+            var bounds = new Rect(Bounds.Size);
+            var keypoints = GeometryBuilder.CalculateRoundedCornersRectangleWinUI(
+                bounds,
+                LayoutThickness,
+                CornerRadius,
+                BackgroundSizing.InnerBorderEdge);
+            clip = keypoints.ToRoundedRect();
+            geometryClip = null;
+            return true;
+        }
     }
 }

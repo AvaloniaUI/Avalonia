@@ -56,6 +56,52 @@
         <Image Source="/Assets/maple-leaf-888807_640.jpg" Stretch="UniformToFill" />
       </Border>
       <TextBlock Text="Border with Clipping" HorizontalAlignment="Center" />
+
+      <StackPanel Spacing="8" Width="360">
+        <TextBlock Classes="h3">Rounded Border Child Clipping</TextBlock>
+
+        <Border Height="72"
+          Width="160"
+          Background="Red"
+          BorderBrush="Green"
+          BorderThickness="2"
+          CornerRadius="16">
+          <Border Width="80"
+            Height="72"
+            Background="Blue"
+            HorizontalAlignment="Right" />
+        </Border>
+        <TextBlock Text="Expected: child overlaps rounded corners" HorizontalAlignment="Center" />
+        <TextBlock Text="No ClipToBounds" HorizontalAlignment="Center" />
+
+        <Border Height="72"
+          Width="160"
+          Background="Red"
+          BorderBrush="Green"
+          BorderThickness="2"
+          CornerRadius="16"
+          ClipToBounds="True">
+          <Border Width="80"
+            Height="72"
+            Background="Blue"
+            HorizontalAlignment="Right" />
+        </Border>
+        <TextBlock Text="Expected: child clipped to inner rounded edge" HorizontalAlignment="Center" />
+        <TextBlock Text="ClipToBounds True" HorizontalAlignment="Center" />
+
+        <Border Height="80"
+          Width="200"
+          Background="LightGray"
+          BorderBrush="Black"
+          BorderThickness="6"
+          CornerRadius="16"
+          ClipToBounds="True">
+          <Border Background="Orange"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch" />
+        </Border>
+        <TextBlock Text="Thick Border + Rounded Clip" HorizontalAlignment="Center" />
+      </StackPanel>
     </StackPanel>
   </StackPanel>
 </UserControl>

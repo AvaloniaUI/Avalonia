@@ -1,3 +1,4 @@
+using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
@@ -16,6 +17,10 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
 
     private bool _drawListChanged;
     private CompositionRenderData? _drawList;
+    private bool _childClipChanged;
+    private bool _hasChildClip;
+    private RoundedRect _childClip;
+    private IGeometryImpl? _childClipGeometry;
     
     /// <summary>
     /// The list of drawing commands
@@ -36,6 +41,30 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
         }
     }
 
+    internal void SetChildClip(RoundedRect clip, IGeometryImpl? geometryClip)
+    {
+        if (_hasChildClip && _childClip.Equals(clip) && ReferenceEquals(_childClipGeometry, geometryClip))
+            return;
+
+        _hasChildClip = true;
+        _childClip = clip;
+        _childClipGeometry = geometryClip;
+        _childClipChanged = true;
+        RegisterForSerialization();
+    }
+
+    internal void ClearChildClip()
+    {
+        if (!_hasChildClip && _childClipGeometry == null)
+            return;
+
+        _hasChildClip = false;
+        _childClip = default;
+        _childClipGeometry = null;
+        _childClipChanged = true;
+        RegisterForSerialization();
+    }
+
     private protected override void SerializeChangesCore(BatchStreamWriter writer)
     {
         writer.Write((byte)(_drawListChanged ? 1 : 0));
@@ -43,6 +72,14 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
         {
             writer.WriteObject(DrawList?.Server);
             _drawListChanged = false;
+        }
+        writer.Write((byte)(_childClipChanged ? 1 : 0));
+        if (_childClipChanged)
+        {
+            writer.Write(_hasChildClip);
+            writer.Write(_childClip);
+            writer.WriteObject(_childClipGeometry);
+            _childClipChanged = false;
         }
         base.SerializeChangesCore(writer);
     }
