@@ -41,6 +41,7 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabStripItem.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabControl.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabItem.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/PipsPager.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/PopupRoot.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/OverlayPopupHost.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/WindowNotificationManager.xaml" />
