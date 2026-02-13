@@ -21,8 +21,8 @@ namespace Avalonia.Base.UnitTests.Input
             root.KeyUp += (s, e) => events.Add($"KeyUp {e.Key}");
 
             KeyDown(root, Key.LeftAlt);
-            KeyDown(root, Key.A, KeyModifiers.Alt);
-            KeyUp(root, Key.A, KeyModifiers.Alt);
+            KeyDown(root, Key.A, "a", KeyModifiers.Alt);
+            KeyUp(root, Key.A, "a", KeyModifiers.Alt);
             KeyUp(root, Key.LeftAlt);
 
             Assert.Equal(new[]
@@ -48,8 +48,8 @@ namespace Avalonia.Base.UnitTests.Input
             root.KeyUp += (s, e) => events.Add($"KeyUp {e.Key}");
 
             KeyDown(root, Key.LeftAlt);
-            KeyDown(root, Key.A, KeyModifiers.Alt);
-            KeyUp(root, Key.A, KeyModifiers.Alt);
+            KeyDown(root, Key.A, "a", KeyModifiers.Alt);
+            KeyUp(root, Key.A, "a", KeyModifiers.Alt);
             KeyUp(root, Key.LeftAlt);
 
             Assert.Equal(new[]
@@ -122,13 +122,13 @@ namespace Avalonia.Base.UnitTests.Input
             var events = new List<string>();
 
             target.SetOwner(root);
-            target.Register('A', button);
+            target.Register("A", button);
             root.KeyDown += (s, e) => events.Add($"KeyDown {e.Key}");
             root.KeyUp += (s, e) => events.Add($"KeyUp {e.Key}");
 
             KeyDown(root, Key.LeftAlt);
-            KeyDown(root, Key.A, KeyModifiers.Alt);
-            KeyUp(root, Key.A, KeyModifiers.Alt);
+            KeyDown(root, Key.A, "a", KeyModifiers.Alt);
+            KeyUp(root, Key.A, "a", KeyModifiers.Alt);
             KeyUp(root, Key.LeftAlt);
 
             // This differs from WPF which doesn't raise the `A` key event, but matches UWP.
@@ -141,8 +141,12 @@ namespace Avalonia.Base.UnitTests.Input
             }, events);
         }
 
-        [Fact]
-        public void Should_Raise_AccessKey_For_Registered_Access_Key()
+        [Theory]
+        [InlineData("A", Key.A, "a")]
+        [InlineData("A", Key.Q, "a")]
+        [InlineData("é", Key.D2, "é")]
+        [InlineData("2", Key.D2, "2")]
+        public void Should_Raise_AccessKey_For_Registered_Access_Key_Matching_KeySymbol(string registered, Key key, string keySymbol)
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
@@ -154,19 +158,48 @@ namespace Avalonia.Base.UnitTests.Input
                 KeyboardDevice.Instance?.SetFocusedElement(button, NavigationMethod.Unspecified, KeyModifiers.None);
 
                 target.SetOwner(root);
-                target.Register('A', button);
+                target.Register(registered, button);
                 button.AddHandler(AccessKeyHandler.AccessKeyEvent, (s, e) => ++raised);
 
                 KeyDown(root, Key.LeftAlt);
                 Assert.Equal(0, raised);
 
-                KeyDown(root, Key.A, KeyModifiers.Alt);
+                KeyDown(root, key, keySymbol, KeyModifiers.Alt);
                 Assert.Equal(1, raised);
 
-                KeyUp(root, Key.A, KeyModifiers.Alt);
+                KeyUp(root, key, keySymbol, KeyModifiers.Alt);
                 KeyUp(root, Key.LeftAlt);
 
                 Assert.Equal(1, raised);
+            }
+        }
+
+        [Fact]
+        public void Should_Not_Raise_AccessKey_For_Registered_Access_Key_Not_Matching_KeySymbol()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var button = new Button();
+                var root = new TestRoot(button);
+                var target = new AccessKeyHandler();
+                var raised = 0;
+
+                KeyboardDevice.Instance?.SetFocusedElement(button, NavigationMethod.Unspecified, KeyModifiers.None);
+
+                target.SetOwner(root);
+                target.Register("A", button);
+                button.AddHandler(AccessKeyHandler.AccessKeyEvent, (_, _) => ++raised);
+
+                KeyDown(root, Key.LeftAlt);
+                Assert.Equal(0, raised);
+
+                KeyDown(root, Key.A, "q", KeyModifiers.Alt);
+                Assert.Equal(0, raised);
+
+                KeyUp(root, Key.A, "q", KeyModifiers.Alt);
+                KeyUp(root, Key.LeftAlt);
+
+                Assert.Equal(0, raised);
             }
         }
 
@@ -185,16 +218,16 @@ namespace Avalonia.Base.UnitTests.Input
                 KeyboardDevice.Instance?.SetFocusedElement(button, NavigationMethod.Unspecified, KeyModifiers.None);
                 
                 target.SetOwner(root);
-                target.Register('A', button);
+                target.Register("A", button);
                 button.AddHandler(AccessKeyHandler.AccessKeyEvent, (s, e) => ++raised);
 
                 KeyDown(root, Key.LeftAlt);
                 Assert.Equal(0, raised);
 
-                KeyDown(root, Key.A, KeyModifiers.Alt);
+                KeyDown(root, Key.A, "a", KeyModifiers.Alt);
                 Assert.Equal(expected, raised);
 
-                KeyUp(root, Key.A, KeyModifiers.Alt);
+                KeyUp(root, Key.A, "a", KeyModifiers.Alt);
                 KeyUp(root, Key.LeftAlt);
                 Assert.Equal(expected, raised);
             }
@@ -223,22 +256,24 @@ namespace Avalonia.Base.UnitTests.Input
             }
         }
 
-        private static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+        private static void KeyDown(IInputElement target, Key key, string? keySymbol = null, KeyModifiers modifiers = KeyModifiers.None)
         {
             target.RaiseEvent(new KeyEventArgs
             {
                 RoutedEvent = InputElement.KeyDownEvent,
                 Key = key,
+                KeySymbol = keySymbol,
                 KeyModifiers = modifiers,
             });
         }
 
-        private static void KeyUp(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+        private static void KeyUp(IInputElement target, Key key, string? keySymbol = null, KeyModifiers modifiers = KeyModifiers.None)
         {
             target.RaiseEvent(new KeyEventArgs
             {
                 RoutedEvent = InputElement.KeyUpEvent,
                 Key = key,
+                KeySymbol = keySymbol,
                 KeyModifiers = modifiers,
             });
         }

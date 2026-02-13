@@ -319,6 +319,41 @@ namespace Avalonia.Automation.Peers
         /// </remarks>
         public int GetHeadingLevel() => GetHeadingLevelCore();
 
+
+        /// <summary>
+        /// Gets the item type that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_ItemTypePropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string? GetItemType() => GetItemTypeCore();
+
+        /// <summary>
+        /// Gets the item status that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_ItemStatusPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string? GetItemStatus() => GetItemStatusCore();
+
         /// <summary>
         /// Gets the <see cref="AutomationPeer"/> that is the parent of this <see cref="AutomationPeer"/>.
         /// </summary>
@@ -562,6 +597,8 @@ namespace Avalonia.Automation.Peers
         protected virtual string? GetHelpTextCore() => null;
         protected virtual AutomationLandmarkType? GetLandmarkTypeCore() => null;
         protected virtual int GetHeadingLevelCore() => 0;
+        protected virtual string? GetItemTypeCore() => null;
+        protected virtual string? GetItemStatusCore() => null;
         protected abstract AutomationPeer? GetParentCore();
         protected abstract bool HasKeyboardFocusCore();
         protected abstract bool IsContentElementCore();
