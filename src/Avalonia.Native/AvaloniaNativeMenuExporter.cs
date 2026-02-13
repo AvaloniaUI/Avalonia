@@ -267,7 +267,7 @@ namespace Avalonia.Native
             }
         }
 
-        public void QueueReset()
+        private void QueueReset()
         {
             if (_resetQueued)
                 return;
@@ -301,7 +301,7 @@ namespace Avalonia.Native
             {
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded,appMenuHolder, "");
+                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded, appMenuHolder, "");
 
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
 
@@ -329,7 +329,7 @@ namespace Avalonia.Native
             {
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded,menu, "");
+                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded, menu, "");
 
                 setMenu = true;
             }
@@ -350,7 +350,7 @@ namespace Avalonia.Native
             {
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
-                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded,menu, "");
+                _nativeMenu.Initialize(QueueReset, UpdateIfNeeded, menu, "");
 
                 setMenu = true;
             }
