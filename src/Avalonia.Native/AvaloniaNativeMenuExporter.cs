@@ -108,7 +108,7 @@ namespace Avalonia.Native
             }
         }
 
-        public void UpdateIfNeeded()
+        private void UpdateIfNeeded()
         {
             if (_resetQueued)
             {
