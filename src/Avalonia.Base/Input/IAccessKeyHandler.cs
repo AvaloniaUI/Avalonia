@@ -26,7 +26,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="accessKey">The access key.</param>
         /// <param name="element">The input element.</param>
-        void Register(char accessKey, IInputElement element);
+        void Register(string accessKey, IInputElement element);
 
         /// <summary>
         /// Unregisters the access keys associated with the input element.

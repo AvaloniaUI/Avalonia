@@ -4,6 +4,7 @@ using Avalonia.Reactive;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using System;
+using System.Text;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -42,7 +43,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the access key.
         /// </summary>
-        public char AccessKey
+        public string? AccessKey
         {
             get;
             private set;
@@ -93,7 +94,7 @@ namespace Avalonia.Controls.Primitives
             base.OnAttachedToVisualTree(e);
             _accessKeys = (e.Root as TopLevel)?.AccessKeyHandler;
 
-            if (_accessKeys != null && AccessKey != 0)
+            if (_accessKeys != null && !string.IsNullOrEmpty(AccessKey))
             {
                 _accessKeys.Register(AccessKey, this);
             }
@@ -104,7 +105,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDetachedFromVisualTree(e);
 
-            if (_accessKeys != null && AccessKey != 0)
+            if (_accessKeys != null && !string.IsNullOrEmpty(AccessKey))
             {
                 _accessKeys.Unregister(this);
                 _accessKeys = null;
@@ -153,7 +154,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="text">The new text.</param>
         private void TextChanged(string? text)
         {
-            var key = (char)0;
+            string? key = null;
 
             if (text != null)
             {
@@ -161,13 +162,14 @@ namespace Avalonia.Controls.Primitives
 
                 if (underscore != -1 && underscore < text.Length - 1)
                 {
-                    key = text[underscore + 1];
+                    var rune = Rune.GetRuneAt(text, underscore + 1);
+                    key = rune.ToString();
                 }
             }
 
             AccessKey = key;
 
-            if (_accessKeys != null && AccessKey != 0)
+            if (_accessKeys != null && !string.IsNullOrEmpty(AccessKey))
             {
                 _accessKeys.Register(AccessKey, this);
             }
