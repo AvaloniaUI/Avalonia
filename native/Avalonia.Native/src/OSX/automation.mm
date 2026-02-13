@@ -95,8 +95,8 @@
         case AutomationEdit: return NSAccessibilityTextFieldRole;
         case AutomationHyperlink: return NSAccessibilityLinkRole;
         case AutomationImage: return NSAccessibilityImageRole;
-        case AutomationListItem: return NSAccessibilityRowRole;
-        case AutomationList: return NSAccessibilityTableRole;
+        case AutomationListItem: return NSAccessibilityGroupRole;
+        case AutomationList: return NSAccessibilityListRole;
         case AutomationMenu: return NSAccessibilityMenuBarRole;
         case AutomationMenuBar: return NSAccessibilityMenuBarRole;
         case AutomationMenuItem: return NSAccessibilityMenuItemRole;
@@ -105,7 +105,7 @@
         case AutomationScrollBar: return NSAccessibilityScrollBarRole;
         case AutomationSlider: return NSAccessibilitySliderRole;
         case AutomationSpinner: return NSAccessibilityIncrementorRole;
-        case AutomationStatusBar: return NSAccessibilityTableRole;
+        case AutomationStatusBar: return NSAccessibilityGroupRole;
         case AutomationTab: return NSAccessibilityTabGroupRole;
         case AutomationTabItem: return NSAccessibilityRadioButtonRole;
         case AutomationText: return NSAccessibilityStaticTextRole;
@@ -136,6 +136,11 @@
 
 - (NSAccessibilitySubrole)accessibilitySubrole
 {
+    auto controlType = _peer->GetAutomationControlType();
+    switch (controlType) {
+        case AutomationList: return @"AXContentList";
+    }
+
     auto landmarkType = _peer->GetLandmarkType();
     switch (landmarkType) {
         case LandmarkBanner: return @"AXLandmarkBanner";
@@ -146,8 +151,9 @@
         case LandmarkMain: return @"AXLandmarkMain";
         case LandmarkNavigation: return @"AXLandmarkNavigation";
         case LandmarkSearch: return @"AXLandmarkSearch";
-        default: return NSAccessibilityUnknownSubrole;
     }
+
+    return NSAccessibilityUnknownSubrole;
 }
 
 - (NSString *)accessibilityRoleDescription
