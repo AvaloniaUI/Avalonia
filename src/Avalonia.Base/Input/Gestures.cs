@@ -61,6 +61,14 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<ScrollGestureEndedEventArgs> ScrollGestureEndedEvent =
             RoutedEvent.Register<ScrollGestureEndedEventArgs>(
                 "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
+
+        public static readonly RoutedEvent<SwipeGestureEventArgs> SwipeGestureEvent =
+            RoutedEvent.Register<SwipeGestureEventArgs>(
+                "SwipeGesture", RoutingStrategies.Bubble, typeof(Gestures));
+
+        public static readonly RoutedEvent<SwipeGestureEndedEventArgs> SwipeGestureEndedEvent =
+            RoutedEvent.Register<SwipeGestureEndedEventArgs>(
+                "SwipeGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
         
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureMagnifyEvent =
             RoutedEvent.Register<PointerDeltaEventArgs>(
@@ -217,6 +225,18 @@ namespace Avalonia.Input
 
         public static void RemoveScrollGestureInertiaStartingHandler(Interactive element, EventHandler<ScrollGestureInertiaStartingEventArgs> handler) =>
             element.RemoveHandler(ScrollGestureInertiaStartingEvent, handler);
+
+        public static void AddSwipeGestureHandler(Interactive element, EventHandler<SwipeGestureEventArgs> handler) =>
+            element.AddHandler(SwipeGestureEvent, handler);
+
+        public static void AddSwipeGestureEndedHandler(Interactive element, EventHandler<SwipeGestureEndedEventArgs> handler) =>
+            element.AddHandler(SwipeGestureEndedEvent, handler);
+
+        public static void RemoveSwipeGestureHandler(Interactive element, EventHandler<SwipeGestureEventArgs> handler) =>
+            element.RemoveHandler(SwipeGestureEvent, handler);
+
+        public static void RemoveSwipeGestureEndedHandler(Interactive element, EventHandler<SwipeGestureEndedEventArgs> handler) =>
+            element.RemoveHandler(SwipeGestureEndedEvent, handler);
 
         private static object? GetCaptured(RoutedEventArgs? args)
         {
