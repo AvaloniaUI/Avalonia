@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Logging;
 
 namespace Sandbox
 {
