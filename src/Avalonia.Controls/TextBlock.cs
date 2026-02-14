@@ -628,9 +628,62 @@ namespace Avalonia.Controls
             RenderTextLayout(context, new Point(padding.Left, top));
         }
 
+        private double GetLineOffsetX(TextLine line, double controlWidth, TextAlignment textAlignment)
+        {
+            var lineInkStartOffset = line.OverhangLeading;
+            var lineTrailingOverhang = -Math.Min(0, line.OverhangTrailing);
+            var lineLeadingOverhang = -Math.Min(0, line.OverhangLeading);
+            var lineInkWidth = line.WidthIncludingTrailingWhitespace + lineLeadingOverhang + lineTrailingOverhang;
+            
+            switch (textAlignment)
+            {
+                case TextAlignment.Center:
+                    return (controlWidth - lineInkWidth) / 2 - lineInkStartOffset - line.Start;
+                
+                case TextAlignment.Right:
+                    return controlWidth - line.WidthIncludingTrailingWhitespace - lineTrailingOverhang - line.Start;
+                
+                default: // Left, Justify
+                    return -lineInkStartOffset - line.Start;
+            }
+        }
+        
+        private TextAlignment GetResolvedTextAlignment()
+        {
+            var textAlignment = TextAlignment;
+            var flowDirection = FlowDirection;
+            
+            if (textAlignment == TextAlignment.Start)
+                return flowDirection == FlowDirection.LeftToRight ? TextAlignment.Left : TextAlignment.Right;
+            else if (textAlignment == TextAlignment.End)
+                return flowDirection == FlowDirection.RightToLeft ? TextAlignment.Left : TextAlignment.Right;
+            else if (textAlignment == TextAlignment.DetectFromContent)
+                return TextAlignment.Left;
+            
+            return textAlignment;
+        }
+
         protected virtual void RenderTextLayout(DrawingContext context, Point origin)
         {
-            TextLayout.Draw(context, origin);
+            var textLayout = TextLayout;
+            
+            if (textLayout.TextLines.Count == 0)
+            {
+                return;
+            }
+            
+            var padding = Padding;
+            var controlWidth = Bounds.Width - padding.Left - padding.Right;
+            var textAlignment = GetResolvedTextAlignment();
+            
+            var currentY = origin.Y;
+            
+            foreach (var line in textLayout.TextLines)
+            {
+                var offsetX = GetLineOffsetX(line, controlWidth, textAlignment);
+                line.Draw(context, new Point(origin.X + offsetX, currentY));
+                currentY += line.Height;
+            }
         }
 
         private bool _clearTextInternal;
@@ -748,8 +801,18 @@ namespace Avalonia.Controls
             //This implicitly recreated the TextLayout with a new constraint if we previously reset it.
             var textLayout = TextLayout;
 
-            // The textWidth used here is matching that TextPresenter uses to measure the text.
-            return new Size(textLayout.WidthIncludingTrailingWhitespace, textLayout.Height).Inflate(padding);
+            var maxLeadingOverhang = 0.0;
+            var maxTrailingOverhang = 0.0;
+            
+            foreach (var line in textLayout.TextLines)
+            {
+                maxLeadingOverhang = Math.Max(maxLeadingOverhang, -Math.Min(0, line.OverhangLeading));
+                maxTrailingOverhang = Math.Max(maxTrailingOverhang, -Math.Min(0, line.OverhangTrailing));
+            }
+            
+            var totalWidth = textLayout.WidthIncludingTrailingWhitespace + maxLeadingOverhang + maxTrailingOverhang;
+            
+            return new Size(totalWidth, textLayout.Height).Inflate(padding);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
