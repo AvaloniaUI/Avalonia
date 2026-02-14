@@ -47,7 +47,17 @@ internal class X11EventDispatcher
                     }
                 }
                 else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
+                {
+                    if (handler is null) 
+                    {
+                        var xE = xev.AnyEvent;
+                        string details = $"type={xE.type},serial={xE.serial},send_event={xE.send_event},display={xE.display},window={xE.window}";
+                        string msg = $"Event handler for event '{xE}' ({details}) is null";
+                        throw new NullReferenceException(msg);
+                    }
+
                     handler(ref xev);
+                }
             }
             finally
             {
