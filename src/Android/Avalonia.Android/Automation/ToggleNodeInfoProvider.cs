@@ -45,7 +45,7 @@ namespace Avalonia.Android.Automation
             if (s_checkedProperty?.PropertyType == typeof(int))
             {
                 // Needed for Xamarin.AndroidX.Core 1.17+
-                s_checkedProperty.SetValue(this, 
+                s_checkedProperty.SetValue(nodeInfo, 
                     provider.ToggleState switch
                     {
                         ToggleState.On => 1,
@@ -56,7 +56,7 @@ namespace Avalonia.Android.Automation
             else if (s_checkedProperty?.PropertyType == typeof(bool))
             {
                 // Needed for Xamarin.AndroidX.Core < 1.17
-                s_checkedProperty.SetValue(this, provider.ToggleState == ToggleState.On);
+                s_checkedProperty.SetValue(nodeInfo, provider.ToggleState == ToggleState.On);
             }
 
             nodeInfo.Checkable = true;
