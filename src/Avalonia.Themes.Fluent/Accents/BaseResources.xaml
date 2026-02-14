@@ -54,6 +54,21 @@
   <!-- Moved from Menu.xaml -->
   <Thickness x:Key="MenuBarItemPadding">12,0,12,0</Thickness>
   
+  <ImplicitAnimationCollection x:Key="RefreshVisualizerAnimations">
+    <RotationAngleCompositionAnimation Duration="0:0:0.1">
+      <ExpressionKeyFrame Easing="LinearEasing" Value="this.FinalValue" NormalizedProgressKey="1.0" />
+    </RotationAngleCompositionAnimation>
+    <OpacityCompositionAnimation Duration="0:0:0.1">
+      <ExpressionKeyFrame Easing="LinearEasing" Value="this.FinalValue" NormalizedProgressKey="1.0" />      
+    </OpacityCompositionAnimation>
+    <OffsetCompositionAnimation Duration="0:0:0.1">
+      <ExpressionKeyFrame Easing="LinearEasing" Value="this.FinalValue" NormalizedProgressKey="1.0" />      
+    </OffsetCompositionAnimation>
+    <ScaleCompositionAnimation Duration="0:0:0.1">
+      <ExpressionKeyFrame Easing="LinearEasing" Value="this.FinalValue" NormalizedProgressKey="1.0" />
+    </ScaleCompositionAnimation>
+  </ImplicitAnimationCollection>
+  
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <SolidColorBrush x:Key="SystemControlBackgroundAccentBrush" Color="{DynamicResource SystemAccentColor}" />
