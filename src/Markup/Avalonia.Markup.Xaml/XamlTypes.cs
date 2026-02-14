@@ -32,14 +32,4 @@ namespace Avalonia.Markup.Xaml
         [RequiresUnreferencedCode(TrimmingMessages.XamlTypeResolvedRequiresUnreferenceCodeMessage)]
         Type Resolve (string qualifiedTypeName);
     }
-
-    
-    [AttributeUsage(AttributeTargets.Property)]
-    public sealed class ConstructorArgumentAttribute : Attribute
-    {
-        public ConstructorArgumentAttribute(string name)
-        {
-            
-        }
-    }
 }

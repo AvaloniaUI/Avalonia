@@ -143,8 +143,9 @@ namespace Avalonia.Base.UnitTests.Styling
                 Classes = { "foo" },
             };
 
-            var binding = new Binding("Name", BindingMode.OneWay)
+            var binding = new Binding("Name")
             {
+                Mode = BindingMode.OneWay,
                 Converter = new TestConverter(),
                 RelativeSource = new RelativeSource(RelativeSourceMode.Self),
             };

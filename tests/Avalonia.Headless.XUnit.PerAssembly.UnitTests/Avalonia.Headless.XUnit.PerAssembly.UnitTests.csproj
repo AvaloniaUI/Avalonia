@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <IsTestProject>true</IsTestProject>
     <DefineConstants>$(DefineConstants);XUNIT</DefineConstants>
-    <IsXUnit2>true</IsXUnit2>
   </PropertyGroup>
 
   <Import Project="..\..\build\UnitTests.NetCore.targets" />

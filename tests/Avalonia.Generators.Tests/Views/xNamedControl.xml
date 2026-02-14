@@ -3,6 +3,6 @@
         x:Class="Sample.App.xNamedControl">
     <TextBox x:Name="UserNameTextBox"
              AutomationProperties.Name="The user name"
-             Watermark="Username input"
-             UseFloatingWatermark="True" />
+             Placeholder="Username input"
+             UseFloatingPlaceholder="True" />
 </Window>

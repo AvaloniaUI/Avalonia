@@ -83,7 +83,7 @@ public class DirectFbCompositionTests : TestBase
         SKBitmap fb = new SKBitmap(200, 200, SKColorType.Rgba8888, SKAlphaType.Premul);
 
         ILockedFramebuffer LockFb() => new LockedFramebuffer(fb.GetAddress(0, 0), new(fb.Width, fb.Height),
-            fb.RowBytes, new Vector(96, 96), PixelFormat.Rgba8888, null);
+            fb.RowBytes, new Vector(96, 96), PixelFormat.Rgba8888, AlphaFormat.Premul, null);
 
         bool previousFrameIsRetained = false;
         IFramebufferRenderTarget rt = advertised

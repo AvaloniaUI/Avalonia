@@ -16,6 +16,11 @@ internal unsafe class ScreenImpl : ScreensBase<nint, WinScreen>
 
     protected override IReadOnlyList<nint> GetAllScreenKeys()
     {
+        return GetAllDisplayMonitorHandlers();
+    }
+
+    public static List<nint> GetAllDisplayMonitorHandlers()
+    {
         var screens = new List<nint>();
         var gcHandle = GCHandle.Alloc(screens);
         try

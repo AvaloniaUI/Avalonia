@@ -170,7 +170,5 @@ namespace Avalonia.DesignerSupport.Remote
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {            
         }
-
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder) => throw new NotSupportedException();
     }
 }

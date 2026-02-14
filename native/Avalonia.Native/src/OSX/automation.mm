@@ -11,6 +11,7 @@
     IAvnAutomationPeer* _peer;
     AvnAutomationNode* _node;
     NSMutableArray* _children;
+    NSArray<NSString*>* _attributeNames;
 }
 
 + (NSAccessibilityElement *)acquire:(IAvnAutomationPeer *)peer
@@ -95,8 +96,8 @@
         case AutomationEdit: return NSAccessibilityTextFieldRole;
         case AutomationHyperlink: return NSAccessibilityLinkRole;
         case AutomationImage: return NSAccessibilityImageRole;
-        case AutomationListItem: return NSAccessibilityRowRole;
-        case AutomationList: return NSAccessibilityTableRole;
+        case AutomationListItem: return NSAccessibilityGroupRole;
+        case AutomationList: return NSAccessibilityListRole;
         case AutomationMenu: return NSAccessibilityMenuBarRole;
         case AutomationMenuBar: return NSAccessibilityMenuBarRole;
         case AutomationMenuItem: return NSAccessibilityMenuItemRole;
@@ -105,7 +106,7 @@
         case AutomationScrollBar: return NSAccessibilityScrollBarRole;
         case AutomationSlider: return NSAccessibilitySliderRole;
         case AutomationSpinner: return NSAccessibilityIncrementorRole;
-        case AutomationStatusBar: return NSAccessibilityTableRole;
+        case AutomationStatusBar: return NSAccessibilityGroupRole;
         case AutomationTab: return NSAccessibilityTabGroupRole;
         case AutomationTabItem: return NSAccessibilityRadioButtonRole;
         case AutomationText: return NSAccessibilityStaticTextRole;
@@ -126,6 +127,7 @@
         case AutomationHeaderItem:  return NSAccessibilityButtonRole;
         case AutomationTable: return NSAccessibilityTableRole;
         case AutomationTitleBar: return NSAccessibilityGroupRole;
+        case AutomationExpander: return NSAccessibilityDisclosureTriangleRole;
         // Treat unknown roles as generic group container items. Returning
         // NSAccessibilityUnknownRole is also possible but makes the screen
        // reader focus on the item instead of passing focus to child items.
@@ -135,6 +137,11 @@
 
 - (NSAccessibilitySubrole)accessibilitySubrole
 {
+    auto controlType = _peer->GetAutomationControlType();
+    switch (controlType) {
+        case AutomationList: return @"AXContentList";
+    }
+
     auto landmarkType = _peer->GetLandmarkType();
     switch (landmarkType) {
         case LandmarkBanner: return @"AXLandmarkBanner";
@@ -145,8 +152,9 @@
         case LandmarkMain: return @"AXLandmarkMain";
         case LandmarkNavigation: return @"AXLandmarkNavigation";
         case LandmarkSearch: return @"AXLandmarkSearch";
-        default: return NSAccessibilityUnknownSubrole;
     }
+
+    return NSAccessibilityUnknownSubrole;
 }
 
 - (NSString *)accessibilityRoleDescription
@@ -163,6 +171,32 @@
         case LandmarkSearch: return @"search";
     }
     return NSAccessibilityRoleDescription([self accessibilityRole], [self accessibilitySubrole]);
+}
+
+// Note: Apple has deprecated this API, but it's still used to set attributes not supported by NSAccessibility
+- (NSArray<NSString *> *)accessibilityAttributeNames
+{
+    if (_attributeNames == nil)
+    {
+        _attributeNames = @[
+            @"AXARIALive", // kAXARIALiveAttribute
+        ];
+    }
+    return _attributeNames;
+}
+
+- (id)accessibilityAttributeValue:(NSAccessibilityAttributeName)attribute
+{
+    if ([attribute isEqualToString:@"AXARIALive" /* kAXARIALiveAttribute */])
+    {
+        switch (_peer->GetLiveSetting())
+        {
+            case LiveSettingPolite: return @"polite";
+            case LiveSettingAssertive: return @"assertive";
+        }
+        return nil;
+    }
+    return nil;
 }
 
 - (NSString *)accessibilityIdentifier
@@ -420,8 +454,15 @@
         @{ NSAccessibilityUIElementsKey: [changed allObjects]});
 }
 
-- (void)raisePropertyChanged
+- (void)raisePropertyChanged:(AvnAutomationProperty)property
 {
+    if (property == AutomationPeer_Name && _peer->GetLiveSetting() != LiveSettingOff)
+        [self raiseLiveRegionChanged];
+}
+
+- (void)raiseLiveRegionChanged
+{
+    NSAccessibilityPostNotification(self, @"AXLiveRegionChanged" /* kAXLiveRegionChangedNotification */);
 }
 
 - (void)setAccessibilityFocused:(BOOL)accessibilityFocused

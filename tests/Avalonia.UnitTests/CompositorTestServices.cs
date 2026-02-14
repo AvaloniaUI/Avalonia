@@ -88,10 +88,11 @@ public class CompositorTestServices : IDisposable
         Events.Rects.Clear();
     }
 
-    public void AssertRenderedVisuals(int renderVisuals)
+    public void AssertRenderedVisuals(int visitedVisuals, int renderVisuals)
     {
         RunJobs();
-        Assert.Equal(Events.RenderedVisuals, renderVisuals);
+        Assert.Equal(visitedVisuals, Events.VisitedVisuals);
+        Assert.Equal(renderVisuals, Events.RenderedVisuals);
         Events.Rects.Clear();
     }
 
@@ -116,22 +117,20 @@ public class CompositorTestServices : IDisposable
     {
         public List<Rect> Rects = new();
 
-        public int RenderedVisuals { get; private set; }
+        public int RenderedVisuals { get; set; }
+        public int VisitedVisuals { get; set; }
 
-        public void IncrementRenderedVisuals()
-        {
-            RenderedVisuals++;
-        }
 
-        public void RectInvalidated(Rect rc)
+        public void RectInvalidated(LtrbRect rc)
         {
-            Rects.Add(rc);
+            Rects.Add(rc.ToRect());
         }
 
         public void Reset()
         {
             Rects.Clear();
             RenderedVisuals = 0;
+            VisitedVisuals = 0;
         }
     }
 
@@ -174,7 +173,7 @@ public class CompositorTestServices : IDisposable
             {
                 var ptr = Marshal.AllocHGlobal(128);
                 return new LockedFramebuffer(ptr, new PixelSize(1, 1), 4, new Vector(96, 96),
-                    PixelFormat.Rgba8888, () => Marshal.FreeHGlobal(ptr));
+                    PixelFormat.Rgba8888, AlphaFormat.Premul, () => Marshal.FreeHGlobal(ptr));
             }
             
             public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);

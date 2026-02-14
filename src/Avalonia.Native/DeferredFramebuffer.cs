@@ -29,6 +29,7 @@ namespace Avalonia.Native
         public int RowBytes { get; set; }
         public Vector Dpi { get; set; }
         public PixelFormat Format { get; set; }
+        public AlphaFormat AlphaFormat { get; set; }
 
         public void Dispose()
         {

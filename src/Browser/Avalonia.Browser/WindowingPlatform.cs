@@ -74,6 +74,9 @@ internal class BrowserWindowingPlatform : IWindowingPlatform
         return null;
     }
 
+    public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+        => throw new NotSupportedException();
+
     public static KeyboardDevice Keyboard => s_keyboard ??
         throw new InvalidOperationException("BrowserWindowingPlatform not registered.");
 

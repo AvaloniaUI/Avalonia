@@ -117,17 +117,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Retrieves a Screen for the display that contains the specified <see cref="IWindowBaseImpl"/>.
-        /// </summary>
-        /// <param name="window">The window impl for which to retrieve the Screen.</param>
-        /// <returns>The <see cref="Screen"/>.</returns>
-        [Obsolete("Use ScreenFromWindow(WindowBase) overload.", true), EditorBrowsable(EditorBrowsableState.Never)]
-        public Screen? ScreenFromWindow(IWindowBaseImpl window)
-        {
-            return _iScreenImpl.ScreenFromWindow(window);
-        }
-
-        /// <summary>
         /// Retrieves a Screen for the display that contains the specified point.
         /// </summary>
         /// <remarks>
