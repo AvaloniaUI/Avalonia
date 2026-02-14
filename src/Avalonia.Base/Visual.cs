@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Data;
@@ -159,7 +160,7 @@ namespace Avalonia
             // Disable transitions until we're added to the visual tree.
             DisableTransitions();
 
-            var visualChildren = new AvaloniaList<Visual>();
+            var visualChildren = new SafeEnumerableList<Visual>();
             visualChildren.ResetBehavior = ResetBehavior.Remove;
             visualChildren.Validator = this;
             visualChildren.CollectionChanged += VisualChildrenChanged;
@@ -554,12 +555,10 @@ namespace Avalonia
             if (ZIndex != 0)
                 _visualParent.HasNonUniformZIndexChildren = true;
 
-            var visualChildren = VisualChildren;
-            var visualChildrenCount = visualChildren.Count;
 
-            for (var i = 0; i < visualChildrenCount; i++)
+            foreach (var child in VisualChildren)
             {
-                if (visualChildren[i] is { } child && child._visualRoot != e.Root) // child may already have been attached within an event handler
+                if (child is { } && child._visualRoot != e.Root) // child may already have been attached within an event handler
                 {
                     child.OnAttachedToVisualTreeCore(e);
                 }
@@ -591,12 +590,10 @@ namespace Avalonia
             DetachedFromVisualTree?.Invoke(this, e);
             e.Root.Renderer.AddDirty(this);
 
-            var visualChildren = VisualChildren;
-            var visualChildrenCount = visualChildren.Count;
 
-            for (var i = 0; i < visualChildrenCount; i++)
+            foreach (var child in VisualChildren)
             {
-                if (visualChildren[i] is { } child)
+                if (child is { })
                 {
                     child.OnDetachedFromVisualTreeCore(e);
                 }
@@ -761,7 +758,7 @@ namespace Avalonia
 
             for (var i = 0; i < count; i++)
             {
-                var visual = (Visual) children[i]!;
+                var visual = (Visual)children[i]!;
 
                 visual.SetVisualParent(parent);
             }
@@ -771,12 +768,11 @@ namespace Avalonia
         {
             base.OnTemplatedParentControlThemeChanged();
 
-            var count = VisualChildren.Count;
             var templatedParent = TemplatedParent;
 
-            for (var i = 0; i < count; ++i)
+            foreach (var child in VisualChildren)
             {
-                if (VisualChildren[i] is StyledElement child &&
+                if (child is not null &&
                     child.TemplatedParent == templatedParent)
                 {
                     child.OnTemplatedParentControlThemeChanged();
