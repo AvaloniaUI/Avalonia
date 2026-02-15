@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
+using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -37,8 +38,9 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
         
         Renderer = new CompositingRenderer(this, PlatformImpl.Compositor, () => PlatformImpl.Surfaces ?? []);
         Renderer.SceneInvalidated += SceneInvalidated;
-        RootVisual = rootVisual;
+        LayoutManager = CreateLayoutManager();
         
+        RootVisual = rootVisual;
     }
 
     // In WPF it's a Visual and it's nullable. For now we have it as non-nullable InputElement since 
@@ -81,6 +83,9 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
     public void Dispose()
     {
+        _layoutDiagnosticBridge?.Dispose();
+        _layoutDiagnosticBridge = null;
+        LayoutManager.Dispose();
         Renderer.SceneInvalidated -= SceneInvalidated;
         // We need to wait for the renderer to complete any in-flight operations
         Renderer.Dispose();

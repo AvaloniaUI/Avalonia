@@ -58,6 +58,11 @@ namespace Avalonia.UnitTests
         public double LayoutScaling { get; set; } = 1;
 
         internal ILayoutManager LayoutManager { get; set; }
+
+        ILayoutRoot IPresentationSource.LayoutRoot => this;
+
+        Layoutable ILayoutRoot.RootVisual => RootElement;
+
         ILayoutManager ILayoutRoot.LayoutManager => LayoutManager;
 
         public Visual? RootVisual => this;

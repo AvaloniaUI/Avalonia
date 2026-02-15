@@ -1218,7 +1218,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static void Layout(Control c)
         {
-            (c.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
+            c.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         private static ContentPresenter GetContainer(ItemsControl target, int index = 0)

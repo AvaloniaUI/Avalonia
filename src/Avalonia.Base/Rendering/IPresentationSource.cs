@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering;
@@ -13,6 +14,8 @@ public interface IPresentationSource
     internal IHitTester HitTester { get; }
     
     internal IInputRoot InputRoot { get; }
+
+    internal ILayoutRoot LayoutRoot { get; }
     
     public Visual? RootVisual { get; }
     

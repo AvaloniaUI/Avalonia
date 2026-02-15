@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
@@ -463,6 +464,14 @@ namespace Avalonia.VisualTree
 
         // TODO: Verify all usages, this is no longer necessary a TopLevel
         internal static Visual? GetVisualRoot(this Visual visual) => visual.PresentationSource?.RootVisual;
+
+        internal static ILayoutRoot? GetLayoutRoot(this Visual visual) => visual.PresentationSource?.LayoutRoot;
+
+        /// <summary>
+        /// Gets the layout manager for the visual's presentation source, or null if the visual is not attached to a visual root.
+        /// </summary>
+        public static ILayoutManager? GetLayoutManager(this Visual visual) =>
+            visual.PresentationSource?.LayoutRoot.LayoutManager;
 
         /// <summary>
         /// Attempts to obtain platform settings from the visual's root.

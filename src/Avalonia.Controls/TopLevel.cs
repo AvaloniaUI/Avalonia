@@ -39,7 +39,6 @@ namespace Avalonia.Controls
     /// </remarks>
     [TemplatePart("PART_TransparencyFallback", typeof(Border))]
     public abstract class TopLevel : ContentControl,
-        ILayoutRoot,
         ICloseable,
         IStyleHost,
         ILogicalRoot
@@ -126,12 +125,10 @@ namespace Avalonia.Controls
         private Size _clientSize;
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
-        private ILayoutManager? _layoutManager;
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
         private Screens? _screens;
-        private LayoutDiagnosticBridge? _layoutDiagnosticBridge;
         private PresentationSource _source;
         internal PresentationSource PresentationSource => _source;
         internal IInputRoot InputRoot => _source;
@@ -384,26 +381,7 @@ namespace Avalonia.Controls
             remove => RemoveHandler(BackRequestedEvent, value);
         }
 
-        internal ILayoutManager LayoutManager
-        {
-            get
-            {
-                if (_layoutManager is null)
-                {
-                    _layoutManager = CreateLayoutManager();
-
-                    if (_layoutManager is LayoutManager typedLayoutManager)
-                    {
-                        _layoutDiagnosticBridge = new LayoutDiagnosticBridge(Renderer.Diagnostics, typedLayoutManager);
-                        _layoutDiagnosticBridge.SetupBridge();
-                    }
-                }
-
-                return _layoutManager;
-            }
-        }
-
-        ILayoutManager ILayoutRoot.LayoutManager => LayoutManager;
+        internal ILayoutManager LayoutManager => _source.LayoutManager;
 
         /// <summary>
         /// Gets the platform-specific window implementation.
@@ -503,8 +481,6 @@ namespace Avalonia.Controls
         {
             return control.GetValue(AutoSafeAreaPaddingProperty);
         }
-
-        double ILayoutRoot.LayoutScaling => _scaling;
 
         /// <inheritdoc/>
         public double RenderScaling => _scaling;
@@ -642,11 +618,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Creates the layout manager for this <see cref="TopLevel" />.
-        /// </summary>
-        private protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
-
-        /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
         /// <param name="rect">The dirty area.</param>
@@ -682,9 +653,6 @@ namespace Avalonia.Controls
                 _applicationThemeHost.ActualThemeVariantChanged -= GlobalActualThemeVariantChanged;
             }
             
-
-            _layoutDiagnosticBridge?.Dispose();
-            _layoutDiagnosticBridge = null;
             _backGestureSubscription?.Dispose();
 
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
@@ -862,50 +830,6 @@ namespace Avalonia.Controls
             }
 
             return scaling;
-        }
-
-        /// <summary>
-        /// Provides layout pass timing from the layout manager to the renderer, for diagnostics purposes.
-        /// </summary>
-        private sealed class LayoutDiagnosticBridge : IDisposable
-        {
-            private readonly RendererDiagnostics _diagnostics;
-            private readonly LayoutManager _layoutManager;
-            private bool _isHandling;
-
-            public LayoutDiagnosticBridge(RendererDiagnostics diagnostics, LayoutManager layoutManager)
-            {
-                _diagnostics = diagnostics;
-                _layoutManager = layoutManager;
-
-                diagnostics.PropertyChanged += OnDiagnosticsPropertyChanged;
-            }
-
-            public void SetupBridge()
-            {
-                var needsHandling = (_diagnostics.DebugOverlays & RendererDebugOverlays.LayoutTimeGraph) != 0;
-                if (needsHandling != _isHandling)
-                {
-                    _isHandling = needsHandling;
-                    _layoutManager.LayoutPassTimed = needsHandling
-                        ? timing => _diagnostics.LastLayoutPassTiming = timing
-                        : null;
-                }
-            }
-
-            private void OnDiagnosticsPropertyChanged(object? sender, PropertyChangedEventArgs e)
-            {
-                if (e.PropertyName == nameof(RendererDiagnostics.DebugOverlays))
-                {
-                    SetupBridge();
-                }
-            }
-
-            public void Dispose()
-            {
-                _diagnostics.PropertyChanged -= OnDiagnosticsPropertyChanged;
-                _layoutManager.LayoutPassTimed = null;
-            }
         }
     }
 }

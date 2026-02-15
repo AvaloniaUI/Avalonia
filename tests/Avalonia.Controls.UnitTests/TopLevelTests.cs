@@ -82,11 +82,11 @@ namespace Avalonia.Controls.UnitTests
             {
                 var impl = CreateMockTopLevelImpl();
                 
-                var target = new TestTopLevel(impl.Object, Mock.Of<ILayoutManager>());
-
+                var target = new TestTopLevel(impl.Object);
+                
                 // The layout pass should be scheduled by the derived class.
-                var layoutManagerMock = Mock.Get(target.LayoutManager);
-                layoutManagerMock.Verify(x => x.ExecuteLayoutPass(), Times.Never);
+                Assert.Equal(0, target.Measured);
+                Assert.Equal(0, target.Arranged);
             }
         }
 
@@ -255,22 +255,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Close_Should_Dispose_LayoutManager()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var impl = CreateMockTopLevelImpl(true);
-
-                var layoutManager = new Mock<ILayoutManager>();
-                var target = new TestTopLevel(impl.Object, layoutManager.Object);
-
-                impl.Object.Closed!();
-
-                layoutManager.Verify(x => x.Dispose());
-            }
-        }
-
-        [Fact]
         public void Reacts_To_Changes_In_Global_Styles()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -329,18 +313,20 @@ namespace Avalonia.Controls.UnitTests
             return topLevel;
         }
 
-        private class TestTopLevel : TopLevel
+        private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl)
         {
-            private readonly ILayoutManager _layoutManager;
-            public bool IsClosed { get; private set; }
-
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
-                : base(impl)
+            public int Measured, Arranged;
+            protected override Size MeasureCore(Size availableSize)
             {
-                _layoutManager = layoutManager ?? new LayoutManager(this);
+                Measured++;
+                return base.MeasureCore(availableSize);
             }
 
-            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
+            protected override void ArrangeCore(Rect finalRect)
+            {
+                Arranged++;
+                base.ArrangeCore(finalRect);
+            }
         }
     }
 }

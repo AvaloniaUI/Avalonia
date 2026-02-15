@@ -9,6 +9,7 @@ using Avalonia.Metadata;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 #nullable enable
 
@@ -20,7 +21,7 @@ namespace Avalonia.Layout
     internal class LayoutManager : ILayoutManager, IDisposable
     {
         private const int MaxPasses = 10;
-        private readonly Layoutable _owner;
+        private readonly ILayoutRoot _owner;
         private readonly LayoutQueue<Layoutable> _toMeasure = new LayoutQueue<Layoutable>(v => !v.IsMeasureValid);
         private readonly LayoutQueue<Layoutable> _toArrange = new LayoutQueue<Layoutable>(v => !v.IsArrangeValid);
         private readonly List<Layoutable> _toArrangeAfterMeasure = new();
@@ -33,7 +34,7 @@ namespace Avalonia.Layout
 
         public LayoutManager(ILayoutRoot owner)
         {
-            _owner = owner as Layoutable ?? throw new ArgumentNullException(nameof(owner));
+            _owner = owner;
             _invokeOnRender = ExecuteQueuedLayoutPass;
         }
 
@@ -62,7 +63,7 @@ namespace Avalonia.Layout
 #endif
             }
 
-            if (control.VisualRoot != _owner)
+            if (control.GetLayoutRoot() != _owner)
             {
                 throw new ArgumentException("Attempt to call InvalidateMeasure on wrong LayoutManager.");
             }
@@ -92,7 +93,7 @@ namespace Avalonia.Layout
 #endif
             }
 
-            if (control.VisualRoot != _owner)
+            if (control.GetLayoutRoot() != _owner)
             {
                 throw new ArgumentException("Attempt to call InvalidateArrange on wrong LayoutManager.");
             }
@@ -187,9 +188,12 @@ namespace Avalonia.Layout
 
             try
             {
+                if (_owner?.RootVisual == null)
+                    return;
+                var root = _owner.RootVisual;
                 _running = true;
-                Measure(_owner);
-                Arrange(_owner);
+                Measure(root);
+                Arrange(root);
             }
             finally
             {
@@ -299,7 +303,7 @@ namespace Avalonia.Layout
             // control to be removed.
             if (!control.IsMeasureValid)
             {
-                if (control is ILayoutRoot root)
+                if (control.GetLayoutRoot()?.RootVisual == control)
                 {
                     control.Measure(Size.Infinity);
                 }
@@ -328,7 +332,7 @@ namespace Avalonia.Layout
 
             if (!control.IsArrangeValid)
             {
-                if (control is ILayoutRoot root)
+                if (control.GetLayoutRoot()?.RootVisual == control)
                     control.Arrange(new Rect(control.DesiredSize));
                 else if (control.PreviousArrange != null)
                 {

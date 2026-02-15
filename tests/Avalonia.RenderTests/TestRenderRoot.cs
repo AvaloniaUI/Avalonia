@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
+using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 
 
 namespace Avalonia.Skia.RenderTests
 {
-    public class TestRenderRoot : Decorator, IPresentationSource, IInputRoot
+    public class TestRenderRoot : Decorator, IPresentationSource, IInputRoot, ILayoutRoot
     {
         private readonly IRenderTarget _renderTarget;
         public Size ClientSize { get; private set; }
@@ -19,6 +20,15 @@ namespace Avalonia.Skia.RenderTests
         IRenderer IPresentationSource.Renderer => Renderer;
         IHitTester IPresentationSource.HitTester => new NullHitTester();
         public IInputRoot InputRoot => this;
+
+        ILayoutRoot IPresentationSource.LayoutRoot => this;
+
+        public double LayoutScaling => 1l;
+
+        public ILayoutManager LayoutManager { get; }
+
+        Layoutable ILayoutRoot.RootVisual => this;
+
         public Visual? RootVisual => this;
         public double RenderScaling { get; }
 
@@ -26,7 +36,8 @@ namespace Avalonia.Skia.RenderTests
         {
             _renderTarget = renderTarget;
             RenderScaling = scaling;
-            
+            LayoutManager = new LayoutManager(this);
+
         }
         
         class NullHitTester : IHitTester

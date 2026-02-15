@@ -168,7 +168,7 @@ namespace Avalonia.Controls
             item.IsExpanded = true;
 
             if (item.Presenter?.Panel is null)
-                (this.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
+                this.GetLayoutManager()?.ExecuteLayoutPass();
 
             if (item.Presenter?.Panel is { } panel)
             {
