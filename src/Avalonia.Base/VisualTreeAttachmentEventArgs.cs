@@ -41,7 +41,7 @@ namespace Avalonia
         
         /// <summary>
         /// The root visual of the tree this visual is being attached to or detached from.
-        /// This is guaranteed to be non-null and will be the same as <see cref="PresentationSource.RootVisual"/>.
+        /// This is guaranteed to be non-null and will be the same as <see cref="IPresentationSource.RootVisual"/>.
         /// </summary>
         public Visual RootVisual => PresentationSource.RootVisual!;
     }
