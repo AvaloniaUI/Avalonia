@@ -582,7 +582,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
 
             if (matrix == null)
             {
-                if (target.GetVisualRoot() == null)
+                if (!target.IsAttachedToVisualTree)
                     throw new InvalidOperationException("Target control is not attached to the visual tree");
                 throw new InvalidOperationException("Target control is not in the same tree as the popup parent");
             }

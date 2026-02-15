@@ -368,7 +368,7 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether this control is attached to a visual root.
         /// </summary>
-        internal bool IsAttachedToVisualTree => VisualRoot != null;
+        internal bool IsAttachedToVisualTree => this.PresentationSource != null;
 
         /// <summary>
         /// Gets the control's parent visual.

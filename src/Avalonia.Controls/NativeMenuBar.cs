@@ -34,7 +34,7 @@ namespace Avalonia.Controls
                     ?? this.FindDescendantOfType<MenuBase>()
                     ?? throw new InvalidOperationException("NativeMenuBar requires a MenuBase#PART_NativeMenuPresenter template part.");
             
-            if (VisualRoot is TopLevel topLevel)
+            if (TopLevel.GetTopLevel(this) is {} topLevel)
             {
                 SubscribeToToplevel(topLevel, _menu);
             }
