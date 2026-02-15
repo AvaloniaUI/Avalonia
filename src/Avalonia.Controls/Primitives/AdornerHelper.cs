@@ -122,7 +122,7 @@ class AdornerHelper
         // If ClipToBounds = true, add extra RectangleGeometry for Bounds.Size
         
         Geometry? result = null;
-        var ancestor = adornedElement.VisualParent;
+        var ancestor = adornedElement;
 
         while (ancestor != null)
         {
@@ -156,7 +156,10 @@ class AdornerHelper
                     if (transform.HasValue && !transform.Value.IsIdentity)
                     {
                         ancestorClip = ancestorClip.Clone();
-                        ancestorClip.Transform = new MatrixTransform(transform.Value);
+                        var matrix = ancestorClip.Transform is { Value.IsIdentity: false }
+                            ? transform.Value * ancestorClip.Transform.Value
+                            : transform.Value;
+                        ancestorClip.Transform = new MatrixTransform(matrix);
                     }
 
                     // Combine with existing result

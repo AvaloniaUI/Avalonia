@@ -74,6 +74,7 @@ namespace Avalonia.Input.TextInput
 
         void UpdateMatrix()
         {
+            _queuedForUpdate = false;
             Matrix? matrix = null;
             if (_visual != null && _visual.VisualRoot != null)
                 matrix = _visual.TransformToVisual((Visual)_visual.VisualRoot);
