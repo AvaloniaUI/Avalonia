@@ -75,11 +75,12 @@ namespace Avalonia.Platform
             _lastPosition = pt;
 
             RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData!, _allowedEffects, modifiers);
-            var tl = (root as Visual)?.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
-            tl?.PlatformImpl?.Input?.Invoke(rawEvent);
+            var source = (PresentationSource?)root.RootElement.PresentationSource;
+            
+            source?.PlatformImpl?.Input?.Invoke(rawEvent);
 
             var effect = GetPreferredEffect(rawEvent.Effects & _allowedEffects, modifiers);
-            UpdateCursor(tl?.PresentationSource, effect);
+            UpdateCursor(source, effect);
             return effect;
         }
 
@@ -197,7 +198,7 @@ namespace Avalonia.Platform
 
                     if (e.Root != _lastSource)
                     {
-                        if (_lastSource?.RootElement is Visual lr && e.Root is Visual r)
+                        if (_lastSource?.RootElement is Visual lr && e.Root.RootElement is Visual r)
                             RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastSource, lr.PointToClient(r.PointToScreen(e.Position)), e.InputModifiers);
                         RaiseEventAndUpdateCursor(RawDragEventType.DragEnter, e.Root, e.Position, e.InputModifiers);
                     }

@@ -65,18 +65,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
     IFocusManager? IInputRoot.FocusManager => FocusManager;
 
     IPlatformSettings? IPresentationSource.PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
-
-    IInputElement? IInputRoot.PointerOverElement
-    {
-        get => field;
-        set
-        {
-            field = value;
-            SetCursor(value?.Cursor);
-        }
-    }
-
-
+    
     ITextInputMethodImpl? IInputRoot.InputMethod => PlatformImpl?.TryGetFeature<ITextInputMethodImpl>();
     public InputElement RootElement => RootVisual;
 
@@ -93,6 +82,8 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
         PlatformImpl = null;
         _pointerOverPreProcessor?.OnCompleted();
         _pointerOverPreProcessorSubscription?.Dispose();
+        if (((IInputRoot)this).PointerOverElement is AvaloniaObject pointerOverElement)
+            pointerOverElement.PropertyChanged -= PointerOverElement_PropertyChanged;
     }
     
     /// <summary>
