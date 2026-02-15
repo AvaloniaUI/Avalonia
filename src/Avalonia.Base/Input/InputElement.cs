@@ -583,7 +583,7 @@ namespace Avalonia.Input
 
             if (IsFocused)
             {
-                var root = e.AttachmentPoint ?? this.GetVisualRoot();
+                var root = e.AttachmentPoint ?? e.RootVisual;
                 if (root != null)
                     ((FocusManager?)e.PresentationSource.InputRoot.FocusManager)
                         ?.ClearFocusOnElementRemoved(this, root);

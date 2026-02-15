@@ -33,7 +33,7 @@ internal partial class PresentationSource
                 old.PropertyChanged -= PointerOverElement_PropertyChanged;
             field = value;
             if (field is AvaloniaObject @new)
-                @new.PropertyChanged -= PointerOverElement_PropertyChanged;
+                @new.PropertyChanged += PointerOverElement_PropertyChanged;
             SetCursor(value?.Cursor);
         }
     }

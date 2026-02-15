@@ -16,8 +16,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
             Border.CornerRadiusProperty.AddOwner<ExperimentalAcrylicBorder>();
 
-        public static readonly StyledProperty<ExperimentalAcrylicMaterial> MaterialProperty =
-            AvaloniaProperty.Register<ExperimentalAcrylicBorder, ExperimentalAcrylicMaterial>(nameof(Material));
+        public static readonly StyledProperty<ExperimentalAcrylicMaterial?> MaterialProperty =
+            AvaloniaProperty.Register<ExperimentalAcrylicBorder, ExperimentalAcrylicMaterial?>(nameof(Material));
 
         private IDisposable? _subscription;
         private IDisposable? _materialSubscription;
@@ -39,7 +39,7 @@ namespace Avalonia.Controls
             set => SetValue(CornerRadiusProperty, value);
         }
 
-        public ExperimentalAcrylicMaterial Material
+        public ExperimentalAcrylicMaterial? Material
         {
             get => GetValue(MaterialProperty);
             set => SetValue(MaterialProperty, value);
@@ -56,7 +56,7 @@ namespace Avalonia.Controls
                 _subscription = tl.GetObservable(TopLevel.ActualTransparencyLevelProperty)
                     .Subscribe(x =>
                     {
-                        if (tl.PlatformImpl is null)
+                        if (tl.PlatformImpl is null || Material is null)
                             return;
                         if (x == WindowTransparencyLevel.Transparent || x == WindowTransparencyLevel.None)
                             Material.PlatformTransparencyCompensationLevel =
@@ -69,7 +69,7 @@ namespace Avalonia.Controls
                                 tl.PlatformImpl.AcrylicCompensationLevels.AcrylicBlurLevel;
                     });
             }
-            else
+            else if (Material != null)
                 Material.PlatformTransparencyCompensationLevel = 1;
 
             UpdateMaterialSubscription();
@@ -95,7 +95,9 @@ namespace Avalonia.Controls
             if (visual is CompositionExperimentalAcrylicVisual v)
             {
                 v.CornerRadius = CornerRadius;
-                v.Material = (ImmutableExperimentalAcrylicMaterial)Material.ToImmutable();
+                v.Material = (Material?.ToImmutable()) is ImmutableExperimentalAcrylicMaterial material
+                    ? material
+                    : default(ImmutableExperimentalAcrylicMaterial);
             }
         }
         
