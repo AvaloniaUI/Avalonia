@@ -38,7 +38,7 @@ namespace Avalonia.Controls.UnitTests
         {
             _toolTipOpenSubscription = ToolTip.IsOpenProperty.Changed.Subscribe(new AnonymousObserver<AvaloniaPropertyChangedEventArgs<bool>>(e =>
             {
-                if (e.Sender is Visual { VisualRoot: TopLevel {} root } visual)
+                if (e.Sender is Visual visual && TopLevel.GetTopLevel(visual) is {} root)
                     OverlayLayer.GetOverlayLayer(visual)?.Measure(root.ClientSize);
             }));
         }
@@ -577,7 +577,7 @@ namespace Avalonia.Controls.UnitTests
                 hitTesterMock.Setup(m => m.HitTestFirst(point, window, It.IsAny<Func<Visual, bool>>()))
                     .Returns(control);
 
-                var root = (IInputRoot?)control?.VisualRoot?.PresentationSource ?? window.InputRoot;
+                var root = control?.GetInputRoot() ?? window.InputRoot;
                 var timestamp = (ulong)DateTime.Now.Ticks;
 
                 windowImpl.Object.Input!(new RawPointerEventArgs(s_mouseDevice, timestamp, root,

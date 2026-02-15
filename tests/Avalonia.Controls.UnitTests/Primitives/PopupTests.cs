@@ -1170,7 +1170,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var ev = new PointerPressedEventArgs(
                     popupContent,
                     pointer,
-                    (PopupRoot)popupContent.VisualRoot!,
+                    (PopupRoot)TopLevel.GetTopLevel(popupContent)!,
                     new Point(50 , 50),
                     0,
                     new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),

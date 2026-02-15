@@ -300,7 +300,7 @@ namespace Avalonia.Controls.Platform
             Menu.AddHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.AddHandler(InputElement.PointerMovedEvent, PointerMoved);
 
-            _root = Menu.VisualRoot;
+            _root = Menu.TopLevel;
 
             if (_root is not null)
             {
