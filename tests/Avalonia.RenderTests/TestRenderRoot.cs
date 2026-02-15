@@ -23,7 +23,7 @@ namespace Avalonia.Skia.RenderTests
 
         ILayoutRoot IPresentationSource.LayoutRoot => this;
 
-        public double LayoutScaling => 1l;
+        public double LayoutScaling => 1d;
 
         public ILayoutManager LayoutManager { get; }
 
@@ -74,7 +74,7 @@ namespace Avalonia.Skia.RenderTests
         public IPlatformSettings? PlatformSettings { get; }
         public IInputElement? PointerOverElement { get; set; }
         public ITextInputMethodImpl? InputMethod { get; }
-        public InputElement RootElement { get; }
-        
+        public InputElement RootElement => this;
+
     }
 }

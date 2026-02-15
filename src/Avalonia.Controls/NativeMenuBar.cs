@@ -47,7 +47,7 @@ namespace Avalonia.Controls
             if (_menu is null)
                 return;
 
-            if (e.Root is TopLevel topLevel)
+            if (TopLevel.GetTopLevel(this) is {} topLevel)
             {
                 SubscribeToToplevel(topLevel, _menu);
             }

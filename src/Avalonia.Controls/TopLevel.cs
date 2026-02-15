@@ -116,7 +116,7 @@ namespace Avalonia.Controls
         private readonly IAccessKeyHandler? _accessKeyHandler;
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         [Obsolete("For unit tests only")]
-        private protected IKeyboardNavigationHandler Tests_KeyboardNavigationHandler => _keyboardNavigationHandler;
+        private protected IKeyboardNavigationHandler Tests_KeyboardNavigationHandler => _keyboardNavigationHandler!;
         private readonly IGlobalStyles? _globalStyles;
         private readonly IThemeVariantHost? _applicationThemeHost;
         private readonly IDisposable? _backGestureSubscription;
@@ -129,8 +129,8 @@ namespace Avalonia.Controls
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
         private Screens? _screens;
-        private PresentationSource _source;
-        internal PresentationSource PresentationSource => _source;
+        private readonly PresentationSource _source;
+        internal new PresentationSource PresentationSource => _source;
         internal IInputRoot InputRoot => _source;
         
         /// <summary>

@@ -32,7 +32,7 @@ namespace Avalonia.Input
                 typeof(AccessKeyHandler));
 
         /// <summary>
-        /// Defines the <see cref="ShowAccessKey"/> attached property.
+        /// Defines the ShowAccessKey attached property.
         /// </summary>
         public static readonly AttachedProperty<bool> ShowAccessKeyProperty =
             AvaloniaProperty.RegisterAttached<AccessKeyHandler, Visual, bool>("ShowAccessKey", inherits: true);

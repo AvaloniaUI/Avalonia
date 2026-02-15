@@ -49,20 +49,29 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            var tl = (TopLevel)e.Root;
+            var tl = TopLevel.GetTopLevel(this);
+            if (tl != null)
+            {
 
-            _subscription = tl.GetObservable(TopLevel.ActualTransparencyLevelProperty)
-                .Subscribe(x =>
-                {
-                    if (tl.PlatformImpl is null)
-                        return;
-                    if (x == WindowTransparencyLevel.Transparent || x == WindowTransparencyLevel.None)
-                        Material.PlatformTransparencyCompensationLevel = tl.PlatformImpl.AcrylicCompensationLevels.TransparentLevel;
-                    else if (x == WindowTransparencyLevel.Blur)
-                        Material.PlatformTransparencyCompensationLevel = tl.PlatformImpl.AcrylicCompensationLevels.BlurLevel;
-                    else if (x == WindowTransparencyLevel.AcrylicBlur)
-                        Material.PlatformTransparencyCompensationLevel = tl.PlatformImpl.AcrylicCompensationLevels.AcrylicBlurLevel;
-                });
+                _subscription = tl.GetObservable(TopLevel.ActualTransparencyLevelProperty)
+                    .Subscribe(x =>
+                    {
+                        if (tl.PlatformImpl is null)
+                            return;
+                        if (x == WindowTransparencyLevel.Transparent || x == WindowTransparencyLevel.None)
+                            Material.PlatformTransparencyCompensationLevel =
+                                tl.PlatformImpl.AcrylicCompensationLevels.TransparentLevel;
+                        else if (x == WindowTransparencyLevel.Blur)
+                            Material.PlatformTransparencyCompensationLevel =
+                                tl.PlatformImpl.AcrylicCompensationLevels.BlurLevel;
+                        else if (x == WindowTransparencyLevel.AcrylicBlur)
+                            Material.PlatformTransparencyCompensationLevel =
+                                tl.PlatformImpl.AcrylicCompensationLevels.AcrylicBlurLevel;
+                    });
+            }
+            else
+                Material.PlatformTransparencyCompensationLevel = 1;
+
             UpdateMaterialSubscription();
         }
 

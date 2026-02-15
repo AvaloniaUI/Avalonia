@@ -27,8 +27,6 @@ namespace Avalonia.Controls.Primitives
         private PopupPositionRequest? _popupPositionRequest;
         private Size _popupSize;
         private bool _needsUpdate;
-        private ITextInputMethodImpl? _inputMethod;
-        private InputElement _rootElement;
 
         static OverlayPopupHost()
             => KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<OverlayPopupHost>(KeyboardNavigationMode.Cycle);

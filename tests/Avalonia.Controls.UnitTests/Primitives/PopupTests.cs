@@ -657,13 +657,15 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 button.Focus();
 
-                var inputRoot = ((Visual)popup.Host).GetInputRoot();
+                var inputRoot = ((Visual)popup.Host!).GetInputRoot();
 
-                var focusManager = inputRoot.FocusManager!;
+                var focusManager = inputRoot!.FocusManager!;
                 Assert.Same(button, focusManager.GetFocusedElement());
 
                 //Ensure focus remains in the popup
-                popup.Host.Tests_KeyboardNavigationHandler.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
+#pragma warning disable CS0618 // Type or member is obsolete
+                popup.Host!.Tests_KeyboardNavigationHandler.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Same(textBox, focusManager.GetFocusedElement());
 
                 popup.Close();
@@ -702,9 +704,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 button.Focus();
 
-                var inputRoot = ((Visual)popup.Host).GetInputRoot();
+                var inputRoot = ((Visual)popup.Host!).GetInputRoot();
 
-                var focusManager = inputRoot.FocusManager!;
+                var focusManager = inputRoot!.FocusManager!;
                 Assert.Same(button, focusManager.GetFocusedElement());
 
                 border1.Child = null;

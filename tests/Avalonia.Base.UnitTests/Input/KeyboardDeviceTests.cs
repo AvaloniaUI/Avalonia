@@ -22,11 +22,11 @@ namespace Avalonia.Base.UnitTests.Input
                     if (sender == window && ev.RoutedEvent == InputElement.KeyDownEvent)
                         raised++;
                 };
-                KeyboardDevice.Instance.ProcessRawEvent(
+                KeyboardDevice.Instance!.ProcessRawEvent(
                     new RawKeyEventArgs(
                         KeyboardDevice.Instance,
                         0,
-                        window.GetInputRoot(),
+                        window.GetInputRoot()!,
                         RawKeyEventType.KeyDown,
                         Key.A,
                         RawInputModifiers.None,
@@ -78,11 +78,11 @@ namespace Avalonia.Base.UnitTests.Input
                     if (sender == window && ev.RoutedEvent == InputElement.TextInputEvent)
                         raised++;
                 };
-                KeyboardDevice.Instance.ProcessRawEvent(
+                KeyboardDevice.Instance!.ProcessRawEvent(
                     new RawTextInputEventArgs(
                         KeyboardDevice.Instance,
                         0,
-                        window.GetInputRoot(),
+                        window.GetInputRoot()!,
                         "Foo"));
                 Assert.Equal(1, raised);
             }

@@ -16,8 +16,7 @@ internal partial class PresentationSource
     /// <summary>
     /// Handles input from <see cref="ITopLevelImpl.Input"/>.
     /// </summary>
-    /// <param name="e">The event args.</param>
-    private void HandleInputCore(object state)
+    private void HandleInputCore(object? state)
     {
         using var _ = Diagnostic.BeginLayoutInputPass();
 

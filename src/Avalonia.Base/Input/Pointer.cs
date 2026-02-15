@@ -115,7 +115,7 @@ namespace Avalonia.Input
 
         private void OnCaptureDetached(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            Capture(GetNextCapture(e.Parent));
+            Capture(GetNextCapture(e.AttachmentPoint));
         }
 
 

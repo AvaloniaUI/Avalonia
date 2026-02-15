@@ -5,6 +5,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -12,7 +13,7 @@ namespace Avalonia.Controls
 {
     public class NativeControlHost : Control
     {
-        private TopLevel? _currentRoot;
+        private PresentationSource? _currentRoot;
         private INativeControlHostImpl? _currentHost;
         private INativeControlHostControlTopLevelAttachment? _attachment;
         private IPlatformHandle? _nativeControlHandle;
@@ -43,7 +44,7 @@ namespace Avalonia.Controls
         /// <inheritdoc />
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            _currentRoot = e.Root as TopLevel;
+            _currentRoot = (PresentationSource)e.PresentationSource;
             var visual = (Visual)this;
             while (visual != null)
             {
@@ -147,7 +148,7 @@ namespace Avalonia.Controls
 
             var bounds = Bounds;
             // Native window is not rendered by Avalonia
-            var transformToVisual = this.TransformToVisual(_currentRoot);
+            var transformToVisual = _currentRoot.RootVisual != null ? this.TransformToVisual(_currentRoot.RootVisual) : null;
             if (transformToVisual == null)
                 return null;
             var position = new Rect(default, bounds.Size).TransformToAABB(transformToVisual.Value).Position;

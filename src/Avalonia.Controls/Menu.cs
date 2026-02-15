@@ -88,7 +88,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            var inputRoot = e.Root as TopLevel;
+            var inputRoot = TopLevel.GetTopLevel(this);
 
             if (inputRoot?.AccessKeyHandler != null)
             {

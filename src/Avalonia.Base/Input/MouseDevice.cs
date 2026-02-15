@@ -142,7 +142,7 @@ namespace Avalonia.Input
             device = device ?? throw new ArgumentNullException(nameof(device));
             root = root ?? throw new ArgumentNullException(nameof(root));
 
-            var source = _pointer.Captured ?? root.RootElement?.InputHitTest(p);
+            var source = _pointer.Captured ?? root.RootElement.InputHitTest(p);
 
             if (source != null)
             {

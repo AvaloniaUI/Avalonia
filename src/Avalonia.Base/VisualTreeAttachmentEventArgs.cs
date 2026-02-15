@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Avalonia.Rendering;
 
 namespace Avalonia
@@ -16,6 +17,7 @@ namespace Avalonia
         /// <param name="presentationSource">Presentation source this visual is being attached to.</param>
         public VisualTreeAttachmentEventArgs(Visual? attachmentPoint, IPresentationSource presentationSource)
         {
+            Debug.Assert(presentationSource.RootVisual != null);
             AttachmentPoint = attachmentPoint;
             PresentationSource = presentationSource ?? throw new ArgumentNullException(nameof(presentationSource));
         }
@@ -34,8 +36,13 @@ namespace Avalonia
         /// </summary>
         public IPresentationSource PresentationSource { get; }
 
-        [Obsolete("Don't use")]
-        // TODO: Remove all usages from the codebase, write docs explaining that this is not necessary a TopLevel
+        [Obsolete("This was previously always returning TopLevel. This is no longer guaranteed. Use TopLevel.GetTopLevel(this) if you need a TopLevel or args.RootVisual if you are interested in the root of the visual tree.")]
         public Visual Root => PresentationSource.RootVisual!;
+        
+        /// <summary>
+        /// The root visual of the tree this visual is being attached to or detached from.
+        /// This is guaranteed to be non-null and will be the same as <see cref="PresentationSource.RootVisual"/>.
+        /// </summary>
+        public Visual RootVisual => PresentationSource.RootVisual!;
     }
 }
