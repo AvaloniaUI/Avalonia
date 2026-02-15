@@ -16,7 +16,7 @@ namespace Avalonia.Input
         /// <remarks>
         /// Focus manager can be null only if window wasn't initialized yet.
         /// </remarks>
-        internal IFocusManager? FocusManager { get; }
+        public IFocusManager? FocusManager { get; }
         
         /// <summary>
         /// Gets or sets the input element that the pointer is currently over.
