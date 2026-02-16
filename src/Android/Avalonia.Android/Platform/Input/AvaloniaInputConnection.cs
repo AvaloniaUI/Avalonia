@@ -157,8 +157,7 @@ namespace Avalonia.Android.Platform.Input
                     }
                 case ImeAction.Next:
                     {
-                        ((FocusManager?)_toplevel.InputRoot.FocusManager)?
-                            .TryMoveFocus(NavigationDirection.Next);
+                        ((FocusManager?)_toplevel.InputRoot?.FocusManager)?.TryMoveFocus(NavigationDirection.Next);
                         break;
                     }
             }
