@@ -9,7 +9,7 @@ partial class X11Window
 {
     public class XEmbedClientWindowMode : X11WindowMode
     {
-        EmbeddableControlRoot? Root => Window._inputRoot as EmbeddableControlRoot;
+        EmbeddableControlRoot? Root => Window._inputRoot?.RootElement as EmbeddableControlRoot;
         private bool _focusedInEmbedder;
         private bool _embedderActivated;
         private bool _disabled;

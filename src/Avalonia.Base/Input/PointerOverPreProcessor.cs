@@ -64,7 +64,7 @@ namespace Avalonia.Input
                             args.InputModifiers.ToKeyModifiers());
                     }
                 }
-                else if (args.Type is RawPointerEventType.TouchBegin or RawPointerEventType.TouchUpdate && args.Root is Visual visual)
+                else if (args.Type is RawPointerEventType.TouchBegin or RawPointerEventType.TouchUpdate && args.Root.RootElement is {} visual)
                 {
                     _lastKnownPosition = visual.PointToScreen(args.Position);
                 }
