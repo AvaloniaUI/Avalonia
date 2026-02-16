@@ -245,8 +245,9 @@ namespace Avalonia
             Action<IClassicDesktopStyleApplicationLifetime>? lifetimeBuilder = null)
         {
             var lifetime = PrepareLifetime(builder, args, lifetimeBuilder);
+            var result = builder.SetupWithLifetime(lifetime);
             lifetime.SetupCore(args);
-            return builder.SetupWithLifetime(lifetime);
+            return result;
         }
 
         /// <summary>
