@@ -35,7 +35,7 @@ namespace Avalonia.Input
             if (target == null)
                 return DragDropEffects.None;
 
-            var p = ((Visual)inputRoot).TranslatePoint(point, target);
+            var p = (inputRoot.RootElement).TranslatePoint(point, target);
 
             if (!p.HasValue)
                 return DragDropEffects.None;
