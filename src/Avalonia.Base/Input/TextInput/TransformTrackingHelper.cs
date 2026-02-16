@@ -24,7 +24,7 @@ namespace Avalonia.Input.TextInput
             if (visual != null)
             {
                 visual.AttachedToVisualTree += OnAttachedToVisualTree;
-                visual.DetachedFromVisualTree -= OnDetachedFromVisualTree;
+                visual.DetachedFromVisualTree += OnDetachedFromVisualTree;
                 if (visual.IsAttachedToVisualTree)
                     SubscribeToParents();
                 UpdateMatrix();
