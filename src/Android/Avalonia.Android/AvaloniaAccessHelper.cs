@@ -135,8 +135,28 @@ namespace Avalonia.Android
         protected override bool OnPerformActionForVirtualView(int virtualViewId, int action, Bundle? arguments)
         {
             return (GetNodeInfoProvidersFromVirtualViewId(virtualViewId) ?? [])
-                .Select(x => x.PerformNodeAction(action, arguments))
+                .Select(x => TryPerformNodeAction(x, action, arguments))
                 .Aggregate(false, (a, b) => a | b);
+        }
+
+        private static bool TryPerformNodeAction(INodeInfoProvider nodeInfoProvider, int action, Bundle? arguments)
+        {
+            try
+            {
+                return nodeInfoProvider.PerformNodeAction(action, arguments);
+            }
+            catch (ElementNotEnabledException)
+            {
+                return false;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+            catch (NotSupportedException)
+            {
+                return false;
+            }
         }
 
         protected override void OnPopulateNodeForVirtualView(int virtualViewId, AccessibilityNodeInfoCompat? nodeInfo)
