@@ -113,7 +113,7 @@ namespace Avalonia.Input.GestureRecognizers
         {
             if (e.Pointer == _tracking)
             {
-                var rootPoint = e.GetPosition(null);
+                var rootPoint = e.GetPosition(Target as Visual);
                 if (!_scrolling)
                 {
                     if (CanHorizontallyScroll && Math.Abs(_trackedRootPoint.X - rootPoint.X) > ScrollStartDistance)
