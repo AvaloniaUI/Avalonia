@@ -38,7 +38,7 @@ namespace Avalonia.Input
                 // occurred.
                 //
                 // Solve this by updating the last known pointer position when a drag event occurs.
-                _lastKnownPosition = ((Visual)_inputRoot).PointToScreen(dragArgs.Location);
+                _lastKnownPosition = ((Visual)_inputRoot.RootElement).PointToScreen(dragArgs.Location);
             }
 
             else if (value is RawPointerEventArgs args
