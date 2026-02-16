@@ -104,7 +104,7 @@ namespace Avalonia.Input
 
                     SetPointerOver(pointer, _inputRoot, element, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
                 }
-                else if (!((Visual)_inputRoot).Bounds.Contains(clientPoint))
+                else if (!_inputRoot.RootElement.Bounds.Contains(clientPoint))
                 {
                     ClearPointerOver(pointer, _inputRoot, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
                 }
