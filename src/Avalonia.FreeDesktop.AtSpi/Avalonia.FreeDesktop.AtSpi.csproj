@@ -13,6 +13,8 @@
     <ProjectReference Include="../../packages/Avalonia/Avalonia.csproj" />
     <ProjectReference Include="../../external/Avalonia.DBus/src/Avalonia.DBus/Avalonia.DBus.csproj" />
     <ProjectReference Include="../../external/Avalonia.DBus/src/Avalonia.DBus.SourceGen/Avalonia.DBus.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">

@@ -9,21 +9,33 @@ namespace Avalonia.FreeDesktop.AtSpi
 {
     internal sealed class AtSpiCacheHandler(AtSpiServer server) : IOrgA11yAtspiCache
     {
+        private bool _reentryGuard;
+
         public uint Version => CacheVersion;
 
         public ValueTask<List<AtSpiAccessibleCacheItem>> GetItemsAsync()
         {
-            var snapshot = server.GetAllNodes()
-                .OrderBy(static node => node.Path, System.StringComparer.Ordinal)
-                .ToList();
+            _reentryGuard = true;
+            try
+            {
+                var snapshot = server.GetAllNodes()
+                    .OrderBy(static node => node.Path, System.StringComparer.Ordinal)
+                    .ToList();
 
-            var items = new List<AtSpiAccessibleCacheItem>(snapshot.Count + 1) { server.BuildAppRootCacheItem() };
-            items.AddRange(snapshot.Select(n => server.BuildCacheItem(n)));
-            return ValueTask.FromResult(items);
+                List<AtSpiAccessibleCacheItem> items = [];
+                items.AddRange(snapshot.Select(server.BuildCacheItem));
+                return ValueTask.FromResult(items);
+            }
+            finally
+            {
+                _reentryGuard = false;
+            }
         }
 
         public void EmitAddAccessibleSignal(AtSpiAccessibleCacheItem item)
         {
+            if (_reentryGuard)
+                return;
             EmitSignal("AddAccessible", item);
         }
 

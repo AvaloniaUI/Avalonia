@@ -292,9 +292,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Analyzers.CodeFixe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Analyzers.VisualBasic", "src\tools\Avalonia.Analyzers.VisualBasic\Avalonia.Analyzers.VisualBasic.csproj", "{A7644C3B-B843-44F1-9940-560D56CB0936}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.FreeDesktop.AtSpi", "src\Avalonia.FreeDesktop.AtSpi\Avalonia.FreeDesktop.AtSpi.csproj", "{936E2297-5AEC-4FCB-8AD1-C10079E50906}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.FreeDesktop.AtSpi", "src\Avalonia.FreeDesktop.AtSpi\Avalonia.FreeDesktop.AtSpi.csproj", "{84207F6F-EEFC-4AD4-A733-774F7FE2BAE5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.FreeDesktop.AtSpi", "src\Avalonia.FreeDesktop.AtSpi\Avalonia.FreeDesktop.AtSpi.csproj", "{742C3613-514C-4D6B-804A-2A7925F278F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -682,14 +680,10 @@ Global
 		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Debug|Any CPU.ActiveCfg = Release|Any CPU
 		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Debug|Any CPU.Build.0 = Release|Any CPU
-		{936E2297-5AEC-4FCB-8AD1-C10079E50906}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{936E2297-5AEC-4FCB-8AD1-C10079E50906}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{936E2297-5AEC-4FCB-8AD1-C10079E50906}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{936E2297-5AEC-4FCB-8AD1-C10079E50906}.Release|Any CPU.Build.0 = Release|Any CPU
-		{84207F6F-EEFC-4AD4-A733-774F7FE2BAE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84207F6F-EEFC-4AD4-A733-774F7FE2BAE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84207F6F-EEFC-4AD4-A733-774F7FE2BAE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84207F6F-EEFC-4AD4-A733-774F7FE2BAE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{742C3613-514C-4D6B-804A-2A7925F278F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{742C3613-514C-4D6B-804A-2A7925F278F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{742C3613-514C-4D6B-804A-2A7925F278F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{742C3613-514C-4D6B-804A-2A7925F278F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -777,8 +771,7 @@ Global
 		{11522B0D-BF31-42D5-8FC5-41E58F319AF9} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{A7644C3B-B843-44F1-9940-560D56CB0936} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
 		{FDFB9C25-552D-420B-9D4A-DB0BB6472239} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
-		{936E2297-5AEC-4FCB-8AD1-C10079E50906} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
-		{84207F6F-EEFC-4AD4-A733-774F7FE2BAE5} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
+		{742C3613-514C-4D6B-804A-2A7925F278F3} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}

@@ -13,6 +13,12 @@ namespace Avalonia.FreeDesktop.AtSpi
             RootProvider = peer.GetProvider<IRootProvider>() ?? throw new InvalidOperationException(
                 "Attempt to create RootAtSpiNode from peer which does not implement IRootProvider.");
             RootProvider.FocusChanged += OnRootFocusChanged;
+
+            if (WindowImpl is { } impl)
+            {
+                impl.Activated += OnWindowActivated;
+                impl.Deactivated += OnWindowDeactivated;
+            }
         }
 
         public IRootProvider RootProvider { get; }
@@ -43,6 +49,16 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (focusedNode is not null)
                 Server.EnsureNodeRegistered(focusedNode);
             Server.EmitFocusChange(focusedNode);
+        }
+
+        private void OnWindowActivated()
+        {
+            Server.EmitWindowActivationChange(this, true);
+        }
+
+        private void OnWindowDeactivated()
+        {
+            Server.EmitWindowActivationChange(this, false);
         }
     }
 }

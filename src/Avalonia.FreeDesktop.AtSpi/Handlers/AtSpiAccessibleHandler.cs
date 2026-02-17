@@ -8,70 +8,59 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
-    internal sealed class AtSpiAccessibleHandler : IOrgA11yAtspiAccessible
+    internal sealed class AtSpiAccessibleHandler(AtSpiServer server, AtSpiNode node) : IOrgA11yAtspiAccessible
     {
-        private readonly AtSpiServer _server;
-        private readonly AtSpiNode _node;
-
-        public AtSpiAccessibleHandler(AtSpiServer server, AtSpiNode node)
-        {
-            _server = server;
-            _node = node;
-        }
-
         public uint Version => AccessibleVersion;
 
-        public string Name => _node.Peer.GetName();
+        public string Name => node.Peer.GetName() ?? "Default";
 
-        public string Description => _node.Peer.GetHelpText();
+        public string Description => node.Peer.GetHelpText();
 
         public AtSpiObjectReference Parent
         {
             get
             {
                 // For window nodes, return the ApplicationAtSpiNode as parent
-                if (_node is RootAtSpiNode { AppRoot: { } appRoot })
+                if (node is RootAtSpiNode { AppRoot: { } appRoot })
                     return new AtSpiObjectReference(
-                        _server.UniqueName, new DBusObjectPath(appRoot.Path));
+                        server.UniqueName, new DBusObjectPath(appRoot.Path));
 
-                var parent = _node.Peer.GetParent();
+                var parent = node.Peer.GetParent();
                 var parentNode = AtSpiNode.TryGet(parent);
-                return _server.GetReference(parentNode);
+                return server.GetReference(parentNode);
             }
         }
 
-        public int ChildCount => _node.Peer.GetChildren().Count;
+        public int ChildCount => node.Peer.GetChildren().Count;
 
         public string Locale => ResolveLocale();
 
-        public string AccessibleId => _node.Peer.GetAutomationId() ?? string.Empty;
+        public string AccessibleId => node.Peer.GetAutomationId() ?? string.Empty;
 
-        public string HelpText => _node.Peer.GetHelpText();
+        public string HelpText => node.Peer.GetHelpText();
 
         public ValueTask<AtSpiObjectReference> GetChildAtIndexAsync(int index)
         {
-            var children = _node.Peer.GetChildren();
-            if (index >= 0 && index < children.Count)
-            {
-                var childNode = AtSpiNode.GetOrCreate(children[index], _server);
-                if (childNode is not null)
-                    _server.EnsureNodeRegistered(childNode);
-                return ValueTask.FromResult(_server.GetReference(childNode));
-            }
+            var children = node.Peer.GetChildren();
+            
+            if (index < 0 || index >= children.Count) 
+                return ValueTask.FromResult(server.GetNullReference());
+            
+            var childNode = AtSpiNode.GetOrCreate(children[index], server);
+            server.EnsureNodeRegistered(childNode);
+            return ValueTask.FromResult(server.GetReference(childNode));
 
-            return ValueTask.FromResult(_server.GetNullReference());
         }
 
         public ValueTask<List<AtSpiObjectReference>> GetChildrenAsync()
         {
-            var children = _node.Peer.GetChildren();
+            var children = node.Peer.GetChildren();
             var refs = new List<AtSpiObjectReference>(children.Count);
             foreach (var child in children)
             {
-                var childNode = AtSpiNode.GetOrCreate(child, _server);
-                if (childNode is not null)
-                    _server.EnsureNodeRegistered(childNode);
-                refs.Add(_server.GetReference(childNode));
+                var childNode = AtSpiNode.GetOrCreate(child, server);
+                server.EnsureNodeRegistered(childNode);
+                refs.Add(server.GetReference(childNode));
             }
 
             return ValueTask.FromResult(refs);
@@ -79,13 +68,13 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<int> GetIndexInParentAsync()
         {
-            var parent = _node.Peer.GetParent();
+            var parent = node.Peer.GetParent();
             if (parent is null)
                 return ValueTask.FromResult(-1);
             var siblings = parent.GetChildren();
             for (var i = 0; i < siblings.Count; i++)
             {
-                if (ReferenceEquals(siblings[i], _node.Peer))
+                if (ReferenceEquals(siblings[i], node.Peer))
                     return ValueTask.FromResult(i);
             }
 
@@ -99,25 +88,25 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<uint> GetRoleAsync()
         {
-            var role = AtSpiNode.ToAtSpiRole(_node.Peer.GetAutomationControlType());
+            var role = AtSpiNode.ToAtSpiRole(node.Peer.GetAutomationControlType());
             return ValueTask.FromResult((uint)role);
         }
 
         public ValueTask<string> GetRoleNameAsync()
         {
-            var role = AtSpiNode.ToAtSpiRole(_node.Peer.GetAutomationControlType());
+            var role = AtSpiNode.ToAtSpiRole(node.Peer.GetAutomationControlType());
             return ValueTask.FromResult(AtSpiNode.ToAtSpiRoleName(role));
         }
 
         public ValueTask<string> GetLocalizedRoleNameAsync()
         {
-            var role = AtSpiNode.ToAtSpiRole(_node.Peer.GetAutomationControlType());
+            var role = AtSpiNode.ToAtSpiRole(node.Peer.GetAutomationControlType());
             return ValueTask.FromResult(AtSpiNode.ToAtSpiRoleName(role));
         }
 
         public ValueTask<List<uint>> GetStateAsync()
         {
-            return ValueTask.FromResult(_node.ComputeStates());
+            return ValueTask.FromResult(node.ComputeStates());
         }
 
         public ValueTask<AtSpiAttributeSet> GetAttributesAsync()
@@ -127,12 +116,12 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<AtSpiObjectReference> GetApplicationAsync()
         {
-            return ValueTask.FromResult(_server.GetRootReference());
+            return ValueTask.FromResult(server.GetRootReference());
         }
 
         public ValueTask<List<string>> GetInterfacesAsync()
         {
-            var interfaces = _node.GetSupportedInterfaces();
+            var interfaces = node.GetSupportedInterfaces();
             var sorted = interfaces.OrderBy(static i => i, StringComparer.Ordinal).ToList();
             return ValueTask.FromResult(sorted);
         }

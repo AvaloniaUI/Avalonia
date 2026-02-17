@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
@@ -47,6 +48,8 @@ namespace Avalonia.FreeDesktop.AtSpi
                     case ToggleState.Indeterminate:
                         states.Add(AtSpiState.Indeterminate);
                         break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
 
@@ -62,15 +65,14 @@ namespace Avalonia.FreeDesktop.AtSpi
                     case ExpandCollapseState.Collapsed:
                         states.Add(AtSpiState.Collapsed);
                         break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
 
             // Range value read-only
-            if (Peer.GetProvider<IRangeValueProvider>() is { } rangeValue)
-            {
-                if (rangeValue.IsReadOnly)
-                    states.Add(AtSpiState.ReadOnly);
-            }
+            if (Peer.GetProvider<IRangeValueProvider>() is { IsReadOnly: true }) 
+                states.Add(AtSpiState.ReadOnly);
 
             // Window-level active state
             var controlType = Peer.GetAutomationControlType();

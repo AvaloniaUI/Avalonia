@@ -49,14 +49,11 @@ namespace Avalonia.FreeDesktop.AtSpi
         public async Task StartAsync()
         {
             // 1. Create a SynchronizationContext that dispatches to the Avalonia UI thread.
-            // We cannot rely on SynchronizationContext.Current here because StartAsync
-            // may be called from an async continuation on a thread-pool thread (the
-            // fire-and-forget InitAccessibilityAsync path yields after the first real
-            // await, and the continuation has no ambient context).
             _syncContext = new AvaloniaSynchronizationContext(DispatcherPriority.Normal);
 
             // 2. Get a11y bus address
             var address = await GetAccessibilityBusAddressAsync();
+            
             if (string.IsNullOrWhiteSpace(address))
                 throw new InvalidOperationException("Failed to resolve the accessibility bus address.");
 
@@ -151,7 +148,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             var allToRemove = new List<AtSpiNode>(toRemove);
             foreach (var kv in _nodesByPath.ToArray())
             {
-                if (kv.Value is AtSpiNode node && node != windowNode && !allToRemove.Contains(node))
+                if (kv.Value is { } node && node != windowNode && !allToRemove.Contains(node))
                 {
                     // Check if this node's visual root is the window
                     try
@@ -170,6 +167,10 @@ namespace Avalonia.FreeDesktop.AtSpi
             // Emit cache removes and unregister paths
             foreach (var node in allToRemove)
             {
+                // Emit defunct state before removal so screen readers know objects are permanently gone
+                if (HasEventListeners && node.Handlers?.EventObjectHandler is { } nodeEventHandler)
+                    nodeEventHandler.EmitStateChangedSignal("defunct", 1, new DBusVariant("0"));
+
                 _cacheHandler.EmitRemoveAccessibleSignal(GetReference(node));
                 UnregisterNodePath(node.Path);
                 _nodesByPath.Remove(node.Path);
@@ -228,9 +229,8 @@ namespace Avalonia.FreeDesktop.AtSpi
 
         internal AtSpiObjectReference GetReference(AtSpiNode? node)
         {
-            if (node is null)
-                return GetNullReference();
-            return new AtSpiObjectReference(_uniqueName, new DBusObjectPath(node.Path));
+            return node is null ? GetNullReference() : 
+                new AtSpiObjectReference(_uniqueName, new DBusObjectPath(node.Path));
         }
 
         internal AtSpiObjectReference GetNullReference()
@@ -251,11 +251,11 @@ namespace Avalonia.FreeDesktop.AtSpi
             AtSpiObjectReference parent;
             int indexInParent;
 
-            if (node is RootAtSpiNode { AppRoot: { } appRoot })
+            if (node is RootAtSpiNode { AppRoot: { } appRoot } spiNode)
             {
                 // Window node: parent is app root
                 parent = new AtSpiObjectReference(_uniqueName, new DBusObjectPath(appRoot.Path));
-                indexInParent = appRoot.WindowChildren.IndexOf((RootAtSpiNode)node);
+                indexInParent = appRoot.WindowChildren.IndexOf(spiNode);
             }
             else
             {
@@ -271,11 +271,9 @@ namespace Avalonia.FreeDesktop.AtSpi
                     var children = parentPeer.GetChildren();
                     for (var i = 0; i < children.Count; i++)
                     {
-                        if (ReferenceEquals(children[i], node.Peer))
-                        {
-                            indexInParent = i;
-                            break;
-                        }
+                        if (!ReferenceEquals(children[i], node.Peer)) continue;
+                        indexInParent = i;
+                        break;
                     }
                 }
             }
@@ -311,16 +309,15 @@ namespace Avalonia.FreeDesktop.AtSpi
                 throw new InvalidOperationException("App root not initialized.");
 
             var self = new AtSpiObjectReference(_uniqueName, new DBusObjectPath(RootPath));
-            var app = self;
             var parent = new AtSpiObjectReference(string.Empty, new DBusObjectPath(NullPath));
             var childCount = _appRoot.WindowChildren.Count;
             var interfaces = new List<string> { IfaceAccessible, IfaceApplication };
             interfaces.Sort(StringComparer.Ordinal);
-            var states = BuildStateSet(new[] { AtSpiState.Active });
+            var states = BuildStateSet([AtSpiState.Active]);
 
             return new AtSpiAccessibleCacheItem(
                 self,
-                app,
+                self,
                 parent,
                 -1,
                 childCount,
@@ -338,14 +335,11 @@ namespace Avalonia.FreeDesktop.AtSpi
 
             // Emit cache updates for children
             var childPeers = node.Peer.GetChildren();
-            for (var i = 0; i < childPeers.Count; i++)
+            foreach (var t in childPeers)
             {
-                var childNode = AtSpiNode.GetOrCreate(childPeers[i], this);
-                if (childNode is not null)
-                {
-                    EnsureNodeRegistered(childNode);
-                    _cacheHandler.EmitAddAccessibleSignal(BuildCacheItem(childNode));
-                }
+                var childNode = AtSpiNode.GetOrCreate(t, this);
+                EnsureNodeRegistered(childNode);
+                _cacheHandler.EmitAddAccessibleSignal(BuildCacheItem(childNode));
             }
 
             // Emit children-changed event (guarded by event listeners)
@@ -376,6 +370,23 @@ namespace Avalonia.FreeDesktop.AtSpi
                 eventHandler.EmitPropertyChangeSignal(
                     "accessible-description",
                     new DBusVariant(e.NewValue?.ToString() ?? string.Empty));
+            }
+        }
+
+        internal void EmitWindowActivationChange(RootAtSpiNode windowNode, bool active)
+        {
+            if (_a11yConnection is null || !HasEventListeners)
+                return;
+
+            if (windowNode.Handlers?.EventObjectHandler is { } eventHandler)
+                eventHandler.EmitStateChangedSignal("active", active ? 1 : 0, new DBusVariant(0));
+
+            if (windowNode.Handlers?.EventWindowHandler is { } windowHandler)
+            {
+                if (active)
+                    windowHandler.EmitActivateSignal();
+                else
+                    windowHandler.EmitDeactivateSignal();
             }
         }
 
@@ -556,6 +567,9 @@ namespace Avalonia.FreeDesktop.AtSpi
 
             handlers.EventObjectHandler = new AtSpiEventObjectHandler(this, node.Path);
 
+            if (node is RootAtSpiNode)
+                handlers.EventWindowHandler = new AtSpiEventWindowHandler(this, node.Path);
+
             node.Handlers = handlers;
         }
 
@@ -573,11 +587,9 @@ namespace Avalonia.FreeDesktop.AtSpi
 
         private void UnregisterNodePath(string path)
         {
-            if (_pathRegistrations.TryGetValue(path, out var active))
-            {
-                active.Registration.Dispose();
-                _pathRegistrations.Remove(path);
-            }
+            if (!_pathRegistrations.TryGetValue(path, out var active)) return;
+            active.Registration.Dispose();
+            _pathRegistrations.Remove(path);
         }
 
         private void RegisterCachePath()
@@ -586,7 +598,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 return;
 
             var registration = _a11yConnection.RegisterObjects(
-                (DBusObjectPath)CachePath, new object[] { _cacheHandler }, _syncContext);
+                (DBusObjectPath)CachePath, [_cacheHandler], _syncContext);
             _pathRegistrations[CachePath] = new ActivePathRegistration(_cacheHandler, registration);
         }
 
@@ -613,16 +625,10 @@ namespace Avalonia.FreeDesktop.AtSpi
             await proxy.EmbedAsync(new AtSpiObjectReference(_uniqueName, new DBusObjectPath(RootPath)));
         }
 
-        private sealed class ActivePathRegistration
+        private sealed class ActivePathRegistration(object owner, IDisposable registration)
         {
-            public ActivePathRegistration(object owner, IDisposable registration)
-            {
-                Owner = owner;
-                Registration = registration;
-            }
-
-            public object Owner { get; }
-            public IDisposable Registration { get; }
+            public object Owner { get; } = owner;
+            public IDisposable Registration { get; } = registration;
         }
     }
 }

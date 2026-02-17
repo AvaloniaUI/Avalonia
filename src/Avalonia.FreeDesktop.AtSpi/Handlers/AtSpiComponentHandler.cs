@@ -6,17 +6,8 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
-    internal sealed class AtSpiComponentHandler : IOrgA11yAtspiComponent
+    internal sealed class AtSpiComponentHandler(AtSpiServer server, AtSpiNode node) : IOrgA11yAtspiComponent
     {
-        private readonly AtSpiServer _server;
-        private readonly AtSpiNode _node;
-
-        public AtSpiComponentHandler(AtSpiServer server, AtSpiNode node)
-        {
-            _server = server;
-            _node = node;
-        }
-
         public uint Version => ComponentVersion;
 
         public ValueTask<bool> ContainsAsync(int x, int y, uint coordType)
@@ -36,10 +27,10 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (point.x >= rect.X && point.y >= rect.Y &&
                 point.x < rect.X + rect.Width && point.y < rect.Y + rect.Height)
             {
-                return ValueTask.FromResult(_server.GetReference(_node));
+                return ValueTask.FromResult(server.GetReference(node));
             }
 
-            return ValueTask.FromResult(_server.GetNullReference());
+            return ValueTask.FromResult(server.GetNullReference());
         }
 
         public ValueTask<AtSpiRect> GetExtentsAsync(uint coordType)
@@ -66,7 +57,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<uint> GetLayerAsync()
         {
-            var controlType = _node.Peer.GetAutomationControlType();
+            var controlType = node.Peer.GetAutomationControlType();
             // Window layer = 7, Widget layer = 3
             var layer = controlType == Automation.Peers.AutomationControlType.Window ? 7u : 3u;
             return ValueTask.FromResult(layer);
@@ -76,7 +67,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<bool> GrabFocusAsync()
         {
-            _node.Peer.SetFocus();
+            node.Peer.SetFocus();
             return ValueTask.FromResult(true);
         }
 
@@ -109,12 +100,12 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         private Rect GetScreenExtents()
         {
-            var bounds = _node.Peer.GetBoundingRectangle();
-            if (_node is RootAtSpiNode rootNode)
+            var bounds = node.Peer.GetBoundingRectangle();
+            if (node is RootAtSpiNode rootNode)
                 return rootNode.ToScreen(bounds);
 
             // Find root and translate to screen
-            var root = _node.Peer.GetVisualRoot();
+            var root = node.Peer.GetVisualRoot();
             if (root is not null)
             {
                 var rootNode2 = AtSpiNode.TryGet(root) as RootAtSpiNode;
@@ -176,20 +167,18 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         private Rect GetWindowRect()
         {
-            var root = _node.Peer.GetVisualRoot();
-            if (root is not null)
-            {
-                var rootNode = AtSpiNode.TryGet(root) as RootAtSpiNode;
-                if (rootNode is not null)
-                    return rootNode.ToScreen(root.GetBoundingRectangle());
-            }
+            var root = node.Peer.GetVisualRoot();
+            if (root is null) return default;
+            
+            if (AtSpiNode.TryGet(root) is RootAtSpiNode rootNode)
+                return rootNode.ToScreen(root.GetBoundingRectangle());
 
             return default;
         }
 
         private Rect GetParentScreenRect()
         {
-            var parent = _node.Peer.GetParent();
+            var parent = node.Peer.GetParent();
             if (parent is not null)
             {
                 var bounds = parent.GetBoundingRectangle();

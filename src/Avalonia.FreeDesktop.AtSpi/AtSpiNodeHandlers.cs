@@ -6,20 +6,16 @@ using Avalonia.FreeDesktop.AtSpi.Handlers;
 
 namespace Avalonia.FreeDesktop.AtSpi
 {
-    internal sealed class AtSpiNodeHandlers
+    internal sealed class AtSpiNodeHandlers(AtSpiNode node)
     {
-        public AtSpiNodeHandlers(AtSpiNode node)
-        {
-            Node = node;
-        }
-
-        public AtSpiNode Node { get; }
+        public AtSpiNode Node { get; } = node;
         public AtSpiAccessibleHandler? AccessibleHandler { get; set; }
         public AtSpiApplicationHandler? ApplicationHandler { get; set; }
         public AtSpiComponentHandler? ComponentHandler { get; set; }
         public AtSpiActionHandler? ActionHandler { get; set; }
         public AtSpiValueHandler? ValueHandler { get; set; }
         public AtSpiEventObjectHandler? EventObjectHandler { get; set; }
+        public AtSpiEventWindowHandler? EventWindowHandler { get; set; }
 
         public IDisposable Register(
             IDBusConnection connection,
@@ -40,11 +36,11 @@ namespace Avalonia.FreeDesktop.AtSpi
                 targets.Add(ValueHandler);
             if (EventObjectHandler != null)
                 targets.Add(EventObjectHandler);
+            if (EventWindowHandler != null)
+                targets.Add(EventWindowHandler);
 
-            if (targets.Count == 0)
-                return EmptyRegistration.Instance;
-
-            return connection.RegisterObjects((DBusObjectPath)Node.Path, targets, synchronizationContext);
+            return targets.Count == 0 ? EmptyRegistration.Instance : 
+                connection.RegisterObjects((DBusObjectPath)Node.Path, targets, synchronizationContext);
         }
 
         private sealed class EmptyRegistration : IDisposable
