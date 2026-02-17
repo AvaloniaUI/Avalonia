@@ -290,6 +290,9 @@ namespace Avalonia.Controls
 
             _backGestureSubscription = _inputManager?.PreProcess.Subscribe(e =>
             {
+                if (e.Root != this)
+                    return;
+
                 bool backRequested = false;
 
                 if (e is RawKeyEventArgs rawKeyEventArgs && rawKeyEventArgs.Type == RawKeyEventType.KeyDown)
