@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
+  <av:ImportTypes>Types.xml</av:ImportTypes>
+  <!--
+      org.a11y.atspi.Selection:
+      @short_description: An interface which indicates that an object exposes
+      a 'selection' model, allowing the selection of one or more of its
+      children.
+  -->
+  <interface name="org.a11y.atspi.Selection">
+
+    <!--
+        Version: The version of this interface.
+
+        This property is incremented by one every time a new method, signal, or property
+        is added to this interface.
+    -->
+    <property name="version" type="u" access="read"/>
+
+    <!--
+        NSelectedChildren:
+
+        The number of children which are currently selected.
+    -->
+    <property name="NSelectedChildren" type="i" access="read"/>
+
+    <!--
+        GetSelectedChild:
+
+        @selectedChildIndex: an integer indicating which of the selected
+        children is specified.
+
+        Gets the i-th selected child of the accessible.
+        Note that @selectedChildIndex refers to the index in the list of
+        selected children and generally differs from that used in
+        GetChildAtIndex or returned by GetIndexInParent.
+        @selectedChildIndex must lie between 0 and the value returned by
+        GetNSelectedChildren - 1, inclusive.
+
+        Returns: a reference (bus name + object path) of the selected child
+        corresponding to the given index. If there is no selected child with
+        the given index, then the special object path "/org/a11y/atspi/null"
+        will be returned.
+    -->
+    <method name="GetSelectedChild">
+      <arg direction="in" name="selectedChildIndex" type="i"/>
+      <arg direction="out" type="(so)">
+        <av:TypeDefinition>
+          <av:Struct Type="AtSpiObjectReference"/>
+        </av:TypeDefinition>
+      </arg>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiObjectReference"/>
+    </method>
+
+    <!--
+        SelectChild:
+
+        @childIndex: an integer indicating which child of the accessible
+        is to be selected.
+
+        Adds a child to to the accessible's list of selected children.
+        For implementors that only allow         single selections, this
+        may replace the (single) current         selection.
+
+        Returns: true if the child was successfully selected, false otherwise.
+    -->
+    <method name="SelectChild">
+      <arg direction="in" name="childIndex" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        DeselectSelectedChild:
+
+        @selectedChildIndex: a integer indicating which of the selected
+        children of the accessible is to be deselected.
+
+        Removes a child from an accessible's list of selected children.
+        Note that @selectedChildIndex is the index in the selected-children list,
+        not the index in the parent container.  @selectedChildIndex in this
+        method and @childIndex in #atspi_selection_select_child
+        are asymmetric.
+
+        Returns: true if the child was successfully deselected, false otherwise.
+    -->
+    <method name="DeselectSelectedChild">
+      <arg direction="in" name="selectedChildIndex" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+    <!--
+        IsChildSelected:
+
+        @childIndex: an index into the accessible's list of children.
+
+        Determines whether a particular child of the accessible is
+        currently selected.  Note that @childIndex is the index into the
+        standard accessible container's list of children.
+
+        Returns: true if the specified child is currently selected,
+        false otherwise.
+    -->
+    <method name="IsChildSelected">
+      <arg direction="in" name="childIndex" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        SelectAll:
+
+        Attempts to select all of the accessible's children.
+        Not all implementors support this operation.
+
+        Returns: true if successful, false otherwise.
+    -->
+    <method name="SelectAll">
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        ClearSelection:
+
+        Clears the current selection, removing all selected children from the
+        specified accessible's selection list.
+
+        Returns: true if successful, false otherwise.
+    -->
+    <method name="ClearSelection">
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        DeselectChild:
+
+        @childIndex: a integer indicating which of the children
+        of the accessible is to be de-selected.
+
+        Deselects a specific child of an accessible.
+        Note that @childIndex is the index of the child in the parent
+        container.
+
+        Returns: true if the child was successfully deselected, false otherwise.
+    -->
+    <method name="DeselectChild">
+      <arg direction="in" name="childIndex" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+  </interface>
+</node>

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
@@ -48,8 +47,8 @@ namespace Avalonia.FreeDesktop.AtSpi
                     case ToggleState.Indeterminate:
                         states.Add(AtSpiState.Indeterminate);
                         break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
+                    case ToggleState.Off:
+                        break;
                 }
             }
 
@@ -65,19 +64,46 @@ namespace Avalonia.FreeDesktop.AtSpi
                     case ExpandCollapseState.Collapsed:
                         states.Add(AtSpiState.Collapsed);
                         break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
                 }
             }
 
+            // Selection item states
+            if (Peer.GetProvider<ISelectionItemProvider>() is { } selectionItem)
+            {
+                states.Add(AtSpiState.Selectable);
+                if (selectionItem.IsSelected)
+                    states.Add(AtSpiState.Selected);
+            }
+
+            // Multi-selectable container
+            if (Peer.GetProvider<ISelectionProvider>() is { CanSelectMultiple: true })
+                states.Add(AtSpiState.MultiSelectable);
+
+            // Value provider states (text editable/read-only)
+            if (Peer.GetProvider<IValueProvider>() is { } valueProvider)
+            {
+                if (valueProvider.IsReadOnly)
+                    states.Add(AtSpiState.ReadOnly);
+                else
+                    states.Add(AtSpiState.Editable);
+            }
+
             // Range value read-only
-            if (Peer.GetProvider<IRangeValueProvider>() is { IsReadOnly: true }) 
+            if (Peer.GetProvider<IRangeValueProvider>() is { IsReadOnly: true })
                 states.Add(AtSpiState.ReadOnly);
 
-            // Window-level active state
+            // Required for form
+            if (Peer is ControlAutomationPeer controlPeer &&
+                AutomationProperties.GetIsRequiredForForm(controlPeer.Owner))
+                states.Add(AtSpiState.Required);
+
+            // Window-level active state and text entry states
             var controlType = Peer.GetAutomationControlType();
             if (controlType == AutomationControlType.Window)
                 states.Add(AtSpiState.Active);
+
+            if (controlType == AutomationControlType.Edit)
+                states.Add(AtSpiState.SingleLine);
 
             return BuildStateSet(states);
         }

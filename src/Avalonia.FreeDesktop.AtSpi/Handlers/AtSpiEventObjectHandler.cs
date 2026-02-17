@@ -25,6 +25,16 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             EmitSignal("StateChanged", stateName, detail1, 0, value, EmptyProperties());
         }
 
+        public void EmitSelectionChangedSignal()
+        {
+            EmitSignal("SelectionChanged", string.Empty, 0, 0, new DBusVariant(0), EmptyProperties());
+        }
+
+        public void EmitBoundsChangedSignal()
+        {
+            EmitSignal("BoundsChanged", string.Empty, 0, 0, new DBusVariant(0), EmptyProperties());
+        }
+
         private void EmitSignal(string member, params object[] body)
         {
             if (!server.HasEventListeners)

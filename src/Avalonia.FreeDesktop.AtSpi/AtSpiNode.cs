@@ -39,18 +39,41 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (Peer.GetProvider<IRootProvider>() is not null)
                 interfaces.Add(IfaceApplication);
 
-            // All visual elements support Component
+            // All visual elements support Component and Collection
             interfaces.Add(IfaceComponent);
+            interfaces.Add(IfaceCollection);
 
             if (Peer.GetProvider<IInvokeProvider>() is not null ||
                 Peer.GetProvider<IToggleProvider>() is not null ||
-                Peer.GetProvider<IExpandCollapseProvider>() is not null)
+                Peer.GetProvider<IExpandCollapseProvider>() is not null ||
+                Peer.GetProvider<IScrollProvider>() is not null ||
+                // TODO: expose Action for ISelectionItemProvider so that selectable items
+                // (e.g. TabItem, ListBoxItem) can be activated via AT-SPI. Ideally the core
+                // automation peers would implement IInvokeProvider and/or the parent container
+                // would implement ISelectionProvider, making this unnecessary.
+                Peer.GetProvider<ISelectionItemProvider>() is not null)
             {
                 interfaces.Add(IfaceAction);
             }
 
             if (Peer.GetProvider<IRangeValueProvider>() is not null)
                 interfaces.Add(IfaceValue);
+
+            if (Peer.GetProvider<ISelectionProvider>() is not null)
+                interfaces.Add(IfaceSelection);
+
+            // Only expose Text/EditableText when IValueProvider is present but IRangeValueProvider is not.
+            // Peers with IRangeValueProvider (sliders, progress bars) use the Value AT-SPI interface instead.
+            if (Peer.GetProvider<IValueProvider>() is { } valueProvider
+                && Peer.GetProvider<IRangeValueProvider>() is null)
+            {
+                interfaces.Add(IfaceText);
+                if (!valueProvider.IsReadOnly)
+                    interfaces.Add(IfaceEditableText);
+            }
+
+            if (Peer.GetAutomationControlType() == AutomationControlType.Image)
+                interfaces.Add(IfaceImage);
 
             return interfaces;
         }

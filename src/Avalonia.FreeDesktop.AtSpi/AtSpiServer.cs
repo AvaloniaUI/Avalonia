@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
+using Avalonia.Automation.Provider;
 using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.FreeDesktop.AtSpi.Handlers;
@@ -65,7 +66,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             _appRoot = new ApplicationAtSpiNode(null);
 
             // 5. Build and register handlers for app root
-            _cacheHandler = new AtSpiCacheHandler(this);
+            _cacheHandler = new AtSpiCacheHandler();
             BuildAndRegisterAppRoot();
 
             // 6. Register cache handler path
@@ -83,7 +84,7 @@ namespace Avalonia.FreeDesktop.AtSpi
         /// </summary>
         public void AddWindow(AutomationPeer windowPeer)
         {
-            if (_a11yConnection is null || _appRoot is null || _cacheHandler is null)
+            if (_a11yConnection is null || _appRoot is null)
                 return;
 
             // Idempotent check
@@ -102,9 +103,6 @@ namespace Avalonia.FreeDesktop.AtSpi
             // Add as child of app root
             _appRoot.AddWindowChild(windowNode);
 
-            // Emit cache add for the window node (always — cache signals are never suppressed)
-            _cacheHandler.EmitAddAccessibleSignal(BuildCacheItem(windowNode));
-
             // Emit children-changed on app root (guarded by event listeners)
             if (HasEventListeners && _appRootEventHandler is { } eventHandler)
             {
@@ -120,7 +118,7 @@ namespace Avalonia.FreeDesktop.AtSpi
         /// </summary>
         public void RemoveWindow(AutomationPeer windowPeer)
         {
-            if (_a11yConnection is null || _appRoot is null || _cacheHandler is null)
+            if (_a11yConnection is null || _appRoot is null)
                 return;
 
             var windowNode = AtSpiNode.TryGet(windowPeer) as RootAtSpiNode;
@@ -164,14 +162,13 @@ namespace Avalonia.FreeDesktop.AtSpi
                 }
             }
 
-            // Emit cache removes and unregister paths
+            // Unregister paths and emit defunct state
             foreach (var node in allToRemove)
             {
                 // Emit defunct state before removal so screen readers know objects are permanently gone
                 if (HasEventListeners && node.Handlers?.EventObjectHandler is { } nodeEventHandler)
                     nodeEventHandler.EmitStateChangedSignal("defunct", 1, new DBusVariant("0"));
 
-                _cacheHandler.EmitRemoveAccessibleSignal(GetReference(node));
                 UnregisterNodePath(node.Path);
                 _nodesByPath.Remove(node.Path);
             }
@@ -182,15 +179,43 @@ namespace Avalonia.FreeDesktop.AtSpi
         /// <summary>
         /// Ensures a node is registered in the tree (idempotent).
         /// Called after <see cref="AtSpiNode.GetOrCreate"/> to lazily register new nodes.
+        /// Also detects when a node's supported interfaces have changed (e.g. a peer
+        /// gained IValueProvider after content was loaded) and re-registers the D-Bus
+        /// path with updated handlers.
         /// </summary>
         internal void EnsureNodeRegistered(AtSpiNode node)
         {
             if (_nodesByPath.ContainsKey(node.Path))
+            {
+                RebuildHandlersIfStale(node);
                 return;
+            }
 
             RegisterNodeInternal(node);
+        }
 
-            _cacheHandler?.EmitAddAccessibleSignal(BuildCacheItem(node));
+        /// <summary>
+        /// Checks whether a node's supported interfaces have changed since its handlers
+        /// were built. If so, tears down the old D-Bus registration, rebuilds handlers,
+        /// and re-registers. This handles the case where a peer gains or loses providers
+        /// after initial registration (e.g. TextBox content loading into a container).
+        /// </summary>
+        /// <returns>True if the registration was updated.</returns>
+        private bool RebuildHandlersIfStale(AtSpiNode node)
+        {
+            if (node.Handlers?.RegisteredInterfaces is not { } oldInterfaces)
+                return false;
+
+            var currentInterfaces = node.GetSupportedInterfaces();
+            if (currentInterfaces.SetEquals(oldInterfaces))
+                return false;
+
+            // Interfaces changed — tear down and rebuild
+            UnregisterNodePath(node.Path);
+            node.Handlers = null;
+            BuildHandlersForNode(node);
+            RegisterNodePath(node);
+            return true;
         }
 
         public async ValueTask DisposeAsync()
@@ -222,11 +247,6 @@ namespace Avalonia.FreeDesktop.AtSpi
             _nodesByPath.Clear();
         }
 
-        internal IReadOnlyCollection<AtSpiNode> GetAllNodes()
-        {
-            return _nodesByPath.Values.ToArray();
-        }
-
         internal AtSpiObjectReference GetReference(AtSpiNode? node)
         {
             return node is null ? GetNullReference() : 
@@ -243,103 +263,17 @@ namespace Avalonia.FreeDesktop.AtSpi
             return new AtSpiObjectReference(_uniqueName, new DBusObjectPath(RootPath));
         }
 
-        internal AtSpiAccessibleCacheItem BuildCacheItem(AtSpiNode node)
-        {
-            var self = new AtSpiObjectReference(_uniqueName, new DBusObjectPath(node.Path));
-            var app = new AtSpiObjectReference(_uniqueName, new DBusObjectPath(RootPath));
-
-            AtSpiObjectReference parent;
-            int indexInParent;
-
-            if (node is RootAtSpiNode { AppRoot: { } appRoot } spiNode)
-            {
-                // Window node: parent is app root
-                parent = new AtSpiObjectReference(_uniqueName, new DBusObjectPath(appRoot.Path));
-                indexInParent = appRoot.WindowChildren.IndexOf(spiNode);
-            }
-            else
-            {
-                var parentPeer = node.Peer.GetParent();
-                var parentNode = AtSpiNode.TryGet(parentPeer);
-                parent = parentNode is not null
-                    ? new AtSpiObjectReference(_uniqueName, new DBusObjectPath(parentNode.Path))
-                    : new AtSpiObjectReference(string.Empty, new DBusObjectPath(NullPath));
-
-                indexInParent = -1;
-                if (parentPeer is not null)
-                {
-                    var children = parentPeer.GetChildren();
-                    for (var i = 0; i < children.Count; i++)
-                    {
-                        if (!ReferenceEquals(children[i], node.Peer)) continue;
-                        indexInParent = i;
-                        break;
-                    }
-                }
-            }
-
-            var childCount = node.Peer.GetChildren().Count;
-            var interfaces = node.GetSupportedInterfaces()
-                .OrderBy(static i => i, StringComparer.Ordinal)
-                .ToList();
-            var name = node.Peer.GetName();
-            var role = (uint)AtSpiNode.ToAtSpiRole(node.Peer.GetAutomationControlType());
-            var description = node.Peer.GetHelpText();
-            var states = node.ComputeStates();
-
-            return new AtSpiAccessibleCacheItem(
-                self,
-                app,
-                parent,
-                indexInParent,
-                childCount,
-                interfaces,
-                name,
-                role,
-                description,
-                states);
-        }
-
-        /// <summary>
-        /// Builds a cache item for the synthetic application root.
-        /// </summary>
-        internal AtSpiAccessibleCacheItem BuildAppRootCacheItem()
-        {
-            if (_appRoot is null)
-                throw new InvalidOperationException("App root not initialized.");
-
-            var self = new AtSpiObjectReference(_uniqueName, new DBusObjectPath(RootPath));
-            var parent = new AtSpiObjectReference(string.Empty, new DBusObjectPath(NullPath));
-            var childCount = _appRoot.WindowChildren.Count;
-            var interfaces = new List<string> { IfaceAccessible, IfaceApplication };
-            interfaces.Sort(StringComparer.Ordinal);
-            var states = BuildStateSet([AtSpiState.Active]);
-
-            return new AtSpiAccessibleCacheItem(
-                self,
-                self,
-                parent,
-                -1,
-                childCount,
-                interfaces,
-                _appRoot.Name,
-                (uint)AtSpiRole.Application,
-                string.Empty,
-                states);
-        }
-
         internal void EmitChildrenChanged(AtSpiNode node)
         {
-            if (_a11yConnection is null || _cacheHandler is null)
+            if (_a11yConnection is null)
                 return;
 
-            // Emit cache updates for children
+            // Ensure child nodes are registered on D-Bus
             var childPeers = node.Peer.GetChildren();
             foreach (var t in childPeers)
             {
                 var childNode = AtSpiNode.GetOrCreate(t, this);
                 EnsureNodeRegistered(childNode);
-                _cacheHandler.EmitAddAccessibleSignal(BuildCacheItem(childNode));
             }
 
             // Emit children-changed event (guarded by event listeners)
@@ -370,6 +304,36 @@ namespace Avalonia.FreeDesktop.AtSpi
                 eventHandler.EmitPropertyChangeSignal(
                     "accessible-description",
                     new DBusVariant(e.NewValue?.ToString() ?? string.Empty));
+            }
+            else if (e.Property == TogglePatternIdentifiers.ToggleStateProperty)
+            {
+                var newState = e.NewValue is ToggleState ts ? ts : ToggleState.Off;
+                eventHandler.EmitStateChangedSignal(
+                    "checked", newState == ToggleState.On ? 1 : 0, new DBusVariant(0));
+                eventHandler.EmitStateChangedSignal(
+                    "indeterminate", newState == ToggleState.Indeterminate ? 1 : 0, new DBusVariant(0));
+            }
+            else if (e.Property == ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty)
+            {
+                var newState = e.NewValue is ExpandCollapseState ecs ? ecs : ExpandCollapseState.Collapsed;
+                eventHandler.EmitStateChangedSignal(
+                    "expanded", newState == ExpandCollapseState.Expanded ? 1 : 0, new DBusVariant(0));
+                eventHandler.EmitStateChangedSignal(
+                    "collapsed", newState == ExpandCollapseState.Collapsed ? 1 : 0, new DBusVariant(0));
+            }
+            else if (e.Property == ValuePatternIdentifiers.ValueProperty)
+            {
+                eventHandler.EmitPropertyChangeSignal(
+                    "accessible-value",
+                    new DBusVariant(e.NewValue?.ToString() ?? string.Empty));
+            }
+            else if (e.Property == SelectionPatternIdentifiers.SelectionProperty)
+            {
+                eventHandler.EmitSelectionChangedSignal();
+            }
+            else if (e.Property == AutomationElementIdentifiers.BoundingRectangleProperty)
+            {
+                eventHandler.EmitBoundsChangedSignal();
             }
         }
 
@@ -549,6 +513,7 @@ namespace Avalonia.FreeDesktop.AtSpi
 
             var handlers = new AtSpiNodeHandlers(node);
             var interfaces = node.GetSupportedInterfaces();
+            handlers.RegisteredInterfaces = interfaces;
 
             if (interfaces.Contains(IfaceAccessible))
                 handlers.AccessibleHandler = new AtSpiAccessibleHandler(this, node);
@@ -564,6 +529,21 @@ namespace Avalonia.FreeDesktop.AtSpi
 
             if (interfaces.Contains(IfaceValue))
                 handlers.ValueHandler = new AtSpiValueHandler(this, node);
+
+            if (interfaces.Contains(IfaceSelection))
+                handlers.SelectionHandler = new AtSpiSelectionHandler(this, node);
+
+            if (interfaces.Contains(IfaceText))
+                handlers.TextHandler = new AtSpiTextHandler(this, node);
+
+            if (interfaces.Contains(IfaceEditableText))
+                handlers.EditableTextHandler = new AtSpiEditableTextHandler(this, node);
+
+            if (interfaces.Contains(IfaceImage))
+                handlers.ImageHandler = new AtSpiImageHandler(this, node);
+
+            if (interfaces.Contains(IfaceCollection))
+                handlers.CollectionHandler = new AtSpiCollectionHandler(this, node);
 
             handlers.EventObjectHandler = new AtSpiEventObjectHandler(this, node.Path);
 

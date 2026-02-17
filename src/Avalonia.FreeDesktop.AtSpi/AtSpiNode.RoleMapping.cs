@@ -1,15 +1,18 @@
 using Avalonia.Automation.Peers;
+using Avalonia.Automation.Provider;
 
 namespace Avalonia.FreeDesktop.AtSpi
 {
     internal partial class AtSpiNode
     {
-        public static AtSpiRole ToAtSpiRole(AutomationControlType controlType)
+        public static AtSpiRole ToAtSpiRole(AutomationControlType controlType, AutomationPeer? peer = null)
         {
             return controlType switch
             {
                 AutomationControlType.None => AtSpiRole.Panel,
-                AutomationControlType.Button => AtSpiRole.PushButton,
+                AutomationControlType.Button => peer?.GetProvider<IToggleProvider>() is not null
+                    ? AtSpiRole.ToggleButton
+                    : AtSpiRole.PushButton,
                 AutomationControlType.Calendar => AtSpiRole.Calendar,
                 AutomationControlType.CheckBox => AtSpiRole.CheckBox,
                 AutomationControlType.ComboBox => AtSpiRole.ComboBox,
@@ -61,6 +64,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 AtSpiRole.Application => "application",
                 AtSpiRole.Frame => "frame",
                 AtSpiRole.PushButton => "push button",
+                AtSpiRole.ToggleButton => "toggle button",
                 AtSpiRole.CheckBox => "check box",
                 AtSpiRole.ComboBox => "combo box",
                 AtSpiRole.Entry => "entry",

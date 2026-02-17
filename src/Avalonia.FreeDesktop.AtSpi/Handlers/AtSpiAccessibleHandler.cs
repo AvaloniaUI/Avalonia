@@ -83,24 +83,35 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<List<AtSpiRelationEntry>> GetRelationSetAsync()
         {
-            return ValueTask.FromResult(new List<AtSpiRelationEntry>());
+            var relations = new List<AtSpiRelationEntry>();
+
+            var labeledBy = node.Peer.GetLabeledBy();
+            if (labeledBy is not null)
+            {
+                var labelNode = AtSpiNode.GetOrCreate(labeledBy, server);
+                server.EnsureNodeRegistered(labelNode);
+                // Relation type 2 = LABELLED_BY
+                relations.Add(new AtSpiRelationEntry(2, [server.GetReference(labelNode)]));
+            }
+
+            return ValueTask.FromResult(relations);
         }
 
         public ValueTask<uint> GetRoleAsync()
         {
-            var role = AtSpiNode.ToAtSpiRole(node.Peer.GetAutomationControlType());
+            var role = AtSpiNode.ToAtSpiRole(node.Peer.GetAutomationControlType(), node.Peer);
             return ValueTask.FromResult((uint)role);
         }
 
         public ValueTask<string> GetRoleNameAsync()
         {
-            var role = AtSpiNode.ToAtSpiRole(node.Peer.GetAutomationControlType());
+            var role = AtSpiNode.ToAtSpiRole(node.Peer.GetAutomationControlType(), node.Peer);
             return ValueTask.FromResult(AtSpiNode.ToAtSpiRoleName(role));
         }
 
         public ValueTask<string> GetLocalizedRoleNameAsync()
         {
-            var role = AtSpiNode.ToAtSpiRole(node.Peer.GetAutomationControlType());
+            var role = AtSpiNode.ToAtSpiRole(node.Peer.GetAutomationControlType(), node.Peer);
             return ValueTask.FromResult(AtSpiNode.ToAtSpiRoleName(role));
         }
 
@@ -111,7 +122,13 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<AtSpiAttributeSet> GetAttributesAsync()
         {
-            return ValueTask.FromResult(new AtSpiAttributeSet());
+            var attrs = new AtSpiAttributeSet { ["toolkit"] = "Avalonia" };
+
+            var name = node.Peer.GetName();
+            if (!string.IsNullOrEmpty(name))
+                attrs["explicit-name"] = "true";
+
+            return ValueTask.FromResult(attrs);
         }
 
         public ValueTask<AtSpiObjectReference> GetApplicationAsync()

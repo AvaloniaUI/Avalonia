@@ -21,6 +21,11 @@ namespace Avalonia.FreeDesktop.AtSpi
         internal const string IfaceEventObject = "org.a11y.atspi.Event.Object";
         internal const string IfaceEventWindow = "org.a11y.atspi.Event.Window";
         internal const string IfaceCache = "org.a11y.atspi.Cache";
+        internal const string IfaceSelection = "org.a11y.atspi.Selection";
+        internal const string IfaceImage = "org.a11y.atspi.Image";
+        internal const string IfaceText = "org.a11y.atspi.Text";
+        internal const string IfaceEditableText = "org.a11y.atspi.EditableText";
+        internal const string IfaceCollection = "org.a11y.atspi.Collection";
 
         // Bus names
         internal const string BusNameRegistry = "org.a11y.atspi.Registry";
@@ -36,6 +41,11 @@ namespace Avalonia.FreeDesktop.AtSpi
         internal const uint EventObjectVersion = 1;
         internal const uint EventWindowVersion = 1;
         internal const uint CacheVersion = 1;
+        internal const uint ImageVersion = 1;
+        internal const uint SelectionVersion = 1;
+        internal const uint TextVersion = 1;
+        internal const uint EditableTextVersion = 1;
+        internal const uint CollectionVersion = 1;
 
         internal static List<uint> BuildStateSet(IReadOnlyCollection<AtSpiState>? states)
         {

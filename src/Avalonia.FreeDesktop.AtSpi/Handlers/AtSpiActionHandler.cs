@@ -83,6 +83,26 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                 case "collapse":
                     _node.Peer.GetProvider<IExpandCollapseProvider>()?.Collapse();
                     break;
+                case "scroll up":
+                    _node.Peer.GetProvider<IScrollProvider>()?.Scroll(
+                        ScrollAmount.NoAmount, ScrollAmount.SmallDecrement);
+                    break;
+                case "scroll down":
+                    _node.Peer.GetProvider<IScrollProvider>()?.Scroll(
+                        ScrollAmount.NoAmount, ScrollAmount.SmallIncrement);
+                    break;
+                case "scroll left":
+                    _node.Peer.GetProvider<IScrollProvider>()?.Scroll(
+                        ScrollAmount.SmallDecrement, ScrollAmount.NoAmount);
+                    break;
+                case "scroll right":
+                    _node.Peer.GetProvider<IScrollProvider>()?.Scroll(
+                        ScrollAmount.SmallIncrement, ScrollAmount.NoAmount);
+                    break;
+                // Provisional: activate selectable items (TabItem, ListBoxItem) via Action.
+                case "select":
+                    _node.Peer.GetProvider<ISelectionItemProvider>()?.Select();
+                    break;
             }
         }
 
@@ -102,6 +122,31 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                     actions.Add(new ActionEntry("expand", "Expand", "Expands the control"));
                 else
                     actions.Add(new ActionEntry("collapse", "Collapse", "Collapses the control"));
+            }
+
+            if (_node.Peer.GetProvider<IScrollProvider>() is { } scroll)
+            {
+                if (scroll.VerticallyScrollable)
+                {
+                    actions.Add(new ActionEntry("scroll up", "Scroll Up", "Scrolls the view up"));
+                    actions.Add(new ActionEntry("scroll down", "Scroll Down", "Scrolls the view down"));
+                }
+
+                if (scroll.HorizontallyScrollable)
+                {
+                    actions.Add(new ActionEntry("scroll left", "Scroll Left", "Scrolls the view left"));
+                    actions.Add(new ActionEntry("scroll right", "Scroll Right", "Scrolls the view right"));
+                }
+            }
+
+            // Provisional: expose a "select" action for items that implement ISelectionItemProvider
+            // (e.g. TabItem, ListBoxItem) but lack IInvokeProvider. This allows screen readers to
+            // activate selectable items. Remove once core automation peers provide IInvokeProvider
+            // or the parent container properly exposes ISelectionProvider.
+            if (_node.Peer.GetProvider<ISelectionItemProvider>() is not null
+                && _node.Peer.GetProvider<IInvokeProvider>() is null)
+            {
+                actions.Add(new ActionEntry("select", "Select", "Selects this item"));
             }
 
             return actions;
