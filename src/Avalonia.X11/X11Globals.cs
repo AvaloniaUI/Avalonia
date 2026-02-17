@@ -136,8 +136,11 @@ namespace Avalonia.X11
                 // We have a new owner, unsubscribe from the previous one first
                 if (CompositionAtomOwner != IntPtr.Zero)
                 {
+                    Console.WriteLine("X11Globals.UpdateCompositingAtomOwner: A");
                     _plat.Windows.Remove(CompositionAtomOwner);
+                    Console.WriteLine("X11Globals.UpdateCompositingAtomOwner: B");
                     XSelectInput(_x11.Display, CompositionAtomOwner, IntPtr.Zero);
+                    Console.WriteLine("X11Globals.UpdateCompositingAtomOwner: C");
                 }
 
                 // Set it as the current owner and select input

@@ -47,7 +47,37 @@ internal class X11EventDispatcher
                     }
                 }
                 else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
+                {
+                    if (handler is null) 
+                    {
+                        var xE = xev.AnyEvent;
+                        string propertyDetails = "N/A";
+
+                        if (xev.PropertyEvent is XPropertyEvent prop)
+                        {
+                            string atomName = "unknown";
+
+                            try
+                            {
+                                atomName = GetAtomName(_display, prop.atom) ?? "unknown";
+                            }
+                            catch { }
+
+                            string timeStr = prop.time == IntPtr.Zero ? "CurrentTime (0)" : prop.time.ToString();
+
+                            propertyDetails = $"PropertyEvent info\n" +
+                                $"  → Atom: {prop.atom} ({atomName})\n" +
+                                $"  → State: {prop.state}\n" +
+                                $"  → Timestamp: {timeStr}";
+                        }
+
+                        string details = $"type={xE.type},serial={xE.serial},send_event={xE.send_event},display={xE.display},window={xE.window},propertyDetails={propertyDetails}";
+                        string msg = $"Event handler for event '{xE}' ({details}) is null";
+                        throw new NullReferenceException(msg);
+                    }
+
                     handler(ref xev);
+                }
             }
             finally
             {

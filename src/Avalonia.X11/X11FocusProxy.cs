@@ -48,7 +48,10 @@ namespace Avalonia.X11
         {
             if (_handle != IntPtr.Zero)
             {
+                Console.WriteLine("EventStreamWindow.Cleanup: A");
                 _platform.Windows.Remove(_handle);
+                Console.WriteLine("EventStreamWindow.Cleanup: B");
+
                 _handle = IntPtr.Zero;
             }
         }
