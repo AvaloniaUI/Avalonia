@@ -8,6 +8,12 @@
     <Right>current/Avalonia.Android/lib/net10.0-android36.0/Avalonia.Android.dll</Right>
   </Suppression>
   <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Android.Resource</Target>
+    <Left>baseline/Avalonia.Android/lib/net10.0-android36.0/Avalonia.Android.dll</Left>
+    <Right>current/Avalonia.Android/lib/net10.0-android36.0/Avalonia.Android.dll</Right>
+  </Suppression>
+  <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:Avalonia.Android.AvaloniaActivity</Target>
     <Left>baseline/Avalonia.Android/lib/net10.0-android36.0/Avalonia.Android.dll</Left>
