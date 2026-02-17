@@ -61,6 +61,35 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal("0", realizedItems[0]);
             }
         }
+        
+        [Fact]
+        public void RealizedContainers_Should_Only_Include_Visible_Items_With_CacheLength_Zero()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var letters = "ABCDEFGHIJ".Select(c => c.ToString()).ToList();
+
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    ItemsSource = letters,
+                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 50 }),
+                    Height = 100, // Show 2 items (100 / 50 = 2)
+                    ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel { CacheLength = 0 }),
+                };
+
+                Prepare(target);
+
+                // At the top, only 2 items should be visible (items at index 0 and 1)
+                var realizedContainers = target.GetRealizedContainers().Cast<ListBoxItem>().ToList();
+
+                // With CacheLength = 0, we should only have the visible items realized
+                Assert.Equal(2, realizedContainers.Count);
+                Assert.Equal("A", realizedContainers[0].Content?.ToString());
+                Assert.Equal("B", realizedContainers[1].Content?.ToString());
+            }
+        }
+
 
         private Control CreateListBoxTemplate(TemplatedControl parent, INameScope scope)
         {
