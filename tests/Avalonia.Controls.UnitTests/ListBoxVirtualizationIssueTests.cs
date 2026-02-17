@@ -34,20 +34,17 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(((ListBoxItem)target.Presenter!.Panel!.Children[0]).IsSelected);
 
                 // 2. Scroll until the selected ListBoxItem is no longer visible
-                target.Scroll!.Offset = new Avalonia.Vector(0, 300); // Scroll down 6 items
-                target.UpdateLayout();
+                target.ScrollIntoView(letters.Count - 1); // Scroll down to the last item
 
                 // Verify that the first item is no longer realized
                 var realizedContainers = target.GetRealizedContainers().Cast<ListBoxItem>().ToList();
-                // Assert.DoesNotContain(realizedContainers, x => x.Content as string == "A");
+                Assert.DoesNotContain(realizedContainers, x => x.Content as string == "A");
 
-                // 3. Click the Button to change ItemsSource
+                // 3. Change the ItemsSource
                 target.ItemsSource = numbers;
-                target.UpdateLayout();
 
                 // 4. Scroll to the top
-                target.Scroll.Offset = new Avalonia.Vector(0, 0);
-                target.UpdateLayout();
+                target.ScrollIntoView(0);
 
                 // 5. The previously selected ListBoxItem will appear in the ListBox
                 var realizedItems = target.GetRealizedContainers()
