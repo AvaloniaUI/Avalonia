@@ -313,18 +313,76 @@ namespace Avalonia.Controls
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
+                    if (_focusedElement is not null && e.NewStartingIndex <= _focusedIndex)
+                    {
+                        var oldIndex = _focusedIndex;
+                        _focusedIndex += e.NewItems!.Count;
+                        _updateElementIndex(_focusedElement, oldIndex, _focusedIndex);
+                    }
                     _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Remove:
+                    if (_focusedElement is not null)
+                    {
+                        if (e.OldStartingIndex <= _focusedIndex && _focusedIndex < e.OldStartingIndex + e.OldItems!.Count)
+                        {
+                            RecycleElementOnItemRemoved(_focusedElement);
+                            _focusedElement = null;
+                            _focusedIndex = -1;
+                        }
+                        else if (e.OldStartingIndex < _focusedIndex)
+                        {
+                            var oldIndex = _focusedIndex;
+                            _focusedIndex -= e.OldItems!.Count;
+                            _updateElementIndex(_focusedElement, oldIndex, _focusedIndex);
+                        }
+                    }
                     _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
                     break;
                 case NotifyCollectionChangedAction.Replace:
+                    if (_focusedElement is not null && e.OldStartingIndex <= _focusedIndex && _focusedIndex < e.OldStartingIndex + e.OldItems!.Count)
+                    {
+                        RecycleElementOnItemRemoved(_focusedElement);
+                        _focusedElement = null;
+                        _focusedIndex = -1;
+                    }
                     _realizedElements.ItemsReplaced(e.OldStartingIndex, e.OldItems!.Count, _recycleElementOnItemRemoved);
                     break;
                 case NotifyCollectionChangedAction.Move:
                     if (e.OldStartingIndex < 0)
                     {
                         goto case NotifyCollectionChangedAction.Reset;
+                    }
+
+                    if (_focusedElement is not null)
+                    {
+                        if (e.OldStartingIndex <= _focusedIndex && _focusedIndex < e.OldStartingIndex + e.OldItems!.Count)
+                        {
+                            var oldIndex = _focusedIndex;
+                            _focusedIndex = e.NewStartingIndex + (_focusedIndex - e.OldStartingIndex);
+                            _updateElementIndex(_focusedElement, oldIndex, _focusedIndex);
+                        }
+                        else
+                        {
+                            var newFocusedIndex = _focusedIndex;
+
+                            if (e.OldStartingIndex < _focusedIndex)
+                            {
+                                newFocusedIndex -= e.OldItems!.Count;
+                            }
+
+                            if (e.NewStartingIndex <= newFocusedIndex)
+                            {
+                                newFocusedIndex += e.NewItems!.Count;
+                            }
+
+                            if (newFocusedIndex != _focusedIndex)
+                            {
+                                var oldIndex = _focusedIndex;
+                                _focusedIndex = newFocusedIndex;
+                                _updateElementIndex(_focusedElement, oldIndex, _focusedIndex);
+                            }
+                        }
                     }
 
                     _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
@@ -338,6 +396,12 @@ namespace Avalonia.Controls
                     _realizedElements.ItemsInserted(insertIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Reset:
+                    if (_focusedElement is not null)
+                    {
+                        RecycleElementOnItemRemoved(_focusedElement);
+                        _focusedElement = null;
+                        _focusedIndex = -1;
+                    }
                     _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
                     break;
             }
@@ -351,6 +415,15 @@ namespace Avalonia.Controls
                 oldValue.PropertyChanged -= OnItemsControlPropertyChanged;
             if (ItemsControl is not null)
                 ItemsControl.PropertyChanged += OnItemsControlPropertyChanged;
+
+            _realizedElements?.ResetForReuse();
+            _measureElements?.ResetForReuse();
+            if (_focusedElement is not null)
+            {
+                RecycleElementOnItemRemoved(_focusedElement);
+                _focusedElement = null;
+            }
+            _focusedIndex = -1;
         }
 
         protected override IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
