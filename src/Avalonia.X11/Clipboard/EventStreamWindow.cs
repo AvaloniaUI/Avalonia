@@ -93,12 +93,17 @@ internal class EventStreamWindow : IDisposable
     {
         _timeoutTimer.Stop();
 
+        Console.WriteLine("EventStreamWindow.Dispose: A");
         _platform.Windows.Remove(_handle);
+        Console.WriteLine("EventStreamWindow.Dispose: B");
+
         if (_isForeign)
             XLib.XSelectInput(_platform.Display, _handle, IntPtr.Zero);
         else
             XLib.XDestroyWindow(_platform.Display, _handle);
-        
+
+        Console.WriteLine($"EventStreamWindow.Dispose: C; stack: \n{Environment.StackTrace}");
+
         _handle = IntPtr.Zero;
         var toDispose = _listeners.ToList();
         toDispose.AddRange(_addedListeners);

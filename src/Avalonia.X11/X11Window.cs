@@ -1075,14 +1075,23 @@ namespace Avalonia.X11
             
             if (_handle != IntPtr.Zero)
             {
+                Console.WriteLine("X11Window.Cleanup: A");
                 _platform.Windows.Remove(_handle);
+                Console.WriteLine("X11Window.Cleanup: A");
                 _platform.XI2?.OnWindowDestroyed(_handle);
+                Console.WriteLine("X11Window.Cleanup: C");
+
                 var handle = _handle;
                 _handle = IntPtr.Zero;
                 _pen.Dispose();
                 _touch.Dispose();
-                if (!fromDestroyNotification) 
+                if (!fromDestroyNotification)
+                {
+                    Console.WriteLine("X11Window.Cleanup: D");
                     XDestroyWindow(_x11.Display, handle);
+                }
+
+                Console.WriteLine("X11Window.Cleanup: E");
             }
 
             _platform.X11Screens.Changed -= OnScreensChanged;
