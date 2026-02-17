@@ -46,7 +46,7 @@ namespace Avalonia.Controls.UnitTests
                 // 4. Scroll to the top
                 target.ScrollIntoView(0);
 
-                // 5. The previously selected ListBoxItem will appear in the ListBox
+                // 5. The previously selected ListBoxItem should NOT appear in the ListBox
                 var realizedItems = target.GetRealizedContainers()
                     .Cast<ListBoxItem>()
                     .Select(x => x.Content?.ToString())
