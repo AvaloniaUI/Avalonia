@@ -159,6 +159,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Dialogs", "src\Ava
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.FreeDesktop", "src\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj", "{4D36CEC8-53F2-40A5-9A37-79AAE356E2DA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.FreeDesktop.AtSpi", "src\Avalonia.FreeDesktop.AtSpi\Avalonia.FreeDesktop.AtSpi.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Themes.Fluent", "src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj", "{C42D2FC1-A531-4ED4-84B9-89AEC7C962FC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Headless", "src\Headless\Avalonia.Headless\Avalonia.Headless.csproj", "{8C89950F-F5D9-47FC-8066-CBC1EC3DF8FC}"

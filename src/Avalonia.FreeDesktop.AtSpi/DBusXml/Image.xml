@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
+  <av:ImportTypes>Types.xml</av:ImportTypes>
+  <!--
+      org.a11y.atspi.Image:
+      @short_description: Interface for accessible objects that represent
+      graphical images.
+  -->
+  <interface name="org.a11y.atspi.Image">
+
+    <!--
+        Version: The version of this interface.
+
+        This property is incremented by one every time a new method, signal, or property
+        is added to this interface.
+    -->
+    <property name="version" type="u" access="read"/>
+
+    <!--
+        ImageDescription: the description of the image.
+    -->
+    <property name="ImageDescription" type="s" access="read"/>
+
+    <!--
+        ImageLocale: a POSIX LC_MESSAGES-style locale value for the image
+        description and text.
+    -->
+    <property name="ImageLocale" type="s" access="read"/>
+
+    <!--
+        GetImageExtents:
+
+        @coordType: Specifies the reference point for the coordinates to
+        be returned. 0 = relative to the screen, 1 = relative to the
+        application's top-level window, 2 = relative to the accessible's
+        parent. Requesting coordinates relative to the screen is deprecated
+        and may not be supported by the application.
+
+        Gets the bounding box of the image displayed in a
+        specified Image implementor.
+        The returned values are meaningful only if the Image has both
+        STATE_VISIBLE and STATE_SHOWING.
+    -->
+    <method name="GetImageExtents">
+      <arg direction="in" name="coordType" type="u"/>
+      <arg direction="out" type="(iiii)">
+        <av:TypeDefinition>
+          <av:Struct Type="AtSpiRect"/>
+        </av:TypeDefinition>
+      </arg>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiRect"/>
+    </method>
+
+    <!--
+        GetImagePosition:
+
+        @coordType: Specifies the reference point for the coordinates to
+        be returned. 0 = relative to the screen, 1 = relative to the
+        application's top-level window, 2 = relative to the accessible's
+        parent. Requesting coordinates relative to the screen is deprecated
+        and may not be supported by the application.
+
+        Gets the minimum x and y coordinates of the image displayed in a
+        specified Image implementor.
+        The returned values are meaningful only if the Image has both
+        STATE_VISIBLE and STATE_SHOWING.
+    -->
+    <method name="GetImagePosition">
+      <arg direction="in" name="coordType" type="u"/>
+      <arg direction="out" name="x" type="i"/>
+      <arg direction="out" name="y" type="i"/>
+    </method>
+
+    <!--
+        GetImageSize:
+
+        Gets the size of the image displayed in a specified object.
+        The returned values are meaningful only if the Image has both
+        STATE_VISIBLE and STATE_SHOWING.
+    -->
+    <method name="GetImageSize">
+      <arg direction="out" name="width" type="i"/>
+      <arg direction="out" name="height" type="i"/>
+    </method>
+
+  </interface>
+</node>
