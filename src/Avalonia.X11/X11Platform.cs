@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
+using Avalonia.FreeDesktop.AtSpi;
 using Avalonia.FreeDesktop.DBusIme;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -27,6 +29,11 @@ namespace Avalonia.X11
     internal class AvaloniaX11Platform : IWindowingPlatform
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
+        private AtSpiAccessibilityWatcher? _atSpiWatcher;
+        private AtSpiServer? _atSpiServer;
+        private bool _serverStartedUnconditionally;
+        private readonly List<X11Window> _trackedWindows = new();
+        internal AtSpiServer? AtSpiServer => _atSpiServer;
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
         public Dictionary<IntPtr, X11EventDispatcher.EventHandler> Windows { get; } = new ();
         public XI2Manager? XI2 { get; private set; }
@@ -106,6 +113,103 @@ namespace Avalonia.X11
 
             Compositor = new Compositor(graphics);
             AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
+
+            _atSpiWatcher = new AtSpiAccessibilityWatcher();
+            _ = InitAccessibilityAsync();
+        }
+
+        internal void TrackWindow(X11Window window) => _trackedWindows.Add(window);
+        internal void UntrackWindow(X11Window window) => _trackedWindows.Remove(window);
+
+        private async Task InitAccessibilityAsync()
+        {
+            try
+            {
+                await _atSpiWatcher!.InitAsync();
+                _atSpiWatcher.IsEnabledChanged += OnAccessibilityEnabledChanged;
+
+                // Path A: try unconditional connection (GTK4 approach).
+                // Event listener tracking in AtSpiServer will suppress signals when nobody is listening.
+                if (await TryStartServerAsync())
+                {
+                    _serverStartedUnconditionally = true;
+                    return;
+                }
+
+                // Path A failed — fall back to Path B (IsEnabled watcher)
+                if (_atSpiWatcher.IsEnabled)
+                    await EnableAccessibilityAsync();
+            }
+            catch
+            {
+                // Accessibility init failed — app continues without AT-SPI.
+            }
+        }
+
+        private async void OnAccessibilityEnabledChanged(object? sender, bool enabled)
+        {
+            try
+            {
+                if (enabled)
+                {
+                    await EnableAccessibilityAsync();
+                }
+                else if (!_serverStartedUnconditionally)
+                {
+                    // Only tear down if server wasn't started unconditionally.
+                    // When started unconditionally, event listener tracking handles suppression.
+                    await DisableAccessibilityAsync();
+                }
+            }
+            catch
+            {
+                // Ignore errors during dynamic a11y toggle.
+            }
+        }
+
+        private async Task<bool> TryStartServerAsync()
+        {
+            if (_atSpiServer is not null)
+                return true;
+
+            try
+            {
+                var server = new AtSpiServer();
+                await server.StartAsync();
+                _atSpiServer = server;
+
+                // Register any already-tracked windows
+                foreach (var window in _trackedWindows)
+                {
+                    if (window.InputRoot is Controls.Control c)
+                    {
+                        var peer = Automation.Peers.ControlAutomationPeer.CreatePeerForElement(c);
+                        if (peer is not null)
+                            server.AddWindow(peer);
+                    }
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private async Task EnableAccessibilityAsync()
+        {
+            await TryStartServerAsync();
+        }
+
+        private async Task DisableAccessibilityAsync()
+        {
+            if (_atSpiServer is null)
+                return;
+
+            var server = _atSpiServer;
+            _atSpiServer = null;
+            await server.DisposeAsync();
         }
 
         public IntPtr DeferredDisplay { get; set; }

@@ -2,14 +2,13 @@ using System;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Platform;
-using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi
 {
     internal sealed class RootAtSpiNode : AtSpiNode
     {
         public RootAtSpiNode(AutomationPeer peer, AtSpiServer server)
-            : base(peer, server, RootPath)
+            : base(peer, server)
         {
             RootProvider = peer.GetProvider<IRootProvider>() ?? throw new InvalidOperationException(
                 "Attempt to create RootAtSpiNode from peer which does not implement IRootProvider.");
@@ -18,6 +17,7 @@ namespace Avalonia.FreeDesktop.AtSpi
 
         public IRootProvider RootProvider { get; }
         public IWindowBaseImpl? WindowImpl => RootProvider.PlatformImpl as IWindowBaseImpl;
+        public ApplicationAtSpiNode? AppRoot { get; set; }
 
         public Rect ToScreen(Rect rect)
         {
@@ -38,8 +38,10 @@ namespace Avalonia.FreeDesktop.AtSpi
 
         private void OnRootFocusChanged(object? sender, EventArgs e)
         {
-            var focused = InvokeSync(() => RootProvider.GetFocus());
+            var focused = RootProvider.GetFocus();
             var focusedNode = focused is not null ? GetOrCreate(focused, Server) : null;
+            if (focusedNode is not null)
+                Server.EnsureNodeRegistered(focusedNode);
             Server.EmitFocusChange(focusedNode);
         }
     }

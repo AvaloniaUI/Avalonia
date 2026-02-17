@@ -17,24 +17,27 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public uint Version => ValueVersion;
 
-        public double MinimumValue => _node.InvokeSync<IRangeValueProvider, double>(p => p.Minimum);
+        public double MinimumValue =>
+            _node.Peer.GetProvider<IRangeValueProvider>() is { } p ? p.Minimum : 0;
 
-        public double MaximumValue => _node.InvokeSync<IRangeValueProvider, double>(p => p.Maximum);
+        public double MaximumValue =>
+            _node.Peer.GetProvider<IRangeValueProvider>() is { } p ? p.Maximum : 0;
 
-        public double MinimumIncrement => _node.InvokeSync<IRangeValueProvider, double>(p => p.SmallChange);
+        public double MinimumIncrement =>
+            _node.Peer.GetProvider<IRangeValueProvider>() is { } p ? p.SmallChange : 0;
 
         public string Text => string.Empty;
 
         public double CurrentValue
         {
-            get => _node.InvokeSync<IRangeValueProvider, double>(p => p.Value);
+            get => _node.Peer.GetProvider<IRangeValueProvider>() is { } p ? p.Value : 0;
             set
             {
-                _node.InvokeSync<IRangeValueProvider>(p =>
+                if (_node.Peer.GetProvider<IRangeValueProvider>() is { } p)
                 {
                     var clamped = Math.Max(p.Minimum, Math.Min(p.Maximum, value));
                     p.SetValue(clamped);
-                });
+                }
             }
         }
     }

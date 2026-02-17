@@ -1024,6 +1024,15 @@ namespace Avalonia.X11
                 return;
             _cleaningUp = true;
             
+            // Remove from AT-SPI tree before closing
+            _platform.UntrackWindow(this);
+            if (_platform.AtSpiServer is { } atSpiServer && _inputRoot is Avalonia.Controls.Control atSpiControl)
+            {
+                var atSpiPeer = atSpiControl.GetAutomationPeer();
+                if (atSpiPeer is not null)
+                    atSpiServer.RemoveWindow(atSpiPeer);
+            }
+
             // Before doing anything else notify the TopLevel that ITopLevelImpl is no longer valid
             if (_handle != IntPtr.Zero)
                 Closed?.Invoke();
@@ -1110,6 +1119,14 @@ namespace Avalonia.X11
         public void Show(bool activate, bool isDialog)
         {
             _mode.Show(activate, isDialog);
+
+            _platform.TrackWindow(this);
+            if (_platform.AtSpiServer is { } server && _inputRoot is Avalonia.Controls.Control c)
+            {
+                var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(c);
+                if (peer is not null)
+                    server.AddWindow(peer);
+            }
         }
 
         public void Hide() => _mode.Hide();

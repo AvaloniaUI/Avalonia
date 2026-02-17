@@ -63,7 +63,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                 return ValueTask.FromResult(false);
 
             var action = _actions[index];
-            _node.InvokeSync(() => ExecuteAction(action.ActionName));
+            ExecuteAction(action.ActionName);
             return ValueTask.FromResult(true);
         }
 

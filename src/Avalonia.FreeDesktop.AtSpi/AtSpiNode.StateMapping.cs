@@ -10,7 +10,7 @@ namespace Avalonia.FreeDesktop.AtSpi
     {
         public List<uint> ComputeStates()
         {
-            return InvokeSync(() => ComputeStatesCore());
+            return ComputeStatesCore();
         }
 
         private List<uint> ComputeStatesCore()

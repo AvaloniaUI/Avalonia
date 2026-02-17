@@ -66,7 +66,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<uint> GetLayerAsync()
         {
-            var controlType = _node.InvokeSync(() => _node.Peer.GetAutomationControlType());
+            var controlType = _node.Peer.GetAutomationControlType();
             // Window layer = 7, Widget layer = 3
             var layer = controlType == Automation.Peers.AutomationControlType.Window ? 7u : 3u;
             return ValueTask.FromResult(layer);
@@ -76,7 +76,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<bool> GrabFocusAsync()
         {
-            _node.InvokeSync(() => _node.Peer.SetFocus());
+            _node.Peer.SetFocus();
             return ValueTask.FromResult(true);
         }
 
@@ -109,23 +109,20 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         private Rect GetScreenExtents()
         {
-            return _node.InvokeSync(() =>
+            var bounds = _node.Peer.GetBoundingRectangle();
+            if (_node is RootAtSpiNode rootNode)
+                return rootNode.ToScreen(bounds);
+
+            // Find root and translate to screen
+            var root = _node.Peer.GetVisualRoot();
+            if (root is not null)
             {
-                var bounds = _node.Peer.GetBoundingRectangle();
-                if (_node is RootAtSpiNode rootNode)
-                    return rootNode.ToScreen(bounds);
+                var rootNode2 = AtSpiNode.TryGet(root) as RootAtSpiNode;
+                if (rootNode2 is not null)
+                    return rootNode2.ToScreen(bounds);
+            }
 
-                // Find root and translate to screen
-                var root = _node.Peer.GetVisualRoot();
-                if (root is not null)
-                {
-                    var rootNode2 = AtSpiNode.TryGet(root) as RootAtSpiNode;
-                    if (rootNode2 is not null)
-                        return rootNode2.ToScreen(bounds);
-                }
-
-                return bounds;
-            });
+            return bounds;
         }
 
         private Rect TranslateRect(Rect screenRect, uint coordType)
@@ -179,41 +176,35 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         private Rect GetWindowRect()
         {
-            return _node.InvokeSync(() =>
+            var root = _node.Peer.GetVisualRoot();
+            if (root is not null)
             {
-                var root = _node.Peer.GetVisualRoot();
-                if (root is not null)
-                {
-                    var rootNode = AtSpiNode.TryGet(root) as RootAtSpiNode;
-                    if (rootNode is not null)
-                        return rootNode.ToScreen(root.GetBoundingRectangle());
-                }
+                var rootNode = AtSpiNode.TryGet(root) as RootAtSpiNode;
+                if (rootNode is not null)
+                    return rootNode.ToScreen(root.GetBoundingRectangle());
+            }
 
-                return default;
-            });
+            return default;
         }
 
         private Rect GetParentScreenRect()
         {
-            return _node.InvokeSync(() =>
+            var parent = _node.Peer.GetParent();
+            if (parent is not null)
             {
-                var parent = _node.Peer.GetParent();
-                if (parent is not null)
+                var bounds = parent.GetBoundingRectangle();
+                var root = parent.GetVisualRoot();
+                if (root is not null)
                 {
-                    var bounds = parent.GetBoundingRectangle();
-                    var root = parent.GetVisualRoot();
-                    if (root is not null)
-                    {
-                        var rootNode = AtSpiNode.TryGet(root) as RootAtSpiNode;
-                        if (rootNode is not null)
-                            return rootNode.ToScreen(bounds);
-                    }
-
-                    return bounds;
+                    var rootNode = AtSpiNode.TryGet(root) as RootAtSpiNode;
+                    if (rootNode is not null)
+                        return rootNode.ToScreen(bounds);
                 }
 
-                return default;
-            });
+                return bounds;
+            }
+
+            return default;
         }
     }
 }

@@ -36,6 +36,9 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         private void EmitSignal(string member, params object[] body)
         {
+            if (!_server.HasEventListeners)
+                return;
+
             var connection = _server.A11yConnection;
             if (connection is null)
                 return;

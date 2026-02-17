@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
-using Avalonia.Threading;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi
@@ -21,17 +21,7 @@ namespace Avalonia.FreeDesktop.AtSpi
         {
             Peer = peer;
             Server = server;
-            _path = $"{AppPathPrefix}/{s_nextId++}";
-            s_nodes.Add(peer, this);
-            peer.ChildrenChanged += OnPeerChildrenChanged;
-            peer.PropertyChanged += OnPeerPropertyChanged;
-        }
-
-        protected AtSpiNode(AutomationPeer peer, AtSpiServer server, string path)
-        {
-            Peer = peer;
-            Server = server;
-            _path = path;
+            _path = $"{AppPathPrefix}/{Interlocked.Increment(ref s_nextId)}";
             s_nodes.Add(peer, this);
             peer.ChildrenChanged += OnPeerChildrenChanged;
             peer.PropertyChanged += OnPeerPropertyChanged;
@@ -90,37 +80,6 @@ namespace Avalonia.FreeDesktop.AtSpi
         }
 
         public static void Release(AutomationPeer peer) => s_nodes.Remove(peer);
-
-        internal void InvokeSync(Action action)
-        {
-            if (Dispatcher.UIThread.CheckAccess())
-                action();
-            else
-                Dispatcher.UIThread.InvokeAsync(action).Wait();
-        }
-
-        internal T InvokeSync<T>(Func<T> func)
-        {
-            if (Dispatcher.UIThread.CheckAccess())
-                return func();
-            else
-                return Dispatcher.UIThread.InvokeAsync(func).Result;
-        }
-
-        internal TResult InvokeSync<TInterface, TResult>(Func<TInterface, TResult> func)
-        {
-            if (Peer.GetProvider<TInterface>() is TInterface provider)
-                return InvokeSync(() => func(provider));
-            throw new NotSupportedException($"Peer does not implement {typeof(TInterface).Name}.");
-        }
-
-        internal void InvokeSync<TInterface>(Action<TInterface> action)
-        {
-            if (Peer.GetProvider<TInterface>() is TInterface provider)
-                InvokeSync(() => action(provider));
-            else
-                throw new NotSupportedException($"Peer does not implement {typeof(TInterface).Name}.");
-        }
 
         private void OnPeerChildrenChanged(object? sender, EventArgs e)
         {

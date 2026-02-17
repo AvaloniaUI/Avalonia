@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="DBusXml/Status.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/org.a11y.Bus.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/Socket.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/Accessible.xml" DBusGeneratorMode="Handler" />
