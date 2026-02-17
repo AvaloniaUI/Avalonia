@@ -16,7 +16,7 @@
     <Content Include="../Avalonia.RenderTests/**/*.png" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xunit.StaFact" Version="3.0.13" />
+    <PackageReference Include="Xunit.StaFact" />
   </ItemGroup>
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />

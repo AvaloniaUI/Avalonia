@@ -25,8 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.548" />
+    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="15.1.548" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
   </ItemGroup>
   
   <ItemGroup>
