@@ -1,11 +1,9 @@
 using System.Linq;
-using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Layout;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
-using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -71,11 +69,11 @@ namespace Avalonia.Controls.UnitTests
 
                 var target = new ListBox
                 {
+                    ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel { CacheLength = 0 }),
                     Template = new FuncControlTemplate(CreateListBoxTemplate),
                     ItemsSource = letters,
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 50 }),
                     Height = 100, // Show 2 items (100 / 50 = 2)
-                    ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel { CacheLength = 0 }),
                 };
 
                 Prepare(target);
@@ -100,6 +98,7 @@ namespace Avalonia.Controls.UnitTests
                 Content = new ItemsPresenter
                 {
                     Name = "PART_ItemsPresenter",
+                    [~ItemsPresenter.ItemsPanelProperty] = ((ListBox)parent).GetObservable(ItemsControl.ItemsPanelProperty).ToBinding(),
                 }.RegisterInNameScope(scope)
             }.RegisterInNameScope(scope);
         }
