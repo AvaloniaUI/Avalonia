@@ -540,8 +540,8 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (interfaces.Contains(IfaceImage))
                 handlers.ImageHandler = new AtSpiImageHandler(this, node);
 
-            if (interfaces.Contains(IfaceCollection))
-                handlers.CollectionHandler = new AtSpiCollectionHandler(this, node);
+            // if (interfaces.Contains(IfaceCollection))
+            //     handlers.CollectionHandler = new AtSpiCollectionHandler(this, node);
 
             handlers.EventObjectHandler = new AtSpiEventObjectHandler(this, node.Path);
 

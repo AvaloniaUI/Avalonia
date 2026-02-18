@@ -42,7 +42,7 @@ namespace Avalonia.FreeDesktop.AtSpi
 
             // All visual elements support Component and Collection
             interfaces.Add(IfaceComponent);
-            interfaces.Add(IfaceCollection);
+            // interfaces.Add(IfaceCollection);
 
             if (Peer.GetProvider<IInvokeProvider>() is not null ||
                 Peer.GetProvider<IToggleProvider>() is not null ||

@@ -25,7 +25,7 @@ namespace Avalonia.FreeDesktop.AtSpi
         public AtSpiTextHandler? TextHandler { get; set; }
         public AtSpiEditableTextHandler? EditableTextHandler { get; set; }
         public AtSpiImageHandler? ImageHandler { get; set; }
-        public AtSpiCollectionHandler? CollectionHandler { get; set; }
+        // public AtSpiCollectionHandler? CollectionHandler { get; set; }
         public AtSpiEventObjectHandler? EventObjectHandler { get; set; }
         public AtSpiEventWindowHandler? EventWindowHandler { get; set; }
 
@@ -54,8 +54,8 @@ namespace Avalonia.FreeDesktop.AtSpi
                 targets.Add(EditableTextHandler);
             if (ImageHandler != null)
                 targets.Add(ImageHandler);
-            if (CollectionHandler != null)
-                targets.Add(CollectionHandler);
+            // if (CollectionHandler != null)
+            //     targets.Add(CollectionHandler);
             if (EventObjectHandler != null)
                 targets.Add(EventObjectHandler);
             if (EventWindowHandler != null)
