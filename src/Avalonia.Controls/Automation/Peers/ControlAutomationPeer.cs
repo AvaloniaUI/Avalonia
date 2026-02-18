@@ -132,6 +132,12 @@ namespace Avalonia.Automation.Peers
                 result = ToolTip.GetTip(Owner) as string;
             }
 
+            // Windows uses HelpText for placeholder text; macOS uses a separate property.
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                result = GetPlaceholderTextCore();
+            }
+
             return result;
         }
         protected override AutomationLandmarkType? GetLandmarkTypeCore() => AutomationProperties.GetLandmarkType(Owner);
