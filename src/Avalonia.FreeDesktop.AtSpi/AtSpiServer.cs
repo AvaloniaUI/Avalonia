@@ -25,7 +25,6 @@ namespace Avalonia.FreeDesktop.AtSpi
         private ApplicationAtSpiNode? _appRoot;
         private AtSpiCacheHandler? _cacheHandler;
         private AtSpiEventObjectHandler? _appRootEventHandler;
-        private bool _embedded;
 
         // Registry event listener tracking
         private OrgA11yAtspiRegistryProxy? _registryProxy;
@@ -89,7 +88,7 @@ namespace Avalonia.FreeDesktop.AtSpi
         }
 
         /// <summary>
-        /// Adds a window to the AT-SPI tree. 
+        /// Adds a window to the AT-SPI tree.
         /// </summary>
         public void AddWindow(AutomationPeer windowPeer)
         {
@@ -111,22 +110,46 @@ namespace Avalonia.FreeDesktop.AtSpi
 
             // Add as child of app root
             _appRoot.AddWindowChild(windowNode);
+ 
+            _ = EmbedAndAnnounceAsync(); 
+            EmitWindowChildAdded(windowNode);
+        }
 
-            // Emit children-changed on app root (guarded by event listeners)
+        private async Task EmbedAndAnnounceAsync()
+        {
+            try
+            {
+                await EmbedApplicationAsync();
+            }
+            catch
+            {
+                // Embed failed — screen reader won't discover us.
+                // Reset so the next AddWindow retries.
+                return;
+            }
+
+            // Now that the screen reader knows about us, emit children-changed
+            // for every window that was added before the embed completed.
+            if (!HasEventListeners || _appRootEventHandler is not { } eventHandler)
+                return;
+
+            var children = _appRoot!.WindowChildren;
+            for (var i = 0; i < children.Count; i++)
+            {
+                var childRef = GetReference(children[i]);
+                var childVariant = new DBusVariant(childRef.ToDbusStruct());
+                eventHandler.EmitChildrenChangedSignal("add", i, childVariant);
+            }
+        }
+
+        private void EmitWindowChildAdded(RootAtSpiNode windowNode)
+        {
             if (HasEventListeners && _appRootEventHandler is { } eventHandler)
             {
                 var childRef = GetReference(windowNode);
                 var childVariant = new DBusVariant(childRef.ToDbusStruct());
                 eventHandler.EmitChildrenChangedSignal(
-                    "add", _appRoot.WindowChildren.Count - 1, childVariant);
-            }
-
-            // Deferred embed: announce ourselves to the registry only once we
-            // have a window registered and the UI thread is past heavy startup.
-            if (!_embedded)
-            {
-                _embedded = true;
-                _ = EmbedApplicationAsync();
+                    "add", _appRoot!.WindowChildren.Count - 1, childVariant);
             }
         }
 
