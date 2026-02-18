@@ -8,7 +8,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Reactive;
+using Avalonia.Logging;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -263,8 +263,20 @@ namespace Avalonia.Controls
 
                         e.Arrange(rect);
                     
-                        if (_viewport.Intersects(rect))
-                            _scrollAnchorProvider?.RegisterAnchorCandidate(e);
+                        if (e.IsVisible && _viewport.Intersects(rect))
+                        {
+                            try
+                            {
+                                _scrollAnchorProvider?.RegisterAnchorCandidate(e);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                // Element might have been removed/reparented during virtualization; ignore but log for diagnostics.
+                                Logger.TryGet(LogEventLevel.Verbose, LogArea.Layout)?.Log(this,
+                                    "RegisterAnchorCandidate ignored for {Element}: not a descendant of ScrollAnchorProvider. {Message}",
+                                    e, ex.Message);
+                            }
+                        }
                         
                         u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
                     }
@@ -307,9 +319,47 @@ namespace Avalonia.Controls
         {
             InvalidateMeasure();
 
+            // Always update special elements
+            UpdateSpecialElementsOnItemsChanged(e);
+
             if (_realizedElements is null)
                 return;
 
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    _realizedElements.ItemsReplaced(e.OldStartingIndex, e.OldItems!.Count, _recycleElementOnItemRemoved);
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    if (e.OldStartingIndex < 0)
+                    {
+                        goto case NotifyCollectionChangedAction.Reset;
+                    }
+
+                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
+                    var insertIndex = e.NewStartingIndex;
+
+                    if (e.NewStartingIndex > e.OldStartingIndex)
+                    {
+                        insertIndex -= e.OldItems!.Count - 1;
+                    }
+
+                    _realizedElements.ItemsInserted(insertIndex, e.NewItems!.Count, _updateElementIndex);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
+                    break;
+            }
+        }
+
+        private void UpdateSpecialElementsOnItemsChanged(NotifyCollectionChangedEventArgs e)
+        {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -319,7 +369,10 @@ namespace Avalonia.Controls
                         _focusedIndex += e.NewItems!.Count;
                         _updateElementIndex(_focusedElement, oldIndex, _focusedIndex);
                     }
-                    _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
+                    if (_scrollToElement is not null && e.NewStartingIndex <= _scrollToIndex)
+                    {
+                        _scrollToIndex += e.NewItems!.Count;
+                    }
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     if (_focusedElement is not null)
@@ -337,7 +390,19 @@ namespace Avalonia.Controls
                             _updateElementIndex(_focusedElement, oldIndex, _focusedIndex);
                         }
                     }
-                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
+                    if (_scrollToElement is not null)
+                    {
+                        if (e.OldStartingIndex <= _scrollToIndex && _scrollToIndex < e.OldStartingIndex + e.OldItems!.Count)
+                        {
+                            RecycleElementOnItemRemoved(_scrollToElement);
+                            _scrollToElement = null;
+                            _scrollToIndex = -1;
+                        }
+                        else if (e.OldStartingIndex < _scrollToIndex)
+                        {
+                            _scrollToIndex -= e.OldItems!.Count;
+                        }
+                    }
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     if (_focusedElement is not null && e.OldStartingIndex <= _focusedIndex && _focusedIndex < e.OldStartingIndex + e.OldItems!.Count)
@@ -346,7 +411,12 @@ namespace Avalonia.Controls
                         _focusedElement = null;
                         _focusedIndex = -1;
                     }
-                    _realizedElements.ItemsReplaced(e.OldStartingIndex, e.OldItems!.Count, _recycleElementOnItemRemoved);
+                    if (_scrollToElement is not null && e.OldStartingIndex <= _scrollToIndex && _scrollToIndex < e.OldStartingIndex + e.OldItems!.Count)
+                    {
+                        RecycleElementOnItemRemoved(_scrollToElement);
+                        _scrollToElement = null;
+                        _scrollToIndex = -1;
+                    }
                     break;
                 case NotifyCollectionChangedAction.Move:
                     if (e.OldStartingIndex < 0)
@@ -385,15 +455,29 @@ namespace Avalonia.Controls
                         }
                     }
 
-                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
-                    var insertIndex = e.NewStartingIndex;
-
-                    if (e.NewStartingIndex > e.OldStartingIndex)
+                    if (_scrollToElement is not null)
                     {
-                        insertIndex -= e.OldItems.Count - 1;
-                    }
+                        if (e.OldStartingIndex <= _scrollToIndex && _scrollToIndex < e.OldStartingIndex + e.OldItems!.Count)
+                        {
+                            _scrollToIndex = e.NewStartingIndex + (_scrollToIndex - e.OldStartingIndex);
+                        }
+                        else
+                        {
+                            var newScrollToIndex = _scrollToIndex;
 
-                    _realizedElements.ItemsInserted(insertIndex, e.NewItems!.Count, _updateElementIndex);
+                            if (e.OldStartingIndex < _scrollToIndex)
+                            {
+                                newScrollToIndex -= e.OldItems!.Count;
+                            }
+
+                            if (e.NewStartingIndex <= newScrollToIndex)
+                            {
+                                newScrollToIndex += e.NewItems!.Count;
+                            }
+
+                            _scrollToIndex = newScrollToIndex;
+                        }
+                    }
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     if (_focusedElement is not null)
@@ -402,7 +486,12 @@ namespace Avalonia.Controls
                         _focusedElement = null;
                         _focusedIndex = -1;
                     }
-                    _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
+                    if (_scrollToElement is not null)
+                    {
+                        RecycleElementOnItemRemoved(_scrollToElement);
+                        _scrollToElement = null;
+                        _scrollToIndex = -1;
+                    }
                     break;
             }
         }
@@ -423,7 +512,13 @@ namespace Avalonia.Controls
                 RecycleElementOnItemRemoved(_focusedElement);
                 _focusedElement = null;
             }
+            if (_scrollToElement is not null)
+            {
+                RecycleElementOnItemRemoved(_scrollToElement);
+                _scrollToElement = null;
+            }
             _focusedIndex = -1;
+            _scrollToIndex = -1;
         }
 
         protected override IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
@@ -931,6 +1026,7 @@ namespace Avalonia.Controls
             if (_recyclePool?.TryGetValue(recycleKey, out var recyclePool) == true && recyclePool.Count > 0)
             {
                 var recycled = recyclePool.Pop();
+                AddInternalChild(recycled);
                 recycled.SetCurrentValue(Visual.IsVisibleProperty, true);
                 generator.PrepareItemContainer(recycled, item, index);
                 generator.ItemContainerPrepared(recycled, item, index);
@@ -982,6 +1078,7 @@ namespace Avalonia.Controls
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
                 element.SetCurrentValue(Visual.IsVisibleProperty, false);
+                RemoveInternalChild(element);
             }
         }
 
@@ -1002,6 +1099,7 @@ namespace Avalonia.Controls
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
                 element.SetCurrentValue(Visual.IsVisibleProperty, false);
+                RemoveInternalChild(element);
             }
         }
 
