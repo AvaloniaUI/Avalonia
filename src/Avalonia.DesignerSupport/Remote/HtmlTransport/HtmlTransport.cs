@@ -124,6 +124,10 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                         }
                         else
                         {
+                            if (req.Headers.TryGetValue("Origin", out var origin))
+                            {
+                                throw new Exception($"Origin '{origin}' doesn't match Url");
+                            }
                             throw new Exception("Origin doesn't match Url");
                         }
                     }
@@ -134,7 +138,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         bool IsValidOrigin(SimpleWebSocketHttpRequest request)
         {
             return request.Headers.TryGetValue("Origin", out var origin) &&
-                   (origin == _listenUri.OriginalString || origin.StartsWith("vscode-webview:"));
+                   (origin == _listenUri.OriginalString || origin.StartsWith("vscode-webview:") || origin.StartsWith("http://localhost:"));
         }
 
         async void SocketReceiveWorker(SimpleWebSocket socket)
