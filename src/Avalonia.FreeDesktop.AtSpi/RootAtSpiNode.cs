@@ -7,8 +7,6 @@ namespace Avalonia.FreeDesktop.AtSpi
 {
     internal sealed class RootAtSpiNode : AtSpiNode
     {
-        private bool _detached;
-
         public RootAtSpiNode(AutomationPeer peer, AtSpiServer server)
             : base(peer, server)
         {
@@ -68,7 +66,6 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (_detached)
                 return;
 
-            _detached = true;
             RootProvider.FocusChanged -= OnRootFocusChanged;
 
             if (WindowImpl is { } impl)

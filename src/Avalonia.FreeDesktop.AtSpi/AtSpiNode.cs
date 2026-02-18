@@ -14,7 +14,8 @@ namespace Avalonia.FreeDesktop.AtSpi
     {
         private static readonly ConditionalWeakTable<AutomationPeer, AtSpiNode> s_nodes = new();
         private static int s_nextId;
-        private bool _detached;
+        private protected bool _detached;
+        private HashSet<AtSpiNode>? _registeredChildren;
 
         private readonly string _path;
 
@@ -32,6 +33,11 @@ namespace Avalonia.FreeDesktop.AtSpi
         public AtSpiServer Server { get; }
         public string Path => _path;
         public AtSpiNodeHandlers? Handlers { get; set; }
+
+        internal HashSet<AtSpiNode> RegisteredChildren => _registeredChildren ??= [];
+        internal bool HasRegisteredChildren => _registeredChildren is { Count: > 0 };
+        internal bool AddRegisteredChild(AtSpiNode child) { _registeredChildren ??= []; return _registeredChildren.Add(child); }
+        internal bool RemoveRegisteredChild(AtSpiNode child) => _registeredChildren?.Remove(child) ?? false;
 
         public HashSet<string> GetSupportedInterfaces()
         {
@@ -111,6 +117,8 @@ namespace Avalonia.FreeDesktop.AtSpi
                 return;
 
             _detached = true;
+            _registeredChildren?.Clear();
+            _registeredChildren = null;
             Peer.ChildrenChanged -= OnPeerChildrenChanged;
             Peer.PropertyChanged -= OnPeerPropertyChanged;
         }

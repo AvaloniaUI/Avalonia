@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Automation;
@@ -135,35 +134,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 eventHandler.EmitChildrenChangedSignal("remove", index, childVariant);
             }
 
-            // Collect all descendant nodes under this window
-            var pathPrefix = windowNode.Path;
-            var toRemove = _nodesByPath
-                .Where(kv => kv.Key == pathPrefix || kv.Key.StartsWith(pathPrefix + "/", StringComparison.Ordinal))
-                .Select(kv => kv.Value)
-                .ToList();
-
-            // Also include nodes that belong to this window's subtree
-            // Walk through all registered nodes and find those whose peer chain leads back to windowPeer
-            var allToRemove = new List<AtSpiNode>(toRemove);
-            foreach (var kv in _nodesByPath.ToArray())
-            {
-                if (kv.Value is { } node && node != windowNode && !allToRemove.Contains(node))
-                {
-                    // Check if this node's visual root is the window
-                    try
-                    {
-                        var visualRoot = node.Peer.GetVisualRoot();
-                        if (visualRoot is not null && ReferenceEquals(AtSpiNode.TryGet(visualRoot), windowNode))
-                            allToRemove.Add(node);
-                    }
-                    catch
-                    {
-                        // Peer may be in a defunct state
-                    }
-                }
-            }
-
-            RemoveNodes(allToRemove, emitDefunct: true);
+            RemoveSubtreeRecursive(windowNode);
         }
 
         /// <summary>
@@ -261,18 +232,32 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (_a11yConnection is null)
                 return;
 
-            // Ensure child nodes are registered on D-Bus
+            // Build the set of current children and ensure they are registered
             var childPeers = node.Peer.GetChildren();
-            var liveChildren = new HashSet<AutomationPeer>(AutomationPeerReferenceComparer.Instance);
-            foreach (var t in childPeers)
+            var newChildren = new HashSet<AtSpiNode>();
+            foreach (var childPeer in childPeers)
             {
-                var childNode = AtSpiNode.GetOrCreate(t, this);
+                var childNode = AtSpiNode.GetOrCreate(childPeer, this);
                 EnsureNodeRegistered(childNode);
-                liveChildren.Add(t);
+                newChildren.Add(childNode);
             }
 
-            PruneRemovedChildren(node, liveChildren);
-            PruneDisconnectedNodes();
+            // Diff against previously tracked children to find removals
+            if (node.HasRegisteredChildren)
+            {
+                // Snapshot to avoid collection-modified-during-enumeration
+                var oldChildren = new List<AtSpiNode>(node.RegisteredChildren);
+                foreach (var oldChild in oldChildren
+                             .Where(oldChild => !newChildren.Contains(oldChild)))
+                {
+                    RemoveSubtreeRecursive(oldChild);
+                }
+            }
+
+            // Replace the tracked set with the current children
+            node.RegisteredChildren.Clear();
+            foreach (var child in newChildren)
+                node.RegisteredChildren.Add(child);
 
             // Emit children-changed event (guarded by event listeners)
             if (HasEventListeners && node.Handlers?.EventObjectHandler is { } eventHandler)
@@ -486,6 +471,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             _nodesByPath[node.Path] = node;
             BuildHandlersForNode(node);
             RegisterNodePath(node);
+            TrackChildInParent(node);
         }
 
         private void BuildAndRegisterAppRoot()
@@ -603,30 +589,59 @@ namespace Avalonia.FreeDesktop.AtSpi
             await proxy.EmbedAsync(new AtSpiObjectReference(_uniqueName, new DBusObjectPath(RootPath)));
         }
 
-        private void PruneRemovedChildren(AtSpiNode parentNode, HashSet<AutomationPeer> liveChildren)
+        private void TrackChildInParent(AtSpiNode childNode)
         {
-            var removedChildRoots = _nodesByPath.Values
-                .Where(node => !ReferenceEquals(node, parentNode)
-                               && IsDirectChild(node.Peer, parentNode.Peer)
-                               && !liveChildren.Contains(node.Peer))
-                .ToList();
+            try
+            {
+                var parentPeer = childNode.Peer.GetParent();
+                if (parentPeer is null)
+                    return;
 
-            foreach (var removedRoot in removedChildRoots)
-                RemoveSubtree(removedRoot.Peer);
+                var parentNode = AtSpiNode.TryGet(parentPeer);
+                if (parentNode is not null && _nodesByPath.ContainsKey(parentNode.Path))
+                    parentNode.AddRegisteredChild(childNode);
+            }
+            catch
+            {
+                // Parent peer may be defunct
+            }
         }
 
-        private void RemoveSubtree(AutomationPeer rootPeer)
+        private void RemoveFromParentTracking(AtSpiNode node)
         {
-            var subtreeNodes = _nodesByPath.Values
-                .Where(node => IsDescendantOrSelf(node.Peer, rootPeer))
-                .ToList();
+            try
+            {
+                var parentPeer = node.Peer.GetParent();
+                if (parentPeer is not null)
+                    AtSpiNode.TryGet(parentPeer)?.RemoveRegisteredChild(node);
+            }
+            catch
+            {
+                // Parent peer may be defunct
+            }
+        }
 
-            RemoveNodes(subtreeNodes, emitDefunct: true);
+        private void RemoveSubtreeRecursive(AtSpiNode rootNode)
+        {
+            var toRemove = new List<AtSpiNode>();
+            CollectSubtree(rootNode, toRemove);
+            RemoveNodes(toRemove, emitDefunct: true);
+        }
+
+        private static void CollectSubtree(AtSpiNode node, List<AtSpiNode> result)
+        {
+            if (node.HasRegisteredChildren)
+            {
+                foreach (var child in node.RegisteredChildren)
+                    CollectSubtree(child, result);
+            }
+
+            result.Add(node);
         }
 
         private void RemoveNodes(IEnumerable<AtSpiNode> nodes, bool emitDefunct)
         {
-            foreach (var node in nodes.Distinct().ToList())
+            foreach (var node in nodes)
             {
                 if (!_nodesByPath.ContainsKey(node.Path))
                     continue;
@@ -636,79 +651,13 @@ namespace Avalonia.FreeDesktop.AtSpi
 
                 UnregisterNodePath(node.Path);
                 _nodesByPath.Remove(node.Path);
+                RemoveFromParentTracking(node);
 
                 if (node is RootAtSpiNode rootNode)
                     _appRoot?.RemoveWindowChild(rootNode);
 
                 ReleaseNode(node);
             }
-        }
-
-        private void PruneDisconnectedNodes()
-        {
-            if (_appRoot is null || _appRoot.WindowChildren.Count == 0 || _nodesByPath.Count == 0)
-                return;
-
-            var livePeers = new HashSet<AutomationPeer>(AutomationPeerReferenceComparer.Instance);
-            var toVisit = new Stack<AutomationPeer>();
-            foreach (var window in _appRoot.WindowChildren)
-                toVisit.Push(window.Peer);
-
-            while (toVisit.Count > 0)
-            {
-                var peer = toVisit.Pop();
-                if (!livePeers.Add(peer))
-                    continue;
-
-                try
-                {
-                    foreach (var child in peer.GetChildren())
-                    {
-                        toVisit.Push(child);
-                    }
-                }
-                catch
-                {
-                    // Defunct peers may throw while querying children.
-                }
-            }
-
-            var staleNodes = _nodesByPath.Values
-                .Where(node => !livePeers.Contains(node.Peer))
-                .ToList();
-
-            if (staleNodes.Count > 0)
-                RemoveNodes(staleNodes, emitDefunct: true);
-        }
-
-        private static bool IsDirectChild(AutomationPeer node, AutomationPeer parent)
-        {
-            try
-            {
-                return ReferenceEquals(node.GetParent(), parent);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private static bool IsDescendantOrSelf(AutomationPeer node, AutomationPeer ancestor)
-        {
-            try
-            {
-                for (var current = node; current is not null; current = current.GetParent())
-                {
-                    if (ReferenceEquals(current, ancestor))
-                        return true;
-                }
-            }
-            catch
-            {
-                // A defunct peer may throw while walking its parent chain.
-            }
-
-            return false;
         }
 
         private static void ReleaseNode(AtSpiNode node)
@@ -724,13 +673,5 @@ namespace Avalonia.FreeDesktop.AtSpi
             public IDisposable Registration { get; } = registration;
         }
 
-        private sealed class AutomationPeerReferenceComparer : IEqualityComparer<AutomationPeer>
-        {
-            public static AutomationPeerReferenceComparer Instance { get; } = new();
-
-            public bool Equals(AutomationPeer? x, AutomationPeer? y) => ReferenceEquals(x, y);
-
-            public int GetHashCode(AutomationPeer obj) => RuntimeHelpers.GetHashCode(obj);
-        }
     }
 }
