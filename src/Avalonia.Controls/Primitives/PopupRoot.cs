@@ -214,6 +214,10 @@ namespace Avalonia.Controls.Primitives
             {
                 PlatformImpl?.SetWindowManagerAddShadowHint(change.GetNewValue<bool>());
             }
+            else if (change.Property == TopmostProperty)
+            {
+                PlatformImpl?.SetTopmost(change.GetNewValue<bool>());
+            }
         }
     }
 }
