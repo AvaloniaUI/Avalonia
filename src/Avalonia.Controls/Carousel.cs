@@ -145,18 +145,12 @@ namespace Avalonia.Controls
                     e.Handled = true;
                     break;
                 case Key.Home:
-                    if (ItemCount > 0)
-                    {
-                        SelectedIndex = 0;
-                        e.Handled = true;
-                    }
+                    SelectedIndex = 0;
+                    e.Handled = true;
                     break;
                 case Key.End:
-                    if (ItemCount > 0)
-                    {
-                        SelectedIndex = ItemCount - 1;
-                        e.Handled = true;
-                    }
+                    SelectedIndex = ItemCount - 1;
+                    e.Handled = true;
                     break;
             }
         }
