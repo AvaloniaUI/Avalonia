@@ -88,7 +88,7 @@ namespace Avalonia.Input.TextInput
         {
             if (ReferenceEquals(obj.Sender, _focusedElement))
             {
-                TryFindAndApplyClient();
+                RediscoverInputMethodAndClient();
             }
         }
 
@@ -132,34 +132,51 @@ namespace Avalonia.Input.TextInput
                 InputMethod.AddTextInputMethodClientRequeryRequestedHandler(_visualRoot,
                     TextInputMethodClientRequeryRequested);
             
-            var inputMethod = ((element as Visual)?.VisualRoot as ITextInputMethodRoot)?.InputMethod;
-
-            if (_im != inputMethod)
-            {
-                _im?.SetClient(null);
-            }
+            RediscoverInputMethodAndClient();
+        }
+        
+        void RediscoverInputMethodAndClient()
+        {
+            var (inputMethod, inputClient) = FindInputMethodAndClient();
+            
+            // Reset the previous input method and our state on input method change
+            if (_im != inputMethod) 
+                Client = null;
             
             _im = inputMethod;
             
-
-            TryFindAndApplyClient();
+            Client = inputClient;
         }
 
         private void TextInputMethodClientRequeryRequested(object? sender, RoutedEventArgs e)
         {
             if (_im != null)
-                TryFindAndApplyClient();
+                RediscoverInputMethodAndClient();
         }
-
-        private void TryFindAndApplyClient()
+        
+        private (ITextInputMethodImpl? im, TextInputMethodClient? client) FindInputMethodAndClient()
         {
             if (_focusedElement is not InputElement focused ||
                 _im == null ||
                 !InputMethod.GetIsInputMethodEnabled(focused))
             {
-                Client = null;
-                return;
+                // Input method system is disabled by focused element
+                return (null, null);
             }
+
+            // Attempt to get a user-provided input method
+            var imQuery = new PluggableTextInputMethodRequestedEventArgs()
+            {
+                RoutedEvent = PluggableTextInputMethod.TextInputMethodRequestedEvent
+            };
+            _focusedElement.RaiseEvent(imQuery);
+            
+            // Fall back to the system provided one, if any
+            var im = imQuery.InputMethod?.Adapter 
+                     ?? (focused.VisualRoot as ITextInputMethodRoot)?.InputMethod;
+
+            if (im == null)
+                return (null, null);
 
             var clientQuery = new TextInputMethodClientRequestedEventArgs
             {
@@ -167,7 +184,7 @@ namespace Avalonia.Input.TextInput
             };
 
             _focusedElement.RaiseEvent(clientQuery);
-            Client = clientQuery.Client;
+            return (im, clientQuery.Client);
         }
     }
 }
