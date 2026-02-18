@@ -531,7 +531,7 @@ namespace Avalonia.Controls
             }
 
             // Ignore events from a different gesture sequence.
-            if (_isDragging && e.GestureId != _swipeGestureId)
+            if (_isDragging && e.Id != _swipeGestureId)
                 return;
 
             if (!_isDragging)
@@ -570,7 +570,7 @@ namespace Avalonia.Controls
                     return;
 
                 _isDragging = true;
-                _swipeGestureId = e.GestureId;
+                _swipeGestureId = e.Id;
                 _totalDelta = 0;
                 _swipeTargetIndex = targetIndex;
                 carousel.IsSwiping = true;
@@ -618,7 +618,7 @@ namespace Avalonia.Controls
 
         private void OnSwipeGestureEnded(object? sender, SwipeGestureEndedEventArgs e)
         {
-            if (!_isDragging || e.GestureId != _swipeGestureId || ItemsControl is not Carousel carousel)
+            if (!_isDragging || e.Id != _swipeGestureId || ItemsControl is not Carousel carousel)
                 return;
 
             var size = _lockedAxis == PageSlide.SlideAxis.Horizontal ? Bounds.Width : Bounds.Height;

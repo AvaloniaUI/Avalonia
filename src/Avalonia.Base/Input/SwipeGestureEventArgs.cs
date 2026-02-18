@@ -12,13 +12,13 @@ namespace Avalonia.Input
         /// <summary>
         /// Initializes a new instance of the <see cref="SwipeGestureEventArgs"/> class.
         /// </summary>
-        /// <param name="gestureId">The unique identifier for this gesture.</param>
+        /// <param name="id">The unique identifier for this gesture.</param>
         /// <param name="delta">The pixel delta since the last event.</param>
         /// <param name="velocity">The current swipe velocity in pixels per second.</param>
-        public SwipeGestureEventArgs(int gestureId, Vector delta, Vector velocity)
+        public SwipeGestureEventArgs(int id, Vector delta, Vector velocity)
             : base(Gestures.SwipeGestureEvent)
         {
-            GestureId = gestureId;
+            Id = id;
             Delta = delta;
             Velocity = velocity;
         }
@@ -26,7 +26,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the unique identifier for this gesture sequence.
         /// </summary>
-        public int GestureId { get; }
+        public int Id { get; }
 
         /// <summary>
         /// Gets the pixel delta since the last event.
@@ -51,19 +51,19 @@ namespace Avalonia.Input
         /// <summary>
         /// Initializes a new instance of the <see cref="SwipeGestureEndedEventArgs"/> class.
         /// </summary>
-        /// <param name="gestureId">The unique identifier for this gesture.</param>
+        /// <param name="id">The unique identifier for this gesture.</param>
         /// <param name="velocity">The swipe velocity at release in pixels per second.</param>
-        public SwipeGestureEndedEventArgs(int gestureId, Vector velocity)
+        public SwipeGestureEndedEventArgs(int id, Vector velocity)
             : base(Gestures.SwipeGestureEndedEvent)
         {
-            GestureId = gestureId;
+            Id = id;
             Velocity = velocity;
         }
 
         /// <summary>
         /// Gets the unique identifier for this gesture sequence.
         /// </summary>
-        public int GestureId { get; }
+        public int Id { get; }
 
         /// <summary>
         /// Gets the swipe velocity at release in pixels per second.
