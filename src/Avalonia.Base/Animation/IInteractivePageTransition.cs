@@ -19,7 +19,6 @@ namespace Avalonia.Animation
         /// <param name="to">The visual being transitioned to. May be null.</param>
         /// <param name="forward">Whether the transition direction is forward (next) or backward (previous).</param>
         /// <param name="orientation">The slide orientation for the transition.</param>
-        /// <param name="size">The size of the transition area.</param>
-        void Update(double progress, Visual? from, Visual? to, bool forward, PageSlide.SlideAxis orientation, Size size);
+        void Update(double progress, Visual? from, Visual? to, bool forward, PageSlide.SlideAxis orientation);
     }
 }

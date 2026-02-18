@@ -120,9 +120,10 @@ public class Rotate3DTransition: PageSlide
     }
 
     /// <inheritdoc/>
-    public override void Update(double progress, Visual? from, Visual? to, bool forward, SlideAxis orientation, Size size)
+    public override void Update(double progress, Visual? from, Visual? to, bool forward, SlideAxis orientation)
     {
-        var center = orientation == SlideAxis.Horizontal ? size.Width : size.Height;
+        var parent = GetVisualParent(from, to);
+        var center = orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
         var depth = Depth ?? center;
         var centerZ = -center / 2;
 

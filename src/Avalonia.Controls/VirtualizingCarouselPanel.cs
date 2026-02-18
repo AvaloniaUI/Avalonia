@@ -610,7 +610,7 @@ namespace Avalonia.Controls
             // Drive the interactive transition if supported; otherwise swipe still navigates on release
             if (GetTransition() is IInteractivePageTransition interactive)
             {
-                interactive.Update(progress, _realized, _swipeTarget, _isForward, _lockedAxis, Bounds.Size);
+                interactive.Update(progress, _realized, _swipeTarget, _isForward, _lockedAxis);
             }
 
             e.Handled = true;
@@ -658,7 +658,7 @@ namespace Avalonia.Controls
 
             if (GetTransition() is IInteractivePageTransition interactive)
             {
-                interactive.Update(progress, _realized, _swipeTarget, _isForward, _lockedAxis, Bounds.Size);
+                interactive.Update(progress, _realized, _swipeTarget, _isForward, _lockedAxis);
             }
 
             if (ratio >= 1.0)

@@ -90,7 +90,7 @@ public class WaveRevealPageTransition : PageSlide
         var size = parent.Bounds.Size;
         var orientation = Orientation;
 
-        await AnimateProgress(0.0, 1.0, from, to, forward, orientation, size, cancellationToken);
+        await AnimateProgress(0.0, 1.0, from, to, forward, orientation, cancellationToken);
 
         if (to != null && !cancellationToken.IsCancellationRequested)
         {
@@ -104,8 +104,10 @@ public class WaveRevealPageTransition : PageSlide
     }
 
     /// <inheritdoc />
-    public override void Update(double progress, Visual? from, Visual? to, bool forward, PageSlide.SlideAxis orientation, Size size)
+    public override void Update(double progress, Visual? from, Visual? to, bool forward, PageSlide.SlideAxis orientation)
     {
+        var parent = GetVisualParent(from, to);
+        var size = parent.Bounds.Size;
         var centerOffset = WaveCenterOffset * CenterSensitivity;
         var isHorizontal = orientation == PageSlide.SlideAxis.Horizontal;
 
@@ -151,7 +153,6 @@ public class WaveRevealPageTransition : PageSlide
         Visual? toVisual,
         bool forward,
         PageSlide.SlideAxis orientation,
-        Size size,
         CancellationToken cancellationToken)
     {
         var durationMs = Math.Max(Duration.TotalMilliseconds * Math.Abs(to - from), 50);
@@ -165,7 +166,7 @@ public class WaveRevealPageTransition : PageSlide
             var eased = SlideInEasing?.Ease(t) ?? t;
             var progress = from + (to - from) * eased;
 
-            Update(progress, fromVisual, toVisual, forward, orientation, size);
+            Update(progress, fromVisual, toVisual, forward, orientation);
 
             if (t >= 1.0)
                 break;
@@ -175,7 +176,7 @@ public class WaveRevealPageTransition : PageSlide
 
         if (!cancellationToken.IsCancellationRequested)
         {
-            Update(to, fromVisual, toVisual, forward, orientation, size);
+            Update(to, fromVisual, toVisual, forward, orientation);
         }
     }
 

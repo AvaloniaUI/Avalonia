@@ -144,9 +144,10 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
-        public virtual void Update(double progress, Visual? from, Visual? to, bool forward, SlideAxis orientation, Size size)
+        public virtual void Update(double progress, Visual? from, Visual? to, bool forward, SlideAxis orientation)
         {
-            var distance = orientation == SlideAxis.Horizontal ? size.Width : size.Height;
+            var parent = GetVisualParent(from, to);
+            var distance = orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
 
             if (from != null)
             {
