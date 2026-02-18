@@ -136,13 +136,13 @@ namespace Avalonia.X11
                     return;
                 }
 
-                // Path A failed — fall back to Path B (IsEnabled watcher)
+                // Path A failed - fall back to Path B (IsEnabled watcher)
                 if (_atSpiWatcher.IsEnabled)
                     await EnableAccessibilityAsync();
             }
             catch
             {
-                // Accessibility init failed — app continues without AT-SPI.
+                // Accessibility init failed - app continues without AT-SPI.
             }
         }
 

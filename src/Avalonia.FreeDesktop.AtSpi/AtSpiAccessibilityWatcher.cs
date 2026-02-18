@@ -46,7 +46,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             catch
             {
                 // D-Bus session bus unavailable or org.a11y.Bus not present.
-                // Silently degrade — accessibility remains disabled.
+                // Silently degrade - accessibility remains disabled.
                 IsEnabled = false;
             }
         }

@@ -25,6 +25,7 @@ namespace Avalonia.FreeDesktop.AtSpi
         private ApplicationAtSpiNode? _appRoot;
         private AtSpiCacheHandler? _cacheHandler;
         private AtSpiEventObjectHandler? _appRootEventHandler;
+        private bool _embedded;
 
         // Registry event listener tracking
         private OrgA11yAtspiRegistryProxy? _registryProxy;
@@ -44,43 +45,51 @@ namespace Avalonia.FreeDesktop.AtSpi
         internal bool HasEventListeners { get; private set; } = true;
 
         /// <summary>
-        /// Starts the AT-SPI server. Must be called on the UI thread.
-        /// Creates the synthetic application root and registers with the a11y bus.
+        /// Starts the AT-SPI server.
+        /// Must be called on the UI thread.
         /// </summary>
         public async Task StartAsync()
         {
-            // 1. Create a SynchronizationContext that dispatches to the Avalonia UI thread.
+            // Create a SynchronizationContext that dispatches to the Avalonia UI thread.
             _syncContext = new AvaloniaSynchronizationContext(DispatcherPriority.Normal);
 
-            // 2. Get a11y bus address
+            // Get a11y bus address
             var address = await GetAccessibilityBusAddressAsync();
             
             if (string.IsNullOrWhiteSpace(address))
                 throw new InvalidOperationException("Failed to resolve the accessibility bus address.");
 
-            // 3. Connect to a11y bus
+            // Connect to a11y bus
             _a11yConnection = await DBusConnection.ConnectAsync(address);
             _uniqueName = await _a11yConnection.GetUniqueNameAsync() ?? string.Empty;
 
-            // 4. Create synthetic application root
+            // Create detached application root
             _appRoot = new ApplicationAtSpiNode(null);
 
-            // 5. Build and register handlers for app root
+            // Build and register handlers for app root
             _cacheHandler = new AtSpiCacheHandler();
             BuildAndRegisterAppRoot();
 
-            // 6. Register cache handler path
+            // Register cache handler path
             RegisterCachePath();
 
-            // 7. Embed with registry
-            await EmbedApplicationAsync();
-
-            // 8. Start tracking registry event listeners
+            // Start tracking registry event listeners
             await InitializeRegistryEventTrackingAsync();
+
+            // NOTE: Embed is deferred to the first AddWindow call.
+            // At this point the UI thread is still busy with initial layout/render.
+            
+            // If we embed now, the registry notifies the screen reader immediately,
+            // but our handlers (dispatched via SynchronizationContext to the UI thread)
+            // can't respond until the startup work finishes - often exceeding libatspi's
+            // 800 ms timeout.
+
+            // By deferring until AddWindow, we only announce ourselves
+            // once we actually have content and the UI thread is responsive.
         }
 
         /// <summary>
-        /// Adds a window to the AT-SPI tree. Idempotent — skips if already registered.
+        /// Adds a window to the AT-SPI tree. 
         /// </summary>
         public void AddWindow(AutomationPeer windowPeer)
         {
@@ -110,6 +119,14 @@ namespace Avalonia.FreeDesktop.AtSpi
                 var childVariant = new DBusVariant(childRef.ToDbusStruct());
                 eventHandler.EmitChildrenChangedSignal(
                     "add", _appRoot.WindowChildren.Count - 1, childVariant);
+            }
+
+            // Deferred embed: announce ourselves to the registry only once we
+            // have a window registered and the UI thread is past heavy startup.
+            if (!_embedded)
+            {
+                _embedded = true;
+                _ = EmbedApplicationAsync();
             }
         }
 
@@ -171,7 +188,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (currentInterfaces.SetEquals(oldInterfaces))
                 return false;
 
-            // Interfaces changed — tear down and rebuild
+            // Interfaces changed - tear down and rebuild
             UnregisterNodePath(node.Path);
             node.Handlers = null;
             BuildHandlersForNode(node);
@@ -384,7 +401,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             }
             catch
             {
-                // Registry event tracking unavailable — remain chatty.
+                // Registry event tracking unavailable - remain chatty.
                 HasEventListeners = true;
             }
         }

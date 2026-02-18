@@ -51,7 +51,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                 return ValueTask.FromResult((text.Substring(start, end - start), start, end));
             }
 
-            // For SENTENCE, LINE, PARAGRAPH — return full text
+            // For SENTENCE, LINE, PARAGRAPH - return full text
             return ValueTask.FromResult((text, 0, text.Length));
         }
 
@@ -107,7 +107,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                 return ValueTask.FromResult((text.Substring(start, end - start), start, end));
             }
 
-            // SENTENCE/LINE/PARAGRAPH — return all text before offset
+            // SENTENCE/LINE/PARAGRAPH - return all text before offset
             var result = text.Substring(0, offset);
             return ValueTask.FromResult((result, 0, offset));
         }
@@ -149,7 +149,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                 return ValueTask.FromResult((text.Substring(start, end - start), start, end));
             }
 
-            // SENTENCE/LINE/PARAGRAPH — return all text after offset
+            // SENTENCE/LINE/PARAGRAPH - return all text after offset
             var afterOffset = Math.Max(0, offset + 1);
             var result = text.Substring(afterOffset);
             return ValueTask.FromResult((result, afterOffset, text.Length));
