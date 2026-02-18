@@ -14,6 +14,7 @@ namespace Avalonia.FreeDesktop.AtSpi
     {
         private static readonly ConditionalWeakTable<AutomationPeer, AtSpiNode> s_nodes = new();
         private static int s_nextId;
+        private bool _detached;
 
         private readonly string _path;
 
@@ -103,6 +104,16 @@ namespace Avalonia.FreeDesktop.AtSpi
         }
 
         public static void Release(AutomationPeer peer) => s_nodes.Remove(peer);
+
+        public virtual void Detach()
+        {
+            if (_detached)
+                return;
+
+            _detached = true;
+            Peer.ChildrenChanged -= OnPeerChildrenChanged;
+            Peer.PropertyChanged -= OnPeerPropertyChanged;
+        }
 
         private void OnPeerChildrenChanged(object? sender, EventArgs e)
         {

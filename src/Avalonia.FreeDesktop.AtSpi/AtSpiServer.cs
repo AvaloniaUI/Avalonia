@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Automation;
@@ -162,18 +163,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 }
             }
 
-            // Unregister paths and emit defunct state
-            foreach (var node in allToRemove)
-            {
-                // Emit defunct state before removal so screen readers know objects are permanently gone
-                if (HasEventListeners && node.Handlers?.EventObjectHandler is { } nodeEventHandler)
-                    nodeEventHandler.EmitStateChangedSignal("defunct", 1, new DBusVariant("0"));
-
-                UnregisterNodePath(node.Path);
-                _nodesByPath.Remove(node.Path);
-            }
-
-            _appRoot.RemoveWindowChild(windowNode);
+            RemoveNodes(allToRemove, emitDefunct: true);
         }
 
         /// <summary>
@@ -240,6 +230,9 @@ namespace Avalonia.FreeDesktop.AtSpi
                 _a11yConnection = null;
             }
 
+            foreach (var node in _nodesByPath.Values.ToArray())
+                ReleaseNode(node);
+
             _uniqueName = string.Empty;
             _cacheHandler = null;
             _appRoot = null;
@@ -270,11 +263,16 @@ namespace Avalonia.FreeDesktop.AtSpi
 
             // Ensure child nodes are registered on D-Bus
             var childPeers = node.Peer.GetChildren();
+            var liveChildren = new HashSet<AutomationPeer>(AutomationPeerReferenceComparer.Instance);
             foreach (var t in childPeers)
             {
                 var childNode = AtSpiNode.GetOrCreate(t, this);
                 EnsureNodeRegistered(childNode);
+                liveChildren.Add(t);
             }
+
+            PruneRemovedChildren(node, liveChildren);
+            PruneDisconnectedNodes();
 
             // Emit children-changed event (guarded by event listeners)
             if (HasEventListeners && node.Handlers?.EventObjectHandler is { } eventHandler)
@@ -605,10 +603,134 @@ namespace Avalonia.FreeDesktop.AtSpi
             await proxy.EmbedAsync(new AtSpiObjectReference(_uniqueName, new DBusObjectPath(RootPath)));
         }
 
+        private void PruneRemovedChildren(AtSpiNode parentNode, HashSet<AutomationPeer> liveChildren)
+        {
+            var removedChildRoots = _nodesByPath.Values
+                .Where(node => !ReferenceEquals(node, parentNode)
+                               && IsDirectChild(node.Peer, parentNode.Peer)
+                               && !liveChildren.Contains(node.Peer))
+                .ToList();
+
+            foreach (var removedRoot in removedChildRoots)
+                RemoveSubtree(removedRoot.Peer);
+        }
+
+        private void RemoveSubtree(AutomationPeer rootPeer)
+        {
+            var subtreeNodes = _nodesByPath.Values
+                .Where(node => IsDescendantOrSelf(node.Peer, rootPeer))
+                .ToList();
+
+            RemoveNodes(subtreeNodes, emitDefunct: true);
+        }
+
+        private void RemoveNodes(IEnumerable<AtSpiNode> nodes, bool emitDefunct)
+        {
+            foreach (var node in nodes.Distinct().ToList())
+            {
+                if (!_nodesByPath.ContainsKey(node.Path))
+                    continue;
+
+                if (emitDefunct && HasEventListeners && node.Handlers?.EventObjectHandler is { } eventHandler)
+                    eventHandler.EmitStateChangedSignal("defunct", 1, new DBusVariant("0"));
+
+                UnregisterNodePath(node.Path);
+                _nodesByPath.Remove(node.Path);
+
+                if (node is RootAtSpiNode rootNode)
+                    _appRoot?.RemoveWindowChild(rootNode);
+
+                ReleaseNode(node);
+            }
+        }
+
+        private void PruneDisconnectedNodes()
+        {
+            if (_appRoot is null || _appRoot.WindowChildren.Count == 0 || _nodesByPath.Count == 0)
+                return;
+
+            var livePeers = new HashSet<AutomationPeer>(AutomationPeerReferenceComparer.Instance);
+            var toVisit = new Stack<AutomationPeer>();
+            foreach (var window in _appRoot.WindowChildren)
+                toVisit.Push(window.Peer);
+
+            while (toVisit.Count > 0)
+            {
+                var peer = toVisit.Pop();
+                if (!livePeers.Add(peer))
+                    continue;
+
+                try
+                {
+                    foreach (var child in peer.GetChildren())
+                    {
+                        toVisit.Push(child);
+                    }
+                }
+                catch
+                {
+                    // Defunct peers may throw while querying children.
+                }
+            }
+
+            var staleNodes = _nodesByPath.Values
+                .Where(node => !livePeers.Contains(node.Peer))
+                .ToList();
+
+            if (staleNodes.Count > 0)
+                RemoveNodes(staleNodes, emitDefunct: true);
+        }
+
+        private static bool IsDirectChild(AutomationPeer node, AutomationPeer parent)
+        {
+            try
+            {
+                return ReferenceEquals(node.GetParent(), parent);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool IsDescendantOrSelf(AutomationPeer node, AutomationPeer ancestor)
+        {
+            try
+            {
+                for (var current = node; current is not null; current = current.GetParent())
+                {
+                    if (ReferenceEquals(current, ancestor))
+                        return true;
+                }
+            }
+            catch
+            {
+                // A defunct peer may throw while walking its parent chain.
+            }
+
+            return false;
+        }
+
+        private static void ReleaseNode(AtSpiNode node)
+        {
+            node.Detach();
+            AtSpiNode.Release(node.Peer);
+            node.Handlers = null;
+        }
+
         private sealed class ActivePathRegistration(object owner, IDisposable registration)
         {
             public object Owner { get; } = owner;
             public IDisposable Registration { get; } = registration;
+        }
+
+        private sealed class AutomationPeerReferenceComparer : IEqualityComparer<AutomationPeer>
+        {
+            public static AutomationPeerReferenceComparer Instance { get; } = new();
+
+            public bool Equals(AutomationPeer? x, AutomationPeer? y) => ReferenceEquals(x, y);
+
+            public int GetHashCode(AutomationPeer obj) => RuntimeHelpers.GetHashCode(obj);
         }
     }
 }
