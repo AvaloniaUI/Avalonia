@@ -142,7 +142,7 @@ public partial class Dispatcher : IDispatcher
             MaximumInputStarvationTimeInExplicitProcessingExplicitMode;
         if (_backgroundProcessingImpl != null)
             _backgroundProcessingImpl.ReadyForBackgroundProcessing += OnReadyForExplicitBackgroundProcessing;
-        if(_signaled)
+        if (_signaled)
             _impl.Signal();
         _osTimerSetTo = null;
         UpdateOSTimer();
