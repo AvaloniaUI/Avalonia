@@ -101,7 +101,7 @@ public partial class Dispatcher
             s_dispatchers.Clear();
 #else
             var alive = s_resetForTestsList.GetAlive();
-            if(alive != null)
+            if (alive != null)
                 foreach (var store in alive)
                     store.Reference = new(null!);
 #endif
