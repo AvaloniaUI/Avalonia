@@ -76,7 +76,7 @@ namespace Avalonia
         public static readonly StyledProperty<ControlTheme?> ThemeProperty =
             AvaloniaProperty.Register<StyledElement, ControlTheme?>(nameof(Theme));
 
-        private static readonly ControlTheme s_invalidTheme = new ControlTheme();
+        [ThreadStatic] private static ControlTheme? s_invalidTheme;
         private int _initCount;
         private string? _name;
         private Classes? _classes;
@@ -331,6 +331,9 @@ namespace Avalonia
 
         /// <inheritdoc/>
         IStyleHost? IStyleHost.StylingParent => (IStyleHost?)InheritanceParent;
+
+        internal static ControlTheme InvalidTheme
+            => s_invalidTheme ??= new();
 
         /// <inheritdoc/>
         public virtual void BeginInit()
@@ -666,10 +669,10 @@ namespace Avalonia
                 if (this.TryFindResource(key, out var value) && value is ControlTheme t)
                     _implicitTheme = t;
                 else
-                    _implicitTheme = s_invalidTheme;
+                    _implicitTheme = InvalidTheme;
             }
 
-            if (_implicitTheme != s_invalidTheme)
+            if (_implicitTheme != InvalidTheme)
                 return _implicitTheme;
 
             return null;
@@ -828,11 +831,11 @@ namespace Avalonia
                 return;
 
             // Refetch the implicit theme.
-            var oldImplicitTheme = _implicitTheme == s_invalidTheme ? null : _implicitTheme;
+            var oldImplicitTheme = _implicitTheme == InvalidTheme ? null : _implicitTheme;
             _implicitTheme = null;
             GetEffectiveTheme();
 
-            var newImplicitTheme = _implicitTheme == s_invalidTheme ? null : _implicitTheme;
+            var newImplicitTheme = _implicitTheme == InvalidTheme ? null : _implicitTheme;
 
             // If the implicit theme has changed, detach the existing theme.
             if (newImplicitTheme != oldImplicitTheme)
