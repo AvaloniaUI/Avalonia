@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -181,6 +181,10 @@ namespace Avalonia.Win32
                     || changedSetting == "WindowsThemeElement") // high contrast mode
                 {
                     win32PlatformSettings.OnColorValuesChanged();   
+                }
+                else if (changedSetting == "intl") // language/locale change
+                {
+                    win32PlatformSettings.OnLanguageChanged();
                 }
             }
 
