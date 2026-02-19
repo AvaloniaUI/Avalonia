@@ -1,11 +1,13 @@
 #include "common.h"
 #include "AvnString.h"
+#include "menu.h"
 @interface AvnAppDelegate : NSObject<NSApplicationDelegate>
 -(AvnAppDelegate* _Nonnull) initWithEvents: (IAvnApplicationEvents* _Nonnull) events;
 -(void) releaseEvents;
 @end
 
 NSApplicationActivationPolicy AvnDesiredActivationPolicy = NSApplicationActivationPolicyRegular;
+static NSMenu* s_dockMenu = nil;
 
 @implementation AvnAppDelegate
 ComPtr<IAvnApplicationEvents> _events;
@@ -84,6 +86,11 @@ ComPtr<IAvnApplicationEvents> _events;
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
     return _events->TryShutdown() ? NSTerminateNow : NSTerminateCancel;
+}
+
+- (NSMenu *)applicationDockMenu:(NSApplication *)sender
+{
+    return s_dockMenu;
 }
 
 @end
@@ -179,4 +186,9 @@ HRESULT AvnApplicationCommands::HideOthers()
 extern IAvnApplicationCommands* CreateApplicationCommands()
 {
     return new AvnApplicationCommands();
+}
+
+extern void SetDockMenu(NSMenu* menu)
+{
+    s_dockMenu = menu;
 }
