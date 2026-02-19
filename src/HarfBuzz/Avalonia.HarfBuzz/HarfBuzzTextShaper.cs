@@ -121,6 +121,8 @@ namespace Avalonia.Harfbuzz
         {
             var length = buffer.Length;
 
+            if (length == 0) return;
+
             var glyphInfos = buffer.GetGlyphInfoSpan();
 
             var second = glyphInfos[length - 1];
