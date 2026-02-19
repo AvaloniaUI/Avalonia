@@ -8,7 +8,6 @@ using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using Avalonia.Android.Platform.Input;
-using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls;
@@ -254,7 +253,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            if (_view.Context is not AvaloniaMainActivity activity)
+            if (_view.Context is not AvaloniaActivity activity)
                 return;
 
             foreach (var level in transparencyLevels)
@@ -366,7 +365,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             return false;
         }
 
-        private static void SetBlurBehind(AvaloniaMainActivity activity, int radius)
+        private static void SetBlurBehind(AvaloniaActivity activity, int radius)
         {
             if (radius == 0)
                 activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
