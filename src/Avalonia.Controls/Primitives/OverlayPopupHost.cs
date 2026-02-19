@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Primitives
         private readonly OverlayLayer _overlayLayer;
         private readonly ManagedPopupPositioner _positioner;
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
-        IKeyboardNavigationHandler IPopupHost.Tests_KeyboardNavigationHandler => _keyboardNavigationHandler!;
+        internal IKeyboardNavigationHandler Tests_KeyboardNavigationHandler => _keyboardNavigationHandler!;
         private Point _lastRequestedPosition;
         private PopupPositionRequest? _popupPositionRequest;
         private Size _popupSize;

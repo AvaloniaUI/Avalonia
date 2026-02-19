@@ -100,8 +100,5 @@ namespace Avalonia.Controls.Primitives
         /// Takes focus from any currently focused native control.
         /// </summary>
         void TakeFocus();
-
-        [Obsolete("For unit tests only")]
-        internal IKeyboardNavigationHandler Tests_KeyboardNavigationHandler { get; }
     }
 }

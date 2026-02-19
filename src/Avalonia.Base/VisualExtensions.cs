@@ -34,7 +34,7 @@ namespace Avalonia
             var source = visual.PresentationSource;
             var root = source?.RootVisual ??
                        throw new ArgumentException("Control does not belong to a visual tree.", nameof(visual));
-            var p = visual.TranslatePoint(point, (Visual)root);
+            var p = visual.TranslatePoint(point, root);
             return source.PointToScreen(p!.Value);
         }
 

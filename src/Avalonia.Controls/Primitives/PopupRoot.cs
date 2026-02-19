@@ -147,10 +147,6 @@ namespace Avalonia.Controls.Primitives
         public void SetChild(Control? control) => Content = control;
 
         public void TakeFocus() => PlatformImpl?.TakeFocus();
-        
-        [Obsolete("For unit tests only")]
-        IKeyboardNavigationHandler IPopupHost.Tests_KeyboardNavigationHandler => base.Tests_KeyboardNavigationHandler;
-
 
         Visual IPopupHost.HostedVisualTreeRoot => this;
         

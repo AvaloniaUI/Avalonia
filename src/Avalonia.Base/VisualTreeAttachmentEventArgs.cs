@@ -17,7 +17,8 @@ namespace Avalonia
         /// <param name="presentationSource">Presentation source this visual is being attached to.</param>
         public VisualTreeAttachmentEventArgs(Visual? attachmentPoint, IPresentationSource presentationSource)
         {
-            Debug.Assert(presentationSource.RootVisual != null);
+            RootVisual = presentationSource.RootVisual ??
+                         throw new InvalidOperationException("PresentationSource must have a non-null RootVisual.");
             AttachmentPoint = attachmentPoint;
             PresentationSource = presentationSource ?? throw new ArgumentNullException(nameof(presentationSource));
         }
@@ -37,12 +38,12 @@ namespace Avalonia
         public IPresentationSource PresentationSource { get; }
 
         [Obsolete("This was previously always returning TopLevel. This is no longer guaranteed. Use TopLevel.GetTopLevel(this) if you need a TopLevel or args.RootVisual if you are interested in the root of the visual tree.")]
-        public Visual Root => PresentationSource.RootVisual!;
+        public Visual Root => RootVisual;
         
         /// <summary>
         /// The root visual of the tree this visual is being attached to or detached from.
         /// This is guaranteed to be non-null and will be the same as <see cref="IPresentationSource.RootVisual"/>.
         /// </summary>
-        public Visual RootVisual => PresentationSource.RootVisual!;
+        public Visual RootVisual { get; set; }
     }
 }

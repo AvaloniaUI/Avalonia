@@ -664,7 +664,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 //Ensure focus remains in the popup
 #pragma warning disable CS0618 // Type or member is obsolete
-                popup.Host!.Tests_KeyboardNavigationHandler.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
+                var handler = popup.Host switch
+                {
+                    PopupRoot popupRoot => popupRoot.Tests_KeyboardNavigationHandler,
+                    OverlayPopupHost overlayPopupHost => overlayPopupHost.Tests_KeyboardNavigationHandler,
+                    _ => throw new InvalidOperationException("Unknown popup host type")
+                };
+                
+                handler.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
 #pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Same(textBox, focusManager.GetFocusedElement());
 

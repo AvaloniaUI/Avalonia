@@ -10,7 +10,6 @@ namespace Avalonia.Input
     /// <summary>
     /// Handles keyboard navigation for a window.
     /// </summary>
-    [Unstable]
     internal sealed class KeyboardNavigationHandler : IKeyboardNavigationHandler
     {
         /// <summary>

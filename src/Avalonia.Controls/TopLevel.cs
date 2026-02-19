@@ -115,8 +115,7 @@ namespace Avalonia.Controls
         private readonly IToolTipService? _tooltipService;
         private readonly IAccessKeyHandler? _accessKeyHandler;
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
-        [Obsolete("For unit tests only")]
-        private protected IKeyboardNavigationHandler Tests_KeyboardNavigationHandler => _keyboardNavigationHandler!;
+        internal IKeyboardNavigationHandler Tests_KeyboardNavigationHandler => _keyboardNavigationHandler!;
         private readonly IGlobalStyles? _globalStyles;
         private readonly IThemeVariantHost? _applicationThemeHost;
         private readonly IDisposable? _backGestureSubscription;
