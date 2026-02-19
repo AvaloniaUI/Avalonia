@@ -1329,6 +1329,7 @@ interface IAvnAutomationPeer : IUnknown
      void ValueProvider_SetValue([const] char* value);
 
      IAvnString* GetHelpText();
+     IAvnString* GetPlaceholderText();
 
      AvnLandmarkType GetLandmarkType();
      int GetHeadingLevel();
