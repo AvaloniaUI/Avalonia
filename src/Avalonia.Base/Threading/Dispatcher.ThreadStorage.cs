@@ -15,11 +15,6 @@ public partial class Dispatcher
     private static readonly object s_globalLock = new();
     private static readonly ConditionalWeakTable<Thread, DispatcherReferenceStorage> s_dispatchers = new();
     
-    #if !NET6_0_OR_GREATER
-    // netstandard2.0 doesn't have ConditionalWeakTable enumeration support
-    private static readonly WeakHashList<DispatcherReferenceStorage> s_resetForTestsList = new();
-    #endif
-    
     private static Dispatcher? s_uiThread;
 
     // This class is needed PURELY for ResetForUnitTests, so we can reset s_currentThreadDispatcher for all threads
@@ -95,16 +90,9 @@ public partial class Dispatcher
     {
         lock (s_globalLock)
         {
-#if NET6_0_OR_GREATER
             foreach (var store in s_dispatchers)
                 store.Value.Reference = new(null!);
             s_dispatchers.Clear();
-#else
-            var alive = s_resetForTestsList.GetAlive();
-            if (alive != null)
-                foreach (var store in alive)
-                    store.Reference = new(null!);
-#endif
 
             s_currentThreadDispatcher = null;
             s_uiThread = null;
