@@ -4,6 +4,9 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
+    /// <summary>
+    /// Implements the AT-SPI Image interface for image controls.
+    /// </summary>
     internal sealed class AtSpiImageHandler : IOrgA11yAtspiImage
     {
         private readonly AtSpiNode _node;
@@ -16,7 +19,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public uint Version => ImageVersion;
 
-        public string ImageDescription => _node.Peer.GetHelpText() ?? _node.Peer.GetName() ?? string.Empty;
+        public string ImageDescription => _node.Peer.GetHelpText();
 
         public string ImageLocale => ResolveLocale();
 

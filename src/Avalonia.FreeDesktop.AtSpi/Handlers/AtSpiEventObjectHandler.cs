@@ -6,6 +6,9 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
+    /// <summary>
+    /// Emits AT-SPI Event.Object signals (children-changed, state-changed, property-change).
+    /// </summary>
     internal sealed class AtSpiEventObjectHandler(AtSpiServer server, string path) : IOrgA11yAtspiEventObject
     {
         public uint Version => EventObjectVersion;

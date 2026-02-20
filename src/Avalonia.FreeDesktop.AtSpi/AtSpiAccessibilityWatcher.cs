@@ -6,6 +6,9 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi
 {
+    /// <summary>
+    /// Monitors the session bus to detect whether a screen reader is active.
+    /// </summary>
     internal sealed class AtSpiAccessibilityWatcher : IAsyncDisposable
     {
         private DBusConnection? _sessionConnection;

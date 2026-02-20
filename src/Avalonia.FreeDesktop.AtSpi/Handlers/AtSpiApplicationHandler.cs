@@ -4,6 +4,9 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
+    /// <summary>
+    /// Implements the AT-SPI Application interface for an AutomationPeer-backed node.
+    /// </summary>
     internal sealed class AtSpiApplicationHandler : IOrgA11yAtspiApplication
     {
         public AtSpiApplicationHandler(AtSpiServer server, AtSpiNode node)

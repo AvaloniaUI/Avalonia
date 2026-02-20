@@ -6,6 +6,9 @@ using Avalonia.FreeDesktop.AtSpi.Handlers;
 
 namespace Avalonia.FreeDesktop.AtSpi
 {
+    /// <summary>
+    /// Aggregates D-Bus interface handlers for a single AtSpiNode.
+    /// </summary>
     internal sealed class AtSpiNodeHandlers(AtSpiNode node)
     {
         public AtSpiNode Node { get; } = node;
@@ -25,10 +28,11 @@ namespace Avalonia.FreeDesktop.AtSpi
         public AtSpiTextHandler? TextHandler { get; set; }
         public AtSpiEditableTextHandler? EditableTextHandler { get; set; }
         public AtSpiImageHandler? ImageHandler { get; set; }
-        // public AtSpiCollectionHandler? CollectionHandler { get; set; }
         public AtSpiEventObjectHandler? EventObjectHandler { get; set; }
         public AtSpiEventWindowHandler? EventWindowHandler { get; set; }
 
+        // public AtSpiCollectionHandler? CollectionHandler { get; set; }
+        
         public IDisposable Register(
             IDBusConnection connection,
             SynchronizationContext? synchronizationContext = null)
@@ -54,17 +58,21 @@ namespace Avalonia.FreeDesktop.AtSpi
                 targets.Add(EditableTextHandler);
             if (ImageHandler != null)
                 targets.Add(ImageHandler);
-            // if (CollectionHandler != null)
-            //     targets.Add(CollectionHandler);
             if (EventObjectHandler != null)
                 targets.Add(EventObjectHandler);
             if (EventWindowHandler != null)
                 targets.Add(EventWindowHandler);
 
+            // if (CollectionHandler != null)
+            //     targets.Add(CollectionHandler);
+
             return targets.Count == 0 ? EmptyRegistration.Instance : 
                 connection.RegisterObjects((DBusObjectPath)Node.Path, targets, synchronizationContext);
         }
 
+        /// <summary>
+        /// No-op IDisposable returned when a node has no handlers to register.
+        /// </summary>
         private sealed class EmptyRegistration : IDisposable
         {
             public static EmptyRegistration Instance { get; } = new();

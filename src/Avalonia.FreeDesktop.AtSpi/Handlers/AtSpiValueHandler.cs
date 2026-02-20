@@ -5,6 +5,9 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
+    /// <summary>
+    /// Implements the AT-SPI Value interface for range-based controls.
+    /// </summary>
     internal sealed class AtSpiValueHandler : IOrgA11yAtspiValue
     {
         private readonly AtSpiNode _node;
@@ -33,11 +36,10 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             get => _node.Peer.GetProvider<IRangeValueProvider>() is { } p ? p.Value : 0;
             set
             {
-                if (_node.Peer.GetProvider<IRangeValueProvider>() is { } p)
-                {
-                    var clamped = Math.Max(p.Minimum, Math.Min(p.Maximum, value));
-                    p.SetValue(clamped);
-                }
+                if (_node.Peer.GetProvider<IRangeValueProvider>() is not { } p) 
+                    return;
+                var clamped = Math.Max(p.Minimum, Math.Min(p.Maximum, value));
+                p.SetValue(clamped);
             }
         }
     }

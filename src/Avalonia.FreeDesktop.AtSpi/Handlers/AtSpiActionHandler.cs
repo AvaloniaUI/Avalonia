@@ -8,6 +8,9 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
+    /// <summary>
+    /// Implements the AT-SPI Action interface (invoke, toggle, expand/collapse, scroll).
+    /// </summary>
     internal sealed class AtSpiActionHandler : IOrgA11yAtspiAction
     {
         private readonly AtSpiNode _node;
@@ -151,6 +154,9 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             return actions;
         }
 
+        /// <summary>
+        /// Describes a single AT-SPI action exposed by a node.
+        /// </summary>
         private readonly record struct ActionEntry(
             string ActionName,
             string LocalizedName,

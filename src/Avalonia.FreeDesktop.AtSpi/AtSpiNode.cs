@@ -10,6 +10,9 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi
 {
+    /// <summary>
+    /// Represents an element in the AT-SPI tree, backed by an AutomationPeer.
+    /// </summary>
     internal partial class AtSpiNode
     {
         private static readonly ConditionalWeakTable<AutomationPeer, AtSpiNode> s_nodes = new();
@@ -19,7 +22,7 @@ namespace Avalonia.FreeDesktop.AtSpi
 
         private readonly string _path;
 
-        public AtSpiNode(AutomationPeer peer, AtSpiServer server)
+        protected AtSpiNode(AutomationPeer peer, AtSpiServer server)
         {
             Peer = peer;
             Server = server;
@@ -46,15 +49,18 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (Peer.GetProvider<IRootProvider>() is not null)
                 interfaces.Add(IfaceApplication);
 
-            // All visual elements support Component and Collection
+            // All visual elements support Component.
             interfaces.Add(IfaceComponent);
+            
+            // Disabled this for now, mainly used by Cache iface.
             // interfaces.Add(IfaceCollection);
 
             if (Peer.GetProvider<IInvokeProvider>() is not null ||
                 Peer.GetProvider<IToggleProvider>() is not null ||
                 Peer.GetProvider<IExpandCollapseProvider>() is not null ||
                 Peer.GetProvider<IScrollProvider>() is not null ||
-                // TODO: expose Action for ISelectionItemProvider so that selectable items
+                // Provisional:
+                // Expose Action for ISelectionItemProvider so that selectable items
                 // (e.g. TabItem, ListBoxItem) can be activated via AT-SPI. Ideally the core
                 // automation peers would implement IInvokeProvider and/or the parent container
                 // would implement ISelectionProvider, making this unnecessary.

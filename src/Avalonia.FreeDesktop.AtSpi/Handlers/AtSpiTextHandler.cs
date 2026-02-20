@@ -7,9 +7,32 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
+    /// <summary>
+    /// Implements the AT-SPI Text interface for read-only text content.
+    /// </summary>
     internal sealed class AtSpiTextHandler : IOrgA11yAtspiText
     {
         private readonly AtSpiNode _node;
+
+        private enum TextGranularity : uint
+        {
+            Char = 0,
+            Word = 1,
+            Sentence = 2,
+            Line = 3,
+            Paragraph = 4,
+        }
+
+        private enum TextBoundaryType : uint
+        {
+            Char = 0,
+            WordStart = 1,
+            WordEnd = 2,
+            SentenceStart = 3,
+            SentenceEnd = 4,
+            LineStart = 5,
+            LineEnd = 6,
+        }
 
         public AtSpiTextHandler(AtSpiServer server, AtSpiNode node)
         {
@@ -32,15 +55,17 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
             offset = Math.Max(0, Math.Min(offset, text.Length - 1));
 
+            var g = (TextGranularity)granularity;
+
             // For CHAR granularity, return single character
-            if (granularity == 0)
+            if (g == TextGranularity.Char)
             {
                 var ch = text.Substring(offset, 1);
                 return ValueTask.FromResult((ch, offset, offset + 1));
             }
 
             // For WORD granularity, find word boundaries
-            if (granularity == 1)
+            if (g == TextGranularity.Word)
             {
                 var start = offset;
                 var end = offset;
@@ -79,21 +104,26 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
         public ValueTask<(string Text, int StartOffset, int EndOffset)> GetTextBeforeOffsetAsync(
             int offset, uint type)
         {
+            // TODO: This method is a bit sketchy. Might need to wired up to
+            // our text handling logic in core.
+            
             var text = GetText();
             if (offset <= 0 || text.Length == 0)
                 return ValueTask.FromResult((string.Empty, 0, 0));
 
             offset = Math.Min(offset, text.Length);
 
+            var bt = (TextBoundaryType)type;
+
             // CHAR boundary
-            if (type == 0)
+            if (bt == TextBoundaryType.Char)
             {
                 var charOffset = offset - 1;
                 return ValueTask.FromResult((text.Substring(charOffset, 1), charOffset, charOffset + 1));
             }
 
             // WORD_START or WORD_END boundary
-            if (type is 1 or 2)
+            if (bt is TextBoundaryType.WordStart or TextBoundaryType.WordEnd)
             {
                 var end = offset;
                 // Skip whitespace before offset to find end of previous word
@@ -125,8 +155,10 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (offset >= text.Length - 1 || text.Length == 0)
                 return ValueTask.FromResult((string.Empty, text.Length, text.Length));
 
+            var bt = (TextBoundaryType)type;
+
             // CHAR boundary
-            if (type == 0)
+            if (bt == TextBoundaryType.Char)
             {
                 var charOffset = offset + 1;
                 if (charOffset >= text.Length)
@@ -135,7 +167,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             }
 
             // WORD_START or WORD_END boundary
-            if (type is 1 or 2)
+            if (bt is TextBoundaryType.WordStart or TextBoundaryType.WordEnd)
             {
                 var start = offset + 1;
                 // Skip whitespace after offset to find start of next word

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.DBus;
@@ -8,22 +9,18 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
-    internal sealed class AtSpiCollectionHandler : IOrgA11yAtspiCollection
+    /// <summary>
+    /// Implements the AT-SPI Collection interface for match-based node queries.
+    /// </summary>
+    internal sealed class AtSpiCollectionHandler(AtSpiServer server, AtSpiNode node) : IOrgA11yAtspiCollection
     {
-        private readonly AtSpiServer _server;
-        private readonly AtSpiNode _node;
-
-        // Match type constants (AtspiCollectionMatchType)
-        private const int MatchInvalid = 0;
-        private const int MatchAll = 1;
-        private const int MatchAny = 2;
-        private const int MatchNone = 3;
-        private const int MatchEmpty = 4;
-
-        public AtSpiCollectionHandler(AtSpiServer server, AtSpiNode node)
+        private enum MatchType
         {
-            _server = server;
-            _node = node;
+            Invalid = 0,
+            All = 1,
+            Any = 2,
+            None = 3,
+            Empty = 4,
         }
 
         public uint Version => CollectionVersion;
@@ -32,7 +29,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             AtSpiMatchRule rule, uint sortby, int count, bool traverse)
         {
             var results = new List<AtSpiObjectReference>();
-            CollectMatches(_node, rule, count, traverse, results, skipSelf: true);
+            CollectMatches(node, rule, count, traverse, results, skipSelf: true);
             return ValueTask.FromResult(results);
         }
 
@@ -43,7 +40,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             // GetMatchesTo: find matches after currentObject in tree order
             var results = new List<AtSpiObjectReference>();
             var found = false;
-            CollectMatchesOrdered(_node, rule, count, traverse, results,
+            CollectMatchesOrdered(node, rule, count, traverse, results,
                 currentObject.ToString(), ref found, after: true);
             return ValueTask.FromResult(results);
         }
@@ -55,7 +52,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             // GetMatchesFrom: find matches before currentObject in tree order
             var results = new List<AtSpiObjectReference>();
             var found = false;
-            CollectMatchesOrdered(_node, rule, count, traverse, results,
+            CollectMatchesOrdered(node, rule, count, traverse, results,
                 currentObject.ToString(), ref found, after: false);
             return ValueTask.FromResult(results);
         }
@@ -63,7 +60,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
         public ValueTask<AtSpiObjectReference> GetActiveDescendantAsync()
         {
             // Not implemented in most toolkits
-            return ValueTask.FromResult(_server.GetNullReference());
+            return ValueTask.FromResult(server.GetNullReference());
         }
 
         private void CollectMatches(
@@ -75,7 +72,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
             if (!skipSelf && MatchesRule(parent, rule))
             {
-                results.Add(_server.GetReference(parent));
+                results.Add(server.GetReference(parent));
                 if (count > 0 && results.Count >= count)
                     return;
             }
@@ -83,12 +80,12 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             var children = parent.Peer.GetChildren();
             foreach (var childPeer in children)
             {
-                var childNode = AtSpiNode.GetOrCreate(childPeer, _server);
-                _server.EnsureNodeRegistered(childNode);
+                var childNode = AtSpiNode.GetOrCreate(childPeer, server);
+                server.EnsureNodeRegistered(childNode);
 
                 if (MatchesRule(childNode, rule))
                 {
-                    results.Add(_server.GetReference(childNode));
+                    results.Add(server.GetReference(childNode));
                     if (count > 0 && results.Count >= count)
                         return;
                 }
@@ -112,8 +109,8 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                 if (count > 0 && results.Count >= count)
                     return;
 
-                var childNode = AtSpiNode.GetOrCreate(childPeer, _server);
-                _server.EnsureNodeRegistered(childNode);
+                var childNode = AtSpiNode.GetOrCreate(childPeer, server);
+                server.EnsureNodeRegistered(childNode);
 
                 if (string.Equals(childNode.Path, targetPath, StringComparison.Ordinal))
                 {
@@ -127,7 +124,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                 var shouldInclude = after ? pastTarget : !pastTarget;
                 if (shouldInclude && MatchesRule(childNode, rule))
                 {
-                    results.Add(_server.GetReference(childNode));
+                    results.Add(server.GetReference(childNode));
                     if (count > 0 && results.Count >= count)
                         return;
                 }
@@ -140,18 +137,18 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         private static bool MatchesRule(AtSpiNode node, AtSpiMatchRule rule)
         {
-            var match = MatchesStates(node, rule.States, rule.StateMatchType)
-                     && MatchesRoles(node, rule.Roles, rule.RoleMatchType)
-                     && MatchesInterfaces(node, rule.Interfaces, rule.InterfaceMatchType)
-                     && MatchesAttributes(node, rule.Attributes, rule.AttributeMatchType);
+            var match = MatchesStates(node, rule.States, (MatchType)rule.StateMatchType)
+                     && MatchesRoles(node, rule.Roles, (MatchType)rule.RoleMatchType)
+                     && MatchesInterfaces(node, rule.Interfaces, (MatchType)rule.InterfaceMatchType)
+                     && MatchesAttributes(node, rule.Attributes, (MatchType)rule.AttributeMatchType);
 
             return rule.Invert ? !match : match;
         }
 
-        private static bool MatchesStates(AtSpiNode node, List<int> ruleStates, int matchType)
+        private static bool MatchesStates(AtSpiNode node, List<int> ruleStates, MatchType matchType)
         {
-            if (matchType == MatchInvalid || matchType == MatchEmpty)
-                return matchType == MatchEmpty ? IsEmptyBitSet(ruleStates) : true;
+            if (matchType is MatchType.Invalid or MatchType.Empty)
+                return matchType != MatchType.Empty || IsEmptyBitSet(ruleStates);
 
             if (IsEmptyBitSet(ruleStates))
                 return true;
@@ -164,17 +161,17 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
             return matchType switch
             {
-                MatchAll => (nodeLow & ruleLow) == ruleLow && (nodeHigh & ruleHigh) == ruleHigh,
-                MatchAny => (nodeLow & ruleLow) != 0 || (nodeHigh & ruleHigh) != 0,
-                MatchNone => (nodeLow & ruleLow) == 0 && (nodeHigh & ruleHigh) == 0,
+                MatchType.All => (nodeLow & ruleLow) == ruleLow && (nodeHigh & ruleHigh) == ruleHigh,
+                MatchType.Any => (nodeLow & ruleLow) != 0 || (nodeHigh & ruleHigh) != 0,
+                MatchType.None => (nodeLow & ruleLow) == 0 && (nodeHigh & ruleHigh) == 0,
                 _ => true,
             };
         }
 
-        private static bool MatchesRoles(AtSpiNode node, List<int> ruleRoles, int matchType)
+        private static bool MatchesRoles(AtSpiNode node, List<int> ruleRoles, MatchType matchType)
         {
-            if (matchType == MatchInvalid || matchType == MatchEmpty)
-                return matchType == MatchEmpty ? IsEmptyBitSet(ruleRoles) : true;
+            if (matchType is MatchType.Invalid or MatchType.Empty)
+                return matchType != MatchType.Empty || IsEmptyBitSet(ruleRoles);
 
             if (IsEmptyBitSet(ruleRoles))
                 return true;
@@ -186,63 +183,51 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
             return matchType switch
             {
-                MatchAll or MatchAny => isSet,
-                MatchNone => !isSet,
+                MatchType.All or MatchType.Any => isSet,
+                MatchType.None => !isSet,
                 _ => true,
             };
         }
 
-        private static bool MatchesInterfaces(AtSpiNode node, List<string> ruleInterfaces, int matchType)
+        private static bool MatchesInterfaces(AtSpiNode node, List<string> ruleInterfaces, MatchType matchType)
         {
-            if (matchType == MatchInvalid || matchType == MatchEmpty)
-                return matchType == MatchEmpty ? (ruleInterfaces == null || ruleInterfaces.Count == 0) : true;
+            if (matchType is MatchType.Invalid or MatchType.Empty)
+                return matchType != MatchType.Empty || ruleInterfaces.Count == 0;
 
-            if (ruleInterfaces == null || ruleInterfaces.Count == 0)
+            if (ruleInterfaces.Count == 0)
                 return true;
 
             var nodeInterfaces = node.GetSupportedInterfaces();
 
             return matchType switch
             {
-                MatchAll => AllInterfacesPresent(nodeInterfaces, ruleInterfaces),
-                MatchAny => AnyInterfacePresent(nodeInterfaces, ruleInterfaces),
-                MatchNone => !AnyInterfacePresent(nodeInterfaces, ruleInterfaces),
+                MatchType.All => AllInterfacesPresent(nodeInterfaces, ruleInterfaces),
+                MatchType.Any => AnyInterfacePresent(nodeInterfaces, ruleInterfaces),
+                MatchType.None => !AnyInterfacePresent(nodeInterfaces, ruleInterfaces),
                 _ => true,
             };
         }
 
         private static bool AllInterfacesPresent(HashSet<string> nodeInterfaces, List<string> required)
         {
-            foreach (var iface in required)
-            {
-                if (!nodeInterfaces.Contains(ResolveInterfaceName(iface)))
-                    return false;
-            }
-            return true;
+            return required.All(iface => nodeInterfaces.Contains(ResolveInterfaceName(iface)));
         }
 
         private static bool AnyInterfacePresent(HashSet<string> nodeInterfaces, List<string> required)
         {
-            foreach (var iface in required)
-            {
-                if (nodeInterfaces.Contains(ResolveInterfaceName(iface)))
-                    return true;
-            }
-            return false;
+            return required.Any(iface => nodeInterfaces.Contains(ResolveInterfaceName(iface)));
         }
 
         private static string ResolveInterfaceName(string name)
         {
             // ATs may pass short names like "Action" or full names like "org.a11y.atspi.Action"
-            if (name.Contains('.'))
-                return name;
-            return $"org.a11y.atspi.{name}";
+            return name.Contains('.') ? name : $"org.a11y.atspi.{name}";
         }
 
-        private static bool MatchesAttributes(AtSpiNode node, Dictionary<string, string>? ruleAttrs, int matchType)
+        private static bool MatchesAttributes(AtSpiNode node, Dictionary<string, string>? ruleAttrs, MatchType matchType)
         {
-            if (matchType == MatchInvalid || matchType == MatchEmpty)
-                return matchType == MatchEmpty ? (ruleAttrs == null || ruleAttrs.Count == 0) : true;
+            if (matchType is MatchType.Invalid or MatchType.Empty)
+                return matchType != MatchType.Empty || (ruleAttrs == null || ruleAttrs.Count == 0);
 
             if (ruleAttrs == null || ruleAttrs.Count == 0)
                 return true;
@@ -255,9 +240,9 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
             return matchType switch
             {
-                MatchAll => AllAttributesMatch(nodeAttrs, ruleAttrs),
-                MatchAny => AnyAttributeMatches(nodeAttrs, ruleAttrs),
-                MatchNone => !AnyAttributeMatches(nodeAttrs, ruleAttrs),
+                MatchType.All => AllAttributesMatch(nodeAttrs, ruleAttrs),
+                MatchType.Any => AnyAttributeMatches(nodeAttrs, ruleAttrs),
+                MatchType.None => !AnyAttributeMatches(nodeAttrs, ruleAttrs),
                 _ => true,
             };
         }
@@ -288,12 +273,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
         {
             if (values == null || values.Count == 0)
                 return true;
-            foreach (var v in values)
-            {
-                if (v != 0)
-                    return false;
-            }
-            return true;
+            return values.All(v => v == 0);
         }
     }
 }

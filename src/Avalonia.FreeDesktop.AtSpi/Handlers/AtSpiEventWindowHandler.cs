@@ -6,6 +6,9 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
+    /// <summary>
+    /// Emits AT-SPI Event.Window signals (activate, deactivate).
+    /// </summary>
     internal sealed class AtSpiEventWindowHandler(AtSpiServer server, string path) : IOrgA11yAtspiEventWindow
     {
         public void EmitActivateSignal()

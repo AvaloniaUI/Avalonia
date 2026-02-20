@@ -14,6 +14,9 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi
 {
+    /// <summary>
+    /// Manages the AT-SPI D-Bus connection, node registration, and event emission.
+    /// </summary>
     internal sealed class AtSpiServer : IAsyncDisposable
     {
         private readonly Dictionary<string, AtSpiNode> _nodesByPath = new(StringComparer.Ordinal);
@@ -46,6 +49,10 @@ namespace Avalonia.FreeDesktop.AtSpi
         /// <summary>
         /// Starts the AT-SPI server.
         /// Must be called on the UI thread.
+        /// <remarks>
+        /// Call order in this method is important because
+        /// AT's are sensitive and/or broken.
+        /// </remarks>
         /// </summary>
         public async Task StartAsync()
         {
@@ -75,7 +82,9 @@ namespace Avalonia.FreeDesktop.AtSpi
             // Start tracking registry event listeners
             await InitializeRegistryEventTrackingAsync();
 
-            // NOTE: Embed is deferred to the first AddWindow call.
+            // Implementation note:
+            //
+            // Embed is deferred to the first AddWindow call. It used to be here.
             // At this point the UI thread is still busy with initial layout/render.
             
             // If we embed now, the registry notifies the screen reader immediately,
@@ -144,13 +153,11 @@ namespace Avalonia.FreeDesktop.AtSpi
 
         private void EmitWindowChildAdded(RootAtSpiNode windowNode)
         {
-            if (HasEventListeners && _appRootEventHandler is { } eventHandler)
-            {
-                var childRef = GetReference(windowNode);
-                var childVariant = new DBusVariant(childRef.ToDbusStruct());
-                eventHandler.EmitChildrenChangedSignal(
-                    "add", _appRoot!.WindowChildren.Count - 1, childVariant);
-            }
+            if (!HasEventListeners || _appRootEventHandler is not { } eventHandler) return;
+            var childRef = GetReference(windowNode);
+            var childVariant = new DBusVariant(childRef.ToDbusStruct());
+            eventHandler.EmitChildrenChangedSignal(
+                "add", _appRoot!.WindowChildren.Count - 1, childVariant);
         }
 
         /// <summary>
@@ -300,12 +307,10 @@ namespace Avalonia.FreeDesktop.AtSpi
                 node.RegisteredChildren.Add(child);
 
             // Emit children-changed event (guarded by event listeners)
-            if (HasEventListeners && node.Handlers?.EventObjectHandler is { } eventHandler)
-            {
-                var reference = GetReference(node);
-                var childVariant = new DBusVariant(reference.ToDbusStruct());
-                eventHandler.EmitChildrenChangedSignal("add", 0, childVariant);
-            }
+            if (!HasEventListeners || node.Handlers?.EventObjectHandler is not { } eventHandler) return;
+            var reference = GetReference(node);
+            var childVariant = new DBusVariant(reference.ToDbusStruct());
+            eventHandler.EmitChildrenChangedSignal("add", 0, childVariant);
         }
 
         internal void EmitPropertyChange(AtSpiNode node, AutomationPropertyChangedEventArgs e)
@@ -368,13 +373,13 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (windowNode.Handlers?.EventObjectHandler is { } eventHandler)
                 eventHandler.EmitStateChangedSignal("active", active ? 1 : 0, new DBusVariant(0));
 
-            if (windowNode.Handlers?.EventWindowHandler is { } windowHandler)
-            {
-                if (active)
-                    windowHandler.EmitActivateSignal();
-                else
-                    windowHandler.EmitDeactivateSignal();
-            }
+            if (windowNode.Handlers?.EventWindowHandler is not { } windowHandler) 
+                return;
+            
+            if (active)
+                windowHandler.EmitActivateSignal();
+            else
+                windowHandler.EmitDeactivateSignal();
         }
 
         internal void EmitFocusChange(AtSpiNode? focusedNode)
@@ -388,7 +393,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             }
         }
 
-        // ── Registry event listener tracking ──────────────────────────────
+        // Registry event listener tracking
 
         private async Task InitializeRegistryEventTrackingAsync()
         {
@@ -500,8 +505,8 @@ namespace Avalonia.FreeDesktop.AtSpi
                 || eventName.StartsWith("window:", StringComparison.OrdinalIgnoreCase)
                 || eventName.StartsWith("focus:", StringComparison.OrdinalIgnoreCase);
         }
-
-        // ── Node registration ────────────────────────────────────────────
+        
+        // Node registration
 
         /// <summary>
         /// Registers a node in _nodesByPath, builds handlers, and registers D-Bus path.
@@ -707,11 +712,9 @@ namespace Avalonia.FreeDesktop.AtSpi
             node.Handlers = null;
         }
 
-        private sealed class ActivePathRegistration(object owner, IDisposable registration)
-        {
-            public object Owner { get; } = owner;
-            public IDisposable Registration { get; } = registration;
-        }
-
+        /// <summary>
+        /// Pairs a D-Bus object path registration with its handler owner.
+        /// </summary>
+        private sealed record ActivePathRegistration(object Owner, IDisposable Registration);
     }
 }

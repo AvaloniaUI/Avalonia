@@ -5,6 +5,9 @@ using Avalonia.Platform;
 
 namespace Avalonia.FreeDesktop.AtSpi
 {
+    /// <summary>
+    /// AT-SPI node for a top-level window with coordinate translation support.
+    /// </summary>
     internal sealed class RootAtSpiNode : AtSpiNode
     {
         public RootAtSpiNode(AutomationPeer peer, AtSpiServer server)
@@ -14,11 +17,11 @@ namespace Avalonia.FreeDesktop.AtSpi
                 "Attempt to create RootAtSpiNode from peer which does not implement IRootProvider.");
             RootProvider.FocusChanged += OnRootFocusChanged;
 
-            if (WindowImpl is { } impl)
-            {
-                impl.Activated += OnWindowActivated;
-                impl.Deactivated += OnWindowDeactivated;
-            }
+            if (WindowImpl is not { } impl)
+                return;
+
+            impl.Activated += OnWindowActivated;
+            impl.Deactivated += OnWindowDeactivated;
         }
 
         public IRootProvider RootProvider { get; }

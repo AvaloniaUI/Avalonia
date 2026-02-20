@@ -6,6 +6,9 @@ using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
+    /// <summary>
+    /// Implements the AT-SPI Component interface (geometry and focus).
+    /// </summary>
     internal sealed class AtSpiComponentHandler(AtSpiServer server, AtSpiNode node) : IOrgA11yAtspiComponent
     {
         public uint Version => ComponentVersion;
@@ -80,13 +83,12 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<bool> SetPositionAsync(int x, int y, uint coordType)
         {
-            if (node.Peer.GetProvider<IRootProvider>() is { PlatformImpl: IWindowImpl windowImpl })
-            {
-                var screenPos = TranslateToScreen(x, y, coordType);
-                windowImpl.Move(new PixelPoint(screenPos.x, screenPos.y));
-                return ValueTask.FromResult(true);
-            }
-            return ValueTask.FromResult(false);
+            if (node.Peer.GetProvider<IRootProvider>() is not { PlatformImpl: IWindowImpl windowImpl })
+                return ValueTask.FromResult(false);
+
+            var screenPos = TranslateToScreen(x, y, coordType);
+            windowImpl.Move(new PixelPoint(screenPos.x, screenPos.y));
+            return ValueTask.FromResult(true);
         }
 
         public ValueTask<bool> SetSizeAsync(int width, int height)
@@ -106,22 +108,25 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         private (int x, int y) TranslateToScreen(int x, int y, uint coordType)
         {
-            if (coordType == 0)
-                return (x, y);
+            var ct = (AtSpiCoordType)coordType;
 
-            if (coordType == 1)
+            switch (ct)
             {
-                var windowRect = AtSpiCoordinateHelper.GetWindowRect(node);
-                return (x + (int)windowRect.X, y + (int)windowRect.Y);
+                case AtSpiCoordType.Screen:
+                    return (x, y);
+                case AtSpiCoordType.Window:
+                {
+                    var windowRect = AtSpiCoordinateHelper.GetWindowRect(node);
+                    return (x + (int)windowRect.X, y + (int)windowRect.Y);
+                }
+                case AtSpiCoordType.Parent:
+                {
+                    var parentRect = AtSpiCoordinateHelper.GetParentScreenRect(node);
+                    return (x + (int)parentRect.X, y + (int)parentRect.Y);
+                }
+                default:
+                    return (x, y);
             }
-
-            if (coordType == 2)
-            {
-                var parentRect = AtSpiCoordinateHelper.GetParentScreenRect(node);
-                return (x + (int)parentRect.X, y + (int)parentRect.Y);
-            }
-
-            return (x, y);
         }
     }
 }

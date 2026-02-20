@@ -3,6 +3,9 @@ using System.Globalization;
 
 namespace Avalonia.FreeDesktop.AtSpi
 {
+    /// <summary>
+    /// Well-known AT-SPI2 D-Bus paths, interface names, and utility methods.
+    /// </summary>
     internal static class AtSpiConstants
     {
         // D-Bus paths
@@ -76,6 +79,7 @@ namespace Avalonia.FreeDesktop.AtSpi
 
         internal static string ResolveToolkitVersion()
         {
+            // TODO: Better way of doing this?
             return typeof(AtSpiConstants).Assembly.GetName().Version?.ToString() ?? "0";
         }
     }
