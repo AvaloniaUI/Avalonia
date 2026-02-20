@@ -168,7 +168,7 @@ namespace Avalonia.Layout
         {
             add
             {
-                if (_effectiveViewportChanged is null && VisualRoot is ILayoutRoot r && !_isAttachingToVisualTree)
+                if (_effectiveViewportChanged is null && this.GetLayoutRoot() is {} r && !_isAttachingToVisualTree)
                 {
                     r.LayoutManager.RegisterEffectiveViewportListener(this);
                 }
@@ -180,7 +180,7 @@ namespace Avalonia.Layout
             {
                 _effectiveViewportChanged -= value;
 
-                if (_effectiveViewportChanged is null && VisualRoot is ILayoutRoot r)
+                if (_effectiveViewportChanged is null && this.GetLayoutRoot() is {} r)
                 {
                     r.LayoutManager.UnregisterEffectiveViewportListener(this);
                 }
@@ -194,7 +194,7 @@ namespace Avalonia.Layout
         {
             add
             {
-                if (_layoutUpdated is null && VisualRoot is ILayoutRoot r && !_isAttachingToVisualTree)
+                if (_layoutUpdated is null && this.GetLayoutRoot() is {} r && !_isAttachingToVisualTree)
                 {
                     r.LayoutManager.LayoutUpdated += LayoutManagedLayoutUpdated;
                 }
@@ -206,7 +206,7 @@ namespace Avalonia.Layout
             {
                 _layoutUpdated -= value;
 
-                if (_layoutUpdated is null && VisualRoot is ILayoutRoot r)
+                if (_layoutUpdated is null && this.GetLayoutRoot() is {} r)
                 {
                     r.LayoutManager.LayoutUpdated -= LayoutManagedLayoutUpdated;
                 }
@@ -220,7 +220,8 @@ namespace Avalonia.Layout
         /// You should not usually need to call this method explictly, the layout manager will
         /// schedule layout passes itself.
         /// </remarks>
-        public void UpdateLayout() => (this.GetVisualRoot() as ILayoutRoot)?.LayoutManager?.ExecuteLayoutPass();
+        
+        public void UpdateLayout() => this.GetLayoutManager()?.ExecuteLayoutPass();
 
         /// <summary>
         /// Gets or sets the width of the element.
@@ -448,7 +449,7 @@ namespace Avalonia.Layout
 
                 if (IsAttachedToVisualTree)
                 {
-                    (VisualRoot as ILayoutRoot)?.LayoutManager.InvalidateMeasure(this);
+                    this.GetLayoutManager()?.InvalidateMeasure(this);
                     InvalidateVisual();
                 }
                 OnMeasureInvalidated();
@@ -465,7 +466,7 @@ namespace Avalonia.Layout
                 Logger.TryGet(LogEventLevel.Verbose, LogArea.Layout)?.Log(this, "Invalidated arrange");
 
                 IsArrangeValid = false;
-                (VisualRoot as ILayoutRoot)?.LayoutManager?.InvalidateArrange(this);
+                this.GetLayoutManager()?.InvalidateArrange(this);
                 InvalidateVisual();
             }
         }
@@ -793,7 +794,7 @@ namespace Avalonia.Layout
                 _isAttachingToVisualTree = false;
             }
 
-            if (e.Root is ILayoutRoot r)
+            if (this.GetLayoutRoot() is {} r)
             {
                 if (_layoutUpdated is object)
                 {
@@ -809,7 +810,7 @@ namespace Avalonia.Layout
 
         protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            if (e.Root is ILayoutRoot r)
+            if (this.GetLayoutRoot() is {} r)
             {
                 if (_layoutUpdated is object)
                 {
@@ -852,7 +853,7 @@ namespace Avalonia.Layout
                     // they will need to be registered with the layout manager now that they
                     // are again effectively visible. If IsEffectivelyVisible becomes an observable
                     // property then we can piggy-pack on that; for the moment we do this manually.
-                    if (VisualRoot is ILayoutRoot layoutRoot)
+                    if (this.GetLayoutRoot() is {} layoutRoot)
                     {
                         var count = VisualChildren.Count;
 

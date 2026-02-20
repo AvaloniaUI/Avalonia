@@ -2352,8 +2352,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static void Layout(Control target)
         {
-            var root = (ILayoutRoot?)target.GetVisualRoot();
-            root?.LayoutManager.ExecuteLayoutPass();
+            target.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         private static IControlTemplate ListBoxItemTemplate()

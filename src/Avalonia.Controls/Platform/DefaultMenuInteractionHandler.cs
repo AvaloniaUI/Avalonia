@@ -21,7 +21,7 @@ namespace Avalonia.Controls.Platform
     {
         private readonly bool _isContextMenu;
         private IDisposable? _inputManagerSubscription;
-        private IRenderRoot? _root;
+        private TopLevel? _root;
         private RadioButtonGroupManager? _groupManager;
 
         public DefaultMenuInteractionHandler(bool isContextMenu)
@@ -300,7 +300,7 @@ namespace Avalonia.Controls.Platform
             Menu.AddHandler(MenuItem.PointerExitedItemEvent, PointerExited);
             Menu.AddHandler(InputElement.PointerMovedEvent, PointerMoved);
 
-            _root = Menu.VisualRoot;
+            _root = Menu.TopLevel;
 
             if (_root is not null)
             {

@@ -208,14 +208,14 @@ namespace Avalonia.Controls
 
             if (IsDefault)
             {
-                if (e.Root is IInputElement inputElement)
+                if (e.RootVisual is IInputElement inputElement)
                 {
                     ListenForDefault(inputElement);
                 }
             }
             if (IsCancel)
             {
-                if (e.Root is IInputElement inputElement)
+                if (e.RootVisual is IInputElement inputElement)
                 {
                     ListenForCancel(inputElement);
                 }
@@ -229,14 +229,14 @@ namespace Avalonia.Controls
 
             if (IsDefault)
             {
-                if (e.Root is IInputElement inputElement)
+                if (e.RootVisual is IInputElement inputElement)
                 {
                     StopListeningForDefault(inputElement);
                 }
             }
             if (IsCancel)
             {
-                if (e.Root is IInputElement inputElement)
+                if (e.RootVisual is IInputElement inputElement)
                 {
                     StopListeningForCancel(inputElement);
                 }

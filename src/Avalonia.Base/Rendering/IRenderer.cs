@@ -10,7 +10,7 @@ namespace Avalonia.Rendering
     /// Defines the interface for a renderer.
     /// </summary>
     [PrivateApi]
-    public interface IRenderer : IDisposable
+    internal interface IRenderer : IDisposable
     {
         /// <summary>
         /// Gets a value indicating whether the renderer should draw specific diagnostics.
@@ -75,7 +75,7 @@ namespace Avalonia.Rendering
     }
 
     [PrivateApi]
-    public interface IHitTester
+    internal interface IHitTester
     {
         /// <summary>
         /// Hit tests a location to find the visuals at the specified point.

@@ -19,7 +19,7 @@ namespace Avalonia.Platform
 
         private DragDropEffects _allowedEffects;
         private IDataTransfer? _draggedData;
-        private TopLevel? _lastRoot;
+        private PresentationSource? _lastSource;
         private Point _lastPosition;
         private StandardCursorType? _lastCursorType;
         private RawInputModifiers? _initialInputModifiers;
@@ -40,7 +40,7 @@ namespace Avalonia.Platform
             if (_draggedData == null)
             {
                 _draggedData = dataTransfer;
-                _lastRoot = null;
+                _lastSource = null;
                 _lastPosition = default;
                 _allowedEffects = allowedEffects;
 
@@ -75,11 +75,12 @@ namespace Avalonia.Platform
             _lastPosition = pt;
 
             RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData!, _allowedEffects, modifiers);
-            var tl = (root as Visual)?.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
-            tl?.PlatformImpl?.Input?.Invoke(rawEvent);
+            var source = root.RootElement.PresentationSource as PresentationSource;
+            
+            source?.PlatformImpl?.Input?.Invoke(rawEvent);
 
             var effect = GetPreferredEffect(rawEvent.Effects & _allowedEffects, modifiers);
-            UpdateCursor(tl, effect);
+            UpdateCursor(source, effect);
             return effect;
         }
 
@@ -105,12 +106,12 @@ namespace Avalonia.Platform
             return StandardCursorType.No;
         }
         
-        private void UpdateCursor(TopLevel? root, DragDropEffects effect)
+        private void UpdateCursor(PresentationSource? root, DragDropEffects effect)
         {
-            if (_lastRoot != root)
+            if (_lastSource != root)
             {
-                _lastRoot?.SetCursorOverride(null);
-                _lastRoot = root;
+                _lastSource?.SetCursorOverride(null);
+                _lastSource = root;
                 _lastCursorType = null;
             }
 
@@ -127,8 +128,8 @@ namespace Avalonia.Platform
 
         private void CancelDragging()
         {
-            if (_lastRoot != null)
-                RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastRoot, _lastPosition, RawInputModifiers.None);
+            if (_lastSource != null)
+                RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastSource, _lastPosition, RawInputModifiers.None);
             UpdateCursor(null, DragDropEffects.None);
             _result.OnNext(DragDropEffects.None);
         }
@@ -137,16 +138,16 @@ namespace Avalonia.Platform
         {
             if (e.Type == RawKeyEventType.KeyDown && e.Key == Key.Escape)
             {
-                if (_lastRoot != null)
-                    RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastRoot, _lastPosition, e.Modifiers);
+                if (_lastSource != null)
+                    RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastSource, _lastPosition, e.Modifiers);
                 UpdateCursor(null, DragDropEffects.None);
                 _result.OnNext(DragDropEffects.None);
                 e.Handled = true;
             }
             else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl || e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
             {
-                if (_lastRoot != null)
-                    RaiseEventAndUpdateCursor(RawDragEventType.DragOver, _lastRoot, _lastPosition, e.Modifiers);
+                if (_lastSource != null)
+                    RaiseEventAndUpdateCursor(RawDragEventType.DragOver, _lastSource, _lastPosition, e.Modifiers);
             }
         }
 
@@ -195,10 +196,10 @@ namespace Avalonia.Platform
                         return;
                     }
 
-                    if (e.Root != _lastRoot)
+                    if (e.Root != _lastSource)
                     {
-                        if (_lastRoot is Visual lr && e.Root is Visual r)
-                            RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastRoot, lr.PointToClient(r.PointToScreen(e.Position)), e.InputModifiers);
+                        if (_lastSource?.RootElement is Visual lr && e.Root.RootElement is Visual r)
+                            RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastSource, lr.PointToClient(r.PointToScreen(e.Position)), e.InputModifiers);
                         RaiseEventAndUpdateCursor(RawDragEventType.DragEnter, e.Root, e.Position, e.InputModifiers);
                     }
                     else
