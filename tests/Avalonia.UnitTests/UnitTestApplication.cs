@@ -84,7 +84,6 @@ namespace Avalonia.UnitTests
                 .Bind<IPlatformRenderInterface?>().ToConstant(Services.RenderInterface)
                 .Bind<IFontManagerImpl?>().ToConstant(Services.FontManagerImpl)
                 .Bind<ITextShaperImpl?>().ToConstant(Services.TextShaperImpl)
-                .Bind<IDispatcherImpl?>().ToConstant(Services.DispatcherImpl)
                 .Bind<ICursorFactory?>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IWindowingPlatform?>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
