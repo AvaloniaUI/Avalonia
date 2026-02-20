@@ -1,4 +1,4 @@
-﻿// ReSharper disable ForCanBeConvertedToForeach
+// ReSharper disable ForCanBeConvertedToForeach
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -290,9 +290,13 @@ namespace Avalonia.Media.TextFormatting
                                 }
 
                                 var shaperOptions = new TextShaperOptions(
-                                    properties.CachedGlyphTypeface, properties.FontFeatures,
-                                    properties.FontRenderingEmSize, shapeableRun.BidiLevel, properties.CultureInfo,
-                                    paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
+                                    properties.CachedGlyphTypeface,
+                                    properties.FontRenderingEmSize,
+                                    shapeableRun.BidiLevel,
+                                    properties.CultureInfo,
+                                    paragraphProperties.DefaultIncrementalTab,
+                                    paragraphProperties.LetterSpacing,
+                                    properties.FontFeatures);
 
                                 ShapeTogether(groupedRuns, text, shaperOptions, textShaper, shapedRuns);
 
@@ -658,7 +662,7 @@ namespace Avalonia.Media.TextFormatting
                                         clusterLength = shapedTextCharacters.GlyphRun.Metrics.FirstCluster + currentRun.Length - currentInfo.GlyphCluster;
                                     }
 
-                                    if (currentWidth + clusterWidth > paragraphWidth)
+                                    if (MathUtilities.GreaterThan(currentWidth + clusterWidth, paragraphWidth))
                                     {
                                         if (runLength == 0 && measuredLength == 0)
                                         {

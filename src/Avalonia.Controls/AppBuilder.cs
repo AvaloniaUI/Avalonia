@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
-using Avalonia.Media.Fonts;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia
 {
@@ -55,13 +54,6 @@ namespace Avalonia
         /// Gets or sets a method to call the initialize the windowing subsystem.
         /// </summary>
         public Action? RenderingSubsystemInitializer { get; private set; }
-
-        /// <summary>
-        /// Gets a method to override a lifetime factory.
-        /// </summary>
-        [Obsolete("This property has no effect", true)]
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        public Func<Type, IApplicationLifetime?>? LifetimeOverride { get; private set; }
 
         /// <summary>
         /// Gets the name of the currently selected rendering subsystem.
@@ -272,6 +264,17 @@ namespace Avalonia
         public AppBuilder With<T>(Func<T> options)
         {
             _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToFunc(options); };
+            return Self;
+        }
+
+        /// <summary>
+        /// Adds support for validation using <c>System.ComponentModel.DataAnnotations</c>.
+        /// </summary>
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
+        public AppBuilder WithDataAnnotationsValidation()
+        {
+            if (!BindingPlugins.DataValidators.Any(x => x is DataAnnotationsValidationPlugin))
+                BindingPlugins.DataValidators.Insert(0, new DataAnnotationsValidationPlugin());
             return Self;
         }
 

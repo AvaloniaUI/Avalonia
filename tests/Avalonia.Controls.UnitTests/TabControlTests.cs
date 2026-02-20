@@ -9,6 +9,8 @@ using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -259,51 +261,48 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void DataContexts_Should_Be_Correctly_Set()
         {
+            using var app = Start();
             var items = new object[]
             {
                 "Foo",
                 new Item("Bar"),
                 new TextBlock { Text = "Baz" },
                 new TabItem { Content = "Qux" },
-                new TabItem { Content = new TextBlock { Text = "Bob" } }
+                new TabItem { Content = new TextBlock { Text = "Bob" } },
+                new TabItem { DataContext = "Rob", Content = new TextBlock { Text = "Bob" } },
             };
 
             var target = new TabControl
             {
-                Template = TabControlTemplate(),
                 DataContext = "Base",
-                DataTemplates =
-                {
-                    new FuncDataTemplate<Item>((x, __) => new Button { Content = x })
-                },
                 ItemsSource = items,
             };
 
-            ApplyTemplate(target);
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
-            target.ContentPart!.UpdateChild();
-            var dataContext = ((TextBlock)target.ContentPart.Child!).DataContext;
+            var dataContext = ((TextBlock)target.ContentPart!.Child!).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
-            target.ContentPart.UpdateChild();
             dataContext = ((Button)target.ContentPart.Child).DataContext;
             Assert.Equal(items[1], dataContext);
 
             target.SelectedIndex = 2;
-            target.ContentPart.UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Base", dataContext);
 
             target.SelectedIndex = 3;
-            target.ContentPart.UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Qux", dataContext);
 
             target.SelectedIndex = 4;
-            target.ContentPart.UpdateChild();
             dataContext = target.ContentPart.DataContext;
             Assert.Equal("Base", dataContext);
+
+            target.SelectedIndex = 5;
+            dataContext = target.ContentPart.Child.DataContext;
+            Assert.Equal("Rob", dataContext);
         }
 
         /// <summary>
@@ -719,10 +718,10 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(Key.A, 1)]
-        [InlineData(Key.L, 2)]
-        [InlineData(Key.D, 0)]
-        public void Should_TabControl_Recognizes_AccessKey(Key accessKey, int selectedTabIndex)
+        [InlineData(Key.A, "a", 1)]
+        [InlineData(Key.L, "l", 2)]
+        [InlineData(Key.D, "d", 0)]
+        public void Should_TabControl_Recognizes_AccessKey(Key accessKey, string accessKeySymbol, int selectedTabIndex)
         {
             var ah = new AccessKeyHandler();
             var kd = new KeyboardDevice();
@@ -761,8 +760,8 @@ namespace Avalonia.Controls.UnitTests
                 ApplyTemplate(tabControl);
 
                 KeyDown(root, Key.LeftAlt);
-                KeyDown(root, accessKey, KeyModifiers.Alt);
-                KeyUp(root, accessKey, KeyModifiers.Alt);
+                KeyDown(root, accessKey, accessKeySymbol, KeyModifiers.Alt);
+                KeyUp(root, accessKey, accessKeySymbol, KeyModifiers.Alt);
                 KeyUp(root, Key.LeftAlt);
 
                 Assert.Equal(selectedTabIndex, tabControl.SelectedIndex);
@@ -789,22 +788,24 @@ namespace Avalonia.Controls.UnitTests
                 return topLevel;
             }
 
-            static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            static void KeyDown(IInputElement target, Key key, string? keySymbol = null, KeyModifiers modifiers = KeyModifiers.None)
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
                     RoutedEvent = InputElement.KeyDownEvent,
                     Key = key,
+                    KeySymbol = keySymbol,
                     KeyModifiers = modifiers,
                 });
             }
 
-            static void KeyUp(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            static void KeyUp(IInputElement target, Key key, string? keySymbol = null, KeyModifiers modifiers = KeyModifiers.None)
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
                     RoutedEvent = InputElement.KeyUpEvent,
                     Key = key,
+                    KeySymbol = keySymbol,
                     KeyModifiers = modifiers,
                 });
             }
@@ -841,6 +842,45 @@ namespace Avalonia.Controls.UnitTests
                     [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabItem.HeaderTemplateProperty),
                     RecognizesAccessKey = true,
                 }.RegisterInNameScope(scope));
+        }
+
+        private static ControlTheme CreateTabControlControlTheme()
+        {
+            return new ControlTheme(typeof(TabControl))
+            {
+                Setters =
+                {
+                    new Setter(TabControl.TemplateProperty, TabControlTemplate()),
+                },
+            };
+        }
+
+        private static ControlTheme CreateTabItemControlTheme()
+        {
+            return new ControlTheme(typeof(TabItem))
+            {
+                Setters =
+                {
+                    new Setter(TabItem.TemplateProperty, TabItemTemplate()),
+                },
+            };
+        }
+        
+        private static TestRoot CreateRoot(Control child)
+        {
+            return new TestRoot
+            {
+                Resources =
+                {
+                    { typeof(TabControl), CreateTabControlControlTheme() },
+                    { typeof(TabItem), CreateTabItemControlTheme() },
+                },
+                DataTemplates =
+                {
+                    new FuncDataTemplate<Item>((x, _) => new Button { Content = x.Value })
+                },
+                Child = child,
+            };
         }
 
         private class TestTopLevel : TopLevel
@@ -890,6 +930,19 @@ namespace Avalonia.Controls.UnitTests
             }
 
             target.ContentPart!.ApplyTemplate();
+        }
+
+        private IDisposable Start()
+        {
+            return UnitTestApplication.Start(
+                TestServices.MockThreadingInterface.With(
+                    fontManagerImpl: new HeadlessFontManagerStub(),
+                    keyboardDevice: () => new KeyboardDevice(),
+                    keyboardNavigation: () => new KeyboardNavigationHandler(),
+                    inputManager: new InputManager(),
+                    renderInterface: new HeadlessPlatformRenderInterface(),
+                    textShaperImpl: new HarfBuzzTextShaper(),
+                    assetLoader: new StandardAssetLoader()));
         }
 
         private class Item

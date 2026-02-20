@@ -47,6 +47,7 @@ namespace Avalonia.Automation.Peers
         Table,
         TitleBar,
         Separator,
+        Expander,
     }
 
     public enum AutomationLandmarkType
@@ -283,11 +284,28 @@ namespace Avalonia.Automation.Peers
         public string GetHelpText() => GetHelpTextCore() ?? string.Empty;
 
         /// <summary>
+        /// Gets text that provides a placeholder for the element that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityPlaceholderValue</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string GetPlaceholderText() => GetPlaceholderTextCore() ?? string.Empty;
+
+        /// <summary>
         /// Gets the control type for the element that is associated with the UI Automation peer.
         /// </summary>
         /// <remarks>
         /// Gets the type of the element.
-        /// 
+        ///
         /// <list type="table">
         ///   <item>
         ///     <term>Windows</term>
@@ -317,6 +335,41 @@ namespace Avalonia.Automation.Peers
         /// </list>
         /// </remarks>
         public int GetHeadingLevel() => GetHeadingLevelCore();
+
+
+        /// <summary>
+        /// Gets the item type that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_ItemTypePropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string? GetItemType() => GetItemTypeCore();
+
+        /// <summary>
+        /// Gets the item status that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_ItemStatusPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string? GetItemStatus() => GetItemStatusCore();
 
         /// <summary>
         /// Gets the <see cref="AutomationPeer"/> that is the parent of this <see cref="AutomationPeer"/>.
@@ -476,6 +529,12 @@ namespace Avalonia.Automation.Peers
         public bool ShowContextMenu() => ShowContextMenuCore();
 
         /// <summary>
+        /// Gets the current live setting that is associated with this this automation peer.
+        /// </summary>
+        /// <returns>The live setting to use for automation.</returns>
+        public AutomationLiveSetting GetLiveSetting() => GetLiveSettingCore();
+
+        /// <summary>
         /// Tries to get a provider of the specified type from the peer.
         /// </summary>
         /// <typeparam name="T">The provider type.</typeparam>
@@ -536,6 +595,7 @@ namespace Avalonia.Automation.Peers
                 AutomationControlType.SplitButton => "split button",
                 AutomationControlType.HeaderItem => "header item",
                 AutomationControlType.TitleBar => "title bar",
+                AutomationControlType.Expander => "group",
                 AutomationControlType.None => (GetLandmarkType()?.ToString() ?? controlType.ToString()).ToLowerInvariant(),
                 _ => controlType.ToString().ToLowerInvariant(),
             };
@@ -552,8 +612,11 @@ namespace Avalonia.Automation.Peers
         protected abstract AutomationPeer? GetLabeledByCore();
         protected abstract string? GetNameCore();
         protected virtual string? GetHelpTextCore() => null;
+        protected virtual string? GetPlaceholderTextCore() => null;
         protected virtual AutomationLandmarkType? GetLandmarkTypeCore() => null;
         protected virtual int GetHeadingLevelCore() => 0;
+        protected virtual string? GetItemTypeCore() => null;
+        protected virtual string? GetItemStatusCore() => null;
         protected abstract AutomationPeer? GetParentCore();
         protected abstract bool HasKeyboardFocusCore();
         protected abstract bool IsContentElementCore();
@@ -563,6 +626,7 @@ namespace Avalonia.Automation.Peers
         protected virtual bool IsOffscreenCore() => false;
         protected abstract void SetFocusCore();
         protected abstract bool ShowContextMenuCore();
+        protected virtual AutomationLiveSetting GetLiveSettingCore() => AutomationLiveSetting.Off;
 
         protected virtual AutomationControlType GetControlTypeOverrideCore()
         {

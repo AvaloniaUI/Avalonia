@@ -652,6 +652,7 @@ enum AvnAutomationControlType
     AutomationTable,
     AutomationTitleBar,
     AutomationSeparator,
+    AutomationExpander,
 }
 
 enum AvnLandmarkType
@@ -688,6 +689,13 @@ enum AvnPointerDeviceType
     Pen,
 }
 
+enum AvnLiveSetting
+{
+    LiveSettingOff,
+    LiveSettingPolite,
+    LiveSettingAssertive,
+}
+
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
 interface IAvaloniaNativeFactory : IUnknown
 {
@@ -716,6 +724,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreatePlatformRenderTimer(IAvnPlatformRenderTimer** ppv);
      HRESULT ImportMTLSharedEvent([intptr]void* idMtlSharedEvent, IAvnMTLSharedEvent** ppv);
      HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement** ppv);
+     HRESULT SetDockMenu(IAvnMenu* menu);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -1320,9 +1329,12 @@ interface IAvnAutomationPeer : IUnknown
      void ValueProvider_SetValue([const] char* value);
 
      IAvnString* GetHelpText();
+     IAvnString* GetPlaceholderText();
 
      AvnLandmarkType GetLandmarkType();
      int GetHeadingLevel();
+
+     AvnLiveSetting GetLiveSetting();
 }
 
 [uuid(b00af5da-78af-4b33-bfff-4ce13a6239a9)]

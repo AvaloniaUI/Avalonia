@@ -1013,11 +1013,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 var intType = context.Configuration.TypeSystem.GetType("System.Int32");
                 var types = context.GetAvaloniaTypes();
 
-                // We're calling the CompiledBindingPathBuilder(int apiVersion) with an apiVersion 
-                // of 1 to indicate that we don't want TemplatedParent compatibility hacks enabled.
-                codeGen
-                    .Ldc_I4(1)
-                    .Newobj(types.CompiledBindingPathBuilder.GetConstructor(new() { intType }));
+                codeGen.Newobj(types.CompiledBindingPathBuilder.GetConstructor());
 
                 foreach (var transform in _transformElements)
                 {

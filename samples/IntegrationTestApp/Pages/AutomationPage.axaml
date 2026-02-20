@@ -10,7 +10,7 @@
       TextBlockWithNameAndAutomationId
     </TextBlock>
     <TextBlock Name="TextBlockAsLabel">Label for TextBox</TextBlock>
-    <TextBox Name="LabeledByTextBox" AutomationProperties.LabeledBy="{Binding #TextBlockAsLabel}">
+    <TextBox Name="LabeledByTextBox" AutomationProperties.LabeledBy="{Binding #TextBlockAsLabel}" PlaceholderText="Placeholder for TextBox">
       Foo
     </TextBox>
     <TextBlock Name="TextBlockWithHeader1" AutomationProperties.ControlTypeOverride="Header" AutomationProperties.HeadingLevel="1">
@@ -22,5 +22,8 @@
     <TextBlock Name="TextBlockWithoutHeader">
       Header None
     </TextBlock>
+
+    <Button Click="OnButtonAddSomeText">Add some live region text</Button>
+    <TextBlock Name="textLiveRegion" AutomationProperties.LiveSetting="Assertive">This is an assertive live region.</TextBlock>
   </StackPanel>
 </UserControl>

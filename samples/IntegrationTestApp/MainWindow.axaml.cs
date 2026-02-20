@@ -37,7 +37,7 @@ namespace IntegrationTestApp
                 {
                     Header = (string?)page.Name,
                     ToolTip = $"Tip:{(string?)page.Name}",
-                    ToggleType = NativeMenuItemToggleType.Radio,
+                    ToggleType = MenuItemToggleType.Radio
                 };
 
                 menuItem.Click += (_, _) =>

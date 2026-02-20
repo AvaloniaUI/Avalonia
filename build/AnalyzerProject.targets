@@ -3,6 +3,7 @@
   <PropertyGroup>
     <EnforceExtendedAnalyzerRules Condition="'$(EnforceExtendedAnalyzerRules)' == ''">true</EnforceExtendedAnalyzerRules>
     <IsRoslynComponent Condition="'$(IsRoslynComponent)' == ''">true</IsRoslynComponent>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <NoWarn>$(NoWarn);RS2008</NoWarn>
   </PropertyGroup>
 

@@ -18,7 +18,7 @@ namespace Avalonia.Headless;
 /// All UI tests are supposed to be executed from one of the <see cref="Dispatch"/> methods to keep execution flow on the UI thread.
 /// Disposing unit test session stops internal dispatcher loop. 
 /// </summary>
-public sealed class HeadlessUnitTestSession : IDisposable
+public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 {
     private static readonly Dictionary<Assembly, HeadlessUnitTestSession> s_session = new();
 
@@ -184,6 +184,14 @@ public sealed class HeadlessUnitTestSession : IDisposable
         _cancellationTokenSource.Dispose();
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        await _cancellationTokenSource.CancelAsync().ConfigureAwait(false);
+        _queue.CompleteAdding();
+        await _dispatchTask.ConfigureAwait(false);
+        _cancellationTokenSource.Dispose();
+    }
+
     /// <summary>
     /// Creates instance of <see cref="HeadlessUnitTestSession"/>. 
     /// </summary>
@@ -228,7 +236,9 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 // If windowing subsystem wasn't initialized by user, force headless with default parameters.
                 if (appBuilder.WindowingSubsystemName != "Headless")
                 {
-                    appBuilder = appBuilder.UseHeadless(new AvaloniaHeadlessPlatformOptions());
+                    appBuilder = appBuilder
+                        .UseHeadless(new AvaloniaHeadlessPlatformOptions())
+                        .UseHarfBuzz();
                 }
 
                 // ReSharper disable once AccessToModifiedClosure

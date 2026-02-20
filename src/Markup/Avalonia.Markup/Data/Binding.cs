@@ -16,6 +16,4 @@ public class Binding : ReflectionBinding
     public Binding() { }
 
     public Binding(string path) : base(path) { }
-
-    public Binding(string path, BindingMode mode) : base(path, mode) { }
 }

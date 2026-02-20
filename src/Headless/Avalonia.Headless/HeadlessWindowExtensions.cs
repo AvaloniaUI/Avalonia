@@ -42,13 +42,6 @@ public static class HeadlessWindowExtensions
     }
 
     /// <summary>
-    /// Simulates a keyboard press on the headless window/toplevel.
-    /// </summary>
-    [Obsolete("Use the overload that takes a physical key and key symbol instead, or KeyPressQwerty alternatively.")]
-    public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
-        KeyPress(topLevel, key, modifiers, PhysicalKey.None, null);
-
-    /// <summary>
     /// Simulates keyboard press on the headless window/toplevel.
     /// </summary>
     public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey,
@@ -60,13 +53,6 @@ public static class HeadlessWindowExtensions
     /// </summary>
     public static void KeyPressQwerty(this TopLevel topLevel, PhysicalKey physicalKey, RawInputModifiers modifiers) =>
         RunJobsOnImpl(topLevel, w => w.KeyPress(physicalKey.ToQwertyKey(), modifiers, physicalKey, physicalKey.ToQwertyKeySymbol()));
-
-    /// <summary>
-    /// Simulates a keyboard release on the headless window/toplevel.
-    /// </summary>
-    [Obsolete("Use the overload that takes a physical key and key symbol instead, or KeyReleaseQwerty alternatively.")]
-    public static void KeyRelease(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
-        KeyRelease(topLevel, key, modifiers, PhysicalKey.None, null);
 
     /// <summary>
     /// Simulates keyboard release on the headless window/toplevel.
@@ -120,14 +106,6 @@ public static class HeadlessWindowExtensions
     public static void MouseWheel(this TopLevel topLevel, Point point, Vector delta,
         RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.MouseWheel(point, delta, modifiers));
-
-    /// <summary>
-    /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
-    /// </summary>
-    [Obsolete($"Use the overload accepting a {nameof(IDataTransfer)} instance instead.")]
-    public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataObject data,
-        DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
-        RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
 
     /// <summary>
     /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.

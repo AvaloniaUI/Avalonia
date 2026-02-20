@@ -121,12 +121,6 @@ namespace Avalonia.Controls
                 (s, h) => s.ResourcesChanged -= h
             );
 
-        private static readonly WeakEvent<IResourceHost2, ResourcesChangedToken>
-            ResourcesChanged2WeakEvent = WeakEvent.Register<IResourceHost2, ResourcesChangedToken>(
-                (s, h) => s.ResourcesChanged2 += h,
-                (s, h) => s.ResourcesChanged2 -= h
-            );
-
         private readonly IInputManager? _inputManager;
         private readonly IToolTipService? _tooltipService;
         private readonly IAccessKeyHandler? _accessKeyHandler;
@@ -144,7 +138,6 @@ namespace Avalonia.Controls
         private ILayoutManager? _layoutManager;
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
-        private TargetWeakEventSubscriber<TopLevel, ResourcesChangedToken>? _resourcesChangesSubscriber2;
         private IStorageProvider? _storageProvider;
         private Screens? _screens;
         private LayoutDiagnosticBridge? _layoutDiagnosticBridge;
@@ -270,25 +263,15 @@ namespace Avalonia.Controls
 
             var stylingParent = ((IStyleHost)this).StylingParent;
 
-            if (stylingParent is IResourceHost2 applicationResources2)
+            if (stylingParent is IResourceHost applicationResources2)
             {
-                _resourcesChangesSubscriber2 = new TargetWeakEventSubscriber<TopLevel, ResourcesChangedToken>(
+                _resourcesChangesSubscriber = new TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>(
                     this, static (target, _, _, token) =>
                     {
                         target.NotifyResourcesChanged(token);
                     });
 
-                ResourcesChanged2WeakEvent.Subscribe(applicationResources2, _resourcesChangesSubscriber2);
-            }
-            else if (stylingParent is IResourceHost applicationResources)
-            {
-                _resourcesChangesSubscriber = new TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>(
-                    this, static (target, _, _, _) =>
-                    {
-                        target.NotifyResourcesChanged(ResourcesChangedToken.Create());
-                    });
-
-                ResourcesChangedWeakEvent.Subscribe(applicationResources, _resourcesChangesSubscriber);
+                ResourcesChangedWeakEvent.Subscribe(applicationResources2, _resourcesChangesSubscriber);
             }
 
             impl.LostFocus += PlatformImpl_LostFocus;
@@ -307,6 +290,9 @@ namespace Avalonia.Controls
 
             _backGestureSubscription = _inputManager?.PreProcess.Subscribe(e =>
             {
+                if (e.Root != this)
+                    return;
+
                 bool backRequested = false;
 
                 if (e is RawKeyEventArgs rawKeyEventArgs && rawKeyEventArgs.Type == RawKeyEventType.KeyDown)

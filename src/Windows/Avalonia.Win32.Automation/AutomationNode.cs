@@ -39,6 +39,7 @@ namespace Avalonia.Win32.Automation
             { AutomationElementIdentifiers.HelpTextProperty, UiaPropertyId.HelpText },
             { AutomationElementIdentifiers.LandmarkTypeProperty, UiaPropertyId.LandmarkType },
             { AutomationElementIdentifiers.HeadingLevelProperty, UiaPropertyId.HeadingLevel },
+            { AutomationElementIdentifiers.ItemStatusProperty, UiaPropertyId.ItemStatus },
             { ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty, UiaPropertyId.ExpandCollapseExpandCollapseState },
             { RangeValuePatternIdentifiers.IsReadOnlyProperty, UiaPropertyId.RangeValueIsReadOnly},
             { RangeValuePatternIdentifiers.MaximumProperty, UiaPropertyId.RangeValueMaximum },
@@ -54,10 +55,8 @@ namespace Avalonia.Win32.Automation
             { SelectionPatternIdentifiers.IsSelectionRequiredProperty, UiaPropertyId.SelectionIsSelectionRequired },
             { SelectionPatternIdentifiers.SelectionProperty, UiaPropertyId.SelectionSelection },
             { SelectionItemPatternIdentifiers.IsSelectedProperty, UiaPropertyId.SelectionItemIsSelected },
-            {
-                SelectionItemPatternIdentifiers.SelectionContainerProperty,
-                UiaPropertyId.SelectionItemSelectionContainer
-            }
+            { SelectionItemPatternIdentifiers.SelectionContainerProperty, UiaPropertyId.SelectionItemSelectionContainer },
+            { TogglePatternIdentifiers.ToggleStateProperty, UiaPropertyId.ToggleToggleState },
         };
 
         private static ConditionalWeakTable<AutomationPeer, AutomationNode> s_nodes = new();
@@ -137,12 +136,15 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.IsEnabled => InvokeSync(() => Peer.IsEnabled()),
                 UiaPropertyId.IsKeyboardFocusable => InvokeSync(() => Peer.IsKeyboardFocusable()),
                 UiaPropertyId.IsOffscreen => InvokeSync(() => Peer.IsOffscreen()),
+                UiaPropertyId.ItemType => InvokeSync(() => Peer.GetItemType()),
+                UiaPropertyId.ItemStatus => InvokeSync(() => Peer.GetItemStatus()),
                 UiaPropertyId.LocalizedControlType => InvokeSync(() => Peer.GetLocalizedControlType()),
                 UiaPropertyId.Name => InvokeSync(() => Peer.GetName()),
                 UiaPropertyId.HelpText => InvokeSync(() => Peer.GetHelpText()),
                 UiaPropertyId.LandmarkType => InvokeSync(() => ToUiaLandmarkType(Peer.GetLandmarkType())),
                 UiaPropertyId.LocalizedLandmarkType => InvokeSync(() => ToUiaLocalizedLandmarkType(Peer.GetLandmarkType())),
                 UiaPropertyId.HeadingLevel => InvokeSync(() => ToUiaHeadingLevel(Peer.GetHeadingLevel())),
+                UiaPropertyId.LiveSetting => InvokeSync(() => ToUiaLiveSetting(Peer.GetLiveSetting())),
                 UiaPropertyId.ProcessId => s_pid,
                 UiaPropertyId.RuntimeId => _runtimeId,
                 _ => null,
@@ -275,6 +277,13 @@ namespace Avalonia.Win32.Automation
                 (int)UiaEventId.AutomationFocusChanged);
         }
 
+        protected void RaiseLiveRegionChanged()
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(
+                this,
+                (int)UiaEventId.LiveRegionChanged);
+        }
+
         private RootAutomationNode? GetRoot()
         {
             Dispatcher.UIThread.VerifyAccess();
@@ -295,6 +304,11 @@ namespace Avalonia.Win32.Automation
                     (int)id,
                     e.OldValue as IConvertible,
                     e.NewValue as IConvertible);
+            }
+
+            if (id == UiaPropertyId.Name && Peer.GetLiveSetting() != AutomationLiveSetting.Off)
+            {
+                RaiseLiveRegionChanged();
             }
         }
 
@@ -359,6 +373,7 @@ namespace Avalonia.Win32.Automation
                 AutomationControlType.Table => UiaControlTypeId.Table,
                 AutomationControlType.TitleBar => UiaControlTypeId.TitleBar,
                 AutomationControlType.Separator => UiaControlTypeId.Separator,
+                AutomationControlType.Expander => UiaControlTypeId.Group,
                 _ => UiaControlTypeId.Custom,
             };
         }
@@ -407,6 +422,8 @@ namespace Avalonia.Win32.Automation
                 _ => UiaHeadingLevel.None,
             };
         }
+
+        private static UiaLiveSetting ToUiaLiveSetting(AutomationLiveSetting liveSetting) => (UiaLiveSetting)liveSetting;
 
         private static int GetProcessId()
         {

@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="../../../packages/Avalonia/Avalonia.csproj" />
     <ProjectReference Include="../../Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
+    <ProjectReference Include="../../HarfBuzz/Avalonia.HarfBuzz/Avalonia.HarfBuzz.csproj" />
   </ItemGroup>
 
   <ItemGroup>
