@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);net481</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
@@ -14,11 +14,12 @@
   <Import Project="..\..\build\HarfBuzzSharp.props" />
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\SharedVersion.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
   <ItemGroup>
-    <Content Include="..\TestFiles\BuildTasks\PInvoke\bin\$(Configuration)\netstandard2.0\PInvoke.dll" Link="Assets\PInvoke.dll">
+    <Content Include="..\TestFiles\BuildTasks\PInvoke\bin\$(Configuration)\$(AvsCurrentTargetFramework)\PInvoke.dll" Link="Assets\PInvoke.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\TestFiles\BuildTasks\PInvoke\bin\$(Configuration)\netstandard2.0\PInvoke.dll.refs" Link="Assets\PInvoke.dll.refs">
+    <Content Include="..\TestFiles\BuildTasks\PInvoke\bin\$(Configuration)\$(AvsCurrentTargetFramework)\PInvoke.dll.refs" Link="Assets\PInvoke.dll.refs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -33,7 +34,7 @@
     <!-- Ensure PInvoke.csproj is build before Avalonia.Build.Tasks.UnitTest -->
     <ProjectReference Include="..\TestFiles\BuildTasks\PInvoke\PInvoke.csproj" 
                       SetConfiguration="Configuration=$(Configuration)"
-                      SetTargetFramework="TargetFramework=netstandard2.0"
+                      SetTargetFramework="TargetFramework=$(AvsCurrentTargetFramework)"
                       ReferenceOutputAssembly="false" 
                       PrivateAssets="all" />
   </ItemGroup>

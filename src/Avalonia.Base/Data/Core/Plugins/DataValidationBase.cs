@@ -11,7 +11,7 @@ namespace Avalonia.Data.Core.Plugins
     /// and convert any values received from the inner property accessor into
     /// <see cref="BindingNotification"/>s.
     /// </remarks>
-    public abstract class DataValidationBase : PropertyAccessorBase, IObserver<object?>
+    internal abstract class DataValidationBase : PropertyAccessorBase, IObserver<object?>
     {
         private readonly IPropertyAccessor _inner;
 

@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\Moq.props" />
@@ -8,10 +9,11 @@
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
   <Import Project="..\..\build\SharedVersion.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
   <ItemGroup>
-    <EmbeddedResource Include="..\Avalonia.RenderTests\*\*.ttf" />
-    <None Remove="**\*.ttf" />
-    <EmbeddedResource Include="**\*.ttf" />
+    <EmbeddedResource Include="..\Avalonia.RenderTests\Assets\**\*.ttf" LinkBase="Assets" />
+    <None Remove="Fonts\**\*.ttf" />
+    <EmbeddedResource Include="Fonts\**\*.ttf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
@@ -19,5 +21,10 @@
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="..\Avalonia.RenderTests\Assets\Inter-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

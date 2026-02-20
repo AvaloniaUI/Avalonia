@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Linq;
 using Avalonia.Controls;
@@ -57,7 +55,7 @@ namespace Avalonia.Native
                 .OrderBy(x => x.Scaling)
                 .First(m => m.Bounds.Contains(Position));
 
-            Resize(new Size(monitor!.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), WindowResizeReason.Layout);
+            Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), WindowResizeReason.Layout);
         }
 
         public void Activate()
@@ -114,12 +112,6 @@ namespace Avalonia.Native
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
             Native?.SetMinMaxSize(minSize.ToAvnSize(), maxSize.ToAvnSize());
-        }
-
-        internal void BeginDraggingSession(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard clipboard,
-            IAvnDndResultCallback callback, IntPtr sourceHandle)
-        {
-            Native?.BeginDragAndDropOperation(effects, point, clipboard, callback, sourceHandle);
         }
 
         protected class WindowBaseEvents : TopLevelEvents, IAvnWindowBaseEvents

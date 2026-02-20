@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -109,10 +109,34 @@ namespace Avalonia.Controls
                 defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
+        /// Defines the <see cref="PlaceholderText"/> property.
+        /// </summary>
+        public static readonly StyledProperty<string?> PlaceholderTextProperty =
+            AvaloniaProperty.Register<NumericUpDown, string?>(nameof(PlaceholderText));
+
+        /// <summary>
         /// Defines the <see cref="Watermark"/> property.
         /// </summary>
-        public static readonly StyledProperty<string?> WatermarkProperty =
-            AvaloniaProperty.Register<NumericUpDown, string?>(nameof(Watermark));
+        [Obsolete("Use PlaceholderTextProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1013",
+            Justification = "We keep WatermarkForegroundProperty for backward compatibility.")]
+        public static readonly StyledProperty<Media.IBrush?> PlaceholderForegroundProperty =
+            TextBox.PlaceholderForegroundProperty.AddOwner<NumericUpDown>();
+
+        /// <summary>
+        /// Defines the <see cref="WatermarkForeground"/> property.
+        /// </summary>
+        [Obsolete("Use PlaceholderForegroundProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<Media.IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
@@ -253,7 +277,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the parsing style (AllowLeadingWhite, Float, AllowHexSpecifier, ...). By default, Any.
-        /// Note that Hex style does not work with decimal. 
+        /// Note that Hex style does not work with decimal.
         /// For hexadecimal display, use <see cref="TextConverter"/>.
         /// </summary>
         public NumberStyles ParsingNumberStyle
@@ -273,7 +297,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the custom bidirectional Text-Value converter.
-        /// Non-null converter overrides <see cref="ParsingNumberStyle"/>, providing finer control over 
+        /// Non-null converter overrides <see cref="ParsingNumberStyle"/>, providing finer control over
         /// string representation of the underlying value.
         /// </summary>
         public IValueConverter? TextConverter
@@ -292,12 +316,45 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the object to use as a watermark if the <see cref="Value"/> is null.
+        /// Gets or sets the object to use as a placeholder if the <see cref="Value"/> is null.
         /// </summary>
+        public string? PlaceholderText
+        {
+            get => GetValue(PlaceholderTextProperty);
+            set => SetValue(PlaceholderTextProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the object to use as a placeholder if the <see cref="Value"/> is null.
+        /// </summary>
+        [Obsolete("Use PlaceholderText instead.", false)]
         public string? Watermark
         {
-            get => GetValue(WatermarkProperty);
-            set => SetValue(WatermarkProperty, value);
+            get => PlaceholderText;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => PlaceholderText = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        public Media.IBrush? PlaceholderForeground
+        {
+            get => GetValue(PlaceholderForegroundProperty);
+            set => SetValue(PlaceholderForegroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        [Obsolete("Use PlaceholderForeground instead.", false)]
+        public Media.IBrush? WatermarkForeground
+        {
+            get => PlaceholderForeground;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => PlaceholderForeground = value;
         }
 
         /// <summary>
@@ -442,24 +499,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called to update the validation state for properties for which data validation is
-        /// enabled.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="state">The current data binding state.</param>
-        /// <param name="error">The current data binding error, if any.</param>
-        protected override void UpdateDataValidation(
-            AvaloniaProperty property,
-            BindingValueType state,
-            Exception? error)
-        {
-            if (property == TextProperty || property == ValueProperty)
-            {
-                DataValidationErrors.SetError(this, error);
-            }
-        }
-
-        /// <summary>
         /// Called when the <see cref="NumberFormat"/> property value changed.
         /// </summary>
         /// <param name="oldValue">The old value.</param>
@@ -468,7 +507,7 @@ namespace Avalonia.Controls
         {
             if (IsInitialized)
             {
-                SyncTextAndValueProperties(false, null);
+                SyncTextAndValueProperties(false, null, true);
             }
         }
 
@@ -718,8 +757,8 @@ namespace Avalonia.Controls
             }
             else
             {
-                // if Minimum is set we set value to Minimum on Increment. 
-                // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here. 
+                // if Minimum is set we set value to Minimum on Increment.
+                // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here.
                 result = IsSet(MinimumProperty) ? Minimum : 0;
             }
 
@@ -739,8 +778,8 @@ namespace Avalonia.Controls
             }
             else
             {
-                // if Maximum is set we set value to Maximum on decrement. 
-                // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here. 
+                // if Maximum is set we set value to Maximum on decrement.
+                // otherwise we set value to 0. It ill be clamped to be between Minimum and Maximum later, so we don't need to do it here.
                 result = IsSet(MaximumProperty) ? Maximum : 0;
             }
 

@@ -18,6 +18,9 @@ namespace Avalonia.Input
     [PrivateApi]
     public class MouseDevice : IMouseDevice, IDisposable
     {
+        private static MouseDevice? _primary;
+        internal static MouseDevice Primary => _primary ??= new MouseDevice();
+
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
@@ -29,6 +32,18 @@ namespace Avalonia.Input
         public MouseDevice(Pointer? pointer = null)
         {
             _pointer = pointer ?? new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+        }
+
+        internal Pointer Pointer => _pointer;
+
+        internal static TMouseDevice GetOrCreatePrimary<TMouseDevice>() where TMouseDevice : MouseDevice, new()
+        {
+            if (_primary is TMouseDevice device)
+                return device;
+
+            device = new TMouseDevice();
+            _primary = device;
+            return device;
         }
 
         public void ProcessRawEvent(RawInputEventArgs e)
@@ -131,7 +146,7 @@ namespace Avalonia.Input
 
             if (source != null)
             {
-                _pointer.Capture(source);
+                _pointer.Capture(source, CaptureSource.Implicit);
 
                 var settings = ((IInputRoot?)(source as Interactive)?.GetVisualRoot())?.PlatformSettings;
                 if (settings is not null)
@@ -206,7 +221,7 @@ namespace Avalonia.Input
                 }
                 finally
                 {
-                    _pointer.Capture(null);
+                    _pointer.Capture(null, CaptureSource.Implicit);
                     _pointer.CaptureGestureRecognizer(null);
                     _pointer.IsGestureRecognitionSkipped = false;
                     _lastMouseDownButton = default;
@@ -300,6 +315,8 @@ namespace Avalonia.Input
 
         public void Dispose()
         {
+            System.Diagnostics.Debug.Assert(this != _primary, "Disposing primary mouse device.");
+
             _disposed = true;
             _pointer?.Dispose();
         }

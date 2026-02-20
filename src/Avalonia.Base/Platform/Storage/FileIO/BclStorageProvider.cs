@@ -15,6 +15,7 @@ internal abstract class BclStorageProvider : IStorageProvider
 
     public abstract bool CanSave { get; }
     public abstract Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options);
+    public abstract Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options);
 
     public abstract bool CanPickFolder { get; }
     public abstract Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options);

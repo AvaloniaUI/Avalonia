@@ -11,6 +11,7 @@
     IAvnAutomationPeer* _peer;
     AvnAutomationNode* _node;
     NSMutableArray* _children;
+    NSArray<NSString*>* _attributeNames;
 }
 
 + (NSAccessibilityElement *)acquire:(IAvnAutomationPeer *)peer
@@ -95,8 +96,8 @@
         case AutomationEdit: return NSAccessibilityTextFieldRole;
         case AutomationHyperlink: return NSAccessibilityLinkRole;
         case AutomationImage: return NSAccessibilityImageRole;
-        case AutomationListItem: return NSAccessibilityRowRole;
-        case AutomationList: return NSAccessibilityTableRole;
+        case AutomationListItem: return NSAccessibilityGroupRole;
+        case AutomationList: return NSAccessibilityListRole;
         case AutomationMenu: return NSAccessibilityMenuBarRole;
         case AutomationMenuBar: return NSAccessibilityMenuBarRole;
         case AutomationMenuItem: return NSAccessibilityMenuItemRole;
@@ -105,7 +106,7 @@
         case AutomationScrollBar: return NSAccessibilityScrollBarRole;
         case AutomationSlider: return NSAccessibilitySliderRole;
         case AutomationSpinner: return NSAccessibilityIncrementorRole;
-        case AutomationStatusBar: return NSAccessibilityTableRole;
+        case AutomationStatusBar: return NSAccessibilityGroupRole;
         case AutomationTab: return NSAccessibilityTabGroupRole;
         case AutomationTabItem: return NSAccessibilityRadioButtonRole;
         case AutomationText: return NSAccessibilityStaticTextRole;
@@ -122,15 +123,80 @@
         case AutomationSplitButton: return NSAccessibilityPopUpButtonRole;
         case AutomationWindow: return NSAccessibilityWindowRole;
         case AutomationPane: return NSAccessibilityGroupRole;
-        case AutomationHeader: return NSAccessibilityGroupRole;
+        case AutomationHeader: return @"AXHeading";
         case AutomationHeaderItem:  return NSAccessibilityButtonRole;
         case AutomationTable: return NSAccessibilityTableRole;
         case AutomationTitleBar: return NSAccessibilityGroupRole;
+        case AutomationExpander: return NSAccessibilityDisclosureTriangleRole;
         // Treat unknown roles as generic group container items. Returning
         // NSAccessibilityUnknownRole is also possible but makes the screen
        // reader focus on the item instead of passing focus to child items.
         default: return NSAccessibilityGroupRole;
     }
+}
+
+- (NSAccessibilitySubrole)accessibilitySubrole
+{
+    auto controlType = _peer->GetAutomationControlType();
+    switch (controlType) {
+        case AutomationList: return @"AXContentList";
+    }
+
+    auto landmarkType = _peer->GetLandmarkType();
+    switch (landmarkType) {
+        case LandmarkBanner: return @"AXLandmarkBanner";
+        case LandmarkComplementary: return @"AXLandmarkComplementary";
+        case LandmarkContentInfo: return @"AXLandmarkContentInfo";
+        case LandmarkRegion: return @"AXLandmarkRegion";
+        case LandmarkForm: return @"AXLandmarkForm";
+        case LandmarkMain: return @"AXLandmarkMain";
+        case LandmarkNavigation: return @"AXLandmarkNavigation";
+        case LandmarkSearch: return @"AXLandmarkSearch";
+    }
+
+    return NSAccessibilityUnknownSubrole;
+}
+
+- (NSString *)accessibilityRoleDescription
+{
+    auto landmarkType = _peer->GetLandmarkType();
+    switch (landmarkType) {
+        case LandmarkBanner: return @"banner";
+        case LandmarkComplementary: return @"complementary";
+        case LandmarkContentInfo: return @"content";
+        case LandmarkRegion: return @"region";
+        case LandmarkForm: return @"form";
+        case LandmarkMain: return @"main";
+        case LandmarkNavigation: return @"navigation";
+        case LandmarkSearch: return @"search";
+    }
+    return NSAccessibilityRoleDescription([self accessibilityRole], [self accessibilitySubrole]);
+}
+
+// Note: Apple has deprecated this API, but it's still used to set attributes not supported by NSAccessibility
+- (NSArray<NSString *> *)accessibilityAttributeNames
+{
+    if (_attributeNames == nil)
+    {
+        _attributeNames = @[
+            @"AXARIALive", // kAXARIALiveAttribute
+        ];
+    }
+    return _attributeNames;
+}
+
+- (id)accessibilityAttributeValue:(NSAccessibilityAttributeName)attribute
+{
+    if ([attribute isEqualToString:@"AXARIALive" /* kAXARIALiveAttribute */])
+    {
+        switch (_peer->GetLiveSetting())
+        {
+            case LiveSettingPolite: return @"polite";
+            case LiveSettingAssertive: return @"assertive";
+        }
+        return nil;
+    }
+    return nil;
 }
 
 - (NSString *)accessibilityIdentifier
@@ -152,6 +218,11 @@
 - (NSString *)accessibilityHelp
 {
     return GetNSStringAndRelease(_peer->GetHelpText()); 
+}
+
+- (NSString *)accessibilityPlaceholderValue
+{
+    return GetNSStringAndRelease(_peer->GetPlaceholderText());
 }
 
 - (id)accessibilityValue
@@ -176,8 +247,28 @@
     {
         return GetNSStringAndRelease(_peer->GetName());
     }
+    else if (_peer->GetAutomationControlType() == AutomationHeader)
+    {
+        return [NSNumber numberWithInt:_peer->GetHeadingLevel()];
+    }
 
     return [super accessibilityValue];
+}
+
+- (void)setAccessibilityValue:(id)newValue
+{
+    if (_peer->IsValueProvider())
+    {
+        if (newValue == nil)
+            _peer->ValueProvider_SetValue(nil);
+        else if ([newValue isKindOfClass:[NSString class]])
+            _peer->ValueProvider_SetValue([(NSString*)newValue UTF8String]);
+    }
+    else if (_peer->IsRangeValueProvider())
+    {
+        if ([newValue isKindOfClass:[NSNumber class]])
+            _peer->RangeValueProvider_SetValue([(NSNumber*)newValue doubleValue]);
+    }
 }
 
 - (id)accessibilityMinValue
@@ -368,8 +459,15 @@
         @{ NSAccessibilityUIElementsKey: [changed allObjects]});
 }
 
-- (void)raisePropertyChanged
+- (void)raisePropertyChanged:(AvnAutomationProperty)property
 {
+    if (property == AutomationPeer_Name && _peer->GetLiveSetting() != LiveSettingOff)
+        [self raiseLiveRegionChanged];
+}
+
+- (void)raiseLiveRegionChanged
+{
+    NSAccessibilityPostNotification(self, @"AXLiveRegionChanged" /* kAXLiveRegionChangedNotification */);
 }
 
 - (void)setAccessibilityFocused:(BOOL)accessibilityFocused

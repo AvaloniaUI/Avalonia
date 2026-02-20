@@ -196,14 +196,26 @@ namespace Avalonia.Platform
         void PopRenderOptions();
 
         /// <summary>
+        /// Pushes text options for the drawing context.
+        /// </summary>
+        /// <param name="textOptions">The text options.</param>
+        void PushTextOptions(TextOptions textOptions);
+
+        /// <summary>
+        /// Pops the latest text options.
+        /// </summary>
+        void PopTextOptions();
+
+        /// <summary>
         /// Attempts to get an optional feature from the drawing context implementation.
         /// </summary>
         object? GetFeature(Type t);
     }
 
-    public interface IDrawingContextImplWithEffects
+    [PrivateApi]
+    public interface IDrawingContextImplWithEffects : IDrawingContextImpl
     {
-        void PushEffect(IEffect effect);
+        void PushEffect(Rect? clipRect, IEffect effect);
         void PopEffect();
     }
 

@@ -18,7 +18,7 @@ namespace Avalonia.Platform
         private readonly LightweightSubject<DragDropEffects> _result = new();
 
         private DragDropEffects _allowedEffects;
-        private IDataObject? _draggedData;
+        private IDataTransfer? _draggedData;
         private TopLevel? _lastRoot;
         private Point _lastPosition;
         private StandardCursorType? _lastCursorType;
@@ -30,13 +30,16 @@ namespace Avalonia.Platform
             _dragDrop = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
         }
 
-        public async Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects)
+        public async Task<DragDropEffects> DoDragDropAsync(
+            PointerEventArgs triggerEvent,
+            IDataTransfer dataTransfer,
+            DragDropEffects allowedEffects)
         {
             Dispatcher.UIThread.VerifyAccess();
             triggerEvent.Pointer.Capture(null);
             if (_draggedData == null)
             {
-                _draggedData = data;
+                _draggedData = dataTransfer;
                 _lastRoot = null;
                 _lastPosition = default;
                 _allowedEffects = allowedEffects;

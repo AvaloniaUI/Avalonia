@@ -1,17 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;$(AvsCurrentTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>enable</Nullable>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
       <DependentUpon>%(Filename)</DependentUpon>
     </Compile>
-    <AvaloniaResource Include="**\*.xaml">
+    <AvaloniaXaml Include="**\*.xaml">
       <SubType>Designer</SubType>
-    </AvaloniaResource>
+    </AvaloniaXaml>
     <AvaloniaResource Include="Assets\*" />
     <AvaloniaResource Include="Assets\Fonts\*" />
   </ItemGroup>

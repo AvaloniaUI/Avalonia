@@ -44,6 +44,7 @@ namespace Avalonia.X11
         private bool _triggeredExpose;
         private IInputRoot? _inputRoot;
         private readonly MouseDevice _mouse;
+        private readonly PenDevice _pen;
         private readonly TouchDevice _touch;
         private readonly IKeyboardDevice _keyboard;
         private readonly ITopLevelNativeMenuExporter? _nativeMenuExporter;
@@ -96,7 +97,8 @@ namespace Avalonia.X11
             _popup = popupParent != null;
             _overrideRedirect = _popup || overrideRedirect;
             _x11 = platform.Info;
-            _mouse = new MouseDevice();
+            _mouse = Avalonia.Input.MouseDevice.Primary;
+            _pen = new PenDevice();
             _touch = new TouchDevice();
             _keyboard = platform.KeyboardDevice;
 
@@ -1072,7 +1074,7 @@ namespace Avalonia.X11
                 _platform.XI2?.OnWindowDestroyed(_handle);
                 var handle = _handle;
                 _handle = IntPtr.Zero;
-                _mouse.Dispose();
+                _pen.Dispose();
                 _touch.Dispose();
                 if (!fromDestroyNotification) 
                     XDestroyWindow(_x11.Display, handle);
@@ -1239,6 +1241,7 @@ namespace Avalonia.X11
         }
 
         public IMouseDevice MouseDevice => _mouse;
+        public IPenDevice PenDevice => _pen;
         public TouchDevice TouchDevice => _touch;
 
         public IPopupImpl? CreatePopup() 
@@ -1552,80 +1555,6 @@ namespace Avalonia.X11
             XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
                 32, PropertyMode.Replace, new[] { atom }, 1);
 
-        }
-
-        /// <inheritdoc/>
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> outputZOrder)
-        {
-            // a mapping of parent windows to their children, sorted by z-order (bottom to top)
-            var windowsChildren = new Dictionary<IntPtr, List<IntPtr>>();
-
-            var indexInWindowsSpan = new Dictionary<IntPtr, int>();
-            for (var i = 0; i < windows.Length; i++)
-                if (windows[i].PlatformImpl is { Handle: { } handle })
-                    indexInWindowsSpan[handle.Handle] = i;
-
-            foreach (var window in windows)
-            {
-                if (window.PlatformImpl is not X11Window x11Window)
-                    continue;
-
-                var node = x11Window.Handle.Handle;
-                while (node != IntPtr.Zero)
-                {
-                    if (windowsChildren.ContainsKey(node))
-                    {
-                        break;
-                    }
-
-                    if (XQueryTree(_x11.Display, node, out _, out var parent,
-                            out var childrenPtr, out var childrenCount) == 0)
-                    {
-                        break;
-                    }
-
-                    if (childrenPtr != IntPtr.Zero)
-                    {
-                        var children = (IntPtr*)childrenPtr;
-                        windowsChildren[node] = new List<IntPtr>(childrenCount);
-                        for (var i = 0; i < childrenCount; i++)
-                        {
-                            windowsChildren[node].Add(children[i]);
-                        }
-                        XFree(childrenPtr);
-                    }
-
-                    node = parent;
-                }
-            }
-
-            var stack = new Stack<IntPtr>();
-            var zOrder = 0;
-            stack.Push(_x11.RootWindow);
-
-            while (stack.Count > 0)
-            {
-                var currentWindow = stack.Pop();
-
-                if (!windowsChildren.TryGetValue(currentWindow, out var children))
-                {
-                    continue;
-                }
-
-                if (indexInWindowsSpan.TryGetValue(currentWindow, out var index))
-                {
-                    outputZOrder[index] = zOrder;
-                }
-
-                zOrder++;
-
-                // Children are returned bottom to top, so we need to push them in reverse order
-                // In order to traverse bottom children first
-                for (int i = children.Count - 1; i >= 0; i--)
-                {
-                    stack.Push(children[i]);
-                }
-            }
         }
 
         public void TakeFocus()

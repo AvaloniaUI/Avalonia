@@ -59,6 +59,15 @@
       <Setter Property="FontSize" Value="12" />
     </Style>
   </Application.Styles>
+  <NativeDock.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="New Window" Click="OnDockNewWindowClicked"/>
+      <NativeMenuItemSeparator/>
+      <NativeMenuItem Header="Show Main Window" Click="OnDockShowMainWindowClicked"/>
+      <NativeMenuItemSeparator/>
+      <NativeMenuItem Header="Add Dock Menu Item" Click="OnDockAddItemClicked"/>
+    </NativeMenu>
+  </NativeDock.Menu>
   <TrayIcon.Icons>
     <TrayIcons>
       <TrayIcon Icon="/Assets/test_icon.ico" MacOSProperties.IsTemplateIcon="true" ToolTipText="Avalonia Tray Icon ToolTip">

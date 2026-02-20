@@ -65,7 +65,7 @@ public partial class XYFocus
 
     private static bool IsValidCandidate(InputElement candidate, KeyDeviceType? inputKeyDeviceType)
     {
-        return candidate.Focusable && candidate.IsEnabled && candidate.IsVisible
+        return candidate.Focusable && candidate.IsEffectivelyEnabled && candidate.IsEffectivelyVisible
                // Only allow candidate focus, if original key device type could focus it.
                && XYFocusHelpers.IsAllowedXYNavigationMode(candidate, inputKeyDeviceType);
     }
@@ -78,7 +78,7 @@ public partial class XYFocus
             return false;
         }
 
-        var closestScroller = candidate.FindAncestorOfType<IInternalScroller>(true);
+        var closestScroller = candidate.FindAncestorOfType<IScrollable>(true);
         return ReferenceEquals(closestScroller, activeScroller);
     }
 
@@ -93,7 +93,7 @@ public partial class XYFocus
         var parent = activeScroller.Parent;
         while (parent != null)
         {
-            if (parent is IInternalScroller and Visual visual
+            if (parent is IScrollable and Visual visual
                 && visual.IsVisualAncestorOf(candidate))
             {
                 return true;

@@ -16,10 +16,18 @@ internal static class BidiTrie
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => new(Data, 0x00100000, 0x00000000);
-    } 
+    }
     
-    private static ReadOnlySpan<uint> Data => new uint[]
-    {
+    // For Debug builds, we store the data in a separate uint[] field to avoid RuntimeFieldInfoStub allocations.
+    // See also: https://github.com/AvaloniaUI/Avalonia/pull/20175
+
+#if DEBUG
+    public static ReadOnlySpan<uint> Data => s_data;
+    private static uint[] s_data =
+#else
+    public static ReadOnlySpan<uint> Data =>
+#endif
+    [
         0x0000038D, 0x00000395, 0x0000039D, 0x000003A5, 0x000003BD, 0x000003C5, 0x000003CD, 0x000003D5, 0x000003AD, 0x000003B5, 0x000003AD, 0x000003B5, 
         0x000003AD, 0x000003B5, 0x000003AD, 0x000003B5, 0x000003AD, 0x000003B5, 0x000003AD, 0x000003B5, 0x000003DB, 0x000003E3, 0x000003EB, 0x000003F3, 
         0x000003FB, 0x00000403, 0x000003FF, 0x00000407, 0x0000040F, 0x00000417, 0x00000412, 0x0000041A, 0x000003AD, 0x000003B5, 0x000003AD, 0x000003B5, 
@@ -1104,5 +1112,5 @@ internal static class BidiTrie
         0x00000000, 0x00040000, 0x00040000, 0x00040000, 0x00040000, 0x00040000, 0x00000000, 0x00040000, 0x00040000, 0x00040000, 0x00040000, 0x00040000, 
         0x00040000, 0x00040000, 0x00040000, 0x00040000, 0x00040000, 0x00040000, 0x00040000, 0x00040000, 0x00040000, 0x00040000, 0x00040000, 0x00040000, 
         0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000
-    };
+    ];
 }

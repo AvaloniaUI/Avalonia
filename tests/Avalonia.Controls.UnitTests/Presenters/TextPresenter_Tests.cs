@@ -72,7 +72,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 Assert.Equal(1, presenter.TextLayout.TextLines.Count);
                 Assert.Equal(1, presenter.TextLayout.TextLines[0].TextRuns.Count);
                 Assert.NotNull(presenter.TextLayout.TextLines[0].TextRuns[0].Properties);
-                Assert.Equal(fontStretch, presenter.TextLayout.TextLines[0].TextRuns[0].Properties.Typeface.Stretch);
+                Assert.Equal(fontStretch, presenter.TextLayout.TextLines[0].TextRuns[0].Properties!.Typeface.Stretch);
             }
         }
     }

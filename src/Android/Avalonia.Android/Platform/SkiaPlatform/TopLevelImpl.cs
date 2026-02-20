@@ -8,7 +8,6 @@ using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using Avalonia.Android.Platform.Input;
-using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls;
@@ -26,7 +25,7 @@ using ClipboardManager = Android.Content.ClipboardManager;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy
+    class TopLevelImpl : ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfoWithWaitPolicy
     {
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
@@ -35,7 +34,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly IStorageProvider? _storageProvider;
         private readonly AndroidSystemNavigationManagerImpl _systemNavigationManager;
         private readonly AndroidInsetsManager? _insetsManager;
-        private readonly ClipboardImpl _clipboard;
+        private readonly Clipboard _clipboard;
         private readonly AndroidLauncher? _launcher;
         private readonly AndroidScreens? _screens;
         private SurfaceViewImpl _view;
@@ -43,19 +42,21 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
-            if (avaloniaView.Context is null)
+            if (avaloniaView.Context is not { } context)
             {
                 throw new ArgumentException("AvaloniaView.Context must not be null");
             }
 
-            _view = new SurfaceViewImpl(avaloniaView.Context, this, placeOnTop);
+            _view = new SurfaceViewImpl(context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<AvaloniaView>(avaloniaView);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _pointerHelper = new AndroidMotionEventsHelper(this);
-            _clipboard = new ClipboardImpl(avaloniaView.Context.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>());
-            _screens = new AndroidScreens(avaloniaView.Context);
+            _clipboard = new Clipboard(new ClipboardImpl(
+                context.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>(),
+                context));
+            _screens = new AndroidScreens(context);
 
-            if (avaloniaView.Context is Activity mainActivity)
+            if (context is Activity mainActivity)
             {
                 _insetsManager = new AndroidInsetsManager(mainActivity, this);
                 _storageProvider = new AndroidStorageProvider(mainActivity);
@@ -65,7 +66,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             _transparencyLevel = WindowTransparencyLevel.None;
 
-            _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
+            _systemNavigationManager = new AndroidSystemNavigationManagerImpl(context as IActivityNavigationService);
 
             var gl = new EglGlPlatformSurface(this);
             var framebuffer = new FramebufferManager(this);
@@ -252,7 +253,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            if (_view.Context is not AvaloniaMainActivity activity)
+            if (_view.Context is not AvaloniaActivity activity)
                 return;
 
             foreach (var level in transparencyLevels)
@@ -364,7 +365,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             return false;
         }
 
-        private static void SetBlurBehind(AvaloniaMainActivity activity, int radius)
+        private static void SetBlurBehind(AvaloniaActivity activity, int radius)
         {
             if (radius == 0)
                 activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);

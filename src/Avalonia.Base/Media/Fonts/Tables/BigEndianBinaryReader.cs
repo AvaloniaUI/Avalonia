@@ -5,104 +5,92 @@
 using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Avalonia.Media.Fonts.Tables
 {
     /// <summary>
-    /// BinaryReader using big-endian encoding.
+    /// BinaryReader using big-endian encoding for ReadOnlySpan&lt;byte&gt;.
     /// </summary>
-    [DebuggerDisplay("Start: {StartOfStream}, Position: {BaseStream.Position}")]
-    internal class BigEndianBinaryReader : IDisposable
+    [DebuggerDisplay("Start: {StartOfSpan}, Position: {Position}")]
+    internal ref struct BigEndianBinaryReader
     {
-        /// <summary>
-        /// Buffer used for temporary storage before conversion into primitives
-        /// </summary>
-        private readonly byte[] _buffer = new byte[16];
-
-        private readonly bool _leaveOpen;
+        private readonly ReadOnlySpan<byte> _span;
+        private int _position;
+        private readonly int _startOfSpan;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BigEndianBinaryReader" /> class.
-        /// Constructs a new binary reader with the given bit converter, reading
-        /// to the given stream, using the given encoding.
         /// </summary>
-        /// <param name="stream">Stream to read data from</param>
-        /// <param name="leaveOpen">if set to <c>true</c> [leave open].</param>
-        public BigEndianBinaryReader(Stream stream, bool leaveOpen)
+        /// <param name="span">Span to read data from</param>
+        public BigEndianBinaryReader(ReadOnlySpan<byte> span)
         {
-            BaseStream = stream;
-            StartOfStream = stream.Position;
-            _leaveOpen = leaveOpen;
+            _span = span;
+            _position = 0;
+            _startOfSpan = 0;
         }
 
-        private long StartOfStream { get; }
+        private readonly int StartOfSpan => _startOfSpan;
 
         /// <summary>
-        /// Gets the underlying stream of the EndianBinaryReader.
+        /// Gets the current position in the span.
         /// </summary>
-        public Stream BaseStream { get; }
+        public readonly int Position => _position;
 
         /// <summary>
-        /// Seeks within the stream.
+        /// Seeks within the span.
         /// </summary>
         /// <param name="offset">Offset to seek to.</param>
-        /// <param name="origin">Origin of seek operation. If SeekOrigin.Begin, the offset will be set to the start of stream position.</param>
-        public void Seek(long offset, SeekOrigin origin)
+        public void Seek(int offset)
         {
-            // If SeekOrigin.Begin, the offset will be set to the start of stream position.
-            if (origin == SeekOrigin.Begin)
+            int absoluteOffset = _startOfSpan + offset;
+
+            if (offset < 0 || absoluteOffset > _span.Length)
             {
-                offset += StartOfStream;
+                throw new ArgumentOutOfRangeException(nameof(offset));
             }
 
-            BaseStream.Seek(offset, origin);
+            _position = absoluteOffset;
         }
 
-        /// <summary>
-        /// Reads a single byte from the stream.
-        /// </summary>
-        /// <returns>The byte read</returns>
         public byte ReadByte()
         {
-            ReadInternal(_buffer, 1);
-            return _buffer[0];
+            EnsureAvailable(1);
+
+            return _span[_position++];
         }
 
-        /// <summary>
-        /// Reads a single signed byte from the stream.
-        /// </summary>
-        /// <returns>The byte read</returns>
         public sbyte ReadSByte()
         {
-            ReadInternal(_buffer, 1);
-            return unchecked((sbyte)_buffer[0]);
+            EnsureAvailable(1);
+
+            return unchecked((sbyte)_span[_position++]);
         }
 
         public float ReadF2dot14()
         {
             const float f2Dot14ToFloat = 16384.0f;
+
             return ReadInt16() / f2Dot14ToFloat;
         }
 
-        /// <summary>
-        /// Reads a 16-bit signed integer from the stream, using the bit converter
-        /// for this reader. 2 bytes are read.
-        /// </summary>
-        /// <returns>The 16-bit integer read</returns>
         public short ReadInt16()
         {
-            ReadInternal(_buffer, 2);
+            EnsureAvailable(2);
 
-            return BinaryPrimitives.ReadInt16BigEndian(_buffer);
+            short value = BinaryPrimitives.ReadInt16BigEndian(_span.Slice(_position, 2));
+
+            _position += 2;
+
+            return value;
         }
 
         public TEnum ReadInt16<TEnum>()
             where TEnum : struct, Enum
         {
             TryConvert(ReadUInt16(), out TEnum value);
+
             return value;
         }
 
@@ -112,77 +100,75 @@ namespace Avalonia.Media.Fonts.Tables
 
         public ushort ReadUFWORD() => ReadUInt16();
 
-        /// <summary>
-        /// Reads a fixed 32-bit value from the stream.
-        /// 4 bytes are read.
-        /// </summary>
-        /// <returns>The 32-bit value read.</returns>
         public float ReadFixed()
         {
-            ReadInternal(_buffer, 4);
-            return BinaryPrimitives.ReadInt32BigEndian(_buffer) / 65536F;
+            EnsureAvailable(4);
+
+            float value = BinaryPrimitives.ReadInt32BigEndian(_span.Slice(_position, 4)) / 65536F;
+
+            _position += 4;
+
+            return value;
         }
 
-        /// <summary>
-        /// Reads a 32-bit signed integer from the stream, using the bit converter
-        /// for this reader. 4 bytes are read.
-        /// </summary>
-        /// <returns>The 32-bit integer read</returns>
+        public FontVersion ReadVersion16Dot16()
+        {
+            EnsureAvailable(4);
+
+            uint value = BinaryPrimitives.ReadUInt32BigEndian(_span.Slice(_position, 4));
+
+            _position += 4;
+
+            return new FontVersion(value);
+        }
+
         public int ReadInt32()
         {
-            ReadInternal(_buffer, 4);
+            EnsureAvailable(4);
 
-            return BinaryPrimitives.ReadInt32BigEndian(_buffer);
+            int value = BinaryPrimitives.ReadInt32BigEndian(_span.Slice(_position, 4));
+
+            _position += 4;
+
+            return value;
         }
 
-        /// <summary>
-        /// Reads a 64-bit signed integer from the stream.
-        /// 8 bytes are read.
-        /// </summary>
-        /// <returns>The 64-bit integer read.</returns>
         public long ReadInt64()
         {
-            ReadInternal(_buffer, 8);
+            EnsureAvailable(8);
 
-            return BinaryPrimitives.ReadInt64BigEndian(_buffer);
+            long value = BinaryPrimitives.ReadInt64BigEndian(_span.Slice(_position, 8));
+
+            _position += 8;
+
+            return value;
         }
 
-        /// <summary>
-        /// Reads a 16-bit unsigned integer from the stream.
-        /// 2 bytes are read.
-        /// </summary>
-        /// <returns>The 16-bit unsigned integer read.</returns>
         public ushort ReadUInt16()
         {
-            ReadInternal(_buffer, 2);
+            EnsureAvailable(2);
 
-            return BinaryPrimitives.ReadUInt16BigEndian(_buffer);
+            ushort value = BinaryPrimitives.ReadUInt16BigEndian(_span.Slice(_position, 2));
+
+            _position += 2;
+
+            return value;
         }
 
-        /// <summary>
-        /// Reads a 16-bit unsigned integer from the stream representing an offset position.
-        /// 2 bytes are read.
-        /// </summary>
-        /// <returns>The 16-bit unsigned integer read.</returns>
         public ushort ReadOffset16() => ReadUInt16();
 
         public TEnum ReadUInt16<TEnum>()
             where TEnum : struct, Enum
         {
             TryConvert(ReadUInt16(), out TEnum value);
+
             return value;
         }
 
-        /// <summary>
-        /// Reads array of 16-bit unsigned integers from the stream.
-        /// </summary>
-        /// <param name="length">The length.</param>
-        /// <returns>
-        /// The 16-bit unsigned integer read.
-        /// </returns>
         public ushort[] ReadUInt16Array(int length)
         {
             ushort[] data = new ushort[length];
+
             for (int i = 0; i < length; i++)
             {
                 data[i] = ReadUInt16();
@@ -191,10 +177,6 @@ namespace Avalonia.Media.Fonts.Tables
             return data;
         }
 
-        /// <summary>
-        /// Reads array of 16-bit unsigned integers from the stream to the buffer.
-        /// </summary>
-        /// <param name="buffer">The buffer to read to.</param>
         public void ReadUInt16Array(Span<ushort> buffer)
         {
             for (int i = 0; i < buffer.Length; i++)
@@ -203,16 +185,10 @@ namespace Avalonia.Media.Fonts.Tables
             }
         }
 
-        /// <summary>
-        /// Reads array or 32-bit unsigned integers from the stream.
-        /// </summary>
-        /// <param name="length">The length.</param>
-        /// <returns>
-        /// The 32-bit unsigned integer read.
-        /// </returns>
         public uint[] ReadUInt32Array(int length)
         {
             uint[] data = new uint[length];
+
             for (int i = 0; i < length; i++)
             {
                 data[i] = ReadUInt32();
@@ -225,21 +201,15 @@ namespace Avalonia.Media.Fonts.Tables
         {
             byte[] data = new byte[length];
 
-            ReadInternal(data, length);
+            ReadBytesInternal(data, length);
 
             return data;
         }
 
-        /// <summary>
-        /// Reads array of 16-bit unsigned integers from the stream.
-        /// </summary>
-        /// <param name="length">The length.</param>
-        /// <returns>
-        /// The 16-bit signed integer read.
-        /// </returns>
         public short[] ReadInt16Array(int length)
         {
             short[] data = new short[length];
+
             for (int i = 0; i < length; i++)
             {
                 data[i] = ReadInt16();
@@ -248,10 +218,6 @@ namespace Avalonia.Media.Fonts.Tables
             return data;
         }
 
-        /// <summary>
-        /// Reads an array of 16-bit signed integers from the stream to the buffer.
-        /// </summary>
-        /// <param name="buffer">The buffer to read to.</param>
         public void ReadInt16Array(Span<short> buffer)
         {
             for (int i = 0; i < buffer.Length; i++)
@@ -260,110 +226,66 @@ namespace Avalonia.Media.Fonts.Tables
             }
         }
 
-        /// <summary>
-        /// Reads a 8-bit unsigned integer from the stream, using the bit converter
-        /// for this reader. 1 bytes are read.
-        /// </summary>
-        /// <returns>The 8-bit unsigned integer read.</returns>
         public byte ReadUInt8()
         {
-            ReadInternal(_buffer, 1);
-            return _buffer[0];
+            EnsureAvailable(1);
+
+            return _span[_position++];
         }
 
-        /// <summary>
-        /// Reads a 24-bit unsigned integer from the stream, using the bit converter
-        /// for this reader. 3 bytes are read.
-        /// </summary>
-        /// <returns>The 24-bit unsigned integer read.</returns>
         public int ReadUInt24()
         {
             byte highByte = ReadByte();
+
             return (highByte << 16) | ReadUInt16();
         }
 
-        /// <summary>
-        /// Reads a 32-bit unsigned integer from the stream, using the bit converter
-        /// for this reader. 4 bytes are read.
-        /// </summary>
-        /// <returns>The 32-bit unsigned integer read.</returns>
         public uint ReadUInt32()
         {
-            ReadInternal(_buffer, 4);
+            EnsureAvailable(4);
 
-            return BinaryPrimitives.ReadUInt32BigEndian(_buffer);
+            uint value = BinaryPrimitives.ReadUInt32BigEndian(_span.Slice(_position, 4));
+
+            _position += 4;
+
+            return value;
         }
 
-        /// <summary>
-        /// Reads a 32-bit unsigned integer from the stream representing an offset position.
-        /// 4 bytes are read.
-        /// </summary>
-        /// <returns>The 32-bit unsigned integer read.</returns>
         public uint ReadOffset32() => ReadUInt32();
 
-        /// <summary>
-        /// Reads the specified number of bytes, returning them in a new byte array.
-        /// If not enough bytes are available before the end of the stream, this
-        /// method will return what is available.
-        /// </summary>
-        /// <param name="count">The number of bytes to read.</param>
-        /// <returns>The bytes read.</returns>
         public byte[] ReadBytes(int count)
         {
-            byte[] ret = new byte[count];
-            int index = 0;
-            while (index < count)
-            {
-                int read = BaseStream.Read(ret, index, count - index);
+            int available = Math.Min(count, _span.Length - _position);
 
-                // Stream has finished half way through. That's fine, return what we've got.
-                if (read == 0)
-                {
-                    byte[] copy = new byte[index];
-                    Buffer.BlockCopy(ret, 0, copy, 0, index);
-                    return copy;
-                }
+            byte[] ret = new byte[available];
 
-                index += read;
-            }
+            ReadBytesInternal(ret, available);
 
             return ret;
         }
 
-        /// <summary>
-        /// Reads a string of a specific length, which specifies the number of bytes
-        /// to read from the stream. These bytes are then converted into a string with
-        /// the encoding for this reader.
-        /// </summary>
-        /// <param name="bytesToRead">The bytes to read.</param>
-        /// <param name="encoding">The encoding.</param>
-        /// <returns>
-        /// The string read from the stream.
-        /// </returns>
         public string ReadString(int bytesToRead, Encoding encoding)
         {
-            byte[] data = new byte[bytesToRead];
-            ReadInternal(data, bytesToRead);
-            return encoding.GetString(data, 0, data.Length);
+            EnsureAvailable(bytesToRead);
+
+            string result = encoding.GetString(_span.Slice(_position, bytesToRead));
+
+            _position += bytesToRead;
+
+            return result;
         }
 
-        /// <summary>
-        /// Reads the uint32 string.
-        /// </summary>
-        /// <returns>a 4 character long UTF8 encoded string.</returns>
         public string ReadTag()
         {
-            ReadInternal(_buffer, 4);
+            EnsureAvailable(4);
 
-            return Encoding.UTF8.GetString(_buffer, 0, 4);
+            string tag = Encoding.UTF8.GetString(_span.Slice(_position, 4));
+
+            _position += 4;
+
+            return tag;
         }
 
-        /// <summary>
-        /// Reads an offset consuming the given nuber of bytes.
-        /// </summary>
-        /// <param name="size">The offset size in bytes.</param>
-        /// <returns>The 32-bit signed integer representing the offset.</returns>
-        /// <exception cref="InvalidOperationException">Size is not in range.</exception>
         public int ReadOffset(int size)
             => size switch
             {
@@ -374,33 +296,20 @@ namespace Avalonia.Media.Fonts.Tables
                 _ => throw new InvalidOperationException(),
             };
 
-        /// <summary>
-        /// Reads the given number of bytes from the stream, throwing an exception
-        /// if they can't all be read.
-        /// </summary>
-        /// <param name="data">Buffer to read into.</param>
-        /// <param name="size">Number of bytes to read.</param>
-        private void ReadInternal(byte[] data, int size)
+        private void ReadBytesInternal(byte[] data, int size)
         {
-            int index = 0;
+            EnsureAvailable(size);
 
-            while (index < size)
-            {
-                int read = BaseStream.Read(data, index, size - index);
-                if (read == 0)
-                {
-                    throw new EndOfStreamException($"End of stream reached with {size - index} byte{(size - index == 1 ? "s" : string.Empty)} left to read.");
-                }
+            _span.Slice(_position, size).CopyTo(data);
 
-                index += read;
-            }
+            _position += size;
         }
 
-        public void Dispose()
+        private readonly void EnsureAvailable(int size)
         {
-            if (!_leaveOpen)
+            if (_position + size > _span.Length)
             {
-                BaseStream?.Dispose();
+                throw new InvalidOperationException($"End of span reached with {size - (_span.Length - _position)} byte{(size - (_span.Length - _position) == 1 ? "s" : string.Empty)} left to read.");
             }
         }
 

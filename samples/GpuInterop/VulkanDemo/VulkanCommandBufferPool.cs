@@ -28,7 +28,7 @@ namespace Avalonia.Vulkan
                 QueueFamilyIndex = queueFamilyIndex
             };
 
-            _api.CreateCommandPool(_device, commandPoolCreateInfo, null, out _commandPool)
+            _api.CreateCommandPool(_device, in commandPoolCreateInfo, null, out _commandPool)
                 .ThrowOnError();
         }
 
@@ -53,7 +53,7 @@ namespace Avalonia.Vulkan
 
             lock (_lock)
             {
-                _api.AllocateCommandBuffers(_device, commandBufferAllocateInfo, out var commandBuffer);
+                _api.AllocateCommandBuffers(_device, in commandBufferAllocateInfo, out var commandBuffer);
 
                 return commandBuffer;
             }
@@ -111,15 +111,16 @@ namespace Avalonia.Vulkan
                     Flags = FenceCreateFlags.SignaledBit
                 };
 
-                api.CreateFence(device, fenceCreateInfo, null, out _fence);
+                api.CreateFence(device, in fenceCreateInfo, null, out _fence);
             }
 
             public unsafe void Dispose()
             {
-                _api.WaitForFences(_device, 1, _fence, true, ulong.MaxValue);
+                _api.WaitForFences(_device, 1, in _fence, true, ulong.MaxValue);
                 lock (_commandBufferPool._lock)
                 {
-                    _api.FreeCommandBuffers(_device, _commandBufferPool._commandPool, 1, InternalHandle);
+                    var handle = InternalHandle;
+                    _api.FreeCommandBuffers(_device, _commandBufferPool._commandPool, 1, in handle);
                 }
                 _api.DestroyFence(_device, _fence, null);
             }
@@ -136,7 +137,7 @@ namespace Avalonia.Vulkan
                         Flags = CommandBufferUsageFlags.OneTimeSubmitBit
                     };
 
-                    _api.BeginCommandBuffer(InternalHandle, beginInfo);
+                    _api.BeginCommandBuffer(InternalHandle, in beginInfo);
                 }
             }
 
@@ -167,7 +168,8 @@ namespace Avalonia.Vulkan
                 ReadOnlySpan<PipelineStageFlags> waitDstStageMask = default,
                 ReadOnlySpan<Semaphore> signalSemaphores = default,
                 Fence? fence = null,
-                KeyedMutexSubmitInfo? keyedMutex = null)
+                KeyedMutexSubmitInfo? keyedMutex = null,
+                IntPtr pNext = default)
             {
                 EndRecording();
 
@@ -189,7 +191,8 @@ namespace Avalonia.Vulkan
                         PReleaseKeys = &releaseKey,
                         PAcquireSyncs = &devMem,
                         PReleaseSyncs = &devMem,
-                        PAcquireTimeouts = &timeout
+                        PAcquireTimeouts = &timeout,
+                        PNext = (void*)pNext
                     };
                 
                 fixed (Semaphore* pWaitSemaphores = waitSemaphores, pSignalSemaphores = signalSemaphores)
@@ -199,7 +202,7 @@ namespace Avalonia.Vulkan
                         var commandBuffer = InternalHandle;
                         var submitInfo = new SubmitInfo
                         {
-                            PNext = keyedMutex != null ? &mutex : null,
+                            PNext = keyedMutex != null ? &mutex : (void*)pNext,
                             SType = StructureType.SubmitInfo,
                             WaitSemaphoreCount = waitSemaphores != null ? (uint)waitSemaphores.Length : 0,
                             PWaitSemaphores = pWaitSemaphores,
@@ -210,9 +213,10 @@ namespace Avalonia.Vulkan
                             PSignalSemaphores = pSignalSemaphores,
                         };
 
-                        _api.ResetFences(_device, 1, fence.Value);
+                        var fenceValue = fence.Value;
+                        _api.ResetFences(_device, 1, in fenceValue);
 
-                        _api.QueueSubmit(_queue, 1, submitInfo, fence.Value);
+                        _api.QueueSubmit(_queue, 1, in submitInfo, fenceValue);
                     }
                 }
 

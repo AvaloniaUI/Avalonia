@@ -1,19 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-      <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
+      <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
       <PackageId>Avalonia</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
-      <PackageReference Include="Avalonia.BuildServices" Version="0.0.31" />
+      <PackageReference Include="Avalonia.BuildServices" Version="11.3.2" />
       <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
       <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj"
                         PrivateAssets="all" />
-      <ProjectReference Include="..\..\src\tools\Avalonia.Generators\Avalonia.Generators.csproj"
+      <ProjectReference Include="../../src/tools/Avalonia.Generators/Avalonia.Generators.csproj"
                         ReferenceOutputAssembly="false"
                         PrivateAssets="all"
                         OutputItemType="Analyzer" />
-      <ProjectReference Include="..\..\src\tools\Avalonia.Analyzers\Avalonia.Analyzers.csproj"
+      <ProjectReference Include="../../src/tools/Avalonia.Analyzers.CSharp/Avalonia.Analyzers.CSharp.csproj"
+                        ReferenceOutputAssembly="false" 
+                        PrivateAssets="all"
+                        OutputItemType="Analyzer" />
+      <ProjectReference Include="../../src/tools/Avalonia.Analyzers.CodeFixes.CSharp/Avalonia.Analyzers.CodeFixes.CSharp.csproj"
+                        ReferenceOutputAssembly="false" 
+                        PrivateAssets="all" 
+                        OutputItemType="Analyzer" />
+      <ProjectReference Include="../../src/tools/Avalonia.Analyzers.VisualBasic/Avalonia.Analyzers.VisualBasic.csproj"
                         ReferenceOutputAssembly="false"
                         PrivateAssets="all"
                         OutputItemType="Analyzer" />
@@ -27,13 +35,13 @@
     <MSBuild Projects="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/Avalonia.Designer.HostApp.csproj" Properties="Configuration=$(Configuration);&#xA;Platform=$(Platform)" />
 
     <ItemGroup>
-      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/netstandard2.0/Avalonia.Designer.HostApp.dll">
-        <PackagePath>tools/netstandard2.0/designer</PackagePath>
+      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/$(AvsCurrentTargetFramework)/Avalonia.Designer.HostApp.dll">
+        <PackagePath>tools/$(AvsCurrentTargetFramework)/designer</PackagePath>
         <Visible>false</Visible>
         <BuildAction>None</BuildAction>
       </_PackageFiles>
-      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/net461/Avalonia.Designer.HostApp.exe">
-        <PackagePath>tools/net461/designer</PackagePath>
+      <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/$(AvsLegacyTargetFrameworks)/Avalonia.Designer.HostApp.dll">
+        <PackagePath>tools/$(AvsLegacyTargetFrameworks)/designer</PackagePath>
         <Visible>false</Visible>
         <BuildAction>None</BuildAction>
       </_PackageFiles>

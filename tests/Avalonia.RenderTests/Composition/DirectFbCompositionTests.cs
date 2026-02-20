@@ -83,7 +83,7 @@ public class DirectFbCompositionTests : TestBase
         SKBitmap fb = new SKBitmap(200, 200, SKColorType.Rgba8888, SKAlphaType.Premul);
 
         ILockedFramebuffer LockFb() => new LockedFramebuffer(fb.GetAddress(0, 0), new(fb.Width, fb.Height),
-            fb.RowBytes, new Vector(96, 96), PixelFormat.Rgba8888, null);
+            fb.RowBytes, new Vector(96, 96), PixelFormat.Rgba8888, AlphaFormat.Premul, null);
 
         bool previousFrameIsRetained = false;
         IFramebufferRenderTarget rt = advertised
@@ -100,7 +100,7 @@ public class DirectFbCompositionTests : TestBase
         control.Measure(new Size(control.Width, control.Height));
         control.Arrange(new Rect(control.DesiredSize));
         renderer.Start();
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
         timer.TriggerTick();
         var image1 =
             $"{nameof(Should_Only_Update_Clipped_Rects_When_Retained_Fb_Is_Advertised)}_advertized-{advertised}_initial";
@@ -112,7 +112,7 @@ public class DirectFbCompositionTests : TestBase
         
         r1.Fill = Brushes.Red;
         r2.Fill = Brushes.Green;
-        Dispatcher.UIThread.RunJobs();
+        Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
         timer.TriggerTick();
         var image2 =
             $"{nameof(Should_Only_Update_Clipped_Rects_When_Retained_Fb_Is_Advertised)}_advertized-{advertised}_updated";

@@ -3,10 +3,8 @@
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsCurrentAndroidTargetFramework);$(AvsCurrentBrowserTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(IncludeIOSTargetSamples)' == 'true'">$(TargetFrameworks);$(AvsCurrentIOSTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(IncludeMacTargetSamples)' == 'true'">$(TargetFrameworks);$(AvsCurrentMacOSTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IncludeTizenTargetSamples)' == 'true'">$(TargetFrameworks);$(AvsCurrentTizenTargetFramework)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>enable</Nullable>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
   </PropertyGroup>
 

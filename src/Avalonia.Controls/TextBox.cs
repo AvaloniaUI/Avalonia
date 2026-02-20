@@ -48,13 +48,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsInactiveSelectionHighlightEnabled"/> property
         /// </summary>
-        public static readonly StyledProperty<bool> IsInactiveSelectionHighlightEnabledProperty = 
+        public static readonly StyledProperty<bool> IsInactiveSelectionHighlightEnabledProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsInactiveSelectionHighlightEnabled), defaultValue: true);
 
         /// <summary>
         /// Defines the <see cref="ClearSelectionOnLostFocus"/> property
         /// </summary>
-        public static readonly StyledProperty<bool> ClearSelectionOnLostFocusProperty = 
+        public static readonly StyledProperty<bool> ClearSelectionOnLostFocusProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(ClearSelectionOnLostFocus), defaultValue: true);
 
         /// <summary>
@@ -181,22 +181,46 @@ namespace Avalonia.Controls
             TextBlock.LineHeightProperty.AddOwner<TextBox>(new(defaultValue: double.NaN));
 
         /// <summary>
-        /// Defines see <see cref="TextBlock.LetterSpacing"/> property.
+        /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> LetterSpacingProperty =
-            TextBlock.LetterSpacingProperty.AddOwner<TextBox>();
+        public static readonly StyledProperty<string?> PlaceholderTextProperty =
+            AvaloniaProperty.Register<TextBox, string?>(nameof(PlaceholderText));
 
         /// <summary>
-        /// Defines the <see cref="Watermark"/> property
+        /// Defines the <see cref="Watermark"/> property.
         /// </summary>
-        public static readonly StyledProperty<string?> WatermarkProperty =
-            AvaloniaProperty.Register<TextBox, string?>(nameof(Watermark));
+        [Obsolete("Use PlaceholderTextProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
 
         /// <summary>
-        /// Defines the <see cref="UseFloatingWatermark"/> property
+        /// Defines the <see cref="UseFloatingPlaceholder"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
-            AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingWatermark));
+        public static readonly StyledProperty<bool> UseFloatingPlaceholderProperty =
+            AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingPlaceholder));
+
+        /// <summary>
+        /// Defines the <see cref="UseFloatingWatermark"/> property.
+        /// </summary>
+        [Obsolete("Use UseFloatingPlaceholderProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty = UseFloatingPlaceholderProperty;
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush?> PlaceholderForegroundProperty =
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(PlaceholderForeground));
+
+        /// <summary>
+        /// Defines the <see cref="WatermarkForeground"/> property.
+        /// </summary>
+        [Obsolete("Use PlaceholderForegroundProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
         /// Defines the <see cref="NewLine"/> property
@@ -400,8 +424,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ClearSelectionOnLostFocus
         {
-            get=> GetValue(ClearSelectionOnLostFocusProperty);
-            set=> SetValue(ClearSelectionOnLostFocusProperty, value);
+            get => GetValue(ClearSelectionOnLostFocusProperty);
+            set => SetValue(ClearSelectionOnLostFocusProperty, value);
         }
 
         /// <summary>
@@ -414,7 +438,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value that determins whether the TextBox allows and displays tabs
+        /// Gets or sets a value that determines whether the TextBox allows and displays tabs
         /// </summary>
         public bool AcceptsTab
         {
@@ -522,7 +546,7 @@ namespace Avalonia.Controls
         /// Gets or sets the end position of the text selected in the TextBox
         /// </summary>
         /// <remarks>
-        /// When the SelectionEnd is equal to <see cref="SelectionStart"/>, there is no 
+        /// When the SelectionEnd is equal to <see cref="SelectionStart"/>, there is no
         /// selected text and it marks the caret position
         /// </remarks>
         public int SelectionEnd
@@ -568,15 +592,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(MinLinesProperty);
             set => SetValue(MinLinesProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the spacing between characters
-        /// </summary>
-        public double LetterSpacing
-        {
-            get => GetValue(LetterSpacingProperty);
-            set => SetValue(LetterSpacingProperty, value);
         }
 
         /// <summary>
@@ -680,20 +695,67 @@ namespace Avalonia.Controls
         /// Gets or sets the placeholder or descriptive text that is displayed even if the <see cref="Text"/>
         /// property is not yet set.
         /// </summary>
-        public string? Watermark
+        public string? PlaceholderText
         {
-            get => GetValue(WatermarkProperty);
-            set => SetValue(WatermarkProperty, value);
+            get => GetValue(PlaceholderTextProperty);
+            set => SetValue(PlaceholderTextProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the <see cref="Watermark"/> will still be shown above the
+        /// Gets or sets the placeholder or descriptive text that is displayed even if the <see cref="Text"/>
+        /// property is not yet set.
+        /// </summary>
+        [Obsolete("Use PlaceholderText instead.", false)]
+        public string? Watermark
+        {
+            get => PlaceholderText;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => PlaceholderText = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the <see cref="PlaceholderText"/> will still be shown above the
         /// <see cref="Text"/> even after a text value is set.
         /// </summary>
+        public bool UseFloatingPlaceholder
+        {
+            get => GetValue(UseFloatingPlaceholderProperty);
+            set => SetValue(UseFloatingPlaceholderProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the <see cref="PlaceholderText"/> will still be shown above the
+        /// <see cref="Text"/> even after a text value is set.
+        /// </summary>
+        [Obsolete("Use UseFloatingPlaceholder instead.", false)]
         public bool UseFloatingWatermark
         {
-            get => GetValue(UseFloatingWatermarkProperty);
-            set => SetValue(UseFloatingWatermarkProperty, value);
+            get => UseFloatingPlaceholder;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => UseFloatingPlaceholder = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        public IBrush? PlaceholderForeground
+        {
+            get => GetValue(PlaceholderForegroundProperty);
+            set => SetValue(PlaceholderForegroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        [Obsolete("Use PlaceholderForeground instead.", false)]
+        public IBrush? WatermarkForeground
+        {
+            get => PlaceholderForeground;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => PlaceholderForeground = value;
         }
 
         /// <summary>
@@ -1033,7 +1095,7 @@ namespace Avalonia.Controls
             if(_presenter != null)
             {
                 _presenter.ShowSelectionHighlight = true;
-            }           
+            }
 
             // when navigating to a textbox via the tab key, select all text if
             //   1) this textbox is *not* a multiline textbox
@@ -1259,7 +1321,7 @@ namespace Avalonia.Controls
             {
                 try
                 {
-                    text = await clipboard.GetTextAsync();
+                    text = await clipboard.TryGetTextAsync();
                 }
                 catch (TimeoutException)
                 {
@@ -1868,6 +1930,8 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionEndProperty, caretIndex);
                 }
 
+                _presenter.TextSelectionHandleCanvas?.Show();
+
                 if (SelectionStart != SelectionEnd)
                 {
                     _presenter.TextSelectionHandleCanvas?.ShowContextMenu();
@@ -1880,17 +1944,6 @@ namespace Avalonia.Controls
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new TextBoxAutomationPeer(this);
-        }
-
-        protected override void UpdateDataValidation(
-            AvaloniaProperty property,
-            BindingValueType state,
-            Exception? error)
-        {
-            if (property == TextProperty)
-            {
-                DataValidationErrors.SetError(this, error);
-            }
         }
 
         internal static int CoerceCaretIndex(AvaloniaObject sender, int value)

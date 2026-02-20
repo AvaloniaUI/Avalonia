@@ -22,7 +22,7 @@ namespace Avalonia.Base.UnitTests.Input
                     (newParent = new Border { Child = newCapture = new Border() })
                 }
             };
-            var receivers = new List<object>();
+            var receivers = new List<object?>();
             var root = new TestRoot(el);
             foreach (InputElement d in root.GetSelfAndVisualDescendants())
                 d.PointerCaptureLost += (s, e) => receivers.Add(s);
@@ -35,6 +35,79 @@ namespace Avalonia.Base.UnitTests.Input
             receivers.Clear();
             pointer.Capture(null);
             Assert.True(receivers.SequenceEqual(new object[] { newCapture, newParent, el, root }));
+        }
+
+        [Fact]
+        public void Capture_Captured_ShouldNot_Call_Platform()
+        {
+            var pointer = new TestPointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+
+            Border capture = new Border();
+            pointer.Capture(capture);
+            pointer.Capture(capture);
+
+            Assert.Equal(1, pointer.PlatformCaptureCalled);
+
+            pointer.Capture(null);
+            pointer.Capture(null);
+
+            Assert.Equal(2, pointer.PlatformCaptureCalled);
+        }
+
+        [Fact]
+        public void Capture_Explicit_ShouldNotify_After_Implicit()
+        {
+            var pointer = new TestPointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+
+            Border capture = new Border();
+
+            List<CaptureSource> sources = new();
+            capture.PointerCaptureChanging += (sender, e) =>
+            {
+                sources.Add(e.CaptureSource);
+            };
+
+            pointer.Capture(capture, CaptureSource.Implicit);
+            pointer.Capture(capture, CaptureSource.Explicit);
+
+            Assert.True(sources.SequenceEqual([CaptureSource.Implicit, CaptureSource.Explicit]));
+
+            Assert.Equal(1, pointer.PlatformCaptureCalled);
+
+            pointer.Capture(null, CaptureSource.Implicit); // not ignored, so captured element will become null
+            pointer.Capture(null, CaptureSource.Explicit); // changing from null to null does not notify anything
+
+            Assert.True(sources.SequenceEqual([CaptureSource.Implicit, CaptureSource.Explicit, CaptureSource.Implicit]));
+
+            Assert.Equal(2, pointer.PlatformCaptureCalled);
+        }
+
+        [Fact]
+        public void Capture_Explicit_ShouldNotify_After_HandledImplicit()
+        {
+            var pointer = new TestPointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+
+            Border capture = new Border();
+
+            List<CaptureSource> sources = new();
+            capture.PointerCaptureChanging += (sender, e) =>
+            {
+                sources.Add(e.CaptureSource);
+                e.Handled = e.CaptureSource == CaptureSource.Implicit;
+            };
+
+            pointer.Capture(capture, CaptureSource.Implicit);
+            pointer.Capture(capture, CaptureSource.Explicit);
+
+            Assert.True(sources.SequenceEqual([CaptureSource.Implicit, CaptureSource.Explicit]));
+
+            Assert.Equal(1, pointer.PlatformCaptureCalled);
+
+            pointer.Capture(null, CaptureSource.Implicit);
+            pointer.Capture(null, CaptureSource.Explicit);
+            Assert.True(sources.SequenceEqual([CaptureSource.Implicit, CaptureSource.Explicit, CaptureSource.Implicit, CaptureSource.Explicit]));
+
+            Assert.Equal(2, pointer.PlatformCaptureCalled);
         }
     }
 }

@@ -10,8 +10,7 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
-    internal class GlSkiaGpu : ISkiaGpu, IOpenGlTextureSharingRenderInterfaceContextFeature,
-        ISkiaGpuWithPlatformGraphicsContext
+    internal class GlSkiaGpu : ISkiaGpu, IOpenGlTextureSharingRenderInterfaceContextFeature
     {
         private readonly GRContext _grContext;
         private readonly IGlContext _glContext;
@@ -173,6 +172,8 @@ namespace Avalonia.Skia
                 return this;
             if (featureType == typeof(IExternalObjectsRenderInterfaceContextFeature))
                 return _externalObjectsFeature;
+            if (featureType == typeof(IExternalObjectsHandleWrapRenderInterfaceContextFeature))
+                return _glContext.TryGetFeature(featureType);
             return null;
         }
         

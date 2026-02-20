@@ -170,7 +170,7 @@ namespace Avalonia.Platform
         /// <param name="glyphInfos">The list of glyphs.</param>
         /// <param name="baselineOrigin">The baseline origin of the run. Can be null.</param>
         /// <returns>An <see cref="IGlyphRunImpl"/>.</returns>
-        IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin);
+        IGlyphRunImpl CreateGlyphRun(GlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin);
 
         /// <summary>
         /// Creates a backend-specific object using a low-level API graphics context
@@ -221,8 +221,9 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="pixelSize">The size, in pixels, of the render target</param>
         /// <param name="scaling">The scaling which will be reported by IBitmap.Dpi</param>
+        /// <param name="enableTextAntialiasing">Specifies if text antialiasing should be enabled</param>
         /// <returns></returns>
-        IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, double scaling);
+        IDrawingContextLayerImpl CreateOffscreenRenderTarget(PixelSize pixelSize, Vector scaling, bool enableTextAntialiasing);
         
         /// <summary>
         /// Indicates that the context is no longer usable. This method should be thread-safe
@@ -233,5 +234,10 @@ namespace Avalonia.Platform
         /// Exposes features that should be available for consumption while context isn't active (e. g. from the UI thread)
         /// </summary>
         IReadOnlyDictionary<Type, object> PublicFeatures { get; }
+        
+        /// <summary>
+        /// Maximum supported offscreen render target pixel size, or null if no limit
+        /// </summary>
+        public PixelSize? MaxOffscreenRenderTargetPixelSize { get; }
     }
 }

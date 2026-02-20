@@ -11,12 +11,12 @@ namespace Avalonia.UnitTests
     public class MockWindowingPlatform : IWindowingPlatform
     {
         private static readonly Size s_screenSize = new Size(1280, 1024);
-        private readonly Func<IWindowImpl> _windowImpl;
-        private readonly Func<IWindowBaseImpl, IPopupImpl> _popupImpl;
+        private readonly Func<IWindowImpl>? _windowImpl;
+        private readonly Func<IWindowBaseImpl, IPopupImpl?>? _popupImpl;
 
         public MockWindowingPlatform(
-            Func<IWindowImpl> windowImpl = null,
-            Func<IWindowBaseImpl, IPopupImpl> popupImpl = null )
+            Func<IWindowImpl>? windowImpl = null,
+            Func<IWindowBaseImpl, IPopupImpl?>? popupImpl = null )
         {
             _windowImpl = windowImpl;
             _popupImpl = popupImpl;
@@ -34,7 +34,7 @@ namespace Avalonia.UnitTests
             windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
-            windowImpl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
+            windowImpl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns((object?)null);
             windowImpl.Setup(x => x.TryGetFeature(It.Is<Type>(t => t == typeof(IScreenImpl)))).Returns(CreateScreenMock().Object);
 
             windowImpl.Setup(x => x.CreatePopup()).Returns(() =>
@@ -113,7 +113,7 @@ namespace Avalonia.UnitTests
 
 
 
-            popupImpl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
+            popupImpl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns((object?)null);
             popupImpl.Setup(x => x.Dispose()).Callback(() =>
             {
                 popupImpl.Object.Closed?.Invoke();
@@ -126,7 +126,7 @@ namespace Avalonia.UnitTests
         {
             var screenImpl = new Mock<IScreenImpl>();
             var bounds = new PixelRect(0, 0, (int)s_screenSize.Width, (int)s_screenSize.Height);
-            var screen = new Screen(96, bounds, bounds, true);
+            var screen = new MockScreen(96, bounds, bounds, true);
             screenImpl.Setup(x => x.AllScreens).Returns(new[] { screen });
             screenImpl.Setup(x => x.ScreenCount).Returns(1);
             return screenImpl;
@@ -158,9 +158,12 @@ namespace Avalonia.UnitTests
             throw new NotImplementedException();
         }
 
-        public ITrayIconImpl CreateTrayIcon()
+        public ITrayIconImpl? CreateTrayIcon()
         {
             return null;
         }
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+            => zOrder.Clear();
     }
 }

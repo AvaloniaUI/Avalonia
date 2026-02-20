@@ -81,7 +81,11 @@ public enum CompositionGpuImportedImageSynchronizationCapabilities
     /// <summary>
     /// Synchronization and ordering is somehow handled by the underlying platform
     /// </summary>
-    Automatic = 4
+    Automatic = 4,
+    /// <summary>
+    /// Pre-render and after-render timeline semaphores must be provided alongside with the image
+    /// </summary>
+    TimelineSemaphores = 8
 }
 
 /// <summary>
@@ -96,12 +100,6 @@ public interface ICompositionGpuImportedObject : IAsyncDisposable
     /// sharing handle was used.
     /// </summary>
     Task ImportCompleted { get; }
-    
-    /// <inheritdoc cref="ImportCompleted"/>
-    /// <seealso cref="ImportCompleted">ImportCompleted (recommended replacement)</seealso>
-    [Obsolete("Please use ICompositionGpuImportedObject.ImportCompleted instead")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    Task ImportCompeted { get; }
     
     /// <summary>
     /// Indicates if the device context this instance is associated with is no longer available

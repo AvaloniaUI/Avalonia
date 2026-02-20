@@ -105,6 +105,28 @@ namespace Avalonia.Automation
                 typeof(AutomationProperties));
 
         /// <summary>
+        /// Defines the AutomationProperties.LandmarkType attached property.
+        /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetLandmarkType"/>
+        /// </remarks>
+        public static readonly AttachedProperty<AutomationLandmarkType?> LandmarkTypeProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, AutomationLandmarkType?>(
+                "LandmarkType",
+                typeof(AutomationProperties));
+
+        /// <summary>
+        /// Defines the AutomationProperties.HeadingLevel attached property.
+        /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetHeadingLevel"/>.
+        /// </remarks>
+        public static readonly AttachedProperty<int> HeadingLevelProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, int>(
+                "HeadingLevel",
+                typeof(AutomationProperties));
+
+        /// <summary>
         /// Defines the AutomationProperties.IsColumnHeader attached property.
         /// </summary>
         /// <remarks>
@@ -189,7 +211,7 @@ namespace Avalonia.Automation
         /// Defines the AutomationProperties.LiveSetting attached property.
         /// </summary>
         /// <remarks>
-        /// This property currently has no effect.
+        /// This property affects the default value for <see cref="AutomationPeer.GetLiveSetting"/> and controls whether live region changed events are emitted.
         /// </remarks>
         public static readonly AttachedProperty<AutomationLiveSetting> LiveSettingProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, AutomationLiveSetting>(
@@ -346,6 +368,42 @@ namespace Avalonia.Automation
         {
             _ = element ?? throw new ArgumentNullException(nameof(element));
             return element.GetValue(HelpTextProperty);
+        }
+
+        /// <summary>
+        /// Helper for setting the value of the <see cref="LandmarkTypeProperty"/> on a StyledElement.
+        /// </summary>
+        public static void SetLandmarkType(StyledElement element, AutomationLandmarkType? value)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            element.SetValue(LandmarkTypeProperty, value);
+        }
+
+        /// <summary>
+        /// Helper for reading the value of the <see cref="LandmarkTypeProperty"/> on a StyledElement.
+        /// </summary>
+        public static AutomationLandmarkType? GetLandmarkType(StyledElement element)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            return element.GetValue(LandmarkTypeProperty);
+        }
+
+        /// <summary>
+        /// Helper for setting the value of the <see cref="HeadingLevelProperty"/> on a StyledElement.
+        /// </summary>
+        public static void SetHeadingLevel(StyledElement element, int value)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            element.SetValue(HeadingLevelProperty, value);
+        }
+
+        /// <summary>
+        /// Helper for reading the value of the <see cref="HeadingLevelProperty"/> on a StyledElement.
+        /// </summary>
+        public static int GetHeadingLevel(StyledElement element)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            return element.GetValue(HeadingLevelProperty);
         }
 
         /// <summary>

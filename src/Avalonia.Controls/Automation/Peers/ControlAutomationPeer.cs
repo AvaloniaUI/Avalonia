@@ -132,8 +132,16 @@ namespace Avalonia.Automation.Peers
                 result = ToolTip.GetTip(Owner) as string;
             }
 
+            // Windows uses HelpText for placeholder text; macOS uses a separate property.
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                result = GetPlaceholderTextCore();
+            }
+
             return result;
         }
+        protected override AutomationLandmarkType? GetLandmarkTypeCore() => AutomationProperties.GetLandmarkType(Owner);
+        protected override int GetHeadingLevelCore() => AutomationProperties.GetHeadingLevel(Owner);
         protected override AutomationPeer? GetParentCore()
         {
             EnsureConnected();
@@ -183,6 +191,8 @@ namespace Avalonia.Automation.Peers
             return false;
         }
 
+        protected override AutomationLiveSetting GetLiveSettingCore() => AutomationProperties.GetLiveSetting(Owner);
+
         protected internal override bool TrySetParent(AutomationPeer? parent)
         {
             _parent = parent;
@@ -195,6 +205,8 @@ namespace Avalonia.Automation.Peers
         protected override string? GetAutomationIdCore() => AutomationProperties.GetAutomationId(Owner) ?? Owner.Name;
         protected override Rect GetBoundingRectangleCore() => GetBounds(Owner);
         protected override string GetClassNameCore() => Owner.GetType().Name;
+        protected override string? GetItemStatusCore() => AutomationProperties.GetItemStatus(Owner);
+        protected override string? GetItemTypeCore() => AutomationProperties.GetItemType(Owner);
         protected override bool HasKeyboardFocusCore() => Owner.IsFocused;
         protected override bool IsContentElementCore() => true;
         protected override bool IsControlElementCore() => true;
@@ -276,6 +288,13 @@ namespace Avalonia.Automation.Peers
             else if (e.Property == Visual.VisualParentProperty)
             {
                 InvalidateParent();
+            }
+            else if (e.Property == AutomationProperties.ItemStatusProperty)
+            {
+                RaisePropertyChangedEvent(
+                    AutomationElementIdentifiers.ItemStatusProperty,
+                    e.OldValue,
+                    e.NewValue);
             }
         }
 

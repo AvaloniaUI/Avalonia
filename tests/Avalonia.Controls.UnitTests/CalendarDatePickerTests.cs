@@ -33,7 +33,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 DateTime value = new DateTime(2000, 10, 10);
                 datePicker.SelectedDate = value;
-                Threading.Dispatcher.UIThread.RunJobs();
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.True(handled);
             }
         }
@@ -44,6 +44,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 CalendarDatePicker datePicker = CreateControl();
+                Assert.NotNull(datePicker.BlackoutDates);
                 datePicker.BlackoutDates.AddDatesInPast();
 
                 DateTime goodValue = DateTime.Today.AddDays(1);
@@ -65,7 +66,7 @@ namespace Avalonia.Controls.UnitTests
                 datePicker.SelectedDate = DateTime.Today.AddDays(5);
 
                 Assert.ThrowsAny<ArgumentOutOfRangeException>(
-                    () => datePicker.BlackoutDates.Add(new CalendarDateRange(DateTime.Today, DateTime.Today.AddDays(10))));
+                    () => datePicker.BlackoutDates!.Add(new CalendarDateRange(DateTime.Today, DateTime.Today.AddDays(10))));
             }
         }
 
@@ -86,7 +87,7 @@ namespace Avalonia.Controls.UnitTests
                 RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
 
                 Assert.Equal("17.10.2024", datePicker.Text);
-                Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2024, 10, 17)));
+                Assert.True(CompareDates(datePicker.SelectedDate!.Value, new DateTime(2024, 10, 17)));
 
                 tb.Clear();
                 RaiseTextEvent(tb, "12.10.2024");
@@ -116,7 +117,7 @@ namespace Avalonia.Controls.UnitTests
         {
             return new FuncControlTemplate<CalendarDatePicker>((control, scope) =>
             {
-                var textBox = 
+                var textBox =
                     new TextBox
                     {
                         Name = "PART_TextBox"
@@ -129,7 +130,7 @@ namespace Avalonia.Controls.UnitTests
                 var calendar =
                     new Calendar
                     {
-                        Name = "PART_Calendar", 
+                        Name = "PART_Calendar",
                         [!Calendar.SelectedDateProperty] = control[!CalendarDatePicker.SelectedDateProperty],
                         [!Calendar.DisplayDateProperty] = control[!CalendarDatePicker.DisplayDateProperty],
                         [!Calendar.DisplayDateStartProperty] = control[!CalendarDatePicker.DisplayDateStartProperty],
@@ -176,6 +177,19 @@ namespace Avalonia.Controls.UnitTests
                 RoutedEvent = InputElement.TextInputEvent,
                 Text = text
             });
+        }
+
+        [Fact]
+        public void PlaceholderForeground_Can_Be_Set()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var control = CreateControl();
+                control.PlaceholderText = "Select date";
+                control.PlaceholderForeground = Media.Brushes.Purple;
+
+                Assert.Equal(Media.Brushes.Purple, control.PlaceholderForeground);
+            }
         }
 
     }

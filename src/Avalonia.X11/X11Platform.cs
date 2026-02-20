@@ -15,6 +15,7 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Vulkan;
 using Avalonia.X11;
+using Avalonia.X11.Clipboard;
 using Avalonia.X11.Dispatching;
 using Avalonia.X11.Glx;
 using Avalonia.X11.Vulkan;
@@ -71,6 +72,9 @@ namespace Avalonia.X11
                ? new UiThreadRenderTimer(60)
                : new SleepLoopRenderTimer(60);
 
+            var clipboardImpl = new X11ClipboardImpl(this);
+            var clipboard = new Input.Platform.Clipboard(clipboardImpl);
+
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IDispatcherImpl>().ToConstant<IDispatcherImpl>(options.UseGLibMainLoop
@@ -81,7 +85,8 @@ namespace Avalonia.X11
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
-                .Bind<IClipboard>().ToLazy(() => new X11Clipboard(this))
+                .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
+                .Bind<IClipboard>().ToConstant(clipboard)
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
@@ -161,27 +166,26 @@ namespace Avalonia.X11
 
         private static bool ShouldUseXim()
         {
+            // Priority: AVALONIA_IM_MODULE > GTK_IM_MODULE >= QT_IM_MODULE
+            string? imeOverride = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
+            if (string.IsNullOrEmpty(imeOverride))
+                imeOverride = Environment.GetEnvironmentVariable("GTK_IM_MODULE");
+            if (string.IsNullOrEmpty(imeOverride))
+                imeOverride = Environment.GetEnvironmentVariable("QT_IM_MODULE");
+
             // Check if we are forbidden from using IME
-            if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"
-                || Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "none"
-                || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "none")
-                return true;
-            
+            if (imeOverride == "none")
+                return false;
+
             // Check if XIM is configured
             var modifiers = Environment.GetEnvironmentVariable("XMODIFIERS");
-            if (modifiers == null)
-                return false;
-            if (modifiers.Contains("@im=none") || modifiers.Contains("@im=null"))
-                return false;
-            if (!modifiers.Contains("@im="))
-                return false;
-            
-            // Check if we are configured to use it
-            if (Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "xim"
-                || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "xim"
-                || Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "xim")
-                return true;
-            
+            if (modifiers is not null && modifiers.Contains("@im="))
+            {
+                // If XIM is explicitly requested, or no IME override is configured
+                if (imeOverride == "xim" || string.IsNullOrEmpty(imeOverride))
+                    return true;
+            }
+
             return false;
         }
         
@@ -225,6 +229,83 @@ namespace Avalonia.X11
             }
 
             throw new InvalidOperationException($"{nameof(X11PlatformOptions)}.{nameof(X11PlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
+        }
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> outputZOrder)
+        {
+            // a mapping of parent windows to their children, sorted by z-order (bottom to top)
+            var windowsChildren = new Dictionary<IntPtr, List<IntPtr>>();
+
+            var indexInWindowsSpan = new Dictionary<IntPtr, int>();
+            for (var i = 0; i < windows.Length; i++)
+                if (windows[i] is X11Window { Handle: { } handle })
+                    indexInWindowsSpan[handle.Handle] = i;
+
+            foreach (var window in windows)
+            {
+                if (window is not X11Window x11Window)
+                    continue;
+
+                var node = x11Window.Handle.Handle;
+                while (node != IntPtr.Zero)
+                {
+                    if (windowsChildren.ContainsKey(node))
+                    {
+                        break;
+                    }
+
+                    if (XQueryTree(Info.Display, node, out _, out var parent,
+                            out var childrenPtr, out var childrenCount) == 0)
+                    {
+                        break;
+                    }
+
+                    if (childrenPtr != IntPtr.Zero)
+                    {
+                        unsafe
+                        {
+                            var children = (IntPtr*)childrenPtr;
+                            windowsChildren[node] = new List<IntPtr>(childrenCount);
+                            for (var i = 0; i < childrenCount; i++)
+                            {
+                                windowsChildren[node].Add(children[i]);
+                            }
+
+                            XFree(childrenPtr);
+                        }
+                    }
+
+                    node = parent;
+                }
+            }
+
+            var stack = new Stack<IntPtr>();
+            var zOrder = 0;
+            stack.Push(Info.RootWindow);
+
+            while (stack.Count > 0)
+            {
+                var currentWindow = stack.Pop();
+
+                if (!windowsChildren.TryGetValue(currentWindow, out var children))
+                {
+                    continue;
+                }
+
+                if (indexInWindowsSpan.TryGetValue(currentWindow, out var index))
+                {
+                    outputZOrder[index] = zOrder;
+                }
+
+                zOrder++;
+
+                // Children are returned bottom to top, so we need to push them in reverse order
+                // In order to traverse bottom children first
+                for (int i = children.Count - 1; i >= 0; i--)
+                {
+                    stack.Push(children[i]);
+                }
+            }
         }
     }
 }

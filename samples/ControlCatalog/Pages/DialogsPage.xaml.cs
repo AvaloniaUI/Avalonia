@@ -1,42 +1,35 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Security;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Dialogs;
 using Avalonia.Layout;
-using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
-using Avalonia.Platform.Storage.FileIO;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-#nullable enable
 
 namespace ControlCatalog.Pages
 {
-    public class DialogsPage : UserControl
+    public partial class DialogsPage : UserControl
     {
         public DialogsPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             IStorageFolder? lastSelectedDirectory = null;
             IStorageItem? lastSelectedItem = null;
             bool ignoreTextChanged = false;
 
-            var results = this.Get<ItemsControl>("PickerLastResults");
-            var resultsVisible = this.Get<TextBlock>("PickerLastResultsVisible");
-            var bookmarkContainer = this.Get<TextBox>("BookmarkContainer");
-            var openedFileContent = this.Get<TextBox>("OpenedFileContent");
-            var openMultiple = this.Get<CheckBox>("OpenMultiple");
-            var currentFolderBox = this.Get<AutoCompleteBox>("CurrentFolderBox");
+            var results = PickerLastResults;
+            var resultsVisible = PickerLastResultsVisible;
+            var bookmarkContainer = BookmarkContainer;
+            var openedFileContent = OpenedFileContent;
+            var openMultiple = OpenMultiple;
+            var currentFolderBox = CurrentFolderBox;
+            var useSuggestedFilter = UseSuggestedFilter;
+            var suggestedFilterSelector = SuggestedFilterSelector;
 
             currentFolderBox.TextChanged += async (sender, args) =>
             {
@@ -61,24 +54,16 @@ namespace ControlCatalog.Pages
                         }
                         catch (SecurityException)
                         {
-                            
+                        
                         }
                     }
                 }
             };
 
 
-            List<FileDialogFilter> GetFilters()
+            List<FilePickerFileType>? BuildFileTypes()
             {
-                return GetFileTypes()?.Select(f => new FileDialogFilter
-                {
-                    Name = f.Name, Extensions = f.Patterns!.ToList()
-                }).ToList() ?? new List<FileDialogFilter>();
-            }
-
-            List<FilePickerFileType>? GetFileTypes()
-            {
-                var selectedItem = (this.Get<ComboBox>("FilterSelector").SelectedItem as ComboBoxItem)?.Content
+                var selectedItem = (FilterSelector.SelectedItem as ComboBoxItem)?.Content
                     ?? "None";
 
                 var binLogType = new FilePickerFileType("Binary Log")
@@ -115,110 +100,92 @@ namespace ControlCatalog.Pages
                 };
             }
 
-            this.Get<Button>("OpenFile").Click += async delegate
+            List<FilePickerFileType>? GetFileTypes()
             {
-                // Almost guaranteed to exist
-                var uri = Assembly.GetEntryAssembly()?.GetModules().FirstOrDefault()?.FullyQualifiedName;
-                var initialFileName = uri == null ? null : System.IO.Path.GetFileName(uri);
-                var initialDirectory = uri == null ? null : System.IO.Path.GetDirectoryName(uri);
+                var types = BuildFileTypes();
+                UpdateSuggestedFilterSelector(types);
+                return types;
+            }
 
-                var result = await new OpenFileDialog()
-                {
-                    Title = "Open file",
-                    Filters = GetFilters(),
-                    Directory = initialDirectory,
-                    InitialFileName = initialFileName
-                }.ShowAsync(GetWindow());
-                results.ItemsSource = result;
-                resultsVisible.IsVisible = result?.Any() == true;
-            };
-            this.Get<Button>("OpenMultipleFiles").Click += async delegate
+            void UpdateSuggestedFilterSelector(IReadOnlyList<FilePickerFileType>? types)
             {
-                var result = await new OpenFileDialog()
+                var previouslySelected = (suggestedFilterSelector.SelectedItem as ComboBoxItem)?.Tag as FilePickerFileType;
+                suggestedFilterSelector.Items.Clear();
+                suggestedFilterSelector.Items.Add(new ComboBoxItem { Content = "First filter", Tag = null });
+
+                var desiredIndex = 0;
+                if (types is { Count: > 0 })
                 {
-                    Title = "Open multiple files",
-                    Filters = GetFilters(),
-                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
-                    AllowMultiple = true
-                }.ShowAsync(GetWindow());
-                results.ItemsSource = result;
-                resultsVisible.IsVisible = result?.Any() == true;
-            };
-            this.Get<Button>("SaveFile").Click += async delegate
-            {
-                var filters = GetFilters();
-                var result = await new SaveFileDialog()
-                {
-                    Title = "Save file",
-                    Filters = filters,
-                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
-                    DefaultExtension = filters?.Any() == true ? "txt" : null,
-                    InitialFileName = "test.txt"
-                }.ShowAsync(GetWindow());
-                results.ItemsSource = new[] { result };
-                resultsVisible.IsVisible = result != null;
-            };
-            this.Get<Button>("SelectFolder").Click += async delegate
-            {
-                var result = await new OpenFolderDialog()
-                {
-                    Title = "Select folder",
-                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
-                }.ShowAsync(GetWindow());
-                if (string.IsNullOrEmpty(result))
-                {
-                    resultsVisible.IsVisible = false;
+                    for (var i = 0; i < types.Count; i++)
+                    {
+                        var type = types[i];
+                        var item = new ComboBoxItem { Content = type.Name, Tag = type };
+                        suggestedFilterSelector.Items.Add(item);
+
+                        if (previouslySelected is not null && ReferenceEquals(previouslySelected, type))
+                        {
+                            desiredIndex = i + 1;
+                        }
+                    }
                 }
-                else
-                {
-                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result!));
-                    results.ItemsSource = new[] { result };
-                    resultsVisible.IsVisible = true;
-                }
-            };
-            this.Get<Button>("OpenBoth").Click += async delegate
+
+                suggestedFilterSelector.SelectedIndex = desiredIndex;
+            }
+
+            FilePickerFileType? GetSuggestedFileType(IReadOnlyList<FilePickerFileType>? types)
             {
-                var result = await new OpenFileDialog()
+                if (useSuggestedFilter.IsChecked == true && types is { Count: > 0 })
                 {
-                    Title = "Select both",
-                    Directory = lastSelectedDirectory?.Path is {IsAbsoluteUri:true} path ? path.LocalPath : null,
-                    AllowMultiple = true
-                }.ShowManagedAsync(GetWindow(), new ManagedFileDialogOptions
-                {
-                    AllowDirectorySelection = true
-                });
-                results.ItemsSource = result;
-                resultsVisible.IsVisible = result?.Any() == true;
-            };
-            this.Get<Button>("DecoratedWindow").Click += delegate
+                    if (suggestedFilterSelector.SelectedItem is ComboBoxItem { Tag: FilePickerFileType selectedType }
+                        && types.Any(t => ReferenceEquals(t, selectedType)))
+                    {
+                        return selectedType;
+                    }
+
+                    return types.FirstOrDefault();
+                }
+
+                return null;
+            }
+
+            void UpdateSuggestedFilterSelectorState() =>
+                suggestedFilterSelector.IsEnabled = useSuggestedFilter.IsChecked == true;
+
+            useSuggestedFilter.IsCheckedChanged += (_, _) => UpdateSuggestedFilterSelectorState();
+            UpdateSuggestedFilterSelectorState();
+
+            FilterSelector.SelectionChanged += (_, _) => UpdateSuggestedFilterSelector(BuildFileTypes());
+            UpdateSuggestedFilterSelector(BuildFileTypes());
+
+            DecoratedWindow.Click += delegate
             {
                 new DecoratedWindow().Show();
             };
-            this.Get<Button>("DecoratedWindowDialog").Click += delegate
+            DecoratedWindowDialog.Click += delegate
             {
                 _ = new DecoratedWindow().ShowDialog(GetWindow());
             };
-            this.Get<Button>("Dialog").Click += delegate
+            Dialog.Click += delegate
             {
                 var window = CreateSampleWindow();
                 window.Height = 200;
                 _ = window.ShowDialog(GetWindow());
             };
-            this.Get<Button>("DialogNoTaskbar").Click += delegate
+            DialogNoTaskbar.Click += delegate
             {
                 var window = CreateSampleWindow();
                 window.Height = 200;
                 window.ShowInTaskbar = false;
                 _ = window.ShowDialog(GetWindow());
             };
-            this.Get<Button>("OwnedWindow").Click += delegate
+            OwnedWindow.Click += delegate
             {
                 var window = CreateSampleWindow();
 
                 window.Show(GetWindow());
             };
 
-            this.Get<Button>("OwnedWindowNoTaskbar").Click += delegate
+            OwnedWindowNoTaskbar.Click += delegate
             {
                 var window = CreateSampleWindow();
 
@@ -227,12 +194,14 @@ namespace ControlCatalog.Pages
                 window.Show(GetWindow());
             };
 
-            this.Get<Button>("OpenFilePicker").Click += async delegate
+            OpenFilePicker.Click += async delegate
             {
+                var fileTypes = GetFileTypes();
                 var result = await GetStorageProvider().OpenFilePickerAsync(new FilePickerOpenOptions()
                 {
                     Title = "Open file",
-                    FileTypeFilter = GetFileTypes(),
+                    FileTypeFilter = fileTypes,
+                    SuggestedFileType = GetSuggestedFileType(fileTypes),
                     SuggestedFileName = "FileName",
                     SuggestedStartLocation = lastSelectedDirectory,
                     AllowMultiple = openMultiple.IsChecked == true
@@ -240,13 +209,15 @@ namespace ControlCatalog.Pages
 
                 await SetPickerResult(result);
             };
-            this.Get<Button>("SaveFilePicker").Click += async delegate
+            SaveFilePicker.Click += async delegate
             {
                 var fileTypes = GetFileTypes();
+                var suggestedType = GetSuggestedFileType(fileTypes);
                 var file = await GetStorageProvider().SaveFilePickerAsync(new FilePickerSaveOptions()
                 {
                     Title = "Save file",
                     FileTypeChoices = fileTypes,
+                    SuggestedFileType = suggestedType,
                     SuggestedStartLocation = lastSelectedDirectory,
                     SuggestedFileName = "FileName",
                     ShowOverwritePrompt = true
@@ -276,7 +247,51 @@ namespace ControlCatalog.Pages
 
                 await SetPickerResult(file is null ? null : new[] { file });
             };
-            this.Get<Button>("OpenFolderPicker").Click += async delegate
+            SaveFilePickerWithResult.Click += async delegate
+            {
+                var saveFileTypes = new[] { FilePickerFileTypes.Json, FilePickerFileTypes.Xml };
+                var result = await GetStorageProvider().SaveFilePickerWithResultAsync(new FilePickerSaveOptions()
+                {
+                    Title = "Save file",
+                    FileTypeChoices = saveFileTypes,
+                    SuggestedFileType = GetSuggestedFileType(saveFileTypes),
+                    SuggestedStartLocation = lastSelectedDirectory,
+                    SuggestedFileName = "FileName",
+                    ShowOverwritePrompt = true
+                });
+
+                try
+                {
+                    if (result.File is { } file)
+                    {
+                        // Sync disposal of StreamWriter is not supported on WASM
+#if NET6_0_OR_GREATER
+                        await using var stream = await file.OpenWriteAsync();
+                        await using var writer = new System.IO.StreamWriter(stream);
+#else
+                        using var stream = await file.OpenWriteAsync();
+                        using var writer = new System.IO.StreamWriter(stream);
+#endif
+                        if (result.SelectedFileType == FilePickerFileTypes.Xml)
+                        {
+                            await writer.WriteLineAsync("<sample>Test</sample>");
+                        }
+                        else
+                        {
+                            await writer.WriteLineAsync("""{ "sample": "Test" }""");
+                        }
+
+                        SetFolder(await result.File.GetParentAsync());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    openedFileContent.Text = ex.ToString();
+                }
+
+                await SetPickerResult(result.File is null ? null : new[] { result.File }, result.SelectedFileType);
+            };
+            OpenFolderPicker.Click += async delegate
             {
                 var folders = await GetStorageProvider().OpenFolderPickerAsync(new FolderPickerOpenOptions()
                 {
@@ -288,7 +303,7 @@ namespace ControlCatalog.Pages
 
                 await SetPickerResult(folders);
             };
-            this.Get<Button>("OpenFileFromBookmark").Click += async delegate
+            OpenFileFromBookmark.Click += async delegate
             {
                 var file = bookmarkContainer.Text is not null
                     ? await GetStorageProvider().OpenFileBookmarkAsync(bookmarkContainer.Text)
@@ -296,7 +311,7 @@ namespace ControlCatalog.Pages
 
                 await SetPickerResult(file is null ? null : new[] { file });
             };
-            this.Get<Button>("OpenFolderFromBookmark").Click += async delegate
+            OpenFolderFromBookmark.Click += async delegate
             {
                 var folder = bookmarkContainer.Text is not null
                     ? await GetStorageProvider().OpenFolderBookmarkAsync(bookmarkContainer.Text)
@@ -304,11 +319,11 @@ namespace ControlCatalog.Pages
 
                 await SetPickerResult(folder is null ? null : new[] { folder });
             };
-            
-            this.Get<Button>("LaunchUri").Click += async delegate
+        
+            LaunchUri.Click += async delegate
             {
-                var statusBlock = this.Get<TextBlock>("LaunchStatus");
-                if (Uri.TryCreate(this.Get<TextBox>("UriToLaunch").Text, UriKind.Absolute, out var uri))
+                var statusBlock = LaunchStatus;
+                if (Uri.TryCreate(UriToLaunch.Text, UriKind.Absolute, out var uri))
                 {
                     var result = await TopLevel.GetTopLevel(this)!.Launcher.LaunchUriAsync(uri);
                     statusBlock.Text = "LaunchUriAsync returned " + result;
@@ -319,9 +334,9 @@ namespace ControlCatalog.Pages
                 }
             };
 
-            this.Get<Button>("LaunchFile").Click += async delegate
+            LaunchFile.Click += async delegate
             {
-                var statusBlock = this.Get<TextBlock>("LaunchStatus");
+                var statusBlock = LaunchStatus;
                 if (lastSelectedItem is not null)
                 {
                     var result = await TopLevel.GetTopLevel(this)!.Launcher.LaunchFileAsync(lastSelectedItem);
@@ -341,15 +356,16 @@ namespace ControlCatalog.Pages
                 currentFolderBox.Text = folder?.Path is { IsAbsoluteUri: true } abs ? abs.LocalPath : folder?.Path?.ToString();
                 ignoreTextChanged = false;
             }
-            async Task SetPickerResult(IReadOnlyCollection<IStorageItem>? items)
+            async Task SetPickerResult(IReadOnlyCollection<IStorageItem>? items, FilePickerFileType? selectedType = null)
             {
                 items ??= Array.Empty<IStorageItem>();
                 bookmarkContainer.Text = items.FirstOrDefault(f => f.CanBookmark) is { } f ? await f.SaveBookmarkAsync() : "Can't bookmark";
                 var mappedResults = new List<string>();
 
+                string resultText = "";
                 if (items.FirstOrDefault() is IStorageItem item)
                 {
-                    var resultText = item is IStorageFile ? "File:" : "Folder:";
+                    resultText += item is IStorageFile ? "File:" : "Folder:";
                     resultText += Environment.NewLine;
 
                     var props = await item.GetBasicPropertiesAsync();
@@ -373,8 +389,6 @@ namespace ControlCatalog.Pages
                             resultText += ex.ToString();
                         }
                     }
-
-                    openedFileContent.Text = resultText;
 
                     if (item is IStorageFolder storageFolder)
                     {
@@ -404,6 +418,12 @@ namespace ControlCatalog.Pages
                     lastSelectedItem = item;
                 }
 
+                if (selectedType is not null)
+                {
+                    resultText += Environment.NewLine + "Selected type: " + selectedType.Name;
+                }
+
+                openedFileContent.Text = resultText;
                 results.ItemsSource = mappedResults;
                 resultsVisible.IsVisible = mappedResults.Any();
             }
@@ -435,7 +455,7 @@ namespace ControlCatalog.Pages
         {
             base.OnAttachedToVisualTree(e);
 
-            var openedFileContent = this.Get<TextBox>("OpenedFileContent");
+            var openedFileContent = OpenedFileContent;
             try
             {
                 var storageProvider = GetStorageProvider();
@@ -494,7 +514,7 @@ CanPickFolder: {storageProvider.CanPickFolder}";
 
         private IStorageProvider GetStorageProvider()
         {
-            var forceManaged = this.Get<CheckBox>("ForceManaged").IsChecked ?? false;
+            var forceManaged = ForceManaged.IsChecked ?? false;
             return forceManaged 
                 ? new ManagedStorageProvider(GetWindow()) // NOTE: In your production App use 'AppBuilder.UseManagedSystemDialogs()'
                 : GetTopLevel().StorageProvider;
@@ -508,11 +528,6 @@ CanPickFolder: {storageProvider.CanPickFolder}";
 
         Window GetWindow() => TopLevel.GetTopLevel(this) as Window ?? throw new NullReferenceException("Invalid Owner");
         TopLevel GetTopLevel() => TopLevel.GetTopLevel(this) ?? throw new NullReferenceException("Invalid Owner");
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
     }
-}
 #pragma warning restore CS0618 // Type or member is obsolete
+}

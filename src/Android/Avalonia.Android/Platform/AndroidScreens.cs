@@ -10,6 +10,7 @@ using AndroidX.Window.Layout;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Platform;
 using AndroidOrientation = global::Android.Content.Res.Orientation;
+using AndroidRotation = global::Android.Views.SurfaceOrientation;
 
 namespace Avalonia.Android.Platform;
 
@@ -32,11 +33,18 @@ internal class AndroidScreen(Display display) : PlatformScreen(new PlatformHandl
             var metrics = metricsCalc.ComputeMaximumWindowMetrics(displayContext);
             Bounds = new(metrics.Bounds.Left, metrics.Bounds.Top, metrics.Bounds.Width(), metrics.Bounds.Height());
 
-            var inset = metrics.WindowInsets.GetInsets(WindowInsetsCompat.Type.SystemBars());
-            WorkingArea = new(Bounds.X + inset.Left,
-                Bounds.Y + inset.Top,
-                Bounds.Width - (inset.Left + inset.Right),
-                Bounds.Height - (inset.Top + inset.Bottom));
+            var windowInsets = new WindowInsetsCompat.Builder().Build();
+            if (windowInsets?.GetInsets(WindowInsetsCompat.Type.SystemBars()) is { } inset)
+            {
+                WorkingArea = new(Bounds.X + inset.Left,
+                    Bounds.Y + inset.Top,
+                    Bounds.Width - (inset.Left + inset.Right),
+                    Bounds.Height - (inset.Top + inset.Bottom));
+            }
+            else
+            {
+                WorkingArea = Bounds;
+            }
 
             if (context.Resources?.Configuration is { } config)
             {
@@ -46,7 +54,7 @@ internal class AndroidScreen(Display display) : PlatformScreen(new PlatformHandl
             var orientation = displayContext.Resources?.Configuration?.Orientation;
             if (orientation == AndroidOrientation.Square)
                 naturalOrientation = ScreenOrientation.None;
-            else if (rotation is SurfaceOrientation.Rotation0 or SurfaceOrientation.Rotation180)
+            else if (rotation is AndroidRotation.Rotation0 or AndroidRotation.Rotation180)
                 naturalOrientation = orientation == AndroidOrientation.Landscape ?
                     ScreenOrientation.Landscape :
                     ScreenOrientation.Portrait;
@@ -66,14 +74,14 @@ internal class AndroidScreen(Display display) : PlatformScreen(new PlatformHandl
         CurrentOrientation = (display.Rotation, naturalOrientation) switch
         {
             (_, ScreenOrientation.None) => ScreenOrientation.None,
-            (SurfaceOrientation.Rotation0, ScreenOrientation.Landscape) => ScreenOrientation.Landscape,
-            (SurfaceOrientation.Rotation90, ScreenOrientation.Landscape) => ScreenOrientation.Portrait,
-            (SurfaceOrientation.Rotation180, ScreenOrientation.Landscape) => ScreenOrientation.LandscapeFlipped,
-            (SurfaceOrientation.Rotation270, ScreenOrientation.Landscape) => ScreenOrientation.PortraitFlipped,
-            (SurfaceOrientation.Rotation0, _) => ScreenOrientation.Portrait,
-            (SurfaceOrientation.Rotation90, _) => ScreenOrientation.Landscape,
-            (SurfaceOrientation.Rotation180, _) => ScreenOrientation.PortraitFlipped,
-            (SurfaceOrientation.Rotation270, _) => ScreenOrientation.LandscapeFlipped,
+            (AndroidRotation.Rotation0, ScreenOrientation.Landscape) => ScreenOrientation.Landscape,
+            (AndroidRotation.Rotation90, ScreenOrientation.Landscape) => ScreenOrientation.Portrait,
+            (AndroidRotation.Rotation180, ScreenOrientation.Landscape) => ScreenOrientation.LandscapeFlipped,
+            (AndroidRotation.Rotation270, ScreenOrientation.Landscape) => ScreenOrientation.PortraitFlipped,
+            (AndroidRotation.Rotation0, _) => ScreenOrientation.Portrait,
+            (AndroidRotation.Rotation90, _) => ScreenOrientation.Landscape,
+            (AndroidRotation.Rotation180, _) => ScreenOrientation.PortraitFlipped,
+            (AndroidRotation.Rotation270, _) => ScreenOrientation.LandscapeFlipped,
             _ => ScreenOrientation.Portrait
         };
     }

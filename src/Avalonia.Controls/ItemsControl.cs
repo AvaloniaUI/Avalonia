@@ -64,18 +64,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="DisplayMemberBinding" /> property
         /// </summary>
-        public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
-            AvaloniaProperty.Register<ItemsControl, IBinding?>(nameof(DisplayMemberBinding));
+        public static readonly StyledProperty<BindingBase?> DisplayMemberBindingProperty =
+            AvaloniaProperty.Register<ItemsControl, BindingBase?>(nameof(DisplayMemberBinding));
 
         private static readonly AttachedProperty<ControlTheme?> AppliedItemContainerTheme =
             AvaloniaProperty.RegisterAttached<ItemsControl, Control, ControlTheme?>("AppliedItemContainerTheme");
 
         /// <summary>
-        /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
+        /// Gets or sets the <see cref="BindingBase"/> to use for binding to the display member of each item.
         /// </summary>
         [AssignBinding]
         [InheritDataTypeFromItems(nameof(ItemsSource))]
-        public IBinding? DisplayMemberBinding
+        public BindingBase? DisplayMemberBinding
         {
             get => GetValue(DisplayMemberBindingProperty);
             set => SetValue(DisplayMemberBindingProperty, value);
@@ -101,11 +101,7 @@ namespace Avalonia.Controls
         /// Gets the <see cref="ItemContainerGenerator"/> for the control.
         /// </summary>
         public ItemContainerGenerator ItemContainerGenerator
-        {
-#pragma warning disable CS0612 // Type or member is obsolete
-            get => _itemContainerGenerator ??= CreateItemContainerGenerator();
-#pragma warning restore CS0612 // Type or member is obsolete
-        }
+            => _itemContainerGenerator ??= new ItemContainerGenerator(this);
 
         /// <summary>
         /// Gets the items to display.
@@ -318,19 +314,6 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="item">The item.</param>
         public void ScrollIntoView(object item) => ScrollIntoView(ItemsView.IndexOf(item));
-
-        /// <summary>
-        /// Returns the <see cref="ItemsControl"/> that owns the specified container control.
-        /// </summary>
-        /// <param name="container">The container.</param>
-        /// <returns>
-        /// The owning <see cref="ItemsControl"/> or null if the control is not an items container.
-        /// </returns>
-        [Obsolete("Typo, use ItemsControlFromItemContainer instead")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [Browsable(false)]
-        public static ItemsControl? ItemsControlFromItemContaner(Control container) =>
-            ItemsControlFromItemContainer(container);
 
         /// <summary>
         /// Returns the <see cref="ItemsControl"/> that owns the specified container control.
@@ -672,20 +655,6 @@ namespace Avalonia.Controls
             ItemCount = ItemsView.Count;
         }
 
-        /// <summary>
-        /// Creates the <see cref="ItemContainerGenerator"/>
-        /// </summary>
-        /// <remarks>
-        /// This method is only present for backwards compatibility with 0.10.x in order for
-        /// TreeView to be able to create a <see cref="TreeItemContainerGenerator"/>. Can be
-        /// removed in 12.0.
-        /// </remarks>
-        [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
-        private protected virtual ItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new ItemContainerGenerator(this);
-        }
-
         internal void AddLogicalChild(Control c)
         {
             if (!LogicalChildren.Contains(c))
@@ -720,7 +689,7 @@ namespace Avalonia.Controls
             {
                 var itemContainerTheme = ItemContainerTheme;
 
-                if (itemContainerTheme?.TargetType?.IsAssignableFrom(GetStyleKey(container)) == true)
+                if (itemContainerTheme?.TargetType?.IsAssignableFrom(container.StyleKey) == true)
                 {
                     // We have an ItemContainerTheme and it matches the container. Set the Theme
                     // property, and mark the container as having had ItemContainerTheme applied.

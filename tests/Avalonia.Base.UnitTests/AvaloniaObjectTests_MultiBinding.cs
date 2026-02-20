@@ -76,7 +76,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
 
-            var b = new Subject<object>();
+            var b = new Subject<object?>();
 
             var mb = new MultiBinding()
             {
@@ -104,7 +104,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
 
-            var b = new Subject<object>();
+            var b = new Subject<object?>();
 
             var mb = new MultiBinding()
             {
@@ -128,7 +128,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new FuncMultiValueConverter<string, string>(v => string.Join(",", v.ToArray()));
 
-            object value = target.Convert(new[] { "Foo", "Bar", "Baz" }, typeof(string), null, CultureInfo.InvariantCulture);
+            object? value = target.Convert(new[] { "Foo", "Bar", "Baz" }, typeof(string), null, CultureInfo.InvariantCulture);
 
             Assert.Equal("Foo,Bar,Baz", value);
 
@@ -142,16 +142,30 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new FuncMultiValueConverter<StringValueTypeWrapper, string>(v => string.Join(",", v.ToArray()));
 
-            IList<object> create(string[] values) =>
-                values.Select(v => (object)(v != null ? new StringValueTypeWrapper() { Value = v } : default)).ToList();
+            IList<object?> Create(string?[] values) =>
+                values.Select(v => (object?)(v != null ? new StringValueTypeWrapper() { Value = v } : default)).ToList();
 
-            object value = target.Convert(create(new[] { "Foo", "Bar", "Baz" }), typeof(string), null, CultureInfo.InvariantCulture);
+            var value = target.Convert(Create(new[] { "Foo", "Bar", "Baz" }), typeof(string), null, CultureInfo.InvariantCulture);
 
             Assert.Equal("Foo,Bar,Baz", value);
 
-            value = target.Convert(create(new[] { null, "Bar", "Baz" }), typeof(string), null, CultureInfo.InvariantCulture);
+            value = target.Convert(Create(new[] { null, "Bar", "Baz" }), typeof(string), null, CultureInfo.InvariantCulture);
 
             Assert.Equal(",Bar,Baz", value);
+        }
+        
+        [Fact]
+        public void MultiValueConverter_Supports_Indexing_The_Parameters()
+        {
+            var target = new FuncMultiValueConverter<string, string?>(v => v[0]);
+
+            var value = target.Convert(new[] { "Foo", "Bar", "Baz" }, typeof(string), null, CultureInfo.InvariantCulture);
+
+            Assert.Equal("Foo", value);
+
+            value = target.Convert(new[] { null, "Bar", "Baz" }, typeof(string), null, CultureInfo.InvariantCulture);
+
+            Assert.Null(value);
         }
 
         private struct StringValueTypeWrapper

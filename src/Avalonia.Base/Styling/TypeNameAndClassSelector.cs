@@ -93,7 +93,7 @@ namespace Avalonia.Styling
         {
             if (TargetType != null)
             {
-                var controlType = StyledElement.GetStyleKey(control) ?? control.GetType();
+                var controlType = control.StyleKey ?? control.GetType();
 
                 if (IsConcreteType)
                 {
@@ -143,7 +143,7 @@ namespace Avalonia.Styling
 
             if (_previous != null)
             {
-                builder.Append(_previous.ToString(owner));
+                builder.Append(_previous.ToString(owner, true));
             }
 
             if (TargetType != null)

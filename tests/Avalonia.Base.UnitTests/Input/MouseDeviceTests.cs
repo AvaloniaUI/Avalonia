@@ -80,7 +80,7 @@ namespace Avalonia.Base.UnitTests.Input
             }, renderer.Object);
 
             // Synthesize event to receive a pointer.
-            IPointer result = null;
+            IPointer? result = null;
             root.PointerMoved += (_, a) =>
             {
                 result = a.Pointer;

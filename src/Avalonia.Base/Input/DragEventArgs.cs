@@ -4,14 +4,14 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
-    public class DragEventArgs : RoutedEventArgs
+    public class DragEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     {
         private readonly Interactive _target;
         private readonly Point _targetLocation;
 
         public DragDropEffects DragEffects { get; set; }
 
-        public IDataObject Data { get; }
+        public IDataTransfer DataTransfer { get; }
 
         public KeyModifiers KeyModifiers { get; }
 
@@ -26,10 +26,15 @@ namespace Avalonia.Input
         }
 
         [Unstable("This constructor might be removed in 12.0. For unit testing, consider using DragDrop.DoDragDrop or IHeadlessWindow.DragDrop.")]
-        public DragEventArgs(RoutedEvent<DragEventArgs> routedEvent, IDataObject data, Interactive target, Point targetLocation, KeyModifiers keyModifiers)
+        public DragEventArgs(
+            RoutedEvent<DragEventArgs> routedEvent,
+            IDataTransfer dataTransfer,
+            Interactive target,
+            Point targetLocation,
+            KeyModifiers keyModifiers)
             : base(routedEvent)
         {
-            Data = data;
+            DataTransfer = dataTransfer;
             _target = target;
             _targetLocation = targetLocation;
             KeyModifiers = keyModifiers;

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <DefineConstants>$(DefineConstants);PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER;XAMLX_INTERNAL</DefineConstants>
     <UseCecil>false</UseCecil>
     <DefineConstants Condition="$(UseCecil) == true">$(DefineConstants);RUNTIME_XAML_CECIL</DefineConstants>
@@ -20,7 +20,6 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="MarkupExtension.cs" />
     <Compile Include="MarkupExtensions\CompiledBindingExtension.cs" />
-    <Compile Include="MarkupExtensions\CompiledBindings\CompiledBindingPath.cs" />
     <Compile Include="MarkupExtensions\CompiledBindings\PropertyInfoAccessorFactory.cs" />
     <Compile Include="MarkupExtensions\CompiledBindings\TaskStreamPlugin.cs" />
     <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
@@ -39,6 +38,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RuntimeXamlLoaderConfiguration.cs" />
     <Compile Include="RuntimeXamlLoaderDocument.cs" />
+    <Compile Include="Diagnostics\XamlSourceInfo.cs" />
     <Compile Include="Styling\MergeResourceInclude.cs" />
     <Compile Include="Styling\ResourceInclude.cs" />
     <Compile Include="Styling\StyleInclude.cs" />

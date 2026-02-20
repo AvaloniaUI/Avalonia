@@ -220,11 +220,10 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// The binding expression is already instantiated on an AvaloniaObject.
     /// </exception>
     /// <remarks>
-    /// This method is mostly here for backwards compatibility with <see cref="InstancedBinding"/>
-    /// and unit testing and we may want to remove it in future. In particular its usefulness in
-    /// terms of unit testing is limited in that it preserves the semantics of binding expressions
-    /// as expected by unit tests, not necessarily the semantics that will be used when the
-    /// expression is used as an <see cref="IValueEntry"/> instantiated in a
+    /// This method is mostly here for unit testing and we may want to remove it in future. In
+    /// particular its usefulness is limited in that it preserves the semantics of binding
+    /// expressions as expected by unit tests, not necessarily the semantics that will be used
+    /// when the expression is used as an <see cref="IValueEntry"/> instantiated in a
     /// <see cref="ValueStore"/>. Unit tests should be migrated to not test the behaviour of
     /// binding expressions through an observable, and instead test the behaviour of the binding
     /// when applied to an <see cref="AvaloniaObject"/>.

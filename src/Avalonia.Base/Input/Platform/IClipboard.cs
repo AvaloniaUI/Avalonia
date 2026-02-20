@@ -3,60 +3,66 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Input.Platform
 {
+    /// <summary>
+    /// Represents the system clipboard.
+    /// </summary>
     [NotClientImplementable]
     public interface IClipboard
     {
         /// <summary>
-        /// Returns a string containing the text data on the Clipboard.
-        /// </summary>
-        /// <returns>A string containing text data in the specified data format, or an empty string if no corresponding text data is available.</returns>
-        Task<string?> GetTextAsync();
-
-        /// <summary>
-        /// Stores text data on the Clipboard. The text data to store is specified as a string.
-        /// </summary>
-        /// <param name="text">A string that contains the UnicodeText data to store on the Clipboard.</param>
-        /// <exception cref="System.ArgumentNullException"><paramref name="text"/> is null.</exception>
-        Task SetTextAsync(string? text);
-
-        /// <summary>
-        /// Clears any data from the system Clipboard.
+        /// Clears any data from the system clipboard.
         /// </summary>
         Task ClearAsync();
 
         /// <summary>
-        /// Places a specified non-persistent data object on the system Clipboard.
+        /// Places a data object on the clipboard.
+        /// The data object is responsible for providing supported formats and data upon request.
         /// </summary>
-        /// <param name="data">A data object (an object that implements <see cref="IDataObject"/>) to place on the system Clipboard.</param>
-        /// <exception cref="System.ArgumentNullException"><paramref name="data"/> is null.</exception>
-        Task SetDataObjectAsync(IDataObject data);
+        /// <param name="dataTransfer">The data object to set on the clipboard.</param>
+        /// <remarks>
+        /// <para>
+        /// If <paramref name="dataTransfer"/> is null, nothing will get placed on the clipboard and this method
+        /// will be equivalent to <see cref="ClearAsync"/>.
+        /// </para>
+        /// <para>
+        /// The <see cref="IAsyncDataTransfer"/> must NOT be disposed by the caller after this call.
+        /// The clipboard will dispose of it automatically when it becomes unused.
+        /// </para>
+        /// </remarks>
+        Task SetDataAsync(IAsyncDataTransfer? dataTransfer);
 
         /// <summary>
         /// Permanently adds the data that is on the Clipboard so that it is available after the data's original application closes.
         /// </summary>
         /// <returns></returns>
-        /// <remarks>This method works only on Windows platform, on other platforms it does nothing.</remarks>
+        /// <remarks>This method is only supported on the Windows platform. This method will do nothing on other platforms.</remarks>
         Task FlushAsync();
 
         /// <summary>
-        /// Get list of available Clipboard format.
+        /// Retrieves data from the clipboard.
         /// </summary>
-        Task<string[]> GetFormatsAsync();
+        /// <remarks>
+        /// <para>The returned <see cref="IAsyncDataTransfer"/> MUST be disposed by the caller.</para>
+        /// <para>
+        /// Avoid storing the returned <see cref="IAsyncDataTransfer"/> instance for a long time:
+        /// use it, then dispose it as soon as possible.
+        /// </para>
+        /// </remarks>
+        Task<IAsyncDataTransfer?> TryGetDataAsync();
 
         /// <summary>
-        /// Retrieves data in a specified format from the Clipboard.
+        /// Retrieves the exact instance of a <see cref="IAsyncDataTransfer"/> previously placed on the clipboard
+        /// by <see cref="SetDataAsync"/>, if any.
         /// </summary>
-        /// <param name="format">A string that specifies the format of the data to retrieve. For a set of predefined data formats, see the <see cref="DataFormats"/> class.</param>
-        /// <returns></returns>
-        Task<object?> GetDataAsync(string format);
-        
-        /// <summary>
-        /// If clipboard contains the IDataObject that was set by a previous call to <see cref="SetDataObjectAsync"/>,
-        /// return said IDataObject instance. Otherwise, return null.
-        /// Note that not every platform supports that method, on unsupported platforms this method will always return
-        /// null
-        /// </summary>
-        /// <returns></returns>
-        Task<IDataObject?> TryGetInProcessDataObjectAsync();
+        /// <returns>The data transfer object if present, null otherwise.</returns>
+        /// <remarks>
+        /// <para>This method cannot be used to retrieve a <see cref="IAsyncDataTransfer"/> set by another process.</para>
+        /// <para>This method is only supported on Windows, macOS and X11 platforms. Other platforms will always return null.</para>
+        /// <para>
+        /// Contrary to <see cref="TryGetDataAsync"/>, the returned <see cref="IAsyncDataTransfer"/> must NOT be disposed
+        /// by the caller since it's still owned by the clipboard.
+        /// </para>
+        /// </remarks>
+        Task<IAsyncDataTransfer?> TryGetInProcessDataAsync();
     }
 }

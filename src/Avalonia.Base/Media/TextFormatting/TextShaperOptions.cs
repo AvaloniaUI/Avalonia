@@ -8,29 +8,16 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public readonly record struct TextShaperOptions
     {
-        // TODO12: Remove in 12.0.0 and make fontFeatures parameter in main ctor optional
         public TextShaperOptions(
-            IGlyphTypeface typeface,
-            double fontRenderingEmSize = 12,
-            sbyte bidiLevel = 0,
-            CultureInfo? culture = null,
-            double incrementalTabWidth = 0,
-            double letterSpacing = 0)
-            : this(typeface, null, fontRenderingEmSize, bidiLevel, culture, incrementalTabWidth, letterSpacing)
-        {
-        }
-
-        // TODO12:Change signature in 12.0.0
-        public TextShaperOptions(
-            IGlyphTypeface typeface, 
-            IReadOnlyList<FontFeature>? fontFeatures,
-            double fontRenderingEmSize = 12, 
+            GlyphTypeface typeface, 
+            double fontRenderingEmSize = GenericTextRunProperties.DefaultFontRenderingEmSize,
             sbyte bidiLevel = 0, 
             CultureInfo? culture = null, 
             double incrementalTabWidth = 0,
-            double letterSpacing = 0)
+            double letterSpacing = 0,
+            IReadOnlyList<FontFeature>? fontFeatures = null)
         {
-            Typeface = typeface;
+            GlyphTypeface = typeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
             Culture = culture;
@@ -42,7 +29,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Get the typeface.
         /// </summary>
-        public IGlyphTypeface Typeface { get; }
+        public GlyphTypeface GlyphTypeface { get; }
         /// <summary>
         /// Get the font rendering em size.
         /// </summary>

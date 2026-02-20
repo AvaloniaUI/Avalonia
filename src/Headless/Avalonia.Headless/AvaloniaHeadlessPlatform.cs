@@ -63,13 +63,25 @@ namespace Avalonia.Headless
             public IWindowImpl CreateEmbeddableWindow() => throw new PlatformNotSupportedException();
 
             public ITrayIconImpl? CreateTrayIcon() => null;
+
+            public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+            {
+                for (var i = 0; i < windows.Length; ++i)
+                {
+                    zOrder[i] = (windows[i] as HeadlessWindowImpl)?.ZOrder ?? 0;
+                }
+            }
         }
         
         internal static void Initialize(AvaloniaHeadlessPlatformOptions opts)
         {
+            var clipboardImpl = new HeadlessClipboardImplStub();
+            var clipboard = new Clipboard(clipboardImpl);
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(null))
-                .Bind<IClipboard>().ToSingleton<HeadlessClipboardStub>()
+                .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
+                .Bind<IClipboard>().ToConstant(clipboard)
                 .Bind<ICursorFactory>().ToSingleton<HeadlessCursorFactoryStub>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()

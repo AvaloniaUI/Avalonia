@@ -1,21 +1,17 @@
 using System;
 using System.Runtime.InteropServices;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Notifications;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml;
-using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
-    public class MainWindow : Window
+    public partial class MainWindow : Window
     {
         private NativeMenu? _recentMenu;
 
         public MainWindow()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             _recentMenu = ((NativeMenu.GetMenu(this)?.Items[0] as NativeMenuItem)?.Menu?.Items[2] as NativeMenuItem)?.Menu;
         }
@@ -34,11 +30,6 @@ namespace ControlCatalog
         public void OnCloseClicked(object sender, EventArgs args)
         {
             Close();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

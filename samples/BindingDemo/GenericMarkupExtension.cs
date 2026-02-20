@@ -5,7 +5,7 @@ namespace BindingDemo;
 
 internal class GenericMarkupExtension<T> : MarkupExtension
 {
-    public T Value { get; set; }
+    public T? Value { get; set; }
 
     public override object ProvideValue(IServiceProvider serviceProvider)
     {

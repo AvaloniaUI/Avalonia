@@ -11,6 +11,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Threading;
@@ -74,12 +75,6 @@ namespace Avalonia.Controls
             add => AddHandler(SelectingItemsControl.SelectionChangedEvent, value);
             remove => RemoveHandler(SelectingItemsControl.SelectionChangedEvent, value);
         }
-
-        /// <summary>
-        /// Gets the <see cref="TreeItemContainerGenerator"/> for the tree view.
-        /// </summary>
-        public new TreeItemContainerGenerator ItemContainerGenerator =>
-            (TreeItemContainerGenerator)base.ItemContainerGenerator;
 
         /// <summary>
         /// Gets or sets a value indicating whether to automatically scroll to newly selected items.
@@ -662,25 +657,36 @@ namespace Avalonia.Controls
             return result;
         }
 
-        /// <inheritdoc/>
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        /// <inheritdoc cref="ItemSelectionEventTriggers.ShouldTriggerSelection(Visual, PointerEventArgs)"/>
+        /// <seealso cref="UpdateSelectionFromEvent"/>
+        protected virtual bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs) => ItemSelectionEventTriggers.ShouldTriggerSelection(selectable, eventArgs);
+
+        /// <inheritdoc cref="ItemSelectionEventTriggers.ShouldTriggerSelection(Visual, PointerEventArgs)"/>
+        protected virtual bool ShouldTriggerSelection(Visual selectable, KeyEventArgs eventArgs) => ItemSelectionEventTriggers.ShouldTriggerSelection(selectable, eventArgs);
+
+        /// <inheritdoc cref="SelectingItemsControl.UpdateSelectionFromEvent"/>
+        /// <seealso cref="SelectingItemsControl.UpdateSelectionFromEvent"/>
+        public virtual bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
         {
-            base.OnPointerPressed(e);
-
-            if (e.Source is Visual source)
+            if (eventArgs.Handled)
             {
-                var point = e.GetCurrentPoint(source);
+                return false;
+            }
 
-                if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
-                {
-                    var keymap = Application.Current!.PlatformSettings!.HotkeyConfiguration;
-                    e.Handled = UpdateSelectionFromEventSource(
-                        e.Source,
-                        true,
-                        e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                        e.KeyModifiers.HasAllFlags(keymap.CommandModifiers),
-                        point.Properties.IsRightButtonPressed);
-                }
+            switch (eventArgs)
+            {
+                case PointerEventArgs pointerEvent when ShouldTriggerSelection(container, pointerEvent):
+                case KeyEventArgs keyEvent when ShouldTriggerSelection(container, keyEvent):
+                    UpdateSelectionFromContainer(container, true,
+                        ItemSelectionEventTriggers.HasRangeSelectionModifier(container, eventArgs),
+                        ItemSelectionEventTriggers.HasToggleSelectionModifier(container, eventArgs),
+                        eventArgs is PointerEventArgs { Properties.IsRightButtonPressed: true });
+
+                    eventArgs.Handled = true;
+                    return true;
+
+                default:
+                    return false;
             }
         }
 
@@ -759,12 +765,6 @@ namespace Avalonia.Controls
                     }
                 }
             }
-        }
-
-        [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
-        private protected override ItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new TreeItemContainerGenerator(this);
         }
 
         /// <summary>

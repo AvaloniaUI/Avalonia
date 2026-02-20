@@ -77,12 +77,6 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(Placement), defaultValue: PlacementMode.Bottom);
 
         /// <summary>
-        /// Defines the <see cref="PlacementMode"/> property.
-        /// </summary>
-        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
-        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
-
-        /// <summary>
         /// Defines the <see cref="PlacementRect"/> property.
         /// </summary>
         public static readonly StyledProperty<Rect?> PlacementRectProperty =
@@ -277,14 +271,6 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(PlacementGravityProperty, value);
         }
 
-        /// <inheritdoc cref="Placement"/>
-        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
-        public PlacementMode PlacementMode
-        {
-            get => GetValue(PlacementProperty);
-            set => SetValue(PlacementProperty, value);
-        }
-
         /// <summary>
         /// Gets or sets the desired placement of the popup in relation to the <see cref="PlacementTarget"/>.
         /// </summary>
@@ -470,7 +456,7 @@ namespace Avalonia.Controls.Primitives
 
             if (InheritsTransform)
             {
-                TransformTrackingHelper.Track(placementTarget, PlacementTargetTransformChanged)
+                TransformTrackingHelper.Track(placementTarget, true, PlacementTargetTransformChanged)
                     .DisposeWith(handlerCleanup);
             }
             else
@@ -535,6 +521,16 @@ namespace Avalonia.Controls.Primitives
                         (x, handler) => x.Closed += handler,
                         (x, handler) => x.Closed -= handler).DisposeWith(handlerCleanup);
                 }
+            }
+            else if (topLevel is { } wtl && wtl.PlatformImpl is IWindowBaseImpl wimpl)
+            {
+                SubscribeToEventHandler<ITopLevelImpl, Action>(wimpl, TopLevelLostPlatformFocus,
+                    (x, handler) => x.LostFocus += handler,
+                    (x, handler) => x.LostFocus -= handler).DisposeWith(handlerCleanup);
+
+                SubscribeToEventHandler<IWindowBaseImpl, Action>(wimpl, WindowBaseDeactivated,
+                    (x, handler) => x.Deactivated += handler,
+                    (x, handler) => x.Deactivated -= handler).DisposeWith(handlerCleanup);
             }
             else if (topLevel is { } tl && tl.PlatformImpl is ITopLevelImpl pimpl)
             {
@@ -980,6 +976,14 @@ namespace Avalonia.Controls.Primitives
         public bool IsPointerOverPopup => ((IInputElement?)_openState?.PopupHost)?.IsPointerOver ?? false;
 
         private void WindowDeactivated(object? sender, EventArgs e)
+        {
+            if (IsLightDismissEnabled)
+            {
+                Close();
+            }
+        }
+
+        private void WindowBaseDeactivated()
         {
             if (IsLightDismissEnabled)
             {

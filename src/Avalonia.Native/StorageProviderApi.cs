@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -155,10 +153,10 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
 
     public async Task<IReadOnlyList<IStorageFile>> OpenFileDialog(TopLevelImpl? topLevel, FilePickerOpenOptions options)
     {
-        using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeFilter, null);
+        using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeFilter, null, options.SuggestedFileType);
         var suggestedDirectory = options.SuggestedStartLocation?.Path.AbsoluteUri ?? string.Empty;
 
-        var results = await OpenDialogAsync(events =>
+        var (items, _) = await OpenDialogAsync(events =>
         {
             _native.OpenFileDialog((IAvnWindow?)topLevel?.Native,
                 events,
@@ -167,17 +165,17 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
                 suggestedDirectory,
                 options.SuggestedFileName ?? string.Empty,
                 fileTypes);
-        });
+        }).ConfigureAwait(false);
 
-        return results.OfType<IStorageFile>().ToArray();
+        return items.OfType<IStorageFile>().ToArray();
     }
 
-    public async Task<IStorageFile?> SaveFileDialog(TopLevelImpl? topLevel, FilePickerSaveOptions options)
+    public async Task<(IStorageFile? file, FilePickerFileType? selectedType)> SaveFileDialog(TopLevelImpl? topLevel, FilePickerSaveOptions options)
     {
-        using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeChoices, options.DefaultExtension);
+        using var fileTypes = new FilePickerFileTypesWrapper(options.FileTypeChoices, options.DefaultExtension, options.SuggestedFileType);
         var suggestedDirectory = options.SuggestedStartLocation?.Path.AbsoluteUri ?? string.Empty;
 
-        var results = await OpenDialogAsync(events =>
+        var (items, selectedFilterIndex) = await OpenDialogAsync(events =>
         {
             _native.SaveFileDialog((IAvnWindow?)topLevel?.Native,
                 events,
@@ -185,48 +183,77 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
                 suggestedDirectory,
                 options.SuggestedFileName ?? string.Empty,
                 fileTypes);
-        }, create: true);
+        }, create: true).ConfigureAwait(false);
 
-        return results.OfType<IStorageFile>().FirstOrDefault();
+        var file = items.OfType<IStorageFile>().FirstOrDefault();
+        FilePickerFileType? selectedType = null;
+        if (selectedFilterIndex is { } index && index >= 0 && options.FileTypeChoices is { Count: > 0 } choices && index < choices.Count)
+        {
+            selectedType = choices[index];
+        }
+
+        return (file, selectedType);
     }
 
     public async Task<IReadOnlyList<IStorageFolder>> SelectFolderDialog(TopLevelImpl? topLevel, FolderPickerOpenOptions options)
     {
         var suggestedDirectory = options.SuggestedStartLocation?.Path.AbsoluteUri ?? string.Empty;
 
-        var results = await OpenDialogAsync(events =>
+        var (items, _) = await OpenDialogAsync(events =>
         {
             _native.SelectFolderDialog((IAvnWindow?)topLevel?.Native,
                 events,
                 options.AllowMultiple.AsComBool(),
                 options.Title ?? "",
                 suggestedDirectory);
-        });
+        }).ConfigureAwait(false);
 
-        return results.OfType<IStorageFolder>().ToArray();
+        return items.OfType<IStorageFolder>().ToArray();
     }
 
-    public async Task<IEnumerable<IStorageItem>> OpenDialogAsync(Action<SystemDialogEvents> runDialog, bool create = false)
+    public async Task<(IEnumerable<IStorageItem> Items, int? SelectedFilterIndex)> OpenDialogAsync(Action<SystemDialogEvents> runDialog, bool create = false)
     {
         using var events = new SystemDialogEvents();
         runDialog(events);
-        var result = await events.Task.ConfigureAwait(false);
-        return (result?
+        var (result, selectedFilterIndex) = await events.Task.ConfigureAwait(false);
+
+        var items = result
             .Select(f => Uri.TryCreate(f, UriKind.Absolute, out var uri) ? TryGetStorageItem(uri, create) : null)
-            .Where(f => f is not null) ?? [])!;
+            .OfType<IStorageItem>()
+            .ToArray();
+
+        return (items, selectedFilterIndex);
+    }
+
+    public Uri? TryResolveFileReferenceUri(Uri uri)
+    {
+        using var uriString = new AvnString(uri.AbsoluteUri);
+        using var resultString = _native.TryResolveFileReferenceUri(uriString);
+
+        return Uri.TryCreate(resultString?.String, UriKind.Absolute, out var resultUri) ? resultUri : null;
     }
 
     internal class FilePickerFileTypesWrapper(
         IReadOnlyList<FilePickerFileType>? types,
-        string? defaultExtension)
+        string? defaultExtension,
+        FilePickerFileType? suggestedType)
         : NativeCallbackBase, IAvnFilePickerFileTypes
     {
         private readonly List<IDisposable> _disposables = new();
 
         public int Count => types?.Count ?? 0;
 
-        public int IsDefaultType(int index) => (defaultExtension is not null &&
-            types![index].TryGetExtensions()?.Any(defaultExtension.EndsWith) == true).AsComBool();
+        public int IsDefaultType(int index)
+        {
+            if (types is null)
+                return false.AsComBool();
+
+            if (suggestedType is not null && ReferenceEquals(types[index], suggestedType))
+                return true.AsComBool();
+
+            return (defaultExtension is not null &&
+                    types[index].TryGetExtensions()?.Any(defaultExtension.EndsWith) == true).AsComBool();
+        }
 
         public int IsAnyType(int index) =>
             (types![index].Patterns?.Contains("*.*") == true || types[index].MimeTypes?.Contains("*.*") == true)
@@ -274,15 +301,27 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
 
     internal class SystemDialogEvents : NativeCallbackBase, IAvnSystemDialogEvents
     {
-        private readonly TaskCompletionSource<string[]> _tcs = new();
+        private readonly TaskCompletionSource<(string[] Results, int? SelectedFilterIndex)> _tcs = new();
 
-        public Task<string[]> Task => _tcs.Task;
+        public Task<(string[] Results, int? SelectedFilterIndex)> Task => _tcs.Task;
 
         public void OnCompleted(IAvnStringArray? ppv)
         {
+            Complete(ppv, null);
+        }
+
+        public void OnCompletedWithFilter(IAvnStringArray? ppv, int selectedFilterIndex)
+        {
+            Complete(ppv, selectedFilterIndex);
+        }
+
+        private void Complete(IAvnStringArray? ppv, int? selectedFilterIndex)
+        {
             using (ppv)
             {
-                _tcs.SetResult(ppv?.ToStringArray() ?? []);
+                var items = ppv?.ToStringArray() ?? Array.Empty<string>();
+                var typeIndex = selectedFilterIndex is >= 0 ? selectedFilterIndex : null;
+                _tcs.TrySetResult((items, typeIndex));
             }
         }
     }

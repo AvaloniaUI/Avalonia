@@ -260,13 +260,13 @@ namespace Avalonia.FreeDesktop
 
                     if (name == "toggle-type")
                     {
-                        if (item.ToggleType == NativeMenuItemToggleType.CheckBox)
+                        if (item.ToggleType == MenuItemToggleType.CheckBox)
                             return VariantValue.String("checkmark");
-                        if (item.ToggleType == NativeMenuItemToggleType.Radio)
+                        if (item.ToggleType == MenuItemToggleType.Radio)
                             return VariantValue.String("radio");
                     }
 
-                    if (name == "toggle-state" && item.ToggleType != NativeMenuItemToggleType.None)
+                    if (name == "toggle-state" && item.ToggleType != MenuItemToggleType.None)
                         return VariantValue.Int32(item.IsChecked ? 1 : 0);
 
                     if (name == "icon-data")

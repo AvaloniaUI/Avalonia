@@ -33,7 +33,7 @@ curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scri
 ##  Build and Run Avalonia
 
 ```bash
-cd samples\ControlCatalog.NetCore
+cd samples\ControlCatalog.Desktop
 dotnet restore
 dotnet run
 ```
@@ -47,7 +47,7 @@ If you want to open Avalonia in Visual Studio you have two options:
 
 Avalonia requires Visual Studio 2022 or newer. The free Visual Studio Community edition works fine.
 
-Build and run `ControlCatalog.NetCore` project to see the sample application.
+Build and run `ControlCatalog.Desktop` project to see the sample application.
 
 ### Visual Studio Troubleshooting
 
@@ -70,6 +70,9 @@ And run tests:
 
 Or if you need to create nuget packages as well (it will compile and run tests automatically):
 `nuke --target Package --configuration Release`
+
+Alternatively, you can run nuke build directly without installing Nuke global tool:
+`dotnet run --project nukebuild/_build.csproj -- --configuration Debug`
 
 # Linux/macOS
 
