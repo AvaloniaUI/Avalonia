@@ -45,7 +45,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Button with TextBlock", button.Text);
         }
 
-        [PlatformFact(TestPlatforms.Windows)]
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.Linux)]
         public void ButtonWithAcceleratorKey()
         {
             var button = Session.FindElementByAccessibilityId("ButtonWithAcceleratorKey");

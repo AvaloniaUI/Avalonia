@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium.Appium;
+﻿using System.IO;
+using OpenQA.Selenium.Appium;
 
 namespace Avalonia.IntegrationTests.Appium
 {
@@ -14,6 +15,12 @@ namespace Avalonia.IntegrationTests.Appium
         {
             base.ConfigureMacOptions(options, app);
             options.AddAdditionalCapability("appium:arguments", new[] { "--overlayPopups" });
+        }
+
+        protected override void ConfigureLinuxOptions(AppiumOptions options, string? app = null)
+        {
+            var appPath = (app ?? Path.GetFullPath(TestAppPathLinux)) + " --overlayPopups";
+            base.ConfigureLinuxOptions(options, appPath);
         }
     }
 }

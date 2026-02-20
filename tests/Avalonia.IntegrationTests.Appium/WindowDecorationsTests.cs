@@ -12,7 +12,7 @@ public class WindowDecorationsTests : TestBase, IDisposable
     {
     }
 
-    [Fact]
+    [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
     public void Window_Size_Should_Be_Consistent_Between_Toggles()
     {
         var window = Session.FindElementByAccessibilityId("MainWindow");
@@ -38,7 +38,15 @@ public class WindowDecorationsTests : TestBase, IDisposable
         Assert.Equal(original, window.Size);
     }
 
-    [Fact]
+    [PlatformFact(TestPlatforms.Linux)]
+    public void Linux_Window_Size_Should_Be_Consistent_Between_Toggles()
+    {
+        using var fixture = new DefaultAppFixture();
+        var isolated = new WindowDecorationsTests(fixture);
+        isolated.Window_Size_Should_Be_Consistent_Between_Toggles();
+    }
+
+    [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
     public void Can_Restore_To_Non_Extended_State()
     {
         SetParameters(true, true, false, false, 20);
@@ -55,6 +63,21 @@ public class WindowDecorationsTests : TestBase, IDisposable
 
         var props = Session.FindElementByAccessibilityId("WindowDecorationProperties");
         Assert.Equal($"0 0 False", props.Text);
+    }
+
+    [PlatformFact(TestPlatforms.Linux)]
+    public void Linux_Can_Restore_To_Non_Extended_State()
+    {
+        using var fixture = new DefaultAppFixture();
+        var isolated = new WindowDecorationsTests(fixture);
+        isolated.SetParameters(true, true, false, false, 20);
+        isolated.ApplyToCurrentWindow();
+
+        isolated.SetParameters(false, false, false, false, 1000);
+        isolated.ApplyToCurrentWindow();
+
+        var props = isolated.Session.FindElementByAccessibilityId("WindowDecorationProperties");
+        Assert.Equal("0 0 False", props.Text);
     }
 
     [PlatformTheory(TestPlatforms.Windows)]  // We don't have client chrome on macOS
@@ -82,7 +105,7 @@ public class WindowDecorationsTests : TestBase, IDisposable
         }
     }
 
-    [Theory]
+    [PlatformTheory(TestPlatforms.Windows | TestPlatforms.MacOS)]
     [InlineData(-1)]
     [InlineData(25)]
     [InlineData(50)]

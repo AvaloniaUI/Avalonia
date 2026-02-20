@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
   <av:ImportTypes>Types.xml</av:ImportTypes>
   <!--
@@ -69,7 +69,6 @@
           <av:Struct Type="AtSpiMatchRule"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiMatchRule"/>
       <arg direction="in" name="sortby" type="u"/>
       <arg direction="in" name="count" type="i"/>
       <arg direction="in" name="traverse" type="b"/>
@@ -80,7 +79,6 @@
           </av:List>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiReferenceSet"/>
     </method>
 
     <!--
@@ -120,13 +118,11 @@
           <av:Struct Type="AtSpiObjectReference"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiObjectReference"/>
       <arg direction="in" name="rule" type="(aiia{ss}iaiiasib)">
         <av:TypeDefinition>
           <av:Struct Type="AtSpiMatchRule"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QSpiMatchRule"/>
       <arg direction="in" name="sortby" type="u"/>
       <arg direction="in" name="tree" type="u"/>
       <arg direction="in" name="limit_scope" type="b"/>
@@ -139,7 +135,6 @@
           </av:List>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiReferenceSet"/>
     </method>
 
     <!--
@@ -171,13 +166,11 @@
           <av:Struct Type="AtSpiObjectReference"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiObjectReference"/>
       <arg direction="in" name="rule" type="(aiia{ss}iaiiasib)">
         <av:TypeDefinition>
           <av:Struct Type="AtSpiMatchRule"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QSpiMatchRule"/>
       <arg direction="in" name="sortby" type="u"/>
       <arg direction="in" name="tree" type="u"/>
       <arg direction="in" name="count" type="i"/>
@@ -189,7 +182,6 @@
           </av:List>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiReferenceSet"/>
     </method>
 
     <!--
@@ -204,7 +196,6 @@
           <av:Struct Type="AtSpiObjectReference"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiReferenceSet"/>
     </method>
 
   </interface>

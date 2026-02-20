@@ -28,6 +28,8 @@ namespace Avalonia.IntegrationTests.Appium
                 return Platforms.HasFlag(TestPlatforms.Windows);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 return Platforms.HasFlag(TestPlatforms.MacOS);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return Platforms.HasFlag(TestPlatforms.Linux);
             return false;
         }
     }

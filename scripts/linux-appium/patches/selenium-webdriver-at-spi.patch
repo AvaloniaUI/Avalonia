@@ -1,0 +1,938 @@
+diff --git a/selenium-webdriver-at-spi.py b/selenium-webdriver-at-spi.py
+index 5eb4508..b321fe0 100644
+--- a/selenium-webdriver-at-spi.py
++++ b/selenium-webdriver-at-spi.py
+@@ -75,7 +75,7 @@ def _createNode2(accessible, parentElement, indexInParents=[]):
+     if not accessible:
+         return
+     # A bit of aggressive filtering to not introspect chromium and firefox and the likes when using the desktop root.
+-    if accessible.toolkitName != "Qt" and accessible.toolkitName != "at-spi-registry":
++    if accessible.toolkitName not in ("Qt", "at-spi-registry", "Avalonia", None, ""):
+         return
+ 
+     roleName = accessible.getRoleName()
+@@ -136,6 +136,14 @@ class Session:
+     def __init__(self) -> None:
+         self.id = str(uuid.uuid1())
+         self.elements = {}  # a cache to hold elements between finding and interacting with
++        # Track synthesized input state so /actions DELETE (releaseActions) can
++        # reliably reset sticky buttons/keys between tests.
++        self.input_state = {
++            'pointer_x': 0,
++            'pointer_y': 0,
++            'pressed_buttons': set(),
++            'pressed_keys': set(),
++        }
+         self.browsing_context = None
+         self.pid = -1
+         # implicit deviates from spec, 0 is unreasonable
+@@ -148,23 +156,17 @@ class Session:
+         desired_timeouts = None
+         desired_environ = None
+         if 'desiredCapabilities' in blob:
+-            if 'app' in blob['desiredCapabilities']:
+-                desired_app = blob['desiredCapabilities']['app']
+-            else:
+-                desired_app = blob['desiredCapabilities']['appium:app']
+-            if 'timeouts' in blob['desiredCapabilities']:
+-                desired_timeouts = blob['desiredCapabilities']['timeouts']
+-            if 'appium:environ' in blob['desiredCapabilities']:
+-                desired_environ = blob['desiredCapabilities']['appium:environ']
++            caps = blob['desiredCapabilities']
++        elif 'capabilities' in blob:
++            caps = blob['capabilities'].get('alwaysMatch', {})
++            if not caps and 'firstMatch' in blob['capabilities']:
++                caps = blob['capabilities']['firstMatch'][0] if blob['capabilities']['firstMatch'] else {}
+         else:
+-            if 'app' in blob['capabilities']['alwaysMatch']:
+-                desired_app = blob['capabilities']['alwaysMatch']['app']
+-            else:
+-                desired_app = blob['capabilities']['alwaysMatch']['appium:app']
+-            if 'timeouts' in blob['capabilities']['alwaysMatch']:
+-                desired_timeouts = blob['capabilities']['alwaysMatch']['timeouts']
+-            if 'appium:environ' in blob['capabilities']['alwaysMatch']:
+-                desired_environ = blob['capabilities']['alwaysMatch']['appium:environ']
++            caps = {}
++
++        desired_app = caps.get('app') or caps.get('appium:app')
++        desired_timeouts = caps.get('timeouts')
++        desired_environ = caps.get('appium:environ')
+ 
+         if 'SELENIUM_OVERRIDE_LAUNCH' in os.environ and len(os.environ['SELENIUM_OVERRIDE_LAUNCH'].strip()) > 0:
+             desired_app = os.environ['SELENIUM_OVERRIDE_LAUNCH']
+@@ -312,53 +314,196 @@ def check_requires_button_compat():
+     return major > 2 or (major == 2 and minor >= 53)
+ requires_button_compat = check_requires_button_compat()
+ 
+-def locator(session, strategy, selector, start, findAll = False):
++def _coordinate_click(accessible):
++    try:
++        comp = accessible.queryComponent()
++        x, y = comp.getPosition(pyatspi.XY_SCREEN)
++        w, h = comp.getSize()
++        cx, cy = x + w // 2, y + h // 2
++        pyatspi.Registry.generateMouseEvent(cx, cy, 'abs')
++        time.sleep(0.01)
++        pyatspi.Registry.generateMouseEvent(cx, cy, 'b1p')
++        time.sleep(0.01)
++        pyatspi.Registry.generateMouseEvent(cx, cy, 'b1r')
++        return True
++    except Exception:
++        return False
++
++
++def _try_focus_via_action(accessible):
++    try:
++        action = accessible.queryAction()
++    except Exception:
++        return False
++
++    try:
++        for i in range(action.nActions):
++            name = action.getName(i)
++            normalized = name.lower().replace(" ", "") if name else ""
++            if normalized in ("setfocus", "focus"):
++                action.doAction(i)
++                time.sleep(EVENTLOOP_TIME)
++                return True
++    except Exception:
++        return False
++
++    return False
++
++
++def _focus_for_keyboard_input(accessible, allow_coordinate_click=True):
++    if _safe_state_contains(accessible, pyatspi.STATE_FOCUSED):
++        return True
++
++    if _try_focus_via_action(accessible):
++        return True
++
++    try:
++        comp = accessible.queryComponent()
++        if comp.grabFocus():
++            time.sleep(EVENTLOOP_TIME)
++            return True
++    except Exception:
++        pass
++
++    if allow_coordinate_click and _coordinate_click(accessible):
++        time.sleep(EVENTLOOP_TIME)
++        return True
++
++    return False
++
++
++def _safe_state_contains(accessible, state):
++    try:
++        return accessible.getState().contains(state)
++    except Exception:
++        return False
++
++
++def _same_accessible(a, b):
++    if a is b:
++        return True
++    if a is None or b is None:
++        return False
++    try:
++        return a.path == b.path
++    except Exception:
++        return False
++
++
++def _is_window_like(accessible):
++    try:
++        return accessible.getRoleName() in ('frame', 'window', 'dialog')
++    except Exception:
++        return False
++
++
++def _window_score(accessible):
++    score = 0
++    if _safe_state_contains(accessible, pyatspi.STATE_ACTIVE):
++        score += 100
++    if _safe_state_contains(accessible, pyatspi.STATE_FOCUSED):
++        score += 80
++    if _safe_state_contains(accessible, pyatspi.STATE_SHOWING):
++        score += 40
++    if _safe_state_contains(accessible, pyatspi.STATE_VISIBLE):
++        score += 20
++    if _safe_state_contains(accessible, pyatspi.STATE_SENSITIVE):
++        score += 10
++    try:
++        focused = pyatspi.findDescendant(
++            accessible,
++            lambda x: _safe_state_contains(x, pyatspi.STATE_FOCUSED))
++        if focused:
++            score += 60
++    except Exception:
++        pass
++    return score
++
++
++def _prioritized_search_roots(session, start, strategy, prefer_active_window):
++    if not prefer_active_window or strategy == 'xpath':
++        return [start]
++    if not _same_accessible(start, session.browsing_context):
++        return [start]
++
++    windows = []
++    try:
++        for i in range(start.childCount):
++            child = start.getChildAtIndex(i)
++            if _is_window_like(child):
++                windows.append(child)
++    except Exception:
++        return [start]
++
++    if not windows:
++        return [start]
++
++    windows.sort(key=_window_score, reverse=True)
++    windows.append(start)  # final fallback to full application scope
++    return windows
++
++
++def locator(session, strategy, selector, start, findAll = False, preferActiveWindow = False):
+     end_time = datetime.now() + \
+         timedelta(milliseconds=session.timeouts['implicit'])
+-    results = []
++    attempt = 0
+ 
+     while datetime.now() < end_time:
+-        if strategy == 'xpath':
+-            doc = _createNode2(start, None)
+-            for c in doc.xpath(selector):
+-                path = [int(x) for x in c.get('path').split()]
+-                # path is relative to the app root, not our start item!
+-                item = session.browsing_context
+-                for i in path:
+-                    item = item[i]
+-                if c.get('name') != item.name or c.get('description') != item.description:
+-                    return []
+-                results.append(item)
+-        else:
+-            # In a thrilling turn of events [push button | foo] became [button | foo] as of at-spi 2.53. Add compatibility
+-            if requires_button_compat:
+-                if '[push button |' in selector:
+-                    print("    --> [push button | foo] is deprecated. Please port to [button | foo]")
+-                    selector = selector.replace('[push button |', '[button |')
+-
+-            # TODO can I switch this in python +++ raise on unmapped strategy
+-            pred = None
+-            if strategy == 'accessibility id':
+-                def pred(x): return x.accessibleId.endswith(selector) and (x.getState().contains(pyatspi.STATE_VISIBLE) and x.getState().contains(pyatspi.STATE_SENSITIVE))
+-            # pyatspi strings "[ roleName | name ]"
+-            elif strategy == 'class name':
+-                def pred(x): return str(x) == selector and (x.getState().contains(
+-                    pyatspi.STATE_VISIBLE) or x.getState().contains(pyatspi.STATE_SENSITIVE))
+-            elif strategy == 'name':
+-                def pred(x): return x.name == selector and (x.getState().contains(
+-                    pyatspi.STATE_VISIBLE) or x.getState().contains(pyatspi.STATE_SENSITIVE))
+-            elif strategy == 'description':
+-                def pred(x): return x.description == selector and (x.getState().contains(
+-                    pyatspi.STATE_VISIBLE) or x.getState().contains(pyatspi.STATE_SENSITIVE))
+-            # there are also id and accessibleId but they seem not ever set. Not sure what to make of that :shrug:
+-            if findAll:
+-                accessible = pyatspi.findAllDescendants(start, pred)
+-                if accessible:
+-                    results += accessible
++        attempt += 1
++        results = []
++        search_roots = _prioritized_search_roots(session, start, strategy, preferActiveWindow)
++
++        for search_root in search_roots:
++            scoped_results = []
++            if strategy == 'xpath':
++                doc = _createNode2(search_root, None)
++                for c in doc.xpath(selector):
++                    path = [int(x) for x in c.get('path').split()]
++                    item = search_root
++                    for i in path:
++                        item = item[i]
++                    if c.get('name') != item.name or c.get('description') != item.description:
++                        continue
++                    scoped_results.append(item)
+             else:
+-                accessible = pyatspi.findDescendant(start, pred)
+-                if accessible:
+-                    results.append(accessible)
++                # In a thrilling turn of events [push button | foo] became [button | foo] as of at-spi 2.53. Add compatibility
++                if requires_button_compat:
++                    if '[push button |' in selector:
++                        print("    --> [push button | foo] is deprecated. Please port to [button | foo]")
++                        selector = selector.replace('[push button |', '[button |')
++
++                # TODO can I switch this in python +++ raise on unmapped strategy
++                pred = None
++                if strategy == 'accessibility id':
++                    def pred(x): return x.accessibleId and x.accessibleId.endswith(selector) and (x.getState().contains(pyatspi.STATE_VISIBLE) or x.getState().contains(pyatspi.STATE_SHOWING))
++                # pyatspi strings "[ roleName | name ]"
++                elif strategy == 'class name':
++                    def pred(x): return str(x) == selector and (x.getState().contains(
++                        pyatspi.STATE_VISIBLE) or x.getState().contains(pyatspi.STATE_SENSITIVE))
++                elif strategy == 'name':
++                    def pred(x): return x.name == selector and (x.getState().contains(
++                        pyatspi.STATE_VISIBLE) or x.getState().contains(pyatspi.STATE_SENSITIVE))
++                elif strategy == 'description':
++                    def pred(x): return x.description == selector and (x.getState().contains(
++                        pyatspi.STATE_VISIBLE) or x.getState().contains(pyatspi.STATE_SENSITIVE))
++                # there are also id and accessibleId but they seem not ever set. Not sure what to make of that :shrug:
++
++                if findAll:
++                    accessible = pyatspi.findAllDescendants(search_root, pred)
++                    if accessible:
++                        scoped_results += accessible
++                else:
++                    accessible = pyatspi.findDescendant(search_root, pred)
++                    if accessible:
++                        scoped_results.append(accessible)
++
++            if scoped_results:
++                if findAll:
++                    results += scoped_results
++                else:
++                    results = [scoped_results[0]]
++                break
++
+         if len(results) > 0:
+             break
+ 
+@@ -382,7 +527,7 @@ def session_element(session_id=None):
+     if not start: # browsing context (no longer) valid
+         return json.dumps({'value': {'error': 'no such window'}}), 404, {'content-type': 'application/json'}
+ 
+-    results = locator(session, strategy, selector, start)
++    results = locator(session, strategy, selector, start, preferActiveWindow = True)
+ 
+     if not results:
+         return json.dumps({'value': {'error': 'no such element'}}), 404, {'content-type': 'application/json'}
+@@ -434,26 +579,68 @@ def session_element_click(session_id, element_id):
+     if not element:
+         return json.dumps({'value': {'error': 'no such element'}}), 404, {'content-type': 'application/json'}
+ 
+-    action = element.queryAction()
+-    availableActions = {}
+-    for i in range(0, action.nActions):
+-        availableActions[action.getName(i)] = i
+-
+-    keys = availableActions.keys()
+-    if 'SetFocus' in keys: # this is used in addition to actual actions so focus is where it would be expected after a click
+-        action.doAction(availableActions['SetFocus'])
+-        time.sleep(EVENTLOOP_TIME)
++    try:
++        action = element.queryAction()
++    except NotImplementedError:
++        action = None
+ 
++    role_name = ''
+     try:
+-        if 'Press' in keys:
+-            action.doAction(availableActions['Press'])
+-        elif 'Toggle' in keys:
+-            action.doAction(availableActions['Toggle'])
+-        elif 'ShowMenu' in keys:
+-            action.doAction(availableActions['ShowMenu'])
+-    except gi.repository.GLib.GError as e:
+-        print(e)
+-        print("Ignoring! There is a chance your application is misbehaving. Could also just be a blocked eventloop though.")
++        role_name = element.getRoleName().lower()
++    except Exception:
++        role_name = ''
++
++    if action:
++        availableActions = {}
++        for i in range(0, action.nActions):
++            availableActions[action.getName(i)] = i
++
++        keys = list(availableActions.keys())
++        keys_lc = {k.lower(): k for k in keys}
++
++        focus_action = keys_lc.get('setfocus') or keys_lc.get('set focus')
++        if focus_action:
++            try:
++                action.doAction(availableActions[focus_action])
++                time.sleep(EVENTLOOP_TIME)
++            except Exception:
++                pass
++
++        chosen_action = None
++        try:
++            # Prefer explicit activation/menu-opening actions before generic "select".
++            click_actions = [
++                'press',
++                'click',
++                'activate',
++                'showmenu',
++                'show menu',
++                'open',
++                'expand',
++                'expand or collapse',
++                'increment',
++                'scroll right',
++                'scroll down',
++                'toggle',
++                'select',
++            ]
++            for act_name in click_actions:
++                real_name = keys_lc.get(act_name)
++                if real_name:
++                    action.doAction(availableActions[real_name])
++                    chosen_action = real_name.lower()
++                    break
++        except gi.repository.GLib.GError as e:
++            print(e)
++            print("Ignoring! There is a chance your application is misbehaving.")
++
++        if not chosen_action:
++            _coordinate_click(element)
++        elif chosen_action == 'select' and ('menu' in role_name):
++            # Some menu backends expose only "select" but require a physical click to open submenus.
++            _coordinate_click(element)
++    else:
++        _coordinate_click(element)
+     time.sleep(EVENTLOOP_TIME)
+ 
+     return json.dumps({'value': None}), 200, {'content-type': 'application/json'}
+@@ -463,11 +650,26 @@ def session_element_click(session_id, element_id):
+ def session_element_text(session_id, element_id):
+     session = sessions[session_id]
+     element = session.elements[element_id]
++    text_value = None
+     try:
+         textElement = element.queryText()
+-        return json.dumps({'value': textElement.getText(0, -1)}), 200, {'content-type': 'application/json'}
++        text_value = textElement.getText(0, -1)
+     except NotImplementedError:
+-        return json.dumps({'value': element.name}), 200, {'content-type': 'application/json'}
++        text_value = None
++
++    # Some controls (for example sliders/scroll bars) expose a Value interface
++    # but return an empty Text payload. Fall back to Value before using name.
++    if text_value is None or str(text_value).strip() == "":
++        try:
++            elementValue = element.queryValue()
++            text_value = str(elementValue.currentValue)
++        except NotImplementedError:
++            pass
++
++    if text_value is None or str(text_value).strip() == "":
++        text_value = element.name
++
++    return json.dumps({'value': text_value}), 200, {'content-type': 'application/json'}
+ 
+ 
+ @app.route('/session/<session_id>/element/<element_id>/enabled', methods=['GET'])
+@@ -517,8 +719,57 @@ def session_element_attribute(session_id, element_id, name):
+         return json.dumps({'value': element.name}), 200, {'content-type': 'application/json'}
+ 
+     if name == "value":
+-        elementValue = element.queryValue()
+-        return json.dumps({'value': elementValue.currentValue}), 200, {'content-type': 'application/json'}
++        try:
++            elementValue = element.queryValue()
++            return json.dumps({'value': elementValue.currentValue}), 200, {'content-type': 'application/json'}
++        except NotImplementedError:
++            try:
++                textElement = element.queryText()
++                return json.dumps({'value': textElement.getText(0, -1)}), 200, {'content-type': 'application/json'}
++            except NotImplementedError:
++                return json.dumps({'value': element.name}), 200, {'content-type': 'application/json'}
++
++    def normalize_key(key):
++        return ''.join(ch for ch in str(key).lower() if ch.isalnum())
++
++    normalized_name = normalize_key(name)
++
++    # Custom attributes exposed by the AT-SPI Accessible interface.
++    try:
++        attrs = {}
++        for entry in element.getAttributes():
++            if ':' in entry:
++                k, v = entry.split(':', 1)
++                attrs[k] = v
++
++        # Exact lookup first.
++        if name in attrs:
++            return json.dumps({'value': attrs[name]}), 200, {'content-type': 'application/json'}
++
++        # Normalized lookup (e.g. AcceleratorKey <-> accelerator-key).
++        for k, v in attrs.items():
++            if normalize_key(k) == normalized_name:
++                return json.dumps({'value': v}), 200, {'content-type': 'application/json'}
++
++        # Common aliases used by different backends.
++        if normalized_name == 'acceleratorkey':
++            for alias in ('accelerator-key', 'acceleratorkey', 'keybinding', 'shortcut'):
++                for k, v in attrs.items():
++                    if normalize_key(k) == normalize_key(alias):
++                        return json.dumps({'value': v}), 200, {'content-type': 'application/json'}
++    except Exception:
++        pass
++
++    # Fallback: use Action key bindings when available.
++    if normalized_name == 'acceleratorkey':
++        try:
++            action = element.queryAction()
++            for i in range(0, action.nActions):
++                binding = action.getKeyBinding(i)
++                if binding:
++                    return json.dumps({'value': binding}), 200, {'content-type': 'application/json'}
++        except Exception:
++            pass
+ 
+     result = None
+     for value, string in pyatspi.STATE_VALUE_TO_NAME.items():
+@@ -604,18 +855,13 @@ def session_element_value(session_id, element_id):
+         return json.dumps({'value': None}), 200, {'content-type': 'application/json'}
+     except NotImplementedError:
+         print("element is not text type, falling back to synthesizing keyboard events")
+-        action = element.queryAction()
+-        processed = False
+-        for i in range(0, action.nActions):
+-            if action.getName(i) == 'SetFocus':
+-                processed = True
+-                action.doAction(i)
+-                time.sleep(EVENTLOOP_TIME) # give the focus time to apply
+-                generate_keyboard_event_text(text)
+-                break
+-        if not processed:
+-            raise RuntimeError("element's actions list didn't contain SetFocus. The element may be malformed")
+-        return json.dumps({'value': None}), 404, {'content-type': 'application/json'}
++        # Avoid synthetic click as a focus fallback for sendKeys because it may
++        # activate list/menu items before key events are injected.
++        _focus_for_keyboard_input(element, allow_coordinate_click=False)
++        time.sleep(EVENTLOOP_TIME)
++        generate_keyboard_event_text(text)
++        time.sleep(EVENTLOOP_TIME)
++        return json.dumps({'value': None}), 200, {'content-type': 'application/json'}
+ 
+ 
+ @app.route('/session/<session_id>/execute/sync', methods=['POST'])
+@@ -662,22 +908,16 @@ def session_element_clear(session_id, element_id):
+         return json.dumps({'value': None}), 200, {'content-type': 'application/json'}
+     except NotImplementedError:
+         print("element is not text type, falling back to synthesizing keyboard events")
+-        action = element.queryAction()
+-        processed = False
+-        for i in range(0, action.nActions):
+-            if action.getName(i) == 'SetFocus':
+-                processed = True
+-                action.doAction(i)
+-                time.sleep(EVENTLOOP_TIME) # give the focus time to apply
++        # Avoid synthetic click for clear as it can trigger side-effects.
++        _focus_for_keyboard_input(element, allow_coordinate_click=False)
+ 
+-                pseudo_text = ''
+-                pseudo_text += '\ue010' # end
+-                for _ in range(characterCount):
+-                    pseudo_text += '\ue003'  # backspace
+-                generate_keyboard_event_text(pseudo_text)
+-                break
+-        if not processed:
+-            raise RuntimeError("element's actions list didn't contain SetFocus. The element may be malformed")
++        pseudo_text = ''
++        pseudo_text += '\ue010' # end
++        for _ in range(characterCount):
++            pseudo_text += '\ue003'  # backspace
++        time.sleep(EVENTLOOP_TIME)
++        generate_keyboard_event_text(pseudo_text)
++        time.sleep(EVENTLOOP_TIME)
+         return json.dumps({'value': None}), 200, {'content-type': 'application/json'}
+ 
+ 
+@@ -737,14 +977,22 @@ def session_appium_device_press_keycode(session_id):
+     return json.dumps({'value': None}), 200, {'content-type': 'application/json'}
+ 
+ 
+-@app.route('/session/<session_id>/actions', methods=['POST'])
++@app.route('/session/<session_id>/actions', methods=['POST', 'DELETE'])
+ def session_actions(session_id):
+     session = sessions[session_id]
+     if not session:
+         return json.dumps({'value': {'error': 'no such window'}}), 404, {'content-type': 'application/json'}
+ 
++    if request.method == 'DELETE':
++        _release_input_state(session)
++        return json.dumps({'value': None}), 200, {'content-type': 'application/json'}
++
+     blob = json.loads(request.data)
+ 
++    # Some clients don't always send releaseActions between tests. Proactively
++    # release any stale synthesized input state before a new action sequence.
++    _release_input_state(session)
++
+     """
+     The following is to support actions that use a specific element
+     as the origin. Instead of passing that origin to the inputsynth,
+@@ -760,22 +1008,178 @@ def session_actions(session_id):
+                 action["origin"] = "viewport"
+                 element = session.elements[element_id]
+                 x, y = element.queryComponent().getPosition(pyatspi.XY_SCREEN)
+-                action["x"] += x
+-                action["y"] += y
++                w, h = element.queryComponent().getSize()
++                action["x"] += x + w // 2
++                action["y"] += y + h // 2
+     except KeyError:
+         pass
+ 
++    if any(parent_action.get("type") == "key" and parent_action.get("actions") for parent_action in blob.get("actions", [])):
++        _focus_session_for_keyboard(session)
++
+     if 'KWIN_PID' in os.environ:
+         with tempfile.NamedTemporaryFile() as file:
+             file.write(bytes(json.dumps(blob), "utf-8"))
+             file.flush()
+             subprocess.run(["selenium-webdriver-at-spi-inputsynth", file.name])
+     else:
+-        raise RuntimeError("actions only work with nested kwin!")
++        _synthesize_actions(blob, session)
+ 
+     return json.dumps({'value': None}), 200, {'content-type': 'application/json'}
+ 
+ 
++def _button_to_release_event(button):
++    return 'b1r' if button == 0 else 'b3r' if button == 2 else f'b{button+1}r'
++
++
++def _resolve_action_key(value):
++    if not value:
++        return None, None
++
++    keyval = char_to_keyval(value)
++    if not keyval:
++        return None, None
++
++    keycode = None
++    try:
++        keycode = keyval_to_keycode(keyval).keycode
++    except Exception:
++        keycode = None
++
++    return keyval, keycode
++
++
++def _release_input_state(session):
++    state = session.input_state
++    x = state.get('pointer_x', 0)
++    y = state.get('pointer_y', 0)
++
++    for button in list(state.get('pressed_buttons', set())):
++        try:
++            pyatspi.Registry.generateMouseEvent(x, y, _button_to_release_event(button))
++            time.sleep(0.01)
++        except Exception:
++            pass
++
++    for value in list(state.get('pressed_keys', set())):
++        try:
++            _keyval, keycode = _resolve_action_key(value)
++            if keycode is not None:
++                pyatspi.Registry.generateKeyboardEvent(keycode, None, pyatspi.KEY_RELEASE)
++                time.sleep(0.01)
++        except Exception:
++            pass
++
++    state['pressed_buttons'] = set()
++    state['pressed_keys'] = set()
++
++
++def _focus_session_for_keyboard(session):
++    try:
++        start = session.browsing_context
++        if not start:
++            return
++
++        for root in _prioritized_search_roots(session, start, 'name', True):
++            if _is_window_like(root) and _focus_for_keyboard_input(root):
++                return
++
++        _focus_for_keyboard_input(start)
++    except Exception:
++        pass
++
++
++def _synthesize_actions(blob, session=None):
++    """Synthesize W3C Actions using pyatspi.Registry.generateMouseEvent and generateKeyboardEvent."""
++    state = session.input_state if session is not None else {
++        'pointer_x': 0,
++        'pointer_y': 0,
++        'pressed_buttons': set(),
++        'pressed_keys': set(),
++    }
++    actions_by_source = blob.get("actions", [])
++    max_ticks = 0
++    for source in actions_by_source:
++        max_ticks = max(max_ticks, len(source.get("actions", [])))
++
++    def _run_key_action(action):
++        act_type = action.get("type")
++        value = action.get("value", "")
++
++        if act_type == "keyDown":
++            keyval, keycode = _resolve_action_key(value)
++            if keycode is not None:
++                pyatspi.Registry.generateKeyboardEvent(keycode, None, pyatspi.KEY_PRESS)
++            elif keyval is not None:
++                pyatspi.Registry.generateKeyboardEvent(keyval, None, pyatspi.KEY_PRESSRELEASE)
++            state.setdefault('pressed_keys', set()).add(value)
++            time.sleep(0.05)
++        elif act_type == "keyUp":
++            _keyval, keycode = _resolve_action_key(value)
++            if keycode is not None:
++                pyatspi.Registry.generateKeyboardEvent(keycode, None, pyatspi.KEY_RELEASE)
++            state.setdefault('pressed_keys', set()).discard(value)
++            time.sleep(0.05)
++        elif act_type == "pause":
++            duration = action.get("duration", 0)
++            time.sleep(duration / 1000.0)
++
++    def _run_pointer_action(action):
++        act_type = action.get("type")
++        cursor_x = state.get('pointer_x', 0)
++        cursor_y = state.get('pointer_y', 0)
++
++        if act_type == "pointerMove":
++            origin = action.get("origin", "viewport")
++            dx = action.get("x", 0)
++            dy = action.get("y", 0)
++
++            if origin == "viewport":
++                cursor_x = dx
++                cursor_y = dy
++            elif origin == "pointer":
++                cursor_x += dx
++                cursor_y += dy
++
++            pyatspi.Registry.generateMouseEvent(cursor_x, cursor_y, 'abs')
++            duration = action.get("duration", 50)
++            time.sleep(max(duration / 1000.0, 0.02))
++            state['pointer_x'] = cursor_x
++            state['pointer_y'] = cursor_y
++        elif act_type == "pointerDown":
++            button = action.get("button", 0)
++            btn_str = 'b1p' if button == 0 else 'b3p' if button == 2 else f'b{button+1}p'
++            pyatspi.Registry.generateMouseEvent(cursor_x, cursor_y, btn_str)
++            state.setdefault('pressed_buttons', set()).add(button)
++            time.sleep(0.02)
++        elif act_type == "pointerUp":
++            button = action.get("button", 0)
++            btn_str = 'b1r' if button == 0 else 'b3r' if button == 2 else f'b{button+1}r'
++            pyatspi.Registry.generateMouseEvent(cursor_x, cursor_y, btn_str)
++            state.setdefault('pressed_buttons', set()).discard(button)
++            time.sleep(0.02)
++        elif act_type == "pause":
++            duration = action.get("duration", 0)
++            time.sleep(duration / 1000.0)
++
++    # W3C actions are tick-based across sources. Execute key actions before pointer actions
++    # within each tick so modifier keys are active for same-tick pointer events.
++    for tick in range(max_ticks):
++        tick_actions = []
++        for source in actions_by_source:
++            source_actions = source.get("actions", [])
++            if tick < len(source_actions):
++                tick_actions.append((source.get("type"), source_actions[tick]))
++
++        tick_actions.sort(key=lambda t: 0 if t[0] == "key" else 1 if t[0] == "pointer" else 2)
++
++        for action_type, action in tick_actions:
++            if action_type == "key":
++                _run_key_action(action)
++            elif action_type == "pointer":
++                _run_pointer_action(action)
++
++
+ @app.route('/session/<session_id>/appium/device/get_clipboard', methods=['POST'])
+ def session_appium_device_get_clipboard(session_id):
+     session = sessions[session_id]
+@@ -843,7 +1247,31 @@ def session_appium_screenshot(session_id):
+     if not out:
+         return json.dumps({'value': {'error': err}}), 404, {'content-type': 'application/json'}
+ 
+-    return json.dumps({'value': out.decode('utf-8')}), 200, {'content-type': 'application/json'}
++    return json.dumps({'value': out.decode('utf-8').strip()}), 200, {'content-type': 'application/json'}
++
++
++@app.route('/session/<session_id>/element/<element_id>/screenshot', methods=['GET'])
++def session_element_screenshot(session_id, element_id):
++    session = sessions[session_id]
++    if not session:
++        return json.dumps({'value': {'error': 'no such window'}}), 404, {'content-type': 'application/json'}
++
++    element = session.elements[element_id]
++    if not element:
++        return json.dumps({'value': {'error': 'no such element'}}), 404, {'content-type': 'application/json'}
++
++    x, y = element.queryComponent().getPosition(pyatspi.XY_SCREEN)
++    w, h = element.queryComponent().getSize()
++
++    proc = subprocess.Popen(['selenium-webdriver-at-spi-screenshotter',
++                             str(x), str(y), str(w), str(h)],
++                            stdout=subprocess.PIPE)
++    out, err = proc.communicate()
++
++    if not out:
++        return json.dumps({'value': {'error': err}}), 404, {'content-type': 'application/json'}
++
++    return json.dumps({'value': out.decode('utf-8').strip()}), 200, {'content-type': 'application/json'}
+ 
+ 
+ @app.route('/session/<session_id>/appium/compare_images', methods=['POST'])
+@@ -980,10 +1408,59 @@ def generate_keyboard_event_text(text):
+             fp.flush()
+             subprocess.run(["selenium-webdriver-at-spi-inputsynth", fp.name])
+     else:
++        pressed_modifiers = []
++
++        def press_key(value):
++            keyval, keycode = _resolve_action_key(value)
++            if keycode is not None:
++                pyatspi.Registry.generateKeyboardEvent(keycode, None, pyatspi.KEY_PRESS)
++                return True
++            if keyval is not None:
++                pyatspi.Registry.generateKeyboardEvent(keyval, None, pyatspi.KEY_PRESS)
++                return True
++            return False
++
++        def release_key(value):
++            keyval, keycode = _resolve_action_key(value)
++            if keycode is not None:
++                pyatspi.Registry.generateKeyboardEvent(keycode, None, pyatspi.KEY_RELEASE)
++                return True
++            if keyval is not None:
++                pyatspi.Registry.generateKeyboardEvent(keyval, None, pyatspi.KEY_RELEASE)
++                return True
++            return False
++
+         for ch in text:
+-            pyatspi.Registry.generateKeyboardEvent(char_to_keyval(ch), None, pyatspi.KEY_SYM)
++            if ch == WEBDRIVER_NULL_KEY:
++                while pressed_modifiers:
++                    release_key(pressed_modifiers.pop())
++                    time.sleep(0.01)
++                time.sleep(EVENTLOOP_TIME)
++                continue
++
++            if ch in WEBDRIVER_MODIFIER_KEYS:
++                if ch in pressed_modifiers:
++                    release_key(ch)
++                    pressed_modifiers.remove(ch)
++                else:
++                    if press_key(ch):
++                        pressed_modifiers.append(ch)
++                time.sleep(0.02)
++                continue
++
++            keyval, keycode = _resolve_action_key(ch)
++            if keycode is not None:
++                pyatspi.Registry.generateKeyboardEvent(keycode, None, pyatspi.KEY_PRESS)
++                time.sleep(0.01)
++                pyatspi.Registry.generateKeyboardEvent(keycode, None, pyatspi.KEY_RELEASE)
++            elif keyval is not None:
++                pyatspi.Registry.generateKeyboardEvent(keyval, None, pyatspi.KEY_SYM)
+             time.sleep(EVENTLOOP_TIME)
+ 
++        while pressed_modifiers:
++            release_key(pressed_modifiers.pop())
++            time.sleep(0.01)
++
+ def keyval_to_keycode(keyval):
+     keymap = Gdk.Keymap.get_default()
+     ret, keys = keymap.get_entries_for_keyval(keyval)
+@@ -993,35 +1470,65 @@ def keyval_to_keycode(keyval):
+     return keys[0]
+ 
+ 
++WEBDRIVER_SPECIAL_KEYVALS = {
++    "\uE001": 0xff69,  # cancel
++    "\uE003": 0xff08,  # backspace
++    "\uE004": 0xff09,  # tab
++    "\uE005": 0xff0b,  # clear
++    "\uE006": 0xff0d,  # return
++    "\uE007": 0xff8d,  # enter (keypad)
++    "\uE008": 0xffe1,  # shift_l
++    "\uE009": 0xffe3,  # control_l
++    "\uE00A": 0xffe9,  # alt_l
++    "\uE00B": 0xff13,  # pause
++    "\uE00C": 0xff1b,  # escape
++    "\uE00D": 0x0020,  # space
++    "\uE00E": 0xff55,  # page_up
++    "\uE00F": 0xff56,  # page_down
++    "\uE010": 0xff57,  # end
++    "\uE011": 0xff50,  # home
++    "\uE012": 0xff51,  # left
++    "\uE013": 0xff52,  # up
++    "\uE014": 0xff53,  # right
++    "\uE015": 0xff54,  # down
++    "\uE016": 0xff63,  # insert
++    "\uE017": 0xffff,  # delete
++    "\uE018": 0x003b,  # semicolon
++    "\uE019": 0x003d,  # equals
++    "\uE031": 0xffbe,  # f1
++    "\uE032": 0xffbf,  # f2
++    "\uE033": 0xffc0,  # f3
++    "\uE034": 0xffc1,  # f4
++    "\uE035": 0xffc2,  # f5
++    "\uE036": 0xffc3,  # f6
++    "\uE037": 0xffc4,  # f7
++    "\uE038": 0xffc5,  # f8
++    "\uE039": 0xffc6,  # f9
++    "\uE03A": 0xffc7,  # f10
++    "\uE03B": 0xffc8,  # f11
++    "\uE03C": 0xffc9,  # f12
++    "\uE03D": 0xffeb,  # meta_l / command
++}
++
++WEBDRIVER_NULL_KEY = "\uE000"
++WEBDRIVER_MODIFIER_KEYS = {
++    "\uE008",  # shift
++    "\uE009",  # control
++    "\uE00A",  # alt
++    "\uE03D",  # meta
++}
++
++
+ def char_to_keyval(ch):
+-    keyval = Gdk.unicode_to_keyval(ord(ch))
+-    # I Don't know why this doesn't work, also doesn't work with \033 as input. :((
+-    # https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gdk/gdkkeyuni.c
+-    # Other useful resources:
+-    # https://www.cl.cam.ac.uk/~mgk25/ucs/keysymdef.h
+-    if ch == "\uE00C":
+-        keyval = 0xff1b # escape
+-    elif ch == "\ue03d":
+-        keyval = 0xffeb # left meta
+-    elif ch == "\ue006":
+-        keyval = 0xff0d # return
+-    elif ch == "\ue007":
+-        keyval = 0xff8d # enter
+-    elif ch == "\ue003":
+-        keyval = 0xff08 # backspace
+-    elif ch == "\ue010":
+-        keyval = 0xff57 # end
+-    elif ch == "\ue012":
+-        keyval = 0xff51 # left
+-    elif ch == "\ue014":
+-        keyval = 0xff53 # right
+-    elif ch == "\ue013":
+-        keyval = 0xff52 # up
+-    elif ch == "\ue015":
+-        keyval = 0xff54 # down
+-    elif ch == "\ue004":
+-        keyval = 0xff09 # tab
+-    return keyval
++    if ch in WEBDRIVER_SPECIAL_KEYVALS:
++        return WEBDRIVER_SPECIAL_KEYVALS[ch]
++
++    # Ignore unknown private-use keys from WebDriver to avoid generating
++    # bogus key symbols that leak through as literal text.
++    if 0xE000 <= ord(ch) <= 0xF8FF:
++        return None
++
++    return Gdk.unicode_to_keyval(ord(ch))
+ 
+ 
+ def get_clipboard(content_type):

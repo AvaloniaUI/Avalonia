@@ -7,7 +7,8 @@ namespace Avalonia.FreeDesktop.AtSpi
 {
     /// <summary>
     /// Registers the AT-SPI cache interface at /org/a11y/atspi/cache.
-    /// Like the Qt bridge, GetItems returns an empty list and cache signals
+    /// 
+    /// GetItems returns an empty list and cache signals
     /// are not emitted. Screen readers fall back to live Accessible queries.
     /// </summary>
     internal sealed class AtSpiCacheHandler : IOrgA11yAtspiCache

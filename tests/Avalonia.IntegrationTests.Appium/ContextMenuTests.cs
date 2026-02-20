@@ -26,5 +26,13 @@ namespace Avalonia.IntegrationTests.Appium
             var clickedMenuItem = Session.FindElementByAccessibilityId("ContextMenuItem1");
             Assert.True(clickedMenuItem.GetIsFocused());
         }
+
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_Select_First_Item_With_Down_Arrow_Key()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new ContextMenuTests(fixture);
+            isolated.Select_First_Item_With_Down_Arrow_Key();
+        }
     }
 }

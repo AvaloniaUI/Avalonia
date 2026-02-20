@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
   <av:ImportTypes>Types.xml</av:ImportTypes>
   <!--
@@ -56,7 +56,6 @@
       <av:TypeDefinition>
         <av:Struct Type="AtSpiObjectReference"/>
       </av:TypeDefinition>
-      <annotation name="org.qtproject.QtDBus.QtTypeName" value="QSpiObjectReference"/>
     </property>
 
     <!--
@@ -116,7 +115,6 @@
           <av:Struct Type="AtSpiObjectReference"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiObjectReference"/>
     </method>
 
     <!--
@@ -137,7 +135,6 @@
           </av:List>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiObjectReferenceArray"/>
     </method>
 
     <!--
@@ -282,7 +279,6 @@
           </av:List>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiRelationArray"/>
     </method>
 
     <!--
@@ -834,7 +830,6 @@
           <av:List/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiIntList"/>
     </method>
 
     <!--
@@ -852,7 +847,6 @@
           <av:Dictionary Type="AtSpiAttributeSet"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiAttributeSet"/>
     </method>
 
     <!--
@@ -867,7 +861,6 @@
           <av:Struct Type="AtSpiObjectReference"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiObjectReference"/>
     </method>
 
     <!--

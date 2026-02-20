@@ -19,24 +19,18 @@
     <property name="IconName" type="s" access="read"/>
 
     <!--struct containing width, height and image data-->
-    <property name="IconPixmap" type="a(iiay)" access="read">
-      <annotation name="org.qtproject.QtDBus.QtTypeName" value="KDbusImageVector"/>
-    </property>
+    <property name="IconPixmap" type="a(iiay)" access="read"/>
 
     <property name="OverlayIconName" type="s" access="read"/>
 
-    <property name="OverlayIconPixmap" type="a(iiay)" access="read">
-      <annotation name="org.qtproject.QtDBus.QtTypeName" value="KDbusImageVector"/>
-    </property>
+    <property name="OverlayIconPixmap" type="a(iiay)" access="read"/>
 
 
     <!-- Requesting attention icon -->
     <property name="AttentionIconName" type="s" access="read"/>
 
     <!--same definition as image-->
-    <property name="AttentionIconPixmap" type="a(iiay)" access="read">
-      <annotation name="org.qtproject.QtDBus.QtTypeName" value="KDbusImageVector"/>
-    </property>
+    <property name="AttentionIconPixmap" type="a(iiay)" access="read"/>
 
     <property name="AttentionMovieName" type="s" access="read"/>
 
@@ -45,9 +39,7 @@
     <!-- tooltip data -->
 
     <!--(iiay) is an image-->
-    <property name="ToolTip" type="(sa(iiay)ss)" access="read">
-      <annotation name="org.qtproject.QtDBus.QtTypeName" value="KDbusToolTipStruct"/>
-    </property>
+    <property name="ToolTip" type="(sa(iiay)ss)" access="read"/>
 
 
     <!-- interaction: the systemtray wants the application to do something -->

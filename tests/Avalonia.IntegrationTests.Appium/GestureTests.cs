@@ -15,8 +15,13 @@ namespace Avalonia.IntegrationTests.Appium
             clear.Click();
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void Tapped_Is_Raised()
+        {
+            TappedIsRaisedCore();
+        }
+
+        private void TappedIsRaisedCore()
         {
             var border = Session.FindElementByAccessibilityId("GestureBorder");
             var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
@@ -26,8 +31,13 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Tapped", lastGesture.Text);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void Tapped_Is_Raised_Slow()
+        {
+            TappedIsRaisedSlowCore();
+        }
+
+        private void TappedIsRaisedSlowCore()
         {
             var border = Session.FindElementByAccessibilityId("GestureBorder");
             var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
@@ -41,8 +51,13 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Tapped", lastGesture.Text);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void Tapped_Is_Not_Raised_For_Drag()
+        {
+            TappedIsNotRaisedForDragCore();
+        }
+
+        private void TappedIsNotRaisedForDragCore()
         {
             var border = Session.FindElementByAccessibilityId("GestureBorder");
             var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
@@ -56,8 +71,13 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(string.Empty, lastGesture.Text);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void DoubleTapped_Is_Raised()
+        {
+            DoubleTappedIsRaisedCore();
+        }
+
+        private void DoubleTappedIsRaisedCore()
         {
             var border = Session.FindElementByAccessibilityId("GestureBorder");
             var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
@@ -67,8 +87,13 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("DoubleTapped", lastGesture.Text);
         }
 
-        [PlatformFact(TestPlatforms.Windows | TestPlatforms.Linux)]
+        [PlatformFact(TestPlatforms.Windows)]
         public void DoubleTapped_Is_Raised_2()
+        {
+            DoubleTappedIsRaised2Core();
+        }
+
+        private void DoubleTappedIsRaised2Core()
         {
             var border = Session.FindElementByAccessibilityId("GestureBorder");
             var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
@@ -91,8 +116,69 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_Tapped_Is_Raised()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new GestureTests(fixture);
+            isolated.TappedIsRaisedCore();
+        }
+
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_Tapped_Is_Raised_Slow()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new GestureTests(fixture);
+            isolated.TappedIsRaisedSlowCore();
+        }
+
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_Tapped_Is_Not_Raised_For_Drag()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new GestureTests(fixture);
+            isolated.TappedIsNotRaisedForDragCore();
+        }
+
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_DoubleTapped_Is_Raised()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new GestureTests(fixture);
+            isolated.DoubleTappedIsRaisedCore();
+        }
+
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_DoubleTapped_Is_Raised_2()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new GestureTests(fixture);
+            isolated.DoubleTappedIsRaised2Core();
+        }
+
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_DoubleTapped_Is_Raised_Not_Raised_If_Too_Slow()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new GestureTests(fixture);
+            isolated.DoubleTappedIsRaisedNotRaisedIfTooSlowCore();
+        }
+
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_DoubleTapped_Is_Raised_After_Control_Changes()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new GestureTests(fixture);
+            isolated.DoubleTappedIsRaisedAfterControlChangesCore();
+        }
+
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void DoubleTapped_Is_Raised_Not_Raised_If_Too_Slow()
+        {
+            DoubleTappedIsRaisedNotRaisedIfTooSlowCore();
+        }
+
+        private void DoubleTappedIsRaisedNotRaisedIfTooSlowCore()
         {
             var border = Session.FindElementByAccessibilityId("GestureBorder");
             var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
@@ -106,8 +192,13 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Tapped", lastGesture.Text);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void DoubleTapped_Is_Raised_After_Control_Changes()
+        {
+            DoubleTappedIsRaisedAfterControlChangesCore();
+        }
+
+        private void DoubleTappedIsRaisedAfterControlChangesCore()
         {
             // #8733
             var border = Session.FindElementByAccessibilityId("GestureBorder");
@@ -125,8 +216,13 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("DoubleTapped2", lastGesture.Text);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void RightTapped_Is_Raised()
+        {
+            RightTappedIsRaisedCore();
+        }
+
+        private void RightTappedIsRaisedCore()
         {
             var border = Session.FindElementByAccessibilityId("GestureBorder");
             var lastGesture = Session.FindElementByAccessibilityId("LastGesture");
@@ -153,6 +249,22 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("RightTapped", lastGesture.Text);
         }
 
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_RightTapped_Is_Raised()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new GestureTests(fixture);
+            isolated.RightTappedIsRaisedCore();
+        }
+
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_RightTapped_Is_Raised_2()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new GestureTests(fixture);
+            isolated.RightTapped_Is_Raised_2();
+        }
+
         [PlatformFact(TestPlatforms.MacOS)]
         public void RightTapped_Is_Not_Raised_For_Drag()
         {
@@ -167,6 +279,14 @@ namespace Avalonia.IntegrationTests.Appium
             b.AddAction(device.CreatePointerUp(MouseButton.Right));
 
             Assert.Equal(string.Empty, lastGesture.Text);
+        }
+
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_RightTapped_Is_Not_Raised_For_Drag()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new GestureTests(fixture);
+            isolated.RightTapped_Is_Not_Raised_For_Drag();
         }
     }
 }

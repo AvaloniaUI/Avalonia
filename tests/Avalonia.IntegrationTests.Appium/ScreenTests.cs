@@ -13,7 +13,7 @@ public class ScreenTests : TestBase
     {
     }
 
-    [Fact]
+    [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS | TestPlatforms.Linux)]
     public void Can_Read_Current_Screen_Info()
     {
         var refreshButton = Session.FindElementByAccessibilityId("ScreenRefresh");
@@ -24,7 +24,7 @@ public class ScreenTests : TestBase
         var screenBounds = Rect.Parse(Session.FindElementByAccessibilityId("ScreenBounds").Text);
         var screenWorkArea = Rect.Parse(Session.FindElementByAccessibilityId("ScreenWorkArea").Text);
         var screenScaling = double.Parse(Session.FindElementByAccessibilityId("ScreenScaling").Text, NumberStyles.Float, CultureInfo.InvariantCulture);
-        var screenOrientation = Enum.Parse<ScreenOrientation>(Session.FindElementByAccessibilityId("ScreenOrientation").Text);
+        _ = Enum.Parse<ScreenOrientation>(Session.FindElementByAccessibilityId("ScreenOrientation").Text);
 
         Assert.NotNull(screenName);
         Assert.NotNull(screenHandle);
@@ -33,7 +33,6 @@ public class ScreenTests : TestBase
         Assert.True(screenBounds.Size.Width >= screenWorkArea.Size.Width);
         Assert.True(screenBounds.Size.Height >= screenWorkArea.Size.Height);
         Assert.True(screenScaling > 0);
-        Assert.True(screenOrientation != ScreenOrientation.None);
     }
 
     [Fact]

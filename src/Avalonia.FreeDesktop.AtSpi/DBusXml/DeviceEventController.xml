@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
   <av:ImportTypes>Types.xml</av:ImportTypes>
   <!--
@@ -60,7 +60,6 @@
           </av:List>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QSpiKeyTypeArray"/>
       <arg direction="in" name="mask" type="u">
         <av:TypeDefinition>
           <av:BitFlags Type="AtSpiModifierMask"/>
@@ -71,13 +70,11 @@
           <av:BitFlags Type="AtSpiEventTypeMask"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In3" value="QSpiEventTypeArray"/>
       <arg direction="in" name="mode" type="(bbb)">
         <av:TypeDefinition>
           <av:Struct Type="AtSpiEventMode"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In4" value="QSpiEventMode"/>
       <arg direction="out" type="b"/>
     </method>
 
@@ -90,7 +87,6 @@
           </av:List>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QSpiKeyTypeArray"/>
       <arg direction="in" name="mask" type="u">
         <av:TypeDefinition>
           <av:BitFlags Type="AtSpiModifierMask"/>
@@ -132,7 +128,6 @@
         </av:TypeDefinition>
       </arg>
       <arg direction="out" type="b"/>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiDeviceEvent"/>
     </method>
 
     <method name="NotifyListenersAsync">
@@ -141,7 +136,6 @@
           <av:Struct Type="AtSpiDeviceEvent"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiDeviceEvent"/>
     </method>
 
   </interface>

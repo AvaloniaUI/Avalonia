@@ -1,5 +1,7 @@
 ﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
+using System.Threading;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
@@ -17,35 +19,95 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("None", clickedMenuItem.Text);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void Click_Child()
         {
-            var rootMenuItem = Session.FindElementByAccessibilityId("RootMenuItem");
-            
-            rootMenuItem.SendClick();
+            ClickChildCore();
+        }
 
-            var childMenuItem = Session.FindElementByAccessibilityId("Child1MenuItem");
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
+        public void Click_Grandchild()
+        {
+            ClickGrandchildCore();
+        }
+
+        protected void ClickChildCore()
+        {
+            ClickChildCore(Session);
+        }
+
+        private static void ClickChildCore(AppiumDriver session)
+        {
+            var childMenuItem = OpenRootMenuAndFindItem(session, "Child1MenuItem");
             childMenuItem.SendClick();
 
-            var clickedMenuItem = Session.FindElementByAccessibilityId("ClickedMenuItem");
+            var clickedMenuItem = session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Child 1", clickedMenuItem.Text);
         }
 
-        [Fact]
-        public void Click_Grandchild()
+        protected void ClickGrandchildCore()
         {
-            var rootMenuItem = Session.FindElementByAccessibilityId("RootMenuItem");
-            
-            rootMenuItem.SendClick();
+            ClickGrandchildCore(Session);
+        }
 
-            var childMenuItem = Session.FindElementByAccessibilityId("Child2MenuItem");
+        private static void ClickGrandchildCore(AppiumDriver session)
+        {
+            var childMenuItem = OpenRootMenuAndFindItem(session, "Child2MenuItem");
             childMenuItem.SendClick();
 
-            var grandchildMenuItem = Session.FindElementByAccessibilityId("GrandchildMenuItem");
+            var grandchildMenuItem = FindMenuItemWithFallbackClick(
+                session,
+                childMenuItem,
+                "GrandchildMenuItem");
             grandchildMenuItem.SendClick();
 
-            var clickedMenuItem = Session.FindElementByAccessibilityId("ClickedMenuItem");
+            var clickedMenuItem = session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Grandchild", clickedMenuItem.Text);
+        }
+
+        private static AppiumWebElement OpenRootMenuAndFindItem(AppiumDriver session, string itemAccessibilityId)
+        {
+            var rootMenuItem = session.FindElementByAccessibilityId("RootMenuItem");
+            return FindMenuItemWithFallbackClick(session, rootMenuItem, itemAccessibilityId);
+        }
+
+        private static AppiumWebElement FindMenuItemWithFallbackClick(
+            AppiumDriver session,
+            AppiumWebElement opener,
+            string itemAccessibilityId)
+        {
+            for (var attempt = 0; attempt < 3; ++attempt)
+            {
+                opener.SendClick();
+                if (TryFindMenuItem(session, itemAccessibilityId, out var item))
+                    return item;
+
+                // Some backends expose "select" without opening the popup; force a physical click as fallback.
+                new Actions(session).MoveToElement(opener).Click().Perform();
+                if (TryFindMenuItem(session, itemAccessibilityId, out item))
+                    return item;
+
+                Thread.Sleep(100);
+            }
+
+            return session.FindElementByAccessibilityId(itemAccessibilityId);
+        }
+
+        private static bool TryFindMenuItem(
+            AppiumDriver session,
+            string itemAccessibilityId,
+            out AppiumWebElement menuItem)
+        {
+            try
+            {
+                menuItem = session.FindElementByAccessibilityId(itemAccessibilityId);
+                return true;
+            }
+            catch (NoSuchElementException)
+            {
+                menuItem = null!;
+                return false;
+            }
         }
 
         [PlatformFact(TestPlatforms.Windows)]
@@ -139,12 +201,17 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void Child_AcceleratorKey()
         {
-            var rootMenuItem = Session.FindElementByAccessibilityId("RootMenuItem");
+            ChildAcceleratorKeyCore();
+        }
 
-            rootMenuItem.SendClick();
+        protected void ChildAcceleratorKeyCore()
+        {
+            ChildAcceleratorKeyCore(Session);
+        }
 
-            var childMenuItem = Session.FindElementByAccessibilityId("Child1MenuItem");
-
+        private static void ChildAcceleratorKeyCore(AppiumDriver session)
+        {
+            var childMenuItem = OpenRootMenuAndFindItem(session, "Child1MenuItem");
             Assert.Equal("Ctrl+O", childMenuItem.GetAttribute("AcceleratorKey"));
         }
 
@@ -177,12 +244,110 @@ namespace Avalonia.IntegrationTests.Appium
         public class Default : MenuTests
         {
             public Default(DefaultAppFixture fixture) : base(fixture) { }
+
+            [PlatformFact(TestPlatforms.Linux)]
+            public void Linux_Click_Child()
+            {
+                using var fixture = new DefaultAppFixture();
+                var isolated = new Default(fixture);
+                isolated.ClickChildCore();
+            }
+
+            [PlatformFact(TestPlatforms.Linux)]
+            public void Linux_Click_Grandchild()
+            {
+                using var fixture = new DefaultAppFixture();
+                var isolated = new Default(fixture);
+                isolated.ClickGrandchildCore();
+            }
+
+            [PlatformFact(TestPlatforms.Linux)]
+            public void Linux_Child_AcceleratorKey()
+            {
+                using var fixture = new DefaultAppFixture();
+                var isolated = new Default(fixture);
+                isolated.ChildAcceleratorKeyCore();
+            }
+
+            [PlatformFact(TestPlatforms.Linux)]
+            public void Linux_Select_Child_With_Click_Arrow_Keys()
+            {
+                using var fixture = new DefaultAppFixture();
+                var isolated = new Default(fixture);
+                isolated.Select_Child_With_Click_Arrow_Keys();
+            }
+
+            [PlatformFact(TestPlatforms.Linux)]
+            public void Linux_Select_Grandchild_With_Click_Arrow_Keys()
+            {
+                using var fixture = new DefaultAppFixture();
+                var isolated = new Default(fixture);
+                isolated.Select_Grandchild_With_Click_Arrow_Keys();
+            }
+
+            [PlatformFact(TestPlatforms.Linux)]
+            public void Linux_PointerOver_Does_Not_Steal_Focus()
+            {
+                using var fixture = new DefaultAppFixture();
+                var isolated = new Default(fixture);
+                isolated.PointerOver_Does_Not_Steal_Focus();
+            }
+
         }
 
         [Collection("OverlayPopups")]
         public class OverlayPopups : MenuTests
         {
             public OverlayPopups(OverlayPopupsAppFixture fixture) : base(fixture) { }
+
+            [PlatformFact(TestPlatforms.Linux)]
+            public void Linux_Click_Child()
+            {
+                using var fixture = new OverlayPopupsAppFixture();
+                var isolated = new OverlayPopups(fixture);
+                isolated.ClickChildCore();
+            }
+
+            [PlatformFact(TestPlatforms.Linux)]
+            public void Linux_Click_Grandchild()
+            {
+                using var fixture = new OverlayPopupsAppFixture();
+                var isolated = new OverlayPopups(fixture);
+                isolated.ClickGrandchildCore();
+            }
+
+            [PlatformFact(TestPlatforms.Linux)]
+            public void Linux_Child_AcceleratorKey()
+            {
+                using var fixture = new OverlayPopupsAppFixture();
+                var isolated = new OverlayPopups(fixture);
+                isolated.ChildAcceleratorKeyCore();
+            }
+
+            [PlatformFact(TestPlatforms.Linux)]
+            public void Linux_Select_Child_With_Click_Arrow_Keys()
+            {
+                using var fixture = new OverlayPopupsAppFixture();
+                var isolated = new OverlayPopups(fixture);
+                isolated.Select_Child_With_Click_Arrow_Keys();
+            }
+
+            [PlatformFact(TestPlatforms.Linux)]
+            public void Linux_Select_Grandchild_With_Click_Arrow_Keys()
+            {
+                using var fixture = new OverlayPopupsAppFixture();
+                var isolated = new OverlayPopups(fixture);
+                isolated.Select_Grandchild_With_Click_Arrow_Keys();
+            }
+
+            [PlatformFact(TestPlatforms.Linux)]
+            public void Linux_PointerOver_Does_Not_Steal_Focus()
+            {
+                using var fixture = new OverlayPopupsAppFixture();
+                var isolated = new OverlayPopups(fixture);
+                isolated.PointerOver_Does_Not_Steal_Focus();
+            }
+
         }
     }
 }

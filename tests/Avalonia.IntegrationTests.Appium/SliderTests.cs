@@ -25,7 +25,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(Session).ClickAndHold(thumb).MoveByOffset(100, 0).Release().Perform();
 
-            var value = double.Parse(slider.Text, CultureInfo.InvariantCulture);
+            var value = GetSliderValue(slider);
             var boundValue = double.Parse(
                 Session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
                 CultureInfo.InvariantCulture);
@@ -46,7 +46,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(Session).ClickAndHold(thumb).MoveByOffset(-100, 0).Release().Perform();
 
-            var value = double.Parse(slider.Text, CultureInfo.InvariantCulture);
+            var value = GetSliderValue(slider);
             var boundValue = double.Parse(
                 Session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
                 CultureInfo.InvariantCulture);
@@ -58,7 +58,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.True(currentThumbRect.Left < initialThumbRect.Left);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS | TestPlatforms.Linux)]
         public void Horizontal_Changes_Value_When_Clicking_Increase_Button()
         {
             var slider = Session.FindElementByAccessibilityId("HorizontalSlider");
@@ -67,7 +67,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(Session).MoveToElementCenter(slider, 100, 0).Click().Perform();
 
-            var value = double.Parse(slider.Text, CultureInfo.InvariantCulture);
+            var value = GetSliderValue(slider);
             var boundValue = double.Parse(
                 Session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
                 CultureInfo.InvariantCulture);
@@ -79,7 +79,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.True(currentThumbRect.Left > initialThumbRect.Left);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS | TestPlatforms.Linux)]
         public void Horizontal_Changes_Value_When_Clicking_Decrease_Button()
         {
             var slider = Session.FindElementByAccessibilityId("HorizontalSlider");
@@ -88,7 +88,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(Session).MoveToElementCenter(slider, -100, 0).Click().Perform();
 
-            var value = double.Parse(slider.Text, CultureInfo.InvariantCulture);
+            var value = GetSliderValue(slider);
             var boundValue = double.Parse(
                 Session.FindElementByAccessibilityId("HorizontalSliderValue").Text,
                 CultureInfo.InvariantCulture);
@@ -98,6 +98,14 @@ namespace Avalonia.IntegrationTests.Appium
 
             var currentThumbRect = thumb.Rect;
             Assert.True(currentThumbRect.Left < initialThumbRect.Left);
+        }
+
+        private static double GetSliderValue(AppiumWebElement slider)
+        {
+            var raw = slider.Text;
+            if (string.IsNullOrWhiteSpace(raw))
+                raw = slider.GetAttribute("value");
+            return double.Parse(raw, CultureInfo.InvariantCulture);
         }
     }
 }

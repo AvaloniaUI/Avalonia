@@ -71,48 +71,59 @@ namespace Avalonia.IntegrationTests.Appium
 
         public static string GetComboBoxValue(this AppiumWebElement element)
         {
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                element.Text :
-                element.GetAttribute("value");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return element.Text;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return element.Text;
+            return element.GetAttribute("value");
         }
         
-        public static string GetName(this AppiumWebElement element) => GetAttribute(element, "Name", "title");
+        public static string GetName(this AppiumWebElement element) => GetAttribute(element, "Name", "title", "name");
 
-        public static bool? GetIsChecked(this AppiumWebElement element) =>
-            GetAttribute(element, "Toggle.ToggleState", "value") switch
+        public static bool? GetIsChecked(this AppiumWebElement element)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                var indeterminate = element.GetAttribute("indeterminate");
+                if (indeterminate is "true" or "True")
+                    return null;
+                var isChecked = element.GetAttribute("checked");
+                return isChecked is "true" or "True";
+            }
+
+            return GetAttribute(element, "Toggle.ToggleState", "value") switch
             {
                 "0" => false,
                 "1" => true,
                 "2" => null,
                 _ => throw new ArgumentOutOfRangeException($"Unexpected IsChecked value.")
             };
+        }
 
         public static bool GetIsFocused(this AppiumWebElement element)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
                 return element.GetAttribute("HasKeyboardFocus") == "True";
-            }
-            else
-            {
-                // https://stackoverflow.com/questions/71807788/check-if-element-is-focused-in-appium
-                throw new NotSupportedException("Couldn't work out how to check if an element is focused on mac.");
-            }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return element.GetAttribute("focused") is "true" or "True";
+            // https://stackoverflow.com/questions/71807788/check-if-element-is-focused-in-appium
+            throw new NotSupportedException("Couldn't work out how to check if an element is focused on mac.");
         }
 
         public static AppiumWebElement GetCurrentSingleWindow(this AppiumDriver session)
         {
             if (OperatingSystem.IsMacOS())
             {
-                // The Avalonia a11y tree currently exposes two nested Window elements, this is a bug and should be fixed 
-                // but in the meantime use the `parent::' selector to return the parent "real" window. 
+                // The Avalonia a11y tree currently exposes two nested Window elements, this is a bug and should be fixed
+                // but in the meantime use the `parent::' selector to return the parent "real" window.
                 return session.FindElementByXPath(
                     $"XCUIElementTypeWindow//*/parent::XCUIElementTypeWindow");
             }
-            else
+            if (OperatingSystem.IsLinux())
             {
-                return session.FindElementByXPath($"//Window");
+                return session.FindElementByXPath("//frame");
             }
+            return session.FindElementByXPath($"//Window");
         }
 
         public static AppiumWebElement GetWindowById(this AppiumDriver session, string identifier)
@@ -122,10 +133,11 @@ namespace Avalonia.IntegrationTests.Appium
                 return session.FindElementByXPath(
                     $"XCUIElementTypeWindow[@identifier='{identifier}']");
             }
-            else
+            if (OperatingSystem.IsLinux())
             {
-                return session.FindElementByXPath($"//Window[@AutomationId='{identifier}']");
+                return session.FindElementByXPath($"//frame[@accessibility-id='{identifier}']");
             }
+            return session.FindElementByXPath($"//Window[@AutomationId='{identifier}']");
         }
 
 
@@ -139,6 +151,66 @@ namespace Avalonia.IntegrationTests.Appium
         public static IDisposable OpenWindowWithClick(this AppiumWebElement element, TimeSpan? delay = null)
         {
             var session = element.WrappedDriver;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                var oldWindows = GetLinuxTopLevelWindows(session)
+                    .Select(GetLinuxWindowSignature)
+                    .ToHashSet();
+                var oldWindowCount = oldWindows.Count;
+
+                element.Click();
+                if (delay is not null)
+                    Thread.Sleep((int)delay.Value.TotalMilliseconds);
+
+                IWebElement? newWindow = null;
+                for (var i = 0; i < 20; ++i)
+                {
+                    var currentWindows = GetLinuxTopLevelWindows(session);
+                    newWindow = currentWindows.FirstOrDefault(w => !oldWindows.Contains(GetLinuxWindowSignature(w)));
+
+                    // Some Linux window managers don't expose unique ids for transient dialogs.
+                    // Fall back to detecting that a new top-level window appeared.
+                    if (newWindow is null && currentWindows.Count > oldWindowCount)
+                        newWindow = currentWindows.LastOrDefault();
+
+                    if (newWindow is not null)
+                        break;
+                    Thread.Sleep(100);
+                }
+
+                if (newWindow is not null)
+                {
+                    return Disposable.Create(() =>
+                    {
+                        newWindow.SendKeys(Keys.Alt + Keys.F4 + Keys.Alt);
+                        Thread.Sleep(500);
+                    });
+                }
+
+                // Some Linux stacks expose transient dialogs inconsistently as top-level windows.
+                // Fall back to closing the active window instead of failing window discovery.
+                return Disposable.Create(() =>
+                {
+                    try
+                    {
+                        session.SwitchTo().ActiveElement().SendKeys(Keys.Alt + Keys.F4 + Keys.Alt);
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            element.SendKeys(Keys.Alt + Keys.F4 + Keys.Alt);
+                        }
+                        catch
+                        {
+                            // ignore cleanup failures
+                        }
+                    }
+
+                    Thread.Sleep(500);
+                });
+            }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -231,12 +303,35 @@ namespace Avalonia.IntegrationTests.Appium
                 });
             }
         }
+
+        private static IReadOnlyList<AppiumWebElement> GetLinuxTopLevelWindows(IWebDriver session) =>
+            session.FindElements(By.XPath("//frame | //dialog | //window"))
+                .Cast<AppiumWebElement>()
+                .ToList();
+
+        private static string GetLinuxWindowSignature(AppiumWebElement window)
+        {
+            var id = window.GetAttribute("accessibility-id");
+            if (!string.IsNullOrEmpty(id))
+                return $"id:{id}";
+
+            var rect = window.Rect;
+            var name = window.GetAttribute("name") ?? string.Empty;
+            return $"anon:{name}:{rect.X}:{rect.Y}:{rect.Width}:{rect.Height}";
+        }
     
         public static void SendClick(this AppiumWebElement element)
         {
             // The Click() method seems to correspond to accessibilityPerformPress on macOS but certain controls
             // such as list items don't support this action, so instead simulate a physical click as VoiceOver
             // does. On Windows, Click() seems to fail with the WindowState checkbox for some reason.
+            // On Linux (AT-SPI), use the accessibility action directly since pyatspi mouse synthesis
+            // doesn't reliably deliver events without a compositor/WM.
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                element.Click();
+                return;
+            }
             new Actions(element.WrappedDriver).MoveToElement(element).Click().Perform();
         }
         
@@ -253,6 +348,15 @@ namespace Avalonia.IntegrationTests.Appium
         public static string GetAttribute(AppiumWebElement element, string windows, string macOS)
         {
             return element.GetAttribute(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? windows : macOS);
+        }
+
+        public static string GetAttribute(AppiumWebElement element, string windows, string macOS, string linux)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return element.GetAttribute(windows);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return element.GetAttribute(linux);
+            return element.GetAttribute(macOS);
         }
     }
 }

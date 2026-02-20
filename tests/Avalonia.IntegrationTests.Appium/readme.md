@@ -35,3 +35,26 @@ If you need to run with Appium 2 on macOS, extra steps are required:
 - Set `<IsRunningAppium2>true</IsRunningAppium2>` msbuild property on the test project or globally
 - Run appium 2 with `appium --base-path=/wd/hub` (custom base path is required)
 - Run tests as normally
+
+## Linux (AT-SPI backend)
+
+Use the helper scripts to bring up and tear down the Linux test environment across sessions.
+
+### Start environment
+
+- `scripts/linux-appium/start.sh`
+- Starts/reuses Xvfb, creates a dedicated D-Bus session, launches AT-SPI services, and starts the KDE AT-SPI WebDriver.
+- Automatically applies local driver fixes from `scripts/linux-appium/patches/selenium-webdriver-at-spi.patch` when present.
+
+### Run tests
+
+- `scripts/linux-appium/run-tests.sh`
+- Example with filter: `scripts/linux-appium/run-tests.sh -- --filter-method "*ButtonWithAcceleratorKey"`
+
+### Check status
+
+- `scripts/linux-appium/status.sh`
+
+### Tear down
+
+- `scripts/linux-appium/stop.sh`

@@ -113,3 +113,76 @@ jobs:
     inputs:
       OperationType: 'Stop'
     displayName: 'Stop WinAppDriver'
+
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-24.04'
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET 8.0 Runtime'
+    inputs:
+      packageType: runtime
+      version: 8.0.x
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET 10.0 SDK'
+    inputs:
+      packageType: sdk
+      useGlobalJson: true
+
+  - script: |
+      sudo apt-get update
+      sudo apt-get install -y xvfb at-spi2-core dbus-x11 libatk-bridge2.0-0 \
+        python3-pip python3-gi gir1.2-atspi-2.0 gir1.2-gio-2.0 \
+        libx11-dev libxrandr2 libxcursor1 libxcomposite1 libxdamage1 \
+        libxfixes3 libxrender1 libxi6 libxtst6
+    displayName: 'Install system dependencies'
+
+  - script: |
+      pip3 install --user flask pyatspi lxml
+      git clone --depth 1 https://github.com/KDE/selenium-webdriver-at-spi.git /tmp/at-spi-driver
+    displayName: 'Install AT-SPI WebDriver'
+
+  - script: |
+      Xvfb :99 -screen 0 1920x1080x24 &
+      sleep 2
+    displayName: 'Start Xvfb'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Build IntegrationTestApp'
+    inputs:
+      command: 'build'
+      projects: 'samples/IntegrationTestApp/IntegrationTestApp.csproj'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Build Test Project'
+    inputs:
+      command: 'build'
+      projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
+
+  - script: |
+      export DISPLAY=:99
+      unset WAYLAND_DISPLAY
+      unset GNOME_SETUP_DISPLAY
+      export XDG_SESSION_TYPE=x11
+
+      exec dbus-run-session -- bash -c '
+        /usr/libexec/at-spi-bus-launcher --launch-immediately &
+        sleep 2
+        /usr/libexec/at-spi2-registryd --use-gnome-session &
+        sleep 1
+
+        cd /tmp/at-spi-driver
+        FLASK_APP=selenium-webdriver-at-spi.py python3 -m flask run --port 4723 &
+        sleep 2
+
+        export SELENIUM_REMOTE_URL=http://127.0.0.1:4723
+        dotnet test tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj --no-build --no-progress
+      '
+    displayName: 'Run Integration Tests (isolated D-Bus session)'
+
+  - script: |
+      pkill Xvfb || true
+    displayName: 'Cleanup'
+    condition: always()

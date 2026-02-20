@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
   <av:ImportTypes>Types.xml</av:ImportTypes>
 
@@ -36,7 +36,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="BoundsChanged">
@@ -49,7 +48,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="LinkSelected">
@@ -62,7 +60,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="StateChanged">
@@ -75,7 +72,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="ChildrenChanged">
@@ -88,7 +84,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="VisibleDataChanged">
@@ -101,7 +96,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="SelectionChanged">
@@ -114,7 +108,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="ModelChanged">
@@ -127,7 +120,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="ActiveDescendantChanged">
@@ -140,7 +132,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Announcement">
@@ -156,7 +147,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="AttributesChanged">
@@ -171,7 +161,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <!-- Table events. TODO: move to Table interface? -->
@@ -186,7 +175,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="RowReordered">
@@ -199,7 +187,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="RowDeleted">
@@ -212,7 +199,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="ColumnInserted">
@@ -225,7 +211,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="ColumnReordered">
@@ -238,7 +223,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="ColumnDeleted">
@@ -251,7 +235,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <!-- Text events. TODO: move to Text interface? -->
@@ -266,7 +249,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="TextSelectionChanged">
@@ -279,7 +261,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="TextChanged">
@@ -292,7 +273,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="TextAttributesChanged">
@@ -305,7 +285,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="TextCaretMoved">
@@ -318,7 +297,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
   </interface>
 
@@ -333,7 +311,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Minimize">
@@ -346,7 +323,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Maximize">
@@ -359,7 +335,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Restore">
@@ -372,7 +347,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Close">
@@ -385,7 +359,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Create">
@@ -398,7 +371,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Reparent">
@@ -411,7 +383,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="DesktopCreate">
@@ -424,7 +395,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="DesktopDestroy">
@@ -437,7 +407,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Destroy">
@@ -450,7 +419,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Activate">
@@ -463,7 +431,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Deactivate">
@@ -476,7 +443,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Raise">
@@ -489,7 +455,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Lower">
@@ -502,7 +467,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Move">
@@ -515,7 +479,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Resize">
@@ -528,7 +491,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Shade">
@@ -541,7 +503,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="uUshade">
@@ -554,7 +515,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Restyle">
@@ -567,7 +527,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
   </interface>
 
@@ -583,7 +542,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Rel">
@@ -596,7 +554,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Button">
@@ -609,7 +566,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
   </interface>
 
@@ -625,7 +581,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
   </interface>
 
@@ -641,7 +596,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="ColumncountChanged">
@@ -654,7 +608,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="LinecountChanged">
@@ -667,7 +620,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="ApplicationChanged">
@@ -680,7 +632,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="CharwidthChanged">
@@ -693,7 +644,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
   </interface>
 
@@ -709,7 +659,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="Reload">
@@ -722,7 +671,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="LoadStopped">
@@ -735,7 +683,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="ContentChanged">
@@ -748,7 +695,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="AttributesChanged">
@@ -763,7 +709,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
 
     <signal name="PageChanged">
@@ -776,7 +721,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
   </interface>
 
@@ -792,7 +736,6 @@
           <av:Dictionary Type="AtSpiEventProperties"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiEvent"/>
     </signal>
   </interface>
 

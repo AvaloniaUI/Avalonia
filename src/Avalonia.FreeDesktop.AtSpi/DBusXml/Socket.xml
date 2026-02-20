@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
   <av:ImportTypes>Types.xml</av:ImportTypes>
   <!--
@@ -41,13 +41,11 @@
           <av:Struct Type="AtSpiObjectReference"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiObjectReference"/>
       <arg direction="out" name="socket" type="(so)">
         <av:TypeDefinition>
           <av:Struct Type="AtSpiObjectReference"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QSpiObjectReference"/>
     </method>
 
     <!--
@@ -78,7 +76,6 @@
           <av:Struct Type="AtSpiObjectReference"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiObjectReference"/>
     </method>
 
     <!--
@@ -95,7 +92,6 @@
           <av:Struct Type="AtSpiObjectReference"/>
         </av:TypeDefinition>
       </arg>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="QSpiObjectReference"/>
     </signal>
 
   </interface>

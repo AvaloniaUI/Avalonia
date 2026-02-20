@@ -2,11 +2,13 @@
 global using AppiumDriver = OpenQA.Selenium.Appium.AppiumDriver<OpenQA.Selenium.Appium.AppiumWebElement>;
 global using WindowsDriver = OpenQA.Selenium.Appium.Windows.WindowsDriver<OpenQA.Selenium.Appium.AppiumWebElement>;
 global using MacDriver = OpenQA.Selenium.Appium.Mac.MacDriver<OpenQA.Selenium.Appium.AppiumWebElement>;
+global using LinuxDriver = Avalonia.IntegrationTests.Appium.LinuxDriver<OpenQA.Selenium.Appium.AppiumWebElement>;
 #elif APPIUM2
 global using AppiumWebElement = OpenQA.Selenium.Appium.AppiumElement;
 global using AppiumDriver = OpenQA.Selenium.Appium.AppiumDriver;
 global using WindowsDriver = OpenQA.Selenium.Appium.Windows.WindowsDriver;
 global using MacDriver = OpenQA.Selenium.Appium.Mac.MacDriver;
+global using LinuxDriver = Avalonia.IntegrationTests.Appium.LinuxDriver;
 #endif
 
 using System;

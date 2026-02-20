@@ -24,6 +24,10 @@ namespace IntegrationTestApp
                 {
                     OverlayPopups = OverlayPopups,
                 })
+                .With(new X11PlatformOptions
+                {
+                    OverlayPopups = OverlayPopups,
+                })
                 .StartWithClassicDesktopLifetime(args);
         }
 

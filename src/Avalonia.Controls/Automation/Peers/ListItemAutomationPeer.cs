@@ -39,6 +39,11 @@ namespace Avalonia.Automation.Peers
 
                 if (index != -1)
                     parent.SelectedIndex = index;
+
+                // When an accessibility tool selects a ComboBox dropdown item,
+                // also close the dropdown to match real click behavior.
+                if (parent is ComboBox { IsDropDownOpen: true } comboBox)
+                    comboBox.IsDropDownOpen = false;
             }
         }
 

@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <!--
  Copyright (C) 2015 Red Hat, Inc.
 
@@ -16,9 +16,7 @@
  License along with this library. If not, see <http://www.gnu.org/licenses/>.
 
  Author: Alexander Larsson <alexl@redhat.com>
--->
-
-<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+--><node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" name="/">
   <!--
       org.freedesktop.portal.Request:
       @short_description: Shared request interface
@@ -80,7 +78,6 @@
     <signal name="Response">
       <arg type="u" name="response"/>
       <arg type="a{sv}" name="results"/>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QVariantMap"/>
     </signal>
   </interface>
 </node>

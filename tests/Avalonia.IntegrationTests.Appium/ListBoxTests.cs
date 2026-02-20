@@ -36,47 +36,30 @@ namespace Avalonia.IntegrationTests.Appium
         [Fact(Skip = "WinAppDriver seems unable to consistently send a Ctrl key and appium-mac2-driver just hangs")]
         public void Can_Select_Items_By_Ctrl_Clicking()
         {
-            var listBox = GetTarget();
-            var item2 = listBox.FindElementByName("Item 2");
-            var item4 = listBox.FindElementByName("Item 4");
-
-            Assert.False(item2.Selected);
-            Assert.False(item4.Selected);
-            
-            new Actions(Session)
-                .Click(item2)
-                .KeyDown(Keys.Control)
-                .Click(item4)
-                .KeyUp(Keys.Control)
-                .Perform();
-
-            Assert.True(item2.Selected);
-            Assert.True(item4.Selected);
+            AssertSelectItemsByCtrlClicking(Session);
         }
 
         // appium-mac2-driver just hangs
         [PlatformFact(TestPlatforms.Windows)]
         public void Can_Select_Range_By_Shift_Clicking()
         {
-            var listBox = GetTarget();
-            var item2 = listBox.FindElementByName("Item 2");
-            var item3 = listBox.FindElementByName("Item 3");
-            var item4 = listBox.FindElementByName("Item 4");
+            AssertSelectRangeByShiftClicking(Session);
+        }
 
-            Assert.False(item2.Selected);
-            Assert.False(item3.Selected);
-            Assert.False(item4.Selected);
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_Can_Select_Items_By_Ctrl_Clicking()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new ListBoxTests(fixture);
+            AssertSelectItemsByCtrlClicking(isolated.Session);
+        }
 
-            new Actions(Session)
-                .Click(item2)
-                .KeyDown(Keys.Shift)
-                .Click(item4)
-                .KeyUp(Keys.Shift)
-                .Perform();
-
-            Assert.True(item2.Selected);
-            Assert.True(item3.Selected);
-            Assert.True(item4.Selected);
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_Can_Select_Range_By_Shift_Clicking()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new ListBoxTests(fixture);
+            AssertSelectRangeByShiftClicking(isolated.Session);
         }
 
         [Fact]
@@ -92,6 +75,55 @@ namespace Avalonia.IntegrationTests.Appium
         {
             Session.FindElementByAccessibilityId("ListBoxSelectionClear").Click();
             return Session.FindElementByAccessibilityId("BasicListBox");
+        }
+
+        private static void AssertSelectItemsByCtrlClicking(AppiumDriver session)
+        {
+            var listBox = GetTarget(session);
+            var item2 = listBox.FindElementByName("Item 2");
+            var item4 = listBox.FindElementByName("Item 4");
+
+            Assert.False(item2.Selected);
+            Assert.False(item4.Selected);
+            
+            new Actions(session)
+                .Click(item2)
+                .KeyDown(Keys.Control)
+                .Click(item4)
+                .KeyUp(Keys.Control)
+                .Perform();
+
+            Assert.True(item2.Selected);
+            Assert.True(item4.Selected);
+        }
+
+        private static void AssertSelectRangeByShiftClicking(AppiumDriver session)
+        {
+            var listBox = GetTarget(session);
+            var item2 = listBox.FindElementByName("Item 2");
+            var item3 = listBox.FindElementByName("Item 3");
+            var item4 = listBox.FindElementByName("Item 4");
+
+            Assert.False(item2.Selected);
+            Assert.False(item3.Selected);
+            Assert.False(item4.Selected);
+
+            new Actions(session)
+                .Click(item2)
+                .KeyDown(Keys.Shift)
+                .Click(item4)
+                .KeyUp(Keys.Shift)
+                .Perform();
+
+            Assert.True(item2.Selected);
+            Assert.True(item3.Selected);
+            Assert.True(item4.Selected);
+        }
+
+        private static AppiumWebElement GetTarget(AppiumDriver session)
+        {
+            session.FindElementByAccessibilityId("ListBoxSelectionClear").Click();
+            return session.FindElementByAccessibilityId("BasicListBox");
         }
     }
 }

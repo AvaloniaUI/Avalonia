@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Avalonia.Controls;
 using OpenQA.Selenium;
@@ -20,7 +22,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
         }
 
-        [Theory]
+        [PlatformTheory(TestPlatforms.Windows | TestPlatforms.MacOS)]
         [MemberData(nameof(StartupLocationData))]
         public void StartupLocation(Size? size, ShowWindowMode mode, WindowStartupLocation location, bool canResize)
         {
@@ -53,7 +55,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [Theory]
+        [PlatformTheory(TestPlatforms.Windows | TestPlatforms.MacOS)]
         [MemberData(nameof(WindowStateData))]
         public void WindowState(Size? size, ShowWindowMode mode, WindowState state, bool canResize)
         {
@@ -97,6 +99,35 @@ namespace Avalonia.IntegrationTests.Appium
                     }
                 }
             }
+        }
+
+        [PlatformTheory(TestPlatforms.Linux)]
+        [InlineData(Controls.WindowState.Normal)]
+        [InlineData(Controls.WindowState.Maximized)]
+        public void Linux_WindowState_Reflects_Requested_State(Controls.WindowState state)
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new WindowTests(fixture);
+
+            using var window = isolated.OpenWindow(state: state);
+            var currentState = isolated.Session.FindElementByAccessibilityId("CurrentWindowState").GetComboBoxValue();
+
+            Assert.Equal(state.ToString(), currentState);
+        }
+
+        [PlatformTheory(TestPlatforms.Linux)]
+        [InlineData(ShowWindowMode.NonOwned)]
+        [InlineData(ShowWindowMode.Owned)]
+        [InlineData(ShowWindowMode.Modal)]
+        public void Linux_WindowState_Maximized_Is_Applied_For_All_ShowModes(ShowWindowMode mode)
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new WindowTests(fixture);
+
+            using var window = isolated.OpenWindow(mode: mode, state: Controls.WindowState.Maximized);
+            var currentState = isolated.Session.FindElementByAccessibilityId("CurrentWindowState").GetComboBoxValue();
+
+            Assert.Equal("Maximized", currentState);
         }
 
         [PlatformFact(TestPlatforms.Windows)]
@@ -154,7 +185,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [Theory]
+        [PlatformTheory(TestPlatforms.Windows | TestPlatforms.MacOS)]
         [InlineData(ShowWindowMode.NonOwned)]
         [InlineData(ShowWindowMode.Owned)]
         [InlineData(ShowWindowMode.Modal)]
@@ -199,7 +230,34 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [Fact]
+        [PlatformTheory(TestPlatforms.Linux)]
+        [InlineData(ShowWindowMode.NonOwned)]
+        [InlineData(ShowWindowMode.Owned)]
+        [InlineData(ShowWindowMode.Modal)]
+        public void Linux_ShowMode_Maximize_And_Restore(ShowWindowMode mode)
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new WindowTests(fixture);
+
+            using var window = isolated.OpenWindow(null, mode, WindowStartupLocation.Manual);
+            var windowState = isolated.Session.FindElementByAccessibilityId("CurrentWindowState");
+            var originalPosition = isolated.ReadStableElementText("CurrentPosition");
+
+            Assert.Equal("Normal", windowState.GetComboBoxValue());
+
+            windowState.Click();
+            isolated.Session.FindElementByAccessibilityId("WindowStateMaximized").SendClick();
+            Assert.Equal("Maximized", windowState.GetComboBoxValue());
+
+            windowState.Click();
+            isolated.Session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
+            Assert.Equal("Normal", windowState.GetComboBoxValue());
+
+            var restoredPosition = isolated.ReadStableElementText("CurrentPosition");
+            Assert.Equal(originalPosition, restoredPosition);
+        }
+
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void Extended_Client_Window_Shows_With_Requested_Size()
         {
             var clientSize = new Size(400, 400);
@@ -210,7 +268,20 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(current.ClientSize, clientSize);
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_Extended_Client_Window_Shows_With_Requested_Size()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new WindowTests(fixture);
+
+            var clientSize = new Size(400, 400);
+            using var window = isolated.OpenWindow(clientSize, ShowWindowMode.NonOwned, WindowStartupLocation.CenterScreen, extendClientArea: true);
+
+            var currentClientSize = ParseSizeRelaxed(isolated.ReadStableElementText("CurrentClientSize"));
+            Assert.Equal(clientSize, currentClientSize);
+        }
+
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void TransparentWindow()
         {
             var showTransparentWindow = Session.FindElementByAccessibilityId("ShowTransparentWindow");
@@ -230,7 +301,8 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(new Rgba32(255, 0, 0), centerColor);
         }
 
-        [Fact]
+
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void TransparentPopup()
         {
             var showTransparentWindow = Session.FindElementByAccessibilityId("ShowTransparentPopup");
@@ -250,6 +322,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(new Rgba32(0, 128, 0), topLeftColor);
             Assert.Equal(new Rgba32(255, 0, 0), centerColor);
         }
+
 
         [PlatformFact(TestPlatforms.Windows)]
         public void Owned_Window_Should_Appear_Above_Topmost_Owner()
@@ -280,7 +353,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [Theory]
+        [PlatformTheory(TestPlatforms.Windows | TestPlatforms.MacOS)]
         [InlineData(ShowWindowMode.NonOwned, true)]
         [InlineData(ShowWindowMode.Owned, true)]
         [InlineData(ShowWindowMode.Modal, true)]
@@ -311,7 +384,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [Theory]
+        [PlatformTheory(TestPlatforms.Windows | TestPlatforms.MacOS)]
         [InlineData(false)]
         [InlineData(true)]
         public void Window_Minimize_Button_Enabled_Matches_CanMinimize(bool canMinimize)
@@ -326,7 +399,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [Theory]
+        [PlatformTheory(TestPlatforms.Windows | TestPlatforms.MacOS)]
         [InlineData(false)]
         [InlineData(true)]
         public void Window_Maximize_Button_Enabled_Matches_CanMaximize(bool canMaximize)
@@ -342,7 +415,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void Changing_SystemDecorations_Should_Not_Change_Frame_Size_And_Position()
         {
             using (OpenWindow(null, ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
@@ -363,7 +436,34 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [Fact]
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_Changing_SystemDecorations_Should_Not_Change_Frame_Size_And_Position()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new WindowTests(fixture);
+
+            using (isolated.OpenWindow(null, ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
+            {
+                var originalFrameSize = isolated.ReadStableElementText("CurrentFrameSize");
+                var originalPosition = isolated.ReadStableElementText("CurrentPosition");
+
+                isolated.Session.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
+                isolated.Session.FindElementByAccessibilityId("SystemDecorationsNone").SendClick();
+
+                Assert.Equal(originalFrameSize, isolated.ReadStableElementText("CurrentFrameSize"));
+                Assert.Equal(originalPosition, isolated.ReadStableElementText("CurrentPosition"));
+
+                isolated.Session.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
+                isolated.Session.FindElementByAccessibilityId("SystemDecorationsFull").SendClick();
+
+                Assert.Equal(originalFrameSize, isolated.ReadStableElementText("CurrentFrameSize"));
+                Assert.Equal(originalPosition, isolated.ReadStableElementText("CurrentPosition"));
+            }
+        }
+
+
+
+        [PlatformFact(TestPlatforms.Windows | TestPlatforms.MacOS)]
         public void Changing_WindowState_Should_Not_Change_Frame_Size_And_Position()
         {
             using (OpenWindow())
@@ -379,6 +479,32 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.Equal(info.Position, updatedInfo.Position);
             }
         }
+
+        [PlatformFact(TestPlatforms.Linux)]
+        public void Linux_Changing_WindowState_Should_Not_Change_Frame_Size_And_Position()
+        {
+            using var fixture = new DefaultAppFixture();
+            var isolated = new WindowTests(fixture);
+
+            using (isolated.OpenWindow())
+            {
+                var originalPosition = isolated.ReadStableElementText("CurrentPosition");
+                var originalFrameSize = isolated.ReadStableElementText("CurrentFrameSize");
+
+                isolated.Session.FindElementByAccessibilityId("CurrentWindowState").SendClick();
+                isolated.Session.FindElementByAccessibilityId("WindowStateMaximized").SendClick();
+                isolated.Session.FindElementByAccessibilityId("CurrentWindowState").SendClick();
+                isolated.Session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
+
+                var updatedPosition = isolated.ReadStableElementText("CurrentPosition");
+                var updatedFrameSize = isolated.ReadStableElementText("CurrentFrameSize");
+
+                Assert.Equal(originalPosition, updatedPosition);
+                Assert.Equal(originalFrameSize, updatedFrameSize);
+            }
+        }
+
+
 
         [PlatformFact(TestPlatforms.Windows)]
         public void Changing_Size_Should_Not_Change_Position()
@@ -537,7 +663,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             PixelRect? ReadOwnerRect()
             {
-                var text = Session.FindElementByAccessibilityId("CurrentOwnerRect").Text;
+                var text = ReadElementText("CurrentOwnerRect");
                 return !string.IsNullOrWhiteSpace(text) ? PixelRect.Parse(text) : null;
             }
 
@@ -548,21 +674,82 @@ namespace Avalonia.IntegrationTests.Appium
                 try
                 {
                     return new(
-                        Size.Parse(Session.FindElementByAccessibilityId("CurrentClientSize").Text),
-                        Size.Parse(Session.FindElementByAccessibilityId("CurrentFrameSize").Text),
-                        PixelPoint.Parse(Session.FindElementByAccessibilityId("CurrentPosition").Text),
+                        ParseSizeRelaxed(ReadElementText("CurrentClientSize")),
+                        ParseSizeRelaxed(ReadElementText("CurrentFrameSize")),
+                        PixelPoint.Parse(ReadElementText("CurrentPosition")),
                         ReadOwnerRect(),
-                        PixelRect.Parse(Session.FindElementByAccessibilityId("CurrentScreenRect").Text),
-                        double.Parse(Session.FindElementByAccessibilityId("CurrentScaling").Text),
-                        Enum.Parse<WindowState>(Session.FindElementByAccessibilityId("CurrentWindowState").Text));
+                        PixelRect.Parse(ReadElementText("CurrentScreenRect")),
+                        double.Parse(ReadElementText("CurrentScaling"), CultureInfo.InvariantCulture),
+                        Enum.Parse<WindowState>(ReadElementText("CurrentWindowState")));
                 }
-                catch (OpenQA.Selenium.NoSuchElementException) when (retry++ < 3)
+                catch (OpenQA.Selenium.NoSuchElementException) when (retry++ < 6)
                 {
-                    // MacOS sometimes seems to need a bit of time to get itself back in order after switching out
-                    // of fullscreen.
-                    Thread.Sleep(1000);
+                    Thread.Sleep(250);
+                }
+                catch (FormatException) when (retry++ < 6)
+                {
+                    // Linux AT-SPI can momentarily return empty/transitioning values while window state updates.
+                    Thread.Sleep(250);
                 }
             }
+        }
+
+        private string ReadElementText(string accessibilityId)
+        {
+            var element = Session.FindElementByAccessibilityId(accessibilityId);
+            var text = element.Text;
+            if (!string.IsNullOrWhiteSpace(text))
+                return text;
+
+            text = element.GetAttribute("value");
+            if (!string.IsNullOrWhiteSpace(text))
+                return text;
+
+            return element.GetAttribute("name") ?? string.Empty;
+        }
+
+        private static Size ParseSizeRelaxed(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                throw new FormatException("Invalid Size.");
+
+            try
+            {
+                return Size.Parse(value);
+            }
+            catch (FormatException)
+            {
+                var matches = Regex.Matches(value, @"-?\d+(?:\.\d+)?");
+                if (matches.Count >= 2 &&
+                    double.TryParse(matches[0].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var width) &&
+                    double.TryParse(matches[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var height))
+                {
+                    return new Size(width, height);
+                }
+
+                throw;
+            }
+        }
+
+        private string ReadStableElementText(string accessibilityId)
+        {
+            string? last = null;
+
+            for (var i = 0; i < 20; ++i)
+            {
+                var current = ReadElementText(accessibilityId).Trim();
+                if (!string.IsNullOrWhiteSpace(current) && current.Any(char.IsDigit))
+                {
+                    if (last == current)
+                        return current;
+
+                    last = current;
+                }
+
+                Thread.Sleep(100);
+            }
+
+            return last ?? ReadElementText(accessibilityId);
         }
 
         public enum ShowWindowMode

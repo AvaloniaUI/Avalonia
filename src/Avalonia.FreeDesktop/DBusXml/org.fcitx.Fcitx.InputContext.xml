@@ -1,5 +1,4 @@
-<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
-"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
   <interface name="org.fcitx.Fcitx.InputContext">
     <method name="FocusIn">
@@ -45,11 +44,9 @@
       <arg name="langCode" type="s"/>
     </signal>
     <signal name="UpdateFormattedPreedit">
-      <arg name="str" type="a(si)" />
+      <arg name="str" type="a(si)"/>
       <arg name="cursorpos" type="i"/>
       <!-- qt4 / 5 seems use in/out differently -->
-      <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="FcitxFormattedPreeditList" />
-      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="FcitxFormattedPreeditList" />
     </signal>
     <signal name="ForwardKey">
       <arg name="keyval" type="u"/>

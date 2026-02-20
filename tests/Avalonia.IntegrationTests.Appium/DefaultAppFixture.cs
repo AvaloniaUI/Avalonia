@@ -11,6 +11,8 @@ namespace Avalonia.IntegrationTests.Appium
     {
         private const string TestAppPath = @"..\..\..\..\..\samples\IntegrationTestApp\bin\Debug\net10.0\IntegrationTestApp.exe";
         private const string TestAppBundleId = "net.avaloniaui.avalonia.integrationtestapp";
+        protected const string TestAppPathLinux =
+            @"../../../../../samples/IntegrationTestApp/bin/Debug/net10.0/IntegrationTestApp";
 
         public DefaultAppFixture()
         {
@@ -35,6 +37,13 @@ namespace Avalonia.IntegrationTests.Appium
                     new Uri("http://127.0.0.1:4723/wd/hub"),
                     options);
             }
+            else if (OperatingSystem.IsLinux())
+            {
+                ConfigureLinuxOptions(options);
+                var url = Environment.GetEnvironmentVariable("SELENIUM_REMOTE_URL")
+                    ?? "http://127.0.0.1:4723";
+                Session = new LinuxDriver(new Uri(url), options);
+            }
             else
             {
                 throw new PlatformNotSupportedException();
@@ -54,6 +63,16 @@ namespace Avalonia.IntegrationTests.Appium
             options.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
             options.AddAdditionalCapability(MobileCapabilityType.AutomationName, "mac2");
             options.AddAdditionalCapability("appium:showServerLogs", true);
+        }
+
+        protected virtual void ConfigureLinuxOptions(AppiumOptions options, string? app = null)
+        {
+            var appPath = app ?? Path.GetFullPath(TestAppPathLinux);
+#if APPIUM2
+            options.App = appPath;
+#else
+            options.AddAdditionalCapability("app", appPath);
+#endif
         }
 
         public AppiumDriver Session { get; }
@@ -83,6 +102,13 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 ConfigureMacOptions(options, appName);
                 return new MacDriver(new Uri("http://127.0.0.1:4723/wd/hub"), options);
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                ConfigureLinuxOptions(options, appName);
+                var url = Environment.GetEnvironmentVariable("SELENIUM_REMOTE_URL")
+                    ?? "http://127.0.0.1:4723";
+                return new LinuxDriver(new Uri(url), options);
             }
             else
             {
