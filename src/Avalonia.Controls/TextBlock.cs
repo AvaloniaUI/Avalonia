@@ -15,7 +15,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
-    public class TextBlock : Control, IInlineHost
+    public class TextBlock : Control, IInlineHost, ITextScaleable
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -647,6 +647,8 @@ namespace Avalonia.Controls
             }
         }
 
+        void ITextScaleable.OnTextScalingChanged() => InvalidateMeasure();
+
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
@@ -657,15 +659,17 @@ namespace Avalonia.Controls
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
-                FontSize,
+                TextScaling.GetScaledFontSize(this, FontSize),
                 TextDecorations,
                 Foreground,
                 fontFeatures: FontFeatures);
 
+            var fontScaleFactor = defaultProperties.FontRenderingEmSize / FontSize;
+
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, IsMeasureValid ? TextAlignment : TextAlignment.Left, true, false,
-                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
+                defaultProperties, TextWrapping, LineHeight * fontScaleFactor, 0, LetterSpacing * fontScaleFactor)
             {
-                LineSpacing = LineSpacing
+                LineSpacing = LineSpacing * fontScaleFactor,
             };
 
             ITextSource textSource;
@@ -730,7 +734,7 @@ namespace Avalonia.Controls
                 //Force arrange so text will be properly aligned.
                 InvalidateArrange();
             }
-           
+
             var inlines = Inlines;
 
             if (HasComplexContent)
@@ -830,6 +834,12 @@ namespace Avalonia.Controls
                 }
             }
 
+            if (change.Property.OwnerType == typeof(TextScaling))
+            {
+                InvalidateTextLayout();
+                return;
+            }
+
             switch (change.Property.Name)
             {
                 case nameof(FontSize):
@@ -846,6 +856,7 @@ namespace Avalonia.Controls
 
                 case nameof(Padding):
                 case nameof(LineHeight):
+                case nameof(LineSpacing):
                 case nameof(LetterSpacing):
                 case nameof(MaxLines):
 
