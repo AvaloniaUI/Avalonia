@@ -1319,7 +1319,10 @@ interface IAvnAutomationPeer : IUnknown
      
      bool IsSelectionItemProvider();
      bool SelectionItemProvider_IsSelected();
-     
+     void SelectionItemProvider_AddToSelection();
+     void SelectionItemProvider_RemoveFromSelection();
+     void SelectionItemProvider_Select();
+
      bool IsToggleProvider();
      int ToggleProvider_GetToggleState();
      void ToggleProvider_Toggle();

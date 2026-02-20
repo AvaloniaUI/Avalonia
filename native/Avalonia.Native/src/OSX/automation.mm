@@ -191,6 +191,7 @@
     {
         switch (_peer->GetLiveSetting())
         {
+            case LiveSettingOff: break;
             case LiveSettingPolite: return @"polite";
             case LiveSettingAssertive: return @"assertive";
         }
@@ -399,6 +400,24 @@
     if (_peer->IsSelectionItemProvider())
         return _peer->SelectionItemProvider_IsSelected();
     return NO;
+}
+
+- (void)setAccessibilitySelected:(BOOL)accessibilitySelected
+{
+    if (!_peer->IsSelectionItemProvider())
+        return;
+    if (accessibilitySelected)
+        _peer->SelectionItemProvider_Select();
+    else
+        _peer->SelectionItemProvider_RemoveFromSelection();
+}
+
+- (BOOL)accessibilityPerformPick
+{
+    if (!_peer->IsSelectionItemProvider())
+        return NO;
+    _peer->SelectionItemProvider_Select();
+    return YES;
 }
 
 - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector

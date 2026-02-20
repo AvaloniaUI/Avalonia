@@ -175,7 +175,10 @@ namespace Avalonia.Native
 
         public int IsSelectionItemProvider() => IsProvider<ISelectionItemProvider>();
         public int SelectionItemProvider_IsSelected() => SelectionItemProvider.IsSelected.AsComBool();
-        
+        public void SelectionItemProvider_AddToSelection() => SelectionItemProvider.AddToSelection();
+        public void SelectionItemProvider_RemoveFromSelection() => SelectionItemProvider.RemoveFromSelection();
+        public void SelectionItemProvider_Select() => SelectionItemProvider.Select();
+
         public int IsToggleProvider() => IsProvider<IToggleProvider>();
         public int ToggleProvider_GetToggleState() => (int)ToggleProvider.ToggleState;
         public void ToggleProvider_Toggle() => ToggleProvider.Toggle();
