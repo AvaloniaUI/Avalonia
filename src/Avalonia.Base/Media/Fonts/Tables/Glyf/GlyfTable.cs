@@ -470,7 +470,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                 _matrix = matrix;
             }
 
-            public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
+            public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked = true)
             {
                 if (Logger.TryGet(LogEventLevel.Debug, LogArea.Visual, out var log))
                 {
@@ -479,7 +479,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
                 var tp = _matrix.Transform(point);
 
-                _inner.ArcTo(tp, size, rotationAngle, isLargeArc, sweepDirection);
+                _inner.ArcTo(tp, size, rotationAngle, isLargeArc, sweepDirection, isStroked);
             }
 
             public void BeginFigure(Point startPoint, bool isFilled = true)
@@ -494,34 +494,34 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                 _inner.BeginFigure(tp, isFilled);
             }
 
-            public void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint)
+            public void CubicBezierTo(Point controlPoint1, Point controlPoint2, Point endPoint, bool isStroked = true)
             {
                 if (Logger.TryGet(LogEventLevel.Debug, LogArea.Visual, out var log))
                 {
                     log.Log(_inner, "CubicBezierTo cp1={0} cp2={1} end={2}", controlPoint1, controlPoint2, endPoint);
                 }
 
-                _inner.CubicBezierTo(_matrix.Transform(controlPoint1), _matrix.Transform(controlPoint2), _matrix.Transform(endPoint));
+                _inner.CubicBezierTo(_matrix.Transform(controlPoint1), _matrix.Transform(controlPoint2), _matrix.Transform(endPoint), isStroked);
             }
 
-            public void QuadraticBezierTo(Point controlPoint, Point endPoint)
+            public void QuadraticBezierTo(Point controlPoint, Point endPoint, bool isStroked = true)
             {
                 if (Logger.TryGet(LogEventLevel.Debug, LogArea.Visual, out var log))
                 {
                     log.Log(_inner, "QuadraticBezierTo cp={0} end={1}", controlPoint, endPoint);
                 }
 
-                _inner.QuadraticBezierTo(_matrix.Transform(controlPoint), _matrix.Transform(endPoint));
+                _inner.QuadraticBezierTo(_matrix.Transform(controlPoint), _matrix.Transform(endPoint), isStroked);
             }
 
-            public void LineTo(Point endPoint)
+            public void LineTo(Point endPoint, bool isStroked = true)
             {
                 if (Logger.TryGet(LogEventLevel.Debug, LogArea.Visual, out var log))
                 {
                     log.Log(_inner, "LineTo {0}", endPoint);
                 }
 
-                _inner.LineTo(_matrix.Transform(endPoint));
+                _inner.LineTo(_matrix.Transform(endPoint), isStroked);
             }
 
             public void EndFigure(bool isClosed)
