@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Automation;
 using Avalonia.Automation.Provider;
@@ -46,14 +47,15 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<string> GetKeyBindingAsync(int index)
         {
+            if (index >= 0 && index < _actions.Count)
+                return ValueTask.FromResult(_actions[index].KeyBinding);
             return ValueTask.FromResult(string.Empty);
         }
 
         public ValueTask<List<AtSpiAction>> GetActionsAsync()
         {
             var result = new List<AtSpiAction>(_actions.Count);
-            foreach (var entry in _actions)
-                result.Add(new AtSpiAction(entry.LocalizedName, entry.Description, string.Empty));
+            result.AddRange(_actions.Select(entry => new AtSpiAction(entry.LocalizedName, entry.Description, entry.KeyBinding)));
             return ValueTask.FromResult(result);
         }
 
@@ -77,11 +79,14 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                 case "toggle":
                     _node.Peer.GetProvider<IToggleProvider>()?.Toggle();
                     break;
-                case "expand":
-                    _node.Peer.GetProvider<IExpandCollapseProvider>()?.Expand();
-                    break;
-                case "collapse":
-                    _node.Peer.GetProvider<IExpandCollapseProvider>()?.Collapse();
+                case "expand or collapse":
+                    if (_node.Peer.GetProvider<IExpandCollapseProvider>() is { } expandCollapseAction)
+                    {
+                        if (expandCollapseAction.ExpandCollapseState == ExpandCollapseState.Collapsed)
+                            expandCollapseAction.Expand();
+                        else
+                            expandCollapseAction.Collapse();
+                    }
                     break;
                 case "scroll up":
                     _node.Peer.GetProvider<IScrollProvider>()?.Scroll(
@@ -105,53 +110,51 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                     break;
             }
         }
-
+        // TODO: Proper mapping of ActionList keybindings to AutomationPeers. 
         private List<ActionEntry> BuildActionList()
         {
             var actions = new List<ActionEntry>();
 
             if (_node.Peer.GetProvider<IInvokeProvider>() is not null)
-                actions.Add(new ActionEntry("click", "Click", "Performs the default action"));
+            {
+                var acceleratorKey = _node.Peer.GetAcceleratorKey() ?? string.Empty;
+                actions.Add(new ActionEntry("click", "Click", "Performs the default action", acceleratorKey));
+            }
 
             if (_node.Peer.GetProvider<IToggleProvider>() is not null)
-                actions.Add(new ActionEntry("toggle", "Toggle", "Toggles the control state"));
+                actions.Add(new ActionEntry("toggle", "Toggle", "Toggles the control state", string.Empty));
 
-            if (_node.Peer.GetProvider<IExpandCollapseProvider>() is { } expandCollapse)
-            {
-                if (expandCollapse.ExpandCollapseState == ExpandCollapseState.Collapsed)
-                    actions.Add(new ActionEntry("expand", "Expand", "Expands the control"));
-                else
-                    actions.Add(new ActionEntry("collapse", "Collapse", "Collapses the control"));
-            }
+            if (_node.Peer.GetProvider<IExpandCollapseProvider>() is not null)
+                actions.Add(new ActionEntry("expand or collapse", "Expand or Collapse", "Expands or collapses the control", string.Empty));
 
             if (_node.Peer.GetProvider<IScrollProvider>() is { } scroll)
             {
                 if (scroll.VerticallyScrollable)
                 {
-                    actions.Add(new ActionEntry("scroll up", "Scroll Up", "Scrolls the view up"));
-                    actions.Add(new ActionEntry("scroll down", "Scroll Down", "Scrolls the view down"));
+                    actions.Add(new ActionEntry("scroll up", "Scroll Up", "Scrolls the view up", string.Empty));
+                    actions.Add(new ActionEntry("scroll down", "Scroll Down", "Scrolls the view down", string.Empty));
                 }
 
                 if (scroll.HorizontallyScrollable)
                 {
-                    actions.Add(new ActionEntry("scroll left", "Scroll Left", "Scrolls the view left"));
-                    actions.Add(new ActionEntry("scroll right", "Scroll Right", "Scrolls the view right"));
+                    actions.Add(new ActionEntry("scroll left", "Scroll Left", "Scrolls the view left", string.Empty));
+                    actions.Add(new ActionEntry("scroll right", "Scroll Right", "Scrolls the view right", string.Empty));
                 }
             }
-
-            // Provisional: expose a "select" action for items that implement ISelectionItemProvider
-            // (e.g. TabItem, ListBoxItem) but lack IInvokeProvider. This allows screen readers to
-            // activate selectable items. Remove once core automation peers provide IInvokeProvider
-            // or the parent container properly exposes ISelectionProvider.
+            
             if (_node.Peer.GetProvider<ISelectionItemProvider>() is not null
                 && _node.Peer.GetProvider<IInvokeProvider>() is null)
             {
-                actions.Add(new ActionEntry("select", "Select", "Selects this item"));
+                actions.Add(new ActionEntry("select", "Select", "Selects this item", string.Empty));
             }
 
             return actions;
         }
 
-        private readonly record struct ActionEntry(string ActionName, string LocalizedName, string Description);
+        private readonly record struct ActionEntry(
+            string ActionName,
+            string LocalizedName,
+            string Description,
+            string KeyBinding);
     }
 }

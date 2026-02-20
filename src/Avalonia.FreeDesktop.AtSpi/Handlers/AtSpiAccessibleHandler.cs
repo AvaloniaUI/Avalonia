@@ -128,6 +128,14 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (!string.IsNullOrEmpty(name))
                 attrs["explicit-name"] = "true";
 
+            var acceleratorKey = node.Peer.GetAcceleratorKey();
+            if (!string.IsNullOrEmpty(acceleratorKey))
+                attrs["accelerator-key"] = acceleratorKey;
+
+            var accessKey = node.Peer.GetAccessKey();
+            if (!string.IsNullOrEmpty(accessKey))
+                attrs["access-key"] = accessKey;
+
             return ValueTask.FromResult(attrs);
         }
 
