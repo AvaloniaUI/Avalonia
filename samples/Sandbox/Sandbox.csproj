@@ -9,10 +9,28 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="noto-glyf_colr_1.ttf" />
+    <None Remove="test_glyphs-glyf_colr_1_no_cliplist.ttf" />
+    <None Remove="twemoji-glyf_colr_1.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="noto-glyf_colr_1.ttf" />
+    <EmbeddedResource Include="test_glyphs-glyf_colr_1_no_cliplist.ttf" />
+    <EmbeddedResource Include="twemoji-glyf_colr_1.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Controls.ColorPicker\Avalonia.Controls.ColorPicker.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
+    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="NotoColorEmoji-Regular.ttf" />
+    <EmbeddedResource Include="NotoColorEmoji-Regular.ttf" />
   </ItemGroup>
   
   <Import Project="..\..\build\SampleApp.props" />
