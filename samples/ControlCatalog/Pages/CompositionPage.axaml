@@ -1,62 +1,207 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:pages="using:ControlCatalog.Pages"
-             x:Class="ControlCatalog.Pages.CompositionPage">
-  <TabControl>
-    <TabItem Header="Implicit animations">
-      <StackPanel>
-        <Grid ColumnDefinitions="*,10,40" Margin="0 0 40 0">
-          <ItemsControl x:Name="Items">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <WrapPanel/>
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.DataTemplates>
-              <DataTemplate DataType="pages:CompositionPageColorItem">
-                <Border 
-                  pages:CompositionPage.EnableAnimations="True"
-                  Padding="10" BorderBrush="Gray" BorderThickness="2"
-                  Background="{Binding ColorBrush}" Width="100" Height="100" Margin="10">
-                    <TextBlock Text="{Binding ColorHexValue}"/>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.DataTemplates>
-          </ItemsControl>
-          <GridSplitter Margin="2" BorderThickness="1" BorderBrush="Gray" 
-                        Background="#e0e0e0" Grid.Column="1"
-                        ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"
-          />
-          <Border Grid.Column="2">
-            <LayoutTransformControl HorizontalAlignment="Center" MinWidth="30">
-              <LayoutTransformControl.LayoutTransform>
-                <RotateTransform Angle="90"/>
-              </LayoutTransformControl.LayoutTransform>
-              <TextBlock>Resize me</TextBlock>
-            </LayoutTransformControl>
-          </Border>
-        </Grid>
-      </StackPanel>
-    </TabItem>
-    <TabItem Header="Animation">
-      <DockPanel>
-        <Button DockPanel.Dock="Top" Margin="10" Click="ButtonThreadSleep">Thread.Sleep(10000);</Button>
-        <Control x:Name="SolidVisualHost" />
-      </DockPanel>
-    </TabItem>
-    <TabItem Header="Custom">
-      <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-          <Button Margin="10" Click="ButtonThreadSleep">Thread.Sleep(10000);</Button>
-          <Button Margin="10" Click="ButtonStartCustomVisual">Start</Button>
-          <Button Margin="10" Click="ButtonStopCustomVisual">Stop</Button>
-          <CheckBox Margin="10" 
-                    x:Name="PreciseDirtyRectsCheckboxCustomVisual"
-                    IsCheckedChanged="PreciseDirtyRectsCheckboxCustomVisualChanged"
-                    >Precise dirty rects</CheckBox>
-        </StackPanel>
-        <Control x:Name="CustomVisualHost" />
-      </DockPanel>
-    </TabItem>
-  </TabControl>
+<UserControl
+    x:Class="ControlCatalog.Pages.CompositionPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:pages="using:ControlCatalog.Pages">
+    <TabControl>
+        <TabItem Header="Implicit animations">
+            <StackPanel>
+                <Grid Margin="0,0,40,0" ColumnDefinitions="*,10,40">
+                    <ItemsControl x:Name="Items">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.DataTemplates>
+                            <DataTemplate DataType="pages:CompositionPageColorItem">
+                                <Border
+                                    Width="100"
+                                    Height="100"
+                                    Margin="10"
+                                    Padding="10"
+                                    pages:CompositionPage.EnableAnimations="True"
+                                    Background="{Binding ColorBrush}"
+                                    BorderBrush="Gray"
+                                    BorderThickness="2">
+                                    <TextBlock Text="{Binding ColorHexValue}" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.DataTemplates>
+                    </ItemsControl>
+                    <GridSplitter
+                        Grid.Column="1"
+                        Margin="2"
+                        Background="#e0e0e0"
+                        BorderBrush="Gray"
+                        BorderThickness="1"
+                        ResizeBehavior="PreviousAndNext"
+                        ResizeDirection="Columns" />
+                    <Border Grid.Column="2">
+                        <LayoutTransformControl MinWidth="30" HorizontalAlignment="Center">
+                            <LayoutTransformControl.LayoutTransform>
+                                <RotateTransform Angle="90" />
+                            </LayoutTransformControl.LayoutTransform>
+                            <TextBlock>Resize me</TextBlock>
+                        </LayoutTransformControl>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="Animation">
+            <DockPanel>
+                <Button
+                    Margin="10"
+                    Click="ButtonThreadSleep"
+                    DockPanel.Dock="Top">
+                    Thread.Sleep(10000);
+                </Button>
+                <Control x:Name="SolidVisualHost" />
+            </DockPanel>
+        </TabItem>
+        <TabItem Header="Custom">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+                    <Button Margin="10" Click="ButtonThreadSleep">Thread.Sleep(5000);</Button>
+                    <Button Margin="10" Click="ButtonStartCustomVisual">Start</Button>
+                    <Button Margin="10" Click="ButtonStopCustomVisual">Stop</Button>
+                    <CheckBox
+                        x:Name="PreciseDirtyRectsCheckboxCustomVisual"
+                        Margin="10"
+                        IsCheckedChanged="PreciseDirtyRectsCheckboxCustomVisualChanged">
+                        Precise dirty rects
+                    </CheckBox>
+                </StackPanel>
+                <Control x:Name="CustomVisualHost" />
+            </DockPanel>
+        </TabItem>
+        <TabItem Header="Composition brush">
+            <ScrollViewer>
+                <StackPanel>
+                    <StackPanel.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="BorderThickness" Value="2" />
+                        </Style>
+                    </StackPanel.Styles>
+                    <Button Margin="10" Click="ButtonThreadSleep">
+                        Thread.Sleep(5000);
+                    </Button>
+                    <UniformGrid
+                        Margin="12"
+                        ColumnSpacing="12"
+                        RowSpacing="12">
+
+                        <!--  Solid Color  -->
+                        <StackPanel Spacing="6">
+                            <TextBlock
+                                FontWeight="Bold"
+                                Foreground="{Binding #SolidBrushHost.Background, Mode=OneWay}"
+                                Text="SolidColorBrush" />
+                            <Border
+                                x:Name="SolidBrushHost"
+                                Height="120"
+                                Background="Gray"
+                                BorderBrush="DarkGray"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="18"
+                                    Text="Solid" />
+                            </Border>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button
+                                    BorderBrush="{Binding #SolidBrushHost.Background, Mode=OneWay}"
+                                    Click="SolidBrushCreateAnimate_Click"
+                                    Content="Create" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  Linear Gradient  -->
+                        <StackPanel Spacing="6">
+                            <TextBlock
+                                FontWeight="Bold"
+                                Foreground="{Binding #LinearBrushHost.Background, Mode=OneWay}"
+                                Text="LinearGradientBrush" />
+                            <Border
+                                x:Name="LinearBrushHost"
+                                Height="120"
+                                Background="Gray"
+                                BorderBrush="DarkGray"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="18"
+                                    Text="Linear" />
+                            </Border>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button
+                                    BorderBrush="{Binding #LinearBrushHost.Background, Mode=OneWay}"
+                                    Click="LinearBrushCreateAnimate_Click"
+                                    Content="Create" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  Radial Gradient  -->
+                        <StackPanel Spacing="6">
+                            <TextBlock
+                                FontWeight="Bold"
+                                Foreground="{Binding #RadialBrushHost.Background, Mode=OneWay}"
+                                Text="RadialGradientBrush" />
+                            <Border
+                                x:Name="RadialBrushHost"
+                                Height="120"
+                                Background="Gray"
+                                BorderBrush="DarkGray"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="18"
+                                    Text="Radial" />
+                            </Border>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button
+                                    BorderBrush="{Binding #RadialBrushHost.Background, Mode=OneWay}"
+                                    Click="RadialBrushCreateAnimate_Click"
+                                    Content="Create" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--  Conic Gradient  -->
+                        <StackPanel Spacing="6">
+                            <TextBlock
+                                FontWeight="Bold"
+                                Foreground="{Binding #ConicBrushHost.Background, Mode=OneWay}"
+                                Text="ConicGradientBrush" />
+                            <Border
+                                x:Name="ConicBrushHost"
+                                Height="120"
+                                Background="Gray"
+                                BorderBrush="DarkGray"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="18"
+                                    Text="Conic" />
+                            </Border>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button
+                                    BorderBrush="{Binding #ConicBrushHost.Background, Mode=OneWay}"
+                                    Click="ConicBrushCreateAnimate_Click"
+                                    Content="Create" />
+                            </StackPanel>
+                        </StackPanel>
+                    </UniformGrid>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+
+    </TabControl>
 </UserControl>
