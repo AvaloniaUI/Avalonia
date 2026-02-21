@@ -25,13 +25,13 @@ namespace Avalonia.Automation.Peers
             {
                 var container = Owner.ContainerFromIndex(i);
 
-                if (container is Control control)
+                if (container == null)
                 {
-                    children.Add(GetOrCreate(control));
+                    children.Add(new VirtualListItemAutomationPeer(Owner, i));
                 }
                 else
                 {
-                    children.Add(new VirtualListItemAutomationPeer(Owner, i));
+                    children.Add(GetOrCreate(container));
                 }
             }
 
