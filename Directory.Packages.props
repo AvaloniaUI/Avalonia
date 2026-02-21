@@ -40,13 +40,6 @@
     <PackageVersion Include="NUnit3TestAdapter" Version="6.1.0" />
     <PackageVersion Include="Quamotion.RemoteViewing" Version="1.1.211" />
     <PackageVersion Include="SharpCompress" Version="0.41.0" />
-    <PackageVersion Include="SharpDX" Version="$(SharpDXPackageVersion)" />
-    <PackageVersion Include="SharpDX.D3DCompiler" Version="$(SharpDXPackageVersion)" />
-    <PackageVersion Include="SharpDX.Direct2D1" Version="$(SharpDXPackageVersion)" />
-    <PackageVersion Include="SharpDX.Direct3D11" Version="$(SharpDXPackageVersion)" />
-    <PackageVersion Include="SharpDX.Direct3D9" Version="$(SharpDXPackageVersion)" />
-    <PackageVersion Include="SharpDX.DXGI" Version="$(SharpDXPackageVersion)" />
-    <PackageVersion Include="SharpDX.Mathematics" Version="$(SharpDXPackageVersion)" />
     <PackageVersion Include="Silk.NET.Direct3D.Compilers" Version="2.22.0" />
     <PackageVersion Include="Silk.NET.Direct3D11" Version="2.22.0" />
     <PackageVersion Include="Silk.NET.Vulkan" Version="2.22.0" />
