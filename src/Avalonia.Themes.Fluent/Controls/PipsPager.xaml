@@ -1,0 +1,378 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <PipsPager NumberOfPages="5" SelectedPageIndex="2" />
+  </Design.PreviewWith>
+
+  <!-- Icon path data for navigation buttons -->
+  <!-- Horizontal (left/right arrows) -->
+  <StreamGeometry x:Key="PipsPagerPreviousPageButtonData">M 8.12,2.29 L 3.41,7.00 C 3.14,7.27 3.14,7.71 3.41,7.98 L 8.12,12.69 C 8.57,13.14 9.33,12.82 9.33,12.19 L 9.33,2.79 C 9.33,2.16 8.57,1.84 8.12,2.29 Z</StreamGeometry>
+  <StreamGeometry x:Key="PipsPagerNextPageButtonData">M 3.88,2.29 L 8.59,7.00 C 8.86,7.27 8.86,7.71 8.59,7.98 L 3.88,12.69 C 3.43,13.14 2.67,12.82 2.67,12.19 L 2.67,2.79 C 2.67,2.16 3.43,1.84 3.88,2.29 Z</StreamGeometry>
+  
+  <!-- Vertical (up/down arrows) -->
+  <StreamGeometry x:Key="PipsPagerPreviousPageButtonVerticalData">M 2.29,8.12 L 7.00,3.41 C 7.27,3.14 7.71,3.14 7.98,3.41 L 12.69,8.12 C 13.14,8.57 12.82,9.33 12.19,9.33 L 2.79,9.33 C 2.16,9.33 1.84,8.57 2.29,8.12 Z</StreamGeometry>
+  <StreamGeometry x:Key="PipsPagerNextPageButtonVerticalData">M 2.29,3.88 L 7.00,8.59 C 7.27,8.86 7.71,8.86 7.98,8.59 L 12.69,3.88 C 13.14,3.43 12.82,2.67 12.19,2.67 L 2.79,2.67 C 2.16,2.67 1.84,3.43 2.29,3.88 Z</StreamGeometry>
+
+  <!-- Base navigation button theme (for custom button styles to inherit from) -->
+  <ControlTheme x:Key="PipsPagerNavigationButtonTheme" TargetType="Button">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForeground}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Width" Value="24" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Padding="{TemplateBinding Padding}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPointerOver}" />
+    </Style>
+
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPressed}" />
+    </Style>
+
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundDisabled}" />
+    </Style>
+  </ControlTheme>
+
+  <!-- Previous button theme with built-in icon -->
+  <ControlTheme x:Key="PipsPagerPreviousButtonTheme" TargetType="Button" BasedOn="{StaticResource PipsPagerNavigationButtonTheme}">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_Border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}">
+          <PathIcon Name="Icon"
+                    Width="10" Height="10" 
+                    Data="{StaticResource PipsPagerPreviousPageButtonData}"
+                    Foreground="{TemplateBinding Foreground}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    
+    <!-- Use vertical arrow icon in vertical orientation -->
+    <Style Selector="^.vertical /template/ PathIcon#Icon">
+      <Setter Property="Data" Value="{StaticResource PipsPagerPreviousPageButtonVerticalData}" />
+    </Style>
+    
+    <Style Selector="^:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPointerOver}" />
+    </Style>
+
+    <Style Selector="^:pressed /template/ Border#PART_Border">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPressed}" />
+    </Style>
+
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundDisabled}" />
+    </Style>
+  </ControlTheme>
+
+  <!-- Next button theme with built-in icon -->
+  <ControlTheme x:Key="PipsPagerNextButtonTheme" TargetType="Button" BasedOn="{StaticResource PipsPagerNavigationButtonTheme}">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_Border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}">
+          <PathIcon Name="Icon"
+                    Width="10" Height="10" 
+                    Data="{StaticResource PipsPagerNextPageButtonData}"
+                    Foreground="{TemplateBinding Foreground}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    
+    <!-- Use vertical arrow icon in vertical orientation -->
+    <Style Selector="^.vertical /template/ PathIcon#Icon">
+      <Setter Property="Data" Value="{StaticResource PipsPagerNextPageButtonVerticalData}" />
+    </Style>
+    
+    <Style Selector="^:pointerover /template/ Border#PART_Border">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPointerOver}" />
+    </Style>
+
+    <Style Selector="^:pressed /template/ Border#PART_Border">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPressed}" />
+    </Style>
+
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundDisabled}" />
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="PipsPagerItemTheme" TargetType="ListBoxItem">
+    <Setter Property="Width" Value="12" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="ClipToBounds" Value="False" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid Background="Transparent">
+          <Ellipse Name="Pip"
+                   Width="4"
+                   Height="4"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Fill="{DynamicResource PipsPagerSelectionIndicatorForeground}">
+            <Ellipse.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Width" Duration="0:0:0.167" />
+                <DoubleTransition Property="Height" Duration="0:0:0.167" />
+                <BrushTransition Property="Fill" Duration="0:0:0.167" />
+              </Transitions>
+            </Ellipse.Transitions>
+          </Ellipse>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ Ellipse#Pip">
+      <Setter Property="Width" Value="6" />
+      <Setter Property="Height" Value="6" />
+      <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPointerOver}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Ellipse#Pip">
+      <Setter Property="Width" Value="4" />
+      <Setter Property="Height" Value="4" />
+      <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPressed}" />
+    </Style>
+
+
+    <Style Selector="^:selected /template/ Ellipse#Pip">
+      <Setter Property="Width" Value="6" />
+      <Setter Property="Height" Value="6" />
+      <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundSelected}" />
+    </Style>
+    <Style Selector="^:selected:pointerover /template/ Ellipse#Pip">
+      <Setter Property="Width" Value="6" />
+      <Setter Property="Height" Value="6" />
+      <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPointerOver}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Ellipse#Pip">
+      <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundDisabled}" />
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type PipsPager}" TargetType="PipsPager">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="PreviousButtonStyle" Value="{StaticResource PipsPagerPreviousButtonTheme}" />
+    <Setter Property="NextButtonStyle" Value="{StaticResource PipsPagerNextButtonTheme}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Name="PART_RootPanel"
+                    Orientation="{TemplateBinding Orientation}"
+                    Background="{TemplateBinding Background}"
+                    ClipToBounds="False">
+          <Button Name="PART_PreviousButton"
+                  Theme="{TemplateBinding PreviousButtonStyle}"
+                  IsVisible="{TemplateBinding IsPreviousButtonVisible}"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center" />
+
+          <ListBox Name="PART_PipsPagerList"
+                   Background="Transparent"
+                   BorderThickness="0"
+                   Padding="0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                   ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                   ItemsSource="{Binding TemplateSettings.Pips, RelativeSource={RelativeSource TemplatedParent}}"
+                   SelectedIndex="{Binding SelectedPageIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                   AutoScrollToSelectedItem="False"
+                   ClipToBounds="False"
+                   ItemContainerTheme="{StaticResource PipsPagerItemTheme}">
+            <ListBox.Styles>
+              <Style Selector="ScrollViewer">
+                <Setter Property="ClipToBounds" Value="False" />
+              </Style>
+            </ListBox.Styles>
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="{Binding Orientation, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=PipsPager}}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Spacing="0" />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+          </ListBox>
+
+          <Button Name="PART_NextButton"
+                  Theme="{TemplateBinding NextButtonStyle}"
+                  IsVisible="{TemplateBinding IsNextButtonVisible}"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center" />
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:horizontal /template/ StackPanel#PART_RootPanel">
+      <Setter Property="Orientation" Value="Horizontal" />
+    </Style>
+
+    <Style Selector="^:vertical /template/ ListBox ListBoxItem">
+      <Setter Property="Width" Value="24" />
+      <Setter Property="Height" Value="12" />
+    </Style>
+
+    <Style Selector="^:vertical /template/ StackPanel#PART_RootPanel">
+      <Setter Property="Orientation" Value="Vertical" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="^:first-page /template/ Button#PART_PreviousButton">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^:last-page /template/ Button#PART_NextButton">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+
+    <Style Selector="^ /template/ Button#PART_PreviousButton:pressed">
+      <Setter Property="RenderTransformOrigin" Value="0.5, 0.5" />
+      <Setter Property="RenderTransform" Value="scale(0.875)" />
+    </Style>
+    <Style Selector="^ /template/ Button#PART_NextButton:pressed">
+      <Setter Property="RenderTransformOrigin" Value="0.5, 0.5" />
+      <Setter Property="RenderTransform" Value="scale(0.875)" />
+    </Style>
+  </ControlTheme>
+
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundSelected" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrushPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrushPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrushSelected" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrushDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="#72000000" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="#9E000000" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPressed" Color="#9E000000" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#72000000" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundDisabled" Color="#51000000" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBorderBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBorderBrushPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBorderBrushPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBorderBrushDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonForeground" Color="#72000000" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundPointerOver" Color="#9E000000" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundPressed" Color="#9E000000" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundDisabled" Color="#51000000" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Default">
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundSelected" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrushPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrushPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrushSelected" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrushDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="#72000000" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="#9E000000" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPressed" Color="#9E000000" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#72000000" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundDisabled" Color="#51000000" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBorderBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBorderBrushPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBorderBrushPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBorderBrushDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonForeground" Color="#72000000" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundPointerOver" Color="#9E000000" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundPressed" Color="#9E000000" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundDisabled" Color="#51000000" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundSelected" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBackgroundDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrushPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrushPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrushSelected" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorBorderBrushDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="#8BFFFFFF" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="#C5FFFFFF" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPressed" Color="#C5FFFFFF" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#8BFFFFFF" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundDisabled" Color="#3FFFFFFF" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBackground" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBorderBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBorderBrushPointerOver" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBorderBrushPressed" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonBorderBrushDisabled" Color="Transparent" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonForeground" Color="#8BFFFFFF" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundPointerOver" Color="#C5FFFFFF" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundPressed" Color="#C5FFFFFF" />
+      <SolidColorBrush x:Key="PipsPagerNavigationButtonForegroundDisabled" Color="#3FFFFFFF" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>
