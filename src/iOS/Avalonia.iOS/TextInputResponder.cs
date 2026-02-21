@@ -34,14 +34,16 @@ partial class AvaloniaView
 
             public AvaloniaTextRange(int startIndex, int endIndex)
             {
+#if DEBUG
                 if (startIndex < 0)
                     throw new ArgumentOutOfRangeException(nameof(startIndex));
 
                 if (endIndex < startIndex)
                     throw new ArgumentOutOfRangeException(nameof(endIndex));
+#endif
 
-                StartIndex = startIndex;
-                EndIndex = endIndex;
+                StartIndex = Math.Max(0, startIndex);
+                EndIndex = Math.Max(startIndex, endIndex);
             }
 
             public override bool IsEmpty => StartIndex == EndIndex;
@@ -58,9 +60,12 @@ partial class AvaloniaView
         {
             public AvaloniaTextPosition(int index)
             {
+#if DEBUG
                 if (index < 0)
                     throw new ArgumentOutOfRangeException(nameof(index));
-                Index = index;
+#endif
+
+                Index = Math.Max(0, index);
             }
 
             public int Index { get; }
