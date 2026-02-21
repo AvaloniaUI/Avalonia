@@ -33,10 +33,10 @@
     <!-- This test project is run in CI via VSTest Azure Task, to have video recorder support -->
     <!-- Video recorder isn't yet supported by Microsoft.Testing.Platform, we keep this project compatible with both VSTest and Microsoft.Testing.Platform. -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="System.Reactive" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
   <Import Project="..\..\build\XUnit.props" />
-  <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\ImageSharp.props" />
 </Project>

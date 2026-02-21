@@ -16,12 +16,12 @@
     <Content Include="../Avalonia.RenderTests/**/*.png" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Moq" />
+    <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="System.Reactive" />
     <PackageReference Include="Xunit.StaFact" />
   </ItemGroup>
-  <Import Project="..\..\build\Moq.props" />
-  <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\XUnit.props" />
-  <Import Project="..\..\build\ImageSharp.props" />
   <Import Project="..\..\build\SkiaSharp.props" />
   <Import Project="..\..\build\SharedVersion.props" />
 </Project>

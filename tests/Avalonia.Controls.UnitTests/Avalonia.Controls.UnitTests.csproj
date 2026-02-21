@@ -6,14 +6,16 @@
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\UnitTests.NetFX.props" />
-  <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\XUnit.props" />
-  <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
   <Import Project="..\..\build\Base.props" />
   <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\HarfBuzzSharp.props" />
   <Import Project="..\..\build\NullableEnable.props" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Reactive.Testing" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="System.Reactive" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml.Loader\Avalonia.Markup.Xaml.Loader.csproj" />
