@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -7,8 +8,10 @@ namespace Avalonia.X11.Clipboard;
 
 internal static class ClipboardDataFormatHelper
 {
-    private const string MimeTypeTextUriList = "text/uri-list";
+    public const string MimeTypeTextUriList = "text/uri-list";
     private const string AppPrefix = "application/avn-fmt.";
+    public const string MimeTextPlain = "text/plain";
+    public const string MimeUTF8_alt = "text/plain;charset=utf-8";
     public const string PngFormatMimeType = "image/png";
     public const string JpegFormatMimeType = "image/jpeg";
 
@@ -34,6 +37,12 @@ internal static class ClipboardDataFormatHelper
 
         if (atoms.GetAtomName(formatAtom) is { } atomName)
         {
+            if (atomName == MimeTextPlain ||
+                atomName == MimeUTF8_alt)
+            {
+                return DataFormat.Text;
+            }
+
             return atomName == MimeTypeTextUriList ?
                 DataFormat.File : DataFormat.FromSystemName<byte[]>(atomName, AppPrefix);
         }
@@ -115,5 +124,47 @@ internal static class ClipboardDataFormatHelper
             return Encoding.ASCII;
 
         return null;
+    }
+
+    public static (DataFormat[] DataFormats, nint[] TextFormatAtoms) GetDataFormats(IList<IntPtr>? formatAtoms, X11Atoms atoms)
+    {
+        if (formatAtoms is null)
+            return ([], []);
+
+        var formats = new List<DataFormat>(formatAtoms.Count);
+        List<IntPtr>? textFormatAtoms = null;
+
+        var hasImage = false;
+
+        foreach (var formatAtom in formatAtoms)
+        {
+            if (ToDataFormat(formatAtom, atoms) is not { } format)
+                continue;
+
+            if (DataFormat.Text.Equals(format))
+            {
+                if (textFormatAtoms is null)
+                {
+                    formats.Add(format);
+                    textFormatAtoms = [];
+                }
+                textFormatAtoms.Add(formatAtom);
+            }
+            else
+            {
+                formats.Add(format);
+
+                if (!hasImage)
+                {
+                    if (format.Identifier is JpegFormatMimeType or PngFormatMimeType)
+                        hasImage = true;
+                }
+            }
+        }
+
+        if (hasImage)
+            formats.Add(DataFormat.Bitmap);
+
+        return (formats.ToArray(), textFormatAtoms?.ToArray() ?? []);
     }
 }
