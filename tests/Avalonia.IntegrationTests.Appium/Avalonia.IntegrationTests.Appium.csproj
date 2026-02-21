@@ -21,23 +21,22 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsRunningAppium2)' == 'false'">
-    <PackageReference Include="Appium.WebDriver" Version="4.4.5" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+    <PackageReference Include="Appium.WebDriver" VersionOverride="4.4.5" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsRunningAppium2)' == 'true'">
-    <PackageReference Include="Appium.WebDriver" Version="5.2.0"/>
   </ItemGroup>
 
   <ItemGroup>
     <!-- This test project is run in CI via VSTest Azure Task, to have video recorder support -->
     <!-- Video recorder isn't yet supported by Microsoft.Testing.Platform, we keep this project compatible with both VSTest and Microsoft.Testing.Platform. -->
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="System.Reactive" />
+    <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
   <Import Project="..\..\build\XUnit.props" />
-  <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\ImageSharp.props" />
 </Project>
