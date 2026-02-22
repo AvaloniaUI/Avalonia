@@ -215,7 +215,8 @@
             <ComboBox x:Name="Decorations"
                       HorizontalAlignment="Stretch"
                       SelectedIndex="0"
-                      SelectionChanged="Decorations_SelectionChanged">
+                      SelectionChanged="Decorations_SelectionChanged"
+                      ToolTip.Tip="System Decorations">
               <ComboBox.Items>
                 <SystemDecorations>None</SystemDecorations>
                 <SystemDecorations>BorderOnly</SystemDecorations>
@@ -225,7 +226,8 @@
             <ComboBox HorizontalAlignment="Stretch"
                       DisplayMemberBinding="{Binding Key, x:DataType=ThemeVariant}"
                       SelectedIndex="0"
-                      SelectionChanged="ThemeVariants_SelectionChanged">
+                      SelectionChanged="ThemeVariants_SelectionChanged"
+                      ToolTip.Tip="Theme Variant">
               <ComboBox.Items>
                 <ThemeVariant>Default</ThemeVariant>
                 <ThemeVariant>Light</ThemeVariant>
@@ -234,7 +236,8 @@
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
                       SelectedItem="{x:Static local:App.CurrentTheme}"
-                      SelectionChanged="Themes_SelectionChanged">
+                      SelectionChanged="Themes_SelectionChanged"
+                      ToolTip.Tip="Catalog Theme">
               <ComboBox.Items>
                 <models:CatalogTheme>Fluent</models:CatalogTheme>
                 <models:CatalogTheme>Simple</models:CatalogTheme>
@@ -242,7 +245,8 @@
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
                       SelectedIndex="0"
-                      SelectionChanged="TransparencyLevels_SelectionChanged">
+                      SelectionChanged="TransparencyLevels_SelectionChanged"
+                      ToolTip.Tip="Window Transparency Level">
               <ComboBox.Items>
                 <WindowTransparencyLevel>None</WindowTransparencyLevel>
                 <WindowTransparencyLevel>Transparent</WindowTransparencyLevel>
@@ -253,7 +257,8 @@
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
                       SelectedIndex="0"
-                      SelectionChanged="FlowDirection_SelectionChanged">
+                      SelectionChanged="FlowDirection_SelectionChanged"
+                      ToolTip.Tip="Flow Direction">
               <ComboBox.Items>
                 <FlowDirection>LeftToRight</FlowDirection>
                 <FlowDirection>RightToLeft</FlowDirection>
@@ -261,7 +266,8 @@
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
                       ItemsSource="{Binding WindowStates}"
-                      SelectedItem="{Binding WindowState}" />
+                      SelectedItem="{Binding WindowState}"
+                      ToolTip.Tip="Window State"/>
           </StackPanel>
         </Flyout>
       </FlyoutBase.AttachedFlyout>
