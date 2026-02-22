@@ -12,6 +12,13 @@ namespace Avalonia.Automation.Peers
         public ListBoxAutomationPeer(ListBox owner)
             : base(owner)
         {
+            owner.ContainerPrepared += OnContainerPrepared;
+        }
+
+        private void OnContainerPrepared(object? sender, ContainerPreparedEventArgs e)
+        {
+            if (e.Container.GetAutomationPeer() is ListItemAutomationPeer peer)
+                peer.Index = e.Index;
         }
 
         protected override void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
