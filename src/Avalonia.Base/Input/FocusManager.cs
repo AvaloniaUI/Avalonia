@@ -13,7 +13,8 @@ namespace Avalonia.Input
     /// Manages focus for the application.
     /// </summary>
     [PrivateApi]
-    public class FocusManager : IFocusManager
+    public class 
+        FocusManager : IFocusManager
     {
         /// <summary>
         /// Private attached property for storing the currently focused element in a focus scope.
@@ -246,10 +247,10 @@ namespace Avalonia.Input
             if (scope is not Visual v)
                 return null;
 
-            var root = v.VisualRoot as Visual;
+            var root = v.PresentationSource?.InputRoot.FocusRoot as Visual;
 
             while (root is IHostedVisualTreeRoot hosted &&
-                hosted.Host?.VisualRoot is Visual parentRoot)
+                hosted.Host?.PresentationSource?.InputRoot.FocusRoot is {} parentRoot)
             {
                 root = parentRoot;
             }

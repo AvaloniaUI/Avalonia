@@ -189,8 +189,12 @@ namespace Avalonia.Controls
             PlatformImpl = impl ?? throw new InvalidOperationException(
                 "Could not create window implementation: maybe no windowing subsystem was initialized?");
             dependencyResolver ??= AvaloniaLocator.Current;
-            _source = new PresentationSource(this, impl, dependencyResolver, () => ClientSize);
-            _source.RootVisual = this;
+
+            var hostVisual = new TopLevelHost(this);
+            ((ISetLogicalParent)hostVisual).SetParent(this);
+
+            _source = new PresentationSource(hostVisual, this,
+                impl, dependencyResolver, () => ClientSize);
             _source.Renderer.SceneInvalidated += SceneInvalidated;
 
             _scaling = ValidateScaling(impl.RenderScaling);
