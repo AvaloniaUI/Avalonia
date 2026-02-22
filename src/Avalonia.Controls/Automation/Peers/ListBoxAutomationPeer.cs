@@ -35,7 +35,10 @@ namespace Avalonia.Automation.Peers
                 }
                 else
                 {
-                    children.Add(GetOrCreate(container));
+                    var peer = GetOrCreate(container);
+                    if (peer is ListItemAutomationPeer listItemPeer)
+                        listItemPeer.Index = i;
+                    children.Add(peer);
                 }
             }
 
@@ -89,7 +92,7 @@ namespace Avalonia.Automation.Peers
             protected override string? GetAcceleratorKeyCore() => null;
             protected override string? GetAccessKeyCore() => null;
             protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.ListItem;
-            protected override string GetAutomationIdCore() => $"{GetClassNameCore()}: {index}";
+            protected override string GetAutomationIdCore() => $"{nameof(ListBoxItem)}: {index}";
 
             protected override Rect GetBoundingRectangleCore()
             {
