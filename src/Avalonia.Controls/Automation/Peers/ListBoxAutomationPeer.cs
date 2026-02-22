@@ -14,6 +14,14 @@ namespace Avalonia.Automation.Peers
         {
         }
 
+        protected override void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            base.OwnerPropertyChanged(sender, e);
+
+            if (e.Property == ItemsControl.ItemCountProperty)
+                InvalidateChildren();
+        }
+
         public new ListBox Owner => (ListBox)base.Owner;
 
         protected override IReadOnlyList<AutomationPeer>? GetChildrenCore()
