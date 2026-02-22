@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using Avalonia.Controls.Chrome;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class VisualLayerManager : Decorator
+    public sealed class VisualLayerManager : Decorator
     {
         private const int AdornerZIndex = int.MaxValue - 100;
         private const int ChromeZIndex = int.MaxValue - 99;
@@ -19,7 +20,7 @@ namespace Avalonia.Controls.Primitives
 
         public bool IsPopup { get; set; }
 
-        public AdornerLayer AdornerLayer
+        internal AdornerLayer AdornerLayer
         {
             get
             {
@@ -53,7 +54,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        public OverlayLayer? OverlayLayer
+        internal OverlayLayer? OverlayLayer
         {
             get
             {
@@ -66,7 +67,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        public TextSelectorLayer? TextSelectorLayer
+        internal TextSelectorLayer? TextSelectorLayer
         {
             get
             {
@@ -79,7 +80,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        public LightDismissOverlayLayer LightDismissOverlayLayer
+        internal LightDismissOverlayLayer LightDismissOverlayLayer
         {
             get
             {
