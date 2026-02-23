@@ -633,7 +633,7 @@ namespace Avalonia.Automation.Peers
             return GetAutomationControlTypeCore();
         }
 
-        protected virtual AutomationPeer? GetVisualRootCore()
+        private protected virtual AutomationPeer? GetVisualRootCore()
         {
             var peer = this;
             var parent = peer.GetParent();

@@ -88,6 +88,11 @@ namespace Avalonia.Automation.Peers
                 OnFocusChanged(KeyboardDevice.Instance!.FocusedElement);
             }
         }
+
+        private protected override Visual? GetVisualParent()
+        {
+            return null;
+        }
     }
 }
 

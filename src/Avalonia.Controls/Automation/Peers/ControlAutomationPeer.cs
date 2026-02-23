@@ -148,13 +148,6 @@ namespace Avalonia.Automation.Peers
             return _parent;
         }
 
-        protected override AutomationPeer? GetVisualRootCore()
-        {
-            if (Owner.GetVisualRoot() is Control c)
-                return CreatePeerForElement(c);
-            return null;
-        }
-
         /// <summary>
         /// Invalidates the peer's children and causes a re-read from <see cref="GetChildrenCore"/>.
         /// </summary>
@@ -268,11 +261,13 @@ namespace Avalonia.Automation.Peers
 
         private void VisualChildrenChanged(object? sender, EventArgs e) => InvalidateChildren();
 
+        private protected virtual Visual? GetVisualParent() => Owner.GetVisualParent();
+
         private void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == Visual.IsVisibleProperty)
             {
-                var parent = Owner.GetVisualParent();
+                var parent = GetVisualParent();
                 if (parent is Control c)
                     (GetOrCreate(c) as ControlAutomationPeer)?.InvalidateChildren();
             }
@@ -303,7 +298,7 @@ namespace Avalonia.Automation.Peers
         {
             if (!_parentValid)
             {
-                var parent = Owner.GetVisualParent();
+                var parent = GetVisualParent();
 
                 while (parent is object)
                 {
@@ -311,6 +306,11 @@ namespace Avalonia.Automation.Peers
                     {
                         var parentPeer = GetOrCreate(c);
                         parentPeer.GetChildren();
+                        if (parentPeer is ControlAutomationPeer controlPeer)
+                        {
+                            parent = controlPeer.GetVisualParent();
+                            continue;
+                        }
                     }
 
                     parent = parent.GetVisualParent();

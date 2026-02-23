@@ -89,5 +89,7 @@ namespace Avalonia.Controls.Automation.Peers
             Owner.Closed -= OnClosed;
             StopTrackingFocus();
         }
+
+        private protected override Visual? GetVisualParent() => null;
     }
 }
