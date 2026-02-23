@@ -377,7 +377,7 @@ namespace Avalonia.Controls.UnitTests
 
         private void Layout(Control c)
         {
-            (c.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
+            c.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         private class TestTransition : IPageTransition

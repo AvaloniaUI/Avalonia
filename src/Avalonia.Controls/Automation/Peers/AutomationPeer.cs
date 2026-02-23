@@ -284,11 +284,28 @@ namespace Avalonia.Automation.Peers
         public string GetHelpText() => GetHelpTextCore() ?? string.Empty;
 
         /// <summary>
+        /// Gets text that provides a placeholder for the element that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityPlaceholderValue</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string GetPlaceholderText() => GetPlaceholderTextCore() ?? string.Empty;
+
+        /// <summary>
         /// Gets the control type for the element that is associated with the UI Automation peer.
         /// </summary>
         /// <remarks>
         /// Gets the type of the element.
-        /// 
+        ///
         /// <list type="table">
         ///   <item>
         ///     <term>Windows</term>
@@ -595,6 +612,7 @@ namespace Avalonia.Automation.Peers
         protected abstract AutomationPeer? GetLabeledByCore();
         protected abstract string? GetNameCore();
         protected virtual string? GetHelpTextCore() => null;
+        protected virtual string? GetPlaceholderTextCore() => null;
         protected virtual AutomationLandmarkType? GetLandmarkTypeCore() => null;
         protected virtual int GetHeadingLevelCore() => 0;
         protected virtual string? GetItemTypeCore() => null;

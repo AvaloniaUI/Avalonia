@@ -78,26 +78,26 @@ public abstract class PointerTestsBase : ScopedTestBase
 
     protected static RawPointerEventArgs CreateRawPointerArgs(
         IPointerDevice pointerDevice,
-        IInputRoot root,
+        TopLevel root,
         RawPointerEventType type,
         Point? position = default)
     {
-        return new RawPointerEventArgs(pointerDevice, 0, root, type, position ?? default, default);
+        return new RawPointerEventArgs(pointerDevice, 0, root.PresentationSource, type, position ?? default, default);
     }
 
     protected static RawPointerEventArgs CreateRawPointerMovedArgs(
         IPointerDevice pointerDevice,
-        IInputRoot root,
+        TopLevel root,
         Point? position = null)
     {
-        return new RawPointerEventArgs(pointerDevice, 0, root, RawPointerEventType.Move,
+        return new RawPointerEventArgs(pointerDevice, 0, root.PresentationSource, RawPointerEventType.Move,
             position ?? default, default);
     }
 
     protected static PointerEventArgs CreatePointerMovedArgs(
         IInputRoot root, IInputElement? source, Point? position = null)
     {
-        return new PointerEventArgs(InputElement.PointerMovedEvent, source, new Mock<IPointer>().Object, (Visual)root,
+        return new PointerEventArgs(InputElement.PointerMovedEvent, source, new Mock<IPointer>().Object, root.RootElement,
             position ?? default, default, PointerPointProperties.None, KeyModifiers.None);
     }
 

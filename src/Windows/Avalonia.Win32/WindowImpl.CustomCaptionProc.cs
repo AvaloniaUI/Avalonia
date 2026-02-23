@@ -224,7 +224,7 @@ namespace Avalonia.Win32
         private HitTestValues HitTestVisual(IntPtr lParam)
         {
             var position = PointToClient(PointFromLParam(lParam));
-            if (_owner is Window window)
+            if (_owner?.RootElement is {} window)
             {
                 var visual = window.GetVisualAt(position, x =>
                 {

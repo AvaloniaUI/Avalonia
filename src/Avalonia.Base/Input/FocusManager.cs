@@ -51,6 +51,11 @@ namespace Avalonia.Input
         {
             _contentRoot = contentRoot;
         }
+        
+        internal void SetContentRoot(IInputElement? contentRoot)
+        {
+            _contentRoot = contentRoot;
+        }
 
         private IInputElement? Current => KeyboardDevice.Instance?.FocusedElement;
 
@@ -120,7 +125,7 @@ namespace Avalonia.Input
                 scope.ClearValue(FocusedElementProperty);
             }
 
-            if (Current == removedElement)
+            if (Current == removedElement) 
                 Focus(null);
         }
 
@@ -163,9 +168,10 @@ namespace Avalonia.Input
         /// </summary>
         internal static FocusManager? GetFocusManager(IInputElement? element)
         {
+            
             // Element might not be a visual, and not attached to the root.
             // But IFocusManager is always expected to be a FocusManager. 
-            return (FocusManager?)((element as Visual)?.VisualRoot as IInputRoot)?.FocusManager
+            return (FocusManager?)(element as Visual)?.GetInputRoot()?.FocusManager
                 // In our unit tests some elements might not have a root. Remove when we migrate to headless tests.
                 ?? (FocusManager?)AvaloniaLocator.Current.GetService<IFocusManager>();
         }
