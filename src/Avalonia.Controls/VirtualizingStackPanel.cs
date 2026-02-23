@@ -1098,7 +1098,10 @@ namespace Avalonia.Controls
 
         private void RecycleFocusedElement()
         {
-            RecycleElementOnItemRemoved(_focusedElement);
+            if (_focusedElement != null)
+            {
+                RecycleElementOnItemRemoved(_focusedElement);
+            }
             _focusedElement = null;
             _focusedIndex = -1;
         }
