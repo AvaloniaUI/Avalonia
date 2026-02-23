@@ -20,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="../Avalonia.Controls/Avalonia.Controls.csproj" />
     <ProjectReference Include="../Avalonia.Dialogs/Avalonia.Dialogs.csproj" />
-    <ProjectReference Include="../../external/Avalonia.DBus/src/Avalonia.DBus/Avalonia.DBus.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">

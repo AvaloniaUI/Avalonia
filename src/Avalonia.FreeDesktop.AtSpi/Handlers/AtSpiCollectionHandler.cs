@@ -81,6 +81,8 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             foreach (var childPeer in children)
             {
                 var childNode = AtSpiNode.GetOrCreate(childPeer, server);
+                if (childNode is null)
+                    continue;
                 server.EnsureNodeRegistered(childNode);
 
                 if (MatchesRule(childNode, rule))
@@ -110,6 +112,8 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                     return;
 
                 var childNode = AtSpiNode.GetOrCreate(childPeer, server);
+                if (childNode is null)
+                    continue;
                 server.EnsureNodeRegistered(childNode);
 
                 if (string.Equals(childNode.Path, targetPath, StringComparison.Ordinal))

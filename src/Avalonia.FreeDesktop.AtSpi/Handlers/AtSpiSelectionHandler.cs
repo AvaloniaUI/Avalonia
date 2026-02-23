@@ -36,6 +36,8 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
             var selectedPeer = selection[selectedChildIndex];
             var childNode = AtSpiNode.GetOrCreate(selectedPeer, server);
+            if (childNode is null)
+                return ValueTask.FromResult(server.GetNullReference());
             server.EnsureNodeRegistered(childNode);
             return ValueTask.FromResult(server.GetReference(childNode));
         }

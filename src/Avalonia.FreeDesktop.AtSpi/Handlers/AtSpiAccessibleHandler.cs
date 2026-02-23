@@ -50,6 +50,8 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                 return ValueTask.FromResult(server.GetNullReference());
             
             var childNode = AtSpiNode.GetOrCreate(children[index], server);
+            if (childNode is null)
+                return ValueTask.FromResult(server.GetNullReference());
             server.EnsureNodeRegistered(childNode);
             return ValueTask.FromResult(server.GetReference(childNode));
 
@@ -62,6 +64,8 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             foreach (var child in children)
             {
                 var childNode = AtSpiNode.GetOrCreate(child, server);
+                if (childNode is null)
+                    continue;
                 server.EnsureNodeRegistered(childNode);
                 refs.Add(server.GetReference(childNode));
             }
@@ -92,9 +96,12 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (labeledBy is not null)
             {
                 var labelNode = AtSpiNode.GetOrCreate(labeledBy, server);
-                server.EnsureNodeRegistered(labelNode);
-                // Relation type 2 = LABELLED_BY
-                relations.Add(new AtSpiRelationEntry(2, [server.GetReference(labelNode)]));
+                if (labelNode is not null)
+                {
+                    server.EnsureNodeRegistered(labelNode);
+                    // Relation type 2 = LABELLED_BY
+                    relations.Add(new AtSpiRelationEntry(2, [server.GetReference(labelNode)]));
+                }
             }
 
             return ValueTask.FromResult(relations);

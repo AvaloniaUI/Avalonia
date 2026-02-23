@@ -3,17 +3,26 @@
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <DefineConstants>$(DefineConstants);AVDBUS_INTERNAL</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <AvDBusInternal>true</AvDBusInternal>
+    <AvDBusSourcePath>../../external/Avalonia.DBus/src/Avalonia.DBus</AvDBusSourcePath>
   </PropertyGroup>
 
   <Import Project="../../build/NullableEnable.props" />
   <Import Project="../../build/DevAnalyzers.props" />
   <Import Project="../../build/TrimmingEnable.props" />
-  <Import Project="../../external/Avalonia.DBus/src/Avalonia.DBus.SourceGen/Avalonia.DBus.SourceGen.props" />
+  <Import Project="../tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.props" />
+
+  <ItemGroup>
+    <Compile Include="$(AvDBusSourcePath)/**/*.cs"
+             Exclude="$(AvDBusSourcePath)/obj/**/*.cs"
+             LinkBase="Avalonia.DBus" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../../packages/Avalonia/Avalonia.csproj" />
-    <ProjectReference Include="../../external/Avalonia.DBus/src/Avalonia.DBus/Avalonia.DBus.csproj" />
-    <ProjectReference Include="../../external/Avalonia.DBus/src/Avalonia.DBus.SourceGen/Avalonia.DBus.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
   </ItemGroup>
