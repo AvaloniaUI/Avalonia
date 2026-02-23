@@ -30,6 +30,8 @@ namespace Avalonia.Input
         // HACK: This is a temporary hack for "default focus" concept. 
         // If nothing is focused we send keyboard events to Window. Since for now we always
         // control PresentationSource, we simply pass the TopLevel as a separate parameter there.
-        internal InputElement FocusRoot { get; }
+        // It's also currently used by automation since we have special WindowAutomationPeer which needs to target the
+        // window itself
+        public InputElement FocusRoot { get; }
     }
 }
