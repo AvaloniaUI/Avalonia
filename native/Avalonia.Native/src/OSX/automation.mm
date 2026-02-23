@@ -407,7 +407,7 @@
     if (!_peer->IsSelectionItemProvider())
         return;
     if (accessibilitySelected)
-        _peer->SelectionItemProvider_Select();
+        _peer->SelectionItemProvider_AddToSelection();
     else
         _peer->SelectionItemProvider_RemoveFromSelection();
 }
@@ -418,6 +418,31 @@
         return NO;
     _peer->SelectionItemProvider_Select();
     return YES;
+}
+
+- (NSArray *)accessibilitySelectedChildren
+{
+    if (!_peer->IsSelectionProvider())
+        return nil;
+
+    auto selection = _peer->SelectionProvider_GetSelection();
+    if (selection == nullptr)
+        return nil;
+    auto count = selection->GetCount();
+    NSMutableArray* selectedElements = [[NSMutableArray alloc] initWithCapacity:count];
+
+    for (int i = 0; i < count; ++i)
+    {
+        IAvnAutomationPeer* selectedPeer;
+
+        if (selection->Get(i, &selectedPeer) == S_OK)
+        {
+            id element = [AvnAccessibilityElement acquire:selectedPeer];
+            [selectedElements addObject:element];
+        }
+    }
+
+    return selectedElements;
 }
 
 - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector
@@ -441,7 +466,11 @@
     {
         return _peer->IsRangeValueProvider();
     }
-    
+    else if (selector == @selector(accessibilityPerformPick))
+    {
+        return _peer->IsSelectionItemProvider();
+    }
+
     return [super isAccessibilitySelectorAllowed:selector];
 }
 

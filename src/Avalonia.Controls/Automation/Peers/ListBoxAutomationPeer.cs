@@ -72,25 +72,26 @@ namespace Avalonia.Automation.Peers
             public void Select()
             {
                 EnsureEnabled();
+                BringIntoView();
 
                 _listBox.SelectedIndex = index;
-                BringIntoView();
             }
 
             public void AddToSelection()
             {
                 EnsureEnabled();
+                BringIntoView();
 
                 if (_listBox.GetValue(ListBox.SelectionProperty) is ISelectionModel selectionModel)
                 {
                     selectionModel.Select(index);
-                    BringIntoView();
                 }
             }
 
             public void RemoveFromSelection()
             {
                 EnsureEnabled();
+                BringIntoView();
 
                 if (_listBox.GetValue(ListBox.SelectionProperty) is ISelectionModel selectionModel)
                 {
@@ -134,7 +135,6 @@ namespace Avalonia.Automation.Peers
 
             protected override void SetFocusCore()
             {
-                _listBox.SelectedIndex = index;
                 BringIntoView();
             }
         }

@@ -1316,7 +1316,10 @@ interface IAvnAutomationPeer : IUnknown
      double RangeValueProvider_GetSmallChange();
      double RangeValueProvider_GetLargeChange();
      void RangeValueProvider_SetValue(double value);
-     
+
+     bool IsSelectionProvider();
+     IAvnAutomationPeerArray* SelectionProvider_GetSelection();
+
      bool IsSelectionItemProvider();
      bool SelectionItemProvider_IsSelected();
      void SelectionItemProvider_AddToSelection();

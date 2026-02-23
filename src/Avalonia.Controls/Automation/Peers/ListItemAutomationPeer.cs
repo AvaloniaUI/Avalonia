@@ -50,6 +50,7 @@ namespace Avalonia.Automation.Peers
         public void Select()
         {
             EnsureEnabled();
+            BringIntoView();
 
             if (Owner.Parent is SelectingItemsControl parent)
             {
@@ -63,6 +64,7 @@ namespace Avalonia.Automation.Peers
         public void AddToSelection()
         {
             EnsureEnabled();
+            BringIntoView();
 
             if (Owner.Parent is ItemsControl parent &&
                 parent.GetValue(ListBox.SelectionProperty) is ISelectionModel selectionModel)
@@ -77,6 +79,7 @@ namespace Avalonia.Automation.Peers
         public void RemoveFromSelection()
         {
             EnsureEnabled();
+            BringIntoView();
 
             if (Owner.Parent is ItemsControl parent &&
                 parent.GetValue(ListBox.SelectionProperty) is ISelectionModel selectionModel)
@@ -105,5 +108,11 @@ namespace Avalonia.Automation.Peers
 
         protected override bool IsContentElementCore() => true;
         protected override bool IsControlElementCore() => true;
+
+        protected override void SetFocusCore()
+        {
+            base.SetFocusCore();
+            BringIntoView();
+        }
     }
 }
