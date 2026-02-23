@@ -97,7 +97,7 @@ namespace Avalonia.Automation.Peers
         {
             var index = Index;
 
-            if (index != -1)
+            if (index == -1)
                 return base.GetAutomationIdCore();
 
             return $"{nameof(ListBoxItem)}: {index}";
