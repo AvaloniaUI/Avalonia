@@ -60,7 +60,7 @@ namespace Avalonia.Automation.Peers
             }
         }
 
-        void ISelectionItemProvider.AddToSelection()
+        public void AddToSelection()
         {
             EnsureEnabled();
 
@@ -74,7 +74,7 @@ namespace Avalonia.Automation.Peers
             }
         }
 
-        void ISelectionItemProvider.RemoveFromSelection()
+        public void RemoveFromSelection()
         {
             EnsureEnabled();
 
