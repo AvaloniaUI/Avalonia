@@ -144,6 +144,7 @@
 
     auto landmarkType = _peer->GetLandmarkType();
     switch (landmarkType) {
+        case LandmarkNone: break;
         case LandmarkBanner: return @"AXLandmarkBanner";
         case LandmarkComplementary: return @"AXLandmarkComplementary";
         case LandmarkContentInfo: return @"AXLandmarkContentInfo";
@@ -161,6 +162,7 @@
 {
     auto landmarkType = _peer->GetLandmarkType();
     switch (landmarkType) {
+        case LandmarkNone: break;
         case LandmarkBanner: return @"banner";
         case LandmarkComplementary: return @"complementary";
         case LandmarkContentInfo: return @"content";
