@@ -19,7 +19,7 @@ namespace Avalonia.Input
         /// <remarks>
         /// This method can only be called once, typically by the owner itself on creation.
         /// </remarks>
-        void SetOwner(IInputRoot owner);
+        void SetOwner(InputElement owner);
 
         /// <summary>
         /// Registers an input element to be associated with an access key.

@@ -267,7 +267,9 @@ namespace Avalonia.X11
                     ? DBusSystemDialog.TryCreateAsync(Handle)
                     : Task.FromResult<IStorageProvider?>(null),
                 () => GtkSystemDialog.TryCreate(this),
-                () => Task.FromResult(InputRoot is TopLevel tl
+                // TODO: This will be incompatible with "root element is not a TopLevel" scenarios,
+                // we should probably have a separate API for this
+                () => Task.FromResult(InputRoot.RootElement is TopLevel tl
                     ? (IStorageProvider?)new ManagedStorageProvider(tl)
                     : null)
             });

@@ -6,6 +6,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using MicroCom.Runtime;
 
 namespace Avalonia.Native
@@ -136,8 +137,9 @@ namespace Avalonia.Native
             {
                 if(e.Type == RawPointerEventType.LeftButtonDown)
                 {
-                    var window = _inputRoot as Window;
-                    var visual = window?.Renderer.HitTestFirst(e.Position, window, x =>
+                    // TODO: Casts like this are evil
+                    var source = (PresentationSource?)_inputRoot;
+                    var visual = source?.Renderer.HitTestFirst(e.Position, source.RootElement, x =>
                             {
                                 if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
                                 {

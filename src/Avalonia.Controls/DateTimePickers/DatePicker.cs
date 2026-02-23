@@ -8,6 +8,7 @@ using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -406,7 +407,7 @@ namespace Avalonia.Controls
             // Overlay popup hosts won't get measured until the next layout pass, but we need the
             // template to be applied to `_presenter` now. Detect this case and force a layout pass.
             if (!_presenter.IsMeasureValid)
-                (VisualRoot as ILayoutRoot)?.LayoutManager?.ExecuteInitialLayoutPass();
+                this.GetLayoutManager()?.ExecuteInitialLayoutPass();
 
             var deltaY = _presenter.GetOffsetForPopup();
 

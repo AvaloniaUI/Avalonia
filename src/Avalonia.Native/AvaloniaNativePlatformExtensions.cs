@@ -22,6 +22,7 @@ namespace Avalonia
                         {
                             platform.SetupApplicationName();
                             platform.SetupApplicationMenuExporter();
+                            platform.SetupApplicationDockMenuExporter();
                         });
                 });
 

@@ -14,7 +14,9 @@
     <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\build\Rx.props" />
+  <ItemGroup>
+    <PackageReference Include="System.Reactive" />
+  </ItemGroup>
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
 </Project>

@@ -620,7 +620,7 @@ namespace Avalonia.Controls
                 element.BringIntoView();
                 return element;
             }
-            else if (this.GetVisualRoot() is ILayoutRoot root)
+            else if (this.GetLayoutRoot() is {} root)
             {
                 // Create and measure the element to be brought into view. Store it in a field so that
                 // it can be re-used in the layout pass.
