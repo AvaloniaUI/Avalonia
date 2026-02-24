@@ -112,7 +112,7 @@ namespace Avalonia.UnitTests
         internal IGlobalClock? GlobalClock { get; set; }
         internal IAccessKeyHandler? AccessKeyHandler { get; }
         public Func<IKeyboardDevice?>? KeyboardDevice { get; }
-        public Func<IKeyboardNavigationHandler?>? KeyboardNavigation { get; }
+        internal Func<IKeyboardNavigationHandler?>? KeyboardNavigation { get; }
         public Func<IMouseDevice?>? MouseDevice { get; }
         public IRuntimePlatform? Platform { get; }
         public IPlatformRenderInterface? RenderInterface { get; }

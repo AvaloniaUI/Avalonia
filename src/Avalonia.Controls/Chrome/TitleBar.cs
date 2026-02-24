@@ -54,7 +54,7 @@ namespace Avalonia.Controls.Chrome
 
             _captionButtons = e.NameScope.Get<CaptionButtons>("PART_CaptionButtons");
 
-            if (VisualRoot is Window window)
+            if (TopLevel.GetTopLevel(this) is Window window)
             {
                 _captionButtons?.Attach(window);
 
@@ -67,7 +67,7 @@ namespace Avalonia.Controls.Chrome
         {
             base.OnAttachedToVisualTree(e);
 
-            if (VisualRoot is Window window)
+            if (TopLevel.GetTopLevel(this) is Window window)
             {
                 _disposables = new CompositeDisposable(6)
                 {

@@ -148,8 +148,23 @@ public:
             [fileUri stopAccessingSecurityScopedResource];
         }
     }
+    
+    static NSWindow* GetEffectiveNSWindow(IAvnTopLevel* topLevel)
+    {
+        auto windowHolder = dynamic_cast<INSWindowHolder*>(topLevel);
+        if (windowHolder != nullptr)
+            return windowHolder->GetNSWindow();
+        
+        auto viewHolder = dynamic_cast<INSViewHolder*>(topLevel);
+        if (viewHolder != nullptr) {
+            auto view = (NSView*)viewHolder->GetNSView();
+            return [view window];
+        }
+        
+        return nullptr;
+    }
 
-    virtual void SelectFolderDialog (IAvnWindow* parentWindowHandle,
+    virtual void SelectFolderDialog (IAvnTopLevel* parentTopLevel,
                                      IAvnSystemDialogEvents* events,
                                      bool allowMultiple,
                                      const char* title,
@@ -176,6 +191,8 @@ public:
                 panel.directoryURL = [NSURL URLWithString:directoryString];
             }
             
+            auto parentWindow = GetEffectiveNSWindow(parentTopLevel);
+            
             auto handler = ^(NSModalResponse result) {
                 if(result == NSFileHandlingPanelOKButton)
                 {
@@ -188,10 +205,9 @@ public:
     
                         [panel orderOut:panel];
                         
-                        if(parentWindowHandle != nullptr)
+                        if (parentWindow != nullptr)
                         {
-                            auto windowHolder = dynamic_cast<INSWindowHolder*>(parentWindowHandle);
-                            [windowHolder->GetNSWindow() makeKeyAndOrderFront:windowHolder->GetNSWindow()];
+                            [parentWindow makeKeyAndOrderFront:parentWindow];
                         }
                         
                         return;
@@ -202,11 +218,9 @@ public:
                 
             };
             
-            if(parentWindowHandle != nullptr)
+            if (parentWindow != nullptr)
             {
-                auto windowBase = dynamic_cast<INSWindowHolder*>(parentWindowHandle);
-                
-                [panel beginSheetModalForWindow:windowBase->GetNSWindow() completionHandler:handler];
+                [panel beginSheetModalForWindow:parentWindow completionHandler:handler];
             }
             else
             {
@@ -215,7 +229,7 @@ public:
         }
     }
     
-    virtual void OpenFileDialog (IAvnWindow* parentWindowHandle,
+    virtual void OpenFileDialog (IAvnTopLevel* parentTopLevel,
                                  IAvnSystemDialogEvents* events,
                                  bool allowMultiple,
                                  const char* title,
@@ -249,6 +263,8 @@ public:
                 panel.directoryURL = [NSURL URLWithString:directoryString];
             }
             
+            auto parentWindow = GetEffectiveNSWindow(parentTopLevel);
+            
             auto handler = ^(NSModalResponse result) {
                 if(result == NSFileHandlingPanelOKButton)
                 {
@@ -261,10 +277,9 @@ public:
 
                         [panel orderOut:panel];
                         
-                        if(parentWindowHandle != nullptr)
+                        if (parentWindow != nullptr)
                         {
-                            auto windowHolder = dynamic_cast<INSWindowHolder*>(parentWindowHandle);
-                            [windowHolder->GetNSWindow() makeKeyAndOrderFront:windowHolder->GetNSWindow()];
+                            [parentWindow makeKeyAndOrderFront:parentWindow];
                         }
                         
                         return;
@@ -275,11 +290,9 @@ public:
                 
             };
             
-            if(parentWindowHandle != nullptr)
+            if (parentWindow != nullptr)
             {
-                auto windowHolder = dynamic_cast<INSWindowHolder*>(parentWindowHandle);
-                
-                [panel beginSheetModalForWindow:windowHolder->GetNSWindow() completionHandler:handler];
+                [panel beginSheetModalForWindow:parentWindow completionHandler:handler];
             }
             else
             {
@@ -288,7 +301,7 @@ public:
         }
     }
     
-    virtual void SaveFileDialog (IAvnWindow* parentWindowHandle,
+    virtual void SaveFileDialog (IAvnTopLevel* parentTopLevel,
                                  IAvnSystemDialogEvents* events,
                                  const char* title,
                                  const char* initialDirectory,
@@ -319,6 +332,8 @@ public:
                 panel.directoryURL = [NSURL URLWithString:directoryString];
             }
             
+            auto parentWindow = GetEffectiveNSWindow(parentTopLevel);
+            
             auto handler = ^(NSModalResponse result) {
                 int selectedIndex = -1;
                 if (panel.accessoryView != nil)
@@ -339,10 +354,9 @@ public:
 
                     [panel orderOut:panel];
                     
-                    if(parentWindowHandle != nullptr)
+                    if (parentWindow != nullptr)
                     {
-                        auto windowHolder = dynamic_cast<INSWindowHolder*>(parentWindowHandle);
-                        [windowHolder->GetNSWindow() makeKeyAndOrderFront:windowHolder->GetNSWindow()];
+                        [parentWindow makeKeyAndOrderFront:parentWindow];
                     }
                     
                     return;
@@ -352,11 +366,9 @@ public:
                 
             };
             
-            if(parentWindowHandle != nullptr)
+            if (parentWindow != nullptr)
             {
-                auto windowBase = dynamic_cast<INSWindowHolder*>(parentWindowHandle);
-                
-                [panel beginSheetModalForWindow:windowBase->GetNSWindow() completionHandler:handler];
+                [panel beginSheetModalForWindow:parentWindow completionHandler:handler];
             }
             else
             {

@@ -169,7 +169,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
 
     public AutomationPeer? GetAutomationPeer()
     {
-        return _inputRoot is Control c ? ControlAutomationPeer.CreatePeerForElement(c) : null;
+        return _inputRoot?.RootElement is Control c ? ControlAutomationPeer.CreatePeerForElement(c) : null;
     }
 
     public bool RawTextInputEvent(ulong timeStamp, string text)

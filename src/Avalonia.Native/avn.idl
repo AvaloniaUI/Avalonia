@@ -724,6 +724,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreatePlatformRenderTimer(IAvnPlatformRenderTimer** ppv);
      HRESULT ImportMTLSharedEvent([intptr]void* idMtlSharedEvent, IAvnMTLSharedEvent** ppv);
      HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement** ppv);
+     HRESULT SetDockMenu(IAvnMenu* menu);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -937,13 +938,13 @@ interface IAvnSystemDialogEvents : IUnknown
 [uuid(4d7a47db-a944-4061-abe7-62cb6aa0ffd5)]
 interface IAvnStorageProvider : IUnknown
 {
-     void SelectFolderDialog(IAvnWindow* parentWindowHandle,
+     void SelectFolderDialog(IAvnTopLevel* parentTopLevel,
                              IAvnSystemDialogEvents* events,
                              bool allowMultiple,
                              [const] char* title,
                              [const] char* initialPath);
 
-     void OpenFileDialog(IAvnWindow* parentWindowHandle,
+     void OpenFileDialog(IAvnTopLevel* parentTopLevel,
                                  IAvnSystemDialogEvents* events,
                                  bool allowMultiple,
                                  [const] char* title,
@@ -951,7 +952,7 @@ interface IAvnStorageProvider : IUnknown
                                  [const] char* initialFile,
                                  IAvnFilePickerFileTypes* filters);
 
-     void SaveFileDialog(IAvnWindow* parentWindowHandle,
+     void SaveFileDialog(IAvnTopLevel* parentTopLevel,
                                  IAvnSystemDialogEvents* events,
                                  [const] char* title,
                                  [const] char* initialDirectory,
@@ -1328,6 +1329,7 @@ interface IAvnAutomationPeer : IUnknown
      void ValueProvider_SetValue([const] char* value);
 
      IAvnString* GetHelpText();
+     IAvnString* GetPlaceholderText();
 
      AvnLandmarkType GetLandmarkType();
      int GetHeadingLevel();

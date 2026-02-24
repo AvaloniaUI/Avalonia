@@ -456,7 +456,7 @@ namespace Avalonia.Controls.Primitives
 
             if (InheritsTransform)
             {
-                TransformTrackingHelper.Track(placementTarget, PlacementTargetTransformChanged)
+                TransformTrackingHelper.Track(placementTarget, true, PlacementTargetTransformChanged)
                     .DisposeWith(handlerCleanup);
             }
             else
@@ -676,7 +676,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         var newTarget = change.GetNewValue<Control?>() ?? this.FindLogicalAncestorOfType<Control>();
 
-                        if (newTarget is null || newTarget.GetVisualRoot() != _openState.TopLevel)
+                        if (newTarget is null || TopLevel.GetTopLevel(newTarget) != _openState.TopLevel)
                         {
                             Close();
                             return;

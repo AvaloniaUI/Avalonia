@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -10,7 +11,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class OverlayPopupHost : ContentControl, IPopupHost, IManagedPopupPositionerPopup, IInputRoot
+    public class OverlayPopupHost : ContentControl, IPopupHost, IManagedPopupPositionerPopup
     {
         /// <summary>
         /// Defines the <see cref="Transform"/> property.
@@ -21,6 +22,7 @@ namespace Avalonia.Controls.Primitives
         private readonly OverlayLayer _overlayLayer;
         private readonly ManagedPopupPositioner _positioner;
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
+        internal IKeyboardNavigationHandler Tests_KeyboardNavigationHandler => _keyboardNavigationHandler!;
         private Point _lastRequestedPosition;
         private PopupPositionRequest? _popupPositionRequest;
         private Size _popupSize;
@@ -59,39 +61,7 @@ namespace Avalonia.Controls.Primitives
             get => false;
             set { /* Not currently supported in overlay popups */ }
         }
-
-        private IInputRoot? InputRoot
-            => TopLevel.GetTopLevel(this);
-
-        IKeyboardNavigationHandler? IInputRoot.KeyboardNavigationHandler
-            => _keyboardNavigationHandler;
-
-        IFocusManager? IInputRoot.FocusManager
-            => InputRoot?.FocusManager;
-
-        IPlatformSettings? IInputRoot.PlatformSettings
-            => InputRoot?.PlatformSettings;
-
-        IInputElement? IInputRoot.PointerOverElement
-        {
-            get => InputRoot?.PointerOverElement;
-            set
-            {
-                if (InputRoot is { } inputRoot)
-                    inputRoot.PointerOverElement = value;
-            }
-        }
-
-        bool IInputRoot.ShowAccessKeys
-        {
-            get => InputRoot?.ShowAccessKeys ?? false;
-            set
-            {
-                if (InputRoot is { } inputRoot)
-                    inputRoot.ShowAccessKeys = value;
-            }
-        }
-
+        
         /// <inheritdoc />
         internal override Interactive? InteractiveParent => Parent as Interactive;
 

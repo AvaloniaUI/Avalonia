@@ -570,19 +570,11 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             var target = positionRequest.Target;
             if (target == null)
                 throw new InvalidOperationException("Placement mode is not Pointer and PlacementTarget is null");
-            Matrix? matrix;
-            if (TryGetAdorner(target, out var adorned, out var adornerLayer))
-            {
-                matrix = adorned!.TransformToVisual(topLevel) * target.TransformToVisual(adornerLayer!);
-            }
-            else
-            {
-                matrix = target.TransformToVisual(topLevel);
-            }
-
+            Matrix? matrix = target.TransformToVisual(topLevel);
+            
             if (matrix == null)
             {
-                if (target.GetVisualRoot() == null)
+                if (!target.IsAttachedToVisualTree)
                     throw new InvalidOperationException("Target control is not attached to the visual tree");
                 throw new InvalidOperationException("Target control is not in the same tree as the popup parent");
             }
@@ -590,25 +582,6 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             var bounds = new Rect(default, target.Bounds.Size);
             var anchorRect = positionRequest.AnchorRect ?? bounds;
             return anchorRect.Intersect(bounds).TransformToAABB(matrix.Value);
-        }
-
-        private static bool TryGetAdorner(Visual target, out Visual? adorned, out Visual? adornerLayer)
-        {
-            var element = target;
-            while (element != null)
-            {
-                if (AdornerLayer.GetAdornedElement(element) is { } adornedElement)
-                {
-                    adorned = adornedElement;
-                    adornerLayer = AdornerLayer.GetAdornerLayer(adorned);
-                    return true;
-                }
-                element = element.VisualParent;
-            }
-
-            adorned = null;
-            adornerLayer = null;
-            return false;
         }
     }
 

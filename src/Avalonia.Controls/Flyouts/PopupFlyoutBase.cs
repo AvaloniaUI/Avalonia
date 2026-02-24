@@ -344,7 +344,7 @@ namespace Avalonia.Controls.Primitives
                     return;
                 }
 
-                if (Popup?.Host is PopupRoot && pArgs.Root is Visual eventRoot)
+                if (Popup?.Host is PopupRoot && pArgs.Root.RootElement is {} eventRoot)
                 {
                     // As long as the pointer stays within the enlargedPopupRect
                     // the flyout stays open. If it leaves, close it

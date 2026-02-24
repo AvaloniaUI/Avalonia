@@ -5,7 +5,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// An <see cref="IPropertyAccessor"/> that represents an error.
     /// </summary>
-    public class PropertyError : IPropertyAccessor
+    internal class PropertyError : IPropertyAccessor
     {
         private readonly BindingNotification _error;
 

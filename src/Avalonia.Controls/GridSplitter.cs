@@ -13,6 +13,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -226,7 +227,7 @@ namespace Avalonia.Controls
                     ResizeDirection = resizeDirection,
                     SplitterLength = Math.Min(Bounds.Width, Bounds.Height),
                     ResizeBehavior = GetEffectiveResizeBehavior(resizeDirection),
-                    Scaling = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1,
+                    Scaling = this.GetLayoutRoot()?.LayoutScaling ?? 1,
                 };
 
                 // Store the rows and columns to resize on drag events.
