@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.CompilerServices;
+using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Cmap;
@@ -219,6 +219,25 @@ namespace Avalonia.Media
                 {
                     return CultureInfo.InvariantCulture;
                 }
+            }
+        }
+
+        internal static GlyphTypeface? TryCreate(IPlatformTypeface typeface, FontSimulations fontSimulations = FontSimulations.None)
+        {
+            try
+            {
+                return new GlyphTypeface(typeface, fontSimulations);
+            }
+            catch (Exception ex)
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Fonts)?.Log(
+                    null,
+                    "Could not create glyph typeface from platform typeface named {FamilyName} with simulations {Simulations}: {Exception}",
+                    typeface.FamilyName,
+                    fontSimulations,
+                    ex);
+
+                return null;
             }
         }
 
