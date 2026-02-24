@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
+using Avalonia.Logging;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi
@@ -30,8 +31,10 @@ namespace Avalonia.FreeDesktop.AtSpi
                     var props = await proxy.GetAllPropertiesAsync();
                     IsEnabled = props.IsEnabled || props.ScreenReaderEnabled;
                 }
-                catch
+                catch (Exception e)
                 {
+                    Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
+                        .Log(this, "AT-SPI status properties query failed, defaulting to disabled: {0}", e);
                     IsEnabled = false;
                 }
 
@@ -46,10 +49,12 @@ namespace Avalonia.FreeDesktop.AtSpi
                     sender: null,
                     emitOnCapturedContext: true);
             }
-            catch
+            catch (Exception e)
             {
                 // D-Bus session bus unavailable or org.a11y.Bus not present.
                 // Silently degrade - accessibility remains disabled.
+                Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
+                    .Log(this, "AT-SPI watcher unavailable; accessibility remains disabled: {0}", e);
                 IsEnabled = false;
             }
         }

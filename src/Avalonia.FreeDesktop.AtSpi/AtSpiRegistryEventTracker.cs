@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
+using Avalonia.Logging;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi
@@ -62,9 +63,11 @@ namespace Avalonia.FreeDesktop.AtSpi
                     },
                     emitOnCapturedContext: true);
             }
-            catch
+            catch (Exception e)
             {
                 // Registry event tracking unavailable - remain chatty.
+                Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
+                    .Log(this, "AT-SPI registry event tracker unavailable; remaining chatty: {0}", e);
                 HasEventListeners = true;
             }
         }
@@ -111,8 +114,10 @@ namespace Avalonia.FreeDesktop.AtSpi
                     senderFilter,
                     emitOnCapturedContext: true);
             }
-            catch
+            catch (Exception e)
             {
+                Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
+                    .Log(this, "AT-SPI registry signal subscription failed; remaining chatty: {0}", e);
                 _registryRegisteredSubscription?.Dispose();
                 _registryRegisteredSubscription = null;
                 _registryDeregisteredSubscription?.Dispose();

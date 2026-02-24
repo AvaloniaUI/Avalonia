@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Automation.Provider;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.Platform;
@@ -11,14 +12,14 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
     /// </summary>
     internal sealed class AtSpiComponentHandler(AtSpiServer server, AtSpiNode node) : IOrgA11yAtspiComponent
     {
+
         public uint Version => ComponentVersion;
 
         public ValueTask<bool> ContainsAsync(int x, int y, uint coordType)
         {
             var rect = AtSpiCoordinateHelper.GetScreenExtents(node);
             var point = TranslateToScreen(x, y, coordType);
-            var contains = point.x >= rect.X && point.y >= rect.Y &&
-                           point.x < rect.X + rect.Width && point.y < rect.Y + rect.Height;
+            var contains = rect.ContainsExclusive(new Point(point.x, point.y));
             return ValueTask.FromResult(contains);
         }
 
@@ -26,8 +27,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
         {
             var rect = AtSpiCoordinateHelper.GetScreenExtents(node);
             var point = TranslateToScreen(x, y, coordType);
-            if (point.x >= rect.X && point.y >= rect.Y &&
-                point.x < rect.X + rect.Width && point.y < rect.Y + rect.Height)
+            if (rect.ContainsExclusive(new Point(point.x, point.y)))
             {
                 return ValueTask.FromResult(server.GetReference(node));
             }
@@ -60,8 +60,9 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
         public ValueTask<uint> GetLayerAsync()
         {
             var controlType = node.Peer.GetAutomationControlType();
-            // Window layer = 7, Widget layer = 3
-            var layer = controlType == Automation.Peers.AutomationControlType.Window ? 7u : 3u;
+            var layer = controlType == Automation.Peers.AutomationControlType.Window
+                ? WindowLayer
+                : WidgetLayer;
             return ValueTask.FromResult(layer);
         }
 

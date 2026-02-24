@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls.Utils;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
@@ -10,10 +11,8 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
     /// <summary>
     /// Implements the AT-SPI Text interface for read-only text content.
     /// </summary>
-    internal sealed class AtSpiTextHandler : IOrgA11yAtspiText
+    internal sealed class AtSpiTextHandler(AtSpiNode node) : IOrgA11yAtspiText
     {
-        private readonly AtSpiNode _node;
-
         private enum TextGranularity : uint
         {
             Char = 0,
@@ -32,12 +31,6 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             SentenceEnd = 4,
             LineStart = 5,
             LineEnd = 6,
-        }
-
-        public AtSpiTextHandler(AtSpiServer server, AtSpiNode node)
-        {
-            _ = server;
-            _node = node;
         }
 
         public uint Version => TextVersion;
@@ -67,12 +60,14 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             // For WORD granularity, find word boundaries
             if (g == TextGranularity.Word)
             {
-                var start = offset;
-                var end = offset;
-                while (start > 0 && !char.IsWhiteSpace(text[start - 1]))
-                    start--;
-                while (end < text.Length && !char.IsWhiteSpace(text[end]))
-                    end++;
+                var start = StringUtils.PreviousWord(text, offset + 1);
+                if (start >= text.Length || !StringUtils.IsStartOfWord(text, start))
+                    return ValueTask.FromResult((string.Empty, 0, 0));
+
+                var end = Math.Min(StringUtils.NextWord(text, start), text.Length);
+                if (end <= start)
+                    return ValueTask.FromResult((string.Empty, 0, 0));
+
                 return ValueTask.FromResult((text.Substring(start, end - start), start, end));
             }
 
@@ -126,14 +121,17 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (bt is TextBoundaryType.WordStart or TextBoundaryType.WordEnd)
             {
                 var end = offset;
-                // Skip whitespace before offset to find end of previous word
-                while (end > 0 && char.IsWhiteSpace(text[end - 1]))
-                    end--;
-                if (end == 0)
+                var start = StringUtils.PreviousWord(text, end);
+                if (start >= end)
+                    start = StringUtils.PreviousWord(text, start);
+
+                if (start < 0 || start >= text.Length || !StringUtils.IsStartOfWord(text, start))
                     return ValueTask.FromResult((string.Empty, 0, 0));
-                var start = end;
-                while (start > 0 && !char.IsWhiteSpace(text[start - 1]))
-                    start--;
+
+                end = Math.Min(StringUtils.NextWord(text, start), end);
+                if (end <= start)
+                    return ValueTask.FromResult((string.Empty, 0, 0));
+
                 return ValueTask.FromResult((text.Substring(start, end - start), start, end));
             }
 
@@ -170,14 +168,21 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (bt is TextBoundaryType.WordStart or TextBoundaryType.WordEnd)
             {
                 var start = offset + 1;
-                // Skip whitespace after offset to find start of next word
-                while (start < text.Length && char.IsWhiteSpace(text[start]))
+
+                while (start < text.Length &&
+                       StringUtils.IsEndOfWord(text, start) &&
+                       !StringUtils.IsStartOfWord(text, start))
+                {
                     start++;
+                }
+
                 if (start >= text.Length)
                     return ValueTask.FromResult((string.Empty, text.Length, text.Length));
-                var end = start;
-                while (end < text.Length && !char.IsWhiteSpace(text[end]))
-                    end++;
+
+                var end = Math.Min(StringUtils.NextWord(text, start), text.Length);
+                if (end <= start)
+                    return ValueTask.FromResult((string.Empty, text.Length, text.Length));
+
                 return ValueTask.FromResult((text.Substring(start, end - start), start, end));
             }
 
@@ -285,7 +290,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         private string GetText()
         {
-            return _node.Peer.GetProvider<IValueProvider>()?.Value ?? string.Empty;
+            return node.Peer.GetProvider<IValueProvider>()?.Value ?? string.Empty;
         }
     }
 }

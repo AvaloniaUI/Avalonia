@@ -46,6 +46,7 @@
       "src\\tools\\Avalonia.Analyzers.CodeFixes.CSharp\\Avalonia.Analyzers.CodeFixes.CSharp.csproj",
       "src\\tools\\Avalonia.Analyzers.CSharp\\Avalonia.Analyzers.CSharp.csproj",
       "src\\tools\\Avalonia.Analyzers.VisualBasic\\Avalonia.Analyzers.VisualBasic.csproj",
+      "src\\tools\\Avalonia.DBus.Generators\\Avalonia.DBus.Generators.csproj",
       "src\\tools\\Avalonia.Generators\\Avalonia.Generators.csproj",
       "src\\tools\\DevAnalyzers\\DevAnalyzers.csproj",
       "src\\tools\\DevGenerators\\DevGenerators.csproj",

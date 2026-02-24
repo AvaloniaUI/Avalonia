@@ -157,10 +157,16 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
         /// <summary>
         /// Describes a single AT-SPI action exposed by a node.
         /// </summary>
-        private readonly record struct ActionEntry(
-            string ActionName,
-            string LocalizedName,
-            string Description,
-            string KeyBinding);
+        private readonly struct ActionEntry(
+            string actionName,
+            string localizedName,
+            string description,
+            string keyBinding)
+        {
+            public string ActionName { get; } = actionName;
+            public string LocalizedName { get; } = localizedName;
+            public string Description { get; } = description;
+            public string KeyBinding { get; } = keyBinding;
+        }
     }
 }

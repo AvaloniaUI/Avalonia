@@ -7,6 +7,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using Avalonia.FreeDesktop.AtSpi.Handlers;
+using Avalonia.Logging;
 using Avalonia.Threading;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
@@ -27,7 +28,6 @@ namespace Avalonia.FreeDesktop.AtSpi
         private AtSpiCacheHandler? _cacheHandler;
         private AtSpiEventObjectHandler? _appRootEventHandler;
         private AtSpiRegistryEventTracker? _registryTracker;
-        private Task? _registryTrackerInitTask;
         private IDisposable? _appRootRegistration;
         private IDisposable? _cacheRegistration;
         private Task? _embedTask;
@@ -85,7 +85,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             // Start tracking registry event listeners in the background so we don't
             // delay AT-SPI root readiness and initial embed timing.
             _registryTracker = new AtSpiRegistryEventTracker(_a11yConnection);
-            _registryTrackerInitTask = InitializeRegistryTrackerAsync(_registryTracker);
+            _ = InitializeRegistryTrackerAsync(_registryTracker);
 
             // Attempt embed immediately so AT clients discover us as early as possible.
             // If this fails, AddWindow keeps retrying through EnsureEmbeddedAndAnnounceAsync.
@@ -156,10 +156,12 @@ namespace Avalonia.FreeDesktop.AtSpi
             {
                 await EmbedApplicationAsync();
             }
-            catch
+            catch (Exception e)
             {
                 // Embed failed — screen reader won't discover us.
                 // Reset so the next AddWindow retries.
+                Logger.TryGet(LogEventLevel.Warning, LogArea.FreeDesktopPlatform)?
+                    .Log(this, "AT-SPI embed failed; will retry when windows are added: {0}", e);
                 lock (_embedSync)
                     _embedTask = null;
                 return;
@@ -244,7 +246,6 @@ namespace Avalonia.FreeDesktop.AtSpi
                 _embedTask = null;
             }
 
-            _registryTrackerInitTask = null;
             _registryTracker?.Dispose();
             _registryTracker = null;
 
@@ -372,8 +373,10 @@ namespace Avalonia.FreeDesktop.AtSpi
                 var proxy = new OrgA11yBusProxy(connection, BusNameA11y, new DBusObjectPath(PathA11y));
                 return await proxy.GetAddressAsync();
             }
-            catch
+            catch (Exception e)
             {
+                Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
+                    .Log(this, "Failed to resolve AT-SPI accessibility bus address: {0}", e);
                 return string.Empty;
             }
         }
@@ -393,9 +396,11 @@ namespace Avalonia.FreeDesktop.AtSpi
             {
                 await tracker.InitializeAsync();
             }
-            catch
+            catch (Exception e)
             {
                 // Registry tracking is best-effort; AT-SPI server remains functional without it.
+                Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
+                    .Log(tracker, "AT-SPI registry listener tracking initialization failed: {0}", e);
             }
         }
 
@@ -411,9 +416,11 @@ namespace Avalonia.FreeDesktop.AtSpi
                 if (parentNode is not null && _nodesByPath.ContainsKey(parentNode.Path))
                     parentNode.AddRegisteredChild(childNode);
             }
-            catch
+            catch (Exception e)
             {
                 // Parent peer may be defunct
+                Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
+                    .Log(childNode, "AT-SPI parent tracking skipped due to defunct parent peer: {0}", e);
             }
         }
 
@@ -425,9 +432,11 @@ namespace Avalonia.FreeDesktop.AtSpi
                 if (parentPeer is not null)
                     AtSpiNode.TryGet(parentPeer)?.RemoveRegisteredChild(node);
             }
-            catch
+            catch (Exception e)
             {
                 // Parent peer may be defunct
+                Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
+                    .Log(node, "AT-SPI parent untracking skipped due to defunct parent peer: {0}", e);
             }
         }
 

@@ -1028,7 +1028,8 @@ namespace Avalonia.X11
             
             // Remove from AT-SPI tree before closing
             _platform.UntrackWindow(this);
-            if (_platform.AtSpiServer is { } atSpiServer && _inputRoot is Avalonia.Controls.Control atSpiControl)
+            if (_platform.AtSpiServer is { } atSpiServer
+                && _inputRoot?.RootElement is Control atSpiControl)
             {
                 var atSpiPeer = atSpiControl.GetAutomationPeer();
                 if (atSpiPeer is not null)
@@ -1123,7 +1124,8 @@ namespace Avalonia.X11
             _mode.Show(activate, isDialog);
 
             _platform.TrackWindow(this);
-            if (_platform.AtSpiServer is { } server && _inputRoot is Avalonia.Controls.Control c)
+            if (_platform.AtSpiServer is { } server
+                && _inputRoot?.RootElement is Control c)
             {
                 var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(c);
                 if (peer is not null)

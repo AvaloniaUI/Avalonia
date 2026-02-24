@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
@@ -12,6 +12,12 @@ namespace Avalonia.FreeDesktop.AtSpi;
 internal sealed class ApplicationAccessibleHandler(AtSpiServer server, ApplicationAtSpiNode appNode)
     : IOrgA11yAtspiAccessible
 {
+    private static readonly List<string> s_interfaces =
+    [
+        AtSpiConstants.IfaceAccessible,
+        AtSpiConstants.IfaceApplication,
+    ];
+
     public uint Version => AtSpiConstants.AccessibleVersion;
     public string Name => appNode.Name;
     public string Description => string.Empty;
@@ -61,10 +67,6 @@ internal sealed class ApplicationAccessibleHandler(AtSpiServer server, Applicati
     public ValueTask<AtSpiObjectReference> GetApplicationAsync() =>
         ValueTask.FromResult(server.GetRootReference());
 
-    public ValueTask<List<string>> GetInterfacesAsync()
-    {
-        var interfaces = new List<string> { AtSpiConstants.IfaceAccessible, AtSpiConstants.IfaceApplication };
-        interfaces.Sort(StringComparer.Ordinal);
-        return ValueTask.FromResult(interfaces);
-    }
+    public ValueTask<List<string>> GetInterfacesAsync() =>
+        ValueTask.FromResult(s_interfaces.ToList());
 }

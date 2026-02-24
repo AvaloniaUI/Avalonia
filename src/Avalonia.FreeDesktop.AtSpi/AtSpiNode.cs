@@ -10,6 +10,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.Handlers;
+using Avalonia.Logging;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
 
 namespace Avalonia.FreeDesktop.AtSpi
@@ -55,7 +56,7 @@ namespace Avalonia.FreeDesktop.AtSpi
         }
 
         internal AtSpiAccessibleHandler? AccessibleHandler { get; private set; }
-        internal AtSpiApplicationHandler? ApplicationHandler { get; private set; }
+        internal ApplicationNodeApplicationHandler? ApplicationHandler { get; private set; }
         internal AtSpiComponentHandler? ComponentHandler { get; private set; }
         internal AtSpiActionHandler? ActionHandler { get; private set; }
         internal AtSpiValueHandler? ValueHandler { get; private set; }
@@ -65,12 +66,9 @@ namespace Avalonia.FreeDesktop.AtSpi
         internal AtSpiImageHandler? ImageHandler { get; private set; }
         internal AtSpiEventObjectHandler? EventObjectHandler { get; private set; }
         internal AtSpiEventWindowHandler? EventWindowHandler { get; private set; }
-        
-        // internal AtSpiCollectionHandler? CollectionHandler { get; private set; }
-
         internal HashSet<AtSpiNode> RegisteredChildren => _registeredChildren ??= [];
         internal bool HasRegisteredChildren => _registeredChildren is { Count: > 0 };
-        internal bool AddRegisteredChild(AtSpiNode child) { _registeredChildren ??= []; return _registeredChildren.Add(child); }
+        internal bool AddRegisteredChild(AtSpiNode child) => RegisteredChildren.Add(child);
         internal bool RemoveRegisteredChild(AtSpiNode child) => _registeredChildren?.Remove(child) ?? false;
 
         internal void BuildAndRegisterHandlers(
@@ -85,7 +83,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             targets.Add(AccessibleHandler = new AtSpiAccessibleHandler(Server, this));
 
             if (Peer.GetProvider<IRootProvider>() is not null)
-                targets.Add(ApplicationHandler = new AtSpiApplicationHandler(Server, this));
+                targets.Add(ApplicationHandler = new ApplicationNodeApplicationHandler());
 
             // Component - all visual elements
             targets.Add(ComponentHandler = new AtSpiComponentHandler(Server, this));
@@ -108,10 +106,10 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (Peer.GetProvider<IValueProvider>() is { } valueProvider
                 && Peer.GetProvider<IRangeValueProvider>() is null)
             {
-                targets.Add(TextHandler = new AtSpiTextHandler(Server, this));
+                targets.Add(TextHandler = new AtSpiTextHandler(this));
 
                 if (!valueProvider.IsReadOnly)
-                    targets.Add(EditableTextHandler = new AtSpiEditableTextHandler(Server, this));
+                    targets.Add(EditableTextHandler = new AtSpiEditableTextHandler(this));
             }
 
             if (Peer.GetAutomationControlType() == AutomationControlType.Image)
@@ -142,6 +140,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             return node;
         }
 
+        [return: NotNullIfNotNull(nameof(peer))]
         public static AtSpiNode? GetOrCreate(AutomationPeer? peer, AtSpiServer server)
         {
             return peer is null ? null : s_nodes.GetValue(peer, p => Create(p, server));
@@ -173,11 +172,11 @@ namespace Avalonia.FreeDesktop.AtSpi
                 return;
 
             _detached = true;
-            DisposePathRegistration();
             _registeredChildren?.Clear();
             _registeredChildren = null;
             Peer.ChildrenChanged -= OnPeerChildrenChanged;
             Peer.PropertyChanged -= OnPeerPropertyChanged;
+            DisposePathRegistration();
         }
 
         internal async Task DisposePathRegistrationAsync()
@@ -225,9 +224,11 @@ namespace Avalonia.FreeDesktop.AtSpi
                 var registration = await registrationTask.ConfigureAwait(false);
                 registration.Dispose();
             }
-            catch
+            catch (Exception e)
             {
                 // Best-effort cleanup: path may have failed to register or connection may be gone.
+                Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
+                    .Log(null, "AT-SPI node path registration cleanup failed: {0}", e);
             }
         }
 
@@ -250,18 +251,15 @@ namespace Avalonia.FreeDesktop.AtSpi
             // Diff against previously tracked children to find removals
             if (HasRegisteredChildren)
             {
-                var oldChildren = RegisteredChildren.ToHashSet();
-                foreach (var oldChild in oldChildren
-                             .Where(oldChild => !newChildren.Contains(oldChild)))
+                var removedChildren = RegisteredChildren.Except(newChildren).ToArray();
+                foreach (var oldChild in removedChildren)
                 {
                     Server.RemoveSubtreeRecursive(oldChild);
                 }
             }
 
             // Replace the tracked set with the current children
-            RegisteredChildren.Clear();
-            foreach (var child in newChildren)
-                RegisteredChildren.Add(child);
+            RegisteredChildren.UnionWith(newChildren);
 
             // Emit children-changed event (guarded by event listeners)
             if (!Server.HasEventListeners || EventObjectHandler is not { } eventHandler) return;

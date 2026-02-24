@@ -49,6 +49,9 @@ namespace Avalonia.FreeDesktop.AtSpi
         internal const uint TextVersion = 1;
         internal const uint EditableTextVersion = 1;
         internal const uint CollectionVersion = 1;
+        
+        internal const uint WidgetLayer = 3;
+        internal const uint WindowLayer = 7;
 
         internal static List<uint> BuildStateSet(IReadOnlyCollection<AtSpiState>? states)
         {
