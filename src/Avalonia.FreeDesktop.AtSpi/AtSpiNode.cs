@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Automation;
@@ -20,10 +18,10 @@ namespace Avalonia.FreeDesktop.AtSpi
     /// </summary>
     internal partial class AtSpiNode
     {
-        private static readonly ConditionalWeakTable<AutomationPeer, AtSpiNode> s_nodes = new();
-        private static int s_nextId;
         private protected bool _detached;
-        private HashSet<AtSpiNode>? _registeredChildren;
+        private bool _attached;
+        private bool _childrenDirty = true;
+        private List<AtSpiNode> _attachedChildren = [];
 
         private readonly string _path;
 
@@ -31,15 +29,15 @@ namespace Avalonia.FreeDesktop.AtSpi
         {
             Peer = peer;
             Server = server;
-            _path = $"{AppPathPrefix}/{Interlocked.Increment(ref s_nextId)}";
-            s_nodes.Add(peer, this);
-            peer.ChildrenChanged += OnPeerChildrenChanged;
-            peer.PropertyChanged += OnPeerPropertyChanged;
+            _path = server.AllocateNodePath();
         }
 
         public AutomationPeer Peer { get; }
         public AtSpiServer Server { get; }
         public string Path => _path;
+        internal bool IsAttached => _attached && !_detached;
+        internal AtSpiNode? Parent { get; private set; }
+        internal IReadOnlyList<AtSpiNode> AttachedChildren => _attachedChildren;
         internal Task<IDisposable>? PathRegistrationTask { get; private set; }
 
         public HashSet<string> GetSupportedInterfaces()
@@ -66,10 +64,6 @@ namespace Avalonia.FreeDesktop.AtSpi
         internal AtSpiImageHandler? ImageHandler { get; private set; }
         internal AtSpiEventObjectHandler? EventObjectHandler { get; private set; }
         internal AtSpiEventWindowHandler? EventWindowHandler { get; private set; }
-        internal HashSet<AtSpiNode> RegisteredChildren => _registeredChildren ??= [];
-        internal bool HasRegisteredChildren => _registeredChildren is { Count: > 0 };
-        internal bool AddRegisteredChild(AtSpiNode child) => RegisteredChildren.Add(child);
-        internal bool RemoveRegisteredChild(AtSpiNode child) => _registeredChildren?.Remove(child) ?? false;
 
         internal void BuildAndRegisterHandlers(
             IDBusConnection connection,
@@ -130,31 +124,10 @@ namespace Avalonia.FreeDesktop.AtSpi
 
         internal static AtSpiNode Create(AutomationPeer peer, AtSpiServer server)
         {
-            var node = peer.GetProvider<IRootProvider>() is not null
+            return peer.GetProvider<IRootProvider>() is not null
                 ? new RootAtSpiNode(peer, server)
                 : new AtSpiNode(peer, server);
-
-            if (server.A11yConnection is { } connection)
-                node.BuildAndRegisterHandlers(connection, server.SyncContext);
-
-            return node;
         }
-
-        [return: NotNullIfNotNull(nameof(peer))]
-        public static AtSpiNode? GetOrCreate(AutomationPeer? peer, AtSpiServer server)
-        {
-            return peer is null ? null : s_nodes.GetValue(peer, p => Create(p, server));
-        }
-
-        public static AtSpiNode? TryGet(AutomationPeer? peer)
-        {
-            if (peer is null)
-                return null;
-            s_nodes.TryGetValue(peer, out var node);
-            return node;
-        }
-
-        public static void Release(AutomationPeer peer) => s_nodes.Remove(peer);
 
         internal static string GetAccessibleName(AutomationPeer peer)
         {
@@ -166,14 +139,77 @@ namespace Avalonia.FreeDesktop.AtSpi
             return string.IsNullOrWhiteSpace(visualTypeName) ? string.Empty : visualTypeName;
         }
 
+        internal void Attach(AtSpiNode? parent)
+        {
+            if (_detached)
+                return;
+
+            if (_attached)
+            {
+                Parent = parent;
+                return;
+            }
+
+            _attached = true;
+            _childrenDirty = true;
+            Parent = parent;
+            Peer.ChildrenChanged += OnPeerChildrenChanged;
+            Peer.PropertyChanged += OnPeerPropertyChanged;
+
+            if (Server.A11yConnection is { } connection)
+                BuildAndRegisterHandlers(connection, Server.SyncContext);
+        }
+
+        internal void SetParent(AtSpiNode? parent) => Parent = parent;
+
+        internal bool RemoveAttachedChild(AtSpiNode child) => _attachedChildren.Remove(child);
+
+        internal IReadOnlyList<AtSpiNode> EnsureChildren()
+        {
+            if (!IsAttached)
+                return Array.Empty<AtSpiNode>();
+
+            if (!_childrenDirty)
+                return _attachedChildren;
+
+            var childPeers = Peer.GetChildren();
+            var nextChildren = new List<AtSpiNode>(childPeers.Count);
+            var nextChildrenSet = new HashSet<AtSpiNode>();
+            foreach (var childPeer in childPeers)
+            {
+                var childNode = Server.GetOrCreateNode(childPeer);
+                if (!Server.AttachNode(childNode, this))
+                    continue;
+
+                nextChildren.Add(childNode);
+                nextChildrenSet.Add(childNode);
+            }
+
+            if (_attachedChildren.Count > 0)
+            {
+                var removed = _attachedChildren.Where(c => !nextChildrenSet.Contains(c)).ToArray();
+                foreach (var removedNode in removed)
+                {
+                    if (ReferenceEquals(removedNode.Parent, this))
+                        Server.DetachSubtreeRecursive(removedNode);
+                }
+            }
+
+            _attachedChildren = nextChildren;
+            _childrenDirty = false;
+            return _attachedChildren;
+        }
+
         public virtual void Detach()
         {
             if (_detached)
                 return;
 
             _detached = true;
-            _registeredChildren?.Clear();
-            _registeredChildren = null;
+            _attached = false;
+            _childrenDirty = true;
+            _attachedChildren.Clear();
+            Parent = null;
             Peer.ChildrenChanged -= OnPeerChildrenChanged;
             Peer.PropertyChanged -= OnPeerPropertyChanged;
             DisposePathRegistration();
@@ -234,34 +270,34 @@ namespace Avalonia.FreeDesktop.AtSpi
 
         private void OnPeerChildrenChanged(object? sender, EventArgs e)
         {
-            if (Server.A11yConnection is null)
+            if (Server.A11yConnection is null || !IsAttached)
                 return;
 
-            // Build the set of current children and ensure they are registered
-            var childPeers = Peer.GetChildren();
-            var newChildren = new HashSet<AtSpiNode>();
-            foreach (var childPeer in childPeers)
-            {
-                var childNode = GetOrCreate(childPeer, Server);
-                if (childNode == null) continue;
-                Server.EnsureNodeRegistered(childNode);
-                newChildren.Add(childNode);
-            }
+            _childrenDirty = true;
 
-            // Diff against previously tracked children to find removals
-            if (HasRegisteredChildren)
+            var childPeers = Peer.GetChildren();
+            if (_attachedChildren.Count > 0)
             {
-                var removedChildren = RegisteredChildren.Except(newChildren).ToArray();
+                var currentPeers = new HashSet<AutomationPeer>(childPeers);
+                var removedChildren = _attachedChildren
+                    .Where(childNode => !currentPeers.Contains(childNode.Peer))
+                    .ToArray();
+
                 foreach (var oldChild in removedChildren)
                 {
-                    Server.RemoveSubtreeRecursive(oldChild);
+                    if (ReferenceEquals(oldChild.Parent, this))
+                        Server.DetachSubtreeRecursive(oldChild);
+                }
+
+                if (removedChildren.Length > 0)
+                {
+                    var removedSet = new HashSet<AtSpiNode>(removedChildren);
+                    _attachedChildren = _attachedChildren
+                        .Where(childNode => !removedSet.Contains(childNode))
+                        .ToList();
                 }
             }
 
-            // Replace the tracked set with the current children
-            RegisteredChildren.UnionWith(newChildren);
-
-            // Emit children-changed event (guarded by event listeners)
             if (!Server.HasEventListeners || EventObjectHandler is not { } eventHandler) return;
             var reference = Server.GetReference(this);
             var childVariant = new DBusVariant(reference.ToDbusStruct());

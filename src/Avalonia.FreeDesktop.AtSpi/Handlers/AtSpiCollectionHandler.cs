@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Automation.Peers;
 using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
 using static Avalonia.FreeDesktop.AtSpi.AtSpiConstants;
@@ -77,14 +76,9 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                     return;
             }
 
-            var children = parent.Peer.GetChildren();
-            foreach (var childPeer in children)
+            var children = parent.EnsureChildren();
+            foreach (var childNode in children)
             {
-                var childNode = AtSpiNode.GetOrCreate(childPeer, server);
-                if (childNode is null)
-                    continue;
-                server.EnsureNodeRegistered(childNode);
-
                 if (MatchesRule(childNode, rule))
                 {
                     results.Add(server.GetReference(childNode));
@@ -105,16 +99,11 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (count > 0 && results.Count >= count)
                 return;
 
-            var children = parent.Peer.GetChildren();
-            foreach (var childPeer in children)
+            var children = parent.EnsureChildren();
+            foreach (var childNode in children)
             {
                 if (count > 0 && results.Count >= count)
                     return;
-
-                var childNode = AtSpiNode.GetOrCreate(childPeer, server);
-                if (childNode is null)
-                    continue;
-                server.EnsureNodeRegistered(childNode);
 
                 if (string.Equals(childNode.Path, targetPath, StringComparison.Ordinal))
                 {

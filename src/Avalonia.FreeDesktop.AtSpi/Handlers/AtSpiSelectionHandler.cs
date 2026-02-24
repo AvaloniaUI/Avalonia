@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.DBus;
 using Avalonia.FreeDesktop.AtSpi.DBusXml;
@@ -26,6 +26,8 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<AtSpiObjectReference> GetSelectedChildAsync(int selectedChildIndex)
         {
+            node.EnsureChildren();
+
             var provider = node.Peer.GetProvider<ISelectionProvider>();
             if (provider is null)
                 return ValueTask.FromResult(server.GetNullReference());
@@ -35,10 +37,10 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                 return ValueTask.FromResult(server.GetNullReference());
 
             var selectedPeer = selection[selectedChildIndex];
-            var childNode = AtSpiNode.GetOrCreate(selectedPeer, server);
-            if (childNode is null)
+            var childNode = server.TryGetAttachedNode(selectedPeer);
+            if (childNode is null || !ReferenceEquals(childNode.Parent, node))
                 return ValueTask.FromResult(server.GetNullReference());
-            server.EnsureNodeRegistered(childNode);
+
             return ValueTask.FromResult(server.GetReference(childNode));
         }
 

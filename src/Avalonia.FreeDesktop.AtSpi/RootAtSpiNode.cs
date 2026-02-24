@@ -48,9 +48,14 @@ namespace Avalonia.FreeDesktop.AtSpi
         private void OnRootFocusChanged(object? sender, EventArgs e)
         {
             var focused = RootProvider.GetFocus();
-            var focusedNode = focused is not null ? GetOrCreate(focused, Server) : null;
-            if (focusedNode is not null)
-                Server.EnsureNodeRegistered(focusedNode);
+            var focusedNode = Server.TryGetAttachedNode(focused);
+            if (focusedNode is null)
+            {
+                // Focus can shift before children are queried;
+                // refresh visible root children lazily.
+                EnsureChildren();
+                focusedNode = Server.TryGetAttachedNode(focused);
+            }
             Server.EmitFocusChange(focusedNode);
         }
 

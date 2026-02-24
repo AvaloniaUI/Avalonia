@@ -28,13 +28,11 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
                     return new AtSpiObjectReference(
                         server.UniqueName, new DBusObjectPath(appRoot.Path));
 
-                var parent = node.Peer.GetParent();
-                var parentNode = AtSpiNode.TryGet(parent);
-                return server.GetReference(parentNode);
+                return server.GetReference(node.Parent);
             }
         }
 
-        public int ChildCount => node.Peer.GetChildren().Count;
+        public int ChildCount => node.EnsureChildren().Count;
 
         public string Locale => ResolveLocale();
 
@@ -44,30 +42,20 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<AtSpiObjectReference> GetChildAtIndexAsync(int index)
         {
-            var children = node.Peer.GetChildren();
-            
-            if (index < 0 || index >= children.Count) 
+            var children = node.EnsureChildren();
+            if (index < 0 || index >= children.Count)
                 return ValueTask.FromResult(server.GetNullReference());
-            
-            var childNode = AtSpiNode.GetOrCreate(children[index], server);
-            if (childNode is null)
-                return ValueTask.FromResult(server.GetNullReference());
-            server.EnsureNodeRegistered(childNode);
-            return ValueTask.FromResult(server.GetReference(childNode));
 
+            return ValueTask.FromResult(server.GetReference(children[index]));
         }
 
         public ValueTask<List<AtSpiObjectReference>> GetChildrenAsync()
         {
-            var children = node.Peer.GetChildren();
+            var children = node.EnsureChildren();
             var refs = new List<AtSpiObjectReference>(children.Count);
             foreach (var child in children)
             {
-                var childNode = AtSpiNode.GetOrCreate(child, server);
-                if (childNode is null)
-                    continue;
-                server.EnsureNodeRegistered(childNode);
-                refs.Add(server.GetReference(childNode));
+                refs.Add(server.GetReference(child));
             }
 
             return ValueTask.FromResult(refs);
@@ -75,13 +63,14 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<int> GetIndexInParentAsync()
         {
-            var parent = node.Peer.GetParent();
+            var parent = node.Parent;
             if (parent is null)
                 return ValueTask.FromResult(-1);
-            var siblings = parent.GetChildren();
+
+            var siblings = parent.EnsureChildren();
             for (var i = 0; i < siblings.Count; i++)
             {
-                if (ReferenceEquals(siblings[i], node.Peer))
+                if (ReferenceEquals(siblings[i], node))
                     return ValueTask.FromResult(i);
             }
 
@@ -95,10 +84,9 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             var labeledBy = node.Peer.GetLabeledBy();
             if (labeledBy is not null)
             {
-                var labelNode = AtSpiNode.GetOrCreate(labeledBy, server);
+                var labelNode = server.TryGetAttachedNode(labeledBy);
                 if (labelNode is not null)
                 {
-                    server.EnsureNodeRegistered(labelNode);
                     // Relation type 2 = LABELLED_BY
                     relations.Add(new AtSpiRelationEntry(2, [server.GetReference(labelNode)]));
                 }

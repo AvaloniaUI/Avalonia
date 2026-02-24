@@ -19,8 +19,10 @@ namespace Avalonia.FreeDesktop.AtSpi
     internal sealed class AtSpiServer : IAsyncDisposable
     {
         private readonly Dictionary<string, AtSpiNode> _nodesByPath = new(StringComparer.Ordinal);
+        private readonly Dictionary<AutomationPeer, AtSpiNode> _nodesByPeer = [];
         private readonly object _embedSync = new();
 
+        private int _nextNodeId;
         private DBusConnection? _a11yConnection;
         private string _uniqueName = string.Empty;
         private SynchronizationContext? _syncContext;
@@ -59,37 +61,25 @@ namespace Avalonia.FreeDesktop.AtSpi
                 _isEmbedded = false;
             }
 
-            // Create a SynchronizationContext that dispatches to the Avalonia UI thread.
             _syncContext = new AvaloniaSynchronizationContext(DispatcherPriority.Normal);
 
-            // Get a11y bus address
             var address = await GetAccessibilityBusAddressAsync();
-            
+
             if (string.IsNullOrWhiteSpace(address))
                 throw new InvalidOperationException("Failed to resolve the accessibility bus address.");
 
-            // Connect to a11y bus
             _a11yConnection = await DBusConnection.ConnectAsync(address);
             _uniqueName = await _a11yConnection.GetUniqueNameAsync() ?? string.Empty;
 
-            // Create detached application root
             _appRoot = new ApplicationAtSpiNode(null);
 
-            // Build and register handlers for app root
             _cacheHandler = new AtSpiCacheHandler();
             await BuildAndRegisterAppRootAsync();
 
-            // Register cache handler path
             await RegisterCachePathAsync();
 
-            // Start tracking registry event listeners in the background so we don't
-            // delay AT-SPI root readiness and initial embed timing.
             _registryTracker = new AtSpiRegistryEventTracker(_a11yConnection);
             _ = InitializeRegistryTrackerAsync(_registryTracker);
-
-            // Attempt embed immediately so AT clients discover us as early as possible.
-            // If this fails, AddWindow keeps retrying through EnsureEmbeddedAndAnnounceAsync.
-            _ = EnsureEmbeddedAndAnnounceAsync();
         }
 
         /// <summary>
@@ -101,20 +91,18 @@ namespace Avalonia.FreeDesktop.AtSpi
                 return;
 
             // Idempotent check
-            var existing = AtSpiNode.TryGet(windowPeer);
-            if (existing is not null && _nodesByPath.ContainsKey(existing.Path))
+            if (TryGetAttachedNode(windowPeer) is RootAtSpiNode)
                 return;
 
-            // Create window node
-            var windowNode = AtSpiNode.GetOrCreate(windowPeer, this) as RootAtSpiNode;
-            if (windowNode is null)
+            if (GetOrCreateNode(windowPeer) is not RootAtSpiNode windowNode)
                 return;
 
             windowNode.AppRoot = _appRoot;
-            RegisterNodeInternal(windowNode);
+            if (!AttachNode(windowNode, parent: null))
+                return;
 
-            // Add as child of app root
-            _appRoot.AddWindowChild(windowNode);
+            if (!_appRoot.WindowChildren.Contains(windowNode))
+                _appRoot.AddWindowChild(windowNode);
 
             var isEmbedded = false;
             lock (_embedSync)
@@ -158,7 +146,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             }
             catch (Exception e)
             {
-                // Embed failed — screen reader won't discover us.
+                // Embed failed - screen reader won't discover us.
                 // Reset so the next AddWindow retries.
                 Logger.TryGet(LogEventLevel.Warning, LogArea.FreeDesktopPlatform)?
                     .Log(this, "AT-SPI embed failed; will retry when windows are added: {0}", e);
@@ -204,7 +192,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (_a11yConnection is null || _appRoot is null)
                 return;
 
-            var windowNode = AtSpiNode.TryGet(windowPeer) as RootAtSpiNode;
+            var windowNode = TryGetAttachedNode(windowPeer) as RootAtSpiNode;
             if (windowNode is null)
                 return;
 
@@ -217,25 +205,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 eventHandler.EmitChildrenChangedSignal("remove", index, childVariant);
             }
 
-            RemoveSubtreeRecursive(windowNode);
-        }
-
-        /// <summary>
-        /// Ensures a node is registered in the tree (idempotent).
-        /// Called after <see cref="AtSpiNode.GetOrCreate"/> to lazily register new nodes.
-        /// Re-registers the D-Bus path with updated handlers in case the peer's
-        /// supported interfaces have changed since initial registration.
-        /// </summary>
-        internal void EnsureNodeRegistered(AtSpiNode node)
-        {
-            if (_nodesByPath.ContainsKey(node.Path))
-            {
-                if (_a11yConnection is not null)
-                    node.BuildAndRegisterHandlers(_a11yConnection, _syncContext);
-                return;
-            }
-
-            RegisterNodeInternal(node);
+            DetachSubtreeRecursive(windowNode);
         }
 
         public async ValueTask DisposeAsync()
@@ -249,8 +219,10 @@ namespace Avalonia.FreeDesktop.AtSpi
             _registryTracker?.Dispose();
             _registryTracker = null;
 
-            // Dispose all D-Bus registrations before the connection
-            foreach (var node in _nodesByPath.Values)
+            var nodes = _nodesByPath.Values.ToArray();
+
+            // Dispose all D-Bus registrations before the connection.
+            foreach (var node in nodes)
             {
                 await node.DisposePathRegistrationAsync();
             }
@@ -266,7 +238,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 _a11yConnection = null;
             }
 
-            foreach (var node in _nodesByPath.Values.ToArray())
+            foreach (var node in nodes)
                 ReleaseNode(node);
 
             _uniqueName = string.Empty;
@@ -274,12 +246,15 @@ namespace Avalonia.FreeDesktop.AtSpi
             _appRoot = null;
             _appRootEventHandler = null;
             _nodesByPath.Clear();
+            _nodesByPeer.Clear();
         }
 
         internal AtSpiObjectReference GetReference(AtSpiNode? node)
         {
-            return node is null ? GetNullReference() : 
-                new AtSpiObjectReference(_uniqueName, new DBusObjectPath(node.Path));
+            if (node is null || !node.IsAttached || !_nodesByPath.ContainsKey(node.Path))
+                return GetNullReference();
+
+            return new AtSpiObjectReference(_uniqueName, new DBusObjectPath(node.Path));
         }
 
         internal AtSpiObjectReference GetNullReference()
@@ -300,9 +275,9 @@ namespace Avalonia.FreeDesktop.AtSpi
             if (windowNode.EventObjectHandler is { } eventHandler)
                 eventHandler.EmitStateChangedSignal("active", active ? 1 : 0, new DBusVariant(0));
 
-            if (windowNode.EventWindowHandler is not { } windowHandler) 
+            if (windowNode.EventWindowHandler is not { } windowHandler)
                 return;
-            
+
             if (active)
                 windowHandler.EmitActivateSignal();
             else
@@ -315,20 +290,101 @@ namespace Avalonia.FreeDesktop.AtSpi
                 return;
 
             if (focusedNode.EventObjectHandler is { } eventHandler)
-            {
                 eventHandler.EmitStateChangedSignal("focused", 1, new DBusVariant(0));
-            }
         }
 
-        // Node registration
-
-        /// <summary>
-        /// Registers a node in _nodesByPath, builds handlers, and registers D-Bus path.
-        /// </summary>
-        private void RegisterNodeInternal(AtSpiNode node)
+        internal string AllocateNodePath()
         {
+            return $"{AppPathPrefix}/{Interlocked.Increment(ref _nextNodeId)}";
+        }
+
+        internal AtSpiNode GetOrCreateNode(AutomationPeer peer)
+        {
+            if (_nodesByPeer.TryGetValue(peer, out var node))
+                return node;
+
+            node = AtSpiNode.Create(peer, this);
+            _nodesByPeer[peer] = node;
+            return node;
+        }
+
+        internal AtSpiNode? TryGetNode(AutomationPeer? peer)
+        {
+            if (peer is null)
+                return null;
+
+            _nodesByPeer.TryGetValue(peer, out var node);
+            return node;
+        }
+
+        internal AtSpiNode? TryGetAttachedNode(AutomationPeer? peer)
+        {
+            var node = TryGetNode(peer);
+            return node is { IsAttached: true } && _nodesByPath.ContainsKey(node.Path) ? node : null;
+        }
+
+        internal bool AttachNode(AtSpiNode node, AtSpiNode? parent)
+        {
+            if (_a11yConnection is null)
+                return false;
+
+            if (parent is not null && !parent.IsAttached)
+                return false;
+
+            if (node.IsAttached)
+            {
+                if (!ReferenceEquals(node.Parent, parent))
+                {
+                    node.Parent?.RemoveAttachedChild(node);
+                    node.SetParent(parent);
+                }
+
+                node.BuildAndRegisterHandlers(_a11yConnection, _syncContext);
+                _nodesByPath[node.Path] = node;
+                return true;
+            }
+
+            node.Attach(parent);
+            if (!node.IsAttached)
+                return false;
+
             _nodesByPath[node.Path] = node;
-            TrackChildInParent(node);
+            return true;
+        }
+
+        internal void DetachSubtreeRecursive(AtSpiNode rootNode)
+        {
+            var toRemove = new List<AtSpiNode>();
+            CollectSubtree(rootNode, toRemove);
+            RemoveNodes(toRemove, emitDefunct: true);
+        }
+
+        private static void CollectSubtree(AtSpiNode node, List<AtSpiNode> result)
+        {
+            foreach (var child in node.AttachedChildren.ToArray())
+                CollectSubtree(child, result);
+
+            result.Add(node);
+        }
+
+        private void RemoveNodes(IEnumerable<AtSpiNode> nodes, bool emitDefunct)
+        {
+            foreach (var node in nodes)
+            {
+                if (!node.IsAttached || !_nodesByPath.ContainsKey(node.Path))
+                    continue;
+
+                if (emitDefunct && HasEventListeners && node.EventObjectHandler is { } eventHandler)
+                    eventHandler.EmitStateChangedSignal("defunct", 1, new DBusVariant("0"));
+
+                _nodesByPath.Remove(node.Path);
+                node.Parent?.RemoveAttachedChild(node);
+
+                if (node is RootAtSpiNode rootNode)
+                    _appRoot?.RemoveWindowChild(rootNode);
+
+                ReleaseNode(node);
+            }
         }
 
         private async Task BuildAndRegisterAppRootAsync()
@@ -404,85 +460,10 @@ namespace Avalonia.FreeDesktop.AtSpi
             }
         }
 
-        private void TrackChildInParent(AtSpiNode childNode)
-        {
-            try
-            {
-                var parentPeer = childNode.Peer.GetParent();
-                if (parentPeer is null)
-                    return;
-
-                var parentNode = AtSpiNode.TryGet(parentPeer);
-                if (parentNode is not null && _nodesByPath.ContainsKey(parentNode.Path))
-                    parentNode.AddRegisteredChild(childNode);
-            }
-            catch (Exception e)
-            {
-                // Parent peer may be defunct
-                Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
-                    .Log(childNode, "AT-SPI parent tracking skipped due to defunct parent peer: {0}", e);
-            }
-        }
-
-        private void RemoveFromParentTracking(AtSpiNode node)
-        {
-            try
-            {
-                var parentPeer = node.Peer.GetParent();
-                if (parentPeer is not null)
-                    AtSpiNode.TryGet(parentPeer)?.RemoveRegisteredChild(node);
-            }
-            catch (Exception e)
-            {
-                // Parent peer may be defunct
-                Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
-                    .Log(node, "AT-SPI parent untracking skipped due to defunct parent peer: {0}", e);
-            }
-        }
-
-        internal void RemoveSubtreeRecursive(AtSpiNode rootNode)
-        {
-            var toRemove = new List<AtSpiNode>();
-            CollectSubtree(rootNode, toRemove);
-            RemoveNodes(toRemove, emitDefunct: true);
-        }
-
-        private static void CollectSubtree(AtSpiNode node, List<AtSpiNode> result)
-        {
-            if (node.HasRegisteredChildren)
-            {
-                foreach (var child in node.RegisteredChildren)
-                    CollectSubtree(child, result);
-            }
-
-            result.Add(node);
-        }
-
-        private void RemoveNodes(IEnumerable<AtSpiNode> nodes, bool emitDefunct)
-        {
-            foreach (var node in nodes)
-            {
-                if (!_nodesByPath.ContainsKey(node.Path))
-                    continue;
-
-                if (emitDefunct && HasEventListeners && node.EventObjectHandler is { } eventHandler)
-                    eventHandler.EmitStateChangedSignal("defunct", 1, new DBusVariant("0"));
-
-                _nodesByPath.Remove(node.Path);
-                RemoveFromParentTracking(node);
-
-                if (node is RootAtSpiNode rootNode)
-                    _appRoot?.RemoveWindowChild(rootNode);
-
-                ReleaseNode(node);
-            }
-        }
-
-        private static void ReleaseNode(AtSpiNode node)
+        private void ReleaseNode(AtSpiNode node)
         {
             node.Detach();
-            AtSpiNode.Release(node.Peer);
+            _nodesByPeer.Remove(node.Peer);
         }
-
     }
 }

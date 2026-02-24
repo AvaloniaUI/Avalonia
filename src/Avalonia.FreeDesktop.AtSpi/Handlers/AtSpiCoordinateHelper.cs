@@ -1,5 +1,3 @@
-using Avalonia.Automation.Peers;
-
 namespace Avalonia.FreeDesktop.AtSpi.Handlers
 {
     /// <summary>
@@ -18,7 +16,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (root is null) 
                 return bounds;
 
-            if (AtSpiNode.TryGet(root) is RootAtSpiNode rootNode2)
+            if (node.Server.TryGetAttachedNode(root) is RootAtSpiNode rootNode2)
                 return rootNode2.ToScreen(bounds);
 
             return bounds;
@@ -60,7 +58,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             var root = node.Peer.GetVisualRoot();
             if (root is null) return default;
 
-            if (AtSpiNode.TryGet(root) is RootAtSpiNode rootNode)
+            if (node.Server.TryGetAttachedNode(root) is RootAtSpiNode rootNode)
                 return rootNode.ToScreen(root.GetBoundingRectangle());
 
             return default;
@@ -75,7 +73,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             var root = parent.GetVisualRoot();
             if (root is null)
                 return bounds;
-            var rootNode = AtSpiNode.TryGet(root) as RootAtSpiNode;
+            var rootNode = node.Server.TryGetAttachedNode(root) as RootAtSpiNode;
             return rootNode?.ToScreen(bounds) ?? bounds;
         }
     }
