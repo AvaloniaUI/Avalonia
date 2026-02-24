@@ -392,9 +392,7 @@ namespace Avalonia.Controls
                     {
                         if (e.OldStartingIndex <= _scrollToIndex && _scrollToIndex < e.OldStartingIndex + e.OldItems!.Count)
                         {
-                            RecycleElementOnItemRemoved(_scrollToElement);
-                            _scrollToElement = null;
-                            _scrollToIndex = -1;
+                            RecycleScrollToElement();
                         }
                         else if (e.OldStartingIndex < _scrollToIndex)
                         {
@@ -409,9 +407,7 @@ namespace Avalonia.Controls
                     }
                     if (_scrollToElement is not null && e.OldStartingIndex <= _scrollToIndex && _scrollToIndex < e.OldStartingIndex + e.OldItems!.Count)
                     {
-                        RecycleElementOnItemRemoved(_scrollToElement);
-                        _scrollToElement = null;
-                        _scrollToIndex = -1;
+                        RecycleScrollToElement();
                     }
                     break;
                 case NotifyCollectionChangedAction.Move:
@@ -482,9 +478,7 @@ namespace Avalonia.Controls
                     }
                     if (_scrollToElement is not null)
                     {
-                        RecycleElementOnItemRemoved(_scrollToElement);
-                        _scrollToElement = null;
-                        _scrollToIndex = -1;
+                        RecycleScrollToElement();
                     }
                     break;
             }
@@ -507,8 +501,7 @@ namespace Avalonia.Controls
             }
             if (_scrollToElement is not null)
             {
-                RecycleElementOnItemRemoved(_scrollToElement);
-                _scrollToElement = null;
+                RecycleScrollToElement();
             }
             _focusedIndex = -1;
             _scrollToIndex = -1;
@@ -1104,6 +1097,16 @@ namespace Avalonia.Controls
             }
             _focusedElement = null;
             _focusedIndex = -1;
+        }
+        
+        private void RecycleScrollToElement()
+        {
+            if (_scrollToElement != null)
+            {
+                RecycleElementOnItemRemoved(_scrollToElement);
+            }
+            _scrollToElement = null;
+            _scrollToIndex = -1;
         }
         
         private void PushToRecyclePool(object recycleKey, Control element)
