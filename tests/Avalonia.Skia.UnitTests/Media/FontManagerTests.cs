@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Fonts.Inter;
-using Avalonia.Headless;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.TextFormatting.Unicode;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
 using SkiaSharp;
 using Xunit;
@@ -492,6 +493,54 @@ namespace Avalonia.Skia.UnitTests.Media
                     var typeface = new Typeface(string.Empty);
                     Assert.NotNull(typeface.FontFamily);
                 }
+            }
+        }
+
+        [Fact]
+        public void TryGetGlyphTypeface_Should_Return_False_For_Font_Without_Supported_Cmap()
+        {
+            const string fontUri = "resm:Avalonia.Skia.UnitTests.Fonts.TestFontNoCmap412.ttf?assembly=Avalonia.Skia.UnitTests#TestFontNoCmap412";
+
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl()));
+            using var scope = AvaloniaLocator.EnterScope();
+
+            // Skia can load the font
+            AssertCanCreatePlatformTypeface();
+
+            // But Avalonia can't, because it has no supported cmap subtable
+            AssertCannotCreateGlyphTypeface();
+
+            void AssertCanCreatePlatformTypeface()
+            {
+                var fontManagerImpl = AvaloniaLocator.Current.GetRequiredService<IFontManagerImpl>();
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+                using var stream = assetLoader.Open(new Uri(fontUri));
+
+                Assert.True(fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface));
+                Assert.NotNull(platformTypeface);
+                Assert.Equal("TestFontNoCmap412", platformTypeface.FamilyName);
+            }
+
+            void AssertCannotCreateGlyphTypeface()
+            {
+                string? loggedTemplate = null;
+                object?[] loggedValues = [];
+
+                using var logSinkScope = TestLogSink.Start((level, area, _, template, values) =>
+                {
+                    if (level == LogEventLevel.Warning && area == LogArea.Fonts)
+                    {
+                        loggedTemplate = template;
+                        loggedValues = values;
+                    }
+                });
+
+                Assert.False(FontManager.Current.TryGetGlyphTypeface(new Typeface(fontUri), out _));
+                Assert.Equal(loggedTemplate, "Could not create glyph typeface from platform typeface named {FamilyName} with simulations {Simulations}: {Exception}");
+                Assert.Equal(3, loggedValues.Length);
+                Assert.Equal("TestFontNoCmap412", Assert.IsType<string>(loggedValues[0]));
+                Assert.Equal("No suitable cmap subtable found.", Assert.IsType<InvalidOperationException>(loggedValues[2]).Message);
             }
         }
     }
