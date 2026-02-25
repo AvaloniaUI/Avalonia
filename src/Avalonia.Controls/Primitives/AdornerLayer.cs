@@ -54,7 +54,7 @@ namespace Avalonia.Controls.Primitives
             IsClipEnabledProperty.Changed.Subscribe(AdornerIsClipEnabledChanged);
         }
 
-        internal AdornerLayer()
+        public AdornerLayer()
         {
             Children.CollectionChanged += ChildrenCollectionChanged;
             _trackingHelper.SetVisual(this);
