@@ -200,6 +200,7 @@ namespace Avalonia.Controls
 
             if (change.Property == IsVisibleProperty)
             {
+                VisualRoot?.IsVisible = change.GetNewValue<bool>();
                 IsVisibleChanged(change);
             }
         }
