@@ -4,7 +4,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class OverlayLayer : Canvas
+    internal class OverlayLayer : Canvas
     {
         protected override bool BypassFlowDirectionPolicies => true;
         public Size AvailableSize { get; private set; }
