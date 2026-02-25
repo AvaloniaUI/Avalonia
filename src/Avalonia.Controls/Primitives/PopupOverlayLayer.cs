@@ -3,22 +3,22 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class OverlayLayer : Canvas
+    public class PopupOverlayLayer : Canvas
     {
         protected override bool BypassFlowDirectionPolicies => true;
 
         public Size AvailableSize { get; private set; }
 
-        public static OverlayLayer? GetOverlayLayer(Visual visual)
+        public static PopupOverlayLayer? GetPopupOverlayLayer(Visual visual)
         {
             foreach (var v in visual.GetVisualAncestors())
-                if (v is VisualLayerManager { OverlayLayer: { } layer })
+                if (v is VisualLayerManager { PopupOverlayLayer: { } layer })
                     return layer;
 
             if (TopLevel.GetTopLevel(visual) is { } tl)
             {
                 var layers = tl.GetVisualDescendants().OfType<VisualLayerManager>().FirstOrDefault();
-                return layers?.OverlayLayer;
+                return layers?.PopupOverlayLayer;
             }
 
             return null;

@@ -39,7 +39,7 @@ namespace Avalonia.Controls.UnitTests
             _toolTipOpenSubscription = ToolTip.IsOpenProperty.Changed.Subscribe(new AnonymousObserver<AvaloniaPropertyChangedEventArgs<bool>>(e =>
             {
                 if (e.Sender is Visual visual && TopLevel.GetTopLevel(visual) is {} root)
-                    OverlayLayer.GetOverlayLayer(visual)?.Measure(root.ClientSize);
+                    PopupOverlayLayer.GetPopupOverlayLayer(visual)?.Measure(root.ClientSize);
             }));
         }
 
