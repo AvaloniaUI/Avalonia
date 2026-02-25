@@ -312,7 +312,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="size">The requested size of the window.</param>
         /// <returns>The actual size of the window.</returns>
-        protected virtual Size ArrangeSetBounds(Size size) => size;
+        private protected virtual Size ArrangeSetBounds(Size size) => size;
 
         /// <summary>
         /// Handles a window position change notification from 
