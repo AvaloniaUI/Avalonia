@@ -15,6 +15,9 @@
           <Border Background="{TemplateBinding Background}" IsHitTestVisible="False" />
           <Panel Background="Transparent" Margin="{TemplateBinding WindowDecorationMargin}" />
           <VisualLayerManager>
+            <VisualLayerManager.ChromeOverlayLayer>
+              <TitleBar />
+            </VisualLayerManager.ChromeOverlayLayer>
             <ContentPresenter Name="PART_ContentPresenter"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
                               Content="{TemplateBinding Content}"
