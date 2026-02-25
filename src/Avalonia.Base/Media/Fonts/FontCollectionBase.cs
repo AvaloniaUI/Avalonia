@@ -134,7 +134,9 @@ namespace Avalonia.Media.Fonts
                 {
                     if (_fontManagerImpl.TryCreateGlyphTypeface(stream, fontSimulations, out var platformTypeface))
                     {
-                        syntheticGlyphTypeface = new GlyphTypeface(platformTypeface, fontSimulations);
+                        syntheticGlyphTypeface = GlyphTypeface.TryCreate(platformTypeface, fontSimulations);
+                        if (syntheticGlyphTypeface is null)
+                            return false;
 
                         //Add the TypographicFamilyName to the cache
                         if (!string.IsNullOrEmpty(glyphTypeface.TypographicFamilyName))
@@ -278,16 +280,14 @@ namespace Avalonia.Media.Fonts
         /// langword="false"/>.</returns>
         public bool TryAddGlyphTypeface(Stream stream, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
-            glyphTypeface = null;
-
             if (!_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface))
             {
+                glyphTypeface = null;
                 return false;
             }
 
-            glyphTypeface = new GlyphTypeface(platformTypeface);
-
-            return TryAddGlyphTypeface(glyphTypeface);
+            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface);
+            return glyphTypeface is not null && TryAddGlyphTypeface(glyphTypeface);
         }
 
         /// <summary>
@@ -321,12 +321,11 @@ namespace Avalonia.Media.Fonts
                         {
                             var stream = _assetLoader.Open(fontAsset);
 
-                            if (!_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface))
+                            if (!_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface) ||
+                                GlyphTypeface.TryCreate(platformTypeface) is not { } glyphTypeface)
                             {
                                 continue;
                             }
-
-                            var glyphTypeface = new GlyphTypeface(platformTypeface);
 
                             var key = glyphTypeface.ToFontCollectionKey();
 
@@ -359,14 +358,11 @@ namespace Avalonia.Media.Fonts
 
                             using var stream = File.OpenRead(source.LocalPath);
 
-                            if (_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface))
+                            if (_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface) &&
+                                GlyphTypeface.TryCreate(platformTypeface) is { } glyphTypeface &&
+                                TryAddGlyphTypeface(glyphTypeface))
                             {
-                                var glyphTypeface = new GlyphTypeface(platformTypeface);
-
-                                if (TryAddGlyphTypeface(glyphTypeface))
-                                {
-                                    result = true;
-                                }
+                                result = true;
                             }
                         }
                         // If the path is a directory, load all font files from that directory
@@ -383,14 +379,11 @@ namespace Avalonia.Media.Fonts
                                 {
                                     using var stream = File.OpenRead(file);
 
-                                    if (_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface))
+                                    if (_fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface) &&
+                                        GlyphTypeface.TryCreate(platformTypeface) is { } glyphTypeface &&
+                                        TryAddGlyphTypeface(glyphTypeface))
                                     {
-                                        var glyphTypeface = new GlyphTypeface(platformTypeface);
-
-                                        if (TryAddGlyphTypeface(glyphTypeface))
-                                        {
-                                            result = true;
-                                        }
+                                        result = true;
                                     }
                                 }
                             }
