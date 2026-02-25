@@ -268,8 +268,8 @@ namespace Avalonia.X11
                     : Task.FromResult<IStorageProvider?>(null),
                 () => GtkSystemDialog.TryCreate(this),
                 // TODO: This will be incompatible with "root element is not a TopLevel" scenarios,
-                // we should probably have a separate API for this
-                () => Task.FromResult(InputRoot.RootElement is TopLevel tl
+                // HACK: this relies on focus root being TopLevel which currently is true
+                () => Task.FromResult(InputRoot.FocusRoot is TopLevel tl
                     ? (IStorageProvider?)new ManagedStorageProvider(tl)
                     : null)
             });

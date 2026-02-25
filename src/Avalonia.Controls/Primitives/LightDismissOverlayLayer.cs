@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A layer that is used to dismiss a <see cref="Popup"/> when the user clicks outside.
     /// </summary>
-    public class LightDismissOverlayLayer : Border, ICustomHitTest
+    internal class LightDismissOverlayLayer : Border, ICustomHitTest
     {
         public IInputElement? InputPassThroughElement { get; set; }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.CompilerServices;
+using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Cmap;
@@ -114,6 +114,9 @@ namespace Avalonia.Media
 
             HeadTable.TryLoad(this, out var headTable);
 
+            IsLastResort = (headTable is not null && (headTable.Flags & HeadFlags.LastResortFont) != 0) ||
+                           _cmapTable.Format == CmapFormat.Format13;
+
             var postTable = PostTable.Load(this);
 
             var isFixedPitch = postTable.IsFixedPitch;
@@ -219,6 +222,25 @@ namespace Avalonia.Media
                 {
                     return CultureInfo.InvariantCulture;
                 }
+            }
+        }
+
+        internal static GlyphTypeface? TryCreate(IPlatformTypeface typeface, FontSimulations fontSimulations = FontSimulations.None)
+        {
+            try
+            {
+                return new GlyphTypeface(typeface, fontSimulations);
+            }
+            catch (Exception ex)
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Fonts)?.Log(
+                    null,
+                    "Could not create glyph typeface from platform typeface named {FamilyName} with simulations {Simulations}: {Exception}",
+                    typeface.FamilyName,
+                    fontSimulations,
+                    ex);
+
+                return null;
             }
         }
 
@@ -334,6 +356,11 @@ namespace Avalonia.Media
                 return _textShaperTypeface;
             }
         }
+
+        /// <summary>
+        /// Gets whether the font should be used as a last resort, if no other fonts matched.
+        /// </summary>
+        internal bool IsLastResort { get; }
 
         /// <summary>
         /// Attempts to retrieve the horizontal advance width for the specified glyph.

@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Primitives
         static OverlayPopupHost()
             => KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<OverlayPopupHost>(KeyboardNavigationMode.Cycle);
 
-        public OverlayPopupHost(OverlayLayer overlayLayer)
+        internal OverlayPopupHost(OverlayLayer overlayLayer)
         {
             _overlayLayer = overlayLayer;
             _positioner = new ManagedPopupPositioner(this);
@@ -41,7 +41,7 @@ namespace Avalonia.Controls.Primitives
 
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", Justification = "Explicit set")]
-        public void SetChild(Control? control)
+        void IPopupHost.SetChild(Control? control)
         {
             Content = control;
         }
@@ -86,7 +86,7 @@ namespace Avalonia.Controls.Primitives
             _overlayLayer.Children.Remove(this);
         }
 
-        public void TakeFocus()
+        void IPopupHost.TakeFocus()
         {
             // Nothing to do here: overlay popups are implemented inside the window.
         }
@@ -150,9 +150,8 @@ namespace Avalonia.Controls.Primitives
         }
 
         double IManagedPopupPositionerPopup.Scaling => 1;
-
-        [PrivateApi]
-        public static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver, bool shouldUseOverlayLayer)
+        
+        internal static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver, bool shouldUseOverlayLayer)
         {
             if (!shouldUseOverlayLayer)
             {

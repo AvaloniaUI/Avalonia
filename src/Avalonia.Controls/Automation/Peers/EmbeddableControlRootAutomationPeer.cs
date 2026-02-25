@@ -58,8 +58,8 @@ namespace Avalonia.Controls.Automation.Peers
         {
             var oldFocus = _focus;
             var c = focus as Control;
-
-            _focus = c?.VisualRoot == Owner ? c : null;
+            
+            _focus = Owner.IsVisualAncestorOf(c) ? c : null;
 
             if (_focus != oldFocus)
             {
@@ -89,5 +89,7 @@ namespace Avalonia.Controls.Automation.Peers
             Owner.Closed -= OnClosed;
             StopTrackingFocus();
         }
+
+        private protected override Visual? GetVisualParent() => null;
     }
 }
