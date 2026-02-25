@@ -2279,25 +2279,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Sorts row/column indices by rounding error if layout rounding is applied.
-        /// </summary>
-        /// <param name="x">Index, rounding error pair</param>
-        /// <param name="y">Index, rounding error pair</param>
-        /// <returns>1 if x.Value > y.Value, 0 if equal, -1 otherwise</returns>
-        private static int CompareRoundingErrors(KeyValuePair<int, double> x, KeyValuePair<int, double> y)
-        {
-            if (x.Value < y.Value)
-            {
-                return -1;
-            }
-            else if (x.Value > y.Value)
-            {
-                return 1;
-            }
-            return 0;
-        }
-
-        /// <summary>
         /// Calculates final (aka arrange) size for given range.
         /// </summary>
         /// <param name="definitions">Array of definitions to process.</param>
@@ -2979,88 +2960,6 @@ namespace Avalonia.Controls
                             result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
                         }
                     }
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// StarDistributionOrderIndexComparer.
-        /// </summary>
-        private class StarDistributionOrderIndexComparer : IComparer
-        {
-            private readonly IReadOnlyList<DefinitionBase> definitions;
-
-            internal StarDistributionOrderIndexComparer(IReadOnlyList<DefinitionBase> definitions)
-            {
-                this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
-            }
-
-            public int Compare(object? x, object? y)
-            {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                DefinitionBase? definitionX = null;
-                DefinitionBase? definitionY = null;
-
-                if (indexX != null)
-                {
-                    definitionX = definitions[indexX.Value];
-                }
-                if (indexY != null)
-                {
-                    definitionY = definitions[indexY.Value];
-                }
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// DistributionOrderComparer.
-        /// </summary>
-        private class DistributionOrderIndexComparer : IComparer
-        {
-            private readonly IReadOnlyList<DefinitionBase> definitions;
-
-            internal DistributionOrderIndexComparer(IReadOnlyList<DefinitionBase> definitions)
-            {
-                this.definitions = definitions ?? throw new ArgumentNullException(nameof(definitions));
-            }
-
-            public int Compare(object? x, object? y)
-            {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                DefinitionBase? definitionX = null;
-                DefinitionBase? definitionY = null;
-
-                if (indexX != null)
-                {
-                    definitionX = definitions[indexX.Value];
-                }
-                if (indexY != null)
-                {
-                    definitionY = definitions[indexY.Value];
-                }
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    double xprime = definitionX.SizeCache - definitionX.MinSizeForArrange;
-                    double yprime = definitionY.SizeCache - definitionY.MinSizeForArrange;
-                    result = xprime.CompareTo(yprime);
                 }
 
                 return result;
