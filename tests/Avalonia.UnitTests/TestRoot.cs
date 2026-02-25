@@ -80,6 +80,7 @@ namespace Avalonia.UnitTests
         public IInputElement? PointerOverElement { get; set; }
         public ITextInputMethodImpl? InputMethod { get; }
         public InputElement RootElement => this;
+        public InputElement FocusRoot => this;
 
         public bool ShowAccessKeys { get; set; }
 

@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Buffers.Binary;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.Fonts.Tables.Cmap
 {
-    internal sealed class CmapFormat12Table
+    internal sealed class CmapFormat12Or13Table
     {
         private readonly ReadOnlyMemory<byte> _table;
         private readonly int _groupCount;
         private readonly ReadOnlyMemory<byte> _groups;
+
+        public CmapFormat Format { get; }
 
         /// <summary>
         /// Gets the language code for the cmap subtable.
@@ -19,12 +19,13 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         /// </summary>
         public uint Language { get; }
 
-        public CmapFormat12Table(ReadOnlyMemory<byte> table)
+        public CmapFormat12Or13Table(ReadOnlyMemory<byte> table)
         {
             var reader = new BigEndianBinaryReader(table.Span);
 
             ushort format = reader.ReadUInt16();
-            Debug.Assert(format == 12, "Format must be 12.");
+            Debug.Assert(format is 12 or 13, "Format must be 12 or 13.");
+            Format = (CmapFormat)format;
 
             ushort reserved = reader.ReadUInt16();
             Debug.Assert(reserved == 0, "Reserved field must be 0.");
@@ -101,7 +102,7 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
                 // Optimization: check if codepoint is in the same group as previous
                 if (lastGroup >= 0 && codePoint >= lastStart && codePoint <= lastEnd)
                 {
-                    glyphIds[i] = (ushort)(lastStartGlyph + (codePoint - lastStart));
+                    glyphIds[i] = CalcEffectiveGlyph(codePoint, lastStart, lastStartGlyph);
                     continue;
                 }
 
@@ -122,27 +123,13 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
                 lastEnd = ReadUInt32BE(groups, groupIndex, 4);
                 lastStartGlyph = ReadUInt32BE(groups, groupIndex, 8);
 
-                glyphIds[i] = (ushort)(lastStartGlyph + (codePoint - lastStart));
+                glyphIds[i] = CalcEffectiveGlyph(codePoint, lastStart, lastStartGlyph);
             }
         }
 
         public bool TryGetGlyph(int codePoint, out ushort glyphId)
         {
-            int groupIndex = FindGroupIndex(codePoint);
-
-            if (groupIndex < 0)
-            {
-                glyphId = 0;
-                return false;
-            }
-
-            var groups = _groups.Span;
-
-            uint start = ReadUInt32BE(groups, groupIndex, 0);
-            uint startGlyph = ReadUInt32BE(groups, groupIndex, 8);
-
-            glyphId = (ushort)(startGlyph + (codePoint - start));
-
+            glyphId = this[codePoint];
             return glyphId != 0;
         }
 
@@ -180,10 +167,21 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
                 uint start = ReadUInt32BE(groups, groupIndex, 0);
                 uint startGlyph = ReadUInt32BE(groups, groupIndex, 8);
-
-                // Calculate glyph index
-                return (ushort)(startGlyph + (codePoint - start));
+                return CalcEffectiveGlyph(codePoint, start, startGlyph);
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ushort CalcEffectiveGlyph(int codePoint, uint start, uint startGlyph)
+        {
+            // Format 13, all codepoints in the group map to a single glyph
+            if (Format == CmapFormat.Format13)
+            {
+                return (ushort)startGlyph;
+            }
+
+            // Format 12, calculate glyph index
+            return (ushort)(startGlyph + (codePoint - start));
         }
 
         // Optimized binary search that works directly with cached span

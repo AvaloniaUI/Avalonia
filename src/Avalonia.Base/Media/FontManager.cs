@@ -199,7 +199,7 @@ namespace Avalonia.Media
                     return true;
                 }
 
-                var logger = Logger.TryGet(LogEventLevel.Debug, "FontManager");
+                var logger = Logger.TryGet(LogEventLevel.Debug, LogArea.Fonts);
 
                 logger?.Log(this,
                     $"Font family '{familyName}' could not be found. Present font families: [{string.Join(",", fontCollection)}]");
