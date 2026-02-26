@@ -114,6 +114,29 @@ namespace ControlCatalog.Pages
                 }
             });
 
+            control.AddHandler(Gestures.PointerTouchPadGestureMagnifyEvent, (s, e) =>
+            {
+                const double scalingStep = 0.05;
+
+                InitComposition(control!);
+                if (compositionVisual != null)
+                {
+                    var scale = _currentScale + ((float)e.Delta.Y * scalingStep);
+
+                    if (scale <= 1)
+                    {
+                        scale = 1;
+                        compositionVisual.Offset = default;
+                    }
+
+                    compositionVisual.Scale = new(scale, scale, 1);
+
+                    _currentScale = scale;
+
+                    e.Handled = true;
+                }
+            });
+
             control.AddHandler(Gestures.PinchEndedEvent, (s, e) =>
             {
                 InitComposition(control!);

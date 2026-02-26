@@ -224,7 +224,7 @@ namespace Avalonia.Win32
                     }
 
                     var requestIcon = (Icons)wParam;
-                    var requestDpi = (uint) lParam;
+                    var requestDpi = (uint)lParam;
 
                     if (requestDpi == 0)
                     {
@@ -411,13 +411,22 @@ namespace Avalonia.Win32
                         {
                             break;
                         }
-                        e = new RawMouseWheelEventArgs(
-                            _mouseDevice,
-                            timestamp,
-                            Owner,
-                            PointToClient(PointFromLParam(lParam)),
-                            new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta),
-                            GetMouseModifiers(wParam));
+                        var modifiers = GetMouseModifiers(wParam);
+                        e = modifiers == RawInputModifiers.Control ?
+                            new RawPointerGestureEventArgs(_mouseDevice,
+                                timestamp,
+                                Owner,
+                                RawPointerEventType.Magnify,
+                                PointToClient(PointFromLParam(lParam)),
+                                new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta),
+                                modifiers) :
+                            new RawMouseWheelEventArgs(
+                                _mouseDevice,
+                                timestamp,
+                                Owner,
+                                PointToClient(PointFromLParam(lParam)),
+                                new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta),
+                                modifiers);
                         break;
                     }
 
@@ -453,7 +462,6 @@ namespace Avalonia.Win32
                             WindowsKeyboardDevice.Instance.Modifiers);
                         break;
                     }
-
                 // covers WM_CANCELMODE which sends WM_CAPTURECHANGED in DefWindowProc
                 case WindowsMessage.WM_CAPTURECHANGED:
                     {
@@ -946,7 +954,7 @@ namespace Avalonia.Win32
                     break;
                 case WindowsMessage.WM_WINDOWPOSCHANGED:
                     var winPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
-                    if((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
+                    if ((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
                     {
                         OnShowHideMessage(true);
                     }
@@ -973,7 +981,7 @@ namespace Avalonia.Win32
 
                 if (message == WindowsMessage.WM_KEYDOWN)
                 {
-                    if(e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
+                    if (e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
                     {
                         _ignoreWmChar = true;
                     }
@@ -1118,7 +1126,7 @@ namespace Avalonia.Win32
                     var x = mp.x > 32767 ? mp.x - 65536 : mp.x;
                     var y = mp.y > 32767 ? mp.y - 65536 : mp.y;
 
-                    if(mp.time <= prevMovePoint.time || mp.time >= movePoint.time)
+                    if (mp.time <= prevMovePoint.time || mp.time >= movePoint.time)
                         continue;
 
                     s_sortedPoints.Add(new InternalPoint

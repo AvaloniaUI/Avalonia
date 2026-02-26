@@ -1005,7 +1005,7 @@ namespace Avalonia.Win32
 
             Handle = new WindowImplPlatformHandle(this);
 
-                RegisterTouchWindow(_hwnd, 0);
+            RegisterTouchWindow(_hwnd, 0);
 
             if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
             {
