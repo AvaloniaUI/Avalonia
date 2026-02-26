@@ -75,6 +75,6 @@ namespace Avalonia.Skia.RenderTests
         public IInputElement? PointerOverElement { get; set; }
         public ITextInputMethodImpl? InputMethod { get; }
         public InputElement RootElement => this;
-
+        public InputElement FocusRoot => this;
     }
 }

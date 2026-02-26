@@ -52,7 +52,11 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            glyphTypeface = new GlyphTypeface(platformTypeface);
+            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface);
+            if (glyphTypeface is null)
+            {
+                return false;
+            }
 
             //Add to cache with platform typeface family name first
             TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface);
@@ -112,7 +116,10 @@ namespace Avalonia.Media.Fonts
                 }
 
                 // Not in cache yet: create glyph typeface and try to add it.
-                var glyphTypeface = new GlyphTypeface(platformTypeface);
+                if (GlyphTypeface.TryCreate(platformTypeface) is not { } glyphTypeface)
+                {
+                    return false;
+                }
 
                 // Try adding with the platform typeface family name first.
                 TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface);
