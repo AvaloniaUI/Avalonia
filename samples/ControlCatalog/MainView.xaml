@@ -49,6 +49,9 @@
       <TabItem Header="Canvas">
         <pages:CanvasPage />
       </TabItem>
+      <TabItem Header="CommandBar">
+        <pages:CommandBarPage />
+      </TabItem>
       <TabItem Header="Carousel">
         <pages:CarouselPage />
       </TabItem>
