@@ -3,7 +3,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class PopupOverlayLayer : Canvas
+    internal sealed class PopupOverlayLayer : Canvas
     {
         protected override bool BypassFlowDirectionPolicies => true;
 
