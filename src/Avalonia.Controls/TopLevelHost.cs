@@ -18,4 +18,6 @@ internal class TopLevelHost : Control
     {
         VisualChildren.Add(tl);
     }
+
+    protected override bool BypassFlowDirectionPolicies => true;
 }
