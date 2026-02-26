@@ -121,7 +121,8 @@ namespace Avalonia.Headless
                 builder = builder.UseRenderingSubsystem(HeadlessPlatformRenderInterface.Initialize, "Headless");
             return builder
                 .UseStandardRuntimePlatformSubsystem()
-                .UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless");
+                .UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless")
+                .UseHarfBuzz();
         }
     }
 }

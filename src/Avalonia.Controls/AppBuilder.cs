@@ -61,6 +61,16 @@ namespace Avalonia
         public string? RenderingSubsystemName { get; private set; }
 
         /// <summary>
+        /// Gets or sets a method to call the initialize the text shaping subsystem.
+        /// </summary>
+        public Action? TextShapingSubsystemInitializer { get; private set; }
+
+        /// <summary>
+        /// Gets the name of the currently selected text shaping subsystem.
+        /// </summary>
+        public string? TextShapingSubsystemName { get; private set; }
+
+        /// <summary>
         /// Gets a method to call after the <see cref="Application"/> is setup.
         /// </summary>
         public Action<AppBuilder> AfterSetupCallback { get; private set; } = builder => { };
@@ -224,6 +234,19 @@ namespace Avalonia
             RenderingSubsystemName = name;
             return Self;
         }
+
+        /// <summary>
+        /// Specifies a text shaping subsystem to use.
+        /// </summary>
+        /// <param name="initializer">The method to call to initialize the text shaping subsystem.</param>
+        /// <param name="name">The name of the text shaping subsystem.</param>
+        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
+        public AppBuilder UseTextShapingSubsystem(Action initializer, string name = "")
+        {
+            TextShapingSubsystemInitializer = initializer;
+            TextShapingSubsystemName = name;
+            return Self;
+        }
         
         /// <summary>
         /// Specifies a runtime platform subsystem to use.
@@ -311,6 +334,11 @@ namespace Avalonia
                 throw new InvalidOperationException("No rendering system configured.");
             }
 
+            if (TextShapingSubsystemInitializer == null)
+            {
+                throw new InvalidOperationException("No text shaping system configured.");
+            }
+
             if (_appFactory == null)
             {
                 throw new InvalidOperationException("No Application factory configured.");
@@ -333,6 +361,7 @@ namespace Avalonia
         {
             _optionsInitializers?.Invoke();
             RuntimePlatformServicesInitializer?.Invoke();
+            TextShapingSubsystemInitializer?.Invoke();
             RenderingSubsystemInitializer?.Invoke();
             WindowingSubsystemInitializer?.Invoke();
             AfterPlatformServicesSetupCallback?.Invoke(Self);
