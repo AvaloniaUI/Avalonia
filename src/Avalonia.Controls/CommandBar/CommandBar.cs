@@ -13,37 +13,67 @@ namespace Avalonia.Controls
     /// </summary>
     public class CommandBar : TemplatedControl
     {
+        /// <summary>
+        /// Defines the <see cref="PrimaryCommands"/> property.
+        /// </summary>
         public static readonly StyledProperty<IList<ICommandBarElement>> PrimaryCommandsProperty =
             AvaloniaProperty.Register<CommandBar, IList<ICommandBarElement>>(nameof(PrimaryCommands));
 
+        /// <summary>
+        /// Defines the <see cref="SecondaryCommands"/> property.
+        /// </summary>
         public static readonly StyledProperty<IList<ICommandBarElement>> SecondaryCommandsProperty =
             AvaloniaProperty.Register<CommandBar, IList<ICommandBarElement>>(nameof(SecondaryCommands));
 
+        /// <summary>
+        /// Defines the <see cref="Content"/> property.
+        /// </summary>
         public static readonly StyledProperty<object?> ContentProperty =
             ContentControl.ContentProperty.AddOwner<CommandBar>();
 
+        /// <summary>
+        /// Defines the <see cref="DefaultLabelPosition"/> property.
+        /// </summary>
         public static readonly StyledProperty<CommandBarDefaultLabelPosition> DefaultLabelPositionProperty =
             AvaloniaProperty.Register<CommandBar, CommandBarDefaultLabelPosition>(nameof(DefaultLabelPosition), CommandBarDefaultLabelPosition.Bottom);
 
+        /// <summary>
+        /// Defines the <see cref="IsDynamicOverflowEnabled"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> IsDynamicOverflowEnabledProperty =
             AvaloniaProperty.Register<CommandBar, bool>(nameof(IsDynamicOverflowEnabled));
 
+        /// <summary>
+        /// Defines the <see cref="OverflowButtonVisibility"/> property.
+        /// </summary>
         public static readonly StyledProperty<CommandBarOverflowButtonVisibility> OverflowButtonVisibilityProperty =
             AvaloniaProperty.Register<CommandBar, CommandBarOverflowButtonVisibility>(nameof(OverflowButtonVisibility), CommandBarOverflowButtonVisibility.Auto);
 
+        /// <summary>
+        /// Defines the <see cref="IsOpen"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> IsOpenProperty =
             AvaloniaProperty.Register<CommandBar, bool>(nameof(IsOpen));
 
+        /// <summary>
+        /// Defines the <see cref="IsSticky"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> IsStickyProperty =
             AvaloniaProperty.Register<CommandBar, bool>(nameof(IsSticky));
 
         private bool _hasSecondaryCommands;
+        /// <summary>
+        /// Defines the <see cref="HasSecondaryCommands"/> property.
+        /// </summary>
         public static readonly DirectProperty<CommandBar, bool> HasSecondaryCommandsProperty =
             AvaloniaProperty.RegisterDirect<CommandBar, bool>(
                 nameof(HasSecondaryCommands),
                 o => o._hasSecondaryCommands);
 
         private bool _isOverflowButtonVisible;
+        /// <summary>
+        /// Defines the <see cref="IsOverflowButtonVisible"/> property.
+        /// </summary>
         public static readonly DirectProperty<CommandBar, bool> IsOverflowButtonVisibleProperty =
             AvaloniaProperty.RegisterDirect<CommandBar, bool>(
                 nameof(IsOverflowButtonVisible),

@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
 
-public class AppBarButtonTests
+public class AppBarButtonTests : ScopedTestBase
 {
     [Fact]
     public void Label_DefaultIsNull()
@@ -111,7 +112,7 @@ public class AppBarButtonTests
     }
 }
 
-public class AppBarToggleButtonTests
+public class AppBarToggleButtonTests : ScopedTestBase
 {
     [Fact]
     public void Label_DefaultIsNull()
@@ -198,7 +199,7 @@ public class AppBarToggleButtonTests
     }
 }
 
-public class AppBarSeparatorTests
+public class AppBarSeparatorTests : ScopedTestBase
 {
     [Fact]
     public void IsCompact_DefaultIsFalse()
@@ -235,7 +236,7 @@ public class AppBarSeparatorTests
     }
 }
 
-public class CommandBarEnumTests
+public class CommandBarEnumTests : ScopedTestBase
 {
     [Fact]
     public void LabelPosition_Bottom_IsZero()
@@ -262,7 +263,7 @@ public class CommandBarEnumTests
         => Assert.Equal(2, (int)CommandBarOverflowButtonVisibility.Collapsed);
 }
 
-public class CommandBarDefaultsTests
+public class CommandBarDefaultsTests : ScopedTestBase
 {
     [Fact]
     public void DefaultLabelPosition_IsBottom()
@@ -329,7 +330,7 @@ public class CommandBarDefaultsTests
         => Assert.Empty(new CommandBar().OverflowItems);
 }
 
-public class CommandBarPropertyRoundTripTests
+public class CommandBarPropertyRoundTripTests : ScopedTestBase
 {
     [Fact]
     public void Content_RoundTrip()
@@ -378,7 +379,7 @@ public class CommandBarPropertyRoundTripTests
     }
 }
 
-public class CommandBarIsOpenTests
+public class CommandBarIsOpenTests : ScopedTestBase
 {
     [Fact]
     public void Opening_FiredWhenIsOpenBecomesTrue()
@@ -458,7 +459,7 @@ public class CommandBarIsOpenTests
     }
 }
 
-public class CommandBarCollectionTests
+public class CommandBarCollectionTests : ScopedTestBase
 {
     [Fact]
     public void PrimaryCommands_Added_AppearInVisiblePrimary_WhenDynamicOverflowDisabled()
@@ -566,7 +567,7 @@ public class CommandBarCollectionTests
     }
 }
 
-public class CommandBarLabelPositionTests
+public class CommandBarLabelPositionTests : ScopedTestBase
 {
     [Fact]
     public void DefaultLabelPosition_Collapsed_SetsIsCompactOnExistingPrimaryButton()
@@ -702,7 +703,7 @@ public class CommandBarLabelPositionTests
     }
 }
 
-public class CommandBarOverflowButtonTests
+public class CommandBarOverflowButtonTests : ScopedTestBase
 {
     [Fact]
     public void OverflowButtonVisibility_Visible_SetsIsOverflowButtonVisibleTrue()

@@ -7,21 +7,39 @@ namespace Avalonia.Controls
     /// </summary>
     public class AppBarToggleButton : ToggleButton, ICommandBarElement
     {
+        /// <summary>
+        /// Defines the <see cref="Label"/> property.
+        /// </summary>
         public static readonly StyledProperty<string?> LabelProperty =
             AvaloniaProperty.Register<AppBarToggleButton, string?>(nameof(Label));
 
+        /// <summary>
+        /// Defines the <see cref="Icon"/> property.
+        /// </summary>
         public static readonly StyledProperty<object?> IconProperty =
             AvaloniaProperty.Register<AppBarToggleButton, object?>(nameof(Icon));
 
+        /// <summary>
+        /// Defines the <see cref="IsCompact"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> IsCompactProperty =
             AvaloniaProperty.Register<AppBarToggleButton, bool>(nameof(IsCompact));
 
+        /// <summary>
+        /// Defines the <see cref="DynamicOverflowOrder"/> property.
+        /// </summary>
         public static readonly StyledProperty<int> DynamicOverflowOrderProperty =
             AvaloniaProperty.Register<AppBarToggleButton, int>(nameof(DynamicOverflowOrder));
 
+        /// <summary>
+        /// Defines the <see cref="LabelPosition"/> property.
+        /// </summary>
         public static readonly StyledProperty<CommandBarDefaultLabelPosition> LabelPositionProperty =
             AvaloniaProperty.Register<AppBarToggleButton, CommandBarDefaultLabelPosition>(nameof(LabelPosition), CommandBarDefaultLabelPosition.Bottom);
 
+        /// <summary>
+        /// Defines the <see cref="IsInOverflow"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> IsInOverflowProperty =
             AvaloniaProperty.Register<AppBarToggleButton, bool>(nameof(IsInOverflow));
 

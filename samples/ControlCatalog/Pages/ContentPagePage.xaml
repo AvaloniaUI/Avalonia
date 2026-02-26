@@ -1,0 +1,97 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ContentPagePage">
+  <DockPanel>
+    <!-- Options panel -->
+    <ScrollViewer DockPanel.Dock="Right" Width="280">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Options" FontWeight="SemiBold" FontSize="14" />
+
+        <TextBlock Text="Background" />
+        <ComboBox x:Name="BackgroundCombo"
+                  SelectedIndex="0"
+                  SelectionChanged="OnBackgroundChanged"
+                  HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Default" />
+          <ComboBoxItem Content="Light Gray" />
+          <ComboBoxItem Content="Light Blue" />
+          <ComboBoxItem Content="Light Green" />
+        </ComboBox>
+
+        <TextBlock Text="HorizontalContentAlignment" />
+        <ComboBox x:Name="HAlignCombo"
+                  SelectedIndex="3"
+                  SelectionChanged="OnHAlignChanged"
+                  HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Left" />
+          <ComboBoxItem Content="Center" />
+          <ComboBoxItem Content="Right" />
+          <ComboBoxItem Content="Stretch" />
+        </ComboBox>
+
+        <TextBlock Text="VerticalContentAlignment" />
+        <ComboBox x:Name="VAlignCombo"
+                  SelectedIndex="3"
+                  SelectionChanged="OnVAlignChanged"
+                  HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Top" />
+          <ComboBoxItem Content="Center" />
+          <ComboBoxItem Content="Bottom" />
+          <ComboBoxItem Content="Stretch" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Top CommandBar" FontWeight="SemiBold" />
+        <CheckBox x:Name="TopBarCheck"
+                  Content="Show top CommandBar"
+                  IsCheckedChanged="OnTopBarChanged" />
+
+        <TextBlock Text="Bottom CommandBar" FontWeight="SemiBold" />
+        <CheckBox x:Name="BottomBarCheck"
+                  Content="Show bottom CommandBar"
+                  IsCheckedChanged="OnBottomBarChanged" />
+
+        <Separator />
+
+        <TextBlock Text="AutomaticallyApplySafeAreaPadding" />
+        <CheckBox x:Name="SafeAreaCheck"
+                  Content="Apply safe area padding"
+                  IsChecked="True"
+                  IsCheckedChanged="OnSafeAreaChanged" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Preview -->
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            ClipToBounds="True">
+      <ContentPage x:Name="SamplePage"
+                   HorizontalContentAlignment="Stretch"
+                   VerticalContentAlignment="Stretch">
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="12">
+          <TextBlock Text="ContentPage"
+                     FontSize="20"
+                     FontWeight="SemiBold"
+                     HorizontalAlignment="Center" />
+          <TextBlock Text="Hosts any Avalonia control as its Content."
+                     FontSize="13"
+                     Opacity="0.7"
+                     TextWrapping="Wrap"
+                     TextAlignment="Center"
+                     MaxWidth="260" />
+          <TextBlock Text="Use Header to set the navigation bar title."
+                     FontSize="12"
+                     Opacity="0.5"
+                     TextWrapping="Wrap"
+                     TextAlignment="Center"
+                     MaxWidth="260" />
+        </StackPanel>
+      </ContentPage>
+    </Border>
+  </DockPanel>
+</UserControl>

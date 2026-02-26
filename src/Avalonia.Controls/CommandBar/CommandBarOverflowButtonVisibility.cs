@@ -5,11 +5,17 @@ namespace Avalonia.Controls
     /// </summary>
     public enum CommandBarOverflowButtonVisibility
     {
-        /// <summary>The overflow button is shown only when secondary commands are present.</summary>
+        /// <summary>
+        /// The overflow button is shown only when secondary commands are present.
+        /// </summary>
         Auto,
-        /// <summary>The overflow button is always shown.</summary>
+        /// <summary>
+        /// The overflow button is always shown.
+        /// </summary>
         Visible,
-        /// <summary>The overflow button is never shown.</summary>
+        /// <summary>
+        /// The overflow button is never shown.
+        /// </summary>
         Collapsed
     }
 }

@@ -7,9 +7,15 @@ namespace Avalonia.Controls
     /// </summary>
     public class AppBarSeparator : TemplatedControl, ICommandBarElement
     {
+        /// <summary>
+        /// Defines the <see cref="IsCompact"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> IsCompactProperty =
             AvaloniaProperty.Register<AppBarSeparator, bool>(nameof(IsCompact));
 
+        /// <summary>
+        /// Defines the <see cref="IsInOverflow"/> property.
+        /// </summary>
         public static readonly StyledProperty<bool> IsInOverflowProperty =
             AvaloniaProperty.Register<AppBarSeparator, bool>(nameof(IsInOverflow));
 

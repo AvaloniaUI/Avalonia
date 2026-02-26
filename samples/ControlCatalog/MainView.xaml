@@ -52,6 +52,9 @@
       <TabItem Header="CommandBar">
         <pages:CommandBarPage />
       </TabItem>
+      <TabItem Header="ContentPage">
+        <pages:ContentPagePage />
+      </TabItem>
       <TabItem Header="Carousel">
         <pages:CarouselPage />
       </TabItem>
