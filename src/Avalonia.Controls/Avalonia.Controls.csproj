@@ -11,6 +11,7 @@
   <Import Project="..\..\build\DevAnalyzers.props" />
 
   <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Sandbox, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Controls.ItemsRepeater, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Skia.RenderTests, PublicKey=$(AvaloniaPublicKey)" />

@@ -422,7 +422,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="templatedParent">The templated parent to apply.</param>
-        internal static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
+        public static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
         {
             control.TemplatedParent = templatedParent;
 

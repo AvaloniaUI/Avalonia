@@ -1,4 +1,44 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        x:Class="Sandbox.MainWindow">
+  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+  xmlns:sandbox="clr-namespace:Sandbox"
+  x:Class="Sandbox.MainWindow">
+  
+  <Window.Resources>
+    <ResourceDictionary>
+      <ControlTheme x:Key="{x:Type WindowDrawnDecorations}" TargetType="WindowDrawnDecorations">
+        <Setter Property="TitleBarHeight" Value="32"/>
+        <Setter Property="Template">
+          <WindowDrawnDecorationsTemplate>
+            <WindowDrawnDecorationsContent>
+              <WindowDrawnDecorationsContent.Overlay>
+                <StackPanel x:Name="PART_TitleBar" VerticalAlignment="Top" Orientation="Horizontal" Height="{TemplateBinding TitleBarHeight}">
+                  <TextBlock Foreground="Green" FontSize="20">TITLEBAR</TextBlock>
+                  <TextBlock Foreground="Green" Text="{TemplateBinding TitleBarHeight}"/>
+                </StackPanel>
+              </WindowDrawnDecorationsContent.Overlay>
+              
+              <WindowDrawnDecorationsContent.Underlay>
+                <Border Background="Azure" BorderThickness="1" BorderBrush="Gray"/>
+              </WindowDrawnDecorationsContent.Underlay>
+              
+            </WindowDrawnDecorationsContent>
+          </WindowDrawnDecorationsTemplate>
+        </Setter>
+        <Style Selector="^ /template/ StackPanel">
+          <Setter Property="Background" Value="Red"/>
+        </Style>
+        <Style Selector="^ /template/ TestTest">
+          <Setter Property="Background" Value="Red"/>
+        </Style>
+        <Style Selector="^:test /template/ StackPanel#PART_TitleBar">
+          <Setter Property="Background" Value="DarkBlue"/>
+        </Style>
+      </ControlTheme>
+    </ResourceDictionary>
+    
+  </Window.Resources>
+  
+
+  <DrawnDecorationsPresenter/>
+  
 </Window>
