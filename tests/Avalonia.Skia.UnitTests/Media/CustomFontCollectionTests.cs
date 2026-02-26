@@ -33,6 +33,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     new FontAssetInfo($"{AssetsNamespace}.Inter-Regular.ttf", "Inter"),
                     new FontAssetInfo($"{AssetsNamespace}.Manrope-Light.ttf", "Manrope Light"),
                     new FontAssetInfo($"{AssetsNamespace}.MiSans-Normal.ttf", "MiSans Normal"),
+                    new FontAssetInfo($"{AssetsNamespace}.NISC18030.ttf", "GB18030 Bitmap"),
                     new FontAssetInfo($"{AssetsNamespace}.NotoMono-Regular.ttf", "Noto Mono"),
                     new FontAssetInfo($"{AssetsNamespace}.NotoSans-Italic.ttf", "Noto Sans"),
                     new FontAssetInfo($"{AssetsNamespace}.NotoSansArabic-Regular.ttf", "Noto Sans Arabic"),
