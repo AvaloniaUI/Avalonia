@@ -222,7 +222,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Adding_Top_Level_As_Child_Should_Not_Exception()
+        public void Adding_Top_Level_As_Child_Should_Throw_Exception()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -233,8 +233,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Template = CreateTemplate();
                 target.Content = child;
                 target.ApplyTemplate();
-
-                target.Presenter!.ApplyTemplate();
+                Assert.Throws<InvalidOperationException>(() => target.Presenter!.ApplyTemplate());
             }
         }
 

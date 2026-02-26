@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
+  <av:ImportTypes>Types.xml</av:ImportTypes>
+  <!--
+      org.a11y.atspi.Value:
+      @short_description: An interface supporting a one-dimensional scalar
+      to be modified, or which reflects its value.
+  -->
+  <interface name="org.a11y.atspi.Value">
+
+    <!--
+        Version: The version of this interface.
+
+        This property is incremented by one every time a new method, signal, or property
+        is added to this interface.
+    -->
+    <property name="version" type="u" access="read"/>
+
+    <!--
+        MinimumValue: The minimum allowed value.
+    -->
+    <property name="MinimumValue" type="d" access="read"/>
+
+    <!--
+        MaximumValue: The maximum allowed value.
+    -->
+    <property name="MaximumValue" type="d" access="read"/>
+
+    <!--
+        MinimumIncrement: The minimum increment by which a value can be
+        adjusted.
+    -->
+    <property name="MinimumIncrement" type="d" access="read"/>
+
+    <!--
+        CurrentValue: The current value.
+    -->
+    <property name="CurrentValue" type="d" access="readwrite"/>
+
+    <!--
+        Text: a human readable text alternative associated with the value,
+        if available.
+    -->
+    <property name="Text" type="s" access="read"/>
+
+  </interface>
+</node>

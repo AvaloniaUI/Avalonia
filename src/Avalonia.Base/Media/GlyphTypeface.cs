@@ -114,6 +114,9 @@ namespace Avalonia.Media
 
             HeadTable.TryLoad(this, out var headTable);
 
+            IsLastResort = (headTable is not null && (headTable.Flags & HeadFlags.LastResortFont) != 0) ||
+                           _cmapTable.Format == CmapFormat.Format13;
+
             var postTable = PostTable.Load(this);
 
             var isFixedPitch = postTable.IsFixedPitch;
@@ -353,6 +356,11 @@ namespace Avalonia.Media
                 return _textShaperTypeface;
             }
         }
+
+        /// <summary>
+        /// Gets whether the font should be used as a last resort, if no other fonts matched.
+        /// </summary>
+        internal bool IsLastResort { get; }
 
         /// <summary>
         /// Attempts to retrieve the horizontal advance width for the specified glyph.

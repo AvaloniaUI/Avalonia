@@ -437,6 +437,41 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void Should_Use_Last_Resort_Font_Last_MatchCharacter()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    FontManager.Current.AddFontCollection(
+                        new EmbeddedFontCollection(
+                            new Uri("fonts:MyCollection"), //key
+                            new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests"))); //source
+
+                    var fontFamily = new FontFamily("fonts:MyCollection#Noto Sans");
+
+                    const string characters = "א𪜶";
+
+                    var codepoint1 = Codepoint.ReadAt(characters, 0, out _);
+                    Assert.Equal(0x5D0, codepoint1); // א
+
+                    // Typeface should come from the font collection - falling back to Noto Sans Hebrew
+                    Assert.True(FontManager.Current.TryMatchCharacter(codepoint1, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, fontFamily, null, out var typeface1));
+                    Assert.NotNull(typeface1.FontFamily.Key);
+                    Assert.Equal("Noto Sans Hebrew", typeface1.GlyphTypeface.FamilyName);
+
+                    var codepoint2 = Codepoint.ReadAt(characters, 1, out _);
+                    Assert.Equal(0x2A736, codepoint2); // 𪜶
+
+                    // Typeface should come from the font collection - falling back to Adobe Blank 2 VF R as a last resort
+                    Assert.True(FontManager.Current.TryMatchCharacter(codepoint2, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, fontFamily, null, out var typeface2));
+                    Assert.NotNull(typeface2.FontFamily.Key);
+                    Assert.Equal("Adobe Blank 2 VF R", typeface2.GlyphTypeface.FamilyName);
+                }
+            }
+        }
+
         [InlineData("Arial")]
         [InlineData("#Arial")]
         [Win32Theory("Windows specific font")]
