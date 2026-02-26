@@ -331,12 +331,12 @@ namespace Avalonia
 
             if (RenderingSubsystemInitializer == null)
             {
-                throw new InvalidOperationException("No rendering system configured.");
+                throw new InvalidOperationException("No rendering system configured. Consider calling UseSkia().");
             }
 
             if (TextShapingSubsystemInitializer == null)
             {
-                throw new InvalidOperationException("No text shaping system configured.");
+                throw new InvalidOperationException("No text shaping system configured. Consider calling UseHarfBuzz().");
             }
 
             if (_appFactory == null)
