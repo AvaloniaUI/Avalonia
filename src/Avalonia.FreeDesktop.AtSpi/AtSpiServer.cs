@@ -149,7 +149,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 // Embed failed - screen reader won't discover us.
                 // Reset so the next AddWindow retries.
                 Logger.TryGet(LogEventLevel.Warning, LogArea.FreeDesktopPlatform)?
-                    .Log(this, "AT-SPI embed failed; will retry when windows are added: {0}", e);
+                    .Log(this, "AT-SPI embed failed; will retry when windows are added: {Exception}", e);
                 lock (_embedSync)
                     _embedTask = null;
                 return;
@@ -432,7 +432,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             catch (Exception e)
             {
                 Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
-                    .Log(this, "Failed to resolve AT-SPI accessibility bus address: {0}", e);
+                    .Log(this, "Failed to resolve AT-SPI accessibility bus address: {Exception}", e);
                 return string.Empty;
             }
         }
@@ -456,7 +456,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             {
                 // Registry tracking is best-effort; AT-SPI server remains functional without it.
                 Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
-                    .Log(tracker, "AT-SPI registry listener tracking initialization failed: {0}", e);
+                    .Log(tracker, "AT-SPI registry listener tracking initialization failed: {Exception}", e);
             }
         }
 

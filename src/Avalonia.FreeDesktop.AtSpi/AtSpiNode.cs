@@ -264,7 +264,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             {
                 // Best-effort cleanup: path may have failed to register or connection may be gone.
                 Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
-                    .Log(null, "AT-SPI node path registration cleanup failed: {0}", e);
+                    .Log(null, "AT-SPI node path registration cleanup failed: {Exception}", e);
             }
         }
 

@@ -57,7 +57,7 @@ namespace Avalonia.X11
             catch (Exception e)
             {
                 Logger.TryGet(LogEventLevel.Warning, LogArea.X11Platform)?
-                    .Log(_platform, "AT-SPI initialization failed and will be disabled: {0}", e);
+                    .Log(_platform, "AT-SPI initialization failed and will be disabled: {Exception}", e);
             }
         }
 
@@ -78,12 +78,12 @@ namespace Avalonia.X11
             catch (TimeoutException e)
             {
                 Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?
-                    .Log(_platform, "AT-SPI startup wait timed out before UI thread reached idle: {0}", e);
+                    .Log(_platform, "AT-SPI startup wait timed out before UI thread reached idle: {Exception}", e);
             }
             catch (Exception e)
             {
                 Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?
-                    .Log(_platform, "AT-SPI startup wait failed, continuing without idle settle: {0}", e);
+                    .Log(_platform, "AT-SPI startup wait failed, continuing without idle settle: {Exception}", e);
             }
         }
 
@@ -105,7 +105,7 @@ namespace Avalonia.X11
             catch (Exception e)
             {
                 Logger.TryGet(LogEventLevel.Warning, LogArea.X11Platform)?
-                    .Log(_platform, "AT-SPI dynamic enable/disable toggle failed: {0}", e);
+                    .Log(_platform, "AT-SPI dynamic enable/disable toggle failed: {Exception}", e);
             }
         }
 
@@ -133,7 +133,7 @@ namespace Avalonia.X11
             catch (Exception e)
             {
                 Logger.TryGet(LogEventLevel.Warning, LogArea.X11Platform)?
-                    .Log(_platform, "AT-SPI server startup attempt failed: {0}", e);
+                    .Log(_platform, "AT-SPI server startup attempt failed: {Exception}", e);
                 return false;
             }
         }
@@ -149,7 +149,7 @@ namespace Avalonia.X11
             {
                 // Window can be tracked before input root is available.
                 Logger.TryGet(LogEventLevel.Debug, LogArea.X11Platform)?
-                    .Log(window, "AT-SPI could not resolve window automation peer yet: {0}", e);
+                    .Log(window, "AT-SPI could not resolve window automation peer yet: {Exception}", e);
             }
 
             return null;

@@ -67,7 +67,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             {
                 // Registry event tracking unavailable - remain chatty.
                 Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
-                    .Log(this, "AT-SPI registry event tracker unavailable; remaining chatty: {0}", e);
+                    .Log(this, "AT-SPI registry event tracker unavailable; remaining chatty: {Exception}", e);
                 HasEventListeners = true;
             }
         }
@@ -117,7 +117,7 @@ namespace Avalonia.FreeDesktop.AtSpi
             catch (Exception e)
             {
                 Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
-                    .Log(this, "AT-SPI registry signal subscription failed; remaining chatty: {0}", e);
+                    .Log(this, "AT-SPI registry signal subscription failed; remaining chatty: {Exception}", e);
                 _registryRegisteredSubscription?.Dispose();
                 _registryRegisteredSubscription = null;
                 _registryDeregisteredSubscription?.Dispose();

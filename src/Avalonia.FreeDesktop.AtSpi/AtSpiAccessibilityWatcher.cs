@@ -34,7 +34,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 catch (Exception e)
                 {
                     Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
-                        .Log(this, "AT-SPI status properties query failed, defaulting to disabled: {0}", e);
+                        .Log(this, "AT-SPI status properties query failed, defaulting to disabled: {Exception}", e);
                     IsEnabled = false;
                 }
 
@@ -54,7 +54,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 // D-Bus session bus unavailable or org.a11y.Bus not present.
                 // Silently degrade - accessibility remains disabled.
                 Logger.TryGet(LogEventLevel.Debug, LogArea.FreeDesktopPlatform)?
-                    .Log(this, "AT-SPI watcher unavailable; accessibility remains disabled: {0}", e);
+                    .Log(this, "AT-SPI watcher unavailable; accessibility remains disabled: {Exception}", e);
                 IsEnabled = false;
             }
         }
