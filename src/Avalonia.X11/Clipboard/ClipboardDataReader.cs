@@ -17,10 +17,9 @@ internal sealed class ClipboardDataReader(
     IntPtr[] textFormatAtoms,
     IntPtr owner,
     DataFormat[] dataFormats)
-    : IDisposable
+    : X11DataReader(x11, platform), IDisposable
 {
     private readonly X11Info _x11 = x11;
-    private readonly AvaloniaX11Platform _platform = platform;
     private readonly IntPtr[] _textFormatAtoms = textFormatAtoms;
     private IntPtr _owner = owner;
 
@@ -36,45 +35,7 @@ internal sealed class ClipboardDataReader(
         if (formatAtom == IntPtr.Zero)
             return null;
 
-        using var session = new ClipboardReadSession(_platform);
-        var result = await session.SendDataRequest(formatAtom).ConfigureAwait(false);
-        return ConvertDataResult(result, format, formatAtom);
-    }
-
-    private object? ConvertDataResult(ClipboardReadSession.GetDataResult? result, DataFormat format, IntPtr formatAtom)
-    {
-        if (result is null)
-            return null;
-
-        if (DataFormat.Text.Equals(format))
-        {
-            return ClipboardDataFormatHelper.TryGetStringEncoding(result.TypeAtom, _x11.Atoms) is { } textEncoding ?
-                textEncoding.GetString(result.AsBytes()) :
-                null;
-        }
-
-        if(DataFormat.Bitmap.Equals(format))
-        {
-            using var data = result.AsStream();
-
-            return new Bitmap(data);
-        }
-
-        if (DataFormat.File.Equals(format))
-        {
-            // text/uri-list might not be supported
-            return formatAtom != IntPtr.Zero && result.TypeAtom == formatAtom ?
-                ClipboardUriListHelper.Utf8BytesToFileUriList(result.AsBytes()) :
-                null;
-        }
-
-        if (format is DataFormat<string>)
-            return Encoding.UTF8.GetString(result.AsBytes());
-
-        if (format is DataFormat<byte[]>)
-            return result.AsBytes();
-
-        return null;
+       return await base.TryGetAsync(format, formatAtom);
     }
 
     public void Dispose()
