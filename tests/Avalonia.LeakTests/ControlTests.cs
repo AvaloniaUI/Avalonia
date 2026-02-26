@@ -1047,6 +1047,44 @@ namespace Avalonia.LeakTests
             }
         }
 
+        [ReleaseFact]
+        public void Menu_Is_Freed()
+        {
+            using (Start())
+            {
+                var window = new Window();
+
+                WeakReference Run()
+                {
+                    var menu = new Menu();
+                    window.Content = menu;
+
+                    window.Show();
+
+                    // Do a layout and make sure that Menu gets added to visual tree
+                    window.LayoutManager.ExecuteInitialLayoutPass();
+                    Assert.IsType<Menu>(window.Presenter!.Child);
+                    Assert.NotEmpty(window.Presenter.Child.GetVisualChildren());
+
+                    // Clear the content and ensure the Menu is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return new WeakReference(menu);
+                }
+
+                var weakMenu = Run();
+                Assert.True(weakMenu.IsAlive);
+
+                CollectGarbage();
+
+                Assert.False(weakMenu.IsAlive);
+
+                GC.KeepAlive(window);
+            }
+        }
+
         private static FuncControlTemplate CreateWindowTemplate()
         {
             return new FuncControlTemplate<Window>((parent, scope) =>
@@ -1075,7 +1113,8 @@ namespace Avalonia.LeakTests
                 Disposable.Create(Cleanup),
                 UnitTestApplication.Start(TestServices.StyledWindow.With(
                     keyboardDevice: () => new KeyboardDevice(),
-                    inputManager: new InputManager()))
+                    inputManager: new InputManager(),
+                    accessKeyHandler: () => new AccessKeyHandler()))
             };
         }
 

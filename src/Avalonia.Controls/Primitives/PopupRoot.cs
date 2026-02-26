@@ -190,7 +190,7 @@ namespace Avalonia.Controls.Primitives
             return new Size(width, height);
         }
 
-        protected sealed override Size ArrangeSetBounds(Size size)
+        private protected sealed override Size ArrangeSetBounds(Size size)
         {
             if (_popupSize != size)
             {

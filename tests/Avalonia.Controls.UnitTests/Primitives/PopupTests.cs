@@ -607,7 +607,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 window.Content = border;
 
                 hitTester.Setup(x =>
-                    x.HitTestFirst(new Point(10, 15), window, It.IsAny<Func<Visual, bool>>()))
+                    x.HitTestFirst(new Point(10, 15), (Visual)window.VisualRoot!, It.IsAny<Func<Visual, bool>>()))
                     .Returns(border);
 
                 border.PointerPressed += (s, e) =>

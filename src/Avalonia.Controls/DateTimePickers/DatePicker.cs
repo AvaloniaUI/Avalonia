@@ -103,8 +103,6 @@ namespace Avalonia.Controls
             SetCurrentValue(MaxYearProperty, new DateTimeOffset(now.Date.Year + 100, 12, 31, 0, 0, 0, now.Offset));
         }
 
-        private static void OnGridVisibilityChanged(DatePicker sender, AvaloniaPropertyChangedEventArgs e) => sender.SetGrid();
-
         public string DayFormat
         {
             get => GetValue(DayFormatProperty);
