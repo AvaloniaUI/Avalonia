@@ -501,13 +501,18 @@ namespace Avalonia.Controls
 
             _realizedElements?.ResetForReuse();
             _measureElements?.ResetForReuse();
-            if (_focusedElement is not null)
+            if (ItemsControl is not null && _focusedElement is not null)
             {
                 RecycleFocusedElement();
             }
-            if (_scrollToElement is not null)
+            if (ItemsControl is not null && _scrollToElement is not null)
             {
                 RecycleElementOnItemRemoved(_scrollToElement);
+                _scrollToElement = null;
+            }
+            if (ItemsControl is null)
+            {
+                _focusedElement = null;
                 _scrollToElement = null;
             }
             _focusedIndex = -1;
@@ -1055,6 +1060,7 @@ namespace Avalonia.Controls
 
             if (recycleKey is null)
             {
+                ItemContainerGenerator!.ClearItemContainer(element);
                 RemoveInternalChild(element);
             }
             else if (recycleKey == s_itemIsItsOwnContainer)
@@ -1083,7 +1089,12 @@ namespace Avalonia.Controls
 
             var recycleKey = element.GetValue(RecycleKeyProperty);
             
-            if (recycleKey is null || recycleKey == s_itemIsItsOwnContainer)
+            if (recycleKey is null)
+            {
+                ItemContainerGenerator!.ClearItemContainer(element);
+                RemoveInternalChild(element);
+            }
+            else if (recycleKey == s_itemIsItsOwnContainer)
             {
                 RemoveInternalChild(element);
             }

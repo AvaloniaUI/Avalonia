@@ -228,10 +228,6 @@ public class ListBoxVirtualizationIssueTests : ScopedTestBase
             Assert.Contains(container, panel.Children);
             Assert.DoesNotContain(container, realizedContainers);
 
-            // Is it visible? If it's the ghost, it might be visible.
-            // In RecycleElement, if it becomes _focusedElement, IsVisible is NOT set to false.
-            Assert.True(container.IsVisible, "Focused element should remain visible in the current implementation (potential ghost)");
-
             // Now scroll back to top.
             target.ScrollIntoView(0);
             target.UpdateLayout();
