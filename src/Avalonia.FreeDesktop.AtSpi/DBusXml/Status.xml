@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node xmlns:av="http://avaloniaui.net/dbus/1.0">
+  <interface name="org.a11y.Status">
+    <property name="IsEnabled" type="b" access="readwrite"/>
+    <property name="ScreenReaderEnabled" type="b" access="readwrite"/>
+  </interface>
+</node>
