@@ -275,7 +275,7 @@ namespace Avalonia.Controls.UnitTests
                 content.Focus();
                 Assert.True(content.IsFocused);
 
-                impl.Object?.LostFocus?.Invoke();
+                impl.Object.LostFocus?.Invoke();
 
                 Assert.False(content.IsFocused);
             }
