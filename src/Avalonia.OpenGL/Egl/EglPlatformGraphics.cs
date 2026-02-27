@@ -6,14 +6,14 @@ namespace Avalonia.OpenGL.Egl
 {
     public sealed class EglPlatformGraphics : IPlatformGraphics
     {
-        private readonly EglDisplay _display;
+        public EglDisplay Display { get; }
         public bool UsesSharedContext => false;
-        public IPlatformGraphicsContext CreateContext() => _display.CreateContext(null);
+        public IPlatformGraphicsContext CreateContext() => Display.CreateContext(null);
         public IPlatformGraphicsContext GetSharedContext() => throw new NotSupportedException();
         
         public EglPlatformGraphics(EglDisplay display)
         {
-            _display = display;
+            Display = display;
         }
         
         public static EglPlatformGraphics? TryCreate() => TryCreate(() => new EglDisplay(new EglDisplayCreationOptions
@@ -23,7 +23,7 @@ namespace Avalonia.OpenGL.Egl
             SupportsMultipleContexts = true,
             SupportsContextSharing = true
         }));
-        
+
         public static EglPlatformGraphics? TryCreate(Func<EglDisplay> displayFactory)
         {
             try

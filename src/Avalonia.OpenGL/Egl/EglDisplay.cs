@@ -20,6 +20,7 @@ namespace Avalonia.OpenGL.Egl
 
         public IntPtr Handle => _display;
         public IntPtr Config => _config.Config;
+        public int NativeVisualId { get; }
         internal bool SingleContext => !_options.SupportsMultipleContexts;
         private readonly List<EglContext> _contexts = new();
         
@@ -45,7 +46,9 @@ namespace Avalonia.OpenGL.Egl
             if(_display == IntPtr.Zero)
                 throw new ArgumentException();
 
-            _config = EglDisplayUtils.InitializeAndGetConfig(_egl, display, options.GlVersions);
+            _config = EglDisplayUtils.InitializeAndGetConfig(_egl, display, options);
+            _egl.GetConfigAttrib(_display, _config.Config, EGL_NATIVE_VISUAL_ID, out var id);
+            NativeVisualId = id;
         }
         
         public EglInterface EglInterface => _egl;
