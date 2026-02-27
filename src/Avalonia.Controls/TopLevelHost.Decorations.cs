@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Chrome;
 using Avalonia.Input;
 using Avalonia.Reactive;
@@ -27,6 +29,18 @@ internal partial class TopLevelHost
                 if (field != null)
                     VisualChildren.Add(field);
             }
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+            => new LayerWrapperAutomationPeer(this);
+
+        /// <summary>
+        /// Returns no children so that EnsureConnected on content peers
+        /// doesn't override their parent set by WindowAutomationPeer.
+        /// </summary>
+        private class LayerWrapperAutomationPeer(LayerWrapper owner) : ControlAutomationPeer(owner)
+        {
+            protected override IReadOnlyList<AutomationPeer>? GetChildrenCore() => null;
         }
     }
 
