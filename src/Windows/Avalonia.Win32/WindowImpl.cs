@@ -1620,7 +1620,8 @@ namespace Avalonia.Win32
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         /// <inheritdoc/>
-        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome);
+        public bool NeedsManagedDecorations => _isClientAreaExtended && (_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome)
+            || _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome));
 
         public PlatformRequestedDrawnDecoration RequestedDrawnDecorations =>
             NeedsManagedDecorations
