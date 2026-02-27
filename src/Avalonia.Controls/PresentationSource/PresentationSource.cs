@@ -143,10 +143,14 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
     WindowDecorationsElementRole? IInputRoot.HitTestChromeElement(Point point)
     {
-        var visual = RootVisual.GetVisualAt(point, ChromeHitTestFilter);
-        if (visual == null)
-            return null;
-
-        return GetChromeRoleFromVisual(visual);
+        // Check all visuals at the point (not just topmost) because chrome elements
+        // may be in the underlay layer which sits below the TopLevel in the visual tree.
+        foreach (var visual in RootVisual.GetVisualsAt(point, ChromeHitTestFilter))
+        {
+            var role = GetChromeRoleFromVisual(visual);
+            if (role != null)
+                return role;
+        }
+        return null;
     }
 }

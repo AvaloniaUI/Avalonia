@@ -157,8 +157,8 @@ internal partial class TopLevelHost
         if (_resizeGrips == null || _decorations == null)
             return;
 
-        var frame = _decorations.EffectiveFrameThickness;
-        var shadow = _decorations.EffectiveShadowThickness;
+        var frame = _decorations.FrameThickness;
+        var shadow = _decorations.ShadowThickness;
         // Grips strictly cover frame + shadow area, never client area
         _resizeGrips.GripThickness = new Thickness(
             frame.Left + shadow.Left,
@@ -219,7 +219,7 @@ internal partial class TopLevelHost
         if (_fullscreenPopoverEnabled && _fullscreenPopover != null)
         {
             var pos = e.GetPosition(this);
-            // Use DefaultTitleBarHeight since EffectiveTitleBarHeight is 0 in fullscreen
+            // Use DefaultTitleBarHeight since TitleBarHeight is 0 in fullscreen
             var titleBarHeight = _decorations?.DefaultTitleBarHeight ?? 30;
 
             if (!_fullscreenPopover.IsVisible && pos.Y <= PopoverTriggerZoneHeight)

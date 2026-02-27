@@ -50,24 +50,22 @@ public class WindowDrawnDecorations : StyledElement
         AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultShadowThickness));
 
     /// <summary>
-    /// Defines the <see cref="TitleBarHeight"/> property.
+    /// Defines the <see cref="TitleBarHeightOverride"/> property.
     /// </summary>
-    public static readonly StyledProperty<double> TitleBarHeightProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, double>(nameof(TitleBarHeight), defaultValue: double.NaN);
+    internal static readonly StyledProperty<double> TitleBarHeightOverrideProperty =
+        AvaloniaProperty.Register<WindowDrawnDecorations, double>(nameof(TitleBarHeightOverride), defaultValue: double.NaN);
 
     /// <summary>
-    /// Defines the <see cref="FrameThickness"/> property.
+    /// Defines the <see cref="FrameThicknessOverride"/> property.
     /// </summary>
-    public static readonly StyledProperty<Thickness> FrameThicknessProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(FrameThickness),
-            defaultValue: new Thickness(double.NaN));
+    internal static readonly StyledProperty<Thickness> FrameThicknessOverrideProperty =
+        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(FrameThicknessOverride));
 
     /// <summary>
-    /// Defines the <see cref="ShadowThickness"/> property.
+    /// Defines the <see cref="ShadowThicknessOverride"/> property.
     /// </summary>
-    public static readonly StyledProperty<Thickness> ShadowThicknessProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(ShadowThickness),
-            defaultValue: new Thickness(double.NaN));
+    internal static readonly StyledProperty<Thickness> ShadowThicknessOverrideProperty =
+        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(ShadowThicknessOverride));
 
     /// <summary>
     /// Defines the <see cref="Title"/> property.
@@ -136,36 +134,36 @@ public class WindowDrawnDecorations : StyledElement
     }
 
     /// <summary>
-    /// Gets or sets the effective titlebar height.
+    /// Gets or sets the titlebar height override.
     /// When NaN, falls back to <see cref="DefaultTitleBarHeight"/>.
     /// Window can override by setting a local value.
     /// </summary>
-    public double TitleBarHeight
+    internal double TitleBarHeightOverride
     {
-        get => GetValue(TitleBarHeightProperty);
-        set => SetValue(TitleBarHeightProperty, value);
+        get => GetValue(TitleBarHeightOverrideProperty);
+        set => SetValue(TitleBarHeightOverrideProperty, value);
     }
 
     /// <summary>
-    /// Gets or sets the effective frame thickness.
-    /// When any component is NaN, that component falls back to <see cref="DefaultFrameThickness"/>.
+    /// Gets or sets the frame thickness override.
+    /// When set, takes precedence over <see cref="DefaultFrameThickness"/>.
     /// Window can override by setting a local value.
     /// </summary>
-    public Thickness FrameThickness
+    internal Thickness FrameThicknessOverride
     {
-        get => GetValue(FrameThicknessProperty);
-        set => SetValue(FrameThicknessProperty, value);
+        get => GetValue(FrameThicknessOverrideProperty);
+        set => SetValue(FrameThicknessOverrideProperty, value);
     }
 
     /// <summary>
-    /// Gets or sets the effective shadow area thickness.
-    /// When any component is NaN, that component falls back to <see cref="DefaultShadowThickness"/>.
+    /// Gets or sets the shadow thickness override.
+    /// When set, takes precedence over <see cref="DefaultShadowThickness"/>.
     /// Window can override by setting a local value.
     /// </summary>
-    public Thickness ShadowThickness
+    internal Thickness ShadowThicknessOverride
     {
-        get => GetValue(ShadowThicknessProperty);
-        set => SetValue(ShadowThicknessProperty, value);
+        get => GetValue(ShadowThicknessOverrideProperty);
+        set => SetValue(ShadowThicknessOverrideProperty, value);
     }
 
     /// <summary>
@@ -193,30 +191,32 @@ public class WindowDrawnDecorations : StyledElement
     public WindowDrawnDecorationsContent? Content { get; private set; }
 
     /// <summary>
-    /// Gets the effective titlebar height, resolving NaN to the default.
+    /// Gets the effective titlebar height, resolving NaN override to the default.
     /// Returns 0 if titlebar part is disabled.
     /// </summary>
-    public double EffectiveTitleBarHeight =>
+    public double TitleBarHeight =>
         EnabledParts.HasFlag(DrawnWindowDecorationParts.TitleBar)
-            ? (double.IsNaN(TitleBarHeight) ? DefaultTitleBarHeight : TitleBarHeight)
+            ? (double.IsNaN(TitleBarHeightOverride) ? DefaultTitleBarHeight : TitleBarHeightOverride)
             : 0;
 
     /// <summary>
-    /// Gets the effective frame thickness, resolving NaN components to defaults.
+    /// Gets the effective frame thickness.
+    /// Uses FrameThicknessOverride if explicitly set, otherwise DefaultFrameThickness.
     /// Returns zero if border part is disabled.
     /// </summary>
-    public Thickness EffectiveFrameThickness =>
+    public Thickness FrameThickness =>
         EnabledParts.HasFlag(DrawnWindowDecorationParts.Border)
-            ? ResolveThickness(FrameThickness, DefaultFrameThickness)
+            ? (FrameThicknessOverride != default ? FrameThicknessOverride : DefaultFrameThickness)
             : default;
 
     /// <summary>
-    /// Gets the effective shadow thickness, resolving NaN components to defaults.
+    /// Gets the effective shadow thickness.
+    /// Uses ShadowThicknessOverride if explicitly set, otherwise DefaultShadowThickness.
     /// Returns zero if shadow part is disabled.
     /// </summary>
-    public Thickness EffectiveShadowThickness =>
+    public Thickness ShadowThickness =>
         EnabledParts.HasFlag(DrawnWindowDecorationParts.Shadow)
-            ? ResolveThickness(ShadowThickness, DefaultShadowThickness)
+            ? (ShadowThicknessOverride != default ? ShadowThicknessOverride : DefaultShadowThickness)
             : default;
 
     static WindowDrawnDecorations()
@@ -232,9 +232,9 @@ public class WindowDrawnDecorations : StyledElement
         DefaultTitleBarHeightProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
         DefaultFrameThicknessProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
         DefaultShadowThicknessProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
-        TitleBarHeightProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
-        FrameThicknessProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
-        ShadowThicknessProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
+        TitleBarHeightOverrideProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
+        FrameThicknessOverrideProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
+        ShadowThicknessOverrideProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
     }
 
     /// <summary>
@@ -462,14 +462,5 @@ public class WindowDrawnDecorations : StyledElement
         PseudoClasses.Set(":has-shadow", parts.HasFlag(DrawnWindowDecorationParts.Shadow));
         PseudoClasses.Set(":has-border", parts.HasFlag(DrawnWindowDecorationParts.Border));
         PseudoClasses.Set(":has-titlebar", parts.HasFlag(DrawnWindowDecorationParts.TitleBar));
-    }
-
-    private static Thickness ResolveThickness(Thickness value, Thickness defaultValue)
-    {
-        return new Thickness(
-            double.IsNaN(value.Left) ? defaultValue.Left : value.Left,
-            double.IsNaN(value.Top) ? defaultValue.Top : value.Top,
-            double.IsNaN(value.Right) ? defaultValue.Right : value.Right,
-            double.IsNaN(value.Bottom) ? defaultValue.Bottom : value.Bottom);
     }
 }

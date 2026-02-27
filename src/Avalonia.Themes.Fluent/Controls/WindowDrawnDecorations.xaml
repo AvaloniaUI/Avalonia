@@ -38,24 +38,32 @@
         <WindowDrawnDecorationsContent>
 
           <WindowDrawnDecorationsContent.Underlay>
-            <Panel>
-              <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                      BorderThickness="{TemplateBinding FrameThickness}"
-                      BorderBrush="{DynamicResource SystemControlForegroundChromeHighBrush}"
+            <Panel x:Name="PART_UnderlayWrapper">
+              <Border x:Name="PART_WindowBorder"
+                      Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                      BorderThickness="{TemplateBinding DefaultFrameThickness}"
+                      BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                       IsHitTestVisible="False" />
+              <!-- Titlebar: background, title text, and drag area live in underlay -->
+              <Panel x:Name="PART_TitleBar" VerticalAlignment="Top"
+                     Height="{TemplateBinding DefaultTitleBarHeight}"
+                     Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                     WindowDecorations.ElementRole="TitleBar">
+                <TextBlock Text="{TemplateBinding Title}"
+                           VerticalAlignment="Center"
+                           Margin="12,0,0,0"
+                           FontSize="12" />
+              </Panel>
             </Panel>
           </WindowDrawnDecorationsContent.Underlay>
 
           <WindowDrawnDecorationsContent.Overlay>
-            <Panel x:Name="PART_OverlayPanel" VerticalAlignment="Top" Height="30"
-                   Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                   WindowDecorations.ElementRole="TitleBar">
-              <TextBlock Text="{TemplateBinding Title}"
-                         VerticalAlignment="Center"
-                         Margin="12,0,0,0"
-                         FontSize="12" />
-              <StackPanel x:Name="PART_CaptionButtonPanel"
+            <!-- Overlay: only interactive caption buttons -->
+            <Panel x:Name="PART_OverlayWrapper">
+              <StackPanel x:Name="PART_OverlayPanel"
+                          VerticalAlignment="Top"
                           HorizontalAlignment="Right"
+                          Height="{TemplateBinding DefaultTitleBarHeight}"
                           Orientation="Horizontal"
                           Spacing="2"
                           TextElement.FontSize="10">
@@ -106,8 +114,7 @@
           </WindowDrawnDecorationsContent.Overlay>
 
           <WindowDrawnDecorationsContent.FullscreenPopover>
-            <!-- Shown on hover at top edge in fullscreen mode -->
-            <Panel Height="30"
+            <Panel Height="{TemplateBinding DefaultTitleBarHeight}"
                    VerticalAlignment="Top"
                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
                    WindowDecorations.ElementRole="TitleBar">
@@ -146,6 +153,25 @@
       </WindowDrawnDecorationsTemplate>
     </Setter>
 
+    <!-- Shadow: inset border and add drop shadow -->
+    <Style Selector="^:has-shadow /template/ Panel#PART_UnderlayWrapper">
+      <Setter Property="Margin" Value="16"/>
+    </Style>
+    <Style Selector="^:has-shadow /template/ Border#PART_WindowBorder">
+      <Setter Property="BoxShadow" Value="0 2 16 0 #40000000"/>
+    </Style>
+    <Style Selector="^:has-shadow /template/ Panel#PART_OverlayWrapper">
+      <Setter Property="Margin" Value="16"/>
+    </Style>
+
+    <!-- Border: inset titlebar and buttons inside frame -->
+    <Style Selector="^:has-border /template/ Panel#PART_TitleBar">
+      <Setter Property="Margin" Value="1,1,1,0"/>
+    </Style>
+    <Style Selector="^:has-border /template/ StackPanel#PART_OverlayPanel">
+      <Setter Property="Margin" Value="0,1,1,0"/>
+    </Style>
+
     <!-- Maximized: restore button path changes -->
     <Style Selector="^:maximized /template/ Path#RestoreButtonPath">
       <Setter Property="Data" Value="M2048 410h-410v-410h-1638v1638h410v410h1638v-1638zM1434 1434h-1229v-1229h1229v1229zM1843 1843h-1229v-205h1024v-1024h205v1229z" />
@@ -161,8 +187,11 @@
       <Setter Property="Opacity" Value="0.2"/>
     </Style>
 
-    <!-- Fullscreen: hide overlay (popover takes over) -->
-    <Style Selector="^:fullscreen /template/ Panel#PART_OverlayPanel">
+    <!-- Fullscreen: hide overlay and titlebar (popover takes over) -->
+    <Style Selector="^:fullscreen /template/ StackPanel#PART_OverlayPanel">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:fullscreen /template/ Panel#PART_TitleBar">
       <Setter Property="IsVisible" Value="False" />
     </Style>
   </ControlTheme>

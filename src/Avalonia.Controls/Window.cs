@@ -643,10 +643,13 @@ namespace Avalonia.Controls
         protected virtual void ExtendClientAreaToDecorationsChanged(bool isExtended)
         {
             IsExtendedIntoWindowDecorations = isExtended;
-            WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
             OffScreenMargin = PlatformImpl?.OffScreenMargin ?? default;
 
             UpdateDrawnDecorations();
+
+            // Only use platform margins if drawn decorations are not active
+            if (TopLevelHost.Decorations == null)
+                WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
         }
 
         private void UpdateDrawnDecorations()
@@ -665,7 +668,7 @@ namespace Avalonia.Controls
                 {
                     var hint = ExtendClientAreaTitleBarHeightHint;
                     if (hint >= 0)
-                        decorations.TitleBarHeight = hint;
+                        decorations.TitleBarHeightOverride = hint;
                 }
 
                 UpdateDrawnDecorationMargins();
@@ -692,9 +695,8 @@ namespace Avalonia.Controls
         private Chrome.DrawnWindowDecorationParts ComputeDecorationParts()
         {
             var platformNeeds = PlatformImpl?.RequestedDrawnDecorations ?? PlatformRequstedDrawnDecoration.None;
-            var parts = default(DrawnWindowDecorationParts);
-            if(platformNeeds.HasFlag(PlatformRequstedDrawnDecoration.TitleBar))
-                parts |= Chrome.DrawnWindowDecorationParts.TitleBar;
+            // TitleBar is always enabled when drawn decorations are active
+            var parts = Chrome.DrawnWindowDecorationParts.TitleBar;
             if (platformNeeds.HasFlag(PlatformRequstedDrawnDecoration.Shadow))
                 parts |= Chrome.DrawnWindowDecorationParts.Shadow;
             if (platformNeeds.HasFlag(PlatformRequstedDrawnDecoration.Border))
@@ -727,9 +729,9 @@ namespace Avalonia.Controls
             if (decorations == null)
                 return;
 
-            var titleBarHeight = decorations.EffectiveTitleBarHeight;
-            var frame = decorations.EffectiveFrameThickness;
-            WindowDecorationMargin = new Thickness(frame.Left, titleBarHeight, frame.Right, frame.Bottom);
+            var titleBarHeight = decorations.TitleBarHeight;
+            var frame = decorations.FrameThickness;
+            WindowDecorationMargin = new Thickness(frame.Left, titleBarHeight + frame.Top, frame.Right, frame.Bottom);
         }
 
         private void OnTitleBarHeightHintChanged()
@@ -740,9 +742,9 @@ namespace Avalonia.Controls
 
             var hint = ExtendClientAreaTitleBarHeightHint;
             if (hint >= 0)
-                decorations.TitleBarHeight = hint;
+                decorations.TitleBarHeightOverride = hint;
             else
-                decorations.ClearValue(Chrome.WindowDrawnDecorations.TitleBarHeightProperty);
+                decorations.ClearValue(Chrome.WindowDrawnDecorations.TitleBarHeightOverrideProperty);
 
             UpdateDrawnDecorationMargins();
         }
