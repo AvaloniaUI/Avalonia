@@ -134,7 +134,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SystemDecorations"/> property.
         /// </summary>
-        public static readonly StyledProperty<SystemDecorations> WindowDecorationsProperty =
+        public static readonly StyledProperty<SystemDecorations> SystemDecorationsProperty =
             AvaloniaProperty.Register<Window, SystemDecorations>(nameof(SystemDecorations), SystemDecorations.Full);
 
         /// <summary>
@@ -361,8 +361,8 @@ namespace Avalonia.Controls
         /// </summary>
         public SystemDecorations SystemDecorations
         {
-            get => GetValue(WindowDecorationsProperty);
-            set => SetValue(WindowDecorationsProperty, value);
+            get => GetValue(SystemDecorationsProperty);
+            set => SetValue(SystemDecorationsProperty, value);
         }
 
         /// <summary>
@@ -1339,7 +1339,7 @@ namespace Avalonia.Controls
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
-            if (change.Property == WindowDecorationsProperty)
+            if (change.Property == SystemDecorationsProperty)
             {
                 var (_, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
 

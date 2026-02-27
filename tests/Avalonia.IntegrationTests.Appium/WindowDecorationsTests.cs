@@ -5,7 +5,7 @@ using Xunit;
 namespace Avalonia.IntegrationTests.Appium;
 
 [Collection("WindowDecorations")]
-public class WindowDecorationsTests : TestBase, IDisposable
+public class WindowDecorationsTests : TestBase
 {
     public WindowDecorationsTests(DefaultAppFixture fixture)
         : base(fixture, "Window Decorations")
@@ -210,9 +210,10 @@ public class WindowDecorationsTests : TestBase, IDisposable
         return showNewWindowDecorations.OpenWindowWithClick();
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         SetParameters(false, -1);
         ApplyToCurrentWindow();
+        base.Dispose();
     }
 }

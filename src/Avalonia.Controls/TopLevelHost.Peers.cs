@@ -12,7 +12,9 @@ partial class TopLevelHost
         => new TopLevelHostAutomationPeer(this);
 
     private DecorationsOverlaysAutomationPeer? _decorationsOverlayPeer;
-    public AutomationPeer GetOrCreateDecorationsOverlaysPeer() => _decorationsOverlayPeer ?? new DecorationsOverlaysAutomationPeer(this, _topLevel);
+
+    public AutomationPeer GetOrCreateDecorationsOverlaysPeer() =>
+        _decorationsOverlayPeer ??= new DecorationsOverlaysAutomationPeer(this, _topLevel);
     
     /// <summary>
     /// Automation peer that returns no children. The automation tree is managed

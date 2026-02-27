@@ -137,8 +137,8 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
 
     protected (double TitleBarHeight, double ButtonsHeight) GetTitleBarInfo()
     {
-        var host = Window.GetVisualParent();
-        host.GetLayoutManager().ExecuteLayoutPass();
+        var host = Window.GetVisualParent()!;
+        host.GetLayoutManager()!.ExecuteLayoutPass();
 
         var titlebar = host.GetVisualDescendants().First(c => AutomationProperties.GetAutomationId(c) == "AvaloniaTitleBar");
         var closeButton = host.GetVisualDescendants().First(c => AutomationProperties.GetAutomationId(c) == "Close");

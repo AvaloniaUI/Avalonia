@@ -37,7 +37,7 @@ public class TestBase : IDisposable
     }
 
     protected AppiumDriver Session { get; }
-    public void Dispose()
+    public virtual void Dispose()
     {
         try
         {

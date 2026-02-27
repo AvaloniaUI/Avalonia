@@ -7,7 +7,7 @@ using Xunit;
 namespace Avalonia.IntegrationTests.Appium;
 
 [Collection("Default")]
-public class PointerTests_MacOS : TestBase, IDisposable
+public class PointerTests_MacOS : TestBase
 {
     public PointerTests_MacOS(DefaultAppFixture fixture)
         : base(fixture, "Window Decorations")
@@ -51,10 +51,11 @@ public class PointerTests_MacOS : TestBase, IDisposable
         return int.Parse(doubleClickCountTextBox.Text ?? "0");
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         SetParameters(false, false);
         var applyButton = Session.FindElementByAccessibilityId("ApplyWindowDecorations");
         applyButton.Click();
+        base.Dispose();
     }
 }
