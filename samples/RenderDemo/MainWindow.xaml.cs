@@ -43,5 +43,10 @@ namespace RenderDemo
         {
             TransparencyLevelHint = [WindowTransparencyLevel.None];
         }
+
+        private void SetTransparencyMenuItem_OnClick(object? sender, RoutedEventArgs e)
+        {
+            TransparencyLevelHint = [WindowTransparencyLevel.Transparent];
+        }
     }
 }
