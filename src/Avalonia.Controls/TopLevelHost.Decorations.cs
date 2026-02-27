@@ -237,10 +237,10 @@ internal partial class TopLevelHost
     {
         base.OnPointerExited(e);
 
-        if (_fullscreenPopoverEnabled && _fullscreenPopover != null)
-        {
-            _fullscreenPopover.IsVisible = false;
-        }
+        // Don't hide popover on PointerExited — it's hidden via the Y threshold
+        // check in OnPointerMoved. PointerExited can fire spuriously at window edges
+        // when the popover becomes visible (layout change re-routes the pointer),
+        // causing a show/hide feedback loop.
     }
 
 }
