@@ -233,9 +233,10 @@ namespace Avalonia.Win32
                 {
                     return chromeRole.Value switch
                     {
-                        // ElementRole.None means an interactive chrome element (e.g., caption button)
-                        // was hit — signal to redirect NC input to client input.
-                        WindowDecorationsElementRole.None => HitTestValues.HTCLIENT,
+                        // DecorationsElement/User = interactive chrome element (e.g., caption button)
+                        // — signal to redirect NC input to client input.
+                        WindowDecorationsElementRole.DecorationsElement => HitTestValues.HTCLIENT,
+                        WindowDecorationsElementRole.User => HitTestValues.HTCLIENT,
                         WindowDecorationsElementRole.TitleBar => HitTestValues.HTCAPTION,
                         WindowDecorationsElementRole.ResizeN => HitTestValues.HTTOP,
                         WindowDecorationsElementRole.ResizeS => HitTestValues.HTBOTTOM,

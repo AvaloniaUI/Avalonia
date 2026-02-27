@@ -254,7 +254,7 @@ namespace Avalonia.Headless
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         public bool NeedsManagedDecorations => false;
-        public PlatformRequstedDrawnDecoration RequestedDrawnDecorations { get; }
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations { get; }
 
         public Thickness ExtendedMargins => new Thickness();
 

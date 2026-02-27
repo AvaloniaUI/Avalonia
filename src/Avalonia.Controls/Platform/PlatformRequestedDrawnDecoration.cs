@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Platform;
 /// Flags indicating which drawn decoration parts a platform backend requires.
 /// </summary>
 [Flags, PrivateApi]
-public enum PlatformRequstedDrawnDecoration
+public enum PlatformRequestedDrawnDecoration
 {
     None = 0,
 

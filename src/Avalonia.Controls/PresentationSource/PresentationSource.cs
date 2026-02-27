@@ -134,8 +134,6 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
             var role = Chrome.WindowDecorations.GetElementRole(visual);
             if (role != WindowDecorationsElementRole.None)
                 return role;
-            if (Chrome.WindowDecorations.GetIsHitTestVisibleInChrome(visual))
-                return WindowDecorationsElementRole.None;
             visual = visual.VisualParent;
         }
         return null;

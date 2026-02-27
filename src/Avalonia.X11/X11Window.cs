@@ -930,7 +930,10 @@ namespace Avalonia.X11
                     && _inputRoot is { } inputRoot)
                 {
                     var chromeRole = inputRoot.HitTestChromeElement(mouse.Position);
-                    if (chromeRole is { } role && role != WindowDecorationsElementRole.None)
+                    if (chromeRole is { } role
+                        && role != WindowDecorationsElementRole.None
+                        && role != WindowDecorationsElementRole.DecorationsElement
+                        && role != WindowDecorationsElementRole.User)
                     {
                         var moveResizeSide = role switch
                         {
@@ -1580,10 +1583,10 @@ namespace Avalonia.X11
 
         public bool NeedsManagedDecorations => _extendClientAreaToDecorations;
 
-        public PlatformRequstedDrawnDecoration RequestedDrawnDecorations =>
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations =>
             _extendClientAreaToDecorations
-                ? PlatformRequstedDrawnDecoration.Border | PlatformRequstedDrawnDecoration.ResizeGrips
-                : PlatformRequstedDrawnDecoration.None;
+                ? PlatformRequestedDrawnDecoration.Border | PlatformRequestedDrawnDecoration.ResizeGrips
+                : PlatformRequestedDrawnDecoration.None;
 
         public bool IsEnabled => !_disabled && !_mode.BlockInput;
 

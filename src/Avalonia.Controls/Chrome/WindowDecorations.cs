@@ -24,22 +24,4 @@ public static class WindowDecorations
     /// Sets the <see cref="WindowDecorationsElementRole"/> for the specified element.
     /// </summary>
     public static void SetElementRole(Visual element, WindowDecorationsElementRole value) => element.SetValue(ElementRoleProperty, value);
-
-    /// <summary>
-    /// Defines the IsHitTestVisibleInChrome attached property.
-    /// When true, the element participates in chrome hit-testing as an interactive chrome element
-    /// (e.g., caption buttons). Internal use only.
-    /// </summary>
-    internal static readonly AttachedProperty<bool> IsHitTestVisibleInChromeProperty =
-        AvaloniaProperty.RegisterAttached<Visual, bool>("IsHitTestVisibleInChrome", typeof(WindowDecorations));
-
-    /// <summary>
-    /// Gets whether the element is hit-test visible in chrome.
-    /// </summary>
-    internal static bool GetIsHitTestVisibleInChrome(Visual element) => element.GetValue(IsHitTestVisibleInChromeProperty);
-
-    /// <summary>
-    /// Sets whether the element is hit-test visible in chrome.
-    /// </summary>
-    internal static void SetIsHitTestVisibleInChrome(Visual element, bool value) => element.SetValue(IsHitTestVisibleInChromeProperty, value);
 }

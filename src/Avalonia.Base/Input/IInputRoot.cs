@@ -40,9 +40,9 @@ namespace Avalonia.Input
         /// <param name="point">The point in root-relative coordinates.</param>
         /// <returns>
         /// <c>null</c> if no chrome element was hit (no chrome involvement at this point).
-        /// <see cref="ElementRole.None"/> if an interactive chrome element was hit (e.g., caption button) —
-        /// the platform should redirect non-client input to regular client input.
-        /// Any other <see cref="ElementRole"/> value indicates a specific non-client role (titlebar, resize grip, etc.).
+        /// <see cref="WindowDecorationsElementRole.DecorationsElement"/> or <see cref="WindowDecorationsElementRole.User"/>
+        /// if an interactive chrome element was hit — the platform should redirect non-client input to regular client input.
+        /// Any other non-<see cref="WindowDecorationsElementRole.None"/> value indicates a specific non-client role (titlebar, resize grip, etc.).
         /// </returns>
         internal WindowDecorationsElementRole? HitTestChromeElement(Point point) => null;
     }

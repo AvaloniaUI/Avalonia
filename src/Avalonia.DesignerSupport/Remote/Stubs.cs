@@ -48,8 +48,8 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
-        public PlatformRequstedDrawnDecoration RequestedDrawnDecorations => IsClientAreaExtendedToDecorations
-            ? PlatformRequstedDrawnDecoration.TitleBar
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations => IsClientAreaExtendedToDecorations
+            ? PlatformRequestedDrawnDecoration.TitleBar
             : default;
         public Thickness ExtendedMargins { get; } = new Thickness();
 

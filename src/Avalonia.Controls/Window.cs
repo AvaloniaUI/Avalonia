@@ -622,6 +622,7 @@ namespace Avalonia.Controls
 
         private void HandleWindowStateChanged(WindowState state)
         {
+            Console.WriteLine(state);
             WindowState = state;
 
             if (state == WindowState.Minimized)
@@ -694,14 +695,14 @@ namespace Avalonia.Controls
 
         private Chrome.DrawnWindowDecorationParts ComputeDecorationParts()
         {
-            var platformNeeds = PlatformImpl?.RequestedDrawnDecorations ?? PlatformRequstedDrawnDecoration.None;
+            var platformNeeds = PlatformImpl?.RequestedDrawnDecorations ?? PlatformRequestedDrawnDecoration.None;
             // TitleBar is always enabled when drawn decorations are active
             var parts = Chrome.DrawnWindowDecorationParts.TitleBar;
-            if (platformNeeds.HasFlag(PlatformRequstedDrawnDecoration.Shadow))
+            if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Shadow))
                 parts |= Chrome.DrawnWindowDecorationParts.Shadow;
-            if (platformNeeds.HasFlag(PlatformRequstedDrawnDecoration.Border))
+            if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Border))
                 parts |= Chrome.DrawnWindowDecorationParts.Border;
-            if (platformNeeds.HasFlag(PlatformRequstedDrawnDecoration.ResizeGrips))
+            if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.ResizeGrips))
                 parts |= Chrome.DrawnWindowDecorationParts.ResizeGrips;
 
             // In fullscreen: no shadow, border, resize grips, or titlebar (popover takes over)

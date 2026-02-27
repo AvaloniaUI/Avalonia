@@ -343,35 +343,17 @@ public class WindowDrawnDecorations : StyledElement
         _popoverFullScreenButton = _templateNameScope.Find<Button>(PART_PopoverFullScreenButton);
 
         if (_closeButton != null)
-        {
             _closeButton.Click += OnCloseButtonClick;
-            WindowDecorations.SetIsHitTestVisibleInChrome(_closeButton, true);
-        }
         if (_minimizeButton != null)
-        {
             _minimizeButton.Click += OnMinimizeButtonClick;
-            WindowDecorations.SetIsHitTestVisibleInChrome(_minimizeButton, true);
-        }
         if (_maximizeButton != null)
-        {
             _maximizeButton.Click += OnMaximizeButtonClick;
-            WindowDecorations.SetIsHitTestVisibleInChrome(_maximizeButton, true);
-        }
         if (_fullScreenButton != null)
-        {
             _fullScreenButton.Click += OnFullScreenButtonClick;
-            WindowDecorations.SetIsHitTestVisibleInChrome(_fullScreenButton, true);
-        }
         if (_popoverCloseButton != null)
-        {
             _popoverCloseButton.Click += OnCloseButtonClick;
-            WindowDecorations.SetIsHitTestVisibleInChrome(_popoverCloseButton, true);
-        }
         if (_popoverFullScreenButton != null)
-        {
             _popoverFullScreenButton.Click += OnFullScreenButtonClick;
-            WindowDecorations.SetIsHitTestVisibleInChrome(_popoverFullScreenButton, true);
-        }
     }
 
     private void DetachCaptionButtons()

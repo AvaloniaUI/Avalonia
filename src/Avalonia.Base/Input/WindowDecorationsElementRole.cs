@@ -7,9 +7,23 @@ namespace Avalonia.Input;
 public enum WindowDecorationsElementRole
 {
     /// <summary>
-    /// No special role. The element participates in normal input handling.
+    /// No special role. The element is invisible to chrome hit-testing.
     /// </summary>
     None,
+
+    /// <summary>
+    /// An interactive element that is part of the decorations chrome (e.g., a caption button).
+    /// Set by themes on decoration template elements. Input is passed through to the element
+    /// rather than being intercepted for non-client actions.
+    /// </summary>
+    DecorationsElement,
+
+    /// <summary>
+    /// An interactive element set by user code that should receive input even when
+    /// overlapping chrome areas. Has the same effect as <see cref="DecorationsElement"/>
+    /// but is intended for use by application developers.
+    /// </summary>
+    User,
 
     /// <summary>
     /// The element acts as a titlebar drag area.

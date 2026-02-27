@@ -12,6 +12,7 @@
     <Setter Property="Width" Value="{DynamicResource CaptionButtonWidth}"/>
     <Setter Property="Height" Value="{DynamicResource CaptionButtonHeight}"/>
     <Setter Property="VerticalAlignment" Value="Stretch"/>
+    <Setter Property="(WindowDecorations.ElementRole)" Value="DecorationsElement"/>
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter Name="PART_ContentPresenter"
