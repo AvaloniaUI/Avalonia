@@ -150,12 +150,6 @@ namespace Avalonia.Platform
         void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint);        
 
         /// <summary>
-        /// Sets hints that configure how the client area extends. 
-        /// </summary>
-        /// <param name="hints"></param>
-        void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints);
-
-        /// <summary>
         /// Sets how big the non-client titlebar area should be.
         /// </summary>
         /// <param name="titleBarHeight">-1 for platform default, otherwise the height in DIPs.</param>

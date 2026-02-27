@@ -178,10 +178,6 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {
-        }
-
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
         }

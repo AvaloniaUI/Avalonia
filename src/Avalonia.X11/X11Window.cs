@@ -1499,10 +1499,6 @@ namespace Avalonia.X11
             ExtendClientAreaToDecorationsChanged?.Invoke(extendIntoClientAreaHint);
         }
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {
-        }
-
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
         }

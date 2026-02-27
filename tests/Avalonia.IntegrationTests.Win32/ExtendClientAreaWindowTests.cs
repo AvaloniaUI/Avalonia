@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -41,7 +40,6 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
             WindowState = state,
             SystemDecorations = Decorations,
             ExtendClientAreaToDecorationsHint = true,
-            ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.PreferSystemChrome,
             Width = ClientWidth,
             Height = ClientHeight,
             WindowStartupLocation = WindowStartupLocation.Manual,

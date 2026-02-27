@@ -206,12 +206,6 @@ namespace Avalonia.Native
         }
 
         /// <inheritdoc/>
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {   
-            _native.SetExtendClientAreaHints ((AvnExtendClientAreaChromeHints)hints);
-        }
-
-        /// <inheritdoc/>
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
             _extendTitleBarHeight = titleBarHeight;
