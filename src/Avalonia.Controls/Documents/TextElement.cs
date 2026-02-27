@@ -354,6 +354,12 @@ namespace Avalonia.Controls.Documents
         {
             base.OnPropertyChanged(change);
 
+            if (change.Property.OwnerType == typeof(TextScaling))
+            {
+                InlineHost?.Invalidate();
+                return;
+            }
+
             switch (change.Property.Name)
             {
                 case nameof(Background):
@@ -363,7 +369,7 @@ namespace Avalonia.Controls.Documents
                 case nameof(FontWeight):
                 case nameof(FontStretch):
                 case nameof(Foreground):
-                    InlineHost?.Invalidate();
+                InlineHost?.Invalidate();
                     break;
             }
         }

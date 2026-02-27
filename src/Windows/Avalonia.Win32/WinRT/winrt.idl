@@ -859,6 +859,15 @@ enum UIColorType
     Complement = 9
 }
 
+[uuid(BAD82401-2721-44F9-BB91-2BB228BE442F)]
+interface IUISettings2 : IInspectable
+{
+    [propget] HRESULT GetTextScaleFactor([out][retval] DOUBLE* value);
+    
+    [eventadd] HRESULT AddTextScaleFactorChanged([in] void* handler, [out][retval] int* token);
+    [eventremove] HRESULT RemoveTextScaleFactorChanged([in] int token);
+}
+
 [uuid(03021BE4-5254-4781-8194-5168F7D06D7B)]
 interface IUISettings3 : IInspectable
 {

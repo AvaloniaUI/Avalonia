@@ -3,7 +3,7 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Documents
 {
-    internal interface IInlineHost : ILogical
+    internal interface IInlineHost : ILogical, ITextScaleable
     {
         void Invalidate();
 
