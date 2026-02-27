@@ -43,7 +43,7 @@
                   Focusable="True"
                   TemplatedControl.IsTemplateFocusTarget="True">
             <Grid Name="PART_Header"
-                  ColumnDefinitions="16, *">
+                  ColumnDefinitions="16, Auto">
               <Grid.Margin>
                 <MultiBinding Converter="{x:Static converters:TreeViewItemIndentConverter.Instance}">
                   <Binding Path="Level" RelativeSource="{RelativeSource TemplatedParent}" />
