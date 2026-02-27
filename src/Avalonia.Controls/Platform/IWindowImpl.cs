@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Metadata;
 
@@ -100,7 +101,7 @@ namespace Avalonia.Platform
         /// Gets flags indicating which drawn decoration parts the platform requires.
         /// For example, X11 needs shadow, border, and resize grips; Win32 only needs titlebar/buttons.
         /// </summary>
-        PlatformDrawnDecorationNeeds DrawnDecorationNeeds => PlatformDrawnDecorationNeeds.None;
+        PlatformRequstedDrawnDecoration RequestedDrawnDecorations => PlatformRequstedDrawnDecoration.None;
 
         /// <summary>
         /// Gets a thickness that describes the amount each side of the non-client area extends into the client area.

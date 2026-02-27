@@ -44,6 +44,6 @@ namespace Avalonia.Input
         /// the platform should redirect non-client input to regular client input.
         /// Any other <see cref="ElementRole"/> value indicates a specific non-client role (titlebar, resize grip, etc.).
         /// </returns>
-        internal ElementRole? HitTestChromeElement(Point point) => null;
+        internal WindowDecorationsElementRole? HitTestChromeElement(Point point) => null;
     }
 }

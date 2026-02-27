@@ -691,7 +691,7 @@ namespace Avalonia.Controls
 
         private Chrome.DrawnWindowDecorationParts ComputeDecorationParts()
         {
-            var platformNeeds = PlatformImpl?.DrawnDecorationNeeds ?? PlatformRequstedDrawnDecoration.None;
+            var platformNeeds = PlatformImpl?.RequestedDrawnDecorations ?? PlatformRequstedDrawnDecoration.None;
             var parts = Chrome.DrawnWindowDecorationParts.TitleBar; // Always need titlebar/buttons
             if (platformNeeds.HasFlag(PlatformRequstedDrawnDecoration.Shadow))
                 parts |= Chrome.DrawnWindowDecorationParts.Shadow;
