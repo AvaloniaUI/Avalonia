@@ -104,6 +104,7 @@ internal partial class TopLevelHost
             .Subscribe(_ => ApplyDecorationsTemplate());
 
         ApplyDecorationsTemplate();
+        InvalidateMeasure();
     }
 
     /// <summary>

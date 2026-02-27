@@ -80,7 +80,7 @@ public class WindowDrawnDecorations : StyledElement
     /// </summary>
     internal static readonly StyledProperty<DrawnWindowDecorationParts> EnabledPartsProperty =
         AvaloniaProperty.Register<WindowDrawnDecorations, DrawnWindowDecorationParts>(nameof(EnabledParts),
-            defaultValue: DrawnWindowDecorationParts.All);
+            defaultValue: DrawnWindowDecorationParts.None);
 
     private IWindowDrawnDecorationsTemplate? _appliedTemplate;
     private INameScope? _templateNameScope;

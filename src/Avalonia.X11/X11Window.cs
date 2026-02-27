@@ -1578,7 +1578,9 @@ namespace Avalonia.X11
 
         public PlatformRequestedDrawnDecoration RequestedDrawnDecorations =>
             _extendClientAreaToDecorations
-                ? PlatformRequestedDrawnDecoration.Border | PlatformRequestedDrawnDecoration.ResizeGrips
+                ? PlatformRequestedDrawnDecoration.Border
+                  | PlatformRequestedDrawnDecoration.ResizeGrips
+                  | PlatformRequestedDrawnDecoration.TitleBar
                 : PlatformRequestedDrawnDecoration.None;
 
         public bool IsEnabled => !_disabled && !_mode.BlockInput;
