@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -377,6 +378,13 @@ namespace Avalonia.Win32
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
+            if (transparencyLevels.Count == 1 && transparencyLevels[0] == WindowTransparencyLevel.None)
+            {
+                // Explicitly disable transparency. Ignore the UseRedirectionBitmap property.
+                TransparencyLevel = WindowTransparencyLevel.None;
+                return;
+            }
+
             foreach (var level in transparencyLevels)
             {
                 if (!IsSupported(level))
