@@ -246,6 +246,10 @@ namespace Avalonia.Win32
                         WindowDecorationsElementRole.ResizeNW => HitTestValues.HTTOPLEFT,
                         WindowDecorationsElementRole.ResizeSE => HitTestValues.HTBOTTOMRIGHT,
                         WindowDecorationsElementRole.ResizeSW => HitTestValues.HTBOTTOMLEFT,
+                        WindowDecorationsElementRole.CloseButton => HitTestValues.HTCLOSE,
+                        WindowDecorationsElementRole.MinimizeButton => HitTestValues.HTMINBUTTON,
+                        WindowDecorationsElementRole.MaximizeButton => HitTestValues.HTMAXBUTTON,
+                        WindowDecorationsElementRole.FullScreenButton => HitTestValues.HTCLIENT,
                         _ => HitTestValues.HTNOWHERE
                     };
                 }

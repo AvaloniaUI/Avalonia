@@ -69,7 +69,8 @@
                           Spacing="2"
                           TextElement.FontSize="10">
                 <Button x:Name="PART_FullScreenButton"
-                        Theme="{StaticResource FluentDrawnCaptionButton}">
+                        Theme="{StaticResource FluentDrawnCaptionButton}"
+                        WindowDecorations.ElementRole="FullScreenButton">
                   <Viewbox Width="11" Margin="2">
                     <Path Name="FullScreenButtonPath"
                           Stretch="UniformToFill"
@@ -79,6 +80,7 @@
                 </Button>
                 <Button x:Name="PART_MinimizeButton"
                         Theme="{StaticResource FluentDrawnCaptionButton}"
+                        WindowDecorations.ElementRole="MinimizeButton"
                         AutomationProperties.Name="Minimize">
                   <Viewbox Width="11" Margin="2">
                     <Path Stretch="UniformToFill"
@@ -88,6 +90,7 @@
                 </Button>
                 <Button x:Name="PART_MaximizeButton"
                         Theme="{StaticResource FluentDrawnCaptionButton}"
+                        WindowDecorations.ElementRole="MaximizeButton"
                         AutomationProperties.Name="Maximize">
                   <Viewbox Width="11" Margin="2">
                     <Viewbox.RenderTransform>
@@ -103,6 +106,7 @@
                         Background="#ffe81123"
                         BorderBrush="#fff1707a"
                         Theme="{StaticResource FluentDrawnCaptionButton}"
+                        WindowDecorations.ElementRole="CloseButton"
                         AutomationProperties.Name="Close">
                   <Viewbox Width="11" Margin="2">
                     <Path Stretch="UniformToFill"
@@ -128,7 +132,8 @@
                           Spacing="2"
                           TextElement.FontSize="10">
                 <Button x:Name="PART_PopoverFullScreenButton"
-                        Theme="{StaticResource FluentDrawnCaptionButton}">
+                        Theme="{StaticResource FluentDrawnCaptionButton}"
+                        WindowDecorations.ElementRole="FullScreenButton">
                   <Viewbox Width="11" Margin="2">
                     <Path Stretch="UniformToFill"
                           Fill="{DynamicResource CaptionButtonForeground}"
@@ -139,6 +144,7 @@
                         Background="#ffe81123"
                         BorderBrush="#fff1707a"
                         Theme="{StaticResource FluentDrawnCaptionButton}"
+                        WindowDecorations.ElementRole="CloseButton"
                         AutomationProperties.Name="Close">
                   <Viewbox Width="11" Margin="2">
                     <Path Stretch="UniformToFill"

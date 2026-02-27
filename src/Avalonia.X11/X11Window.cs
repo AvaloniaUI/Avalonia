@@ -930,10 +930,7 @@ namespace Avalonia.X11
                     && _inputRoot is { } inputRoot)
                 {
                     var chromeRole = inputRoot.HitTestChromeElement(mouse.Position);
-                    if (chromeRole is { } role
-                        && role != WindowDecorationsElementRole.None
-                        && role != WindowDecorationsElementRole.DecorationsElement
-                        && role != WindowDecorationsElementRole.User)
+                    if (chromeRole is { } role)
                     {
                         var moveResizeSide = role switch
                         {

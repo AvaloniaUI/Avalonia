@@ -69,5 +69,32 @@ public enum WindowDecorationsElementRole
     /// <summary>
     /// Resize grip for the southwest corner.
     /// </summary>
-    ResizeSW
+    ResizeSW,
+
+    /// <summary>
+    /// The element acts as the window close button.
+    /// On Win32, maps to HTCLOSE for system close behavior.
+    /// On other platforms, treated as an interactive decoration element.
+    /// </summary>
+    CloseButton,
+
+    /// <summary>
+    /// The element acts as the window minimize button.
+    /// On Win32, maps to HTMINBUTTON for system minimize behavior.
+    /// On other platforms, treated as an interactive decoration element.
+    /// </summary>
+    MinimizeButton,
+
+    /// <summary>
+    /// The element acts as the window maximize/restore button.
+    /// On Win32, maps to HTMAXBUTTON for system maximize behavior.
+    /// On other platforms, treated as an interactive decoration element.
+    /// </summary>
+    MaximizeButton,
+
+    /// <summary>
+    /// The element acts as the window fullscreen toggle button.
+    /// Treated as an interactive decoration element on all platforms.
+    /// </summary>
+    FullScreenButton
 }
