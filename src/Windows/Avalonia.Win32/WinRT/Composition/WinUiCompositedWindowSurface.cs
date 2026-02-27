@@ -149,6 +149,13 @@ namespace Avalonia.Win32.WinRT.Composition
                 _drawingSurface.Dispose();
 
                 CreateSurface(_window);
+
+                var size = _window.WindowInfo.Size;
+                _surfaceInterop.Resize(new UnmanagedMethods.POINT
+                {
+                    X = size.Width,
+                    Y = size.Height
+                });
             }
 
             bool needsEndDraw = false;
