@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
@@ -534,18 +535,36 @@ namespace Avalonia.Controls
 
         private void UpdateSelectionBoxItem(object? item)
         {
-            var contentControl = item as IContentControl;
-
-            if (contentControl != null)
+            var target = item;
+            IDataTemplate? itemTemplate=null;
+            if (SelectionBoxItemTemplate is { } selectionBoxItemTemplate)
+            {
+                itemTemplate = selectionBoxItemTemplate;
+            }else if(ItemTemplate is {} itemTemplateFromItems)
+            {
+                itemTemplate = itemTemplateFromItems;
+            }
+            else if(DisplayMemberBinding is { } displayMemberBinding)
+            {
+                itemTemplate=new FuncDataTemplate<object?>((_, _) =>
+                    new TextBlock
+                    {
+                        [TextBlock.DataContextProperty] = target,
+                        [!TextBlock.TextProperty] = displayMemberBinding,
+                    });
+            }
+            if(itemTemplate != null&&itemTemplate.Match(target))
+            {
+                item=itemTemplate.Build(item);
+            }
+            if (item is IContentControl contentControl)
             {
                 item = contentControl.Content;
             }
 
-            var control = item as Control;
-
-            if (control != null)
+            if (item is Control control)
             {
-                if (VisualRoot is object)
+                if (VisualRoot is not null)
                 {
                     control.Measure(Size.Infinity);
 
@@ -566,22 +585,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                if (item is not null && ItemTemplate is null && SelectionBoxItemTemplate is null && DisplayMemberBinding is { } binding)
-                {
-                    var template = new FuncDataTemplate<object?>((_, _) =>
-                    new TextBlock
-                    {
-                        [TextBlock.DataContextProperty] = item,
-                        [!TextBlock.TextProperty] = binding,
-                    });
-                    var text = template.Build(item);
-                    SelectionBoxItem = text;
-                }
-                else
-                {
-                    SelectionBoxItem = item;
-                }
-                
+                SelectionBoxItem = item;
             }
         }
 
@@ -589,7 +593,7 @@ namespace Avalonia.Controls
         {
             if (SelectionBoxItem is Rectangle rectangle)
             {
-                if ((rectangle.Fill as VisualBrush)?.Visual is Visual content)
+                if ((rectangle.Fill as VisualBrush)?.Visual is { } content)
                 {
                     var flowDirection = content.VisualParent?.FlowDirection ?? FlowDirection.LeftToRight;
                     rectangle.FlowDirection = flowDirection;
