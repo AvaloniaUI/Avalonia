@@ -16,8 +16,8 @@ public partial class Dispatcher
     private long? _dueTimeForBackgroundProcessing;
     private long? _osTimerSetTo;
 
-    private readonly Func<TimeSpan> _timeProvider;
-    internal long Now => (long)_timeProvider().TotalMilliseconds;
+    private readonly Func<long> _timeProvider;
+    internal long Now => _timeProvider();
 
     private void UpdateOSTimer()
     {
@@ -29,14 +29,7 @@ public partial class Dispatcher
         if (_osTimerSetTo == nextDueTime)
             return;
 
-        _osTimerSetTo = nextDueTime;
-        if (nextDueTime == null) 
-            _impl.UpdateTimer(null);
-        else
-        {
-            var delay = (nextDueTime.Value - Now);
-            _impl.UpdateTimer(_impl.Now + delay);
-        }
+        _impl.UpdateTimer(_osTimerSetTo = nextDueTime);
     }
 
     internal void RescheduleTimers()

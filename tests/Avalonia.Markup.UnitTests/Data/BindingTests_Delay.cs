@@ -26,7 +26,7 @@ public class BindingTests_Delay : ScopedTestBase, IDisposable
     {
         _app = UnitTestApplication.Start(new(keyboardDevice: () => new KeyboardDevice()));
         _dispatcher = new ManualTimerDispatcher();
-        _ = new Dispatcher(_dispatcher, () => TimeSpan.FromMilliseconds(_dispatcher.Now));
+        _ = new Dispatcher(_dispatcher);
 
         _source = new BindingTests.Source { Foo = InitialFooValue };
         _target = new TextBox { DataContext = _source };

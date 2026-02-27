@@ -37,7 +37,6 @@ public partial class DispatcherTests
         }
 
         public long Now { get; set; }
-        public TimeSpan Time => TimeSpan.FromMilliseconds(Now);
 
         public void ExecuteSignal()
         {
@@ -156,7 +155,7 @@ public partial class DispatcherTests
     {
         var impl = new SimpleDispatcherImpl();
         Dispatcher.ResetForUnitTests();
-        _uiThread = new Dispatcher(impl, () => impl.Time);
+        _uiThread = new Dispatcher(impl);
         var actions = new List<int>();
         for (var c = 0; c < 10; c++)
         {
@@ -201,7 +200,7 @@ public partial class DispatcherTests
 
         var impl = new SimpleDispatcherImpl();
         impl.TestInputPending = true;
-        _uiThread = new Dispatcher(impl, () => impl.Time);
+        _uiThread = new Dispatcher(impl);
 
         var actions = new List<int>();
         for (var c = 0; c < 10; c++)

@@ -30,7 +30,7 @@ public partial class Dispatcher : IDispatcher
     private readonly AvaloniaSynchronizationContext?[] _priorityContexts =
         new AvaloniaSynchronizationContext?[DispatcherPriority.MaxValue - DispatcherPriority.MinValue + 1];
 
-    internal Dispatcher(IDispatcherImpl? impl, Func<TimeSpan>? timeProvider = null)
+    internal Dispatcher(IDispatcherImpl? impl)
     {
 #if DEBUG
         if (AvaloniaLocator.Current.GetService<IDispatcherImpl>() != null
@@ -51,9 +51,14 @@ public partial class Dispatcher : IDispatcher
             s_dispatchers.Add(Thread.CurrentThread,
                 s_currentThreadDispatcher = new() { Reference = new WeakReference<Dispatcher>(this) });
         }
-        
-        var st = Stopwatch.StartNew();
-        _timeProvider = timeProvider ?? (() => st.Elapsed);
+
+        if (impl is null)
+        {
+            var st = Stopwatch.StartNew();
+            _timeProvider = () => st.ElapsedMilliseconds;
+        }
+        else
+            _timeProvider = () => impl.Now;
 
         _impl = null!; // Set by ReplaceImplementation
         ReplaceImplementation(impl);
