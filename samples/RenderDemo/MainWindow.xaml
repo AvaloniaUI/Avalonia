@@ -49,6 +49,9 @@
     <TabItem Header="Animations">
       <pages:AnimationsPage />
     </TabItem>
+    <TabItem Header="Animation Speed">
+      <pages:AnimationSpeedPage />
+    </TabItem>
     <TabItem Header="Transitions">
       <pages:TransitionsPage />
     </TabItem>
