@@ -204,7 +204,7 @@ namespace Avalonia.Automation.Peers
         protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
         protected override string? GetAutomationIdCore() => AutomationProperties.GetAutomationId(Owner) ?? Owner.Name;
         protected override Rect GetBoundingRectangleCore() => GetBounds(Owner);
-        protected override string GetClassNameCore() => Owner.GetType().Name;
+        protected override string GetClassNameCore() => AutomationProperties.GetClassNameOverride(Owner) ?? Owner.GetType().Name;
         protected override string? GetItemStatusCore() => AutomationProperties.GetItemStatus(Owner);
         protected override string? GetItemTypeCore() => AutomationProperties.GetItemType(Owner);
         protected override bool HasKeyboardFocusCore() => Owner.IsFocused;

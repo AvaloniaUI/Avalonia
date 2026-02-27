@@ -94,6 +94,17 @@ namespace Avalonia.Automation
                 typeof(AutomationProperties));
 
         /// <summary>
+        /// Defines the AutomationProperties.ClassNameOverride attached property.
+        /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetClassName"/>.
+        /// </remarks>
+        public static readonly AttachedProperty<string?> ClassNameOverrideProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, string?>(
+                "ClassNameOverride",
+                typeof(AutomationProperties));
+
+        /// <summary>
         /// Defines the AutomationProperties.HelpText attached property.
         /// </summary>
         /// <remarks>
@@ -350,6 +361,24 @@ namespace Avalonia.Automation
         {
             _ = element ?? throw new ArgumentNullException(nameof(element));
             return element.GetValue(ControlTypeOverrideProperty);
+        }
+
+        /// <summary>
+        /// Helper for setting the value of the <see cref="ClassNameOverrideProperty"/> on a StyledElement. 
+        /// </summary>
+        public static void SetClassNameOverride(StyledElement element, string? value)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            element.SetValue(ClassNameOverrideProperty, value);
+        }
+
+        /// <summary>
+        /// Helper for reading the value of the <see cref="ClassNameOverrideProperty"/> on a StyledElement.
+        /// </summary>
+        public static string? GetClassNameOverride(StyledElement element)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            return element.GetValue(ClassNameOverrideProperty);
         }
 
         /// <summary>

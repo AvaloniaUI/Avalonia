@@ -24,6 +24,8 @@ public class WindowDrawnDecorations : StyledElement
     // Popover caption buttons (separate names to avoid name scope conflicts)
     internal const string PART_PopoverCloseButton = "PART_PopoverCloseButton";
     internal const string PART_PopoverFullScreenButton = "PART_PopoverFullScreenButton";
+    // Titlebar panel
+    internal const string PART_TitleBar = "PART_TitleBar";
 
     /// <summary>
     /// Defines the <see cref="Template"/> property.
@@ -341,6 +343,16 @@ public class WindowDrawnDecorations : StyledElement
         _fullScreenButton = _templateNameScope.Find<Button>(PART_FullScreenButton);
         _popoverCloseButton = _templateNameScope.Find<Button>(PART_PopoverCloseButton);
         _popoverFullScreenButton = _templateNameScope.Find<Button>(PART_PopoverFullScreenButton);
+
+        // Set up automation properties on the titlebar panel
+        var titleBar = _templateNameScope.Find<Control>(PART_TitleBar);
+        if (titleBar != null)
+        {
+            global::Avalonia.Automation.AutomationProperties.SetControlTypeOverride(titleBar, global::Avalonia.Automation.Peers.AutomationControlType.TitleBar);
+            global::Avalonia.Automation.AutomationProperties.SetAutomationId(titleBar, "AvaloniaTitleBar");
+            global::Avalonia.Automation.AutomationProperties.SetAccessibilityView(titleBar, global::Avalonia.Automation.AccessibilityView.Raw);
+            global::Avalonia.Automation.AutomationProperties.SetClassNameOverride(titleBar, "TitleBar");
+        }
 
         if (_closeButton != null)
             _closeButton.Click += OnCloseButtonClick;

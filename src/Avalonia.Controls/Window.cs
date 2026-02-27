@@ -641,8 +641,10 @@ namespace Avalonia.Controls
 
         private void UpdateDrawnDecorations()
         {
-            var needsDrawnDecorations = IsExtendedIntoWindowDecorations
-                && (PlatformImpl?.NeedsManagedDecorations ?? false);
+            var isExtended = IsExtendedIntoWindowDecorations
+                || (PlatformImpl?.IsClientAreaExtendedToDecorations ?? false);
+            var needsManaged = PlatformImpl?.NeedsManagedDecorations ?? false;
+            var needsDrawnDecorations = isExtended && needsManaged;
 
             if (needsDrawnDecorations)
             {
@@ -682,8 +684,9 @@ namespace Avalonia.Controls
         private Chrome.DrawnWindowDecorationParts ComputeDecorationParts()
         {
             var platformNeeds = PlatformImpl?.RequestedDrawnDecorations ?? PlatformRequestedDrawnDecoration.None;
-            // TitleBar is always enabled when drawn decorations are active
-            var parts = Chrome.DrawnWindowDecorationParts.TitleBar;
+            var parts = Chrome.DrawnWindowDecorationParts.None;
+            if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.TitleBar))
+                parts |= Chrome.DrawnWindowDecorationParts.TitleBar;
             if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Shadow))
                 parts |= Chrome.DrawnWindowDecorationParts.Shadow;
             if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Border))
@@ -877,6 +880,10 @@ namespace Avalonia.Controls
 
                 EnsureInitialized();
                 ApplyStyling();
+                
+                // Enable drawn decorations before layout so margins are computed
+                UpdateDrawnDecorations();
+                
                 _shown = true;
                 IsVisible = true;
 

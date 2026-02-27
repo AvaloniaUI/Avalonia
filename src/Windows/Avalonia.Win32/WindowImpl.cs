@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -1726,3 +1726,4 @@ namespace Avalonia.Win32
         }
     }
 }
+
