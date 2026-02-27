@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPagePerformancePage">
+  <Grid ColumnDefinitions="*,240">
+
+    <!-- Left: NavigationPage + Operation log -->
+    <DockPanel Grid.Column="0" Margin="12">
+
+      <DockPanel DockPanel.Dock="Bottom" Height="130" Margin="0,8,0,0">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+          <TextBlock Text="Operation Log"
+                     FontSize="12" FontWeight="SemiBold"
+                     VerticalAlignment="Center" />
+          <Button x:Name="ClearLogButton" Content="Clear"
+                  FontSize="11" Padding="8,2"
+                  HorizontalAlignment="Right"
+                  Click="OnClearLog" />
+        </DockPanel>
+        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1" CornerRadius="4" ClipToBounds="True">
+          <ScrollViewer x:Name="LogScrollViewer">
+            <StackPanel x:Name="LogPanel" Spacing="0" />
+          </ScrollViewer>
+        </Border>
+      </DockPanel>
+
+      <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+              BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+        <NavigationPage x:Name="DemoNav" />
+      </Border>
+    </DockPanel>
+
+    <!-- Right: Metrics + Actions -->
+    <Border Grid.Column="1"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1,0,0,0" Padding="12">
+      <ScrollViewer>
+        <StackPanel Spacing="8">
+
+          <TextBlock Text="Metrics" FontWeight="SemiBold" />
+          <TextBlock x:Name="StackDepthText"    Text="Stack Depth: 0"        FontSize="12" />
+          <TextBlock x:Name="LiveInstancesText" Text="Live Page Instances: 0" FontSize="12" />
+          <TextBlock x:Name="TotalCreatedText"  Text="Total Pages Created: 0" FontSize="12" />
+          <DockPanel>
+            <TextBlock x:Name="ManagedMemoryText" Text="Managed Heap: 0.0 MB" FontSize="12" />
+            <TextBlock x:Name="MemoryDeltaText"   Text=""
+                       FontSize="12" FontWeight="SemiBold" Margin="6,0,0,0" />
+          </DockPanel>
+
+          <Separator />
+
+          <TextBlock Text="Actions" FontWeight="SemiBold" />
+          <Button Content="Push Page"     HorizontalAlignment="Stretch" Click="OnPush" />
+          <Button Content="Push 5 Pages"  HorizontalAlignment="Stretch" Click="OnPush5" />
+          <Button Content="Pop Page"      HorizontalAlignment="Stretch" Click="OnPop" />
+          <Button Content="Pop to Root"   HorizontalAlignment="Stretch" Click="OnPopToRoot" />
+
+          <Separator />
+
+          <Button x:Name="ForceGCButton" Content="Force GC + Refresh"
+                  HorizontalAlignment="Stretch"
+                  Click="OnForceGC" />
+
+          <CheckBox x:Name="AutoRefreshCheck" Content="Auto-refresh (2s)"
+                    FontSize="12"
+                    IsCheckedChanged="OnAutoRefreshChanged" />
+
+          <Separator />
+
+          <TextBlock Text="Stack" FontWeight="SemiBold" />
+          <TextBlock Text="▲  Current (top)" FontSize="10" Opacity="0.45" Margin="0,-2,0,0" />
+          <StackPanel x:Name="StackItemsPanel" Spacing="4" />
+          <TextBlock Text="▼  Root (bottom)" FontSize="10" Opacity="0.45" />
+
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
+  </Grid>
+</UserControl>

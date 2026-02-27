@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPagePassDataPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Pass Data" FontWeight="SemiBold" FontSize="14" />
+        <TextBlock Text="Tap a contact on the left to navigate to their detail page and see how data is passed."
+                   TextWrapping="Wrap"
+                   FontSize="12"
+                   Opacity="0.7" />
+
+        <Separator />
+
+        <TextBlock Text="Pass Method" />
+        <ComboBox x:Name="MethodCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Via Constructor" />
+          <ComboBoxItem Content="Via DataContext" />
+        </ComboBox>
+
+        <Separator />
+
+        <Button Content="Pop"
+                HorizontalAlignment="Stretch"
+                Click="OnPop" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>

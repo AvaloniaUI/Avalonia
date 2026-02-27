@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPageScrollAwarePage">
+  <Panel ClipToBounds="True">
+
+    <!-- Reserve right column so the NavigationPage does not go under the info panel -->
+    <Grid ColumnDefinitions="*, 260">
+      <Border Grid.Column="0" Margin="12"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+              BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+        <NavigationPage x:Name="DemoNav" />
+      </Border>
+    </Grid>
+
+    <!-- Info panel: fixed 260 px wide, floats over the right edge, scrollable internally -->
+    <Border Width="260" HorizontalAlignment="Right"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1,0,0,0"
+            Background="{DynamicResource SystemControlPageBackgroundAltHighBrush}">
+      <ScrollViewer>
+        <StackPanel Margin="12" Spacing="8">
+          <TextBlock Text="How it works" FontWeight="SemiBold" FontSize="16"
+                     Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+          <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                     Text="The navigation bar hides on downward scroll and reappears on upward scroll. The pattern is built entirely with existing public API." />
+
+          <Separator />
+
+          <TextBlock Text="Step 1: Overlay mode" FontSize="13" FontWeight="SemiBold" />
+          <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                     Text="Set BarLayoutBehavior.Overlay on the page so the nav bar floats above the content. Content scrolls edge-to-edge behind the bar." />
+
+          <TextBlock Text="Step 2: Watch scroll offset" FontSize="13" FontWeight="SemiBold" />
+          <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                     Text="Subscribe to ScrollViewer.OffsetProperty via GetObservable(). Compare each new Y value with the previous to determine direction and magnitude." />
+
+          <TextBlock Text="Step 3: Translate the bar" FontSize="13" FontWeight="SemiBold" />
+          <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                     Text="Apply a TranslateTransform to PART_NavigationBar. Y is clamped between 0 (visible) and –BarHeight (hidden)." />
+
+          <TextBlock Text="Step 4: Cleanup" FontSize="13" FontWeight="SemiBold" />
+          <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                     Text="Dispose the IDisposable returned by GetObservable() when the view is unloaded. Reset TranslateTransform.Y to 0 so the bar is visible when the user returns." />
+
+          <Separator />
+
+          <TextBlock Text="Thresholds used" FontSize="13" FontWeight="SemiBold" />
+          <TextBlock FontSize="12" Text="• Hide  : scroll down > 8 px" />
+          <TextBlock FontSize="12" Text="• Show  : scroll up  > 4 px" />
+          <TextBlock FontSize="12" Text="• Always show at top (Y ≤ 4)" />
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
+  </Panel>
+</UserControl>

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Metadata;
 
@@ -11,6 +12,9 @@ namespace Avalonia.Controls
     /// A command bar that provides primary commands displayed inline and secondary commands
     /// accessible via an overflow menu.
     /// </summary>
+    [TemplatePart("PART_OverflowButton",   typeof(Button))]
+    [TemplatePart("PART_OverflowPopup",    typeof(Popup))]
+    [TemplatePart("PART_ContentPresenter", typeof(Control))]
     public class CommandBar : TemplatedControl
     {
         /// <summary>
@@ -86,6 +90,7 @@ namespace Avalonia.Controls
         private readonly ObservableCollection<ICommandBarElement> _visiblePrimaryCommands = new();
         private readonly ObservableCollection<ICommandBarElement> _overflowItems = new();
         private bool _isDynamicUpdateInProgress;
+        private double _constraintWidth = double.PositiveInfinity;
 
         public CommandBar()
         {
@@ -255,17 +260,18 @@ namespace Avalonia.Controls
             if (change.Property == IsOpenProperty)
             {
                 var isOpen = (bool)change.NewValue!;
-                if (_overflowPopup != null)
-                    _overflowPopup.IsOpen = isOpen;
-
                 if (isOpen)
                 {
                     Opening?.Invoke(this, EventArgs.Empty);
+                    if (_overflowPopup != null)
+                        _overflowPopup.IsOpen = true;
                     Opened?.Invoke(this, EventArgs.Empty);
                 }
                 else
                 {
                     Closing?.Invoke(this, EventArgs.Empty);
+                    if (_overflowPopup != null)
+                        _overflowPopup.IsOpen = false;
                     Closed?.Invoke(this, EventArgs.Empty);
                 }
             }
@@ -285,6 +291,29 @@ namespace Avalonia.Controls
             {
                 UpdateDynamicOverflow();
             }
+            else if (change.Property == PrimaryCommandsProperty)
+            {
+                if (change.OldValue is INotifyCollectionChanged oldPrimary)
+                    oldPrimary.CollectionChanged -= OnPrimaryCommandsChanged;
+                if (change.NewValue is INotifyCollectionChanged newPrimary)
+                    newPrimary.CollectionChanged += OnPrimaryCommandsChanged;
+                ApplyLabelPositionToChildren();
+                UpdateDynamicOverflow();
+            }
+            else if (change.Property == SecondaryCommandsProperty)
+            {
+                if (change.OldValue is INotifyCollectionChanged oldSecondary)
+                    oldSecondary.CollectionChanged -= OnSecondaryCommandsChanged;
+                if (change.NewValue is INotifyCollectionChanged newSecondary)
+                    newSecondary.CollectionChanged += OnSecondaryCommandsChanged;
+                UpdateDynamicOverflow();
+            }
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            _constraintWidth = availableSize.Width;
+            return base.MeasureOverride(availableSize);
         }
 
         private void CommandBar_SizeChanged(object? sender, SizeChangedEventArgs e)
@@ -317,7 +346,10 @@ namespace Avalonia.Controls
 
         private void UpdateDynamicOverflow()
         {
-            if (_isDynamicUpdateInProgress) return;
+            if (PrimaryCommands == null || SecondaryCommands == null)
+                return;
+            if (_isDynamicUpdateInProgress)
+                return;
             _isDynamicUpdateInProgress = true;
 
             try
@@ -331,7 +363,7 @@ namespace Avalonia.Controls
                     _overflowItems.Add(item);
                 }
 
-                var availableWidth = Bounds.Width;
+                var availableWidth = double.IsFinite(_constraintWidth) ? _constraintWidth : Bounds.Width;
 
                 if (!IsDynamicOverflowEnabled || availableWidth <= 0)
                 {
@@ -344,8 +376,6 @@ namespace Avalonia.Controls
                 else
                 {
                     var contentWidth = _contentPresenter?.DesiredSize.Width ?? 0;
-                    var overflowButtonWidth = IsOverflowButtonVisible ? 48 : 0;
-                    var availableForItems = availableWidth - contentWidth - overflowButtonWidth - 8;
 
                     if (availableWidth < 50)
                     {
@@ -359,18 +389,36 @@ namespace Avalonia.Controls
                     {
                         var itemWidth = DefaultLabelPosition switch
                         {
-                            CommandBarDefaultLabelPosition.Right => 100,
-                            CommandBarDefaultLabelPosition.Bottom => 56,
-                            _ => 48
+                            CommandBarDefaultLabelPosition.Right => 102,
+                            CommandBarDefaultLabelPosition.Bottom => 70,  // 68 (template Width) + 2 spacing
+                            _ => 42                                        // 40 (compact) + 2 spacing
                         };
 
-                        var maxItems = Math.Max(0, (int)(availableForItems / itemWidth));
+                        int primaryNonSepCount = 0;
+                        foreach (var item in PrimaryCommands)
+                            if (item is not AppBarSeparator)
+                                primaryNonSepCount++;
 
-                        if (maxItems == 0 && PrimaryCommands.Count > 0 && availableForItems > 32)
-                            maxItems = 1;
+                        const double overflowButtonWidth = 48;
+                        var paddingH = Padding.Left + Padding.Right;
+                        var baseAvailable = availableWidth - contentWidth - paddingH;
+                        bool allFitWithoutButton = SecondaryCommands.Count == 0
+                            && baseAvailable + 2 >= primaryNonSepCount * itemWidth;
 
-                        // Determine which items stay visible by DynamicOverflowOrder priority.
-                        // Lower order = higher priority (stays visible longer).
+                        int maxItems;
+                        if (allFitWithoutButton)
+                        {
+                            maxItems = primaryNonSepCount;
+                        }
+                        else
+                        {
+                            var availableForItems = baseAvailable - overflowButtonWidth;
+                            maxItems = Math.Max(0, (int)(availableForItems / itemWidth));
+                            if (maxItems == 0 && PrimaryCommands.Count > 0 && availableForItems > 32)
+                                maxItems = 1;
+                        }
+
+                        // Lower DynamicOverflowOrder = higher priority (stays visible longer).
                         var prioritized = new List<(int Index, int Order)>(PrimaryCommands.Count);
                         for (var i = 0; i < PrimaryCommands.Count; i++)
                             prioritized.Add((i, GetDynamicOverflowOrder(PrimaryCommands[i])));
@@ -379,8 +427,8 @@ namespace Avalonia.Controls
                             ? a.Order.CompareTo(b.Order)
                             : a.Index.CompareTo(b.Index));
 
-                        // Separators are always kept in the primary bar and never counted
-                        // toward maxItems.
+                        // Separators stay in the primary bar but are not counted toward maxItems.
+                        // If no non-separator buttons fit, separators are moved to overflow too.
                         var visibleIndices = new HashSet<int>();
                         int nonSeparatorCount = 0;
                         for (var i = 0; i < prioritized.Count; i++)
@@ -394,6 +442,9 @@ namespace Avalonia.Controls
                                 nonSeparatorCount++;
                             }
                         }
+
+                        if (nonSeparatorCount == 0)
+                            visibleIndices.Clear();
 
                         for (var i = 0; i < PrimaryCommands.Count; i++)
                         {
@@ -421,11 +472,7 @@ namespace Avalonia.Controls
         }
 
         private static void SetOverflowMode(ICommandBarElement element, bool inOverflow)
-        {
-            if (element is AppBarButton btn) btn.IsInOverflow = inOverflow;
-            else if (element is AppBarToggleButton toggle) toggle.IsInOverflow = inOverflow;
-            else if (element is AppBarSeparator sep) sep.IsInOverflow = inOverflow;
-        }
+            => element.IsInOverflow = inOverflow;
 
         private static int GetDynamicOverflowOrder(ICommandBarElement element) => element switch
         {
@@ -436,10 +483,12 @@ namespace Avalonia.Controls
 
         private void ApplyLabelPositionToChildren()
         {
-            foreach (var cmd in PrimaryCommands)
-                ApplyLabelPositionToElement(cmd);
-            foreach (var cmd in SecondaryCommands)
-                ApplyLabelPositionToElement(cmd);
+            if (PrimaryCommands != null)
+                foreach (var cmd in PrimaryCommands)
+                    ApplyLabelPositionToElement(cmd);
+            if (SecondaryCommands != null)
+                foreach (var cmd in SecondaryCommands)
+                    ApplyLabelPositionToElement(cmd);
         }
 
         private void ApplyLabelPositionToElement(ICommandBarElement element)

@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPageInteractiveHeaderPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="How It Works" FontWeight="SemiBold" />
+        <TextBlock TextWrapping="Wrap" Opacity="0.7" FontSize="11"
+                   Text="Page.Header accepts any Control, not just strings. A Grid divides the nav bar: the page title stretches on the left (*) and a search box sits on the right (Auto). Both share the same data so typing immediately filters the contact list." />
+        <Separator />
+        <TextBlock Text="Key Points" FontWeight="SemiBold" />
+        <TextBlock FontSize="11" Text="• Header = any Control, not just a string" />
+        <TextBlock FontSize="11" Text="• Grid: title (*) + search box (Auto)" />
+        <TextBlock FontSize="11" Text="• Typing instantly filters via ObservableCollection" />
+      </StackPanel>
+    </ScrollViewer>
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>

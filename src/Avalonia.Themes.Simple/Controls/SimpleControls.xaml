@@ -75,6 +75,7 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TextSelectionHandle.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CommandBar.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ContentPage.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/NavigationPage.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Styles.Resources>

@@ -216,7 +216,8 @@
                     </TextBlock.Transitions>
                   </TextBlock>
                 </Border>
-                <Border x:Name="BackgroundBorder">
+                <Border x:Name="BackgroundBorder"
+                        ClipToBounds="True">
                   <Border.Transitions>
                     <Transitions>
                       <CornerRadiusTransition Property="CornerRadius" Duration="{StaticResource SplitViewPaneAnimationCloseDuration}" />

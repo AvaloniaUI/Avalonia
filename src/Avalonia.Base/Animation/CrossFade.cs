@@ -33,6 +33,7 @@ namespace Avalonia.Animation
         {
             _fadeOutAnimation = new Animation
             {
+                FillMode = FillMode.Forward,
                 Children =
                 {
                     new KeyFrame()
@@ -64,6 +65,7 @@ namespace Avalonia.Animation
             };
             _fadeInAnimation = new Animation
             {
+                FillMode = FillMode.Forward,
                 Children =
                 {
                     new KeyFrame()
@@ -140,15 +142,21 @@ namespace Avalonia.Animation
 
             if (to != null)
             {
+                to.Opacity = 0;
                 to.IsVisible = true;
                 tasks.Add(_fadeInAnimation.RunAsync(to, null, cancellationToken));
             }
 
             await Task.WhenAll(tasks);
 
-            if (from != null && !cancellationToken.IsCancellationRequested)
+            if (to != null)
+                to.Opacity = 1;
+
+            if (from != null)
             {
-                from.IsVisible = false;
+                if (!cancellationToken.IsCancellationRequested)
+                    from.IsVisible = false;
+                from.Opacity = 1;
             }
         }
 

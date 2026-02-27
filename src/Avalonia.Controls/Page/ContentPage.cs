@@ -182,6 +182,9 @@ namespace Avalonia.Controls
             if (e.OldValue is ILogical oldChild)
                 LogicalChildren.Remove(oldChild);
 
+            if (e.OldValue is Page oldPage)
+                oldPage.SafeAreaPadding = default;
+
             if (e.NewValue is ILogical newChild)
                 LogicalChildren.Add(newChild);
         }

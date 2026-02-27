@@ -61,6 +61,14 @@ namespace Avalonia.Animation
         /// </summary>
         public Easing SlideOutEasing { get; set; } = new LinearEasing();
 
+        /// <summary>
+        /// Gets or sets the fill mode applied to both slide animations.
+        /// Defaults to <see cref="FillMode.Forward"/>, which keeps the final transform value after
+        /// the animation completes and prevents a one-frame flash where the outgoing element snaps
+        /// back to its original position before <c>IsVisible = false</c> takes effect.
+        /// </summary>
+        public FillMode FillMode { get; set; } = FillMode.Forward;
+
         /// <inheritdoc />
         public virtual async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
         {
@@ -71,13 +79,15 @@ namespace Avalonia.Animation
 
             var tasks = new List<Task>();
             var parent = GetVisualParent(from, to);
-            var distance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
+            var rawDistance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
+            var distance = rawDistance > 0 ? rawDistance : (Orientation == SlideAxis.Horizontal ? 500d : 400d);
             var translateProperty = Orientation == SlideAxis.Horizontal ? TranslateTransform.XProperty : TranslateTransform.YProperty;
 
             if (from != null)
             {
                 var animation = new Animation
                 {
+                    FillMode = FillMode,
                     Easing = SlideOutEasing,
                     Children =
                     {
@@ -109,6 +119,7 @@ namespace Avalonia.Animation
                 to.IsVisible = true;
                 var animation = new Animation
                 {
+                    FillMode = FillMode,
                     Easing = SlideInEasing,
                     Children =
                     {
@@ -137,10 +148,20 @@ namespace Avalonia.Animation
 
             await Task.WhenAll(tasks);
 
-            if (from != null && !cancellationToken.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            if (from != null)
             {
+                // Hide BEFORE resetting transform so there is no single-frame flash
+                // where the element snaps back to position 0 while still visible.
                 from.IsVisible = false;
+                if (FillMode != FillMode.None)
+                    from.RenderTransform = null;
             }
+
+            if (to != null && FillMode != FillMode.None)
+                to.RenderTransform = null;
         }
 
         /// <summary>

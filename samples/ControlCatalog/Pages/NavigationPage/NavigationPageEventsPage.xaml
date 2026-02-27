@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPageEventsPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Navigation" FontWeight="SemiBold" FontSize="14" />
+
+        <Button Content="Push Page"
+                HorizontalAlignment="Stretch"
+                Click="OnPush" />
+        <Button Content="Pop"
+                HorizontalAlignment="Stretch"
+                Click="OnPop" />
+        <Button Content="Pop to Root"
+                HorizontalAlignment="Stretch"
+                Click="OnPopToRoot" />
+        <Button Content="Insert Page"
+                HorizontalAlignment="Stretch"
+                Click="OnInsertPage" />
+        <Button Content="Remove Page"
+                HorizontalAlignment="Stretch"
+                Click="OnRemovePage" />
+
+        <Separator />
+
+        <TextBlock Text="Modal" FontWeight="SemiBold" FontSize="14" />
+
+        <Button Content="Push Modal"
+                HorizontalAlignment="Stretch"
+                Click="OnPushModal" />
+        <Button Content="Pop Modal"
+                HorizontalAlignment="Stretch"
+                Click="OnPopModal" />
+
+        <Separator />
+
+        <Button Content="Clear Log"
+                HorizontalAlignment="Stretch"
+                Click="OnClearLog" />
+
+        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Height="160"
+                ClipToBounds="True">
+          <ScrollViewer x:Name="LogScroll">
+            <TextBlock x:Name="EventLog"
+                       Margin="8"
+                       FontFamily="Monospace"
+                       FontSize="11"
+                       TextWrapping="Wrap" />
+          </ScrollViewer>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>

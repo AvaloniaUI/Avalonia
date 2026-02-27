@@ -7,6 +7,9 @@ namespace Avalonia.Controls
     /// </summary>
     public class NavigatingFromEventArgs : EventArgs
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NavigatingFromEventArgs"/> class.
+        /// </summary>
         /// <param name="destinationPage">The page that will become active after this navigation, or <see langword="null"/> when popping to root.</param>
         /// <param name="navigationType">The type of navigation that triggered this event.</param>
         public NavigatingFromEventArgs(Page? destinationPage, NavigationType navigationType)

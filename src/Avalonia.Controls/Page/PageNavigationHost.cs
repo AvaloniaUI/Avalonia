@@ -113,7 +113,7 @@ namespace Avalonia.Controls
 
             if (change.Property == PageProperty)
             {
-                Content = change.GetNewValue<Page?>();
+                SetCurrentValue(ContentProperty, change.GetNewValue<Page?>());
 
                 if (_insetManager != null && Presenter != null && Presenter.Child is Page page)
                     page.SafeAreaPadding = _insetManager.SafeAreaPadding;

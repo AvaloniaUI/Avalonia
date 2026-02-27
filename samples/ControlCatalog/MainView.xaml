@@ -49,11 +49,20 @@
       <TabItem Header="Canvas">
         <pages:CanvasPage />
       </TabItem>
-      <TabItem Header="CommandBar">
+      <TabItem Header="CommandBar"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:CommandBarPage />
       </TabItem>
-      <TabItem Header="ContentPage">
-        <pages:ContentPagePage />
+      <TabItem Header="ContentPage"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:ContentDemoPage />
+      </TabItem>
+      <TabItem Header="NavigationPage"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:NavigationDemoPage />
       </TabItem>
       <TabItem Header="Carousel">
         <pages:CarouselPage />

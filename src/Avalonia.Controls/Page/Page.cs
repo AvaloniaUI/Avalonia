@@ -125,11 +125,12 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets whether this page is currently hosted inside a NavigationPage.
+        /// Set automatically by the navigation infrastructure; do not set this from application code.
         /// </summary>
         public bool IsInNavigationPage
         {
             get => GetValue(IsInNavigationPageProperty);
-            internal set => SetValue(IsInNavigationPageProperty, value);
+            set => SetValue(IsInNavigationPageProperty, value);
         }
 
         /// <summary>
@@ -221,7 +222,7 @@ namespace Avalonia.Controls
 
         internal void SendNavigatedFrom(NavigatedFromEventArgs args) => OnNavigatedFrom(args);
 
-        internal void SetInNavigationPage(bool value) => IsInNavigationPage = value;
+        internal void SetInNavigationPage(bool value) => SetCurrentValue(IsInNavigationPageProperty, value);
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {

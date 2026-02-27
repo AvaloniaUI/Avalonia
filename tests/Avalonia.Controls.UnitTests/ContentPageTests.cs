@@ -221,6 +221,21 @@ public class ContentPageTests
             var page = new ContentPage { Content = "hello" };
             Assert.Empty(((ILogical)page).LogicalChildren);
         }
+
+        [Fact]
+        public void Content_ReplacedPage_ResetsSafeAreaPaddingOnOldPage()
+        {
+            // When a child Page is replaced, its SafeAreaPadding must be cleared
+            // so the old page does not retain insets from a previous host.
+            var host = new ContentPage();
+            var oldChild = new ContentPage();
+            oldChild.SafeAreaPadding = new Thickness(10, 20, 10, 30);
+            host.Content = oldChild;
+
+            host.Content = new ContentPage();
+
+            Assert.Equal(default(Thickness), oldChild.SafeAreaPadding);
+        }
     }
 
     public class CommandBarProperties : ScopedTestBase

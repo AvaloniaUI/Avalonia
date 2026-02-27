@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPageTitlePage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+
+        <TextBlock Text="Set Header on Current Page" FontWeight="SemiBold" FontSize="13" />
+        <Button Content="String Header"
+                HorizontalAlignment="Stretch"
+                Click="OnSetStringHeader" />
+        <Button Content="Custom: Search Box"
+                HorizontalAlignment="Stretch"
+                Click="OnSetSearchHeader" />
+        <Button Content="Custom: Slider"
+                HorizontalAlignment="Stretch"
+                Click="OnSetSliderHeader" />
+        <Button Content="Custom: Icon + Subtitle"
+                HorizontalAlignment="Stretch"
+                Click="OnSetLayoutHeader" />
+
+        <Separator />
+
+        <TextBlock Text="Navigation" FontWeight="SemiBold" FontSize="13" />
+        <Button Content="Push with String Header"
+                HorizontalAlignment="Stretch"
+                Click="OnPushWithStringHeader" />
+        <Button Content="Push with Custom Header"
+                HorizontalAlignment="Stretch"
+                Click="OnPushWithCustomHeader" />
+        <Button Content="Pop"
+                HorizontalAlignment="Stretch"
+                Click="OnPop" />
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="14" />
+        <TextBlock x:Name="StatusText"
+                   Text="Current: Home"
+                   Opacity="0.7"
+                   TextWrapping="Wrap" />
+
+        <Separator />
+
+        <TextBlock Text="About" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock Text="Page.Header is object? — set a string for a simple text label, or any control for a fully custom nav bar."
+                   FontSize="12"
+                   Opacity="0.7"
+                   TextWrapping="Wrap" />
+
+        <Separator />
+
+        <TextBlock Text="Code" FontWeight="SemiBold" FontSize="13" />
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4"
+                Padding="8">
+          <TextBlock FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Text="// Simple string header&#xA;page.Header = &quot;My Page&quot;;&#xA;&#xA;// Custom control header&#xA;page.Header =&#xA;  new Slider { Width = 200 };&#xA;&#xA;// Mixed icon + text&#xA;page.Header = new StackPanel {&#xA;  Orientation = Horizontal,&#xA;  Children = { icon, label }&#xA;};" />
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>
