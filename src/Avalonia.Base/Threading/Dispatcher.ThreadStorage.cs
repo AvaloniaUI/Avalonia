@@ -80,12 +80,6 @@ public partial class Dispatcher
         UIThread.ReplaceImplementation(impl);
     }
 
-    internal void SetCurrentDispatcherForUnitTests(Dispatcher dispatcher)
-    {
-        if (FromThread(Thread.CurrentThread) != null || TryGetUIThread() != null)
-            throw new InvalidOperationException();
-    }
-
     private static void ResetGlobalState()
     {
         lock (s_globalLock)

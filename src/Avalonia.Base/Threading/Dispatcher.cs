@@ -50,9 +50,6 @@ public partial class Dispatcher : IDispatcher
             s_dispatchers.Remove(Thread.CurrentThread);
             s_dispatchers.Add(Thread.CurrentThread,
                 s_currentThreadDispatcher = new() { Reference = new WeakReference<Dispatcher>(this) });
-#if !NET6_0_OR_GREATER
-        s_resetForTestsList.Add(s_currentThreadDispatcher);
-#endif
         }
         
         var st = Stopwatch.StartNew();
