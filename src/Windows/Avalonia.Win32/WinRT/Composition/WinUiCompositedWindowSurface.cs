@@ -140,6 +140,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 throw new RenderTargetCorruptedException();
             var transaction = _window.BeginTransaction();
 
+            bool forceResize = false;
             var supportTransparency = _drawingSurface.AlphaMode == DirectXAlphaMode.Premultiplied;
             if (_window.IsTransparency != supportTransparency)
             {
@@ -150,12 +151,8 @@ namespace Avalonia.Win32.WinRT.Composition
 
                 CreateSurface(_window);
 
-                var size = _window.WindowInfo.Size;
-                _surfaceInterop.Resize(new UnmanagedMethods.POINT
-                {
-                    X = size.Width,
-                    Y = size.Height
-                });
+                // The _drawingSurface.Size != _size, so that require force resize to update the size of surface.
+                forceResize = true;
             }
 
             bool needsEndDraw = false;
@@ -170,7 +167,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 UnmanagedMethods.POINT off;
                 try
                 {
-                    if (_size != size)
+                    if (forceResize || _size != size)
                     {
                         _surfaceInterop.Resize(new UnmanagedMethods.POINT
                         {
