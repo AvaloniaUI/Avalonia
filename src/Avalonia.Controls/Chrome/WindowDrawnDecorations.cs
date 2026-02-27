@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
@@ -348,24 +349,47 @@ public class WindowDrawnDecorations : StyledElement
         var titleBar = _templateNameScope.Find<Control>(PART_TitleBar);
         if (titleBar != null)
         {
-            global::Avalonia.Automation.AutomationProperties.SetControlTypeOverride(titleBar, global::Avalonia.Automation.Peers.AutomationControlType.TitleBar);
-            global::Avalonia.Automation.AutomationProperties.SetAutomationId(titleBar, "AvaloniaTitleBar");
-            global::Avalonia.Automation.AutomationProperties.SetAccessibilityView(titleBar, global::Avalonia.Automation.AccessibilityView.Raw);
-            global::Avalonia.Automation.AutomationProperties.SetClassNameOverride(titleBar, "TitleBar");
+            AutomationProperties.SetControlTypeOverride(titleBar, Avalonia.Automation.Peers.AutomationControlType.TitleBar);
+            AutomationProperties.SetAutomationId(titleBar, "AvaloniaTitleBar");
+            AutomationProperties.SetAccessibilityView(titleBar, AccessibilityView.Raw);
+            AutomationProperties.SetClassNameOverride(titleBar, "TitleBar");
         }
 
         if (_closeButton != null)
+        {
+            AutomationProperties.SetAutomationId(_closeButton, "Close");
             _closeButton.Click += OnCloseButtonClick;
+        }
+
         if (_minimizeButton != null)
+        {
+            AutomationProperties.SetAutomationId(_minimizeButton, "Minimize");
             _minimizeButton.Click += OnMinimizeButtonClick;
+        }
+
         if (_maximizeButton != null)
+        {
             _maximizeButton.Click += OnMaximizeButtonClick;
+            AutomationProperties.SetAutomationId(_maximizeButton, "Maximize");
+        }
+
         if (_fullScreenButton != null)
+        {
             _fullScreenButton.Click += OnFullScreenButtonClick;
+            AutomationProperties.SetAutomationId(_fullScreenButton, "Fullscreen");
+        }
+
         if (_popoverCloseButton != null)
+        {
             _popoverCloseButton.Click += OnCloseButtonClick;
+            AutomationProperties.SetAutomationId(_popoverCloseButton, "FullscreenClose");
+        }
+
         if (_popoverFullScreenButton != null)
+        {
             _popoverFullScreenButton.Click += OnFullScreenButtonClick;
+            AutomationProperties.SetAutomationId(_popoverFullScreenButton, "ExitFullscreen");
+        }
     }
 
     private void DetachCaptionButtons()
