@@ -1622,6 +1622,11 @@ namespace Avalonia.Win32
         /// <inheritdoc/>
         public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome);
 
+        public PlatformRequstedDrawnDecoration RequestedDrawnDecorations =>
+            NeedsManagedDecorations
+                ? PlatformRequstedDrawnDecoration.TitleBar
+                : PlatformRequstedDrawnDecoration.None;
+
         /// <inheritdoc/>
         public Thickness ExtendedMargins => _extendedMargins;
 

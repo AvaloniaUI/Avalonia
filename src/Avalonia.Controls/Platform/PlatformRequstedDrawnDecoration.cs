@@ -25,4 +25,9 @@ public enum PlatformRequstedDrawnDecoration
     /// Platform needs app-drawn resize grips.
     /// </summary>
     ResizeGrips = 4,
+    
+    /// <summary>
+    /// Platform needs app-drawn window titlebar.
+    /// </summary>
+    TitleBar = 8,
 }

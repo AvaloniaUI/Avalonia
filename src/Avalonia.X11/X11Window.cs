@@ -1580,7 +1580,7 @@ namespace Avalonia.X11
 
         public bool NeedsManagedDecorations => _extendClientAreaToDecorations;
 
-        public PlatformRequstedDrawnDecoration RequstedDrawnDecoration =>
+        public PlatformRequstedDrawnDecoration RequestedDrawnDecorations =>
             _extendClientAreaToDecorations
                 ? PlatformRequstedDrawnDecoration.Border | PlatformRequstedDrawnDecoration.ResizeGrips
                 : PlatformRequstedDrawnDecoration.None;

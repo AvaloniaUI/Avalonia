@@ -40,7 +40,7 @@
           <WindowDrawnDecorationsContent.Underlay>
             <Panel>
               <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                      BorderThickness="1"
+                      BorderThickness="{TemplateBinding FrameThickness}"
                       BorderBrush="{DynamicResource SystemControlForegroundChromeHighBrush}"
                       IsHitTestVisible="False" />
             </Panel>

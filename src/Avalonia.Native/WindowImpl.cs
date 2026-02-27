@@ -115,6 +115,8 @@ namespace Avalonia.Native
 
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
+        // Extension is handled by native backend
+        public PlatformRequstedDrawnDecoration RequestedDrawnDecorations => default;
         public Thickness ExtendedMargins { get; private set; }
 
         public Thickness OffScreenMargin { get; } = new Thickness();
