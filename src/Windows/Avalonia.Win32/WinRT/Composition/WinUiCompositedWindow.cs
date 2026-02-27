@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using System.Threading;
+using Avalonia.Controls;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Reactive;
 using MicroCom.Runtime;
@@ -111,5 +112,10 @@ internal class WinUiCompositedWindow : IDisposable
                 _size = size;
             }
         }
+    }
+
+    public void SetTransparencyLevel(WindowTransparencyLevel transparencyLevel)
+    {
+        
     }
 }

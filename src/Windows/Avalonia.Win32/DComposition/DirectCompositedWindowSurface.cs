@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Avalonia.Controls;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Win32.DirectX;
@@ -42,6 +43,11 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
     {
         _blurEffect = enable;
         // _window?.SetBlur(enable);
+    }
+
+    public void SetTransparencyLevel(WindowTransparencyLevel transparencyLevel)
+    {
+       
     }
 }
 
