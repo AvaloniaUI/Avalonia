@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
@@ -110,6 +111,7 @@ namespace Avalonia.Win32.WinRT.Composition
             }
         }
 
+        [MemberNotNull(nameof(_drawingSurface), nameof(_surface), nameof(_surfaceInterop))]
         private void CreateSurface(WinUiCompositedWindow window)
         {
             // Do not use Premultiplied when the window is not Transparency. Because the Premultiplied AlphaMode will increase the performance loss of DWM. See https://github.com/AvaloniaUI/Avalonia/issues/20643
