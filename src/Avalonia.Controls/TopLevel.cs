@@ -65,9 +65,9 @@ namespace Avalonia.Controls
         /// Defines the <see cref="ActualTransparencyLevel"/> property.
         /// </summary>
         public static readonly DirectProperty<TopLevel, WindowTransparencyLevel> ActualTransparencyLevelProperty =
-            AvaloniaProperty.RegisterDirect<TopLevel, WindowTransparencyLevel>(nameof(ActualTransparencyLevel), 
-                o => o.ActualTransparencyLevel, 
-                unsetValue: WindowTransparencyLevel.None);        
+            AvaloniaProperty.RegisterDirect<TopLevel, WindowTransparencyLevel>(nameof(ActualTransparencyLevel),
+                o => o.ActualTransparencyLevel,
+                unsetValue: WindowTransparencyLevel.None);
 
         /// <summary>
         /// Defines the <see cref="TransparencyBackgroundFallback"/> property.
@@ -78,7 +78,7 @@ namespace Avalonia.Controls
         /// <inheritdoc cref="ThemeVariantScope.ActualThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
             ThemeVariantScope.ActualThemeVariantProperty.AddOwner<TopLevel>();
-        
+
         /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
             ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<TopLevel>();
@@ -102,7 +102,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="BackRequested"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> BackRequestedEvent = 
+        public static readonly RoutedEvent<RoutedEventArgs> BackRequestedEvent =
             RoutedEvent.Register<TopLevel, RoutedEventArgs>(nameof(BackRequested), RoutingStrategies.Bubble);
 
         private static readonly WeakEvent<IResourceHost, ResourcesChangedEventArgs>
@@ -131,7 +131,7 @@ namespace Avalonia.Controls
         private readonly PresentationSource _source;
         internal new PresentationSource PresentationSource => _source;
         internal IInputRoot InputRoot => _source;
-        
+
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
         /// </summary>
@@ -203,7 +203,7 @@ namespace Avalonia.Controls
             _source.Renderer.CompositionTarget.TransparencyLevel =
                 ToCompositionTransparencyLevel(_actualTransparencyLevel);
 
-
+            
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
@@ -213,7 +213,7 @@ namespace Avalonia.Controls
             _applicationThemeHost = TryGetService<IThemeVariantHost>(dependencyResolver);
 
 
-            
+
 
             impl.Closed = HandleClosed;
             impl.Paint = HandlePaint;
@@ -259,9 +259,7 @@ namespace Avalonia.Controls
 
             impl.LostFocus += PlatformImpl_LostFocus;
 
-
-
-            if(impl.TryGetFeature<ISystemNavigationManagerImpl>() is {} systemNavigationManager)
+            if (impl.TryGetFeature<ISystemNavigationManagerImpl>() is { } systemNavigationManager)
             {
                 systemNavigationManager.BackRequested += (_, e) =>
                 {
@@ -288,14 +286,14 @@ namespace Avalonia.Controls
                             KeyModifiers = (KeyModifiers)rawKeyEventArgs.Modifiers,
                             Key = rawKeyEventArgs.Key,
                             PhysicalKey = rawKeyEventArgs.PhysicalKey,
-                            KeyDeviceType= rawKeyEventArgs.KeyDeviceType,
+                            KeyDeviceType = rawKeyEventArgs.KeyDeviceType,
                             KeySymbol = rawKeyEventArgs.KeySymbol
                         };
 
-                        backRequested = keymap.Any( key => key.Matches(keyEvent));
+                        backRequested = keymap.Any(key => key.Matches(keyEvent));
                     }
                 }
-                else if(e is RawPointerEventArgs pointerEventArgs)
+                else if (e is RawPointerEventArgs pointerEventArgs)
                 {
                     backRequested = pointerEventArgs.Type == RawPointerEventType.XButton1Down;
                 }
@@ -323,7 +321,7 @@ namespace Avalonia.Controls
         /// Gets or sets a method called when the TopLevel's scaling changes.
         /// </summary>
         public event EventHandler? ScalingChanged;
-        
+
         /// <summary>
         /// Gets or sets the client size of the window.
         /// </summary>
@@ -361,7 +359,7 @@ namespace Avalonia.Controls
         {
             get => _actualTransparencyLevel;
             private set => SetAndRaise(ActualTransparencyLevelProperty, ref _actualTransparencyLevel, value);
-        }        
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="IBrush"/> that transparency will blend with when transparency is not supported.
@@ -441,7 +439,7 @@ namespace Avalonia.Controls
         public RendererDiagnostics RendererDiagnostics => Renderer.Diagnostics;
 
         internal PixelPoint? LastPointerPosition => _source.GetLastPointerPosition(this);
-        
+
         /// <summary>
         /// Gets the access key handler for the window.
         /// </summary>
@@ -450,7 +448,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the keyboard navigation handler for the window.
         /// </summary>
-        
+
         /// <summary>
         /// Helper for setting the color of the platform's system bars.
         /// </summary>
@@ -575,7 +573,7 @@ namespace Avalonia.Controls
                     return Disposable.Create(() => { });
             }
         }
-        
+
         /// <summary>
         /// Enqueues a callback to be called on the next animation tick
         /// </summary>
@@ -584,7 +582,7 @@ namespace Avalonia.Controls
             Dispatcher.UIThread.VerifyAccess();
             MediaContext.Instance.RequestAnimationFrame(action);
         }
-        
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -604,7 +602,7 @@ namespace Avalonia.Controls
         private void InvalidateChildInsetsPadding()
         {
             if (Content is Control child
-                && InsetsManager is {} insetsManager)
+                && InsetsManager is { } insetsManager)
             {
                 insetsManager.SafeAreaChanged -= InsetsManagerOnSafeAreaChanged;
                 _insetsPaddings?.Dispose();
@@ -645,12 +643,12 @@ namespace Avalonia.Controls
         {
             _source.Dispose();
             StopRendering();
-            
+
             Debug.Assert(PlatformImpl != null);
             // The PlatformImpl is completely invalid at this point
             PlatformImpl = null;
             _scaling = 1.0;
-            
+
             if (_globalStyles is object)
             {
                 _globalStyles.GlobalStylesAdded -= ((IStyleHost)this).StylesAdded;
@@ -660,14 +658,14 @@ namespace Avalonia.Controls
             {
                 _applicationThemeHost.ActualThemeVariantChanged -= GlobalActualThemeVariantChanged;
             }
-            
+
             _backGestureSubscription?.Dispose();
 
             var logicalArgs = new LogicalTreeAttachmentEventArgs(this, this, null);
             ((ILogical)this).NotifyDetachedFromLogicalTree(logicalArgs);
 
             _source.RootVisual = null!;
-            
+
             OnClosed(EventArgs.Empty);
 
             LayoutManager.Dispose();
@@ -785,8 +783,8 @@ namespace Avalonia.Controls
         private static void OnToolTipServiceEnabledChanged(AvaloniaPropertyChangedEventArgs<bool> args)
         {
             if (args.GetNewValue<bool>()
-                && args.Priority != BindingPriority.Inherited 
-                && args.Sender is Visual visual 
+                && args.Priority != BindingPriority.Inherited
+                && args.Sender is Visual visual
                 && GetTopLevel(visual) is { } topLevel)
             {
                 topLevel.UpdateToolTip(visual.Bounds.Translate((Vector)visual.TranslatePoint(default, topLevel)!));
@@ -807,11 +805,7 @@ namespace Avalonia.Controls
 
         void PlatformImpl_LostFocus()
         {
-            var focused = (Visual?)FocusManager?.GetFocusedElement();
-            if (focused == null)
-                return;
-            while (focused.VisualParent != null)
-                focused = focused.VisualParent;
+            var focused = TopLevel.GetTopLevel((Visual?)FocusManager?.GetFocusedElement());
 
             if (focused == this)
                 KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None, false);

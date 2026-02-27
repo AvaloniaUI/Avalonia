@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
+  <av:ImportTypes>Types.xml</av:ImportTypes>
+  <!--
+      org.a11y.atspi.Collection:
+      @short_description: An interface designed to allow accessibles which satisfy a set of
+      criteria to be returned.
+    -->
+
+  <interface name="org.a11y.atspi.Collection">
+
+    <!--
+        Version: The version of this interface.
+
+        This property is incremented by one every time a new method, signal, or property
+        is added to this interface.
+    -->
+    <property name="version" type="u" access="read"/>
+
+    <!--
+        GetMatches:
+
+        Return descendants which satisfy a set of criteria specified in the
+        match rule.
+
+        @rule: Criteria that objects to be returned must fulfill.
+        This structure is composed as follows:
+                  - ai: States (see below for more how they are encoded)
+                  - i: Match type used for matching states
+                  - a{ss}: Attributes. See also the Accessible.GetAttributes method
+                  - i: Match type used for matching attributes
+                  - ai: Roles (see below for how they are encoded)
+                  - i: Match type used for matching roles
+                  - as: Interfaces, by name (like "Action" or "Text").
+                  - i: Match type used for matching interfaces
+                  - b: Whether to invert the criteria. If true, the match rule should
+                    be denied (inverted); if false, it should not. For example, if
+                    the match rule defines that a match is an object of ROLE_HEADING
+                    which has STATE_FOCUSABLE and a click action, inverting it would
+                    match all objects that are not of ROLE_HEADING, focusable and
+                    clickable at the same time.
+
+               For all criteria, the value used for the match type corresponds to the
+               AtspiCollectionMatchType enum values.
+
+               The set of states and roles are bitsets encoded as an array of
+               multiple 32-bit integers.
+               A state/role with enum value N is set by setting the Nth bit in the bit
+               set.
+               The first integer in the array contains the lowest 0-31 bits, the next
+               integer bits 32-63, etc.
+
+               For example, enum value AT_SPI_ROLE_COMBOBOX has a value of 83. In order to
+               pass a set of roles in which only this role is set, an array of integers
+               representing (1 << 83) = 0x800000000000000000000 would be
+               passed: { 0, 0, 0x80000, 0 }
+
+        @sortby: The way objects should be sorted.
+        The values correspond to those defined in the AtspiCollectionSortOrder enum.
+
+        @count: Maximum number of objects to return, or 0 for no limit.
+
+        @traverse: Whether to return descendants from the accessible subtree
+        (if #TRUE) or only direct children (if #FALSE).
+    -->
+    <method name="GetMatches">
+      <arg direction="in" name="rule" type="(aiia{ss}iaiiasib)">
+        <av:TypeDefinition>
+          <av:Struct Type="AtSpiMatchRule"/>
+        </av:TypeDefinition>
+      </arg>
+      <arg direction="in" name="sortby" type="u"/>
+      <arg direction="in" name="count" type="i"/>
+      <arg direction="in" name="traverse" type="b"/>
+      <arg direction="out" type="a(so)">
+        <av:TypeDefinition>
+          <av:List>
+            <av:Struct Type="AtSpiObjectReference"/>
+          </av:List>
+        </av:TypeDefinition>
+      </arg>
+    </method>
+
+    <!--
+        GetMatchesTo:
+
+        @currentObject: The object at which to start searching.
+
+        @rule: Criteria that objects to be returned must fulfill.
+
+        @sortby: The way objects should be sorted.
+
+        @tree: Specifies restrictions on the objects to be traversed. Values
+        correspond to the AtspiCollectionTreeTraversalType enum:
+        - ATSPI_Collection_TREE_RESTRICT_CHILDREN (0): Restrict children tree traversal
+        - 1 (ATSPI_Collection_TREE_RESTRICT_SIBLING): Restrict sibling tree traversal
+        - 2 (ATSPI_Collection_TREE_INORDER): In-order tree traversal.
+
+        @limit_scope: If true, only descendants of @currentObject's parent
+        will be returned. Otherwise (if false), any accessible may be
+        returned if it would preceed @currentObject in a flattened
+        hierarchy.
+
+        @count: The maximum number of results to return, or 0 for no limit.
+
+        @traverse: Whether to traverse the accessible subtree (in case
+        of true) or only the direct children (on case of false).
+
+        Gets all Accessible objects from the collection, after
+        @currentObject, matching a given @rule.
+
+        Returns: All accessible objects matching the given match rule after
+        @currentObject.
+    -->
+    <method name="GetMatchesTo">
+      <arg direction="in" name="currentObject" type="o">
+        <av:TypeDefinition>
+          <av:Struct Type="AtSpiObjectReference"/>
+        </av:TypeDefinition>
+      </arg>
+      <arg direction="in" name="rule" type="(aiia{ss}iaiiasib)">
+        <av:TypeDefinition>
+          <av:Struct Type="AtSpiMatchRule"/>
+        </av:TypeDefinition>
+      </arg>
+      <arg direction="in" name="sortby" type="u"/>
+      <arg direction="in" name="tree" type="u"/>
+      <arg direction="in" name="limit_scope" type="b"/>
+      <arg direction="in" name="count" type="i"/>
+      <arg direction="in" name="traverse" type="b"/>
+      <arg direction="out" type="a(so)">
+        <av:TypeDefinition>
+          <av:List>
+            <av:Struct Type="AtSpiObjectReference"/>
+          </av:List>
+        </av:TypeDefinition>
+      </arg>
+    </method>
+
+    <!--
+        GetMatchesFrom:
+
+        @currentObject: Upon reaching this object, searching should stop.
+
+        @rule: Criteria that objects to be returned must fulfill.
+
+        @sortby: The way objects should be sorted.
+
+        @tree: Specifies restrictions on the objects to be traversed. Values
+        correspond to the AtspiCollectionTreeTraversalType enum.
+
+        @count: The maximum number of results to return, or 0 for no limit.
+
+        @traverse: Whether to traverse the accessible subtree (if true)
+        or only the direct children (if false).
+
+        Gets all Accessible objects from the collection, before @currentObject,
+        matching a given @rule.
+
+        Returns: All accessible objects matching the given match rule after
+        @currentObject.
+    -->
+    <method name="GetMatchesFrom">
+      <arg direction="in" name="currentObject" type="o">
+        <av:TypeDefinition>
+          <av:Struct Type="AtSpiObjectReference"/>
+        </av:TypeDefinition>
+      </arg>
+      <arg direction="in" name="rule" type="(aiia{ss}iaiiasib)">
+        <av:TypeDefinition>
+          <av:Struct Type="AtSpiMatchRule"/>
+        </av:TypeDefinition>
+      </arg>
+      <arg direction="in" name="sortby" type="u"/>
+      <arg direction="in" name="tree" type="u"/>
+      <arg direction="in" name="count" type="i"/>
+      <arg direction="in" name="traverse" type="b"/>
+      <arg direction="out" type="a(so)">
+        <av:TypeDefinition>
+          <av:List>
+            <av:Struct Type="AtSpiObjectReference"/>
+          </av:List>
+        </av:TypeDefinition>
+      </arg>
+    </method>
+
+    <!--
+        GetActiveDescendant:
+
+        Returns the active descendant of the given object. Not currently
+        implemented in libatspi.
+    -->
+    <method name="GetActiveDescendant">
+      <arg direction="out" type="(so)">
+        <av:TypeDefinition>
+          <av:Struct Type="AtSpiObjectReference"/>
+        </av:TypeDefinition>
+      </arg>
+    </method>
+
+  </interface>
+</node>

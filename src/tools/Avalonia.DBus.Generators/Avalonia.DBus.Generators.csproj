@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <DebugType>embedded</DebugType>
+    <IncludeSymbols>false</IncludeSymbols>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <AvDBusSourceGenPath>../../../external/Avalonia.DBus/src/Avalonia.DBus.SourceGen</AvDBusSourceGenPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(AvDBusSourceGenPath)/**/*.cs"
+             Exclude="$(AvDBusSourceGenPath)/obj/**/*.cs"
+             LinkBase="Avalonia.DBus.SourceGen" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
+  <Import Project="../../../build/AnalyzerProject.targets" />
+</Project>
