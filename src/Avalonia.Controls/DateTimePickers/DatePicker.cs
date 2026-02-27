@@ -8,6 +8,7 @@ using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -101,8 +102,6 @@ namespace Avalonia.Controls
             SetCurrentValue(MinYearProperty, new DateTimeOffset(now.Date.Year - 100, 1, 1, 0, 0, 0, now.Offset));
             SetCurrentValue(MaxYearProperty, new DateTimeOffset(now.Date.Year + 100, 12, 31, 0, 0, 0, now.Offset));
         }
-
-        private static void OnGridVisibilityChanged(DatePicker sender, AvaloniaPropertyChangedEventArgs e) => sender.SetGrid();
 
         public string DayFormat
         {
@@ -406,7 +405,7 @@ namespace Avalonia.Controls
             // Overlay popup hosts won't get measured until the next layout pass, but we need the
             // template to be applied to `_presenter` now. Detect this case and force a layout pass.
             if (!_presenter.IsMeasureValid)
-                (VisualRoot as ILayoutRoot)?.LayoutManager?.ExecuteInitialLayoutPass();
+                this.GetLayoutManager()?.ExecuteInitialLayoutPass();
 
             var deltaY = _presenter.GetOffsetForPopup();
 

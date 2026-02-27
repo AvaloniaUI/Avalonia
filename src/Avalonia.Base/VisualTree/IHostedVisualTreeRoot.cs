@@ -3,7 +3,7 @@ namespace Avalonia.VisualTree
     /// <summary>
     /// Interface for controls that are at the root of a hosted visual tree, such as popups.
     /// </summary>
-    public interface IHostedVisualTreeRoot
+    internal interface IHostedVisualTreeRoot
     {
         /// <summary>
         /// Gets the visual tree host.

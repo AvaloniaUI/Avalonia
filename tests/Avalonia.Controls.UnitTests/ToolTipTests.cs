@@ -26,7 +26,7 @@ namespace Avalonia.Controls.UnitTests
             var toolTip = control.GetValue(ToolTip.ToolTipProperty);
             Assert.NotNull(toolTip);
             Assert.IsType<PopupRoot>(toolTip.PopupHost);
-            Assert.Same(toolTip.VisualRoot, toolTip.PopupHost);
+            Assert.Same(TopLevel.GetTopLevel(toolTip), toolTip.PopupHost);
         }
     }
 
@@ -38,8 +38,8 @@ namespace Avalonia.Controls.UnitTests
         {
             _toolTipOpenSubscription = ToolTip.IsOpenProperty.Changed.Subscribe(new AnonymousObserver<AvaloniaPropertyChangedEventArgs<bool>>(e =>
             {
-                if (e.Sender is Visual { VisualRoot: {} root } visual)
-                    OverlayLayer.GetOverlayLayer(visual)!.Measure(root.ClientSize);
+                if (e.Sender is Visual visual && TopLevel.GetTopLevel(visual) is {} root)
+                    OverlayLayer.GetOverlayLayer(visual)?.Measure(root.ClientSize);
             }));
         }
 
@@ -524,7 +524,7 @@ namespace Avalonia.Controls.UnitTests
                 AssertToolTipOpen(target);
 
                 var topLevel = TopLevel.GetTopLevel(target);
-                topLevel!.PlatformImpl!.Input!(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, topLevel,
+                topLevel!.PlatformImpl!.Input!(new RawPointerEventArgs(s_mouseDevice, (ulong)DateTime.Now.Ticks, topLevel.InputRoot,
                     RawPointerEventType.LeaveWindow, default(RawPointerPoint), RawInputModifiers.None));
 
                 Assert.False(ToolTip.GetIsOpen(target));
@@ -574,10 +574,10 @@ namespace Avalonia.Controls.UnitTests
                     point = new Point(id, int.MaxValue);
                 }
 
-                hitTesterMock.Setup(m => m.HitTestFirst(point, window, It.IsAny<Func<Visual, bool>>()))
+                hitTesterMock.Setup(m => m.HitTestFirst(point, It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                     .Returns(control);
 
-                var root = (IInputRoot?)control?.VisualRoot ?? window;
+                var root = control?.GetInputRoot() ?? window.InputRoot;
                 var timestamp = (ulong)DateTime.Now.Ticks;
 
                 windowImpl.Object.Input!(new RawPointerEventArgs(s_mouseDevice, timestamp, root,
@@ -585,7 +585,7 @@ namespace Avalonia.Controls.UnitTests
 
                 if (lastRoot != null && lastRoot != root)
                 {
-                    ((TopLevel)lastRoot).PlatformImpl?.Input!(new RawPointerEventArgs(s_mouseDevice, timestamp,
+                    ((PresentationSource)lastRoot)?.PlatformImpl?.Input?.Invoke(new RawPointerEventArgs(s_mouseDevice, timestamp,
                         lastRoot, RawPointerEventType.LeaveWindow, new Point(-1,-1), RawInputModifiers.None));
                 }
 

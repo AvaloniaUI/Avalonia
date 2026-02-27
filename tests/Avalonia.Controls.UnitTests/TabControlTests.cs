@@ -723,11 +723,10 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(Key.D, "d", 0)]
         public void Should_TabControl_Recognizes_AccessKey(Key accessKey, string accessKeySymbol, int selectedTabIndex)
         {
-            var ah = new AccessKeyHandler();
             var kd = new KeyboardDevice();
             using (UnitTestApplication.Start(TestServices.StyledWindow
                        .With(
-                           accessKeyHandler: ah,
+                           accessKeyHandler: () => new AccessKeyHandler(),
                            keyboardDevice: () => kd)
                    ))
             {
@@ -883,18 +882,8 @@ namespace Avalonia.Controls.UnitTests
             };
         }
 
-        private class TestTopLevel : TopLevel
+        private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl)
         {
-            private readonly ILayoutManager _layoutManager;
-            public bool IsClosed { get; private set; }
-
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
-                : base(impl)
-            {
-                _layoutManager = layoutManager ?? new LayoutManager(this);
-            }
-
-            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
 
         private static void Prepare(TabControl target)

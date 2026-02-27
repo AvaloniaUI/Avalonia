@@ -305,11 +305,10 @@ namespace Avalonia.Controls.UnitTests
         public void Raises_Click_When_AccessKey_Raised()
         {
             var raised = 0;
-            var ah = new AccessKeyHandler();
             var kd = new KeyboardDevice();
             using var app = UnitTestApplication.Start(TestServices.StyledWindow
                 .With(
-                    accessKeyHandler: ah, 
+                    accessKeyHandler: () => new AccessKeyHandler(),
                     keyboardDevice: () => kd)
             );
 
@@ -759,18 +758,9 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class TestTopLevel : TopLevel
+        private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl)
         {
-            private readonly ILayoutManager _layoutManager;
-            public bool IsClosed { get; private set; }
 
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
-                : base(impl)
-            {
-                _layoutManager = layoutManager ?? new LayoutManager(this);
-            }
-
-            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
     }
 }

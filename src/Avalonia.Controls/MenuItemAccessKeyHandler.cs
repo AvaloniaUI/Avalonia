@@ -9,7 +9,7 @@ namespace Avalonia.Controls
     /// </summary>
     internal class MenuItemAccessKeyHandler : AccessKeyHandler
     {
-        protected override void OnSetOwner(IInputRoot owner)
+        protected override void OnSetOwner(InputElement owner)
         {
             owner.AddHandler(InputElement.TextInputEvent, OnTextInput);
         }

@@ -141,8 +141,8 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(0d, 11)]
-        [InlineData(0.5d, 21)]
+        [InlineData(0d, 10)]
+        [InlineData(0.5d, 20)]
         public void Scrolling_Up_To_Index_Does_Not_Create_A_Page_Of_Unrealized_Elements(double bufferFactor, int expectedCount)
         {
             using var app = App();
@@ -1097,9 +1097,9 @@ namespace Avalonia.Controls.UnitTests
             itemsControl.ItemsSource = null;
             root.LayoutManager.ExecuteLayoutPass();
 
-            // Should have no realized elements and 3 unrealized elements.
+            // Should have no realized elements and no unrealized elements.
             Assert.Equal(0, target.GetRealizedElements().Count);
-            Assert.Equal(3, target.Children.Count);
+            Assert.Equal(0, target.Children.Count);
 
             // Make the panel effectively invisible and set items.
             container.IsVisible = false;
@@ -2352,8 +2352,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static void Layout(Control target)
         {
-            var root = (ILayoutRoot?)target.GetVisualRoot();
-            root?.LayoutManager.ExecuteLayoutPass();
+            target.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         private static IControlTemplate ListBoxItemTemplate()

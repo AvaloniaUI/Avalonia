@@ -83,21 +83,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\AnalyzerProject.targets = build\AnalyzerProject.targets
 		build\AvaloniaPublicKey.props = build\AvaloniaPublicKey.props
 		build\Base.props = build\Base.props
-		build\Binding.props = build\Binding.props
 		build\CoreLibraries.props = build\CoreLibraries.props
 		build\DevAnalyzers.props = build\DevAnalyzers.props
 		build\EmbedXaml.props = build\EmbedXaml.props
 		build\HarfBuzzSharp.props = build\HarfBuzzSharp.props
-		build\ImageSharp.props = build\ImageSharp.props
-		build\Microsoft.CSharp.props = build\Microsoft.CSharp.props
-		build\Microsoft.Reactive.Testing.props = build\Microsoft.Reactive.Testing.props
-		build\Moq.props = build\Moq.props
 		build\NetAnalyzers.props = build\NetAnalyzers.props
-		build\NetCore.props = build\NetCore.props
-		build\NetFX.props = build\NetFX.props
 		build\NullableEnable.props = build\NullableEnable.props
 		build\ReferenceCoreLibraries.props = build\ReferenceCoreLibraries.props
-		build\Rx.props = build\Rx.props
 		build\SampleApp.props = build\SampleApp.props
 		build\SharedVersion.props = build\SharedVersion.props
 		build\SkiaSharp.props = build\SkiaSharp.props
@@ -113,7 +105,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Targets", "Targets", "{4D6F
 	ProjectSection(SolutionItems) = preProject
 		build\BuildTargets.targets = build\BuildTargets.targets
 		build\DevSingleProject.targets = build\DevSingleProject.targets
-		build\LegacyProject.targets = build\LegacyProject.targets
 		build\UnitTests.NetCore.targets = build\UnitTests.NetCore.targets
 	EndProjectSection
 EndProject
@@ -291,6 +282,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Analyzers.CodeFixes.CSharp", "src\tools\Avalonia.Analyzers.CodeFixes.CSharp\Avalonia.Analyzers.CodeFixes.CSharp.csproj", "{FDFB9C25-552D-420B-9D4A-DB0BB6472239}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Analyzers.VisualBasic", "src\tools\Avalonia.Analyzers.VisualBasic\Avalonia.Analyzers.VisualBasic.csproj", "{A7644C3B-B843-44F1-9940-560D56CB0936}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.FreeDesktop.AtSpi", "src\Avalonia.FreeDesktop.AtSpi\Avalonia.FreeDesktop.AtSpi.csproj", "{742C3613-514C-4D6B-804A-2A7925F278F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DBus.Generators", "src\tools\Avalonia.DBus.Generators\Avalonia.DBus.Generators.csproj", "{98A16FFD-0C99-4665-AC64-DC17E86879A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -670,14 +665,22 @@ Global
 		{11522B0D-BF31-42D5-8FC5-41E58F319AF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11522B0D-BF31-42D5-8FC5-41E58F319AF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11522B0D-BF31-42D5-8FC5-41E58F319AF9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A7644C3B-B843-44F1-9940-560D56CB0936}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A7644C3B-B843-44F1-9940-560D56CB0936}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A7644C3B-B843-44F1-9940-560D56CB0936}.Debug|Any CPU.ActiveCfg = Release|Any CPU
-		{A7644C3B-B843-44F1-9940-560D56CB0936}.Debug|Any CPU.Build.0 = Release|Any CPU
-		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Debug|Any CPU.ActiveCfg = Release|Any CPU
 		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Debug|Any CPU.Build.0 = Release|Any CPU
+		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDFB9C25-552D-420B-9D4A-DB0BB6472239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7644C3B-B843-44F1-9940-560D56CB0936}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{A7644C3B-B843-44F1-9940-560D56CB0936}.Debug|Any CPU.Build.0 = Release|Any CPU
+		{A7644C3B-B843-44F1-9940-560D56CB0936}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7644C3B-B843-44F1-9940-560D56CB0936}.Release|Any CPU.Build.0 = Release|Any CPU
+		{742C3613-514C-4D6B-804A-2A7925F278F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{742C3613-514C-4D6B-804A-2A7925F278F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{742C3613-514C-4D6B-804A-2A7925F278F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{742C3613-514C-4D6B-804A-2A7925F278F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98A16FFD-0C99-4665-AC64-DC17E86879A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98A16FFD-0C99-4665-AC64-DC17E86879A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98A16FFD-0C99-4665-AC64-DC17E86879A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98A16FFD-0C99-4665-AC64-DC17E86879A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -763,8 +766,10 @@ Global
 		{342D2657-2F84-493C-B74B-9D2CAE5D9DAB} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{26918642-829D-4FA2-B60A-BE8D83F4E063} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{11522B0D-BF31-42D5-8FC5-41E58F319AF9} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
-		{A7644C3B-B843-44F1-9940-560D56CB0936} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
 		{FDFB9C25-552D-420B-9D4A-DB0BB6472239} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
+		{A7644C3B-B843-44F1-9940-560D56CB0936} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
+		{742C3613-514C-4D6B-804A-2A7925F278F3} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
+		{98A16FFD-0C99-4665-AC64-DC17E86879A2} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}

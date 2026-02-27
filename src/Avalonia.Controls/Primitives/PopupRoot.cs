@@ -2,6 +2,7 @@ using System;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Diagnostics;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -189,7 +190,7 @@ namespace Avalonia.Controls.Primitives
             return new Size(width, height);
         }
 
-        protected sealed override Size ArrangeSetBounds(Size size)
+        private protected sealed override Size ArrangeSetBounds(Size size)
         {
             if (_popupSize != size)
             {
