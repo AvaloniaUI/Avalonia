@@ -627,7 +627,6 @@ namespace Avalonia.Media.TextFormatting
             finally
             {
                 objectPool.TextLines.Return(ref textLines);
-                objectPool.VerifyAllReturned();
             }
         }
 
