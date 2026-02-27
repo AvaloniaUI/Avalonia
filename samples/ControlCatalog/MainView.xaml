@@ -143,6 +143,9 @@
       <TabItem Header="Platform Information">
         <pages:PlatformInfoPage />
       </TabItem>
+      <TabItem Header="Platform Settings">
+        <pages:PlatformSettingsPage />
+      </TabItem>
       <TabItem Header="Pointers">
         <pages:PointersPage />
       </TabItem>
