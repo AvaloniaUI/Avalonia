@@ -224,6 +224,33 @@ namespace Avalonia.Win32
         private HitTestValues HitTestVisual(IntPtr lParam)
         {
             var position = PointToClient(PointFromLParam(lParam));
+            
+            // First, check new cross-platform ElementRole via chrome hit-test
+            if (_owner is IInputRoot inputRoot)
+            {
+                var chromeRole = inputRoot.HitTestChromeElement(position);
+                if (chromeRole.HasValue)
+                {
+                    return chromeRole.Value switch
+                    {
+                        // ElementRole.None means an interactive chrome element (e.g., caption button)
+                        // was hit — signal to redirect NC input to client input.
+                        WindowDecorationsElementRole.None => HitTestValues.HTCLIENT,
+                        WindowDecorationsElementRole.TitleBar => HitTestValues.HTCAPTION,
+                        WindowDecorationsElementRole.ResizeN => HitTestValues.HTTOP,
+                        WindowDecorationsElementRole.ResizeS => HitTestValues.HTBOTTOM,
+                        WindowDecorationsElementRole.ResizeE => HitTestValues.HTRIGHT,
+                        WindowDecorationsElementRole.ResizeW => HitTestValues.HTLEFT,
+                        WindowDecorationsElementRole.ResizeNE => HitTestValues.HTTOPRIGHT,
+                        WindowDecorationsElementRole.ResizeNW => HitTestValues.HTTOPLEFT,
+                        WindowDecorationsElementRole.ResizeSE => HitTestValues.HTBOTTOMRIGHT,
+                        WindowDecorationsElementRole.ResizeSW => HitTestValues.HTBOTTOMLEFT,
+                        _ => HitTestValues.HTNOWHERE
+                    };
+                }
+            }
+            
+            // Fall back to Win32-specific NonClientHitTestResult attached property
             if (_owner?.RootElement is {} window)
             {
                 var visual = window.GetVisualAt(position, x =>

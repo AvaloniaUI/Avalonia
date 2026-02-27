@@ -1,0 +1,170 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+
+  <x:Double x:Key="CaptionButtonWidth">45</x:Double>
+  <x:Double x:Key="CaptionButtonHeight">30</x:Double>
+
+  <ControlTheme x:Key="SimpleDrawnCaptionButton" TargetType="Button">
+    <Setter Property="Background" Value="{DynamicResource CaptionButtonBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource CaptionButtonBorderBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource CaptionButtonForeground}"/>
+    <Setter Property="Width" Value="{DynamicResource CaptionButtonWidth}"/>
+    <Setter Property="Height" Value="{DynamicResource CaptionButtonHeight}"/>
+    <Setter Property="VerticalAlignment" Value="Stretch"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          Background="Transparent"
+                          Content="{TemplateBinding Content}"/>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{TemplateBinding Background}" />
+    </Style>
+
+    <Style Selector="^:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="{TemplateBinding BorderBrush}" />
+    </Style>
+  </ControlTheme>
+
+  <ControlTheme x:Key="{x:Type WindowDrawnDecorations}" TargetType="WindowDrawnDecorations">
+    <Setter Property="DefaultTitleBarHeight" Value="30"/>
+    <Setter Property="DefaultFrameThickness" Value="1"/>
+    <Setter Property="DefaultShadowThickness" Value="16"/>
+    <Setter Property="Template">
+      <WindowDrawnDecorationsTemplate>
+        <WindowDrawnDecorationsContent>
+
+          <WindowDrawnDecorationsContent.Underlay>
+            <Panel>
+              <Border Background="{DynamicResource ThemeBackgroundBrush}"
+                      BorderThickness="1"
+                      BorderBrush="{DynamicResource ThemeBorderMidBrush}"
+                      IsHitTestVisible="False" />
+            </Panel>
+          </WindowDrawnDecorationsContent.Underlay>
+
+          <WindowDrawnDecorationsContent.Overlay>
+            <Panel x:Name="PART_OverlayPanel" VerticalAlignment="Top" Height="30"
+                   Background="{DynamicResource ThemeBackgroundBrush}"
+                   WindowDecorations.ElementRole="TitleBar">
+              <TextBlock Text="{TemplateBinding Title}"
+                         VerticalAlignment="Center"
+                         Margin="12,0,0,0"
+                         FontSize="12" />
+              <StackPanel x:Name="PART_CaptionButtonPanel"
+                          HorizontalAlignment="Right"
+                          Orientation="Horizontal"
+                          Spacing="2"
+                          TextElement.FontSize="10">
+                <Button x:Name="PART_FullScreenButton"
+                        Theme="{StaticResource SimpleDrawnCaptionButton}">
+                  <Viewbox Width="11" Margin="2">
+                    <Path Name="FullScreenButtonPath"
+                          Stretch="UniformToFill"
+                          Fill="{DynamicResource CaptionButtonForeground}"
+                          Data="M2048 2048v-819h-205v469l-1493 -1493h469v-205h-819v819h205v-469l1493 1493h-469v205h819z" />
+                  </Viewbox>
+                </Button>
+                <Button x:Name="PART_MinimizeButton"
+                        Theme="{StaticResource SimpleDrawnCaptionButton}"
+                        AutomationProperties.Name="Minimize">
+                  <Viewbox Width="11" Margin="2">
+                    <Path Stretch="UniformToFill"
+                          Fill="{DynamicResource CaptionButtonForeground}"
+                          Data="M2048 1229v-205h-2048v205h2048z" />
+                  </Viewbox>
+                </Button>
+                <Button x:Name="PART_MaximizeButton"
+                        Theme="{StaticResource SimpleDrawnCaptionButton}"
+                        AutomationProperties.Name="Maximize">
+                  <Viewbox Width="11" Margin="2">
+                    <Viewbox.RenderTransform>
+                      <RotateTransform Angle="-90" />
+                    </Viewbox.RenderTransform>
+                    <Path Name="RestoreButtonPath"
+                          Stretch="UniformToFill"
+                          Fill="{DynamicResource CaptionButtonForeground}"
+                          Data="M2048 2048v-2048h-2048v2048h2048zM1843 1843h-1638v-1638h1638v1638z"/>
+                  </Viewbox>
+                </Button>
+                <Button x:Name="PART_CloseButton"
+                        Background="#ffe81123"
+                        BorderBrush="#fff1707a"
+                        Theme="{StaticResource SimpleDrawnCaptionButton}"
+                        AutomationProperties.Name="Close">
+                  <Viewbox Width="11" Margin="2">
+                    <Path Stretch="UniformToFill"
+                          Fill="{DynamicResource CaptionButtonForeground}"
+                          Data="M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z" />
+                  </Viewbox>
+                </Button>
+              </StackPanel>
+            </Panel>
+          </WindowDrawnDecorationsContent.Overlay>
+
+          <WindowDrawnDecorationsContent.FullscreenPopover>
+            <!-- Shown on hover at top edge in fullscreen mode -->
+            <Panel Height="30"
+                   VerticalAlignment="Top"
+                   Background="{DynamicResource ThemeAccentBrush}"
+                   WindowDecorations.ElementRole="TitleBar">
+              <TextBlock Text="{TemplateBinding Title}"
+                         VerticalAlignment="Center"
+                         Foreground="White"
+                         Margin="12,0,0,0"
+                         FontSize="12" />
+              <StackPanel HorizontalAlignment="Right"
+                          Orientation="Horizontal"
+                          Spacing="2"
+                          TextElement.FontSize="10">
+                <Button x:Name="PART_PopoverFullScreenButton"
+                        Theme="{StaticResource SimpleDrawnCaptionButton}">
+                  <Viewbox Width="11" Margin="2">
+                    <Path Stretch="UniformToFill"
+                          Fill="{DynamicResource CaptionButtonForeground}"
+                          Data="M205 1024h819v-819h-205v469l-674 -674l-145 145l674 674h-469v205zM1374 1229h469v-205h-819v819h205v-469l674 674l145 -145z" />
+                  </Viewbox>
+                </Button>
+                <Button x:Name="PART_PopoverCloseButton"
+                        Background="#ffe81123"
+                        BorderBrush="#fff1707a"
+                        Theme="{StaticResource SimpleDrawnCaptionButton}"
+                        AutomationProperties.Name="Close">
+                  <Viewbox Width="11" Margin="2">
+                    <Path Stretch="UniformToFill"
+                          Fill="{DynamicResource CaptionButtonForeground}"
+                          Data="M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z" />
+                  </Viewbox>
+                </Button>
+              </StackPanel>
+            </Panel>
+          </WindowDrawnDecorationsContent.FullscreenPopover>
+
+        </WindowDrawnDecorationsContent>
+      </WindowDrawnDecorationsTemplate>
+    </Setter>
+
+    <!-- Maximized: restore button path changes -->
+    <Style Selector="^:maximized /template/ Path#RestoreButtonPath">
+      <Setter Property="Data" Value="M2048 410h-410v-410h-1638v1638h410v410h1638v-1638zM1434 1434h-1229v-1229h1229v1229zM1843 1843h-1229v-205h1024v-1024h205v1229z" />
+    </Style>
+
+    <!-- Fullscreen: update fullscreen button icon to "exit fullscreen" -->
+    <Style Selector="^:fullscreen /template/ Path#FullScreenButtonPath">
+      <Setter Property="Data" Value="M205 1024h819v-819h-205v469l-674 -674l-145 145l674 674h-469v205zM1374 1229h469v-205h-819v819h205v-469l674 674l145 -145z" />
+    </Style>
+
+    <!-- Disabled buttons -->
+    <Style Selector="^ /template/ Button:disabled">
+      <Setter Property="Opacity" Value="0.2"/>
+    </Style>
+
+    <!-- Fullscreen: hide overlay -->
+    <Style Selector="^:fullscreen /template/ Panel#PART_OverlayPanel">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

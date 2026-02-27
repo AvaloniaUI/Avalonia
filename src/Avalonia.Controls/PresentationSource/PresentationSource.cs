@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls.Chrome;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.Layout;
@@ -6,6 +7,7 @@ using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls;
 
@@ -114,5 +116,37 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
     public PixelPoint? GetLastPointerPosition(Visual topLevel)
     {
         return _pointerOverPreProcessor?.LastPosition;
+    }
+    
+    private static bool ChromeHitTestFilter(Visual visual)
+    {
+        if (visual is not IInputElement ie || !ie.IsEffectivelyVisible)
+            return false;
+
+        // Allow traversal into any container that might contain chrome elements
+        return true;
+    }
+
+    private static WindowDecorationsElementRole? GetChromeRoleFromVisual(Visual? visual)
+    {
+        while (visual != null)
+        {
+            var role = Chrome.WindowDecorations.GetElementRole(visual);
+            if (role != WindowDecorationsElementRole.None)
+                return role;
+            if (Chrome.WindowDecorations.GetIsHitTestVisibleInChrome(visual))
+                return WindowDecorationsElementRole.None;
+            visual = visual.VisualParent;
+        }
+        return null;
+    }
+
+    WindowDecorationsElementRole? IInputRoot.HitTestChromeElement(Point point)
+    {
+        var visual = RootVisual.GetVisualAt(point, ChromeHitTestFilter);
+        if (visual == null)
+            return null;
+
+        return GetChromeRoleFromVisual(visual);
     }
 }

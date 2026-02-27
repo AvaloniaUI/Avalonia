@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Controls.Chrome;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -139,13 +138,10 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
 
     protected (double TitleBarHeight, double ButtonsHeight) GetTitleBarInfo()
     {
-        var titleBar = Window.GetVisualDescendants().OfType<TitleBar>().FirstOrDefault();
-        Assert.NotNull(titleBar);
-
-        var buttons = titleBar.GetVisualDescendants().OfType<CaptionButtons>().FirstOrDefault();
-        Assert.NotNull(buttons);
-
-        return (titleBar.Height, buttons.Height);
+        // With the new CSD system, there's no TitleBar/CaptionButtons class.
+        // These tests need to be rewritten for WindowDrawnDecorations.
+        // For now, return 0 to indicate no legacy title bar is present.
+        throw new NotImplementedException("TODO");
     }
 
     private void AssertNoTitleBar()

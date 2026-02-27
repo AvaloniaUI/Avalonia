@@ -97,6 +97,12 @@ namespace Avalonia.Platform
         bool NeedsManagedDecorations { get; }
 
         /// <summary>
+        /// Gets flags indicating which drawn decoration parts the platform requires.
+        /// For example, X11 needs shadow, border, and resize grips; Win32 only needs titlebar/buttons.
+        /// </summary>
+        PlatformDrawnDecorationNeeds DrawnDecorationNeeds => PlatformDrawnDecorationNeeds.None;
+
+        /// <summary>
         /// Gets a thickness that describes the amount each side of the non-client area extends into the client area.
         /// It includes the titlebar.
         /// </summary>

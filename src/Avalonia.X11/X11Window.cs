@@ -508,7 +508,7 @@ namespace Avalonia.X11
 
         public Thickness OffScreenMargin { get; } = new Thickness();
 
-        public bool IsClientAreaExtendedToDecorations { get; }
+        public bool IsClientAreaExtendedToDecorations { get; private set; }
 
         public Action? Closed { get; set; }
         public Action<PixelPoint>? PositionChanged { get; set; }
@@ -921,7 +921,44 @@ namespace Avalonia.X11
         private void ScheduleInput(RawInputEventArgs args)
         {
             if (args is RawPointerEventArgs mouse)
+            {
                 mouse.Position = mouse.Position / RenderScaling;
+                
+                // Chrome hit-test for drawn decorations
+                if (_extendClientAreaToDecorations 
+                    && mouse.Type == RawPointerEventType.LeftButtonDown
+                    && _inputRoot is { } inputRoot)
+                {
+                    var chromeRole = inputRoot.HitTestChromeElement(mouse.Position);
+                    if (chromeRole is { } role && role != WindowDecorationsElementRole.None)
+                    {
+                        var moveResizeSide = role switch
+                        {
+                            WindowDecorationsElementRole.TitleBar => NetWmMoveResize._NET_WM_MOVERESIZE_MOVE,
+                            WindowDecorationsElementRole.ResizeN => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOP,
+                            WindowDecorationsElementRole.ResizeS => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOM,
+                            WindowDecorationsElementRole.ResizeE => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_RIGHT,
+                            WindowDecorationsElementRole.ResizeW => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_LEFT,
+                            WindowDecorationsElementRole.ResizeNE => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOPRIGHT,
+                            WindowDecorationsElementRole.ResizeNW => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOPLEFT,
+                            WindowDecorationsElementRole.ResizeSE => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT,
+                            WindowDecorationsElementRole.ResizeSW => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT,
+                            _ => (NetWmMoveResize?)null
+                        };
+                        
+                        if (moveResizeSide.HasValue)
+                        {
+                            var pos = GetCursorPos(_x11);
+                            XUngrabPointer(_x11.Display, IntPtr.Zero);
+                            SendNetWMMessage(_x11.Atoms._NET_WM_MOVERESIZE,
+                                (IntPtr)pos.x, (IntPtr)pos.y,
+                                (IntPtr)moveResizeSide.Value,
+                                (IntPtr)1, (IntPtr)1);
+                            return;
+                        }
+                    }
+                }
+            }
             if (args is RawDragEvent drag)
                 drag.Location = drag.Location / RenderScaling;
             
@@ -1434,8 +1471,32 @@ namespace Avalonia.X11
             }
         }
 
+        private bool _extendClientAreaToDecorations;
+
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
         {
+            if (_platform.Options.EnableDrawnDecorations != true)
+                return;
+
+            if (_extendClientAreaToDecorations == extendIntoClientAreaHint)
+                return;
+
+            _extendClientAreaToDecorations = extendIntoClientAreaHint;
+
+            if (extendIntoClientAreaHint)
+            {
+                // Remove WM decorations so we draw our own
+                _systemDecorations = SystemDecorations.None;
+                UpdateMotifHints();
+            }
+            else
+            {
+                _systemDecorations = SystemDecorations.Full;
+                UpdateMotifHints();
+            }
+
+            IsClientAreaExtendedToDecorations = extendIntoClientAreaHint;
+            ExtendClientAreaToDecorationsChanged?.Invoke(extendIntoClientAreaHint);
         }
 
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
@@ -1517,7 +1578,12 @@ namespace Avalonia.X11
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
-        public bool NeedsManagedDecorations => false;
+        public bool NeedsManagedDecorations => _extendClientAreaToDecorations;
+
+        public PlatformRequstedDrawnDecoration RequstedDrawnDecoration =>
+            _extendClientAreaToDecorations
+                ? PlatformRequstedDrawnDecoration.Border | PlatformRequstedDrawnDecoration.ResizeGrips
+                : PlatformRequstedDrawnDecoration.None;
 
         public bool IsEnabled => !_disabled && !_mode.BlockInput;
 
