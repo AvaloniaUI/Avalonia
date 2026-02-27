@@ -192,18 +192,22 @@ internal partial class TopLevelHost
 
         if (enabled)
         {
-            // In fullscreen mode, hide overlay and enable popover hover detection
+            // In fullscreen mode, hide overlay and underlay, enable popover hover detection
             if (_overlay != null)
                 _overlay.IsVisible = false;
+            if (_underlay != null)
+                _underlay.IsVisible = false;
             // Popover starts hidden, will show on hover at top edge
             _fullscreenPopover.IsVisible = false;
             _fullscreenPopoverEnabled = true;
         }
         else
         {
-            // Not fullscreen: show overlay, hide popover
+            // Not fullscreen: show overlay and underlay, hide popover
             if (_overlay != null)
                 _overlay.IsVisible = true;
+            if (_underlay != null)
+                _underlay.IsVisible = true;
             _fullscreenPopover.IsVisible = false;
             _fullscreenPopoverEnabled = false;
         }
