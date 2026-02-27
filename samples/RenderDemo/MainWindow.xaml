@@ -43,6 +43,7 @@
         </MenuItem>
         <MenuItem Header="Tests">
           <MenuItem Command="{Binding ResizeWindow}" Header="Resize window" />
+          <MenuItem x:Name="SetNotTransparencyMenuItem" Header="Set window not Transparency" Click="SetNotTransparencyMenuItem_OnClick"/>
         </MenuItem>
       </MenuFlyout>
     </FlyoutBase.AttachedFlyout>
