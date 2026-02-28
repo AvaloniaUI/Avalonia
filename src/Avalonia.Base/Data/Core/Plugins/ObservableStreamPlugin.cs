@@ -36,7 +36,13 @@ namespace Avalonia.Data.Core.Plugins
 
         public static bool MatchesType(Type type)
         {
-            return type.GetInterfaces().Any(x =>
+            var interfaces = type.GetInterfaces().AsEnumerable();
+            if (type.IsInterface)
+            {
+                interfaces = interfaces.Concat([type]);
+            }
+            
+            return interfaces.Any(x =>
               x.IsGenericType &&
               x.GetGenericTypeDefinition() == typeof(IObservable<>));
         }
