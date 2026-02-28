@@ -1,13 +1,18 @@
+using System;
+using System.Collections.Generic;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Chrome;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls;
 
 /// <summary>
-/// For now this is a stub class that is needed to prevent people from assuming that TopLevel sits at the root of the
-/// visual tree.
-/// In future 12.x releases it will serve more roles like hosting popups and CSD.
+/// Hosts the TopLevel and, when enabled, drawn decoration layers (underlay, overlay, fullscreen popover).
+/// Serves as the visual root for PresentationSource.
 /// </summary>
-internal class TopLevelHost : Control
+internal partial class TopLevelHost : Control
 {
     static TopLevelHost()
     {
@@ -16,6 +21,7 @@ internal class TopLevelHost : Control
 
     public TopLevelHost(TopLevel tl)
     {
+        _topLevel = tl;
         VisualChildren.Add(tl);
     }
 }

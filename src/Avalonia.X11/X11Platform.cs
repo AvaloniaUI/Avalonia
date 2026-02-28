@@ -468,6 +468,14 @@ namespace Avalonia
         public bool UseGLibMainLoop { get; set; }
         
         /// <summary>
+        /// Enables client-side drawn window decorations on X11.
+        /// When true and ExtendClientAreaToDecorationsHint is set on a window,
+        /// Avalonia will draw its own decorations (titlebar, borders, resize grips)
+        /// instead of using the X11 window manager decorations.
+        /// </summary>
+        public bool? EnableDrawnDecorations { get; set; }
+        
+        /// <summary>
         /// If Avalonia is in control of a run loop, we propagate exceptions by stopping the run loop frame
         /// and rethrowing an exception. However, if there is no Avalonia-controlled run loop frame,
         /// there is no way to report such exceptions, since allowing those to escape native->managed call boundary

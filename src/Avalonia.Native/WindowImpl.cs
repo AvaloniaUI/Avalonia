@@ -115,6 +115,8 @@ namespace Avalonia.Native
 
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
+        // Extension is handled by native backend
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations => default;
         public Thickness ExtendedMargins { get; private set; }
 
         public Thickness OffScreenMargin { get; } = new Thickness();
@@ -201,12 +203,6 @@ namespace Avalonia.Native
             _native.SetExtendClientArea(extendIntoClientAreaHint.AsComBool());
 
             InvalidateExtendedMargins();
-        }
-
-        /// <inheritdoc/>
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {   
-            _native.SetExtendClientAreaHints ((AvnExtendClientAreaChromeHints)hints);
         }
 
         /// <inheritdoc/>

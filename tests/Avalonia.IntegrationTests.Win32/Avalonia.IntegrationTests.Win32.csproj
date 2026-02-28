@@ -11,6 +11,7 @@
     <ProjectReference Include="../../src/Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
     <ProjectReference Include="../../src/Windows/Avalonia.Win32/Avalonia.Win32.csproj" />
     <ProjectReference Include="../../src/Avalonia.Themes.Fluent/Avalonia.Themes.Fluent.csproj" />
+    <ProjectReference Include="..\..\src\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
   </ItemGroup>
 
   <Import Project="../../build/XUnit.props" />

@@ -69,4 +69,8 @@
                       ReferenceOutputAssembly="false"
                       PrivateAssets="all" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Input\Chrome\" />
+  </ItemGroup>
 </Project>

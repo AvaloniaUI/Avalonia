@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -107,9 +108,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> ExtendClientAreaToDecorationsHintProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(ExtendClientAreaToDecorationsHint), false);
-
-        public static readonly StyledProperty<ExtendClientAreaChromeHints> ExtendClientAreaChromeHintsProperty =
-            AvaloniaProperty.Register<Window, ExtendClientAreaChromeHints>(nameof(ExtendClientAreaChromeHints), ExtendClientAreaChromeHints.Default);
 
         public static readonly StyledProperty<double> ExtendClientAreaTitleBarHeightHintProperty =
             AvaloniaProperty.Register<Window, double>(nameof(ExtendClientAreaTitleBarHeightHint), -1);
@@ -224,6 +222,7 @@ namespace Avalonia.Controls
         static Window()
         {
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
+            ExtendClientAreaTitleBarHeightHintProperty.Changed.AddClassHandler<Window>((w, _) => w.OnTitleBarHeightHintChanged());
         }
 
         /// <summary>
@@ -257,7 +256,6 @@ namespace Avalonia.Controls
 
             CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
             CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, hint => PlatformImpl!.SetExtendClientAreaToDecorationsHint(hint));
-            CreatePlatformImplBinding(ExtendClientAreaChromeHintsProperty, hint => PlatformImpl!.SetExtendClientAreaChromeHints(hint));
             CreatePlatformImplBinding(ExtendClientAreaTitleBarHeightHintProperty, height => PlatformImpl!.SetExtendClientAreaTitleBarHeightHint(height));
 
             CreatePlatformImplBinding(MinWidthProperty, UpdateMinMaxSize);
@@ -315,16 +313,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(ExtendClientAreaToDecorationsHintProperty);
             set => SetValue(ExtendClientAreaToDecorationsHintProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or Sets the <see cref="Avalonia.Platform.ExtendClientAreaChromeHints"/> that control
-        /// how the chrome looks when the client area is extended.
-        /// </summary>
-        public ExtendClientAreaChromeHints ExtendClientAreaChromeHints
-        {
-            get => GetValue(ExtendClientAreaChromeHintsProperty);
-            set => SetValue(ExtendClientAreaChromeHintsProperty, value);
         }
 
         /// <summary>
@@ -630,13 +618,134 @@ namespace Avalonia.Controls
             {
                 StartRendering();
             }
+
+            // Update fullscreen popover visibility
+            TopLevelHost.SetFullscreenPopoverEnabled(state == WindowState.FullScreen);
+
+            // Update decoration parts for the new window state
+            UpdateDrawnDecorationParts();
         }
 
         protected virtual void ExtendClientAreaToDecorationsChanged(bool isExtended)
         {
             IsExtendedIntoWindowDecorations = isExtended;
-            WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
             OffScreenMargin = PlatformImpl?.OffScreenMargin ?? default;
+
+            UpdateDrawnDecorations();
+
+            // Only use platform margins if drawn decorations are not active
+            if (TopLevelHost.Decorations == null)
+                WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
+        }
+        
+        private void UpdateDrawnDecorations()
+        {
+            var isExtended = IsExtendedIntoWindowDecorations
+                || (PlatformImpl?.IsClientAreaExtendedToDecorations ?? false);
+            var needsManaged = PlatformImpl?.NeedsManagedDecorations ?? false;
+            var needsDrawnDecorations = isExtended && needsManaged;
+
+            if (needsDrawnDecorations)
+            {
+                var parts = ComputeDecorationParts();
+                TopLevelHost.EnableDecorations(parts);
+
+                // Forward ExtendClientAreaTitleBarHeightHint to decoration TitleBarHeight
+                var decorations = TopLevelHost.Decorations;
+                if (decorations != null)
+                {
+                    var hint = ExtendClientAreaTitleBarHeightHint;
+                    if (hint >= 0)
+                        decorations.TitleBarHeightOverride = hint;
+                }
+
+                UpdateDrawnDecorationMargins();
+            }
+            else
+            {
+                TopLevelHost.DisableDecorations();
+            }
+        }
+
+        /// <summary>
+        /// Updates decoration parts based on current window state without
+        /// re-creating the decorations instance.
+        /// </summary>
+        private void UpdateDrawnDecorationParts()
+        {
+            var decorations = TopLevelHost.Decorations;
+            if (decorations == null)
+                return;
+
+            decorations.EnabledParts = ComputeDecorationParts();
+        }
+
+        private Chrome.DrawnWindowDecorationParts ComputeDecorationParts()
+        {
+            var platformNeeds = PlatformImpl?.RequestedDrawnDecorations ?? PlatformRequestedDrawnDecoration.None;
+            var parts = Chrome.DrawnWindowDecorationParts.None;
+            if (SystemDecorations != SystemDecorations.None)
+            {
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.TitleBar) &&
+                    SystemDecorations == SystemDecorations.Full)
+                    parts |= Chrome.DrawnWindowDecorationParts.TitleBar;
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Shadow))
+                    parts |= Chrome.DrawnWindowDecorationParts.Shadow;
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Border))
+                    parts |= Chrome.DrawnWindowDecorationParts.Border;
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.ResizeGrips))
+                    parts |= Chrome.DrawnWindowDecorationParts.ResizeGrips;
+
+
+                // In fullscreen: no shadow, border, resize grips, or titlebar (popover takes over)
+                if (WindowState == WindowState.FullScreen)
+                {
+                    parts &= ~(Chrome.DrawnWindowDecorationParts.Shadow
+                               | Chrome.DrawnWindowDecorationParts.Border
+                               | Chrome.DrawnWindowDecorationParts.ResizeGrips
+                               | Chrome.DrawnWindowDecorationParts.TitleBar);
+                }
+                // In maximized: no shadow, border, or resize grips (titlebar stays)
+                else if (WindowState == WindowState.Maximized)
+                {
+                    parts &= ~(Chrome.DrawnWindowDecorationParts.Shadow
+                               | Chrome.DrawnWindowDecorationParts.Border
+                               | Chrome.DrawnWindowDecorationParts.ResizeGrips);
+                }
+            }
+
+            return parts;
+        }
+
+        private void UpdateDrawnDecorationMargins()
+        {
+            var decorations = TopLevelHost.Decorations;
+            if (decorations == null)
+                return;
+
+            var titleBarHeight = decorations.TitleBarHeight;
+            var frame = decorations.FrameThickness;
+            WindowDecorationMargin = new Thickness(frame.Left, titleBarHeight + frame.Top, frame.Right, frame.Bottom);
+        }
+
+        private void OnTitleBarHeightHintChanged()
+        {
+            var decorations = TopLevelHost.Decorations;
+            if (decorations == null)
+                return;
+
+            decorations.TitleBarHeightOverride = ExtendClientAreaTitleBarHeightHint;
+
+            UpdateDrawnDecorationMargins();
+        }
+
+        /// <summary>
+        /// Called by TopLevelHost when decoration effective geometry changes
+        /// (e.g. theme changes Default* values, or EnabledParts changes).
+        /// </summary>
+        internal void OnDrawnDecorationsGeometryChanged()
+        {
+            UpdateDrawnDecorationMargins();
         }
 
         /// <summary>
@@ -771,6 +880,10 @@ namespace Avalonia.Controls
 
                 EnsureInitialized();
                 ApplyStyling();
+                
+                // Enable drawn decorations before layout so margins are computed
+                UpdateDrawnDecorations();
+                
                 _shown = true;
                 IsVisible = true;
 

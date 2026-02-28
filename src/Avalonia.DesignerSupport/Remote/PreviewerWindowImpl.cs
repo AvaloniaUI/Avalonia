@@ -92,6 +92,7 @@ namespace Avalonia.DesignerSupport.Remote
         
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations { get; }
         public Thickness ExtendedMargins { get; } = new Thickness();
 
         public bool IsClientAreaExtendedToDecorations { get; }
@@ -160,10 +161,6 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
-        {            
-        }
-
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {            
         }
 
