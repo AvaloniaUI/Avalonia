@@ -37,28 +37,11 @@ namespace Avalonia.Rendering.Composition
         private readonly object _pendingBatchLock = new();
         private readonly List<Action> _pendingServerCompositorJobs = new();
         private readonly List<Action> _pendingServerCompositorPostTargetJobs = new();
-        private DiagnosticTextRenderer? _diagnosticTextRenderer;
         private readonly Action _triggerCommitRequested;
 
         internal IEasing DefaultEasing { get; }
 
         internal Dispatcher Dispatcher { get; }
-
-        private DiagnosticTextRenderer? DiagnosticTextRenderer
-        {
-            get
-            {
-                if (_diagnosticTextRenderer == null)
-                {
-                    // We are running in some unit test context
-                    if (AvaloniaLocator.Current.GetService<IFontManagerImpl>() == null)
-                        return null;
-                    _diagnosticTextRenderer = new(Typeface.Default.GlyphTypeface, 12.0);
-                }
-
-                return _diagnosticTextRenderer;
-            }
-        }
 
         internal event Action? AfterCommit;
 

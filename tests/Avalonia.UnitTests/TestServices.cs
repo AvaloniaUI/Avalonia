@@ -87,7 +87,7 @@ namespace Avalonia.UnitTests
             ITextShaperImpl? textShaperImpl = null,
             IWindowImpl? windowImpl = null,
             IWindowingPlatform? windowingPlatform = null,
-            IAccessKeyHandler? accessKeyHandler = null)
+            Func<IAccessKeyHandler?>? accessKeyHandler = null)
         {
             AssetLoader = assetLoader;
             InputManager = inputManager;
@@ -110,9 +110,9 @@ namespace Avalonia.UnitTests
         public IAssetLoader? AssetLoader { get; }
         public IInputManager? InputManager { get; }
         internal IGlobalClock? GlobalClock { get; set; }
-        internal IAccessKeyHandler? AccessKeyHandler { get; }
+        internal Func<IAccessKeyHandler?>? AccessKeyHandler { get; }
         public Func<IKeyboardDevice?>? KeyboardDevice { get; }
-        public Func<IKeyboardNavigationHandler?>? KeyboardNavigation { get; }
+        internal Func<IKeyboardNavigationHandler?>? KeyboardNavigation { get; }
         public Func<IMouseDevice?>? MouseDevice { get; }
         public IRuntimePlatform? Platform { get; }
         public IPlatformRenderInterface? RenderInterface { get; }
@@ -128,7 +128,7 @@ namespace Avalonia.UnitTests
             IAssetLoader? assetLoader = null,
             IInputManager? inputManager = null,
             IGlobalClock? globalClock = null,
-            IAccessKeyHandler? accessKeyHandler = null,
+            Func<IAccessKeyHandler?>? accessKeyHandler = null,
             Func<IKeyboardDevice?>? keyboardDevice = null,
             Func<IKeyboardNavigationHandler?>? keyboardNavigation = null,
             Func<IMouseDevice?>? mouseDevice = null,

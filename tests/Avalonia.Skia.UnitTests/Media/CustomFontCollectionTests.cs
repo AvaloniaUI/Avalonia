@@ -11,8 +11,8 @@ namespace Avalonia.Skia.UnitTests.Media
 {
     public class CustomFontCollectionTests
     {
-        private const string NotoMono =
-         "resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests";
+        private const string AssetsNamespace = "Avalonia.Skia.UnitTests.Assets";
+        private const string AssetFonts = $"resm:{AssetsNamespace}?assembly=Avalonia.Skia.UnitTests";
 
         [Fact]
         public void Should_AddGlyphTypeface_By_Stream()
@@ -27,23 +27,46 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
-                var assets = assetLoader.GetAssets(new Uri(NotoMono, UriKind.Absolute), null).ToArray();
+                var infos = new[]
+                {
+                    new FontAssetInfo($"{AssetsNamespace}.AdobeBlank2VF.ttf", "Adobe Blank 2 VF R"),
+                    new FontAssetInfo($"{AssetsNamespace}.Inter-Regular.ttf", "Inter"),
+                    new FontAssetInfo($"{AssetsNamespace}.Manrope-Light.ttf", "Manrope Light"),
+                    new FontAssetInfo($"{AssetsNamespace}.MiSans-Normal.ttf", "MiSans Normal"),
+                    new FontAssetInfo($"{AssetsNamespace}.NISC18030.ttf", "GB18030 Bitmap"),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoMono-Regular.ttf", "Noto Mono"),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoSans-Italic.ttf", "Noto Sans"),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoSansArabic-Regular.ttf", "Noto Sans Arabic"),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoSansDeseret-Regular.ttf", "Noto Sans Deseret"),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoSansHebrew-Regular.ttf", "Noto Sans Hebrew"),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoSansMiao-Regular.ttf", "Noto Sans Miao"),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoSansTamil-Regular.ttf", "Noto Sans Tamil"),
+                    new FontAssetInfo($"{AssetsNamespace}.SourceSerif4_36pt-Italic.ttf", "Source Serif 4 36pt"),
+                    new FontAssetInfo($"{AssetsNamespace}.TwitterColorEmoji-SVGinOT.ttf", "Twitter Color Emoji")
+                };
 
-                Assert.NotEmpty(assets);
+                var assets = assetLoader.GetAssets(new Uri(AssetFonts, UriKind.Absolute), null)
+                    .OrderBy(uri => uri.AbsoluteUri, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
 
-                var notoMonoLocation = assets.First();
+                Assert.Equal(infos.Length, assets.Length);
 
-                using var notoMonoStream = assetLoader.Open(notoMonoLocation);
+                for (var i = 0; i < infos.Length; ++i)
+                {
+                    var info = infos[i];
+                    var asset = assets[i];
 
-                Assert.NotNull(notoMonoStream);
+                    Assert.Equal(info.Path, asset.AbsolutePath);
 
-                Assert.True(fontCollection.TryAddGlyphTypeface(notoMonoStream, out var glyphTypeface));
+                    using var fontStream = assetLoader.Open(asset);
+                    Assert.NotNull(fontStream);
 
-                Assert.Equal("Inter", glyphTypeface.FamilyName);
+                    Assert.True(fontCollection.TryAddGlyphTypeface(fontStream, out var glyphTypeface));
+                    Assert.Equal(info.FamilyName, glyphTypeface.FamilyName);
 
-                Assert.True(fontManager.TryGetGlyphTypeface(new Typeface("fonts:custom#Inter"), out var secondGlyphTypeface));
-
-                Assert.Equal(glyphTypeface, secondGlyphTypeface);
+                    Assert.True(fontManager.TryGetGlyphTypeface(new Typeface($"fonts:custom#{info.FamilyName}"), out var secondGlyphTypeface));
+                    Assert.Same(glyphTypeface, secondGlyphTypeface);
+                }
             }
         }
 
@@ -60,7 +83,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
-                var assets = assetLoader.GetAssets(new Uri(NotoMono, UriKind.Absolute), null).Where(x => x.AbsolutePath.EndsWith(".ttf")).ToArray();
+                var assets = assetLoader.GetAssets(new Uri(AssetFonts, UriKind.Absolute), null).Where(x => x.AbsolutePath.EndsWith(".ttf")).ToArray();
 
                 foreach (var asset in assets)
                 {
@@ -157,11 +180,10 @@ namespace Avalonia.Skia.UnitTests.Media
                 var fontCollection = new CustomFontCollection(new Uri("fonts:custom", UriKind.Absolute));
                 fontManager.AddFontCollection(fontCollection);
 
-                // Use the NotoMono resource as FontSource
-                var notoMonoUri = new Uri(NotoMono, UriKind.Absolute);
+                var allFontsUri = new Uri(AssetFonts, UriKind.Absolute);
 
                 // Add the font resource
-                Assert.True(fontCollection.TryAddFontSource(notoMonoUri));
+                Assert.True(fontCollection.TryAddFontSource(allFontsUri));
 
                 // Get the loaded family names
                 var families = fontCollection.ToArray();
@@ -184,5 +206,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             public override Uri Key { get; } = key;
         }
+
+        private record struct FontAssetInfo(string Path, string FamilyName);
     }
 }

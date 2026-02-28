@@ -108,14 +108,14 @@ namespace Avalonia.Input
             }
         }
 
-        static IInputElement? GetNextCapture(Visual parent)
+        static IInputElement? GetNextCapture(Visual? parent)
         {
             return parent as IInputElement ?? parent.FindAncestorOfType<IInputElement>();
         }
 
         private void OnCaptureDetached(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            Capture(GetNextCapture(e.Parent));
+            Capture(GetNextCapture(e.AttachmentPoint));
         }
 
 

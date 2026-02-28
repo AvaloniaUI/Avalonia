@@ -209,7 +209,7 @@ namespace Avalonia.Win32
         private Point GetDragLocation(UnmanagedMethods.POINT dragPoint)
         {
             var screenPt = new PixelPoint(dragPoint.X, dragPoint.Y);
-            return ((Visual)_target).PointToClient(screenPt);
+            return _target.RootElement.PointToClient(screenPt);
         }
 
         protected override void Destroyed()

@@ -110,7 +110,7 @@ namespace Avalonia.Controls.UnitTests
                 new RawKeyEventArgs(
                     keyboardDevice,
                     0,
-                    root,
+                    root.InputRoot,
                     RawKeyEventType.KeyDown,
                     Key.F,
                     RawInputModifiers.Control,

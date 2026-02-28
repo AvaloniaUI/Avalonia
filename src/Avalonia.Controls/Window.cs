@@ -86,7 +86,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : WindowBase, IFocusScope, ILayoutRoot
+    public class Window : WindowBase, IFocusScope
     {
         private static readonly Lazy<WindowIcon?> s_defaultIcon = new(LoadDefaultIcon);
         private readonly List<(Window child, bool isDialog)> _children = new List<(Window, bool)>();
@@ -1164,7 +1164,7 @@ namespace Avalonia.Controls
             return result;
         }
 
-        protected sealed override Size ArrangeSetBounds(Size size)
+        private protected sealed override Size ArrangeSetBounds(Size size)
         {
             _arrangeBounds = size;
             if (_canHandleResized)

@@ -220,6 +220,11 @@
     return GetNSStringAndRelease(_peer->GetHelpText()); 
 }
 
+- (NSString *)accessibilityPlaceholderValue
+{
+    return GetNSStringAndRelease(_peer->GetPlaceholderText());
+}
+
 - (id)accessibilityValue
 {
     if (_peer->IsRangeValueProvider())

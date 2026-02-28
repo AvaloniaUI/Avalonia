@@ -46,10 +46,11 @@ namespace Avalonia.Native
         public IAvnAutomationPeer? LabeledBy => Wrap(_inner.GetLabeledBy());
         public IAvnString? Name => _inner.GetName().ToAvnString();
         public IAvnString? HelpText => _inner.GetHelpText().ToAvnString();
+        public IAvnString? PlaceholderText => _inner.GetPlaceholderText().ToAvnString();
         public AvnLandmarkType LandmarkType => (AvnLandmarkType?)_inner.GetLandmarkType() ?? AvnLandmarkType.LandmarkNone;
         public int HeadingLevel => _inner.GetHeadingLevel();
         public IAvnAutomationPeer? Parent => Wrap(_inner.GetParent());
-        public IAvnAutomationPeer? VisualRoot => Wrap(_inner.GetVisualRoot());
+        public IAvnAutomationPeer? VisualRoot => Wrap(_inner.GetAutomationRoot());
         public AvnLiveSetting LiveSetting => (AvnLiveSetting)_inner.GetLiveSetting();
 
         public int HasKeyboardFocus() => _inner.HasKeyboardFocus().AsComBool();

@@ -21,6 +21,8 @@ namespace Avalonia.Automation.Peers
             return AutomationControlType.Edit;
         }
 
+        protected override string? GetPlaceholderTextCore() => Owner.PlaceholderText;
+
         protected virtual void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if(e.Property == TextBox.TextProperty)

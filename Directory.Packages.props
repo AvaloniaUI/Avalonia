@@ -1,0 +1,76 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="Appium.WebDriver" Version="5.2.0" />
+    <PackageVersion Include="Avalonia.Angle.Windows.Natives" Version="2.1.25547.20250602" />
+    <PackageVersion Include="Avalonia.BuildServices" Version="11.3.2" />
+    <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.0-beta2" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.6" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageVersion Include="Dotnet.Bundle" Version="0.9.13" />
+    <PackageVersion Include="GtkSharp" Version="3.24.24.95" />
+    <PackageVersion Include="HarfBuzzSharp" Version="8.3.1.2" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.2" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.WebAssembly" Version="8.3.1.2" />
+    <PackageVersion Include="MicroCom.CodeGenerator" Version="0.11.0" />
+    <PackageVersion Include="MicroCom.CodeGenerator.MSBuild" Version="0.11.0" />
+    <PackageVersion Include="MicroCom.Runtime" Version="0.11.0" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.10" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="18.0.2" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="15.1.548" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.5.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.5.0" />
+    <PackageVersion Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="Microsoft.Reactive.Testing" Version="6.1.0" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.0.2" />
+    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.257" />
+    <PackageVersion Include="Mono.Cecil" Version="0.11.6" />
+    <PackageVersion Include="MonoMac.NetStandard" Version="0.0.4" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
+    <PackageVersion Include="Nito.AsyncEx.Context" Version="5.1.2" />
+    <PackageVersion Include="NuGet.Protocol" Version="7.0.1" />
+    <PackageVersion Include="Nuke.Common" Version="10.1.0" />
+    <PackageVersion Include="NUnit" Version="4.4.0" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="6.1.0" />
+    <PackageVersion Include="Quamotion.RemoteViewing" Version="1.1.211" />
+    <PackageVersion Include="SharpCompress" Version="0.41.0" />
+    <PackageVersion Include="Silk.NET.Direct3D.Compilers" Version="2.22.0" />
+    <PackageVersion Include="Silk.NET.Direct3D11" Version="2.22.0" />
+    <PackageVersion Include="Silk.NET.Vulkan" Version="2.22.0" />
+    <PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.22.0" />
+    <PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
+    <PackageVersion Include="SixLabors.ImageSharp" Version="2.1.12" />
+    <PackageVersion Include="SkiaSharp" Version="3.119.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.1" />
+    <PackageVersion Include="System.ComponentModel.Annotations" Version="4.5.0" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="9.0.10" />
+    <PackageVersion Include="System.Memory" Version="4.5.5" />
+    <PackageVersion Include="System.Net.Http" Version="4.3.4" />
+    <PackageVersion Include="System.Numerics.Vectors" Version="4.6.1" />
+    <PackageVersion Include="System.Reactive" Version="6.1.0" />
+    <PackageVersion Include="System.Reflection.Emit" Version="4.7.0" />
+    <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.0" />
+    <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
+    <PackageVersion Include="Tmds.DBus.Protocol" Version="0.21.2" />
+    <PackageVersion Include="Tmds.DBus.SourceGenerator" Version="0.0.22" />
+    <PackageVersion Include="Xamarin.AndroidX.AppCompat" Version="1.7.1.1" />
+    <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0" />
+    <PackageVersion Include="Xamarin.AndroidX.Window" Version="1.5.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="Xunit.StaFact" Version="3.0.13" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.1" />
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <GlobalPackageReference Include="Microsoft.VisualStudio.SlnGen" Version="8.5.17" PrivateAssets="all" />
+  </ItemGroup>
+</Project>
