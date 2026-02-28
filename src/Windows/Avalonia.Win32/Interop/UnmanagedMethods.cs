@@ -1210,6 +1210,15 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool IsMouseInPointerEnabled();
 
+        public const uint SIGNATURE_MASK = 0xFFFFFF00;
+        public const uint PEN_ID_SIGNATURE = 0xFF515700;
+
+        public static bool IsMessageFromPen()
+        {
+            IntPtr extra = GetMessageExtraInfo();
+            return (extra & SIGNATURE_MASK) == PEN_ID_SIGNATURE;
+        }
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int EnableMouseInPointer(bool enable);
 
