@@ -1,43 +1,76 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Threading;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests;
 
 // Some of these exceptions are based from https://github.com/dotnet/wpf-test/blob/05797008bb4975ceeb71be36c47f01688f535d53/src/Test/ElementServices/FeatureTests/Untrusted/Dispatcher/UnhandledExceptionTest.cs#L30
-public partial class DispatcherTests
+public partial class DispatcherTests : ScopedTestBase
 {
     private const string ExpectedExceptionText = "Exception thrown inside Dispatcher.Invoke / Dispatcher.BeginInvoke.";
 
     private int _numberOfHandlerOnUnhandledEventInvoked;
     private int _numberOfHandlerOnUnhandledEventFilterInvoked;
+    private Dispatcher _uiThread;
 
     public DispatcherTests()
     {
         _numberOfHandlerOnUnhandledEventInvoked = 0;
         _numberOfHandlerOnUnhandledEventFilterInvoked = 0;
+
+        VerifyDispatcherSanity();
+        _uiThread = Dispatcher.CurrentDispatcher;
+    }
+
+    void VerifyDispatcherSanity()
+    {
+        // Verify that we are in a clear-ish state. Do this for every test to ensure that our reset procedure is working
+        Assert.Null(Dispatcher.FromThread(Thread.CurrentThread));
+        Assert.Null(Dispatcher.TryGetUIThread());
+
+        // The first (this) dispatcher becomes UI thread one
+        Assert.NotNull(Dispatcher.CurrentDispatcher);
+        Assert.Equal(Dispatcher.TryGetUIThread(), Dispatcher.CurrentDispatcher);
+        Assert.Equal(Dispatcher.UIThread, Dispatcher.CurrentDispatcher);
+
+        // Dispatcher.FromThread works
+        Assert.Equal(Dispatcher.CurrentDispatcher, Dispatcher.FromThread(Thread.CurrentThread));
+        Assert.Equal(Dispatcher.UIThread, Dispatcher.FromThread(Thread.CurrentThread));
+    }
+
+    [Fact]
+    [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method", Justification = "Tests the dispatcher itself")]
+    public void Different_Threads_Auto_Spawn_Dispatchers()
+    {
+        var dispatcher = Dispatcher.CurrentDispatcher;
+        ThreadRunHelper.RunOnDedicatedThread(() =>
+        {
+            Assert.Null(Dispatcher.FromThread(Thread.CurrentThread));
+            Assert.NotNull(Dispatcher.CurrentDispatcher);
+            Assert.NotEqual(dispatcher, Dispatcher.CurrentDispatcher);
+            Assert.Equal(Dispatcher.CurrentDispatcher, Dispatcher.FromThread(Thread.CurrentThread));
+        }).GetAwaiter().GetResult();
     }
 
     [Fact]
     public void DispatcherHandlesExceptionWithPost()
     {
-        var impl = new ManagedDispatcherImpl(null);
-        var disp = new Dispatcher(impl);
-
         var handled = false;
         var executed = false;
-        disp.UnhandledException += (sender, args) =>
+        _uiThread.UnhandledException += (sender, args) =>
         {
             handled = true;
             args.Handled = true;
         };
-        disp.Post(() => ThrowAnException());
-        disp.Post(() => executed = true);
+        _uiThread.Post(() => ThrowAnException());
+        _uiThread.Post(() => executed = true);
 
-        disp.RunJobs(null, TestContext.Current.CancellationToken);
+        _uiThread.RunJobs(null, TestContext.Current.CancellationToken);
         
         Assert.True(handled);
         Assert.True(executed);
@@ -46,14 +79,11 @@ public partial class DispatcherTests
     [Fact]
     public void SyncContextExceptionCanBeHandledWithPost()
     {
-        var impl = new ManagedDispatcherImpl(null);
-        var disp = new Dispatcher(impl);
-
-        var syncContext = disp.GetContextWithPriority(DispatcherPriority.Background);
+        var syncContext = _uiThread.GetContextWithPriority(DispatcherPriority.Background);
 
         var handled = false;
         var executed = false;
-        disp.UnhandledException += (sender, args) =>
+        _uiThread.UnhandledException += (sender, args) =>
         {
             handled = true;
             args.Handled = true;
@@ -62,7 +92,7 @@ public partial class DispatcherTests
         syncContext.Post(_ => ThrowAnException(), null);
         syncContext.Post(_ => executed = true, null);
 
-        disp.RunJobs(null, TestContext.Current.CancellationToken);
+        _uiThread.RunJobs(null, TestContext.Current.CancellationToken);
 
         Assert.True(handled);
         Assert.True(executed);
@@ -71,24 +101,22 @@ public partial class DispatcherTests
     [Fact]
     public void CanRemoveDispatcherExceptionHandler()
     {
-        var impl = new ManagedDispatcherImpl(null);
-        var dispatcher = new Dispatcher(impl);
         var caughtCorrectException = false;
 
-        dispatcher.UnhandledExceptionFilter +=
+        _uiThread.UnhandledExceptionFilter +=
             HandlerOnUnhandledExceptionFilterRequestCatch;
-        dispatcher.UnhandledException +=
+        _uiThread.UnhandledException +=
             HandlerOnUnhandledExceptionNotHandled;
 
-        dispatcher.UnhandledExceptionFilter -=
+        _uiThread.UnhandledExceptionFilter -=
             HandlerOnUnhandledExceptionFilterRequestCatch;
-        dispatcher.UnhandledException -=
+        _uiThread.UnhandledException -=
             HandlerOnUnhandledExceptionNotHandled;
 
         try
         {
-            dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
+            _uiThread.Post(ThrowAnException, DispatcherPriority.Normal);
+            _uiThread.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception e)
         {
@@ -103,19 +131,16 @@ public partial class DispatcherTests
     [Fact]
     public void CanHandleExceptionWithUnhandledException()
     {
-        var impl = new ManagedDispatcherImpl(null);
-        var dispatcher = new Dispatcher(impl);
-        
-        dispatcher.UnhandledExceptionFilter +=
+        _uiThread.UnhandledExceptionFilter +=
             HandlerOnUnhandledExceptionFilterRequestCatch;
         
-        dispatcher.UnhandledException +=
+        _uiThread.UnhandledException +=
             HandlerOnUnhandledExceptionHandled;
         var caughtCorrectException = true;
         try
         {
-            dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
+            _uiThread.Post(ThrowAnException, DispatcherPriority.Normal);
+            _uiThread.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception)
         {
@@ -131,20 +156,17 @@ public partial class DispatcherTests
     [Fact]
     public void InvokeMethodDoesntTriggerUnhandledException()
     {
-        var impl = new ManagedDispatcherImpl(null);
-        var dispatcher = new Dispatcher(impl);
-        
-        dispatcher.UnhandledExceptionFilter +=
+        _uiThread.UnhandledExceptionFilter +=
             HandlerOnUnhandledExceptionFilterRequestCatch;
         
-        dispatcher.UnhandledException +=
+        _uiThread.UnhandledException +=
             HandlerOnUnhandledExceptionHandled;
         var caughtCorrectException = false;
         try
         {
             // Since both Invoke and InvokeAsync can throw exception, there is no need to pass them to the UnhandledException.
-            dispatcher.Invoke(ThrowAnException, DispatcherPriority.Normal, TestContext.Current.CancellationToken);
-            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
+            _uiThread.Invoke(ThrowAnException, DispatcherPriority.Normal, TestContext.Current.CancellationToken);
+            _uiThread.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception e)
         {
@@ -160,21 +182,18 @@ public partial class DispatcherTests
     [Fact]
     public void InvokeAsyncMethodDoesntTriggerUnhandledException()
     {
-        var impl = new ManagedDispatcherImpl(null);
-        var dispatcher = new Dispatcher(impl);
-        
-        dispatcher.UnhandledExceptionFilter +=
+        _uiThread.UnhandledExceptionFilter +=
             HandlerOnUnhandledExceptionFilterRequestCatch;
         
-        dispatcher.UnhandledException +=
+        _uiThread.UnhandledException +=
             HandlerOnUnhandledExceptionHandled;
         var caughtCorrectException = false;
         try
         {
             // Since both Invoke and InvokeAsync can throw exception, there is no need to pass them to the UnhandledException.
-            var op = dispatcher.InvokeAsync(ThrowAnException, DispatcherPriority.Normal, TestContext.Current.CancellationToken);
+            var op = _uiThread.InvokeAsync(ThrowAnException, DispatcherPriority.Normal, TestContext.Current.CancellationToken);
             op.Wait();
-            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
+            _uiThread.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception e)
         {
@@ -190,19 +209,16 @@ public partial class DispatcherTests
     [Fact]
     public void CanRethrowExceptionWithUnhandledException()
     {
-        var impl = new ManagedDispatcherImpl(null);
-        var dispatcher = new Dispatcher(impl);
-        
-        dispatcher.UnhandledExceptionFilter +=
+        _uiThread.UnhandledExceptionFilter +=
             HandlerOnUnhandledExceptionFilterRequestCatch;
         
-        dispatcher.UnhandledException +=
+        _uiThread.UnhandledException +=
             HandlerOnUnhandledExceptionNotHandled;
         var caughtCorrectException = false;
         try
         {
-            dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
+            _uiThread.Post(ThrowAnException, DispatcherPriority.Normal);
+            _uiThread.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception e)
         {
@@ -217,23 +233,20 @@ public partial class DispatcherTests
     [Fact]
     public void MultipleUnhandledExceptionFilterCannotResetRequestCatchFlag()
     {
-        var impl = new ManagedDispatcherImpl(null);
-        var dispatcher = new Dispatcher(impl);
-        
-        dispatcher.UnhandledExceptionFilter +=
+        _uiThread.UnhandledExceptionFilter +=
             HandlerOnUnhandledExceptionFilterNotRequestCatch;
-        dispatcher.UnhandledExceptionFilter +=
+        _uiThread.UnhandledExceptionFilter +=
             HandlerOnUnhandledExceptionFilterRequestCatch;
         
-        dispatcher.UnhandledException +=
+        _uiThread.UnhandledException +=
             HandlerOnUnhandledExceptionNotHandled;
-        dispatcher.UnhandledException +=
+        _uiThread.UnhandledException +=
             HandlerOnUnhandledExceptionHandled;
         var caughtCorrectException = false;
         try
         {
-            dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
+            _uiThread.Post(ThrowAnException, DispatcherPriority.Normal);
+            _uiThread.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception e)
         {
@@ -248,22 +261,19 @@ public partial class DispatcherTests
     [Fact]
     public void MultipleUnhandledExceptionCannotResetHandleFlag()
     {
-        var impl = new ManagedDispatcherImpl(null);
-        var dispatcher = new Dispatcher(impl);
-        
-        dispatcher.UnhandledExceptionFilter +=
+        _uiThread.UnhandledExceptionFilter +=
             HandlerOnUnhandledExceptionFilterRequestCatch;
         
-        dispatcher.UnhandledException +=
+        _uiThread.UnhandledException +=
             HandlerOnUnhandledExceptionHandled;
-        dispatcher.UnhandledException +=
+        _uiThread.UnhandledException +=
             HandlerOnUnhandledExceptionNotHandled;
         var caughtCorrectException = true;
         
         try
         {
-            dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
+            _uiThread.Post(ThrowAnException, DispatcherPriority.Normal);
+            _uiThread.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception)
         {
@@ -279,19 +289,16 @@ public partial class DispatcherTests
     [Fact]
     public void CanPushFrameAndShutdownDispatcherFromUnhandledException()
     {
-        var impl = new ManagedDispatcherImpl(null);
-        var dispatcher = new Dispatcher(impl);
-        
-        dispatcher.UnhandledExceptionFilter +=
+        _uiThread.UnhandledExceptionFilter +=
             HandlerOnUnhandledExceptionFilterNotRequestCatchPushFrame;
         
-        dispatcher.UnhandledException +=
+        _uiThread.UnhandledException +=
             HandlerOnUnhandledExceptionHandledPushFrame;
         var caughtCorrectException = false;
         try
         {
-            dispatcher.Post(ThrowAnException, DispatcherPriority.Normal);
-            dispatcher.RunJobs(null, TestContext.Current.CancellationToken);
+            _uiThread.Post(ThrowAnException, DispatcherPriority.Normal);
+            _uiThread.RunJobs(null, TestContext.Current.CancellationToken);
         }
         catch (Exception e)
         {

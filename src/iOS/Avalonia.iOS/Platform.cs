@@ -77,6 +77,7 @@ namespace Avalonia.iOS
             Timer ??= new DisplayLinkTimer();
             var keyboard = new KeyboardDevice();
 
+            Dispatcher.InitializeUIThreadDispatcher(DispatcherImpl.Instance);
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformGraphics>().ToConstant(Graphics)
                 .Bind<ICursorFactory>().ToConstant(new CursorFactoryStub())
@@ -93,7 +94,6 @@ namespace Avalonia.iOS
                         { Key.Up , "↑" }
                     }, ctrl: "⌃", meta: "⌘", shift: "⇧", alt: "⌥"))
                 .Bind<IRenderTimer>().ToConstant(Timer)
-                .Bind<IDispatcherImpl>().ToConstant(DispatcherImpl.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(keyboard);
 
             if (appDelegate is not null)

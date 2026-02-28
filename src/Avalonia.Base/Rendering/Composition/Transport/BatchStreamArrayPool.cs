@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Threading;
 
@@ -30,9 +31,7 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
         var updateRef = new WeakReference<BatchStreamPoolBase<T>>(this);
         if (
             reclaimImmediately 
-            || (
-            AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>() == null
-            && AvaloniaLocator.Current.GetService<IDispatcherImpl>() == null))
+            || Dispatcher.FromThread(Thread.CurrentThread) == null)
             _reclaimImmediately = true;
         else
             StartUpdateTimer(startTimer, updateRef);
