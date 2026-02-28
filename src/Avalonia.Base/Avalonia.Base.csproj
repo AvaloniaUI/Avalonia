@@ -11,7 +11,6 @@
     <AdditionalFiles Include="composition-schema.xml" />
   </ItemGroup>
   <Import Project="..\..\build\Base.props" />
-  <Import Project="..\..\build\Binding.props" />
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
@@ -22,6 +21,10 @@
     <Compile Include="..\Shared\ModuleInitializer.cs" Link="Compatibility\ModuleInitializer.cs" />
     <Compile Include="..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
     <Compile Include="..\Shared\StreamCompatibilityExtensions.cs" Link="Compatibility\StreamCompatibilityExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
+    <PackageReference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">

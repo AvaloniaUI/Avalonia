@@ -256,7 +256,7 @@ namespace Avalonia.Controls.UnitTests
                 var hitTester = new Mock<IHitTester>();
                 window.HitTesterOverride = hitTester.Object;
                 hitTester.Setup(x =>
-                    x.HitTestFirst(new Point(90, 90), window, It.IsAny<Func<Visual, bool>>()))
+                    x.HitTestFirst(new Point(90, 90), (Visual)window.VisualRoot!, It.IsAny<Func<Visual, bool>>()))
                     .Returns(button);
 
                 var e = CreatePointerPressedEventArgs(window, new Point(90, 90));
@@ -299,7 +299,7 @@ namespace Avalonia.Controls.UnitTests
                 var hitTester = new Mock<IHitTester>();
                 window.HitTesterOverride = hitTester.Object;
                 hitTester.Setup(x =>
-                    x.HitTestFirst(new Point(90, 90), window, It.IsAny<Func<Visual, bool>>()))
+                    x.HitTestFirst(new Point(90, 90), (Visual)window.VisualRoot!, It.IsAny<Func<Visual, bool>>()))
                     .Returns(button);
 
                 var e = CreatePointerPressedEventArgs(window, new Point(90, 90));

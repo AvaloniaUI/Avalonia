@@ -222,7 +222,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Adding_Top_Level_As_Child_Should_Not_Exception()
+        public void Adding_Top_Level_As_Child_Should_Throw_Exception()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -233,8 +233,7 @@ namespace Avalonia.Controls.UnitTests
                 target.Template = CreateTemplate();
                 target.Content = child;
                 target.ApplyTemplate();
-
-                target.Presenter!.ApplyTemplate();
+                Assert.Throws<InvalidOperationException>(() => target.Presenter!.ApplyTemplate());
             }
         }
 
@@ -251,6 +250,34 @@ namespace Avalonia.Controls.UnitTests
                 Application.Current!.Resources.Add("foo", "bar");
 
                 Assert.True(raised);
+            }
+        }
+
+        [Fact]
+        public void TopLevel_Should_Unfocus_When_Impl_Focus_Is_Lost()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var impl = CreateMockTopLevelImpl(true);
+                var content = new TextBox()
+                {
+                    Focusable = true
+                };
+                var target = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTemplate(),
+                    Focusable = true,
+                    Content = content
+                };
+
+                target.LayoutManager.ExecuteInitialLayoutPass();
+
+                content.Focus();
+                Assert.True(content.IsFocused);
+
+                impl.Object.LostFocus?.Invoke();
+
+                Assert.False(content.IsFocused);
             }
         }
 

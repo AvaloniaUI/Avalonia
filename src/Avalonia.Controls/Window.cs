@@ -1164,7 +1164,7 @@ namespace Avalonia.Controls
             return result;
         }
 
-        protected sealed override Size ArrangeSetBounds(Size size)
+        private protected sealed override Size ArrangeSetBounds(Size size)
         {
             _arrangeBounds = size;
             if (_canHandleResized)
