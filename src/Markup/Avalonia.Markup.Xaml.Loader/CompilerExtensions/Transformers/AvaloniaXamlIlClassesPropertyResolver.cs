@@ -46,15 +46,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             public void Emit(IXamlILEmitter emitter)
             {
                 using (var value = emitter.LocalsPool.GetLocal(_types.XamlIlTypes.Boolean))
-                {
                     emitter
                         .Stloc(value.Local)
-                        .EmitCall(_types.StyledElementClassesProperty.Getter!)
                         .Ldstr(_className)
-                        .Ldloc(value.Local)
-                        .EmitCall(_types.Classes.GetMethod(new FindMethodMethodSignature("Set",
-                        _types.XamlIlTypes.Void, _types.XamlIlTypes.String, _types.XamlIlTypes.Boolean)));
-                }
+                        .Ldloc(value.Local);
+                emitter.EmitCall(_types.SetClassMethod);
             }
 
             public IXamlType TargetType => _types.StyledElement;
@@ -86,7 +82,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         .Ldloc(bloc.Local)
                         // TODO: provide anchor?
                         .Ldnull();
-                emitter.EmitCall(_types.ClassesBindMethod, true);
+                emitter.EmitCall(_types.BindClassMethod, true);
             }
 
             public IXamlType TargetType => _types.StyledElement;
