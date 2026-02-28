@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -154,6 +155,11 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
             Scroll = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ListBoxAutomationPeer(this);
         }
     }
 }

@@ -8,6 +8,24 @@ namespace Avalonia.Automation.Peers
     public class ListItemAutomationPeer : ContentControlAutomationPeer,
         ISelectionItemProvider
     {
+        private int? _index;
+
+        public int Index
+        {
+            get
+            {
+                if (_index.HasValue)
+                    return _index.Value;
+
+                if (Owner.Parent is ItemsControl parent)
+                    return parent.IndexFromContainer(Owner);
+
+                return -1;
+            }
+
+            set => _index = value;
+        }
+
         public ListItemAutomationPeer(ContentControl owner)
             : base(owner)
         {
@@ -32,38 +50,41 @@ namespace Avalonia.Automation.Peers
         public void Select()
         {
             EnsureEnabled();
+            BringIntoView();
 
             if (Owner.Parent is SelectingItemsControl parent)
             {
-                var index = parent.IndexFromContainer(Owner);
+                var index = Index;
 
                 if (index != -1)
                     parent.SelectedIndex = index;
             }
         }
 
-        void ISelectionItemProvider.AddToSelection()
+        public void AddToSelection()
         {
             EnsureEnabled();
+            BringIntoView();
 
             if (Owner.Parent is ItemsControl parent &&
                 parent.GetValue(ListBox.SelectionProperty) is ISelectionModel selectionModel)
             {
-                var index = parent.IndexFromContainer(Owner);
+                var index = Index;
 
                 if (index != -1)
                     selectionModel.Select(index);
             }
         }
 
-        void ISelectionItemProvider.RemoveFromSelection()
+        public void RemoveFromSelection()
         {
             EnsureEnabled();
+            BringIntoView();
 
             if (Owner.Parent is ItemsControl parent &&
                 parent.GetValue(ListBox.SelectionProperty) is ISelectionModel selectionModel)
             {
-                var index = parent.IndexFromContainer(Owner);
+                var index = Index;
 
                 if (index != -1)
                     selectionModel.Deselect(index);
@@ -75,7 +96,23 @@ namespace Avalonia.Automation.Peers
             return AutomationControlType.ListItem;
         }
 
+        protected override string? GetAutomationIdCore()
+        {
+            var index = Index;
+
+            if (index == -1)
+                return base.GetAutomationIdCore();
+
+            return $"{nameof(ListBoxItem)}: {index}";
+        }
+
         protected override bool IsContentElementCore() => true;
         protected override bool IsControlElementCore() => true;
+
+        protected override void SetFocusCore()
+        {
+            base.SetFocusCore();
+            BringIntoView();
+        }
     }
 }

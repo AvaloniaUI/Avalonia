@@ -93,6 +93,7 @@ namespace Avalonia.Native
         private IInvokeProvider InvokeProvider => GetProvider<IInvokeProvider>();
         private IRangeValueProvider RangeValueProvider => GetProvider<IRangeValueProvider>();
         private IRootProvider RootProvider => GetProvider<IRootProvider>();
+        private ISelectionProvider SelectionProvider => GetProvider<ISelectionProvider>();
         private ISelectionItemProvider SelectionItemProvider => GetProvider<ISelectionItemProvider>();
         private IToggleProvider ToggleProvider => GetProvider<IToggleProvider>();
         private IValueProvider ValueProvider => GetProvider<IValueProvider>();
@@ -173,9 +174,15 @@ namespace Avalonia.Native
         public double RangeValueProvider_GetLargeChange() => RangeValueProvider.LargeChange;
         public void RangeValueProvider_SetValue(double value) => RangeValueProvider.SetValue(value);
 
+        public int IsSelectionProvider() => IsProvider<ISelectionProvider>();
+        public IAvnAutomationPeerArray? SelectionProvider_GetSelection() => new AvnAutomationPeerArray(SelectionProvider.GetSelection());
+
         public int IsSelectionItemProvider() => IsProvider<ISelectionItemProvider>();
         public int SelectionItemProvider_IsSelected() => SelectionItemProvider.IsSelected.AsComBool();
-        
+        public void SelectionItemProvider_AddToSelection() => SelectionItemProvider.AddToSelection();
+        public void SelectionItemProvider_RemoveFromSelection() => SelectionItemProvider.RemoveFromSelection();
+        public void SelectionItemProvider_Select() => SelectionItemProvider.Select();
+
         public int IsToggleProvider() => IsProvider<IToggleProvider>();
         public int ToggleProvider_GetToggleState() => (int)ToggleProvider.ToggleState;
         public void ToggleProvider_Toggle() => ToggleProvider.Toggle();
