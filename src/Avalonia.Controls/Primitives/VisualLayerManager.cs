@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Avalonia.Controls.Chrome;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
@@ -10,7 +10,11 @@ namespace Avalonia.Controls.Primitives
         private const int ChromeZIndex = int.MaxValue - 99;
         private const int LightDismissOverlayZIndex = int.MaxValue - 98;
         private const int OverlayZIndex = int.MaxValue - 97;
-        private const int TextSelectorLayerZIndex = int.MaxValue - 96;
+        private const int PopupOverlayZIndex = int.MaxValue - 96;
+        private const int TextSelectorLayerZIndex = int.MaxValue - 95;
+
+        public static readonly StyledProperty<ChromeOverlayLayer?> ChromeOverlayLayerProperty =
+            AvaloniaProperty.Register<VisualLayerManager, ChromeOverlayLayer?>(nameof(ChromeOverlayLayer));
 
         private ILogicalRoot? _logicalRoot;
         private readonly List<Control> _layers = new();
@@ -29,38 +33,39 @@ namespace Avalonia.Controls.Primitives
         }
 
 
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        [SuppressMessage("AvaloniaProperty", "AVP1030")]
+        [SuppressMessage("AvaloniaProperty", "AVP1031",
+            Justification = "A hack to make ChromeOverlayLayer lazily creatable. It is expected that GetValue(ChromeOverlayLayerProperty) alone won't work.")]
+        public ChromeOverlayLayer ChromeOverlayLayer
         {
-            EnsureChromeOverlayIfNeeded();
-            
-            base.OnAttachedToVisualTree(e);
-        }
-
-        void EnsureChromeOverlayIfNeeded()
-        {
-            // HACK: This is a replacement hack for the old set of hacks for TitleBar.
-
-            // Check if we are attached direclty-ish to a Window (i. e. no other VisualLayerManager in between).
-            // If we are, then we are the "main" VisualLayerManager and should create the ChromeOverlayLayer and add titlebar there
-            var parent = VisualParent;
-            while (parent != null)
+            get
             {
-                if(parent is VisualLayerManager)
-                    break;
-                else if (parent is Window window)
+                var current = GetValue(ChromeOverlayLayerProperty);
+
+                if (current is null)
                 {
-                    if (FindLayer<ChromeOverlayLayer>() == null)
-                    {
-                        var layer = new ChromeOverlayLayer();
-                        AddLayer(layer, ChromeZIndex);
-                        layer.Children.Add(new TitleBar());
-                    }
-                    
-                    break;
+                    var chromeOverlayLayer = new ChromeOverlayLayer();
+                    AddLayer(chromeOverlayLayer, ChromeZIndex);
+
+                    SetValue(ChromeOverlayLayerProperty, chromeOverlayLayer);
+
+                    current = chromeOverlayLayer;
                 }
 
-                parent = parent.VisualParent;
+                return current;
+            }
+        }
 
+        internal PopupOverlayLayer? PopupOverlayLayer
+        {
+            get
+            {
+                if (IsPopup)
+                    return null;
+                var rv = FindLayer<PopupOverlayLayer>();
+                if (rv == null)
+                    AddLayer(rv = new PopupOverlayLayer(), PopupOverlayZIndex);
+                return rv;
             }
         }
         
