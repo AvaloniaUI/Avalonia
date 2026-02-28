@@ -1,11 +1,13 @@
-﻿using OpenQA.Selenium;
+﻿using System;
+using System.Threading;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium
 {
     [Collection("Default")]
-    public abstract class MenuTests : TestBase
+    public abstract class MenuTests : TestBase, IDisposable
     {
         public MenuTests(DefaultAppFixture fixture)
             : base(fixture, "Menu")
@@ -17,11 +19,18 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("None", clickedMenuItem.Text);
         }
 
+        public void Dispose()
+        {
+            // Click the reset button so that any menu still open gets closed
+            var reset = Session.FindElementByAccessibilityId("MenuClickedMenuItemReset");
+            reset?.Click();
+        }
+
         [Fact]
         public void Click_Child()
         {
             var rootMenuItem = Session.FindElementByAccessibilityId("RootMenuItem");
-            
+
             rootMenuItem.SendClick();
 
             var childMenuItem = Session.FindElementByAccessibilityId("Child1MenuItem");
@@ -35,7 +44,7 @@ namespace Avalonia.IntegrationTests.Appium
         public void Click_Grandchild()
         {
             var rootMenuItem = Session.FindElementByAccessibilityId("RootMenuItem");
-            
+
             rootMenuItem.SendClick();
 
             var childMenuItem = Session.FindElementByAccessibilityId("Child2MenuItem");
@@ -53,10 +62,12 @@ namespace Avalonia.IntegrationTests.Appium
         {
             MovePointerOutOfTheWay();
 
-            new Actions(Session)
-                .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
-                .SendKeys(Keys.Down + Keys.Enter)
-                .Perform();
+            var window = Session.FindElementByAccessibilityId("MainWindow");
+            window.Click();
+
+            window.SendKeys(Keys.LeftAlt);
+            Thread.Sleep(150);
+            window.SendKeys(Keys.Down + Keys.Enter);
 
             var clickedMenuItem = Session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Child 1", clickedMenuItem.Text);
@@ -67,10 +78,12 @@ namespace Avalonia.IntegrationTests.Appium
         {
             MovePointerOutOfTheWay();
 
-            new Actions(Session)
-                .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
-                .SendKeys(Keys.Down + Keys.Down + Keys.Right + Keys.Enter)
-                .Perform();
+            var window = Session.FindElementByAccessibilityId("MainWindow");
+            window.Click();
+
+            window.SendKeys(Keys.LeftAlt);
+            Thread.Sleep(150);
+            window.SendKeys(Keys.Down + Keys.Down + Keys.Right + Keys.Enter);
 
             var clickedMenuItem = Session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Grandchild", clickedMenuItem.Text);
@@ -81,10 +94,14 @@ namespace Avalonia.IntegrationTests.Appium
         {
             MovePointerOutOfTheWay();
 
-            new Actions(Session)
-                .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
-                .SendKeys("rc")
-                .Perform();
+            var window = Session.FindElementByAccessibilityId("MainWindow");
+            window.Click();
+
+            window.SendKeys(Keys.LeftAlt);
+            Thread.Sleep(150);
+            window.SendKeys("r");
+            Thread.Sleep(75);
+            window.SendKeys("c");
 
             var clickedMenuItem = Session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Child 1", clickedMenuItem.Text);
@@ -95,10 +112,16 @@ namespace Avalonia.IntegrationTests.Appium
         {
             MovePointerOutOfTheWay();
 
-            new Actions(Session)
-                .KeyDown(Keys.Alt).KeyUp(Keys.Alt)
-                .SendKeys("rhg")
-                .Perform();
+            var window = Session.FindElementByAccessibilityId("MainWindow");
+            window.Click();
+
+            window.SendKeys(Keys.LeftAlt);
+            Thread.Sleep(150);
+            window.SendKeys("r");
+            Thread.Sleep(75);
+            window.SendKeys("h");
+            Thread.Sleep(75);
+            window.SendKeys("g");
 
             var clickedMenuItem = Session.FindElementByAccessibilityId("ClickedMenuItem");
             Assert.Equal("_Grandchild", clickedMenuItem.Text);
