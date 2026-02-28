@@ -6,8 +6,7 @@ using Avalonia.Remote.Protocol;
 
 namespace Avalonia.Controls.Remote
 {
-    [Unstable]
-    public class RemoteServer : IDisposable
+    internal class RemoteServer : IDisposable
     {
         private EmbeddableControlRoot _topLevel;
 
