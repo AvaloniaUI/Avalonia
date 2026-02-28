@@ -102,50 +102,30 @@ namespace Avalonia.Controls.Utils
             void IWeakEventSubscriber<NotifyCollectionChangedEventArgs>.
                 OnEvent(object? notifyCollectionChanged, WeakEvent ev, NotifyCollectionChangedEventArgs e)
             {
-                static void Notify(
-                    INotifyCollectionChanged incc,
-                    NotifyCollectionChangedEventArgs args,
-                    WeakReference<ICollectionChangedListener>[] listeners)
+                var listeners = Listeners.ToArray();
+
+                foreach (var l in listeners)
                 {
-                    foreach (var l in listeners)
+                    if (l.TryGetTarget(out var target))
                     {
-                        if (l.TryGetTarget(out var target))
-                        {
-                            target.PreChanged(incc, args);
-                        }
-                    }
-
-                    foreach (var l in listeners)
-                    {
-                        if (l.TryGetTarget(out var target))
-                        {
-                            target.Changed(incc, args);
-                        }
-                    }
-
-                    foreach (var l in listeners)
-                    {
-                        if (l.TryGetTarget(out var target))
-                        {
-                            target.PostChanged(incc, args);
-                        }
+                        target.PreChanged(_collection, e);
                     }
                 }
 
-                if (Dispatcher.UIThread.CheckAccess())
+                foreach (var l in listeners)
                 {
-                    var l = Listeners.ToArray();
-                    Notify(_collection, e, l);
+                    if (l.TryGetTarget(out var target))
+                    {
+                        target.Changed(_collection, e);
+                    }
                 }
-                else
+
+                foreach (var l in listeners)
                 {
-                    var eCapture = e;
-                    Dispatcher.UIThread.Post(() =>
-                        {
-                            var l = Listeners.ToArray();
-                            Notify(_collection, eCapture, l);
-                        },
-                        DispatcherPriority.Send);
+                    if (l.TryGetTarget(out var target))
+                    {
+                        target.PostChanged(_collection, e);
+                    }
                 }
             }
         }
