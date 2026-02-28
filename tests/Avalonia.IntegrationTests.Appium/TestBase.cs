@@ -39,14 +39,19 @@ public class TestBase : IDisposable
     protected AppiumDriver Session { get; }
     public virtual void Dispose()
     {
-        try
+        for(var tries=0; tries<3; tries++)
         {
-            Assert.NotNull(Session.FindElementByAccessibilityId("Pager"));
+            try
+            {
+                Assert.NotNull(Session.FindElementByAccessibilityId("Pager"));
+                return;
+            }
+            catch
+            {
+                Thread.Sleep(3000);
+            }
         }
-        catch
-        {
-            throw new Exception(
-                "===== THE TEST HAS LEFT THE SESSION IN A BROKEN STATE. THE SUBSEQUENT TESTS WILL ALL FAIL =======");
-        }
+        throw new Exception(
+            "===== THE TEST HAS LEFT THE SESSION IN A BROKEN STATE. THE SUBSEQUENT TESTS WILL ALL FAIL =======");
     }
 }
