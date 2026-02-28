@@ -22,7 +22,6 @@ namespace Avalonia.Data.Core.Parsers;
 /// can then be converted into <see cref="ExpressionNode"/> instances. It supports property access,
 /// indexers, AvaloniaProperty access, stream bindings, type casts, and logical operators.
 /// </remarks>
-[RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
 internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : ExpressionVisitor
 {
