@@ -28,7 +28,7 @@ public class CompiledBinding : BindingBase
     /// </summary>
     /// <param name="path">The binding path.</param>
     public CompiledBinding(CompiledBindingPath path) => Path = path;
-    
+
     /// <summary>
     /// Creates a <see cref="CompiledBinding"/> from a lambda expression.
     /// </summary>
@@ -85,8 +85,7 @@ public class CompiledBinding : BindingBase
     /// <item>AvaloniaProperty access: <c>x => x[MyProperty]</c></item>
     /// </list>
     /// </remarks>
-    [RequiresDynamicCode(TrimmingMessages.ExpressionNodeRequiresDynamicCodeMessage)]
-    [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Expression statically preserves members used in binding expressions.")]
     public static CompiledBinding Create<TIn, TOut>(
         Expression<Func<TIn, TOut>> expression,
         object? source = null,

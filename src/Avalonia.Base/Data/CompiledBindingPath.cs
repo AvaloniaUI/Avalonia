@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Data.Core;
@@ -155,9 +156,23 @@ namespace Avalonia.Data
             return this;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
+        public CompiledBindingPathBuilder StreamTask()
+        {
+            _elements.Add(new TaskStreamPathElement());
+            return this;
+        }
+
         public CompiledBindingPathBuilder StreamObservable<T>()
         {
             _elements.Add(new ObservableStreamPathElement<T>());
+            return this;
+        }
+
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
+        public CompiledBindingPathBuilder StreamObservable()
+        {
+            _elements.Add(new ObservableStreamPathElement());
             return this;
         }
 
@@ -305,11 +320,27 @@ namespace Avalonia.Data
         public IStreamPlugin CreatePlugin() => new TaskStreamPlugin<T>();
     }
 
+    [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
+    internal class TaskStreamPathElement : IStronglyTypedStreamElement
+    {
+        public static readonly TaskStreamPathElement Instance = new TaskStreamPathElement();
+
+        public IStreamPlugin CreatePlugin() => new TaskStreamPlugin();
+    }
+
     internal class ObservableStreamPathElement<T> : IStronglyTypedStreamElement
     {
         public static readonly ObservableStreamPathElement<T> Instance = new ObservableStreamPathElement<T>();
 
         public IStreamPlugin CreatePlugin() => new ObservableStreamPlugin<T>();
+    }
+
+    [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
+    internal class ObservableStreamPathElement : IStronglyTypedStreamElement
+    {
+        public static readonly ObservableStreamPathElement Instance = new ObservableStreamPathElement();
+
+        public IStreamPlugin CreatePlugin() => new ObservableStreamPlugin();
     }
 
     internal class SelfPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement

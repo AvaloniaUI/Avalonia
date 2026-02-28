@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -8,9 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Data.Core.ExpressionNodes.Reflection;
 using Avalonia.Data.Core.Plugins;
-using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core.Parsers;
@@ -149,17 +146,11 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
                  instanceType.GetGenericTypeDefinition() == typeof(Task<>) &&
                  genericArg.IsAssignableFrom(instanceType.GetGenericArguments()[0])))
             {
-                var builderMethod = typeof(CompiledBindingPathBuilder)
-                    .GetMethod(nameof(CompiledBindingPathBuilder.StreamTask))!
-                    .MakeGenericMethod(genericArg);
-                return Add(instance, node, x => builderMethod.Invoke(x, null));
+                return Add(instance, node, x => x.StreamTask());
             }
-            else if (typeof(IObservable<>).MakeGenericType(genericArg).IsAssignableFrom(instance?.Type))
+            else if (instanceType is not null && ObservableStreamPlugin.MatchesType(instanceType))
             {
-                var builderMethod = typeof(CompiledBindingPathBuilder)
-                    .GetMethod(nameof(CompiledBindingPathBuilder.StreamObservable))!
-                    .MakeGenericMethod(genericArg);
-                return Add(instance, node, x => builderMethod.Invoke(x, null));
+                return Add(instance, node, x => x.StreamObservable());
             }
         }
         else if (method == BindingExpressionVisitorMembers.CreateDelegateMethod)
