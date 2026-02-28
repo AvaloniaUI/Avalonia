@@ -122,10 +122,11 @@ namespace Avalonia.Media
             var isFixedPitch = postTable.IsFixedPitch;
             var underlineOffset = postTable.UnderlinePosition;
             var underlineSize = postTable.UnderlineThickness;
+            var designEmHeight = GetFontDesignEmHeight(headTable);
 
             Metrics = new FontMetrics
             {
-                DesignEmHeight = headTable?.UnitsPerEm ?? 0,
+                DesignEmHeight = designEmHeight,
                 Ascent = ascent,
                 Descent = descent,
                 LineGap = lineGap,
@@ -223,6 +224,18 @@ namespace Avalonia.Media
                     return CultureInfo.InvariantCulture;
                 }
             }
+        }
+
+        private static ushort GetFontDesignEmHeight(HeadTable? headTable)
+        {
+            var unitsPerEm = headTable?.UnitsPerEm ?? 0;
+
+            // Bitmap fonts may specify 0 or miss the head table completely.
+            // Use 2048 as sensible default (used by most fonts).
+            if (unitsPerEm == 0)
+                unitsPerEm = 2048;
+
+            return unitsPerEm;
         }
 
         internal static GlyphTypeface? TryCreate(IPlatformTypeface typeface, FontSimulations fontSimulations = FontSimulations.None)
