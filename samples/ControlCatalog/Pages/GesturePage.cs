@@ -134,8 +134,8 @@ namespace ControlCatalog.Pages
 
                     var currentSize = control.Bounds.Size * _currentScale;
 
-                    currentOffset = new Vector3D(MathUtilities.Clamp(currentOffset.X, 0, currentSize.Width - control.Bounds.Width),
-                        (float)MathUtilities.Clamp(currentOffset.Y, 0, currentSize.Height - control.Bounds.Height),
+                    currentOffset = new Vector3D(Math.Clamp(currentOffset.X, 0, currentSize.Width - control.Bounds.Width),
+                        (float)Math.Clamp(currentOffset.Y, 0, currentSize.Height - control.Bounds.Height),
                         0);
 
                     compositionVisual.Offset = currentOffset * -1;

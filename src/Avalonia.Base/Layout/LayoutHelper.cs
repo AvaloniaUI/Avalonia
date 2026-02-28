@@ -147,8 +147,7 @@ namespace Avalonia.Layout
         /// coordinates by rounding the size up to the nearest pixel.
         /// </summary>
         /// <param name="size">Input size.</param>
-        /// <param name="dpiScaleX">DPI along x-dimension.</param>
-        /// <param name="dpiScaleY">DPI along y-dimension.</param>
+        /// <param name="dpiScale">The DPI scale.</param>
         /// <returns>Value of size that will be rounded under screen DPI.</returns>
         /// <remarks>
         /// This is a layout helper method. It takes DPI into account and also does not return
@@ -156,14 +155,8 @@ namespace Avalonia.Layout
         /// associated with the UseLayoutRounding property and should not be used as a general rounding
         /// utility.
         /// </remarks>
-        public static Size RoundLayoutSizeUp(Size size, double dpiScaleX, double dpiScaleY)
-        {
-            return new Size(RoundLayoutValueUp(size.Width, dpiScaleX), RoundLayoutValueUp(size.Height, dpiScaleY));
-        }
-
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator", Justification = "The DPI scale should have been normalized.")]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Size RoundLayoutSizeUp(Size size, double dpiScale)
+        public static Size RoundLayoutSizeUp(Size size, double dpiScale)
         {
             // If DPI == 1, don't use DPI-aware rounding.
             return dpiScale == 1.0 ?
@@ -180,8 +173,7 @@ namespace Avalonia.Layout
         /// coordinates.
         /// </summary>
         /// <param name="thickness">Input thickness.</param>
-        /// <param name="dpiScaleX">DPI along x-dimension.</param>
-        /// <param name="dpiScaleY">DPI along y-dimension.</param>
+        /// <param name="dpiScale">The DPI scale.</param>
         /// <returns>Value of thickness that will be rounded under screen DPI.</returns>
         /// <remarks>
         /// This is a layout helper method. It takes DPI into account and also does not return
@@ -189,19 +181,8 @@ namespace Avalonia.Layout
         /// associated with the UseLayoutRounding property and should not be used as a general rounding
         /// utility.
         /// </remarks>
-        public static Thickness RoundLayoutThickness(Thickness thickness, double dpiScaleX, double dpiScaleY)
-        {
-            return new Thickness(
-                RoundLayoutValue(thickness.Left, dpiScaleX),
-                RoundLayoutValue(thickness.Top, dpiScaleY),
-                RoundLayoutValue(thickness.Right, dpiScaleX),
-                RoundLayoutValue(thickness.Bottom, dpiScaleY)
-            );
-        }
-
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator", Justification = "The DPI scale should have been normalized.")]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Thickness RoundLayoutThickness(Thickness thickness, double dpiScale)
+        public static Thickness RoundLayoutThickness(Thickness thickness, double dpiScale)
         {
             // If DPI == 1, don't use DPI-aware rounding.
             return dpiScale == 1.0 ?
@@ -219,7 +200,7 @@ namespace Avalonia.Layout
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator", Justification = "The DPI scale should have been normalized.")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Point RoundLayoutPoint(Point point, double dpiScale)
+        public static Point RoundLayoutPoint(Point point, double dpiScale)
         {
             // If DPI == 1, don't use DPI-aware rounding.
             return dpiScale == 1.0 ?
@@ -244,10 +225,11 @@ namespace Avalonia.Layout
         /// associated with the UseLayoutRounding property and should not be used as a general rounding
         /// utility.
         /// </remarks>
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator", Justification = "The DPI scale should have been normalized.")]
         public static double RoundLayoutValue(double value, double dpiScale)
         {
             // If DPI == 1, don't use DPI-aware rounding.
-            return MathUtilities.IsOne(dpiScale) ?
+            return dpiScale == 1.0 ?
                 Math.Round(value) :
                 Math.Round(value * dpiScale) / dpiScale;
         }
@@ -265,10 +247,11 @@ namespace Avalonia.Layout
         /// associated with the UseLayoutRounding property and should not be used as a general rounding
         /// utility.
         /// </remarks>
+        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator", Justification = "The DPI scale should have been normalized.")]
         public static double RoundLayoutValueUp(double value, double dpiScale)
         {
             // If DPI == 1, don't use DPI-aware rounding.
-            return MathUtilities.IsOne(dpiScale) ?
+            return dpiScale == 1.0 ?
                 Math.Ceiling(value) :
                 Math.Ceiling(RoundTo8Digits(value) * dpiScale) / dpiScale;
         }
