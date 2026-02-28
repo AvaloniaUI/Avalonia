@@ -142,8 +142,11 @@ namespace Avalonia.X11
         {
             try
             {
-                if (window.InputRoot.RootElement is Control control)
-                    return ControlAutomationPeer.CreatePeerForElement(control);
+                if (window.InputRoot.FocusRoot is Control control)
+                {
+                    var peer = ControlAutomationPeer.CreatePeerForElement(control);
+                    return peer?.GetAutomationRoot() ?? peer;
+                }
             }
             catch (Exception e)
             {
