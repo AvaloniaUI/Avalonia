@@ -8,7 +8,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Reactive;
+using Avalonia.Logging;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -263,8 +263,20 @@ namespace Avalonia.Controls
 
                         e.Arrange(rect);
                     
-                        if (_viewport.Intersects(rect))
-                            _scrollAnchorProvider?.RegisterAnchorCandidate(e);
+                        if (e.IsVisible && _viewport.Intersects(rect))
+                        {
+                            try
+                            {
+                                _scrollAnchorProvider?.RegisterAnchorCandidate(e);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                // Element might have been removed/reparented during virtualization; ignore but log for diagnostics.
+                                Logger.TryGet(LogEventLevel.Verbose, LogArea.Layout)?.Log(this,
+                                    "RegisterAnchorCandidate ignored for {Element}: not a descendant of ScrollAnchorProvider. {Message}",
+                                    e, ex.Message);
+                            }
+                        }
                         
                         u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
                     }
@@ -307,6 +319,9 @@ namespace Avalonia.Controls
         {
             InvalidateMeasure();
 
+            // Always update special elements
+            UpdateSpecialElementsOnItemsChanged(e);
+
             if (_realizedElements is null)
                 return;
 
@@ -332,13 +347,139 @@ namespace Avalonia.Controls
 
                     if (e.NewStartingIndex > e.OldStartingIndex)
                     {
-                        insertIndex -= e.OldItems.Count - 1;
+                        insertIndex -= e.OldItems!.Count - 1;
                     }
 
                     _realizedElements.ItemsInserted(insertIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
+                    break;
+            }
+        }
+
+        private void UpdateSpecialElementsOnItemsChanged(NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    if (_focusedElement is not null && e.NewStartingIndex <= _focusedIndex)
+                    {
+                        var oldIndex = _focusedIndex;
+                        _focusedIndex += e.NewItems!.Count;
+                        _updateElementIndex(_focusedElement, oldIndex, _focusedIndex);
+                    }
+                    if (_scrollToElement is not null && e.NewStartingIndex <= _scrollToIndex)
+                    {
+                        _scrollToIndex += e.NewItems!.Count;
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    if (_focusedElement is not null)
+                    {
+                        if (e.OldStartingIndex <= _focusedIndex && _focusedIndex < e.OldStartingIndex + e.OldItems!.Count)
+                        {
+                            RecycleFocusedElement();
+                        }
+                        else if (e.OldStartingIndex < _focusedIndex)
+                        {
+                            var oldIndex = _focusedIndex;
+                            _focusedIndex -= e.OldItems!.Count;
+                            _updateElementIndex(_focusedElement, oldIndex, _focusedIndex);
+                        }
+                    }
+                    if (_scrollToElement is not null)
+                    {
+                        if (e.OldStartingIndex <= _scrollToIndex && _scrollToIndex < e.OldStartingIndex + e.OldItems!.Count)
+                        {
+                            RecycleScrollToElement();
+                        }
+                        else if (e.OldStartingIndex < _scrollToIndex)
+                        {
+                            _scrollToIndex -= e.OldItems!.Count;
+                        }
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    if (_focusedElement is not null && e.OldStartingIndex <= _focusedIndex && _focusedIndex < e.OldStartingIndex + e.OldItems!.Count)
+                    {
+                        RecycleFocusedElement();
+                    }
+                    if (_scrollToElement is not null && e.OldStartingIndex <= _scrollToIndex && _scrollToIndex < e.OldStartingIndex + e.OldItems!.Count)
+                    {
+                        RecycleScrollToElement();
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    if (e.OldStartingIndex < 0)
+                    {
+                        goto case NotifyCollectionChangedAction.Reset;
+                    }
+
+                    if (_focusedElement is not null)
+                    {
+                        if (e.OldStartingIndex <= _focusedIndex && _focusedIndex < e.OldStartingIndex + e.OldItems!.Count)
+                        {
+                            var oldIndex = _focusedIndex;
+                            _focusedIndex = e.NewStartingIndex + (_focusedIndex - e.OldStartingIndex);
+                            _updateElementIndex(_focusedElement, oldIndex, _focusedIndex);
+                        }
+                        else
+                        {
+                            var newFocusedIndex = _focusedIndex;
+
+                            if (e.OldStartingIndex < _focusedIndex)
+                            {
+                                newFocusedIndex -= e.OldItems!.Count;
+                            }
+
+                            if (e.NewStartingIndex <= newFocusedIndex)
+                            {
+                                newFocusedIndex += e.NewItems!.Count;
+                            }
+
+                            if (newFocusedIndex != _focusedIndex)
+                            {
+                                var oldIndex = _focusedIndex;
+                                _focusedIndex = newFocusedIndex;
+                                _updateElementIndex(_focusedElement, oldIndex, _focusedIndex);
+                            }
+                        }
+                    }
+
+                    if (_scrollToElement is not null)
+                    {
+                        if (e.OldStartingIndex <= _scrollToIndex && _scrollToIndex < e.OldStartingIndex + e.OldItems!.Count)
+                        {
+                            _scrollToIndex = e.NewStartingIndex + (_scrollToIndex - e.OldStartingIndex);
+                        }
+                        else
+                        {
+                            var newScrollToIndex = _scrollToIndex;
+
+                            if (e.OldStartingIndex < _scrollToIndex)
+                            {
+                                newScrollToIndex -= e.OldItems!.Count;
+                            }
+
+                            if (e.NewStartingIndex <= newScrollToIndex)
+                            {
+                                newScrollToIndex += e.NewItems!.Count;
+                            }
+
+                            _scrollToIndex = newScrollToIndex;
+                        }
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    if (_focusedElement is not null)
+                    {
+                        RecycleFocusedElement();
+                    }
+                    if (_scrollToElement is not null)
+                    {
+                        RecycleScrollToElement();
+                    }
                     break;
             }
         }
@@ -351,6 +492,24 @@ namespace Avalonia.Controls
                 oldValue.PropertyChanged -= OnItemsControlPropertyChanged;
             if (ItemsControl is not null)
                 ItemsControl.PropertyChanged += OnItemsControlPropertyChanged;
+
+            _realizedElements?.ResetForReuse();
+            _measureElements?.ResetForReuse();
+            if (ItemsControl is not null && _focusedElement is not null)
+            {
+                RecycleFocusedElement();
+            }
+            if (ItemsControl is not null && _scrollToElement is not null)
+            {
+                RecycleScrollToElement();
+            }
+            if (ItemsControl is null)
+            {
+                _focusedElement = null;
+                _scrollToElement = null;
+            }
+            _focusedIndex = -1;
+            _scrollToIndex = -1;
         }
 
         protected override IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
@@ -860,6 +1019,7 @@ namespace Avalonia.Controls
                 var recycled = recyclePool.Pop();
                 recycled.SetCurrentValue(Visual.IsVisibleProperty, true);
                 generator.PrepareItemContainer(recycled, item, index);
+                AddInternalChild(recycled);
                 generator.ItemContainerPrepared(recycled, item, index);
                 return recycled;
             }
@@ -893,6 +1053,7 @@ namespace Avalonia.Controls
 
             if (recycleKey is null)
             {
+                ItemContainerGenerator!.ClearItemContainer(element);
                 RemoveInternalChild(element);
             }
             else if (recycleKey == s_itemIsItsOwnContainer)
@@ -909,6 +1070,7 @@ namespace Avalonia.Controls
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
                 element.SetCurrentValue(Visual.IsVisibleProperty, false);
+                RemoveInternalChild(element);
             }
         }
 
@@ -920,7 +1082,12 @@ namespace Avalonia.Controls
 
             var recycleKey = element.GetValue(RecycleKeyProperty);
             
-            if (recycleKey is null || recycleKey == s_itemIsItsOwnContainer)
+            if (recycleKey is null)
+            {
+                ItemContainerGenerator!.ClearItemContainer(element);
+                RemoveInternalChild(element);
+            }
+            else if (recycleKey == s_itemIsItsOwnContainer)
             {
                 RemoveInternalChild(element);
             }
@@ -929,9 +1096,30 @@ namespace Avalonia.Controls
                 ItemContainerGenerator!.ClearItemContainer(element);
                 PushToRecyclePool(recycleKey, element);
                 element.SetCurrentValue(Visual.IsVisibleProperty, false);
+                RemoveInternalChild(element);
             }
         }
 
+        private void RecycleFocusedElement()
+        {
+            if (_focusedElement != null)
+            {
+                RecycleElementOnItemRemoved(_focusedElement);
+            }
+            _focusedElement = null;
+            _focusedIndex = -1;
+        }
+        
+        private void RecycleScrollToElement()
+        {
+            if (_scrollToElement != null)
+            {
+                RecycleElementOnItemRemoved(_scrollToElement);
+            }
+            _scrollToElement = null;
+            _scrollToIndex = -1;
+        }
+        
         private void PushToRecyclePool(object recycleKey, Control element)
         {
             _recyclePool ??= new();
