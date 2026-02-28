@@ -12,7 +12,7 @@
     <Setter Property="Width" Value="{DynamicResource CaptionButtonWidth}"/>
     <Setter Property="Height" Value="{DynamicResource CaptionButtonHeight}"/>
     <Setter Property="VerticalAlignment" Value="Stretch"/>
-    <Setter Property="(WindowDecorations.ElementRole)" Value="DecorationsElement"/>
+    <Setter Property="(WindowDecorationProperties.ElementRole)" Value="DecorationsElement"/>
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter Name="PART_ContentPresenter"
@@ -47,9 +47,10 @@
                       IsHitTestVisible="False" />
               <!-- Titlebar: background, title text, and drag area live in underlay -->
               <Panel x:Name="PART_TitleBar" VerticalAlignment="Top"
-                     Height="{TemplateBinding DefaultTitleBarHeight}"
+                     Height="{TemplateBinding TitleBarHeight}"
                      Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                     WindowDecorations.ElementRole="TitleBar">
+                     IsVisible="{TemplateBinding HasTitleBar}"
+                     WindowDecorationProperties.ElementRole="TitleBar">
                 <TextBlock Text="{TemplateBinding Title}"
                            VerticalAlignment="Center"
                            Margin="12,0,0,0"
@@ -64,13 +65,14 @@
               <StackPanel x:Name="PART_OverlayPanel"
                           VerticalAlignment="Top"
                           HorizontalAlignment="Right"
-                          Height="{TemplateBinding DefaultTitleBarHeight}"
+                          Height="{TemplateBinding TitleBarHeight}"
+                          IsVisible="{TemplateBinding HasTitleBar}"
                           Orientation="Horizontal"
                           Spacing="2"
                           TextElement.FontSize="10">
                 <Button x:Name="PART_FullScreenButton"
                         Theme="{StaticResource FluentDrawnCaptionButton}"
-                        WindowDecorations.ElementRole="FullScreenButton">
+                        WindowDecorationProperties.ElementRole="FullScreenButton">
                   <Viewbox Width="11" Margin="2">
                     <Path Name="FullScreenButtonPath"
                           Stretch="UniformToFill"
@@ -80,8 +82,7 @@
                 </Button>
                 <Button x:Name="PART_MinimizeButton"
                         Theme="{StaticResource FluentDrawnCaptionButton}"
-                        WindowDecorations.ElementRole="MinimizeButton"
-                        AutomationProperties.Name="Minimize">
+                        WindowDecorationProperties.ElementRole="MinimizeButton">
                   <Viewbox Width="11" Margin="2">
                     <Path Stretch="UniformToFill"
                           Fill="{DynamicResource CaptionButtonForeground}"
@@ -90,8 +91,7 @@
                 </Button>
                 <Button x:Name="PART_MaximizeButton"
                         Theme="{StaticResource FluentDrawnCaptionButton}"
-                        WindowDecorations.ElementRole="MaximizeButton"
-                        AutomationProperties.Name="Maximize">
+                        WindowDecorationProperties.ElementRole="MaximizeButton">
                   <Viewbox Width="11" Margin="2">
                     <Viewbox.RenderTransform>
                       <RotateTransform Angle="-90" />
@@ -106,8 +106,7 @@
                         Background="#ffe81123"
                         BorderBrush="#fff1707a"
                         Theme="{StaticResource FluentDrawnCaptionButton}"
-                        WindowDecorations.ElementRole="CloseButton"
-                        AutomationProperties.Name="Close">
+                        WindowDecorationProperties.ElementRole="CloseButton">
                   <Viewbox Width="11" Margin="2">
                     <Path Stretch="UniformToFill"
                           Fill="{DynamicResource CaptionButtonForeground}"
@@ -122,7 +121,7 @@
             <Panel Height="{TemplateBinding DefaultTitleBarHeight}"
                    VerticalAlignment="Top"
                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                   WindowDecorations.ElementRole="TitleBar">
+                   WindowDecorationProperties.ElementRole="TitleBar">
               <TextBlock Text="{TemplateBinding Title}"
                          VerticalAlignment="Center"
                          Margin="12,0,0,0"
@@ -133,7 +132,7 @@
                           TextElement.FontSize="10">
                 <Button x:Name="PART_PopoverFullScreenButton"
                         Theme="{StaticResource FluentDrawnCaptionButton}"
-                        WindowDecorations.ElementRole="FullScreenButton">
+                        WindowDecorationProperties.ElementRole="FullScreenButton">
                   <Viewbox Width="11" Margin="2">
                     <Path Stretch="UniformToFill"
                           Fill="{DynamicResource CaptionButtonForeground}"
@@ -144,8 +143,7 @@
                         Background="#ffe81123"
                         BorderBrush="#fff1707a"
                         Theme="{StaticResource FluentDrawnCaptionButton}"
-                        WindowDecorations.ElementRole="CloseButton"
-                        AutomationProperties.Name="Close">
+                        WindowDecorationProperties.ElementRole="CloseButton">
                   <Viewbox Width="11" Margin="2">
                     <Path Stretch="UniformToFill"
                           Fill="{DynamicResource CaptionButtonForeground}"

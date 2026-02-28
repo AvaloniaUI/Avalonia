@@ -53,22 +53,52 @@ public class WindowDrawnDecorations : StyledElement
         AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultShadowThickness));
 
     /// <summary>
-    /// Defines the <see cref="TitleBarHeightOverride"/> property.
+    /// Defines the <see cref="TitleBarHeight"/> property.
     /// </summary>
-    internal static readonly StyledProperty<double> TitleBarHeightOverrideProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, double>(nameof(TitleBarHeightOverride), defaultValue: double.NaN);
+    public static readonly DirectProperty<WindowDrawnDecorations, double> TitleBarHeightProperty =
+        AvaloniaProperty.RegisterDirect<WindowDrawnDecorations, double>(
+            nameof(TitleBarHeight),
+            o => o.TitleBarHeight);
 
     /// <summary>
-    /// Defines the <see cref="FrameThicknessOverride"/> property.
+    /// Defines the <see cref="FrameThickness"/> property.
     /// </summary>
-    internal static readonly StyledProperty<Thickness> FrameThicknessOverrideProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(FrameThicknessOverride));
+    public static readonly DirectProperty<WindowDrawnDecorations, Thickness> FrameThicknessProperty =
+        AvaloniaProperty.RegisterDirect<WindowDrawnDecorations, Thickness>(
+            nameof(FrameThickness),
+            o => o.FrameThickness);
 
     /// <summary>
-    /// Defines the <see cref="ShadowThicknessOverride"/> property.
+    /// Defines the <see cref="ShadowThickness"/> property.
     /// </summary>
-    internal static readonly StyledProperty<Thickness> ShadowThicknessOverrideProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(ShadowThicknessOverride));
+    public static readonly DirectProperty<WindowDrawnDecorations, Thickness> ShadowThicknessProperty =
+        AvaloniaProperty.RegisterDirect<WindowDrawnDecorations, Thickness>(
+            nameof(ShadowThickness),
+            o => o.ShadowThickness);
+
+    /// <summary>
+    /// Defines the <see cref="HasShadow"/> property.
+    /// </summary>
+    public static readonly DirectProperty<WindowDrawnDecorations, bool> HasShadowProperty =
+        AvaloniaProperty.RegisterDirect<WindowDrawnDecorations, bool>(
+            nameof(HasShadow),
+            o => o.HasShadow);
+
+    /// <summary>
+    /// Defines the <see cref="HasBorder"/> property.
+    /// </summary>
+    public static readonly DirectProperty<WindowDrawnDecorations, bool> HasBorderProperty =
+        AvaloniaProperty.RegisterDirect<WindowDrawnDecorations, bool>(
+            nameof(HasBorder),
+            o => o.HasBorder);
+
+    /// <summary>
+    /// Defines the <see cref="HasTitleBar"/> property.
+    /// </summary>
+    public static readonly DirectProperty<WindowDrawnDecorations, bool> HasTitleBarProperty =
+        AvaloniaProperty.RegisterDirect<WindowDrawnDecorations, bool>(
+            nameof(HasTitleBar),
+            o => o.HasTitleBar);
 
     /// <summary>
     /// Defines the <see cref="Title"/> property.
@@ -93,6 +123,7 @@ public class WindowDrawnDecorations : StyledElement
     private Button? _popoverFullScreenButton;
     private IDisposable? _windowSubscriptions;
     private Window? _hostWindow;
+    private double _titleBarHeightOverride = -1;
 
     /// <summary>
     /// Raised when any property affecting the effective geometry changes
@@ -139,34 +170,39 @@ public class WindowDrawnDecorations : StyledElement
     /// <summary>
     /// Gets or sets the titlebar height override.
     /// When NaN, falls back to <see cref="DefaultTitleBarHeight"/>.
-    /// Window can override by setting a local value.
     /// </summary>
     internal double TitleBarHeightOverride
     {
-        get => GetValue(TitleBarHeightOverrideProperty);
-        set => SetValue(TitleBarHeightOverrideProperty, value);
+        get => _titleBarHeightOverride;
+        set { _titleBarHeightOverride = value; UpdateEffectiveGeometry(); }
     }
 
     /// <summary>
     /// Gets or sets the frame thickness override.
     /// When set, takes precedence over <see cref="DefaultFrameThickness"/>.
-    /// Window can override by setting a local value.
     /// </summary>
-    internal Thickness FrameThicknessOverride
+    internal Thickness? FrameThicknessOverride
     {
-        get => GetValue(FrameThicknessOverrideProperty);
-        set => SetValue(FrameThicknessOverrideProperty, value);
+        get;
+        set
+        {
+            field = value;
+            UpdateEffectiveGeometry();
+        }
     }
 
     /// <summary>
     /// Gets or sets the shadow thickness override.
     /// When set, takes precedence over <see cref="DefaultShadowThickness"/>.
-    /// Window can override by setting a local value.
     /// </summary>
-    internal Thickness ShadowThicknessOverride
+    internal Thickness? ShadowThicknessOverride
     {
-        get => GetValue(ShadowThicknessOverrideProperty);
-        set => SetValue(ShadowThicknessOverrideProperty, value);
+        get;
+        set
+        {
+            field = value;
+            UpdateEffectiveGeometry();
+        }
     }
 
     /// <summary>
@@ -197,30 +233,60 @@ public class WindowDrawnDecorations : StyledElement
     /// Gets the effective titlebar height, resolving NaN override to the default.
     /// Returns 0 if titlebar part is disabled.
     /// </summary>
-    public double TitleBarHeight =>
-        EnabledParts.HasFlag(DrawnWindowDecorationParts.TitleBar)
-            ? (double.IsNaN(TitleBarHeightOverride) ? DefaultTitleBarHeight : TitleBarHeightOverride)
-            : 0;
+    public double TitleBarHeight
+    {
+        get;
+        private set => SetAndRaise(TitleBarHeightProperty, ref field, value);
+    }
 
     /// <summary>
     /// Gets the effective frame thickness.
     /// Uses FrameThicknessOverride if explicitly set, otherwise DefaultFrameThickness.
     /// Returns zero if border part is disabled.
     /// </summary>
-    public Thickness FrameThickness =>
-        EnabledParts.HasFlag(DrawnWindowDecorationParts.Border)
-            ? (FrameThicknessOverride != default ? FrameThicknessOverride : DefaultFrameThickness)
-            : default;
+    public Thickness FrameThickness
+    {
+        get;
+        private set => SetAndRaise(FrameThicknessProperty, ref field, value);
+    }
 
     /// <summary>
     /// Gets the effective shadow thickness.
     /// Uses ShadowThicknessOverride if explicitly set, otherwise DefaultShadowThickness.
     /// Returns zero if shadow part is disabled.
     /// </summary>
-    public Thickness ShadowThickness =>
-        EnabledParts.HasFlag(DrawnWindowDecorationParts.Shadow)
-            ? (ShadowThicknessOverride != default ? ShadowThicknessOverride : DefaultShadowThickness)
-            : default;
+    public Thickness ShadowThickness
+    {
+        get;
+        private set => SetAndRaise(ShadowThicknessProperty, ref field, value);
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the shadow decoration part is enabled.
+    /// </summary>
+    public bool HasShadow
+    {
+        get;
+        private set => SetAndRaise(HasShadowProperty, ref field, value);
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the border decoration part is enabled.
+    /// </summary>
+    public bool HasBorder
+    {
+        get;
+        private set => SetAndRaise(HasBorderProperty, ref field, value);
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the title bar decoration part is enabled.
+    /// </summary>
+    public bool HasTitleBar
+    {
+        get;
+        private set => SetAndRaise(HasTitleBarProperty, ref field, value);
+    }
 
     static WindowDrawnDecorations()
     {
@@ -228,16 +294,12 @@ public class WindowDrawnDecorations : StyledElement
         EnabledPartsProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) =>
         {
             x.UpdateEnabledPartsPseudoClasses();
-            x.EffectiveGeometryChanged?.Invoke();
+            x.UpdateEffectiveGeometry();
         });
 
-        // Notify geometry changes when any thickness/height property changes
-        DefaultTitleBarHeightProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
-        DefaultFrameThicknessProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
-        DefaultShadowThicknessProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
-        TitleBarHeightOverrideProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
-        FrameThicknessOverrideProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
-        ShadowThicknessOverrideProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.EffectiveGeometryChanged?.Invoke());
+        DefaultTitleBarHeightProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.UpdateEffectiveGeometry());
+        DefaultFrameThicknessProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.UpdateEffectiveGeometry());
+        DefaultShadowThicknessProperty.Changed.AddClassHandler<WindowDrawnDecorations>((x, _) => x.UpdateEffectiveGeometry());
     }
 
     /// <summary>
@@ -345,25 +407,25 @@ public class WindowDrawnDecorations : StyledElement
         _popoverCloseButton = _templateNameScope.Find<Button>(PART_PopoverCloseButton);
         _popoverFullScreenButton = _templateNameScope.Find<Button>(PART_PopoverFullScreenButton);
 
-        // Set up automation properties on the titlebar panel
         var titleBar = _templateNameScope.Find<Control>(PART_TitleBar);
         if (titleBar != null)
         {
-            AutomationProperties.SetControlTypeOverride(titleBar, Avalonia.Automation.Peers.AutomationControlType.TitleBar);
+            AutomationProperties.SetIsControlElementOverride(titleBar, true);
             AutomationProperties.SetAutomationId(titleBar, "AvaloniaTitleBar");
-            AutomationProperties.SetAccessibilityView(titleBar, AccessibilityView.Raw);
-            AutomationProperties.SetClassNameOverride(titleBar, "TitleBar");
+            AutomationProperties.SetName(titleBar, "TitleBar");
         }
-
+        
         if (_closeButton != null)
         {
             AutomationProperties.SetAutomationId(_closeButton, "Close");
+            AutomationProperties.SetName(_closeButton, "Close");
             _closeButton.Click += OnCloseButtonClick;
         }
 
         if (_minimizeButton != null)
         {
             AutomationProperties.SetAutomationId(_minimizeButton, "Minimize");
+            AutomationProperties.SetName(_minimizeButton, "Minimize");
             _minimizeButton.Click += OnMinimizeButtonClick;
         }
 
@@ -371,24 +433,28 @@ public class WindowDrawnDecorations : StyledElement
         {
             _maximizeButton.Click += OnMaximizeButtonClick;
             AutomationProperties.SetAutomationId(_maximizeButton, "Maximize");
+            AutomationProperties.SetName(_maximizeButton, "Maximize");
         }
 
         if (_fullScreenButton != null)
         {
             _fullScreenButton.Click += OnFullScreenButtonClick;
             AutomationProperties.SetAutomationId(_fullScreenButton, "Fullscreen");
+            AutomationProperties.SetName(_fullScreenButton, "Fullscreen");
         }
 
         if (_popoverCloseButton != null)
         {
             _popoverCloseButton.Click += OnCloseButtonClick;
             AutomationProperties.SetAutomationId(_popoverCloseButton, "FullscreenClose");
+            AutomationProperties.SetName(_popoverCloseButton, "Close");
         }
 
         if (_popoverFullScreenButton != null)
         {
             _popoverFullScreenButton.Click += OnFullScreenButtonClick;
             AutomationProperties.SetAutomationId(_popoverFullScreenButton, "ExitFullscreen");
+            AutomationProperties.SetName(_popoverFullScreenButton, "ExitFullscreen");
         }
     }
 
@@ -474,11 +540,34 @@ public class WindowDrawnDecorations : StyledElement
             : _hostWindow?.CanMaximize ?? true;
     }
 
+    private void UpdateEffectiveGeometry()
+    {
+        TitleBarHeight = EnabledParts.HasFlag(DrawnWindowDecorationParts.TitleBar)
+            ? (TitleBarHeightOverride == -1 ? DefaultTitleBarHeight : TitleBarHeightOverride)
+            : 0;
+
+        FrameThickness = EnabledParts.HasFlag(DrawnWindowDecorationParts.Border)
+            ? (FrameThicknessOverride ?? DefaultFrameThickness)
+            : default;
+
+        ShadowThickness = EnabledParts.HasFlag(DrawnWindowDecorationParts.Shadow)
+            ? (ShadowThicknessOverride ?? DefaultShadowThickness)
+            : default;
+
+        EffectiveGeometryChanged?.Invoke();
+    }
+
     private void UpdateEnabledPartsPseudoClasses()
     {
         var parts = EnabledParts;
-        PseudoClasses.Set(":has-shadow", parts.HasFlag(DrawnWindowDecorationParts.Shadow));
-        PseudoClasses.Set(":has-border", parts.HasFlag(DrawnWindowDecorationParts.Border));
-        PseudoClasses.Set(":has-titlebar", parts.HasFlag(DrawnWindowDecorationParts.TitleBar));
+        var hasShadow = parts.HasFlag(DrawnWindowDecorationParts.Shadow);
+        var hasBorder = parts.HasFlag(DrawnWindowDecorationParts.Border);
+        var hasTitleBar = parts.HasFlag(DrawnWindowDecorationParts.TitleBar);
+        HasShadow = hasShadow;
+        HasBorder = hasBorder;
+        HasTitleBar = hasTitleBar;
+        PseudoClasses.Set(":has-shadow", hasShadow);
+        PseudoClasses.Set(":has-border", hasBorder);
+        PseudoClasses.Set(":has-titlebar", hasTitleBar);
     }
 }

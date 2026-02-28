@@ -24,18 +24,4 @@ internal partial class TopLevelHost : Control
         _topLevel = tl;
         VisualChildren.Add(tl);
     }
-
-    protected override AutomationPeer OnCreateAutomationPeer()
-        => new TopLevelHostAutomationPeer(this);
-
-    /// <summary>
-    /// Automation peer that returns no children. The automation tree is managed
-    /// by WindowAutomationPeer, which directly includes decoration content.
-    /// Without this, EnsureConnected would walk up through TopLevelHost and
-    /// set Window's parent peer to TopLevelHost's peer, breaking the root.
-    /// </summary>
-    private class TopLevelHostAutomationPeer(TopLevelHost owner) : ControlAutomationPeer(owner)
-    {
-        protected override IReadOnlyList<AutomationPeer>? GetChildrenCore() => null;
-    }
 }

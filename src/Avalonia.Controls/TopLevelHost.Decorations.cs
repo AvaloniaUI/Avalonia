@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Chrome;
 using Avalonia.Input;
@@ -29,18 +31,6 @@ internal partial class TopLevelHost
                 if (field != null)
                     VisualChildren.Add(field);
             }
-        }
-
-        protected override AutomationPeer OnCreateAutomationPeer()
-            => new LayerWrapperAutomationPeer(this);
-
-        /// <summary>
-        /// Returns no children so that EnsureConnected on content peers
-        /// doesn't override their parent set by WindowAutomationPeer.
-        /// </summary>
-        private class LayerWrapperAutomationPeer(LayerWrapper owner) : ControlAutomationPeer(owner)
-        {
-            protected override IReadOnlyList<AutomationPeer>? GetChildrenCore() => null;
         }
     }
 
@@ -77,9 +67,12 @@ internal partial class TopLevelHost
         LogicalChildren.Add(_decorations);
 
         // Create layer wrappers
-        _underlay = new LayerWrapper();
-        _overlay = new LayerWrapper();
-        _fullscreenPopover = new LayerWrapper { IsVisible = false };
+        _underlay = new LayerWrapper() { [AutomationProperties.AutomationIdProperty] = "WindowChromeUnderlay" };
+        _overlay = new LayerWrapper()  { [AutomationProperties.AutomationIdProperty] = "WindowChromeOverlay" };
+        _fullscreenPopover = new LayerWrapper()
+        {
+            IsVisible = false, [AutomationProperties.AutomationIdProperty] = "PopoverWindowChrome"
+        };
 
         // Insert layers: underlay below TopLevel, overlay and popover above
         // Visual order: underlay(0), TopLevel(1), overlay(2), fullscreenPopover(3), resizeGrips(4)
@@ -105,6 +98,7 @@ internal partial class TopLevelHost
 
         ApplyDecorationsTemplate();
         InvalidateMeasure();
+        _decorationsOverlayPeer?.InvalidateChildren();
     }
 
     /// <summary>
@@ -226,6 +220,7 @@ internal partial class TopLevelHost
             _fullscreenPopover.IsVisible = false;
             _fullscreenPopoverEnabled = false;
         }
+        _decorationsOverlayPeer?.InvalidateChildren();
     }
 
     private bool _fullscreenPopoverEnabled;
@@ -244,22 +239,13 @@ internal partial class TopLevelHost
             if (!_fullscreenPopover.IsVisible && pos.Y <= PopoverTriggerZoneHeight)
             {
                 _fullscreenPopover.IsVisible = true;
+                _decorationsOverlayPeer?.InvalidateChildren();
             }
             else if (pos.Y > titleBarHeight && _fullscreenPopover.IsVisible)
             {
                 _fullscreenPopover.IsVisible = false;
+                _decorationsOverlayPeer?.InvalidateChildren();
             }
         }
     }
-
-    protected override void OnPointerExited(PointerEventArgs e)
-    {
-        base.OnPointerExited(e);
-
-        // Don't hide popover on PointerExited — it's hidden via the Y threshold
-        // check in OnPointerMoved. PointerExited can fire spuriously at window edges
-        // when the popover becomes visible (layout change re-routes the pointer),
-        // causing a show/hide feedback loop.
-    }
-
 }

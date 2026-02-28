@@ -5,7 +5,7 @@ namespace Avalonia.Controls.Chrome;
 /// <summary>
 /// Provides attached properties for window decoration hit-testing.
 /// </summary>
-public static class WindowDecorations
+public static class WindowDecorationProperties
 {
     /// <summary>
     /// Defines the <see cref="WindowDecorationsElementRole"/> attached property.
@@ -13,7 +13,7 @@ public static class WindowDecorations
     /// Can be applied to any element in the visual tree, not limited to decoration children.
     /// </summary>
     public static readonly AttachedProperty<WindowDecorationsElementRole> ElementRoleProperty =
-        AvaloniaProperty.RegisterAttached<Visual, WindowDecorationsElementRole>("ElementRole", typeof(WindowDecorations));
+        AvaloniaProperty.RegisterAttached<Visual, WindowDecorationsElementRole>("ElementRole", typeof(WindowDecorationProperties));
 
     /// <summary>
     /// Gets the <see cref="WindowDecorationsElementRole"/> for the specified element.

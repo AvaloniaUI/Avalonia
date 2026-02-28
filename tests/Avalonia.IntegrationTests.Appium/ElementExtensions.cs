@@ -62,11 +62,15 @@ namespace Avalonia.IntegrationTests.Appium
 
         public static WindowChrome GetClientChromeButtons(this AppiumWebElement window)
         {
-            var titlebar = window.FindElementsByAccessibilityId("AvaloniaTitleBar")?.FirstOrDefault();
-            var closeButton = titlebar?.FindElementByName("Close");
-            var minimizeButton = titlebar?.FindElementByName("Minimize");
-            var maximizeButton = titlebar?.FindElementByName("Maximize");
-            return new(closeButton, minimizeButton, maximizeButton, null, titlebar);
+            var children = window.GetChildren();
+            var names = children.Select(x => x.GetName()).ToList();
+            var chrome = window.FindElementsByAccessibilityId("AvaloniaWindowChrome")?.FirstOrDefault();
+            var titlebar = chrome?.FindElementsByAccessibilityId("AvaloniaTitleBar")?.FirstOrDefault();
+            var closeButton = chrome?.FindElementsByName("Close")?.FirstOrDefault();
+            var minimizeButton = chrome?.FindElementsByName("Minimize")?.FirstOrDefault();
+            var maximizeButton = chrome?.FindElementsByName("Maximize")?.FirstOrDefault();
+            var fullscreenButton = chrome?.FindElementsByName("Fullscreen")?.FirstOrDefault();
+            return new(closeButton, minimizeButton, maximizeButton, fullscreenButton, titlebar);
         }
 
         public static string GetComboBoxValue(this AppiumWebElement element)

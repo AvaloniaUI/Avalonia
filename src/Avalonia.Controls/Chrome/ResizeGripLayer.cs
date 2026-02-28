@@ -87,7 +87,7 @@ internal class ResizeGripLayer : Control
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
         };
-        WindowDecorations.SetElementRole(grip, role);
+        WindowDecorationProperties.SetElementRole(grip, role);
         return grip;
     }
 }

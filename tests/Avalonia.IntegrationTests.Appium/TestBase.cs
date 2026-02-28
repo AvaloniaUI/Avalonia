@@ -1,9 +1,11 @@
-﻿using OpenQA.Selenium;
+﻿using System;
+using OpenQA.Selenium;
 using System.Threading;
+using Xunit;
 
 namespace Avalonia.IntegrationTests.Appium;
 
-public class TestBase
+public class TestBase : IDisposable
 {
     protected TestBase(DefaultAppFixture fixture, string pageName)
     {
@@ -35,4 +37,16 @@ public class TestBase
     }
 
     protected AppiumDriver Session { get; }
+    public void Dispose()
+    {
+        try
+        {
+            Assert.NotNull(Session.FindElementByAccessibilityId("Pager"));
+        }
+        catch
+        {
+            throw new Exception(
+                "===== THE TEST HAS LEFT THE SESSION IN A BROKEN STATE. THE SUBSEQUENT TESTS WILL ALL FAIL =======");
+        }
+    }
 }

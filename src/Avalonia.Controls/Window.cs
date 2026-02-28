@@ -134,7 +134,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SystemDecorations"/> property.
         /// </summary>
-        public static readonly StyledProperty<SystemDecorations> SystemDecorationsProperty =
+        public static readonly StyledProperty<SystemDecorations> WindowDecorationsProperty =
             AvaloniaProperty.Register<Window, SystemDecorations>(nameof(SystemDecorations), SystemDecorations.Full);
 
         /// <summary>
@@ -361,8 +361,8 @@ namespace Avalonia.Controls
         /// </summary>
         public SystemDecorations SystemDecorations
         {
-            get => GetValue(SystemDecorationsProperty);
-            set => SetValue(SystemDecorationsProperty, value);
+            get => GetValue(WindowDecorationsProperty);
+            set => SetValue(WindowDecorationsProperty, value);
         }
 
         /// <summary>
@@ -608,7 +608,6 @@ namespace Avalonia.Controls
 
         private void HandleWindowStateChanged(WindowState state)
         {
-            Console.WriteLine(state);
             WindowState = state;
 
             if (state == WindowState.Minimized)
@@ -638,7 +637,7 @@ namespace Avalonia.Controls
             if (TopLevelHost.Decorations == null)
                 WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
         }
-
+        
         private void UpdateDrawnDecorations()
         {
             var isExtended = IsExtendedIntoWindowDecorations
@@ -685,29 +684,34 @@ namespace Avalonia.Controls
         {
             var platformNeeds = PlatformImpl?.RequestedDrawnDecorations ?? PlatformRequestedDrawnDecoration.None;
             var parts = Chrome.DrawnWindowDecorationParts.None;
-            if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.TitleBar))
-                parts |= Chrome.DrawnWindowDecorationParts.TitleBar;
-            if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Shadow))
-                parts |= Chrome.DrawnWindowDecorationParts.Shadow;
-            if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Border))
-                parts |= Chrome.DrawnWindowDecorationParts.Border;
-            if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.ResizeGrips))
-                parts |= Chrome.DrawnWindowDecorationParts.ResizeGrips;
+            if (SystemDecorations != SystemDecorations.None)
+            {
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.TitleBar) &&
+                    SystemDecorations == SystemDecorations.Full)
+                    parts |= Chrome.DrawnWindowDecorationParts.TitleBar;
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Shadow))
+                    parts |= Chrome.DrawnWindowDecorationParts.Shadow;
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Border))
+                    parts |= Chrome.DrawnWindowDecorationParts.Border;
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.ResizeGrips))
+                    parts |= Chrome.DrawnWindowDecorationParts.ResizeGrips;
 
-            // In fullscreen: no shadow, border, resize grips, or titlebar (popover takes over)
-            if (WindowState == WindowState.FullScreen)
-            {
-                parts &= ~(Chrome.DrawnWindowDecorationParts.Shadow
-                    | Chrome.DrawnWindowDecorationParts.Border
-                    | Chrome.DrawnWindowDecorationParts.ResizeGrips
-                    | Chrome.DrawnWindowDecorationParts.TitleBar);
-            }
-            // In maximized: no shadow, border, or resize grips (titlebar stays)
-            else if (WindowState == WindowState.Maximized)
-            {
-                parts &= ~(Chrome.DrawnWindowDecorationParts.Shadow
-                    | Chrome.DrawnWindowDecorationParts.Border
-                    | Chrome.DrawnWindowDecorationParts.ResizeGrips);
+
+                // In fullscreen: no shadow, border, resize grips, or titlebar (popover takes over)
+                if (WindowState == WindowState.FullScreen)
+                {
+                    parts &= ~(Chrome.DrawnWindowDecorationParts.Shadow
+                               | Chrome.DrawnWindowDecorationParts.Border
+                               | Chrome.DrawnWindowDecorationParts.ResizeGrips
+                               | Chrome.DrawnWindowDecorationParts.TitleBar);
+                }
+                // In maximized: no shadow, border, or resize grips (titlebar stays)
+                else if (WindowState == WindowState.Maximized)
+                {
+                    parts &= ~(Chrome.DrawnWindowDecorationParts.Shadow
+                               | Chrome.DrawnWindowDecorationParts.Border
+                               | Chrome.DrawnWindowDecorationParts.ResizeGrips);
+                }
             }
 
             return parts;
@@ -730,11 +734,7 @@ namespace Avalonia.Controls
             if (decorations == null)
                 return;
 
-            var hint = ExtendClientAreaTitleBarHeightHint;
-            if (hint >= 0)
-                decorations.TitleBarHeightOverride = hint;
-            else
-                decorations.ClearValue(Chrome.WindowDrawnDecorations.TitleBarHeightOverrideProperty);
+            decorations.TitleBarHeightOverride = ExtendClientAreaTitleBarHeightHint;
 
             UpdateDrawnDecorationMargins();
         }
@@ -1339,7 +1339,7 @@ namespace Avalonia.Controls
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
-            if (change.Property == SystemDecorationsProperty)
+            if (change.Property == WindowDecorationsProperty)
             {
                 var (_, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
 

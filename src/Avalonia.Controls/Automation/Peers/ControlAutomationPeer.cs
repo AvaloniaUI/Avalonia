@@ -204,7 +204,7 @@ namespace Avalonia.Automation.Peers
         protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
         protected override string? GetAutomationIdCore() => AutomationProperties.GetAutomationId(Owner) ?? Owner.Name;
         protected override Rect GetBoundingRectangleCore() => GetBounds(Owner);
-        protected override string GetClassNameCore() => AutomationProperties.GetClassNameOverride(Owner) ?? Owner.GetType().Name;
+        protected override string GetClassNameCore() => Owner.GetType().Name;
         protected override string? GetItemStatusCore() => AutomationProperties.GetItemStatus(Owner);
         protected override string? GetItemTypeCore() => AutomationProperties.GetItemType(Owner);
         protected override bool HasKeyboardFocusCore() => Owner.IsFocused;
@@ -219,6 +219,11 @@ namespace Avalonia.Automation.Peers
             return AutomationProperties.GetControlTypeOverride(Owner) ?? GetAutomationControlTypeCore();
         }
 
+        protected override string GetClassNameOverrideCore()
+        {
+            return AutomationProperties.GetClassNameOverride(Owner) ?? GetClassNameCore();
+        }
+
         protected override bool IsContentElementOverrideCore()
         {
             var view = AutomationProperties.GetAccessibilityView(Owner);
@@ -227,6 +232,8 @@ namespace Avalonia.Automation.Peers
 
         protected override bool IsControlElementOverrideCore()
         {
+            if (AutomationProperties.GetIsControlElementOverride(Owner) is { } isControlElement)
+                return isControlElement;
             var view = AutomationProperties.GetAccessibilityView(Owner);
             return view == AccessibilityView.Default ? IsControlElementCore() : view >= AccessibilityView.Control;
         }
