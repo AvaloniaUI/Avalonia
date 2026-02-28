@@ -194,18 +194,12 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
             if (!node.Type.IsValueType && !node.Operand.Type.IsValueType &&
                 (node.Type.IsAssignableFrom(node.Operand.Type) || node.Operand.Type.IsAssignableFrom(node.Type)))
             {
-                var castMethod = typeof(CompiledBindingPathBuilder)
-                    .GetMethod(nameof(CompiledBindingPathBuilder.TypeCast))!
-                    .MakeGenericMethod(node.Type);
-                return Add(node.Operand, node, x => castMethod.Invoke(x, null));
+                return Add(node.Operand, node, x => x.TypeCast(node.Type));
             }
         }
         else if (node.NodeType == ExpressionType.TypeAs)
         {
-            var castMethod = typeof(CompiledBindingPathBuilder)
-                .GetMethod(nameof(CompiledBindingPathBuilder.TypeCast))!
-                .MakeGenericMethod(node.Type);
-            return Add(node.Operand, node, x => castMethod.Invoke(x, null));
+            return Add(node.Operand, node, x => x.TypeCast(node.Type));
         }
 
         throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");

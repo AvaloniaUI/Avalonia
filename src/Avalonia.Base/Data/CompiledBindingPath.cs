@@ -197,6 +197,12 @@ namespace Avalonia.Data
             return this;
         }
 
+        public CompiledBindingPathBuilder TypeCast(Type targetType)
+        {
+            _elements.Add(new TypeCastPathElement(targetType));
+            return this;
+        }
+
         public CompiledBindingPathBuilder TemplatedParent()
         {
             _elements.Add(new TemplatedParentPathElement());
@@ -387,7 +393,28 @@ namespace Avalonia.Data
 
         public Type Type => typeof(T);
 
-        public Func<object?, object?> Cast => TryCast;
+        public Func<object?, object?> Cast { get; } = TryCast;
+
+        public override string ToString()
+            => $"({Type.FullName})";
+    }
+
+    internal class TypeCastPathElement : ITypeCastElement
+    {
+        public TypeCastPathElement(Type type)
+        {
+            Type = type;
+            Cast = obj =>
+            {
+                if (obj is { } result && type.IsInstanceOfType(result))
+                    return result;
+                return null;
+            };
+        }
+
+        public Type Type { get; }
+
+        public Func<object?, object?> Cast { get; }
 
         public override string ToString()
             => $"({Type.FullName})";
