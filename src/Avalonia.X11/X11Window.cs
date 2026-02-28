@@ -1029,9 +1029,10 @@ namespace Avalonia.X11
             // Remove from AT-SPI tree before closing
             _platform.UntrackWindow(this);
             if (_platform.AtSpiServer is { } atSpiServer
-                && _inputRoot?.RootElement is Control atSpiControl)
+                && _inputRoot?.FocusRoot is Control atSpiControl)
             {
-                var atSpiPeer = atSpiControl.GetAutomationPeer();
+                var atSpiPeer = atSpiControl.GetAutomationPeer()?.GetAutomationRoot()
+                    ?? atSpiControl.GetAutomationPeer();
                 if (atSpiPeer is not null)
                     atSpiServer.RemoveWindow(atSpiPeer);
             }
@@ -1125,11 +1126,12 @@ namespace Avalonia.X11
 
             _platform.TrackWindow(this);
             if (_platform.AtSpiServer is { } server
-                && _inputRoot?.RootElement is Control c)
+                && _inputRoot?.FocusRoot is Control c)
             {
                 var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(c);
-                if (peer is not null)
-                    server.AddWindow(peer);
+                var rootPeer = peer?.GetAutomationRoot() ?? peer;
+                if (rootPeer is not null)
+                    server.AddWindow(rootPeer);
             }
         }
 
