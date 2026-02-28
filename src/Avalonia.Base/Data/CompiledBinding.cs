@@ -81,7 +81,6 @@ public class CompiledBinding : BindingBase
     /// <item>Indexers: <c>x => x.Items[0]</c></item>
     /// <item>Type casts: <c>x => ((DerivedType)x).Property</c></item>
     /// <item>Logical NOT: <c>x => !x.BoolProperty</c></item>
-    /// <item>Stream bindings: <c>x => x.TaskProperty</c> (Task/Observable)</item>
     /// <item>AvaloniaProperty access: <c>x => x[MyProperty]</c></item>
     /// </list>
     /// </remarks>
