@@ -463,7 +463,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
             TargetProperty is not null &&
             target.GetValue(TargetProperty) is var value &&
             LeafNode is { } leafNode &&
-            !TypeUtilities.IdentityEquals(value, leafNode.Value, TargetType))
+            (!TypeUtilities.IdentityEquals(value, leafNode.Value, TargetType) || ErrorType != BindingErrorType.None))
         {
             WriteValueToSource(value);
         }

@@ -134,6 +134,42 @@ public partial class BindingExpressionTests
     }
 
     [Fact]
+    public void Setter_Exception_Error_Is_Cleared_When_Reverting_To_Same_Valid_Value()
+    {
+        // Issue #20534: When a setter throws on an invalid value and the user
+        // reverts to the same valid value that was last successfully set, the
+        // validation error should be cleared.
+        var data = new ExceptionViewModel { MustBePositive = 5 };
+
+        var target = CreateTargetWithSource(
+            data,
+            o => o.MustBePositive,
+            enableDataValidation: true,
+            mode: BindingMode.TwoWay);
+
+        // Step 1: Set a valid value.
+        target.Int = 10;
+        Assert.Equal(10, data.MustBePositive);
+        AssertNoError(target, TargetClass.IntProperty);
+
+        // Step 2: Set an invalid value — setter throws, error appears.
+        target.Int = -5;
+        Assert.Equal(10, data.MustBePositive);
+        AssertBindingError(
+            target,
+            TargetClass.IntProperty,
+            new ArgumentOutOfRangeException("value"),
+            BindingErrorType.DataValidationError);
+
+        // Step 3: Revert to the same valid value (10). The error must clear.
+        target.Int = 10;
+        Assert.Equal(10, data.MustBePositive);
+        AssertNoError(target, TargetClass.IntProperty);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
     public void Indei_Validation_Does_Not_Subscribe_When_DataValidation_Not_Enabled()
     {
         var data = new IndeiViewModel { MustBePositive = 5 };
