@@ -82,7 +82,9 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
+#if APPIUM2
         [PlatformFact(TestPlatforms.MacOS)]
+#endif
         public void WindowOrder_Owned_Dialog_Stays_InFront_Of_Parent()
         {
             var mainWindow = Session.FindElementByAccessibilityId("MainWindow");
@@ -95,7 +97,9 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
         
+#if APPIUM2
         [PlatformFact(TestPlatforms.MacOS)]
+#endif
         public void WindowOrder_Owned_Dialog_Stays_InFront_Of_FullScreen_Parent()
         {
             var mainWindow = Session.FindElementByAccessibilityId("MainWindow");
