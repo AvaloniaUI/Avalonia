@@ -31,7 +31,18 @@ namespace Avalonia.Data.Core.Plugins
         {
             reference.TryGetTarget(out var target);
 
-            return target != null && target.GetType().GetInterfaces().Any(x =>
+            return target != null && MatchesType(target.GetType());
+        }
+
+        public static bool MatchesType(Type type)
+        {
+            var interfaces = type.GetInterfaces().AsEnumerable();
+            if (type.IsInterface)
+            {
+                interfaces = interfaces.Concat([type]);
+            }
+            
+            return interfaces.Any(x =>
               x.IsGenericType &&
               x.GetGenericTypeDefinition() == typeof(IObservable<>));
         }

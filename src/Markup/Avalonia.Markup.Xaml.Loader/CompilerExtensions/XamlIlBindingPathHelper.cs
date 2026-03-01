@@ -561,7 +561,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
-                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m.Name == "StreamObservable").MakeGenericMethod(new[] { Type }));
+                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m is { Name: "StreamObservable", ContainsGenericParameters: true }).MakeGenericMethod(new[] { Type }));
             }
         }
 
@@ -576,7 +576,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
-                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m.Name == "StreamTask").MakeGenericMethod(new[] { Type }));
+                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m is { Name: "StreamTask", ContainsGenericParameters: true }).MakeGenericMethod(new[] { Type }));
             }
         }
 
@@ -980,7 +980,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
-                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m.Name == "TypeCast").MakeGenericMethod(new[] { Type }));
+                codeGen.EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.GetMethod(m => m is { Name: "TypeCast", ContainsGenericParameters: true }).MakeGenericMethod(new[] { Type }));
             }
         }
 

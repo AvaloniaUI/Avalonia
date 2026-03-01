@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Data.Core;
@@ -155,9 +156,23 @@ namespace Avalonia.Data
             return this;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
+        public CompiledBindingPathBuilder StreamTask()
+        {
+            _elements.Add(new TaskStreamPathElement());
+            return this;
+        }
+
         public CompiledBindingPathBuilder StreamObservable<T>()
         {
             _elements.Add(new ObservableStreamPathElement<T>());
+            return this;
+        }
+
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
+        public CompiledBindingPathBuilder StreamObservable()
+        {
+            _elements.Add(new ObservableStreamPathElement());
             return this;
         }
 
@@ -194,6 +209,12 @@ namespace Avalonia.Data
         public CompiledBindingPathBuilder TypeCast<T>()
         {
             _elements.Add(new TypeCastPathElement<T>());
+            return this;
+        }
+
+        public CompiledBindingPathBuilder TypeCast(Type targetType)
+        {
+            _elements.Add(new TypeCastPathElement(targetType));
             return this;
         }
 
@@ -299,11 +320,27 @@ namespace Avalonia.Data
         public IStreamPlugin CreatePlugin() => new TaskStreamPlugin<T>();
     }
 
+    [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
+    internal class TaskStreamPathElement : IStronglyTypedStreamElement
+    {
+        public static readonly TaskStreamPathElement Instance = new TaskStreamPathElement();
+
+        public IStreamPlugin CreatePlugin() => new TaskStreamPlugin();
+    }
+
     internal class ObservableStreamPathElement<T> : IStronglyTypedStreamElement
     {
         public static readonly ObservableStreamPathElement<T> Instance = new ObservableStreamPathElement<T>();
 
         public IStreamPlugin CreatePlugin() => new ObservableStreamPlugin<T>();
+    }
+
+    [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
+    internal class ObservableStreamPathElement : IStronglyTypedStreamElement
+    {
+        public static readonly ObservableStreamPathElement Instance = new ObservableStreamPathElement();
+
+        public IStreamPlugin CreatePlugin() => new ObservableStreamPlugin();
     }
 
     internal class SelfPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
@@ -387,7 +424,28 @@ namespace Avalonia.Data
 
         public Type Type => typeof(T);
 
-        public Func<object?, object?> Cast => TryCast;
+        public Func<object?, object?> Cast { get; } = TryCast;
+
+        public override string ToString()
+            => $"({Type.FullName})";
+    }
+
+    internal class TypeCastPathElement : ITypeCastElement
+    {
+        public TypeCastPathElement(Type type)
+        {
+            Type = type;
+            Cast = obj =>
+            {
+                if (obj is { } result && type.IsInstanceOfType(result))
+                    return result;
+                return null;
+            };
+        }
+
+        public Type Type { get; }
+
+        public Func<object?, object?> Cast { get; }
 
         public override string ToString()
             => $"({Type.FullName})";
