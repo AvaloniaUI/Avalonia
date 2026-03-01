@@ -39,7 +39,8 @@ public class TestBase : IDisposable
     protected AppiumDriver Session { get; }
     public virtual void Dispose()
     {
-        for(var tries=0; tries<3; tries++)
+        #if DETECT_MISBEHAVING_TEST
+        for(var tries = 0; tries < 3; tries++)
         {
             try
             {
@@ -53,5 +54,6 @@ public class TestBase : IDisposable
         }
         throw new Exception(
             "===== THE TEST HAS LEFT THE SESSION IN A BROKEN STATE. THE SUBSEQUENT TESTS WILL ALL FAIL =======");
+        #endif    
     }
 }
