@@ -200,8 +200,10 @@ namespace Avalonia.Controls
             _scaling = ValidateScaling(impl.RenderScaling);
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;
 
+            _source.Renderer.CompositionTarget.TransparencyLevel =
+                ToCompositionTransparencyLevel(_actualTransparencyLevel);
 
-
+            
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
@@ -713,6 +715,8 @@ namespace Avalonia.Controls
             }
 
             ActualTransparencyLevel = transparencyLevel;
+            Renderer.CompositionTarget.TransparencyLevel =
+                ToCompositionTransparencyLevel(transparencyLevel);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -830,6 +834,19 @@ namespace Avalonia.Controls
             }
 
             return scaling;
+        }
+
+        private static CompositionTransparencyLevel ToCompositionTransparencyLevel(WindowTransparencyLevel level)
+        {
+            if (level == WindowTransparencyLevel.Transparent)
+                return CompositionTransparencyLevel.Transparent;
+            if (level == WindowTransparencyLevel.Blur)
+                return CompositionTransparencyLevel.Blur;
+            if (level == WindowTransparencyLevel.AcrylicBlur)
+                return CompositionTransparencyLevel.AcrylicBlur;
+            if (level == WindowTransparencyLevel.Mica)
+                return CompositionTransparencyLevel.Mica;
+            return CompositionTransparencyLevel.None;
         }
     }
 }
