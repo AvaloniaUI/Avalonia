@@ -12,15 +12,16 @@ namespace Avalonia.Base.UnitTests.Media
 {
     public class GlyphTypefaceTests
     {
-        private static readonly string s_InterFontUri = "resm:Avalonia.Base.UnitTests.Assets.Inter-Regular.ttf?assembly=Avalonia.Base.UnitTests";
-        private static readonly string s_blankFontUri = "resm:Avalonia.Base.UnitTests.Assets.AdobeBlank2VF.ttf?assembly=Avalonia.Base.UnitTests";
+        private const string InterFontUri = "resm:Avalonia.Base.UnitTests.Assets.Inter-Regular.ttf?assembly=Avalonia.Base.UnitTests";
+        private const string BlankFontUri = "resm:Avalonia.Base.UnitTests.Assets.AdobeBlank2VF.ttf?assembly=Avalonia.Base.UnitTests";
+        private const string GB18030FontUri = "resm:Avalonia.Base.UnitTests.Assets.NISC18030.ttf?assembly=Avalonia.Base.UnitTests";
 
         [Fact]
         public void Should_Load_Inter_Font()
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -32,7 +33,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -55,7 +56,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -75,12 +76,14 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.Equal(metrics.Width, advance);
         }
 
-        [Fact]
-        public void Should_Have_Valid_FontMetrics()
+        [Theory]
+        [InlineData(InterFontUri)]
+        [InlineData(GB18030FontUri)] // Font without head table
+        public void Should_Have_Valid_FontMetrics(string fontUri)
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(fontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -97,7 +100,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -109,7 +112,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -124,7 +127,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream), FontSimulations.Bold);
 
@@ -137,7 +140,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream), FontSimulations.Oblique);
 
@@ -150,7 +153,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream), 
                 FontSimulations.Bold | FontSimulations.Oblique);
@@ -165,7 +168,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -177,7 +180,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -190,7 +193,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -203,7 +206,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -217,7 +220,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -232,7 +235,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -244,7 +247,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -259,7 +262,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -278,7 +281,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var platformTypeface = new CustomPlatformTypeface(stream);
             var typeface = new GlyphTypeface(platformTypeface);
@@ -292,7 +295,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -307,7 +310,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -327,7 +330,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_blankFontUri));
+            using var stream = assetLoader.Open(new Uri(BlankFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -347,7 +350,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -363,7 +366,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -382,7 +385,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 
@@ -395,7 +398,7 @@ namespace Avalonia.Base.UnitTests.Media
         {
             var assetLoader = new StandardAssetLoader();
 
-            using var stream = assetLoader.Open(new Uri(s_InterFontUri));
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
 
             var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
 

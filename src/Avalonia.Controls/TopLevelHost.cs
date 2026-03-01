@@ -24,4 +24,6 @@ internal partial class TopLevelHost : Control
         _topLevel = tl;
         VisualChildren.Add(tl);
     }
+
+    protected override bool BypassFlowDirectionPolicies => true;
 }
