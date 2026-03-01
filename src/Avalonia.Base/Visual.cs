@@ -129,6 +129,8 @@ namespace Avalonia
         internal IPresentationSource? PresentationSource { get; private set; }
         private Visual? _visualParent;
         private bool _hasMirrorTransform;
+        private Size _layoutSlotSize;
+        private bool _hasLayoutSlotSize;
         private TargetWeakEventSubscriber<Visual, EventArgs>? _affectsRenderWeakSubscriber;
         private RenderOptions _renderOptions;
         private TextOptions _textOptions;
@@ -201,6 +203,47 @@ namespace Avalonia
         {
             get { return GetValue(ClipProperty); }
             set { SetValue(ClipProperty, value); }
+        }
+
+        /// <summary>
+        /// Returns the geometry used to clip this visual's children during layout.
+        /// This mirrors WPF's UIElement.GetLayoutClip behavior.
+        /// </summary>
+        /// <param name="layoutSlotSize">The size of the space allocated to this visual.</param>
+        /// <returns>The clip geometry, or null if no layout clip is required.</returns>
+        protected virtual Geometry? GetLayoutClip(Size layoutSlotSize)
+        {
+            return null;
+        }
+
+        internal bool TryGetChildClip(out RoundedRect clip, out Geometry? geometryClip)
+        {
+            return TryGetChildClipCore(out clip, out geometryClip);
+        }
+
+        /// <summary>
+        /// Attempts to get a child-only clip. By default this uses <see cref="GetLayoutClip"/>.
+        /// </summary>
+        protected virtual bool TryGetChildClipCore(out RoundedRect clip, out Geometry? geometryClip)
+        {
+            var layoutSlotSize = _hasLayoutSlotSize ? _layoutSlotSize : Bounds.Size;
+            var layoutClip = GetLayoutClip(layoutSlotSize);
+            if (layoutClip == null)
+            {
+                clip = default;
+                geometryClip = null;
+                return false;
+            }
+
+            clip = default;
+            geometryClip = layoutClip;
+            return true;
+        }
+
+        internal void SetLayoutSlotSize(Size size)
+        {
+            _layoutSlotSize = size;
+            _hasLayoutSlotSize = true;
         }
 
         /// <summary>

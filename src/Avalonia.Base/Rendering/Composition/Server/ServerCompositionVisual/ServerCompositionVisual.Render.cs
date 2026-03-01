@@ -16,6 +16,7 @@ partial class ServerCompositionVisual
         private readonly bool _renderChildren;
         private TreeWalkContext _walkContext;
         private Stack<double> _opacityStack;
+        private Stack<int> _childClipSwapStack;
         private double _opacity;
         private bool _fullSkip;
         private bool _usedCache;
@@ -51,6 +52,7 @@ partial class ServerCompositionVisual
 
             _opacity = 1;
             _opacityStack = pools.DoubleStackPool.Rent();
+            _childClipSwapStack = pools.IntStackPool.Rent();
             _skipNextVisualTransform = skipRootVisualTransform;
             _renderingToBitmapCache = renderingToBitmapCache;
         }
@@ -123,6 +125,7 @@ partial class ServerCompositionVisual
         {
             VisitedVisuals++;
             var bitmapCacheRoot = _renderingToBitmapCache && visual == _rootVisual;
+            ServerCompositionDrawListVisual? childClipVisual = null;
 
             if (!bitmapCacheRoot) // Skip those for the root visual if we are rendering to bitmap cache
             {
@@ -138,6 +141,9 @@ partial class ServerCompositionVisual
                 if (visual.AdornedVisual != null)
                     AdornerHelper_RenderPreGraphPushAdornerClip(visual);
 
+                if (visual is ServerCompositionDrawListVisual drawListVisual && drawListVisual.HasChildClip)
+                    childClipVisual = drawListVisual;
+
                 // If caching is enabled, draw from cache and skip rendering
                 if (visual.Cache != null)
                 {
@@ -145,6 +151,7 @@ partial class ServerCompositionVisual
                     VisitedVisuals += visited;
                     RenderedVisuals += rendered;
                     _usedCache = true;
+                    _childClipSwapStack.Push(0);
                     visitChildren = false;
                     return;
                 }
@@ -163,7 +170,39 @@ partial class ServerCompositionVisual
                 effects.PushEffect(visual._subTreeBounds!.Value.ToRect(), visual.Effect);
 
             visual.RenderCore(_publicContext, _walkContext.Clip);
-            
+
+            var childClipSwapState = 0;
+            if (!bitmapCacheRoot && childClipVisual != null)
+            {
+                var clipGeometry = visual.Clip;
+                var hasClipGeometry = clipGeometry != null;
+                var useGeometryClip = childClipVisual.ChildClipGeometry != null;
+                var hasBoundsClip = visual.ClipToBounds;
+
+                if (hasClipGeometry)
+                    _canvas.PopGeometryClip();
+                if (hasBoundsClip)
+                    _canvas.PopClip();
+
+                if (useGeometryClip)
+                {
+                    if (hasBoundsClip)
+                        visual.PushClipToBounds(_canvas);
+                    _canvas.PushGeometryClip(childClipVisual.ChildClipGeometry!);
+                }
+                else
+                {
+                    _canvas.PushClip(childClipVisual.ChildClip);
+                }
+
+                if (hasClipGeometry)
+                    _canvas.PushGeometryClip(clipGeometry!);
+
+                childClipSwapState = 1 | (useGeometryClip ? 2 : 0) | (hasClipGeometry ? 4 : 0);
+            }
+
+            _childClipSwapStack.Push(childClipSwapState);
+
             visitChildren = _renderChildren;
         }
         
@@ -176,6 +215,34 @@ partial class ServerCompositionVisual
             }
             
             var bitmapCacheRoot = _renderingToBitmapCache && visual == _rootVisual;
+
+            var childClipSwapState = _childClipSwapStack.Pop();
+            if (childClipSwapState != 0)
+            {
+                var hasClipGeometry = (childClipSwapState & 4) != 0;
+                var useGeometryClip = (childClipSwapState & 2) != 0;
+                var hasBoundsClip = visual.ClipToBounds;
+
+                if (hasClipGeometry)
+                    _canvas.PopGeometryClip();
+
+                if (useGeometryClip)
+                {
+                    _canvas.PopGeometryClip();
+                    if (hasBoundsClip)
+                        _canvas.PopClip();
+                }
+                else
+                {
+                    _canvas.PopClip();
+                }
+
+                if (hasBoundsClip)
+                    visual.PushClipToBounds(_canvas);
+
+                if (hasClipGeometry)
+                    _canvas.PushGeometryClip(visual.Clip!);
+            }
             
             // If we've used cache, those never got pushed in PreSubgraph
             if (!_usedCache)
@@ -226,6 +293,7 @@ partial class ServerCompositionVisual
         {
             _walkContext.Dispose();
             _pools.DoubleStackPool.Return(ref _opacityStack);
+            _pools.IntStackPool.Return(ref _childClipSwapStack);
             AdornerHelper_Dispose();
         }
     }

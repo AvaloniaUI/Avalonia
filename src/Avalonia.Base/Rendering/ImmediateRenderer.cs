@@ -50,17 +50,24 @@ internal class ImmediateRenderer
             transform = Matrix.CreateTranslation(bounds.Position);
         }
 
+        var childClipProvider = visual;
+        RoundedRect childClip = default;
+        Geometry? childClipGeometry = null;
+        var hasChildClip = childClipProvider != null &&
+            childClipProvider.TryGetChildClip(out childClip, out childClipGeometry);
+        var useGeometryClip = hasChildClip && childClipGeometry != null;
+
         using (visual.TextOptions != default ? context.PushTextOptions(visual.TextOptions) : default(DrawingContext.PushedState?))
         using (visual.RenderOptions != default ? context.PushRenderOptions(visual.RenderOptions) : default(DrawingContext.PushedState?))
         using (context.PushTransform(transform))
         using (visual.HasMirrorTransform ? context.PushTransform(new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0)) : default(DrawingContext.PushedState?))
         using (context.PushOpacity(opacity))
-        using (visual switch
+        using (!hasChildClip ? visual switch
         {
             { ClipToBounds: true } and IVisualWithRoundRectClip roundClipVisual => context.PushClip(new RoundedRect(rect, roundClipVisual.ClipToBoundsRadius)),
             { ClipToBounds: true } => context.PushClip(rect),
             _ => default(DrawingContext.PushedState?)
-        })
+        } : default(DrawingContext.PushedState?))
         using (visual.Clip is { } clip ? context.PushGeometryClip(clip) : default(DrawingContext.PushedState?))
         using (visual.OpacityMask is { } opctMask ? context.PushOpacityMask(opctMask, rect) : default(DrawingContext.PushedState?))
         {
@@ -79,12 +86,24 @@ internal class ImmediateRenderer
             if (visual.ClipToBounds)
             {
                 totalTransform = Matrix.Identity;
-                clipRect = rect;
+                clipRect = hasChildClip
+                    ? (useGeometryClip ? rect : childClip.Rect)
+                    : rect;
             }
 
-            foreach (var child in childrenEnumerable)
+            using (hasChildClip && useGeometryClip && visual.ClipToBounds
+                ? context.PushClip(rect)
+                : default(DrawingContext.PushedState?))
+            using (hasChildClip
+                ? (useGeometryClip
+                    ? context.PushGeometryClip(childClipGeometry!)
+                    : context.PushClip(childClip))
+                : default(DrawingContext.PushedState?))
             {
-                Render(context, child, child.Bounds, totalTransform, clipRect);
+                foreach (var child in childrenEnumerable)
+                {
+                    Render(context, child, child.Bounds, totalTransform, clipRect);
+                }
             }
         }
     }
