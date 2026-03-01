@@ -696,7 +696,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         expectedOffset = 50 - textLine.Width / 2;
                         break;
                     case TextAlignment.Right:
-                        expectedOffset = 100 - textLine.WidthIncludingTrailingWhitespace;
+                        var overhangAdjustment = Math.Min(0, textLine.OverhangTrailing);
+                        expectedOffset = 100 - textLine.WidthIncludingTrailingWhitespace + overhangAdjustment;
                         break;
                 }
 

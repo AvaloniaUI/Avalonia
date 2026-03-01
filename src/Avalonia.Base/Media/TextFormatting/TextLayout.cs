@@ -294,7 +294,27 @@ namespace Avalonia.Media.TextFormatting
 
                 var endX = textLine.GetDistanceFromCharacterHit(nextCharacterHit);
 
-                return new Rect(startX, currentY, endX - startX, textLine.Height);
+                var width = endX - startX;
+                var adjustedX = startX;
+                
+                var lineContentLength = textLine.Length - textLine.NewLineLength;
+
+                if (lineContentLength > 0)
+                {
+                    if (textPosition == textLine.FirstTextSourceIndex && textLine.OverhangLeading < 0 && startX > 0)
+                    {
+                        adjustedX += textLine.OverhangLeading;
+                        width -= textLine.OverhangLeading;
+                    }
+
+                    var lastCharacterPosition = textLine.FirstTextSourceIndex + lineContentLength - 1;
+                    if (textPosition >= lastCharacterPosition && textLine.OverhangTrailing < 0)
+                    {
+                        width -= textLine.OverhangTrailing;
+                    }
+                }
+
+                return new Rect(adjustedX, currentY, width, textLine.Height);
             }
 
             return new Rect();
