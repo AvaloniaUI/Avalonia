@@ -58,6 +58,8 @@ internal partial class TopLevelHost
             // Layers persist across part changes; pseudo-classes driven by EnabledParts
             // control visibility of individual decoration elements in the theme.
             _decorations.EnabledParts = parts;
+            if (_resizeGrips != null)
+                _resizeGrips.IsVisible = parts.HasFlag(DrawnWindowDecorationParts.ResizeGrips);
             return;
         }
 
@@ -81,12 +83,10 @@ internal partial class TopLevelHost
         VisualChildren.Add(_overlay);
         VisualChildren.Add(_fullscreenPopover);
 
-        // Add resize grips as topmost layer
-        if (parts.HasFlag(DrawnWindowDecorationParts.ResizeGrips))
-        {
-            _resizeGrips = new ResizeGripLayer();
-            VisualChildren.Add(_resizeGrips);
-        }
+        // Always create resize grips; visibility is controlled by EnabledParts
+        _resizeGrips = new ResizeGripLayer();
+        _resizeGrips.IsVisible = parts.HasFlag(DrawnWindowDecorationParts.ResizeGrips);
+        VisualChildren.Add(_resizeGrips);
 
         // Attach to window if available
         if (_topLevel is Window window)

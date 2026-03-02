@@ -17,5 +17,5 @@ public class WindowDrawnDecorationsTemplate : IWindowDrawnDecorationsTemplate, I
         TemplateContent.Load<WindowDrawnDecorationsContent>(Content)
         ?? throw new InvalidOperationException();
 
-    object? ITemplate.Build() => Build();
+    object? ITemplate.Build() => Build().Result;
 }

@@ -865,6 +865,7 @@ namespace Avalonia.X11
             return rv;
         }
         
+        private SystemDecorations _requestedSystemDecorations = SystemDecorations.Full;
         private SystemDecorations _systemDecorations = SystemDecorations.Full;
         private bool _canResize = true;
         private bool _canMinimize = true;
@@ -1180,7 +1181,23 @@ namespace Avalonia.X11
         
         public void SetSystemDecorations(SystemDecorations enabled)
         {
-            _systemDecorations = enabled == SystemDecorations.Full ? SystemDecorations.Full : SystemDecorations.None;
+            _requestedSystemDecorations = enabled;
+            UpdateEffectiveSystemDecorations();
+        }
+
+        private void UpdateEffectiveSystemDecorations()
+        {
+            // When extending client area, always hide WM decorations (we draw our own)
+            var effective = _extendClientAreaToDecorations
+                ? SystemDecorations.None
+                : (_requestedSystemDecorations == SystemDecorations.Full
+                    ? SystemDecorations.Full
+                    : SystemDecorations.None);
+
+            if (_systemDecorations == effective)
+                return;
+
+            _systemDecorations = effective;
             UpdateMotifHints();
             UpdateSizeHints(null);
         }
@@ -1503,18 +1520,7 @@ namespace Avalonia.X11
                 return;
 
             _extendClientAreaToDecorations = extendIntoClientAreaHint;
-
-            if (extendIntoClientAreaHint)
-            {
-                // Remove WM decorations so we draw our own
-                _systemDecorations = SystemDecorations.None;
-                UpdateMotifHints();
-            }
-            else
-            {
-                _systemDecorations = SystemDecorations.Full;
-                UpdateMotifHints();
-            }
+            UpdateEffectiveSystemDecorations();
 
             IsClientAreaExtendedToDecorations = extendIntoClientAreaHint;
             ExtendClientAreaToDecorationsChanged?.Invoke(extendIntoClientAreaHint);

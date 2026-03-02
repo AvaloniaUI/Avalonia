@@ -47,11 +47,10 @@
                       IsHitTestVisible="False" />
               <!-- Titlebar: background, title text, and drag area live in underlay -->
               <Panel x:Name="PART_TitleBar" VerticalAlignment="Top"
-                     Height="{TemplateBinding DefaultTitleBarHeight}"
+                     Height="{TemplateBinding TitleBarHeight}"
                      Background="{DynamicResource ThemeBackgroundBrush}"
                      IsVisible="{TemplateBinding HasTitleBar}"
                      WindowDecorationProperties.ElementRole="TitleBar" />
-
             </Panel>
           </WindowDrawnDecorationsContent.Underlay>
 
@@ -60,7 +59,7 @@
             <Panel x:Name="PART_OverlayWrapper">
               <!-- Title text lives in overlay so it renders above client content -->
               <Panel x:Name="PART_TitleTextPanel" VerticalAlignment="Top"
-                     Height="{TemplateBinding DefaultTitleBarHeight}"
+                     Height="{TemplateBinding TitleBarHeight}"
                      IsHitTestVisible="False"
                      IsVisible="{TemplateBinding HasTitleBar}">
                 <TextBlock Text="{TemplateBinding Title}"
@@ -71,7 +70,7 @@
               <StackPanel x:Name="PART_OverlayPanel"
                           VerticalAlignment="Top"
                           HorizontalAlignment="Right"
-                          Height="{TemplateBinding DefaultTitleBarHeight}"
+                          Height="{TemplateBinding TitleBarHeight}"
                           Orientation="Horizontal"
                           Spacing="2"
                           IsVisible="{TemplateBinding HasTitleBar}"
