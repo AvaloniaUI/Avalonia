@@ -35,7 +35,7 @@
                               DockPanel.Dock="Bottom"
                               HorizontalContentAlignment="Stretch"
                               Background="{TemplateBinding Background}"
-                              Content="{Binding CurrentPage.(NavigationPage.BottomCommandBar), RelativeSource={RelativeSource TemplatedParent}}" />
+                              Content="{Binding CurrentPage.(NavigationPage.BottomCommandBar), RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}" />
 
             <Grid Name="PART_ContentHost"
                   Background="{TemplateBinding Background}"
@@ -82,10 +82,10 @@
                         Stretch="Uniform"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        IsVisible="{Binding CurrentPage.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}" />
+                        IsVisible="{Binding CurrentPage.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}, FallbackValue=False}" />
                   <ContentPresenter
-                    Content="{Binding CurrentPage.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}}"
-                    IsVisible="{Binding CurrentPage.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}}"
+                    Content="{Binding CurrentPage.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
+                    IsVisible="{Binding CurrentPage.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"/>
                 </Panel>
@@ -95,7 +95,7 @@
                                 Grid.Column="1"
                                 FontSize="18"
                                 Foreground="{TemplateBinding BarForeground}"
-                                Content="{Binding CurrentPage.Header, RelativeSource={RelativeSource TemplatedParent}}"
+                                Content="{Binding CurrentPage.Header, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
@@ -106,7 +106,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalContentAlignment="Stretch"
                                 Foreground="{TemplateBinding BarForeground}"
-                                Content="{Binding CurrentPage.(NavigationPage.TopCommandBar), RelativeSource={RelativeSource TemplatedParent}}">
+                                Content="{Binding CurrentPage.(NavigationPage.TopCommandBar), RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}">
                 <ContentPresenter.Styles>
                   <Style Selector="CommandBar">
                     <Setter Property="Background" Value="Transparent" />

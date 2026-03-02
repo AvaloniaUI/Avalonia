@@ -390,6 +390,16 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            _currentTransition?.Cancel();
+            _currentTransition?.Dispose();
+            _currentTransition = null;
+            _shouldAnimate = false;
+        }
+
         protected override Size ArrangeOverride(Size finalSize)
         {
             var result = base.ArrangeOverride(finalSize);

@@ -441,8 +441,6 @@ namespace ControlCatalog.Pages
         {
             base.OnDetachedFromVisualTree(e);
             StopAnimation();
-            foreach (var p in _parsedPaths) p?.Dispose();
-            _parsedPaths = Array.Empty<SKPath?>();
         }
 
         private sealed class FluidNavBarRenderOp : ICustomDrawOperation
