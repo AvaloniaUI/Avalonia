@@ -578,5 +578,46 @@ namespace Avalonia.Skia.UnitTests.Media
                 Assert.Equal("No suitable cmap subtable found.", Assert.IsType<InvalidOperationException>(loggedValues[2]).Message);
             }
         }
+
+        [Theory]
+        [InlineData(FontWeight.Normal, "Inter")]
+        [InlineData(FontWeight.Bold, "Inter")]
+        [InlineData(FontWeight.SemiBold, "Inter SemiBold")]
+        [InlineData(FontWeight.SemiLight, "Inter Light")]
+        public void TryMatchCharacter_Should_Return_Correct_Weight(FontWeight requestedWeight, string expectedFamilyName)
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl()));
+            using var scope = AvaloniaLocator.EnterScope();
+
+            FontManager.Current.AddFontCollection(new InterFontCollection());
+
+            Assert.True(FontManager.Current.TryMatchCharacter(
+                'A', FontStyle.Normal, requestedWeight, FontStretch.Normal, new FontFamily("fonts:Inter#Inter"), null, out var typeface));
+
+            Assert.NotNull(typeface);
+            Assert.Equal(expectedFamilyName, typeface.GlyphTypeface.FamilyName);
+            Assert.Equal(requestedWeight, typeface.Weight);
+        }
+
+        [Theory]
+        [InlineData(FontStretch.Normal)]
+        [InlineData(FontStretch.Condensed)]
+        [InlineData(FontStretch.Expanded)]
+        [InlineData(FontStretch.SemiCondensed)]
+        [InlineData(FontStretch.SemiExpanded)]
+        public void TryMatchCharacter_Should_Return_Correct_Stretch(FontStretch requestedStretch)
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl()));
+            using var scope = AvaloniaLocator.EnterScope();
+
+            FontManager.Current.AddFontCollection(new InterFontCollection());
+
+            Assert.True(FontManager.Current.TryMatchCharacter(
+                'A', FontStyle.Normal, FontWeight.Normal, requestedStretch, new FontFamily("fonts:Inter#Inter"), null, out var typeface));
+
+            Assert.NotNull(typeface);
+            Assert.Equal("Inter", typeface.GlyphTypeface.FamilyName);
+            Assert.Equal(requestedStretch, typeface.Stretch);
+        }
     }
 }

@@ -63,6 +63,22 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
 
         public ValueTask<int> GetIndexInParentAsync()
         {
+            // Window nodes are children of the ApplicationAtSpiNode, but their
+            // internal Parent field is null (they are attached with parent: null).
+            // Mirror the Parent property's special case so that backward path
+            // walks (e.g. accerciser's get_index_in_parent) work correctly.
+            if (node is RootAtSpiNode { AppRoot: { } appRoot })
+            {
+                var windows = appRoot.WindowChildren;
+                for (var i = 0; i < windows.Count; i++)
+                {
+                    if (ReferenceEquals(windows[i], node))
+                        return ValueTask.FromResult(i);
+                }
+
+                return ValueTask.FromResult(-1);
+            }
+
             var parent = node.Parent;
             if (parent is null)
                 return ValueTask.FromResult(-1);

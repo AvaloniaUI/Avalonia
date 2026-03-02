@@ -1,19 +1,12 @@
 using System;
 using System.Runtime.CompilerServices;
-#if !BUILDTASK
-using Avalonia.Metadata;
-#endif
 
 namespace Avalonia.Utilities
 {
     /// <summary>
     /// Provides math utilities not provided in System.Math.
     /// </summary>
-#if !BUILDTASK
-    [Unstable("This API might be removed in next major version. Please use corresponding BCL APIs.")]
-    public
-#endif
-    static class MathUtilities
+    internal static class MathUtilities
     {
         // smallest such that 1.0+DoubleEpsilon != 1.0
         internal const double DoubleEpsilon = 2.2204460492503131e-016;

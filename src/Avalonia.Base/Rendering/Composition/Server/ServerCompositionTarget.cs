@@ -39,13 +39,12 @@ namespace Avalonia.Rendering.Composition.Server
         public int RenderedVisuals { get; set; }
         public int VisitedVisuals { get; set; }
 
-        public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<object>> surfaces,
-            DiagnosticTextRenderer? diagnosticTextRenderer)
+        public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<object>> surfaces)
             : base(compositor)
         {
             _compositor = compositor;
             _surfaces = surfaces;
-            _overlays = new CompositionTargetOverlays(this, diagnosticTextRenderer);
+            _overlays = new CompositionTargetOverlays(this);
             var platformRender = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
 
             if (platformRender?.SupportsRegions == true && compositor.Options.UseRegionDirtyRectClipping != false)
