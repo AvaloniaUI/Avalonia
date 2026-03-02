@@ -38,10 +38,10 @@
         <TextBlock Text="Overflow Priority" FontWeight="SemiBold" />
         <TextBlock Text="DynamicOverflowOrder priority (lower = stays visible longer):"
                    FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
-        <TextBlock Text="0 — New, Save (always shown last to overflow)" FontSize="11" Opacity="0.7" />
-        <TextBlock Text="1 — Share" FontSize="11" Opacity="0.7" />
-        <TextBlock Text="2 — Bold, Italic" FontSize="11" Opacity="0.7" />
-        <TextBlock Text="3 — Delete (overflows first)" FontSize="11" Opacity="0.7" />
+        <TextBlock Text="0: New, Save (always shown last to overflow)" FontSize="11" Opacity="0.7" />
+        <TextBlock Text="1: Share" FontSize="11" Opacity="0.7" />
+        <TextBlock Text="2: Bold, Italic" FontSize="11" Opacity="0.7" />
+        <TextBlock Text="3: Delete (overflows first)" FontSize="11" Opacity="0.7" />
       </StackPanel>
     </ScrollViewer>
 
@@ -49,7 +49,7 @@
 
     <StackPanel Margin="12" Spacing="8">
       <TextBlock x:Name="StatusText"
-                 Text="Showing 6 of 6 commands — 0 in overflow"
+                 Text="Showing 6 of 6 commands, 0 in overflow"
                  FontSize="12"
                  Opacity="0.7" />
       <Border x:Name="BarContainer"

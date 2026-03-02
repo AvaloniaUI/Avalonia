@@ -4,22 +4,19 @@
   <DockPanel>
     <ScrollViewer DockPanel.Dock="Right" Width="260">
       <StackPanel Margin="12" Spacing="8">
-        <TextBlock Text="Back Gesture" FontWeight="SemiBold" FontSize="14" />
+        <TextBlock Text="How It Works" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Press and drag from within 20px of the left edge. The current page slides right while the destination page slides in with a 0.25x parallax effect." />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Release past 40% of the width to commit the pop, or release earlier to cancel and spring back." />
+
+        <Separator />
 
         <CheckBox x:Name="GestureCheck"
                   Content="IsGestureEnabled"
                   IsChecked="True"
                   IsCheckedChanged="OnGestureEnabledChanged" />
-
-        <Separator />
-
-        <TextBlock Text="How it works:"
-                   FontWeight="SemiBold"
-                   FontSize="12" />
-        <TextBlock Text="• Drag from the left edge of the preview toward the right&#10;• Release past the midpoint to complete navigation&#10;• Release before midpoint to cancel"
-                   FontSize="11"
-                   Opacity="0.7"
-                   TextWrapping="Wrap" />
 
         <Separator />
 
@@ -33,6 +30,16 @@
         <TextBlock x:Name="StatusText"
                    Text="Depth: 1"
                    Opacity="0.7" />
+
+        <Separator />
+
+        <TextBlock Text="API" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="13" FontFamily="Cascadia Code, Consolas, Monospace"
+                     Text="IsGestureEnabled" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Opacity="0.7"
+                     Text="Enable or disable the back-swipe gesture globally on the NavigationPage." />
+        </StackPanel>
       </StackPanel>
     </ScrollViewer>
 

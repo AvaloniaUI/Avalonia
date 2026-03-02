@@ -12,7 +12,10 @@
   <DockPanel>
     <ScrollViewer DockPanel.Dock="Right" Width="260">
       <StackPanel Margin="12" Spacing="8">
-        <TextBlock Text="Position" />
+        <TextBlock Text="Configuration" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Position" FontWeight="SemiBold" />
         <ComboBox x:Name="PositionCombo"
                   SelectedIndex="0"
                   HorizontalAlignment="Stretch"

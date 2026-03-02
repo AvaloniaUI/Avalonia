@@ -18,6 +18,8 @@ namespace ControlCatalog.Pages
             new("Emma Brown", "UX Researcher", "Germany", Color.Parse("#F44336")),
         };
 
+        private bool _isLoaded;
+
         public NavigationPagePassDataPage()
         {
             InitializeComponent();
@@ -26,14 +28,54 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            _isLoaded = true;
+
+            DemoNav.Pushed += (s, ev) => AppendNavigationLog($"Pushed → {ev.Page?.Header}");
+            DemoNav.Popped += (s, ev) => AppendNavigationLog($"Popped ← {ev.Page?.Header}");
+
             await DemoNav.PushAsync(CreateContactListPage(), null);
         }
 
         private async void OnPop(object? sender, RoutedEventArgs e) => await DemoNav.PopAsync();
 
+        private void OnMethodChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded) return;
+
+            if (MethodCombo.SelectedIndex == 0)
+            {
+                MethodDescription.Text = "Data is passed as a constructor argument to the detail page. The page stores the contact and displays its properties directly.";
+                CodeExample.Text = "DemoNav.Push(\n  new DetailPage(contact));";
+            }
+            else
+            {
+                MethodDescription.Text = "Data is passed by setting the new page's DataContext. This enables data binding in XAML to display the data automatically.";
+                CodeExample.Text = "DemoNav.Push(\n  new DetailPage {\n    DataContext = contact\n  });";
+            }
+        }
+
         private ContentPage CreateContactListPage()
         {
             var list = new StackPanel { Spacing = 8, Margin = new Avalonia.Thickness(16) };
+
+            var header = new TextBlock
+            {
+                Text = "Contacts",
+                FontSize = 20,
+                FontWeight = FontWeight.Bold,
+                Margin = new Avalonia.Thickness(0, 0, 0, 4),
+            };
+            list.Children.Add(header);
+
+            var subtitle = new TextBlock
+            {
+                Text = "Tap a contact to navigate and pass its data to the detail page.",
+                FontSize = 13,
+                Opacity = 0.6,
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Avalonia.Thickness(0, 0, 0, 8),
+            };
+            list.Children.Add(subtitle);
 
             foreach (var contact in Contacts)
             {
@@ -67,13 +109,14 @@ namespace ControlCatalog.Pages
                     {
                         new Border
                         {
-                            Width = 40, Height = 40,
-                            CornerRadius = new Avalonia.CornerRadius(20),
+                            Width = 44, Height = 44,
+                            CornerRadius = new Avalonia.CornerRadius(22),
                             Background = new SolidColorBrush(contact.Color),
                             Child = new TextBlock
                             {
                                 Text = initials,
                                 Foreground = Brushes.White,
+                                FontSize = 16,
                                 FontWeight = FontWeight.Bold,
                                 HorizontalAlignment = HorizontalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center
@@ -82,10 +125,11 @@ namespace ControlCatalog.Pages
                         new StackPanel
                         {
                             VerticalAlignment = VerticalAlignment.Center,
+                            Spacing = 2,
                             Children =
                             {
-                                new TextBlock { Text = contact.Name, FontWeight = FontWeight.SemiBold },
-                                new TextBlock { Text = contact.Occupation, FontSize = 12, Opacity = 0.7 }
+                                new TextBlock { Text = contact.Name, FontSize = 15, FontWeight = FontWeight.SemiBold },
+                                new TextBlock { Text = $"{contact.Occupation} · {contact.Country}", FontSize = 12, Opacity = 0.6 }
                             }
                         }
                     }
@@ -99,8 +143,8 @@ namespace ControlCatalog.Pages
         private void NavigateToDetail(Contact contact)
         {
             ContentPage detailPage;
-
             var pageBg = new SolidColorBrush(Color.FromArgb(30, contact.Color.R, contact.Color.G, contact.Color.B));
+
             if (MethodCombo.SelectedIndex == 1)
             {
                 // Via DataContext
@@ -109,7 +153,7 @@ namespace ControlCatalog.Pages
                     Header = contact.Name,
                     Background = pageBg,
                     DataContext = contact,
-                    Content = CreateDetailContent(contact)
+                    Content = CreateDetailContent(contact, "DataContext")
                 };
             }
             else
@@ -119,17 +163,22 @@ namespace ControlCatalog.Pages
                 {
                     Header = contact.Name,
                     Background = pageBg,
-                    Content = CreateDetailContent(contact)
+                    Content = CreateDetailContent(contact, "Constructor")
                 };
             }
 
             detailPage.HorizontalContentAlignment = HorizontalAlignment.Stretch;
             detailPage.VerticalContentAlignment = VerticalAlignment.Stretch;
             DemoNav.Push(detailPage);
+
+            AppendNavigationLog($"Navigated to {contact.Name} via {(MethodCombo.SelectedIndex == 1 ? "DataContext" : "Constructor")}");
         }
 
-        private static Panel CreateDetailContent(Contact contact) =>
-            new StackPanel
+        private static Panel CreateDetailContent(Contact contact, string method)
+        {
+            var initials = string.Concat(contact.Name.Split(' ')[0][0], contact.Name.Split(' ')[1][0]).ToString();
+
+            return new StackPanel
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -138,13 +187,13 @@ namespace ControlCatalog.Pages
                 {
                     new Border
                     {
-                        Width = 72, Height = 72,
-                        CornerRadius = new Avalonia.CornerRadius(36),
+                        Width = 80, Height = 80,
+                        CornerRadius = new Avalonia.CornerRadius(40),
                         Background = new SolidColorBrush(contact.Color),
                         HorizontalAlignment = HorizontalAlignment.Center,
                         Child = new TextBlock
                         {
-                            Text = string.Concat(contact.Name.Split(' ')[0][0], contact.Name.Split(' ')[1][0]).ToString(),
+                            Text = initials,
                             Foreground = Brushes.White,
                             FontSize = 28,
                             FontWeight = FontWeight.Bold,
@@ -155,9 +204,22 @@ namespace ControlCatalog.Pages
                     new TextBlock
                     {
                         Text = contact.Name,
-                        FontSize = 22,
+                        FontSize = 24,
                         FontWeight = FontWeight.Bold,
                         HorizontalAlignment = HorizontalAlignment.Center
+                    },
+                    new Border
+                    {
+                        Background = new SolidColorBrush(Color.Parse("#2196F3")),
+                        CornerRadius = new Avalonia.CornerRadius(4),
+                        Padding = new Avalonia.Thickness(8, 4),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Child = new TextBlock
+                        {
+                            Text = $"Passed via {method}",
+                            FontSize = 11,
+                            Foreground = Brushes.White,
+                        }
                     },
                     new TextBlock
                     {
@@ -175,5 +237,14 @@ namespace ControlCatalog.Pages
                     }
                 }
             };
+        }
+
+        private void AppendNavigationLog(string message)
+        {
+            var current = NavigationLog.Text;
+            NavigationLog.Text = string.IsNullOrEmpty(current)
+                ? message
+                : $"{current}\n{message}";
+        }
     }
 }

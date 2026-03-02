@@ -1,15 +1,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
 using Avalonia.Logging;
+using Avalonia.LogicalTree;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -31,9 +34,7 @@ namespace Avalonia.Controls
     [TemplatePart("PART_ModalPresenter", typeof(ContentPresenter))]
     public class NavigationPage : MultiPage, INavigation
     {
-        private const double GestureThreshold = 30;
         private const double EdgeGestureWidth = 20;
-        private const double VerticalGestureCancelThreshold = 8;
 
         private Button? _backButton;
         private Panel? _contentHost;
@@ -54,10 +55,9 @@ namespace Avalonia.Controls
         private IDisposable? _isBackButtonEnabledSub;
         private IDisposable? _barLayoutBehaviorSub;
         private IDisposable? _barHeightSub;
-        private bool _isDragging;
-        private Point _dragStart;
         private bool _isNavigating;
         private bool _canGoBack;
+        private DrawerPage? _drawerPage;
         private IPageTransition? _overrideTransition;
         private bool _hasOverrideTransition;
         private readonly HashSet<object> _pageSet = new(ReferenceEqualityComparer.Instance);
@@ -101,28 +101,25 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<NavigationPage, IPageTransition?>(nameof(ModalTransition));
 
         /// <summary>
-        /// Defines the computed back-button visibility.
+        /// Defines the <see cref="BackButtonVisibleEffective"/> property.
         /// </summary>
         public static readonly StyledProperty<bool?> BackButtonVisibleEffectiveProperty =
             AvaloniaProperty.Register<NavigationPage, bool?>(nameof(BackButtonVisibleEffective), true);
 
         /// <summary>
-        /// Defines the computed effective nav bar visibility based on the current page's
-        /// <see cref="HasNavigationBarProperty"/>. Drives the template binding.
+        /// Defines the <see cref="NavBarEffectivelyVisible"/> property.
         /// </summary>
-        private static readonly StyledProperty<bool> NavBarVisibleEffectiveProperty =
-            AvaloniaProperty.Register<NavigationPage, bool>(nameof(NavBarVisibleEffective), true);
+        internal static readonly StyledProperty<bool> NavBarEffectivelyVisibleProperty =
+            AvaloniaProperty.Register<NavigationPage, bool>(nameof(NavBarEffectivelyVisible), true);
 
         /// <summary>
-        /// Defines the per-page attached property for <see cref="BarLayoutBehavior"/>.
-        /// Null means inherit the NavigationPage default (<see cref="BarLayoutBehavior.Inset"/>).
+        /// Defines the <see cref="PageBarLayoutBehaviorProperty"/> attached property.
         /// </summary>
         public static readonly AttachedProperty<BarLayoutBehavior?> PageBarLayoutBehaviorProperty =
             AvaloniaProperty.RegisterAttached<NavigationPage, Page, BarLayoutBehavior?>("BarLayoutBehavior");
 
         /// <summary>
-        /// Defines the computed effective <see cref="BarLayoutBehavior"/> based on the current page's
-        /// <see cref="PageBarLayoutBehaviorProperty"/>. Drives the template.
+        /// Defines the <see cref="BarLayoutBehaviorEffective"/> property.
         /// </summary>
         public static readonly StyledProperty<BarLayoutBehavior> BarLayoutBehaviorEffectiveProperty =
             AvaloniaProperty.Register<NavigationPage, BarLayoutBehavior>(nameof(BarLayoutBehaviorEffective), BarLayoutBehavior.Inset);
@@ -140,29 +137,25 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<NavigationPage, double>(nameof(BarHeight), 48.0);
 
         /// <summary>
-        /// Defines the per-page attached property that overrides the navigation bar height.
-        /// Null means inherit the global <see cref="BarHeight"/> value.
+        /// Defines the <see cref="PageBarHeightProperty"/> attached property.
         /// </summary>
         public static readonly AttachedProperty<double?> PageBarHeightProperty =
             AvaloniaProperty.RegisterAttached<NavigationPage, Page, double?>("PageBarHeight");
 
         /// <summary>
-        /// Defines the computed effective bar height for the current page.
-        /// Set to the page's <see cref="PageBarHeightProperty"/> when non-null, otherwise falls
-        /// back to the global <see cref="BarHeight"/>. Drives the template binding.
+        /// Defines the <see cref="BarHeightEffective"/> property.
         /// </summary>
         public static readonly StyledProperty<double> BarHeightEffectiveProperty =
             AvaloniaProperty.Register<NavigationPage, double>(nameof(BarHeightEffective), 48.0);
 
         /// <summary>
-        /// Defines the attached property that sets custom content for the back button on a specific <see cref="Page"/>.
-        /// Accepts any object (string, icon, Control).
+        /// Defines the <see cref="BackButtonContentProperty"/> attached property.
         /// </summary>
         public static readonly AttachedProperty<object?> BackButtonContentProperty =
             AvaloniaProperty.RegisterAttached<NavigationPage, Page, object?>("BackButtonContent");
 
         /// <summary>
-        /// Defines the attached property controlling back button visibility for a specific <see cref="Page"/>.
+        /// Defines the <see cref="PageIsBackButtonVisibleEffectiveProperty"/> attached property.
         /// </summary>
         public static readonly AttachedProperty<bool> PageIsBackButtonVisibleEffectiveProperty =
             AvaloniaProperty.RegisterAttached<NavigationPage, Page, bool>("PageIsBackButtonVisible", true);
@@ -174,26 +167,25 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<NavigationPage, bool>(nameof(IsBackButtonVisible), true);
 
         /// <summary>
-        /// Defines the attached property that sets a command bar displayed at the top of the navigation bar for a specific <see cref="Page"/>.
+        /// Defines the <see cref="TopCommandBarProperty"/> attached property.
         /// </summary>
         public static readonly AttachedProperty<Control?> TopCommandBarProperty =
             AvaloniaProperty.RegisterAttached<NavigationPage, Page, Control?>("TopCommandBar");
 
         /// <summary>
-        /// Defines the attached property that sets a command bar displayed below the page content for a specific <see cref="Page"/>.
+        /// Defines the <see cref="BottomCommandBarProperty"/> attached property.
         /// </summary>
         public static readonly AttachedProperty<Control?> BottomCommandBarProperty =
             AvaloniaProperty.RegisterAttached<NavigationPage, Page, Control?>("BottomCommandBar");
 
         /// <summary>
-        /// Defines the attached property that controls whether the navigation bar is visible for a specific <see cref="Page"/>.
+        /// Defines the <see cref="HasNavigationBarProperty"/> attached property.
         /// </summary>
         public static readonly AttachedProperty<bool> HasNavigationBarProperty =
             AvaloniaProperty.RegisterAttached<NavigationPage, Page, bool>("HasNavigationBar", true);
 
         /// <summary>
         /// Defines the <see cref="IsGestureEnabled"/> property.
-        /// When true, an edge-swipe gesture can be used to navigate back.
         /// </summary>
         public static readonly StyledProperty<bool> IsGestureEnabledProperty =
             AvaloniaProperty.Register<NavigationPage, bool>(nameof(IsGestureEnabled), true);
@@ -205,14 +197,13 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<NavigationPage, bool>(nameof(CanGoBack), o => o.CanGoBack);
 
         /// <summary>
-        /// Defines the attached property controlling whether the back button is enabled for a specific <see cref="Page"/>.
-        /// When false the back button is visible but grayed out and non-interactive.
+        /// Defines the <see cref="PageIsBackButtonEnabledEffectiveProperty"/> attached property.
         /// </summary>
         public static readonly AttachedProperty<bool> PageIsBackButtonEnabledEffectiveProperty =
             AvaloniaProperty.RegisterAttached<NavigationPage, Page, bool>("IsBackButtonEnabled", true);
 
         /// <summary>
-        /// Defines the computed back-button enabled state that drives the template binding.
+        /// Defines the <see cref="BackButtonEnabledEffective"/> property.
         /// </summary>
         private static readonly StyledProperty<bool> BackButtonEnabledEffectiveProperty =
             AvaloniaProperty.Register<NavigationPage, bool>(nameof(BackButtonEnabledEffective), true);
@@ -252,7 +243,7 @@ namespace Avalonia.Controls
             BarHeightEffectiveProperty.Changed.AddClassHandler<NavigationPage>((x, _) =>
                 x.ApplyHasShadow());
 
-            NavBarVisibleEffectiveProperty.Changed.AddClassHandler<NavigationPage>((x, _) =>
+            NavBarEffectivelyVisibleProperty.Changed.AddClassHandler<NavigationPage>((x, _) =>
             {
                 x.ApplyNavBarVisibility();
                 x.ApplyHasShadow();
@@ -276,6 +267,8 @@ namespace Avalonia.Controls
         public NavigationPage()
         {
             Pages = new Stack<object>();
+            GestureRecognizers.Add(new SwipeGestureRecognizer { EdgeSize = EdgeGestureWidth });
+            AddHandler(Gestures.SwipeGestureEvent, OnSwipeGesture);
         }
 
         /// <summary>
@@ -288,7 +281,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the foreground brush of the navigation bar (title text, back button, etc.).
+        /// Gets or sets the foreground brush of the navigation bar.
         /// </summary>
         public IBrush? BarForeground
         {
@@ -298,7 +291,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the transition used when pushing or popping pages.
-        /// Set to <see langword="null"/> to disable transitions.
         /// </summary>
         public IPageTransition? PageTransition
         {
@@ -328,7 +320,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the computed back-button visibility.
+        /// Gets or sets the effective back-button visibility.
         /// </summary>
         public bool? BackButtonVisibleEffective
         {
@@ -338,10 +330,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the root page of the navigation stack.
-        /// Setting this in XAML (or in code before the first <see cref="Push"/> call) pushes the
-        /// value as the initial entry when the stack is empty. After the stack is populated this
-        /// property mirrors the currently displayed page; use <see cref="PushAsync(object)"/> and
-        /// <see cref="PopAsync()"/> to navigate.
         /// </summary>
         [Content]
         [DependsOn(nameof(PageTemplate))]
@@ -352,17 +340,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the effective (computed) navigation bar visibility.
-        /// Determined by the current page's <see cref="HasNavigationBarProperty"/>.
+        /// Gets the effective navigation bar visibility.
         /// </summary>
-        private bool NavBarVisibleEffective
+        internal bool NavBarEffectivelyVisible
         {
-            get => GetValue(NavBarVisibleEffectiveProperty);
-            set => SetValue(NavBarVisibleEffectiveProperty, value);
+            get => GetValue(NavBarEffectivelyVisibleProperty);
         }
 
         /// <summary>
-        /// Gets or sets the computed effective bar layout behavior for the current page.
+        /// Gets or sets the effective bar layout behavior.
         /// </summary>
         public BarLayoutBehavior BarLayoutBehaviorEffective
         {
@@ -389,8 +375,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the effective navigation bar height for the current page
-        /// (per-page override if set, otherwise the global <see cref="BarHeight"/>).
+        /// Gets or sets the effective navigation bar height.
         /// </summary>
         public double BarHeightEffective
         {
@@ -417,8 +402,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets whether the navigation stack has more than one entry (popping is possible).
-        /// Suitable for binding to custom back-button <c>IsEnabled</c> or <c>IsVisible</c>.
+        /// Gets whether the navigation stack has more than one entry.
         /// </summary>
         public bool CanGoBack => _canGoBack;
 
@@ -429,7 +413,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the current navigation stack as a read-only list (root at index 0, current page at last index).
+        /// Gets the current navigation stack as a read-only list.
         /// </summary>
         public IReadOnlyList<Page> NavigationStack
         {
@@ -466,7 +450,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the current modal stack. The top (most recently pushed) modal is enumerated first.
+        /// Gets the current modal stack.
         /// </summary>
         public IReadOnlyCollection<Page> ModalStack => _modalStack;
 
@@ -493,7 +477,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Sets custom content for the back button on the specified page.
-        /// Accepts any object (string label, icon, Control).
         /// </summary>
         public static void SetBackButtonContent(Page page, object? content) =>
             page.SetValue(BackButtonContentProperty, content);
@@ -518,7 +501,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Sets the header for the specified page.
-        /// Accepts any object: a string renders as plain text, a Control renders directly.
         /// </summary>
         public static void SetHeader(Page page, object? header) =>
             page.SetValue(Page.HeaderProperty, header);
@@ -530,7 +512,7 @@ namespace Avalonia.Controls
             page.GetValue(TopCommandBarProperty);
 
         /// <summary>
-        /// Sets a top command bar for the specified page, displayed inside the navigation bar area.
+        /// Sets a top command bar for the specified page.
         /// </summary>
         public static void SetTopCommandBar(Page page, Control? commandBar) =>
             page.SetValue(TopCommandBarProperty, commandBar);
@@ -542,7 +524,7 @@ namespace Avalonia.Controls
             page.GetValue(BottomCommandBarProperty);
 
         /// <summary>
-        /// Sets a bottom command bar for the specified page, displayed below the page content.
+        /// Sets a bottom command bar for the specified page.
         /// </summary>
         public static void SetBottomCommandBar(Page page, Control? commandBar) =>
             page.SetValue(BottomCommandBarProperty, commandBar);
@@ -561,28 +543,24 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets the bar layout behavior for the specified page.
-        /// Returns null when not explicitly set (NavigationPage defaults to <see cref="BarLayoutBehavior.Inset"/>).
         /// </summary>
         public static BarLayoutBehavior? GetBarLayoutBehavior(Page page) =>
             page.GetValue(PageBarLayoutBehaviorProperty);
 
         /// <summary>
         /// Sets the bar layout behavior for the specified page.
-        /// Use <see cref="BarLayoutBehavior.Overlay"/> to make page content extend behind the navigation bar.
         /// </summary>
         public static void SetBarLayoutBehavior(Page page, BarLayoutBehavior? value) =>
             page.SetValue(PageBarLayoutBehaviorProperty, value);
 
         /// <summary>
         /// Gets the per-page navigation bar height override for the specified page.
-        /// Returns null when not explicitly set (NavigationPage uses its global <see cref="BarHeight"/>).
         /// </summary>
         public static double? GetBarHeight(Page page) =>
             page.GetValue(PageBarHeightProperty);
 
         /// <summary>
-        /// Sets a per-page navigation bar height override.
-        /// Pass null to revert to the global <see cref="BarHeight"/>.
+        /// Sets the per-page navigation bar height override.
         /// </summary>
         public static void SetBarHeight(Page page, double? value) =>
             page.SetValue(PageBarHeightProperty, value);
@@ -595,7 +573,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Sets whether the back button is enabled for the specified page.
-        /// When false the button is visible but grayed out and non-interactive.
         /// </summary>
         public static void SetIsBackButtonEnabled(Page page, bool value) =>
             page.SetValue(PageIsBackButtonEnabledEffectiveProperty, value);
@@ -759,11 +736,18 @@ namespace Avalonia.Controls
 
         private async void BackButton_Clicked(object? sender, RoutedEventArgs eventArgs)
         {
+            if (StackDepth <= 1 && _drawerPage != null
+                && _drawerPage.DrawerBehavior != DrawerBehavior.Locked
+                && _drawerPage.DrawerBehavior != DrawerBehavior.Disabled)
+            {
+                _drawerPage.IsOpen = !_drawerPage.IsOpen;
+                return;
+            }
             await PopAsync();
         }
 
         /// <summary>
-        /// Returns the page that would become active after a Pop, without modifying the stack.
+        /// Returns the page that would become active after a pop.
         /// </summary>
         private Page? PeekDestinationPage()
         {
@@ -782,7 +766,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Performs the actual push after the Navigating event has been fired and awaited.
+        /// Performs the push after the Navigating event has been processed.
         /// </summary>
         private void ExecutePushCore(object page, Page? previousPage)
         {
@@ -798,6 +782,9 @@ namespace Avalonia.Controls
 
             _pageSet.Add(page);
             _cachedNavigationStack = null;
+
+            if (page is ILogical logical && Pages is not INotifyCollectionChanged)
+                LogicalChildren.Add(logical);
 
             var typedPage = page as Page;
 
@@ -820,7 +807,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Performs the actual pop after the Navigating event has been fired and awaited.
+        /// Performs the pop after the Navigating event has been processed.
         /// </summary>
         private object? ExecutePopCore()
         {
@@ -841,6 +828,9 @@ namespace Avalonia.Controls
 
             if (old != null)
                 _pageSet.Remove(old);
+
+            if (old is ILogical oldLogical && Pages is not INotifyCollectionChanged)
+                LogicalChildren.Remove(oldLogical);
 
             _cachedNavigationStack = null;
             _isPop = true;
@@ -923,15 +913,14 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Pushes <paramref name="page"/> onto the navigation stack asynchronously using
-        /// <paramref name="transition"/>. Pass <see langword="null"/> to push without animation.
+        /// Pushes <paramref name="page"/> onto the navigation stack asynchronously using <paramref name="transition"/>.
         /// </summary>
         public async Task PushAsync(object page, IPageTransition? transition)
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
             try { await PushAsync(page); }
-            catch { _hasOverrideTransition = false; _overrideTransition = null; throw; }
+            finally { _hasOverrideTransition = false; _overrideTransition = null; }
         }
 
         /// <summary>
@@ -999,25 +988,24 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Pops the top page from the navigation stack asynchronously using <paramref name="transition"/>.
-        /// Pass <see langword="null"/> to pop without animation.
         /// </summary>
         public async Task<Page?> PopAsync(IPageTransition? transition)
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
             try { return await PopAsync(); }
-            catch { _hasOverrideTransition = false; _overrideTransition = null; throw; }
+            finally { _hasOverrideTransition = false; _overrideTransition = null; }
         }
 
         /// <summary>
         /// Pops all pages to the root page using <see cref="PageTransition"/>.
         /// </summary>
-        public Task PopToRootAsync()
+        public async Task PopToRootAsync()
         {
             if (StackDepth <= 1)
-                return Task.CompletedTask;
+                return;
             if (_isNavigating)
-                return Task.CompletedTask;
+                return;
 
             _isNavigating = true;
             try
@@ -1029,10 +1017,12 @@ namespace Avalonia.Controls
                 if (currentPage != null)
                 {
                     var navigatingArgs = new NavigatingFromEventArgs(rootPage, NavigationType.PopToRoot);
-                    currentPage.SendNavigatingFrom(navigatingArgs);
+                    await currentPage.SendNavigatingAsync(navigatingArgs);
                     if (navigatingArgs.Cancel)
-                        return Task.CompletedTask;
+                        return;
                 }
+
+                bool isIncc = Pages is INotifyCollectionChanged;
 
                 if (Pages is Stack<object> stack)
                 {
@@ -1040,6 +1030,8 @@ namespace Avalonia.Controls
                     {
                         var popped = stack.Pop();
                         _pageSet.Remove(popped);
+                        if (!isIncc && popped is ILogical poppedLogical)
+                            LogicalChildren.Remove(poppedLogical);
                         if (popped is Page p)
                         {
                             p.SendDisappearing();
@@ -1057,6 +1049,8 @@ namespace Avalonia.Controls
                         list.RemoveAt(list.Count - 1);
                         if (last != null)
                             _pageSet.Remove(last);
+                        if (!isIncc && last is ILogical lastLogical)
+                            LogicalChildren.Remove(lastLogical);
                         if (last is Page p)
                         {
                             p.SendDisappearing();
@@ -1073,12 +1067,10 @@ namespace Avalonia.Controls
 
                 if (CurrentPage != null)
                 {
-                    CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.PopToRoot));
+                    CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(currentPage, NavigationType.PopToRoot));
                     CurrentPage.SendAppearing();
                     PoppedToRoot?.Invoke(this, new NavigationEventArgs(CurrentPage, NavigationType.PopToRoot));
                 }
-
-                return Task.CompletedTask;
             }
             finally
             {
@@ -1088,20 +1080,19 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Pops all pages to the root page using <paramref name="transition"/>.
-        /// Pass <see langword="null"/> to pop without animation.
         /// </summary>
         public async Task PopToRootAsync(IPageTransition? transition)
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
             try { await PopToRootAsync(); }
-            catch { _hasOverrideTransition = false; _overrideTransition = null; throw; }
+            finally { _hasOverrideTransition = false; _overrideTransition = null; }
         }
 
         /// <summary>
         /// Pops to a specific page in the stack using <see cref="PageTransition"/>.
         /// </summary>
-        public Task PopToPageAsync(Page page)
+        public async Task PopToPageAsync(Page page)
         {
             ArgumentNullException.ThrowIfNull(page);
 
@@ -1109,7 +1100,7 @@ namespace Avalonia.Controls
                 throw new ArgumentException("Page is not in the navigation stack.", nameof(page));
 
             if (_isNavigating)
-                return Task.CompletedTask;
+                return;
 
             _isNavigating = true;
             try
@@ -1118,10 +1109,12 @@ namespace Avalonia.Controls
                 if (currentPage != null)
                 {
                     var navigatingArgs = new NavigatingFromEventArgs(page, NavigationType.Pop);
-                    currentPage.SendNavigatingFrom(navigatingArgs);
+                    await currentPage.SendNavigatingAsync(navigatingArgs);
                     if (navigatingArgs.Cancel)
-                        return Task.CompletedTask;
+                        return;
                 }
+
+                bool isIncc = Pages is INotifyCollectionChanged;
 
                 if (Pages is Stack<object> stack)
                 {
@@ -1129,6 +1122,8 @@ namespace Avalonia.Controls
                     {
                         var popped = stack.Pop();
                         _pageSet.Remove(popped);
+                        if (!isIncc && popped is ILogical poppedLogical)
+                            LogicalChildren.Remove(poppedLogical);
                         if (popped is Page p)
                         {
                             p.SendDisappearing();
@@ -1147,6 +1142,8 @@ namespace Avalonia.Controls
                         list.RemoveAt(list.Count - 1);
                         if (last != null)
                             _pageSet.Remove(last);
+                        if (!isIncc && last is ILogical lastLogical)
+                            LogicalChildren.Remove(lastLogical);
                         if (last is Page p)
                         {
                             p.SendDisappearing();
@@ -1164,11 +1161,9 @@ namespace Avalonia.Controls
 
                 if (CurrentPage != null)
                 {
-                    CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Pop));
+                    CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(currentPage, NavigationType.Pop));
                     CurrentPage.SendAppearing();
                 }
-
-                return Task.CompletedTask;
             }
             finally
             {
@@ -1178,14 +1173,13 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Pops all pages above <paramref name="page"/> using <paramref name="transition"/>.
-        /// Pass <see langword="null"/> to pop without animation.
         /// </summary>
         public async Task PopToPageAsync(Page page, IPageTransition? transition)
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
             try { await PopToPageAsync(page); }
-            catch { _hasOverrideTransition = false; _overrideTransition = null; throw; }
+            finally { _hasOverrideTransition = false; _overrideTransition = null; }
         }
 
         /// <summary>
@@ -1262,14 +1256,13 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Pushes <paramref name="page"/> as a modal page using <paramref name="transition"/>.
-        /// Pass <see langword="null"/> to push without animation.
         /// </summary>
         public async Task PushModalAsync(object page, IPageTransition? transition)
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
             try { await PushModalAsync(page); }
-            catch { _hasOverrideTransition = false; _overrideTransition = null; throw; }
+            finally { _hasOverrideTransition = false; _overrideTransition = null; }
         }
 
         /// <summary>
@@ -1321,7 +1314,6 @@ namespace Avalonia.Controls
                         }
                         finally
                         {
-                            // Sync logical state regardless of whether the transition completed or was cancelled.
                             SetCurrentValue(ModalContentProperty, (object?)next);
                         }
                     }
@@ -1343,7 +1335,6 @@ namespace Avalonia.Controls
                         }
                         finally
                         {
-                            // Sync visual state regardless of whether the transition completed or was cancelled.
                             SetCurrentValue(IsModalVisibleProperty, false);
                             SetCurrentValue(ModalContentProperty, (object?)null);
                         }
@@ -1370,18 +1361,17 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Pops the top modal page using <paramref name="transition"/>.
-        /// Pass <see langword="null"/> to pop without animation.
         /// </summary>
         public async Task<Page?> PopModalAsync(IPageTransition? transition)
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
             try { return await PopModalAsync(); }
-            catch { _hasOverrideTransition = false; _overrideTransition = null; throw; }
+            finally { _hasOverrideTransition = false; _overrideTransition = null; }
         }
 
         /// <summary>
-        /// Pops all modal pages using <see cref="ModalTransition"/>, animating the topmost one out.
+        /// Pops all modal pages using <see cref="ModalTransition"/>.
         /// </summary>
         public async Task PopAllModalsAsync()
         {
@@ -1430,14 +1420,13 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Pops all modal pages using <paramref name="transition"/>.
-        /// Pass <see langword="null"/> to dismiss without animation.
         /// </summary>
         public async Task PopAllModalsAsync(IPageTransition? transition)
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
             try { await PopAllModalsAsync(); }
-            catch { _hasOverrideTransition = false; _overrideTransition = null; throw; }
+            finally { _hasOverrideTransition = false; _overrideTransition = null; }
         }
 
         /// <summary>
@@ -1572,8 +1561,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Replaces the top page with <paramref name="page"/> without creating a back entry,
-        /// using <see cref="PageTransition"/>.
+        /// Replaces the top page with <paramref name="page"/> using <see cref="PageTransition"/>.
         /// </summary>
         public async Task ReplaceAsync(object page)
         {
@@ -1604,15 +1592,14 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Replaces the top page with <paramref name="page"/> without creating a back entry,
-        /// using <paramref name="transition"/>. Pass <see langword="null"/> to replace without animation.
+        /// Replaces the top page with <paramref name="page"/> using <paramref name="transition"/>.
         /// </summary>
         public async Task ReplaceAsync(object page, IPageTransition? transition)
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
             try { await ReplaceAsync(page); }
-            catch { _hasOverrideTransition = false; _overrideTransition = null; throw; }
+            finally { _hasOverrideTransition = false; _overrideTransition = null; }
         }
 
         protected override void UpdateActivePage()
@@ -1727,7 +1714,7 @@ namespace Avalonia.Controls
             if (newPage != null)
             {
                 _hasNavigationBarSub = newPage.GetObservable(HasNavigationBarProperty)
-                    .Subscribe(new AnonymousObserver<bool>(_ => UpdateNavBarVisibleEffective()));
+                    .Subscribe(new AnonymousObserver<bool>(_ => UpdateNavBarEffectivelyVisible()));
 
                 _isBackButtonEnabledSub = newPage.GetObservable(PageIsBackButtonEnabledEffectiveProperty)
                     .Subscribe(new AnonymousObserver<bool>(_ => UpdateBackButtonEnabledEffective()));
@@ -1739,7 +1726,7 @@ namespace Avalonia.Controls
                     .Subscribe(new AnonymousObserver<double?>(_ => UpdateBarHeightEffective()));
             }
 
-            UpdateNavBarVisibleEffective();
+            UpdateNavBarEffectivelyVisible();
             UpdateBarLayoutBehaviorEffective();
             UpdateBarHeightEffective();
 
@@ -1747,10 +1734,11 @@ namespace Avalonia.Controls
             UpdateContentSafeAreaPadding();
             UpdateBackButtonVisibleEffective();
             UpdateBackButtonEnabledEffective();
+            UpdateDrawerToggleIcon();
         }
 
         /// <summary>
-        /// Runs the page transition and performs cleanup once the animation completes.
+        /// Runs the page transition and cleans up presenters on completion.
         /// </summary>
         private async Task RunPageTransitionAsync(
             IPageTransition transition,
@@ -1783,18 +1771,22 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Atomically swaps the top of the navigation stack with <paramref name="page"/>,
-        /// treating the operation as a push-direction transition.
+        /// Swaps the top of the navigation stack with <paramref name="page"/>.
         /// </summary>
         private void ExecuteReplaceCore(object page, Page? replacedPage)
         {
+            object? removed = null;
+
             if (Pages is Stack<object> pagesStack && pagesStack.Count > 0)
-                _pageSet.Remove(pagesStack.Pop());
+            {
+                removed = pagesStack.Pop();
+                _pageSet.Remove(removed);
+            }
             else if (Pages is IList pagesList && pagesList.Count > 0)
             {
-                var top = pagesList[pagesList.Count - 1];
-                if (top != null)
-                    _pageSet.Remove(top);
+                removed = pagesList[pagesList.Count - 1];
+                if (removed != null)
+                    _pageSet.Remove(removed);
                 pagesList.RemoveAt(pagesList.Count - 1);
             }
 
@@ -1805,6 +1797,14 @@ namespace Avalonia.Controls
 
             _pageSet.Add(page);
             _cachedNavigationStack = null;
+
+            if (Pages is not INotifyCollectionChanged)
+            {
+                if (removed is ILogical removedLogical)
+                    LogicalChildren.Remove(removedLogical);
+                if (page is ILogical addedLogical)
+                    LogicalChildren.Add(addedLogical);
+            }
 
             var typedPage = page as Page;
             if (typedPage != null)
@@ -1831,7 +1831,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Swaps front and back modal presenters by exchanging field references and ZIndex.
+        /// Swaps front and back modal presenters.
         /// </summary>
         private void SwapModalPresenters()
         {
@@ -1847,8 +1847,13 @@ namespace Avalonia.Controls
         internal void UpdateBackButtonVisibleEffective()
         {
             var depth = StackDepth;
+
+            bool showDrawerToggle = _drawerPage != null
+                && _drawerPage.DrawerBehavior != DrawerBehavior.Locked
+                && _drawerPage.DrawerBehavior != DrawerBehavior.Disabled;
+
             SetCurrentValue(BackButtonVisibleEffectiveProperty, (bool?)(IsBackButtonVisible
-                && depth > 1
+                && (depth > 1 || showDrawerToggle)
                 && (CurrentPage == null || GetHasBackButton(CurrentPage))));
 
             SetAndRaise(CanGoBackProperty, ref _canGoBack, depth > 1);
@@ -1866,74 +1871,58 @@ namespace Avalonia.Controls
             if (_backButton == null)
                 return;
 
-            AutomationProperties.SetName(_backButton, "Go back");
-            ToolTip.SetTip(_backButton, "Go back");
+            bool isDrawerToggle = _drawerPage != null
+                && StackDepth <= 1
+                && _drawerPage.DrawerBehavior != DrawerBehavior.Locked
+                && _drawerPage.DrawerBehavior != DrawerBehavior.Disabled;
+
+            var label = isDrawerToggle ? "Toggle navigation drawer" : "Go back";
+
+            AutomationProperties.SetName(_backButton, label);
+            ToolTip.SetTip(_backButton, label);
         }
 
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        internal void SetDrawerPage(DrawerPage? drawerPage)
         {
-            base.OnPointerPressed(e);
+            _drawerPage = drawerPage;
+            UpdateBackButtonVisibleEffective();
+            UpdateDrawerToggleIcon();
+        }
 
+        private static StreamGeometry? s_hamburgerIcon;
+        private static StreamGeometry HamburgerIcon => s_hamburgerIcon ??=
+            StreamGeometry.Parse("M3 17h18a1 1 0 0 1 .117 1.993L21 19H3a1 1 0 0 1-.117-1.993L3 17h18H3Zm0-6 18-.002a1 1 0 0 1 .117 1.993l-.117.007L3 13a1 1 0 0 1-.117-1.993L3 11l18-.002L3 11Zm0-6h18a1 1 0 0 1 .117 1.993L21 7H3a1 1 0 0 1-.117-1.993L3 5h18H3Z");
+
+        private void UpdateDrawerToggleIcon()
+        {
+            if (_drawerPage == null || CurrentPage == null)
+                return;
+
+            bool showToggle = _drawerPage.DrawerBehavior != DrawerBehavior.Locked
+                           && _drawerPage.DrawerBehavior != DrawerBehavior.Disabled;
+
+            if (StackDepth <= 1 && showToggle)
+            {
+                if (GetBackButtonContent(CurrentPage) is not PathIcon)
+                    SetBackButtonContent(CurrentPage, new PathIcon { Data = HamburgerIcon });
+            }
+            else
+            {
+                SetBackButtonContent(CurrentPage, null);
+            }
+
+            UpdateBackButtonAccessibility();
+        }
+
+        private void OnSwipeGesture(object? sender, SwipeGestureEventArgs e)
+        {
             if (!IsGestureEnabled || StackDepth <= 1 || _isNavigating || _modalStack.Count > 0)
                 return;
-
-            var pos = e.GetPosition(this);
-            var width = Bounds.Width;
-
-            bool hitEdge = IsRtl
-                ? pos.X >= width - EdgeGestureWidth
-                : pos.X <= EdgeGestureWidth;
-
-            if (hitEdge)
-            {
-                _isDragging = true;
-                _dragStart = pos;
-                e.Pointer.Capture(this);
-                e.Handled = true;
-            }
-        }
-
-        protected override void OnPointerMoved(PointerEventArgs e)
-        {
-            base.OnPointerMoved(e);
-            if (!_isDragging)
-                return;
-
-            var pos = e.GetPosition(this);
-            var deltaX = pos.X - _dragStart.X;
-            var deltaY = pos.Y - _dragStart.Y;
-
-            if (Math.Abs(deltaY) > Math.Abs(deltaX) && Math.Abs(deltaY) > VerticalGestureCancelThreshold)
-            {
-                _isDragging = false;
-                e.Pointer.Capture(null);
-                return;
-            }
-
-            bool rightDirection = IsRtl ? deltaX < -GestureThreshold : deltaX > GestureThreshold;
-            if (!rightDirection)
-                return;
-
-            _isDragging = false;
-            e.Pointer.Capture(null);
-            e.Handled = true;
-            _ = PopAsync();
-        }
-
-        protected override void OnPointerReleased(PointerReleasedEventArgs e)
-        {
-            base.OnPointerReleased(e);
-            if (_isDragging)
-            {
-                e.Pointer.Capture(null);
-                _isDragging = false;
-            }
-        }
-
-        protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
-        {
-            base.OnPointerCaptureLost(e);
-            _isDragging = false;
+            bool shouldPop = IsRtl
+                ? e.SwipeDirection == SwipeDirection.Left
+                : e.SwipeDirection == SwipeDirection.Right;
+            if (shouldPop)
+                _ = PopAsync();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -1947,9 +1936,9 @@ namespace Avalonia.Controls
             }
         }
 
-        private void UpdateNavBarVisibleEffective()
+        private void UpdateNavBarEffectivelyVisible()
         {
-            SetCurrentValue(NavBarVisibleEffectiveProperty, CurrentPage == null || GetHasNavigationBar(CurrentPage));
+            SetCurrentValue(NavBarEffectivelyVisibleProperty, CurrentPage == null || GetHasNavigationBar(CurrentPage));
             UpdateNavBarSpacer();
         }
 
@@ -1964,7 +1953,7 @@ namespace Avalonia.Controls
         private void UpdateNavBarSpacer()
         {
             PseudoClasses.Set(":nav-bar-inset",
-                NavBarVisibleEffective && BarLayoutBehaviorEffective == BarLayoutBehavior.Inset);
+                NavBarEffectivelyVisible && BarLayoutBehaviorEffective == BarLayoutBehavior.Inset);
         }
 
         private void UpdateBarHeightEffective()
@@ -1976,7 +1965,7 @@ namespace Avalonia.Controls
         private void ApplyNavBarVisibility()
         {
             if (_navBar != null)
-                _navBar.IsVisible = NavBarVisibleEffective;
+                _navBar.IsVisible = NavBarEffectivelyVisible;
         }
 
         private void ApplyBackButtonEnabled(bool enabled)
@@ -1990,7 +1979,7 @@ namespace Avalonia.Controls
             if (_navBarShadow == null)
                 return;
             _navBarShadow.Margin = new Thickness(0, BarHeightEffective, 0, 0);
-            _navBarShadow.IsVisible = HasShadow && NavBarVisibleEffective;
+            _navBarShadow.IsVisible = HasShadow && NavBarEffectivelyVisible;
         }
     }
 }

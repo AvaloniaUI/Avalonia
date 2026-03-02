@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -7,11 +8,15 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageStackPage : UserControl
     {
-        private static readonly Color[] PageColors =
-        {
-            Color.Parse("#BBDEFB"), Color.Parse("#C8E6C9"), Color.Parse("#FFE0B2"),
-            Color.Parse("#E1BEE7"), Color.Parse("#FFCDD2"), Color.Parse("#B2EBF2"),
-        };
+        private static readonly IBrush[] _pageBrushes =
+        [
+            new SolidColorBrush(Color.Parse("#E3F2FD")),
+            new SolidColorBrush(Color.Parse("#E8F5E9")),
+            new SolidColorBrush(Color.Parse("#FFF3E0")),
+            new SolidColorBrush(Color.Parse("#FCE4EC")),
+            new SolidColorBrush(Color.Parse("#F3E5F5")),
+            new SolidColorBrush(Color.Parse("#E0F7FA")),
+        ];
 
         private int _pageCount;
 
@@ -23,14 +28,15 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            DemoNav.Pushed += (s, ev) => RefreshStack();
-            DemoNav.Popped += (s, ev) => RefreshStack();
+            DemoNav.Pushed       += (s, ev) => RefreshStack();
+            DemoNav.Popped       += (s, ev) => RefreshStack();
             DemoNav.PoppedToRoot += (s, ev) => RefreshStack();
             DemoNav.PageInserted += (s, ev) => RefreshStack();
-            DemoNav.PageRemoved += (s, ev) => RefreshStack();
+            DemoNav.PageRemoved  += (s, ev) => RefreshStack();
 
-            await DemoNav.PushAsync(BuildPage("Root", 0), null);
-            RefreshStack();
+            _pageCount++;
+            await DemoNav.PushAsync(BuildPage("Home", _pageCount), null);
+            // RefreshStack is called via the Pushed event above.
         }
 
         private void OnPush(object? sender, RoutedEventArgs e)
@@ -41,87 +47,169 @@ namespace ControlCatalog.Pages
 
         private void OnInsert(object? sender, RoutedEventArgs e)
         {
-            if (DemoNav.CurrentPage == null)
-                return;
-            _pageCount++;
-            var newPage = BuildPage($"Inserted {_pageCount}", _pageCount);
-            DemoNav.InsertPage(newPage, DemoNav.CurrentPage);
-        }
-
-        private void OnRemoveCurrent(object? sender, RoutedEventArgs e)
-        {
-            if (DemoNav.StackDepth <= 1)
-                return;
             var current = DemoNav.CurrentPage;
-            if (current != null)
-                DemoNav.RemovePage(current);
-        }
+            if (current == null || DemoNav.StackDepth <= 1)
+                return;
 
-        private async void OnPopToRoot(object? sender, RoutedEventArgs e)
-        {
-            await DemoNav.PopToRootAsync();
+            _pageCount++;
+            var inserted = BuildPage($"Inserted {_pageCount}", _pageCount);
+            DemoNav.InsertPage(inserted, current);
+            RefreshStack();
         }
 
         private void RefreshStack()
         {
-            var stack = DemoNav.NavigationStack;
-            DepthLabel.Text = $"Depth: {stack.Count}";
+            var stack   = DemoNav.NavigationStack;
+            var depth   = stack.Count;
+            var current = DemoNav.CurrentPage;
+
+            DepthLabel.Text = $"depth: {depth}";
 
             StackDisplay.Children.Clear();
-            for (int i = stack.Count - 1; i >= 0; i--)
+
+            // Render from top (current) down to root.
+            for (int i = depth - 1; i >= 0; i--)
             {
-                var page = stack[i];
-                var isCurrent = i == stack.Count - 1;
+                var page      = stack[i];
+                var isCurrent = ReferenceEquals(page, current);
+                var isRoot    = i == 0;
 
-                var entry = new Border
-                {
-                    Background = isCurrent
-                        ? new SolidColorBrush(Color.Parse("#2196F3"))
-                        : new SolidColorBrush(Color.Parse("#E0E0E0")),
-                    CornerRadius = new Avalonia.CornerRadius(3),
-                    Padding = new Avalonia.Thickness(6, 3),
-                    Child = new TextBlock
-                    {
-                        Text = isCurrent ? $"▶ {page.Header} (current)" : $"  {page.Header}",
-                        Foreground = isCurrent ? Brushes.White : Brushes.Black,
-                        FontSize = 11
-                    }
-                };
-
-                StackDisplay.Children.Add(entry);
+                StackDisplay.Children.Add(BuildStackEntry(page, i + 1, isCurrent, isRoot));
             }
         }
 
-        private ContentPage BuildPage(string title, int index) =>
-            new ContentPage
+        private Border BuildStackEntry(Page page, int position, bool isCurrent, bool isRoot)
+        {
+            var colorIdx   = (position - 1) % _pageBrushes.Length;
+            var background = _pageBrushes[colorIdx];
+            var badge = new Border
             {
-                Header = title,
-                Background = new SolidColorBrush(PageColors[index % PageColors.Length]),
-                Content = new StackPanel
+                Width             = 24,
+                Height            = 24,
+                CornerRadius      = new CornerRadius(12),
+                Background        = background,
+                VerticalAlignment = VerticalAlignment.Center,
+                Child             = new TextBlock
+                {
+                    Text                = position.ToString(),
+                    FontSize            = 11,
+                    FontWeight          = FontWeight.SemiBold,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment   = VerticalAlignment.Center,
+                }
+            };
+            var title = new TextBlock
+            {
+                Text              = page.Header?.ToString() ?? "(untitled)",
+                FontWeight        = isCurrent ? FontWeight.SemiBold : FontWeight.Normal,
+                VerticalAlignment = VerticalAlignment.Center,
+                TextTrimming      = TextTrimming.CharacterEllipsis,
+                Margin            = new Thickness(6, 0, 0, 0),
+            };
+            string? badgeText  = isCurrent ? "current" : (isRoot ? "root" : null);
+            var badgeLabel = new TextBlock
+            {
+                Text              = badgeText,
+                FontSize          = 10,
+                Opacity           = 0.5,
+                VerticalAlignment = VerticalAlignment.Center,
+                IsVisible         = badgeText != null,
+                Margin            = new Thickness(4, 0, 0, 0),
+            };
+
+            // Remove button (disabled when it is the only page in the stack)
+            var removeBtn = new Button
+            {
+                Content           = "Remove",
+                FontSize          = 11,
+                Padding           = new Thickness(6, 2),
+                VerticalAlignment = VerticalAlignment.Center,
+                IsEnabled         = !(isRoot && DemoNav.StackDepth == 1),
+            };
+            removeBtn.Click += (_, _) =>
+            {
+                DemoNav.RemovePage(page);
+                RefreshStack();
+            };
+
+            // Insert-before button (not shown for current page — use the dedicated button instead)
+            var insertBtn = new Button
+            {
+                Content           = "Insert \u2191",
+                FontSize          = 11,
+                Padding           = new Thickness(6, 2),
+                VerticalAlignment = VerticalAlignment.Center,
+                IsVisible         = !isCurrent,
+            };
+            ToolTip.SetTip(insertBtn, $"Insert a new page before \"{page.Header}\"");
+            insertBtn.Click += (_, _) =>
+            {
+                _pageCount++;
+                var inserted = BuildPage($"Inserted {_pageCount}", _pageCount);
+                DemoNav.InsertPage(inserted, page);
+                RefreshStack();
+            };
+
+            var buttonsPanel = new StackPanel
+            {
+                Orientation       = Orientation.Horizontal,
+                Spacing           = 4,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            buttonsPanel.Children.Add(removeBtn);
+            buttonsPanel.Children.Add(insertBtn);
+
+            var titleRow = new DockPanel { LastChildFill = true };
+            DockPanel.SetDock(buttonsPanel, Dock.Right);
+            titleRow.Children.Add(buttonsPanel);
+            titleRow.Children.Add(badge);
+            titleRow.Children.Add(title);
+            titleRow.Children.Add(badgeLabel);
+
+            return new Border
+            {
+                BorderBrush     = new SolidColorBrush(isCurrent
+                                    ? Color.Parse("#0078D4")
+                                    : Color.Parse("#CCCCCC")),
+                BorderThickness = new Thickness(isCurrent ? 2 : 1),
+                CornerRadius    = new CornerRadius(6),
+                Padding         = new Thickness(8, 6),
+                Child           = titleRow,
+            };
+        }
+
+        private ContentPage BuildPage(string title, int index)
+        {
+            var colorIdx = (index - 1) % _pageBrushes.Length;
+
+            return new ContentPage
+            {
+                Header     = title,
+                Background = _pageBrushes[colorIdx],
+                Content    = new StackPanel
                 {
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Spacing = 8,
+                    VerticalAlignment   = VerticalAlignment.Center,
+                    Spacing             = 8,
                     Children =
                     {
                         new TextBlock
                         {
-                            Text = title,
-                            FontSize = 18,
-                            FontWeight = FontWeight.SemiBold,
-                            HorizontalAlignment = HorizontalAlignment.Center
+                            Text                = title,
+                            FontSize            = 28,
+                            FontWeight          = FontWeight.Bold,
+                            HorizontalAlignment = HorizontalAlignment.Center,
                         },
                         new TextBlock
                         {
-                            Text = $"Position {index} in the stack",
-                            FontSize = 13,
-                            Opacity = 0.7,
-                            HorizontalAlignment = HorizontalAlignment.Center
-                        }
-                    }
+                            Text                = $"Stack position #{index}",
+                            FontSize            = 14,
+                            Opacity             = 0.6,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                        },
+                    },
                 },
-                HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                VerticalContentAlignment = VerticalAlignment.Stretch
             };
+        }
     }
 }

@@ -2,56 +2,58 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.NavigationPageEventsPage">
   <DockPanel>
-    <ScrollViewer DockPanel.Dock="Right" Width="260">
-      <StackPanel Margin="12" Spacing="8">
-        <TextBlock Text="Navigation" FontWeight="SemiBold" FontSize="14" />
+    <ScrollViewer DockPanel.Dock="Right" Width="280">
+      <StackPanel Margin="12" Spacing="16">
+        <TextBlock Text="Configuration" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock Text="Navigation" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="6">
+          <Button Content="Push Page"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPush" />
+          <Button Content="Pop"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPop" />
+          <Button Content="Pop to Root"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPopToRoot" />
+          <Button Content="Insert Page"
+                  HorizontalAlignment="Stretch"
+                  Click="OnInsertPage" />
+          <Button Content="Remove Page"
+                  HorizontalAlignment="Stretch"
+                  Click="OnRemovePage" />
+        </StackPanel>
 
-        <Button Content="Push Page"
-                HorizontalAlignment="Stretch"
-                Click="OnPush" />
-        <Button Content="Pop"
-                HorizontalAlignment="Stretch"
-                Click="OnPop" />
-        <Button Content="Pop to Root"
-                HorizontalAlignment="Stretch"
-                Click="OnPopToRoot" />
-        <Button Content="Insert Page"
-                HorizontalAlignment="Stretch"
-                Click="OnInsertPage" />
-        <Button Content="Remove Page"
-                HorizontalAlignment="Stretch"
-                Click="OnRemovePage" />
+        <TextBlock Text="Modal" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="6">
+          <Button Content="Push Modal"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPushModal" />
+          <Button Content="Pop Modal"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPopModal" />
+        </StackPanel>
 
         <Separator />
 
-        <TextBlock Text="Modal" FontWeight="SemiBold" FontSize="14" />
-
-        <Button Content="Push Modal"
-                HorizontalAlignment="Stretch"
-                Click="OnPushModal" />
-        <Button Content="Pop Modal"
-                HorizontalAlignment="Stretch"
-                Click="OnPopModal" />
-
-        <Separator />
-
-        <Button Content="Clear Log"
-                HorizontalAlignment="Stretch"
-                Click="OnClearLog" />
-
-        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
-                BorderThickness="1"
-                CornerRadius="4"
-                Height="160"
-                ClipToBounds="True">
-          <ScrollViewer x:Name="LogScroll">
-            <TextBlock x:Name="EventLog"
-                       Margin="8"
-                       FontFamily="Monospace"
-                       FontSize="11"
-                       TextWrapping="Wrap" />
+        <!-- Event Log -->
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Left" Text="Event Log" FontSize="13" FontWeight="SemiBold"
+                     VerticalAlignment="Center" />
+          <Button DockPanel.Dock="Right" Content="Clear" Click="OnClearLog"
+                  HorizontalAlignment="Right" Padding="8,2" FontSize="11" />
+        </DockPanel>
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8" MinHeight="120" MaxHeight="250">
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="LogPanel" Spacing="1" />
           </ScrollViewer>
         </Border>
+
+        <Separator />
+        <TextBlock Text="NavigationPage exposes events for push, pop, insert, remove, and modal operations. Pages also fire Appearing, Disappearing, NavigatedTo, and NavigatedFrom on each navigation. Subscribe to events before pushing to capture the initial Appearing."
+                   TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
       </StackPanel>
     </ScrollViewer>
 

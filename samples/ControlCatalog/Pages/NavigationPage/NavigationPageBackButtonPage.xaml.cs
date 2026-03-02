@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -16,7 +15,6 @@ namespace ControlCatalog.Pages
         };
 
         private int _pushCount;
-        private readonly List<string> _logs = new();
 
         public NavigationPageBackButtonPage()
         {
@@ -26,7 +24,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            await DemoNav.PushAsync(CreatePage("Home", "Tap a push button on the right to see different back button styles.", null), null);
+            DemoNav.Pushed += (s, ev) => AddLog($"Pushed: \"{ev.Page?.Header}\"");
+            DemoNav.Popped += (s, ev) => AddLog($"Popped: \"{ev.Page?.Header}\"");
+
+            await DemoNav.PushAsync(CreatePage("Home", "This is the root page.\nNo back button is shown here.\n\nPush pages from the config panel\nto explore back button behaviors.", null), null);
         }
 
         private void OnGlobalBackButtonChanged(object? sender, RoutedEventArgs e)
@@ -34,43 +35,43 @@ namespace ControlCatalog.Pages
             if (DemoNav == null)
                 return;
             DemoNav.IsBackButtonVisible = IsBackButtonVisibleCheck.IsChecked == true;
-            AddLog($"IsBackButtonVisible = {DemoNav.IsBackButtonVisible}");
+            AddLog($"IsBackButtonVisible={DemoNav.IsBackButtonVisible}");
         }
 
         private void OnPushStandard(object? sender, RoutedEventArgs e)
         {
-            var page = CreatePage("Standard", "Default back button.", null);
+            var page = CreatePage($"Page {_pushCount + 1}", "Standard page with default back arrow.", null);
             DemoNav.Push(page);
-            AddLog("Pushed: standard back button");
         }
 
         private void OnPushNoBack(object? sender, RoutedEventArgs e)
         {
-            var page = CreatePage("No Back", "Back button hidden.", null);
+            var page = CreatePage($"No Back #{_pushCount + 1}", "IsBackButtonVisible = false\n\nThe back arrow is hidden.\nUse the Pop button to go back.", null);
             NavigationPage.SetHasBackButton(page, false);
             DemoNav.Push(page);
-            AddLog("Pushed: HasBackButton=false");
+            AddLog($"HasBackButton=false on \"{page.Header}\"");
         }
 
         private void OnPushDisabledBack(object? sender, RoutedEventArgs e)
         {
-            var page = CreatePage("Disabled Back", "Back button is disabled.", null);
+            var page = CreatePage($"Disabled Back #{_pushCount + 1}", "IsBackButtonEnabled = false\n\nThe back arrow is visible but disabled.\nUse the Pop button to go back.", null);
             NavigationPage.SetIsBackButtonEnabled(page, false);
             DemoNav.Push(page);
-            AddLog("Pushed: IsBackButtonEnabled=false");
+            AddLog($"IsBackButtonEnabled=false on \"{page.Header}\"");
         }
 
         private void OnPushCustomText(object? sender, RoutedEventArgs e)
         {
-            var page = CreatePage("Custom Text", "Back button shows '← Cancel'.", null);
-            NavigationPage.SetBackButtonContent(page, "← Cancel");
+            var text = string.IsNullOrWhiteSpace(BackContentInput?.Text) ? "Cancel" : BackContentInput!.Text;
+            var page = CreatePage($"Text Back #{_pushCount + 1}", $"BackButtonContent = \"{text}\"\n\nThe back button shows custom text.", null);
+            NavigationPage.SetBackButtonContent(page, text);
             DemoNav.Push(page);
-            AddLog("Pushed: BackButtonContent='← Cancel'");
+            AddLog($"BackButtonContent=\"{text}\" on \"{page.Header}\"");
         }
 
         private void OnPushCustomIcon(object? sender, RoutedEventArgs e)
         {
-            var page = CreatePage("Custom Icon", "Back button shows a close icon.", null);
+            var page = CreatePage($"Icon Back #{_pushCount + 1}", "BackButtonContent = PathIcon (×)\n\nThe back button shows a custom icon.", null);
             NavigationPage.SetBackButtonContent(page, new TextBlock
             {
                 Text = "✕",
@@ -78,37 +79,90 @@ namespace ControlCatalog.Pages
                 VerticalAlignment = VerticalAlignment.Center
             });
             DemoNav.Push(page);
-            AddLog("Pushed: BackButtonContent=custom icon");
+            AddLog($"BackButtonContent=icon on \"{page.Header}\"");
+        }
+
+        private void OnPushIconTextBack(object? sender, RoutedEventArgs e)
+        {
+            var page = CreatePage($"Icon+Text Back #{_pushCount + 1}", "BackButtonContent = icon + text\n\nThe back button shows both icon and text.", null);
+
+            var content = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Spacing = 4,
+                VerticalAlignment = VerticalAlignment.Center,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = "✕",
+                        FontSize = 14,
+                        VerticalAlignment = VerticalAlignment.Center,
+                    },
+                    new TextBlock
+                    {
+                        Text = "Close",
+                        VerticalAlignment = VerticalAlignment.Center,
+                        FontSize = 14,
+                    },
+                }
+            };
+
+            NavigationPage.SetBackButtonContent(page, content);
+            DemoNav.Push(page);
+            AddLog($"BackButtonContent=icon+text on \"{page.Header}\"");
         }
 
         private void OnPushGuarded(object? sender, RoutedEventArgs e)
         {
-            var page = CreatePage("Guarded", "This page has a navigation guard.\nYou will be prompted before leaving.", null);
-            page.Navigating += async args =>
+            var useAsync = DeferRadio?.IsChecked == true;
+            var mode = useAsync ? "async save" : "cancel";
+
+            var page = CreatePage($"Guarded #{_pushCount + 1}",
+                useAsync
+                    ? "This page uses an async Navigating handler.\n\nWhen you tap back, it simulates\nan async save (1.5s) before\nallowing the navigation."
+                    : "This page cancels back navigation.\n\nTapping back will be blocked.\nUse the Pop button to force-pop.",
+                Color.Parse("#FCE4EC"));
+
+            page.Navigating += async (args) =>
             {
-                args.Cancel = true;
-                AddLog("Navigation blocked by guard!");
-                await Task.Delay(1500);
-                args.Cancel = false;
-                AddLog("Guard released — navigation allowed");
+                if (args.NavigationType != NavigationType.Pop) return;
+
+                if (useAsync)
+                {
+                    AddLog("Saving...");
+                    await Task.Delay(1500);
+                    AddLog("Saved, navigation allowed");
+                }
+                else
+                {
+                    args.Cancel = true;
+                    AddLog("Navigation CANCELLED");
+                }
             };
+
             DemoNav.Push(page);
-            AddLog("Pushed: with navigation guard");
+            AddLog($"Guarded page ({mode}) pushed");
         }
 
         private async void OnPop(object? sender, RoutedEventArgs e) => await DemoNav.PopAsync();
 
+        private async void OnPopToRoot(object? sender, RoutedEventArgs e) => await DemoNav.PopToRootAsync();
+
         private void OnClearLog(object? sender, RoutedEventArgs e)
         {
-            _logs.Clear();
-            LogText.Text = string.Empty;
+            LogPanel.Children.Clear();
         }
 
         private void AddLog(string message)
         {
-            _logs.Insert(0, message);
-            if (_logs.Count > 6) _logs.RemoveAt(_logs.Count - 1);
-            LogText.Text = string.Join('\n', _logs);
+            LogPanel.Children.Insert(0, new TextBlock
+            {
+                Text = message,
+                FontFamily = new FontFamily("Cascadia Code,Consolas,Menlo,monospace"),
+                FontSize = 10,
+                TextWrapping = TextWrapping.Wrap,
+            });
         }
 
         private ContentPage CreatePage(string title, string body, Color? bg)
@@ -123,24 +177,25 @@ namespace ControlCatalog.Pages
                 {
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Spacing = 8,
+                    Spacing = 12,
                     Children =
                     {
                         new TextBlock
                         {
                             Text = title,
-                            FontSize = 18,
-                            FontWeight = FontWeight.SemiBold,
-                            HorizontalAlignment = HorizontalAlignment.Center
+                            FontSize = 28,
+                            FontWeight = FontWeight.Bold,
+                            HorizontalAlignment = HorizontalAlignment.Center,
                         },
                         new TextBlock
                         {
                             Text = body,
-                            FontSize = 13,
-                            Opacity = 0.7,
-                            TextWrapping = TextWrapping.Wrap,
+                            FontSize = 14,
+                            Opacity = 0.6,
+                            HorizontalAlignment = HorizontalAlignment.Center,
                             TextAlignment = TextAlignment.Center,
-                            MaxWidth = 240
+                            TextWrapping = TextWrapping.Wrap,
+                            MaxWidth = 360,
                         }
                     }
                 },

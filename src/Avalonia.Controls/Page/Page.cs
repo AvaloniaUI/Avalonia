@@ -9,7 +9,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Abstract base class for all page types.
     /// </summary>
-    public abstract class Page : TemplatedControl
+    public abstract class Page : TemplatedControl, IHeadered
     {
         private INavigation? _navigation;
 
@@ -78,7 +78,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the header content displayed in the navigation bar or tab strip.
-        /// Accepts a string or any <see cref="Control"/>.
         /// </summary>
         public object? Header
         {
@@ -97,7 +96,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the safe-area padding applied to this page's content.
-        /// Set automatically by <see cref="PageNavigationHost"/> from the platform insets manager.
         /// </summary>
         public Thickness SafeAreaPadding
         {
@@ -124,8 +122,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets whether this page is currently hosted inside a NavigationPage.
-        /// Set automatically by the navigation infrastructure; do not set this from application code.
+        /// Gets or sets whether this page is currently hosted inside a NavigationPage.
         /// </summary>
         public bool IsInNavigationPage
         {
@@ -159,7 +156,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Occurs when the page is about to be navigated from.
-        /// Async handlers are awaited before navigation proceeds.
         /// </summary>
         public event Func<NavigatingFromEventArgs, Task>? Navigating;
 
@@ -185,7 +181,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Called when the page is about to be navigated from.
-        /// Override and set <see cref="NavigatingFromEventArgs.Cancel"/> to prevent the navigation.
         /// </summary>
         protected virtual void OnNavigatingFrom(NavigatingFromEventArgs args) { }
 
@@ -206,7 +201,21 @@ namespace Avalonia.Controls
 
         internal void SendNavigatedTo(NavigatedToEventArgs args) => OnNavigatedTo(args);
 
-        internal void SendNavigatingFrom(NavigatingFromEventArgs args) => OnNavigatingFrom(args);
+        internal void SendNavigatingFrom(NavigatingFromEventArgs args)
+        {
+            OnNavigatingFrom(args);
+
+            var navigating = Navigating;
+            if (navigating != null)
+            {
+                foreach (Func<NavigatingFromEventArgs, Task> handler in navigating.GetInvocationList())
+                {
+                    var task = handler(args);
+                    if (!task.IsCompleted)
+                        task.ContinueWith(static t => _ = t.Exception, TaskContinuationOptions.OnlyOnFaulted);
+                }
+            }
+        }
 
         internal async Task SendNavigatingAsync(NavigatingFromEventArgs args)
         {
@@ -216,7 +225,7 @@ namespace Avalonia.Controls
             if (navigating != null)
             {
                 foreach (Func<NavigatingFromEventArgs, Task> handler in navigating.GetInvocationList())
-                    await handler(args).ConfigureAwait(false);
+                    await handler(args);
             }
         }
 
@@ -242,12 +251,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Override in subclasses to adjust content padding when safe area insets change.
+        /// Called when the safe-area padding changes.
         /// </summary>
         protected virtual void UpdateContentSafeAreaPadding() { }
 
         /// <summary>
-        /// Override in subclasses to update the displayed content when the active child page changes.
+        /// Called when the active child page changes.
         /// </summary>
         protected virtual void UpdateActivePage() { }
     }

@@ -107,7 +107,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets whether safe-area padding is automatically applied to the content presenter.
-        /// Defaults to <see langword="true"/>.
         /// </summary>
         public bool AutomaticallyApplySafeAreaPadding
         {
@@ -117,7 +116,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the content displayed in the top command bar area.
-        /// When set, a <see cref="ContentPresenter"/> docked at the top becomes visible.
         /// </summary>
         public object? TopCommandBar
         {
@@ -127,7 +125,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the content displayed in the bottom command bar area.
-        /// When set, a <see cref="ContentPresenter"/> docked at the bottom becomes visible.
         /// </summary>
         public object? BottomCommandBar
         {

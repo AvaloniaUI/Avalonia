@@ -25,7 +25,7 @@
     </Setter>
     <Setter Property="Template">
       <ControlTemplate>
-        <!-- Full-page layout root. ClipToBounds prevents slide animations bleeding outside the control bounds. -->
+        <!-- ClipToBounds prevents slide animations bleeding outside the control bounds. -->
         <Panel ClipToBounds="True">
           <DockPanel>
             <!-- Reserves nav-bar height in Inset mode. Invisible in Overlay mode. -->
@@ -40,7 +40,7 @@
                               Background="{TemplateBinding Background}"
                               Content="{Binding CurrentPage.(NavigationPage.BottomCommandBar), RelativeSource={RelativeSource TemplatedParent}}" />
 
-            <!-- Back and front presenters enable cross-fade and slide transitions without Control recycling. -->
+            <!-- Back and front presenters enable slide transitions without Control recycling. -->
             <Grid Name="PART_ContentHost"
                   Background="{TemplateBinding Background}"
                   ClipToBounds="True">
@@ -53,7 +53,7 @@
             </Grid>
           </DockPanel>
 
-          <!-- Navigation bar floats above content (ZIndex=1). PART_NavBarSpacer reserves equivalent height in Inset mode. -->
+          <!-- Navigation bar floats above content (ZIndex=1). -->
           <Border Name="PART_NavigationBar"
                   ZIndex="1"
                   VerticalAlignment="Top"
@@ -150,8 +150,7 @@
             </Grid>
           </Border>
 
-          <!-- Nav-bar shadow: separate gradient element avoids BoxShadow clipping inside Border bounds.
-               Margin.Top is set from code to match BarHeightEffective. IsHitTestVisible=False passes events through. -->
+          <!-- Nav-bar shadow gradient. Margin.Top is set from code to match BarHeightEffective. -->
           <Border Name="PART_NavBarShadow"
                   ZIndex="1"
                   VerticalAlignment="Top"
@@ -166,9 +165,7 @@
             </Border.Background>
           </Border>
 
-          <!-- Modal overlay: covers the full control including the navigation bar.
-               PART_ModalBackPresenter (ZIndex=99) holds the static modal layer during transitions;
-               PART_ModalPresenter (ZIndex=100) is the animating modal. Both are controlled from code-behind. -->
+          <!-- Modal overlay: ZIndex=99 holds the static layer during transitions; ZIndex=100 is the animating modal. -->
           <ContentPresenter Name="PART_ModalBackPresenter"
                             ZIndex="99"
                             IsVisible="False"
@@ -181,12 +178,12 @@
       </ControlTemplate>
     </Setter>
 
-    <!-- :nav-bar-inset → make the spacer reserve nav-bar height so content is pushed below -->
+    <!-- :nav-bar-inset → spacer reserves nav-bar height so content is pushed below -->
     <Style Selector="^:nav-bar-inset /template/ Border#PART_NavBarSpacer">
       <Setter Property="IsVisible" Value="True" />
     </Style>
 
-    <!-- Collapse CommandBar labels automatically when the bar is too short to fit them -->
+    <!-- :nav-bar-compact → collapse CommandBar labels when bar is too short -->
     <Style Selector="^:nav-bar-compact /template/ ContentPresenter#PART_TopCommandBar CommandBar">
       <Setter Property="DefaultLabelPosition" Value="Collapsed" />
     </Style>

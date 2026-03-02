@@ -25,7 +25,7 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            await DemoNav.PushAsync(MakePage("Home", "Tap 'Push Modal' to present a modal page.", 0), null);
+            await DemoNav.PushAsync(MakePage("Home", "Use Push Modal to show a modal on top.", 0), null);
         }
 
         private async void OnPushModal(object? sender, RoutedEventArgs e)
@@ -55,7 +55,7 @@ namespace ControlCatalog.Pages
                 return;
             DemoNav.ModalTransition = TransitionCombo.SelectedIndex switch
             {
-                1 => new CrossFade(TimeSpan.FromMilliseconds(300)),
+                1 => new CrossFade(TimeSpan.FromMilliseconds(250)),
                 2 => null,
                 _ => new PageSlide(TimeSpan.FromMilliseconds(300), PageSlide.SlideAxis.Vertical)
             };
@@ -81,18 +81,19 @@ namespace ControlCatalog.Pages
                         new TextBlock
                         {
                             Text = header,
-                            FontSize = 20,
-                            FontWeight = FontWeight.SemiBold,
+                            FontSize = 24,
+                            FontWeight = FontWeight.Bold,
                             HorizontalAlignment = HorizontalAlignment.Center
                         },
                         new TextBlock
                         {
                             Text = body,
-                            FontSize = 13,
-                            Opacity = 0.7,
+                            FontSize = 14,
+                            Opacity = 0.6,
                             TextWrapping = TextWrapping.Wrap,
                             TextAlignment = TextAlignment.Center,
-                            MaxWidth = 260
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            MaxWidth = 300,
                         }
                     }
                 },

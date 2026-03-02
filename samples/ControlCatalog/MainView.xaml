@@ -54,18 +54,13 @@
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:CommandBarPage />
       </TabItem>
-      <TabItem Header="ContentPage"
-               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-               ScrollViewer.VerticalScrollBarVisibility="Disabled">
-        <pages:ContentDemoPage />
-      </TabItem>
-      <TabItem Header="NavigationPage"
-               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-               ScrollViewer.VerticalScrollBarVisibility="Disabled">
-        <pages:NavigationDemoPage />
-      </TabItem>
       <TabItem Header="Carousel">
         <pages:CarouselPage />
+      </TabItem>
+      <TabItem Header="Connected Animation"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:ConnectedAnimationDemoPage />
       </TabItem>
       <TabItem Header="CheckBox">
         <pages:CheckBoxPage />
@@ -81,6 +76,11 @@
       </TabItem>
       <TabItem Header="Container Queries">
         <pages:ContainerQueryPage />
+      </TabItem>
+      <TabItem Header="ContentPage"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:ContentDemoPage />
       </TabItem>
       <TabItem Header="ContextFlyout">
         <pages:ContextFlyoutPage />
@@ -114,6 +114,11 @@
       <TabItem Header="Drag+Drop">
         <pages:DragAndDropPage />
       </TabItem>
+      <TabItem Header="DrawerPage"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:DrawerDemoPage />
+      </TabItem>
       <TabItem Header="Expander">
         <pages:ExpanderPage />
       </TabItem>
@@ -142,6 +147,11 @@
       </TabItem>
       <TabItem Header="Menu">
         <pages:MenuPage />
+      </TabItem>
+      <TabItem Header="NavigationPage"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:NavigationDemoPage />
       </TabItem>
       <TabItem Header="Notifications">
         <pages:NotificationsPage />
@@ -181,6 +191,11 @@
       </TabItem>
       <TabItem Header="SplitView">
         <pages:SplitViewPage />
+      </TabItem>
+      <TabItem Header="TabbedPage"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:TabbedDemoPage />
       </TabItem>
       <TabItem Header="TabControl">
         <pages:TabControlPage />

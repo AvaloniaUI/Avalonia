@@ -2,38 +2,47 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.NavigationPageModalPage">
   <DockPanel>
-    <ScrollViewer DockPanel.Dock="Right" Width="260">
-      <StackPanel Margin="12" Spacing="8">
-        <TextBlock Text="Modal Navigation" FontWeight="SemiBold" FontSize="14" />
+    <ScrollViewer DockPanel.Dock="Right" Width="280">
+      <StackPanel Margin="12" Spacing="16">
+        <TextBlock Text="Configuration" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
 
-        <Button x:Name="PushModalButton"
-                Content="Push Modal"
-                HorizontalAlignment="Stretch"
-                Click="OnPushModal" />
-        <Button x:Name="PopModalButton"
-                Content="Pop Modal"
-                HorizontalAlignment="Stretch"
-                Click="OnPopModal" />
-        <Button x:Name="PopAllModalsButton"
-                Content="Pop All Modals"
-                HorizontalAlignment="Stretch"
-                Click="OnPopAllModals" />
+        <!-- Modal Actions -->
+        <TextBlock Text="Modal Actions" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="6">
+          <Button x:Name="PushModalButton"
+                  Content="Push Modal"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPushModal" />
+          <Button x:Name="PopModalButton"
+                  Content="Pop Modal"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPopModal" />
+          <Button x:Name="PopAllModalsButton"
+                  Content="Pop All Modals"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPopAllModals" />
+        </StackPanel>
 
         <Separator />
 
-        <TextBlock Text="Modal Transition" />
+        <!-- Modal Transition -->
+        <TextBlock Text="Modal Transition" FontSize="13" FontWeight="SemiBold" />
         <ComboBox x:Name="TransitionCombo"
                   SelectedIndex="0"
                   HorizontalAlignment="Stretch"
                   SelectionChanged="OnTransitionChanged">
           <ComboBoxItem Content="Slide from Bottom" />
-          <ComboBoxItem Content="Cross Fade" />
+          <ComboBoxItem Content="CrossFade" />
           <ComboBoxItem Content="None" />
         </ComboBox>
 
         <Separator />
+        <TextBlock Text="Modal pages slide up from the bottom and dismiss by sliding back down. The ModalTransition property controls this animation independently from the stack PageTransition."
+                   TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
 
-        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="14" />
+        <Separator />
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="13" />
         <TextBlock x:Name="StatusText"
                    Text="Modals: 0"
                    Opacity="0.7"

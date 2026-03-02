@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -23,6 +24,8 @@ namespace ControlCatalog.Pages
         private static readonly IBrush PositiveDeltaBrush = new SolidColorBrush(Color.Parse("#D32F2F"));
         private static readonly IBrush NegativeDeltaBrush = new SolidColorBrush(Color.Parse("#388E3C"));
         private static readonly IBrush ZeroDeltaBrush     = new SolidColorBrush(Color.Parse("#757575"));
+        private static readonly IBrush CurrentBorderBrush = new SolidColorBrush(Color.Parse("#0078D4"));
+        private static readonly IBrush DefaultBorderBrush = new SolidColorBrush(Color.Parse("#CCCCCC"));
 
         private readonly List<WeakReference<ContentPage>> _trackedPages = new();
         private int _totalCreated;
@@ -30,46 +33,69 @@ namespace ControlCatalog.Pages
         private double _previousHeapMB;
         private DispatcherTimer? _autoRefreshTimer;
 
+        private readonly Stopwatch _opStopwatch = new();
+
+        // Cached stack row elements (avoid per-refresh allocations)
+        private readonly List<(Border Container, Border Badge, TextBlock IndexText,
+            TextBlock TitleText, TextBlock BadgeText)> _stackRowCache = new();
+
         public NavigationPagePerformancePage()
         {
             InitializeComponent();
-            Loaded += OnLoaded;
-            Unloaded += OnUnloaded;
         }
 
-        private async void OnLoaded(object? sender, RoutedEventArgs e)
+        protected override async void OnLoaded(RoutedEventArgs e)
         {
+            base.OnLoaded(e);
+
             DemoNav.Pushed += OnStackChanged;
             DemoNav.Popped += OnStackChanged;
             DemoNav.PoppedToRoot += OnStackChanged;
 
             _previousHeapMB = GC.GetTotalMemory(false) / (1024.0 * 1024.0);
 
+            _opStopwatch.Restart();
             _pageCounter++;
             await DemoNav.PushAsync(BuildPage("Home", _pageCounter), null);
+            _opStopwatch.Stop();
             LogOperation("Init", "Pushed root page");
         }
 
-        private void OnUnloaded(object? sender, RoutedEventArgs e) => StopAutoRefresh();
+        protected override void OnUnloaded(RoutedEventArgs e)
+        {
+            base.OnUnloaded(e);
+            StopAutoRefresh();
+        }
 
         private void OnStackChanged(object? sender, NavigationEventArgs e) => RefreshAll();
+
+        private void StopMetrics()
+        {
+            if (!_opStopwatch.IsRunning) return;
+            _opStopwatch.Stop();
+            LastOpTimeText.Text = $"Last Op: {_opStopwatch.ElapsedMilliseconds} ms";
+        }
 
         private void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCounter++;
             var page = BuildPage($"Page {_pageCounter}", _pageCounter);
+            _opStopwatch.Restart();
             DemoNav.Push(page);
+            StopMetrics();
             LogOperation("Push", $"Pushed \"{page.Header}\"");
         }
 
         private void OnPush5(object? sender, RoutedEventArgs e)
         {
             int first = _pageCounter + 1;
+            _opStopwatch.Restart();
             for (int i = 0; i < 5; i++)
             {
                 _pageCounter++;
                 DemoNav.Push(BuildPage($"Page {_pageCounter}", _pageCounter));
             }
+            StopMetrics();
             LogOperation("Push ×5", $"Pushed pages {first}–{_pageCounter}");
         }
 
@@ -78,7 +104,9 @@ namespace ControlCatalog.Pages
             if (DemoNav.StackDepth > 1)
             {
                 var header = DemoNav.CurrentPage?.Header?.ToString();
+                _opStopwatch.Restart();
                 DemoNav.Pop();
+                StopMetrics();
                 LogOperation("Pop", $"Popped \"{header}\"");
             }
         }
@@ -88,7 +116,9 @@ namespace ControlCatalog.Pages
             if (DemoNav.StackDepth > 1)
             {
                 int removed = DemoNav.StackDepth - 1;
+                _opStopwatch.Restart();
                 await DemoNav.PopToRootAsync();
+                StopMetrics();
                 LogOperation("PopToRoot", $"Removed {removed} page(s)");
             }
         }
@@ -166,70 +196,100 @@ namespace ControlCatalog.Pages
 
         private void RefreshStack()
         {
-            StackItemsPanel.Children.Clear();
             var stack   = DemoNav.NavigationStack;
             var current = DemoNav.CurrentPage;
+            int count   = stack.Count;
 
-            for (int i = stack.Count - 1; i >= 0; i--)
+            // Grow cache if needed
+            while (_stackRowCache.Count < count)
+                _stackRowCache.Add(CreateStackRow());
+
+            // Sync panel children count (remove excess, add missing)
+            while (StackItemsPanel.Children.Count > count)
+                StackItemsPanel.Children.RemoveAt(StackItemsPanel.Children.Count - 1);
+            while (StackItemsPanel.Children.Count < count)
+                StackItemsPanel.Children.Add(_stackRowCache[StackItemsPanel.Children.Count].Container);
+
+            // Update each row (displayed in reverse: top of stack first)
+            for (int displayIdx = 0; displayIdx < count; displayIdx++)
             {
-                var page      = stack[i];
+                int stackIdx = count - 1 - displayIdx;
+                var page = stack[stackIdx];
                 bool isCurrent = ReferenceEquals(page, current);
-                bool isRoot    = i == 0;
+                bool isRoot = stackIdx == 0;
 
-                var colorIdx  = i % PageBrushes.Length;
-                var badge = new Border
-                {
-                    Width = 22, Height = 22,
-                    CornerRadius = new Avalonia.CornerRadius(11),
-                    Background = PageBrushes[colorIdx],
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Child = new TextBlock
-                    {
-                        Text = (i + 1).ToString(),
-                        FontSize = 10, FontWeight = FontWeight.SemiBold,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                    }
-                };
+                var (container, badge, indexText, titleText, badgeText) = _stackRowCache[displayIdx];
 
-                string? badgeText = isCurrent ? "current" : (isRoot ? "root" : null);
-                var row = new DockPanel();
-                row.Children.Add(badge);
-                row.Children.Add(new TextBlock
-                {
-                    Text = page.Header?.ToString() ?? "(untitled)",
-                    FontWeight = isCurrent ? FontWeight.SemiBold : FontWeight.Normal,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    TextTrimming = TextTrimming.CharacterEllipsis,
-                    Margin = new Avalonia.Thickness(6, 0, 0, 0),
-                });
-                if (badgeText != null)
-                    row.Children.Add(new TextBlock
-                    {
-                        Text = badgeText,
-                        FontSize = 10, Opacity = 0.5,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        Margin = new Avalonia.Thickness(4, 0, 0, 0),
-                    });
+                // Ensure correct container is at this position
+                if (!ReferenceEquals(StackItemsPanel.Children[displayIdx], container))
+                    StackItemsPanel.Children[displayIdx] = container;
 
-                StackItemsPanel.Children.Add(new Border
-                {
-                    BorderBrush = new SolidColorBrush(isCurrent
-                        ? Color.Parse("#0078D4") : Color.Parse("#CCCCCC")),
-                    BorderThickness = new Avalonia.Thickness(isCurrent ? 2 : 1),
-                    CornerRadius = new Avalonia.CornerRadius(6),
-                    Padding = new Avalonia.Thickness(8, 6),
-                    Child = row,
-                });
+                badge.Background = PageBrushes[stackIdx % PageBrushes.Length];
+                indexText.Text = (stackIdx + 1).ToString();
+                titleText.Text = page.Header?.ToString() ?? "(untitled)";
+                titleText.FontWeight = isCurrent ? FontWeight.SemiBold : FontWeight.Normal;
+
+                string? label = isCurrent ? "current" : (isRoot ? "root" : null);
+                badgeText.Text = label ?? "";
+                badgeText.IsVisible = label != null;
+
+                container.BorderBrush = isCurrent ? CurrentBorderBrush : DefaultBorderBrush;
+                container.BorderThickness = new Avalonia.Thickness(isCurrent ? 2 : 1);
             }
+        }
+
+        private static (Border Container, Border Badge, TextBlock IndexText,
+            TextBlock TitleText, TextBlock BadgeText) CreateStackRow()
+        {
+            var indexText = new TextBlock
+            {
+                FontSize = 10, FontWeight = FontWeight.SemiBold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            var badge = new Border
+            {
+                Width = 22, Height = 22,
+                CornerRadius = new Avalonia.CornerRadius(11),
+                VerticalAlignment = VerticalAlignment.Center,
+                Child = indexText,
+            };
+            var titleText = new TextBlock
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Margin = new Avalonia.Thickness(6, 0, 0, 0),
+            };
+            var badgeText = new TextBlock
+            {
+                FontSize = 10, Opacity = 0.5,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Avalonia.Thickness(4, 0, 0, 0),
+                IsVisible = false,
+            };
+
+            var row = new DockPanel();
+            row.Children.Add(badge);
+            row.Children.Add(titleText);
+            row.Children.Add(badgeText);
+
+            var container = new Border
+            {
+                CornerRadius = new Avalonia.CornerRadius(6),
+                Padding = new Avalonia.Thickness(8, 6),
+                Child = row,
+            };
+
+            return (container, badge, indexText, titleText, badgeText);
         }
 
         private void LogOperation(string action, string detail)
         {
             var heapMB = GC.GetTotalMemory(false) / (1024.0 * 1024.0);
+            var timing = _opStopwatch.ElapsedMilliseconds;
             LogPanel.Children.Add(new TextBlock
             {
-                Text = $"{DateTime.Now:HH:mm:ss}  [{action}]  {detail}  — depth {DemoNav.StackDepth}, heap {heapMB:##0.0} MB",
+                Text = $"{DateTime.Now:HH:mm:ss}  [{action}]  {detail}  — depth {DemoNav.StackDepth}, heap {heapMB:##0.0} MB, {timing} ms",
                 FontSize = 10,
                 FontFamily = new FontFamily("Cascadia Mono,Consolas,Menlo,monospace"),
                 Padding = new Avalonia.Thickness(6, 2),

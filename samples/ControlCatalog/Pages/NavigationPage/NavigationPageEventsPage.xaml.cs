@@ -1,4 +1,3 @@
-using System.Text;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -14,7 +13,6 @@ namespace ControlCatalog.Pages
             Color.Parse("#E1BEE7"), Color.Parse("#FFCDD2"), Color.Parse("#B2EBF2"),
         };
 
-        private readonly StringBuilder _log = new StringBuilder();
         private int _pageCount;
 
         public NavigationPageEventsPage()
@@ -25,28 +23,28 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            DemoNav.Pushed       += (s, ev) => Log($"Pushed → {ev.Page?.Header}");
-            DemoNav.Popped       += (s, ev) => Log($"Popped ← {ev.Page?.Header}");
-            DemoNav.PoppedToRoot += (s, ev) => Log("PoppedToRoot");
-            DemoNav.PageInserted += (s, ev) => Log($"PageInserted: {ev.Page?.Header}");
-            DemoNav.PageRemoved  += (s, ev) => Log($"PageRemoved: {ev.Page?.Header}");
-            DemoNav.ModalPushed  += (s, ev) => Log($"ModalPushed → {ev.Modal?.Header}");
-            DemoNav.ModalPopped  += (s, ev) => Log($"ModalPopped ← {ev.Modal?.Header}");
+            DemoNav.Pushed       += (s, ev) => AddLog($"Pushed → {ev.Page?.Header}");
+            DemoNav.Popped       += (s, ev) => AddLog($"Popped ← {ev.Page?.Header}");
+            DemoNav.PoppedToRoot += (s, ev) => AddLog("PoppedToRoot");
+            DemoNav.PageInserted += (s, ev) => AddLog($"PageInserted: {ev.Page?.Header}");
+            DemoNav.PageRemoved  += (s, ev) => AddLog($"PageRemoved: {ev.Page?.Header}");
+            DemoNav.ModalPushed  += (s, ev) => AddLog($"ModalPushed → {ev.Modal?.Header}");
+            DemoNav.ModalPopped  += (s, ev) => AddLog($"ModalPopped ← {ev.Modal?.Header}");
 
-            var root = MakePage("Home", "Events are logged below.", 0);
+            var root = MakePage("Home", "Push pages and watch the event log.\nAll navigation events are captured.", 0);
             SubscribePage(root);
             await DemoNav.PushAsync(root, null);
         }
 
         private void SubscribePage(ContentPage page)
         {
-            page.Appearing    += (s, e) => Log($"[{page.Header}] Appearing");
-            page.Disappearing += (s, e) => Log($"[{page.Header}] Disappearing");
-            page.NavigatedTo  += (s, e) => Log($"[{page.Header}] NavigatedTo");
-            page.NavigatedFrom += (s, e) => Log($"[{page.Header}] NavigatedFrom");
+            page.Appearing    += (s, e) => AddLog($"[{page.Header}] Appearing");
+            page.Disappearing += (s, e) => AddLog($"[{page.Header}] Disappearing");
+            page.NavigatedTo  += (s, e) => AddLog($"[{page.Header}] NavigatedTo");
+            page.NavigatedFrom += (s, e) => AddLog($"[{page.Header}] NavigatedFrom");
             page.Navigating += args =>
             {
-                Log($"[{page.Header}] Navigating");
+                AddLog($"[{page.Header}] Navigating");
                 return System.Threading.Tasks.Task.CompletedTask;
             };
         }
@@ -92,16 +90,19 @@ namespace ControlCatalog.Pages
 
         private void OnClearLog(object? sender, RoutedEventArgs e)
         {
-            _log.Clear();
-            EventLog.Text = string.Empty;
+            LogPanel.Children.Clear();
         }
 
-        private void Log(string message)
+        private void AddLog(string message)
         {
-            if (_log.Length > 0)
-                _log.Insert(0, '\n');
-            _log.Insert(0, message);
-            EventLog.Text = _log.ToString();
+            LogPanel.Children.Insert(0, new TextBlock
+            {
+                Text = message,
+                FontFamily = new FontFamily("Cascadia Code,Consolas,Menlo,monospace"),
+                FontSize = 11,
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Avalonia.Thickness(0, 1),
+            });
         }
 
         private static ContentPage MakePage(string header, string body, int index) =>
@@ -119,18 +120,19 @@ namespace ControlCatalog.Pages
                         new TextBlock
                         {
                             Text = header,
-                            FontSize = 18,
-                            FontWeight = FontWeight.SemiBold,
-                            HorizontalAlignment = HorizontalAlignment.Center
+                            FontSize = 24,
+                            FontWeight = FontWeight.Bold,
+                            HorizontalAlignment = HorizontalAlignment.Center,
                         },
                         new TextBlock
                         {
                             Text = body,
-                            FontSize = 13,
-                            Opacity = 0.7,
+                            FontSize = 14,
+                            Opacity = 0.6,
                             TextWrapping = TextWrapping.Wrap,
                             TextAlignment = TextAlignment.Center,
-                            MaxWidth = 240
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            MaxWidth = 300,
                         }
                     }
                 },

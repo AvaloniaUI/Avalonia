@@ -76,6 +76,8 @@ namespace ControlCatalog.Pages
                         _currentTranslateY = Math.Clamp(-y, -barHeight, 0);
                     else if (delta > 0)
                         _currentTranslateY = Math.Clamp(_currentTranslateY - delta, -barHeight, 0);
+                    else if (delta < 0)
+                        _currentTranslateY = Math.Clamp(_currentTranslateY - delta, -barHeight, 0);
 
                     transform.Y = _currentTranslateY;
                 }));

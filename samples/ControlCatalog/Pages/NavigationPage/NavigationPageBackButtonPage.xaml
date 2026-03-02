@@ -2,53 +2,130 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.NavigationPageBackButtonPage">
   <DockPanel>
-    <ScrollViewer DockPanel.Dock="Right" Width="260">
-      <StackPanel Margin="12" Spacing="8">
-        <CheckBox x:Name="IsBackButtonVisibleCheck"
-                  Content="IsBackButtonVisible (global)"
-                  IsChecked="True"
-                  IsCheckedChanged="OnGlobalBackButtonChanged" />
+    <ScrollViewer DockPanel.Dock="Right" Width="280">
+      <StackPanel Margin="12" Spacing="14">
+        <TextBlock Text="Configuration" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <!-- Global override -->
+        <TextBlock Text="Global Override" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock Text="IsBackButtonVisible=false hides the back button for every page in this NavigationPage."
+                   TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+        <CheckBox x:Name="IsBackButtonVisibleCheck" Content="IsBackButtonVisible"
+                  IsChecked="True" IsCheckedChanged="OnGlobalBackButtonChanged" />
 
         <Separator />
 
-        <TextBlock Text="Push page with:" FontWeight="SemiBold" />
-
-        <Button Content="Standard back button"
-                HorizontalAlignment="Stretch"
-                Click="OnPushStandard" />
-        <Button Content="No back button"
-                HorizontalAlignment="Stretch"
-                Click="OnPushNoBack" />
-        <Button Content="Disabled back button"
-                HorizontalAlignment="Stretch"
-                Click="OnPushDisabledBack" />
-        <Button Content="Custom text: ← Cancel"
-                HorizontalAlignment="Stretch"
-                Click="OnPushCustomText" />
-        <Button Content="Custom icon: ✕ Close"
-                HorizontalAlignment="Stretch"
-                Click="OnPushCustomIcon" />
-        <Button Content="Navigation guard"
-                HorizontalAlignment="Stretch"
-                Click="OnPushGuarded" />
+        <!-- Per-page visibility -->
+        <TextBlock Text="Per-Page Visibility" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="6">
+          <Button Content="Standard Page" Click="OnPushStandard"
+                  HorizontalAlignment="Stretch" />
+          <Button Content="Hidden Back Button" Click="OnPushNoBack"
+                  HorizontalAlignment="Stretch" />
+        </StackPanel>
 
         <Separator />
 
-        <Button Content="Pop"
-                HorizontalAlignment="Stretch"
-                Click="OnPop" />
+        <!-- Per-page enabled/disabled -->
+        <TextBlock Text="Per-Page Enabled" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock Text="IsBackButtonEnabled=false shows the back button grayed out and non-interactive."
+                   TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+        <Button Content="Disabled Back Button" Click="OnPushDisabledBack"
+                HorizontalAlignment="Stretch" />
 
         <Separator />
 
-        <Button Content="Clear Log"
-                HorizontalAlignment="Stretch"
-                Click="OnClearLog" />
+        <!-- Custom BackButtonContent -->
+        <TextBlock Text="Custom Back Content" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock Text="Any string, icon or control can be the back button content."
+                   TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+        <TextBox x:Name="BackContentInput" PlaceholderText="Text content (default: Cancel)..." />
+        <StackPanel Spacing="6">
+          <Button Content="Push with Text Content" Click="OnPushCustomText"
+                  HorizontalAlignment="Stretch" />
+          <Button Content="Push with Icon (×)" Click="OnPushCustomIcon"
+                  HorizontalAlignment="Stretch" />
+          <Button Content="Push with Icon + Text" Click="OnPushIconTextBack"
+                  HorizontalAlignment="Stretch" />
+        </StackPanel>
 
-        <TextBlock x:Name="LogText"
-                   FontFamily="Monospace"
-                   FontSize="11"
-                   TextWrapping="Wrap"
-                   Opacity="0.8" />
+        <Separator />
+
+        <!-- Navigation Guard -->
+        <TextBlock Text="Navigation Guard" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock Text="Push a page that intercepts back navigation."
+                   TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+        <StackPanel Spacing="6">
+          <RadioButton x:Name="CancelRadio" GroupName="GuardMode"
+                       Content="Cancel navigation" IsChecked="True" />
+          <RadioButton x:Name="DeferRadio" GroupName="GuardMode"
+                       Content="Async save (1.5s)" />
+        </StackPanel>
+        <Button Content="Push Guarded Page" Click="OnPushGuarded"
+                HorizontalAlignment="Stretch" />
+
+        <Separator />
+        <TextBlock Text="Navigation" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="6">
+          <Button Content="Pop" Click="OnPop" HorizontalAlignment="Stretch" />
+          <Button Content="Pop to Root" Click="OnPopToRoot" HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <Separator />
+
+        <!-- Event Log -->
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Left" Text="Event Log" FontSize="13" FontWeight="SemiBold"
+                     VerticalAlignment="Center" />
+          <Button DockPanel.Dock="Right" Content="Clear" Click="OnClearLog"
+                  HorizontalAlignment="Right" Padding="8,2" FontSize="11" />
+        </DockPanel>
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8" MinHeight="100" MaxHeight="200">
+          <ScrollViewer>
+            <StackPanel x:Name="LogPanel" Spacing="1" />
+          </ScrollViewer>
+        </Border>
+
+        <Separator />
+
+        <!-- API Reference -->
+        <TextBlock Text="API Reference" FontSize="13" FontWeight="SemiBold" />
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8">
+          <TextBlock FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                     FontSize="10" TextWrapping="Wrap"
+                     xml:space="preserve">// Global: hide for all pages
+navPage.IsBackButtonVisible = false;
+
+// Per-page: hide for one page
+NavigationPage
+  .SetHasBackButton(
+    page, false);
+
+// Per-page: disable (grayed out)
+NavigationPage
+  .SetIsBackButtonEnabled(
+    page, false);
+
+// Custom string content
+NavigationPage
+  .SetBackButtonContent(
+    page, "Cancel");
+
+// Cancel navigation (sync)
+page.Navigating += (args) =&gt; {
+  args.Cancel = true;
+  return Task.CompletedTask;
+};
+
+// Cancel with async guard
+page.Navigating += async (args) =&gt; {
+  bool ok = await ShowConfirmAsync();
+  if (!ok) args.Cancel = true;
+};</TextBlock>
+        </Border>
       </StackPanel>
     </ScrollViewer>
 

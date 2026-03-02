@@ -35,7 +35,7 @@
       <Separator />
 
       <TextBlock Text="Collapsed (icon only)" FontWeight="SemiBold" />
-      <TextBlock Text="No label shown — use ToolTip.Tip to preserve accessibility." FontSize="12" Opacity="0.7" />
+      <TextBlock Text="No label shown. Use ToolTip.Tip to preserve accessibility." FontSize="12" Opacity="0.7" />
       <CommandBar DefaultLabelPosition="Collapsed" OverflowButtonVisibility="Collapsed">
         <AppBarButton ToolTip.Tip="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
         <AppBarButton ToolTip.Tip="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>

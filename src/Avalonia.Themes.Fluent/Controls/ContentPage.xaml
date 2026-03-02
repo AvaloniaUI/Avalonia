@@ -14,13 +14,13 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel>
-          <!-- Top CommandBar: visibility managed in code-behind -->
+          <!-- Visibility managed in code-behind -->
           <ContentPresenter Name="PART_TopCommandBar"
                             DockPanel.Dock="Top"
                             HorizontalContentAlignment="Stretch"
                             IsVisible="False" />
 
-          <!-- Bottom CommandBar: visibility managed in code-behind -->
+          <!-- Visibility managed in code-behind -->
           <ContentPresenter Name="PART_BottomCommandBar"
                             DockPanel.Dock="Bottom"
                             HorizontalContentAlignment="Stretch"

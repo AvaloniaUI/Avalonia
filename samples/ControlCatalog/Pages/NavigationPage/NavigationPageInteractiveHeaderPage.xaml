@@ -4,13 +4,15 @@
   <DockPanel>
     <ScrollViewer DockPanel.Dock="Right" Width="260">
       <StackPanel Margin="12" Spacing="8">
-        <TextBlock Text="How It Works" FontWeight="SemiBold" />
-        <TextBlock TextWrapping="Wrap" Opacity="0.7" FontSize="11"
-                   Text="Page.Header accepts any Control, not just strings. A Grid divides the nav bar: the page title stretches on the left (*) and a search box sits on the right (Auto). Both share the same data so typing immediately filters the contact list." />
+        <TextBlock Text="How It Works" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" Opacity="0.7" FontSize="12"
+                   Text="Page.Header accepts any Control, not just strings. A Grid in the header divides the nav bar: the page title stretches on the left, and a search box sits on the right. Both share the same data so typing immediately filters the contact list." />
         <Separator />
         <TextBlock Text="Key Points" FontWeight="SemiBold" />
         <TextBlock FontSize="11" Text="• Header = any Control, not just a string" />
         <TextBlock FontSize="11" Text="• Grid: title (*) + search box (Auto)" />
+        <TextBlock FontSize="11" Text="• One ViewModel shared by header and content" />
         <TextBlock FontSize="11" Text="• Typing instantly filters via ObservableCollection" />
       </StackPanel>
     </ScrollViewer>

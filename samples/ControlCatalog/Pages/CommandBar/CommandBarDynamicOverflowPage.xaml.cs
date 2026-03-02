@@ -39,7 +39,7 @@ namespace ControlCatalog.Pages
             var total = DemoBar.PrimaryCommands.Count;
             var overflow = DemoBar.OverflowItems.Count;
             var visible = total - overflow;
-            StatusText.Text = $"Showing {visible} of {total} commands — {overflow} in overflow";
+            StatusText.Text = $"Showing {visible} of {total} commands, {overflow} in overflow";
         }
     }
 }

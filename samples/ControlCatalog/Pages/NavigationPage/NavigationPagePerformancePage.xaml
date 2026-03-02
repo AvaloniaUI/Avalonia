@@ -46,6 +46,7 @@
             <TextBlock x:Name="MemoryDeltaText"   Text=""
                        FontSize="12" FontWeight="SemiBold" Margin="6,0,0,0" />
           </DockPanel>
+          <TextBlock x:Name="LastOpTimeText"     Text="Last Op: —"            FontSize="12" />
 
           <Separator />
 

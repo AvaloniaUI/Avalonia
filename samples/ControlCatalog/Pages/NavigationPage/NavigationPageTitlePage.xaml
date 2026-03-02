@@ -42,23 +42,10 @@
 
         <Separator />
 
-        <TextBlock Text="About" FontWeight="SemiBold" FontSize="13" />
-        <TextBlock Text="Page.Header is object? — set a string for a simple text label, or any control for a fully custom nav bar."
+        <TextBlock Text="Page.Header is object. Set a string for a simple text label, or any control for a fully custom nav bar."
                    FontSize="12"
                    Opacity="0.7"
                    TextWrapping="Wrap" />
-
-        <Separator />
-
-        <TextBlock Text="Code" FontWeight="SemiBold" FontSize="13" />
-        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                CornerRadius="4"
-                Padding="8">
-          <TextBlock FontFamily="Cascadia Code,Consolas,Menlo,monospace"
-                     FontSize="11"
-                     TextWrapping="Wrap"
-                     Text="// Simple string header&#xA;page.Header = &quot;My Page&quot;;&#xA;&#xA;// Custom control header&#xA;page.Header =&#xA;  new Slider { Width = 200 };&#xA;&#xA;// Mixed icon + text&#xA;page.Header = new StackPanel {&#xA;  Orientation = Horizontal,&#xA;  Children = { icon, label }&#xA;};" />
-        </Border>
       </StackPanel>
     </ScrollViewer>
 

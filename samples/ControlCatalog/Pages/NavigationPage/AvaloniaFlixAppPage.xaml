@@ -1,0 +1,263 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.AvaloniaFlixAppPage">
+
+  <UserControl.Resources>
+    <SolidColorBrush x:Key="FlixBg"            Color="#0A0A0A"/>
+    <SolidColorBrush x:Key="FlixSurface"       Color="#141414"/>
+    <SolidColorBrush x:Key="FlixPrimary"       Color="#E50914"/>
+    <SolidColorBrush x:Key="FlixTextSecondary" Color="#B3B3B3"/>
+    <SolidColorBrush x:Key="FlixBorder"        Color="#262626"/>
+  </UserControl.Resources>
+
+  <DockPanel>
+    <ScrollViewer x:Name="InfoPanel" DockPanel.Dock="Right" Width="300">
+      <StackPanel Margin="16" Spacing="16">
+        <TextBlock Text="AvaloniaFlix" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Netflix-inspired streaming app. DrawerPage provides the side flyout menu with hamburger auto-injection. NavigationPage manages the push/pop stack." />
+        <Separator />
+        <TextBlock Text="Navigation Flow" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="12" Text="1. Home: root of NavigationPage" />
+          <TextBlock FontSize="12" Text="2. Tap hamburger → DrawerPage flyout opens" />
+          <TextBlock FontSize="12" Text="3. Tap search icon → Search page pushed" />
+          <TextBlock FontSize="12" Text="4. Tap any poster → Detail pushed" />
+          <TextBlock FontSize="12" Text="5. ← Back pops to previous page" />
+        </StackPanel>
+        <Separator />
+        <TextBlock Text="Architecture" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="12" Text="• DrawerPage wraps NavigationPage" />
+          <TextBlock FontSize="12" Text="• Hamburger auto-injected at depth ≤ 1" />
+          <TextBlock FontSize="12" Text="• Back arrow appears at depth > 1" />
+          <TextBlock FontSize="12" Text="• DrawerPage.Detail = NavigationPage" />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+
+      <DrawerPage x:Name="DrawerPageControl"
+                       Background="{StaticResource FlixBg}"
+                       DrawerBackground="{StaticResource FlixSurface}"
+                       DrawerLength="280">
+        <DrawerPage.Resources>
+          <SolidColorBrush x:Key="NavigationControlNavBarBackground" Color="#0A0A0A"/>
+        </DrawerPage.Resources>
+
+        <DrawerPage.DrawerHeader>
+          <StackPanel Background="{StaticResource FlixSurface}" Spacing="16" Margin="0,0,0,8">
+            <TextBlock Text="AVALONIAFLIX"
+                       Foreground="{StaticResource FlixPrimary}"
+                       FontSize="22" FontWeight="Black"
+                       Margin="20,20,20,0" />
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="20,0,20,8">
+              <Border Width="44" Height="44" CornerRadius="22" Background="#333333">
+                <TextBlock Text="JD" FontSize="16" FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+              </Border>
+              <StackPanel VerticalAlignment="Center" Spacing="2">
+                <TextBlock Text="John Doe" FontSize="15" FontWeight="SemiBold" Foreground="White"/>
+                <TextBlock Text="Switch Profile" FontSize="11" Foreground="{StaticResource FlixTextSecondary}"/>
+              </StackPanel>
+            </StackPanel>
+          </StackPanel>
+        </DrawerPage.DrawerHeader>
+
+        <DrawerPage.Drawer>
+          <DockPanel>
+              <!-- Secondary items pinned to bottom -->
+              <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                <Border Height="1" Background="{StaticResource FlixBorder}" Margin="16,0"/>
+                <Button Classes="drawerItem" Click="OnMenuItemClick" Tag="Notifications" Margin="8,8,8,0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="{StaticResource FlixPrimary}"
+                              Data="M12,22A2,2 0 0,0 14,20H10A2,2 0 0,0 12,22M18,16V11C18,7.93 16.36,5.36 13.5,4.68V4A1.5,1.5 0 0,0 12,2.5A1.5,1.5 0 0,0 10.5,4V4.68C7.63,5.36 6,7.92 6,11V16L4,18V19H20V18L18,16Z"/>
+                    <TextBlock Text="Notifications" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+                <Button Classes="drawerItem" Click="OnMenuItemClick" Tag="Settings" Margin="8,0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="White"
+                              Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+                    <TextBlock Text="Settings" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+
+              <!-- Primary nav items scrollable -->
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
+              <StackPanel Spacing="2" Margin="8,4">
+                <Button Classes="drawerItem drawerItemSelected" Click="OnMenuItemClick" Tag="Home" Margin="0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="White"
+                              Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/>
+                    <TextBlock Text="Home" FontSize="14" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+                <Button Classes="drawerItem" Click="OnMenuItemClick" Tag="Movies" Margin="0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="White"
+                              Data="M18,4L20,8H17L15,4H13L15,8H12L10,4H8L10,8H7L5,4H4A2,2 0 0,0 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V4H18Z"/>
+                    <TextBlock Text="Movies" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+                <Button Classes="drawerItem" Click="OnMenuItemClick" Tag="TV Shows" Margin="0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="White"
+                              Data="M21,17H3V5H21M21,3H3A2,2 0 0,0 1,5V17A2,2 0 0,0 3,19H8V21H16V19H21A2,2 0 0,0 23,17V5A2,2 0 0,0 21,3Z"/>
+                    <TextBlock Text="TV Shows" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+                <Button Classes="drawerItem" Click="OnMenuItemClick" Tag="My List" Margin="0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="White"
+                              Data="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
+                    <TextBlock Text="My List" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+                    <Border Width="20" Height="20" CornerRadius="10"
+                            Background="{StaticResource FlixPrimary}" VerticalAlignment="Center">
+                      <TextBlock Text="4" FontSize="10" FontWeight="Bold" Foreground="White"
+                                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 TextAlignment="Center" LineHeight="10"/>
+                    </Border>
+                  </StackPanel>
+                </Button>
+                <Button Classes="drawerItem" Click="OnMenuItemClick" Tag="Downloads" Margin="0">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <PathIcon Width="20" Height="20" Foreground="White"
+                              Data="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                    <TextBlock Text="Downloads" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+              </ScrollViewer>
+          </DockPanel>
+        </DrawerPage.Drawer>
+
+        <DrawerPage.DrawerFooter>
+          <StackPanel Background="{StaticResource FlixSurface}" Spacing="4" Margin="0,8,0,0">
+            <Border Height="1" Background="{StaticResource FlixBorder}" Margin="16,0"/>
+            <Button Classes="drawerItem" Margin="8,4">
+              <StackPanel Orientation="Horizontal" Spacing="14">
+                <PathIcon Width="20" Height="20" Foreground="White"
+                          Data="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z"/>
+                <TextBlock Text="Sign Out" FontSize="14" Foreground="White" VerticalAlignment="Center"/>
+              </StackPanel>
+            </Button>
+            <TextBlock Text="v2.4.0  &#169; AvaloniaFlix"
+                       FontSize="10" Foreground="#555555"
+                       Margin="20,0,20,12"/>
+          </StackPanel>
+        </DrawerPage.DrawerFooter>
+
+        <DrawerPage.Content>
+          <NavigationPage x:Name="DetailNav"
+                               Background="{StaticResource FlixBg}"
+                               BarBackground="{StaticResource FlixBg}"
+                               BarForeground="White"
+                               BarHeight="52" />
+        </DrawerPage.Content>
+      </DrawerPage>
+    </Border>
+  </DockPanel>
+
+  <UserControl.Styles>
+    <!-- White back/hamburger button in NavigationPage -->
+    <Style Selector="NavigationPage /template/ Button#PART_BackButton PathIcon">
+      <Setter Property="Foreground" Value="White"/>
+    </Style>
+    <Style Selector="NavigationPage /template/ Button#PART_BackButton /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="NavigationPage /template/ Button#PART_BackButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#1AFFFFFF"/>
+    </Style>
+    <Style Selector="NavigationPage /template/ Button#PART_BackButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#33FFFFFF"/>
+    </Style>
+
+    <!-- Transparent icon buttons (search, share, bookmark) -->
+    <Style Selector="Button.flixTransparent /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button.flixTransparent:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#1AFFFFFF"/>
+    </Style>
+    <Style Selector="Button.flixTransparent:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#33FFFFFF"/>
+    </Style>
+
+    <!-- White Play button (hero) -->
+    <Style Selector="Button.flixPlayWhite /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="White"/>
+    </Style>
+    <Style Selector="Button.flixPlayWhite:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#E0E0E0"/>
+    </Style>
+    <Style Selector="Button.flixPlayWhite:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#BDBDBD"/>
+    </Style>
+
+    <!-- Ghost button (My List on hero) -->
+    <Style Selector="Button.flixGhost /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#66555555"/>
+    </Style>
+    <Style Selector="Button.flixGhost:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#88666666"/>
+    </Style>
+    <Style Selector="Button.flixGhost:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#AA777777"/>
+    </Style>
+
+    <!-- Red Play button (detail page) -->
+    <Style Selector="Button.flixPlayRed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#E50914"/>
+    </Style>
+    <Style Selector="Button.flixPlayRed:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#FF1A1A"/>
+    </Style>
+    <Style Selector="Button.flixPlayRed:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#CC0812"/>
+    </Style>
+
+    <!-- Icon buttons (download / like on detail) -->
+    <Style Selector="Button.flixIconBtn /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#1AFFFFFF"/>
+    </Style>
+    <Style Selector="Button.flixIconBtn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#33FFFFFF"/>
+    </Style>
+    <Style Selector="Button.flixIconBtn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#4DFFFFFF"/>
+    </Style>
+    <Style Selector="Button.drawerItem">
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+      <Setter Property="Padding" Value="16,10"/>
+      <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    <Style Selector="Button.drawerItem /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button.drawerItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#1AFFFFFF"/>
+    </Style>
+    <Style Selector="Button.drawerItem:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#33FFFFFF"/>
+    </Style>
+    <Style Selector="Button.drawerItemSelected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#E50914"/>
+    </Style>
+    <Style Selector="Button.drawerItemSelected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#FF1A1A"/>
+    </Style>
+    <Style Selector="Button.drawerItemSelected:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#CC0812"/>
+    </Style>
+  </UserControl.Styles>
+</UserControl>

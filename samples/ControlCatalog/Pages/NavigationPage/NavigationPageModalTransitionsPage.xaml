@@ -4,6 +4,9 @@
   <DockPanel>
     <ScrollViewer DockPanel.Dock="Right" Width="260">
       <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
         <TextBlock Text="Modal Transition" />
         <ComboBox x:Name="TransitionCombo"
                   SelectedIndex="0"
@@ -15,17 +18,20 @@
         </ComboBox>
 
         <TextBlock Text="Duration (ms)" />
-        <Slider x:Name="DurationSlider"
-                Minimum="100"
-                Maximum="1000"
-                Value="300"
-                TickFrequency="100"
-                IsSnapToTickEnabled="True"
-                ValueChanged="OnDurationChanged" />
-        <TextBlock x:Name="DurationLabel"
-                   Text="300 ms"
-                   HorizontalAlignment="Center"
-                   Opacity="0.7" />
+        <DockPanel>
+          <TextBlock x:Name="DurationLabel" DockPanel.Dock="Right"
+                     Text="300 ms"
+                     FontSize="12" Opacity="0.7"
+                     VerticalAlignment="Center"
+                     Width="50" TextAlignment="Right" />
+          <Slider x:Name="DurationSlider"
+                  Minimum="100"
+                  Maximum="1000"
+                  Value="300"
+                  TickFrequency="100"
+                  IsSnapToTickEnabled="True"
+                  ValueChanged="OnDurationChanged" />
+        </DockPanel>
 
         <Separator />
 

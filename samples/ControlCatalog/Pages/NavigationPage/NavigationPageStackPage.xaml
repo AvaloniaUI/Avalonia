@@ -4,34 +4,32 @@
   <DockPanel>
     <ScrollViewer DockPanel.Dock="Right" Width="260">
       <StackPanel Margin="12" Spacing="8">
-        <TextBlock Text="Stack Management" FontWeight="SemiBold" FontSize="14" />
+        <TextBlock Text="Stack Inspector" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
 
         <Button Content="Push New Page"
                 HorizontalAlignment="Stretch"
                 Click="OnPush" />
         <Button Content="Insert Before Current"
                 HorizontalAlignment="Stretch"
+                ToolTip.Tip="Inserts a new page so navigating back from the current page lands on it."
                 Click="OnInsert" />
-        <Button Content="Remove Current Page"
-                HorizontalAlignment="Stretch"
-                Click="OnRemoveCurrent" />
-        <Button Content="Pop to Root"
-                HorizontalAlignment="Stretch"
-                Click="OnPopToRoot" />
 
         <Separator />
 
-        <TextBlock Text="Navigation Stack" FontWeight="SemiBold" FontSize="12" />
-        <TextBlock x:Name="DepthLabel"
-                   Text="Depth: 1"
-                   Opacity="0.7"
-                   FontSize="12" />
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Left" Text="Stack" FontSize="13" FontWeight="SemiBold" />
+          <TextBlock x:Name="DepthLabel" DockPanel.Dock="Right"
+                     HorizontalAlignment="Right" FontSize="12" Opacity="0.5" />
+        </DockPanel>
 
-        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
-                BorderThickness="1"
-                CornerRadius="4">
-          <StackPanel x:Name="StackDisplay" Margin="4" Spacing="2" />
-        </Border>
+        <TextBlock Text="▲  Current (top)"
+                   FontSize="11" Opacity="0.45" Margin="0,-6,0,0" />
+
+        <StackPanel x:Name="StackDisplay" Spacing="4" Margin="0,4,0,4" />
+
+        <TextBlock Text="▼  Root (bottom)"
+                   FontSize="11" Opacity="0.45" Margin="0,4,0,0" />
       </StackPanel>
     </ScrollViewer>
 
