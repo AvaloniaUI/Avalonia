@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPageDisabledTabsPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="240">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Tab Enabled State" FontWeight="SemiBold" FontSize="13" />
+        <CheckBox x:Name="Tab0Check" Content="Home (tab 0)" IsChecked="True"
+                  IsCheckedChanged="OnTabEnabledChanged" Tag="0" />
+        <CheckBox x:Name="Tab1Check" Content="Explore (tab 1)" IsChecked="True"
+                  IsCheckedChanged="OnTabEnabledChanged" Tag="1" />
+        <CheckBox x:Name="Tab2Check" Content="Library (tab 2)" IsChecked="True"
+                  IsCheckedChanged="OnTabEnabledChanged" Tag="2" />
+        <CheckBox x:Name="Tab3Check" Content="Profile (tab 3)" IsChecked="True"
+                  IsCheckedChanged="OnTabEnabledChanged" Tag="3" />
+
+        <Separator />
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="TabbedPage.IsTabEnabled is an attached property set on each child Page. Disabled tabs are grayed out and cannot be selected by pointer, keyboard, or swipe. The selection automatically moves to the nearest enabled tab." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <TabbedPage x:Name="DemoTabs" TabPlacement="Bottom">
+        <ContentPage x:Name="HomeTab" Header="Home">
+          <TextBlock Text="Home" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="18" Opacity="0.7" />
+        </ContentPage>
+        <ContentPage x:Name="ExploreTab" Header="Explore">
+          <TextBlock Text="Explore" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="18" Opacity="0.7" />
+        </ContentPage>
+        <ContentPage x:Name="LibraryTab" Header="Library">
+          <TextBlock Text="Library" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="18" Opacity="0.7" />
+        </ContentPage>
+        <ContentPage x:Name="ProfileTab" Header="Profile">
+          <TextBlock Text="Profile" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="18" Opacity="0.7" />
+        </ContentPage>
+      </TabbedPage>
+    </Border>
+  </DockPanel>
+</UserControl>

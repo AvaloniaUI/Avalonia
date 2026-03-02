@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -29,6 +30,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the collection of child pages.
         /// </summary>
+        [Content]
         public virtual IEnumerable? Pages
         {
             get => _pages;
@@ -50,7 +52,7 @@ namespace Avalonia.Controls
         public event EventHandler? CurrentPageChanged;
 
         /// <summary>
-        /// Occurs when the <see cref="Pages"/> collection changes (items added, removed, or reset).
+        /// Occurs when the <see cref="Pages"/> collection changes.
         /// </summary>
         public event EventHandler<NotifyCollectionChangedEventArgs>? PagesChanged;
 
@@ -133,10 +135,11 @@ namespace Avalonia.Controls
 
                     if (e.NewItems != null)
                     {
+                        int insertIdx = e.NewStartingIndex >= 0 ? e.NewStartingIndex : LogicalChildren.Count;
                         foreach (var newItem in e.NewItems)
                         {
                             if (newItem is ILogical logical)
-                                LogicalChildren.Add(logical);
+                                LogicalChildren.Insert(insertIdx++, logical);
                         }
                     }
                     break;

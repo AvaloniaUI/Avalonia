@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPageWithDrawerPage">
+  <Border Margin="12"
+          BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+          BorderThickness="1"
+          CornerRadius="6"
+          ClipToBounds="True">
+    <!-- DrawerPage wraps the TabbedPage so the global drawer overlays all tabs. -->
+    <DrawerPage x:Name="DemoDrawer"
+                Header="My App"
+                DrawerLength="220">
+      <DrawerPage.DrawerHeader>
+        <Border Background="{DynamicResource SystemControlHighlightAccentBrush}" Padding="16,20">
+          <StackPanel Spacing="4">
+            <TextBlock Text="Navigation" FontSize="18" FontWeight="SemiBold" Foreground="White" />
+            <TextBlock Text="Select a section" FontSize="12" Foreground="White" Opacity="0.7" />
+          </StackPanel>
+        </Border>
+      </DrawerPage.DrawerHeader>
+      <DrawerPage.Drawer>
+        <StackPanel Spacing="2" Margin="8">
+          <Button Tag="Home" Click="OnSectionSelected"
+                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                  Padding="12,10" Background="Transparent">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <PathIcon Width="16" Height="16" Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" />
+              <TextBlock Text="Home" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Tag="Explore" Click="OnSectionSelected"
+                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                  Padding="12,10" Background="Transparent">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <PathIcon Width="16" Height="16" Data="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+              <TextBlock Text="Explore" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Tag="Favorites" Click="OnSectionSelected"
+                  HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                  Padding="12,10" Background="Transparent">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <PathIcon Width="16" Height="16" Data="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              <TextBlock Text="Favorites" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </DrawerPage.Drawer>
+      <DrawerPage.Content>
+        <!-- TabbedPage is the main content; tabs provide secondary navigation within each section. -->
+        <TabbedPage x:Name="DemoTabs" TabPlacement="Bottom">
+          <ContentPage Header="Feed">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+              <TextBlock x:Name="SectionText" Text="Home" FontSize="22" FontWeight="SemiBold"
+                         HorizontalAlignment="Center" />
+              <TextBlock Text="Feed tab. Open the drawer to switch sections."
+                         FontSize="13" Opacity="0.7" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="300" />
+            </StackPanel>
+          </ContentPage>
+          <ContentPage Header="Featured">
+            <TextBlock Text="Featured content" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       FontSize="18" Opacity="0.7" />
+          </ContentPage>
+          <ContentPage Header="Recent">
+            <TextBlock Text="Recent activity" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       FontSize="18" Opacity="0.7" />
+          </ContentPage>
+        </TabbedPage>
+      </DrawerPage.Content>
+    </DrawerPage>
+  </Border>
+</UserControl>

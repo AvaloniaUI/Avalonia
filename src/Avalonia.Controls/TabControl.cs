@@ -1,4 +1,8 @@
+using System;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Presenters;
@@ -9,6 +13,7 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
+using Avalonia.Logging;
 using Avalonia.Reactive;
 using Avalonia.Interactivity;
 
@@ -19,11 +24,18 @@ namespace Avalonia.Controls
     /// </summary>
     [TemplatePart("PART_ItemsPresenter", typeof(ItemsPresenter))]
     [TemplatePart("PART_SelectedContentHost", typeof(ContentPresenter))]
+    [TemplatePart("PART_SelectedContentHost2", typeof(ContentPresenter))]
     public class TabControl : SelectingItemsControl, IContentPresenterHost
     {
         private object? _selectedContent;
         private IDataTemplate? _selectedContentTemplate;
         private CompositeDisposable? _selectedItemSubscriptions;
+        private ContentPresenter? _contentPart;
+        private ContentPresenter? _contentPresenter2;
+        private int _previousSelectedIndex = -1;
+        private CancellationTokenSource? _currentTransition;
+        private bool _shouldAnimate;
+        private bool _pendingForward;
 
         /// <summary>
         /// Defines the <see cref="TabStripPlacement"/> property.
@@ -50,20 +62,29 @@ namespace Avalonia.Controls
             ContentControl.ContentTemplateProperty.AddOwner<TabControl>();
 
         /// <summary>
-        /// The selected content property
+        /// Defines the <see cref="SelectedContent"/> property.
         /// </summary>
         public static readonly DirectProperty<TabControl, object?> SelectedContentProperty =
             AvaloniaProperty.RegisterDirect<TabControl, object?>(nameof(SelectedContent), o => o.SelectedContent);
 
         /// <summary>
-        /// The selected content template property
+        /// Defines the <see cref="SelectedContentTemplate"/> property.
         /// </summary>
         public static readonly DirectProperty<TabControl, IDataTemplate?> SelectedContentTemplateProperty =
             AvaloniaProperty.RegisterDirect<TabControl, IDataTemplate?>(nameof(SelectedContentTemplate), o => o.SelectedContentTemplate);
-        
+
         /// <summary>
-        /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
+        /// Defines the <see cref="PageTransition"/> property.
         /// </summary>
+        public static readonly StyledProperty<IPageTransition?> PageTransitionProperty =
+            AvaloniaProperty.Register<TabControl, IPageTransition?>(nameof(PageTransition));
+
+        /// <summary>
+        /// Defines the <see cref="IndicatorTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> IndicatorTemplateProperty =
+            AvaloniaProperty.Register<TabControl, IDataTemplate?>(nameof(IndicatorTemplate));
+
         private static readonly FuncTemplate<Panel?> DefaultPanel =
             new(() => new WrapPanel());
 
@@ -118,9 +139,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the content of the selected tab.
         /// </summary>
-        /// <value>
-        /// The content of the selected tab.
-        /// </value>
         public object? SelectedContent
         {
             get => _selectedContent;
@@ -130,18 +148,37 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the content template for the selected tab.
         /// </summary>
-        /// <value>
-        /// The content template of the selected tab.
-        /// </value>
         public IDataTemplate? SelectedContentTemplate
         {
             get => _selectedContentTemplate;
             internal set => SetAndRaise(SelectedContentTemplateProperty, ref _selectedContentTemplate, value);
         }
 
+        /// <summary>
+        /// Gets or sets the page transition to use when switching tabs.
+        /// </summary>
+        public IPageTransition? PageTransition
+        {
+            get => GetValue(PageTransitionProperty);
+            set => SetValue(PageTransitionProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to render the selection indicator on each tab item.
+        /// </summary>
+        public IDataTemplate? IndicatorTemplate
+        {
+            get => GetValue(IndicatorTemplateProperty);
+            set => SetValue(IndicatorTemplateProperty, value);
+        }
+
         internal ItemsPresenter? ItemsPresenterPart { get; private set; }
 
-        internal ContentPresenter? ContentPart { get; private set; }
+        internal ContentPresenter? ContentPart
+        {
+            get => _contentPart;
+            private set => _contentPart = value;
+        }
 
         /// <inheritdoc/>
         IAvaloniaList<ILogical> IContentPresenterHost.LogicalChildren => LogicalChildren;
@@ -169,8 +206,11 @@ namespace Avalonia.Controls
             if (element is TabItem tabItem)
             {
                 tabItem.TabStripPlacement = TabStripPlacement;
+
+                if (IndicatorTemplate is { } tmpl)
+                    tabItem.SetValue(TabItem.IndicatorTemplateProperty, tmpl);
             }
-            
+
             if (index == SelectedIndex)
             {
                 UpdateSelectedContent(element);
@@ -182,7 +222,7 @@ namespace Avalonia.Controls
             base.ContainerIndexChangedOverride(container, oldIndex, newIndex);
 
             var selectedIndex = SelectedIndex;
-            
+
             if (selectedIndex == oldIndex || selectedIndex == newIndex)
                 UpdateSelectedContent();
         }
@@ -211,61 +251,120 @@ namespace Avalonia.Controls
             _selectedItemSubscriptions?.Dispose();
             _selectedItemSubscriptions = null;
 
+            _currentTransition?.Cancel();
+            _currentTransition = null;
+            _shouldAnimate = false;
+
+            if (_contentPresenter2 is { IsVisible: true })
+            {
+                _contentPresenter2.IsVisible = false;
+                _contentPresenter2.Content = null;
+                _contentPresenter2.ContentTemplate = null;
+                _contentPresenter2.DataContext = null;
+            }
+
+            int oldIndex = _previousSelectedIndex;
+            _previousSelectedIndex = SelectedIndex;
+            bool forward = SelectedIndex >= oldIndex || oldIndex < 0;
+
             if (SelectedIndex == -1)
             {
                 SelectedContent = SelectedContentTemplate = null;
-            }
-            else
-            {
-                container ??= ContainerFromIndex(SelectedIndex);
-                if (container != null)
+                if (ContentPart != null)
                 {
-                    if (SelectedContentTemplate != SelectContentTemplate(container.GetValue(ContentTemplateProperty)))
-                    {
-                        // If the value of SelectedContentTemplate is about to change, clear it first. This ensures
-                        // that the template is not reused as soon as SelectedContent changes in the statement below
-                        // this block, and also that controls generated from it are unloaded before SelectedContent
-                        // (which is typically their DataContext) changes.
-                        SelectedContentTemplate = null;
-                    }
-
-                    _selectedItemSubscriptions = new CompositeDisposable(
-                        container.GetObservable(ContentControl.ContentProperty).Subscribe(content =>
-                        {
-                            var contentElement = content as StyledElement;
-                            var contentDataContext = contentElement?.DataContext;
-                            SelectedContent = content;
-
-                            // When the ContentPresenter (ContentPart) displays content that is a Control, it doesn't
-                            // set its DataContext to that of the Control's. If the content doesn't set a DataContext,
-                            // then it gets inherited from the TabControl. Work around this issue by setting the
-                            // DataContext of the ContentPart to the content's original DataContext (inherited from
-                            // container).
-                            if (contentElement is not null &&
-                                contentElement.DataContext != contentDataContext &&
-                                ContentPart is not null)
-                            {
-                                Debug.Assert(!contentElement.IsSet(DataContextProperty));
-                                ContentPart.DataContext = contentDataContext;
-                            }
-                        }),
-                        container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v => SelectedContentTemplate = SelectContentTemplate(v)));
-
-                    // Note how we fall back to our own ContentTemplate if the container doesn't specify one
-                    IDataTemplate? SelectContentTemplate(IDataTemplate? containerTemplate) => containerTemplate ?? ContentTemplate;
+                    ContentPart.Content = null;
+                    ContentPart.ContentTemplate = null;
+                    ContentPart.DataContext = null;
                 }
+                return;
+            }
+
+            container ??= ContainerFromIndex(SelectedIndex);
+            if (container != null)
+            {
+                if (SelectedContentTemplate != SelectContentTemplate(container.GetValue(ContentControl.ContentTemplateProperty)))
+                {
+                    SelectedContentTemplate = null;
+                    if (ContentPart != null)
+                        ContentPart.ContentTemplate = null;
+                }
+
+                bool shouldTransition = PageTransition != null && _contentPresenter2 != null
+                                        && VisualRoot != null && oldIndex >= 0
+                                        && oldIndex != SelectedIndex;
+                bool isInitialFire = true;
+
+                _selectedItemSubscriptions = new CompositeDisposable(
+                    container.GetObservable(ContentControl.ContentProperty).Subscribe(content =>
+                    {
+                        var contentElement = content as StyledElement;
+                        var contentDataContext = contentElement?.DataContext;
+                        SelectedContent = content;
+
+                        if (isInitialFire && shouldTransition)
+                        {
+                            var template = SelectContentTemplate(container.GetValue(ContentControl.ContentTemplateProperty));
+                            SelectedContentTemplate = template;
+
+                            _contentPresenter2!.Content = content;
+                            _contentPresenter2.ContentTemplate = template;
+                            _contentPresenter2.IsVisible = true;
+                            if (contentElement is not null && contentElement.DataContext != contentDataContext)
+                                _contentPresenter2.DataContext = contentDataContext;
+
+                            _pendingForward = forward;
+                            _shouldAnimate = true;
+                            InvalidateArrange();
+                        }
+                        else
+                        {
+                            if (ContentPart != null)
+                            {
+                                ContentPart.Content = content;
+                                // When ContentPart displays a Control, it doesn't set its
+                                // DataContext to that of the Control's. If the content doesn't
+                                // set a DataContext it gets inherited from the TabControl.
+                                // Work around this by setting ContentPart's DataContext to
+                                // the content's original DataContext (inherited from container).
+                                if (contentElement is not null &&
+                                    contentElement.DataContext != contentDataContext)
+                                {
+                                    Debug.Assert(!contentElement.IsSet(DataContextProperty));
+                                    ContentPart.DataContext = contentDataContext;
+                                }
+                            }
+                        }
+
+                        isInitialFire = false;
+                    }),
+                    container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v =>
+                    {
+                        SelectedContentTemplate = SelectContentTemplate(v);
+                        if (ContentPart != null && !_shouldAnimate)
+                            ContentPart.ContentTemplate = _selectedContentTemplate;
+                    }));
+
+                IDataTemplate? SelectContentTemplate(IDataTemplate? containerTemplate) => containerTemplate ?? ContentTemplate;
             }
         }
 
         /// <summary>
-        /// Called when an <see cref="ContentPresenter"/> is registered with the control.
+        /// Called when a <see cref="ContentPresenter"/> is registered with the control.
         /// </summary>
-        /// <param name="presenter">The presenter.</param>
         protected virtual bool RegisterContentPresenter(ContentPresenter presenter)
         {
             if (presenter.Name == "PART_SelectedContentHost")
             {
                 ContentPart = presenter;
+                ContentPart.Content = _selectedContent;
+                ContentPart.ContentTemplate = _selectedContentTemplate;
+                return true;
+            }
+
+            if (presenter.Name == "PART_SelectedContentHost2")
+            {
+                _contentPresenter2 = presenter;
+                _contentPresenter2.IsVisible = false;
                 return true;
             }
 
@@ -279,8 +378,6 @@ namespace Avalonia.Controls
 
             UpdateTabStripPlacement();
 
-            // Set TabNavigation to Once on the panel if not already set and
-            // forward the TabOnceActiveElement to the panel.
             if (ItemsPresenterPart?.Panel is { } panel)
             {
                 if (!panel.IsSet(KeyboardNavigation.TabNavigationProperty))
@@ -293,6 +390,25 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            var result = base.ArrangeOverride(finalSize);
+
+            if (_shouldAnimate)
+            {
+                _shouldAnimate = false;
+                _currentTransition?.Cancel();
+                var cancel = new CancellationTokenSource();
+                _currentTransition = cancel;
+                var from = ContentPart;
+                var to = _contentPresenter2;
+                if (from != null && to != null && PageTransition != null)
+                    _ = RunTransitionAsync(PageTransition, from, to, _pendingForward, cancel);
+            }
+
+            return result;
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -301,24 +417,63 @@ namespace Avalonia.Controls
             {
                 RefreshContainers();
             }
+            else if (change.Property == IndicatorTemplateProperty)
+            {
+                UpdateIndicatorTemplate();
+            }
             else if (change.Property == ContentTemplateProperty)
             {
                 var newTemplate = change.GetNewValue<IDataTemplate?>();
                 if (SelectedContentTemplate != newTemplate &&
-                    ContainerFromIndex(SelectedIndex) is { } container && 
+                    ContainerFromIndex(SelectedIndex) is { } container &&
                     container.GetValue(ContentControl.ContentTemplateProperty) == null)
                 {
-                    SelectedContentTemplate = newTemplate; // See also UpdateSelectedContent
+                    SelectedContentTemplate = newTemplate;
+                    if (ContentPart != null && !_shouldAnimate)
+                        ContentPart.ContentTemplate = newTemplate;
                 }
             }
             else if (change.Property == KeyboardNavigation.TabOnceActiveElementProperty &&
                 ItemsPresenterPart?.Panel is { } panel)
             {
-                // Forward TabOnceActiveElement to the panel.
                 KeyboardNavigation.SetTabOnceActiveElement(
                     panel,
                     change.GetNewValue<IInputElement?>());
             }
+        }
+
+        private async Task RunTransitionAsync(
+            IPageTransition transition,
+            ContentPresenter from,
+            ContentPresenter to,
+            bool forward,
+            CancellationTokenSource cts)
+        {
+            try
+            {
+                await transition.Start(from, to, forward, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch (Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.Control)
+                    ?.Log(this, "Tab transition threw an unhandled exception: {Exception}", e);
+            }
+
+            if (cts.IsCancellationRequested)
+                return;
+
+            from.IsVisible = false;
+            from.Content = null;
+            from.ContentTemplate = null;
+            from.DataContext = null;
+            from.RenderTransform = null;
+            from.Opacity = 1;
+
+            (_contentPart, _contentPresenter2) = (_contentPresenter2, _contentPart);
         }
 
         private void UpdateTabStripPlacement()
@@ -334,6 +489,25 @@ namespace Avalonia.Controls
                 if (control is TabItem tabItem)
                 {
                     tabItem.TabStripPlacement = TabStripPlacement;
+                }
+            }
+        }
+
+        private void UpdateIndicatorTemplate()
+        {
+            var controls = ItemsPresenterPart?.Panel?.Children;
+            if (controls is null)
+                return;
+
+            var template = IndicatorTemplate;
+            foreach (var control in controls)
+            {
+                if (control is TabItem tabItem)
+                {
+                    if (template is not null)
+                        tabItem.SetValue(TabItem.IndicatorTemplateProperty, template);
+                    else
+                        tabItem.ClearValue(TabItem.IndicatorTemplateProperty);
                 }
             }
         }
