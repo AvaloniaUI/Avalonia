@@ -427,6 +427,7 @@ public class WindowDrawnDecorations : StyledElement
             AutomationProperties.SetAutomationId(_minimizeButton, "Minimize");
             AutomationProperties.SetName(_minimizeButton, "Minimize");
             _minimizeButton.Click += OnMinimizeButtonClick;
+            UpdateMinimizeButtonState();
         }
 
         if (_maximizeButton != null)
@@ -434,6 +435,7 @@ public class WindowDrawnDecorations : StyledElement
             _maximizeButton.Click += OnMaximizeButtonClick;
             AutomationProperties.SetAutomationId(_maximizeButton, "Maximize");
             AutomationProperties.SetName(_maximizeButton, "Maximize");
+            UpdateMaximizeButtonState();
         }
 
         if (_fullScreenButton != null)
@@ -441,6 +443,7 @@ public class WindowDrawnDecorations : StyledElement
             _fullScreenButton.Click += OnFullScreenButtonClick;
             AutomationProperties.SetAutomationId(_fullScreenButton, "Fullscreen");
             AutomationProperties.SetName(_fullScreenButton, "Fullscreen");
+            UpdateFullScreenButtonState();
         }
 
         if (_popoverCloseButton != null)
