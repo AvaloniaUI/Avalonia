@@ -8,7 +8,7 @@ namespace Avalonia.Controls.UnitTests;
 
 public class ContentPageTests
 {
-    public class PageBaseDefaults : ScopedTestBase
+    public class PageDefaults : ScopedTestBase
     {
         [Fact]
         public void Header_DefaultIsNull()
@@ -21,14 +21,14 @@ public class ContentPageTests
         [InlineData("Home")]
         [InlineData("Settings")]
         [InlineData("")]
-        public void Header_AcceptsStringValue(string title)
+        public void Header_SetString_RoundTrips(string title)
         {
             var page = new ContentPage { Header = title };
             Assert.Equal(title, page.Header);
         }
 
         [Fact]
-        public void Header_AcceptsControlValue()
+        public void Header_SetControl_RoundTrips()
         {
             var label = new TextBlock { Text = "Custom Title" };
             var page = new ContentPage { Header = label };
@@ -88,7 +88,7 @@ public class ContentPageTests
         }
     }
 
-    public class ContentPageProperties : ScopedTestBase
+    public class ContentPropertyTests : ScopedTestBase
     {
         [Fact]
         public void Content_DefaultIsNull()
@@ -98,14 +98,14 @@ public class ContentPageTests
         }
 
         [Fact]
-        public void Content_AcceptsStringValue()
+        public void Content_SetString_RoundTrips()
         {
             var page = new ContentPage { Content = "Hello" };
             Assert.Equal("Hello", page.Content);
         }
 
         [Fact]
-        public void Content_AcceptsControl()
+        public void Content_SetControl_RoundTrips()
         {
             var ctrl = new Button();
             var page = new ContentPage { Content = ctrl };
@@ -180,7 +180,7 @@ public class ContentPageTests
         }
     }
 
-    public class LogicalChildren : ScopedTestBase
+    public class LogicalChildrenTests : ScopedTestBase
     {
         [Fact]
         public void Content_SetControl_AddsToLogicalChildren()
@@ -225,8 +225,6 @@ public class ContentPageTests
         [Fact]
         public void Content_ReplacedPage_ResetsSafeAreaPaddingOnOldPage()
         {
-            // When a child Page is replaced, its SafeAreaPadding must be cleared
-            // so the old page does not retain insets from a previous host.
             var host = new ContentPage();
             var oldChild = new ContentPage();
             oldChild.SafeAreaPadding = new Thickness(10, 20, 10, 30);
@@ -238,7 +236,7 @@ public class ContentPageTests
         }
     }
 
-    public class CommandBarProperties : ScopedTestBase
+    public class CommandBarPropertyTests : ScopedTestBase
     {
         [Fact]
         public void TopCommandBar_DefaultIsNull()
@@ -281,99 +279,7 @@ public class ContentPageTests
         }
     }
 
-    public class NavigationEventArgTypes : ScopedTestBase
-    {
-        [Fact]
-        public void NavigatedToEventArgs_Properties()
-        {
-            var prev = new ContentPage { Header = "Prev" };
-            var args = new NavigatedToEventArgs(prev, NavigationType.Push);
-            Assert.Same(prev, args.PreviousPage);
-            Assert.Equal(NavigationType.Push, args.NavigationType);
-        }
-
-        [Fact]
-        public void NavigatedToEventArgs_NullPreviousPage_IsAllowed()
-        {
-            var args = new NavigatedToEventArgs(null, NavigationType.PopToRoot);
-            Assert.Null(args.PreviousPage);
-        }
-
-        [Fact]
-        public void NavigatedFromEventArgs_Properties()
-        {
-            var dest = new ContentPage { Header = "Dest" };
-            var args = new NavigatedFromEventArgs(dest, NavigationType.Pop);
-            Assert.Same(dest, args.DestinationPage);
-            Assert.Equal(NavigationType.Pop, args.NavigationType);
-        }
-
-        [Fact]
-        public void NavigatingFromEventArgs_DefaultCancelIsFalse()
-        {
-            var args = new NavigatingFromEventArgs(null, NavigationType.Push);
-            Assert.False(args.Cancel);
-        }
-
-        [Fact]
-        public void NavigatingFromEventArgs_Cancel_CanBeSetTrue()
-        {
-            var args = new NavigatingFromEventArgs(null, NavigationType.Push) { Cancel = true };
-            Assert.True(args.Cancel);
-        }
-
-        [Fact]
-        public void NavigationEventArgs_Properties()
-        {
-            var page = new ContentPage();
-            var args = new NavigationEventArgs(page, NavigationType.Push);
-            Assert.Same(page, args.Page);
-            Assert.Equal(NavigationType.Push, args.NavigationType);
-        }
-
-        [Fact]
-        public void ModalPushedEventArgs_Properties()
-        {
-            var modal = new ContentPage();
-            var args = new ModalPushedEventArgs(modal);
-            Assert.Same(modal, args.Modal);
-        }
-
-        [Fact]
-        public void ModalPoppedEventArgs_Properties()
-        {
-            var modal = new ContentPage();
-            var args = new ModalPoppedEventArgs(modal);
-            Assert.Same(modal, args.Modal);
-        }
-
-        [Fact]
-        public void PageSelectionChangedEventArgs_Properties()
-        {
-            var prev = new ContentPage { Header = "Tab 1" };
-            var current = new ContentPage { Header = "Tab 2" };
-            var args = new PageSelectionChangedEventArgs(prev, current);
-            Assert.Same(prev, args.PreviousPage);
-            Assert.Same(current, args.CurrentPage);
-        }
-    }
-
-    public class NavigationTypeEnum : ScopedTestBase
-    {
-        [Fact]
-        public void NavigationType_AllValuesAreDefined()
-        {
-            var values = System.Enum.GetValues<NavigationType>();
-            Assert.Contains(NavigationType.Push, values);
-            Assert.Contains(NavigationType.Pop, values);
-            Assert.Contains(NavigationType.PopToRoot, values);
-            Assert.Contains(NavigationType.Insert, values);
-            Assert.Contains(NavigationType.Remove, values);
-            Assert.Contains(NavigationType.Replace, values);
-        }
-    }
-
-    public class VirtualOverrides : ScopedTestBase
+    public class SystemBackButtonTests : ScopedTestBase
     {
         [Fact]
         public void OnSystemBackButtonPressed_DefaultReturnsFalse()

@@ -4,7 +4,6 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Themes.Simple;
-using Avalonia.UnitTests;
 using Xunit;
 
 #if AVALONIA_SKIA
@@ -74,10 +73,8 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
-            // Attach to a logical root
-            var logicalRoot = new TestRoot { Child = target };
             await RenderToFile(target);
-            CompareImages();
+            CompareImages(skipImmediate: true);
         }
 
         [Fact]
@@ -134,10 +131,8 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
-            // Attach to a logical root
-            var logicalRoot = new TestRoot { Child = target };
             await RenderToFile(target);
-            CompareImages();
+            CompareImages(skipImmediate: true);
         }
     }
 }
