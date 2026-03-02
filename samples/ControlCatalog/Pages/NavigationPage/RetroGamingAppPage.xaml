@@ -1,0 +1,177 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.RetroGamingAppPage">
+
+  <UserControl.Resources>
+    <SolidColorBrush x:Key="RetroBg"      Color="#120a1f"/>
+    <SolidColorBrush x:Key="RetroSurface" Color="#2d1b4e"/>
+    <SolidColorBrush x:Key="RetroPrimary" Color="#ad2bee"/>
+    <SolidColorBrush x:Key="RetroCyan"    Color="#00ffff"/>
+    <SolidColorBrush x:Key="RetroYellow"  Color="#ffff00"/>
+    <SolidColorBrush x:Key="RetroText"    Color="#e0d0ff"/>
+    <SolidColorBrush x:Key="RetroMuted"   Color="#7856a8"/>
+  </UserControl.Resources>
+
+  <DockPanel>
+    <ScrollViewer x:Name="InfoPanel" DockPanel.Dock="Right" Width="300">
+      <StackPanel Margin="16" Spacing="16">
+        <TextBlock Text="Retro Gaming" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Retro arcade-style game browser. NavigationPage shows the app header and coin counter. TabbedPage provides the bottom tab bar with 5 sections. Tapping a game card pushes a full detail screen." />
+        <Separator />
+        <TextBlock Text="Navigation Flow" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="12" Text="1. Home: TabbedPage root in NavigationPage" />
+          <TextBlock FontSize="12" Text="2. Browse tabs: Home, Games, Search, Favorites, Profile" />
+          <TextBlock FontSize="12" Text="3. Tap any game card → detail page pushed" />
+          <TextBlock FontSize="12" Text="4. ← Back returns to TabbedPage" />
+        </StackPanel>
+        <Separator />
+        <TextBlock Text="Architecture" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="12" Text="• NavigationPage BarForeground = cyan" />
+          <TextBlock FontSize="12" Text="• TabbedPage.Header = retro logo (TextBlock)" />
+          <TextBlock FontSize="12" Text="• SetTopCommandBar = coin counter widget" />
+          <TextBlock FontSize="12" Text="• 5 bottom tabs with SVG path icons" />
+          <TextBlock FontSize="12" Text="• SelectedTabBrush + UnselectedTabBrush" />
+          <TextBlock FontSize="12" Text="• Pipe indicator styled via TabbedPage.Styles" />
+        </StackPanel>
+        <Separator />
+        <TextBlock Text="Design" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="12" Text="• #120a1f background, #2d1b4e surface" />
+          <TextBlock FontSize="12" Text="• #ad2bee primary, #00ffff cyan, #ffff00 yellow" />
+          <TextBlock FontSize="12" Text="• Square corners (0px radius) throughout" />
+          <TextBlock FontSize="12" Text="• Pixel art decorations using small Borders" />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+      <Panel>
+        <NavigationPage x:Name="RetroNav"
+                             Background="{StaticResource RetroBg}"
+                             BarBackground="{StaticResource RetroSurface}"
+                             BarForeground="{StaticResource RetroCyan}"
+                             BarHeight="64" />
+      </Panel>
+    </Border>
+  </DockPanel>
+
+  <UserControl.Styles>
+    <!-- Nav back button: square bordered box -->
+    <Style Selector="NavigationPage /template/ Button#PART_BackButton">
+      <Setter Property="Width" Value="32"/>
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush" Value="{StaticResource RetroCyan}"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="Background" Value="{StaticResource RetroSurface}"/>
+    </Style>
+    <Style Selector="NavigationPage /template/ Button#PART_BackButton PathIcon">
+      <Setter Property="Foreground" Value="{StaticResource RetroCyan}"/>
+      <Setter Property="Width" Value="16"/>
+      <Setter Property="Height" Value="16"/>
+    </Style>
+    <Style Selector="NavigationPage /template/ Button#PART_BackButton /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#cc2d1b4e"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+    </Style>
+    <Style Selector="NavigationPage /template/ Button#PART_BackButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#cc3d2b6e"/>
+    </Style>
+    <Style Selector="NavigationPage /template/ Button#PART_BackButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#cc1e1035"/>
+    </Style>
+
+    <!-- Primary purple button (INSERT COIN TO PLAY) -->
+    <Style Selector="Button.retro-primary-btn /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#ad2bee"/>
+    </Style>
+    <Style Selector="Button.retro-primary-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#c040ff"/>
+    </Style>
+    <Style Selector="Button.retro-primary-btn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#8b22c0"/>
+    </Style>
+
+    <!-- Square bordered icon button (heart, share in detail nav bar) -->
+    <Style Selector="Button.retro-icon-btn">
+      <Setter Property="Width" Value="32"/>
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush" Value="{StaticResource RetroCyan}"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="Background" Value="{StaticResource RetroSurface}"/>
+    </Style>
+    <Style Selector="Button.retro-icon-btn /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#cc2d1b4e"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+    </Style>
+    <Style Selector="Button.retro-icon-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#cc3d2b6e"/>
+    </Style>
+    <Style Selector="Button.retro-icon-btn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#cc1e1035"/>
+    </Style>
+
+    <!-- Transparent list/card button -->
+    <Style Selector="Button.retro-list-btn /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button.retro-list-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#1Aad2bee"/>
+    </Style>
+    <Style Selector="Button.retro-list-btn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#33ad2bee"/>
+    </Style>
+
+    <!-- Category filter: unselected -->
+    <Style Selector="Button.retro-cat-btn /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#2d1b4e"/>
+    </Style>
+    <Style Selector="Button.retro-cat-btn:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#3d2b6e"/>
+    </Style>
+    <Style Selector="Button.retro-cat-btn:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#1e1035"/>
+    </Style>
+
+    <!-- Category filter: selected -->
+    <Style Selector="Button.retro-cat-selected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#ad2bee"/>
+    </Style>
+    <Style Selector="Button.retro-cat-selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#c040ff"/>
+    </Style>
+    <Style Selector="Button.retro-cat-selected:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#8b22c0"/>
+    </Style>
+
+    <!-- Search FAB: yellow square, correct hover/press colors -->
+    <Style Selector="Button.retro-fab">
+      <Setter Property="Background" Value="#ffff00"/>
+    </Style>
+    <Style Selector="Button.retro-fab /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#ffff00"/>
+      <Setter Property="CornerRadius" Value="0"/>
+    </Style>
+    <Style Selector="Button.retro-fab:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#e6e600"/>
+    </Style>
+    <Style Selector="Button.retro-fab:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#cccc00"/>
+    </Style>
+
+    <!-- Nav bar back button: left margin so it doesn't hug the edge -->
+    <Style Selector="NavigationPage /template/ Button#PART_BackButton">
+      <Setter Property="Margin" Value="4,0,0,0"/>
+    </Style>
+  </UserControl.Styles>
+</UserControl>
