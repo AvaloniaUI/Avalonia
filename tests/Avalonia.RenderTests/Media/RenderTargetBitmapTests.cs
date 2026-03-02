@@ -48,12 +48,6 @@ public class RenderTargetBitmapTests : TestBase
         };
 
         await RenderToFile(root);
-        
         CompareImages();
-
-        // var rtb = new RenderTargetBitmap(new PixelSize(300,300), new Vector(96,96));
-        // rtb.Render(root);
-        //
-        // rtb.Save("test.png");
     }
 }

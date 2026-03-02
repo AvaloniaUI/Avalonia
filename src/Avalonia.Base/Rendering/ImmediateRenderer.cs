@@ -63,6 +63,7 @@ internal class ImmediateRenderer
         })
         using (visual.Clip is { } clip ? context.PushGeometryClip(clip) : default(DrawingContext.PushedState?))
         using (visual.OpacityMask is { } opctMask ? context.PushOpacityMask(opctMask, rect) : default(DrawingContext.PushedState?))
+        using (visual.Effect is { } effect ? context.PushEffect(effect, rect) : default(DrawingContext.PushedState?))
         {
             var totalTransform = transform * parentTransform;
             var visualBounds = rect.TransformToAABB(totalTransform);

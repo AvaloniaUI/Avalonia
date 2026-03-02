@@ -21,6 +21,9 @@ namespace Avalonia.Media
         public static readonly StyledProperty<IBrush?> OpacityMaskProperty =
             AvaloniaProperty.Register<DrawingGroup, IBrush?>(nameof(OpacityMask));
 
+        public static readonly StyledProperty<IEffect?> EffectProperty =
+            AvaloniaProperty.Register<DrawingGroup, IEffect?>(nameof(Effect));
+
         public static readonly DirectProperty<DrawingGroup, DrawingCollection> ChildrenProperty =
             AvaloniaProperty.RegisterDirect<DrawingGroup, DrawingCollection>(
                 nameof(Children),
@@ -53,6 +56,12 @@ namespace Avalonia.Media
             set => SetValue(OpacityMaskProperty, value);
         }
 
+        public IEffect? Effect
+        {
+            get => GetValue(EffectProperty);
+            set => SetValue(EffectProperty, value);
+        }
+
         internal RenderOptions? RenderOptions { get; set; }
         internal TextOptions? TextOptions { get; set; }
 
@@ -80,6 +89,7 @@ namespace Avalonia.Media
             using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, bounds) : default)
             using (RenderOptions != null ? context.PushRenderOptions(RenderOptions.Value) : default)
             using (TextOptions != null ? context.PushTextOptions(TextOptions.Value) : default)
+            using (Effect != null ? context.PushEffect(Effect, bounds) : default)
             {
                 foreach (var drawing in Children)
                 {
@@ -336,6 +346,15 @@ namespace Avalonia.Media
                 drawingGroup.TextOptions = textOptions;
             }
 
+            protected override void PushEffectCore(IEffect effect, Rect bounds)
+            {
+                // Instantiate a new drawing group and set it as the _currentDrawingGroup
+                var drawingGroup = PushNewDrawingGroup();
+
+                // Set the effect on the new DrawingGroup
+                drawingGroup.Effect = effect;
+            }
+
             protected override void PopClipCore() => Pop();
 
             protected override void PopGeometryClipCore() => Pop();
@@ -349,6 +368,8 @@ namespace Avalonia.Media
             protected override void PopRenderOptionsCore() => Pop();
 
             protected override void PopTextOptionsCore() => Pop();
+
+            protected override void PopEffectCore() => Pop();
 
             /// <summary>
             /// Creates a new DrawingGroup for a Push* call by setting the

@@ -285,7 +285,8 @@ namespace Avalonia.Media
                 GeometryClip,
                 OpacityMask,
                 RenderOptions,
-                TextOptions
+                TextOptions,
+                Effect
             }
 
             public RestoreState(DrawingContext context, PushedStateType type)
@@ -314,6 +315,8 @@ namespace Avalonia.Media
                     _context.PopRenderOptionsCore();
                 else if (_type == PushedStateType.TextOptions)
                     _context.PopTextOptionsCore();
+                else if (_type == PushedStateType.Effect)
+                    _context.PopEffectCore();
             }
         }
 
@@ -433,9 +436,25 @@ namespace Avalonia.Media
             return new PushedState(this);
         }
 
+        /// <summary>
+        /// Pushes an effect.
+        /// </summary>
+        /// <param name="effect">The effect.</param>
+        /// <param name="bounds">The bounds of the effect.</param>
+        /// <returns>A disposable used to undo the effect.</returns>
+        public PushedState PushEffect(IEffect effect, Rect bounds)
+        {
+            PushEffectCore(effect, bounds);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.Effect));
+            return new PushedState(this);
+        }
+
         protected abstract void PushTextOptionsCore(TextOptions textOptions);
         
         protected abstract void PushTransformCore(Matrix matrix);
+
+        protected abstract void PushEffectCore(IEffect effect, Rect bounds);
 
         protected abstract void PopClipCore();
         protected abstract void PopGeometryClipCore();
@@ -444,6 +463,7 @@ namespace Avalonia.Media
         protected abstract void PopTransformCore();
         protected abstract void PopRenderOptionsCore();
         protected abstract void PopTextOptionsCore();
+        protected abstract void PopEffectCore();
         
         private static bool PenIsVisible(IPen? pen)
         {
