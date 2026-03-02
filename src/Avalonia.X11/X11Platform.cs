@@ -474,7 +474,11 @@ namespace Avalonia
         /// Avalonia will draw its own decorations (titlebar, borders, resize grips)
         /// instead of using the X11 window manager decorations.
         /// </summary>
-        [Experimental("AVALONIA_X11_CSD", Message = "Experimental¸used mostly for testing ")]
+        [Experimental("AVALONIA_X11_CSD"
+            #if NET10_0_OR_GREATER
+            , Message = "Experimental¸used mostly for testing "
+            #endif
+            )]
         public bool? EnableDrawnDecorations
         {
             get => EnableDrawnDecorationsInternal;
