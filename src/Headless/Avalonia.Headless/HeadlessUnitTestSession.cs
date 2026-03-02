@@ -236,9 +236,12 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
                 // If windowing subsystem wasn't initialized by user, force headless with default parameters.
                 if (appBuilder.WindowingSubsystemName != "Headless")
                 {
-                    appBuilder = appBuilder
-                        .UseHeadless(new AvaloniaHeadlessPlatformOptions())
-                        .UseHarfBuzz();
+                    appBuilder = appBuilder.UseHeadless(new AvaloniaHeadlessPlatformOptions());
+                }
+
+                if (appBuilder.TextShapingSubsystemInitializer is null)
+                {
+                    appBuilder = appBuilder.UseHarfBuzz();
                 }
 
                 // ReSharper disable once AccessToModifiedClosure

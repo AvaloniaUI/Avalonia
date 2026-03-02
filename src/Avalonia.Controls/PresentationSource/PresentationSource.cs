@@ -19,7 +19,8 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
     internal FocusManager FocusManager { get; } = new();
 
-    public PresentationSource(InputElement rootVisual, ITopLevelImpl platformImpl,
+    public PresentationSource(InputElement rootVisual, InputElement defaultFocusVisual,
+        ITopLevelImpl platformImpl,
         IAvaloniaDependencyResolver dependencyResolver, Func<Size> clientSizeProvider)
     {
         _clientSizeProvider = clientSizeProvider;
@@ -41,6 +42,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
         LayoutManager = CreateLayoutManager();
         
         RootVisual = rootVisual;
+        FocusRoot = defaultFocusVisual;
     }
 
     // In WPF it's a Visual and it's nullable. For now we have it as non-nullable InputElement since 

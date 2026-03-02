@@ -14,7 +14,7 @@ public partial class Compositor
     /// <returns></returns>
     internal CompositionTarget CreateCompositionTarget(Func<IEnumerable<object>> surfaces)
     {
-        return new CompositionTarget(this, new ServerCompositionTarget(_server, surfaces, DiagnosticTextRenderer));
+        return new CompositionTarget(this, new ServerCompositionTarget(_server, surfaces));
     }
     
     public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));

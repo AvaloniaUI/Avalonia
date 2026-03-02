@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
+using Avalonia.FreeDesktop.AtSpi;
 using Avalonia.FreeDesktop.DBusIme;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -27,6 +28,8 @@ namespace Avalonia.X11
     internal class AvaloniaX11Platform : IWindowingPlatform
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
+        private X11AtSpiAccessibility? _accessibility;
+        internal AtSpiServer? AtSpiServer => _accessibility?.Server;
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
         public Dictionary<IntPtr, X11EventDispatcher.EventHandler> Windows { get; } = new ();
         public XI2Manager? XI2 { get; private set; }
@@ -106,7 +109,13 @@ namespace Avalonia.X11
 
             Compositor = new Compositor(graphics);
             AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
+            
+            _accessibility = new X11AtSpiAccessibility(this);
+            _accessibility.Initialize();
         }
+
+        internal void TrackWindow(X11Window window) => _accessibility?.TrackWindow(window);
+        internal void UntrackWindow(X11Window window) => _accessibility?.UntrackWindow(window);
 
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }

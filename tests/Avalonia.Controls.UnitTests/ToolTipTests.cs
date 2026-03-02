@@ -26,7 +26,7 @@ namespace Avalonia.Controls.UnitTests
             var toolTip = control.GetValue(ToolTip.ToolTipProperty);
             Assert.NotNull(toolTip);
             Assert.IsType<PopupRoot>(toolTip.PopupHost);
-            Assert.Same(toolTip.VisualRoot, toolTip.PopupHost);
+            Assert.Same(TopLevel.GetTopLevel(toolTip), toolTip.PopupHost);
         }
     }
 
@@ -574,7 +574,7 @@ namespace Avalonia.Controls.UnitTests
                     point = new Point(id, int.MaxValue);
                 }
 
-                hitTesterMock.Setup(m => m.HitTestFirst(point, window, It.IsAny<Func<Visual, bool>>()))
+                hitTesterMock.Setup(m => m.HitTestFirst(point, It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                     .Returns(control);
 
                 var root = control?.GetInputRoot() ?? window.InputRoot;
@@ -585,7 +585,7 @@ namespace Avalonia.Controls.UnitTests
 
                 if (lastRoot != null && lastRoot != root)
                 {
-                    ((TopLevel)lastRoot.RootElement)?.PlatformImpl?.Input?.Invoke(new RawPointerEventArgs(s_mouseDevice, timestamp,
+                    ((PresentationSource)lastRoot)?.PlatformImpl?.Input?.Invoke(new RawPointerEventArgs(s_mouseDevice, timestamp,
                         lastRoot, RawPointerEventType.LeaveWindow, new Point(-1,-1), RawInputModifiers.None));
                 }
 

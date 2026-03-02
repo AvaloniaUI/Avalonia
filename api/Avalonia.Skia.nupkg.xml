@@ -27,9 +27,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Skia.Helpers.DrawingContextHelper.WrapSkiaCanvas(SkiaSharp.SKCanvas,Avalonia.Vector)</Target>
+    <Left>baseline/Avalonia.Skia/lib/net10.0/Avalonia.Skia.dll</Left>
+    <Right>current/Avalonia.Skia/lib/net10.0/Avalonia.Skia.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Skia.ISkiaGpuRenderTarget.BeginRenderingSession</Target>
     <Left>baseline/Avalonia.Skia/lib/net10.0/Avalonia.Skia.dll</Left>
     <Right>current/Avalonia.Skia/lib/net10.0/Avalonia.Skia.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Skia.Helpers.DrawingContextHelper.WrapSkiaCanvas(SkiaSharp.SKCanvas,Avalonia.Vector)</Target>
+    <Left>baseline/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Left>
+    <Right>current/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>

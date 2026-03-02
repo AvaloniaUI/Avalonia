@@ -89,8 +89,7 @@ namespace Avalonia.UnitTests
                 .Bind<IWindowingPlatform?>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
-                .Bind<IAccessKeyHandler?>().ToConstant(Services.AccessKeyHandler)
-                ;
+                .Bind<IAccessKeyHandler?>().ToFunc(Services.AccessKeyHandler ?? (() => null));
             
             // This is a hack to make tests work, we need to refactor the way font manager is registered
             // See https://github.com/AvaloniaUI/Avalonia/issues/10081

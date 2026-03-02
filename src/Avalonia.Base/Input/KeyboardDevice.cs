@@ -225,7 +225,7 @@ namespace Avalonia.Input
             if(e.Handled)
                 return;
 
-            var element = FocusedElement ?? e.Root.RootElement;
+            var element = FocusedElement ?? e.Root.FocusRoot;
 
             if (e is RawKeyEventArgs keyInput)
             {

@@ -14,6 +14,8 @@ public class CompositorInvalidationClippingTests : CompositorTestsBase
         foreach (var child in visual.VisualChildren) count += CountVisuals(child);
         return count;
     }
+
+    private const int TopLevelOverhead = 2; // TopLevel + TopLevelHost
     
     [Theory,
         // If canvas itself has no background, the second render won't draw any visuals at all, since
@@ -22,9 +24,9 @@ public class CompositorInvalidationClippingTests : CompositorTestsBase
         InlineData(true, false, false, 1, 0),
         InlineData(false, true, false, 1, 0),
         // If canvas has background, the second render will draw only the canvas visual itself
-        InlineData(false, false, true, 5, 4),
-        InlineData(true, false,   true,5, 4),
-        InlineData(false, true,  true, 5, 4),
+        InlineData(false, false, true, 4 + TopLevelOverhead, 3 + TopLevelOverhead),
+        InlineData(true, false,   true,4 + TopLevelOverhead, 3 + TopLevelOverhead),
+        InlineData(false, true,  true, 4 + TopLevelOverhead, 3 + TopLevelOverhead),
     ]
     public void Do_Not_Re_Render_Unaffected_Visual_Trees(bool clipToBounds, bool clipGeometry,
         bool canvasHasContent,

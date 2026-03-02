@@ -305,11 +305,10 @@ namespace Avalonia.Controls.UnitTests
         public void Raises_Click_When_AccessKey_Raised()
         {
             var raised = 0;
-            var ah = new AccessKeyHandler();
             var kd = new KeyboardDevice();
             using var app = UnitTestApplication.Start(TestServices.StyledWindow
                 .With(
-                    accessKeyHandler: ah, 
+                    accessKeyHandler: () => new AccessKeyHandler(),
                     keyboardDevice: () => kd)
             );
 

@@ -176,7 +176,7 @@ namespace Avalonia.Controls.Primitives
 
         internal event EventHandler<CancelEventArgs>? Closing;
 
-        public IPopupHost? Host => _openState?.PopupHost;
+        internal IPopupHost? Host => _openState?.PopupHost;
 
         /// <summary>
         /// Gets or sets a hint to the window manager that a shadow should be added to the popup.
