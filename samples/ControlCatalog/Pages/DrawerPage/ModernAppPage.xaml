@@ -1,0 +1,184 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ModernAppPage">
+
+  <UserControl.Resources>
+    <!-- Color tokens -->
+    <SolidColorBrush x:Key="ModernPrimary"  Color="#0dccf2"/>
+    <SolidColorBrush x:Key="ModernBg"       Color="#f5f8f8"/>
+    <SolidColorBrush x:Key="ModernDark"     Color="#101f22"/>
+    <SolidColorBrush x:Key="ModernSurface"  Color="#1a2e33"/>
+    <SolidColorBrush x:Key="ModernMuted"    Color="#8a9ba3"/>
+    <SolidColorBrush x:Key="ModernBorder"   Color="#dde6e9"/>
+  </UserControl.Resources>
+
+  <DockPanel>
+
+    <!-- Info panel (desktop only, >= 640 px) -->
+    <ScrollViewer x:Name="InfoPanel" DockPanel.Dock="Right" Width="290" IsVisible="False">
+      <StackPanel Margin="16" Spacing="16">
+
+        <TextBlock Text="ModernApp" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}"/>
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Travel social app using a top-placement DrawerPage. A slide-down nav pane gives access to Discover, My Trips, Profile, and Settings. Features destination cards, story circles, an experience feed, a stats profile, and a travel gallery." />
+
+        <Separator/>
+
+        <TextBlock Text="Navigation Flow" FontSize="13" FontWeight="SemiBold"/>
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="12" Text="1. DrawerPage: root, placement=Top"/>
+          <TextBlock FontSize="12" Text="2. Hamburger opens slide-down pane (260 px)"/>
+          <TextBlock FontSize="12" Text="3. Pane items navigate NavigationPage sections"/>
+          <TextBlock FontSize="12" Text="4. Discover has full-width destination cards"/>
+          <TextBlock FontSize="12" Text="5. Profile shows stats and a travel gallery"/>
+        </StackPanel>
+
+        <Separator/>
+
+        <TextBlock Text="Design Tokens" FontSize="13" FontWeight="SemiBold"/>
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="12" Text="• Primary:  #0dccf2 (cyan)"/>
+          <TextBlock FontSize="12" Text="• BG:       #f5f8f8 (light)"/>
+          <TextBlock FontSize="12" Text="• Dark:     #101f22"/>
+          <TextBlock FontSize="12" Text="• Corner:   12 px cards, 999 pills"/>
+          <TextBlock FontSize="12" Text="• DrawerLen: 260 px"/>
+        </StackPanel>
+
+        <Separator/>
+
+        <TextBlock Text="Key Code" FontSize="13" FontWeight="SemiBold"/>
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8">
+          <TextBlock FontFamily="Cascadia Code,Consolas,Menlo,monospace"
+                     FontSize="10" TextWrapping="Wrap"
+                     Text="&lt;DrawerPage&#xA; DrawerPlacement=&quot;Top&quot;&#xA; DrawerLength=&quot;260&quot;&#xA; DrawerLayoutBehavior=&quot;Overlay&quot;&gt;&#xA;  &lt;DrawerPage.Drawer&gt;&#xA;   &lt;!-- nav items --&gt;&#xA;  &lt;/DrawerPage.Drawer&gt;&#xA;  &lt;NavigationPage .../&gt;&#xA;&lt;/DrawerPage&gt;"/>
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+
+      <DrawerPage x:Name="DrawerPageControl"
+                  DrawerPlacement="Top"
+                  DrawerLength="260"
+                  DrawerLayoutBehavior="Overlay"
+                  Background="{StaticResource ModernBg}"
+                  DrawerBackground="White">
+
+        <DrawerPage.Resources>
+          <SolidColorBrush x:Key="NavigationControlNavBarBackground" Color="#ffffff"/>
+        </DrawerPage.Resources>
+
+        <!-- Header shown in PART_TopBar alongside the hamburger -->
+        <DrawerPage.Header>
+          <DockPanel>
+            <PathIcon x:Name="PageActionIcon"
+                      Width="20" Height="20"
+                      DockPanel.Dock="Right"
+                      VerticalAlignment="Center"
+                      Foreground="#0d1f22"
+                      Data="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            <TextBlock x:Name="PageTitle"
+                       Text="Discover"
+                       FontSize="18" FontWeight="Bold"
+                       Foreground="#0d1f22"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"/>
+          </DockPanel>
+        </DrawerPage.Header>
+
+        <!-- Drawer header strip -->
+        <DrawerPage.DrawerHeader>
+          <Border Background="White" Padding="8,8,16,8"
+                  BorderBrush="#dde6e9" BorderThickness="0,0,0,1">
+            <DockPanel>
+              <Button x:Name="BtnCloseDrawer" Click="OnCloseDrawer"
+                      DockPanel.Dock="Left"
+                      Background="Transparent" BorderThickness="0"
+                      Padding="8,4" VerticalAlignment="Center">
+                <PathIcon Width="18" Height="18" Foreground="#0d1f22"
+                          Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </Button>
+              <TextBlock Text="Menu Open"
+                         FontSize="16" FontWeight="Bold"
+                         Foreground="#0d1f22"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"/>
+            </DockPanel>
+          </Border>
+        </DrawerPage.DrawerHeader>
+        <DrawerPage.Drawer>
+          <StackPanel>
+
+            <Border Height="1" Background="#dde6e9" Margin="0,0,0,4"/>
+
+            <Button x:Name="BtnDiscover" Tag="Discover" Click="OnNavClick"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Background="Transparent" BorderThickness="0"
+                    Padding="20,14" CornerRadius="0">
+              <StackPanel Orientation="Horizontal" Spacing="16">
+                <PathIcon Width="20" Height="20" Foreground="#0d1f22"
+                          Data="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                <TextBlock Text="Discover" Foreground="#0d1f22" FontSize="15"
+                           VerticalAlignment="Center"/>
+              </StackPanel>
+            </Button>
+
+            <Border Height="1" Background="#f0f4f5" Margin="20,0"/>
+
+            <Button x:Name="BtnMyTrips" Tag="MyTrips" Click="OnNavClick"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Background="Transparent" BorderThickness="0"
+                    Padding="20,14" CornerRadius="0">
+              <StackPanel Orientation="Horizontal" Spacing="16">
+                <PathIcon Width="20" Height="20" Foreground="#0d1f22"
+                          Data="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z"/>
+                <TextBlock Text="My Trips" Foreground="#0d1f22" FontSize="15"
+                           VerticalAlignment="Center"/>
+              </StackPanel>
+            </Button>
+
+            <Border Height="1" Background="#f0f4f5" Margin="20,0"/>
+
+            <Button x:Name="BtnProfile" Tag="Profile" Click="OnNavClick"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Background="Transparent" BorderThickness="0"
+                    Padding="20,14" CornerRadius="0">
+              <StackPanel Orientation="Horizontal" Spacing="16">
+                <PathIcon Width="20" Height="20" Foreground="#0d1f22"
+                          Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                <TextBlock Text="Profile" Foreground="#0d1f22" FontSize="15"
+                           VerticalAlignment="Center"/>
+              </StackPanel>
+            </Button>
+
+            <Border Height="1" Background="#f0f4f5" Margin="20,0"/>
+
+            <Button x:Name="BtnSettings" Tag="Settings" Click="OnNavClick"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                    Background="Transparent" BorderThickness="0"
+                    Padding="20,14" CornerRadius="0">
+              <StackPanel Orientation="Horizontal" Spacing="16">
+                <PathIcon Width="20" Height="20" Foreground="#0d1f22"
+                          Data="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.4-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                <TextBlock Text="Settings" Foreground="#0d1f22" FontSize="15"
+                           VerticalAlignment="Center"/>
+              </StackPanel>
+            </Button>
+
+            <!-- Bottom accent line -->
+            <Border Height="3" Background="#0dccf2" Margin="0,8,0,0"/>
+
+          </StackPanel>
+        </DrawerPage.Drawer>
+        <NavigationPage x:Name="NavPage"
+                        BarBackground="Transparent"/>
+
+      </DrawerPage>
+    </Border>
+
+  </DockPanel>
+</UserControl>
