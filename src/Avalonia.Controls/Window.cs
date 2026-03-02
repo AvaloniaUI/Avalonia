@@ -673,11 +673,10 @@ namespace Avalonia.Controls
         /// </summary>
         private void UpdateDrawnDecorationParts()
         {
-            var decorations = TopLevelHost.Decorations;
-            if (decorations == null)
+            if (TopLevelHost.Decorations == null)
                 return;
 
-            decorations.EnabledParts = ComputeDecorationParts();
+            TopLevelHost.EnableDecorations(ComputeDecorationParts());
         }
 
         private Chrome.DrawnWindowDecorationParts ComputeDecorationParts()
@@ -693,7 +692,7 @@ namespace Avalonia.Controls
                     parts |= Chrome.DrawnWindowDecorationParts.Shadow;
                 if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Border))
                     parts |= Chrome.DrawnWindowDecorationParts.Border;
-                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.ResizeGrips))
+                if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.ResizeGrips) && CanResize)
                     parts |= Chrome.DrawnWindowDecorationParts.ResizeGrips;
 
 

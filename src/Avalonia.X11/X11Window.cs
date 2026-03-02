@@ -936,14 +936,14 @@ namespace Avalonia.X11
                         var moveResizeSide = role switch
                         {
                             WindowDecorationsElementRole.TitleBar => NetWmMoveResize._NET_WM_MOVERESIZE_MOVE,
-                            WindowDecorationsElementRole.ResizeN => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOP,
-                            WindowDecorationsElementRole.ResizeS => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOM,
-                            WindowDecorationsElementRole.ResizeE => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_RIGHT,
-                            WindowDecorationsElementRole.ResizeW => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_LEFT,
-                            WindowDecorationsElementRole.ResizeNE => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOPRIGHT,
-                            WindowDecorationsElementRole.ResizeNW => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOPLEFT,
-                            WindowDecorationsElementRole.ResizeSE => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT,
-                            WindowDecorationsElementRole.ResizeSW => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT,
+                            WindowDecorationsElementRole.ResizeN when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOP,
+                            WindowDecorationsElementRole.ResizeS when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOM,
+                            WindowDecorationsElementRole.ResizeE when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_RIGHT,
+                            WindowDecorationsElementRole.ResizeW when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_LEFT,
+                            WindowDecorationsElementRole.ResizeNE when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOPRIGHT,
+                            WindowDecorationsElementRole.ResizeNW when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOPLEFT,
+                            WindowDecorationsElementRole.ResizeSE when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT,
+                            WindowDecorationsElementRole.ResizeSW when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT,
                             _ => (NetWmMoveResize?)null
                         };
                         

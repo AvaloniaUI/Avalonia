@@ -42,7 +42,7 @@
             <Panel x:Name="PART_UnderlayWrapper">
               <Border x:Name="PART_WindowBorder"
                       Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                      BorderThickness="{TemplateBinding DefaultFrameThickness}"
+                      BorderThickness="{TemplateBinding FrameThickness}"
                       BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                       IsHitTestVisible="False" />
               <!-- Titlebar: background, title text, and drag area live in underlay -->
