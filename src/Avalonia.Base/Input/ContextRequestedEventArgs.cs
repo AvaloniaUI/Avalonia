@@ -33,10 +33,10 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Gets the x- and y-coordinates of the pointer position, optionally evaluated against a coordinate origin of a supplied <see cref="Control"/>.
+        /// Gets the x- and y-coordinates of the pointer position, optionally evaluated against a coordinate origin of a supplied <see cref="InputElement"/>.
         /// </summary>
         /// <param name="relativeTo">
-        /// Any <see cref="Control"/>-derived object that is connected to the same object tree.
+        /// Any <see cref="InputElement"/>-derived object that is connected to the same object tree.
         /// To specify the object relative to the overall coordinate system, use a relativeTo  value of null.
         /// </param>
         /// <param name="point">
