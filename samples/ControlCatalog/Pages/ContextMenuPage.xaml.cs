@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Avalonia.Controls;
+using Avalonia.Input;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages

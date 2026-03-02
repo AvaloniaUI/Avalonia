@@ -31,7 +31,7 @@ public static class ItemSelectionEventTriggers
             } => false,
 
             // Select on mouse press, unless the mouse can generate gestures
-            { Pointer.Type: PointerType.Mouse } => eventArgs.RoutedEvent == (Gestures.GetIsHoldWithMouseEnabled(selectable) ?
+            { Pointer.Type: PointerType.Mouse } => eventArgs.RoutedEvent == (InputElement.GetIsHoldWithMouseEnabled(selectable) ?
                 InputElement.PointerReleasedEvent : (RoutedEvent)InputElement.PointerPressedEvent),
 
             // Pen "right clicks" are used for context menus, and gestures are only processed for primary input

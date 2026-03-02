@@ -19,7 +19,7 @@
               AutomationProperties.ControlTypeOverride="Image"
               Tapped="GestureBorder_Tapped"
               DoubleTapped="GestureBorder_DoubleTapped"
-              Gestures.RightTapped="GestureBorder_RightTapped"/>
+              InputElement.RightTapped="GestureBorder_RightTapped"/>
       <Border Name="GestureBorder2" Background="Green" IsVisible="False"
               AutomationProperties.AccessibilityView="Content"
               AutomationProperties.ControlTypeOverride="Image"

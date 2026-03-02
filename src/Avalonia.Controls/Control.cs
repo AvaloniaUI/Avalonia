@@ -58,14 +58,6 @@ namespace Avalonia.Controls
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>(
                 "RequestBringIntoView",
                 RoutingStrategies.Bubble);
-
-        /// <summary>
-        /// Provides event data for the <see cref="ContextRequested"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<ContextRequestedEventArgs> ContextRequestedEvent =
-            RoutedEvent.Register<Control, ContextRequestedEventArgs>(
-                nameof(ContextRequested),
-                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
         
         /// <summary>
         /// Defines the <see cref="Loaded"/> event.
@@ -161,15 +153,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(TagProperty);
             set => SetValue(TagProperty, value);
-        }
-
-        /// <summary>
-        /// Occurs when the user has completed a context input gesture, such as a right-click.
-        /// </summary>
-        public event EventHandler<ContextRequestedEventArgs>? ContextRequested
-        {
-            add => AddHandler(ContextRequestedEvent, value);
-            remove => RemoveHandler(ContextRequestedEvent, value);
         }
 
         /// <summary>
@@ -387,20 +370,6 @@ namespace Avalonia.Controls
             InitializeIfNeeded();
 
             ScheduleOnLoadedCore();
-        }
-
-        protected override void OnHolding(HoldingRoutedEventArgs e)
-        {
-            base.OnHolding(e);
-
-            if (e.Source == this && !e.Handled && e.HoldingState == HoldingState.Started)
-            {
-                // Trigger ContentRequest when hold has started
-                var contextEvent = e.PointerEventArgs is { } ev ? new ContextRequestedEventArgs(ev) : new ContextRequestedEventArgs();
-                RaiseEvent(contextEvent);
-
-                e.Handled = contextEvent.Handled;
-            }
         }
 
         /// <inheritdoc/>

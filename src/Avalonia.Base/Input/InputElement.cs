@@ -16,7 +16,7 @@ namespace Avalonia.Input
     /// Implements input-related functionality for a control.
     /// </summary>
     [PseudoClasses(":disabled", ":focus", ":focus-visible", ":focus-within", ":pointerover")]
-    public class InputElement : Interactive, IInputElement
+    public partial class InputElement : Interactive, IInputElement
     {
         /// <summary>
         /// Defines the <see cref="Focusable"/> property.
@@ -203,24 +203,20 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Defines the <see cref="Tapped"/> event.
+        /// Provides event data for the <see cref="ContextRequested"/> event.
         /// </summary>
-        public static readonly RoutedEvent<TappedEventArgs> TappedEvent = Gestures.TappedEvent;
+        public static readonly RoutedEvent<ContextRequestedEventArgs> ContextRequestedEvent =
+            RoutedEvent.Register<InputElement, ContextRequestedEventArgs>(
+                nameof(ContextRequested),
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Defines the <see cref="RightTapped"/> event.
+        /// Provides event data for the <see cref="ContextCancelled"/> event.
         /// </summary>
-        public static readonly RoutedEvent<TappedEventArgs> RightTappedEvent = Gestures.RightTappedEvent;
-
-        /// <summary>
-        /// Defines the <see cref="Holding"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<HoldingRoutedEventArgs> HoldingEvent = Gestures.HoldingEvent;
-
-        /// <summary>
-        /// Defines the <see cref="DoubleTapped"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
+        public static readonly RoutedEvent<RoutedEventArgs> ContextCancelledEvent =
+            RoutedEvent.Register<InputElement, RoutedEventArgs>(
+                nameof(ContextCancelled),
+                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
@@ -256,6 +252,12 @@ namespace Avalonia.Input
             RightTappedEvent.AddClassHandler<InputElement>((x, e) => x.OnRightTapped(e));
             DoubleTappedEvent.AddClassHandler<InputElement>((x, e) => x.OnDoubleTapped(e));
             HoldingEvent.AddClassHandler<InputElement>((x, e) => x.OnHolding(e));
+
+            Gestures.Tapped += (s, e) => (s as InputElement)?.RaiseEvent(e);
+            Gestures.RightTapped += (s, e) => (s as InputElement)?.RaiseEvent(e);
+            Gestures.DoubleTapped += (s, e) => (s as InputElement)?.RaiseEvent(e);
+
+            Gestures.Holding += OnPreviewHolding;
 
             // Gesture only handlers
             PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnGesturePointerMoved(e), handledEventsToo: true);
@@ -420,42 +422,6 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a tap gesture occurs on the control.
-        /// </summary>
-        public event EventHandler<TappedEventArgs>? Tapped
-        {
-            add { AddHandler(TappedEvent, value); }
-            remove { RemoveHandler(TappedEvent, value); }
-        }
-
-        /// <summary>
-        /// Occurs when a right tap gesture occurs on the control.
-        /// </summary>
-        public event EventHandler<TappedEventArgs>? RightTapped
-        {
-            add { AddHandler(RightTappedEvent, value); }
-            remove { RemoveHandler(RightTappedEvent, value); }
-        }
-
-        /// <summary>
-        /// Occurs when a hold gesture occurs on the control.
-        /// </summary>
-        public event EventHandler<HoldingRoutedEventArgs>? Holding
-        {
-            add { AddHandler(HoldingEvent, value); }
-            remove { RemoveHandler(HoldingEvent, value); }
-        }
-
-        /// <summary>
-        /// Occurs when a double-tap gesture occurs on the control.
-        /// </summary>
-        public event EventHandler<TappedEventArgs>? DoubleTapped
-        {
-            add { AddHandler(DoubleTappedEvent, value); }
-            remove { RemoveHandler(DoubleTappedEvent, value); }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether the control can receive focus.
         /// </summary>
         public bool Focusable
@@ -516,6 +482,24 @@ namespace Avalonia.Input
         {
             get { return _isPointerOver; }
             internal set { SetAndRaise(IsPointerOverProperty, ref _isPointerOver, value); }
+        }
+
+        /// <summary>
+        /// Occurs when the user has completed a context input gesture, such as a right-click.
+        /// </summary>
+        public event EventHandler<ContextRequestedEventArgs>? ContextRequested
+        {
+            add => AddHandler(ContextRequestedEvent, value);
+            remove => RemoveHandler(ContextRequestedEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs when the context input gesture continues into another gesture, to notify the element that the context flyout should not be opened.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? ContextCancelled
+        {
+            add => AddHandler(ContextCancelledEvent, value);
+            remove => RemoveHandler(ContextCancelledEvent, value);
         }
 
         /// <summary>

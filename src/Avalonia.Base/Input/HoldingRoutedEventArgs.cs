@@ -6,7 +6,7 @@ namespace Avalonia.Input
     public class HoldingRoutedEventArgs : RoutedEventArgs
     {
         /// <summary>
-        /// Gets the state of the <see cref="Gestures.HoldingEvent"/> event.
+        /// Gets the state of the <see cref="InputElement.HoldingEvent"/> event.
         /// </summary>
         public HoldingState HoldingState { get; }
 
@@ -20,24 +20,17 @@ namespace Avalonia.Input
         /// </summary>
         public PointerType PointerType { get; }
 
-        internal PointerEventArgs? PointerEventArgs { get; }
+        internal PointerEventArgs PointerEventArgs { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HoldingRoutedEventArgs"/> class.
         /// </summary>
-        public HoldingRoutedEventArgs(HoldingState holdingState, Point position, PointerType pointerType) : base(Gestures.HoldingEvent)
+        internal HoldingRoutedEventArgs(HoldingState holdingState, Point position, PointerType pointerType, PointerEventArgs pointerEventArgs) : base(InputElement.HoldingEvent)
         {
+            PointerEventArgs = pointerEventArgs;
             HoldingState = holdingState;
             Position = position;
             PointerType = pointerType;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HoldingRoutedEventArgs"/> class.
-        /// </summary>
-        internal HoldingRoutedEventArgs(HoldingState holdingState, Point position, PointerType pointerType, PointerEventArgs pointerEventArgs) : this(holdingState, position, pointerType)
-        {
-            PointerEventArgs = pointerEventArgs;
         }
     }
 
