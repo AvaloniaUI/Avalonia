@@ -188,24 +188,11 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
         protected override void VerifyNormalState(bool canResize)
         {
             AssertHasBorder();
-
-            if (canResize)
-                AssertSmallTitleBarWithoutButtons();
-            else
-                AssertNoTitleBar();
+            AssertNoTitleBar();
         }
 
         protected override void VerifyMaximizedState()
             => AssertNoTitleBar();
-
-        private void AssertSmallTitleBarWithoutButtons()
-        {
-            Assert.Skip("This is BorderOnly mode, why do we expect a titlebar?");
-            var (titleBarHeight, buttonsHeight) = GetTitleBarInfo();
-            Assert.True(titleBarHeight < 10);
-            Assert.NotEqual(0, titleBarHeight);
-            Assert.Equal(0, buttonsHeight);
-        }
     }
 
     public sealed class DecorationsNone : ExtendClientAreaWindowTests
