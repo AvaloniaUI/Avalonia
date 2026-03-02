@@ -58,21 +58,34 @@ internal class ResizeGripLayer : Control
         var w = finalSize.Width;
         var h = finalSize.Height;
 
-        // Corner size for usability
-        var cw = Math.Max(Math.Max(gt.Left, gt.Right), 8);
-        var ch = Math.Max(Math.Max(gt.Top, gt.Bottom), 8);
+        // Hide all grips when thickness is zero (e.g. maximized/fullscreen)
+        var hasGrips = gt.Left > 0 || gt.Top > 0 || gt.Right > 0 || gt.Bottom > 0;
+        IsHitTestVisible = hasGrips;
+        if (!hasGrips)
+        {
+            var empty = new Rect();
+            _top.Arrange(empty);
+            _bottom.Arrange(empty);
+            _left.Arrange(empty);
+            _right.Arrange(empty);
+            _topLeft.Arrange(empty);
+            _topRight.Arrange(empty);
+            _bottomLeft.Arrange(empty);
+            _bottomRight.Arrange(empty);
+            return finalSize;
+        }
 
-        // Edges — positioned at the outer edges, NOT overlapping client area
-        _top.Arrange(new Rect(cw, 0, Math.Max(0, w - 2 * cw), gt.Top));
-        _bottom.Arrange(new Rect(cw, h - gt.Bottom, Math.Max(0, w - 2 * cw), gt.Bottom));
-        _left.Arrange(new Rect(0, ch, gt.Left, Math.Max(0, h - 2 * ch)));
-        _right.Arrange(new Rect(w - gt.Right, ch, gt.Right, Math.Max(0, h - 2 * ch)));
+        // Edges fill the space between their adjacent corners
+        _top.Arrange(new Rect(gt.Left, 0, Math.Max(0, w - gt.Left - gt.Right), gt.Top));
+        _bottom.Arrange(new Rect(gt.Left, h - gt.Bottom, Math.Max(0, w - gt.Left - gt.Right), gt.Bottom));
+        _left.Arrange(new Rect(0, gt.Top, gt.Left, Math.Max(0, h - gt.Top - gt.Bottom)));
+        _right.Arrange(new Rect(w - gt.Right, gt.Top, gt.Right, Math.Max(0, h - gt.Top - gt.Bottom)));
 
-        // Corners
-        _topLeft.Arrange(new Rect(0, 0, cw, ch));
-        _topRight.Arrange(new Rect(w - cw, 0, cw, ch));
-        _bottomLeft.Arrange(new Rect(0, h - ch, cw, ch));
-        _bottomRight.Arrange(new Rect(w - cw, h - ch, cw, ch));
+        // Corners use the thickness of their adjacent edges
+        _topLeft.Arrange(new Rect(0, 0, gt.Left, gt.Top));
+        _topRight.Arrange(new Rect(w - gt.Right, 0, gt.Right, gt.Top));
+        _bottomLeft.Arrange(new Rect(0, h - gt.Bottom, gt.Left, gt.Bottom));
+        _bottomRight.Arrange(new Rect(w - gt.Right, h - gt.Bottom, gt.Right, gt.Bottom));
 
         return finalSize;
     }

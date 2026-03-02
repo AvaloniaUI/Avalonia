@@ -55,6 +55,8 @@ internal partial class TopLevelHost
     {
         if (_decorations != null)
         {
+            // Layers persist across part changes; pseudo-classes driven by EnabledParts
+            // control visibility of individual decoration elements in the theme.
             _decorations.EnabledParts = parts;
             return;
         }
@@ -63,7 +65,6 @@ internal partial class TopLevelHost
         _decorations.EnabledParts = parts;
 
         // Set up logical parenting
-        ((ISetLogicalParent)_decorations).SetParent(this);
         LogicalChildren.Add(_decorations);
 
         // Create layer wrappers
@@ -139,7 +140,6 @@ internal partial class TopLevelHost
 
         // Clean up logical tree
         LogicalChildren.Remove(_decorations);
-        ((ISetLogicalParent)_decorations).SetParent(null);
         _decorations = null;
     }
 

@@ -56,6 +56,7 @@ partial class TopLevelHost
                 foreach (var peer in newChildren)
                     peer.TrySetParent(this);
                 _children = newChildren;
+                _childrenValid = true;
             }
 
             return _children;

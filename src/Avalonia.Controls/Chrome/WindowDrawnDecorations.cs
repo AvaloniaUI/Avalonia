@@ -14,9 +14,23 @@ namespace Avalonia.Controls.Chrome;
 /// TopLevelHost extracts overlay/underlay/popover visuals from the template content
 /// and inserts them into its own visual tree.
 /// </summary>
-[PseudoClasses(":normal", ":maximized", ":fullscreen", ":has-shadow", ":has-border", ":has-titlebar")]
+[PseudoClasses(pcNormal, pcMaximized, pcFullscreen, pcHasShadow, pcHasBorder, pcHasTitlebar)]
+[TemplatePart(PART_CloseButton, typeof(Button))]
+[TemplatePart(PART_MinimizeButton, typeof(Button))]
+[TemplatePart(PART_MaximizeButton, typeof(Button))]
+[TemplatePart(PART_FullScreenButton, typeof(Button))]
+[TemplatePart(PART_PopoverCloseButton, typeof(Button))]
+[TemplatePart(PART_PopoverFullScreenButton, typeof(Button))]
+[TemplatePart(PART_TitleBar, typeof(Panel))]
 public class WindowDrawnDecorations : StyledElement
 {
+    internal const string pcNormal = ":normal";
+    internal const string pcMaximized = ":maximized";
+    internal const string pcFullscreen = ":fullscreen";
+    internal const string pcHasShadow = ":has-shadow";
+    internal const string pcHasBorder = ":has-border";
+    internal const string pcHasTitlebar = ":has-titlebar";
+
     // Template part names for caption buttons
     internal const string PART_CloseButton = "PART_CloseButton";
     internal const string PART_MinimizeButton = "PART_MinimizeButton";
@@ -169,7 +183,7 @@ public class WindowDrawnDecorations : StyledElement
 
     /// <summary>
     /// Gets or sets the titlebar height override.
-    /// When NaN, falls back to <see cref="DefaultTitleBarHeight"/>.
+    /// When -1, falls back to <see cref="DefaultTitleBarHeight"/>.
     /// </summary>
     internal double TitleBarHeightOverride
     {
@@ -366,9 +380,9 @@ public class WindowDrawnDecorations : StyledElement
             window.GetObservable(Window.WindowStateProperty)
                 .Subscribe(state =>
                 {
-                    PseudoClasses.Set(":normal", state == WindowState.Normal);
-                    PseudoClasses.Set(":maximized", state == WindowState.Maximized);
-                    PseudoClasses.Set(":fullscreen", state == WindowState.FullScreen);
+                    PseudoClasses.Set(pcNormal, state == WindowState.Normal);
+                    PseudoClasses.Set(pcMaximized, state == WindowState.Maximized);
+                    PseudoClasses.Set(pcFullscreen, state == WindowState.FullScreen);
                     UpdateMaximizeButtonState();
                     UpdateMinimizeButtonState();
                     UpdateFullScreenButtonState();
@@ -569,8 +583,8 @@ public class WindowDrawnDecorations : StyledElement
         HasShadow = hasShadow;
         HasBorder = hasBorder;
         HasTitleBar = hasTitleBar;
-        PseudoClasses.Set(":has-shadow", hasShadow);
-        PseudoClasses.Set(":has-border", hasBorder);
-        PseudoClasses.Set(":has-titlebar", hasTitleBar);
+        PseudoClasses.Set(pcHasShadow, hasShadow);
+        PseudoClasses.Set(pcHasBorder, hasBorder);
+        PseudoClasses.Set(pcHasTitlebar, hasTitleBar);
     }
 }
