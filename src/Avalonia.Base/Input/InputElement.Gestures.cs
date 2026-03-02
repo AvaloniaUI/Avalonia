@@ -72,7 +72,7 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<TappedEventArgs> RightTappedEvent =
             RoutedEvent.Register<InputElement, TappedEventArgs>(
-                nameof(Tapped),
+                nameof(RightTapped),
                 RoutingStrategies.Bubble);
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent =
             RoutedEvent.Register<InputElement, TappedEventArgs>(
                 nameof(DoubleTapped),
-                RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
+                RoutingStrategies.Bubble);
 
         public static bool GetIsHoldingEnabled(StyledElement element)
         {
@@ -142,7 +142,7 @@ namespace Avalonia.Input
         public static void AddPointerTouchPadGestureSwipeHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
             element.AddHandler(PointerTouchPadGestureSwipeEvent, handler);
 
-        public static void AddScrollGestureHandler(Interactive element, EventHandler<RoutedEventArgs> handler) =>
+        public static void AddScrollGestureHandler(Interactive element, EventHandler<ScrollGestureEventArgs> handler) =>
             element.AddHandler(ScrollGestureEvent, handler);
 
         public static void AddScrollGestureEndedHandler(Interactive element, EventHandler<ScrollGestureEndedEventArgs> handler) =>

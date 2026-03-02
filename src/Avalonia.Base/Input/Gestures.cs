@@ -9,6 +9,10 @@ namespace Avalonia.Input
 {
     internal static class Gestures
     {
+        // These events are only used internally and not propagated through a route.
+        // They have routed event args as their target type because their args generated from
+        // PointerEventArgs. In order to prevent having identical classes with just their base class
+        // being different, these events use routed args.
         public static event EventHandler<HoldingRoutedEventArgs>? Holding;
         public static event EventHandler<TappedEventArgs>? Tapped;
         public static event EventHandler<TappedEventArgs>? RightTapped;
@@ -32,7 +36,6 @@ namespace Avalonia.Input
             InputElement.PointerPressedEvent.RouteFinished.Subscribe(PointerPressed);
             InputElement.PointerReleasedEvent.RouteFinished.Subscribe(PointerReleased);
             InputElement.PointerMovedEvent.RouteFinished.Subscribe(PointerMoved);
-           //InputElement.PointerCaptureLostEvent.RouteFinished.Subscribe(PointerCaptureLost);
         }
 
         private static object? GetCaptured(RoutedEventArgs? args)
@@ -182,24 +185,5 @@ namespace Avalonia.Input
                 }
             }
         }
-
-       /* private static void PointerCaptureLost(RoutedEventArgs args)
-        {
-            if (args is PointerCaptureLostEventArgs && s_lastPress.TryGetTarget(out var target))
-            {
-                if (target == args.Source)
-                {
-                    if (s_gestureState?.Type == GestureStateType.Holding)
-                    {
-                        Holding?.Invoke(target, new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_gestureState.Value.Pointer.Type));
-                    }
-
-                    s_holdCancellationToken?.Cancel();
-                    s_holdCancellationToken?.Dispose();
-                    s_holdCancellationToken = null;
-                    s_gestureState = null;
-                }
-            }
-        }*/
     }
 }
