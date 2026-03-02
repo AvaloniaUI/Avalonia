@@ -1,0 +1,74 @@
+<UserControl x:Class="ControlCatalog.Pages.ConnectedAnimationCoordinatedPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <DockPanel>
+    <!-- Right sidebar -->
+    <ScrollViewer DockPanel.Dock="Right" Width="280">
+      <StackPanel Margin="16" Spacing="8">
+        <TextBlock Text="About" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="13" Opacity="0.7"
+                   Text="Coordinated animation is a special type of entrance animation where companion elements appear alongside the connected animation target." />
+
+        <TextBlock Text="How to use:" FontWeight="SemiBold" FontSize="13" Margin="0,8,0,0" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="1. Click a card in the grid&#10;2. The cover image animates to detail view&#10;3. Title and description fade in alongside&#10;4. Click Back to reverse the animation" />
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.5" Margin="0,8,0,0"
+                   Text="Coordinated elements fade in during the last 40% of the animation, creating a cohesive transition." />
+
+        <Separator />
+
+        <TextBlock Text="API Usage:" FontWeight="SemiBold" FontSize="13" />
+        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                CornerRadius="4" Padding="8" Margin="0,4,0,0">
+          <TextBlock FontFamily="Cascadia Code, Consolas, Monospace" FontSize="11"
+                     TextWrapping="Wrap"
+                     Text="animation.TryStart(&#10;    coverImage,&#10;    new Visual[] {&#10;        titleBlock,&#10;        descriptionPanel&#10;    });" />
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <!-- Main content -->
+    <DockPanel Margin="12">
+      <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+        <TextBlock FontSize="20" FontWeight="Bold">
+          <Run Text="Connected Animation" /><Run Text=" | " Foreground="Gray" /><Run Text="Coordinated" />
+        </TextBlock>
+        <TextBlock Text="Companion elements animate alongside the target" FontSize="12" Opacity="0.5" />
+      </StackPanel>
+
+      <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+              BorderThickness="1" CornerRadius="8" Padding="16" ClipToBounds="True">
+        <Grid>
+          <!-- Card grid -->
+          <ScrollViewer x:Name="CardScrollViewer">
+            <WrapPanel x:Name="CardGrid" Orientation="Horizontal" />
+          </ScrollViewer>
+
+          <!-- Detail panel -->
+          <Grid x:Name="DetailPanel" IsVisible="False" RowDefinitions="Auto,*">
+            <Button Grid.Row="0" Content="← Back" Click="OnBackClick"
+                    Margin="0,0,0,12" HorizontalAlignment="Left" />
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+              <Border CornerRadius="8" ClipToBounds="True" VerticalAlignment="Top">
+                <Image x:Name="DetailImage" Width="300" Height="220"
+                       Stretch="UniformToFill" />
+              </Border>
+              <StackPanel x:Name="CoordinatedPanel" Grid.Column="1" Margin="16,0" Spacing="8"
+                          VerticalAlignment="Top">
+                <TextBlock x:Name="DetailTitle" FontSize="22" FontWeight="Bold" />
+                <TextBlock x:Name="DetailSubtitle" FontSize="14" Opacity="0.6" />
+                <TextBlock x:Name="DetailDescription" FontSize="13" TextWrapping="Wrap"
+                           Opacity="0.7" Margin="0,4,0,0" />
+              </StackPanel>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Border>
+    </DockPanel>
+  </DockPanel>
+</UserControl>
