@@ -1496,7 +1496,7 @@ namespace Avalonia.X11
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
         {
-            if (_platform.Options.EnableDrawnDecorations != true)
+            if (_platform.Options.EnableDrawnDecorationsInternal != true)
                 return;
 
             if (_extendClientAreaToDecorations == extendIntoClientAreaHint)
@@ -1602,6 +1602,7 @@ namespace Avalonia.X11
                 ? PlatformRequestedDrawnDecoration.Border
                   | PlatformRequestedDrawnDecoration.ResizeGrips
                   | PlatformRequestedDrawnDecoration.TitleBar
+                  | PlatformRequestedDrawnDecoration.Shadow
                 : PlatformRequestedDrawnDecoration.None;
 
         public bool IsEnabled => !_disabled && !_mode.BlockInput;

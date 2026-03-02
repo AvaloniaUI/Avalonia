@@ -723,9 +723,18 @@ namespace Avalonia.Controls
             if (decorations == null)
                 return;
 
-            var titleBarHeight = decorations.TitleBarHeight;
-            var frame = decorations.FrameThickness;
-            WindowDecorationMargin = new Thickness(frame.Left, titleBarHeight + frame.Top, frame.Right, frame.Bottom);
+            var parts = decorations.EnabledParts;
+            var titleBarHeight = parts.HasFlag(Chrome.DrawnWindowDecorationParts.TitleBar)
+                ? decorations.TitleBarHeight : 0;
+            var frame = parts.HasFlag(Chrome.DrawnWindowDecorationParts.Border)
+                ? decorations.FrameThickness : default;
+            var shadow = parts.HasFlag(Chrome.DrawnWindowDecorationParts.Shadow)
+                ? decorations.ShadowThickness : default;
+            WindowDecorationMargin = new Thickness(
+                frame.Left + shadow.Left,
+                titleBarHeight + frame.Top + shadow.Top,
+                frame.Right + shadow.Right,
+                frame.Bottom + shadow.Bottom);
         }
 
         private void OnTitleBarHeightHintChanged()

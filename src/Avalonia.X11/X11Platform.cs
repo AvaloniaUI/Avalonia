@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Controls.Platform;
@@ -466,15 +467,22 @@ namespace Avalonia
         /// Use this if you need to use GLib-based libraries on the main thread
         /// </summary>
         public bool UseGLibMainLoop { get; set; }
-        
+
         /// <summary>
         /// Enables client-side drawn window decorations on X11.
         /// When true and ExtendClientAreaToDecorationsHint is set on a window,
         /// Avalonia will draw its own decorations (titlebar, borders, resize grips)
         /// instead of using the X11 window manager decorations.
         /// </summary>
-        public bool? EnableDrawnDecorations { get; set; }
-        
+        [Experimental("AVALONIA_X11_CSD", Message = "Experimental¸used mostly for testing ")]
+        public bool? EnableDrawnDecorations
+        {
+            get => EnableDrawnDecorationsInternal;
+            set => EnableDrawnDecorationsInternal = value;
+        }
+
+        internal bool? EnableDrawnDecorationsInternal { get; set; }
+
         /// <summary>
         /// If Avalonia is in control of a run loop, we propagate exceptions by stopping the run loop frame
         /// and rethrowing an exception. However, if there is no Avalonia-controlled run loop frame,

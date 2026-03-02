@@ -33,7 +33,7 @@
   <ControlTheme x:Key="{x:Type WindowDrawnDecorations}" TargetType="WindowDrawnDecorations">
     <Setter Property="DefaultTitleBarHeight" Value="30"/>
     <Setter Property="DefaultFrameThickness" Value="1"/>
-    <Setter Property="DefaultShadowThickness" Value="16"/>
+    <Setter Property="DefaultShadowThickness" Value="8"/>
     <Setter Property="Template">
       <WindowDrawnDecorationsTemplate>
         <WindowDrawnDecorationsContent>
@@ -50,18 +50,24 @@
                      Height="{TemplateBinding TitleBarHeight}"
                      Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
                      IsVisible="{TemplateBinding HasTitleBar}"
-                     WindowDecorationProperties.ElementRole="TitleBar">
-                <TextBlock Text="{TemplateBinding Title}"
-                           VerticalAlignment="Center"
-                           Margin="12,0,0,0"
-                           FontSize="12" />
-              </Panel>
+                     WindowDecorationProperties.ElementRole="TitleBar" />
+
             </Panel>
           </WindowDrawnDecorationsContent.Underlay>
 
           <WindowDrawnDecorationsContent.Overlay>
             <!-- Overlay: only interactive caption buttons -->
             <Panel x:Name="PART_OverlayWrapper">
+              <!-- Title text lives in overlay so it renders above client content -->
+              <Panel x:Name="PART_TitleTextPanel" VerticalAlignment="Top"
+                     Height="{TemplateBinding TitleBarHeight}"
+                     IsHitTestVisible="False"
+                     IsVisible="{TemplateBinding HasTitleBar}">
+                <TextBlock Text="{TemplateBinding Title}"
+                           VerticalAlignment="Center"
+                           Margin="12,0,0,0"
+                           FontSize="12" />
+              </Panel>
               <StackPanel x:Name="PART_OverlayPanel"
                           VerticalAlignment="Top"
                           HorizontalAlignment="Right"
@@ -160,16 +166,19 @@
 
     <!-- Shadow: inset border and add drop shadow -->
     <Style Selector="^:has-shadow /template/ Panel#PART_UnderlayWrapper">
-      <Setter Property="Margin" Value="16"/>
+      <Setter Property="Margin" Value="{TemplateBinding ShadowThickness}"/>
     </Style>
     <Style Selector="^:has-shadow /template/ Border#PART_WindowBorder">
-      <Setter Property="BoxShadow" Value="0 2 16 0 #40000000"/>
+      <Setter Property="BoxShadow" Value="0 2 10 2 #80000000"/>
     </Style>
     <Style Selector="^:has-shadow /template/ Panel#PART_OverlayWrapper">
-      <Setter Property="Margin" Value="16"/>
+      <Setter Property="Margin" Value="{TemplateBinding ShadowThickness}"/>
     </Style>
 
     <!-- Border: inset titlebar and buttons inside frame -->
+    <Style Selector="^:has-border /template/ Panel#PART_TitleTextPanel">
+      <Setter Property="Margin" Value="1,1,1,0"/>
+    </Style>
     <Style Selector="^:has-border /template/ Panel#PART_TitleBar">
       <Setter Property="Margin" Value="1,1,1,0"/>
     </Style>
@@ -193,6 +202,9 @@
     </Style>
 
     <!-- Fullscreen: hide overlay and titlebar (popover takes over) -->
+    <Style Selector="^:fullscreen /template/ Panel#PART_TitleTextPanel">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
     <Style Selector="^:fullscreen /template/ StackPanel#PART_OverlayPanel">
       <Setter Property="IsVisible" Value="False" />
     </Style>
