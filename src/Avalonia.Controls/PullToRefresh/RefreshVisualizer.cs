@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Numerics;
-using Avalonia.Animation.Easings;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.PullToRefresh;
 using Avalonia.Input;
@@ -8,12 +7,109 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Reactive;
 using Avalonia.Rendering.Composition;
-using Avalonia.Rendering.Composition.Animations;
 
 namespace Avalonia.Controls
 {
     public class RefreshVisualizer : ContentControl
     {
+        /// <summary>
+        /// Provides calculated values for use with the <see cref="ProgressBar"/>'s control theme or template.
+        /// </summary>
+        /// <remarks>
+        /// This class is NOT intended for general use outside of control templates.
+        /// </remarks>
+        public class RefreshVisualizerTemplateSettings : AvaloniaObject
+        {
+            private float _rotationStartAngle;
+            private float _rotationEndAngle;
+
+            private bool _isRotationAnimating;
+            private bool _triggerScaleAnimation;
+
+            /// <summary>
+            /// Defines the <see cref="RotationStartAngle"/> property.
+            /// </summary>
+            public static readonly DirectProperty<RefreshVisualizerTemplateSettings, float> RotationStartAngleProperty =
+                AvaloniaProperty.RegisterDirect<RefreshVisualizerTemplateSettings, float>(
+                    nameof(RotationStartAngle),
+                    p => p.RotationStartAngle,
+                    (p, o) => p.RotationStartAngle = o);
+
+            /// <summary>
+            /// Defines the <see cref="RotationEndAngle"/> property.
+            /// </summary>
+            public static readonly DirectProperty<RefreshVisualizerTemplateSettings, float> RotationEndAngleProperty =
+                AvaloniaProperty.RegisterDirect<RefreshVisualizerTemplateSettings, float>(
+                    nameof(RotationEndAngle),
+                    p => p.RotationEndAngle,
+                    (p, o) => p.RotationEndAngle = o);
+
+            /// <summary>
+            /// Defines the <see cref="IsRotationAnimating"/> property.
+            /// </summary>
+            public static readonly DirectProperty<RefreshVisualizerTemplateSettings, bool> IsRotationAnimatingProperty =
+                AvaloniaProperty.RegisterDirect<RefreshVisualizerTemplateSettings, bool>(
+                    nameof(IsRotationAnimating),
+                    p => p.IsRotationAnimating,
+                    (p, o) => p.IsRotationAnimating = o);
+
+            /// <summary>
+            /// Defines the <see cref="TriggerScaleAnimation"/> property.
+            /// </summary>
+            public static readonly DirectProperty<RefreshVisualizerTemplateSettings, bool> TriggerScaleAnimationProperty =
+                AvaloniaProperty.RegisterDirect<RefreshVisualizerTemplateSettings, bool>(
+                    nameof(TriggerScaleAnimation),
+                    p => p.TriggerScaleAnimation,
+                    (p, o) => p.TriggerScaleAnimation = o);
+
+            /// <summary>
+            /// Used by themes to define the start angle of the indicator icon when animating
+            /// </summary>
+            public float RotationStartAngle
+            {
+                get => _rotationStartAngle;
+                set => SetAndRaise(RotationStartAngleProperty, ref _rotationStartAngle, value);
+            }
+
+            /// <summary>
+            /// Used by themes to define the end angle of the indicator icon when animating
+            /// </summary>
+            public float RotationEndAngle
+            {
+                get => _rotationEndAngle;
+                set => SetAndRaise(RotationEndAngleProperty, ref _rotationEndAngle, value);
+            }
+
+            /// <summary>
+            /// Used by themes to trigger animating the indicator icon
+            /// </summary>
+            public bool IsRotationAnimating
+            {
+                get => _isRotationAnimating;
+                set => SetAndRaise(IsRotationAnimatingProperty, ref _isRotationAnimating, value);
+            }
+
+            /// <summary>
+            /// Used by themes to trigger the scale animation of the indicator when the indicator state
+            /// changes to Pending
+            /// </summary>
+            public bool TriggerScaleAnimation
+            {
+                get => _triggerScaleAnimation;
+                set => SetAndRaise(TriggerScaleAnimationProperty, ref _triggerScaleAnimation, value);
+            }
+
+            /// <summary>
+            /// Used by themes to define the initial scale value of the Pending scale animation
+            /// </summary>
+            public Vector3 ScaleStartValue { get; } = new Vector3(1.5f, 1.5f, 1);
+
+            /// <summary>
+            /// Used by themes to define the final scale value of the Pending scale animation
+            /// </summary>
+            public Vector3 ScaleEndValue { get; } = new Vector3(1f, 1f, 1);
+        }
+
         private const float MinimumIndicatorOpacity = 0.4f;
         private const float ParallaxPositionRatio = 0.5f;
         private double _executingRatio = 0.8;
@@ -26,10 +122,8 @@ namespace Avalonia.Controls
         private Grid? _root;
         private Control? _content;
         private RefreshVisualizerOrientation _orientation;
-        private float _startingRotationAngle;
         private double _interactionRatio;
         private bool _played;
-        private ScalarKeyFrameAnimation? _rotateAnimation;
 
         private bool IsPullDirectionVertical => PullDirection == PullDirection.TopToBottom || PullDirection == PullDirection.BottomToTop;
         private bool IsPullDirectionFar => PullDirection == PullDirection.BottomToTop || PullDirection == PullDirection.RightToLeft;
@@ -118,6 +212,11 @@ namespace Avalonia.Controls
             remove => RemoveHandler(RefreshRequestedEvent, value);
         }
 
+        /// <summary>
+        /// Template settings for themes
+        /// </summary>
+        public RefreshVisualizerTemplateSettings TemplateSettings { get; } = new RefreshVisualizerTemplateSettings();
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
@@ -149,37 +248,7 @@ namespace Avalonia.Controls
             var composition = ElementComposition.GetElementVisual(_content);
 
             if (composition == null) return;
-
-            var compositor = composition.Compositor;
             composition.Opacity = 0;
-
-            var smoothRotationAnimation = compositor.CreateScalarKeyFrameAnimation();
-            smoothRotationAnimation.Target = "RotationAngle";
-            smoothRotationAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
-            smoothRotationAnimation.Duration = TimeSpan.FromMilliseconds(100);
-
-            var opacityAnimation = compositor.CreateScalarKeyFrameAnimation();
-            opacityAnimation.Target = "Opacity";
-            opacityAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
-            opacityAnimation.Duration = TimeSpan.FromMilliseconds(100);
-
-            var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
-            offsetAnimation.Target = "Offset";
-            offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
-            offsetAnimation.Duration = TimeSpan.FromMilliseconds(150);
-
-            var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();
-            scaleAnimation.Target = "Scale";
-            scaleAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
-            scaleAnimation.Duration = TimeSpan.FromMilliseconds(100);
-
-            var animation = compositor.CreateImplicitAnimationCollection();
-            animation["RotationAngle"] = smoothRotationAnimation;
-            animation["Offset"] = offsetAnimation;
-            animation["Scale"] = scaleAnimation;
-            animation["Opacity"] = opacityAnimation;
-
-            composition.ImplicitAnimations = animation;
 
             UpdateContent();
         }
@@ -206,13 +275,11 @@ namespace Avalonia.Controls
                     {
                         case RefreshVisualizerState.Idle:
                             _played = false;
-                            if(_rotateAnimation != null)
-                            {
-                                _rotateAnimation.IterationBehavior = AnimationIterationBehavior.Count;
-                                _rotateAnimation = null;
-                            }
+                            TemplateSettings.TriggerScaleAnimation = false;
+                            TemplateSettings.IsRotationAnimating = false;
                             contentVisual.Opacity = MinimumIndicatorOpacity;
-                            contentVisual.RotationAngle = _startingRotationAngle;
+                            contentVisual.RotationAngle = TemplateSettings.RotationStartAngle;
+                            contentVisual.Scale = new Vector3D(1, 1, 1);
                             visualizerVisual.Offset = IsPullDirectionVertical ?
                                 new Vector3D(visualizerVisual.Offset.X, 0, 0) :
                                 new Vector3D(0, visualizerVisual.Offset.Y, 0);
@@ -221,8 +288,9 @@ namespace Avalonia.Controls
                             break;
                         case RefreshVisualizerState.Interacting:
                             _played = false;
+                            TemplateSettings.TriggerScaleAnimation = false;
                             contentVisual.Opacity = MinimumIndicatorOpacity;
-                            contentVisual.RotationAngle = (float)(_startingRotationAngle + _interactionRatio * 2 * Math.PI);
+                            contentVisual.RotationAngle = (float)(TemplateSettings.RotationStartAngle + _interactionRatio * 2 * Math.PI);
                             Vector3D offset = default;
                             if (IsPullDirectionVertical)
                             {
@@ -239,7 +307,7 @@ namespace Avalonia.Controls
                             break;
                         case RefreshVisualizerState.Pending:
                             contentVisual.Opacity = 1;
-                            contentVisual.RotationAngle = _startingRotationAngle + (float)(2 * Math.PI);
+                            contentVisual.RotationAngle = TemplateSettings.RotationStartAngle + (float)(2 * Math.PI);
                             if (IsPullDirectionVertical)
                             {
                                 offset = new Vector3D(0, (_interactionRatio * (IsPullDirectionFar ? -1 : 1) * root.Bounds.Height), 0);
@@ -256,25 +324,13 @@ namespace Avalonia.Controls
                             if (!_played)
                             {
                                 _played = true;
-                                var scaleAnimation = contentVisual.Compositor!.CreateVector3KeyFrameAnimation();
-                                scaleAnimation.Target = "Scale";
-                                scaleAnimation.InsertKeyFrame(0.5f, new Vector3(1.5f, 1.5f, 1));
-                                scaleAnimation.InsertKeyFrame(1f, new Vector3(1f, 1f, 1));
-                                scaleAnimation.Duration = TimeSpan.FromSeconds(0.3);
-
-                                contentVisual.StartAnimation("Scale", scaleAnimation);
+                                TemplateSettings.TriggerScaleAnimation = true;
                             }
                             break;
                         case RefreshVisualizerState.Refreshing:
-                            _rotateAnimation = contentVisual.Compositor!.CreateScalarKeyFrameAnimation();
-                            _rotateAnimation.Target = "RotationAngle";
-                            _rotateAnimation.InsertKeyFrame(0, _startingRotationAngle, new LinearEasing());
-                            _rotateAnimation.InsertKeyFrame(1, _startingRotationAngle + (float)(2 * Math.PI), new LinearEasing());
-                            _rotateAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
-                            _rotateAnimation.StopBehavior = AnimationStopBehavior.LeaveCurrentValue;
-                            _rotateAnimation.Duration = TimeSpan.FromSeconds(0.5);
-
-                            contentVisual.StartAnimation("RotationAngle", _rotateAnimation);
+                            TemplateSettings.TriggerScaleAnimation = false;
+                            TemplateSettings.RotationEndAngle = TemplateSettings.RotationStartAngle + (float)(2 * Math.PI);
+                            TemplateSettings.IsRotationAnimating = true;
                             contentVisual.Opacity = 1;
                             float translationRatio = (float)(_refreshInfoProvider != null ?  (1.0f - _refreshInfoProvider.ExecutionRatio) * ParallaxPositionRatio : 1.0f) 
                                 * (IsPullDirectionFar ? -1f : 1f);
@@ -295,7 +351,7 @@ namespace Avalonia.Controls
                             break;
                         case RefreshVisualizerState.Peeking:
                             contentVisual.Opacity = 1;
-                            contentVisual.RotationAngle = _startingRotationAngle;
+                            contentVisual.RotationAngle = TemplateSettings.RotationStartAngle;
                             break;
                     }
                 }
@@ -406,24 +462,24 @@ namespace Avalonia.Controls
                     {
                         case PullDirection.TopToBottom:
                         case PullDirection.BottomToTop:
-                            _startingRotationAngle = 0.0f;
+                            TemplateSettings.RotationStartAngle = 0.0f;
                             break;
                         case PullDirection.LeftToRight:
-                            _startingRotationAngle = (float)(-Math.PI / 2);
+                            TemplateSettings.RotationStartAngle = (float)(-Math.PI / 2);
                             break;
                         case PullDirection.RightToLeft:
-                            _startingRotationAngle = (float)(Math.PI / 2);
+                            TemplateSettings.RotationStartAngle = (float)(Math.PI / 2);
                             break;
                     }
                     break;
                 case RefreshVisualizerOrientation.Normal:
-                    _startingRotationAngle = 0.0f;
+                    TemplateSettings.RotationStartAngle = 0.0f;
                     break;
                 case RefreshVisualizerOrientation.Rotate90DegreesCounterclockwise:
-                    _startingRotationAngle = (float)(Math.PI / 2);
+                    TemplateSettings.RotationStartAngle = (float)(Math.PI / 2);
                     break;
                 case RefreshVisualizerOrientation.Rotate270DegreesCounterclockwise:
-                    _startingRotationAngle = (float)(-Math.PI / 2);
+                    TemplateSettings.RotationStartAngle = (float)(-Math.PI / 2);
                     break;
             }
         }
