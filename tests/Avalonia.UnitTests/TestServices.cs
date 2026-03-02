@@ -15,7 +15,7 @@ namespace Avalonia.UnitTests
 {
     public class TestServices
     {
-        public static readonly TestServices StyledWindow = new TestServices(
+        public static TestServices StyledWindow => new TestServices(
             assetLoader: new StandardAssetLoader(),
             platform: new StandardRuntimePlatform(),
             renderInterface: new HeadlessPlatformRenderInterface(),
@@ -25,22 +25,22 @@ namespace Avalonia.UnitTests
             textShaperImpl: new HarfBuzzTextShaper(),
             windowingPlatform: new MockWindowingPlatform());
 
-        public static readonly TestServices MockPlatformRenderInterface = new TestServices(
+        public static TestServices MockPlatformRenderInterface => new TestServices(
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper());
 
-        public static readonly TestServices MockPlatformWrapper = new TestServices(
+        public static TestServices MockPlatformWrapper => new TestServices(
             platform: Mock.Of<IRuntimePlatform>());
 
-        public static readonly TestServices MockThreadingInterface = new TestServices(
+        public static TestServices MockThreadingInterface => new TestServices(
             assetLoader: new StandardAssetLoader());
 
-        public static readonly TestServices MockWindowingPlatform = new TestServices(
+        public static TestServices MockWindowingPlatform => new TestServices(
             windowingPlatform: new MockWindowingPlatform());
 
-        public static readonly TestServices RealFocus = new TestServices(
+        public static TestServices RealFocus => new TestServices(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
@@ -49,7 +49,7 @@ namespace Avalonia.UnitTests
             fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper());
 
-        public static readonly TestServices FocusableWindow = new TestServices(
+        public static TestServices FocusableWindow => new TestServices(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
@@ -62,7 +62,7 @@ namespace Avalonia.UnitTests
             textShaperImpl: new HarfBuzzTextShaper(),
             windowingPlatform: new MockWindowingPlatform());
 
-        public static readonly TestServices TextServices = new TestServices(
+        public static TestServices TextServices => new TestServices(
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new TestFontManager(),
