@@ -67,7 +67,10 @@ namespace ControlCatalog.Pages
 
         private ConnectedAnimationConfiguration CreateConfig() => ConfigCombo.SelectedIndex switch
         {
-            1 => new DirectConnectedAnimationConfiguration(),
+            1 => new DirectConnectedAnimationConfiguration
+            {
+                Duration = TimeSpan.FromMilliseconds(DurationSlider.Value)
+            },
             2 => new BasicConnectedAnimationConfiguration(),
             _ => new GravityConnectedAnimationConfiguration
             {

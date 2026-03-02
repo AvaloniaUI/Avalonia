@@ -690,6 +690,7 @@ namespace Avalonia.Controls
             int next = FindNextEnabledTab(_tabControl.SelectedIndex + delta, delta);
             if (next >= 0)
                 _tabControl.SelectedIndex = next;
+            e.Handled = true;
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

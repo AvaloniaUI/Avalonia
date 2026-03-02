@@ -1922,7 +1922,10 @@ namespace Avalonia.Controls
                 ? e.SwipeDirection == SwipeDirection.Left
                 : e.SwipeDirection == SwipeDirection.Right;
             if (shouldPop)
+            {
+                e.Handled = true;
                 _ = PopAsync();
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

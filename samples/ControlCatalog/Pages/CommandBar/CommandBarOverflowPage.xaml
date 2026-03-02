@@ -57,7 +57,7 @@
       <StackPanel Spacing="12" Margin="12,12,12,0">
         <TextBlock Classes="h2">The overflow (···) button reveals secondary commands. Configure its visibility and behavior.</TextBlock>
 
-        <CommandBar x:Name="DemoBar">
+        <CommandBar x:Name="DemoBar" IsDynamicOverflowEnabled="True">
           <CommandBar.PrimaryCommands>
             <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
             <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>

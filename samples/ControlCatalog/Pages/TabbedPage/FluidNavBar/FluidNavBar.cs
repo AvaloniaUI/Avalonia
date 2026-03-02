@@ -154,7 +154,7 @@ namespace ControlCatalog.Pages
 
             if (index != SelectedIndex)
             {
-                SelectedIndex = index;
+                SetCurrentValue(SelectedIndexProperty, index);
                 SelectionChanged?.Invoke(this, index);
             }
 
