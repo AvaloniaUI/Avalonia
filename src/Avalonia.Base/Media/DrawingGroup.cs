@@ -21,6 +21,9 @@ namespace Avalonia.Media
         public static readonly StyledProperty<IBrush?> OpacityMaskProperty =
             AvaloniaProperty.Register<DrawingGroup, IBrush?>(nameof(OpacityMask));
 
+        /// <summary>
+        /// Defines the <see cref="Effect"/> property.
+        /// </summary>
         public static readonly StyledProperty<IEffect?> EffectProperty =
             AvaloniaProperty.Register<DrawingGroup, IEffect?>(nameof(Effect));
 
@@ -56,6 +59,9 @@ namespace Avalonia.Media
             set => SetValue(OpacityMaskProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the effect to apply to the drawing group.
+        /// </summary>
         public IEffect? Effect
         {
             get => GetValue(EffectProperty);
@@ -346,6 +352,7 @@ namespace Avalonia.Media
                 drawingGroup.TextOptions = textOptions;
             }
 
+            /// <inheritdoc />
             protected override void PushEffectCore(IEffect effect, Rect bounds)
             {
                 // Instantiate a new drawing group and set it as the _currentDrawingGroup
@@ -369,6 +376,7 @@ namespace Avalonia.Media
 
             protected override void PopTextOptionsCore() => Pop();
 
+            /// <inheritdoc />
             protected override void PopEffectCore() => Pop();
 
             /// <summary>

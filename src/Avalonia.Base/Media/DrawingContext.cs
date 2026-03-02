@@ -451,9 +451,14 @@ namespace Avalonia.Media
         }
 
         protected abstract void PushTextOptionsCore(TextOptions textOptions);
-        
+
         protected abstract void PushTransformCore(Matrix matrix);
 
+        /// <summary>
+        /// Pushes an effect.
+        /// </summary>
+        /// <param name="effect">The effect.</param>
+        /// <param name="bounds">The bounds of the effect.</param>
         protected abstract void PushEffectCore(IEffect effect, Rect bounds);
 
         protected abstract void PopClipCore();
@@ -463,6 +468,10 @@ namespace Avalonia.Media
         protected abstract void PopTransformCore();
         protected abstract void PopRenderOptionsCore();
         protected abstract void PopTextOptionsCore();
+
+        /// <summary>
+        /// Pops an effect.
+        /// </summary>
         protected abstract void PopEffectCore();
         
         private static bool PenIsVisible(IPen? pen)

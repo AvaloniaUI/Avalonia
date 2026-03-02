@@ -88,6 +88,7 @@ internal sealed class PlatformDrawingContext : DrawingContext
     
     protected override void PushTextOptionsCore(TextOptions textOptions) => _impl.PushTextOptions(textOptions);
 
+    /// <inheritdoc />
     protected override void PushEffectCore(IEffect effect, Rect bounds)
     {
         if (_impl is IDrawingContextImplWithEffects effectImpl)
@@ -112,6 +113,7 @@ internal sealed class PlatformDrawingContext : DrawingContext
     
     protected override void PopTextOptionsCore() => _impl.PopTextOptions();
 
+    /// <inheritdoc />
     protected override void PopEffectCore()
     {
         if (_impl is IDrawingContextImplWithEffects effectImpl)
