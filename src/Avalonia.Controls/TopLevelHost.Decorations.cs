@@ -141,6 +141,7 @@ internal partial class TopLevelHost
         // Clean up logical tree
         LogicalChildren.Remove(_decorations);
         _decorations = null;
+        _decorationsOverlayPeer?.InvalidateChildren();
     }
 
     private void ApplyDecorationsTemplate()

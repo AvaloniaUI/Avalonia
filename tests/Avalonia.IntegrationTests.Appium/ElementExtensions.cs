@@ -64,10 +64,10 @@ namespace Avalonia.IntegrationTests.Appium
         {
             var chrome = window.FindElementsByAccessibilityId("AvaloniaWindowChrome")?.FirstOrDefault();
             var titlebar = chrome?.FindElementsByAccessibilityId("AvaloniaTitleBar")?.FirstOrDefault();
-            var closeButton = chrome?.FindElementsByName("Close")?.FirstOrDefault();
-            var minimizeButton = chrome?.FindElementsByName("Minimize")?.FirstOrDefault();
-            var maximizeButton = chrome?.FindElementsByName("Maximize")?.FirstOrDefault();
-            var fullscreenButton = chrome?.FindElementsByName("Fullscreen")?.FirstOrDefault();
+            var closeButton = chrome?.FindElementsByAccessibilityId("Close")?.FirstOrDefault();
+            var minimizeButton = chrome?.FindElementsByAccessibilityId("Minimize")?.FirstOrDefault();
+            var maximizeButton = chrome?.FindElementsByAccessibilityId("Maximize")?.FirstOrDefault();
+            var fullscreenButton = chrome?.FindElementsByAccessibilityId("Fullscreen")?.FirstOrDefault();
             return new(closeButton, minimizeButton, maximizeButton, fullscreenButton, titlebar);
         }
 

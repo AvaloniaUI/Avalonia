@@ -120,7 +120,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
     
     private static bool ChromeHitTestFilter(Visual visual)
     {
-        if (visual is not IInputElement ie || !ie.IsEffectivelyVisible)
+        if (visual is not IInputElement ie || !ie.IsEffectivelyVisible || !ie.IsHitTestVisible)
             return false;
 
         // Allow traversal into any container that might contain chrome elements

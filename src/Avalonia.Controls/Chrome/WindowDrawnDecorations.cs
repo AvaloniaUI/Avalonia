@@ -244,7 +244,7 @@ public class WindowDrawnDecorations : StyledElement
     public WindowDrawnDecorationsContent? Content { get; private set; }
 
     /// <summary>
-    /// Gets the effective titlebar height, resolving NaN override to the default.
+    /// Gets the effective titlebar height, resolving -1 override to the default.
     /// Returns 0 if titlebar part is disabled.
     /// </summary>
     public double TitleBarHeight
