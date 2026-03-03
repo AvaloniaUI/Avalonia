@@ -42,7 +42,7 @@
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
 
 
-      <!-- BaseResources for CaptionButtons.xaml -->
+      <!-- BaseResources for WindowDrawnDecorations.xaml -->
       <SolidColorBrush x:Key="CaptionButtonForeground" Color="Black" />
       <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
       <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />
@@ -87,7 +87,7 @@
       <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent" />
 
 
-      <!-- BaseResources for CaptionButtons.xaml -->
+      <!-- BaseResources for WindowDrawnDecorations.xaml -->
       <SolidColorBrush x:Key="CaptionButtonForeground" Color="White" />
       <SolidColorBrush x:Key="CaptionButtonBackground" Color="#ffe5e5e5" />
       <SolidColorBrush x:Key="CaptionButtonBorderBrush" Color="#ffcacaca" />

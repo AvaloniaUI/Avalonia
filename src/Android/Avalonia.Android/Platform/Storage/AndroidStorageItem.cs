@@ -159,7 +159,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     public Task<IStorageFile?> CreateFileAsync(string name)
     {
         var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
-        var treeUri = DocumentsContract.BuildDocumentUriUsingTree(Uri, DocumentsContract.GetTreeDocumentId(Uri));
+        var treeUri = GetTreeUri().treeUri;
         var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, mimeType, name);
         if(newFile == null)
         {
@@ -171,7 +171,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
     public Task<IStorageFolder?> CreateFolderAsync(string name)
     {
-        var treeUri = DocumentsContract.BuildDocumentUriUsingTree(Uri, DocumentsContract.GetTreeDocumentId(Uri));
+        var treeUri = GetTreeUri().treeUri;
         var newFolder = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, DocumentsContract.Document.MimeTypeDir, name);
         if (newFolder == null)
         {
@@ -207,7 +207,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                 }
             }
 
-            var treeUri = DocumentsContract.BuildDocumentUriUsingTree(storageFolder.Uri, DocumentsContract.GetTreeDocumentId(storageFolder.Uri));
+            var treeUri = GetTreeUri().treeUri;
             DocumentsContract.DeleteDocument(Activity.ContentResolver!, treeUri!);
         }
     }
@@ -230,9 +230,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
             yield break;
         }
 
-        var root = PermissionRoot ?? Uri;
-        var folderId = root != Uri ? DocumentsContract.GetDocumentId(Uri) : DocumentsContract.GetTreeDocumentId(Uri);
-        var childrenUri = DocumentsContract.BuildChildDocumentsUriUsingTree(root, folderId);
+        var (root, childrenUri) = GetTreeUri();
 
         var projection = new[]
         {
@@ -311,9 +309,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
             return null;
         }
 
-        var root = PermissionRoot ?? Uri;
-        var folderId = root != Uri ? DocumentsContract.GetDocumentId(Uri) : DocumentsContract.GetTreeDocumentId(Uri);
-        var childrenUri = DocumentsContract.BuildChildDocumentsUriUsingTree(root, folderId);
+        var (root, childrenUri) = GetTreeUri();
 
         var projection = new[]
         {
@@ -369,6 +365,13 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     {
         var file = await GetItemAsync(name, false);
         return (IStorageFile?)file;
+    }
+
+    private (AndroidUri root, AndroidUri? treeUri) GetTreeUri()
+    {
+        var root = PermissionRoot ?? Uri;
+        var folderId = root != Uri ? DocumentsContract.GetDocumentId(Uri) : DocumentsContract.GetTreeDocumentId(Uri);
+        return (root, DocumentsContract.BuildChildDocumentsUriUsingTree(root, folderId));
     }
 }
 

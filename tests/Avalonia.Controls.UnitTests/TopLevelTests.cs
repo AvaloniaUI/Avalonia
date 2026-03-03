@@ -254,6 +254,34 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TopLevel_Should_Unfocus_When_Impl_Focus_Is_Lost()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var impl = CreateMockTopLevelImpl(true);
+                var content = new TextBox()
+                {
+                    Focusable = true
+                };
+                var target = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTemplate(),
+                    Focusable = true,
+                    Content = content
+                };
+
+                target.LayoutManager.ExecuteInitialLayoutPass();
+
+                content.Focus();
+                Assert.True(content.IsFocused);
+
+                impl.Object.LostFocus?.Invoke();
+
+                Assert.False(content.IsFocused);
+            }
+        }
+
+        [Fact]
         public void Reacts_To_Changes_In_Global_Styles()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
