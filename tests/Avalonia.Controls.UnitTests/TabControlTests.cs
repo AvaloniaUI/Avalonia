@@ -833,7 +833,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public async Task PageTransition_Start_Is_Called_When_Tab_Switches()
+        public void PageTransition_Start_Is_Called_When_Tab_Switches()
         {
             using var app = Start();
 
@@ -860,11 +860,8 @@ namespace Avalonia.Controls.UnitTests
             // Switch tab — triggers shouldTransition = true and InvalidateArrange
             target.SelectedIndex = 1;
 
-            // Execute layout pass to invoke ArrangeOverride
+            // Execute layout pass to invoke ArrangeOverride, which fires the transition
             root.LayoutManager.ExecuteLayoutPass();
-
-            // Allow the fire-and-forget async task to run to its first await
-            await Task.Yield();
 
             transition.Verify(
                 t => t.Start(
@@ -875,7 +872,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public async Task PageTransition_Forward_Is_False_When_Switching_To_Earlier_Tab()
+        public void PageTransition_Forward_Is_False_When_Switching_To_Earlier_Tab()
         {
             using var app = Start();
 
@@ -903,12 +900,10 @@ namespace Avalonia.Controls.UnitTests
             // Go forward to tab 2
             target.SelectedIndex = 2;
             root.LayoutManager.ExecuteLayoutPass();
-            await Task.Yield();
 
             // Now go backward to tab 0
             target.SelectedIndex = 0;
             root.LayoutManager.ExecuteLayoutPass();
-            await Task.Yield();
 
             transition.Verify(
                 t => t.Start(

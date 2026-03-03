@@ -6,7 +6,7 @@ namespace Avalonia.Input.GestureRecognizers
 {
     /// <summary>
     /// A gesture recognizer that detects swipe gestures and raises
-    /// <see cref="Gestures.SwipeGestureEvent"/> on the target element when a swipe is confirmed.
+    /// <see cref="InputElement.SwipeGestureEvent"/> on the target element when a swipe is confirmed.
     /// </summary>
     public class SwipeGestureRecognizer : GestureRecognizer
     {

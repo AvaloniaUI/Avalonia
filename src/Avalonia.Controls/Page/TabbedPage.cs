@@ -114,7 +114,7 @@ namespace Avalonia.Controls
             Pages = new AvaloniaList<object>();
             Focusable = true;
             GestureRecognizers.Add(_swipeRecognizer);
-            AddHandler(Gestures.SwipeGestureEvent, OnSwipeGesture);
+            AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
         }
 
         /// <summary>

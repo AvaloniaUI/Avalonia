@@ -8,7 +8,7 @@ namespace Avalonia.Input
     public enum SwipeDirection { Left, Right, Up, Down }
 
     /// <summary>
-    /// Provides data for the <see cref="Gestures.SwipeGestureEvent"/> routed event.
+    /// Provides data for the <see cref="InputElement.SwipeGestureEvent"/> routed event.
     /// </summary>
     public class SwipeGestureEventArgs : RoutedEventArgs
     {
@@ -39,7 +39,7 @@ namespace Avalonia.Input
         /// Initializes a new instance of <see cref="SwipeGestureEventArgs"/>.
         /// </summary>
         public SwipeGestureEventArgs(int id, SwipeDirection direction, Vector delta, Point startPoint)
-            : base(Gestures.SwipeGestureEvent)
+            : base(InputElement.SwipeGestureEvent)
         {
             Id = id;
             SwipeDirection = direction;

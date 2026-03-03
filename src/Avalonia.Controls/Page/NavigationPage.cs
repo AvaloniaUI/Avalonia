@@ -268,7 +268,7 @@ namespace Avalonia.Controls
         {
             Pages = new Stack<object>();
             GestureRecognizers.Add(new SwipeGestureRecognizer { EdgeSize = EdgeGestureWidth });
-            AddHandler(Gestures.SwipeGestureEvent, OnSwipeGesture);
+            AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
         }
 
         /// <summary>
@@ -680,7 +680,7 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
 
-            RemoveHandler(Gestures.SwipeGestureEvent, OnSwipeGesture);
+            RemoveHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
 
             _currentTransition?.Cancel();
             _currentTransition?.Dispose();

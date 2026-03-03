@@ -35,6 +35,10 @@ namespace Avalonia.Input
             RoutedEvent.Register<PullGestureEndedEventArgs>(
                 "PullGestureEnded", RoutingStrategies.Bubble, typeof(InputElement));
 
+        public static readonly RoutedEvent<SwipeGestureEventArgs> SwipeGestureEvent =
+            RoutedEvent.Register<SwipeGestureEventArgs>(
+                "SwipeGesture", RoutingStrategies.Bubble, typeof(InputElement));
+
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEvent =
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGesture", RoutingStrategies.Bubble, typeof(InputElement));
@@ -132,6 +136,12 @@ namespace Avalonia.Input
 
         public static void RemovePullGestureEndedHandler(Interactive element, EventHandler<PullGestureEndedEventArgs> handler) =>
             element.RemoveHandler(PullGestureEndedEvent, handler);
+
+        public static void AddSwipeGestureHandler(Interactive element, EventHandler<SwipeGestureEventArgs> handler) =>
+            element.AddHandler(SwipeGestureEvent, handler);
+
+        public static void RemoveSwipeGestureHandler(Interactive element, EventHandler<SwipeGestureEventArgs> handler) =>
+            element.RemoveHandler(SwipeGestureEvent, handler);
 
         public static void AddPointerTouchPadGestureMagnifyHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
             element.AddHandler(PointerTouchPadGestureMagnifyEvent, handler);

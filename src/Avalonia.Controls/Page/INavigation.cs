@@ -18,7 +18,8 @@ namespace Avalonia.Controls
         IReadOnlyList<Page> NavigationStack { get; }
 
         /// <summary>
-        /// Gets the current modal stack. The most recently pushed modal is enumerated first.
+        /// Gets the current modal stack.
+        /// Ordering is implementation-defined.
         /// </summary>
         IReadOnlyCollection<Page> ModalStack { get; }
 
@@ -33,12 +34,14 @@ namespace Avalonia.Controls
         bool CanGoBack { get; }
 
         /// <summary>
-        /// Pushes <paramref name="page"/> onto the navigation stack without animation.
+        /// Pushes <paramref name="page"/> onto the navigation stack synchronously.
+        /// The host transition settings still apply to the visual update.
         /// </summary>
         void Push(object page);
 
         /// <summary>
-        /// Pops the top page from the navigation stack without animation.
+        /// Pops the top page from the navigation stack synchronously.
+        /// The host transition settings still apply to the visual update.
         /// Returns the popped page, or <see langword="null"/> if the stack has only one entry.
         /// </summary>
         object? Pop();

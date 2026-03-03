@@ -199,7 +199,7 @@ namespace Avalonia.Controls
         private bool IsPaneOnRight => (DrawerPlacement == DrawerPlacement.Right) != IsRtl;
 
         /// <summary>
-        /// Occurs after the drawer finishes opening.
+        /// Occurs when <see cref="IsOpen"/> changes to <see langword="true"/>.
         /// </summary>
         public event EventHandler? Opened;
 
@@ -209,7 +209,8 @@ namespace Avalonia.Controls
         public event EventHandler<DrawerClosingEventArgs>? Closing;
 
         /// <summary>
-        /// Occurs after the drawer finishes closing.
+        /// Occurs when <see cref="IsOpen"/> changes to <see langword="false"/>
+        /// and closing is not cancelled.
         /// </summary>
         public event EventHandler? Closed;
 
@@ -233,7 +234,7 @@ namespace Avalonia.Controls
         public DrawerPage()
         {
             GestureRecognizers.Add(_swipeRecognizer);
-            AddHandler(Gestures.SwipeGestureEvent, OnSwipeGesture);
+            AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
         }
 
         /// <summary>
@@ -603,7 +604,7 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
 
-            RemoveHandler(Gestures.SwipeGestureEvent, OnSwipeGesture);
+            RemoveHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
 
             if (_backdrop != null)
                 _backdrop.PointerPressed -= OnBackdropPressed;
