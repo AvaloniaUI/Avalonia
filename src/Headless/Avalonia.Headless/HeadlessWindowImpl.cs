@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
@@ -253,6 +254,7 @@ namespace Avalonia.Headless
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         public bool NeedsManagedDecorations => false;
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations { get; }
 
         public Thickness ExtendedMargins => new Thickness();
 
@@ -412,11 +414,6 @@ namespace Avalonia.Headless
         }
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
-        {
-            
-        }
-
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {
             
         }

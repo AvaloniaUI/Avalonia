@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -100,7 +100,6 @@ namespace Avalonia.Win32
         private Size _maxSize;
         private POINT _maxTrackSize;
         private WindowImpl? _parent;
-        private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
         private bool _isCloseRequested;
         private bool _shown;
         private bool _hiddenWindowIsParent;
@@ -1150,8 +1149,7 @@ namespace Avalonia.Win32
             borderCaptionThickness.left *= -1;
             borderCaptionThickness.top *= -1;
 
-            if (_extendChromeHints.HasAnyFlag(ExtendClientAreaChromeHints.SystemChrome | ExtendClientAreaChromeHints.PreferSystemChrome) &&
-                _windowProperties.Decorations == SystemDecorations.Full)
+            if (_windowProperties.Decorations == SystemDecorations.Full)
             {
                 if (_extendTitleBarHint != -1)
                     borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);
@@ -1167,7 +1165,7 @@ namespace Avalonia.Win32
             margins.cxRightWidth = defaultMargin;
             margins.cyBottomHeight = defaultMargin;
 
-            margins.cyTopHeight = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : defaultMargin;
+            margins.cyTopHeight = defaultMargin;
 
             if (WindowState == WindowState.Maximized)
             {
@@ -1232,8 +1230,7 @@ namespace Avalonia.Win32
                 }
             }
 
-            if (!_isClientAreaExtended || (_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) &&
-                !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome)))
+            if (!_isClientAreaExtended)
             {
                 EnableCloseButton(_hwnd);
             }
@@ -1598,13 +1595,6 @@ namespace Avalonia.Win32
             ExtendClientArea();
         }
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {
-            _extendChromeHints = hints;
-
-            ExtendClientArea();
-        }
-
         /// <inheritdoc/>
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
@@ -1620,7 +1610,12 @@ namespace Avalonia.Win32
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         /// <inheritdoc/>
-        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome);
+        public bool NeedsManagedDecorations => _isClientAreaExtended;
+
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations =>
+            _isClientAreaExtended
+                ? PlatformRequestedDrawnDecoration.TitleBar
+                : PlatformRequestedDrawnDecoration.None;
 
         /// <inheritdoc/>
         public Thickness ExtendedMargins => _extendedMargins;
@@ -1731,3 +1726,4 @@ namespace Avalonia.Win32
         }
     }
 }
+
