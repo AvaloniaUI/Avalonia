@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Avalonia.DBus;
+using Avalonia.FreeDesktop.DBusXml;
 using Avalonia.Reactive;
-using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop.DBusIme.Fcitx
 {
@@ -38,23 +40,23 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             return await (_modern?.ProcessKeyEventAsync(keyVal, keyCode, state, type > 0, time) ?? Task.FromResult(false));
         }
 
-        public ValueTask<IDisposable> WatchCommitStringAsync(Action<Exception?, string> handler) =>
+        public Task<IDisposable> WatchCommitStringAsync(Action<string> handler) =>
             _old?.WatchCommitStringAsync(handler)
             ?? _modern?.WatchCommitStringAsync(handler)
-            ?? new ValueTask<IDisposable>(Disposable.Empty);
+            ?? Task.FromResult<IDisposable>(Disposable.Empty);
 
-        public ValueTask<IDisposable> WatchForwardKeyAsync(Action<Exception?, (uint keyval, uint state, int type)> handler) =>
+        public Task<IDisposable> WatchForwardKeyAsync(Action<uint, uint, int> handler) =>
             _old?.WatchForwardKeyAsync(handler)
-            ?? _modern?.WatchForwardKeyAsync((e, ev) => handler.Invoke(e, (ev.Keyval, ev.State, ev.Type ? 1 : 0)))
-            ?? new ValueTask<IDisposable>(Disposable.Empty);
+            ?? _modern?.WatchForwardKeyAsync((keyval, state, type) => handler.Invoke(keyval, state, type ? 1 : 0))
+            ?? Task.FromResult<IDisposable>(Disposable.Empty);
 
-        public ValueTask<IDisposable> WatchUpdateFormattedPreeditAsync(
-            Action<Exception?, ((string?, int)[]? str, int cursorpos)> handler) =>
-            _old?.WatchUpdateFormattedPreeditAsync(handler!)
-            ?? _modern?.WatchUpdateFormattedPreeditAsync(handler!)
-            ?? new ValueTask<IDisposable>(Disposable.Empty);
+        public Task<IDisposable> WatchUpdateFormattedPreeditAsync(
+            Action<List<FormattedPreeditSegment>, int> handler) =>
+            _old?.WatchUpdateFormattedPreeditAsync(handler)
+            ?? _modern?.WatchUpdateFormattedPreeditAsync(handler)
+            ?? Task.FromResult<IDisposable>(Disposable.Empty);
 
         public Task SetCapacityAsync(uint flags) =>
-            _old?.SetCapacityAsync(flags) ?? _modern?.SetCapabilityAsync(flags) ?? Task.CompletedTask;
+            _old?.SetCapacityAsync(flags) ?? _modern?.SetCapabilityAsync((ulong)flags) ?? Task.CompletedTask;
     }
 }

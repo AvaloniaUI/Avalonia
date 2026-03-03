@@ -1,14 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.DBus;
+using Avalonia.FreeDesktop.DBusXml;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
-using Tmds.DBus.Protocol;
-using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop.DBusIme.Fcitx
 {
@@ -19,23 +20,23 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
         private FcitxCapabilityFlags _optionFlags;
         private FcitxCapabilityFlags _capabilityFlags;
 
-        public FcitxX11TextInputMethod(Connection connection) : base(connection, "org.fcitx.Fcitx", "org.freedesktop.portal.Fcitx") { }
+        public FcitxX11TextInputMethod(DBusConnection connection) : base(connection, "org.fcitx.Fcitx", "org.freedesktop.portal.Fcitx") { }
 
         protected override async Task<bool> Connect(string name)
         {
             if (name == "org.fcitx.Fcitx")
             {
-                var method = new OrgFcitxFcitxInputMethodProxy(Connection, name, "/inputmethod");
+                var method = new OrgFcitxFcitxInputMethodProxy(Connection, name, new DBusObjectPath("/inputmethod"));
                 var resp = await method.CreateICv3Async(GetAppName(),
                     Process.GetCurrentProcess().Id);
 
-                var proxy = new OrgFcitxFcitxInputContextProxy(Connection, name, $"/inputcontext_{resp.Icid}");
+                var proxy = new OrgFcitxFcitxInputContextProxy(Connection, name, new DBusObjectPath($"/inputcontext_{resp.Icid}"));
                 _context = new FcitxICWrapper(proxy);
             }
             else
             {
-                var method = new OrgFcitxFcitxInputMethod1Proxy(Connection, name, "/inputmethod");
-                var resp = await method.CreateInputContextAsync(new[] { ("appName", GetAppName()) });
+                var method = new OrgFcitxFcitxInputMethod1Proxy(Connection, name, new DBusObjectPath("/inputmethod"));
+                var resp = await method.CreateInputContextAsync(new List<InputContextArg> { new InputContextArg("appName", GetAppName()) });
                 var proxy = new OrgFcitxFcitxInputContext1Proxy(Connection, name, resp.Item1);
                 _context = new FcitxICWrapper(proxy);
             }
@@ -46,23 +47,23 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             return true;
         }
 
-        private void OnPreedit(Exception? arg1, ((string?, int)[]? str, int cursorpos) args)
+        private void OnPreedit(List<FormattedPreeditSegment> str, int cursorpos)
         {
             int? cursor = null;
             string? preeditString = null;
-            if (args.str != null && args.str.Length > 0)
+            if (str.Count > 0)
             {
-                preeditString = string.Join("", args.str.Select(x => x.Item1));
+                preeditString = string.Join("", str.Select(x => x.Text));
 
-                if (preeditString.Length > 0 && args.cursorpos >= 0)
+                if (preeditString.Length > 0 && cursorpos >= 0)
                 {
                     // cursorpos is a byte offset in UTF8 sequence that got sent through dbus
-                    // Tmds.DBus has already converted it to UTF16, so we need to convert it back
+                    // The DBus library has already converted it to UTF16, so we need to convert it back
                     // and figure out the byte offset
                     var utf8String = Encoding.UTF8.GetBytes(preeditString);
-                    if (utf8String.Length >= args.cursorpos)
+                    if (utf8String.Length >= cursorpos)
                     {
-                        cursor = Encoding.UTF8.GetCharCount(utf8String, 0, args.cursorpos);
+                        cursor = Encoding.UTF8.GetCharCount(utf8String, 0, cursorpos);
                     }
                 }
             }
@@ -168,23 +169,23 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
                 return PushFlagsIfNeeded();
             });
 
-        private void OnForward(Exception? e, (uint keyval, uint state, int type) ev)
+        private void OnForward(uint keyval, uint state, int type)
         {
-            var state = (FcitxKeyState)ev.state;
+            var modState = (FcitxKeyState)state;
             KeyModifiers mods = default;
-            if (state.HasAllFlags(FcitxKeyState.FcitxKeyState_Ctrl))
+            if (modState.HasAllFlags(FcitxKeyState.FcitxKeyState_Ctrl))
                 mods |= KeyModifiers.Control;
-            if (state.HasAllFlags(FcitxKeyState.FcitxKeyState_Alt))
+            if (modState.HasAllFlags(FcitxKeyState.FcitxKeyState_Alt))
                 mods |= KeyModifiers.Alt;
-            if (state.HasAllFlags(FcitxKeyState.FcitxKeyState_Shift))
+            if (modState.HasAllFlags(FcitxKeyState.FcitxKeyState_Shift))
                 mods |= KeyModifiers.Shift;
-            if (state.HasAllFlags(FcitxKeyState.FcitxKeyState_Super))
+            if (modState.HasAllFlags(FcitxKeyState.FcitxKeyState_Super))
                 mods |= KeyModifiers.Meta;
-            var isPressKey = ev.type == (int)FcitxKeyEventType.FCITX_PRESS_KEY;
+            var isPressKey = type == (int)FcitxKeyEventType.FCITX_PRESS_KEY;
             FireForward(new X11InputMethodForwardedKey
             {
                 Modifiers = mods,
-                KeyVal = (int)ev.keyval,
+                KeyVal = (int)keyval,
                 Type = isPressKey ?
                     RawKeyEventType.KeyDown :
                     RawKeyEventType.KeyUp,
@@ -192,14 +193,8 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             });
         }
 
-        private void OnCommitString(Exception? e, string s)
+        private void OnCommitString(string s)
         {
-            if (e is not null)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnCommitString failed: {e}");
-                return;
-            }
-
             FireCommit(s);
         }
     }
