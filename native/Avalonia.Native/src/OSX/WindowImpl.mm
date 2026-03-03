@@ -230,6 +230,10 @@ HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
 
         UpdateAppearance();
 
+        if (_isClientAreaExtended) {
+            [StandardContainer ShowTitleBar:_decorations == SystemDecorationsFull];
+        }
+
         switch (_decorations) {
             case SystemDecorationsNone:
                 [Window setHasShadow:NO];
@@ -381,7 +385,7 @@ HRESULT WindowImpl::SetExtendClientArea(bool enable) {
 
                 [Window setTitlebarAppearsTransparent:true];
 
-                [StandardContainer ShowTitleBar:true];
+                [StandardContainer ShowTitleBar:_decorations == SystemDecorationsFull];
 
                 Window.toolbar = nullptr;
             } else {
