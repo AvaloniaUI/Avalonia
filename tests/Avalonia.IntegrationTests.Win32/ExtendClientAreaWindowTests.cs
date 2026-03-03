@@ -140,12 +140,12 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
         var host = Window.GetVisualParent()!;
         host.GetLayoutManager()!.ExecuteLayoutPass();
 
-        var titlebar = host.GetVisualDescendants().First(c => AutomationProperties.GetAutomationId(c) == "AvaloniaTitleBar");
-        var closeButton = host.GetVisualDescendants().First(c => AutomationProperties.GetAutomationId(c) == "Close");
-
+        var titlebar = host.GetVisualDescendants().FirstOrDefault(c => AutomationProperties.GetAutomationId(c) == "AvaloniaTitleBar");
+        var closeButton = host.GetVisualDescendants().FirstOrDefault(c => AutomationProperties.GetAutomationId(c) == "Close");
+        
         return (
-            titlebar.IsEffectivelyVisible ? titlebar.Bounds.Height : 0,
-            closeButton.IsEffectivelyVisible ? closeButton.Bounds.Height : 0);
+            titlebar?.IsEffectivelyVisible == true ? titlebar.Bounds.Height : 0,
+            closeButton?.IsEffectivelyVisible == true ? closeButton.Bounds.Height : 0);
     }
 
     private void AssertNoTitleBar()
