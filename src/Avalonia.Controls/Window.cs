@@ -648,6 +648,12 @@ namespace Avalonia.Controls
             if (needsDrawnDecorations)
             {
                 var parts = ComputeDecorationParts();
+                if (parts == Chrome.DrawnWindowDecorationParts.None)
+                {
+                    TopLevelHost.DisableDecorations();
+                    return;
+                }
+
                 TopLevelHost.EnableDecorations(parts);
 
                 // Forward ExtendClientAreaTitleBarHeightHint to decoration TitleBarHeight
