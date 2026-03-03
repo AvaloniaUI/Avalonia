@@ -632,28 +632,15 @@ namespace Avalonia.Controls
             OffScreenMargin = PlatformImpl?.OffScreenMargin ?? default;
 
             UpdateDrawnDecorations();
-
-            // Only use platform margins if drawn decorations are not active
-            if (TopLevelHost.Decorations == null)
-                WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
         }
         
         private void UpdateDrawnDecorations()
         {
-            var isExtended = IsExtendedIntoWindowDecorations
-                || (PlatformImpl?.IsClientAreaExtendedToDecorations ?? false);
-            var needsManaged = PlatformImpl?.NeedsManagedDecorations ?? false;
-            var needsDrawnDecorations = isExtended && needsManaged;
+            var needsDrawnDecorations = PlatformImpl?.NeedsManagedDecorations ?? false;
 
-            if (needsDrawnDecorations)
+            var parts = needsDrawnDecorations ? ComputeDecorationParts() : DrawnWindowDecorationParts.None;
+            if (parts != DrawnWindowDecorationParts.None)
             {
-                var parts = ComputeDecorationParts();
-                if (parts == Chrome.DrawnWindowDecorationParts.None)
-                {
-                    TopLevelHost.DisableDecorations();
-                    return;
-                }
-
                 TopLevelHost.EnableDecorations(parts);
 
                 // Forward ExtendClientAreaTitleBarHeightHint to decoration TitleBarHeight
@@ -664,13 +651,13 @@ namespace Avalonia.Controls
                     if (hint >= 0)
                         decorations.TitleBarHeightOverride = hint;
                 }
-
-                UpdateDrawnDecorationMargins();
             }
             else
             {
                 TopLevelHost.DisableDecorations();
             }
+            
+            UpdateDrawnDecorationMargins();
         }
 
         /// <summary>
@@ -726,7 +713,10 @@ namespace Avalonia.Controls
         {
             var decorations = TopLevelHost.Decorations;
             if (decorations == null)
+            {
+                WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
                 return;
+            }
 
             var parts = decorations.EnabledParts;
             var titleBarHeight = parts.HasFlag(Chrome.DrawnWindowDecorationParts.TitleBar)
