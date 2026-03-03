@@ -858,7 +858,32 @@ namespace Avalonia.Controls
             // Estimate the element size.
             var estimatedSize = EstimateElementSizeU();
 
-            // TODO: Use _startU to work this out.
+            // If we have a valid StartU, use it to anchor estimates relative to the realized range.
+            if (_realizedElements is { } realized && !double.IsNaN(realized.StartU))
+            {
+                var first = realized.FirstIndex;
+                var last = realized.LastIndex;
+            
+                if (index < first)
+                {
+                    return realized.StartU - ((first - index) * estimatedSize);
+                }
+            
+                if (index > last)
+                {
+                    var sizes = realized.SizeU;
+                    var realizedSpan = 0.0;
+            
+                    for (var i = 0; i < sizes.Count; ++i)
+                    {
+                        var sizeU = sizes[i];
+                        realizedSpan += double.IsNaN(sizeU) ? estimatedSize : sizeU;
+                    }
+            
+                    return realized.StartU + realizedSpan + ((index - last - 1) * estimatedSize);
+                }
+            }
+
             return index * estimatedSize;
         }
 
