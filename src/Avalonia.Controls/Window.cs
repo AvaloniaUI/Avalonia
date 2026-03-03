@@ -47,7 +47,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Determines system decorations (title bar, border, etc) for a <see cref="Window"/>
     /// </summary>
-    public enum SystemDecorations
+    public enum WindowDecorations
     {
         /// <summary>
         /// No decorations
@@ -132,10 +132,10 @@ namespace Avalonia.Controls
                 o => o.OffScreenMargin);
 
         /// <summary>
-        /// Defines the <see cref="SystemDecorations"/> property.
+        /// Defines the <see cref="WindowDecorations"/> property.
         /// </summary>
-        public static readonly StyledProperty<SystemDecorations> SystemDecorationsProperty =
-            AvaloniaProperty.Register<Window, SystemDecorations>(nameof(SystemDecorations), SystemDecorations.Full);
+        public static readonly StyledProperty<WindowDecorations> WindowDecorationsProperty =
+            AvaloniaProperty.Register<Window, WindowDecorations>(nameof(WindowDecorations), WindowDecorations.Full);
 
         /// <summary>
         /// Defines the <see cref="ShowActivated"/> property.
@@ -359,10 +359,17 @@ namespace Avalonia.Controls
         /// <summary>
         /// Sets the system decorations (title bar, border, etc)
         /// </summary>
-        public SystemDecorations SystemDecorations
+        public WindowDecorations WindowDecorations
         {
-            get => GetValue(SystemDecorationsProperty);
-            set => SetValue(SystemDecorationsProperty, value);
+            get => GetValue(WindowDecorationsProperty);
+            set => SetValue(WindowDecorationsProperty, value);
+        }
+
+        [Obsolete("Use WindowDecorations instead.")]
+        public WindowDecorations SystemDecorations
+        {
+            get => WindowDecorations;
+            set => WindowDecorations = value;
         }
 
         /// <summary>
@@ -676,10 +683,10 @@ namespace Avalonia.Controls
         {
             var platformNeeds = PlatformImpl?.RequestedDrawnDecorations ?? PlatformRequestedDrawnDecoration.None;
             var parts = Chrome.DrawnWindowDecorationParts.None;
-            if (SystemDecorations != SystemDecorations.None)
+            if (WindowDecorations != WindowDecorations.None)
             {
                 if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.TitleBar) &&
-                    SystemDecorations == SystemDecorations.Full)
+                    WindowDecorations == WindowDecorations.Full)
                     parts |= Chrome.DrawnWindowDecorationParts.TitleBar;
                 if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Shadow))
                     parts |= Chrome.DrawnWindowDecorationParts.Shadow;
@@ -1343,11 +1350,11 @@ namespace Avalonia.Controls
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
-            if (change.Property == SystemDecorationsProperty)
+            if (change.Property == WindowDecorationsProperty)
             {
-                var (_, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
+                var (_, typedNewValue) = change.GetOldAndNewValue<WindowDecorations>();
 
-                PlatformImpl?.SetSystemDecorations(typedNewValue);
+                PlatformImpl?.SetWindowDecorations(typedNewValue);
             }
 
             else if (change.Property == OwnerProperty)

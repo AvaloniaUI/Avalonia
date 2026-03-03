@@ -218,9 +218,9 @@
                       SelectionChanged="Decorations_SelectionChanged"
                       ToolTip.Tip="System Decorations">
               <ComboBox.Items>
-                <SystemDecorations>None</SystemDecorations>
-                <SystemDecorations>BorderOnly</SystemDecorations>
-                <SystemDecorations>Full</SystemDecorations>
+                <WindowDecorations>None</WindowDecorations>
+                <WindowDecorations>BorderOnly</WindowDecorations>
+                <WindowDecorations>Full</WindowDecorations>
               </ComboBox.Items>
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
