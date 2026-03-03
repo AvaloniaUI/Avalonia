@@ -1,12 +1,12 @@
 using System;
 using System.Threading.Tasks;
+using Avalonia.DBus;
+using Avalonia.FreeDesktop.DBusXml;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
 using Avalonia.Media.TextFormatting.Unicode;
-using Tmds.DBus.Protocol;
-using Tmds.DBus.SourceGenerator;
 
 
 namespace Avalonia.FreeDesktop.DBusIme.IBus
@@ -19,11 +19,11 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
         private int _preeditCursor;
         private int _insideReset;
 
-        public IBusX11TextInputMethod(Connection connection) : base(connection, "org.freedesktop.portal.IBus") { }
+        public IBusX11TextInputMethod(DBusConnection connection) : base(connection, "org.freedesktop.portal.IBus") { }
 
         protected override async Task<bool> Connect(string name)
         {
-            var portal = new OrgFreedesktopIBusPortalProxy(Connection, name, "/org/freedesktop/IBus");
+            var portal = new OrgFreedesktopIBusPortalProxy(Connection, name, new DBusObjectPath("/org/freedesktop/IBus"));
             var path = await portal.CreateInputContextAsync(GetAppName());
             _service = new OrgFreedesktopIBusServiceProxy(Connection, name, path);
             _context = new OrgFreedesktopIBusInputContextProxy(Connection, name, path);
@@ -36,29 +36,29 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             return true;
         }
 
-        private void OnHidePreedit(Exception? obj)
+        private void OnHidePreedit()
         {
             if (Client?.SupportsPreedit != true || string.IsNullOrEmpty(_preeditText))
             {
                 return;
             }
-            
+
             _preeditText = "";
-                
+
             Client?.SetPreeditText(_preeditText, 0);
         }
 
-        private void OnShowPreedit(Exception? obj)
+        private void OnShowPreedit()
         {
         }
 
-        private void OnUpdatePreedit(Exception? arg1, (VariantValue Text, uint CursorPos, bool Visible) preeditComponents)
+        private void OnUpdatePreedit(DBusVariant text, uint cursorPos, bool visible)
         {
             string? preeditText;
-            
-            if (preeditComponents.Text is { Type: VariantValueType.Struct, Count: >= 3 } structItem && structItem.GetItem(2) is { Type: VariantValueType.String} stringItem)
+
+            if (text.Value is DBusStruct { Count: >= 3 } structItem && structItem[2] is string stringValue)
             {
-                preeditText = stringItem.GetString();
+                preeditText = stringValue;
             }
             else
             {
@@ -69,44 +69,38 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             {
                 return;
             }
-            
+
             _preeditText = preeditText;
 
             _preeditCursor = !string.IsNullOrEmpty(_preeditText) ?
                 Utf16Utils.CharacterOffsetToStringOffset(_preeditText,
-                    (int)Math.Min(preeditComponents.CursorPos, int.MaxValue), false) :
+                    (int)Math.Min(cursorPos, int.MaxValue), false) :
                 0;
-            
+
             Client.SetPreeditText(_preeditText, _preeditCursor);
         }
 
-        private void OnForwardKey(Exception? e, (uint keyval, uint keycode, uint state) k)
+        private void OnForwardKey(uint keyval, uint keycode, uint state)
         {
-            if (e is not null)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnForwardKey failed: {e}");
-                return;
-            }
-
-            var state = (IBusModifierMask)k.state;
+            var modState = (IBusModifierMask)state;
             KeyModifiers mods = default;
-            if (state.HasAllFlags(IBusModifierMask.ControlMask))
+            if (modState.HasAllFlags(IBusModifierMask.ControlMask))
                 mods |= KeyModifiers.Control;
-            if (state.HasAllFlags(IBusModifierMask.Mod1Mask))
+            if (modState.HasAllFlags(IBusModifierMask.Mod1Mask))
                 mods |= KeyModifiers.Alt;
-            if (state.HasAllFlags(IBusModifierMask.ShiftMask))
+            if (modState.HasAllFlags(IBusModifierMask.ShiftMask))
                 mods |= KeyModifiers.Shift;
-            if (state.HasAllFlags(IBusModifierMask.Mod4Mask))
+            if (modState.HasAllFlags(IBusModifierMask.Mod4Mask))
                 mods |= KeyModifiers.Meta;
             FireForward(new X11InputMethodForwardedKey
             {
-                KeyVal = (int)k.keyval,
-                Type = state.HasAllFlags(IBusModifierMask.ReleaseMask) ? RawKeyEventType.KeyUp : RawKeyEventType.KeyDown,
+                KeyVal = (int)keyval,
+                Type = modState.HasAllFlags(IBusModifierMask.ReleaseMask) ? RawKeyEventType.KeyUp : RawKeyEventType.KeyDown,
                 Modifiers = mods
             });
         }
 
-        private void OnCommitText(Exception? e, VariantValue variantItem)
+        private void OnCommitText(DBusVariant variantItem)
         {
             if (_insideReset > 0)
             {
@@ -116,14 +110,9 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
                 // check if we have any pending Reset calls and ignore the signal here
                 return;
             }
-            if (e is not null)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnCommitText failed: {e}");
-                return;
-            }
 
-            if (variantItem.Count >= 3 && variantItem.GetItem(2) is { Type: VariantValueType.String } stringItem)
-                FireCommit(stringItem.GetString());
+            if (variantItem.Value is DBusStruct structItem && structItem.Count >= 3 && structItem[2] is string stringValue)
+                FireCommit(stringValue);
         }
 
         protected override Task DisconnectAsync() => _service?.DestroyAsync() ?? Task.CompletedTask;

@@ -1,50 +1,46 @@
 using System;
 using System.Threading;
 using Avalonia.Logging;
-using Tmds.DBus.Protocol;
+using Avalonia.DBus;
 
 namespace Avalonia.FreeDesktop
 {
     internal static class DBusHelper
     {
-        private static Connection? s_defaultConntection;
         private static bool s_defaultConnectionFailed;
-        public static Connection? DefaultConnection
+        public static DBusConnection? DefaultConnection
         {
             get
             {
-                if (s_defaultConntection == null && !s_defaultConnectionFailed)
+                if (field == null && !s_defaultConnectionFailed)
                 {
-                    s_defaultConntection = TryCreateNewConnection();
-                    if (s_defaultConntection == null)
+                    field = TryCreateNewConnection();
+                    if (field == null)
                         s_defaultConnectionFailed = true;
                 }
 
-                return s_defaultConntection;
+                return field;
             }
         }
 
-        public static Connection? TryCreateNewConnection(string? dbusAddress = null)
+        public static DBusConnection? TryCreateNewConnection(string? dbusAddress = null)
         {
             var oldContext = SynchronizationContext.Current;
-            Connection? conn = null;
+            DBusConnection? conn = null;
             try
             {
                 SynchronizationContext.SetSynchronizationContext(null);
-                conn = new Connection(new ClientConnectionOptions(dbusAddress ?? Address.Session!)
-                {
-                    AutoConnect = false,
-                });
-
-                // Connect synchronously
-                conn.ConnectAsync().GetAwaiter().GetResult();
+                if (dbusAddress != null)
+                    conn = DBusConnection.ConnectAsync(dbusAddress).GetAwaiter().GetResult();
+                else
+                    conn = DBusConnection.ConnectSessionAsync().GetAwaiter().GetResult();
                 return conn;
             }
             catch (Exception e)
             {
                 Logger.TryGet(LogEventLevel.Error, "DBUS")
                     ?.Log(null, "Unable to connect to DBus: " + e);
-                conn?.Dispose();
+                conn?.DisposeAsync().AsTask().GetAwaiter().GetResult();
             }
             finally
             {
