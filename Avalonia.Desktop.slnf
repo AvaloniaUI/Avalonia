@@ -64,6 +64,7 @@
       "tests\\Avalonia.Headless.XUnit.PerAssembly.UnitTests\\Avalonia.Headless.XUnit.PerAssembly.UnitTests.csproj",
       "tests\\Avalonia.Headless.XUnit.PerTest.UnitTests\\Avalonia.Headless.XUnit.PerTest.UnitTests.csproj",
       "tests\\Avalonia.IntegrationTests.Appium\\Avalonia.IntegrationTests.Appium.csproj",
+      "tests\\Avalonia.IntegrationTests.Win32\\Avalonia.IntegrationTests.Win32.csproj",
       "tests\\Avalonia.LeakTests\\Avalonia.LeakTests.csproj",
       "tests\\Avalonia.Markup.UnitTests\\Avalonia.Markup.UnitTests.csproj",
       "tests\\Avalonia.Markup.Xaml.UnitTests\\Avalonia.Markup.Xaml.UnitTests.csproj",
