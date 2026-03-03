@@ -52,7 +52,7 @@ namespace ControlCatalog.Pages
                 }
             };
 
-            RotationGesture.AddHandler(Gestures.PinchEvent, (s, e) =>
+            RotationGesture.AddHandler(InputElement.PinchEvent, (s, e) =>
             {
                 AngleSlider.Value = e.Angle;
             });
@@ -94,7 +94,7 @@ namespace ControlCatalog.Pages
                 }
             };
 
-            control.AddHandler(Gestures.PinchEvent, (s, e) =>
+            control.AddHandler(InputElement.PinchEvent, (s, e) =>
             {
                 InitComposition(control!);
 
@@ -114,7 +114,7 @@ namespace ControlCatalog.Pages
                 }
             });
 
-            control.AddHandler(Gestures.PinchEndedEvent, (s, e) =>
+            control.AddHandler(InputElement.PinchEndedEvent, (s, e) =>
             {
                 InitComposition(control!);
 
@@ -124,7 +124,7 @@ namespace ControlCatalog.Pages
                 }
             });
 
-            control.AddHandler(Gestures.ScrollGestureEvent, (s, e) =>
+            control.AddHandler(InputElement.ScrollGestureEvent, (s, e) =>
             {
                 InitComposition(control!);
 
@@ -171,7 +171,7 @@ namespace ControlCatalog.Pages
                 }
             };
 
-            control.AddHandler(Gestures.PullGestureEvent, (s, e) =>
+            control.AddHandler(InputElement.PullGestureEvent, (s, e) =>
             {
                 Vector3D center = new((float)control.Bounds.Center.X, (float)control.Bounds.Center.Y, 0);
                 InitComposition(ball!);
@@ -183,7 +183,7 @@ namespace ControlCatalog.Pages
                 }
             });
 
-            control.AddHandler(Gestures.PullGestureEndedEvent, (s, e) =>
+            control.AddHandler(InputElement.PullGestureEndedEvent, (s, e) =>
             {
                 InitComposition(ball!);
                 if (ballCompositionVisual != null)
