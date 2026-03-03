@@ -78,7 +78,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
             finally
             {
-                Session.FindElementByAccessibilityId("ExitFullscreen").Click();
+                Session.FindElementByAccessibilityId("IntegrationTestApp_ExitFullscreen").Click();
             }
         }
 
@@ -123,7 +123,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
 
             // Exit fullscreen by menu shortcut Command+R
-            mainWindow.FindElementByAccessibilityId("ExitFullscreen").Click();
+            mainWindow.FindElementByAccessibilityId("IntegrationTestApp_ExitFullscreen").Click();
 
             // Wait for restore transition.
             Thread.Sleep(1000);
@@ -172,7 +172,7 @@ namespace Avalonia.IntegrationTests.Appium
 
                 // Failed here due to #9565: main window is no longer visible as the main space is now shown instead
                 // of the fullscreen space.
-                mainWindow.FindElementByAccessibilityId("ExitFullscreen").Click();
+                mainWindow.FindElementByAccessibilityId("IntegrationTestApp_ExitFullscreen").Click();
 
                 // Wait for restore transition.
                 Thread.Sleep(1000);
