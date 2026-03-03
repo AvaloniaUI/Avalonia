@@ -6,7 +6,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
     <AvDBusInternal>true</AvDBusInternal>
-    <AvDBusSourcePath>../../external/Avalonia.DBus/src/Avalonia.DBus</AvDBusSourcePath>
   </PropertyGroup>
 
   <Import Project="../../build/NullableEnable.props" />
@@ -15,9 +14,6 @@
   <Import Project="../tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.props" />
 
   <ItemGroup>
-    <Compile Include="$(AvDBusSourcePath)/**/*.cs"
-             Exclude="$(AvDBusSourcePath)/obj/**/*.cs"
-             LinkBase="Avalonia.DBus" />
     <Compile Include="../Avalonia.Controls/Utils/StringUtils.cs">
       <Link>Shared/StringUtils.cs</Link>
     </Compile>
@@ -28,6 +24,7 @@
     <ProjectReference Include="../tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\Avalonia.DBus\Avalonia.DBus.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">
