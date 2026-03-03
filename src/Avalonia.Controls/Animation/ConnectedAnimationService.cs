@@ -31,10 +31,10 @@ namespace Avalonia.Animation
         }
 
         /// <summary>
-        /// Gets the <see cref="ConnectedAnimationService"/> for the window that hosts
-        /// <paramref name="topLevel"/>.  Each window has its own isolated instance.
+        /// Gets the <see cref="ConnectedAnimationService"/> for the specified <paramref name="topLevel"/>.
+        /// Each top-level window has its own isolated instance.
         /// </summary>
-        public static ConnectedAnimationService GetForCurrentView(TopLevel topLevel)
+        public static ConnectedAnimationService GetForTopLevel(TopLevel topLevel)
         {
             ArgumentNullException.ThrowIfNull(topLevel);
             return s_perView.GetValue(topLevel, static _ => new ConnectedAnimationService());

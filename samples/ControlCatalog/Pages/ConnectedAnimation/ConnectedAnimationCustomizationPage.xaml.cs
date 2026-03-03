@@ -49,7 +49,7 @@ namespace ControlCatalog.Pages
         private ConnectedAnimationService? GetService()
         {
             var topLevel = TopLevel.GetTopLevel(this);
-            return topLevel != null ? ConnectedAnimationService.GetForCurrentView(topLevel) : null;
+            return topLevel != null ? ConnectedAnimationService.GetForTopLevel(topLevel) : null;
         }
 
         private void UpdateCurrentLabel()

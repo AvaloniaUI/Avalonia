@@ -688,11 +688,6 @@ namespace Avalonia.Animation
             OnAnimationComplete();
         }
 
-        /// <summary>
-        /// Resolves animation timing and style from <see cref="Configuration"/>.
-        /// Exposed as <see langword="internal"/> so unit tests can verify resolution
-        /// logic without reflection.
-        /// </summary>
         internal void ResolveTimingAndEasing(ConnectedAnimationService service,
             out TimeSpan duration, out Easing easing,
             out bool useGravityDip, out bool useShadow)

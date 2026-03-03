@@ -103,12 +103,8 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="page">The page whose tab state to update.</param>
         /// <param name="value"><see langword="true"/> to enable the tab; <see langword="false"/> to disable it.</param>
-        public static void SetIsTabEnabled(Page page, bool value)
-        {
+        public static void SetIsTabEnabled(Page page, bool value) =>
             page.SetValue(IsTabEnabledProperty, value);
-            if (((ILogical)page).LogicalParent is TabbedPage tp)
-                tp.SyncTabEnabledState(page);
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TabbedPage"/> class.
@@ -610,12 +606,6 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnDetachedFromVisualTree(e);
-            RemoveHandler(Gestures.SwipeGestureEvent, OnSwipeGesture);
-        }
-
         private void OnSwipeGesture(object? sender, SwipeGestureEventArgs e)
         {
             if (!IsGestureEnabled || _tabControl == null) return;
@@ -639,8 +629,10 @@ namespace Avalonia.Controls
 
             int next = FindNextEnabledTab(_tabControl.SelectedIndex + delta, delta);
             if (next >= 0)
+            {
                 _tabControl.SelectedIndex = next;
-            e.Handled = true;
+                e.Handled = true;
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

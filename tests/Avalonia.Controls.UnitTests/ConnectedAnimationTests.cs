@@ -89,10 +89,10 @@ public class ConnectedAnimationServiceTests : ScopedTestBase
     private static ConnectedAnimationService CreateService() => new ConnectedAnimationService();
 
     [Fact]
-    public void GetForCurrentView_NullTopLevel_ThrowsArgumentNullException()
+    public void GetForTopLevel_NullTopLevel_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            ConnectedAnimationService.GetForCurrentView(null!));
+            ConnectedAnimationService.GetForTopLevel(null!));
     }
 
     [Fact]
