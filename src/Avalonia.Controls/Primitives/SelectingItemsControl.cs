@@ -616,6 +616,13 @@ namespace Avalonia.Controls.Primitives
             {
                 AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
             }
+            else if (change.Property == IsVisibleProperty)
+            {
+                if (change.GetNewValue<bool>())
+                {
+                    AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
+                }
+            }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
                 var newValue = change.GetNewValue<SelectionMode>();
@@ -1153,6 +1160,11 @@ namespace Avalonia.Controls.Primitives
                 anchorIndex >= 0 &&
                 IsAttachedToVisualTree)
             {
+                if (!IsEffectivelyVisible)
+                {
+                    return;
+                }
+
                 Dispatcher.UIThread.Post(state =>
                 {
                     ScrollIntoView((int)state!);
