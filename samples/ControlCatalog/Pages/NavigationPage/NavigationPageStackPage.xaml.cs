@@ -8,16 +8,6 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageStackPage : UserControl
     {
-        private static readonly IBrush[] _pageBrushes =
-        [
-            new SolidColorBrush(Color.Parse("#E3F2FD")),
-            new SolidColorBrush(Color.Parse("#E8F5E9")),
-            new SolidColorBrush(Color.Parse("#FFF3E0")),
-            new SolidColorBrush(Color.Parse("#FCE4EC")),
-            new SolidColorBrush(Color.Parse("#F3E5F5")),
-            new SolidColorBrush(Color.Parse("#E0F7FA")),
-        ];
-
         private int _pageCount;
 
         public NavigationPageStackPage()
@@ -35,14 +25,14 @@ namespace ControlCatalog.Pages
             DemoNav.PageRemoved  += (s, ev) => RefreshStack();
 
             _pageCount++;
-            await DemoNav.PushAsync(BuildPage("Home", _pageCount), null);
+            await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Home", $"Stack position #{_pageCount}", _pageCount), null);
             // RefreshStack is called via the Pushed event above.
         }
 
         private void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
-            DemoNav.Push(BuildPage($"Page {_pageCount}", _pageCount));
+            DemoNav.Push(NavigationDemoHelper.MakePage($"Page {_pageCount}", $"Stack position #{_pageCount}", _pageCount));
         }
 
         private void OnInsert(object? sender, RoutedEventArgs e)
@@ -52,7 +42,7 @@ namespace ControlCatalog.Pages
                 return;
 
             _pageCount++;
-            var inserted = BuildPage($"Inserted {_pageCount}", _pageCount);
+            var inserted = NavigationDemoHelper.MakePage($"Inserted {_pageCount}", $"Stack position #{_pageCount}", _pageCount);
             DemoNav.InsertPage(inserted, current);
             RefreshStack();
         }
@@ -80,8 +70,7 @@ namespace ControlCatalog.Pages
 
         private Border BuildStackEntry(Page page, int position, bool isCurrent, bool isRoot)
         {
-            var colorIdx   = (position - 1) % _pageBrushes.Length;
-            var background = _pageBrushes[colorIdx];
+            var background = NavigationDemoHelper.GetPageBrush(position - 1);
             var badge = new Border
             {
                 Width             = 24,
@@ -145,7 +134,7 @@ namespace ControlCatalog.Pages
             insertBtn.Click += (_, _) =>
             {
                 _pageCount++;
-                var inserted = BuildPage($"Inserted {_pageCount}", _pageCount);
+                var inserted = NavigationDemoHelper.MakePage($"Inserted {_pageCount}", $"Stack position #{_pageCount}", _pageCount);
                 DemoNav.InsertPage(inserted, page);
                 RefreshStack();
             };
@@ -175,40 +164,6 @@ namespace ControlCatalog.Pages
                 CornerRadius    = new CornerRadius(6),
                 Padding         = new Thickness(8, 6),
                 Child           = titleRow,
-            };
-        }
-
-        private ContentPage BuildPage(string title, int index)
-        {
-            var colorIdx = (index - 1) % _pageBrushes.Length;
-
-            return new ContentPage
-            {
-                Header     = title,
-                Background = _pageBrushes[colorIdx],
-                Content    = new StackPanel
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment   = VerticalAlignment.Center,
-                    Spacing             = 8,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text                = title,
-                            FontSize            = 28,
-                            FontWeight          = FontWeight.Bold,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                        },
-                        new TextBlock
-                        {
-                            Text                = $"Stack position #{index}",
-                            FontSize            = 14,
-                            Opacity             = 0.6,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                        },
-                    },
-                },
             };
         }
     }

@@ -37,22 +37,6 @@
                      TextWrapping="Wrap" />
         </Border>
 
-        <Separator />
-
-        <TextBlock Text="API Reference" FontWeight="SemiBold" FontSize="13" />
-        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                CornerRadius="4" Padding="8">
-          <TextBlock FontFamily="Cascadia Code,Consolas,Menlo,monospace"
-                     FontSize="10" TextWrapping="Wrap">
-            <Run Text="// Preset in XAML&#xA;" />
-            <Run Text="&lt;TabbedPage SelectedIndex=&quot;2&quot; /&gt;&#xA;&#xA;" />
-            <Run Text="// Programmatic&#xA;" />
-            <Run Text="page.SelectedIndex = 1;&#xA;&#xA;" />
-            <Run Text="// Event&#xA;" />
-            <Run Text="page.SelectionChanged +=&#xA;" />
-            <Run Text="  (s, e) =&gt; { };" />
-          </TextBlock>
-        </Border>
       </StackPanel>
     </ScrollViewer>
 

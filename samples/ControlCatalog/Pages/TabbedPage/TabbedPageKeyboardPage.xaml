@@ -12,24 +12,58 @@
 
         <Separator />
 
-        <TextBlock Text="Keyboard Shortcuts" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock Text="Key Bindings" FontWeight="SemiBold" FontSize="13" />
         <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
-                   Text="Click the TabbedPage first to give it focus, then use:" />
+                   Text="Click the TabbedPage to give it focus, then:" />
 
-        <StackPanel Spacing="4" Margin="0,4,0,0">
-          <TextBlock FontSize="12" FontFamily="Consolas,Menlo,monospace"
-                     Text="← →  Switch tabs (horizontal)" />
-          <TextBlock FontSize="12" FontFamily="Consolas,Menlo,monospace"
-                     Text="↑ ↓  Switch tabs (vertical)" />
-          <TextBlock FontSize="12" FontFamily="Consolas,Menlo,monospace"
-                     Text="Ctrl+Tab  Next tab" />
-          <TextBlock FontSize="12" FontFamily="Consolas,Menlo,monospace"
-                     Text="Ctrl+Shift+Tab  Previous tab" />
-        </StackPanel>
+        <Border Background="{DynamicResource SystemControlBackgroundListLowBrush}"
+                CornerRadius="4" Padding="8,6" Margin="0,4,0,0">
+          <StackPanel Spacing="6">
+            <TextBlock FontSize="12" FontWeight="SemiBold" Text="Always available" />
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="4,0,0,0">
+              <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                      CornerRadius="3" Padding="4,1" Margin="0,0,8,0">
+                <TextBlock FontSize="11" FontFamily="Consolas,Menlo,monospace" Text="Ctrl+Tab" />
+              </Border>
+              <TextBlock Grid.Column="1" FontSize="11" Opacity="0.7" Text="Next tab" VerticalAlignment="Center" />
+
+              <Border Grid.Row="1" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                      CornerRadius="3" Padding="4,1" Margin="0,4,8,0">
+                <TextBlock FontSize="11" FontFamily="Consolas,Menlo,monospace" Text="Ctrl+Shift+Tab" />
+              </Border>
+              <TextBlock Grid.Row="1" Grid.Column="1" FontSize="11" Opacity="0.7" Text="Previous tab"
+                         VerticalAlignment="Center" Margin="0,4,0,0" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <Border Background="{DynamicResource SystemControlBackgroundListLowBrush}"
+                CornerRadius="4" Padding="8,6" Margin="0,4,0,0">
+          <StackPanel Spacing="6">
+            <TextBlock x:Name="ArrowKeysHeader" FontSize="12" FontWeight="SemiBold"
+                       Text="Top / Bottom placement" />
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="4,0,0,0">
+              <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                      CornerRadius="3" Padding="4,1" Margin="0,0,8,0">
+                <TextBlock x:Name="NextKeyText" FontSize="11" FontFamily="Consolas,Menlo,monospace" Text="→" />
+              </Border>
+              <TextBlock Grid.Column="1" FontSize="11" Opacity="0.7" Text="Next tab" VerticalAlignment="Center" />
+
+              <Border Grid.Row="1" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                      CornerRadius="3" Padding="4,1" Margin="0,4,8,0">
+                <TextBlock x:Name="PrevKeyText" FontSize="11" FontFamily="Consolas,Menlo,monospace" Text="←" />
+              </Border>
+              <TextBlock Grid.Row="1" Grid.Column="1" FontSize="11" Opacity="0.7" Text="Previous tab"
+                         VerticalAlignment="Center" Margin="0,4,0,0" />
+            </Grid>
+          </StackPanel>
+        </Border>
 
         <Separator />
 
         <TextBlock Text="Tab Placement" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock FontSize="11" Opacity="0.5" TextWrapping="Wrap"
+                   Text="Arrow key direction changes with placement." />
         <ComboBox x:Name="PlacementCombo" SelectedIndex="0"
                   SelectionChanged="OnPlacementChanged" HorizontalAlignment="Stretch">
           <ComboBoxItem Content="Top" />
@@ -40,8 +74,7 @@
 
         <Separator />
 
-        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="14" />
-        <TextBlock x:Name="StatusText" Text="Selected: Home (0)" Opacity="0.7" TextWrapping="Wrap" />
+        <TextBlock x:Name="StatusText" Text="Selected: Home (0)" Opacity="0.7" FontSize="12" TextWrapping="Wrap" />
       </StackPanel>
     </ScrollViewer>
 

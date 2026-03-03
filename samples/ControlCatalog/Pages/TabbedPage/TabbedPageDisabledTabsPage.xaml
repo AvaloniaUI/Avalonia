@@ -19,8 +19,24 @@
 
         <Separator />
 
+        <TextBlock Text="Skip Behavior" FontWeight="SemiBold" FontSize="13" />
         <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
-                   Text="TabbedPage.IsTabEnabled is an attached property set on each child Page. Disabled tabs are grayed out and cannot be selected by pointer, keyboard, or swipe. The selection automatically moves to the nearest enabled tab." />
+                   Text="Navigating to a disabled tab automatically selects the nearest enabled one. Try disabling a tab then jumping to it:" />
+
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <Button Content="Go to 0" Tag="0" Click="OnGoToTab" Padding="8,4" FontSize="11" />
+          <Button Content="Go to 1" Tag="1" Click="OnGoToTab" Padding="8,4" FontSize="11" />
+          <Button Content="Go to 2" Tag="2" Click="OnGoToTab" Padding="8,4" FontSize="11" />
+          <Button Content="Go to 3" Tag="3" Click="OnGoToTab" Padding="8,4" FontSize="11" />
+        </StackPanel>
+
+        <TextBlock x:Name="StatusText" FontSize="11" Opacity="0.6" TextWrapping="Wrap" />
+
+        <Separator />
+
+        <TextBlock Text="API" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="TabbedPage.IsTabEnabled is an attached property. Disabled tabs are grayed out and cannot be selected by pointer, keyboard, or swipe." />
       </StackPanel>
     </ScrollViewer>
 

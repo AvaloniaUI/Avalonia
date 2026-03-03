@@ -20,19 +20,11 @@
         <Separator />
         <TextBlock Text="Navigation Flow" FontSize="13" FontWeight="SemiBold" />
         <StackPanel Spacing="4">
-          <TextBlock FontSize="12" Text="1. Home: root of NavigationPage" />
-          <TextBlock FontSize="12" Text="2. Tap hamburger → DrawerPage flyout opens" />
-          <TextBlock FontSize="12" Text="3. Tap search icon → Search page pushed" />
-          <TextBlock FontSize="12" Text="4. Tap any poster → Detail pushed" />
-          <TextBlock FontSize="12" Text="5. ← Back pops to previous page" />
-        </StackPanel>
-        <Separator />
-        <TextBlock Text="Architecture" FontSize="13" FontWeight="SemiBold" />
-        <StackPanel Spacing="4">
-          <TextBlock FontSize="12" Text="• DrawerPage wraps NavigationPage" />
-          <TextBlock FontSize="12" Text="• Hamburger auto-injected at depth ≤ 1" />
-          <TextBlock FontSize="12" Text="• Back arrow appears at depth > 1" />
-          <TextBlock FontSize="12" Text="• DrawerPage.Detail = NavigationPage" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="1. Home: root of NavigationPage" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="2. Tap hamburger → DrawerPage flyout opens" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="3. Tap search icon → Search page pushed" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="4. Tap any poster → Detail pushed" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="5. ← Back pops to previous page" />
         </StackPanel>
       </StackPanel>
     </ScrollViewer>

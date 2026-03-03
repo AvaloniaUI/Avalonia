@@ -1,18 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Media;
 
 namespace ControlCatalog.Pages
 {
     public partial class NavigationPageEventsPage : UserControl
     {
-        private static readonly Color[] PageColors =
-        {
-            Color.Parse("#BBDEFB"), Color.Parse("#C8E6C9"), Color.Parse("#FFE0B2"),
-            Color.Parse("#E1BEE7"), Color.Parse("#FFCDD2"), Color.Parse("#B2EBF2"),
-        };
-
         private int _pageCount;
 
         public NavigationPageEventsPage()
@@ -31,7 +24,7 @@ namespace ControlCatalog.Pages
             DemoNav.ModalPushed  += (s, ev) => AddLog($"ModalPushed → {ev.Modal?.Header}");
             DemoNav.ModalPopped  += (s, ev) => AddLog($"ModalPopped ← {ev.Modal?.Header}");
 
-            var root = MakePage("Home", "Push pages and watch the event log.\nAll navigation events are captured.", 0);
+            var root = NavigationDemoHelper.MakePage("Home", "Push pages and watch the event log.\nAll navigation events are captured.", 0);
             SubscribePage(root);
             await DemoNav.PushAsync(root, null);
         }
@@ -52,7 +45,7 @@ namespace ControlCatalog.Pages
         private void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
-            var page = MakePage($"Page {_pageCount}", "Navigate back to see events.", _pageCount);
+            var page = NavigationDemoHelper.MakePage($"Page {_pageCount}", "Navigate back to see events.", _pageCount);
             SubscribePage(page);
             DemoNav.Push(page);
         }
@@ -65,7 +58,7 @@ namespace ControlCatalog.Pages
             if (DemoNav.CurrentPage == null)
                 return;
             _pageCount++;
-            var page = MakePage($"Inserted {_pageCount}", "Inserted below the current page.", _pageCount);
+            var page = NavigationDemoHelper.MakePage($"Inserted {_pageCount}", "Inserted below the current page.", _pageCount);
             SubscribePage(page);
             DemoNav.InsertPage(page, DemoNav.CurrentPage);
         }
@@ -81,7 +74,7 @@ namespace ControlCatalog.Pages
         private async void OnPushModal(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
-            var page = MakePage($"Modal {_pageCount}", "Dismiss to see ModalPopped event.", _pageCount);
+            var page = NavigationDemoHelper.MakePage($"Modal {_pageCount}", "Dismiss to see ModalPopped event.", _pageCount);
             SubscribePage(page);
             await DemoNav.PushModalAsync(page);
         }
@@ -104,40 +97,5 @@ namespace ControlCatalog.Pages
                 Margin = new Avalonia.Thickness(0, 1),
             });
         }
-
-        private static ContentPage MakePage(string header, string body, int index) =>
-            new ContentPage
-            {
-                Header = header,
-                Background = new SolidColorBrush(PageColors[index % PageColors.Length]),
-                Content = new StackPanel
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Spacing = 8,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = header,
-                            FontSize = 24,
-                            FontWeight = FontWeight.Bold,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                        },
-                        new TextBlock
-                        {
-                            Text = body,
-                            FontSize = 14,
-                            Opacity = 0.6,
-                            TextWrapping = TextWrapping.Wrap,
-                            TextAlignment = TextAlignment.Center,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            MaxWidth = 300,
-                        }
-                    }
-                },
-                HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                VerticalContentAlignment = VerticalAlignment.Stretch
-            };
     }
 }

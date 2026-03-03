@@ -1,0 +1,630 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.AvaloniaFlixHomeView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Category Pills -->
+      <StackPanel Orientation="Horizontal" Spacing="24" Margin="20,8,20,4">
+        <TextBlock Text="TV Shows" FontSize="14" FontWeight="Medium" Foreground="White"/>
+        <TextBlock Text="Movies" FontSize="14" FontWeight="Medium" Foreground="White"/>
+        <TextBlock Text="Categories" FontSize="14" FontWeight="Medium" Foreground="White"/>
+      </StackPanel>
+
+      <!-- Hero Section -->
+      <Border Height="360" ClipToBounds="True" Margin="0,4,0,4">
+        <Panel>
+          <!-- Hero Image -->
+          <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Movies/hero.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+          </Border>
+          <!-- Gradient Overlay -->
+          <Border>
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#B0000000" Offset="0.0"/>
+                <GradientStop Color="#00000000" Offset="0.4"/>
+                <GradientStop Color="#FF0A0A0A" Offset="1.0"/>
+              </LinearGradientBrush>
+            </Border.Background>
+          </Border>
+          <!-- Hero Content -->
+          <StackPanel VerticalAlignment="Bottom" Margin="16,0,16,16" Spacing="8">
+            <TextBlock Text="CYBER DUNE" FontSize="38" FontWeight="Black" Foreground="White"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="98% Match" FontSize="11" FontWeight="SemiBold" Foreground="#46D369"/>
+              <Border CornerRadius="2" Padding="4,1" BorderBrush="#666666" BorderThickness="1">
+                <TextBlock Text="2024" FontSize="9" Foreground="White"/>
+              </Border>
+              <TextBlock Text="2h 14m" FontSize="11" Foreground="White"/>
+              <Border CornerRadius="2" Padding="4,1" BorderBrush="#666666" BorderThickness="1">
+                <TextBlock Text="HD" FontSize="9" Foreground="White"/>
+              </Border>
+            </StackPanel>
+            <TextBlock Text="Dystopian  &#x2022;  Sci-Fi  &#x2022;  Action"
+                       FontSize="12" Foreground="#CCCCCC"/>
+            <Grid ColumnDefinitions="*,12,*" Margin="0,4,0,0">
+              <!-- Play Button -->
+              <Button x:Name="HeroPlayButton" Classes="flixPlayWhite"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Center"
+                      Padding="0,10" CornerRadius="4"
+                      Tag="Cyber Dune" Click="OnMovieClick">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <PathIcon Width="20" Height="20" Foreground="Black"
+                            Data="M8,5.14V19.14L19,12.14L8,5.14Z"/>
+                  <TextBlock Text="Play" FontSize="14" FontWeight="Bold"
+                             Foreground="Black" VerticalAlignment="Center"/>
+                </StackPanel>
+              </Button>
+              <!-- My List Button -->
+              <Button Grid.Column="2" Classes="flixGhost"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Center"
+                      Padding="0,10" CornerRadius="4">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <PathIcon Width="18" Height="18" Foreground="White"
+                            Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+                  <TextBlock Text="My List" FontSize="14" FontWeight="Bold"
+                             Foreground="White" VerticalAlignment="Center"/>
+                </StackPanel>
+              </Button>
+            </Grid>
+          </StackPanel>
+        </Panel>
+      </Border>
+
+      <!-- Trending Now -->
+      <TextBlock Text="Trending Now" FontSize="16" FontWeight="Bold"
+                 Foreground="White" Margin="16,16,16,8"/>
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled" Margin="0,0,0,8">
+        <StackPanel Orientation="Horizontal" Spacing="8" Margin="16,0">
+          <!-- Trending 1: Neon Horizon -->
+          <Button Background="Transparent" Padding="0" Tag="Neon Horizon"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/trending1.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="1" FontSize="42" FontWeight="Black" Foreground="#55FFFFFF"
+                           VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,4,8,0"/>
+                <TextBlock Text="Neon Horizon" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Trending 2: Shadow Protocol -->
+          <Button Background="Transparent" Padding="0" Tag="Shadow Protocol"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/trending2.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="2" FontSize="42" FontWeight="Black" Foreground="#55FFFFFF"
+                           VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,4,8,0"/>
+                <TextBlock Text="Shadow Protocol" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Trending 3: Iron Bloom -->
+          <Button Background="Transparent" Padding="0" Tag="Iron Bloom"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated1.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="3" FontSize="42" FontWeight="Black" Foreground="#55FFFFFF"
+                           VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,4,8,0"/>
+                <TextBlock Text="Iron Bloom" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Trending 4: Void Runners -->
+          <Button Background="Transparent" Padding="0" Tag="Void Runners"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated2.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="4" FontSize="42" FontWeight="Black" Foreground="#55FFFFFF"
+                           VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,4,8,0"/>
+                <TextBlock Text="Void Runners" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Trending 5: Eclipse Rising -->
+          <Button Background="Transparent" Padding="0" Tag="Eclipse Rising"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated3.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="5" FontSize="42" FontWeight="Black" Foreground="#55FFFFFF"
+                           VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,4,8,0"/>
+                <TextBlock Text="Eclipse Rising" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Trending 6: Phantom Code -->
+          <Button Background="Transparent" Padding="0" Tag="Phantom Code"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated4.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="6" FontSize="42" FontWeight="Black" Foreground="#55FFFFFF"
+                           VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,4,8,0"/>
+                <TextBlock Text="Phantom Code" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Trending 7: Starfall Legacy -->
+          <Button Background="Transparent" Padding="0" Tag="Starfall Legacy"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/continue1.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="7" FontSize="42" FontWeight="Black" Foreground="#55FFFFFF"
+                           VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,4,8,0"/>
+                <TextBlock Text="Starfall Legacy" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Trending 8: Crimson Depths -->
+          <Button Background="Transparent" Padding="0" Tag="Crimson Depths"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/morelike1.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="8" FontSize="42" FontWeight="Black" Foreground="#55FFFFFF"
+                           VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,4,8,0"/>
+                <TextBlock Text="Crimson Depths" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- Continue Watching -->
+      <TextBlock Text="Continue Watching for You" FontSize="16" FontWeight="Bold"
+                 Foreground="White" Margin="16,12,16,8"/>
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled" Margin="0,0,0,8">
+        <StackPanel Orientation="Horizontal" Spacing="10" Margin="16,0">
+          <!-- Continue 1: Void Runners -->
+          <Button Background="Transparent" Padding="0" Tag="Void Runners"
+                  Cursor="Hand" Click="OnMovieClick">
+            <StackPanel Spacing="4" Width="200">
+              <Border Width="200" Height="112" CornerRadius="6" ClipToBounds="True">
+                <Panel>
+                  <Border>
+                    <Border.Background>
+                      <ImageBrush Source="avares://ControlCatalog/Assets/Movies/trending1.jpg"
+                                  Stretch="UniformToFill"/>
+                    </Border.Background>
+                  </Border>
+                  <Border Height="3" VerticalAlignment="Bottom" Background="#333333"/>
+                  <Border Height="3" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                          Width="50" Background="#E50914"/>
+                </Panel>
+              </Border>
+              <TextBlock Text="Void Runners" FontSize="12" Foreground="#CCCCCC"
+                         MaxWidth="200" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+          </Button>
+          <!-- Continue 2: Eclipse Rising -->
+          <Button Background="Transparent" Padding="0" Tag="Eclipse Rising"
+                  Cursor="Hand" Click="OnMovieClick">
+            <StackPanel Spacing="4" Width="200">
+              <Border Width="200" Height="112" CornerRadius="6" ClipToBounds="True">
+                <Panel>
+                  <Border>
+                    <Border.Background>
+                      <ImageBrush Source="avares://ControlCatalog/Assets/Movies/trending2.jpg"
+                                  Stretch="UniformToFill"/>
+                    </Border.Background>
+                  </Border>
+                  <Border Height="3" VerticalAlignment="Bottom" Background="#333333"/>
+                  <Border Height="3" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                          Width="80" Background="#E50914"/>
+                </Panel>
+              </Border>
+              <TextBlock Text="Eclipse Rising" FontSize="12" Foreground="#CCCCCC"
+                         MaxWidth="200" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+          </Button>
+          <!-- Continue 3: Phantom Code -->
+          <Button Background="Transparent" Padding="0" Tag="Phantom Code"
+                  Cursor="Hand" Click="OnMovieClick">
+            <StackPanel Spacing="4" Width="200">
+              <Border Width="200" Height="112" CornerRadius="6" ClipToBounds="True">
+                <Panel>
+                  <Border>
+                    <Border.Background>
+                      <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated1.jpg"
+                                  Stretch="UniformToFill"/>
+                    </Border.Background>
+                  </Border>
+                  <Border Height="3" VerticalAlignment="Bottom" Background="#333333"/>
+                  <Border Height="3" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                          Width="110" Background="#E50914"/>
+                </Panel>
+              </Border>
+              <TextBlock Text="Phantom Code" FontSize="12" Foreground="#CCCCCC"
+                         MaxWidth="200" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+          </Button>
+          <!-- Continue 4: Starfall Legacy -->
+          <Button Background="Transparent" Padding="0" Tag="Starfall Legacy"
+                  Cursor="Hand" Click="OnMovieClick">
+            <StackPanel Spacing="4" Width="200">
+              <Border Width="200" Height="112" CornerRadius="6" ClipToBounds="True">
+                <Panel>
+                  <Border>
+                    <Border.Background>
+                      <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated2.jpg"
+                                  Stretch="UniformToFill"/>
+                    </Border.Background>
+                  </Border>
+                  <Border Height="3" VerticalAlignment="Bottom" Background="#333333"/>
+                  <Border Height="3" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                          Width="140" Background="#E50914"/>
+                </Panel>
+              </Border>
+              <TextBlock Text="Starfall Legacy" FontSize="12" Foreground="#CCCCCC"
+                         MaxWidth="200" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+          </Button>
+          <!-- Continue 5: Crimson Depths -->
+          <Button Background="Transparent" Padding="0" Tag="Crimson Depths"
+                  Cursor="Hand" Click="OnMovieClick">
+            <StackPanel Spacing="4" Width="200">
+              <Border Width="200" Height="112" CornerRadius="6" ClipToBounds="True">
+                <Panel>
+                  <Border>
+                    <Border.Background>
+                      <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated3.jpg"
+                                  Stretch="UniformToFill"/>
+                    </Border.Background>
+                  </Border>
+                  <Border Height="3" VerticalAlignment="Bottom" Background="#333333"/>
+                  <Border Height="3" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                          Width="170" Background="#E50914"/>
+                </Panel>
+              </Border>
+              <TextBlock Text="Crimson Depths" FontSize="12" Foreground="#CCCCCC"
+                         MaxWidth="200" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- Top Rated -->
+      <TextBlock Text="Top Rated" FontSize="16" FontWeight="Bold"
+                 Foreground="White" Margin="16,12,16,8"/>
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled" Margin="0,0,0,24">
+        <StackPanel Orientation="Horizontal" Spacing="8" Margin="16,0">
+          <!-- Top Rated 1: Phantom Code -->
+          <Button Background="Transparent" Padding="0" Tag="Phantom Code"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated1.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Phantom Code" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Top Rated 2: Starfall Legacy -->
+          <Button Background="Transparent" Padding="0" Tag="Starfall Legacy"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated2.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Starfall Legacy" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Top Rated 3: Crimson Depths -->
+          <Button Background="Transparent" Padding="0" Tag="Crimson Depths"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated3.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Crimson Depths" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Top Rated 4: Astral Divide -->
+          <Button Background="Transparent" Padding="0" Tag="Astral Divide"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/toprated4.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Astral Divide" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Top Rated 5: Binary Dawn -->
+          <Button Background="Transparent" Padding="0" Tag="Binary Dawn"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/trending1.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Binary Dawn" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Top Rated 6: Pulse Override -->
+          <Button Background="Transparent" Padding="0" Tag="Pulse Override"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/trending2.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Pulse Override" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Top Rated 7: Glacier Eye -->
+          <Button Background="Transparent" Padding="0" Tag="Glacier Eye"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/morelike1.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Glacier Eye" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+          <!-- Top Rated 8: Neon Horizon -->
+          <Button Background="Transparent" Padding="0" Tag="Neon Horizon"
+                  Cursor="Hand" Click="OnMovieClick">
+            <Border Width="110" Height="165" CornerRadius="6" ClipToBounds="True">
+              <Panel>
+                <Border>
+                  <Border.Background>
+                    <ImageBrush Source="avares://ControlCatalog/Assets/Movies/continue1.jpg"
+                                Stretch="UniformToFill"/>
+                  </Border.Background>
+                </Border>
+                <Border>
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                      <GradientStop Color="#00000000" Offset="0.0"/>
+                      <GradientStop Color="#CC000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <TextBlock Text="Neon Horizon" FontSize="11" FontWeight="SemiBold"
+                           Foreground="White" VerticalAlignment="Bottom" Margin="8,0,8,8"
+                           TextTrimming="CharacterEllipsis"/>
+              </Panel>
+            </Border>
+          </Button>
+        </StackPanel>
+      </ScrollViewer>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

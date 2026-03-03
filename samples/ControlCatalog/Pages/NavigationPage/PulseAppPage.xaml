@@ -18,22 +18,11 @@
 
         <TextBlock Text="Navigation Flow" FontSize="13" FontWeight="SemiBold" />
         <StackPanel Spacing="4">
-          <TextBlock FontSize="12" Text="1. Login page is the NavigationPage root" />
-          <TextBlock FontSize="12" Text="2. On login → push TabbedPage (dashboard)" />
-          <TextBlock FontSize="12" Text="3. RemovePage(login) removes it from stack" />
-          <TextBlock FontSize="12" Text="4. Tap workout card → push detail page" />
-          <TextBlock FontSize="12" Text="5. Back button pops to TabbedPage" />
-        </StackPanel>
-
-        <Separator />
-
-        <TextBlock Text="Design" FontSize="13" FontWeight="SemiBold" />
-        <StackPanel Spacing="4">
-          <TextBlock FontSize="12" Text="• Primary: #256af4 (blue)" />
-          <TextBlock FontSize="12" Text="• Background: #101622 (dark navy)" />
-          <TextBlock FontSize="12" Text="• Surface: #1a1a2e (cards)" />
-          <TextBlock FontSize="12" Text="• Font: Lexend (system fallback)" />
-          <TextBlock FontSize="12" Text="• Roundness: 12px corners" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="1. Login page is the NavigationPage root" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="2. On login → push TabbedPage (dashboard)" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="3. RemovePage(login) removes it from stack" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="4. Tap workout card → push detail page" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="5. Back button pops to TabbedPage" />
         </StackPanel>
 
         <Separator />

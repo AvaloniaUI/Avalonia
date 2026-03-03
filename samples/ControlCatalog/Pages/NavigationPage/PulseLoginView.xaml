@@ -1,0 +1,142 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.PulseLoginView">
+  <UserControl.Styles>
+    <!-- Primary button style -->
+    <Style Selector="Button.primary">
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Height" Value="48"/>
+      <Setter Property="CornerRadius" Value="12"/>
+      <Setter Property="Background" Value="#256af4"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="FontSize" Value="14"/>
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1d5ad4"/>
+      <Setter Property="TextElement.Foreground" Value="White"/>
+    </Style>
+    <Style Selector="Button.primary:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1a4fbf"/>
+      <Setter Property="TextElement.Foreground" Value="White"/>
+    </Style>
+
+    <!-- Social button style -->
+    <Style Selector="Button.social">
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Height" Value="48"/>
+      <Setter Property="CornerRadius" Value="12"/>
+      <Setter Property="Background" Value="#1e293b"/>
+      <Setter Property="Foreground" Value="#94a3b8"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush" Value="#1e293b"/>
+      <Setter Property="FontSize" Value="16"/>
+      <Setter Property="Padding" Value="0"/>
+    </Style>
+    <Style Selector="Button.social:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#253352"/>
+      <Setter Property="TextElement.Foreground" Value="White"/>
+    </Style>
+    <Style Selector="Button.social:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1e293b"/>
+      <Setter Property="TextElement.Foreground" Value="White"/>
+    </Style>
+
+    <!-- Dark text box -->
+    <Style Selector="TextBox.dark">
+      <Setter Property="Height" Value="48"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Padding" Value="14,0"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="CornerRadius" Value="12"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="(TextElement.Foreground)" Value="White"/>
+      <Setter Property="Background" Value="#1e293b"/>
+      <Setter Property="BorderBrush" Value="#1e293b"/>
+      <Setter Property="CaretBrush" Value="White"/>
+    </Style>
+    <Style Selector="TextBox.dark:pointerover /template/ Border#PART_BorderElement">
+      <Setter Property="Background" Value="#253352"/>
+      <Setter Property="BorderBrush" Value="#2d3f60"/>
+    </Style>
+    <Style Selector="TextBox.dark:focus">
+      <Setter Property="Foreground" Value="White"/>
+    </Style>
+    <Style Selector="TextBox.dark:focus /template/ Border#PART_BorderElement">
+      <Setter Property="Background" Value="#1e293b"/>
+      <Setter Property="BorderBrush" Value="#256af4"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="20" Margin="32,48,32,32" MaxWidth="400"
+                HorizontalAlignment="Center">
+
+      <!-- Logo Row -->
+      <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+        <Border Width="36" Height="36" CornerRadius="8" Background="#256af4"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
+          <PathIcon Data="M7 2v11h3v9l7-12h-4l4-8z"
+                    Width="16" Height="16" Foreground="White"/>
+        </Border>
+        <TextBlock Text="PULSE." FontSize="20" FontWeight="Bold" Foreground="White"
+                   VerticalAlignment="Center"/>
+      </StackPanel>
+
+      <!-- Spacer -->
+      <Border Height="16"/>
+
+      <!-- Welcome Text -->
+      <TextBlock Text="Welcome Back" FontSize="26" FontWeight="Bold" Foreground="White"
+                 HorizontalAlignment="Center"/>
+      <TextBlock Text="Train harder than yesterday." FontSize="13" Foreground="#94a3b8"
+                 HorizontalAlignment="Center" Margin="0,-12,0,0"/>
+
+      <!-- Spacer -->
+      <Border Height="8"/>
+
+      <!-- Email -->
+      <TextBlock Text="Email Address" FontSize="12" FontWeight="Medium" Foreground="#94a3b8"/>
+      <TextBox Classes="dark" PlaceholderText="name@example.com"/>
+
+      <!-- Password Header -->
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Text="Password" FontSize="12" FontWeight="Medium" Foreground="#94a3b8"
+                   VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="1" Text="Forgot?" FontSize="11" FontWeight="SemiBold"
+                   Foreground="#256af4" VerticalAlignment="Center"/>
+      </Grid>
+      <TextBox Classes="dark" PlaceholderText="Password" PasswordChar="&#x2022;"/>
+
+      <!-- Login Button -->
+      <Button x:Name="LoginButton" Classes="primary" Content="Login" Click="OnLoginClicked"/>
+
+      <!-- Divider -->
+      <Grid ColumnDefinitions="*,Auto,*" Margin="0,4">
+        <Border Height="1" Background="#1e293b" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="1" Text="OR CONTINUE WITH" FontSize="10" FontWeight="Medium"
+                   Foreground="#64748b" LetterSpacing="2" Margin="12,0"/>
+        <Border Grid.Column="2" Height="1" Background="#1e293b" VerticalAlignment="Center"/>
+      </Grid>
+
+      <!-- Social Buttons -->
+      <Grid ColumnDefinitions="*,*,*">
+        <Button Classes="social" Content="G" Margin="0,0,6,0"/>
+        <Button Grid.Column="1" Classes="social" Content="&#xf8ff;" Margin="6,0"/>
+        <Button Grid.Column="2" Classes="social" Content="f" Margin="6,0,0,0"/>
+      </Grid>
+
+      <!-- Footer -->
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
+        <TextBlock Text="New here?" FontSize="12" Foreground="#94a3b8"/>
+        <TextBlock Text="Create an account" FontSize="12" FontWeight="Bold" Foreground="#256af4"/>
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

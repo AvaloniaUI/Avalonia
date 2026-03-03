@@ -2,19 +2,11 @@ using System;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
-using Avalonia.Media;
 
 namespace ControlCatalog.Pages
 {
     public partial class NavigationPageModalPage : UserControl
     {
-        private static readonly Color[] PageColors =
-        {
-            Color.Parse("#BBDEFB"), Color.Parse("#C8E6C9"), Color.Parse("#FFE0B2"),
-            Color.Parse("#E1BEE7"), Color.Parse("#FFCDD2"), Color.Parse("#B2EBF2"),
-        };
-
         private int _modalCount;
 
         public NavigationPageModalPage()
@@ -25,13 +17,13 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            await DemoNav.PushAsync(MakePage("Home", "Use Push Modal to show a modal on top.", 0), null);
+            await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Home", "Use Push Modal to show a modal on top.", 0), null);
         }
 
         private async void OnPushModal(object? sender, RoutedEventArgs e)
         {
             _modalCount++;
-            var modal = MakePage($"Modal {_modalCount}", "This page was presented modally.\nTap 'Pop Modal' to dismiss.", _modalCount);
+            var modal = NavigationDemoHelper.MakePage($"Modal {_modalCount}", "This page was presented modally.\nTap 'Pop Modal' to dismiss.", _modalCount);
             await DemoNav.PushModalAsync(modal);
             UpdateStatus();
         }
@@ -65,40 +57,5 @@ namespace ControlCatalog.Pages
         {
             StatusText.Text = $"Modals: {DemoNav.ModalStack.Count}";
         }
-
-        private static ContentPage MakePage(string header, string body, int index) =>
-            new ContentPage
-            {
-                Header = header,
-                Background = new SolidColorBrush(PageColors[index % PageColors.Length]),
-                Content = new StackPanel
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Spacing = 8,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = header,
-                            FontSize = 24,
-                            FontWeight = FontWeight.Bold,
-                            HorizontalAlignment = HorizontalAlignment.Center
-                        },
-                        new TextBlock
-                        {
-                            Text = body,
-                            FontSize = 14,
-                            Opacity = 0.6,
-                            TextWrapping = TextWrapping.Wrap,
-                            TextAlignment = TextAlignment.Center,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            MaxWidth = 300,
-                        }
-                    }
-                },
-                HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                VerticalContentAlignment = VerticalAlignment.Stretch
-            };
     }
 }

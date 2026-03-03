@@ -8,12 +8,6 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageBackButtonPage : UserControl
     {
-        private static readonly Color[] PageColors =
-        {
-            Color.Parse("#E3F2FD"), Color.Parse("#F3E5F5"), Color.Parse("#E8F5E9"),
-            Color.Parse("#FFF3E0"), Color.Parse("#FCE4EC"), Color.Parse("#E0F7FA"),
-        };
-
         private int _pushCount;
 
         public NavigationPageBackButtonPage()
@@ -71,10 +65,10 @@ namespace ControlCatalog.Pages
 
         private void OnPushCustomIcon(object? sender, RoutedEventArgs e)
         {
-            var page = CreatePage($"Icon Back #{_pushCount + 1}", "BackButtonContent = PathIcon (×)\n\nThe back button shows a custom icon.", null);
+            var page = CreatePage($"Icon Back #{_pushCount + 1}", "BackButtonContent = PathIcon (x)\n\nThe back button shows a custom icon.", null);
             NavigationPage.SetBackButtonContent(page, new TextBlock
             {
-                Text = "✕",
+                Text = "\u2715",
                 FontSize = 16,
                 VerticalAlignment = VerticalAlignment.Center
             });
@@ -95,7 +89,7 @@ namespace ControlCatalog.Pages
                 {
                     new TextBlock
                     {
-                        Text = "✕",
+                        Text = "\u2715",
                         FontSize = 14,
                         VerticalAlignment = VerticalAlignment.Center,
                     },
@@ -168,40 +162,10 @@ namespace ControlCatalog.Pages
         private ContentPage CreatePage(string title, string body, Color? bg)
         {
             _pushCount++;
-            var color = bg ?? PageColors[_pushCount % PageColors.Length];
-            return new ContentPage
-            {
-                Header = title,
-                Background = new SolidColorBrush(color),
-                Content = new StackPanel
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Spacing = 12,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = title,
-                            FontSize = 28,
-                            FontWeight = FontWeight.Bold,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                        },
-                        new TextBlock
-                        {
-                            Text = body,
-                            FontSize = 14,
-                            Opacity = 0.6,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            TextAlignment = TextAlignment.Center,
-                            TextWrapping = TextWrapping.Wrap,
-                            MaxWidth = 360,
-                        }
-                    }
-                },
-                HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                VerticalContentAlignment = VerticalAlignment.Stretch
-            };
+            var page = NavigationDemoHelper.MakePage(title, body, _pushCount);
+            if (bg.HasValue)
+                page.Background = new SolidColorBrush(bg.Value);
+            return page;
         }
     }
 }

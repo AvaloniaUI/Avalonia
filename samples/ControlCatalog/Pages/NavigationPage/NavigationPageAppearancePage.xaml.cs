@@ -7,12 +7,6 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageAppearancePage : UserControl
     {
-        private static readonly Color[] PageColors =
-        {
-            Color.Parse("#BBDEFB"), Color.Parse("#C8E6C9"), Color.Parse("#FFE0B2"),
-            Color.Parse("#E1BEE7"), Color.Parse("#FFCDD2"), Color.Parse("#B2EBF2"),
-        };
-
         private int _pageCount;
         private int _backButtonStyle;
 
@@ -24,7 +18,7 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            await DemoNav.PushAsync(MakePage("Appearance", "Change bar properties using the options panel.", 0), null);
+            await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Appearance", "Change bar properties using the options panel.", 0), null);
         }
 
         private void OnHasNavBarChanged(object? sender, RoutedEventArgs e)
@@ -142,7 +136,7 @@ namespace ControlCatalog.Pages
         private void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
-            var page = MakePage($"Page {_pageCount}", "Check the back button style.", _pageCount);
+            var page = NavigationDemoHelper.MakePage($"Page {_pageCount}", "Check the back button style.", _pageCount);
 
             object? backContent = _backButtonStyle switch
             {
@@ -160,39 +154,5 @@ namespace ControlCatalog.Pages
         }
 
         private async void OnPop(object? sender, RoutedEventArgs e) => await DemoNav.PopAsync();
-
-        private static ContentPage MakePage(string header, string body, int index) =>
-            new ContentPage
-            {
-                Header = header,
-                Background = new SolidColorBrush(PageColors[index % PageColors.Length]),
-                Content = new StackPanel
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Spacing = 8,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = header,
-                            FontSize = 18,
-                            FontWeight = FontWeight.SemiBold,
-                            HorizontalAlignment = HorizontalAlignment.Center
-                        },
-                        new TextBlock
-                        {
-                            Text = body,
-                            FontSize = 13,
-                            Opacity = 0.7,
-                            TextWrapping = TextWrapping.Wrap,
-                            TextAlignment = TextAlignment.Center,
-                            MaxWidth = 240
-                        }
-                    }
-                },
-                HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                VerticalContentAlignment = VerticalAlignment.Stretch
-            };
     }
 }

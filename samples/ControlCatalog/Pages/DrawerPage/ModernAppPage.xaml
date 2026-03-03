@@ -28,22 +28,11 @@
 
         <TextBlock Text="Navigation Flow" FontSize="13" FontWeight="SemiBold"/>
         <StackPanel Spacing="4">
-          <TextBlock FontSize="12" Text="1. DrawerPage: root, placement=Top"/>
-          <TextBlock FontSize="12" Text="2. Hamburger opens slide-down pane (260 px)"/>
-          <TextBlock FontSize="12" Text="3. Pane items navigate NavigationPage sections"/>
-          <TextBlock FontSize="12" Text="4. Discover has full-width destination cards"/>
-          <TextBlock FontSize="12" Text="5. Profile shows stats and a travel gallery"/>
-        </StackPanel>
-
-        <Separator/>
-
-        <TextBlock Text="Design Tokens" FontSize="13" FontWeight="SemiBold"/>
-        <StackPanel Spacing="4">
-          <TextBlock FontSize="12" Text="• Primary:  #0dccf2 (cyan)"/>
-          <TextBlock FontSize="12" Text="• BG:       #f5f8f8 (light)"/>
-          <TextBlock FontSize="12" Text="• Dark:     #101f22"/>
-          <TextBlock FontSize="12" Text="• Corner:   12 px cards, 999 pills"/>
-          <TextBlock FontSize="12" Text="• DrawerLen: 260 px"/>
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="1. DrawerPage: root, placement=Top"/>
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="2. Hamburger opens slide-down pane (260 px)"/>
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="3. Pane items navigate NavigationPage sections"/>
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="4. Discover has full-width destination cards"/>
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="5. Profile shows stats and a travel gallery"/>
         </StackPanel>
 
         <Separator/>

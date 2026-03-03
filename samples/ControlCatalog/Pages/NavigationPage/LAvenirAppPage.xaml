@@ -28,23 +28,11 @@
 
         <TextBlock Text="Navigation Flow" FontSize="13" FontWeight="SemiBold" />
         <StackPanel Spacing="4">
-          <TextBlock FontSize="12" Text="1. DrawerPage is the root container" />
-          <TextBlock FontSize="12" Text="2. Detail = NavigationPage with TabbedPage" />
-          <TextBlock FontSize="12" Text="3. Hamburger icon opens the drawer" />
-          <TextBlock FontSize="12" Text="4. Tap menu item card → push dish detail" />
-          <TextBlock FontSize="12" Text="5. Drawer items close drawer + pop to root" />
-        </StackPanel>
-
-        <Separator />
-
-        <TextBlock Text="Design" FontSize="13" FontWeight="SemiBold" />
-        <StackPanel Spacing="4">
-          <TextBlock FontSize="12" Text="• Primary: #4b2bee (purple)" />
-          <TextBlock FontSize="12" Text="• Dark BG: #131022 (drawer)" />
-          <TextBlock FontSize="12" Text="• Light BG: #f6f6f8 (content)" />
-          <TextBlock FontSize="12" Text="• Surface: #1a1836 (cards)" />
-          <TextBlock FontSize="12" Text="• Font: Plus Jakarta Sans (fallback)" />
-          <TextBlock FontSize="12" Text="• Roundness: 8-12px corners" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="1. DrawerPage is the root container" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="2. Detail = NavigationPage with TabbedPage" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="3. Hamburger icon opens the drawer" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="4. Tap menu item card → push dish detail" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="5. Drawer items close drawer + pop to root" />
         </StackPanel>
 
         <Separator />

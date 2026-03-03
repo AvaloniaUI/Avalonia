@@ -16,11 +16,11 @@
 
         <TextBlock Text="Key Techniques" FontSize="13" FontWeight="SemiBold" />
         <StackPanel Spacing="4">
-          <TextBlock FontSize="12" Text="• Dome: StreamGeometry ArcTo on SizeChanged" />
-          <TextBlock FontSize="12" Text="• Avatar: Canvas overlay, centered at dome Y" />
-          <TextBlock FontSize="12" Text="• Home: SetHasNavigationBar(page, false)" />
-          <TextBlock FontSize="12" Text="• Profile: BarLayoutBehavior.Overlay (transparent bar)" />
-          <TextBlock FontSize="12" Text="• Tap a featured card or recommended item to open the profile page" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Dome: StreamGeometry ArcTo on SizeChanged" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Avatar: Canvas overlay, centered at dome Y" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Home: SetHasNavigationBar(page, false)" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Profile: BarLayoutBehavior.Overlay (transparent bar)" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Tap a featured card or recommended item to open the profile page" />
         </StackPanel>
 
         <Separator />

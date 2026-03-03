@@ -10,10 +10,10 @@
                    Text="Page.Header accepts any Control, not just strings. A Grid in the header divides the nav bar: the page title stretches on the left, and a search box sits on the right. Both share the same data so typing immediately filters the contact list." />
         <Separator />
         <TextBlock Text="Key Points" FontWeight="SemiBold" />
-        <TextBlock FontSize="11" Text="• Header = any Control, not just a string" />
-        <TextBlock FontSize="11" Text="• Grid: title (*) + search box (Auto)" />
-        <TextBlock FontSize="11" Text="• One ViewModel shared by header and content" />
-        <TextBlock FontSize="11" Text="• Typing instantly filters via ObservableCollection" />
+        <TextBlock FontSize="11" TextWrapping="Wrap" Text="• Header = any Control, not just a string" />
+        <TextBlock FontSize="11" TextWrapping="Wrap" Text="• Grid: title (*) + search box (Auto)" />
+        <TextBlock FontSize="11" TextWrapping="Wrap" Text="• One ViewModel shared by header and content" />
+        <TextBlock FontSize="11" TextWrapping="Wrap" Text="• Typing instantly filters via ObservableCollection" />
       </StackPanel>
     </ScrollViewer>
     <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />

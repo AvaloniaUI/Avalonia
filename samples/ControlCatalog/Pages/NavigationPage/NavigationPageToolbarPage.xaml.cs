@@ -1,18 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Media;
 
 namespace ControlCatalog.Pages
 {
     public partial class NavigationPageToolbarPage : UserControl
     {
-        private static readonly Color[] PageColors =
-        {
-            Color.Parse("#BBDEFB"), Color.Parse("#C8E6C9"), Color.Parse("#FFE0B2"),
-            Color.Parse("#E1BEE7"), Color.Parse("#FFCDD2"), Color.Parse("#B2EBF2"),
-        };
-
         private int _pageCount;
         private int _itemCount;
         private ContentPage? _rootPage;
@@ -26,38 +19,8 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            _rootPage = new ContentPage
-            {
-                Header = "Root Page",
-                Background = new SolidColorBrush(PageColors[0]),
-                Content = new StackPanel
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Spacing = 8,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = "CommandBar Demo",
-                            FontSize = 18,
-                            FontWeight = FontWeight.SemiBold,
-                            HorizontalAlignment = HorizontalAlignment.Center
-                        },
-                        new TextBlock
-                        {
-                            Text = "Use the panel to add CommandBar items.\nTop items appear inside the navigation bar.\nBottom items appear as a separate bar.",
-                            FontSize = 13,
-                            Opacity = 0.7,
-                            TextWrapping = TextWrapping.Wrap,
-                            TextAlignment = TextAlignment.Center,
-                            MaxWidth = 240
-                        }
-                    }
-                },
-                HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                VerticalContentAlignment = VerticalAlignment.Stretch
-            };
+            _rootPage = NavigationDemoHelper.MakePage("CommandBar Demo",
+                "Use the panel to add CommandBar items.\nTop items appear inside the navigation bar.\nBottom items appear as a separate bar.", 0);
             ApplyPosition();
             await DemoNav.PushAsync(_rootPage, null);
             UpdateStatus();
@@ -121,7 +84,7 @@ namespace ControlCatalog.Pages
         private void OnPushWithToolbar(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
-            var page = MakePage($"Page {_pageCount}", "CommandBar is shown in the nav bar.", _pageCount);
+            var page = NavigationDemoHelper.MakePage($"Page {_pageCount}", "CommandBar is shown in the nav bar.", _pageCount);
 
             var bar = BuildPresetCommandBar();
             if (PositionCombo.SelectedIndex == 1)
@@ -136,7 +99,7 @@ namespace ControlCatalog.Pages
         private void OnPushWithoutToolbar(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
-            DemoNav.Push(MakePage($"Page {_pageCount}", "No toolbar on this page.", _pageCount));
+            DemoNav.Push(NavigationDemoHelper.MakePage($"Page {_pageCount}", "No toolbar on this page.", _pageCount));
             UpdateStatus();
         }
 
@@ -180,40 +143,6 @@ namespace ControlCatalog.Pages
                         Icon = new PathIcon { Data = (Geometry)this.FindResource("DeleteIcon")! }
                     }
                 }
-            };
-
-        private static ContentPage MakePage(string header, string body, int index) =>
-            new ContentPage
-            {
-                Header = header,
-                Background = new SolidColorBrush(PageColors[index % PageColors.Length]),
-                Content = new StackPanel
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Spacing = 8,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = header,
-                            FontSize = 18,
-                            FontWeight = FontWeight.SemiBold,
-                            HorizontalAlignment = HorizontalAlignment.Center
-                        },
-                        new TextBlock
-                        {
-                            Text = body,
-                            FontSize = 13,
-                            Opacity = 0.7,
-                            TextWrapping = TextWrapping.Wrap,
-                            TextAlignment = TextAlignment.Center,
-                            MaxWidth = 240
-                        }
-                    }
-                },
-                HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                VerticalContentAlignment = VerticalAlignment.Stretch
             };
     }
 }

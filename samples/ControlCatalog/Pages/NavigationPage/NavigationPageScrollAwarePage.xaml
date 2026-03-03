@@ -45,9 +45,9 @@
           <Separator />
 
           <TextBlock Text="Thresholds used" FontSize="13" FontWeight="SemiBold" />
-          <TextBlock FontSize="12" Text="• Hide  : scroll down > 8 px" />
-          <TextBlock FontSize="12" Text="• Show  : scroll up  > 4 px" />
-          <TextBlock FontSize="12" Text="• Always show at top (Y ≤ 4)" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Hide  : scroll down > 8 px" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Show  : scroll up  > 4 px" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="• Always show at top (Y ≤ 4)" />
         </StackPanel>
       </ScrollViewer>
     </Border>

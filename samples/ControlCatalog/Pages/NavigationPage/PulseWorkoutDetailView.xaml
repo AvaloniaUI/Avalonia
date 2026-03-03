@@ -1,0 +1,246 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.PulseWorkoutDetailView">
+  <UserControl.Styles>
+    <Style Selector="Button.back-btn">
+      <Setter Property="Width" Value="40"/>
+      <Setter Property="Height" Value="40"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Background" Value="#99101622"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush" Value="#33FFFFFF"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalAlignment" Value="Top"/>
+      <Setter Property="HorizontalAlignment" Value="Left"/>
+      <Setter Property="Margin" Value="16,16,0,0"/>
+    </Style>
+    <Style Selector="Button.back-btn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#CC101622"/>
+      <Setter Property="TextElement.Foreground" Value="White"/>
+    </Style>
+    <Style Selector="Button.back-btn:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="#99101622"/>
+      <Setter Property="TextElement.Foreground" Value="White"/>
+    </Style>
+    <Style Selector="Button.start-btn">
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Height" Value="52"/>
+      <Setter Property="CornerRadius" Value="12"/>
+      <Setter Property="Background" Value="#256af4"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="FontSize" Value="15"/>
+      <Setter Property="Margin" Value="16,0,16,16"/>
+      <Setter Property="VerticalAlignment" Value="Bottom"/>
+    </Style>
+    <Style Selector="Button.start-btn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1d5ad4"/>
+      <Setter Property="TextElement.Foreground" Value="White"/>
+    </Style>
+    <Style Selector="Button.start-btn:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1a4fbf"/>
+      <Setter Property="TextElement.Foreground" Value="White"/>
+    </Style>
+  </UserControl.Styles>
+
+  <Panel>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="0">
+
+        <!-- Hero -->
+        <Panel Height="280">
+          <Border x:Name="HeroBg" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                  ClipToBounds="True">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/workout_hero.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+          </Border>
+          <Border>
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#66101622" Offset="0"/>
+                <GradientStop Color="#E6101622" Offset="1"/>
+              </LinearGradientBrush>
+            </Border.Background>
+          </Border>
+          <Button x:Name="BackButton" Classes="back-btn" Click="OnBackClicked">
+            <PathIcon Data="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"
+                      Width="18" Height="18" Foreground="White"/>
+          </Button>
+          <StackPanel VerticalAlignment="Bottom" Margin="16,0,16,16">
+            <TextBlock x:Name="WorkoutTitle" Text="Full Body Strength"
+                       FontSize="26" FontWeight="Bold" Foreground="White"/>
+            <Border Height="8"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Border CornerRadius="8" Background="#33256af4"
+                      BorderBrush="#4D256af4" BorderThickness="1" Padding="10,4">
+                <TextBlock Text="45 min" FontSize="12" FontWeight="Medium"
+                           Foreground="#e2e8f0"/>
+              </Border>
+              <Border CornerRadius="8" Background="#33256af4"
+                      BorderBrush="#4D256af4" BorderThickness="1" Padding="10,4">
+                <TextBlock Text="Intermediate" FontSize="12" FontWeight="Medium"
+                           Foreground="#e2e8f0"/>
+              </Border>
+            </StackPanel>
+          </StackPanel>
+        </Panel>
+
+        <!-- Exercises header -->
+        <Grid ColumnDefinitions="*,Auto" Margin="16,20,16,12">
+          <TextBlock Text="Exercises" FontSize="18" FontWeight="Bold" Foreground="White"/>
+          <TextBlock Grid.Column="1" Text="5 Movements" FontSize="12" FontWeight="Medium"
+                     Foreground="#256af4" VerticalAlignment="Center"/>
+        </Grid>
+
+        <!-- Exercise: Bench Press -->
+        <Border CornerRadius="12" BorderBrush="#1e293b" BorderThickness="1"
+                Background="#0f172a" Padding="10" Margin="16,0,16,10">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="56" Height="56" CornerRadius="8" ClipToBounds="True"
+                    VerticalAlignment="Center">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/ex_bench.jpg"
+                            Stretch="UniformToFill"/>
+              </Border.Background>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+              <TextBlock Text="Bench Press" FontSize="14" FontWeight="Bold" Foreground="White"/>
+              <TextBlock Text="Chest, Triceps" FontSize="11" Foreground="#94a3b8"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Center"
+                        HorizontalAlignment="Right" Spacing="4">
+              <Border CornerRadius="999" Background="#1A256af4"
+                      Padding="8,2" HorizontalAlignment="Right">
+                <TextBlock Text="4 SETS" FontSize="9" FontWeight="Bold" Foreground="#256af4"/>
+              </Border>
+              <TextBlock Text="10 Reps" FontSize="12" FontWeight="SemiBold"
+                         Foreground="#94a3b8" HorizontalAlignment="Right"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- Exercise: Barbell Squats -->
+        <Border CornerRadius="12" BorderBrush="#1e293b" BorderThickness="1"
+                Background="#0f172a" Padding="10" Margin="16,0,16,10">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="56" Height="56" CornerRadius="8" ClipToBounds="True"
+                    VerticalAlignment="Center">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/ex_squats.jpg"
+                            Stretch="UniformToFill"/>
+              </Border.Background>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+              <TextBlock Text="Barbell Squats" FontSize="14" FontWeight="Bold" Foreground="White"/>
+              <TextBlock Text="Quads, Glutes" FontSize="11" Foreground="#94a3b8"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Center"
+                        HorizontalAlignment="Right" Spacing="4">
+              <Border CornerRadius="999" Background="#1A256af4"
+                      Padding="8,2" HorizontalAlignment="Right">
+                <TextBlock Text="3 SETS" FontSize="9" FontWeight="Bold" Foreground="#256af4"/>
+              </Border>
+              <TextBlock Text="12 Reps" FontSize="12" FontWeight="SemiBold"
+                         Foreground="#94a3b8" HorizontalAlignment="Right"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- Exercise: Deadlifts -->
+        <Border CornerRadius="12" BorderBrush="#1e293b" BorderThickness="1"
+                Background="#0f172a" Padding="10" Margin="16,0,16,10">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="56" Height="56" CornerRadius="8" ClipToBounds="True"
+                    VerticalAlignment="Center">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/ex_deadlifts.jpg"
+                            Stretch="UniformToFill"/>
+              </Border.Background>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+              <TextBlock Text="Deadlifts" FontSize="14" FontWeight="Bold" Foreground="White"/>
+              <TextBlock Text="Back, Hamstrings" FontSize="11" Foreground="#94a3b8"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Center"
+                        HorizontalAlignment="Right" Spacing="4">
+              <Border CornerRadius="999" Background="#1A256af4"
+                      Padding="8,2" HorizontalAlignment="Right">
+                <TextBlock Text="3 SETS" FontSize="9" FontWeight="Bold" Foreground="#256af4"/>
+              </Border>
+              <TextBlock Text="8 Reps" FontSize="12" FontWeight="SemiBold"
+                         Foreground="#94a3b8" HorizontalAlignment="Right"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- Exercise: Overhead Press -->
+        <Border CornerRadius="12" BorderBrush="#1e293b" BorderThickness="1"
+                Background="#0f172a" Padding="10" Margin="16,0,16,10">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="56" Height="56" CornerRadius="8" ClipToBounds="True"
+                    VerticalAlignment="Center">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/ex_overhead.jpg"
+                            Stretch="UniformToFill"/>
+              </Border.Background>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+              <TextBlock Text="Overhead Press" FontSize="14" FontWeight="Bold" Foreground="White"/>
+              <TextBlock Text="Shoulders, Triceps" FontSize="11" Foreground="#94a3b8"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Center"
+                        HorizontalAlignment="Right" Spacing="4">
+              <Border CornerRadius="999" Background="#1A256af4"
+                      Padding="8,2" HorizontalAlignment="Right">
+                <TextBlock Text="3 SETS" FontSize="9" FontWeight="Bold" Foreground="#256af4"/>
+              </Border>
+              <TextBlock Text="10 Reps" FontSize="12" FontWeight="SemiBold"
+                         Foreground="#94a3b8" HorizontalAlignment="Right"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- Exercise: Pull Ups -->
+        <Border CornerRadius="12" BorderBrush="#1e293b" BorderThickness="1"
+                Background="#0f172a" Padding="10" Margin="16,0,16,10">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="56" Height="56" CornerRadius="8" ClipToBounds="True"
+                    VerticalAlignment="Center">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/ex_pullups.jpg"
+                            Stretch="UniformToFill"/>
+              </Border.Background>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+              <TextBlock Text="Pull Ups" FontSize="14" FontWeight="Bold" Foreground="White"/>
+              <TextBlock Text="Back, Biceps" FontSize="11" Foreground="#94a3b8"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" VerticalAlignment="Center"
+                        HorizontalAlignment="Right" Spacing="4">
+              <Border CornerRadius="999" Background="#1A256af4"
+                      Padding="8,2" HorizontalAlignment="Right">
+                <TextBlock Text="3 SETS" FontSize="9" FontWeight="Bold" Foreground="#256af4"/>
+              </Border>
+              <TextBlock Text="Failure" FontSize="12" FontWeight="SemiBold"
+                         Foreground="#94a3b8" HorizontalAlignment="Right"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- Bottom padding for floating button -->
+        <Border Height="80"/>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Floating Start Workout button -->
+    <Button Classes="start-btn" Content="Start Workout"/>
+  </Panel>
+</UserControl>

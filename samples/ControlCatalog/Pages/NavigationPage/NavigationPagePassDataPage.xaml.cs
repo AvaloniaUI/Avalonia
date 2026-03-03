@@ -45,12 +45,10 @@ namespace ControlCatalog.Pages
             if (MethodCombo.SelectedIndex == 0)
             {
                 MethodDescription.Text = "Data is passed as a constructor argument to the detail page. The page stores the contact and displays its properties directly.";
-                CodeExample.Text = "DemoNav.Push(\n  new DetailPage(contact));";
             }
             else
             {
                 MethodDescription.Text = "Data is passed by setting the new page's DataContext. This enables data binding in XAML to display the data automatically.";
-                CodeExample.Text = "DemoNav.Push(\n  new DetailPage {\n    DataContext = contact\n  });";
             }
         }
 

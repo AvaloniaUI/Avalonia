@@ -88,44 +88,6 @@
           </ScrollViewer>
         </Border>
 
-        <Separator />
-
-        <!-- API Reference -->
-        <TextBlock Text="API Reference" FontSize="13" FontWeight="SemiBold" />
-        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                CornerRadius="4" Padding="8">
-          <TextBlock FontFamily="Cascadia Code,Consolas,Menlo,monospace"
-                     FontSize="10" TextWrapping="Wrap"
-                     xml:space="preserve">// Global: hide for all pages
-navPage.IsBackButtonVisible = false;
-
-// Per-page: hide for one page
-NavigationPage
-  .SetHasBackButton(
-    page, false);
-
-// Per-page: disable (grayed out)
-NavigationPage
-  .SetIsBackButtonEnabled(
-    page, false);
-
-// Custom string content
-NavigationPage
-  .SetBackButtonContent(
-    page, "Cancel");
-
-// Cancel navigation (sync)
-page.Navigating += (args) =&gt; {
-  args.Cancel = true;
-  return Task.CompletedTask;
-};
-
-// Cancel with async guard
-page.Navigating += async (args) =&gt; {
-  bool ok = await ShowConfirmAsync();
-  if (!ok) args.Cancel = true;
-};</TextBlock>
-        </Border>
       </StackPanel>
     </ScrollViewer>
 

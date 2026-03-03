@@ -7,15 +7,6 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageAttachedMethodsPage : UserControl
     {
-        private static readonly IBrush[] PageColors =
-        {
-            new SolidColorBrush(Color.Parse("#E3F2FD")),
-            new SolidColorBrush(Color.Parse("#E8F5E9")),
-            new SolidColorBrush(Color.Parse("#FFF3E0")),
-            new SolidColorBrush(Color.Parse("#FCE4EC")),
-            new SolidColorBrush(Color.Parse("#F3E5F5")),
-        };
-
         private int _pageCount;
 
         public NavigationPageAttachedMethodsPage()
@@ -62,11 +53,10 @@ namespace ControlCatalog.Pages
         private void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
-            var colorIdx = (_pageCount - 1) % PageColors.Length;
 
             var page = new ContentPage
             {
-                Background = PageColors[colorIdx],
+                Background = NavigationDemoHelper.GetPageBrush(_pageCount - 1),
                 Content = new StackPanel
                 {
                     HorizontalAlignment = HorizontalAlignment.Center,

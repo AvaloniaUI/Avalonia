@@ -21,19 +21,11 @@
         <Separator />
         <TextBlock Text="Navigation Flow" FontSize="13" FontWeight="SemiBold" />
         <StackPanel Spacing="4">
-          <TextBlock FontSize="12" Text="1. DrawerPage (CompactInline)" />
-          <TextBlock FontSize="12" Text="2. Detail = NavigationPage" />
-          <TextBlock FontSize="12" Text="3. Eco leaf replaces hamburger" />
-          <TextBlock FontSize="12" Text="4. Compact → icon + UPPERCASE label" />
-          <TextBlock FontSize="12" Text="5. Open → icon + horizontal text" />
-        </StackPanel>
-        <Separator />
-        <TextBlock Text="Design Tokens" FontSize="13" FontWeight="SemiBold" />
-        <StackPanel Spacing="4">
-          <TextBlock FontSize="12" Text="• Drawer BG: #1A2A1D" />
-          <TextBlock FontSize="12" Text="• Accent:    #4CAF50" />
-          <TextBlock FontSize="12" Text="• Selected:  #2D4A32" />
-          <TextBlock FontSize="12" Text="• Rail: 72 px / Open: 250 px" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="1. DrawerPage (CompactInline)" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="2. Detail = NavigationPage" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="3. Eco leaf replaces hamburger" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="4. Compact → icon + UPPERCASE label" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Text="5. Open → icon + horizontal text" />
         </StackPanel>
         <Separator />
         <TextBlock Text="Key Code" FontSize="13" FontWeight="SemiBold" />

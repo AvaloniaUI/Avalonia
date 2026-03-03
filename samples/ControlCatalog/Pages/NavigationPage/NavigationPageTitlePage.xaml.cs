@@ -7,12 +7,6 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageTitlePage : UserControl
     {
-        private static readonly Color[] PageColors =
-        {
-            Color.Parse("#BBDEFB"), Color.Parse("#C8E6C9"), Color.Parse("#FFE0B2"),
-            Color.Parse("#E1BEE7"), Color.Parse("#FFCDD2"), Color.Parse("#B2EBF2"),
-        };
-
         private int _pageCount;
 
         public NavigationPageTitlePage()
@@ -23,7 +17,7 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            await DemoNav.PushAsync(MakePage("Home", "Choose a header type and tap 'Push'.", 0), null);
+            await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Home", "Choose a header type and tap 'Push'.", 0), null);
             StatusText.Text = "Current: Home";
         }
 
@@ -101,7 +95,7 @@ namespace ControlCatalog.Pages
         private void OnPushWithStringHeader(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
-            var page = MakePage($"Page {_pageCount}", "This page uses a string Header.", _pageCount);
+            var page = NavigationDemoHelper.MakePage($"Page {_pageCount}", "This page uses a string Header.", _pageCount);
             DemoNav.Push(page);
             StatusText.Text = $"Pushed: \"Page {_pageCount}\"";
         }
@@ -136,7 +130,7 @@ namespace ControlCatalog.Pages
             var page = new ContentPage
             {
                 Header = progressHeader,
-                Background = new SolidColorBrush(PageColors[_pageCount % PageColors.Length]),
+                Background = NavigationDemoHelper.GetPageBrush(_pageCount),
                 Content = new StackPanel
                 {
                     HorizontalAlignment = HorizontalAlignment.Center,
@@ -173,39 +167,5 @@ namespace ControlCatalog.Pages
             await DemoNav.PopAsync();
             StatusText.Text = $"Current: {DemoNav.CurrentPage?.Header as string ?? "(custom control)"}";
         }
-
-        private static ContentPage MakePage(string header, string body, int index) =>
-            new ContentPage
-            {
-                Header = header,
-                Background = new SolidColorBrush(PageColors[index % PageColors.Length]),
-                Content = new StackPanel
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Spacing = 8,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = header,
-                            FontSize = 18,
-                            FontWeight = FontWeight.SemiBold,
-                            HorizontalAlignment = HorizontalAlignment.Center
-                        },
-                        new TextBlock
-                        {
-                            Text = body,
-                            FontSize = 13,
-                            Opacity = 0.7,
-                            TextWrapping = TextWrapping.Wrap,
-                            TextAlignment = TextAlignment.Center,
-                            MaxWidth = 240
-                        }
-                    }
-                },
-                HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                VerticalContentAlignment = VerticalAlignment.Stretch
-            };
     }
 }

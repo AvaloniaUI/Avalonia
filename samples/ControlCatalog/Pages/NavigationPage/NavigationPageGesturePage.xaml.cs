@@ -1,18 +1,10 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
-using Avalonia.Media;
 
 namespace ControlCatalog.Pages
 {
     public partial class NavigationPageGesturePage : UserControl
     {
-        private static readonly Color[] PageColors =
-        {
-            Color.Parse("#E3F2FD"), Color.Parse("#F3E5F5"), Color.Parse("#E8F5E9"),
-            Color.Parse("#FFF3E0"), Color.Parse("#FCE4EC"),
-        };
-
         public NavigationPageGesturePage()
         {
             InitializeComponent();
@@ -21,9 +13,9 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            await DemoNav.PushAsync(BuildPage("Page 1", 0), null);
-            await DemoNav.PushAsync(BuildPage("Page 2", 1), null);
-            await DemoNav.PushAsync(BuildPage("Page 3", 2), null);
+            await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Page 1", "← Drag from the left edge to go back", 0), null);
+            await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Page 2", "← Drag from the left edge to go back", 1), null);
+            await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Page 3", "← Drag from the left edge to go back", 2), null);
             UpdateStatus();
         }
 
@@ -37,7 +29,7 @@ namespace ControlCatalog.Pages
         private async void OnPushPages(object? sender, RoutedEventArgs e)
         {
             var depth = DemoNav.StackDepth;
-            await DemoNav.PushAsync(BuildPage($"Page {depth + 1}", depth), null);
+            await DemoNav.PushAsync(NavigationDemoHelper.MakePage($"Page {depth + 1}", "← Drag from the left edge to go back", depth), null);
             UpdateStatus();
         }
 
@@ -51,37 +43,5 @@ namespace ControlCatalog.Pages
         {
             StatusText.Text = $"Depth: {DemoNav.StackDepth}";
         }
-
-        private static ContentPage BuildPage(string title, int colorIndex) =>
-            new ContentPage
-            {
-                Header = title,
-                Background = new SolidColorBrush(PageColors[colorIndex % PageColors.Length]),
-                Content = new StackPanel
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Spacing = 12,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = title,
-                            FontSize = 20,
-                            FontWeight = FontWeight.SemiBold,
-                            HorizontalAlignment = HorizontalAlignment.Center
-                        },
-                        new TextBlock
-                        {
-                            Text = "← Drag from the left edge to go back",
-                            FontSize = 13,
-                            Opacity = 0.7,
-                            HorizontalAlignment = HorizontalAlignment.Center
-                        }
-                    }
-                },
-                HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                VerticalContentAlignment = VerticalAlignment.Stretch
-            };
     }
 }

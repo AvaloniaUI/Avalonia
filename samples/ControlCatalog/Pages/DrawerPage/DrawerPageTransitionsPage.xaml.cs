@@ -86,26 +86,8 @@ namespace ControlCatalog.Pages
                 _ => ("M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z", "")
             };
 
-            var page = new ContentPage { Header = section };
+            var page = NavigationDemoHelper.MakeSectionPage(section, iconPath, section, body, 0, $"Transition: {transitionName}");
             NavigationPage.SetHasNavigationBar(page, false);
-
-            var pathIcon = new PathIcon { Width = 48, Height = 48, Data = Geometry.Parse(iconPath) };
-            pathIcon.SetValue(PathIcon.ForegroundProperty, new SolidColorBrush(Color.Parse("#0078D4")));
-
-            var panel = new StackPanel { Margin = new Thickness(24, 20), Spacing = 12 };
-            panel.Children.Add(pathIcon);
-            panel.Children.Add(new TextBlock { Text = section, FontSize = 26, FontWeight = FontWeight.Bold });
-            panel.Children.Add(new TextBlock { Text = body, FontSize = 14, Opacity = 0.8, TextWrapping = TextWrapping.Wrap });
-            panel.Children.Add(new Separator { Margin = new Thickness(0, 4) });
-            panel.Children.Add(new TextBlock
-            {
-                Text = $"Transition: {transitionName}",
-                FontSize = 12,
-                Opacity = 0.45,
-                FontStyle = FontStyle.Italic
-            });
-
-            page.Content = new ScrollViewer { Content = panel };
             return page;
         }
     }

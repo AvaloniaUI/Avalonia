@@ -1,0 +1,186 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.LAvenirMenuView">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Greeting -->
+      <StackPanel Margin="16,20,16,8">
+        <TextBlock Text="GOOD EVENING" FontSize="10" FontWeight="Medium"
+                   Foreground="#94A3B8" LetterSpacing="2"/>
+        <TextBlock Text="Alexander" FontSize="22" FontWeight="Bold" Foreground="#1E293B"/>
+      </StackPanel>
+
+      <!-- Hero Card -->
+      <Border CornerRadius="16" ClipToBounds="True" Height="200"
+              Margin="16,8,16,16">
+        <Panel>
+          <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Restaurant/featured_dish.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+          </Border>
+          <Border>
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#00000000" Offset="0"/>
+                <GradientStop Color="#B4000000" Offset="1"/>
+              </LinearGradientBrush>
+            </Border.Background>
+          </Border>
+          <StackPanel VerticalAlignment="Bottom" Margin="16,0,16,16">
+            <Border CornerRadius="999" Background="#4B2BEE" Padding="10,4"
+                    HorizontalAlignment="Left" Margin="0,0,0,8">
+              <TextBlock Text="CHEF'S SPECIAL" FontSize="10" FontWeight="Bold" Foreground="White"/>
+            </Border>
+            <TextBlock Text="Seared Scallops" FontSize="22" FontWeight="Bold" Foreground="White"/>
+            <TextBlock Text="Fresh scallops with truffle butter and microgreens"
+                       FontSize="12" Foreground="#E2E8F0" TextWrapping="Wrap"/>
+          </StackPanel>
+        </Panel>
+      </Border>
+
+      <!-- Category Chips -->
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled"
+                    Margin="0,0,0,16">
+        <StackPanel Orientation="Horizontal" Spacing="8" Margin="16,0">
+          <Border CornerRadius="999" Background="#4B2BEE" Padding="16,8">
+            <TextBlock Text="Starters" FontSize="13" FontWeight="SemiBold" Foreground="White"/>
+          </Border>
+          <Border CornerRadius="999" Background="Transparent"
+                  BorderBrush="#E2E8F0" BorderThickness="1" Padding="16,8">
+            <TextBlock Text="Mains" FontSize="13" FontWeight="Medium" Foreground="#94A3B8"/>
+          </Border>
+          <Border CornerRadius="999" Background="Transparent"
+                  BorderBrush="#E2E8F0" BorderThickness="1" Padding="16,8">
+            <TextBlock Text="Desserts" FontSize="13" FontWeight="Medium" Foreground="#94A3B8"/>
+          </Border>
+          <Border CornerRadius="999" Background="Transparent"
+                  BorderBrush="#E2E8F0" BorderThickness="1" Padding="16,8">
+            <TextBlock Text="Wines" FontSize="13" FontWeight="Medium" Foreground="#94A3B8"/>
+          </Border>
+          <Border CornerRadius="999" Background="Transparent"
+                  BorderBrush="#E2E8F0" BorderThickness="1" Padding="16,8">
+            <TextBlock Text="Cocktails" FontSize="13" FontWeight="Medium" Foreground="#94A3B8"/>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- Featured Starters header -->
+      <Grid ColumnDefinitions="*,Auto" Margin="16,0,16,12">
+        <TextBlock Text="Featured Starters" FontSize="18" FontWeight="Bold" Foreground="#1E293B"/>
+        <TextBlock Grid.Column="1" Text="See All" FontSize="13" FontWeight="SemiBold"
+                   Foreground="#4B2BEE" VerticalAlignment="Center"/>
+      </Grid>
+
+      <!-- Seared Scallops -->
+      <Border x:Name="Dish1Card" CornerRadius="12" Background="White" Padding="12"
+              Margin="16,0,16,12" Cursor="Hand" PointerPressed="OnDish1Pressed">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Border Width="72" Height="72" CornerRadius="10" ClipToBounds="True"
+                  VerticalAlignment="Center">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Restaurant/dish1.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+          </Border>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center"
+                      Margin="12,0,0,0" Spacing="2">
+            <TextBlock Text="Seared Scallops" FontSize="15" FontWeight="SemiBold" Foreground="#1E293B"/>
+            <TextBlock Text="Fresh scallops with truffle butter and microgreens"
+                       FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="160"/>
+            <TextBlock Text="$38" FontSize="16" FontWeight="Bold" Foreground="#4B2BEE"/>
+          </StackPanel>
+          <Border Grid.Column="2" Width="36" Height="36" CornerRadius="10"
+                  Background="#1A4B2BEE" VerticalAlignment="Center">
+            <PathIcon Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                      Width="18" Height="18" Foreground="#4B2BEE"/>
+          </Border>
+        </Grid>
+      </Border>
+
+      <!-- Truffle Risotto -->
+      <Border x:Name="Dish2Card" CornerRadius="12" Background="White" Padding="12"
+              Margin="16,0,16,12" Cursor="Hand" PointerPressed="OnDish2Pressed">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Border Width="72" Height="72" CornerRadius="10" ClipToBounds="True"
+                  VerticalAlignment="Center">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Restaurant/dish2.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+          </Border>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center"
+                      Margin="12,0,0,0" Spacing="2">
+            <TextBlock Text="Truffle Risotto" FontSize="15" FontWeight="SemiBold" Foreground="#1E293B"/>
+            <TextBlock Text="Creamy arborio rice with black truffle shavings"
+                       FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="160"/>
+            <TextBlock Text="$34" FontSize="16" FontWeight="Bold" Foreground="#4B2BEE"/>
+          </StackPanel>
+          <Border Grid.Column="2" Width="36" Height="36" CornerRadius="10"
+                  Background="#1A4B2BEE" VerticalAlignment="Center">
+            <PathIcon Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                      Width="18" Height="18" Foreground="#4B2BEE"/>
+          </Border>
+        </Grid>
+      </Border>
+
+      <!-- Wagyu Tartare -->
+      <Border x:Name="Dish3Card" CornerRadius="12" Background="White" Padding="12"
+              Margin="16,0,16,12" Cursor="Hand" PointerPressed="OnDish3Pressed">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Border Width="72" Height="72" CornerRadius="10" ClipToBounds="True"
+                  VerticalAlignment="Center">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Restaurant/dish3.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+          </Border>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center"
+                      Margin="12,0,0,0" Spacing="2">
+            <TextBlock Text="Wagyu Tartare" FontSize="15" FontWeight="SemiBold" Foreground="#1E293B"/>
+            <TextBlock Text="Hand-cut wagyu beef with quail egg yolk"
+                       FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="160"/>
+            <TextBlock Text="$42" FontSize="16" FontWeight="Bold" Foreground="#4B2BEE"/>
+          </StackPanel>
+          <Border Grid.Column="2" Width="36" Height="36" CornerRadius="10"
+                  Background="#1A4B2BEE" VerticalAlignment="Center">
+            <PathIcon Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                      Width="18" Height="18" Foreground="#4B2BEE"/>
+          </Border>
+        </Grid>
+      </Border>
+
+      <!-- Lobster Bisque -->
+      <Border x:Name="Dish4Card" CornerRadius="12" Background="White" Padding="12"
+              Margin="16,0,16,12" Cursor="Hand" PointerPressed="OnDish4Pressed">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Border Width="72" Height="72" CornerRadius="10" ClipToBounds="True"
+                  VerticalAlignment="Center">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Restaurant/dish4.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+          </Border>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center"
+                      Margin="12,0,0,0" Spacing="2">
+            <TextBlock Text="Lobster Bisque" FontSize="15" FontWeight="SemiBold" Foreground="#1E293B"/>
+            <TextBlock Text="Classic French bisque with cream and cognac"
+                       FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" MaxWidth="160"/>
+            <TextBlock Text="$24" FontSize="16" FontWeight="Bold" Foreground="#4B2BEE"/>
+          </StackPanel>
+          <Border Grid.Column="2" Width="36" Height="36" CornerRadius="10"
+                  Background="#1A4B2BEE" VerticalAlignment="Center">
+            <PathIcon Data="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                      Width="18" Height="18" Foreground="#4B2BEE"/>
+          </Border>
+        </Grid>
+      </Border>
+
+      <Border Height="16"/>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

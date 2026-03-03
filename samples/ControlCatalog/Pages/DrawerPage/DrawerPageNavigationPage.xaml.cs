@@ -1,8 +1,5 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
-using Avalonia.Media;
 
 namespace ControlCatalog.Pages
 {
@@ -24,12 +21,6 @@ namespace ControlCatalog.Pages
              "Configure application preferences and options. Changes are saved automatically."),
         };
 
-        private static readonly Color[] PageColors =
-        {
-            Color.Parse("#BBDEFB"), Color.Parse("#C8E6C9"), Color.Parse("#FFE0B2"),
-            Color.Parse("#E1BEE7"), Color.Parse("#FFCDD2"), Color.Parse("#B2EBF2"),
-        };
-
         private int _pageCount;
 
         public DrawerPageNavigationPage()
@@ -40,7 +31,9 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            await DetailNav.PushAsync(BuildPage(Sections[0], 0), null);
+            await DetailNav.PushAsync(
+                NavigationDemoHelper.MakeSectionPage(Sections[0].Name, Sections[0].Icon, Sections[0].Title, Sections[0].Content, 0,
+                    "Tip: drag from the left edge to open the menu, or use the hamburger button."), null);
         }
 
         private async void OnMenuSelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -50,63 +43,10 @@ namespace ControlCatalog.Pages
             var section = Sections[index];
 
             _pageCount++;
-            await DetailNav.ReplaceAsync(BuildPage(section, _pageCount), null);
+            await DetailNav.ReplaceAsync(
+                NavigationDemoHelper.MakeSectionPage(section.Name, section.Icon, section.Title, section.Content, _pageCount,
+                    "Tip: drag from the left edge to open the menu, or use the hamburger button."), null);
             DemoDrawer.IsOpen = false;
-        }
-
-        private static ContentPage BuildPage((string Name, string Icon, string Title, string Content) section, int colorIndex)
-        {
-            var page = new ContentPage
-            {
-                Header = section.Name,
-                Background = new SolidColorBrush(PageColors[colorIndex % PageColors.Length]),
-                HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                VerticalContentAlignment = VerticalAlignment.Stretch
-            };
-
-            var icon = new PathIcon
-            {
-                Width = 48,
-                Height = 48,
-                Data = Geometry.Parse(section.Icon),
-                Foreground = new SolidColorBrush(Color.Parse("#0078D4"))
-            };
-
-            var titleText = new TextBlock
-            {
-                Text = section.Title,
-                FontSize = 26,
-                FontWeight = FontWeight.Bold
-            };
-
-            var bodyText = new TextBlock
-            {
-                Text = section.Content,
-                FontSize = 14,
-                Opacity = 0.8,
-                TextWrapping = TextWrapping.Wrap
-            };
-
-            var separator = new Separator { Margin = new Thickness(0, 8) };
-
-            var hint = new TextBlock
-            {
-                Text = "Tip: drag from the left edge to open the menu, or use the hamburger button.",
-                FontSize = 12,
-                Opacity = 0.45,
-                FontStyle = FontStyle.Italic,
-                TextWrapping = TextWrapping.Wrap
-            };
-
-            var panel = new StackPanel { Margin = new Thickness(24, 20), Spacing = 12 };
-            panel.Children.Add(icon);
-            panel.Children.Add(titleText);
-            panel.Children.Add(bodyText);
-            panel.Children.Add(separator);
-            panel.Children.Add(hint);
-
-            page.Content = new ScrollViewer { Content = panel };
-            return page;
         }
     }
 }

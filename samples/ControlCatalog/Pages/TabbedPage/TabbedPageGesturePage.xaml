@@ -13,7 +13,7 @@
 
         <CheckBox x:Name="GestureCheck"
                   Content="IsGestureEnabled"
-                  IsChecked="False"
+                  IsChecked="True"
                   IsCheckedChanged="OnGestureEnabledChanged" />
 
         <Separator />
@@ -46,7 +46,7 @@
             BorderThickness="1"
             CornerRadius="6"
             ClipToBounds="True">
-      <TabbedPage x:Name="DemoTabs" TabPlacement="Top" IsGestureEnabled="False">
+      <TabbedPage x:Name="DemoTabs" TabPlacement="Top" IsGestureEnabled="True">
         <TabbedPage.PageTransition>
           <PageSlide Duration="0:0:0.25" Orientation="Horizontal" />
         </TabbedPage.PageTransition>

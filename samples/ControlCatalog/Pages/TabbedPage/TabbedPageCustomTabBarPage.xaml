@@ -57,15 +57,6 @@
                      TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
         </StackPanel>
 
-        <Separator />
-
-        <TextBlock Text="Key Styles" FontSize="13" FontWeight="SemiBold" />
-        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                CornerRadius="4" Padding="8">
-          <TextBlock FontFamily="Cascadia Code,Consolas,Menlo,monospace"
-                     FontSize="10" TextWrapping="Wrap"
-                     Text="&lt;!-- Override TabStripBackground resource --&gt;&#xA;&lt;ResourceDictionary.ThemeDictionaries&gt;&#xA;  &lt;ResourceDictionary x:Key=&quot;Light&quot;&gt;&#xA;    &lt;SolidColorBrush x:Key=&quot;TabStripBackground&quot;&#xA;                     Color=&quot;#EBEBEB&quot; /&gt;&#xA;  &lt;/ResourceDictionary&gt;&#xA;  &lt;ResourceDictionary x:Key=&quot;Dark&quot;&gt;&#xA;    &lt;SolidColorBrush x:Key=&quot;TabStripBackground&quot;&#xA;                     Color=&quot;#2D2D2D&quot; /&gt;&#xA;  &lt;/ResourceDictionary&gt;&#xA;&lt;/ResourceDictionary.ThemeDictionaries&gt;&#xA;&#xA;&lt;Style Selector=&quot;TabControl /template/ Border#PART_TabStrip&quot;&gt;&#xA;  CornerRadius = &quot;28&quot;&#xA;  HorizontalAlignment = Center&#xA;&lt;/Style&gt;" />
-        </Border>
       </StackPanel>
     </ScrollViewer>
 

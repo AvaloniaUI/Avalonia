@@ -24,16 +24,6 @@
                    TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
 
         <Separator />
-        <TextBlock Text="Code Example" FontSize="13" FontWeight="SemiBold" />
-        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                CornerRadius="4" Padding="8">
-          <TextBlock x:Name="CodeExample"
-                     FontFamily="Cascadia Code,Consolas,Menlo,monospace"
-                     FontSize="11" TextWrapping="Wrap"
-                     Text="DemoNav.Push(&#xA;  new DetailPage(contact));" />
-        </Border>
-
-        <Separator />
 
         <!-- Navigation Log -->
         <TextBlock Text="Navigation Log" FontSize="13" FontWeight="SemiBold" />

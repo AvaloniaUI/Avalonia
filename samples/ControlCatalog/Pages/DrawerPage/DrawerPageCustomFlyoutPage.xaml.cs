@@ -1,5 +1,4 @@
 using System;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
@@ -144,38 +143,8 @@ namespace ControlCatalog.Pages
                 _ => ("M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z", "")
             };
 
-            var page = new ContentPage { Header = section };
+            var page = NavigationDemoHelper.MakeSectionPage(section, iconPath, section, body, 0);
             NavigationPage.SetHasNavigationBar(page, false);
-
-            var pathIcon = new PathIcon
-            {
-                Width = 52,
-                Height = 52,
-                Data = Geometry.Parse(iconPath),
-            };
-            pathIcon.SetValue(PathIcon.ForegroundProperty, new SolidColorBrush(Color.Parse("#0078D4")));
-
-            var titleBlock = new TextBlock
-            {
-                Text = section,
-                FontSize = 30,
-                FontWeight = FontWeight.Bold,
-            };
-
-            var bodyBlock = new TextBlock
-            {
-                Text = body,
-                FontSize = 14,
-                Opacity = 0.75,
-                TextWrapping = TextWrapping.Wrap,
-            };
-
-            var panel = new StackPanel { Margin = new Thickness(28, 24), Spacing = 16 };
-            panel.Children.Add(pathIcon);
-            panel.Children.Add(titleBlock);
-            panel.Children.Add(bodyBlock);
-
-            page.Content = new ScrollViewer { Content = panel };
             return page;
         }
     }

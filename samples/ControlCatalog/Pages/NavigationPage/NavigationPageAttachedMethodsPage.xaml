@@ -74,32 +74,6 @@
                 HorizontalAlignment="Stretch"
                 Click="OnPopToRoot" />
 
-        <Separator />
-
-        <!-- API Reference -->
-        <TextBlock Text="API Reference" FontWeight="SemiBold" FontSize="13" />
-        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                CornerRadius="4"
-                Padding="8">
-          <TextBlock FontFamily="Cascadia Code,Consolas,Menlo,monospace"
-                     FontSize="10"
-                     TextWrapping="Wrap"
-                     xml:space="preserve">// Hide nav bar for a specific page
-NavigationPage
-  .SetHasNavigationBar(page, false);
-
-// Hide back button for a specific page
-NavigationPage
-  .SetHasBackButton(page, false);
-
-// Custom back button content
-NavigationPage
-  .SetBackButtonContent(page, "← Back");
-
-// Custom header (any Control)
-NavigationPage
-  .SetHeader(page, searchBox);</TextBlock>
-        </Border>
       </StackPanel>
     </ScrollViewer>
 
