@@ -8,6 +8,22 @@
 
   <Import Project="../../build/TrimmingEnable.props" />
 
+  <Import Project="../tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.props" />
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);AVDBUS_INTERNAL</DefineConstants>
+    <AvDBusInternal>true</AvDBusInternal>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../Avalonia.Controls/Utils/StringUtils.cs">
+      <Link>Shared/StringUtils.cs</Link>
+    </Compile>
+    <ProjectReference Include="..\Avalonia.DBus\Avalonia.DBus.csproj" />
+    <ProjectReference Include="../tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Compile Include="../Shared/IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>

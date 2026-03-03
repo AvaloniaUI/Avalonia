@@ -2,29 +2,34 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
-    <DefineConstants>$(DefineConstants);AVDBUS_INTERNAL</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <AvDBusInternal>true</AvDBusInternal>
   </PropertyGroup>
-
+  
   <Import Project="../../build/NullableEnable.props" />
   <Import Project="../../build/DevAnalyzers.props" />
   <Import Project="../../build/TrimmingEnable.props" />
+  
   <Import Project="../tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.props" />
 
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);AVDBUS_INTERNAL</DefineConstants>
+    <AvDBusInternal>true</AvDBusInternal>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Compile Include="../Avalonia.Controls/Utils/StringUtils.cs">
       <Link>Shared/StringUtils.cs</Link>
-    </Compile>
+    </Compile>   
+    <ProjectReference Include="..\Avalonia.DBus\Avalonia.DBus.csproj" />
+    <ProjectReference Include="../tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../../packages/Avalonia/Avalonia.csproj" />
-    <ProjectReference Include="../tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\Avalonia.DBus\Avalonia.DBus.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">
