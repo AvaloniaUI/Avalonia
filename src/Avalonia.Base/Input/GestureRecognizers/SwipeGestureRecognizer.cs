@@ -11,6 +11,7 @@ namespace Avalonia.Input.GestureRecognizers
     public class SwipeGestureRecognizer : GestureRecognizer
     {
         private IPointer? _tracking;
+        private IPointer? _captured;
         private Point _initialPosition;
         private int _gestureId;
 
@@ -153,6 +154,7 @@ namespace Avalonia.Input.GestureRecognizers
                 dir, delta);
 
             _tracking = null;
+            _captured = e.Pointer;
             Capture(e.Pointer);
             e.Handled = true;
 
@@ -168,6 +170,12 @@ namespace Avalonia.Input.GestureRecognizers
                     this, "SwipeGestureRecognizer: pointer released without crossing threshold — gesture discarded");
                 _tracking = null;
             }
+
+            if (_captured == e.Pointer)
+            {
+                (e.Pointer as Pointer)?.CaptureGestureRecognizer(null);
+                _captured = null;
+            }
         }
 
         protected override void PointerCaptureLost(IPointer pointer)
@@ -178,6 +186,7 @@ namespace Avalonia.Input.GestureRecognizers
                     this, "SwipeGestureRecognizer: capture lost — gesture cancelled");
                 _tracking = null;
             }
+            _captured = null;
         }
     }
 }

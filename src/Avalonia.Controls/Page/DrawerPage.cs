@@ -507,9 +507,9 @@ namespace Avalonia.Controls
                     {
                         newNav.SetDrawerPage(this);
                         _navBarVisibleSub = newNav.GetObservable(NavigationPage.NavBarEffectivelyVisibleProperty)
-                            .Subscribe(new AnonymousObserver<bool>(_ => UpdateDetailIsNavPagePseudoClass()));
+                            .Subscribe(new AnonymousObserver<bool>(_ => UpdateDetailNavBarVisiblePseudoClass()));
                     }
-                    UpdateDetailIsNavPagePseudoClass();
+                    UpdateDetailNavBarVisiblePseudoClass();
                 }
             }
             else if (change.Property == IsOpenProperty || change.Property == DisplayModeProperty)
@@ -602,6 +602,12 @@ namespace Avalonia.Controls
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
+
+            RemoveHandler(Gestures.SwipeGestureEvent, OnSwipeGesture);
+
+            if (_backdrop != null)
+                _backdrop.PointerPressed -= OnBackdropPressed;
+
             _navBarVisibleSub?.Dispose();
             _navBarVisibleSub = null;
 
@@ -907,7 +913,7 @@ namespace Avalonia.Controls
                 presenter.ClearValue(TextElement.ForegroundProperty);
         }
 
-        private void UpdateDetailIsNavPagePseudoClass()
+        private void UpdateDetailNavBarVisiblePseudoClass()
         {
             bool hideTopBar = Content is NavigationPage navPage && navPage.NavBarEffectivelyVisible;
             PseudoClasses.Set(":detail-is-navpage", hideTopBar);

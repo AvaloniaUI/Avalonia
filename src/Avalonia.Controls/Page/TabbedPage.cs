@@ -241,8 +241,7 @@ namespace Avalonia.Controls
 
                 ApplyTabPlacement();
                 ApplyBarBackground();
-                ApplyBarForeground();
-                ApplyTabColors();
+                ApplyForegroundResources();
                 ApplyIndicatorTemplate();
                 UpdateActivePage();
 
@@ -258,10 +257,10 @@ namespace Avalonia.Controls
                 ApplyTabPlacement();
             else if (change.Property == BarBackgroundProperty)
                 ApplyBarBackground();
-            else if (change.Property == BarForegroundProperty)
-                ApplyBarForeground();
-            else if (change.Property == SelectedTabBrushProperty || change.Property == UnselectedTabBrushProperty)
-                ApplyTabColors();
+            else if (change.Property == BarForegroundProperty
+                     || change.Property == SelectedTabBrushProperty
+                     || change.Property == UnselectedTabBrushProperty)
+                ApplyForegroundResources();
             else if (change.Property == PageTransitionProperty && _tabControl != null)
                 _tabControl.PageTransition = change.GetNewValue<IPageTransition?>();
             else if (change.Property == IndicatorTemplateProperty)
@@ -302,61 +301,20 @@ namespace Avalonia.Controls
             _tabControl.Background = BarBackground;
         }
 
-        private void ApplyBarForeground()
+        private void ApplyForegroundResources()
         {
             if (_tabControl == null)
                 return;
 
             _tabControl.Foreground = BarForeground;
 
-            if (BarForeground != null)
+            var selectedFg = SelectedTabBrush ?? BarForeground;
+            if (selectedFg != null)
             {
-                if (UnselectedTabBrush == null)
-                {
-                    _tabControl.Resources["TabbedPageTabItemHeaderForegroundUnselected"] = BarForeground;
-                    _tabControl.Resources["TabbedPageTabItemHeaderForegroundUnselectedPointerOver"] = BarForeground;
-                    _tabControl.Resources["TabbedPageTabItemHeaderForegroundUnselectedPressed"] = BarForeground;
-                }
-                if (SelectedTabBrush == null)
-                {
-                    _tabControl.Resources["TabbedPageTabItemHeaderForegroundSelected"] = BarForeground;
-                    _tabControl.Resources["TabbedPageTabItemHeaderForegroundSelectedPointerOver"] = BarForeground;
-                    _tabControl.Resources["TabbedPageTabItemHeaderForegroundSelectedPressed"] = BarForeground;
-                    _tabControl.Resources["TabbedPageTabItemHeaderSelectedPipeFill"] = BarForeground;
-                }
-            }
-            else
-            {
-                if (UnselectedTabBrush == null)
-                {
-                    _tabControl.Resources.Remove("TabbedPageTabItemHeaderForegroundUnselected");
-                    _tabControl.Resources.Remove("TabbedPageTabItemHeaderForegroundUnselectedPointerOver");
-                    _tabControl.Resources.Remove("TabbedPageTabItemHeaderForegroundUnselectedPressed");
-                }
-                if (SelectedTabBrush == null)
-                {
-                    _tabControl.Resources.Remove("TabbedPageTabItemHeaderForegroundSelected");
-                    _tabControl.Resources.Remove("TabbedPageTabItemHeaderForegroundSelectedPointerOver");
-                    _tabControl.Resources.Remove("TabbedPageTabItemHeaderForegroundSelectedPressed");
-                    _tabControl.Resources.Remove("TabbedPageTabItemHeaderSelectedPipeFill");
-                }
-            }
-
-            foreach (var tabItem in _containerPageMap.Keys)
-                ApplyColorOverridesToTabItem(tabItem);
-        }
-
-        private void ApplyTabColors()
-        {
-            if (_tabControl == null)
-                return;
-
-            if (SelectedTabBrush != null)
-            {
-                _tabControl.Resources["TabbedPageTabItemHeaderSelectedPipeFill"] = SelectedTabBrush;
-                _tabControl.Resources["TabbedPageTabItemHeaderForegroundSelected"] = SelectedTabBrush;
-                _tabControl.Resources["TabbedPageTabItemHeaderForegroundSelectedPointerOver"] = SelectedTabBrush;
-                _tabControl.Resources["TabbedPageTabItemHeaderForegroundSelectedPressed"] = SelectedTabBrush;
+                _tabControl.Resources["TabbedPageTabItemHeaderSelectedPipeFill"] = selectedFg;
+                _tabControl.Resources["TabbedPageTabItemHeaderForegroundSelected"] = selectedFg;
+                _tabControl.Resources["TabbedPageTabItemHeaderForegroundSelectedPointerOver"] = selectedFg;
+                _tabControl.Resources["TabbedPageTabItemHeaderForegroundSelectedPressed"] = selectedFg;
             }
             else
             {
@@ -366,11 +324,12 @@ namespace Avalonia.Controls
                 _tabControl.Resources.Remove("TabbedPageTabItemHeaderForegroundSelectedPressed");
             }
 
-            if (UnselectedTabBrush != null)
+            var unselectedFg = UnselectedTabBrush ?? BarForeground;
+            if (unselectedFg != null)
             {
-                _tabControl.Resources["TabbedPageTabItemHeaderForegroundUnselected"] = UnselectedTabBrush;
-                _tabControl.Resources["TabbedPageTabItemHeaderForegroundUnselectedPointerOver"] = UnselectedTabBrush;
-                _tabControl.Resources["TabbedPageTabItemHeaderForegroundUnselectedPressed"] = UnselectedTabBrush;
+                _tabControl.Resources["TabbedPageTabItemHeaderForegroundUnselected"] = unselectedFg;
+                _tabControl.Resources["TabbedPageTabItemHeaderForegroundUnselectedPointerOver"] = unselectedFg;
+                _tabControl.Resources["TabbedPageTabItemHeaderForegroundUnselectedPressed"] = unselectedFg;
             }
             else
             {
@@ -378,9 +337,6 @@ namespace Avalonia.Controls
                 _tabControl.Resources.Remove("TabbedPageTabItemHeaderForegroundUnselectedPointerOver");
                 _tabControl.Resources.Remove("TabbedPageTabItemHeaderForegroundUnselectedPressed");
             }
-
-            foreach (var tabItem in _containerPageMap.Keys)
-                ApplyColorOverridesToTabItem(tabItem);
         }
 
         private void ApplyIndicatorTemplate()
@@ -399,7 +355,7 @@ namespace Avalonia.Controls
                 return;
 
             int newIndex = _tabControl!.SelectedIndex;
-            var newPage = _tabControl.SelectedItem as Page;
+            var newPage = _tabControl.SelectedItem as Page ?? ResolvePageAtIndex(newIndex);
 
             if (newPage != null && !GetIsTabEnabled(newPage))
             {
@@ -414,8 +370,7 @@ namespace Avalonia.Controls
                 if (target == SelectedIndex)
                     return;
 
-                var targetPage = Pages is IList pl && target < pl.Count ? pl[target] as Page : null;
-                CommitSelection(target, targetPage);
+                CommitSelection(target, ResolvePageAtIndex(target));
                 UpdateContentSafeAreaPadding();
                 return;
             }
@@ -426,57 +381,31 @@ namespace Avalonia.Controls
 
         private void OnContainerPrepared(object? sender, ContainerPreparedEventArgs e)
         {
-            if (e.Container is TabItem tabItem && Pages is IList pages && e.Index < pages.Count
-                && pages[e.Index] is Page page)
+            if (e.Container is not TabItem tabItem) return;
+            if (Pages is not IList pages || e.Index >= pages.Count) return;
+
+            var item = pages[e.Index];
+            Page? page;
+
+            if (item is Page directPage)
             {
-                tabItem.IsEnabled = GetIsTabEnabled(page);
-                tabItem.Header = page.Header;
-                tabItem.Icon = CreateIconControl(page.Icon);
-
-                ApplyColorOverridesToTabItem(tabItem);
-
-                _containerPageMap[tabItem] = page;
-                _pageContainerMap[page] = tabItem;
-                page.PropertyChanged += OnPagePropertyChanged;
-            }
-        }
-
-        private void ApplyColorOverridesToTabItem(TabItem tabItem)
-        {
-            var selectedFg   = SelectedTabBrush   ?? BarForeground;
-            var unselectedFg = UnselectedTabBrush ?? BarForeground;
-
-            if (selectedFg != null)
-            {
-                tabItem.Resources["TabbedPageTabItemHeaderForegroundSelected"] = selectedFg;
-                tabItem.Resources["TabbedPageTabItemHeaderForegroundSelectedPointerOver"] = selectedFg;
-                tabItem.Resources["TabbedPageTabItemHeaderForegroundSelectedPressed"] = selectedFg;
+                page = directPage;
             }
             else
             {
-                tabItem.Resources.Remove("TabbedPageTabItemHeaderForegroundSelected");
-                tabItem.Resources.Remove("TabbedPageTabItemHeaderForegroundSelectedPointerOver");
-                tabItem.Resources.Remove("TabbedPageTabItemHeaderForegroundSelectedPressed");
+                // Data-template mode: build the page and use it directly as the tab's content.
+                page = PageTemplate?.Build(item) as Page;
+                if (page == null) return;
+                tabItem.Content = page;
             }
 
-            var pipeFill = SelectedTabBrush ?? BarForeground;
-            if (pipeFill != null)
-                tabItem.Resources["TabbedPageTabItemHeaderSelectedPipeFill"] = pipeFill;
-            else
-                tabItem.Resources.Remove("TabbedPageTabItemHeaderSelectedPipeFill");
+            tabItem.IsEnabled = GetIsTabEnabled(page);
+            tabItem.Header = page.Header;
+            tabItem.Icon = CreateIconControl(page.Icon);
 
-            if (unselectedFg != null)
-            {
-                tabItem.Resources["TabbedPageTabItemHeaderForegroundUnselected"] = unselectedFg;
-                tabItem.Resources["TabbedPageTabItemHeaderForegroundUnselectedPointerOver"] = unselectedFg;
-                tabItem.Resources["TabbedPageTabItemHeaderForegroundUnselectedPressed"] = unselectedFg;
-            }
-            else
-            {
-                tabItem.Resources.Remove("TabbedPageTabItemHeaderForegroundUnselected");
-                tabItem.Resources.Remove("TabbedPageTabItemHeaderForegroundUnselectedPointerOver");
-                tabItem.Resources.Remove("TabbedPageTabItemHeaderForegroundUnselectedPressed");
-            }
+            _containerPageMap[tabItem] = page;
+            _pageContainerMap[page] = tabItem;
+            page.PropertyChanged += OnPagePropertyChanged;
         }
 
         private void OnContainerClearing(object? sender, ContainerClearingEventArgs e)
@@ -580,6 +509,15 @@ namespace Avalonia.Controls
             return -1;
         }
 
+        private Page? ResolvePageAtIndex(int index)
+        {
+            if (_tabControl?.ContainerFromIndex(index) is TabItem ti && _containerPageMap.TryGetValue(ti, out var p))
+                return p;
+            if (Pages is IList pages && (uint)index < (uint)pages.Count)
+                return pages[index] as Page;
+            return null;
+        }
+
         private void SyncTabEnabledState(Page page)
         {
             if (_tabControl == null || Pages is not IList pages)
@@ -611,8 +549,8 @@ namespace Avalonia.Controls
 
             for (int i = 0; i < pages.Count; i++)
             {
-                if (pages[i] is Page page &&
-                    _tabControl.ContainerFromIndex(i) is TabItem tabItem)
+                if (_tabControl.ContainerFromIndex(i) is TabItem tabItem &&
+                    _containerPageMap.TryGetValue(tabItem, out var page))
                 {
                     tabItem.IsEnabled = GetIsTabEnabled(page);
                 }
@@ -623,7 +561,8 @@ namespace Avalonia.Controls
         {
             if (_tabControl != null)
             {
-                CommitSelection(_tabControl.SelectedIndex, _tabControl.SelectedItem as Page);
+                int index = _tabControl.SelectedIndex;
+                CommitSelection(index, _tabControl.SelectedItem as Page ?? ResolvePageAtIndex(index));
                 UpdateContentSafeAreaPadding();
             }
         }
@@ -664,6 +603,12 @@ namespace Avalonia.Controls
                 if (CurrentPage != null)
                     CurrentPage.SafeAreaPadding = contentSafeArea;
             }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            RemoveHandler(Gestures.SwipeGestureEvent, OnSwipeGesture);
         }
 
         private void OnSwipeGesture(object? sender, SwipeGestureEventArgs e)

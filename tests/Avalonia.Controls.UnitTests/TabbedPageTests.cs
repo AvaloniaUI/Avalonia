@@ -847,6 +847,177 @@ public class TabbedPageTests
         }
     }
 
+    public class DataTemplateTests : ScopedTestBase
+    {
+        private record DataItem(string Name);
+
+        [Fact]
+        public void CustomPageTemplate_Build_CreatesContentPage_WithCorrectHeader()
+        {
+            var template = new FuncDataTemplate<DataItem>(
+                (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: true);
+            var tp = new TabbedPage { PageTemplate = template };
+
+            var built = tp.PageTemplate!.Build(new DataItem("Electronics")) as ContentPage;
+
+            Assert.NotNull(built);
+            Assert.Equal("Electronics", built!.Header);
+        }
+
+        [Fact]
+        public void DefaultPageDataTemplate_IsNonNull()
+        {
+            Assert.NotNull(new TabbedPage().PageTemplate);
+        }
+
+        [Fact]
+        public void DefaultPageDataTemplate_WrapsNonPageItem_InContentPage()
+        {
+            // Data items must be wrapped in ContentPage, not shown as raw ToString() headers.
+            var tp = new TabbedPage();
+            var built = tp.PageTemplate!.Build(new DataItem("Test"));
+            Assert.IsType<ContentPage>(built);
+        }
+    }
+
+    public class ForegroundResourcesTests : ScopedTestBase
+    {
+        private const string SelectedKey   = "TabbedPageTabItemHeaderForegroundSelected";
+        private const string SelectedPoKey = "TabbedPageTabItemHeaderForegroundSelectedPointerOver";
+        private const string SelectedPrKey = "TabbedPageTabItemHeaderForegroundSelectedPressed";
+        private const string PipeKey       = "TabbedPageTabItemHeaderSelectedPipeFill";
+        private const string UnselKey      = "TabbedPageTabItemHeaderForegroundUnselected";
+        private const string UnselPoKey    = "TabbedPageTabItemHeaderForegroundUnselectedPointerOver";
+        private const string UnselPrKey    = "TabbedPageTabItemHeaderForegroundUnselectedPressed";
+
+        private static (TabbedPage tp, TabControl tc) Create()
+        {
+            var tabControl = new TabControl();
+            var tp = new TabbedPage
+            {
+                Template = new FuncControlTemplate<TabbedPage>((_, scope) =>
+                {
+                    scope.Register("PART_TabControl", tabControl);
+                    return tabControl;
+                })
+            };
+            tp.ApplyTemplate();
+            return (tp, tabControl);
+        }
+
+        private static IBrush? Get(TabControl tc, string key) =>
+            tc.Resources.TryGetResource(key, null, out var v) ? v as IBrush : null;
+
+        private static bool Has(TabControl tc, string key) =>
+            tc.Resources.TryGetResource(key, null, out _);
+
+        [Fact]
+        public void BarForeground_SetsTabControlForeground()
+        {
+            var (tp, tc) = Create();
+            tp.BarForeground = Brushes.White;
+            Assert.Equal(Brushes.White, tc.Foreground);
+        }
+
+        [Fact]
+        public void BarForeground_UsedForBothSelected_And_Unselected_WhenNoSpecificBrushes()
+        {
+            var (tp, tc) = Create();
+            tp.BarForeground = Brushes.White;
+
+            Assert.Equal(Brushes.White, Get(tc, SelectedKey));
+            Assert.Equal(Brushes.White, Get(tc, SelectedPoKey));
+            Assert.Equal(Brushes.White, Get(tc, SelectedPrKey));
+            Assert.Equal(Brushes.White, Get(tc, PipeKey));
+            Assert.Equal(Brushes.White, Get(tc, UnselKey));
+            Assert.Equal(Brushes.White, Get(tc, UnselPoKey));
+            Assert.Equal(Brushes.White, Get(tc, UnselPrKey));
+        }
+
+        [Fact]
+        public void SelectedTabBrush_OverridesBarForeground_ForSelected()
+        {
+            var (tp, tc) = Create();
+            tp.BarForeground = Brushes.White;
+            tp.SelectedTabBrush = Brushes.Red;
+
+            Assert.Equal(Brushes.Red,   Get(tc, SelectedKey));
+            Assert.Equal(Brushes.Red,   Get(tc, PipeKey));
+            Assert.Equal(Brushes.White, Get(tc, UnselKey));
+        }
+
+        [Fact]
+        public void UnselectedTabBrush_OverridesBarForeground_ForUnselected()
+        {
+            var (tp, tc) = Create();
+            tp.BarForeground = Brushes.White;
+            tp.UnselectedTabBrush = Brushes.Gray;
+
+            Assert.Equal(Brushes.White, Get(tc, SelectedKey));
+            Assert.Equal(Brushes.Gray,  Get(tc, UnselKey));
+            Assert.Equal(Brushes.Gray,  Get(tc, UnselPoKey));
+            Assert.Equal(Brushes.Gray,  Get(tc, UnselPrKey));
+        }
+
+        [Fact]
+        public void SelectedTabBrush_SetToNull_FallsBackToBarForeground()
+        {
+            // Regression: clearing SelectedTabBrush must restore the BarForeground fallback.
+            var (tp, tc) = Create();
+            tp.BarForeground   = Brushes.White;
+            tp.SelectedTabBrush = Brushes.Red;
+            tp.SelectedTabBrush = null;
+
+            Assert.Equal(Brushes.White, Get(tc, SelectedKey));
+            Assert.Equal(Brushes.White, Get(tc, PipeKey));
+        }
+
+        [Fact]
+        public void UnselectedTabBrush_SetToNull_FallsBackToBarForeground()
+        {
+            // Regression: clearing UnselectedTabBrush must restore the BarForeground fallback.
+            var (tp, tc) = Create();
+            tp.BarForeground     = Brushes.White;
+            tp.UnselectedTabBrush = Brushes.Gray;
+            tp.UnselectedTabBrush = null;
+
+            Assert.Equal(Brushes.White, Get(tc, UnselKey));
+        }
+
+        [Fact]
+        public void AllNull_ResourcesAbsent()
+        {
+            var (tp, tc) = Create();
+            Assert.False(Has(tc, SelectedKey));
+            Assert.False(Has(tc, PipeKey));
+            Assert.False(Has(tc, UnselKey));
+        }
+
+        [Fact]
+        public void BarForeground_SetToNull_RemovesResources()
+        {
+            var (tp, tc) = Create();
+            tp.BarForeground = Brushes.White;
+            tp.BarForeground = null;
+
+            Assert.False(Has(tc, SelectedKey));
+            Assert.False(Has(tc, PipeKey));
+            Assert.False(Has(tc, UnselKey));
+        }
+
+        [Fact]
+        public void BothSpecificBrushes_Set_BarForegroundNotUsed()
+        {
+            var (tp, tc) = Create();
+            tp.BarForeground     = Brushes.White;
+            tp.SelectedTabBrush  = Brushes.Red;
+            tp.UnselectedTabBrush = Brushes.Gray;
+
+            Assert.Equal(Brushes.Red,  Get(tc, SelectedKey));
+            Assert.Equal(Brushes.Gray, Get(tc, UnselKey));
+        }
+    }
+
     private sealed class TestableTabbedPage : TabbedPage
     {
         public void CallCommitSelection(int index, Page? page) => CommitSelection(index, page);

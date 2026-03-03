@@ -783,7 +783,7 @@ file sealed class DelegateCommand : System.Windows.Input.ICommand
         _canExecute = canExecute ?? (_ => true);
     }
 
-    public event System.EventHandler? CanExecuteChanged;
+    public event System.EventHandler? CanExecuteChanged { add { } remove { } }
     public bool CanExecute(object? parameter) => _canExecute(parameter);
     public void Execute(object? parameter) => _execute(parameter);
 }

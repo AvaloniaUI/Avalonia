@@ -104,7 +104,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="BackButtonVisibleEffective"/> property.
         /// </summary>
         public static readonly StyledProperty<bool?> BackButtonVisibleEffectiveProperty =
-            AvaloniaProperty.Register<NavigationPage, bool?>(nameof(BackButtonVisibleEffective), true);
+            AvaloniaProperty.Register<NavigationPage, bool?>(nameof(BackButtonVisibleEffective), false);
 
         /// <summary>
         /// Defines the <see cref="NavBarEffectivelyVisible"/> property.
@@ -680,6 +680,8 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
 
+            RemoveHandler(Gestures.SwipeGestureEvent, OnSwipeGesture);
+
             _currentTransition?.Cancel();
             _currentTransition?.Dispose();
             _currentTransition = null;
@@ -766,7 +768,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Performs the push after the Navigating event has been processed.
+        /// Performs the stack mutation and lifecycle events for a push. The visual transition runs
+        /// subsequently via <see cref="UpdateActivePage"/>.
         /// </summary>
         private void ExecutePushCore(object page, Page? previousPage)
         {
@@ -807,7 +810,8 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Performs the pop after the Navigating event has been processed.
+        /// Performs the stack mutation and lifecycle events for a pop. The visual transition runs
+        /// subsequently via <see cref="UpdateActivePage"/>.
         /// </summary>
         private object? ExecutePopCore()
         {
@@ -1691,13 +1695,14 @@ namespace Avalonia.Controls
                     _pageBackPresenter.IsVisible = false;
                     _pageBackPresenter.ZIndex = 0;
                 }
+
+                if (page != null)
+                    _hasHadFirstPage = true;
             }
 
             SetCurrentValue(ContentProperty, page);
 
             SetCurrentValue(CurrentPageProperty, newPage);
-            if (page != null)
-                _hasHadFirstPage = true;
 
             _hasNavigationBarSub?.Dispose();
             _hasNavigationBarSub = null;

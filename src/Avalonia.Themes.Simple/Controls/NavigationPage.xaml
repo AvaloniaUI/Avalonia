@@ -35,7 +35,7 @@
                               DockPanel.Dock="Bottom"
                               HorizontalContentAlignment="Stretch"
                               Background="{TemplateBinding Background}"
-                              Content="{Binding CurrentPage.(NavigationPage.BottomCommandBar), RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}" />
+                              Content="{Binding CurrentPage?.(NavigationPage.BottomCommandBar), RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}" />
 
             <Grid Name="PART_ContentHost"
                   Background="{TemplateBinding Background}"
@@ -57,15 +57,28 @@
                   Background="{TemplateBinding BarBackground}">
             <Grid Margin="12,0,0,0" ColumnDefinitions="Auto, *, Auto">
               <Grid.Styles>
+                <Style Selector="Button#PART_BackButton /template/ ContentPresenter#PART_ContentPresenter">
+                  <Setter Property="Background" Value="Transparent" />
+                  <Setter Property="CornerRadius" Value="0" />
+                </Style>
+                <Style Selector="Button#PART_BackButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                  <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}" />
+                </Style>
+                <Style Selector="Button#PART_BackButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                  <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightLowBrush}" />
+                </Style>
+                <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
+                  <Setter Property="Background" Value="Transparent" />
+                </Style>
                 <Style Selector="Button#PART_OverflowButton /template/ ContentPresenter#PART_ContentPresenter">
                   <Setter Property="Background" Value="Transparent" />
                   <Setter Property="CornerRadius" Value="0" />
                 </Style>
                 <Style Selector="Button#PART_OverflowButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="#20808080" />
+                  <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}" />
                 </Style>
                 <Style Selector="Button#PART_OverflowButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                  <Setter Property="Background" Value="#40808080" />
+                  <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightLowBrush}" />
                 </Style>
               </Grid.Styles>
               <Button x:Name="PART_BackButton"
@@ -74,7 +87,7 @@
                       Foreground="{TemplateBinding BarForeground}"
                       IsVisible="{TemplateBinding BackButtonVisibleEffective}"
                       ToolTip.Tip="{x:Null}">
-                <Panel>
+                <Panel Background="Transparent">
                   <Path Data="{DynamicResource NavigationPageBackIcon}"
                         Fill="{TemplateBinding BarForeground}"
                         Width="24"
@@ -82,10 +95,10 @@
                         Stretch="Uniform"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        IsVisible="{Binding CurrentPage.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}, FallbackValue=False}" />
+                        IsVisible="{Binding CurrentPage?.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}, FallbackValue=False}" />
                   <ContentPresenter
-                    Content="{Binding CurrentPage.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
-                    IsVisible="{Binding CurrentPage.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}"
+                    Content="{Binding CurrentPage?.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
+                    IsVisible="{Binding CurrentPage?.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"/>
                 </Panel>
@@ -95,7 +108,7 @@
                                 Grid.Column="1"
                                 FontSize="18"
                                 Foreground="{TemplateBinding BarForeground}"
-                                Content="{Binding CurrentPage.Header, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
+                                Content="{Binding CurrentPage?.Header, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
@@ -106,7 +119,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalContentAlignment="Stretch"
                                 Foreground="{TemplateBinding BarForeground}"
-                                Content="{Binding CurrentPage.(NavigationPage.TopCommandBar), RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}">
+                                Content="{Binding CurrentPage?.(NavigationPage.TopCommandBar), RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}">
                 <ContentPresenter.Styles>
                   <Style Selector="CommandBar">
                     <Setter Property="Background" Value="Transparent" />
