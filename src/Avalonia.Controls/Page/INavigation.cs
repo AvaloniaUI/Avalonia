@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Animation;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -8,6 +9,7 @@ namespace Avalonia.Controls
     /// Provides navigation operations for stack-based and modal page navigation.
     /// Exposed via <see cref="Page.Navigation"/> when a page is hosted in a NavigationPage.
     /// </summary>
+    [NotClientImplementable]
     public interface INavigation
     {
         /// <summary>
