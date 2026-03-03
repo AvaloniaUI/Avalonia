@@ -20,7 +20,7 @@ namespace Avalonia.Native
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
         private bool _canResize = true;
         private bool _canMaximize = true;
-        private Controls.SystemDecorations _decorations = Controls.SystemDecorations.Full;
+        private Controls.WindowDecorations _decorations = Controls.WindowDecorations.Full;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(factory)
         {
@@ -91,7 +91,7 @@ namespace Avalonia.Native
             _native.SetCanMaximize(value.AsComBool());
         }
 
-        public void SetSystemDecorations(Controls.SystemDecorations enabled)
+        public void SetWindowDecorations(Controls.WindowDecorations enabled)
         {
             _decorations = enabled;
             _native.SetDecorations((Interop.SystemDecorations)enabled);
@@ -186,7 +186,7 @@ namespace Avalonia.Native
             if(_native is MicroComProxyBase pb && pb.IsDisposed) 
                 return;
 
-            if (WindowState ==  WindowState.FullScreen || !_isExtended || _decorations != Controls.SystemDecorations.Full)
+            if (WindowState ==  WindowState.FullScreen || !_isExtended || _decorations != Controls.WindowDecorations.Full)
             {
                 ExtendedMargins = new Thickness();
             }
