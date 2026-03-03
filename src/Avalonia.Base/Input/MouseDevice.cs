@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Reactive;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
-using Avalonia.Platform;
-using Avalonia.Utilities;
 using Avalonia.VisualTree;
-using Avalonia.Input.GestureRecognizers;
 #pragma warning disable CS0618
 
 namespace Avalonia.Input
@@ -263,7 +260,7 @@ namespace Avalonia.Input
 
             if (source != null)
             {
-                var e = new PointerDeltaEventArgs(Gestures.PointerTouchPadGestureMagnifyEvent, source,
+                var e = new PointerDeltaEventArgs(InputElement.PointerTouchPadGestureMagnifyEvent, source,
                     _pointer, root.RootElement, p, timestamp, props, inputModifiers, delta);
 
                 source?.RaiseEvent(e);
@@ -283,7 +280,7 @@ namespace Avalonia.Input
 
             if (source != null)
             {
-                var e = new PointerDeltaEventArgs(Gestures.PointerTouchPadGestureRotateEvent, source,
+                var e = new PointerDeltaEventArgs(InputElement.PointerTouchPadGestureRotateEvent, source,
                     _pointer, root.RootElement, p, timestamp, props, inputModifiers, delta);
 
                 source?.RaiseEvent(e);
@@ -303,7 +300,7 @@ namespace Avalonia.Input
 
             if (source != null)
             {
-                var e = new PointerDeltaEventArgs(Gestures.PointerTouchPadGestureSwipeEvent, source, 
+                var e = new PointerDeltaEventArgs(InputElement.PointerTouchPadGestureSwipeEvent, source, 
                     _pointer, root.RootElement, p, timestamp, props, inputModifiers, delta);
 
                 source?.RaiseEvent(e);

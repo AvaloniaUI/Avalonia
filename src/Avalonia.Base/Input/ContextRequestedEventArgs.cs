@@ -1,7 +1,6 @@
-﻿using Avalonia.Input;
-using Avalonia.Interactivity;
+﻿using Avalonia.Interactivity;
 
-namespace Avalonia.Controls
+namespace Avalonia.Input
 {
     /// <summary>
     /// Provides event data for the ContextRequested event.
@@ -14,7 +13,7 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the ContextRequestedEventArgs class.
         /// </summary>
         public ContextRequestedEventArgs()
-            : base(Control.ContextRequestedEvent)
+            : base(InputElement.ContextRequestedEvent)
         {
 
         }
@@ -34,10 +33,10 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the x- and y-coordinates of the pointer position, optionally evaluated against a coordinate origin of a supplied <see cref="Control"/>.
+        /// Gets the x- and y-coordinates of the pointer position, optionally evaluated against a coordinate origin of a supplied <see cref="InputElement"/>.
         /// </summary>
         /// <param name="relativeTo">
-        /// Any <see cref="Control"/>-derived object that is connected to the same object tree.
+        /// Any <see cref="InputElement"/>-derived object that is connected to the same object tree.
         /// To specify the object relative to the overall coordinate system, use a relativeTo  value of null.
         /// </param>
         /// <param name="point">
@@ -48,7 +47,7 @@ namespace Avalonia.Controls
         /// <returns>
         /// true if the context request was initiated by a pointer device; otherwise, false.
         /// </returns>
-        public bool TryGetPosition(Control? relativeTo, out Point point)
+        public bool TryGetPosition(InputElement? relativeTo, out Point point)
         {
             if (_pointerEventArgs is null)
             {
