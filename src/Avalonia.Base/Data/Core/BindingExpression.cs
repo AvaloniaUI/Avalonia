@@ -510,12 +510,9 @@ internal partial class BindingExpression : UntypedBindingExpressionBase, IDescri
         StopDelayTimer();
 
         if (TryGetTarget(out var target) &&
-            TargetProperty is not null &&
-            target.GetValue(TargetProperty) is var value &&
-            LeafNode is { } leafNode &&
-            !TypeUtilities.IdentityEquals(value, leafNode.Value, TargetType))
+            TargetProperty is not null)
         {
-            WriteValueToSource(value);
+            WriteValueToSource(target.GetValue(TargetProperty));
         }
     }
 
