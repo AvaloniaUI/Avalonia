@@ -109,8 +109,6 @@ namespace Avalonia.Animation
             }, TimeSpan.FromSeconds(3), DispatcherPriority.Background);
         }
 
-        // ── Public API ────────────────────────────────────────────────────────────────
-
         /// <summary>Gets the key that identifies this animation.</summary>
         public string Key => _key;
 
@@ -153,15 +151,8 @@ namespace Avalonia.Animation
             return true;
         }
 
-        // ── Internal ──────────────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has been disposed.
-        /// Exposed internally so tests do not need reflection.
-        /// </summary>
+        // Exposed internally so tests can verify disposal state without reflection.
         internal bool IsDisposed => _disposed;
-
-        // ── IDisposable ───────────────────────────────────────────────────────────────
 
         /// <summary>
         /// Releases all resources and cancels the animation if it is in flight.
@@ -202,8 +193,6 @@ namespace Avalonia.Animation
             if (wasMidFlight)
                 Completed?.Invoke(this, new ConnectedAnimationCompletedEventArgs(cancelled: true));
         }
-
-        // ── Private implementation ────────────────────────────────────────────────────
 
         private void CaptureSnapshot(Visual source, TopLevel topLevel)
         {

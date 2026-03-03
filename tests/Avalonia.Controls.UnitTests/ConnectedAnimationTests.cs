@@ -135,11 +135,11 @@ public class ConnectedAnimationServiceTests : ScopedTestBase
     }
 
     [Fact]
-    public void PrepareToAnimate_NullKey_ThrowsArgumentException()
+    public void PrepareToAnimate_NullKey_ThrowsArgumentNullException()
     {
         var service = CreateService();
         var source = new Border();
-        Assert.Throws<ArgumentException>(() =>
+        Assert.Throws<ArgumentNullException>(() =>
             service.PrepareToAnimate(null!, source));
     }
 
