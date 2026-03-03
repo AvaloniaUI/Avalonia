@@ -150,8 +150,8 @@ namespace Avalonia.Controls
             var transformToVisual = this.TransformToVisual(_currentRoot);
             if (transformToVisual == null)
                 return null;
-            var position = new Rect(default, bounds.Size).TransformToAABB(transformToVisual.Value).Position;
-            return new Rect(position, bounds.Size);
+            var transformedRect = new Rect(default, bounds.Size).TransformToAABB(transformToVisual.Value);
+            return transformedRect;
         }
 
         private void EnqueueForMoveResize()
