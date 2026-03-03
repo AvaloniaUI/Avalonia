@@ -211,11 +211,11 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Provides event data for the <see cref="ContextCancelled"/> event.
+        /// Provides event data for the <see cref="ContextCanceled"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> ContextCancelledEvent =
+        public static readonly RoutedEvent<RoutedEventArgs> ContextCanceledEvent =
             RoutedEvent.Register<InputElement, RoutedEventArgs>(
-                nameof(ContextCancelled),
+                nameof(ContextCanceled),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         private bool _isEffectivelyEnabled = true;
@@ -496,10 +496,10 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the context input gesture continues into another gesture, to notify the element that the context flyout should not be opened.
         /// </summary>
-        public event EventHandler<RoutedEventArgs>? ContextCancelled
+        public event EventHandler<RoutedEventArgs>? ContextCanceled
         {
-            add => AddHandler(ContextCancelledEvent, value);
-            remove => RemoveHandler(ContextCancelledEvent, value);
+            add => AddHandler(ContextCanceledEvent, value);
+            remove => RemoveHandler(ContextCanceledEvent, value);
         }
 
         /// <summary>

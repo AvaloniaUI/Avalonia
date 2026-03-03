@@ -49,6 +49,6 @@ namespace Avalonia.Input
         /// <summary>
         /// An additional contact is detected or a subsequent gesture (such as a slide) is detected.
         /// </summary>
-        Cancelled,
+        Canceled,
     }
 }

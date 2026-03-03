@@ -222,9 +222,9 @@ namespace Avalonia.Input
                         inputElement._isContextMenuOnHolding = true;
                     }
                 }
-                else if (e.HoldingState == HoldingState.Cancelled && inputElement._isContextMenuOnHolding)
+                else if (e.HoldingState == HoldingState.Canceled && inputElement._isContextMenuOnHolding)
                 {
-                    inputElement.RaiseEvent(new RoutedEventArgs(InputElement.ContextCancelledEvent)
+                    inputElement.RaiseEvent(new RoutedEventArgs(InputElement.ContextCanceledEvent)
                     {
                         Source = inputElement
                     });

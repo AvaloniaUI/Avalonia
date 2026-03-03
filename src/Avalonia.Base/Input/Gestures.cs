@@ -61,7 +61,7 @@ namespace Avalonia.Input
                 {
                     if (s_gestureState.Value.Type == GestureStateType.Holding && source is Interactive i)
                     {
-                        Holding?.Invoke(i, new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
+                        Holding?.Invoke(i, new HoldingRoutedEventArgs(HoldingState.Canceled, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
                     }
                     s_holdCancellationToken?.Cancel();
                     s_holdCancellationToken?.Dispose();
@@ -174,7 +174,7 @@ namespace Avalonia.Input
 
                         if (s_gestureState.Value.Type == GestureStateType.Holding)
                         {
-                            Holding?.Invoke(i, new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
+                            Holding?.Invoke(i, new HoldingRoutedEventArgs(HoldingState.Canceled, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
                         }
 
                         s_holdCancellationToken?.Cancel();

@@ -205,7 +205,7 @@ namespace Avalonia.Controls
             if (e.OldValue is ContextMenu oldMenu)
             {
                 control.ContextRequested -= ControlContextRequested;
-                control.ContextCancelled -= ControlContextCanceled;
+                control.ContextCanceled -= ControlContextCanceled;
                 control.AttachedToVisualTree -= ControlOnAttachedToVisualTree;
                 control.DetachedFromVisualTree -= ControlDetachedFromVisualTree;
                 oldMenu._attachedControls?.Remove(control);
@@ -215,7 +215,7 @@ namespace Avalonia.Controls
             if (e.NewValue is ContextMenu)
             {
                 control.ContextRequested += ControlContextRequested;
-                control.ContextCancelled += ControlContextCanceled;
+                control.ContextCanceled += ControlContextCanceled;
                 control.AttachedToVisualTree += ControlOnAttachedToVisualTree;
                 control.DetachedFromVisualTree += ControlDetachedFromVisualTree;
             }

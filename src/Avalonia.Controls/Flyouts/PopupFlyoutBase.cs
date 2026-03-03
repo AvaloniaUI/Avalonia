@@ -474,12 +474,12 @@ namespace Avalonia.Controls.Primitives
                 if (args.OldValue is FlyoutBase)
                 {
                     c.ContextRequested -= OnControlContextRequested;
-                    c.ContextCancelled -= OnControlContextCanceled;
+                    c.ContextCanceled -= OnControlContextCanceled;
                 }
                 if (args.NewValue is FlyoutBase)
                 {
                     c.ContextRequested += OnControlContextRequested;
-                    c.ContextCancelled += OnControlContextCanceled;
+                    c.ContextCanceled += OnControlContextCanceled;
                 }
             }
         }

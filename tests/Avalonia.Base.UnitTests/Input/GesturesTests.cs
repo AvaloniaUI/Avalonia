@@ -226,12 +226,12 @@ namespace Avalonia.Base.UnitTests.Input
             {
                 Child = border
             };
-            HoldingState holding = HoldingState.Cancelled;
+            HoldingState holding = HoldingState.Canceled;
 
             root.AddHandler(InputElement.HoldingEvent, (_, e) => holding = e.HoldingState);
 
             _mouse.Down(border);
-            Assert.False(holding != HoldingState.Cancelled);
+            Assert.False(holding != HoldingState.Canceled);
 
             // Verify timer duration, but execute it immediately.
             var timer = Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
@@ -407,7 +407,7 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var cancelled = false;
 
-            root.AddHandler(InputElement.HoldingEvent, (_, e) => cancelled = e.HoldingState == HoldingState.Cancelled);
+            root.AddHandler(InputElement.HoldingEvent, (_, e) => cancelled = e.HoldingState == HoldingState.Canceled);
 
             _mouse.Down(border);
             Assert.False(cancelled);
@@ -443,7 +443,7 @@ namespace Avalonia.Base.UnitTests.Input
             };
             var cancelled = false;
 
-            root.AddHandler(InputElement.HoldingEvent, (_, e) => cancelled = e.HoldingState == HoldingState.Cancelled);
+            root.AddHandler(InputElement.HoldingEvent, (_, e) => cancelled = e.HoldingState == HoldingState.Canceled);
 
             _mouse.Down(border);
 
