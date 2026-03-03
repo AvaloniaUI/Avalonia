@@ -46,7 +46,7 @@ namespace Avalonia.Platform
         Action? GotInputWhenDisabled { get; set; }
 
         /// <summary>
-        /// Enables or disables system window decorations (title bar, buttons, etc)
+        /// Enables or disables window decorations (title bar, buttons, etc)
         /// </summary>
         void SetWindowDecorations(WindowDecorations enabled);
 

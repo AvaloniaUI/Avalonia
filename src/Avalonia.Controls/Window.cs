@@ -45,7 +45,7 @@ namespace Avalonia.Controls
     }
 
     /// <summary>
-    /// Determines system decorations (title bar, border, etc) for a <see cref="Window"/>
+    /// Determines window decorations (title bar, border, etc) for a <see cref="Window"/>
     /// </summary>
     public enum WindowDecorations
     {
@@ -357,7 +357,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Sets the system decorations (title bar, border, etc)
+        /// Gets or sets the window decorations (title bar, border, etc).
         /// </summary>
         public WindowDecorations WindowDecorations
         {
