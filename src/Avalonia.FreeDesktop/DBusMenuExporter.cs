@@ -42,6 +42,7 @@ namespace Avalonia.FreeDesktop
             private bool _resetQueued;
             private int _nextId = 1;
             private IDisposable? _registration;
+            private readonly AvaloniaSynchronizationContext _synchronizationContext = new(DispatcherPriority.Input);
 
             public DBusMenuExporterImpl(DBusConnection connection, IntPtr xid)
             {
@@ -117,7 +118,8 @@ namespace Avalonia.FreeDesktop
                 {
                     _registration = await _connection.RegisterObjects(
                         (DBusObjectPath)_path,
-                        new object[] { this });
+                        new object[] { this },
+                        _synchronizationContext);
                 }
                 catch (Exception e)
                 {

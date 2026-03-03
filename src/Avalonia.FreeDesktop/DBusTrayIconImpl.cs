@@ -25,6 +25,7 @@ namespace Avalonia.FreeDesktop
         private OrgKdeStatusNotifierWatcherProxy? _statusNotifierWatcher;
         private (int, int, byte[]) _icon;
 
+        private readonly AvaloniaSynchronizationContext _synchronizationContext = new(DispatcherPriority.Input);
         private string? _sysTrayServiceName;
         private string? _tooltipText;
         private bool _isDisposed;
@@ -68,7 +69,8 @@ namespace Avalonia.FreeDesktop
             {
                 _registration = await _connection!.RegisterObjects(
                     (DBusObjectPath)"/StatusNotifierItem",
-                    new object[] { _statusNotifierItemDbusObj! });
+                    new object[] { _statusNotifierItemDbusObj! },
+                    _synchronizationContext);
             }
             catch (Exception e)
             {
@@ -137,7 +139,8 @@ namespace Avalonia.FreeDesktop
             {
                 _registration = await _connection.RegisterObjects(
                     (DBusObjectPath)"/StatusNotifierItem",
-                    new object[] { _statusNotifierItemDbusObj! });
+                    new object[] { _statusNotifierItemDbusObj! },
+                    _synchronizationContext);
             }
             catch (Exception e)
             {
