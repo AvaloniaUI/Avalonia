@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Metadata;
 
@@ -97,6 +98,12 @@ namespace Avalonia.Platform
         bool NeedsManagedDecorations { get; }
 
         /// <summary>
+        /// Gets flags indicating which drawn decoration parts the platform requires.
+        /// For example, X11 needs shadow, border, and resize grips; Win32 only needs titlebar/buttons.
+        /// </summary>
+        PlatformRequestedDrawnDecoration RequestedDrawnDecorations { get; }
+
+        /// <summary>
         /// Gets a thickness that describes the amount each side of the non-client area extends into the client area.
         /// It includes the titlebar.
         /// </summary>
@@ -141,12 +148,6 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="extendIntoClientAreaHint">true to enable, false to disable</param>
         void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint);        
-
-        /// <summary>
-        /// Sets hints that configure how the client area extends. 
-        /// </summary>
-        /// <param name="hints"></param>
-        void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints);
 
         /// <summary>
         /// Sets how big the non-client titlebar area should be.

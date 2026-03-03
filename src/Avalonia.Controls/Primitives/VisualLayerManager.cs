@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Avalonia.Controls.Chrome;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
@@ -7,7 +6,6 @@ namespace Avalonia.Controls.Primitives
     public sealed class VisualLayerManager : Decorator
     {
         private const int AdornerZIndex = int.MaxValue - 100;
-        private const int ChromeZIndex = int.MaxValue - 99;
         private const int LightDismissOverlayZIndex = int.MaxValue - 98;
         private const int OverlayZIndex = int.MaxValue - 97;
         private const int TextSelectorLayerZIndex = int.MaxValue - 96;
@@ -28,42 +26,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            EnsureChromeOverlayIfNeeded();
-            
-            base.OnAttachedToVisualTree(e);
-        }
-
-        void EnsureChromeOverlayIfNeeded()
-        {
-            // HACK: This is a replacement hack for the old set of hacks for TitleBar.
-
-            // Check if we are attached direclty-ish to a Window (i. e. no other VisualLayerManager in between).
-            // If we are, then we are the "main" VisualLayerManager and should create the ChromeOverlayLayer and add titlebar there
-            var parent = VisualParent;
-            while (parent != null)
-            {
-                if(parent is VisualLayerManager)
-                    break;
-                else if (parent is Window window)
-                {
-                    if (FindLayer<ChromeOverlayLayer>() == null)
-                    {
-                        var layer = new ChromeOverlayLayer();
-                        AddLayer(layer, ChromeZIndex);
-                        layer.Children.Add(new TitleBar());
-                    }
-                    
-                    break;
-                }
-
-                parent = parent.VisualParent;
-
-            }
-        }
-        
         internal OverlayLayer? OverlayLayer
         {
             get

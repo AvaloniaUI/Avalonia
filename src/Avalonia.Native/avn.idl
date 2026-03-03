@@ -591,15 +591,6 @@ enum AvnMenuItemToggleType
     Radio
 }
 
-enum AvnExtendClientAreaChromeHints
-{
-    AvnNoChrome = 0,
-    AvnSystemChrome = 0x01,
-    AvnPreferSystemChrome = 0x02,
-    AvnOSXThickTitleBar = 0x08,
-    AvnDefaultChrome = AvnPreferSystemChrome,
-}
-
 enum AvnPlatformResizeReason
 {
     ResizeUnspecified,
@@ -810,7 +801,6 @@ interface IAvnWindow : IAvnWindowBase
      HRESULT GetWindowState(AvnWindowState*ret);
      HRESULT TakeFocusFromChildren();
      HRESULT SetExtendClientArea(bool enable);
-     HRESULT SetExtendClientAreaHints(AvnExtendClientAreaChromeHints hints);
      HRESULT GetExtendTitleBarHeight(double*ret);
      HRESULT SetExtendTitleBarHeight(double value);
      HRESULT GetWindowZOrder(long*ret);

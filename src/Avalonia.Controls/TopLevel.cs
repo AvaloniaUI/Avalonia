@@ -129,6 +129,8 @@ namespace Avalonia.Controls
         private IStorageProvider? _storageProvider;
         private Screens? _screens;
         private readonly PresentationSource _source;
+        private readonly TopLevelHost _topLevelHost;
+        internal TopLevelHost TopLevelHost => _topLevelHost;
         internal new PresentationSource PresentationSource => _source;
         internal IInputRoot InputRoot => _source;
 
@@ -191,7 +193,9 @@ namespace Avalonia.Controls
             dependencyResolver ??= AvaloniaLocator.Current;
 
             var hostVisual = new TopLevelHost(this);
+            _topLevelHost = hostVisual;
             ((ISetLogicalParent)hostVisual).SetParent(this);
+            LogicalChildren.Add(hostVisual);
 
             _source = new PresentationSource(hostVisual, this,
                 impl, dependencyResolver, () => ClientSize);
