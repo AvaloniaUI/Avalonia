@@ -63,9 +63,7 @@ namespace Avalonia.Animation
         /// <returns>The prepared <see cref="ConnectedAnimation"/>.</returns>
         public ConnectedAnimation PrepareToAnimate(string key, Visual source)
         {
-            if (string.IsNullOrEmpty(key))
-                throw new ArgumentException("Key cannot be null or empty.", nameof(key));
-
+            ArgumentException.ThrowIfNullOrEmpty(key);
             ArgumentNullException.ThrowIfNull(source);
 
             // Replace any stale animation registered under the same key.

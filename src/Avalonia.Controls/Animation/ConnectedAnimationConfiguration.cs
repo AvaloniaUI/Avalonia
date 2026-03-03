@@ -15,6 +15,10 @@ namespace Avalonia.Animation
     /// the element arcs slightly as it travels and casts an animated shadow.
     /// This is the default configuration when none is specified.
     /// </summary>
+    /// <remarks>
+    /// Use <see cref="DirectConnectedAnimationConfiguration"/> for back navigation
+    /// and <see cref="BasicConnectedAnimationConfiguration"/> for a plain transition.
+    /// </remarks>
     public class GravityConnectedAnimationConfiguration : ConnectedAnimationConfiguration
     {
         /// <summary>
@@ -28,6 +32,10 @@ namespace Avalonia.Animation
     /// Produces a direct, linear translation suitable for back navigation.
     /// No gravity arc or shadow is applied, and the default duration is shorter (150 ms).
     /// </summary>
+    /// <remarks>
+    /// Assign this to <see cref="ConnectedAnimation.Configuration"/> before calling
+    /// <c>TryStart</c> on the return animation to animate back to the source view.
+    /// </remarks>
     public class DirectConnectedAnimationConfiguration : ConnectedAnimationConfiguration
     {
         /// <summary>
@@ -38,8 +46,9 @@ namespace Avalonia.Animation
     }
 
     /// <summary>
-    /// Produces a simple linear transition between the source and destination elements
-    /// with standard ease-in-out timing and no gravity arc or shadow.
+    /// Produces a simple ease-in-out transition between the source and destination elements
+    /// with no gravity arc or shadow. Duration is taken from
+    /// <see cref="ConnectedAnimationService.DefaultDuration"/>.
     /// </summary>
     public class BasicConnectedAnimationConfiguration : ConnectedAnimationConfiguration
     {

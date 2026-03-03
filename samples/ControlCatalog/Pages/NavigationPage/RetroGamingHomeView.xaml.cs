@@ -1,6 +1,5 @@
 using System;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages;
 
@@ -8,11 +7,9 @@ public partial class RetroGamingHomeView : UserControl
 {
     public Action<string>? GameSelected { get; set; }
 
-    public RetroGamingHomeView() => InitializeComponent();
-
-    protected override void OnLoaded(RoutedEventArgs e)
+    public RetroGamingHomeView()
     {
-        base.OnLoaded(e);
+        InitializeComponent();
 
         HeroPlayBtn.Click              += (_, _) => GameSelected?.Invoke("Cyber Ninja 2084");
         ContinuePixelQuestBtn.Click    += (_, _) => GameSelected?.Invoke("Pixel Quest");

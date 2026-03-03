@@ -1,6 +1,5 @@
 using System;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages;
 
@@ -9,11 +8,9 @@ public partial class RetroGamingSearchView : UserControl
     public Action? CloseRequested  { get; set; }
     public Action<string>? GameSelected { get; set; }
 
-    public RetroGamingSearchView() => InitializeComponent();
-
-    protected override void OnLoaded(RoutedEventArgs e)
+    public RetroGamingSearchView()
     {
-        base.OnLoaded(e);
+        InitializeComponent();
 
         CloseBtn.Click               += (_, _) => CloseRequested?.Invoke();
         SearchCyberNinjaBtn.Click    += (_, _) => GameSelected?.Invoke("Cyber Ninja 2084");

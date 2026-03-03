@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -30,6 +31,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the collection of child pages.
         /// </summary>
+        /// <remarks>
+        /// If the assigned collection implements <see cref="INotifyCollectionChanged"/>,
+        /// this control subscribes to its <c>CollectionChanged</c> event with a strong reference.
+        /// The subscription is released when a new collection is assigned or when the control
+        /// is detached from the visual tree. Avoid keeping the collection alive longer than
+        /// the control to prevent the control from being retained by the collection.
+        /// </remarks>
         [Content]
         public virtual IEnumerable? Pages
         {
@@ -83,6 +91,14 @@ namespace Avalonia.Controls
             }
             else if (change.Property == CurrentPageProperty)
                 CurrentPageChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            if (_pages is INotifyCollectionChanged collection)
+                collection.CollectionChanged -= NotifyCollection_CollectionChanged;
         }
 
         private void NotifyCollection_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

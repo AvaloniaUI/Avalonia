@@ -745,7 +745,8 @@ namespace Avalonia.Controls
                 _drawerPage.IsOpen = !_drawerPage.IsOpen;
                 return;
             }
-            await PopAsync();
+            if (CanGoBack)
+                await PopAsync();
         }
 
         /// <summary>

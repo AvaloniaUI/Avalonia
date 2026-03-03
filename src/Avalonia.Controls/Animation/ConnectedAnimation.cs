@@ -11,6 +11,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
+using Avalonia.Logging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -219,9 +220,10 @@ namespace Avalonia.Animation
                     _sourceSnapshot.Render(source);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Snapshot is best-effort; dispose partially-created bitmap.
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Visual)
+                    ?.Log(this, "ConnectedAnimation snapshot failed for key '{Key}': {Exception}", Key, ex);
                 _sourceSnapshot?.Dispose();
                 _sourceSnapshot = null;
             }
@@ -246,9 +248,10 @@ namespace Avalonia.Animation
             {
                 // Dispose already handles cleanup.
             }
-            catch
+            catch (Exception ex)
             {
-                // Prevent unobserved task exceptions; ensure cleanup.
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Visual)
+                    ?.Log(this, "ConnectedAnimation failed for key '{Key}': {Exception}", Key, ex);
                 Dispose();
             }
         }

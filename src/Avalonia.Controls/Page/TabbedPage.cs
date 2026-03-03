@@ -93,11 +93,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the value of the <see cref="IsTabEnabledProperty"/> attached property for a page.
         /// </summary>
+        /// <param name="page">The page to query.</param>
+        /// <returns><see langword="true"/> if the tab is enabled; otherwise <see langword="false"/>.</returns>
         public static bool GetIsTabEnabled(Page page) => page.GetValue(IsTabEnabledProperty);
 
         /// <summary>
         /// Sets the value of the <see cref="IsTabEnabledProperty"/> attached property for a page.
+        /// Disabled tabs are skipped during keyboard and swipe navigation.
         /// </summary>
+        /// <param name="page">The page whose tab state to update.</param>
+        /// <param name="value"><see langword="true"/> to enable the tab; <see langword="false"/> to disable it.</param>
         public static void SetIsTabEnabled(Page page, bool value)
         {
             page.SetValue(IsTabEnabledProperty, value);
