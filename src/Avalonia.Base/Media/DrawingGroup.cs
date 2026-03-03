@@ -70,6 +70,7 @@ namespace Avalonia.Media
 
         internal RenderOptions? RenderOptions { get; set; }
         internal TextOptions? TextOptions { get; set; }
+        internal Rect? EffectBounds { get; set; }
 
         /// <summary>
         /// Gets or sets the collection that contains the child geometries.
@@ -89,13 +90,14 @@ namespace Avalonia.Media
         internal override void DrawCore(DrawingContext context)
         {
             var bounds = GetBounds();
+            var effectBounds = EffectBounds ?? bounds.Inflate(Effect?.GetEffectOutputPadding() ?? default);
             using (context.PushTransform(Transform?.Value ?? Matrix.Identity))
             using (context.PushOpacity(Opacity))
             using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
             using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, bounds) : default)
             using (RenderOptions != null ? context.PushRenderOptions(RenderOptions.Value) : default)
             using (TextOptions != null ? context.PushTextOptions(TextOptions.Value) : default)
-            using (Effect != null ? context.PushEffect(Effect, bounds) : default)
+            using (Effect != null ? context.PushEffect(Effect, effectBounds) : default)
             {
                 foreach (var drawing in Children)
                 {
@@ -360,6 +362,7 @@ namespace Avalonia.Media
 
                 // Set the effect on the new DrawingGroup
                 drawingGroup.Effect = effect;
+                drawingGroup.EffectBounds = bounds;
             }
 
             protected override void PopClipCore() => Pop();
