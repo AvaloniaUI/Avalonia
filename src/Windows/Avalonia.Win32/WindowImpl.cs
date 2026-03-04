@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -100,7 +100,6 @@ namespace Avalonia.Win32
         private Size _maxSize;
         private POINT _maxTrackSize;
         private WindowImpl? _parent;
-        private ExtendClientAreaChromeHints _extendChromeHints = ExtendClientAreaChromeHints.Default;
         private bool _isCloseRequested;
         private bool _shown;
         private bool _hiddenWindowIsParent;
@@ -140,7 +139,7 @@ namespace Avalonia.Win32
                 IsResizable = true,
                 IsMinimizable = true,
                 IsMaximizable = true,
-                Decorations = SystemDecorations.Full
+                Decorations = WindowDecorations.Full
             };
 
             var surfaceFactory = AvaloniaLocator.Current.GetService<IWindowsSurfaceFactory>();
@@ -545,7 +544,7 @@ namespace Avalonia.Win32
             }
         }
 
-        private bool HasFullDecorations => _windowProperties.Decorations == SystemDecorations.Full;
+        private bool HasFullDecorations => _windowProperties.Decorations == WindowDecorations.Full;
 
 
         public void Move(PixelPoint point) => Position = point;
@@ -597,7 +596,7 @@ namespace Avalonia.Win32
             {
                 // We told Windows we have a caption, but since we're actually extending into it,
                 // it should be excluded from the final window bounds.
-                if (_windowProperties.Decorations != SystemDecorations.None)
+                if (_windowProperties.Decorations != WindowDecorations.None)
                 {
                     var borderOnlyRect = ClientRectToWindowRect(requestedClientRect, WindowStyles.WS_BORDER);
                     requestedWindowRect.top = borderOnlyRect.top;
@@ -894,7 +893,7 @@ namespace Avalonia.Win32
             UpdateWindowProperties(newWindowProperties);
         }
 
-        public void SetSystemDecorations(SystemDecorations value)
+        public void SetWindowDecorations(WindowDecorations value)
         {
             var newWindowProperties = _windowProperties;
 
@@ -1150,8 +1149,7 @@ namespace Avalonia.Win32
             borderCaptionThickness.left *= -1;
             borderCaptionThickness.top *= -1;
 
-            if (_extendChromeHints.HasAnyFlag(ExtendClientAreaChromeHints.SystemChrome | ExtendClientAreaChromeHints.PreferSystemChrome) &&
-                _windowProperties.Decorations == SystemDecorations.Full)
+            if (_windowProperties.Decorations == WindowDecorations.Full)
             {
                 if (_extendTitleBarHint != -1)
                     borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);
@@ -1167,7 +1165,7 @@ namespace Avalonia.Win32
             margins.cxRightWidth = defaultMargin;
             margins.cyBottomHeight = defaultMargin;
 
-            margins.cyTopHeight = _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) && !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome) ? borderCaptionThickness.top : defaultMargin;
+            margins.cyTopHeight = defaultMargin;
 
             if (WindowState == WindowState.Maximized)
             {
@@ -1232,8 +1230,7 @@ namespace Avalonia.Win32
                 }
             }
 
-            if (!_isClientAreaExtended || (_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) &&
-                !_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome)))
+            if (!_isClientAreaExtended)
             {
                 EnableCloseButton(_hwnd);
             }
@@ -1297,7 +1294,7 @@ namespace Avalonia.Win32
 
             newWindowProperties.WindowState = state;
 
-            UpdateWindowProperties(newWindowProperties, newWindowProperties.Decorations != SystemDecorations.Full);
+            UpdateWindowProperties(newWindowProperties, newWindowProperties.Decorations != WindowDecorations.Full);
 
             if (command.HasValue)
             {
@@ -1469,7 +1466,7 @@ namespace Avalonia.Win32
 
                 switch (newProperties.Decorations)
                 {
-                    case SystemDecorations.Full:
+                    case WindowDecorations.Full:
                         style |= WindowStyles.WS_BORDER | WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
 
                         if (newProperties.IsMinimizable)
@@ -1480,12 +1477,12 @@ namespace Avalonia.Win32
 
                         break;
 
-                    case SystemDecorations.BorderOnly:
+                    case WindowDecorations.BorderOnly:
                         style |= WindowStyles.WS_BORDER;
                         break;
                 }
 
-                if (newProperties.Decorations != SystemDecorations.None && newProperties.IsResizable)
+                if (newProperties.Decorations != WindowDecorations.None && newProperties.IsResizable)
                     style |= WindowStyles.WS_THICKFRAME;
 
                 var windowStates = GetWindowStateStyles();
@@ -1511,7 +1508,7 @@ namespace Avalonia.Win32
 
             if (!_isFullScreenActive && ((oldProperties.Decorations != newProperties.Decorations) || forceChanges))
             {
-                var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
+                var margin = newProperties.Decorations == WindowDecorations.BorderOnly ? 1 : 0;
 
                 var margins = new MARGINS
                 {
@@ -1598,13 +1595,6 @@ namespace Avalonia.Win32
             ExtendClientArea();
         }
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {
-            _extendChromeHints = hints;
-
-            ExtendClientArea();
-        }
-
         /// <inheritdoc/>
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
@@ -1620,7 +1610,12 @@ namespace Avalonia.Win32
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         /// <inheritdoc/>
-        public bool NeedsManagedDecorations => _isClientAreaExtended && _extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.PreferSystemChrome);
+        public bool NeedsManagedDecorations => _isClientAreaExtended;
+
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations =>
+            _isClientAreaExtended
+                ? PlatformRequestedDrawnDecoration.TitleBar
+                : PlatformRequestedDrawnDecoration.None;
 
         /// <inheritdoc/>
         public Thickness ExtendedMargins => _extendedMargins;
@@ -1660,7 +1655,7 @@ namespace Avalonia.Win32
             public bool IsResizable;
             public bool IsMinimizable;
             public bool IsMaximizable;
-            public SystemDecorations Decorations;
+            public WindowDecorations Decorations;
             public bool IsFullScreen;
             public WindowState WindowState;
         }
@@ -1731,3 +1726,4 @@ namespace Avalonia.Win32
         }
     }
 }
+

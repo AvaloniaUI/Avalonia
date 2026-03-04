@@ -57,4 +57,6 @@ internal partial class PresentationSource
         }
         return candidate;
     }
+    
+    public InputElement FocusRoot { get; }
 }

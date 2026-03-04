@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Automation.Peers;
+using Avalonia.Metadata;
 
 namespace Avalonia.Automation.Provider
 {
@@ -12,6 +13,7 @@ namespace Avalonia.Automation.Provider
     /// an automation tree from a 3rd party UI framework that wishes to use Avalonia's automation
     /// support.
     /// </remarks>
+    [PrivateApi]
     public interface IEmbeddedRootProvider
     {
         /// <summary>

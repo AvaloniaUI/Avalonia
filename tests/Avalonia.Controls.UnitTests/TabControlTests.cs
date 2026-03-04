@@ -723,11 +723,10 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(Key.D, "d", 0)]
         public void Should_TabControl_Recognizes_AccessKey(Key accessKey, string accessKeySymbol, int selectedTabIndex)
         {
-            var ah = new AccessKeyHandler();
             var kd = new KeyboardDevice();
             using (UnitTestApplication.Start(TestServices.StyledWindow
                        .With(
-                           accessKeyHandler: ah,
+                           accessKeyHandler: () => new AccessKeyHandler(),
                            keyboardDevice: () => kd)
                    ))
             {

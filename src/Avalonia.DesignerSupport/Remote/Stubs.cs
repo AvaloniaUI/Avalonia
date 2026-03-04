@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -47,6 +48,9 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations => IsClientAreaExtendedToDecorations
+            ? PlatformRequestedDrawnDecoration.TitleBar
+            : default;
         public Thickness ExtendedMargins { get; } = new Thickness();
 
         public Thickness OffScreenMargin { get; } = new Thickness();
@@ -134,7 +138,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetSystemDecorations(SystemDecorations enabled)
+        public void SetWindowDecorations(WindowDecorations enabled)
         {
         }
 
@@ -171,10 +175,6 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
-        {
-        }
-
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {
         }
 

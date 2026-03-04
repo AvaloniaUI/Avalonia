@@ -105,6 +105,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Input.Gestures</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Input.IDataObject</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
@@ -213,7 +219,19 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Utilities.MathUtilities</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Utilities.StringTokenizer</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.VisualTree.IHostedVisualTreeRoot</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -232,6 +250,30 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Controls.AutoCompleteBox.BindingEvaluator`1</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Chrome.CaptionButtons</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Chrome.TitleBar</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.ContextRequestedEventArgs</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Diagnostics.IPopupHostProvider</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -291,7 +333,49 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Platform.ManagedDispatcherImpl</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.ChromeOverlayLayer</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.IPopupHost</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Controls.Primitives.IScrollable</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.LightDismissOverlayLayer</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.OverlayLayer</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Remote.RemoteServer</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Remote.RemoteWidget</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -303,7 +387,19 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.SystemDecorations</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Controls.SystemDialog</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Platform.ExtendClientAreaChromeHints</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -441,6 +537,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Input.Gestures</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Input.IDataObject</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
@@ -549,7 +651,19 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Utilities.MathUtilities</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Utilities.StringTokenizer</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.VisualTree.IHostedVisualTreeRoot</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -568,6 +682,30 @@
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Controls.AutoCompleteBox.BindingEvaluator`1</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Chrome.CaptionButtons</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Chrome.TitleBar</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.ContextRequestedEventArgs</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Diagnostics.IPopupHostProvider</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -627,7 +765,49 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Platform.ManagedDispatcherImpl</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.ChromeOverlayLayer</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.IPopupHost</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Controls.Primitives.IScrollable</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.LightDismissOverlayLayer</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.OverlayLayer</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Remote.RemoteServer</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.Remote.RemoteWidget</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -639,7 +819,19 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Controls.SystemDecorations</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Avalonia.Controls.SystemDialog</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Avalonia.Platform.ExtendClientAreaChromeHints</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -705,6 +897,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Input.HoldingState.Cancelled</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Media.DrawingImage.ViewboxProperty</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
@@ -742,6 +940,24 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Data.CompiledBindingPathBuilder.SetRawSource(System.Object)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.CompiledBindingPathBuilder.StreamObservable</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.CompiledBindingPathBuilder.StreamTask</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.CompiledBindingPathBuilder.TypeCast(System.Type)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -790,6 +1006,12 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Input.DragEventArgs.get_Data</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.HoldingRoutedEventArgs.#ctor(Avalonia.Input.HoldingState,Avalonia.Point,Avalonia.Input.PointerType)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -916,6 +1138,18 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Input.TextInput.TextInputMethodClient.ShowInputPanel</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Layout.LayoutHelper.RoundLayoutSizeUp(Avalonia.Size,System.Double,System.Double)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Layout.LayoutHelper.RoundLayoutThickness(Avalonia.Thickness,System.Double,System.Double)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -1191,6 +1425,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.Control.ContextRequestedEvent</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Controls.Documents.Inline.TextDecorationsProperty</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
@@ -1233,6 +1473,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.Primitives.VisualLayerManager.ChromeOverlayLayerProperty</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Controls.TextBlock.LetterSpacingProperty</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
@@ -1251,6 +1497,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.Window.ExtendClientAreaChromeHintsProperty</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.Window.SystemDecorationsProperty</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.AppBuilder.get_LifetimeOverride</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
@@ -1264,6 +1522,12 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Application.remove_UrlsOpened(System.EventHandler{Avalonia.UrlOpenedEventArgs})</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Automation.Peers.AutomationPeer.GetVisualRootCore</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -1413,13 +1677,49 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.AdornerLayer.#ctor</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.#ctor(Avalonia.Controls.Primitives.OverlayLayer)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.ConfigurePosition(Avalonia.Visual,Avalonia.Controls.PlacementMode,Avalonia.Point,Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor,Avalonia.Controls.Primitives.PopupPositioning.PopupGravity,Avalonia.Controls.Primitives.PopupPositioning.PopupPositionerConstraintAdjustment,System.Nullable{Avalonia.Rect})</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.CreatePopupHost(Avalonia.Visual,Avalonia.IAvaloniaDependencyResolver,System.Boolean)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.CreatePopupHost(Avalonia.Visual,Avalonia.IAvaloniaDependencyResolver)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.SetChild(Avalonia.Controls.Control)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.TakeFocus</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.Popup.get_Host</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -1509,6 +1809,36 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.VisualLayerManager.get_AdornerLayer</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.VisualLayerManager.get_ChromeOverlayLayer</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.VisualLayerManager.get_LightDismissOverlayLayer</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.VisualLayerManager.get_OverlayLayer</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.VisualLayerManager.get_TextSelectorLayer</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Screens.ScreenFromWindow(Avalonia.Platform.IWindowBaseImpl)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
@@ -1551,13 +1881,49 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Window.get_ExtendClientAreaChromeHints</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Window.get_SystemDecorations</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Window.set_ExtendClientAreaChromeHints(Avalonia.Platform.ExtendClientAreaChromeHints)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Window.SortWindowsByZOrder(Avalonia.Controls.Window[])</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.WindowBase.ArrangeSetBounds(Avalonia.Size)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Platform.IWindowImpl.GetWindowsZOrder(System.Span{Avalonia.Controls.Window},System.Span{System.Int64})</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Platform.IWindowImpl.SetExtendClientAreaChromeHints(Avalonia.Platform.ExtendClientAreaChromeHints)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Platform.IWindowImpl.SetSystemDecorations(Avalonia.Controls.SystemDecorations)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -1725,6 +2091,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Input.HoldingState.Cancelled</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Media.DrawingImage.ViewboxProperty</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
@@ -1762,6 +2134,24 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Data.CompiledBindingPathBuilder.SetRawSource(System.Object)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.CompiledBindingPathBuilder.StreamObservable</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.CompiledBindingPathBuilder.StreamTask</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Data.CompiledBindingPathBuilder.TypeCast(System.Type)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -1810,6 +2200,12 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Input.DragEventArgs.get_Data</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Input.HoldingRoutedEventArgs.#ctor(Avalonia.Input.HoldingState,Avalonia.Point,Avalonia.Input.PointerType)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -1936,6 +2332,18 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Input.TextInput.TextInputMethodClient.ShowInputPanel</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Layout.LayoutHelper.RoundLayoutSizeUp(Avalonia.Size,System.Double,System.Double)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Layout.LayoutHelper.RoundLayoutThickness(Avalonia.Thickness,System.Double,System.Double)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -2211,6 +2619,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.Control.ContextRequestedEvent</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Controls.Documents.Inline.TextDecorationsProperty</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
@@ -2253,6 +2667,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.Primitives.VisualLayerManager.ChromeOverlayLayerProperty</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Controls.TextBlock.LetterSpacingProperty</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
@@ -2271,6 +2691,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.Window.ExtendClientAreaChromeHintsProperty</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.Window.SystemDecorationsProperty</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.AppBuilder.get_LifetimeOverride</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
@@ -2284,6 +2716,12 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Application.remove_UrlsOpened(System.EventHandler{Avalonia.UrlOpenedEventArgs})</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Automation.Peers.AutomationPeer.GetVisualRootCore</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -2433,13 +2871,49 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.AdornerLayer.#ctor</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.#ctor(Avalonia.Controls.Primitives.OverlayLayer)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.ConfigurePosition(Avalonia.Visual,Avalonia.Controls.PlacementMode,Avalonia.Point,Avalonia.Controls.Primitives.PopupPositioning.PopupAnchor,Avalonia.Controls.Primitives.PopupPositioning.PopupGravity,Avalonia.Controls.Primitives.PopupPositioning.PopupPositionerConstraintAdjustment,System.Nullable{Avalonia.Rect})</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.CreatePopupHost(Avalonia.Visual,Avalonia.IAvaloniaDependencyResolver,System.Boolean)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.CreatePopupHost(Avalonia.Visual,Avalonia.IAvaloniaDependencyResolver)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.SetChild(Avalonia.Controls.Control)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.OverlayPopupHost.TakeFocus</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.Popup.get_Host</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -2529,6 +3003,36 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.VisualLayerManager.get_AdornerLayer</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.VisualLayerManager.get_ChromeOverlayLayer</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.VisualLayerManager.get_LightDismissOverlayLayer</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.VisualLayerManager.get_OverlayLayer</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Primitives.VisualLayerManager.get_TextSelectorLayer</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Screens.ScreenFromWindow(Avalonia.Platform.IWindowBaseImpl)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
@@ -2571,13 +3075,49 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Window.get_ExtendClientAreaChromeHints</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Window.get_SystemDecorations</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.Window.set_ExtendClientAreaChromeHints(Avalonia.Platform.ExtendClientAreaChromeHints)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.Window.SortWindowsByZOrder(Avalonia.Controls.Window[])</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.WindowBase.ArrangeSetBounds(Avalonia.Size)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Platform.IWindowImpl.GetWindowsZOrder(System.Span{Avalonia.Controls.Window},System.Span{System.Int64})</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Platform.IWindowImpl.SetExtendClientAreaChromeHints(Avalonia.Platform.ExtendClientAreaChromeHints)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Platform.IWindowImpl.SetSystemDecorations(Avalonia.Controls.SystemDecorations)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -2811,6 +3351,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
+    <Target>P:Avalonia.Input.IInputRoot.FocusRoot</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
     <Target>P:Avalonia.Platform.ILockedFramebuffer.AlphaFormat</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
@@ -2835,7 +3381,19 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Avalonia.Platform.IWindowImpl.SetWindowDecorations(Avalonia.Controls.WindowDecorations)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
     <Target>M:Avalonia.Platform.IWindowingPlatform.GetWindowsZOrder(System.ReadOnlySpan{Avalonia.Platform.IWindowImpl},System.Span{System.Int64})</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>P:Avalonia.Platform.IWindowImpl.RequestedDrawnDecorations</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -3015,6 +3573,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
+    <Target>P:Avalonia.Input.IInputRoot.FocusRoot</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
     <Target>P:Avalonia.Platform.ILockedFramebuffer.AlphaFormat</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
@@ -3039,7 +3603,19 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
+    <Target>M:Avalonia.Platform.IWindowImpl.SetWindowDecorations(Avalonia.Controls.WindowDecorations)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
     <Target>M:Avalonia.Platform.IWindowingPlatform.GetWindowsZOrder(System.ReadOnlySpan{Avalonia.Platform.IWindowImpl},System.Span{System.Int64})</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0006</DiagnosticId>
+    <Target>P:Avalonia.Platform.IWindowImpl.RequestedDrawnDecorations</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -3495,6 +4071,30 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Input.HoldingRoutedEventArgs</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.AdornerLayer</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.OverlayPopupHost</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.VisualLayerManager</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
     <Target>T:Avalonia.Platform.Screen</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
@@ -3510,6 +4110,30 @@
     <Target>T:Avalonia.Input.DataObject</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Input.HoldingRoutedEventArgs</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.AdornerLayer</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.OverlayPopupHost</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0009</DiagnosticId>
+    <Target>T:Avalonia.Controls.Primitives.VisualLayerManager</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0009</DiagnosticId>
