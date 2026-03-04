@@ -1237,7 +1237,7 @@ namespace Avalonia.Controls.Primitives
                 var container = ContainerFromIndex(i);
                 if (container is not null)
                 {
-                    if (container.IsVisible)
+                    if (container is { IsVisible: true, IsEnabled: true })
                         return i;
                 }
                 else
@@ -1245,7 +1245,7 @@ namespace Avalonia.Controls.Primitives
                     var item = ItemsView[i];
                     if (item is Visual v)
                     {
-                        if (v.GetValue(IsVisibleProperty) && v.GetValue(IsEnabledProperty))
+                        if (v.IsVisible && (v is not Control c || c.IsEnabled))
                             return i;
                     }
                     else if (item is not null)
