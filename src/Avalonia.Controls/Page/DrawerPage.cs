@@ -574,7 +574,7 @@ namespace Avalonia.Controls
                     if (change.NewValue is NavigationPage newNav)
                     {
                         newNav.SetDrawerPage(this);
-                        _navBarVisibleSub = newNav.GetObservable(NavigationPage.NavBarEffectivelyVisibleProperty)
+                        _navBarVisibleSub = newNav.GetObservable(NavigationPage.IsNavBarEffectivelyVisibleProperty)
                             .Subscribe(new AnonymousObserver<bool>(_ => UpdateDetailNavBarVisiblePseudoClass()));
                     }
                     UpdateDetailNavBarVisiblePseudoClass();
@@ -1008,7 +1008,7 @@ namespace Avalonia.Controls
 
         private void UpdateDetailNavBarVisiblePseudoClass()
         {
-            bool hideTopBar = Content is NavigationPage navPage && navPage.NavBarEffectivelyVisible;
+            bool hideTopBar = Content is NavigationPage navPage && navPage.IsNavBarEffectivelyVisible;
             PseudoClasses.Set(":detail-is-navpage", hideTopBar);
         }
     }

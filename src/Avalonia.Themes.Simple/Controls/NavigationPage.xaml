@@ -29,7 +29,7 @@
         <Panel ClipToBounds="True">
           <DockPanel>
             <Border Name="PART_NavBarSpacer"
-                    Height="{TemplateBinding BarHeightEffective}"
+                    Height="{TemplateBinding EffectiveBarHeight}"
                     IsVisible="False"
                     DockPanel.Dock="Top" />
 
@@ -55,7 +55,7 @@
                   ZIndex="1"
                   VerticalAlignment="Top"
                   ClipToBounds="True"
-                  Height="{TemplateBinding BarHeightEffective}"
+                  Height="{TemplateBinding EffectiveBarHeight}"
                   Background="{TemplateBinding BarBackground}">
             <Grid Margin="12,0,0,0" ColumnDefinitions="Auto, *, Auto">
               <Grid.Styles>
@@ -95,7 +95,7 @@
                       Grid.Column="0"
                       Background="Transparent"
                       Foreground="{TemplateBinding BarForeground}"
-                      IsVisible="{TemplateBinding BackButtonVisibleEffective}"
+                      IsVisible="{TemplateBinding IsBackButtonEffectivelyVisible}"
                       VerticalAlignment="Stretch"
                       Padding="8,0"
                       ToolTip.Tip="{x:Null}">

@@ -59,6 +59,10 @@ namespace Avalonia.Controls
         private IDisposable? _barHeightSub;
         private bool _isNavigating;
         private bool _canGoBack;
+        private bool? _isBackButtonEffectivelyVisible;
+        private bool _isNavBarEffectivelyVisible;
+        private double _effectiveBarHeight;
+        private bool _isBackButtonEffectivelyEnabled;
         private DrawerPage? _drawerPage;
         private IPageTransition? _overrideTransition;
         private bool _hasOverrideTransition;
@@ -103,16 +107,16 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<NavigationPage, IPageTransition?>(nameof(ModalTransition));
 
         /// <summary>
-        /// Defines the <see cref="BackButtonVisibleEffective"/> property.
+        /// Defines the <see cref="IsBackButtonEffectivelyVisible"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool?> BackButtonVisibleEffectiveProperty =
-            AvaloniaProperty.Register<NavigationPage, bool?>(nameof(BackButtonVisibleEffective), false);
+        public static readonly DirectProperty<NavigationPage, bool?> IsBackButtonEffectivelyVisibleProperty =
+            AvaloniaProperty.RegisterDirect<NavigationPage, bool?>(nameof(IsBackButtonEffectivelyVisible), o => o.IsBackButtonEffectivelyVisible);
 
         /// <summary>
-        /// Defines the <see cref="NavBarEffectivelyVisible"/> property.
+        /// Defines the <see cref="IsNavBarEffectivelyVisible"/> property.
         /// </summary>
-        internal static readonly StyledProperty<bool> NavBarEffectivelyVisibleProperty =
-            AvaloniaProperty.Register<NavigationPage, bool>(nameof(NavBarEffectivelyVisible), true);
+        internal static readonly DirectProperty<NavigationPage, bool> IsNavBarEffectivelyVisibleProperty =
+            AvaloniaProperty.RegisterDirect<NavigationPage, bool>(nameof(IsNavBarEffectivelyVisible), o => o.IsNavBarEffectivelyVisible);
 
         /// <summary>
         /// Defines the <see cref="BarLayoutBehaviorProperty"/> attached property.
@@ -139,10 +143,10 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<NavigationPage, Page, double?>("BarHeightOverride");
 
         /// <summary>
-        /// Defines the <see cref="BarHeightEffective"/> property.
+        /// Defines the <see cref="EffectiveBarHeight"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> BarHeightEffectiveProperty =
-            AvaloniaProperty.Register<NavigationPage, double>(nameof(BarHeightEffective), 48.0);
+        public static readonly DirectProperty<NavigationPage, double> EffectiveBarHeightProperty =
+            AvaloniaProperty.RegisterDirect<NavigationPage, double>(nameof(EffectiveBarHeight), o => o.EffectiveBarHeight);
 
         /// <summary>
         /// Defines the <see cref="BackButtonContentProperty"/> attached property.
@@ -199,10 +203,10 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<NavigationPage, Page, bool>("IsBackButtonEnabled", true);
 
         /// <summary>
-        /// Defines the <see cref="BackButtonEnabledEffective"/> property.
+        /// Defines the <see cref="IsBackButtonEffectivelyEnabled"/> property.
         /// </summary>
-        private static readonly StyledProperty<bool> BackButtonEnabledEffectiveProperty =
-            AvaloniaProperty.Register<NavigationPage, bool>(nameof(BackButtonEnabledEffective), true);
+        private static readonly DirectProperty<NavigationPage, bool> IsBackButtonEffectivelyEnabledProperty =
+            AvaloniaProperty.RegisterDirect<NavigationPage, bool>(nameof(IsBackButtonEffectivelyEnabled), o => o.IsBackButtonEffectivelyEnabled);
 
         static NavigationPage()
         {
@@ -228,24 +232,24 @@ namespace Avalonia.Controls
             });
 
             IsBackButtonVisibleProperty.Changed.AddClassHandler<NavigationPage>((x, _) =>
-                x.UpdateBackButtonVisibleEffective());
+                x.UpdateIsBackButtonEffectivelyVisible());
 
             BarHeightProperty.Changed.AddClassHandler<NavigationPage>((x, _) =>
-                x.UpdateBarHeightEffective());
+                x.UpdateEffectiveBarHeight());
 
             HasShadowProperty.Changed.AddClassHandler<NavigationPage>((x, _) =>
                 x.ApplyHasShadow());
 
-            BarHeightEffectiveProperty.Changed.AddClassHandler<NavigationPage>((x, _) =>
+            EffectiveBarHeightProperty.Changed.AddClassHandler<NavigationPage>((x, _) =>
                 x.ApplyHasShadow());
 
-            NavBarEffectivelyVisibleProperty.Changed.AddClassHandler<NavigationPage>((x, _) =>
+            IsNavBarEffectivelyVisibleProperty.Changed.AddClassHandler<NavigationPage>((x, _) =>
             {
                 x.ApplyNavBarVisibility();
                 x.ApplyHasShadow();
             });
 
-            BackButtonEnabledEffectiveProperty.Changed.AddClassHandler<NavigationPage>((x, e) =>
+            IsBackButtonEffectivelyEnabledProperty.Changed.AddClassHandler<NavigationPage>((x, e) =>
                 x.ApplyBackButtonEnabled(e.GetNewValue<bool>()));
 
             ContentProperty.Changed.AddClassHandler<NavigationPage>(async (x, e) =>
@@ -314,12 +318,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the effective back-button visibility.
+        /// Gets the effective back-button visibility.
         /// </summary>
-        public bool? BackButtonVisibleEffective
+        public bool? IsBackButtonEffectivelyVisible
         {
-            get => GetValue(BackButtonVisibleEffectiveProperty);
-            set => SetValue(BackButtonVisibleEffectiveProperty, value);
+            get => _isBackButtonEffectivelyVisible;
+            private set => SetAndRaise(IsBackButtonEffectivelyVisibleProperty, ref _isBackButtonEffectivelyVisible, value);
         }
 
         /// <summary>
@@ -336,9 +340,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the effective navigation bar visibility.
         /// </summary>
-        internal bool NavBarEffectivelyVisible
+        internal bool IsNavBarEffectivelyVisible
         {
-            get => GetValue(NavBarEffectivelyVisibleProperty);
+            get => _isNavBarEffectivelyVisible;
+            private set => SetAndRaise(IsNavBarEffectivelyVisibleProperty, ref _isNavBarEffectivelyVisible, value);
         }
 
         /// <summary>
@@ -360,12 +365,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the effective navigation bar height.
+        /// Gets the effective navigation bar height.
         /// </summary>
-        public double BarHeightEffective
+        public double EffectiveBarHeight
         {
-            get => GetValue(BarHeightEffectiveProperty);
-            set => SetValue(BarHeightEffectiveProperty, value);
+            get => _effectiveBarHeight;
+            private set => SetAndRaise(EffectiveBarHeightProperty, ref _effectiveBarHeight, value);
         }
 
         /// <summary>
@@ -391,10 +396,10 @@ namespace Avalonia.Controls
         /// </summary>
         public bool CanGoBack => _canGoBack;
 
-        private bool BackButtonEnabledEffective
+        private bool IsBackButtonEffectivelyEnabled
         {
-            get => GetValue(BackButtonEnabledEffectiveProperty);
-            set => SetValue(BackButtonEnabledEffectiveProperty, value);
+            get => _isBackButtonEffectivelyEnabled;
+            set => SetAndRaise(IsBackButtonEffectivelyEnabledProperty, ref _isBackButtonEffectivelyEnabled, value);
         }
 
         /// <summary>
@@ -626,7 +631,7 @@ namespace Avalonia.Controls
             }
 
             ApplyNavBarVisibility();
-            ApplyBackButtonEnabled(BackButtonEnabledEffective);
+            ApplyBackButtonEnabled(IsBackButtonEffectivelyEnabled);
             ApplyHasShadow();
             UpdateActivePage();
         }
@@ -1385,7 +1390,7 @@ namespace Avalonia.Controls
                 LogicalChildren.Remove(page);
 
             _cachedNavigationStack = null;
-            UpdateBackButtonVisibleEffective();
+            UpdateIsBackButtonEffectivelyVisible();
 
             PageRemoved?.Invoke(this, new PageRemovedEventArgs(page));
         }
@@ -1447,7 +1452,7 @@ namespace Avalonia.Controls
                 LogicalChildren.Add(page);
 
             _cachedNavigationStack = null;
-            UpdateBackButtonVisibleEffective();
+            UpdateIsBackButtonEffectivelyVisible();
 
             PageInserted?.Invoke(this, new PageInsertedEventArgs(page, before));
         }
@@ -1605,26 +1610,26 @@ namespace Avalonia.Controls
             if (page != null)
             {
                 _hasNavigationBarSub = page.GetObservable(HasNavigationBarProperty)
-                    .Subscribe(new AnonymousObserver<bool>(_ => UpdateNavBarEffectivelyVisible()));
+                    .Subscribe(new AnonymousObserver<bool>(_ => UpdateIsNavBarEffectivelyVisible()));
 
                 _isBackButtonEnabledSub = page.GetObservable(IsBackButtonEnabledProperty)
-                    .Subscribe(new AnonymousObserver<bool>(_ => UpdateBackButtonEnabledEffective()));
+                    .Subscribe(new AnonymousObserver<bool>(_ => UpdateIsBackButtonEffectivelyEnabled()));
 
                 _barLayoutBehaviorSub = page.GetObservable(BarLayoutBehaviorProperty)
                     .Subscribe(new AnonymousObserver<BarLayoutBehavior?>(_ => UpdateBarLayoutBehaviorEffective()));
 
                 _barHeightSub = page.GetObservable(BarHeightOverrideProperty)
-                    .Subscribe(new AnonymousObserver<double?>(_ => UpdateBarHeightEffective()));
+                    .Subscribe(new AnonymousObserver<double?>(_ => UpdateEffectiveBarHeight()));
             }
 
-            UpdateNavBarEffectivelyVisible();
+            UpdateIsNavBarEffectivelyVisible();
             UpdateBarLayoutBehaviorEffective();
-            UpdateBarHeightEffective();
+            UpdateEffectiveBarHeight();
 
             _cachedNavigationStack = null;
             UpdateContentSafeAreaPadding();
-            UpdateBackButtonVisibleEffective();
-            UpdateBackButtonEnabledEffective();
+            UpdateIsBackButtonEffectivelyVisible();
+            UpdateIsBackButtonEffectivelyEnabled();
             UpdateDrawerToggleIcon();
         }
 
@@ -1725,7 +1730,7 @@ namespace Avalonia.Controls
             (_modalPresenter, _modalBackPresenter) = (_modalBackPresenter, _modalPresenter);
         }
 
-        internal void UpdateBackButtonVisibleEffective()
+        internal void UpdateIsBackButtonEffectivelyVisible()
         {
             var depth = StackDepth;
 
@@ -1733,18 +1738,18 @@ namespace Avalonia.Controls
                 && _drawerPage.DrawerBehavior != DrawerBehavior.Locked
                 && _drawerPage.DrawerBehavior != DrawerBehavior.Disabled;
 
-            SetCurrentValue(BackButtonVisibleEffectiveProperty, (bool?)(IsBackButtonVisible
+            IsBackButtonEffectivelyVisible = IsBackButtonVisible
                 && (depth > 1 || showDrawerToggle)
-                && CurrentPage != null && GetHasBackButton(CurrentPage)));
+                && CurrentPage != null && GetHasBackButton(CurrentPage);
 
             SetAndRaise(CanGoBackProperty, ref _canGoBack, depth > 1);
 
             UpdateBackButtonAccessibility();
         }
 
-        private void UpdateBackButtonEnabledEffective()
+        private void UpdateIsBackButtonEffectivelyEnabled()
         {
-            SetCurrentValue(BackButtonEnabledEffectiveProperty, CurrentPage == null || GetIsBackButtonEnabled(CurrentPage));
+            IsBackButtonEffectivelyEnabled = CurrentPage == null || GetIsBackButtonEnabled(CurrentPage);
         }
 
         private void UpdateBackButtonAccessibility()
@@ -1766,7 +1771,7 @@ namespace Avalonia.Controls
         internal void SetDrawerPage(DrawerPage? drawerPage)
         {
             _drawerPage = drawerPage;
-            UpdateBackButtonVisibleEffective();
+            UpdateIsBackButtonEffectivelyVisible();
             UpdateDrawerToggleIcon();
         }
 
@@ -1821,12 +1826,12 @@ namespace Avalonia.Controls
             }
         }
 
-        private void UpdateNavBarEffectivelyVisible()
+        private void UpdateIsNavBarEffectivelyVisible()
         {
             bool navBarVisible = CurrentPage != null
                 ? GetHasNavigationBar(CurrentPage)
                 : _hasHadFirstPage;
-            SetCurrentValue(NavBarEffectivelyVisibleProperty, navBarVisible);
+            IsNavBarEffectivelyVisible = navBarVisible;
             UpdateNavBarSpacer();
         }
 
@@ -1841,19 +1846,19 @@ namespace Avalonia.Controls
         private void UpdateNavBarSpacer()
         {
             PseudoClasses.Set(":nav-bar-inset",
-                NavBarEffectivelyVisible && _effectiveBarLayoutBehavior == BarLayoutBehavior.Inset);
+                IsNavBarEffectivelyVisible && _effectiveBarLayoutBehavior == BarLayoutBehavior.Inset);
         }
 
-        private void UpdateBarHeightEffective()
+        private void UpdateEffectiveBarHeight()
         {
-            SetCurrentValue(BarHeightEffectiveProperty, (CurrentPage != null ? GetBarHeightOverride(CurrentPage) : null) ?? BarHeight);
-            PseudoClasses.Set(":nav-bar-compact", BarHeightEffective < 40);
+            EffectiveBarHeight = (CurrentPage != null ? GetBarHeightOverride(CurrentPage) : null) ?? BarHeight;
+            PseudoClasses.Set(":nav-bar-compact", EffectiveBarHeight < 40);
         }
 
         private void ApplyNavBarVisibility()
         {
             if (_navBar != null)
-                _navBar.IsVisible = NavBarEffectivelyVisible;
+                _navBar.IsVisible = IsNavBarEffectivelyVisible;
         }
 
         private void ApplyBackButtonEnabled(bool enabled)
@@ -1866,8 +1871,8 @@ namespace Avalonia.Controls
         {
             if (_navBarShadow == null)
                 return;
-            _navBarShadow.Margin = new Thickness(0, BarHeightEffective, 0, 0);
-            _navBarShadow.IsVisible = HasShadow && NavBarEffectivelyVisible;
+            _navBarShadow.Margin = new Thickness(0, EffectiveBarHeight, 0, 0);
+            _navBarShadow.IsVisible = HasShadow && IsNavBarEffectivelyVisible;
         }
     }
 }

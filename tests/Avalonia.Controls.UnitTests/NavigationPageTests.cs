@@ -356,7 +356,7 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             await nav.PushAsync(new ContentPage());
-            Assert.Equal(false, nav.BackButtonVisibleEffective);
+            Assert.Equal(false, nav.IsBackButtonEffectivelyVisible);
         }
 
         [Fact]
@@ -365,7 +365,7 @@ public class NavigationPageTests
             var nav = new NavigationPage();
             await nav.PushAsync(new ContentPage());
             await nav.PushAsync(new ContentPage());
-            Assert.Equal(true, nav.BackButtonVisibleEffective);
+            Assert.Equal(true, nav.IsBackButtonEffectivelyVisible);
         }
 
         [Fact]
@@ -374,7 +374,7 @@ public class NavigationPageTests
             var nav = new NavigationPage { IsBackButtonVisible = false };
             await nav.PushAsync(new ContentPage());
             await nav.PushAsync(new ContentPage());
-            Assert.Equal(false, nav.BackButtonVisibleEffective);
+            Assert.Equal(false, nav.IsBackButtonEffectivelyVisible);
         }
 
         [Fact]
@@ -385,7 +385,7 @@ public class NavigationPageTests
             var top = new ContentPage();
             NavigationPage.SetHasBackButton(top, false);
             await nav.PushAsync(top);
-            Assert.Equal(false, nav.BackButtonVisibleEffective);
+            Assert.Equal(false, nav.IsBackButtonEffectivelyVisible);
         }
 
         [Fact]
@@ -395,7 +395,7 @@ public class NavigationPageTests
             await nav.PushAsync(new ContentPage());
             await nav.PushAsync(new ContentPage());
             nav.IsBackButtonVisible = true;
-            Assert.Equal(true, nav.BackButtonVisibleEffective);
+            Assert.Equal(true, nav.IsBackButtonEffectivelyVisible);
         }
     }
 
@@ -685,21 +685,21 @@ public class NavigationPageTests
     public class AttachedPropertyTests : ScopedTestBase
     {
         [Fact]
-        public async Task BarHeightEffective_UsesPageOverride()
+        public async Task EffectiveBarHeight_UsesPageOverride()
         {
             var nav = new NavigationPage();
             var page = new ContentPage();
             NavigationPage.SetBarHeightOverride(page, 60.0);
             await nav.PushAsync(page);
-            Assert.Equal(60.0, nav.BarHeightEffective);
+            Assert.Equal(60.0, nav.EffectiveBarHeight);
         }
 
         [Fact]
-        public async Task BarHeightEffective_FallsBackToGlobalBarHeight()
+        public async Task EffectiveBarHeight_FallsBackToGlobalBarHeight()
         {
             var nav = new NavigationPage { BarHeight = 56.0 };
             await nav.PushAsync(new ContentPage());
-            Assert.Equal(56.0, nav.BarHeightEffective);
+            Assert.Equal(56.0, nav.EffectiveBarHeight);
         }
 
         [Fact]
