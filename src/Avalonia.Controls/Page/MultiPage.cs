@@ -85,10 +85,22 @@ namespace Avalonia.Controls
                 if (change.NewValue is INotifyCollectionChanged newNotifyCollection)
                     newNotifyCollection.CollectionChanged += NotifyCollection_CollectionChanged;
 
-                UpdateActivePage();
+                if (change.NewValue != null)
+                    UpdateActivePage();
             }
             else if (change.Property == CurrentPageProperty)
                 CurrentPageChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            if (Pages is INotifyCollectionChanged collection)
+            {
+                collection.CollectionChanged -= NotifyCollection_CollectionChanged;
+                collection.CollectionChanged += NotifyCollection_CollectionChanged;
+            }
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

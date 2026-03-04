@@ -293,7 +293,6 @@ namespace Avalonia.Controls
         public DrawerPage()
         {
             GestureRecognizers.Add(_swipeRecognizer);
-            AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
         }
 
         /// <summary>
@@ -638,6 +637,16 @@ namespace Avalonia.Controls
             {
                 ApplyForeground(_drawerFooterPresenter, change.GetNewValue<IBrush?>());
             }
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
+
+            if (_backdrop != null)
+                _backdrop.PointerPressed += OnBackdropPressed;
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

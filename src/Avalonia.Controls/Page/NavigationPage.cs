@@ -263,7 +263,6 @@ namespace Avalonia.Controls
         {
             Pages = new Stack<Page>();
             GestureRecognizers.Add(new SwipeGestureRecognizer { EdgeSize = EdgeGestureWidth });
-            AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
         }
 
         /// <summary>
@@ -657,6 +656,13 @@ namespace Avalonia.Controls
             var maxWidth = Math.Floor(navBarWidth * 0.5);
             if (_topCommandBarPresenter.MaxWidth != maxWidth)
                 _topCommandBarPresenter.MaxWidth = maxWidth;
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
