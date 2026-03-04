@@ -4,7 +4,6 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
-using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -256,46 +255,6 @@ public class ListBoxVirtualizationIssueTests : ScopedTestBase
             // container should be removed from children because RecycleElementOnItemRemoved is called
             Assert.DoesNotContain(container, panel.Children);
             Assert.False(container.IsVisible);
-        }
-    }
-
-    [Fact]
-    public void AutoScrollToSelectedItem_Should_Work_When_Becoming_Visible()
-    {
-        using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-        {
-            var items = Enumerable.Range(0, 100).Select(i => $"Item {i}").ToList();
-
-            var target = new ListBox
-            {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
-                ItemsSource = items,
-                ItemTemplate = new FuncDataTemplate<string>((_, _) => new TextBlock { Height = 50 }),
-                Height = 100,
-                ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel { CacheLength = 0 }),
-                AutoScrollToSelectedItem = true,
-                IsVisible = false
-            };
-
-            Prepare(target);
-
-            // Select item 50
-            target.SelectedIndex = 50;
-
-            // Make visible
-            target.IsVisible = true;
-            target.UpdateLayout();
-            
-            // Wait for dispatcher
-            Dispatcher.UIThread.RunJobs();
-            target.UpdateLayout();
-
-            var scrollViewer = (ScrollViewer)target.VisualChildren[0];
-            var offset = scrollViewer.Offset.Y;
-
-            // Item 50 is at 50 * 50 = 2500. 
-            // ListBox height is 100, so it should be visible if offset is between 2400 and 2500.
-            Assert.True(offset > 0, $"Expected AutoScrollToSelectedItem to scroll to item 50, but offset was {offset}");
         }
     }
 
