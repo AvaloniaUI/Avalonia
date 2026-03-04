@@ -111,7 +111,7 @@ namespace Avalonia.Controls
         /// </summary>
         public TabbedPage()
         {
-            Pages = new AvaloniaList<Page>();
+            SetCurrentValue(PagesProperty, new AvaloniaList<Page>());
             Focusable = true;
             GestureRecognizers.Add(_swipeRecognizer);
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);

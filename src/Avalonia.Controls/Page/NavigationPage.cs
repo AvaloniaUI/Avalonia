@@ -265,7 +265,7 @@ namespace Avalonia.Controls
         /// </summary>
         public NavigationPage()
         {
-            Pages = new Stack<Page>();
+            SetCurrentValue(PagesProperty, new Stack<Page>());
             GestureRecognizers.Add(new SwipeGestureRecognizer { EdgeSize = EdgeGestureWidth });
         }
 
