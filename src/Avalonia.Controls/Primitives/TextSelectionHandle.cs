@@ -10,6 +10,8 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public class TextSelectionHandle : Thumb
     {
+        private const int DragDetectionRadius = 2;
+
         internal SelectionHandleType SelectionHandleType { get; set; }
 
         private Point _startPosition;
@@ -59,9 +61,13 @@ namespace Avalonia.Controls.Primitives
         protected override void OnDragDelta(VectorEventArgs e)
         {
             base.OnDragDelta(e);
+            var newDelta = e.Vector;
 
-            _delta = e.Vector;
-            UpdateTextSelectionHandlePosition();
+            if (Math.Abs((newDelta - _delta).Length) > DragDetectionRadius)
+            {
+                _delta = e.Vector;
+                UpdateTextSelectionHandlePosition();
+            }
         }
 
         protected override void OnDragCompleted(VectorEventArgs e)
@@ -134,6 +140,9 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
+            if (e.Pointer.Captured != this)
+                return;
+
             VectorEventArgs ev;
 
             if (!_lastPoint.HasValue)
@@ -163,8 +172,8 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            e.Handled = true;
             PseudoClasses.Add(":pressed");
+            e.Pointer.Capture(this);
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -184,6 +193,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             PseudoClasses.Remove(":pressed");
+            e.Pointer.Capture(null);
         }
     }
 }

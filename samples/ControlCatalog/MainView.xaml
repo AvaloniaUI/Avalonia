@@ -202,7 +202,7 @@
       <TabItem Header="TabStrip">
         <pages:TabStripPage />
       </TabItem>
-      <TabItem Header="TextBox">
+      <TabItem Header="TextBox" IsSelected="True">
         <pages:TextBoxPage />
       </TabItem>
       <TabItem Header="TextBlock">
