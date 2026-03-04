@@ -184,15 +184,25 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
 
     private Stream CreateStream(FileMode fileMode, FileAccess fileAccess)
     {
-        var document = new UIDocument(Url);
+        using var document = new UIDocument(Url);
         var path = document.FileUrl.Path!;
         var scopeCreated = SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
-        var stream = new FileStream(path, fileMode, fileAccess);
+
+        FileStream stream;
+        try
+        {
+            stream = new FileStream(path, fileMode, fileAccess);
+        }
+        catch
+        {
+            if (scopeCreated)
+                SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
+            throw;
+        }
 
         return scopeCreated ?
             new SecurityScopedStream(stream, Disposable.Create(() =>
             {
-                document.Dispose();
                 SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
             })) :
             stream;
