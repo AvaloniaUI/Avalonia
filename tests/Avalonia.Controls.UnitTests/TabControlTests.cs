@@ -831,6 +831,33 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
+        [Fact]
+        public void Only_Fist_Visible_Tab_Should_Be_Selected_By_Default()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                TabItem first, second;
+
+                var target = new TabControl
+                {
+                    Template = TabControlTemplate(),
+                    Items =
+                    {
+                        (first = new TabItem { Name = "first", Content = "foo", IsVisible = false, }),
+                        (second = new TabItem { Name = "second", Content = "bar", }),
+                    }
+                };
+
+                target.ApplyTemplate();
+                
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                Assert.Equal(1, target.SelectedIndex);
+                Assert.Equal(second, target.SelectedItem);
+            }
+        }
+
         private static IControlTemplate TabItemTemplate()
         {
             return new FuncControlTemplate<TabItem>((parent, scope) =>
