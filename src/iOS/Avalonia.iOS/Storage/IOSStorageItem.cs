@@ -174,20 +174,20 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
 
     public Task<Stream> OpenReadAsync()
     {
-        return Task.FromResult(CreateStream(FileAccess.Read));
+        return Task.FromResult(CreateStream(FileMode.Open, FileAccess.Read));
     }
 
     public Task<Stream> OpenWriteAsync()
     {
-        return Task.FromResult(CreateStream(FileAccess.Write));
+        return Task.FromResult(CreateStream(FileMode.Create, FileAccess.Write));
     }
 
-    private Stream CreateStream(FileAccess fileAccess)
+    private Stream CreateStream(FileMode fileMode, FileAccess fileAccess)
     {
         var document = new UIDocument(Url);
         var path = document.FileUrl.Path!;
         var scopeCreated = SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
-        var stream = File.Open(path, FileMode.Open, fileAccess);
+        var stream = new FileStream(path, fileMode, fileAccess);
 
         return scopeCreated ?
             new SecurityScopedStream(stream, Disposable.Create(() =>
