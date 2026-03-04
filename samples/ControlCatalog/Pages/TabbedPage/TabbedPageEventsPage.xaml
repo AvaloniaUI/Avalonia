@@ -33,7 +33,7 @@
         <Separator />
 
         <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
-                   Text="SelectionChanged fires when the selected tab changes. Appearing/Disappearing and NavigatedTo/NavigatedFrom are page lifecycle events that fire on the outgoing and incoming pages." />
+                   Text="SelectionChanged fires when the selected tab changes. NavigatedTo/NavigatedFrom are page lifecycle events that fire on the outgoing and incoming pages." />
       </StackPanel>
     </ScrollViewer>
 
@@ -44,7 +44,7 @@
             BorderThickness="1"
             CornerRadius="6"
             ClipToBounds="True">
-      <!-- Pages configured in code-behind so lifecycle events are subscribed before Appearing fires. -->
+      <!-- Pages configured in code-behind so lifecycle events are subscribed before NavigatedTo fires. -->
       <TabbedPage x:Name="DemoTabs" TabPlacement="Bottom" />
     </Border>
   </DockPanel>

@@ -52,7 +52,7 @@
         </Border>
 
         <Separator />
-        <TextBlock Text="NavigationPage exposes events for push, pop, insert, remove, and modal operations. Pages also fire Appearing, Disappearing, NavigatedTo, and NavigatedFrom on each navigation. Subscribe to events before pushing to capture the initial Appearing."
+        <TextBlock Text="NavigationPage exposes events for push, pop, insert, remove, and modal operations. Pages also fire NavigatedTo and NavigatedFrom on each navigation."
                    TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
       </StackPanel>
     </ScrollViewer>

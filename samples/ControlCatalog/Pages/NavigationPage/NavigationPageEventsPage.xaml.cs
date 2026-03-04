@@ -32,8 +32,6 @@ namespace ControlCatalog.Pages
 
         private void SubscribePage(ContentPage page)
         {
-            page.Appearing    += (s, e) => AddLog($"[{page.Header}] Appearing");
-            page.Disappearing += (s, e) => AddLog($"[{page.Header}] Disappearing");
             page.NavigatedTo  += (s, e) => AddLog($"[{page.Header}] NavigatedTo");
             page.NavigatedFrom += (s, e) => AddLog($"[{page.Header}] NavigatedFrom");
             page.Navigating += args =>

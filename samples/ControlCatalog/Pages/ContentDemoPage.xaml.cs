@@ -20,7 +20,7 @@ namespace ControlCatalog.Pages
             // Features
             ("Features", "CommandBar",     "Attach a CommandBar to the top or bottom of a ContentPage. Add and remove items at runtime.",               () => new ContentPageCommandBarPage()),
             ("Features", "Safe Area",      "Understand how AutomaticallyApplySafeAreaPadding absorbs platform insets.",                                () => new ContentPageSafeAreaPage()),
-            ("Features", "Events",         "Observe all five page lifecycle events: Appearing, Disappearing, NavigatedTo, NavigatedFrom, and Navigating.", () => new ContentPageEventsPage()),
+            ("Features", "Events",         "Observe page lifecycle events: NavigatedTo, NavigatedFrom, and Navigating.", () => new ContentPageEventsPage()),
 
             // Performance
             ("Performance", "Performance Monitor", "Push ContentPages of varying weight (50 KB to 2 MB) and observe live instance count and managed heap. Pop pages and force GC to confirm memory is released.", () => new ContentPagePerformancePage()),

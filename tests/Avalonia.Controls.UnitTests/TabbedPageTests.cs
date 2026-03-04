@@ -495,36 +495,6 @@ public class TabbedPageTests
     public class LifecycleTests : ScopedTestBase
     {
         [Fact]
-        public void CommitSelection_FiresDisappearing_OnPreviousPage()
-        {
-            var tp = new TestableTabbedPage();
-            var page1 = new ContentPage { Header = "A" };
-            var page2 = new ContentPage { Header = "B" };
-            tp.CallCommitSelection(0, page1);
-
-            bool fired = false;
-            page1.Disappearing += (_, _) => fired = true;
-            tp.CallCommitSelection(1, page2);
-
-            Assert.True(fired);
-        }
-
-        [Fact]
-        public void CommitSelection_FiresAppearing_OnNewPage()
-        {
-            var tp = new TestableTabbedPage();
-            var page1 = new ContentPage { Header = "A" };
-            var page2 = new ContentPage { Header = "B" };
-            tp.CallCommitSelection(0, page1);
-
-            bool fired = false;
-            page2.Appearing += (_, _) => fired = true;
-            tp.CallCommitSelection(1, page2);
-
-            Assert.True(fired);
-        }
-
-        [Fact]
         public void CommitSelection_FiresNavigatedFrom_OnPreviousPage()
         {
             var tp = new TestableTabbedPage();
@@ -559,7 +529,7 @@ public class TabbedPageTests
         }
 
         [Fact]
-        public void CommitSelection_LifecycleOrder_DisappearingNavigatedFromNavigatedToAppearing()
+        public void CommitSelection_LifecycleOrder_NavigatedFromNavigatedTo()
         {
             var tp = new TestableTabbedPage();
             var page1 = new ContentPage { Header = "A" };
@@ -567,13 +537,11 @@ public class TabbedPageTests
             tp.CallCommitSelection(0, page1);
 
             var order = new List<string>();
-            page1.Disappearing += (_, _) => order.Add("Disappearing");
             page1.NavigatedFrom += (_, _) => order.Add("NavigatedFrom");
             page2.NavigatedTo += (_, _) => order.Add("NavigatedTo");
-            page2.Appearing += (_, _) => order.Add("Appearing");
             tp.CallCommitSelection(1, page2);
 
-            Assert.Equal(new[] { "Disappearing", "NavigatedFrom", "NavigatedTo", "Appearing" }, order);
+            Assert.Equal(new[] { "NavigatedFrom", "NavigatedTo" }, order);
         }
 
         [Fact]
@@ -584,37 +552,34 @@ public class TabbedPageTests
             tp.CallCommitSelection(0, page);
 
             var events = new List<string>();
-            page.Appearing += (_, _) => events.Add("Appearing");
-            page.Disappearing += (_, _) => events.Add("Disappearing");
+            page.NavigatedTo += (_, _) => events.Add("NavigatedTo");
+            page.NavigatedFrom += (_, _) => events.Add("NavigatedFrom");
             tp.CallCommitSelection(0, page);
 
             Assert.Empty(events);
         }
 
         [Fact]
-        public void CommitSelection_FirstPage_NoDisappearing_NavigatedToHasNullPrevious()
+        public void CommitSelection_FirstPage_NavigatedToHasNullPrevious()
         {
-            // On first selection there is no previous page, so only NavigatedTo+Appearing
-            // should fire (with PreviousPage == null) and nothing on a nonexistent previous.
             var tp = new TestableTabbedPage();
             var page = new ContentPage { Header = "A" };
 
             NavigatedToEventArgs? navigatedToArgs = null;
             var events = new List<string>();
             page.NavigatedTo  += (_, e) => { navigatedToArgs = e; events.Add("NavigatedTo"); };
-            page.Appearing    += (_, _) => events.Add("Appearing");
-            page.Disappearing += (_, _) => events.Add("Disappearing");
+            page.NavigatedFrom += (_, _) => events.Add("NavigatedFrom");
 
             tp.CallCommitSelection(0, page);
 
-            Assert.Equal(new[] { "NavigatedTo", "Appearing" }, events);
+            Assert.Equal(new[] { "NavigatedTo" }, events);
             Assert.NotNull(navigatedToArgs);
             Assert.Null(navigatedToArgs!.PreviousPage);
             Assert.Equal(NavigationType.Replace, navigatedToArgs.NavigationType);
         }
 
         [Fact]
-        public void CommitSelection_ToNull_FiresDisappearingAndNavigatedFrom_WithNullDestination()
+        public void CommitSelection_ToNull_FiresNavigatedFrom_WithNullDestination()
         {
             var tp = new TestableTabbedPage();
             var page = new ContentPage { Header = "A" };
@@ -622,13 +587,11 @@ public class TabbedPageTests
 
             NavigatedFromEventArgs? navigatedFromArgs = null;
             var events = new List<string>();
-            page.Disappearing  += (_, _)  => events.Add("Disappearing");
             page.NavigatedFrom += (_, e)  => { navigatedFromArgs = e; events.Add("NavigatedFrom"); };
-            page.Appearing     += (_, _)  => events.Add("Appearing");
 
             tp.CallCommitSelection(-1, null);
 
-            Assert.Equal(new[] { "Disappearing", "NavigatedFrom" }, events);
+            Assert.Equal(new[] { "NavigatedFrom" }, events);
             Assert.NotNull(navigatedFromArgs);
             Assert.Null(navigatedFromArgs!.DestinationPage);
             Assert.Equal(NavigationType.Replace, navigatedFromArgs.NavigationType);

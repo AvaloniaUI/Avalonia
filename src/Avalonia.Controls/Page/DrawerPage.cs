@@ -673,7 +673,6 @@ namespace Avalonia.Controls
             {
                 _hasHadFirstPage = true;
                 CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Replace));
-                CurrentPage.SendAppearing();
             }
         }
 
@@ -806,10 +805,8 @@ namespace Avalonia.Controls
             if (!ReferenceEquals(previousPage, CurrentPage) && VisualRoot != null)
             {
                 _hasHadFirstPage = true;
-                previousPage?.SendDisappearing();
                 previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, NavigationType.Replace));
                 CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
-                CurrentPage?.SendAppearing();
             }
 
             UpdateContentSafeAreaPadding();
@@ -962,12 +959,25 @@ namespace Avalonia.Controls
             // the "already has a visual parent" exception when the same instance is used
             // in multiple ContentPresenters simultaneously.
             if (icon is PathIcon pathIcon)
-                return new PathIcon
+            {
+                var clone = new PathIcon
                 {
                     Data = pathIcon.Data,
                     Width = pathIcon.Width,
                     Height = pathIcon.Height,
                 };
+
+                if (pathIcon.IsSet(PathIcon.ForegroundProperty))
+                    clone.Foreground = pathIcon.Foreground;
+                if (pathIcon.IsSet(PathIcon.OpacityProperty))
+                    clone.Opacity = pathIcon.Opacity;
+                if (pathIcon.IsSet(PathIcon.RenderTransformProperty))
+                    clone.RenderTransform = pathIcon.RenderTransform;
+                if (pathIcon.IsSet(PathIcon.RenderTransformOriginProperty))
+                    clone.RenderTransformOrigin = pathIcon.RenderTransformOrigin;
+
+                return clone;
+            }
 
             // For other Control subtypes, return null to avoid a crash.
             // Users should pass non-Control icon data instead.

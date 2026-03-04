@@ -51,7 +51,7 @@ namespace ControlCatalog.Pages
                 "Swipe left/right (Top/Bottom) or up/down (Left/Right) to navigate. Toggle IsGestureEnabled.",
                 () => new TabbedPageGesturePage()),
             ("Features", "Events",
-                "SelectionChanged, Appearing, Disappearing, NavigatedTo, and NavigatedFrom events. Switch tabs to see the live event log.",
+                "SelectionChanged, NavigatedTo, and NavigatedFrom events. Switch tabs to see the live event log.",
                 () => new TabbedPageEventsPage()),
             ("Features", "Disabled Tabs",
                 "IsTabEnabled attached property: disable individual tabs so they cannot be selected.",

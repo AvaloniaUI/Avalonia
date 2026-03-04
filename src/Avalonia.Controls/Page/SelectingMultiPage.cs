@@ -61,14 +61,12 @@ namespace Avalonia.Controls
 
                 if (previousPage != null)
                 {
-                    previousPage.SendDisappearing();
                     previousPage.SendNavigatedFrom(new NavigatedFromEventArgs(newPage, NavigationType.Replace));
                 }
 
                 if (newPage != null)
                 {
                     newPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
-                    newPage.SendAppearing();
                 }
             }
         }

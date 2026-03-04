@@ -20,7 +20,7 @@ namespace ControlCatalog.Pages
                 "CompactOverlay and CompactInline layout modes: a narrow icon rail is always visible and expands on open. Adjust rail width and open pane width.",
                 () => new DrawerPageCompactPage()),
             ("Features", "Events",
-                "Opened, Closing, and Closed drawer events plus Appearing and Disappearing page lifecycle events. Enable 'Cancel next close' to prevent the drawer from closing.",
+                "Opened, Closing, and Closed drawer events plus NavigatedTo and NavigatedFrom page lifecycle events. Enable 'Cancel next close' to prevent the drawer from closing.",
                 () => new DrawerPageEventsPage()),
             ("Features", "RTL Layout", "Right-to-left layout: drawer opens from the right edge with mirrored gestures.",
                 () => new DrawerPageRtlPage()),

@@ -784,10 +784,8 @@ namespace Avalonia.Controls
 
             UpdateActivePage();
 
-            previousPage?.SendDisappearing();
             previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Push));
             page.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Push));
-            page.SendAppearing();
             Pushed?.Invoke(this, new NavigationEventArgs(page, NavigationType.Push));
         }
 
@@ -828,10 +826,8 @@ namespace Avalonia.Controls
                 old.SetInNavigationPage(false);
 
                 var newCurrentPage = CurrentPage;
-                old.SendDisappearing();
                 old.SendNavigatedFrom(new NavigatedFromEventArgs(newCurrentPage, NavigationType.Pop));
                 newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(old, NavigationType.Pop));
-                newCurrentPage?.SendAppearing();
                 Popped?.Invoke(this, new NavigationEventArgs(old, NavigationType.Pop));
             }
 
@@ -950,7 +946,6 @@ namespace Avalonia.Controls
 
                 if (currentPage != null)
                 {
-                    currentPage.SendDisappearing();
                     currentPage.SendNavigatedFrom(new NavigatedFromEventArgs(rootPage, NavigationType.PopToRoot));
                 }
 
@@ -988,7 +983,6 @@ namespace Avalonia.Controls
                 if (newCurrentPage != null)
                 {
                     newCurrentPage.SendNavigatedTo(new NavigatedToEventArgs(currentPage, NavigationType.PopToRoot));
-                    newCurrentPage.SendAppearing();
                     PoppedToRoot?.Invoke(this, new NavigationEventArgs(newCurrentPage, NavigationType.PopToRoot));
                 }
             }
@@ -1041,7 +1035,6 @@ namespace Avalonia.Controls
                     _pageSet.Remove(popped);
                     if (!isIncc && popped is ILogical poppedLogical)
                         LogicalChildren.Remove(poppedLogical);
-                    popped.SendDisappearing();
                     popped.Navigation = null;
                     popped.SetInNavigationPage(false);
                     popped.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Pop));
@@ -1071,7 +1064,6 @@ namespace Avalonia.Controls
                 if (newCurrentPage != null)
                 {
                     newCurrentPage.SendNavigatedTo(new NavigatedToEventArgs(currentPage, NavigationType.Pop));
-                    newCurrentPage.SendAppearing();
                 }
             }
             finally
@@ -1105,7 +1097,6 @@ namespace Avalonia.Controls
                 var previousModal = _modalStack.Count > 0 ? (Page?)_modalStack.Peek() : null;
 
                 var coveredPage = previousModal ?? CurrentPage;
-                coveredPage?.SendDisappearing();
                 coveredPage?.SendNavigatedFrom(new NavigatedFromEventArgs(coveredPage, NavigationType.Push));
 
                 _modalStack.Push(page);
@@ -1151,7 +1142,6 @@ namespace Avalonia.Controls
                 SetCurrentValue(IsModalVisibleProperty, true);
 
                 page.SendNavigatedTo(new NavigatedToEventArgs(coveredPage, NavigationType.Push));
-                page.SendAppearing();
                 ModalPushed?.Invoke(this, new ModalPushedEventArgs(page));
             }
             finally
@@ -1185,7 +1175,6 @@ namespace Avalonia.Controls
             try
             {
                 var modal = _modalStack.Pop();
-                modal.SendDisappearing();
 
                 var revealedPageForNav = _modalStack.Count > 0 ? (Page?)_modalStack.Peek() : CurrentPage;
                 modal.SendNavigatedFrom(new NavigatedFromEventArgs(revealedPageForNav, NavigationType.Pop));
@@ -1254,7 +1243,6 @@ namespace Avalonia.Controls
 
                 var revealedPage = _modalStack.Count > 0 ? (Page?)_modalStack.Peek() : CurrentPage;
                 revealedPage?.SendNavigatedTo(new NavigatedToEventArgs(modal, NavigationType.Pop));
-                revealedPage?.SendAppearing();
 
                 ModalPopped?.Invoke(this, new ModalPoppedEventArgs(modal));
                 return modal;
@@ -1307,7 +1295,6 @@ namespace Avalonia.Controls
                 while (_modalStack.Count > 0)
                 {
                     var modal = _modalStack.Pop();
-                    modal.SendDisappearing();
                     var nextPage = _modalStack.Count > 0 ? (Page?)_modalStack.Peek() : CurrentPage;
                     modal.SendNavigatedFrom(new NavigatedFromEventArgs(nextPage, NavigationType.Pop));
                     modal.Navigation = null;
@@ -1317,7 +1304,6 @@ namespace Avalonia.Controls
 
                 var newCurrentPage = CurrentPage;
                 newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Pop));
-                newCurrentPage?.SendAppearing();
             }
             finally
             {
@@ -1390,7 +1376,6 @@ namespace Avalonia.Controls
 
             _pageSet.Remove(page);
 
-            page.SendDisappearing();
             page.SendNavigatedFrom(new NavigatedFromEventArgs(null, NavigationType.Remove));
 
             page.Navigation = null;
@@ -1720,12 +1705,10 @@ namespace Avalonia.Controls
             {
                 replacedPage.Navigation = null;
                 replacedPage.SetInNavigationPage(false);
-                replacedPage.SendDisappearing();
                 replacedPage.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Replace));
             }
 
             page.SendNavigatedTo(new NavigatedToEventArgs(replacedPage, NavigationType.Replace));
-            page.SendAppearing();
         }
 
         /// <summary>

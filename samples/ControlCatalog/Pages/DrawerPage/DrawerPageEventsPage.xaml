@@ -38,7 +38,7 @@
 
         <Separator />
 
-        <TextBlock Text="Opened/Closing/Closed track the drawer open state. Closing supports cancellation. Appearing/Disappearing and NavigatedTo/NavigatedFrom are page lifecycle events that fire when a page becomes or stops being the active page during navigation."
+        <TextBlock Text="Opened/Closing/Closed track the drawer open state. Closing supports cancellation. NavigatedTo/NavigatedFrom are page lifecycle events that fire when a page becomes or stops being the active page during navigation."
                    TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
       </StackPanel>
     </ScrollViewer>
@@ -89,7 +89,7 @@
             </Button>
           </StackPanel>
         </DrawerPage.Drawer>
-        <!-- Detail set in code-behind so lifecycle events are subscribed before the initial Appearing fires. -->
+        <!-- Detail set in code-behind so lifecycle events are subscribed before the initial NavigatedTo fires. -->
       </DrawerPage>
     </Border>
   </DockPanel>

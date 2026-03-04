@@ -140,16 +140,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Occurs when the page becomes visible.
-        /// </summary>
-        public event EventHandler? Appearing;
-
-        /// <summary>
-        /// Occurs when the page is no longer visible.
-        /// </summary>
-        public event EventHandler? Disappearing;
-
-        /// <summary>
         /// Occurs when the page has been navigated to.
         /// </summary>
         public event EventHandler<NavigatedToEventArgs>? NavigatedTo;
@@ -163,16 +153,6 @@ namespace Avalonia.Controls
         /// Occurs when the page has been navigated from.
         /// </summary>
         public event EventHandler<NavigatedFromEventArgs>? NavigatedFrom;
-
-        /// <summary>
-        /// Called when the page becomes visible.
-        /// </summary>
-        protected virtual void OnAppearing() => Appearing?.Invoke(this, EventArgs.Empty);
-
-        /// <summary>
-        /// Called when the page is no longer visible.
-        /// </summary>
-        protected virtual void OnDisappearing() => Disappearing?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
         /// Called when the page has been navigated to.
@@ -194,10 +174,6 @@ namespace Avalonia.Controls
         /// </summary>
         /// <returns><see langword="true"/> if the back press was handled.</returns>
         protected virtual bool OnSystemBackButtonPressed() => false;
-
-        internal void SendAppearing() => OnAppearing();
-
-        internal void SendDisappearing() => OnDisappearing();
 
         internal void SendNavigatedTo(NavigatedToEventArgs args) => OnNavigatedTo(args);
 

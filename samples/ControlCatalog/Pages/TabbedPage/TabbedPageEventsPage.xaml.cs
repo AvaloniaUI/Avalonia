@@ -35,8 +35,6 @@ namespace ControlCatalog.Pages
                     }
                 };
 
-                page.Appearing += (_, _) => AppendLog($"Appearing: {name}");
-                page.Disappearing += (_, _) => AppendLog($"Disappearing: {name}");
                 page.NavigatedTo += (_, args) => AppendLog($"NavigatedTo: {name} (from {(args.PreviousPage as ContentPage)?.Header ?? "—"})");
                 page.NavigatedFrom += (_, args) => AppendLog($"NavigatedFrom: {name} (to {(args.DestinationPage as ContentPage)?.Header ?? "—"})");
 

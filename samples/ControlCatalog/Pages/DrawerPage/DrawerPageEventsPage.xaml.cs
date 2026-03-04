@@ -24,8 +24,6 @@ namespace ControlCatalog.Pages
             foreach (var (name, page) in _sectionPages)
             {
                 var label = name;
-                page.Appearing    += (_, _) => Log($"{label}: Appearing");
-                page.Disappearing += (_, _) => Log($"{label}: Disappearing");
                 page.NavigatedTo   += (_, _) => Log($"{label}: NavigatedTo");
                 page.NavigatedFrom += (_, _) => Log($"{label}: NavigatedFrom");
             }
@@ -37,7 +35,7 @@ namespace ControlCatalog.Pages
             DemoDrawer.Opened  += OnDrawerOpened;
             DemoDrawer.Closing += OnClosing;
             DemoDrawer.Closed  += OnDrawerClosed;
-            // Set Content here so the initial Appearing/NavigatedTo events fire
+            // Set Content here so the initial NavigatedTo events fire
             // (VisualRoot is null in the constructor, which suppresses lifecycle events).
             DemoDrawer.Content = _sectionPages["Home"];
         }

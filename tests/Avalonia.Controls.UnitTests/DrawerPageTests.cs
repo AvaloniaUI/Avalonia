@@ -568,12 +568,10 @@ public class DrawerPageTests
             var page = new ContentPage { Header = "Content" };
             var dp = new DrawerPage();
             var root = new TestRoot { Child = dp };
-            dp.Content = page; // fires initial NavigatedTo+Appearing
+            dp.Content = page; // fires initial NavigatedTo
 
             var events = new List<string>();
             page.NavigatedTo   += (_, _) => events.Add("NavigatedTo");
-            page.Appearing     += (_, _) => events.Add("Appearing");
-            page.Disappearing  += (_, _) => events.Add("Disappearing");
             page.NavigatedFrom += (_, _) => events.Add("NavigatedFrom");
 
             dp.IsOpen = true;
@@ -584,20 +582,18 @@ public class DrawerPageTests
         }
 
         [Fact]
-        public void Content_SetInitially_FiresAppearingAndNavigatedTo()
+        public void Content_SetInitially_FiresNavigatedTo()
         {
             var page = new ContentPage { Header = "Home" };
             var events = new List<string>();
             page.NavigatedTo  += (_, _) => events.Add("NavigatedTo");
-            page.Appearing    += (_, _) => events.Add("Appearing");
 
             var dp = new DrawerPage();
             var root = new TestRoot { Child = dp };
             dp.Content = page;
 
-            Assert.Equal(2, events.Count);
+            Assert.Single(events);
             Assert.Equal("NavigatedTo",  events[0]);
-            Assert.Equal("Appearing",    events[1]);
         }
 
         [Fact]
@@ -618,18 +614,14 @@ public class DrawerPageTests
             dp.Content = first;
 
             var order = new List<string>();
-            first.Disappearing += (_, _) => order.Add("Disappearing");
             first.NavigatedFrom += (_, _) => order.Add("NavigatedFrom");
             second.NavigatedTo += (_, _) => order.Add("NavigatedTo");
-            second.Appearing += (_, _) => order.Add("Appearing");
 
             dp.Content = second;
 
-            Assert.Equal(4, order.Count);
-            Assert.Equal("Disappearing", order[0]);
-            Assert.Equal("NavigatedFrom", order[1]);
-            Assert.Equal("NavigatedTo", order[2]);
-            Assert.Equal("Appearing", order[3]);
+            Assert.Equal(2, order.Count);
+            Assert.Equal("NavigatedFrom", order[0]);
+            Assert.Equal("NavigatedTo", order[1]);
         }
 
         [Fact]
@@ -683,20 +675,16 @@ public class DrawerPageTests
             dp.Content = home;
 
             var events = new List<string>();
-            home.Disappearing    += (_, _) => events.Add("Home: Disappearing");
             home.NavigatedFrom   += (_, _) => events.Add("Home: NavigatedFrom");
             profile.NavigatedTo  += (_, _) => events.Add("Profile: NavigatedTo");
-            profile.Appearing    += (_, _) => events.Add("Profile: Appearing");
 
             dp.IsOpen = true;
             Assert.Empty(events);
 
             dp.Content = profile;
-            Assert.Equal(4, events.Count);
-            Assert.Equal("Home: Disappearing",  events[0]);
-            Assert.Equal("Home: NavigatedFrom", events[1]);
-            Assert.Equal("Profile: NavigatedTo", events[2]);
-            Assert.Equal("Profile: Appearing",  events[3]);
+            Assert.Equal(2, events.Count);
+            Assert.Equal("Home: NavigatedFrom", events[0]);
+            Assert.Equal("Profile: NavigatedTo", events[1]);
         }
 
         // --- Initial-attach lifecycle (the _hasHadFirstPage / OnLoaded fix) ---
@@ -708,7 +696,6 @@ public class DrawerPageTests
             var page = new ContentPage { Header = "Home" };
             var events = new List<string>();
             page.NavigatedTo += (_, _) => events.Add("NavigatedTo");
-            page.Appearing   += (_, _) => events.Add("Appearing");
 
             var _ = new DrawerPage { Content = page };
 
@@ -723,7 +710,6 @@ public class DrawerPageTests
             var page = new ContentPage { Header = "Home" };
             var events = new List<string>();
             page.NavigatedTo += (_, _) => events.Add("NavigatedTo");
-            page.Appearing   += (_, _) => events.Add("Appearing");
 
             var dp = new DrawerPage { Content = page };
             Assert.Empty(events); // suppressed before visual tree
@@ -731,9 +717,8 @@ public class DrawerPageTests
             var root = new TestRoot { Child = dp };
             Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken); // pump the posted Loaded dispatch
 
-            Assert.Equal(2, events.Count);
+            Assert.Single(events);
             Assert.Equal("NavigatedTo", events[0]);
-            Assert.Equal("Appearing",   events[1]);
         }
 
         [Fact]
@@ -744,21 +729,17 @@ public class DrawerPageTests
 
             var dp = new DrawerPage { Content = first };
             var root = new TestRoot { Child = dp };
-            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken); // fire the deferred NavigatedTo+Appearing on first
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken); // fire the deferred NavigatedTo on first
 
             var events = new List<string>();
-            first.Disappearing  += (_, _) => events.Add("First: Disappearing");
             first.NavigatedFrom += (_, _) => events.Add("First: NavigatedFrom");
             second.NavigatedTo  += (_, _) => events.Add("Second: NavigatedTo");
-            second.Appearing    += (_, _) => events.Add("Second: Appearing");
 
             dp.Content = second;
 
-            Assert.Equal(4, events.Count);
-            Assert.Equal("First: Disappearing",  events[0]);
-            Assert.Equal("First: NavigatedFrom", events[1]);
-            Assert.Equal("Second: NavigatedTo",  events[2]);
-            Assert.Equal("Second: Appearing",    events[3]);
+            Assert.Equal(2, events.Count);
+            Assert.Equal("First: NavigatedFrom", events[0]);
+            Assert.Equal("Second: NavigatedTo",  events[1]);
         }
 
         [Fact]
@@ -768,12 +749,10 @@ public class DrawerPageTests
             var page = new ContentPage { Header = "Home" };
             var dp = new DrawerPage();
             var root = new TestRoot { Child = dp };
-            dp.Content = page; // initial assignment fires NavigatedTo+Appearing
+            dp.Content = page; // initial assignment fires NavigatedTo
 
             var events = new List<string>();
             page.NavigatedTo   += (_, _) => events.Add("NavigatedTo");
-            page.Appearing     += (_, _) => events.Add("Appearing");
-            page.Disappearing  += (_, _) => events.Add("Disappearing");
             page.NavigatedFrom += (_, _) => events.Add("NavigatedFrom");
 
             dp.Content = page; // same instance — must not fire anything

@@ -48,7 +48,7 @@
 
         <TextBlock Text="About" FontSize="13" FontWeight="SemiBold" />
         <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
-                   Text="ContentPage exposes five lifecycle events directly on the page. Appearing and Disappearing fire when the page enters or leaves the screen. NavigatedTo fires after the page arrives, providing the previous page and navigation type. NavigatedFrom fires after departure. Navigating fires before leaving and can cancel the navigation by setting Cancel=true." />
+                   Text="ContentPage exposes lifecycle events directly on the page. NavigatedTo fires after the page arrives, providing the previous page and navigation type. NavigatedFrom fires after departure. Navigating fires before leaving and can cancel the navigation by setting Cancel=true." />
 
       </StackPanel>
     </ScrollViewer>

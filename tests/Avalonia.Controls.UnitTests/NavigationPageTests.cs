@@ -269,7 +269,7 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public async Task PopAsync_InvokesAppearing_AndNavigatedTo_OnRevealedPage()
+        public async Task PopAsync_InvokesNavigatedTo_OnRevealedPage()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
@@ -277,14 +277,11 @@ public class NavigationPageTests
             var top = new ContentPage();
             await nav.PushAsync(top);
 
-            bool appearing = false;
             bool navigatedTo = false;
-            root.Appearing   += (_, _) => appearing   = true;
             root.NavigatedTo += (_, _) => navigatedTo = true;
 
             await nav.PopAsync();
 
-            Assert.True(appearing);
             Assert.True(navigatedTo);
         }
     }
@@ -1026,7 +1023,7 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public async Task PopAllModals_FiresDisappearing_OnAllModals()
+        public async Task PopAllModals_FiresNavigatedFrom_OnAllModals()
         {
             var nav = new NavigationPage();
             await nav.PushAsync(new ContentPage());
@@ -1035,18 +1032,18 @@ public class NavigationPageTests
             await nav.PushModalAsync(m1);
             await nav.PushModalAsync(m2);
 
-            var disappeared = new List<string>();
-            m1.Disappearing += (_, _) => disappeared.Add("M1");
-            m2.Disappearing += (_, _) => disappeared.Add("M2");
+            var navigatedFrom = new List<string>();
+            m1.NavigatedFrom += (_, _) => navigatedFrom.Add("M1");
+            m2.NavigatedFrom += (_, _) => navigatedFrom.Add("M2");
 
             await nav.PopAllModalsAsync();
 
-            // LIFO order: M2 was pushed last, so it disappears first.
-            Assert.Equal(new[] { "M2", "M1" }, disappeared);
+            // LIFO order: M2 was pushed last, so it navigates from first.
+            Assert.Equal(new[] { "M2", "M1" }, navigatedFrom);
         }
 
         [Fact]
-        public async Task PopAllModals_FiresAppearingAndNavigatedTo_OnUnderlyingPage()
+        public async Task PopAllModals_FiresNavigatedTo_OnUnderlyingPage()
         {
             var nav = new NavigationPage();
             var root = new ContentPage { Header = "Root" };
@@ -1054,14 +1051,11 @@ public class NavigationPageTests
             await nav.PushModalAsync(new ContentPage { Header = "M1" });
             await nav.PushModalAsync(new ContentPage { Header = "M2" });
 
-            bool appeared = false;
             bool navigatedTo = false;
-            root.Appearing    += (_, _) => appeared    = true;
             root.NavigatedTo  += (_, _) => navigatedTo = true;
 
             await nav.PopAllModalsAsync();
 
-            Assert.True(appeared);
             Assert.True(navigatedTo);
         }
     }
@@ -1112,19 +1106,15 @@ public class NavigationPageTests
 
             var replacement = new ContentPage { Header = "Replacement" };
             var order = new List<string>();
-            original.Disappearing   += (_, _) => order.Add("Original: Disappearing");
             original.NavigatedFrom  += (_, _) => order.Add("Original: NavigatedFrom");
             replacement.NavigatedTo += (_, _) => order.Add("Replacement: NavigatedTo");
-            replacement.Appearing   += (_, _) => order.Add("Replacement: Appearing");
 
             await nav.ReplaceAsync(replacement);
 
             Assert.Equal(new[]
             {
-                "Original: Disappearing",
                 "Original: NavigatedFrom",
                 "Replacement: NavigatedTo",
-                "Replacement: Appearing",
             }, order);
         }
 
