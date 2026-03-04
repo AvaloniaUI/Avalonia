@@ -11,8 +11,6 @@ namespace Avalonia.Controls.Primitives
     /// Represents a surface for showing adorners.
     /// Adorners are always on top of the adorned element and are positioned to stay relative to the adorned element.
     /// </summary>
-    /// <remarks>
-    /// </remarks>
     public class AdornerLayer : Canvas
     {
         /// <summary>

@@ -6,9 +6,10 @@ namespace Avalonia.Controls.Primitives
     public sealed class VisualLayerManager : Decorator
     {
         private const int AdornerZIndex = int.MaxValue - 100;
-        private const int LightDismissOverlayZIndex = int.MaxValue - 98;
-        private const int OverlayZIndex = int.MaxValue - 97;
-        private const int TextSelectorLayerZIndex = int.MaxValue - 96;
+        private const int OverlayZIndex = int.MaxValue - 98;
+        private const int LightDismissOverlayZIndex = int.MaxValue - 97;
+        private const int PopupOverlayZIndex = int.MaxValue - 96;
+        private const int TextSelectorLayerZIndex = int.MaxValue - 95;
 
         private ILogicalRoot? _logicalRoot;
         private readonly List<Control> _layers = new();
@@ -26,6 +27,19 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        internal PopupOverlayLayer? PopupOverlayLayer
+        {
+            get
+            {
+                if (IsPopup)
+                    return null;
+                var rv = FindLayer<PopupOverlayLayer>();
+                if (rv == null)
+                    AddLayer(rv = new PopupOverlayLayer(), PopupOverlayZIndex);
+                return rv;
+            }
+        }
+        
         internal OverlayLayer? OverlayLayer
         {
             get
