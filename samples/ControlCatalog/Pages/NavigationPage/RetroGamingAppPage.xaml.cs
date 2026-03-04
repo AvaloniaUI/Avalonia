@@ -160,13 +160,13 @@ public partial class RetroGamingAppPage : UserControl
         var tp = new TabbedPage
         {
             Background         = new SolidColorBrush(BgColor),
-            BarBackground      = new SolidColorBrush(SurfaceColor),
-            SelectedTabBrush   = new SolidColorBrush(Color.Parse("#ad2bee")),
-            UnselectedTabBrush = new SolidColorBrush(MutedColor),
             TabPlacement       = TabPlacement.Bottom,
             PageTransition     = new PageSlide(TimeSpan.FromMilliseconds(250)),
         };
-        tp.Resources.Add("TabItemHeaderFontSize", 12.0);
+        tp.Resources["TabItemHeaderFontSize"] = 12.0;
+        tp.Resources["TabbedPageTabStripBackground"] = new SolidColorBrush(SurfaceColor);
+        tp.Resources["TabbedPageTabItemHeaderForegroundSelected"] = new SolidColorBrush(Color.Parse("#ad2bee"));
+        tp.Resources["TabbedPageTabItemHeaderForegroundUnselected"] = new SolidColorBrush(MutedColor);
 
         var homeView = new RetroGamingHomeView();
         homeView.GameSelected = PushDetailPage;

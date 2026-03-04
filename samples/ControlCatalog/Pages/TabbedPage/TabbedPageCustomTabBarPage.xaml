@@ -47,7 +47,7 @@
         <StackPanel Spacing="6">
           <TextBlock Text="1. Hide underline (PipeThickness=0)"
                      TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
-          <TextBlock Text="2. Style TabControl Border#PART_TabStrip with CornerRadius, system Border, and center alignment for the floating pill"
+          <TextBlock Text="2. Style TabControl with CornerRadius, system Border, and center alignment for the floating pill"
                      TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
           <TextBlock Text="3. Style TabItem with large CornerRadius for the ellipse selection shape"
                      TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
@@ -64,8 +64,7 @@
             BorderThickness="1" CornerRadius="8" ClipToBounds="True"
             Margin="16">
       <TabbedPage x:Name="TabbedPageControl"
-                  TabPlacement="Bottom"
-                  BarBackground="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+                  TabPlacement="Bottom">
         <TabbedPage.Resources>
           <ResourceDictionary>
             <!-- Hide the underline pipe indicator -->
@@ -104,7 +103,8 @@
 
         <TabbedPage.Styles>
           <!-- Tab strip: center, cap width -->
-          <Style Selector="TabControl /template/ Border#PART_TabStrip">
+          <Style Selector="TabControl">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="MaxWidth"            Value="480" />
           </Style>

@@ -1,6 +1,19 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.TabbedPageCustomizationPage">
+
+  <UserControl.Styles>
+    <Style Selector="TabbedPage TabControl">
+      <Setter Property="Background" Value="{DynamicResource CustomBarBackgroundBrush}" />
+    </Style>
+    <Style Selector="TabbedPage TabItem">
+      <Setter Property="Foreground" Value="{DynamicResource CustomUnselectedTabForegroundBrush}" />
+    </Style>
+    <Style Selector="TabbedPage TabItem:selected">
+      <Setter Property="Foreground" Value="{DynamicResource CustomSelectedTabForegroundBrush}" />
+    </Style>
+  </UserControl.Styles>
+
   <DockPanel>
     <ScrollViewer DockPanel.Dock="Right" Width="260">
       <StackPanel Margin="12" Spacing="8">

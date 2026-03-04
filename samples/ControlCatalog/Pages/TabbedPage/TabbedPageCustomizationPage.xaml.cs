@@ -1,6 +1,7 @@
 using System.Collections;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 
 namespace ControlCatalog.Pages
@@ -42,6 +43,14 @@ namespace ControlCatalog.Pages
             InitializeComponent();
         }
 
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+            UpdateBarBackgroundBrush();
+            UpdateSelectedTabForegroundBrush();
+            UpdateUnselectedTabForegroundBrush();
+        }
+
         private void OnPlacementChanged(object? sender, SelectionChangedEventArgs e)
         {
             if (DemoTabs == null) return;
@@ -56,20 +65,39 @@ namespace ControlCatalog.Pages
 
         private void OnBarBgChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (DemoTabs != null)
-                DemoTabs.BarBackground = BarBackgrounds[BarBgCombo.SelectedIndex];
+            if (IsInitialized)
+                UpdateBarBackgroundBrush();
+        }
+
+        private void UpdateBarBackgroundBrush()
+        {
+            Resources["CustomBarBackgroundBrush"] = BarBackgrounds[BarBgCombo.SelectedIndex];
         }
 
         private void OnSelectedColorChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (DemoTabs != null)
-                DemoTabs.SelectedTabBrush = SelectedColors[SelectedColorCombo.SelectedIndex];
+            if (IsInitialized)
+                UpdateSelectedTabForegroundBrush();
+        }
+
+        private void UpdateSelectedTabForegroundBrush()
+        {
+            Resources["CustomSelectedTabForegroundBrush"] =
+                SelectedColors[SelectedColorCombo.SelectedIndex] ??
+                this.FindResource("TabbedPageTabItemHeaderForegroundSelected");
         }
 
         private void OnUnselectedColorChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (DemoTabs != null)
-                DemoTabs.UnselectedTabBrush = UnselectedColors[UnselectedColorCombo.SelectedIndex];
+            if (IsInitialized)
+                UpdateUnselectedTabForegroundBrush();
+        }
+
+        private void UpdateUnselectedTabForegroundBrush()
+        {
+            Resources["CustomUnselectedTabForegroundBrush"] =
+                UnselectedColors[UnselectedColorCombo.SelectedIndex] ??
+                this.FindResource("TabbedPageTabItemHeaderForegroundUnselected");
         }
 
         private void OnKeyboardChanged(object? sender, RoutedEventArgs e)

@@ -98,7 +98,7 @@
           </TabbedPage.Resources>
 
           <TabbedPage.Styles>
-            <Style Selector="TabControl /template/ Border#PART_TabStrip">
+            <Style Selector="TabControl">
               <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
             </Style>
 

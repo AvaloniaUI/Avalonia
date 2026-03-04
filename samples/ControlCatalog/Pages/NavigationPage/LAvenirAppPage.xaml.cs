@@ -64,15 +64,15 @@ public partial class LAvenirAppPage : UserControl
         var tp = new TabbedPage
         {
             Background        = new SolidColorBrush(BgLight),
-            BarBackground     = new SolidColorBrush(Colors.White),
-            SelectedTabBrush  = new SolidColorBrush(Primary),
-            UnselectedTabBrush = new SolidColorBrush(TextMuted),
             TabPlacement      = TabPlacement.Bottom,
             PageTransition    = new PageSlide(TimeSpan.FromMilliseconds(200)),
         };
         tp.Resources["TabItemHeaderFontSize"]           = 12.0;
+        tp.Resources["TabbedPageTabStripBackground"] = Brushes.White;
         tp.Resources["TabbedPageTabStripBorderThickness"] = new Thickness(0, 1, 0, 0);
         tp.Resources["TabbedPageTabStripBorderBrush"]   = new SolidColorBrush(BorderLight);
+        tp.Resources["TabbedPageTabItemHeaderForegroundSelected"] = new SolidColorBrush(Primary);
+        tp.Resources["TabbedPageTabItemHeaderForegroundUnselected"] = new SolidColorBrush(TextMuted);
 
         tp.IndicatorTemplate = new FuncDataTemplate<object>((_, _) =>
             new Ellipse

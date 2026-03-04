@@ -31,30 +31,6 @@ namespace Avalonia.Controls
         };
 
         /// <summary>
-        /// Defines the <see cref="BarBackground"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IBrush?> BarBackgroundProperty =
-            AvaloniaProperty.Register<TabbedPage, IBrush?>(nameof(BarBackground));
-
-        /// <summary>
-        /// Defines the <see cref="BarForeground"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IBrush?> BarForegroundProperty =
-            AvaloniaProperty.Register<TabbedPage, IBrush?>(nameof(BarForeground));
-
-        /// <summary>
-        /// Defines the <see cref="SelectedTabBrush"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IBrush?> SelectedTabBrushProperty =
-            AvaloniaProperty.Register<TabbedPage, IBrush?>(nameof(SelectedTabBrush));
-
-        /// <summary>
-        /// Defines the <see cref="UnselectedTabBrush"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IBrush?> UnselectedTabBrushProperty =
-            AvaloniaProperty.Register<TabbedPage, IBrush?>(nameof(UnselectedTabBrush));
-
-        /// <summary>
         /// Defines the <see cref="TabPlacement"/> property.
         /// </summary>
         public static readonly StyledProperty<TabPlacement> TabPlacementProperty =
@@ -115,42 +91,6 @@ namespace Avalonia.Controls
             Focusable = true;
             GestureRecognizers.Add(_swipeRecognizer);
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
-        }
-
-        /// <summary>
-        /// Gets or sets the background brush of the tab bar.
-        /// </summary>
-        public IBrush? BarBackground
-        {
-            get => GetValue(BarBackgroundProperty);
-            set => SetValue(BarBackgroundProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the foreground brush of the tab bar.
-        /// </summary>
-        public IBrush? BarForeground
-        {
-            get => GetValue(BarForegroundProperty);
-            set => SetValue(BarForegroundProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the brush for the selected tab.
-        /// </summary>
-        public IBrush? SelectedTabBrush
-        {
-            get => GetValue(SelectedTabBrushProperty);
-            set => SetValue(SelectedTabBrushProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the brush for unselected tabs.
-        /// </summary>
-        public IBrush? UnselectedTabBrush
-        {
-            get => GetValue(UnselectedTabBrushProperty);
-            set => SetValue(UnselectedTabBrushProperty, value);
         }
 
         /// <summary>
@@ -241,8 +181,6 @@ namespace Avalonia.Controls
                     _tabControl.PageTransition = PageTransition;
 
                 ApplyTabPlacement();
-                ApplyBarBackground();
-                ApplyForegroundResources();
                 ApplyIndicatorTemplate();
                 UpdateActivePage();
 
@@ -256,12 +194,6 @@ namespace Avalonia.Controls
 
             if (change.Property == TabPlacementProperty)
                 ApplyTabPlacement();
-            else if (change.Property == BarBackgroundProperty)
-                ApplyBarBackground();
-            else if (change.Property == BarForegroundProperty ||
-                     change.Property == SelectedTabBrushProperty ||
-                     change.Property == UnselectedTabBrushProperty)
-                ApplyForegroundResources();
             else if (change.Property == PageTransitionProperty && _tabControl != null)
                 _tabControl.PageTransition = change.GetNewValue<IPageTransition?>();
             else if (change.Property == IndicatorTemplateProperty)
@@ -292,41 +224,6 @@ namespace Avalonia.Controls
                 TabPlacement.Right => Dock.Right,
                 _ => Dock.Top
             };
-        }
-
-        private void ApplyBarBackground()
-        {
-            if (_tabControl == null)
-                return;
-
-            _tabControl.Background = BarBackground;
-        }
-
-        private void ApplyForegroundResources()
-        {
-            if (_tabControl == null)
-                return;
-
-            UpdateAllTabItemForegrounds();
-        }
-
-        private void UpdateAllTabItemForegrounds()
-        {
-            if (_tabControl == null)
-                return;
-
-            object? selectedItem = _tabControl.SelectedItem;
-            foreach (var kvp in _containerPageMap)
-                UpdateTabItemForeground(kvp.Key, ReferenceEquals(kvp.Value, selectedItem));
-        }
-
-        private void UpdateTabItemForeground(TabItem tabItem, bool isSelected)
-        {
-            var brush = (isSelected ? SelectedTabBrush : UnselectedTabBrush) ?? BarForeground;
-            if (brush != null)
-                tabItem.Foreground = brush;
-            else
-                tabItem.ClearValue(TemplatedControl.ForegroundProperty);
         }
 
         private void ApplyIndicatorTemplate()
@@ -367,7 +264,6 @@ namespace Avalonia.Controls
 
             CommitSelection(newIndex, newPage);
             UpdateContentSafeAreaPadding();
-            UpdateAllTabItemForegrounds();
         }
 
         private void OnContainerPrepared(object? sender, ContainerPreparedEventArgs e)
@@ -397,9 +293,6 @@ namespace Avalonia.Controls
             _containerPageMap[tabItem] = page;
             _pageContainerMap[page] = tabItem;
             page.PropertyChanged += OnPagePropertyChanged;
-
-            bool isSelected = _tabControl != null && ReferenceEquals(_tabControl.SelectedItem, page);
-            UpdateTabItemForeground(tabItem, isSelected);
         }
 
         private void OnContainerClearing(object? sender, ContainerClearingEventArgs e)

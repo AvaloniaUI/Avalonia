@@ -82,13 +82,13 @@ public partial class PulseAppPage : UserControl
         var tp = new TabbedPage
         {
             Background         = new SolidColorBrush(BgDashboard),
-            BarBackground      = new SolidColorBrush(BgDashboard),
-            SelectedTabBrush   = new SolidColorBrush(Primary),
-            UnselectedTabBrush = new SolidColorBrush(TextDimmed),
             TabPlacement       = TabPlacement.Bottom,
             PageTransition     = new PageSlide(TimeSpan.FromMilliseconds(200)),
         };
-        tp.Resources.Add("TabItemHeaderFontSize", 12.0);
+        tp.Resources["TabItemHeaderFontSize"] = 12.0;
+        tp.Resources["TabbedPageTabStripBackground"] = new SolidColorBrush(BgDashboard);
+        tp.Resources["TabbedPageTabItemHeaderForegroundSelected"] = new SolidColorBrush(Primary);
+        tp.Resources["TabbedPageTabItemHeaderForegroundUnselected"] = new SolidColorBrush(TextDimmed);
         NavigationPage.SetHasNavigationBar(tp, false);
 
         var homeView = new PulseHomeView();
