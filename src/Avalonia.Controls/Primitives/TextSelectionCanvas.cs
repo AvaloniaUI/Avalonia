@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -11,6 +12,7 @@ namespace Avalonia.Controls.Primitives
     internal class TextSelectionHandleCanvas : Canvas
     {
         private const int ContextMenuPadding = 16;
+        private static bool s_isInTouchMode;
 
         private readonly TextSelectionHandle _caretHandle;
         private readonly TextSelectionHandle _startHandle;
@@ -18,7 +20,8 @@ namespace Avalonia.Controls.Primitives
         private TextPresenter? _presenter;
         private TextBox? _textBox;
         private bool _showHandle;
-        private bool _canShowContextMenu = true;
+        private IDisposable? _showDisposable;
+        private PresenterVisualListener _layoutListener;
 
         internal bool ShowHandles
         {
@@ -66,30 +69,46 @@ namespace Avalonia.Controls.Primitives
             _caretHandle.SetTopLeft(default);
             _endHandle.SetTopLeft(default);
 
-            _startHandle.PointerReleased += Handle_PointerReleased;
-            _caretHandle.PointerReleased += Handle_PointerReleased;
-            _endHandle.PointerReleased += Handle_PointerReleased;
-
-            _startHandle.Holding += Caret_Holding;
-            _caretHandle.Holding += Caret_Holding;
-            _endHandle.Holding += Caret_Holding;
+            _startHandle.ContextCanceled += Caret_ContextCanceled;
+            _caretHandle.ContextCanceled += Caret_ContextCanceled;
+            _endHandle.ContextCanceled += Caret_ContextCanceled;
+            _startHandle.ContextRequested += Caret_ContextRequested;
+            _caretHandle.ContextRequested += Caret_ContextRequested;
+            _endHandle.ContextRequested += Caret_ContextRequested;
 
             IsVisible = ShowHandles;
 
             ClipToBounds = false;
+
+            _layoutListener = new PresenterVisualListener();
+            _layoutListener.Invalidated += LayoutListener_Invalidated;
         }
 
-        private void Handle_PointerReleased(object? sender, PointerReleasedEventArgs e)
+        private void LayoutListener_Invalidated(object? sender, EventArgs e)
         {
-            ShowContextMenu();
+            if (ShowHandles)
+                MoveHandlesToSelection();
+        }
+
+        private void Caret_ContextCanceled(object? sender, RoutedEventArgs e)
+        {
+            CloseFlyout();
+        }
+
+        private void Caret_ContextRequested(object? sender, ContextRequestedEventArgs e)
+        {
+            ShowFlyout(e);
+            e.Handled = true;
         }
 
         private void Handle_DragStarted(object? sender, VectorEventArgs e)
         {
-            if (_textBox?.ContextFlyout is { } flyout)
-            {
-                flyout.Hide();
-            }
+            CloseFlyout();
+        }
+
+        private void CloseFlyout()
+        {
+            _presenter?.RaiseEvent(new Interactivity.RoutedEventArgs(InputElement.ContextCanceledEvent));
         }
 
         private void EndHandle_DragDelta(object? sender, VectorEventArgs e)
@@ -106,41 +125,99 @@ namespace Avalonia.Controls.Primitives
 
         private void CaretHandle_DragDelta(object? sender, VectorEventArgs e)
         {
-            _canShowContextMenu = false;
             if (_presenter != null && _textBox != null)
             {
                 var point = ToPresenter(_caretHandle.IndicatorPosition);
+                using var _ = BeginChange();
                 _presenter.MoveCaretToPoint(point);
-                _textBox.SelectionStart = _textBox.SelectionEnd = _presenter.CaretIndex;
-                var points = _presenter.GetCaretPoints();
+                var caretIndex = _presenter.CaretIndex;
+                _textBox.SetCurrentValue(TextBox.CaretIndexProperty, caretIndex);
+                _textBox.SetCurrentValue(TextBox.SelectionStartProperty, caretIndex);
+                _textBox.SetCurrentValue(TextBox.SelectionEndProperty, caretIndex);
+                ClampHandle(_caretHandle);
+            }
+        }
 
-                _caretHandle?.SetTopLeft(ToLayer(points.Item2));
+        public void Hide()
+        {
+            ShowHandles = false;
+        }
+
+        internal void ShowOnFocused()
+        {
+            if (s_isInTouchMode)
+            {
+                MoveHandlesToSelection();
+            }
+        }
+
+        private IDisposable? BeginChange()
+        {
+            return _presenter?.CurrentImClient?.BeginChange();
+        }
+
+        private void ClampHandle(TextSelectionHandle handle)
+        {
+            var bounds = _presenter?.GetTransformedBounds();
+
+            if (bounds.HasValue)
+            {
+                var point = _caretHandle.IndicatorPosition;
+                var rect = bounds.Value.Clip;
+                if (point.X < rect.X)
+                    point = point.WithX(rect.X);
+                if (point.X > rect.Right)
+                    point = point.WithX(rect.Right);
+                if (point.Y < rect.Y)
+                    point = point.WithY(rect.Y);
+                if (point.Y > rect.Bottom)
+                    point = point.WithY(rect.Bottom);
+
+
+                handle?.SetTopLeft(point);
             }
         }
 
         private void Handle_DragCompleted(object? sender, VectorEventArgs e)
         {
             MoveHandlesToSelection();
-
-            ShowContextMenu();
         }
 
         private void EnsureVisible()
         {
-            if (_textBox is { } t && t.VisualRoot is Visual r)
+            _showDisposable?.Dispose();
+            _showDisposable = null;
+
+            if (_presenter is { } presenter && presenter.VisualRoot is InputElement root)
             {
-                var bounds = t.Bounds;
-                var topLeft = t.TranslatePoint(default, r) ?? default;
-                bounds = bounds.WithX(topLeft.X).WithY(topLeft.Y);
+                var bounds = presenter.GetTransformedBounds();
 
-                var hasSelection = _textBox.SelectionStart != _textBox.SelectionEnd;
+                if (bounds == null)
+                    return;
 
-                _startHandle.IsVisible = bounds.Contains(new Point(GetLeft(_startHandle), GetTop(_startHandle))) &&
-                                         ShowHandles && hasSelection;
-                _endHandle.IsVisible = bounds.Contains(new Point(GetLeft(_endHandle), GetTop(_endHandle))) &&
-                                       ShowHandles && hasSelection;
-                _caretHandle.IsVisible = bounds.Contains(new Point(GetLeft(_caretHandle), GetTop(_caretHandle))) &&
-                                         ShowHandles && !hasSelection;
+                var hasSelection = _presenter.SelectionStart != _presenter.SelectionEnd;
+
+                _startHandle.IsVisible = ShowHandles && hasSelection &&
+                    !IsOccluded(new Point(GetLeft(_startHandle), GetTop(_startHandle)));
+                _endHandle.IsVisible = ShowHandles && hasSelection &&
+                    !IsOccluded(new Point(GetLeft(_endHandle), GetTop(_endHandle)));
+                _caretHandle.IsVisible = ShowHandles && !hasSelection &&
+                    !IsOccluded(new Point(GetLeft(_caretHandle), GetTop(_caretHandle)));
+
+                bool IsOccluded(Point point)
+                {
+                    return !bounds.Value.Clip.Contains(point);
+                }
+
+
+                if (ShowHandles && !hasSelection)
+                {
+                    _showDisposable = DispatcherTimer.RunOnce(() =>
+                        {
+                            ShowHandles = false;
+                            _showDisposable?.Dispose();
+                        }, TimeSpan.FromSeconds(5), DispatcherPriority.Background);
+                }
             }
         }
 
@@ -148,10 +225,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_presenter != null && _textBox != null)
             {
-                if (_textBox.ContextFlyout is { } flyout)
-                {
-                    flyout.Hide();
-                }
+                CloseFlyout();
 
                 var point = ToPresenter(handle.IndicatorPosition);
                 point = point.WithY(point.Y - _presenter.FontSize / 2);
@@ -159,18 +233,19 @@ namespace Avalonia.Controls.Primitives
                 var position = hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
 
                 var otherHandle = handle == _startHandle ? _endHandle : _startHandle;
+                using var _ = BeginChange();
 
                 if (handle.SelectionHandleType == SelectionHandleType.Start)
                 {
                     if (position >= _textBox.SelectionEnd)
                         position = _textBox.SelectionEnd - 1;
-                    _textBox.SelectionStart = position;
+                    _textBox.SetCurrentValue(TextBox.SelectionStartProperty, position);
                 }
                 else
                 {
                     if (position <= _textBox.SelectionStart)
                         position = _textBox.SelectionStart + 1;
-                    _textBox.SelectionEnd = position;
+                    _textBox.SetCurrentValue(TextBox.SelectionEndProperty, position);
                 }
 
                 var selectionStart = _textBox.SelectionStart;
@@ -182,7 +257,7 @@ namespace Avalonia.Controls.Primitives
                 if (rects.Count > 0)
                 {
                     var first = rects[0];
-                    var last = rects[rects.Count -1];
+                    var last = rects[rects.Count - 1];
 
                     if (handle.SelectionHandleType == SelectionHandleType.Start)
                         handle?.SetTopLeft(ToLayer(first.BottomLeft));
@@ -196,9 +271,9 @@ namespace Avalonia.Controls.Primitives
                 }
 
                 _presenter?.MoveCaretToTextPosition(position);
-            }
 
-            EnsureVisible();
+                EnsureVisible();
+            }
         }
 
         private Point ToLayer(Point point)
@@ -211,24 +286,19 @@ namespace Avalonia.Controls.Primitives
             return (_presenter is { } p) ? (p.VisualRoot as Visual)?.TranslatePoint(point, p) ?? point : point;
         }
 
-        private Point ToTextBox(Point point)
-        {
-            return (_textBox is { } p) ? (p.VisualRoot as Visual)?.TranslatePoint(point, p) ?? point : point;
-        }
-
         public void MoveHandlesToSelection()
         {
             if (_presenter == null
-                || _textBox == null
                 || _startHandle.IsDragging
-                || _endHandle.IsDragging
-                || _textBox.ContextFlyout?.IsOpen == true
-                || _textBox.ContextMenu?.IsOpen == true)
+                || _caretHandle.IsDragging
+                || _endHandle.IsDragging)
             {
                 return;
             }
 
-            var hasSelection = _textBox.SelectionStart != _textBox.SelectionEnd;
+            var selectionStart = _presenter.SelectionStart;
+            var selectionEnd = _presenter.SelectionEnd;
+            var hasSelection = selectionStart != selectionEnd;
 
             var points = _presenter.GetCaretPoints();
 
@@ -236,8 +306,6 @@ namespace Avalonia.Controls.Primitives
 
             if (hasSelection)
             {
-                var selectionStart = _textBox.SelectionStart;
-                var selectionEnd = _textBox.SelectionEnd;
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
 
@@ -265,6 +333,10 @@ namespace Avalonia.Controls.Primitives
                     }
                 }
             }
+
+            ShowHandles = true;
+
+            EnsureVisible();
         }
 
         internal void SetPresenter(TextPresenter? textPresenter)
@@ -272,58 +344,77 @@ namespace Avalonia.Controls.Primitives
             if (_presenter == textPresenter)
                 return;
 
-            if (_textBox != null)
+            if (_presenter != null)
             {
-                _textBox.RemoveHandler(TextBox.TextChangingEvent, TextChanged);
-                _textBox.RemoveHandler(KeyDownEvent, TextBoxKeyDown);
+                _layoutListener.Detach();
+                _presenter.RemoveHandler(KeyDownEvent, PresenterKeyDown);
+                _presenter.RemoveHandler(TappedEvent, PresenterTapped);
+                _presenter.RemoveHandler(PointerPressedEvent, PresenterPressed);
+                _presenter.RemoveHandler(GotFocusEvent, PresenterFocused);
 
-                _textBox.PropertyChanged -= TextBoxPropertyChanged;
-                _textBox.EffectiveViewportChanged -= TextBoxEffectiveViewportChanged;
-                _textBox.SizeChanged -= TextBox_SizeChanged;
-
+                if (_textBox != null)
+                {
+                    _textBox.PropertyChanged -= TextBox_PropertyChanged;
+                }
                 _textBox = null;
+
+                _presenter = null;
             }
 
             _presenter = textPresenter;
             if (_presenter != null)
             {
+                _layoutListener.Attach(_presenter);
+                _presenter.AddHandler(KeyDownEvent, PresenterKeyDown, handledEventsToo: true);
+                _presenter.AddHandler(TappedEvent, PresenterTapped);
+                _presenter.AddHandler(PointerPressedEvent, PresenterPressed);
+                _presenter.AddHandler(GotFocusEvent, PresenterFocused, handledEventsToo: true);
+
                 _textBox = _presenter.FindAncestorOfType<TextBox>();
 
                 if (_textBox != null)
                 {
-                    _textBox.AddHandler(TextBox.TextChangingEvent, TextChanged, handledEventsToo: true);
-                    _textBox.AddHandler(KeyDownEvent, TextBoxKeyDown, handledEventsToo: true);
-
-                    _textBox.PropertyChanged += TextBoxPropertyChanged;
-                    _textBox.EffectiveViewportChanged += TextBoxEffectiveViewportChanged;
-                    _textBox.SizeChanged += TextBox_SizeChanged;
+                    _textBox.PropertyChanged += TextBox_PropertyChanged;
                 }
             }
         }
 
-        private void TextBox_SizeChanged(object? sender, SizeChangedEventArgs e)
+        private void PresenterPressed(object? sender, PointerPressedEventArgs e)
         {
-            InvalidateMeasure();
+            s_isInTouchMode = e.Pointer.Type != PointerType.Mouse;
         }
 
-        private void TextBoxEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
+        private void PresenterFocused(object? sender, GotFocusEventArgs e)
         {
-            if (ShowHandles)
+            if (_presenter != null && _presenter.SelectionStart != _presenter.SelectionEnd)
             {
-                MoveHandlesToSelection();
+                ShowHandles = true;
                 EnsureVisible();
             }
         }
 
-        private void Caret_Holding(object? sender, HoldingRoutedEventArgs e)
+        private void PresenterTapped(object? sender, TappedEventArgs e)
         {
-            if (ShowContextMenu())
-                e.Handled = true;
+            s_isInTouchMode = e.Pointer.Type != PointerType.Mouse;
+
+            if (s_isInTouchMode)
+                MoveHandlesToSelection();
+            else
+            {
+                ShowHandles = false;
+                _showDisposable?.Dispose();
+                _showDisposable = null;
+            }
         }
 
-        internal bool ShowContextMenu()
+        private void Presenter_SizeChanged(object? sender, SizeChangedEventArgs e)
         {
-            if (_textBox != null && _canShowContextMenu)
+            InvalidateMeasure();
+        }
+
+        internal bool ShowFlyout(ContextRequestedEventArgs e)
+        {
+            if (_textBox != null)
             {
                 if (_textBox.ContextFlyout is PopupFlyoutBase flyout)
                 {
@@ -349,7 +440,7 @@ namespace Avalonia.Controls.Primitives
 
                     if (handle != null)
                     {
-                        var topLeft = ToTextBox(handle.GetTopLeft());
+                        var topLeft = ToPresenter(handle.GetTopLeft());
                         flyout.VerticalOffset = topLeft.Y - verticalOffset;
                         flyout.HorizontalOffset = topLeft.X;
                         flyout.Placement = PlacementMode.TopEdgeAlignedLeft;
@@ -360,11 +451,9 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    _textBox.RaiseEvent(new ContextRequestedEventArgs());
+                    _textBox.RaiseEvent(new ContextRequestedEventArgs(e));
                 }
             }
-
-            _canShowContextMenu = true;
 
             return false;
         }
@@ -377,26 +466,105 @@ namespace Avalonia.Controls.Primitives
             EnsureVisible();
         }
 
-        private void TextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        private void TextBox_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (ShowHandles && (e.Property == TextBox.SelectionStartProperty ||
-                                e.Property == TextBox.SelectionEndProperty))
+            if (s_isInTouchMode && (e.Property == TextPresenter.SelectionStartProperty ||
+                                e.Property == TextPresenter.SelectionEndProperty))
             {
                 MoveHandlesToSelection();
                 EnsureVisible();
             }
+            else if (e.Property == TextPresenter.TextProperty)
+            {
+                ShowHandles = false;
+                if (_presenter?.ContextFlyout is { } flyout && flyout.IsOpen)
+                    flyout.Hide();
+            }
         }
 
-        private void TextBoxKeyDown(object? sender, KeyEventArgs e)
+        private void PresenterKeyDown(object? sender, KeyEventArgs e)
         {
             ShowHandles = false;
+            s_isInTouchMode = false;
         }
 
-        private void TextChanged(object? sender, TextChangingEventArgs e)
+        private class PresenterVisualListener
         {
-            ShowHandles = false;
-            if (_textBox?.ContextFlyout is { } flyout && flyout.IsOpen)
-                flyout.Hide();
+            private List<Visual> _attachedVisuals = new List<Visual>();
+            private TextPresenter? _presenter;
+            private object _lock = new object();
+
+            public event EventHandler? Invalidated;
+
+            public void Attach(TextPresenter presenter)
+            {
+                lock (_lock)
+                {
+                    if (_presenter != null)
+                        throw new InvalidOperationException("Listener is already attached to a TextPresenter");
+
+                    _presenter = presenter;
+                    presenter.SizeChanged += Presenter_SizeChanged;
+                    presenter.EffectiveViewportChanged += Visual_EffectiveViewportChanged;
+
+
+                    void AttachViewportHandler(Visual visual)
+                    {
+                        if (visual is Layoutable layoutable)
+                        {
+                            layoutable.EffectiveViewportChanged += Visual_EffectiveViewportChanged;
+                        }
+
+                        _attachedVisuals.Add(visual);
+                    }
+
+                    var visualParent = presenter.VisualParent;
+                    while (visualParent != null)
+                    {
+                        AttachViewportHandler(visualParent);
+
+                        visualParent = visualParent.VisualParent;
+                    }
+                }
+            }
+
+            private void Visual_EffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)
+            {
+                OnInvalidated();
+            }
+
+            private void Presenter_SizeChanged(object? sender, SizeChangedEventArgs e)
+            {
+                OnInvalidated();
+            }
+
+            public void Detach()
+            {
+                lock (_lock)
+                {
+                    if (_presenter is { } presenter)
+                    {
+                        presenter.SizeChanged -= Presenter_SizeChanged;
+                        presenter.EffectiveViewportChanged -= Visual_EffectiveViewportChanged;
+                    }
+
+                    foreach (var visual in _attachedVisuals)
+                    {
+                        if (visual is Layoutable layoutable)
+                        {
+                            layoutable.EffectiveViewportChanged -= Visual_EffectiveViewportChanged;
+                        }
+                    }
+
+                    _presenter = null;
+                    _attachedVisuals.Clear();
+                }
+            }
+
+            private void OnInvalidated()
+            {
+                Invalidated?.Invoke(this, EventArgs.Empty);
+            }
         }
     }
 }

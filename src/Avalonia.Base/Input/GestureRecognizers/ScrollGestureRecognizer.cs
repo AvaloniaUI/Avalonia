@@ -133,8 +133,6 @@ namespace Avalonia.Input.GestureRecognizers
                         _trackedRootPoint = new Point(
                             _trackedRootPoint.X - (_trackedRootPoint.X >= rootPoint.X ? ScrollStartDistance : -ScrollStartDistance),
                             _trackedRootPoint.Y - (_trackedRootPoint.Y >= rootPoint.Y ? ScrollStartDistance : -ScrollStartDistance));
-
-                        Capture(e.Pointer);
                     }
                 }
 
@@ -145,9 +143,14 @@ namespace Avalonia.Input.GestureRecognizers
                     _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), _pointerPressedPoint - rootPoint);
 
                     _lastMoveTimestamp = e.Timestamp;
-                    Target!.RaiseEvent(new ScrollGestureEventArgs(_gestureId, vector));
+                    var scrollEventArgs = new ScrollGestureEventArgs(_gestureId, vector);
+                    Target!.RaiseEvent(scrollEventArgs);
                     _trackedRootPoint = rootPoint;
-                    e.Handled = true;
+                    e.Handled = scrollEventArgs.Handled;
+                    if(e.Handled)
+                    {
+                        Capture(e.Pointer);
+                    }
                 }
             }
         }
