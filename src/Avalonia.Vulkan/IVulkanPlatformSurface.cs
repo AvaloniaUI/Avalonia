@@ -1,7 +1,8 @@
 using System;
+using Avalonia.Platform.Surfaces;
 
 namespace Avalonia.Vulkan;
-public interface IVulkanKhrSurfacePlatformSurface : IDisposable
+public interface IVulkanKhrSurfacePlatformSurface : IDisposable, IPlatformRenderSurface
 {
     double Scaling { get; }
     PixelSize Size { get; }

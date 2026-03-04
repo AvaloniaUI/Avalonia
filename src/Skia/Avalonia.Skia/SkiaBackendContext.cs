@@ -2,9 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 
 namespace Avalonia.Skia;
 
@@ -47,7 +47,7 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
     }
 
     /// <inheritdoc />
-    public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+    public IRenderTarget CreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
     {
         if (surfaces is not IList)
             surfaces = surfaces.ToList();
@@ -65,6 +65,27 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
 
         throw new NotSupportedException(
             "Don't know how to create a Skia render target from any of provided surfaces");
+    }
+
+    public bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
+    {
+        if (surfaces is not IList)
+            surfaces = surfaces.ToList();
+
+        if (_gpu != null)
+        {
+            return _gpu.IsReadyToCreateRenderTarget(surfaces);
+        }
+
+        foreach (var surface in surfaces)
+        {
+            if (surface is IFramebufferPlatformSurface)
+            {
+                return surface is not IPlatformRenderSurface prs || prs.IsReady;
+            }
+        }
+
+        return false;
     }
 
 

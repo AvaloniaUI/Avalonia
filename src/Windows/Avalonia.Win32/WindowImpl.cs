@@ -14,6 +14,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Avalonia.Win32.DirectX;
@@ -75,7 +76,7 @@ namespace Avalonia.Win32
         private readonly WindowsMouseDevice _mouseDevice;
         private readonly PenDevice _penDevice;
         private readonly FramebufferManager _framebuffer;
-        private readonly object? _glSurface;
+        private readonly IPlatformRenderSurface? _glSurface;
         private readonly bool _wmPointerEnabled;
 
         private readonly Win32NativeControlHost _nativeControlHost;
@@ -505,10 +506,10 @@ namespace Avalonia.Win32
             return result == 0;
         }
 
-        public IEnumerable<object> Surfaces
+        public IPlatformRenderSurface[] Surfaces
             => _glSurface is null ?
-                new object[] { Handle, _framebuffer } :
-                new object[] { Handle, _glSurface, _framebuffer };
+                [(IPlatformRenderSurface)Handle, _framebuffer] :
+                [(IPlatformRenderSurface)Handle, _glSurface, _framebuffer];
 
         public PixelPoint Position
         {

@@ -18,6 +18,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
@@ -96,7 +97,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public double DesktopScaling => RenderScaling;
         public IPlatformHandle Handle { get; }
 
-        public IEnumerable<object> Surfaces { get; }
+        public IPlatformRenderSurface[] Surfaces { get; }
 
         public Compositor Compositor => AndroidPlatform.Compositor ??
             throw new InvalidOperationException("Android backend wasn't initialized. Make sure .UseAndroid() was executed.");

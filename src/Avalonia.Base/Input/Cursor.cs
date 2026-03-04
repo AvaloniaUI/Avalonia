@@ -56,7 +56,7 @@ namespace Avalonia.Input
         }
 
         public Cursor(Bitmap cursor, PixelPoint hotSpot)
-            : this(GetCursorFactory().CreateCursor(cursor.PlatformImpl.Item, hotSpot), "BitmapCursor")
+            : this(GetCursorFactory().CreateCursor(cursor, hotSpot), "BitmapCursor")
         {
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -22,7 +23,12 @@ namespace Avalonia.Skia
         /// </summary>
         /// <param name="surfaces">Surfaces.</param>
         /// <returns>Created render target or <see langword="null"/> if it fails.</returns>
-        ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces);
+        ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces);
+
+        /// <summary>
+        /// Checks if a render target can be created for the given surfaces and the preferred surface is ready.
+        /// </summary>
+        bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces) => false;
 
         /// <summary>
         /// Creates an offscreen render target surface
