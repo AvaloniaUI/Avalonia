@@ -28,7 +28,7 @@ namespace Avalonia.Skia
         /// <summary>
         /// Checks if a render target can be created for the given surfaces and the preferred surface is ready.
         /// </summary>
-        bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces) => false;
+        bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces);
 
         /// <summary>
         /// Creates an offscreen render target surface

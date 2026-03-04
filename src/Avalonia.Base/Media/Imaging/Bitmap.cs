@@ -252,7 +252,7 @@ namespace Avalonia.Media.Imaging
                 // Since we can't read pixels from the bitmap, we need to render it to a compatible bitmap and read pixels from it.
                 using var rtb = new RenderTargetBitmap(PixelSize);
                 using (var ctx = rtb.CreateDrawingContext())
-                    ctx.DrawImage(this, new Rect(0, 0, PixelSize.Width, PixelSize.Height));
+                    ctx.DrawImage(this, new Rect(rtb.Size));
                 rtb.CopyPixels(buffer);
 
                 return;
