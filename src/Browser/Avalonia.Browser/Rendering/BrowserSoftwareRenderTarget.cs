@@ -38,8 +38,9 @@ partial class BrowserSoftwareRenderTarget : BrowserRenderTarget, IFramebufferPla
             _fb = null;
         }
 
-        public ILockedFramebuffer Lock()
+        public ILockedFramebuffer Lock(IRenderTarget.RenderTargetSceneInfo sceneInfo, out FramebufferLockProperties properties)
         {
+            properties = default;
             var (size, scaling) = _parent._sizeGetter();
             _parent.UpdateSize(size);
             
