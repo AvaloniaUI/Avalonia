@@ -862,6 +862,42 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(expectedSelectionItem, target.SelectedItem);
             }
         }
+        
+        /// <summary>
+        /// This test ensures that also an invisible TabControl can receive a selection
+        /// </summary>
+        [Fact]
+        public void SelectedIndexShouldRestoreAfterControlGetsVisible()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                TabItem expectedSelectionItem;
+
+                var target = new TabControl
+                {
+                    IsVisible = false,
+                    SelectedIndex = 1,
+                    Template = TabControlTemplate(),
+                    Items =
+                    {
+                        new TabItem { Name = "first", Content = "foo"},
+                        (expectedSelectionItem = new TabItem { Name = "second", Content = "bar"}),
+                        new TabItem { Name = "third", Content = "baz" },
+                    }
+                };
+
+                target.ApplyTemplate();
+                
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                target.IsVisible = true;
+                
+                // the 2nd item should be selected
+                Assert.Equal(1, target.SelectedIndex);
+                Assert.Equal(expectedSelectionItem, target.SelectedItem);
+            }
+        }
 
         private static IControlTemplate TabItemTemplate()
         {
