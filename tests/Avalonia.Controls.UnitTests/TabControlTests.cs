@@ -831,20 +831,24 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
+        /// <summary>
+        /// This test ensures that the selected tab is the first visible and enabled tab.
+        /// </summary>
         [Fact]
-        public void Only_Fist_Visible_Tab_Should_Be_Selected_By_Default()
+        public void Only_Fist_Visible_And_Enabled_Tab_Should_Be_Selected_By_Default()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                TabItem first, second;
+                TabItem expectedSelectionItem;
 
                 var target = new TabControl
                 {
                     Template = TabControlTemplate(),
                     Items =
                     {
-                        (first = new TabItem { Name = "first", Content = "foo", IsVisible = false, }),
-                        (second = new TabItem { Name = "second", Content = "bar", }),
+                        new TabItem { Name = "first", Content = "foo", IsVisible = false},
+                        new TabItem { Name = "second", Content = "bar", IsEnabled = false},
+                        (expectedSelectionItem = new TabItem { Name = "third", Content = "baz" }),
                     }
                 };
 
@@ -853,8 +857,9 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot(target);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                Assert.Equal(1, target.SelectedIndex);
-                Assert.Equal(second, target.SelectedItem);
+                // the 3rd item should be selected
+                Assert.Equal(2, target.SelectedIndex);
+                Assert.Equal(expectedSelectionItem, target.SelectedItem);
             }
         }
 

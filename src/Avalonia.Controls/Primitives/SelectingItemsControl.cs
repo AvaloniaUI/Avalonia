@@ -461,7 +461,7 @@ namespace Avalonia.Controls.Primitives
 
             if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
             {
-                SelectedIndex = 0;
+                SelectedIndex = GetFirstVisibleAndEnabledIndex();
             }
         }
 
@@ -534,6 +534,11 @@ namespace Avalonia.Controls.Primitives
 
             if (Selection.AnchorIndex == index)
                 KeyboardNavigation.SetTabOnceActiveElement(this, container);
+
+            if (AlwaysSelected && index == SelectedIndex && (!container.IsVisible || !container.IsEnabled))
+            {
+                MoveSelectionToFirstVisibleAndEnabledItem();
+            }
         }
 
         /// <inheritdoc />
@@ -1042,7 +1047,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (AlwaysSelected && ItemsView.Count > 0)
             {
-                SelectedIndex = 0;
+                SelectedIndex = GetFirstVisibleAndEnabledIndex();
             }
         }
 
@@ -1217,6 +1222,54 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Finds the first visible and enabled index in the ItemsSource.
+        /// </summary>
+        /// <returns>the index of the first visible and enabled item, or -1 if none found</returns>
+        private int GetFirstVisibleAndEnabledIndex()
+        {
+            var count = ItemCount;
+            if (count == 0)
+                return -1;
+
+            for (var i = 0; i < count; i++)
+            {
+                var container = ContainerFromIndex(i);
+                if (container is not null)
+                {
+                    if (container.IsVisible)
+                        return i;
+                }
+                else
+                {
+                    var item = ItemsView[i];
+                    if (item is Visual v)
+                    {
+                        if (v.GetValue(IsVisibleProperty) && v.GetValue(IsEnabledProperty))
+                            return i;
+                    }
+                    else if (item is not null)
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// this method moves selection to first visible and enabled item.
+        /// </summary>
+        private void MoveSelectionToFirstVisibleAndEnabledItem()
+        {
+            var index = GetFirstVisibleAndEnabledIndex();
+            if (index != -1 && index != SelectedIndex)
+            {
+                SelectedIndex = index;
+            }
+        }
+
         private void UpdateContainerSelection()
         {
             if (Presenter?.Panel is { } panel)
@@ -1263,7 +1316,7 @@ namespace Avalonia.Controls.Primitives
 
             if (_updateState is null && AlwaysSelected && model.Count == 0)
             {
-                model.SelectedIndex = 0;
+                model.SelectedIndex = GetFirstVisibleAndEnabledIndex();
             }
 
             UpdateContainerSelection();
@@ -1370,7 +1423,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
                 {
-                    SelectedIndex = 0;
+                    SelectedIndex = GetFirstVisibleAndEnabledIndex();
                 }
             }
         }
