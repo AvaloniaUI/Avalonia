@@ -19,45 +19,75 @@ namespace Avalonia.Input
         public static readonly AttachedProperty<bool> IsHoldWithMouseEnabledProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsHoldWithMouseEnabled", typeof(InputElement), false);
 
+        /// <summary>
+        /// Defines the <see cref="Pinch"/> event.
+        /// </summary>
         public static readonly RoutedEvent<PinchEventArgs> PinchEvent =
-            RoutedEvent.Register<PinchEventArgs>(
-                "Pinch", RoutingStrategies.Bubble, typeof(InputElement));
+            RoutedEvent.Register<InputElement, PinchEventArgs>(
+                "Pinch", RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="PinchEnded"/> event.
+        /// </summary>
         public static readonly RoutedEvent<PinchEndedEventArgs> PinchEndedEvent =
-            RoutedEvent.Register<PinchEndedEventArgs>(
-                "PinchEnded", RoutingStrategies.Bubble, typeof(InputElement));
+            RoutedEvent.Register<InputElement, PinchEndedEventArgs>(
+                "PinchEnded", RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="PullGesture"/> event.
+        /// </summary>
         public static readonly RoutedEvent<PullGestureEventArgs> PullGestureEvent =
-            RoutedEvent.Register<PullGestureEventArgs>(
-                "PullGesture", RoutingStrategies.Bubble, typeof(InputElement));
+            RoutedEvent.Register<InputElement, PullGestureEventArgs>(
+                "PullGesture", RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="PullGestureEnded"/> event.
+        /// </summary>
         public static readonly RoutedEvent<PullGestureEndedEventArgs> PullGestureEndedEvent =
-            RoutedEvent.Register<PullGestureEndedEventArgs>(
-                "PullGestureEnded", RoutingStrategies.Bubble, typeof(InputElement));
+            RoutedEvent.Register<InputElement, PullGestureEndedEventArgs>(
+                "PullGestureEnded", RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="ScrollGesture"/> event.
+        /// </summary>
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEvent =
-            RoutedEvent.Register<ScrollGestureEventArgs>(
-                "ScrollGesture", RoutingStrategies.Bubble, typeof(InputElement));
+            RoutedEvent.Register<InputElement, ScrollGestureEventArgs>(
+                "ScrollGesture", RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="ScrollGestureInertiaStarting"/> event.
+        /// </summary>
         public static readonly RoutedEvent<ScrollGestureInertiaStartingEventArgs> ScrollGestureInertiaStartingEvent =
-            RoutedEvent.Register<ScrollGestureInertiaStartingEventArgs>(
-                "ScrollGestureInertiaStarting", RoutingStrategies.Bubble, typeof(InputElement));
+            RoutedEvent.Register<InputElement, ScrollGestureInertiaStartingEventArgs>(
+                "ScrollGestureInertiaStarting", RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="ScrollGestureEnded"/> event.
+        /// </summary>
         public static readonly RoutedEvent<ScrollGestureEndedEventArgs> ScrollGestureEndedEvent =
-            RoutedEvent.Register<ScrollGestureEndedEventArgs>(
-                "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(InputElement));
+            RoutedEvent.Register<InputElement, ScrollGestureEndedEventArgs>(
+                "ScrollGestureEnded", RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="PointerTouchPadGestureMagnify"/> event.
+        /// </summary>
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureMagnifyEvent =
-            RoutedEvent.Register<PointerDeltaEventArgs>(
-                "PointerTouchPadGestureMagnify", RoutingStrategies.Bubble, typeof(InputElement));
+            RoutedEvent.Register<InputElement, PointerDeltaEventArgs>(
+                "PointerTouchPadGestureMagnify", RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="PointerTouchPadGestureRotate"/> event.
+        /// </summary>
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureRotateEvent =
-            RoutedEvent.Register<PointerDeltaEventArgs>(
-                "PointerTouchPadGestureRotate", RoutingStrategies.Bubble, typeof(InputElement));
+            RoutedEvent.Register<InputElement, PointerDeltaEventArgs>(
+                "PointerTouchPadGestureRotate", RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="PointerTouchPadGestureSwipe"/> event.
+        /// </summary>
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureSwipeEvent =
-            RoutedEvent.Register<PointerDeltaEventArgs>(
-                "PointerTouchPadGestureSwipe", RoutingStrategies.Bubble, typeof(InputElement));
+            RoutedEvent.Register<InputElement, PointerDeltaEventArgs>(
+                "PointerTouchPadGestureSwipe", RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="Tapped"/> event.
@@ -95,6 +125,7 @@ namespace Avalonia.Input
         {
             return element.GetValue(IsHoldingEnabledProperty);
         }
+
         public static void SetIsHoldingEnabled(StyledElement element, bool value)
         {
             element.SetValue(IsHoldingEnabledProperty, value);
@@ -104,70 +135,101 @@ namespace Avalonia.Input
         {
             return element.GetValue(IsHoldWithMouseEnabledProperty);
         }
+
         public static void SetIsHoldWithMouseEnabled(StyledElement element, bool value)
         {
             element.SetValue(IsHoldWithMouseEnabledProperty, value);
         }
 
-        public static void AddPinchHandler(Interactive element, EventHandler<PinchEventArgs> handler) =>
-            element.AddHandler(PinchEvent, handler);
+        /// <summary>
+        /// Occurs when a pinch gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<PinchEventArgs>? Pinch
+        {
+            add { AddHandler(PinchEvent, value); }
+            remove { RemoveHandler(PinchEvent, value); }
+        }
 
-        public static void AddPinchEndedHandler(Interactive element, EventHandler<PinchEndedEventArgs> handler) =>
-            element.AddHandler(PinchEndedEvent, handler);
+        /// <summary>
+        /// Occurs when a pinch gesture ends on the control.
+        /// </summary>
+        public event EventHandler<PinchEndedEventArgs>? PinchEnded
+        {
+            add { AddHandler(PinchEndedEvent, value); }
+            remove { RemoveHandler(PinchEndedEvent, value); }
+        }
 
-        public static void AddPullGestureHandler(Interactive element, EventHandler<PullGestureEventArgs> handler) =>
-            element.AddHandler(PullGestureEvent, handler);
+        /// <summary>
+        /// Occurs when a pull gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<PullGestureEventArgs>? PullGesture
+        {
+            add { AddHandler(PullGestureEvent, value); }
+            remove { RemoveHandler(PullGestureEvent, value); }
+        }
 
-        public static void AddPullGestureEndedHandler(Interactive element, EventHandler<PullGestureEndedEventArgs> handler) =>
-            element.AddHandler(PullGestureEndedEvent, handler);
+        /// <summary>
+        /// Occurs when a pull gesture ends on the control.
+        /// </summary>
+        public event EventHandler<PullGestureEndedEventArgs>? PullGestureEnded
+        {
+            add { AddHandler(PullGestureEndedEvent, value); }
+            remove { RemoveHandler(PullGestureEndedEvent, value); }
+        }
 
-        public static void RemovePinchHandler(Interactive element, EventHandler<PinchEventArgs> handler) =>
-            element.RemoveHandler(PinchEvent, handler);
+        /// <summary>
+        /// Occurs when a scroll gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<ScrollGestureEventArgs>? ScrollGesture
+        {
+            add { AddHandler(ScrollGestureEvent, value); }
+            remove { RemoveHandler(ScrollGestureEvent, value); }
+        }
 
-        public static void RemovePinchEndedHandler(Interactive element, EventHandler<PinchEndedEventArgs> handler) =>
-            element.RemoveHandler(PinchEndedEvent, handler);
+        /// <summary>
+        /// Occurs when a scroll gesture inertia starts on the control.
+        /// </summary>
+        public event EventHandler<ScrollGestureInertiaStartingEventArgs>? ScrollGestureInertiaStarting
+        {
+            add { AddHandler(ScrollGestureInertiaStartingEvent, value); }
+            remove { RemoveHandler(ScrollGestureInertiaStartingEvent, value); }
+        }
 
-        public static void RemovePullGestureHandler(Interactive element, EventHandler<PullGestureEventArgs> handler) =>
-            element.RemoveHandler(PullGestureEvent, handler);
+        /// <summary>
+        /// Occurs when a scroll gesture ends on the control.
+        /// </summary>
+        public event EventHandler<ScrollGestureEndedEventArgs>? ScrollGestureEnded
+        {
+            add { AddHandler(ScrollGestureEndedEvent, value); }
+            remove { RemoveHandler(ScrollGestureEndedEvent, value); }
+        }
 
-        public static void RemovePullGestureEndedHandler(Interactive element, EventHandler<PullGestureEndedEventArgs> handler) =>
-            element.RemoveHandler(PullGestureEndedEvent, handler);
+        /// <summary>
+        /// Occurs when a touchpad magnify gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<PointerDeltaEventArgs>? PointerTouchPadGestureMagnify
+        {
+            add { AddHandler(PointerTouchPadGestureMagnifyEvent, value); }
+            remove { RemoveHandler(PointerTouchPadGestureMagnifyEvent, value); }
+        }
 
-        public static void AddPointerTouchPadGestureMagnifyHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
-            element.AddHandler(PointerTouchPadGestureMagnifyEvent, handler);
+        /// <summary>
+        /// Occurs when a touchpad rotate gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<PointerDeltaEventArgs>? PointerTouchPadGestureRotate
+        {
+            add { AddHandler(PointerTouchPadGestureRotateEvent, value); }
+            remove { RemoveHandler(PointerTouchPadGestureRotateEvent, value); }
+        }
 
-        public static void AddPointerTouchPadGestureRotateHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
-            element.AddHandler(PointerTouchPadGestureRotateEvent, handler);
-
-        public static void AddPointerTouchPadGestureSwipeHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
-            element.AddHandler(PointerTouchPadGestureSwipeEvent, handler);
-
-        public static void AddScrollGestureHandler(Interactive element, EventHandler<ScrollGestureEventArgs> handler) =>
-            element.AddHandler(ScrollGestureEvent, handler);
-
-        public static void AddScrollGestureEndedHandler(Interactive element, EventHandler<ScrollGestureEndedEventArgs> handler) =>
-            element.AddHandler(ScrollGestureEndedEvent, handler);
-
-        public static void AddScrollGestureInertiaStartingHandler(Interactive element, EventHandler<ScrollGestureInertiaStartingEventArgs> handler) =>
-            element.AddHandler(ScrollGestureInertiaStartingEvent, handler);
-
-        public static void RemovePointerTouchPadGestureMagnifyHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
-            element.RemoveHandler(PointerTouchPadGestureMagnifyEvent, handler);
-
-        public static void RemovePointerTouchPadGestureRotateHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
-            element.RemoveHandler(PointerTouchPadGestureRotateEvent, handler);
-
-        public static void RemovePointerTouchPadGestureSwipeHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
-            element.RemoveHandler(PointerTouchPadGestureSwipeEvent, handler);
-
-        public static void RemoveScrollGestureHandler(Interactive element, EventHandler<ScrollGestureEventArgs> handler) =>
-            element.RemoveHandler(ScrollGestureEvent, handler);
-
-        public static void RemoveScrollGestureEndedHandler(Interactive element, EventHandler<ScrollGestureEndedEventArgs> handler) =>
-            element.RemoveHandler(ScrollGestureEndedEvent, handler);
-
-        public static void RemoveScrollGestureInertiaStartingHandler(Interactive element, EventHandler<ScrollGestureInertiaStartingEventArgs> handler) =>
-            element.RemoveHandler(ScrollGestureInertiaStartingEvent, handler);
+        /// <summary>
+        /// Occurs when a touchpad swipe gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<PointerDeltaEventArgs>? PointerTouchPadGestureSwipe
+        {
+            add { AddHandler(PointerTouchPadGestureSwipeEvent, value); }
+            remove { RemoveHandler(PointerTouchPadGestureSwipeEvent, value); }
+        }
 
         /// <summary>
         /// Occurs when a tap gesture occurs on the control.
