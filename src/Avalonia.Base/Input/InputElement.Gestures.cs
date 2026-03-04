@@ -24,70 +24,70 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<PinchEventArgs> PinchEvent =
             RoutedEvent.Register<InputElement, PinchEventArgs>(
-                "Pinch", RoutingStrategies.Bubble);
+                nameof(Pinch), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PinchEnded"/> event.
         /// </summary>
         public static readonly RoutedEvent<PinchEndedEventArgs> PinchEndedEvent =
             RoutedEvent.Register<InputElement, PinchEndedEventArgs>(
-                "PinchEnded", RoutingStrategies.Bubble);
+                nameof(PinchEnded), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PullGesture"/> event.
         /// </summary>
         public static readonly RoutedEvent<PullGestureEventArgs> PullGestureEvent =
             RoutedEvent.Register<InputElement, PullGestureEventArgs>(
-                "PullGesture", RoutingStrategies.Bubble);
+                nameof(PullGesture), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PullGestureEnded"/> event.
         /// </summary>
         public static readonly RoutedEvent<PullGestureEndedEventArgs> PullGestureEndedEvent =
             RoutedEvent.Register<InputElement, PullGestureEndedEventArgs>(
-                "PullGestureEnded", RoutingStrategies.Bubble);
+                nameof(PullGestureEnded), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="ScrollGesture"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEvent =
             RoutedEvent.Register<InputElement, ScrollGestureEventArgs>(
-                "ScrollGesture", RoutingStrategies.Bubble);
+                nameof(ScrollGesture), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="ScrollGestureInertiaStarting"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollGestureInertiaStartingEventArgs> ScrollGestureInertiaStartingEvent =
             RoutedEvent.Register<InputElement, ScrollGestureInertiaStartingEventArgs>(
-                "ScrollGestureInertiaStarting", RoutingStrategies.Bubble);
+                nameof(ScrollGestureInertiaStarting), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="ScrollGestureEnded"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollGestureEndedEventArgs> ScrollGestureEndedEvent =
             RoutedEvent.Register<InputElement, ScrollGestureEndedEventArgs>(
-                "ScrollGestureEnded", RoutingStrategies.Bubble);
+                nameof(ScrollGestureEnded), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PointerTouchPadGestureMagnify"/> event.
         /// </summary>
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureMagnifyEvent =
             RoutedEvent.Register<InputElement, PointerDeltaEventArgs>(
-                "PointerTouchPadGestureMagnify", RoutingStrategies.Bubble);
+                nameof(PointerTouchPadGestureMagnify), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PointerTouchPadGestureRotate"/> event.
         /// </summary>
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureRotateEvent =
             RoutedEvent.Register<InputElement, PointerDeltaEventArgs>(
-                "PointerTouchPadGestureRotate", RoutingStrategies.Bubble);
+                nameof(PointerTouchPadGestureRotate), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="PointerTouchPadGestureSwipe"/> event.
         /// </summary>
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureSwipeEvent =
             RoutedEvent.Register<InputElement, PointerDeltaEventArgs>(
-                "PointerTouchPadGestureSwipe", RoutingStrategies.Bubble);
+                nameof(PointerTouchPadGestureSwipe), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="Tapped"/> event.
