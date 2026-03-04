@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -29,7 +30,7 @@ namespace ControlCatalog.Pages
             Loaded += OnLoaded;
         }
 
-        private void OnLoaded(object? sender, RoutedEventArgs e)
+        private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
             var rootPage = new ContentPage
             {
@@ -63,7 +64,7 @@ namespace ControlCatalog.Pages
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
                 VerticalContentAlignment = VerticalAlignment.Stretch
             };
-            DemoNav.Push(rootPage);
+            await DemoNav.PushAsync(rootPage);
         }
 
         private void OnPositionChanged(object? sender, SelectionChangedEventArgs e)

@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia;
 using Avalonia.Interactivity;
@@ -29,10 +30,10 @@ namespace ControlCatalog.Pages
             // RefreshStack is called via the Pushed event above.
         }
 
-        private void OnPush(object? sender, RoutedEventArgs e)
+        private async void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
-            DemoNav.Push(NavigationDemoHelper.MakePage($"Page {_pageCount}", $"Stack position #{_pageCount}", _pageCount));
+            await DemoNav.PushAsync(NavigationDemoHelper.MakePage($"Page {_pageCount}", $"Stack position #{_pageCount}", _pageCount));
         }
 
         private void OnInsert(object? sender, RoutedEventArgs e)

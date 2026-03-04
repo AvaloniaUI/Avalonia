@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 
 namespace ControlCatalog.Pages
@@ -21,11 +20,6 @@ namespace ControlCatalog.Pages
         public TabbedPageCustomTabBarPage()
         {
             InitializeComponent();
-        }
-
-        protected override void OnLoaded(RoutedEventArgs e)
-        {
-            base.OnLoaded(e);
             SetupIcons();
         }
 

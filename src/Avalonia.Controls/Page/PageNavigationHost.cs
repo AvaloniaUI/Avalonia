@@ -42,11 +42,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            if (_insetManager != null)
-                _insetManager.SafeAreaChanged -= InsetManager_SafeAreaChanged;
-
-            if (_topLevel != null)
-                _topLevel.BackRequested -= TopLevel_BackRequested;
+            CleanUpSubscriptions();
 
             _topLevel = TopLevel.GetTopLevel(this);
             _insetManager = _topLevel?.InsetsManager;
@@ -60,19 +56,21 @@ namespace Avalonia.Controls
             if (_topLevel != null)
                 _topLevel.BackRequested += TopLevel_BackRequested;
 
-            if (_contentPresenter != null)
-            {
-                _contentPresenter.PropertyChanged += ContentPresenter_PropertyChanged;
-
-                if (_insetManager != null && _contentPresenter.Child is Page page)
-                    page.SafeAreaPadding = _insetManager.SafeAreaPadding;
-            }
+            AttachContentPresenter();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
 
+            CleanUpSubscriptions();
+
+            if (_contentPresenter != null)
+                _contentPresenter.PropertyChanged -= ContentPresenter_PropertyChanged;
+        }
+
+        private void CleanUpSubscriptions()
+        {
             if (_insetManager != null)
             {
                 _insetManager.SafeAreaChanged -= InsetManager_SafeAreaChanged;
@@ -84,9 +82,6 @@ namespace Avalonia.Controls
                 _topLevel.BackRequested -= TopLevel_BackRequested;
                 _topLevel = null;
             }
-
-            if (_contentPresenter != null)
-                _contentPresenter.PropertyChanged -= ContentPresenter_PropertyChanged;
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -98,13 +93,19 @@ namespace Avalonia.Controls
 
             _contentPresenter = e.NameScope.Get<ContentPresenter>("PART_ContentPresenter");
 
-            if (_contentPresenter != null)
-            {
-                if (_insetManager != null && _contentPresenter.Child is Page page)
-                    page.SafeAreaPadding = _insetManager.SafeAreaPadding;
+            AttachContentPresenter();
+        }
 
+        private void AttachContentPresenter()
+        {
+            if (_contentPresenter == null)
+                return;
+
+            if (_insetManager != null && _contentPresenter.Child is Page page)
+                page.SafeAreaPadding = _insetManager.SafeAreaPadding;
+
+            if (IsAttachedToVisualTree)
                 _contentPresenter.PropertyChanged += ContentPresenter_PropertyChanged;
-            }
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

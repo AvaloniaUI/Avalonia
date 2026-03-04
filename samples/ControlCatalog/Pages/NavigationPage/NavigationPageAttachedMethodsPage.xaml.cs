@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -50,7 +51,7 @@ namespace ControlCatalog.Pages
             }, null);
         }
 
-        private void OnPush(object? sender, RoutedEventArgs e)
+        private async void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
 
@@ -140,7 +141,7 @@ namespace ControlCatalog.Pages
                 NavigationPage.SetHeader(page, titleView);
             }
 
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
         }
 
         private async void OnPop(object? sender, RoutedEventArgs e) => await DemoNav.PopAsync();

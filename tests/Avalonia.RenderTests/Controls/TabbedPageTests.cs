@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
@@ -23,7 +22,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         private static TabbedPage CreateBasicTabbedPage() => new TabbedPage
         {
             Background = Brushes.White,
-            Pages = new AvaloniaList<object>
+            Pages = new Page[]
             {
                 new ContentPage
                 {
@@ -209,7 +208,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 {
                     Background = Brushes.White,
                     TabPlacement = TabPlacement.Top,
-                    Pages = new AvaloniaList<object>
+                    Pages = new Page[]
                     {
                         new ContentPage
                         {
@@ -253,7 +252,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             {
                 Background = Brushes.White,
                 TabPlacement = TabPlacement.Top,
-                Pages = new AvaloniaList<object>
+                Pages = new Page[]
                 {
                     new ContentPage
                     {
@@ -319,7 +318,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             {
                 Background = Brushes.White,
                 TabPlacement = TabPlacement.Bottom,
-                Pages = new AvaloniaList<object>
+                Pages = new Page[]
                 {
                     new ContentPage
                     {

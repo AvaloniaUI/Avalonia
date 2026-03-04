@@ -17,11 +17,6 @@ namespace ControlCatalog.Pages
         public DrawerPageCustomFlyoutPage()
         {
             InitializeComponent();
-        }
-
-        protected override async void OnLoaded(RoutedEventArgs e)
-        {
-            base.OnLoaded(e);
 
             _bubble1 = this.FindControl<Ellipse>("Bubble1");
             _bubble2 = this.FindControl<Ellipse>("Bubble2");
@@ -32,7 +27,7 @@ namespace ControlCatalog.Pages
                     OnDrawerOpenChanged((bool)args.NewValue!);
             };
 
-            await DetailNav.PushAsync(BuildDetailPage("Home"), null);
+            _ = DetailNav.PushAsync(BuildDetailPage("Home"), null);
         }
 
         private Control[] MenuItems =>

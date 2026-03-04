@@ -57,11 +57,7 @@
       <TabItem Header="Carousel">
         <pages:CarouselPage />
       </TabItem>
-      <TabItem Header="Connected Animation"
-               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-               ScrollViewer.VerticalScrollBarVisibility="Disabled">
-        <pages:ConnectedAnimationDemoPage />
-      </TabItem>
+
       <TabItem Header="CheckBox">
         <pages:CheckBoxPage />
       </TabItem>

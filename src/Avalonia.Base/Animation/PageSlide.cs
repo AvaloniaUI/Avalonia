@@ -79,8 +79,7 @@ namespace Avalonia.Animation
 
             var tasks = new List<Task>();
             var parent = GetVisualParent(from, to);
-            var rawDistance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
-            var distance = rawDistance > 0 ? rawDistance : (Orientation == SlideAxis.Horizontal ? 500d : 400d);
+            var distance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
             var translateProperty = Orientation == SlideAxis.Horizontal ? TranslateTransform.XProperty : TranslateTransform.YProperty;
 
             if (from != null)

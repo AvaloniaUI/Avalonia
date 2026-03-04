@@ -18,13 +18,13 @@ namespace ControlCatalog.Pages
             Loaded += OnLoaded;
         }
 
-        private void OnLoaded(object? sender, RoutedEventArgs e)
+        private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
             EventLogItems.ItemsSource = _logItems;
 
             var root = MakePage("Root", "Navigate to see lifecycle events in the log below.");
             SubscribeEvents(root);
-            DemoNav.Push(root);
+            await DemoNav.PushAsync(root);
         }
 
         private void SubscribeEvents(ContentPage page)
@@ -50,12 +50,12 @@ namespace ControlCatalog.Pages
             };
         }
 
-        private void OnPush(object? sender, RoutedEventArgs e)
+        private async void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
             var page = MakePage($"Page {_pageCount}", "Navigate back to see Navigating/NavigatedFrom.");
             SubscribeEvents(page);
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
         }
 
         private async void OnPop(object? sender, RoutedEventArgs e) => await DemoNav.PopAsync();

@@ -1,7 +1,5 @@
 using System.Collections.ObjectModel;
-using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -10,8 +8,19 @@ namespace ControlCatalog.Pages
 {
     public partial class TabbedPageDataTemplatePage : UserControl
     {
-        private readonly ObservableCollection<CategoryItem> _categories = new();
-        private int _counter;
+        private static readonly (string Name, string Color)[] CategoryData =
+        {
+            ("Electronics", "#1565C0"),
+            ("Books",       "#2E7D32"),
+            ("Clothing",    "#6A1B9A"),
+        };
+
+        private static readonly string[] AddNames   = { "Sports", "Music", "Garden", "Toys", "Food" };
+        private static readonly string[] AddColors  = { "#E53935", "#F57C00", "#00796B", "#E91E63", "#3F51B5" };
+
+        private readonly ObservableCollection<Page> _pages = new();
+        private int _addCounter;
+        private TabbedPage? _tabbedPage;
 
         public TabbedPageDataTemplatePage()
         {
@@ -21,80 +30,73 @@ namespace ControlCatalog.Pages
 
         private void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            _categories.Add(new CategoryItem("Electronics", "#1565C0"));
-            _categories.Add(new CategoryItem("Books", "#2E7D32"));
-            _categories.Add(new CategoryItem("Clothing", "#6A1B9A"));
-            _counter = 3;
+            foreach (var (name, color) in CategoryData)
+                _pages.Add(CreatePage(name, color));
 
-            var tabbedPage = new TabbedPage
+            _addCounter = CategoryData.Length;
+
+            _tabbedPage = new TabbedPage
             {
                 TabPlacement = TabPlacement.Top,
-                PageTemplate = new FuncDataTemplate<CategoryItem>((item, _) =>
-                {
-                    if (item == null) return null;
-
-                    return new ContentPage
-                    {
-                        Header = item.Name,
-                        Content = new StackPanel
-                        {
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center,
-                            Spacing = 8,
-                            Children =
-                            {
-                                new TextBlock
-                                {
-                                    Text = item.Name,
-                                    FontSize = 24,
-                                    FontWeight = FontWeight.SemiBold,
-                                    Foreground = new SolidColorBrush(Color.Parse(item.Color)),
-                                    HorizontalAlignment = HorizontalAlignment.Center
-                                },
-                                new TextBlock
-                                {
-                                    Text = $"Data-bound tab generated from a {item.GetType().Name} object.",
-                                    FontSize = 13,
-                                    Opacity = 0.7,
-                                    TextWrapping = TextWrapping.Wrap,
-                                    TextAlignment = TextAlignment.Center,
-                                    MaxWidth = 280
-                                }
-                            }
-                        }
-                    };
-                }, true),
-                Pages = _categories
+                Pages = _pages
             };
 
-            TabbedPageHost.Children.Add(tabbedPage);
+            TabbedPageHost.Children.Add(_tabbedPage);
             UpdateStatus();
         }
 
         private void OnAddCategory(object? sender, RoutedEventArgs e)
         {
-            var colors = new[] { "#E53935", "#F57C00", "#00796B", "#E91E63", "#3F51B5" };
-            var names = new[] { "Sports", "Music", "Garden", "Toys", "Food" };
-            var idx = _counter % names.Length;
-            _categories.Add(new CategoryItem(names[idx] + (_counter >= names.Length ? $" {_counter / names.Length + 1}" : ""), colors[idx]));
-            _counter++;
+            var idx = _addCounter % AddNames.Length;
+            var name = AddNames[idx] + (_addCounter >= AddNames.Length ? $" {_addCounter / AddNames.Length + 1}" : "");
+            _pages.Add(CreatePage(name, AddColors[idx]));
+            _addCounter++;
             UpdateStatus();
         }
 
         private void OnRemoveCategory(object? sender, RoutedEventArgs e)
         {
-            if (_categories.Count > 0)
+            if (_pages.Count > 0)
             {
-                _categories.RemoveAt(_categories.Count - 1);
+                _pages.RemoveAt(_pages.Count - 1);
                 UpdateStatus();
             }
         }
 
         private void UpdateStatus()
         {
-            StatusText.Text = $"{_categories.Count} categor{(_categories.Count == 1 ? "y" : "ies")}";
+            StatusText.Text = $"{_pages.Count} categor{(_pages.Count == 1 ? "y" : "ies")}";
         }
 
-        public record CategoryItem(string Name, string Color);
+        private static ContentPage CreatePage(string name, string color) => new()
+        {
+            Header = name,
+            Content = new StackPanel
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Spacing = 8,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = name,
+                        FontSize = 24,
+                        FontWeight = FontWeight.SemiBold,
+                        Foreground = new SolidColorBrush(Color.Parse(color)),
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    },
+                    new TextBlock
+                    {
+                        Text = $"Tab for category: {name}",
+                        FontSize = 13,
+                        Opacity = 0.7,
+                        TextWrapping = TextWrapping.Wrap,
+                        TextAlignment = TextAlignment.Center,
+                        MaxWidth = 280
+                    }
+                }
+            }
+        };
     }
 }

@@ -314,12 +314,28 @@ public class CommandBarDefaultsTests : ScopedTestBase
         => Assert.NotNull(new CommandBar().OverflowItems);
 
     [Fact]
+    public void PrimaryCommands_CanBeSetToNull()
+    {
+        var cb = new CommandBar();
+        cb.PrimaryCommands = null;
+        Assert.Null(cb.PrimaryCommands);
+    }
+
+    [Fact]
+    public void SecondaryCommands_CanBeSetToNull()
+    {
+        var cb = new CommandBar();
+        cb.SecondaryCommands = null;
+        Assert.Null(cb.SecondaryCommands);
+    }
+
+    [Fact]
     public void PrimaryCommands_StartsEmpty()
-        => Assert.Empty(new CommandBar().PrimaryCommands);
+        => Assert.Empty(new CommandBar().PrimaryCommands!);
 
     [Fact]
     public void SecondaryCommands_StartsEmpty()
-        => Assert.Empty(new CommandBar().SecondaryCommands);
+        => Assert.Empty(new CommandBar().SecondaryCommands!);
 
     [Fact]
     public void VisiblePrimaryCommands_StartsEmpty()
@@ -328,6 +344,18 @@ public class CommandBarDefaultsTests : ScopedTestBase
     [Fact]
     public void OverflowItems_StartsEmpty()
         => Assert.Empty(new CommandBar().OverflowItems);
+
+    [Fact]
+    public void ItemWidthBottom_DefaultIs70()
+        => Assert.Equal(70d, new CommandBar().ItemWidthBottom);
+
+    [Fact]
+    public void ItemWidthRight_DefaultIs102()
+        => Assert.Equal(102d, new CommandBar().ItemWidthRight);
+
+    [Fact]
+    public void ItemWidthCollapsed_DefaultIs42()
+        => Assert.Equal(42d, new CommandBar().ItemWidthCollapsed);
 }
 
 public class CommandBarPropertyRoundTripTests : ScopedTestBase
@@ -376,6 +404,27 @@ public class CommandBarPropertyRoundTripTests : ScopedTestBase
     {
         var cb = new CommandBar { OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Visible };
         Assert.Equal(CommandBarOverflowButtonVisibility.Visible, cb.OverflowButtonVisibility);
+    }
+
+    [Fact]
+    public void ItemWidthBottom_RoundTrip()
+    {
+        var cb = new CommandBar { ItemWidthBottom = 80d };
+        Assert.Equal(80d, cb.ItemWidthBottom);
+    }
+
+    [Fact]
+    public void ItemWidthRight_RoundTrip()
+    {
+        var cb = new CommandBar { ItemWidthRight = 120d };
+        Assert.Equal(120d, cb.ItemWidthRight);
+    }
+
+    [Fact]
+    public void ItemWidthCollapsed_RoundTrip()
+    {
+        var cb = new CommandBar { ItemWidthCollapsed = 50d };
+        Assert.Equal(50d, cb.ItemWidthCollapsed);
     }
 }
 
@@ -466,7 +515,7 @@ public class CommandBarCollectionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var btn = new AppBarButton { Label = "Save" };
-        cb.PrimaryCommands.Add(btn);
+        cb.PrimaryCommands!.Add(btn);
         Assert.Contains(btn, cb.VisiblePrimaryCommands);
     }
 
@@ -475,8 +524,8 @@ public class CommandBarCollectionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var btn = new AppBarButton { Label = "Save" };
-        cb.PrimaryCommands.Add(btn);
-        cb.PrimaryCommands.Remove(btn);
+        cb.PrimaryCommands!.Add(btn);
+        cb.PrimaryCommands!.Remove(btn);
         Assert.DoesNotContain(btn, cb.VisiblePrimaryCommands);
     }
 
@@ -485,7 +534,7 @@ public class CommandBarCollectionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var btn = new AppBarButton { Label = "Settings" };
-        cb.SecondaryCommands.Add(btn);
+        cb.SecondaryCommands!.Add(btn);
         Assert.Contains(btn, cb.OverflowItems);
     }
 
@@ -494,8 +543,8 @@ public class CommandBarCollectionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var btn = new AppBarButton { Label = "Settings" };
-        cb.SecondaryCommands.Add(btn);
-        cb.SecondaryCommands.Remove(btn);
+        cb.SecondaryCommands!.Add(btn);
+        cb.SecondaryCommands!.Remove(btn);
         Assert.DoesNotContain(btn, cb.OverflowItems);
     }
 
@@ -503,7 +552,7 @@ public class CommandBarCollectionTests : ScopedTestBase
     public void HasSecondaryCommands_TrueWhenSecondaryAdded()
     {
         var cb = new CommandBar();
-        cb.SecondaryCommands.Add(new AppBarButton { Label = "Options" });
+        cb.SecondaryCommands!.Add(new AppBarButton { Label = "Options" });
         Assert.True(cb.HasSecondaryCommands);
     }
 
@@ -512,8 +561,8 @@ public class CommandBarCollectionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var btn = new AppBarButton { Label = "Options" };
-        cb.SecondaryCommands.Add(btn);
-        cb.SecondaryCommands.Remove(btn);
+        cb.SecondaryCommands!.Add(btn);
+        cb.SecondaryCommands!.Remove(btn);
         Assert.False(cb.HasSecondaryCommands);
     }
 
@@ -521,8 +570,8 @@ public class CommandBarCollectionTests : ScopedTestBase
     public void OverflowItems_CountMatchesSecondaryCommandCount()
     {
         var cb = new CommandBar();
-        cb.SecondaryCommands.Add(new AppBarButton());
-        cb.SecondaryCommands.Add(new AppBarButton());
+        cb.SecondaryCommands!.Add(new AppBarButton());
+        cb.SecondaryCommands!.Add(new AppBarButton());
         Assert.Equal(2, cb.OverflowItems.Count);
     }
 
@@ -530,8 +579,8 @@ public class CommandBarCollectionTests : ScopedTestBase
     public void VisiblePrimaryCommands_CountMatchesPrimary_WhenDynamicOverflowDisabled()
     {
         var cb = new CommandBar();
-        cb.PrimaryCommands.Add(new AppBarButton());
-        cb.PrimaryCommands.Add(new AppBarButton());
+        cb.PrimaryCommands!.Add(new AppBarButton());
+        cb.PrimaryCommands!.Add(new AppBarButton());
         Assert.Equal(2, cb.VisiblePrimaryCommands.Count);
     }
 
@@ -542,9 +591,9 @@ public class CommandBarCollectionTests : ScopedTestBase
         var btn1 = new AppBarButton { Label = "A" };
         var btn2 = new AppBarButton { Label = "B" };
         var btn3 = new AppBarButton { Label = "C" };
-        cb.PrimaryCommands.Add(btn1);
-        cb.PrimaryCommands.Add(btn2);
-        cb.PrimaryCommands.Add(btn3);
+        cb.PrimaryCommands!.Add(btn1);
+        cb.PrimaryCommands!.Add(btn2);
+        cb.PrimaryCommands!.Add(btn3);
         Assert.Equal(new ICommandBarElement[] { btn1, btn2, btn3 }, cb.VisiblePrimaryCommands);
     }
 
@@ -553,7 +602,7 @@ public class CommandBarCollectionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var sep = new AppBarSeparator();
-        cb.PrimaryCommands.Add(sep);
+        cb.PrimaryCommands!.Add(sep);
         Assert.Contains(sep, cb.VisiblePrimaryCommands);
     }
 
@@ -562,7 +611,7 @@ public class CommandBarCollectionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var toggle = new AppBarToggleButton { Label = "Bold" };
-        cb.PrimaryCommands.Add(toggle);
+        cb.PrimaryCommands!.Add(toggle);
         Assert.Contains(toggle, cb.VisiblePrimaryCommands);
     }
 }
@@ -574,7 +623,7 @@ public class CommandBarLabelPositionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var btn = new AppBarButton();
-        cb.PrimaryCommands.Add(btn);
+        cb.PrimaryCommands!.Add(btn);
 
         cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
 
@@ -586,7 +635,7 @@ public class CommandBarLabelPositionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var btn = new AppBarButton();
-        cb.PrimaryCommands.Add(btn);
+        cb.PrimaryCommands!.Add(btn);
         cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
 
         cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Bottom;
@@ -599,7 +648,7 @@ public class CommandBarLabelPositionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var btn = new AppBarButton();
-        cb.PrimaryCommands.Add(btn);
+        cb.PrimaryCommands!.Add(btn);
 
         cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Right;
 
@@ -611,7 +660,7 @@ public class CommandBarLabelPositionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var btn = new AppBarButton();
-        cb.PrimaryCommands.Add(btn);
+        cb.PrimaryCommands!.Add(btn);
 
         cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
 
@@ -623,7 +672,7 @@ public class CommandBarLabelPositionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var toggle = new AppBarToggleButton();
-        cb.PrimaryCommands.Add(toggle);
+        cb.PrimaryCommands!.Add(toggle);
 
         cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
 
@@ -636,7 +685,7 @@ public class CommandBarLabelPositionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var toggle = new AppBarToggleButton();
-        cb.PrimaryCommands.Add(toggle);
+        cb.PrimaryCommands!.Add(toggle);
 
         cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Right;
 
@@ -648,7 +697,7 @@ public class CommandBarLabelPositionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var sep = new AppBarSeparator();
-        cb.PrimaryCommands.Add(sep);
+        cb.PrimaryCommands!.Add(sep);
 
         cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
 
@@ -661,7 +710,7 @@ public class CommandBarLabelPositionTests : ScopedTestBase
         var cb = new CommandBar { DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed };
 
         var btn = new AppBarButton();
-        cb.PrimaryCommands.Add(btn);
+        cb.PrimaryCommands!.Add(btn);
 
         Assert.True(btn.IsCompact);
         Assert.Equal(CommandBarDefaultLabelPosition.Collapsed, btn.LabelPosition);
@@ -673,7 +722,7 @@ public class CommandBarLabelPositionTests : ScopedTestBase
         var cb = new CommandBar { DefaultLabelPosition = CommandBarDefaultLabelPosition.Right };
 
         var btn = new AppBarButton();
-        cb.PrimaryCommands.Add(btn);
+        cb.PrimaryCommands!.Add(btn);
 
         Assert.Equal(CommandBarDefaultLabelPosition.Right, btn.LabelPosition);
     }
@@ -683,7 +732,7 @@ public class CommandBarLabelPositionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var btn = new AppBarButton();
-        cb.SecondaryCommands.Add(btn);
+        cb.SecondaryCommands!.Add(btn);
 
         cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
 
@@ -695,7 +744,7 @@ public class CommandBarLabelPositionTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var btn = new AppBarButton { Label = "Save" };
-        cb.PrimaryCommands.Add(btn);
+        cb.PrimaryCommands!.Add(btn);
 
         cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
 
@@ -723,7 +772,7 @@ public class CommandBarOverflowButtonTests : ScopedTestBase
     public void OverflowButtonVisibility_Auto_TrueWhenHasSecondaryCommands()
     {
         var cb = new CommandBar();
-        cb.SecondaryCommands.Add(new AppBarButton());
+        cb.SecondaryCommands!.Add(new AppBarButton());
         Assert.True(cb.IsOverflowButtonVisible);
     }
 
@@ -745,7 +794,7 @@ public class CommandBarOverflowButtonTests : ScopedTestBase
     public void OverflowButtonVisibility_Collapsed_RemainsFalseEvenWithSecondary()
     {
         var cb = new CommandBar { OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Collapsed };
-        cb.SecondaryCommands.Add(new AppBarButton());
+        cb.SecondaryCommands!.Add(new AppBarButton());
         Assert.False(cb.IsOverflowButtonVisible);
     }
 
@@ -754,10 +803,10 @@ public class CommandBarOverflowButtonTests : ScopedTestBase
     {
         var cb = new CommandBar();
         var btn = new AppBarButton();
-        cb.SecondaryCommands.Add(btn);
+        cb.SecondaryCommands!.Add(btn);
         Assert.True(cb.IsOverflowButtonVisible);
 
-        cb.SecondaryCommands.Remove(btn);
+        cb.SecondaryCommands!.Remove(btn);
         Assert.False(cb.IsOverflowButtonVisible);
     }
 
@@ -769,6 +818,125 @@ public class CommandBarOverflowButtonTests : ScopedTestBase
 
         cb.OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Visible;
         Assert.True(cb.IsOverflowButtonVisible);
+    }
+}
+
+public class CommandBarItemWidthTests : ScopedTestBase
+{
+    private static CommandBar CreateWithWidth(double width)
+    {
+        var cb = new CommandBar();
+        cb.Measure(new Size(width, double.PositiveInfinity));
+        return cb;
+    }
+
+    [Fact]
+    public void ItemWidthBottom_Controls_HowManyButtonsFit()
+    {
+        var cb = CreateWithWidth(300);
+        cb.SecondaryCommands!.Add(new AppBarButton()); // forces overflow button
+        for (int i = 0; i < 4; i++)
+            cb.PrimaryCommands!.Add(new AppBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(3, cb.VisiblePrimaryCommands.Count);
+        Assert.Equal(1, cb.OverflowItems.Count - 1); // -1 for the secondary command
+    }
+
+    [Fact]
+    public void ItemWidthBottom_Reduced_AllowsMoreItemsToFit()
+    {
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 35;
+        cb.SecondaryCommands!.Add(new AppBarButton());
+        for (int i = 0; i < 4; i++)
+            cb.PrimaryCommands!.Add(new AppBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(4, cb.VisiblePrimaryCommands.Count);
+    }
+
+    [Fact]
+    public void ItemWidthBottom_Large_ReducesToMinimumOneVisible()
+    {
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 260;
+        cb.SecondaryCommands!.Add(new AppBarButton());
+        for (int i = 0; i < 3; i++)
+            cb.PrimaryCommands!.Add(new AppBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(1, cb.VisiblePrimaryCommands.Count);
+    }
+
+    [Fact]
+    public void ItemWidthRight_UsedWhenLabelPositionIsRight()
+    {
+        var cb = CreateWithWidth(300);
+        cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Right;
+        cb.SecondaryCommands!.Add(new AppBarButton());
+        for (int i = 0; i < 4; i++)
+            cb.PrimaryCommands!.Add(new AppBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(2, cb.VisiblePrimaryCommands.Count);
+    }
+
+    [Fact]
+    public void ItemWidthRight_Increased_FewerItemsFit()
+    {
+        var cb = CreateWithWidth(300);
+        cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Right;
+        cb.ItemWidthRight = 252; // exactly 1 fits: 252/252=1
+        cb.SecondaryCommands!.Add(new AppBarButton());
+        for (int i = 0; i < 3; i++)
+            cb.PrimaryCommands!.Add(new AppBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(1, cb.VisiblePrimaryCommands.Count);
+    }
+
+    [Fact]
+    public void ItemWidthCollapsed_UsedWhenLabelPositionIsCollapsed()
+    {
+        var cb = CreateWithWidth(300);
+        cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
+        cb.SecondaryCommands!.Add(new AppBarButton());
+        for (int i = 0; i < 4; i++)
+            cb.PrimaryCommands!.Add(new AppBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(4, cb.VisiblePrimaryCommands.Count);
+    }
+
+    [Fact]
+    public void ItemWidths_AreIndependent_PerLabelPosition()
+    {
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom    = 70;
+        cb.ItemWidthRight     = 102;
+        cb.ItemWidthCollapsed = 42;
+        cb.SecondaryCommands!.Add(new AppBarButton());
+        for (int i = 0; i < 4; i++)
+            cb.PrimaryCommands!.Add(new AppBarButton());
+
+        cb.DefaultLabelPosition    = CommandBarDefaultLabelPosition.Bottom;
+        cb.IsDynamicOverflowEnabled = true;
+        int visibleBottom = cb.VisiblePrimaryCommands.Count; // 252/70 = 3
+
+        cb.IsDynamicOverflowEnabled = false;
+        cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Right;
+        cb.IsDynamicOverflowEnabled = true;
+        int visibleRight = cb.VisiblePrimaryCommands.Count; // 252/102 = 2
+
+        cb.IsDynamicOverflowEnabled = false;
+        cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
+        cb.IsDynamicOverflowEnabled = true;
+        int visibleCollapsed = cb.VisiblePrimaryCommands.Count; // 252/42 = 6 → capped at 4
+
+        Assert.Equal(3, visibleBottom);
+        Assert.Equal(2, visibleRight);
+        Assert.Equal(4, visibleCollapsed);
     }
 }
 

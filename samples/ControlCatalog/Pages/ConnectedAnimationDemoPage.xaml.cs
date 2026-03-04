@@ -9,17 +9,7 @@ namespace ControlCatalog.Pages
 {
     public partial class ConnectedAnimationDemoPage : UserControl
     {
-        private static readonly (string Group, string Title, string Description, Func<UserControl> Factory)[] Demos =
-        {
-            ("Getting Started", "First Look", "Click item to animate to detail view",
-             () => new ConnectedAnimationFirstLookPage()),
-
-            ("Features", "Coordinated", "Companion elements animate alongside the target",
-             () => new ConnectedAnimationCoordinatedPage()),
-
-            ("Configuration", "Customization", "Configure duration, easing and animation style",
-             () => new ConnectedAnimationCustomizationPage()),
-        };
+        private static readonly (string Group, string Title, string Description, Func<UserControl> Factory)[] Demos = [];
 
         public ConnectedAnimationDemoPage()
         {

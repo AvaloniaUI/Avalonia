@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
@@ -13,14 +14,11 @@ namespace Avalonia.Controls
     /// </summary>
     public abstract class MultiPage : Page
     {
-        private IEnumerable? _pages;
-
         /// <summary>
         /// Defines the <see cref="Pages"/> property.
         /// </summary>
-        public static readonly DirectProperty<MultiPage, IEnumerable?> PagesProperty =
-            AvaloniaProperty.RegisterDirect<MultiPage, IEnumerable?>(nameof(Pages),
-                o => o.Pages, (o, v) => o.Pages = v);
+        public static readonly StyledProperty<IEnumerable<Page>?> PagesProperty =
+            AvaloniaProperty.Register<MultiPage, IEnumerable<Page>?>(nameof(Pages));
 
         /// <summary>
         /// Defines the <see cref="PageTemplate"/> property.
@@ -39,10 +37,10 @@ namespace Avalonia.Controls
         /// the control to prevent the control from being retained by the collection.
         /// </remarks>
         [Content]
-        public virtual IEnumerable? Pages
+        public IEnumerable<Page>? Pages
         {
-            get => _pages;
-            set => SetAndRaise(PagesProperty, ref _pages, value);
+            get => GetValue(PagesProperty);
+            set => SetValue(PagesProperty, value);
         }
 
         /// <summary>
@@ -75,9 +73,9 @@ namespace Avalonia.Controls
 
                 LogicalChildren.Clear();
 
-                if (change.NewValue != null)
+                if (change.NewValue is IEnumerable<Page> newPages)
                 {
-                    foreach (var page in Pages!)
+                    foreach (var page in newPages)
                     {
                         if (page is ILogical logical)
                             LogicalChildren.Add(logical);
@@ -97,7 +95,7 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
 
-            if (_pages is INotifyCollectionChanged collection)
+            if (Pages is INotifyCollectionChanged collection)
                 collection.CollectionChanged -= NotifyCollection_CollectionChanged;
         }
 
@@ -107,9 +105,9 @@ namespace Avalonia.Controls
             {
                 case NotifyCollectionChangedAction.Reset:
                     LogicalChildren.Clear();
-                    if (_pages != null)
+                    if (Pages != null)
                     {
-                        foreach (var item in _pages)
+                        foreach (var item in Pages)
                         {
                             if (item is ILogical logical)
                                 LogicalChildren.Add(logical);

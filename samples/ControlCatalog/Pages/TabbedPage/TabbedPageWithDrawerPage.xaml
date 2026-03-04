@@ -47,25 +47,9 @@
         </StackPanel>
       </DrawerPage.Drawer>
       <DrawerPage.Content>
-        <!-- TabbedPage is the main content; tabs provide secondary navigation within each section. -->
-        <TabbedPage x:Name="DemoTabs" TabPlacement="Bottom">
-          <ContentPage Header="Feed">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
-              <TextBlock x:Name="SectionText" Text="Home" FontSize="22" FontWeight="SemiBold"
-                         HorizontalAlignment="Center" />
-              <TextBlock Text="Feed tab. Open the drawer to switch sections."
-                         FontSize="13" Opacity="0.7" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="300" />
-            </StackPanel>
-          </ContentPage>
-          <ContentPage Header="Featured">
-            <TextBlock Text="Featured content" HorizontalAlignment="Center" VerticalAlignment="Center"
-                       FontSize="18" Opacity="0.7" />
-          </ContentPage>
-          <ContentPage Header="Recent">
-            <TextBlock Text="Recent activity" HorizontalAlignment="Center" VerticalAlignment="Center"
-                       FontSize="18" Opacity="0.7" />
-          </ContentPage>
-        </TabbedPage>
+        <!-- ContentControl switches between plain pages and the tabbed Explore section. -->
+        <ContentControl x:Name="SectionHost" HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch" />
       </DrawerPage.Content>
     </DrawerPage>
   </Border>

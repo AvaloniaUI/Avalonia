@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -134,11 +135,11 @@ namespace ControlCatalog.Pages
                 }
             };
 
-            card.Click += (s, e) => NavigateToDetail(contact);
+            card.Click += async (s, e) => await NavigateToDetail(contact);
             return card;
         }
 
-        private void NavigateToDetail(Contact contact)
+        private async Task NavigateToDetail(Contact contact)
         {
             ContentPage detailPage;
             var pageBg = new SolidColorBrush(Color.FromArgb(30, contact.Color.R, contact.Color.G, contact.Color.B));
@@ -167,7 +168,7 @@ namespace ControlCatalog.Pages
 
             detailPage.HorizontalContentAlignment = HorizontalAlignment.Stretch;
             detailPage.VerticalContentAlignment = VerticalAlignment.Stretch;
-            DemoNav.Push(detailPage);
+            await DemoNav.PushAsync(detailPage);
 
             AppendNavigationLog($"Navigated to {contact.Name} via {(MethodCombo.SelectedIndex == 1 ? "DataContext" : "Constructor")}");
         }

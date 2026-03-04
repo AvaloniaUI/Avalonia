@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -18,29 +19,24 @@ public partial class ModernAppPage : UserControl
     ScrollViewer?   _infoPanel;
     TextBlock?      _pageTitle;
     Button?         _selectedNavBtn;
-    bool            _initialized;
 
     public ModernAppPage()
     {
         InitializeComponent();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
 
         _infoPanel  = this.FindControl<ScrollViewer>("InfoPanel");
         _drawerPage = this.FindControl<DrawerPage>("DrawerPageControl");
         _navPage    = this.FindControl<NavigationPage>("NavPage");
         _pageTitle  = this.FindControl<TextBlock>("PageTitle");
 
+        if (_navPage != null)
+            NavigateToDiscover();
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
         UpdateInfoPanelVisibility();
-
-        if (_initialized) return;
-        _initialized = true;
-
-        if (_navPage == null) return;
-        NavigateToDiscover();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -83,40 +79,40 @@ public partial class ModernAppPage : UserControl
         btn.Background = new SolidColorBrush(Color.Parse("#1A0dccf2"));
     }
 
-    void Navigate(ContentPage page)
+    async Task Navigate(ContentPage page)
     {
         if (_navPage == null) return;
         NavigationPage.SetHasBackButton(page, false);
         NavigationPage.SetHasNavigationBar(page, false);
-        _ = _navPage.PopToRootAsync();
-        _navPage.Push(page);
+        await _navPage.PopToRootAsync();
+        await _navPage.PushAsync(page);
     }
 
-    void NavigateToDiscover()
+    async void NavigateToDiscover()
     {
         if (_pageTitle != null) _pageTitle.Text = "Discover";
         SelectNavButton(this.FindControl<Button>("BtnDiscover")!);
-        Navigate(new ContentPage { Content = new ModernDiscoverView(), Background = BgBrush });
+        await Navigate(new ContentPage { Content = new ModernDiscoverView(), Background = BgBrush });
     }
 
-    void NavigateToMyTrips()
+    async void NavigateToMyTrips()
     {
         if (_pageTitle != null) _pageTitle.Text = "My Trips";
         SelectNavButton(this.FindControl<Button>("BtnMyTrips")!);
-        Navigate(new ContentPage { Content = new ModernMyTripsView(), Background = BgBrush });
+        await Navigate(new ContentPage { Content = new ModernMyTripsView(), Background = BgBrush });
     }
 
-    void NavigateToProfile()
+    async void NavigateToProfile()
     {
         if (_pageTitle != null) _pageTitle.Text = "Profile";
         SelectNavButton(this.FindControl<Button>("BtnProfile")!);
-        Navigate(new ContentPage { Content = new ModernProfileView(), Background = BgBrush });
+        await Navigate(new ContentPage { Content = new ModernProfileView(), Background = BgBrush });
     }
 
-    void NavigateToSettings()
+    async void NavigateToSettings()
     {
         if (_pageTitle != null) _pageTitle.Text = "Settings";
         SelectNavButton(this.FindControl<Button>("BtnSettings")!);
-        Navigate(new ContentPage { Content = new ModernSettingsView(), Background = BgBrush });
+        await Navigate(new ContentPage { Content = new ModernSettingsView(), Background = BgBrush });
     }
 }

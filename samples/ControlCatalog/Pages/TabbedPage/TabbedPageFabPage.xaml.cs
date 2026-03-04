@@ -20,11 +20,6 @@ namespace ControlCatalog.Pages
         public TabbedPageFabPage()
         {
             InitializeComponent();
-        }
-
-        protected override void OnLoaded(RoutedEventArgs e)
-        {
-            base.OnLoaded(e);
             SetupIcons();
 
             FabButton.Click += OnFabClicked;

@@ -34,7 +34,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             var nav = (NavigationPage)((Decorator)target).Child!;
-            nav.Push(new ContentPage
+            await nav.PushAsync(new ContentPage
             {
                 Header = "Home",
                 Background = Brushes.White,
@@ -71,7 +71,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             var nav = (NavigationPage)((Decorator)target).Child!;
-            nav.Push(new ContentPage
+            await nav.PushAsync(new ContentPage
             {
                 Header = "Home",
                 Background = Brushes.White,
@@ -125,7 +125,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             var nav = (NavigationPage)((Decorator)target).Child!;
-            nav.Push(new ContentPage
+            await nav.PushAsync(new ContentPage
             {
                 Header = "Green Theme",
                 Background = Brushes.White,

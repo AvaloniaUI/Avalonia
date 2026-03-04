@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -18,11 +19,17 @@ public partial class PulseAppPage : UserControl
     NavigationPage? _navPage;
     ContentPage?    _loginPage;
     ScrollViewer?   _infoPanel;
-    bool            _initialized;
 
     public PulseAppPage()
     {
         InitializeComponent();
+
+        _navPage = this.FindControl<NavigationPage>("NavPage");
+        if (_navPage != null)
+        {
+            _loginPage = BuildLoginPage();
+            _ = _navPage.PushAsync(_loginPage);
+        }
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -31,15 +38,6 @@ public partial class PulseAppPage : UserControl
 
         _infoPanel = this.FindControl<ScrollViewer>("InfoPanel");
         UpdateInfoPanelVisibility();
-
-        if (_initialized) return;
-        _initialized = true;
-
-        _navPage = this.FindControl<NavigationPage>("NavPage");
-        if (_navPage == null) return;
-
-        _loginPage = BuildLoginPage();
-        _navPage.Push(_loginPage);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -69,12 +67,12 @@ public partial class PulseAppPage : UserControl
         return page;
     }
 
-    void OnLoginRequested()
+    async void OnLoginRequested()
     {
         if (_navPage == null || _loginPage == null) return;
 
         var dashboard = BuildDashboardPage();
-        _navPage.Push(dashboard);
+        await _navPage.PushAsync(dashboard);
         _navPage.RemovePage(_loginPage);
         _loginPage = null;
     }
@@ -120,16 +118,16 @@ public partial class PulseAppPage : UserControl
             Icon       = "M12 2C9.243 2 7 4.243 7 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zM12 14c-5.523 0-10 3.582-10 8a1 1 0 001 1h18a1 1 0 001-1c0-4.418-4.477-8-10-8z",
         };
 
-        tp.Pages = new ObservableCollection<object?> { homePage, workoutsPage, profilePage };
+        tp.Pages = new ObservableCollection<Page> { homePage, workoutsPage, profilePage };
         return tp;
     }
 
-    void PushWorkoutDetail()
+    async void PushWorkoutDetail()
     {
         if (_navPage == null) return;
 
         var detailView = new PulseWorkoutDetailView();
-        detailView.BackRequested = () => _navPage?.Pop();
+        detailView.BackRequested = async () => { if (_navPage != null) await _navPage.PopAsync(); };
 
         var page = new ContentPage
         {
@@ -137,6 +135,6 @@ public partial class PulseAppPage : UserControl
             Background = new SolidColorBrush(BgDark),
         };
         NavigationPage.SetHasNavigationBar(page, false);
-        _navPage.Push(page);
+        await _navPage.PushAsync(page);
     }
 }

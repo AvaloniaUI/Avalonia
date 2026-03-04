@@ -125,6 +125,16 @@ namespace Avalonia.Animation
             set => _fadeOutAnimation.Easing = value;
         }
 
+        /// <summary>
+        /// Gets or sets the fill mode applied to both fade animations.
+        /// Defaults to <see cref="FillMode.Forward"/>.
+        /// </summary>
+        public FillMode FillMode
+        {
+            get => _fadeOutAnimation.FillMode;
+            set => _fadeOutAnimation.FillMode = _fadeInAnimation.FillMode = value;
+        }
+
         /// <inheritdoc cref="Start(Visual, Visual, CancellationToken)" />
         public async Task Start(Visual? from, Visual? to, CancellationToken cancellationToken)
         {
@@ -142,22 +152,14 @@ namespace Avalonia.Animation
 
             if (to != null)
             {
-                to.Opacity = 0;
                 to.IsVisible = true;
                 tasks.Add(_fadeInAnimation.RunAsync(to, null, cancellationToken));
             }
 
             await Task.WhenAll(tasks);
 
-            if (to != null)
-                to.Opacity = 1;
-
-            if (from != null)
-            {
-                if (!cancellationToken.IsCancellationRequested)
-                    from.IsVisible = false;
-                from.Opacity = 1;
-            }
+            if (from != null && !cancellationToken.IsCancellationRequested)
+                from.IsVisible = false;
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform;
 using Avalonia.Styling;
@@ -66,8 +67,8 @@ namespace Avalonia.Benchmarks.Navigation
             _nav = new NavigationPage { PageTransition = null };
             _root.Child = _nav;
             _root.LayoutManager.ExecuteLayoutPass();
-            _nav.Push(new ContentPage { Header = "Root" });
-            _nav.Push(new ContentPage { Header = "Page 2" });
+            _nav.PushAsync(new ContentPage { Header = "Root" }).GetAwaiter().GetResult();
+            _nav.PushAsync(new ContentPage { Header = "Page 2" }).GetAwaiter().GetResult();
             _root.LayoutManager.ExecuteLayoutPass();
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
         }
@@ -77,9 +78,9 @@ namespace Avalonia.Benchmarks.Navigation
         /// </summary>
         [Benchmark]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public void Push()
+        public async Task Push()
         {
-            _nav.Push(new ContentPage { Header = "Page 3" });
+            await _nav.PushAsync(new ContentPage { Header = "Page 3" });
             _root.LayoutManager.ExecuteLayoutPass();
         }
 
@@ -88,9 +89,9 @@ namespace Avalonia.Benchmarks.Navigation
         /// </summary>
         [Benchmark]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public void Pop()
+        public async Task Pop()
         {
-            _nav.Pop();
+            await _nav.PopAsync();
             _root.LayoutManager.ExecuteLayoutPass();
         }
 

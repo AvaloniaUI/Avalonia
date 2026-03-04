@@ -20,7 +20,7 @@ namespace ControlCatalog.Pages
             InitializeComponent();
         }
 
-        protected override void OnLoaded(RoutedEventArgs e)
+        protected override async void OnLoaded(RoutedEventArgs e)
         {
             base.OnLoaded(e);
 
@@ -30,7 +30,7 @@ namespace ControlCatalog.Pages
 
             _perf.InitHeap();
             _pageCounter++;
-            NavPage.Push(BuildPage("Home", _pageCounter));
+            await NavPage.PushAsync(BuildPage("Home", _pageCounter));
             Log("Init", "Pushed root page");
         }
 
@@ -42,21 +42,21 @@ namespace ControlCatalog.Pages
 
         private void OnStackChanged(object? sender, NavigationEventArgs e) => RefreshAll();
 
-        private void OnPush(object? sender, RoutedEventArgs e)
+        private async void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCounter++;
             var page = BuildPage($"Page {_pageCounter}", _pageCounter);
-            NavPage.Push(page);
+            await NavPage.PushAsync(page);
             Log("Push", $"Pushed \"{page.Header}\"");
         }
 
-        private void OnPush5(object? sender, RoutedEventArgs e)
+        private async void OnPush5(object? sender, RoutedEventArgs e)
         {
             int first = _pageCounter + 1;
             for (int i = 0; i < 5; i++)
             {
                 _pageCounter++;
-                NavPage.Push(BuildPage($"Page {_pageCounter}", _pageCounter));
+                await NavPage.PushAsync(BuildPage($"Page {_pageCounter}", _pageCounter));
             }
             Log("Push ×5", $"Pushed pages {first}–{_pageCounter}");
         }

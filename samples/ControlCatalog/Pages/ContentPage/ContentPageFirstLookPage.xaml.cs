@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -15,16 +16,16 @@ namespace ControlCatalog.Pages
             Loaded += OnLoaded;
         }
 
-        private void OnLoaded(object? sender, RoutedEventArgs e)
+        private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            DemoNav.Push(MakePage("Root Page", "ContentPage inside a NavigationPage.\nUse the options to navigate."));
+            await DemoNav.PushAsync(MakePage("Root Page", "ContentPage inside a NavigationPage.\nUse the options to navigate."));
             UpdateStatus();
         }
 
-        private void OnPush(object? sender, RoutedEventArgs e)
+        private async void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
-            DemoNav.Push(MakePage($"Page {_pageCount}", $"ContentPage #{_pageCount}.\nNavigate back using the back button."));
+            await DemoNav.PushAsync(MakePage($"Page {_pageCount}", $"ContentPage #{_pageCount}.\nNavigate back using the back button."));
             UpdateStatus();
         }
 

@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
@@ -26,11 +25,6 @@ namespace ControlCatalog.Pages
         public TabbedPageFluidNavPage()
         {
             InitializeComponent();
-        }
-
-        protected override void OnLoaded(RoutedEventArgs e)
-        {
-            base.OnLoaded(e);
             SetupNavBar();
             WireEvents();
         }

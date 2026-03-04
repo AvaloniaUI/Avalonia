@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -85,7 +86,7 @@ namespace ControlCatalog.Pages
                 2 => 72.0,
                 _ => null
             };
-            NavigationPage.SetBarHeight(DemoNav.CurrentPage, height);
+            NavigationPage.SetBarHeightOverride(DemoNav.CurrentPage, height);
         }
 
         private void OnTitleStyleChanged(object? sender, SelectionChangedEventArgs e)
@@ -133,7 +134,7 @@ namespace ControlCatalog.Pages
             _backButtonStyle = BackButtonStyleCombo.SelectedIndex;
         }
 
-        private void OnPush(object? sender, RoutedEventArgs e)
+        private async void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
             var page = NavigationDemoHelper.MakePage($"Page {_pageCount}", "Check the back button style.", _pageCount);
@@ -150,7 +151,7 @@ namespace ControlCatalog.Pages
                 NavigationPage.SetBarLayoutBehavior(page, BarLayoutBehavior.Overlay);
 
             NavigationPage.SetHasNavigationBar(page, HasNavBarCheck.IsChecked == true);
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
         }
 
         private async void OnPop(object? sender, RoutedEventArgs e) => await DemoNav.PopAsync();

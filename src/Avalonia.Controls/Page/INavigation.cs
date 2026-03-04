@@ -34,27 +34,14 @@ namespace Avalonia.Controls
         bool CanGoBack { get; }
 
         /// <summary>
-        /// Pushes <paramref name="page"/> onto the navigation stack synchronously.
-        /// The host transition settings still apply to the visual update.
-        /// </summary>
-        void Push(object page);
-
-        /// <summary>
-        /// Pops the top page from the navigation stack synchronously.
-        /// The host transition settings still apply to the visual update.
-        /// Returns the popped page, or <see langword="null"/> if the stack has only one entry.
-        /// </summary>
-        object? Pop();
-
-        /// <summary>
         /// Pushes <paramref name="page"/> using the host's default transition.
         /// </summary>
-        Task PushAsync(object page);
+        Task PushAsync(Page page);
 
         /// <summary>
         /// Pushes <paramref name="page"/> using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
-        Task PushAsync(object page, IPageTransition? transition);
+        Task PushAsync(Page page, IPageTransition? transition);
 
         /// <summary>
         /// Pops the top page using the host's default transition.
@@ -89,22 +76,22 @@ namespace Avalonia.Controls
         /// <summary>
         /// Replaces the current top page with <paramref name="page"/> using the host's default transition.
         /// </summary>
-        Task ReplaceAsync(object page);
+        Task ReplaceAsync(Page page);
 
         /// <summary>
         /// Replaces the current top page with <paramref name="page"/> using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
-        Task ReplaceAsync(object page, IPageTransition? transition);
+        Task ReplaceAsync(Page page, IPageTransition? transition);
 
         /// <summary>
         /// Pushes <paramref name="page"/> as a modal using the host's modal transition.
         /// </summary>
-        Task PushModalAsync(object page);
+        Task PushModalAsync(Page page);
 
         /// <summary>
         /// Pushes <paramref name="page"/> as a modal using <paramref name="transition"/>. Pass <see langword="null"/> for no animation.
         /// </summary>
-        Task PushModalAsync(object page, IPageTransition? transition);
+        Task PushModalAsync(Page page, IPageTransition? transition);
 
         /// <summary>
         /// Pops the top modal page using the host's modal transition.

@@ -225,6 +225,9 @@
     <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
     <Setter Property="MinHeight" Value="48" />
     <Setter Property="Padding" Value="4,0" />
+    <Setter Property="ItemWidthBottom" Value="70" />
+    <Setter Property="ItemWidthRight" Value="102" />
+    <Setter Property="ItemWidthCollapsed" Value="42" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}"

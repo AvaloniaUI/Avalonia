@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -92,15 +93,15 @@ namespace ControlCatalog.Pages
             StatusText.Text = "Custom: Icon + Subtitle";
         }
 
-        private void OnPushWithStringHeader(object? sender, RoutedEventArgs e)
+        private async void OnPushWithStringHeader(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
             var page = NavigationDemoHelper.MakePage($"Page {_pageCount}", "This page uses a string Header.", _pageCount);
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
             StatusText.Text = $"Pushed: \"Page {_pageCount}\"";
         }
 
-        private void OnPushWithCustomHeader(object? sender, RoutedEventArgs e)
+        private async void OnPushWithCustomHeader(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
             var progressHeader = new StackPanel
@@ -158,7 +159,7 @@ namespace ControlCatalog.Pages
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
                 VerticalContentAlignment = VerticalAlignment.Stretch
             };
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
             StatusText.Text = $"Pushed: Custom Header (Step {_pageCount})";
         }
 

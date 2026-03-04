@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -9,7 +10,7 @@ namespace ControlCatalog.Pages
         private int _pageCount;
         private int _itemCount;
         private ContentPage? _rootPage;
-        private readonly CommandBar _rootCommandBar = new CommandBar();
+        private readonly CommandBar _rootCommandBar = new CommandBar { IsDynamicOverflowEnabled = true };
 
         public NavigationPageToolbarPage()
         {
@@ -81,7 +82,7 @@ namespace ControlCatalog.Pages
             UpdateStatus();
         }
 
-        private void OnPushWithToolbar(object? sender, RoutedEventArgs e)
+        private async void OnPushWithToolbar(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
             var page = NavigationDemoHelper.MakePage($"Page {_pageCount}", "CommandBar is shown in the nav bar.", _pageCount);
@@ -92,14 +93,14 @@ namespace ControlCatalog.Pages
             else
                 NavigationPage.SetTopCommandBar(page, bar);
 
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
             UpdateStatus();
         }
 
-        private void OnPushWithoutToolbar(object? sender, RoutedEventArgs e)
+        private async void OnPushWithoutToolbar(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
-            DemoNav.Push(NavigationDemoHelper.MakePage($"Page {_pageCount}", "No toolbar on this page.", _pageCount));
+            await DemoNav.PushAsync(NavigationDemoHelper.MakePage($"Page {_pageCount}", "No toolbar on this page.", _pageCount));
             UpdateStatus();
         }
 
@@ -119,29 +120,13 @@ namespace ControlCatalog.Pages
             {
                 PrimaryCommands =
                 {
-                    new AppBarButton
-                    {
-                        Label = "Search",
-                        Icon = new PathIcon { Data = (Geometry)this.FindResource("SearchIcon")! }
-                    },
-                    new AppBarButton
-                    {
-                        Label = "Share",
-                        Icon = new PathIcon { Data = (Geometry)this.FindResource("ShareIcon")! }
-                    },
-                    new AppBarButton
-                    {
-                        Label = "Edit",
-                        Icon = new PathIcon { Data = (Geometry)this.FindResource("EditIcon")! }
-                    },
+                    new AppBarButton { Label = "Search", Icon = new PathIcon { Data = (Geometry)this.FindResource("SearchIcon")! } },
+                    new AppBarButton { Label = "Share",  Icon = new PathIcon { Data = (Geometry)this.FindResource("ShareIcon")! } },
+                    new AppBarButton { Label = "Edit",   Icon = new PathIcon { Data = (Geometry)this.FindResource("EditIcon")! } },
                 },
                 SecondaryCommands =
                 {
-                    new AppBarButton
-                    {
-                        Label = "Delete",
-                        Icon = new PathIcon { Data = (Geometry)this.FindResource("DeleteIcon")! }
-                    }
+                    new AppBarButton { Label = "Delete", Icon = new PathIcon { Data = (Geometry)this.FindResource("DeleteIcon")! } }
                 }
             };
     }

@@ -20,7 +20,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Provides data for the <see cref="ConnectedAnimation.Completed"/> event.
     /// </summary>
-    public sealed class ConnectedAnimationCompletedEventArgs : EventArgs
+    internal sealed class ConnectedAnimationCompletedEventArgs : EventArgs
     {
         internal ConnectedAnimationCompletedEventArgs(bool cancelled) => Cancelled = cancelled;
 
@@ -45,7 +45,7 @@ namespace Avalonia.Animation
     /// The animation auto-disposes after three seconds if not consumed (matching UWP behaviour).
     /// </para>
     /// </remarks>
-    public class ConnectedAnimation : IDisposable
+    internal class ConnectedAnimation : IDisposable
     {
         private readonly string _key;
         private readonly ConnectedAnimationService _service;

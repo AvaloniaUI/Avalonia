@@ -32,38 +32,38 @@ namespace ControlCatalog.Pages
             AddLog($"IsBackButtonVisible={DemoNav.IsBackButtonVisible}");
         }
 
-        private void OnPushStandard(object? sender, RoutedEventArgs e)
+        private async void OnPushStandard(object? sender, RoutedEventArgs e)
         {
             var page = CreatePage($"Page {_pushCount + 1}", "Standard page with default back arrow.", null);
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
         }
 
-        private void OnPushNoBack(object? sender, RoutedEventArgs e)
+        private async void OnPushNoBack(object? sender, RoutedEventArgs e)
         {
             var page = CreatePage($"No Back #{_pushCount + 1}", "IsBackButtonVisible = false\n\nThe back arrow is hidden.\nUse the Pop button to go back.", null);
             NavigationPage.SetHasBackButton(page, false);
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
             AddLog($"HasBackButton=false on \"{page.Header}\"");
         }
 
-        private void OnPushDisabledBack(object? sender, RoutedEventArgs e)
+        private async void OnPushDisabledBack(object? sender, RoutedEventArgs e)
         {
             var page = CreatePage($"Disabled Back #{_pushCount + 1}", "IsBackButtonEnabled = false\n\nThe back arrow is visible but disabled.\nUse the Pop button to go back.", null);
             NavigationPage.SetIsBackButtonEnabled(page, false);
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
             AddLog($"IsBackButtonEnabled=false on \"{page.Header}\"");
         }
 
-        private void OnPushCustomText(object? sender, RoutedEventArgs e)
+        private async void OnPushCustomText(object? sender, RoutedEventArgs e)
         {
             var text = string.IsNullOrWhiteSpace(BackContentInput?.Text) ? "Cancel" : BackContentInput!.Text;
             var page = CreatePage($"Text Back #{_pushCount + 1}", $"BackButtonContent = \"{text}\"\n\nThe back button shows custom text.", null);
             NavigationPage.SetBackButtonContent(page, text);
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
             AddLog($"BackButtonContent=\"{text}\" on \"{page.Header}\"");
         }
 
-        private void OnPushCustomIcon(object? sender, RoutedEventArgs e)
+        private async void OnPushCustomIcon(object? sender, RoutedEventArgs e)
         {
             var page = CreatePage($"Icon Back #{_pushCount + 1}", "BackButtonContent = PathIcon (x)\n\nThe back button shows a custom icon.", null);
             NavigationPage.SetBackButtonContent(page, new TextBlock
@@ -72,11 +72,11 @@ namespace ControlCatalog.Pages
                 FontSize = 16,
                 VerticalAlignment = VerticalAlignment.Center
             });
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
             AddLog($"BackButtonContent=icon on \"{page.Header}\"");
         }
 
-        private void OnPushIconTextBack(object? sender, RoutedEventArgs e)
+        private async void OnPushIconTextBack(object? sender, RoutedEventArgs e)
         {
             var page = CreatePage($"Icon+Text Back #{_pushCount + 1}", "BackButtonContent = icon + text\n\nThe back button shows both icon and text.", null);
 
@@ -103,11 +103,11 @@ namespace ControlCatalog.Pages
             };
 
             NavigationPage.SetBackButtonContent(page, content);
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
             AddLog($"BackButtonContent=icon+text on \"{page.Header}\"");
         }
 
-        private void OnPushGuarded(object? sender, RoutedEventArgs e)
+        private async void OnPushGuarded(object? sender, RoutedEventArgs e)
         {
             var useAsync = DeferRadio?.IsChecked == true;
             var mode = useAsync ? "async save" : "cancel";
@@ -135,7 +135,7 @@ namespace ControlCatalog.Pages
                 }
             };
 
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
             AddLog($"Guarded page ({mode}) pushed");
         }
 

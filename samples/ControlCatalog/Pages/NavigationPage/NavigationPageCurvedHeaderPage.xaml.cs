@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -28,7 +29,14 @@ public partial class NavigationPageCurvedHeaderPage : UserControl
     NavigationPage? _navPage;
     ScrollViewer?   _infoPanel;
 
-    public NavigationPageCurvedHeaderPage() => InitializeComponent();
+    public NavigationPageCurvedHeaderPage()
+    {
+        InitializeComponent();
+
+        _navPage = this.FindControl<NavigationPage>("NavPage");
+        if (_navPage != null)
+            _ = _navPage.PushAsync(BuildHomePage());
+    }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
@@ -36,10 +44,6 @@ public partial class NavigationPageCurvedHeaderPage : UserControl
 
         _infoPanel = this.FindControl<ScrollViewer>("InfoPanel");
         UpdateInfoPanelVisibility();
-
-        _navPage = this.FindControl<NavigationPage>("NavPage");
-        if (_navPage == null) return;
-        _navPage.Push(BuildHomePage());
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -141,7 +145,7 @@ public partial class NavigationPageCurvedHeaderPage : UserControl
 
         var homeScroll = new CurvedHeaderHomeScrollView
         {
-            NavigateRequested = () => _navPage?.Push(BuildProfilePage()),
+            NavigateRequested = async () => { if (_navPage != null) await _navPage.PushAsync(BuildProfilePage()); },
         };
 
         headerPanel.SizeChanged += (_, args) =>
@@ -161,7 +165,7 @@ public partial class NavigationPageCurvedHeaderPage : UserControl
         var avatarCanvas = new Canvas { IsHitTestVisible = true, Cursor = new Cursor(StandardCursorType.Hand) };
         avatarCanvas.Children.Add(avatarRing);
         avatarCanvas.Children.Add(avatar);
-        avatarCanvas.PointerReleased += (_, _) => _navPage?.Push(BuildProfilePage());
+        avatarCanvas.PointerReleased += async (_, _) => { if (_navPage != null) await _navPage.PushAsync(BuildProfilePage()); };
 
         headerPanel.Children.Add(bgPath);
         headerPanel.Children.Add(headerContent);

@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
@@ -19,13 +20,13 @@ namespace ControlCatalog.Pages
             UpdateStatus();
         }
 
-        private void OnPush(object? sender, RoutedEventArgs e)
+        private async void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
             var page = NavigationDemoHelper.MakePage($"Page {_pageCount}", $"This is page {_pageCount}.", _pageCount);
             NavigationPage.SetHasNavigationBar(page, HasNavBarCheck.IsChecked == true);
             NavigationPage.SetHasBackButton(page, HasBackButtonCheck.IsChecked == true);
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
             UpdateStatus();
         }
 

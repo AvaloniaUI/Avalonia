@@ -14,10 +14,10 @@ public class NavigationPageTests
     public class PushTests : ScopedTestBase
     {
         [Fact]
-        public void Push_SinglePage_StackDepthBecomesOne()
+        public async Task Push_SinglePage_StackDepthBecomesOne()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             Assert.Equal(1, nav.StackDepth);
         }
 
@@ -25,62 +25,62 @@ public class NavigationPageTests
         [InlineData(1)]
         [InlineData(3)]
         [InlineData(10)]
-        public void Push_MultipleTimes_StackDepthMatchesCount(int n)
+        public async Task Push_MultipleTimes_StackDepthMatchesCount(int n)
         {
             var nav = new NavigationPage();
             for (int i = 0; i < n; i++)
-                nav.Push(new ContentPage { Header = $"Page {i}" });
+                await nav.PushAsync(new ContentPage { Header = $"Page {i}" });
             Assert.Equal(n, nav.StackDepth);
         }
 
         [Fact]
-        public void Push_SetsCurrentPageToTopPage()
+        public async Task Push_SetsCurrentPageToTopPage()
         {
             var nav = new NavigationPage();
             var root = new ContentPage { Header = "Root" };
             var top = new ContentPage { Header = "Top" };
-            nav.Push(root);
-            nav.Push(top);
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
             Assert.Same(top, nav.CurrentPage);
         }
 
         [Fact]
-        public void Push_SetsIsInNavigationPage()
+        public async Task Push_SetsIsInNavigationPage()
         {
             var nav = new NavigationPage();
             var page = new ContentPage();
             Assert.False(page.IsInNavigationPage);
-            nav.Push(page);
+            await nav.PushAsync(page);
             Assert.True(page.IsInNavigationPage);
         }
 
         [Fact]
-        public void Push_SetsNavigationProperty()
+        public async Task Push_SetsNavigationProperty()
         {
             var nav = new NavigationPage();
             var page = new ContentPage();
-            nav.Push(page);
+            await nav.PushAsync(page);
             Assert.Same(nav, page.Navigation);
         }
 
         [Fact]
-        public void Push_DuplicatePage_Throws()
+        public async Task Push_DuplicatePage_Throws()
         {
             var nav = new NavigationPage();
             var page = new ContentPage();
-            nav.Push(page);
-            Assert.Throws<InvalidOperationException>(() => nav.Push(page));
+            await nav.PushAsync(page);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => nav.PushAsync(page));
         }
 
         [Fact]
-        public void Push_FiresPushedEvent()
+        public async Task Push_FiresPushedEvent()
         {
             var nav = new NavigationPage();
             NavigationEventArgs? received = null;
             nav.Pushed += (_, e) => received = e;
 
             var page = new ContentPage();
-            nav.Push(page);
+            await nav.PushAsync(page);
 
             Assert.NotNull(received);
             Assert.Same(page, received.Page);
@@ -88,17 +88,17 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void Push_InvokesNavigatedTo_OnPushedPage()
+        public async Task Push_InvokesNavigatedTo_OnPushedPage()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
 
             NavigatedToEventArgs? args = null;
             var second = new ContentPage();
             second.NavigatedTo += (_, e) => args = e;
 
-            nav.Push(second);
+            await nav.PushAsync(second);
 
             Assert.NotNull(args);
             Assert.Same(root, args.PreviousPage);
@@ -106,16 +106,16 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void Push_InvokesNavigatedFrom_OnPreviousPage()
+        public async Task Push_InvokesNavigatedFrom_OnPreviousPage()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
             NavigatedFromEventArgs? args = null;
             root.NavigatedFrom += (_, e) => args = e;
-            nav.Push(root);
+            await nav.PushAsync(root);
 
             var second = new ContentPage();
-            nav.Push(second);
+            await nav.PushAsync(second);
 
             Assert.NotNull(args);
             Assert.Same(second, args.DestinationPage);
@@ -127,7 +127,7 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
 
             root.Navigating += args =>
             {
@@ -142,18 +142,18 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void Push_ReentrantFromNavigatedTo_IsIgnoredNotThrown()
+        public async Task Push_ReentrantFromNavigatedTo_IsIgnoredNotThrown()
         {
             // Verifies that a re-entrant Push called from inside a NavigatedTo
             // lifecycle callback is silently ignored rather than throwing.
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
 
             var second = new ContentPage();
-            second.NavigatedTo += (_, _) => nav.Push(new ContentPage());
+            second.NavigatedTo += async (_, _) => await nav.PushAsync(new ContentPage());
 
-            nav.Push(second); // must not throw
+            await nav.PushAsync(second); // must not throw
 
             Assert.Equal(2, nav.StackDepth);
             Assert.Same(second, nav.CurrentPage);
@@ -163,34 +163,34 @@ public class NavigationPageTests
     public class PopTests : ScopedTestBase
     {
         [Fact]
-        public void Pop_OnEmptyStack_ReturnsNull()
+        public async Task Pop_OnEmptyStack_ReturnsNull()
         {
             var nav = new NavigationPage();
-            Assert.Null(nav.Pop());
+            Assert.Null(await nav.PopAsync());
         }
 
         [Fact]
-        public void Pop_OnRootOnly_ReturnsNull_AndKeepsRoot()
+        public async Task Pop_OnRootOnly_ReturnsNull_AndKeepsRoot()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
-            var result = nav.Pop();
+            await nav.PushAsync(root);
+            var result = await nav.PopAsync();
             Assert.Null(result);
             Assert.Equal(1, nav.StackDepth);
             Assert.Same(root, nav.CurrentPage);
         }
 
         [Fact]
-        public void Pop_ReturnsPoppedPage_AndDecrementsStack()
+        public async Task Pop_ReturnsPoppedPage_AndDecrementsStack()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
             var top = new ContentPage();
-            nav.Push(root);
-            nav.Push(top);
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
 
-            var result = nav.Pop();
+            var result = await nav.PopAsync();
 
             Assert.Same(top, result);
             Assert.Equal(1, nav.StackDepth);
@@ -198,22 +198,22 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void Pop_ClearsIsInNavigationPage_OnPoppedPage()
+        public async Task Pop_ClearsIsInNavigationPage_OnPoppedPage()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
             var top = new ContentPage();
-            nav.Push(root);
-            nav.Push(top);
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
 
-            nav.Pop();
+            await nav.PopAsync();
 
             Assert.False(top.IsInNavigationPage);
             Assert.Null(top.Navigation);
         }
 
         [Fact]
-        public void Pop_FiresPoppedEvent()
+        public async Task Pop_FiresPoppedEvent()
         {
             var nav = new NavigationPage();
             NavigationEventArgs? received = null;
@@ -221,9 +221,9 @@ public class NavigationPageTests
 
             var root = new ContentPage();
             var top = new ContentPage();
-            nav.Push(root);
-            nav.Push(top);
-            nav.Pop();
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
+            await nav.PopAsync();
 
             Assert.NotNull(received);
             Assert.Same(top, received.Page);
@@ -231,17 +231,17 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void Pop_InvokesNavigatedTo_OnRevealedPage()
+        public async Task Pop_InvokesNavigatedTo_OnRevealedPage()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
             NavigatedToEventArgs? args = null;
             root.NavigatedTo += (_, e) => args = e;
-            nav.Push(root);
+            await nav.PushAsync(root);
 
             var top = new ContentPage();
-            nav.Push(top);
-            nav.Pop();
+            await nav.PushAsync(top);
+            await nav.PopAsync();
 
             Assert.NotNull(args);
             Assert.Same(top, args.PreviousPage);
@@ -252,9 +252,9 @@ public class NavigationPageTests
         public async Task PopAsync_WhenNavigatingFromCancels_DoesNotPop()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             var top = new ContentPage();
-            nav.Push(top);
+            await nav.PushAsync(top);
 
             top.Navigating += args =>
             {
@@ -273,9 +273,9 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
             var top = new ContentPage();
-            nav.Push(top);
+            await nav.PushAsync(top);
 
             bool appearing = false;
             bool navigatedTo = false;
@@ -292,15 +292,15 @@ public class NavigationPageTests
     public class NavigationStackTests : ScopedTestBase
     {
         [Fact]
-        public void NavigationStack_RootAtIndexZero_TopAtLastIndex()
+        public async Task NavigationStack_RootAtIndexZero_TopAtLastIndex()
         {
             var nav = new NavigationPage();
             var root = new ContentPage { Header = "Root" };
             var middle = new ContentPage { Header = "Middle" };
             var top = new ContentPage { Header = "Top" };
-            nav.Push(root);
-            nav.Push(middle);
-            nav.Push(top);
+            await nav.PushAsync(root);
+            await nav.PushAsync(middle);
+            await nav.PushAsync(top);
 
             var stack = nav.NavigationStack;
             Assert.Equal(3, stack.Count);
@@ -310,44 +310,44 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void CanGoBack_FalseWithOneEntry()
+        public async Task CanGoBack_FalseWithOneEntry()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             Assert.False(nav.CanGoBack);
         }
 
         [Fact]
-        public void CanGoBack_TrueWithTwoEntries()
+        public async Task CanGoBack_TrueWithTwoEntries()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             Assert.True(nav.CanGoBack);
         }
 
         [Fact]
-        public void CanGoBack_FalseAfterPop()
+        public async Task CanGoBack_FalseAfterPop()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
-            nav.Push(new ContentPage());
-            nav.Pop();
+            await nav.PushAsync(new ContentPage());
+            await nav.PushAsync(new ContentPage());
+            await nav.PopAsync();
             Assert.False(nav.CanGoBack);
         }
 
         [Fact]
-        public void StackDepth_AlwaysEqualsNavigationStack_Count()
+        public async Task StackDepth_AlwaysEqualsNavigationStack_Count()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
             Assert.Equal(nav.NavigationStack.Count, nav.StackDepth);
 
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             Assert.Equal(nav.NavigationStack.Count, nav.StackDepth);
 
-            nav.Pop();
+            await nav.PopAsync();
             Assert.Equal(nav.NavigationStack.Count, nav.StackDepth);
         }
     }
@@ -355,48 +355,48 @@ public class NavigationPageTests
     public class BackButtonVisibilityTests : ScopedTestBase
     {
         [Fact]
-        public void BackButtonVisible_FalseWhenStackDepthIsOne()
+        public async Task BackButtonVisible_FalseWhenStackDepthIsOne()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             Assert.Equal(false, nav.BackButtonVisibleEffective);
         }
 
         [Fact]
-        public void BackButtonVisible_TrueWhenStackDepthIsTwo()
+        public async Task BackButtonVisible_TrueWhenStackDepthIsTwo()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             Assert.Equal(true, nav.BackButtonVisibleEffective);
         }
 
         [Fact]
-        public void BackButtonVisible_FalseWhenIsBackButtonVisibleIsFalse()
+        public async Task BackButtonVisible_FalseWhenIsBackButtonVisibleIsFalse()
         {
             var nav = new NavigationPage { IsBackButtonVisible = false };
-            nav.Push(new ContentPage());
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             Assert.Equal(false, nav.BackButtonVisibleEffective);
         }
 
         [Fact]
-        public void BackButtonVisible_FalseWhenPerPageIsBackButtonVisibleIsFalse()
+        public async Task BackButtonVisible_FalseWhenPerPageIsBackButtonVisibleIsFalse()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             var top = new ContentPage();
             NavigationPage.SetHasBackButton(top, false);
-            nav.Push(top);
+            await nav.PushAsync(top);
             Assert.Equal(false, nav.BackButtonVisibleEffective);
         }
 
         [Fact]
-        public void BackButtonVisible_TrueAfterRestoringGlobalVisibility()
+        public async Task BackButtonVisible_TrueAfterRestoringGlobalVisibility()
         {
             var nav = new NavigationPage { IsBackButtonVisible = false };
-            nav.Push(new ContentPage());
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             nav.IsBackButtonVisible = true;
             Assert.Equal(true, nav.BackButtonVisibleEffective);
         }
@@ -409,10 +409,10 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var root = new ContentPage { Header = "Root" };
-            nav.Push(root);
-            nav.Push(new ContentPage());
-            nav.Push(new ContentPage());
-            nav.Push(new ContentPage());
+            await nav.PushAsync(root);
+            await nav.PushAsync(new ContentPage());
+            await nav.PushAsync(new ContentPage());
+            await nav.PushAsync(new ContentPage());
 
             await nav.PopToRootAsync();
 
@@ -427,8 +427,8 @@ public class NavigationPageTests
             bool fired = false;
             nav.PoppedToRoot += (_, _) => fired = true;
 
-            nav.Push(new ContentPage());
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             await nav.PopToRootAsync();
 
             Assert.True(fired);
@@ -441,7 +441,7 @@ public class NavigationPageTests
             bool fired = false;
             nav.PoppedToRoot += (_, _) => fired = true;
 
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             await nav.PopToRootAsync();
 
             Assert.Equal(1, nav.StackDepth);
@@ -452,13 +452,13 @@ public class NavigationPageTests
     public class InsertRemoveTests : ScopedTestBase
     {
         [Fact]
-        public void InsertPage_AddsPageBeforeTarget()
+        public async Task InsertPage_AddsPageBeforeTarget()
         {
             var nav = new NavigationPage();
             var root = new ContentPage { Header = "Root" };
             var top = new ContentPage { Header = "Top" };
-            nav.Push(root);
-            nav.Push(top);
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
 
             var middle = new ContentPage { Header = "Middle" };
             nav.InsertPage(middle, top);
@@ -471,15 +471,15 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void RemovePage_RemovesFromMiddleOfStack()
+        public async Task RemovePage_RemovesFromMiddleOfStack()
         {
             var nav = new NavigationPage();
             var root = new ContentPage { Header = "Root" };
             var middle = new ContentPage { Header = "Middle" };
             var top = new ContentPage { Header = "Top" };
-            nav.Push(root);
-            nav.Push(middle);
-            nav.Push(top);
+            await nav.PushAsync(root);
+            await nav.PushAsync(middle);
+            await nav.PushAsync(top);
 
             nav.RemovePage(middle);
 
@@ -490,13 +490,13 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void InsertPage_FiresPageInsertedEvent()
+        public async Task InsertPage_FiresPageInsertedEvent()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
             var top = new ContentPage();
-            nav.Push(root);
-            nav.Push(top);
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
 
             PageInsertedEventArgs? args = null;
             nav.PageInserted += (_, e) => args = e;
@@ -509,15 +509,15 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void RemovePage_FiresPageRemovedEvent()
+        public async Task RemovePage_FiresPageRemovedEvent()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
             var mid = new ContentPage();
             var top = new ContentPage();
-            nav.Push(root);
-            nav.Push(mid);
-            nav.Push(top);
+            await nav.PushAsync(root);
+            await nav.PushAsync(mid);
+            await nav.PushAsync(top);
 
             PageRemovedEventArgs? args = null;
             nav.PageRemoved += (_, e) => args = e;
@@ -529,39 +529,39 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void InsertPage_NullPage_ThrowsArgumentNullException()
+        public async Task InsertPage_NullPage_ThrowsArgumentNullException()
         {
             var nav = new NavigationPage();
             var before = new ContentPage();
-            nav.Push(before);
+            await nav.PushAsync(before);
             Assert.Throws<ArgumentNullException>(() => nav.InsertPage(null!, before));
         }
 
         [Fact]
-        public void InsertPage_NullBefore_ThrowsArgumentNullException()
+        public async Task InsertPage_NullBefore_ThrowsArgumentNullException()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             Assert.Throws<ArgumentNullException>(() => nav.InsertPage(new ContentPage(), null!));
         }
 
         [Fact]
-        public void RemovePage_NullPage_ThrowsArgumentNullException()
+        public async Task RemovePage_NullPage_ThrowsArgumentNullException()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             Assert.Throws<ArgumentNullException>(() => nav.RemovePage(null!));
         }
 
         [Fact]
-        public void InsertPage_DoesNotFireNavigatedTo_OnInsertedPage()
+        public async Task InsertPage_DoesNotFireNavigatedTo_OnInsertedPage()
         {
             // InsertPage should not invoke NavigatedTo on a non-current (background) page.
             var nav = new NavigationPage();
             var root = new ContentPage();
             var top = new ContentPage();
-            nav.Push(root);
-            nav.Push(top);
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
 
             bool navigatedToFired = false;
             var inserted = new ContentPage();
@@ -573,22 +573,22 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void InsertPage_DuplicatePage_ThrowsInvalidOperationException()
+        public async Task InsertPage_DuplicatePage_ThrowsInvalidOperationException()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
             var top = new ContentPage();
-            nav.Push(root);
-            nav.Push(top);
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
 
             Assert.Throws<InvalidOperationException>(() => nav.InsertPage(root, top));
         }
 
         [Fact]
-        public void RemovePage_PageNotInStack_IsNoOp()
+        public async Task RemovePage_PageNotInStack_IsNoOp()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
 
             var stranger = new ContentPage();
             // Should not throw and should not change stack depth
@@ -603,7 +603,7 @@ public class NavigationPageTests
         public async Task PushModal_AddsToModalStack()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
 
             var modal = new ContentPage { Header = "Modal" };
             await nav.PushModalAsync(modal);
@@ -615,7 +615,7 @@ public class NavigationPageTests
         public async Task PopModal_RemovesFromModalStack()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
 
             var modal = new ContentPage();
             await nav.PushModalAsync(modal);
@@ -629,7 +629,7 @@ public class NavigationPageTests
         {
             // Doc: "The top (most recently pushed) modal is enumerated first."
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             var m1 = new ContentPage { Header = "M1" };
             var m2 = new ContentPage { Header = "M2" };
             var m3 = new ContentPage { Header = "M3" };
@@ -644,7 +644,7 @@ public class NavigationPageTests
         public async Task PushModal_FiresModalPushedEvent()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
 
             ModalPushedEventArgs? args = null;
             nav.ModalPushed += (_, e) => args = e;
@@ -660,7 +660,7 @@ public class NavigationPageTests
         public async Task PopModal_FiresModalPoppedEvent()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
 
             var modal = new ContentPage();
             await nav.PushModalAsync(modal);
@@ -678,7 +678,7 @@ public class NavigationPageTests
         public async Task PopModal_OnEmptyStack_ReturnsNull()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
 
             var result = await nav.PopModalAsync();
             Assert.Null(result);
@@ -688,81 +688,39 @@ public class NavigationPageTests
     public class AttachedPropertyTests : ScopedTestBase
     {
         [Fact]
-        public void SetHasNavigationBar_False_AffectsPage()
-        {
-            var page = new ContentPage();
-            NavigationPage.SetHasNavigationBar(page, false);
-            Assert.False(NavigationPage.GetHasNavigationBar(page));
-        }
-
-        [Fact]
-        public void SetBarHeight_Override_ReturnsOverride()
-        {
-            var page = new ContentPage();
-            NavigationPage.SetBarHeight(page, 64.0);
-            Assert.Equal(64.0, NavigationPage.GetBarHeight(page));
-        }
-
-        [Fact]
-        public void BarHeightEffective_UsesPageOverride()
+        public async Task BarHeightEffective_UsesPageOverride()
         {
             var nav = new NavigationPage();
             var page = new ContentPage();
-            NavigationPage.SetBarHeight(page, 60.0);
-            nav.Push(page);
+            NavigationPage.SetBarHeightOverride(page, 60.0);
+            await nav.PushAsync(page);
             Assert.Equal(60.0, nav.BarHeightEffective);
         }
 
         [Fact]
-        public void BarHeightEffective_FallsBackToGlobalBarHeight()
+        public async Task BarHeightEffective_FallsBackToGlobalBarHeight()
         {
             var nav = new NavigationPage { BarHeight = 56.0 };
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             Assert.Equal(56.0, nav.BarHeightEffective);
         }
 
         [Fact]
-        public void SetBarLayoutBehavior_Overlay_AffectsPage()
-        {
-            var page = new ContentPage();
-            NavigationPage.SetBarLayoutBehavior(page, BarLayoutBehavior.Overlay);
-            Assert.Equal(BarLayoutBehavior.Overlay, NavigationPage.GetBarLayoutBehavior(page));
-        }
-
-        [Fact]
-        public void BarLayoutBehaviorEffective_DefaultIsInset()
+        public async Task BarLayoutBehavior_DefaultAppliesNavBarInsetPseudoClass()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
-            Assert.Equal(BarLayoutBehavior.Inset, nav.BarLayoutBehaviorEffective);
+            await nav.PushAsync(new ContentPage());
+            Assert.True(nav.Classes.Contains(":nav-bar-inset"));
         }
 
         [Fact]
-        public void BarLayoutBehaviorEffective_UsesPageOverride()
+        public async Task BarLayoutBehavior_OverlayRemovesNavBarInsetPseudoClass()
         {
             var nav = new NavigationPage();
             var page = new ContentPage();
             NavigationPage.SetBarLayoutBehavior(page, BarLayoutBehavior.Overlay);
-            nav.Push(page);
-            Assert.Equal(BarLayoutBehavior.Overlay, nav.BarLayoutBehaviorEffective);
-        }
-
-        [Fact]
-        public void SetBackButtonContent_RoundTrips()
-        {
-            var page = new ContentPage();
-            var content = new TextBlock { Text = "Back" };
-            NavigationPage.SetBackButtonContent(page, content);
-            Assert.Same(content, NavigationPage.GetBackButtonContent(page));
-        }
-
-        [Fact]
-        public void SetBackButtonContent_Null_ClearsValue()
-        {
-            var page = new ContentPage();
-            NavigationPage.SetBackButtonContent(page, new TextBlock());
-            NavigationPage.SetBackButtonContent(page, null);
-            Assert.Null(NavigationPage.GetBackButtonContent(page));
+            await nav.PushAsync(page);
+            Assert.False(nav.Classes.Contains(":nav-bar-inset"));
         }
     }
 
@@ -778,11 +736,11 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void Content_SetAfterPush_IsIgnored()
+        public async Task Content_SetAfterPush_IsIgnored()
         {
             var nav = new NavigationPage();
             var first = new ContentPage { Header = "First" };
-            nav.Push(first);
+            await nav.PushAsync(first);
 
             // Setting Content when stack is already populated should not push again
             nav.Content = new ContentPage { Header = "Second" };
@@ -798,7 +756,7 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
 
             // Cancel the first navigation
             bool shouldCancel = true;
@@ -827,9 +785,9 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
             var top = new ContentPage();
-            nav.Push(top);
+            await nav.PushAsync(top);
 
             top.Navigating += args =>
             {
@@ -851,9 +809,9 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
             var top = new ContentPage();
-            nav.Push(top);
+            await nav.PushAsync(top);
 
             bool handlerInvoked = false;
             top.Navigating += args =>
@@ -875,11 +833,11 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
             var middle = new ContentPage();
-            nav.Push(middle);
+            await nav.PushAsync(middle);
             var top = new ContentPage();
-            nav.Push(top);
+            await nav.PushAsync(top);
 
             bool handlerInvoked = false;
             top.Navigating += args =>
@@ -897,11 +855,11 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public void Push_Sync_InvokesNavigatingEvent()
+        public async Task Push_Sync_InvokesNavigatingEvent()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
 
             bool handlerInvoked = false;
             root.Navigating += args =>
@@ -911,20 +869,20 @@ public class NavigationPageTests
                 return Task.CompletedTask;
             };
 
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
 
             Assert.True(handlerInvoked);
             Assert.Equal(1, nav.StackDepth);
         }
 
         [Fact]
-        public void Pop_Sync_InvokesNavigatingEvent()
+        public async Task Pop_Sync_InvokesNavigatingEvent()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
             var top = new ContentPage();
-            nav.Push(top);
+            await nav.PushAsync(top);
 
             bool handlerInvoked = false;
             top.Navigating += args =>
@@ -934,7 +892,7 @@ public class NavigationPageTests
                 return Task.CompletedTask;
             };
 
-            nav.Pop();
+            await nav.PopAsync();
 
             Assert.True(handlerInvoked);
             Assert.Equal(2, nav.StackDepth);
@@ -944,25 +902,15 @@ public class NavigationPageTests
     public class LogicalChildrenTests : ScopedTestBase
     {
         [Fact]
-        public void Push_AddsPageToLogicalChildren()
-        {
-            var nav = new NavigationPage();
-            var page = new ContentPage();
-            nav.Push(page);
-
-            Assert.Contains(page, nav.GetLogicalChildren());
-        }
-
-        [Fact]
-        public void Pop_RemovesPageFromLogicalChildren()
+        public async Task Pop_RemovesPageFromLogicalChildren()
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
             var top = new ContentPage();
-            nav.Push(top);
+            await nav.PushAsync(top);
 
-            nav.Pop();
+            await nav.PopAsync();
 
             Assert.DoesNotContain(top, nav.GetLogicalChildren());
             Assert.Contains(root, nav.GetLogicalChildren());
@@ -973,11 +921,11 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
             var middle = new ContentPage();
-            nav.Push(middle);
+            await nav.PushAsync(middle);
             var top = new ContentPage();
-            nav.Push(top);
+            await nav.PushAsync(top);
 
             await nav.PopToRootAsync();
 
@@ -991,7 +939,7 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var original = new ContentPage();
-            nav.Push(original);
+            await nav.PushAsync(original);
 
             var replacement = new ContentPage();
             await nav.ReplaceAsync(replacement);
@@ -1005,7 +953,7 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var root = new ContentPage();
-            nav.Push(root);
+            await nav.PushAsync(root);
 
             var second = new ContentPage();
             await nav.PushAsync(second);
@@ -1022,7 +970,7 @@ public class NavigationPageTests
         public async Task PopAllModals_EmptyStack_DoesNothing()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
 
             await nav.PopAllModalsAsync(); // must not throw
 
@@ -1033,7 +981,7 @@ public class NavigationPageTests
         public async Task PopAllModals_SingleModal_ClearsModalStack()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             await nav.PushModalAsync(new ContentPage());
 
             await nav.PopAllModalsAsync();
@@ -1045,7 +993,7 @@ public class NavigationPageTests
         public async Task PopAllModals_MultipleModals_ClearsEntireStack()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             await nav.PushModalAsync(new ContentPage { Header = "M1" });
             await nav.PushModalAsync(new ContentPage { Header = "M2" });
             await nav.PushModalAsync(new ContentPage { Header = "M3" });
@@ -1059,7 +1007,7 @@ public class NavigationPageTests
         public async Task PopAllModals_FiresModalPopped_ForEachModal()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             var m1 = new ContentPage { Header = "M1" };
             var m2 = new ContentPage { Header = "M2" };
             var m3 = new ContentPage { Header = "M3" };
@@ -1081,7 +1029,7 @@ public class NavigationPageTests
         public async Task PopAllModals_FiresDisappearing_OnAllModals()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             var m1 = new ContentPage { Header = "M1" };
             var m2 = new ContentPage { Header = "M2" };
             await nav.PushModalAsync(m1);
@@ -1102,7 +1050,7 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var root = new ContentPage { Header = "Root" };
-            nav.Push(root);
+            await nav.PushAsync(root);
             await nav.PushModalAsync(new ContentPage { Header = "M1" });
             await nav.PushModalAsync(new ContentPage { Header = "M2" });
 
@@ -1124,7 +1072,7 @@ public class NavigationPageTests
         public async Task ReplaceAsync_NullPage_Throws()
         {
             var nav = new NavigationPage();
-            nav.Push(new ContentPage());
+            await nav.PushAsync(new ContentPage());
             await Assert.ThrowsAsync<ArgumentNullException>(() => nav.ReplaceAsync(null!));
         }
 
@@ -1145,7 +1093,7 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var root = new ContentPage { Header = "Root" };
-            nav.Push(root);
+            await nav.PushAsync(root);
 
             var replacement = new ContentPage { Header = "Replacement" };
             await nav.ReplaceAsync(replacement);
@@ -1160,7 +1108,7 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var original = new ContentPage { Header = "Original" };
-            nav.Push(original);
+            await nav.PushAsync(original);
 
             var replacement = new ContentPage { Header = "Replacement" };
             var order = new List<string>();
@@ -1185,7 +1133,7 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var original = new ContentPage { Header = "Original" };
-            nav.Push(original);
+            await nav.PushAsync(original);
 
             var replacement = new ContentPage { Header = "Replacement" };
             NavigationType? arrivedType   = null;
@@ -1204,7 +1152,7 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var original = new ContentPage { Header = "Original" };
-            nav.Push(original);
+            await nav.PushAsync(original);
 
             original.Navigating += args =>
             {
@@ -1220,58 +1168,6 @@ public class NavigationPageTests
         }
     }
 
-    public class IsBackButtonEnabledTests : ScopedTestBase
-    {
-        [Fact]
-        public void SetIsBackButtonEnabled_False_GetReturnsFalse()
-        {
-            var page = new ContentPage();
-            NavigationPage.SetIsBackButtonEnabled(page, false);
-            Assert.False(NavigationPage.GetIsBackButtonEnabled(page));
-        }
-
-        [Fact]
-        public void SetIsBackButtonEnabled_RestoreTrue_GetReturnsTrue()
-        {
-            var page = new ContentPage();
-            NavigationPage.SetIsBackButtonEnabled(page, false);
-            NavigationPage.SetIsBackButtonEnabled(page, true);
-            Assert.True(NavigationPage.GetIsBackButtonEnabled(page));
-        }
-
-        [Fact]
-        public void SetIsBackButtonEnabled_False_DoesNotAffectOtherPages()
-        {
-            var page1 = new ContentPage();
-            var page2 = new ContentPage();
-            NavigationPage.SetIsBackButtonEnabled(page1, false);
-
-            Assert.False(NavigationPage.GetIsBackButtonEnabled(page1));
-            Assert.True(NavigationPage.GetIsBackButtonEnabled(page2));
-        }
-    }
-
-    public class CommandBarAttachedPropertyTests : ScopedTestBase
-    {
-        [Fact]
-        public void SetTopCommandBar_RoundTrips()
-        {
-            var page = new ContentPage();
-            var bar = new CommandBar();
-            NavigationPage.SetTopCommandBar(page, bar);
-            Assert.Same(bar, NavigationPage.GetTopCommandBar(page));
-        }
-
-        [Fact]
-        public void SetBottomCommandBar_RoundTrips()
-        {
-            var page = new ContentPage();
-            var bar = new CommandBar();
-            NavigationPage.SetBottomCommandBar(page, bar);
-            Assert.Same(bar, NavigationPage.GetBottomCommandBar(page));
-        }
-    }
-
     public class PopToRootLifecycleTests : ScopedTestBase
     {
         [Fact]
@@ -1281,9 +1177,9 @@ public class NavigationPageTests
             var root = new ContentPage { Header = "Root" };
             var second = new ContentPage { Header = "Second" };
             var third = new ContentPage { Header = "Third" };
-            nav.Push(root);
-            nav.Push(second);
-            nav.Push(third);
+            await nav.PushAsync(root);
+            await nav.PushAsync(second);
+            await nav.PushAsync(third);
 
             Page? receivedPreviousPage = null;
             root.NavigatedTo += (_, args) => receivedPreviousPage = args.PreviousPage;
@@ -1298,8 +1194,8 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             var root = new ContentPage { Header = "Root" };
-            nav.Push(root);
-            nav.Push(new ContentPage());
+            await nav.PushAsync(root);
+            await nav.PushAsync(new ContentPage());
 
             NavigationType? receivedType = null;
             root.NavigatedTo += (_, args) => receivedType = args.NavigationType;
@@ -1319,9 +1215,9 @@ public class NavigationPageTests
             var root = new ContentPage { Header = "Root" };
             var target = new ContentPage { Header = "Target" };
             var top = new ContentPage { Header = "Top" };
-            nav.Push(root);
-            nav.Push(target);
-            nav.Push(top);
+            await nav.PushAsync(root);
+            await nav.PushAsync(target);
+            await nav.PushAsync(top);
 
             Page? receivedPreviousPage = null;
             target.NavigatedTo += (_, args) => receivedPreviousPage = args.PreviousPage;
@@ -1337,9 +1233,9 @@ public class NavigationPageTests
             var nav = new NavigationPage();
             var root = new ContentPage { Header = "Root" };
             var target = new ContentPage { Header = "Target" };
-            nav.Push(root);
-            nav.Push(target);
-            nav.Push(new ContentPage());
+            await nav.PushAsync(root);
+            await nav.PushAsync(target);
+            await nav.PushAsync(new ContentPage());
 
             NavigationType? receivedType = null;
             target.NavigatedTo += (_, args) => receivedType = args.NavigationType;
@@ -1349,4 +1245,5 @@ public class NavigationPageTests
             Assert.Equal(NavigationType.Pop, receivedType);
         }
     }
+
 }

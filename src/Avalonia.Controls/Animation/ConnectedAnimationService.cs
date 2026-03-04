@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
@@ -20,10 +20,10 @@ namespace Avalonia.Animation
     ///   <c>TryStart</c> on the returned animation to run the animation.</item>
     /// </list>
     /// </remarks>
-    public class ConnectedAnimationService
+    internal class ConnectedAnimationService : AvaloniaObject
     {
         private static readonly ConditionalWeakTable<TopLevel, ConnectedAnimationService> s_perView = new();
-        private readonly ConcurrentDictionary<string, ConnectedAnimation> _animations = new();
+        private readonly Dictionary<string, ConnectedAnimation> _animations = new();
 
         internal ConnectedAnimationService()
         {
@@ -67,8 +67,11 @@ namespace Avalonia.Animation
             ArgumentNullException.ThrowIfNull(source);
 
             // Replace any stale animation registered under the same key.
-            if (_animations.TryRemove(key, out var old))
+            if (_animations.TryGetValue(key, out var old))
+            {
+                _animations.Remove(key);
                 old.Dispose();
+            }
 
             var animation = new ConnectedAnimation(key, source, this);
             _animations[key] = animation;
@@ -93,6 +96,6 @@ namespace Avalonia.Animation
         /// Removes the animation registered under <paramref name="key"/>.
         /// The caller is responsible for disposing the animation separately.
         /// </summary>
-        internal void RemoveAnimation(string key) => _animations.TryRemove(key, out _);
+        internal void RemoveAnimation(string key) => _animations.Remove(key);
     }
 }

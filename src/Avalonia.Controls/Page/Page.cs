@@ -49,7 +49,7 @@ namespace Avalonia.Controls
         public static readonly RoutedEvent<RoutedEventArgs> PageNavigationSystemBackButtonPressedEvent =
             RoutedEvent.Register<Page, RoutedEventArgs>(
                 nameof(PageNavigationSystemBackButtonPressed),
-                RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
+                RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="Navigation"/> property.
@@ -200,22 +200,6 @@ namespace Avalonia.Controls
         internal void SendDisappearing() => OnDisappearing();
 
         internal void SendNavigatedTo(NavigatedToEventArgs args) => OnNavigatedTo(args);
-
-        internal void SendNavigatingFrom(NavigatingFromEventArgs args)
-        {
-            OnNavigatingFrom(args);
-
-            var navigating = Navigating;
-            if (navigating != null)
-            {
-                foreach (Func<NavigatingFromEventArgs, Task> handler in navigating.GetInvocationList())
-                {
-                    var task = handler(args);
-                    if (!task.IsCompleted)
-                        task.ContinueWith(static t => _ = t.Exception, TaskContinuationOptions.OnlyOnFaulted);
-                }
-            }
-        }
 
         internal async Task SendNavigatingAsync(NavigatingFromEventArgs args)
         {

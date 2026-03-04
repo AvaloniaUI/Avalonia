@@ -24,31 +24,25 @@ public partial class EcoTrackerAppPage : UserControl
     NavigationPage? _navPage;
     DrawerPage? _drawerPage;
     ScrollViewer? _infoPanel;
-    bool _initialized;
     Button? _selectedBtn;
 
     public EcoTrackerAppPage()
     {
         InitializeComponent();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
 
         _infoPanel   = this.FindControl<ScrollViewer>("InfoPanel");
         _navPage     = this.FindControl<NavigationPage>("NavPage");
         _drawerPage  = this.FindControl<DrawerPage>("DrawerPageControl");
         _selectedBtn = this.FindControl<Button>("BtnHome");
 
+        if (_navPage != null)
+            _ = _navPage.PushAsync(BuildHomePage());
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
         UpdateInfoPanelVisibility();
-
-        if (_initialized) return;
-        _initialized = true;
-
-        if (_navPage == null) return;
-        var homePage = BuildHomePage();
-        _navPage.Push(homePage);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

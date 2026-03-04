@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -42,12 +43,12 @@ namespace ControlCatalog.Pages
             };
         }
 
-        private void OnPush(object? sender, RoutedEventArgs e)
+        private async void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
             var page = NavigationDemoHelper.MakePage($"Page {_pageCount}", "Navigate back to see events.", _pageCount);
             SubscribePage(page);
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
         }
 
         private async void OnPop(object? sender, RoutedEventArgs e) => await DemoNav.PopAsync();

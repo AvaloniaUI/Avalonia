@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -24,12 +25,17 @@ public partial class LAvenirAppPage : UserControl
 
     NavigationPage? _navPage;
     DrawerPage?     _drawerPage;
-    bool            _initialized;
     ScrollViewer?   _infoPanel;
 
     public LAvenirAppPage()
     {
         InitializeComponent();
+
+        _navPage    = this.FindControl<NavigationPage>("NavPage");
+        _drawerPage = this.FindControl<DrawerPage>("DrawerPageControl");
+
+        if (_navPage != null)
+            _ = _navPage.PushAsync(BuildMenuTabbedPage());
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -38,16 +44,6 @@ public partial class LAvenirAppPage : UserControl
 
         _infoPanel = this.FindControl<ScrollViewer>("InfoPanel");
         UpdateInfoPanelVisibility();
-
-        if (_initialized) return;
-        _initialized = true;
-
-        _navPage     = this.FindControl<NavigationPage>("NavPage");
-        _drawerPage  = this.FindControl<DrawerPage>("DrawerPageControl");
-
-        if (_navPage == null) return;
-
-        _navPage.Push(BuildMenuTabbedPage());
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -142,11 +138,11 @@ public partial class LAvenirAppPage : UserControl
             Icon       = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z",
         };
 
-        tp.Pages = new ObservableCollection<object?> { menuPage, reservationsPage, profilePage };
+        tp.Pages = new ObservableCollection<Page> { menuPage, reservationsPage, profilePage };
         return tp;
     }
 
-    void PushDishDetail(string name, string price, string description, string imageFile)
+    async void PushDishDetail(string name, string price, string description, string imageFile)
     {
         if (_navPage == null) return;
 
@@ -172,7 +168,7 @@ public partial class LAvenirAppPage : UserControl
             }
         };
 
-        _navPage.Push(detail);
+        await _navPage.PushAsync(detail);
     }
 
     Border BuildFloatingBar(string price)

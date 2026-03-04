@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
@@ -20,14 +21,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="PrimaryCommands"/> property.
         /// </summary>
-        public static readonly StyledProperty<IList<ICommandBarElement>> PrimaryCommandsProperty =
-            AvaloniaProperty.Register<CommandBar, IList<ICommandBarElement>>(nameof(PrimaryCommands));
+        public static readonly StyledProperty<IList<ICommandBarElement>?> PrimaryCommandsProperty =
+            AvaloniaProperty.Register<CommandBar, IList<ICommandBarElement>?>(nameof(PrimaryCommands));
 
         /// <summary>
         /// Defines the <see cref="SecondaryCommands"/> property.
         /// </summary>
-        public static readonly StyledProperty<IList<ICommandBarElement>> SecondaryCommandsProperty =
-            AvaloniaProperty.Register<CommandBar, IList<ICommandBarElement>>(nameof(SecondaryCommands));
+        public static readonly StyledProperty<IList<ICommandBarElement>?> SecondaryCommandsProperty =
+            AvaloniaProperty.Register<CommandBar, IList<ICommandBarElement>?>(nameof(SecondaryCommands));
 
         /// <summary>
         /// Defines the <see cref="Content"/> property.
@@ -65,6 +66,24 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsStickyProperty =
             AvaloniaProperty.Register<CommandBar, bool>(nameof(IsSticky));
 
+        /// <summary>
+        /// Defines the <see cref="ItemWidthBottom"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> ItemWidthBottomProperty =
+            AvaloniaProperty.Register<CommandBar, double>(nameof(ItemWidthBottom), defaultValue: 70d);
+
+        /// <summary>
+        /// Defines the <see cref="ItemWidthRight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> ItemWidthRightProperty =
+            AvaloniaProperty.Register<CommandBar, double>(nameof(ItemWidthRight), defaultValue: 102d);
+
+        /// <summary>
+        /// Defines the <see cref="ItemWidthCollapsed"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> ItemWidthCollapsedProperty =
+            AvaloniaProperty.Register<CommandBar, double>(nameof(ItemWidthCollapsed), defaultValue: 42d);
+
         private bool _hasSecondaryCommands;
         /// <summary>
         /// Defines the <see cref="HasSecondaryCommands"/> property.
@@ -82,6 +101,30 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<CommandBar, bool>(
                 nameof(IsOverflowButtonVisible),
                 o => o._isOverflowButtonVisible);
+
+        /// <summary>
+        /// Defines the <see cref="Opening"/> routed event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> OpeningEvent =
+            RoutedEvent.Register<CommandBar, RoutedEventArgs>(nameof(Opening), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="Opened"/> routed event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> OpenedEvent =
+            RoutedEvent.Register<CommandBar, RoutedEventArgs>(nameof(Opened), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="Closing"/> routed event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> ClosingEvent =
+            RoutedEvent.Register<CommandBar, RoutedEventArgs>(nameof(Closing), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="Closed"/> routed event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> ClosedEvent =
+            RoutedEvent.Register<CommandBar, RoutedEventArgs>(nameof(Closed), RoutingStrategies.Bubble);
 
         private Button? _overflowButton;
         private Popup? _overflowPopup;
@@ -126,7 +169,7 @@ namespace Avalonia.Controls
         [Content]
         public IList<ICommandBarElement> PrimaryCommands
         {
-            get => GetValue(PrimaryCommandsProperty);
+            get => GetValue(PrimaryCommandsProperty)!;
             set => SetValue(PrimaryCommandsProperty, value);
         }
 
@@ -135,7 +178,7 @@ namespace Avalonia.Controls
         /// </summary>
         public IList<ICommandBarElement> SecondaryCommands
         {
-            get => GetValue(SecondaryCommandsProperty);
+            get => GetValue(SecondaryCommandsProperty)!;
             set => SetValue(SecondaryCommandsProperty, value);
         }
 
@@ -196,6 +239,36 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the estimated item width used in dynamic-overflow calculations
+        /// when <see cref="DefaultLabelPosition"/> is <see cref="CommandBarDefaultLabelPosition.Bottom"/>.
+        /// </summary>
+        public double ItemWidthBottom
+        {
+            get => GetValue(ItemWidthBottomProperty);
+            set => SetValue(ItemWidthBottomProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the estimated item width used in dynamic-overflow calculations
+        /// when <see cref="DefaultLabelPosition"/> is <see cref="CommandBarDefaultLabelPosition.Right"/>.
+        /// </summary>
+        public double ItemWidthRight
+        {
+            get => GetValue(ItemWidthRightProperty);
+            set => SetValue(ItemWidthRightProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the estimated item width used in dynamic-overflow calculations
+        /// when <see cref="DefaultLabelPosition"/> is <see cref="CommandBarDefaultLabelPosition.Collapsed"/>.
+        /// </summary>
+        public double ItemWidthCollapsed
+        {
+            get => GetValue(ItemWidthCollapsedProperty);
+            set => SetValue(ItemWidthCollapsedProperty, value);
+        }
+
+        /// <summary>
         /// Gets whether there are any commands (secondary or overflowed primary) in the overflow menu.
         /// </summary>
         public bool HasSecondaryCommands
@@ -216,22 +289,38 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when the overflow menu is about to open.
         /// </summary>
-        public event EventHandler<object>? Opening;
+        public event EventHandler<RoutedEventArgs>? Opening
+        {
+            add => AddHandler(OpeningEvent, value);
+            remove => RemoveHandler(OpeningEvent, value);
+        }
 
         /// <summary>
         /// Occurs when the overflow menu has opened.
         /// </summary>
-        public event EventHandler<object>? Opened;
+        public event EventHandler<RoutedEventArgs>? Opened
+        {
+            add => AddHandler(OpenedEvent, value);
+            remove => RemoveHandler(OpenedEvent, value);
+        }
 
         /// <summary>
         /// Occurs when the overflow menu is about to close.
         /// </summary>
-        public event EventHandler<object>? Closing;
+        public event EventHandler<RoutedEventArgs>? Closing
+        {
+            add => AddHandler(ClosingEvent, value);
+            remove => RemoveHandler(ClosingEvent, value);
+        }
 
         /// <summary>
         /// Occurs when the overflow menu has closed.
         /// </summary>
-        public event EventHandler<object>? Closed;
+        public event EventHandler<RoutedEventArgs>? Closed
+        {
+            add => AddHandler(ClosedEvent, value);
+            remove => RemoveHandler(ClosedEvent, value);
+        }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
@@ -262,17 +351,17 @@ namespace Avalonia.Controls
                 var isOpen = (bool)change.NewValue!;
                 if (isOpen)
                 {
-                    Opening?.Invoke(this, EventArgs.Empty);
+                    RaiseEvent(new RoutedEventArgs(OpeningEvent));
                     if (_overflowPopup != null)
                         _overflowPopup.IsOpen = true;
-                    Opened?.Invoke(this, EventArgs.Empty);
+                    RaiseEvent(new RoutedEventArgs(OpenedEvent));
                 }
                 else
                 {
-                    Closing?.Invoke(this, EventArgs.Empty);
+                    RaiseEvent(new RoutedEventArgs(ClosingEvent));
                     if (_overflowPopup != null)
                         _overflowPopup.IsOpen = false;
-                    Closed?.Invoke(this, EventArgs.Empty);
+                    RaiseEvent(new RoutedEventArgs(ClosedEvent));
                 }
             }
             else if (change.Property == DefaultLabelPositionProperty)
@@ -310,9 +399,19 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            _constraintWidth = availableSize.Width;
+            var newConstraint = double.IsFinite(availableSize.Width)
+                ? availableSize.Width
+                : double.PositiveInfinity;
+
+            if (newConstraint != _constraintWidth)
+            {
+                _constraintWidth = newConstraint;
+                UpdateDynamicOverflow();
+            }
+
             return base.MeasureOverride(availableSize);
         }
 
@@ -389,9 +488,9 @@ namespace Avalonia.Controls
                     {
                         var itemWidth = DefaultLabelPosition switch
                         {
-                            CommandBarDefaultLabelPosition.Right => 102,
-                            CommandBarDefaultLabelPosition.Bottom => 70,  // 68 (template Width) + 2 spacing
-                            _ => 42                                        // 40 (compact) + 2 spacing
+                            CommandBarDefaultLabelPosition.Right     => ItemWidthRight,
+                            CommandBarDefaultLabelPosition.Collapsed => ItemWidthCollapsed,
+                            _                                        => ItemWidthBottom
                         };
 
                         int primaryNonSepCount = 0;

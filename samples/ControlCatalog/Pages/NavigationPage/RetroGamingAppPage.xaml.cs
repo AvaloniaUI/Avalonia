@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -18,10 +19,16 @@ public partial class RetroGamingAppPage : UserControl
     static readonly Color TextColor    = Color.Parse("#e0d0ff");
 
     NavigationPage? _nav;
-    bool            _initialized;
     ScrollViewer?   _infoPanel;
 
-    public RetroGamingAppPage() => InitializeComponent();
+    public RetroGamingAppPage()
+    {
+        InitializeComponent();
+
+        _nav = this.FindControl<NavigationPage>("RetroNav");
+        if (_nav != null)
+            _ = _nav.PushAsync(BuildHomePage());
+    }
 
     protected override void OnLoaded(RoutedEventArgs e)
     {
@@ -29,12 +36,6 @@ public partial class RetroGamingAppPage : UserControl
 
         _infoPanel = this.FindControl<ScrollViewer>("InfoPanel");
         UpdateInfoPanelVisibility();
-
-        if (_initialized) return;
-        _initialized = true;
-
-        _nav = this.FindControl<NavigationPage>("RetroNav");
-        _nav?.Push(BuildHomePage());
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -205,7 +206,7 @@ public partial class RetroGamingAppPage : UserControl
             Content    = new RetroGamingProfileView(),
         };
 
-        tp.Pages = new ObservableCollection<object?> { homeTab, gamesTab, favTab, profileTab };
+        tp.Pages = new ObservableCollection<Page> { homeTab, gamesTab, favTab, profileTab };
         return tp;
     }
 
@@ -257,7 +258,7 @@ public partial class RetroGamingAppPage : UserControl
         return page;
     }
 
-    void PushDetailPage(string gameTitle)
+    async void PushDetailPage(string gameTitle)
     {
         if (_nav == null) return;
 
@@ -300,6 +301,6 @@ public partial class RetroGamingAppPage : UserControl
         cmdBar.Children.Add(shareBtn);
         NavigationPage.SetTopCommandBar(page, cmdBar);
 
-        _nav.Push(page);
+        await _nav.PushAsync(page);
     }
 }

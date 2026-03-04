@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -31,10 +32,10 @@ namespace ControlCatalog.Pages
             UpdateTransition();
         }
 
-        private void OnPush(object? sender, RoutedEventArgs e)
+        private async void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCount++;
-            DemoNav.Push(NavigationDemoHelper.MakePage($"Page {_pageCount}", $"Pushed with {GetTransitionName()}.", _pageCount));
+            await DemoNav.PushAsync(NavigationDemoHelper.MakePage($"Page {_pageCount}", $"Pushed with {GetTransitionName()}.", _pageCount));
         }
 
         private async void OnPop(object? sender, RoutedEventArgs e) => await DemoNav.PopAsync();

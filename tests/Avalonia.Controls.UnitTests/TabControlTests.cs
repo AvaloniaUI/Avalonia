@@ -1141,5 +1141,41 @@ namespace Avalonia.Controls.UnitTests
             tc.IndicatorTemplate = null;
             Assert.Null(tc.IndicatorTemplate);
         }
+
+        [Fact]
+        public void TabControl_IndicatorTemplate_DoesNotOverwrite_UserSetTabItemIndicatorTemplate()
+        {
+            var tabItems = new[]
+            {
+                new TabItem { Header = "A" },
+                new TabItem { Header = "B" },
+            };
+            var userTemplate = new FuncDataTemplate<object>((_, _) => new Border());
+            tabItems[0].IndicatorTemplate = userTemplate;
+
+            var tabControlTemplate = new FuncDataTemplate<object>((_, _) => new TextBlock());
+            var tc = new TabControl
+            {
+                ItemsSource = tabItems,
+                IndicatorTemplate = tabControlTemplate,
+                Template = new FuncControlTemplate<TabControl>((_, scope) =>
+                {
+                    var ip = new ItemsPresenter { Name = "PART_ItemsPresenter" };
+                    scope.Register("PART_ItemsPresenter", ip);
+                    var cp = new ContentPresenter { Name = "PART_SelectedContentHost" };
+                    scope.Register("PART_SelectedContentHost", cp);
+                    return new Panel { Children = { ip, cp } };
+                })
+            };
+
+            var root = new TestRoot { Child = tc };
+            tc.ApplyTemplate();
+            tc.Presenter?.ApplyTemplate();
+
+            // TabItem with a local value must keep it
+            Assert.Same(userTemplate, tabItems[0].IndicatorTemplate);
+            // TabItem without a local value gets the TabControl template
+            Assert.Same(tabControlTemplate, tabItems[1].IndicatorTemplate);
+        }
     }
 }

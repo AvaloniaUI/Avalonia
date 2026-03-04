@@ -207,8 +207,8 @@ namespace Avalonia.Controls
             {
                 tabItem.TabStripPlacement = TabStripPlacement;
 
-                if (IndicatorTemplate is { } tmpl)
-                    tabItem.SetValue(TabItem.IndicatorTemplateProperty, tmpl);
+                if (IndicatorTemplate is { } tmpl && !tabItem.IsSet(TabItem.IndicatorTemplateProperty))
+                    tabItem.SetCurrentValue(TabItem.IndicatorTemplateProperty, tmpl);
             }
 
             if (index == SelectedIndex)
@@ -512,10 +512,10 @@ namespace Avalonia.Controls
             var template = IndicatorTemplate;
             foreach (var control in controls)
             {
-                if (control is TabItem tabItem)
+                if (control is TabItem tabItem && !tabItem.IsSet(TabItem.IndicatorTemplateProperty))
                 {
                     if (template is not null)
-                        tabItem.SetValue(TabItem.IndicatorTemplateProperty, template);
+                        tabItem.SetCurrentValue(TabItem.IndicatorTemplateProperty, template);
                     else
                         tabItem.ClearValue(TabItem.IndicatorTemplateProperty);
                 }

@@ -71,6 +71,9 @@
       <Setter Property="BorderBrush" Value="#256af4"/>
       <Setter Property="BorderThickness" Value="1"/>
     </Style>
+    <Style Selector="TextBox.dark">
+      <Setter Property="PlaceholderForeground" Value="#64748b"/>
+    </Style>
   </UserControl.Styles>
 
   <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -94,19 +97,19 @@
       <!-- Welcome Text -->
       <TextBlock Text="Welcome Back" FontSize="26" FontWeight="Bold" Foreground="White"
                  HorizontalAlignment="Center"/>
-      <TextBlock Text="Train harder than yesterday." FontSize="13" Foreground="#94a3b8"
+      <TextBlock Text="Train harder than yesterday." FontSize="13" Foreground="#cbd5e1"
                  HorizontalAlignment="Center" Margin="0,-12,0,0"/>
 
       <!-- Spacer -->
       <Border Height="8"/>
 
       <!-- Email -->
-      <TextBlock Text="Email Address" FontSize="12" FontWeight="Medium" Foreground="#94a3b8"/>
+      <TextBlock Text="Email Address" FontSize="12" FontWeight="Medium" Foreground="#cbd5e1"/>
       <TextBox Classes="dark" PlaceholderText="name@example.com"/>
 
       <!-- Password Header -->
       <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Text="Password" FontSize="12" FontWeight="Medium" Foreground="#94a3b8"
+        <TextBlock Text="Password" FontSize="12" FontWeight="Medium" Foreground="#cbd5e1"
                    VerticalAlignment="Center"/>
         <TextBlock Grid.Column="1" Text="Forgot?" FontSize="11" FontWeight="SemiBold"
                    Foreground="#256af4" VerticalAlignment="Center"/>
@@ -120,7 +123,7 @@
       <Grid ColumnDefinitions="*,Auto,*" Margin="0,4">
         <Border Height="1" Background="#1e293b" VerticalAlignment="Center"/>
         <TextBlock Grid.Column="1" Text="OR CONTINUE WITH" FontSize="10" FontWeight="Medium"
-                   Foreground="#64748b" LetterSpacing="2" Margin="12,0"/>
+                   Foreground="#94a3b8" LetterSpacing="2" Margin="12,0"/>
         <Border Grid.Column="2" Height="1" Background="#1e293b" VerticalAlignment="Center"/>
       </Grid>
 
@@ -133,7 +136,7 @@
 
       <!-- Footer -->
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
-        <TextBlock Text="New here?" FontSize="12" Foreground="#94a3b8"/>
+        <TextBlock Text="New here?" FontSize="12" Foreground="#cbd5e1"/>
         <TextBlock Text="Create an account" FontSize="12" FontWeight="Bold" Foreground="#256af4"/>
       </StackPanel>
 

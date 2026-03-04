@@ -34,7 +34,7 @@ public partial class AvaloniaFlixAppPage : UserControl
                 Header     = BuildHomeHeader(),
             };
             NavigationPage.SetTopCommandBar(homePage, BuildHomeCommandBar());
-            _detailNav.Push(homePage);
+            _ = _detailNav.PushAsync(homePage);
         }
     }
 
@@ -101,7 +101,7 @@ public partial class AvaloniaFlixAppPage : UserControl
         return cmdBar;
     }
 
-    void PushDetailPage(string title)
+    async void PushDetailPage(string title)
     {
         if (_detailNav == null) return;
 
@@ -145,7 +145,7 @@ public partial class AvaloniaFlixAppPage : UserControl
         };
         NavigationPage.SetTopCommandBar(detailPage, detailCmdBar);
 
-        _detailNav.Push(detailPage);
+        await _detailNav.PushAsync(detailPage);
 
         var drawer = this.FindControl<DrawerPage>("DrawerPageControl");
         if (drawer is { IsOpen: true })

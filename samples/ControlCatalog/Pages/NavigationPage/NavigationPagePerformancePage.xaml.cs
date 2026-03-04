@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
@@ -15,16 +16,16 @@ namespace ControlCatalog.Pages
         public NavigationPagePerformancePage()
         {
             InitializeComponent();
-        }
-
-        protected override async void OnLoaded(RoutedEventArgs e)
-        {
-            base.OnLoaded(e);
 
             DemoNav.Pushed += OnStackChanged;
             DemoNav.Popped += OnStackChanged;
             DemoNav.PoppedToRoot += OnStackChanged;
 
+            _ = InitializeAsync();
+        }
+
+        private async System.Threading.Tasks.Task InitializeAsync()
+        {
             _perf.InitHeap();
             _perf.OpStopwatch.Restart();
             _pageCounter++;
@@ -41,36 +42,36 @@ namespace ControlCatalog.Pages
 
         private void OnStackChanged(object? sender, NavigationEventArgs e) => RefreshAll();
 
-        private void OnPush(object? sender, RoutedEventArgs e)
+        private async void OnPush(object? sender, RoutedEventArgs e)
         {
             _pageCounter++;
             var page = _perf.BuildTrackedPage($"Page {_pageCounter}", _pageCounter);
             _perf.OpStopwatch.Restart();
-            DemoNav.Push(page);
+            await DemoNav.PushAsync(page);
             _perf.StopMetrics(LastOpTimeText);
             Log("Push", $"Pushed \"{page.Header}\"");
         }
 
-        private void OnPush5(object? sender, RoutedEventArgs e)
+        private async void OnPush5(object? sender, RoutedEventArgs e)
         {
             int first = _pageCounter + 1;
             _perf.OpStopwatch.Restart();
             for (int i = 0; i < 5; i++)
             {
                 _pageCounter++;
-                DemoNav.Push(_perf.BuildTrackedPage($"Page {_pageCounter}", _pageCounter));
+                await DemoNav.PushAsync(_perf.BuildTrackedPage($"Page {_pageCounter}", _pageCounter));
             }
             _perf.StopMetrics(LastOpTimeText);
             Log("Push ×5", $"Pushed pages {first}–{_pageCounter}");
         }
 
-        private void OnPop(object? sender, RoutedEventArgs e)
+        private async void OnPop(object? sender, RoutedEventArgs e)
         {
             if (DemoNav.StackDepth > 1)
             {
                 var header = DemoNav.CurrentPage?.Header?.ToString();
                 _perf.OpStopwatch.Restart();
-                DemoNav.Pop();
+                await DemoNav.PopAsync();
                 _perf.StopMetrics(LastOpTimeText);
                 Log("Pop", $"Popped \"{header}\"");
             }

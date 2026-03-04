@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -539,6 +540,23 @@ public class DrawerPageTests
             Assert.True(dp.IsOpen);
             Assert.False(closingFired);
         }
+
+        [Fact]
+        public void Closing_Cancel_PreventsClose_EvenWithReentrantIsOpenFalse()
+        {
+            var dp = new DrawerPage { IsOpen = true };
+            dp.Closing += (_, e) => e.Cancel = true;
+
+            dp.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == DrawerPage.IsOpenProperty)
+                    dp.SetCurrentValue(DrawerPage.IsOpenProperty, false);
+            };
+
+            dp.IsOpen = false;
+
+            Assert.True(dp.IsOpen);
+        }
     }
 
     public class LifecycleEventTests : ScopedTestBase
@@ -721,8 +739,6 @@ public class DrawerPageTests
         [Fact]
         public void Content_SetBeforeAttach_ThenChangedAfterAttach_NoDoubleFire()
         {
-            // The _hasHadFirstPage guard must prevent double-firing when Content is
-            // changed after attach: the initial OnLoaded deferred events must not repeat.
             var first  = new ContentPage { Header = "First" };
             var second = new ContentPage { Header = "Second" };
 
@@ -822,9 +838,6 @@ public class DrawerPageTests
         [Fact]
         public void DrawerBreakpointWidth_BeforeLayout_DoesNotOverrideLayoutBehavior()
         {
-            // Without a layout pass, Bounds.Width == 0.
-            // The breakpoint guard (Bounds.Width > 0) ensures it does not prematurely
-            // force Overlay before the control has been measured.
             var dp = new DrawerPage
             {
                 DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
@@ -1025,10 +1038,27 @@ public class DrawerPageTests
         }
     }
 
+    public class DrawerIconTests : ScopedTestBase
+    {
+        [Fact]
+        public void DrawerIcon_PathIcon_DoesNotCrashWhenTemplateApplied()
+        {
+            var icon = new PathIcon();
+            var dp = new DrawerPage { DrawerIcon = icon };
+            var root = new TestRoot { Child = dp };
+
+            // Changing DrawerIcon after template is applied must not throw.
+            var icon2 = new PathIcon();
+            dp.DrawerIcon = icon2;
+
+            Assert.Same(icon2, dp.DrawerIcon);
+        }
+    }
+
     public class DetachmentTests : ScopedTestBase
     {
         [Fact]
-        public void OnDetached_ClearsDrawerPageReferenceOnNavigationPage()
+        public async Task OnDetached_ClearsDrawerPageReferenceOnNavigationPage()
         {
             var root = new TestRoot();
             var nav = new NavigationPage();
@@ -1041,7 +1071,7 @@ public class DrawerPageTests
             // NavigationPage should no longer reference the DrawerPage.
             // Pushing a page should not show a hamburger icon (which requires DrawerPage).
             var page = new ContentPage();
-            nav.Push(page);
+            await nav.PushAsync(page);
             Assert.Null(NavigationPage.GetBackButtonContent(page));
         }
     }

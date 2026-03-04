@@ -27,8 +27,30 @@ namespace Avalonia.Controls
     [TemplatePart("PART_PaneButton", typeof(ToggleButton))]
     [TemplatePart("PART_CompactPaneToggle", typeof(ToggleButton))]
     [TemplatePart("PART_Backdrop", typeof(Border))]
+    [TemplatePart("PART_CompactPaneIconPresenter", typeof(ContentPresenter))]
+    [TemplatePart("PART_PaneIconPresenter", typeof(ContentPresenter))]
+    [TemplatePart("PART_BottomPaneIconPresenter", typeof(ContentPresenter))]
+    [PseudoClasses(":placement-right", ":placement-top", ":placement-bottom", ":detail-is-navpage")]
     public class DrawerPage : Page
     {
+        /// <summary>
+        /// Defines the <see cref="Opened"/> routed event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> OpenedEvent =
+            RoutedEvent.Register<DrawerPage, RoutedEventArgs>(nameof(Opened), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="Closing"/> routed event.
+        /// </summary>
+        public static readonly RoutedEvent<DrawerClosingEventArgs> ClosingEvent =
+            RoutedEvent.Register<DrawerPage, DrawerClosingEventArgs>(nameof(Closing), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="Closed"/> routed event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> ClosedEvent =
+            RoutedEvent.Register<DrawerPage, RoutedEventArgs>(nameof(Closed), RoutingStrategies.Bubble);
+
         /// <summary>
         /// Defines the <see cref="Drawer"/> property.
         /// </summary>
@@ -45,7 +67,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="IsOpen"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsOpenProperty =
-            AvaloniaProperty.Register<DrawerPage, bool>(nameof(IsOpen));
+            AvaloniaProperty.Register<DrawerPage, bool>(nameof(IsOpen), coerce: CoerceIsOpen);
 
         /// <summary>
         /// Defines the <see cref="DrawerLength"/> property.
@@ -181,6 +203,9 @@ namespace Avalonia.Controls
         private ContentPresenter? _drawerPresenter;
         private ContentPresenter? _drawerHeaderPresenter;
         private ContentPresenter? _drawerFooterPresenter;
+        private ContentPresenter? _compactPaneIconPresenter;
+        private ContentPresenter? _paneIconPresenter;
+        private ContentPresenter? _bottomPaneIconPresenter;
         private SplitView? _splitView;
         private Border? _topBar;
         private ToggleButton? _paneButton;
@@ -201,21 +226,55 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when <see cref="IsOpen"/> changes to <see langword="true"/>.
         /// </summary>
-        public event EventHandler? Opened;
+        public event EventHandler<RoutedEventArgs>? Opened
+        {
+            add => AddHandler(OpenedEvent, value);
+            remove => RemoveHandler(OpenedEvent, value);
+        }
 
         /// <summary>
         /// Occurs when the drawer is about to close.
         /// </summary>
-        public event EventHandler<DrawerClosingEventArgs>? Closing;
+        public event EventHandler<DrawerClosingEventArgs>? Closing
+        {
+            add => AddHandler(ClosingEvent, value);
+            remove => RemoveHandler(ClosingEvent, value);
+        }
 
         /// <summary>
         /// Occurs when <see cref="IsOpen"/> changes to <see langword="false"/>
         /// and closing is not cancelled.
         /// </summary>
-        public event EventHandler? Closed;
+        public event EventHandler<RoutedEventArgs>? Closed
+        {
+            add => AddHandler(ClosedEvent, value);
+            remove => RemoveHandler(ClosedEvent, value);
+        }
 
         private static bool ValidateLength(double value) =>
             !double.IsNaN(value) && !double.IsInfinity(value) && value >= 0;
+
+        private static bool CoerceIsOpen(AvaloniaObject instance, bool value)
+        {
+            var drawer = (DrawerPage)instance;
+            if (drawer._suppressDrawerEvents)
+                return value;
+
+            // Prevent opening when the drawer is disabled.
+            if (value && drawer.DrawerBehavior == DrawerBehavior.Disabled)
+                return false;
+
+            // Raise Closing and allow it to be cancelled.
+            if (!value && drawer.GetValue(IsOpenProperty) && drawer.DrawerBehavior != DrawerBehavior.Disabled)
+            {
+                var args = new DrawerClosingEventArgs(ClosingEvent);
+                drawer.RaiseEvent(args);
+                if (args.Cancel)
+                    return true; // Stay open.
+            }
+
+            return value;
+        }
 
         static DrawerPage()
         {
@@ -467,10 +526,15 @@ namespace Avalonia.Controls
             _drawerPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerPresenter");
             _drawerHeaderPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerHeader");
             _drawerFooterPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerFooter");
+            _compactPaneIconPresenter = e.NameScope.Find<ContentPresenter>("PART_CompactPaneIconPresenter");
+            _paneIconPresenter = e.NameScope.Find<ContentPresenter>("PART_PaneIconPresenter");
+            _bottomPaneIconPresenter = e.NameScope.Find<ContentPresenter>("PART_BottomPaneIconPresenter");
             _splitView = e.NameScope.Find<SplitView>("PART_SplitView");
             _topBar = e.NameScope.Find<Border>("PART_TopBar");
             _paneButton = e.NameScope.Find<ToggleButton>("PART_PaneButton");
             _backdrop = e.NameScope.Find<Border>("PART_Backdrop");
+
+            UpdateIconPresenters();
 
             if (_backdrop != null)
                 _backdrop.PointerPressed += OnBackdropPressed;
@@ -489,7 +553,11 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == DrawerProperty || change.Property == ContentProperty)
+            if (change.Property == DrawerIconProperty)
+            {
+                UpdateIconPresenters();
+            }
+            else if (change.Property == DrawerProperty || change.Property == ContentProperty)
             {
                 if (change.OldValue is ILogical oldLogical)
                     LogicalChildren.Remove(oldLogical);
@@ -515,34 +583,6 @@ namespace Avalonia.Controls
             }
             else if (change.Property == IsOpenProperty || change.Property == DisplayModeProperty)
             {
-                if (change.Property == IsOpenProperty && !_suppressDrawerEvents)
-                {
-                    var newIsOpen = change.GetNewValue<bool>();
-
-                    if (newIsOpen && DrawerBehavior == DrawerBehavior.Disabled)
-                    {
-                        _suppressDrawerEvents = true;
-                        try { SetCurrentValue(IsOpenProperty, false); }
-                        finally { _suppressDrawerEvents = false; }
-                        return;
-                    }
-
-                    var oldIsOpen = change.GetOldValue<bool>();
-
-                    if (oldIsOpen && !newIsOpen && DrawerBehavior != DrawerBehavior.Disabled)
-                    {
-                        var closingArgs = new DrawerClosingEventArgs();
-                        Closing?.Invoke(this, closingArgs);
-                        if (closingArgs.Cancel)
-                        {
-                            _suppressDrawerEvents = true;
-                            try { SetCurrentValue(IsOpenProperty, true); }
-                            finally { _suppressDrawerEvents = false; }
-                            return;
-                        }
-                    }
-                }
-
                 SyncCurrentPage();
                 UpdateBackdropState();
 
@@ -553,9 +593,9 @@ namespace Avalonia.Controls
                     if (!_suppressDrawerEvents)
                     {
                         if (change.GetNewValue<bool>())
-                            Opened?.Invoke(this, EventArgs.Empty);
+                            RaiseEvent(new RoutedEventArgs(OpenedEvent));
                         else
-                            Closed?.Invoke(this, EventArgs.Empty);
+                            RaiseEvent(new RoutedEventArgs(ClosedEvent));
                     }
                 }
             }
@@ -646,7 +686,8 @@ namespace Avalonia.Controls
             if (!IsGestureEnabled ||
                 DrawerBehavior == DrawerBehavior.Disabled ||
                 DrawerBehavior == DrawerBehavior.Locked ||
-                DisplayMode == SplitViewDisplayMode.Inline)
+                DisplayMode == SplitViewDisplayMode.Inline ||
+                Bounds.Width <= 0 || Bounds.Height <= 0)
                 return;
 
             if (IsVerticalPlacement)
@@ -890,6 +931,38 @@ namespace Avalonia.Controls
         {
             SetCurrentValue(IsOpenProperty, false);
             e.Handled = true;
+        }
+
+        private void UpdateIconPresenters()
+        {
+            if (_compactPaneIconPresenter != null)
+                _compactPaneIconPresenter.Content = CreateIconContent(DrawerIcon);
+            if (_paneIconPresenter != null)
+                _paneIconPresenter.Content = CreateIconContent(DrawerIcon);
+            if (_bottomPaneIconPresenter != null)
+                _bottomPaneIconPresenter.Content = CreateIconContent(DrawerIcon);
+        }
+
+        private static object? CreateIconContent(object? icon)
+        {
+            // Non-visual data (Geometry, IImage, string, etc.) can be shared across presenters.
+            if (icon is not Control)
+                return icon;
+
+            // For Control-typed icons, create an independent copy per presenter to avoid
+            // the "already has a visual parent" exception when the same instance is used
+            // in multiple ContentPresenters simultaneously.
+            if (icon is PathIcon pathIcon)
+                return new PathIcon
+                {
+                    Data = pathIcon.Data,
+                    Width = pathIcon.Width,
+                    Height = pathIcon.Height,
+                };
+
+            // For other Control subtypes, return null to avoid a crash.
+            // Users should pass non-Control icon data instead.
+            return null;
         }
 
         private void ApplyDrawerBackground()

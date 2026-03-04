@@ -6,7 +6,7 @@ namespace Avalonia.Animation
     /// Base class for connected animation configurations that control
     /// the visual style and physics of the transition.
     /// </summary>
-    public abstract class ConnectedAnimationConfiguration
+    internal abstract class ConnectedAnimationConfiguration
     {
     }
 
@@ -19,7 +19,7 @@ namespace Avalonia.Animation
     /// Use <see cref="DirectConnectedAnimationConfiguration"/> for back navigation
     /// and <see cref="BasicConnectedAnimationConfiguration"/> for a plain transition.
     /// </remarks>
-    public class GravityConnectedAnimationConfiguration : ConnectedAnimationConfiguration
+    internal class GravityConnectedAnimationConfiguration : ConnectedAnimationConfiguration
     {
         /// <summary>
         /// Gets or sets whether a drop shadow is rendered beneath the element
@@ -36,7 +36,7 @@ namespace Avalonia.Animation
     /// Assign this to <see cref="ConnectedAnimation.Configuration"/> before calling
     /// <c>TryStart</c> on the return animation to animate back to the source view.
     /// </remarks>
-    public class DirectConnectedAnimationConfiguration : ConnectedAnimationConfiguration
+    internal class DirectConnectedAnimationConfiguration : ConnectedAnimationConfiguration
     {
         /// <summary>
         /// Gets or sets the duration of the animation.
@@ -50,7 +50,7 @@ namespace Avalonia.Animation
     /// with no gravity arc or shadow. Duration is taken from
     /// <see cref="ConnectedAnimationService.DefaultDuration"/>.
     /// </summary>
-    public class BasicConnectedAnimationConfiguration : ConnectedAnimationConfiguration
+    internal class BasicConnectedAnimationConfiguration : ConnectedAnimationConfiguration
     {
     }
 }

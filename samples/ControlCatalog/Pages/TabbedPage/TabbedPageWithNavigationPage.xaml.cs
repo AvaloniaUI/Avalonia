@@ -71,7 +71,7 @@ namespace ControlCatalog.Pages
                     }
                 };
 
-                await nav.PushAsync(detail, null);
+                await nav.PushAsync(detail, nav.PageTransition);
             };
 
             var page = new ContentPage

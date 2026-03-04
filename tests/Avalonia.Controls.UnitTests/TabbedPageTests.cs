@@ -152,7 +152,7 @@ public class TabbedPageTests
         public void Pages_SetNewList_UpdatesProperty()
         {
             var tp = new TabbedPage();
-            var pages = new AvaloniaList<object> { new ContentPage { Header = "A" } };
+            var pages = new AvaloniaList<Page> { new ContentPage { Header = "A" } };
             tp.Pages = pages;
             Assert.Same(pages, tp.Pages);
         }
@@ -161,7 +161,7 @@ public class TabbedPageTests
         public void Pages_Added_BecomeLogicalChildren()
         {
             var tp = new TabbedPage();
-            var pages = new AvaloniaList<object>();
+            var pages = new AvaloniaList<Page>();
             tp.Pages = pages;
 
             var page1 = new ContentPage { Header = "Tab 1" };
@@ -180,7 +180,7 @@ public class TabbedPageTests
             var tp = new TabbedPage();
             var page1 = new ContentPage { Header = "Tab 1" };
             var page2 = new ContentPage { Header = "Tab 2" };
-            var pages = new AvaloniaList<object> { page1, page2 };
+            var pages = new AvaloniaList<Page> { page1, page2 };
             tp.Pages = pages;
 
             pages.Remove(page1);
@@ -194,10 +194,10 @@ public class TabbedPageTests
         {
             var tp = new TabbedPage();
             var old = new ContentPage { Header = "Old" };
-            tp.Pages = new AvaloniaList<object> { old };
+            tp.Pages = new AvaloniaList<Page> { old };
 
             var fresh = new ContentPage { Header = "Fresh" };
-            tp.Pages = new AvaloniaList<object> { fresh };
+            tp.Pages = new AvaloniaList<Page> { fresh };
 
             Assert.DoesNotContain(old, ((ILogical)tp).LogicalChildren);
             Assert.Contains(fresh, ((ILogical)tp).LogicalChildren);
@@ -208,7 +208,7 @@ public class TabbedPageTests
         {
             var tp = new TabbedPage();
             var page = new ContentPage();
-            tp.Pages = new AvaloniaList<object> { page };
+            tp.Pages = new AvaloniaList<Page> { page };
             tp.Pages = null;
             Assert.DoesNotContain(page, ((ILogical)tp).LogicalChildren);
         }
@@ -217,7 +217,7 @@ public class TabbedPageTests
         public void Pages_AddMultiple_AllBecomeLogicalChildren()
         {
             var tp = new TabbedPage();
-            var pages = new AvaloniaList<object>();
+            var pages = new AvaloniaList<Page>();
             tp.Pages = pages;
 
             var list = new List<ContentPage>();
@@ -239,7 +239,7 @@ public class TabbedPageTests
             var tp = new TabbedPage();
             var a = new ContentPage { Header = "A" };
             var b = new ContentPage { Header = "B" };
-            var pages = new AvaloniaList<object> { a, b };
+            var pages = new AvaloniaList<Page> { a, b };
             tp.Pages = pages;
 
             pages.Clear();
@@ -255,7 +255,7 @@ public class TabbedPageTests
         public void PagesChanged_FiresOnAdd()
         {
             var tp = new TabbedPage();
-            var pages = new AvaloniaList<object>();
+            var pages = new AvaloniaList<Page>();
             tp.Pages = pages;
 
             NotifyCollectionChangedEventArgs? received = null;
@@ -272,7 +272,7 @@ public class TabbedPageTests
         {
             var tp = new TabbedPage();
             var page = new ContentPage();
-            var pages = new AvaloniaList<object> { page };
+            var pages = new AvaloniaList<Page> { page };
             tp.Pages = pages;
 
             NotifyCollectionChangedEventArgs? received = null;
@@ -288,12 +288,12 @@ public class TabbedPageTests
         public void PagesChanged_NotFiredAfterPagesReplaced()
         {
             var tp = new TabbedPage();
-            var oldPages = new AvaloniaList<object>();
+            var oldPages = new AvaloniaList<Page>();
             tp.Pages = oldPages;
             bool fired = false;
             tp.PagesChanged += (_, _) => fired = true;
 
-            tp.Pages = new AvaloniaList<object>();
+            tp.Pages = new AvaloniaList<Page>();
             oldPages.Add(new ContentPage());
             Assert.False(fired);
         }
@@ -302,7 +302,7 @@ public class TabbedPageTests
         public void PagesChanged_Add_ArgsContainAddedPage()
         {
             var tp = new TabbedPage();
-            var pages = new AvaloniaList<object>();
+            var pages = new AvaloniaList<Page>();
             tp.Pages = pages;
 
             NotifyCollectionChangedEventArgs? received = null;
@@ -321,7 +321,7 @@ public class TabbedPageTests
         {
             var tp = new TabbedPage();
             var page = new ContentPage { Header = "ToRemove" };
-            var pages = new AvaloniaList<object> { page };
+            var pages = new AvaloniaList<Page> { page };
             tp.Pages = pages;
 
             NotifyCollectionChangedEventArgs? received = null;
@@ -338,7 +338,7 @@ public class TabbedPageTests
         public void PagesChanged_FiresOnClear_WithResetAction()
         {
             var tp = new TabbedPage();
-            var pages = new AvaloniaList<object>
+            var pages = new AvaloniaList<Page>
             {
                 new ContentPage { Header = "A" },
                 new ContentPage { Header = "B" },
@@ -616,8 +616,6 @@ public class TabbedPageTests
         [Fact]
         public void CommitSelection_ToNull_FiresDisappearingAndNavigatedFrom_WithNullDestination()
         {
-            // Deselecting (committing to null) must fire Disappearing and NavigatedFrom on the
-            // previous page, with DestinationPage == null, and nothing else.
             var tp = new TestableTabbedPage();
             var page = new ContentPage { Header = "A" };
             tp.CallCommitSelection(0, page);
@@ -673,7 +671,7 @@ public class TabbedPageTests
             var page0 = new ContentPage();
             var page1 = new ContentPage();
             var page2 = new ContentPage();
-            tp.Pages = new AvaloniaList<object> { page0, page1, page2 };
+            tp.Pages = new AvaloniaList<Page> { page0, page1, page2 };
             TabbedPage.SetIsTabEnabled(page1, false);
 
             int result = tp.CallFindNextEnabledTab(1, 1);
@@ -687,7 +685,7 @@ public class TabbedPageTests
             var page0 = new ContentPage();
             var page1 = new ContentPage();
             var page2 = new ContentPage();
-            tp.Pages = new AvaloniaList<object> { page0, page1, page2 };
+            tp.Pages = new AvaloniaList<Page> { page0, page1, page2 };
             TabbedPage.SetIsTabEnabled(page1, false);
 
             int result = tp.CallFindNextEnabledTab(1, -1);
@@ -700,7 +698,7 @@ public class TabbedPageTests
             var tp = new TestableTabbedPage();
             var page0 = new ContentPage();
             var page1 = new ContentPage();
-            tp.Pages = new AvaloniaList<object> { page0, page1 };
+            tp.Pages = new AvaloniaList<Page> { page0, page1 };
             TabbedPage.SetIsTabEnabled(page1, false);
 
             int result = tp.CallFindNextEnabledTab(1, 1);
@@ -714,7 +712,7 @@ public class TabbedPageTests
             var page0 = new ContentPage();
             var page1 = new ContentPage();
             var page2 = new ContentPage();
-            tp.Pages = new AvaloniaList<object> { page0, page1, page2 };
+            tp.Pages = new AvaloniaList<Page> { page0, page1, page2 };
 
             int result = tp.CallFindNextEnabledTab(1, 1);
             Assert.Equal(1, result);
@@ -728,7 +726,7 @@ public class TabbedPageTests
             var page1 = new ContentPage();
             var page2 = new ContentPage();
             var page3 = new ContentPage();
-            tp.Pages = new AvaloniaList<object> { page0, page1, page2, page3 };
+            tp.Pages = new AvaloniaList<Page> { page0, page1, page2, page3 };
             TabbedPage.SetIsTabEnabled(page1, false);
             TabbedPage.SetIsTabEnabled(page2, false);
 
@@ -743,7 +741,7 @@ public class TabbedPageTests
             var page0 = new ContentPage();
             var page1 = new ContentPage();
             var page2 = new ContentPage();
-            tp.Pages = new AvaloniaList<object> { page0, page1, page2 };
+            tp.Pages = new AvaloniaList<Page> { page0, page1, page2 };
             TabbedPage.SetIsTabEnabled(page0, false);
             TabbedPage.SetIsTabEnabled(page1, false);
             TabbedPage.SetIsTabEnabled(page2, false);
@@ -882,14 +880,6 @@ public class TabbedPageTests
 
     public class ForegroundResourcesTests : ScopedTestBase
     {
-        private const string SelectedKey   = "TabbedPageTabItemHeaderForegroundSelected";
-        private const string SelectedPoKey = "TabbedPageTabItemHeaderForegroundSelectedPointerOver";
-        private const string SelectedPrKey = "TabbedPageTabItemHeaderForegroundSelectedPressed";
-        private const string PipeKey       = "TabbedPageTabItemHeaderSelectedPipeFill";
-        private const string UnselKey      = "TabbedPageTabItemHeaderForegroundUnselected";
-        private const string UnselPoKey    = "TabbedPageTabItemHeaderForegroundUnselectedPointerOver";
-        private const string UnselPrKey    = "TabbedPageTabItemHeaderForegroundUnselectedPressed";
-
         private static (TabbedPage tp, TabControl tc) Create()
         {
             var tabControl = new TabControl();
@@ -905,116 +895,14 @@ public class TabbedPageTests
             return (tp, tabControl);
         }
 
-        private static IBrush? Get(TabControl tc, string key) =>
-            tc.Resources.TryGetResource(key, null, out var v) ? v as IBrush : null;
-
-        private static bool Has(TabControl tc, string key) =>
-            tc.Resources.TryGetResource(key, null, out _);
-
         [Fact]
-        public void BarForeground_SetsTabControlForeground()
+        public void BarForeground_DoesNotManipulateTabControlResources()
         {
+            // Foreground colors are now driven by XAML ancestor bindings, not resource overrides.
             var (tp, tc) = Create();
             tp.BarForeground = Brushes.White;
-            Assert.Equal(Brushes.White, tc.Foreground);
-        }
-
-        [Fact]
-        public void BarForeground_UsedForBothSelected_And_Unselected_WhenNoSpecificBrushes()
-        {
-            var (tp, tc) = Create();
-            tp.BarForeground = Brushes.White;
-
-            Assert.Equal(Brushes.White, Get(tc, SelectedKey));
-            Assert.Equal(Brushes.White, Get(tc, SelectedPoKey));
-            Assert.Equal(Brushes.White, Get(tc, SelectedPrKey));
-            Assert.Equal(Brushes.White, Get(tc, PipeKey));
-            Assert.Equal(Brushes.White, Get(tc, UnselKey));
-            Assert.Equal(Brushes.White, Get(tc, UnselPoKey));
-            Assert.Equal(Brushes.White, Get(tc, UnselPrKey));
-        }
-
-        [Fact]
-        public void SelectedTabBrush_OverridesBarForeground_ForSelected()
-        {
-            var (tp, tc) = Create();
-            tp.BarForeground = Brushes.White;
-            tp.SelectedTabBrush = Brushes.Red;
-
-            Assert.Equal(Brushes.Red,   Get(tc, SelectedKey));
-            Assert.Equal(Brushes.Red,   Get(tc, PipeKey));
-            Assert.Equal(Brushes.White, Get(tc, UnselKey));
-        }
-
-        [Fact]
-        public void UnselectedTabBrush_OverridesBarForeground_ForUnselected()
-        {
-            var (tp, tc) = Create();
-            tp.BarForeground = Brushes.White;
-            tp.UnselectedTabBrush = Brushes.Gray;
-
-            Assert.Equal(Brushes.White, Get(tc, SelectedKey));
-            Assert.Equal(Brushes.Gray,  Get(tc, UnselKey));
-            Assert.Equal(Brushes.Gray,  Get(tc, UnselPoKey));
-            Assert.Equal(Brushes.Gray,  Get(tc, UnselPrKey));
-        }
-
-        [Fact]
-        public void SelectedTabBrush_SetToNull_FallsBackToBarForeground()
-        {
-            // Regression: clearing SelectedTabBrush must restore the BarForeground fallback.
-            var (tp, tc) = Create();
-            tp.BarForeground   = Brushes.White;
-            tp.SelectedTabBrush = Brushes.Red;
-            tp.SelectedTabBrush = null;
-
-            Assert.Equal(Brushes.White, Get(tc, SelectedKey));
-            Assert.Equal(Brushes.White, Get(tc, PipeKey));
-        }
-
-        [Fact]
-        public void UnselectedTabBrush_SetToNull_FallsBackToBarForeground()
-        {
-            // Regression: clearing UnselectedTabBrush must restore the BarForeground fallback.
-            var (tp, tc) = Create();
-            tp.BarForeground     = Brushes.White;
-            tp.UnselectedTabBrush = Brushes.Gray;
-            tp.UnselectedTabBrush = null;
-
-            Assert.Equal(Brushes.White, Get(tc, UnselKey));
-        }
-
-        [Fact]
-        public void AllNull_ResourcesAbsent()
-        {
-            var (tp, tc) = Create();
-            Assert.False(Has(tc, SelectedKey));
-            Assert.False(Has(tc, PipeKey));
-            Assert.False(Has(tc, UnselKey));
-        }
-
-        [Fact]
-        public void BarForeground_SetToNull_RemovesResources()
-        {
-            var (tp, tc) = Create();
-            tp.BarForeground = Brushes.White;
-            tp.BarForeground = null;
-
-            Assert.False(Has(tc, SelectedKey));
-            Assert.False(Has(tc, PipeKey));
-            Assert.False(Has(tc, UnselKey));
-        }
-
-        [Fact]
-        public void BothSpecificBrushes_Set_BarForegroundNotUsed()
-        {
-            var (tp, tc) = Create();
-            tp.BarForeground     = Brushes.White;
-            tp.SelectedTabBrush  = Brushes.Red;
-            tp.UnselectedTabBrush = Brushes.Gray;
-
-            Assert.Equal(Brushes.Red,  Get(tc, SelectedKey));
-            Assert.Equal(Brushes.Gray, Get(tc, UnselKey));
+            Assert.False(tc.Resources.TryGetResource("TabbedPageTabItemHeaderForegroundSelected", null, out _));
+            Assert.False(tc.Resources.TryGetResource("TabbedPageTabItemHeaderForegroundUnselected", null, out _));
         }
     }
 
