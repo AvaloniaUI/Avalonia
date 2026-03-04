@@ -26,7 +26,7 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
         }
     }
 
-    protected abstract SystemDecorations Decorations { get; }
+    protected abstract WindowDecorations Decorations { get; }
 
     public static MatrixTheoryData<bool, WindowState> States
         => new([true, false], Enum.GetValues<WindowState>());
@@ -39,7 +39,7 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
         {
             CanResize = canResize,
             WindowState = state,
-            SystemDecorations = Decorations,
+            WindowDecorations = Decorations,
             ExtendClientAreaToDecorationsHint = true,
             Width = ClientWidth,
             Height = ClientHeight,
@@ -160,8 +160,8 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
 
     public sealed class DecorationsFull : ExtendClientAreaWindowTests
     {
-        protected override SystemDecorations Decorations
-            => SystemDecorations.Full;
+        protected override WindowDecorations Decorations
+            => WindowDecorations.Full;
 
         protected override void VerifyNormalState(bool canResize)
         {
@@ -182,8 +182,8 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
 
     public sealed class DecorationsBorderOnly : ExtendClientAreaWindowTests
     {
-        protected override SystemDecorations Decorations
-            => SystemDecorations.BorderOnly;
+        protected override WindowDecorations Decorations
+            => WindowDecorations.BorderOnly;
 
         protected override void VerifyNormalState(bool canResize)
         {
@@ -197,8 +197,8 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
 
     public sealed class DecorationsNone : ExtendClientAreaWindowTests
     {
-        protected override SystemDecorations Decorations
-            => SystemDecorations.None;
+        protected override WindowDecorations Decorations
+            => WindowDecorations.None;
 
         protected override void VerifyNormalState(bool canResize)
         {

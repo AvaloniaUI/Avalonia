@@ -60,7 +60,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_NCCALCSIZE when ToInt32(wParam) == 1:
                     {
-                        if (_windowProperties.Decorations == SystemDecorations.None)
+                        if (_windowProperties.Decorations == WindowDecorations.None)
                             return IntPtr.Zero;
 
                         // When the client area is extended into the frame, we are still requesting the standard styles matching
