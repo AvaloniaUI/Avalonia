@@ -876,14 +876,14 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TabControl
                 {
                     IsVisible = false,
-                    SelectedIndex = 1,
                     Template = TabControlTemplate(),
                     Items =
                     {
                         new TabItem { Name = "first", Content = "foo"},
                         (expectedSelectionItem = new TabItem { Name = "second", Content = "bar"}),
                         new TabItem { Name = "third", Content = "baz" },
-                    }
+                    },
+                    SelectedIndex = 1
                 };
 
                 target.ApplyTemplate();
