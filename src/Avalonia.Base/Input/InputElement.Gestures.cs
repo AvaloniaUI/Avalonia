@@ -47,9 +47,12 @@ namespace Avalonia.Input
             RoutedEvent.Register<InputElement, PullGestureEndedEventArgs>(
                 nameof(PullGestureEnded), RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="SwipeGesture"/> event.
+        /// </summary>
         public static readonly RoutedEvent<SwipeGestureEventArgs> SwipeGestureEvent =
-            RoutedEvent.Register<SwipeGestureEventArgs>(
-                "SwipeGesture", RoutingStrategies.Bubble, typeof(InputElement));
+            RoutedEvent.Register<InputElement, SwipeGestureEventArgs>(
+                nameof(SwipeGesture), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="ScrollGesture"/> event.
@@ -226,14 +229,14 @@ namespace Avalonia.Input
             remove { RemoveHandler(PointerTouchPadGestureRotateEvent, value); }
         }
 
-        public static void AddSwipeGestureHandler(Interactive element, EventHandler<SwipeGestureEventArgs> handler) =>
-            element.AddHandler(SwipeGestureEvent, handler);
-
-        public static void RemoveSwipeGestureHandler(Interactive element, EventHandler<SwipeGestureEventArgs> handler) =>
-            element.RemoveHandler(SwipeGestureEvent, handler);
-
-        public static void AddPointerTouchPadGestureMagnifyHandler(Interactive element, EventHandler<PointerDeltaEventArgs> handler) =>
-            element.AddHandler(PointerTouchPadGestureMagnifyEvent, handler);
+        /// <summary>
+        /// Occurs when a swipe gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<SwipeGestureEventArgs>? SwipeGesture
+        {
+            add { AddHandler(SwipeGestureEvent, value); }
+            remove { RemoveHandler(SwipeGestureEvent, value); }
+        }
 
         /// <summary>
         /// Occurs when a touchpad swipe gesture occurs on the control.
