@@ -13,6 +13,12 @@
     </AvaloniaXaml>
     <AvaloniaResource Include="Assets\*" />
     <AvaloniaResource Include="Assets\Fonts\*" />
+    <AvaloniaResource Include="Assets\Restaurant\*" />
+    <AvaloniaResource Include="Assets\Pulse\*" />
+    <AvaloniaResource Include="Assets\Movies\*" />
+    <AvaloniaResource Include="Assets\CurvedHeader\*" />
+    <AvaloniaResource Include="Assets\RetroGaming\*" />
+    <AvaloniaResource Include="Assets\ModernApp\*" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\image1.jpg" />
