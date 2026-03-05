@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
@@ -86,13 +86,11 @@ public class DirectFbCompositionTests : TestBase
             fb.RowBytes, new Vector(96, 96), PixelFormat.Rgba8888, AlphaFormat.Premul, null);
 
         bool previousFrameIsRetained = false;
-        IFramebufferRenderTarget rt = advertised
-            ? new FuncRetainedFramebufferRenderTarget((out FramebufferLockProperties props) =>
-            {
-                props = new() { PreviousFrameIsRetained = previousFrameIsRetained };
-                return LockFb();
-            })
-            : new FuncFramebufferRenderTarget(LockFb);
+        IFramebufferRenderTarget rt = new FuncFramebufferRenderTarget((_, out props) =>
+        {
+            props = new() { PreviousFrameIsRetained = previousFrameIsRetained };
+            return LockFb();
+        }, advertised);
         
         using var renderer =
             new CompositingRenderer(root, compositor, () => new[] { new FuncFramebufferSurface(() => rt) });

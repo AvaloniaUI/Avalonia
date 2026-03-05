@@ -377,7 +377,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             {
                 //Go through two cycles of buffer swapping (there are render artifacts otherwise)
                 for (var c = 0; c < 2; c++)
-                    using (CreateGlRenderTarget().BeginDraw(PixelSize))
+                    using (CreateGlRenderTarget().BeginDraw(new IRenderTarget.RenderTargetSceneInfo(PixelSize, 1)))
                     {
                         _deferredContext.GlInterface.ClearColor(initialBufferSwappingColorR, initialBufferSwappingColorG,
                             initialBufferSwappingColorB, initialBufferSwappingColorA);
@@ -511,7 +511,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                 public bool IsYFlipped => false;
             }
 
-            public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedPixelSize)
+            public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
                 var clearContext = _parent._deferredContext.MakeCurrent(_parent._eglSurface);
                 var gl = _parent._deferredContext.GlInterface;

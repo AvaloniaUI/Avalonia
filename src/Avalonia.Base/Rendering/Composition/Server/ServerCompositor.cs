@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using Avalonia.Logging;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Transport;
@@ -274,10 +275,15 @@ namespace Avalonia.Rendering.Composition.Server
             _activeTargets.Remove(target);
         }
         
-        public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+        public IRenderTarget CreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
         {
             using (RenderInterface.EnsureCurrent())
                 return RenderInterface.CreateRenderTarget(surfaces);
+        }
+
+        public bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
+        {
+            return RenderInterface.IsReadyToCreateRenderTarget(surfaces);
         }
 
         public bool CheckAccess() => _safeThread == Thread.CurrentThread;

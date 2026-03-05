@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Platform;
 
 namespace Avalonia.Skia
 {
@@ -10,10 +11,12 @@ namespace Avalonia.Skia
         /// <summary>
         /// Start rendering to this render target.
         /// </summary>
-        /// <param name="expectedPixelSize">The expected size.</param>
+        /// <param name="sceneInfo">Information about the scene that will be rendered.</param>
         /// <returns>A render session instance.</returns>
-        ISkiaGpuRenderSession BeginRenderingSession(PixelSize? expectedPixelSize);
+        ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo);
         
         bool IsCorrupted { get; }
+        
+        bool IsReady => true;
     }
 }

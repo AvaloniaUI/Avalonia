@@ -3,6 +3,7 @@ using System.Runtime.Versioning;
 using System.Threading;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 using CoreAnimation;
 
 namespace Avalonia.iOS.Eagl
@@ -70,9 +71,8 @@ namespace Avalonia.iOS.Eagl
                     _fbo.Dispose();
             }
 
-            public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedPixelSize)
+            public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
-                // TODO: use expectedPixelSize
                 CheckThread();
                 var restoreContext = _ctx.MakeCurrent();
                 _fbo.Bind();

@@ -1,0 +1,120 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CommandBarCustomizationPage">
+  <UserControl.Resources>
+    <StreamGeometry x:Key="AddIcon">M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z</StreamGeometry>
+    <StreamGeometry x:Key="SaveIcon">M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z</StreamGeometry>
+    <StreamGeometry x:Key="ShareIcon">M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L15.96,7.19C16.5,7.69 17.21,8 18,8A3,3 0 0,0 21,5A3,3 0 0,0 18,2A3,3 0 0,0 15,5C15,5.24 15.04,5.47 15.09,5.7L8.04,9.81C7.5,9.31 6.79,9 6,9A3,3 0 0,0 3,12A3,3 0 0,0 6,15C6.79,15 7.5,14.69 8.04,14.19L15.16,18.34C15.11,18.55 15.08,18.77 15.08,19C15.08,20.61 16.39,21.91 18,21.91C19.61,21.91 20.92,20.61 20.92,19C20.92,17.39 19.61,16.08 18,16.08Z</StreamGeometry>
+  </UserControl.Resources>
+
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock Text="Live Preview" FontWeight="SemiBold" FontSize="13" />
+        <CommandBar x:Name="LiveBar">
+          <CommandBar.PrimaryCommands>
+            <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
+            <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+            <AppBarButton Label="Share"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
+          </CommandBar.PrimaryCommands>
+        </CommandBar>
+
+        <Separator />
+
+        <TextBlock Text="Background Preset" />
+        <ComboBox x:Name="BgPresetCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnBgPresetChanged">
+          <ComboBoxItem Content="Default" />
+          <ComboBoxItem Content="Blue (#0078D4)" />
+          <ComboBoxItem Content="Dark (#1C1C1E)" />
+          <ComboBoxItem Content="Gradient" />
+          <ComboBoxItem Content="Transparent" />
+        </ComboBox>
+
+        <TextBlock Text="Foreground" />
+        <ComboBox x:Name="FgCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnFgChanged">
+          <ComboBoxItem Content="Default" />
+          <ComboBoxItem Content="White" />
+          <ComboBoxItem Content="Black" />
+        </ComboBox>
+
+        <TextBlock Text="Corner Radius" />
+        <Slider x:Name="RadiusSlider"
+                Minimum="0"
+                Maximum="24"
+                Value="0"
+                ValueChanged="OnRadiusChanged" />
+        <TextBlock x:Name="RadiusLabel"
+                   Text="0"
+                   HorizontalAlignment="Center"
+                   Opacity="0.7" />
+
+        <TextBlock Text="Border Thickness" />
+        <Slider x:Name="BorderSlider"
+                Minimum="0"
+                Maximum="4"
+                Value="0"
+                TickFrequency="1"
+                IsSnapToTickEnabled="True"
+                ValueChanged="OnBorderChanged" />
+        <TextBlock x:Name="BorderLabel"
+                   Text="0"
+                   HorizontalAlignment="Center"
+                   Opacity="0.7" />
+
+        <Separator />
+
+        <TextBlock Text="About" FontWeight="SemiBold" />
+        <TextBlock Text="CommandBar inherits from TemplatedControl, so Background, Foreground, BorderBrush, BorderThickness, and CornerRadius are available out of the box."
+                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+        <TextBlock Text="Foreground is an inherited property: setting it on the CommandBar cascades to all PathIcons inside AppBarButton/AppBarToggleButton."
+                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" Margin="0,4,0,0" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <ScrollViewer>
+      <StackPanel Spacing="16" Margin="12,12,12,0">
+        <TextBlock Classes="h2">Customize the CommandBar appearance using Background, Foreground, BorderBrush, and CornerRadius.</TextBlock>
+
+        <TextBlock Text="Style Presets" FontWeight="SemiBold" />
+
+        <TextBlock Text="Default theme" FontSize="12" Opacity="0.7" />
+        <CommandBar OverflowButtonVisibility="Collapsed">
+          <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
+          <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+        </CommandBar>
+
+        <TextBlock Text="Solid color" FontSize="12" Opacity="0.7" />
+        <CommandBar Background="#0078D4" Foreground="White" OverflowButtonVisibility="Collapsed">
+          <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
+          <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+        </CommandBar>
+
+        <TextBlock Text="Dark" FontSize="12" Opacity="0.7" />
+        <CommandBar Background="#1C1C1E" Foreground="White" OverflowButtonVisibility="Collapsed">
+          <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
+          <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+        </CommandBar>
+
+        <TextBlock Text="Pill shape (CornerRadius=20)" FontSize="12" Opacity="0.7" />
+        <CommandBar Background="#F0F0F0"
+                    CornerRadius="20"
+                    BorderBrush="#CCCCCC"
+                    BorderThickness="1"
+                    OverflowButtonVisibility="Collapsed">
+          <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
+          <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+        </CommandBar>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

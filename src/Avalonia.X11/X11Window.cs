@@ -16,6 +16,7 @@ using Avalonia.Input.TextInput;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -211,7 +212,7 @@ namespace Avalonia.X11
                 SetWmClass(_handle, _platform.Options.WmClass);
             }
 
-            var surfaces = new List<object>
+            var surfaces = new List<IPlatformRenderSurface>
             {
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
@@ -317,7 +318,7 @@ namespace Avalonia.X11
                               MotifDecorations.Maximize | MotifDecorations.Minimize | MotifDecorations.ResizeH;
 
             if (_popup 
-                || _systemDecorations == SystemDecorations.None) 
+                || _windowDecorations == WindowDecorations.None) 
                 decorations = 0;
 
             var isDisabled = !IsEnabled;
@@ -481,7 +482,7 @@ namespace Avalonia.X11
         
         public double DesktopScaling => RenderScaling;
 
-        public IEnumerable<object> Surfaces { get; }
+        public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
@@ -508,7 +509,7 @@ namespace Avalonia.X11
 
         public Thickness OffScreenMargin { get; } = new Thickness();
 
-        public bool IsClientAreaExtendedToDecorations { get; }
+        public bool IsClientAreaExtendedToDecorations { get; private set; }
 
         public Action? Closed { get; set; }
         public Action<PixelPoint>? PositionChanged { get; set; }
@@ -695,7 +696,7 @@ namespace Avalonia.X11
 
         private Thickness? GetFrameExtents()
         {
-            if (_systemDecorations != SystemDecorations.Full)
+            if (_windowDecorations != WindowDecorations.Full)
                 return new Thickness(0);
 
             XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_FRAME_EXTENTS, IntPtr.Zero,
@@ -865,7 +866,8 @@ namespace Avalonia.X11
             return rv;
         }
         
-        private SystemDecorations _systemDecorations = SystemDecorations.Full;
+        private WindowDecorations _requestedWindowDecorations = WindowDecorations.Full;
+        private WindowDecorations _windowDecorations = WindowDecorations.Full;
         private bool _canResize = true;
         private bool _canMinimize = true;
         private bool _canMaximize = true;
@@ -921,7 +923,44 @@ namespace Avalonia.X11
         private void ScheduleInput(RawInputEventArgs args)
         {
             if (args is RawPointerEventArgs mouse)
+            {
                 mouse.Position = mouse.Position / RenderScaling;
+                
+                // Chrome hit-test for drawn decorations
+                if (_extendClientAreaToDecorations 
+                    && mouse.Type == RawPointerEventType.LeftButtonDown
+                    && _inputRoot is { } inputRoot)
+                {
+                    var chromeRole = inputRoot.HitTestChromeElement(mouse.Position);
+                    if (chromeRole is { } role)
+                    {
+                        var moveResizeSide = role switch
+                        {
+                            WindowDecorationsElementRole.TitleBar => NetWmMoveResize._NET_WM_MOVERESIZE_MOVE,
+                            WindowDecorationsElementRole.ResizeN when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOP,
+                            WindowDecorationsElementRole.ResizeS when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOM,
+                            WindowDecorationsElementRole.ResizeE when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_RIGHT,
+                            WindowDecorationsElementRole.ResizeW when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_LEFT,
+                            WindowDecorationsElementRole.ResizeNE when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOPRIGHT,
+                            WindowDecorationsElementRole.ResizeNW when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOPLEFT,
+                            WindowDecorationsElementRole.ResizeSE when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT,
+                            WindowDecorationsElementRole.ResizeSW when _canResize => NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT,
+                            _ => (NetWmMoveResize?)null
+                        };
+                        
+                        if (moveResizeSide.HasValue)
+                        {
+                            var pos = GetCursorPos(_x11);
+                            XUngrabPointer(_x11.Display, IntPtr.Zero);
+                            SendNetWMMessage(_x11.Atoms._NET_WM_MOVERESIZE,
+                                (IntPtr)pos.x, (IntPtr)pos.y,
+                                (IntPtr)moveResizeSide.Value,
+                                (IntPtr)1, (IntPtr)1);
+                            return;
+                        }
+                    }
+                }
+            }
             if (args is RawDragEvent drag)
                 drag.Location = drag.Location / RenderScaling;
             
@@ -1141,9 +1180,25 @@ namespace Avalonia.X11
 
         public PixelPoint PointToScreen(Point point) => _mode.PointToScreen(point);
         
-        public void SetSystemDecorations(SystemDecorations enabled)
+        public void SetWindowDecorations(WindowDecorations enabled)
         {
-            _systemDecorations = enabled == SystemDecorations.Full ? SystemDecorations.Full : SystemDecorations.None;
+            _requestedWindowDecorations = enabled;
+            UpdateEffectiveSystemDecorations();
+        }
+
+        private void UpdateEffectiveSystemDecorations()
+        {
+            // When extending client area, always hide WM decorations (we draw our own)
+            var effective = _extendClientAreaToDecorations
+                ? WindowDecorations.None
+                : (_requestedWindowDecorations == WindowDecorations.Full
+                    ? WindowDecorations.Full
+                    : WindowDecorations.None);
+
+            if (_windowDecorations == effective)
+                return;
+
+            _windowDecorations = effective;
             UpdateMotifHints();
             UpdateSizeHints(null);
         }
@@ -1455,12 +1510,21 @@ namespace Avalonia.X11
             }
         }
 
+        private bool _extendClientAreaToDecorations;
+
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
         {
-        }
+            if (_platform.Options.EnableDrawnDecorationsInternal != true)
+                return;
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {
+            if (_extendClientAreaToDecorations == extendIntoClientAreaHint)
+                return;
+
+            _extendClientAreaToDecorations = extendIntoClientAreaHint;
+            UpdateEffectiveSystemDecorations();
+
+            IsClientAreaExtendedToDecorations = extendIntoClientAreaHint;
+            ExtendClientAreaToDecorationsChanged?.Invoke(extendIntoClientAreaHint);
         }
 
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
@@ -1538,7 +1602,15 @@ namespace Avalonia.X11
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
-        public bool NeedsManagedDecorations => false;
+        public bool NeedsManagedDecorations => _extendClientAreaToDecorations;
+
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations =>
+            _extendClientAreaToDecorations
+                ? PlatformRequestedDrawnDecoration.Border
+                  | PlatformRequestedDrawnDecoration.ResizeGrips
+                  | PlatformRequestedDrawnDecoration.TitleBar
+                  | PlatformRequestedDrawnDecoration.Shadow
+                : PlatformRequestedDrawnDecoration.None;
 
         public bool IsEnabled => !_disabled && !_mode.BlockInput;
 

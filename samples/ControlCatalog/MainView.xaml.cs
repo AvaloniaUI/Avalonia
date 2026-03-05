@@ -45,9 +45,9 @@ namespace ControlCatalog
 
         private void Decorations_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (TopLevel.GetTopLevel(this) is Window window && e.AddedItems.Count > 0 && e.AddedItems[0] is SystemDecorations systemDecorations)
+            if (TopLevel.GetTopLevel(this) is Window window && e.AddedItems.Count > 0 && e.AddedItems[0] is WindowDecorations systemDecorations)
             {
-                window.SystemDecorations = systemDecorations;
+                window.WindowDecorations = systemDecorations;
             }
         }
 
@@ -79,7 +79,7 @@ namespace ControlCatalog
             base.OnAttachedToVisualTree(e);
 
             if (TopLevel.GetTopLevel(this) is Window window)
-                Decorations.SelectedIndex = (int)window.SystemDecorations;
+                Decorations.SelectedIndex = (int)window.WindowDecorations;
 
             var insets = TopLevel.GetTopLevel(this)!.InsetsManager;
             if (insets != null)

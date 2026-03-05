@@ -10,8 +10,9 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that writes to a surface.
     /// </summary>
-    internal class SurfaceRenderTarget : IDrawingContextLayerImpl, IDrawableBitmapImpl, IDrawingContextLayerWithRenderContextAffinityImpl
+    internal class SurfaceRenderTarget : IDrawableBitmapImpl, IDrawingContextLayerWithRenderContextAffinityImpl
     {
+        private readonly bool _useScaledDrawing;
         private readonly ISkiaSurface _surface;
         private readonly SKCanvas _canvas;
         private readonly bool _disableLcdRendering;
@@ -44,6 +45,7 @@ namespace Avalonia.Skia
         /// <param name="createInfo">Create info.</param>
         public SurfaceRenderTarget(CreateInfo createInfo)
         {
+            _useScaledDrawing = createInfo.UseScaledDrawing;
             PixelSize = new PixelSize(createInfo.Width, createInfo.Height);
             Dpi = createInfo.Dpi;
 
@@ -98,7 +100,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
+        public IDrawingContextImpl CreateDrawingContext()
         {
             _canvas.RestoreToCount(-1);
             _canvas.ResetMatrix();
@@ -107,7 +109,7 @@ namespace Avalonia.Skia
             {
                 Surface = _surface.Surface,
                 Dpi = Dpi,
-                ScaleDrawingToDpi = useScaledDrawing,
+                ScaleDrawingToDpi = _useScaledDrawing,
                 DisableSubpixelTextRendering = _disableLcdRendering,
                 GrContext = _grContext,
                 Gpu = _gpu,
@@ -116,15 +118,7 @@ namespace Avalonia.Skia
             return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
         }
 
-        public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
-            out RenderTargetDrawingContextProperties properties)
-        {
-            properties = default;
-            return CreateDrawingContext(false);
-        }
-
         public bool IsCorrupted => _gpu?.IsLost == true;
-
         /// <inheritdoc />
         public Vector Dpi { get; }
 
@@ -241,6 +235,7 @@ namespace Avalonia.Skia
             public ISkiaGpuRenderSession? Session;
 
             public bool DisableManualFbo;
+            public bool UseScaledDrawing;
         }
 
         public bool HasRenderContextAffinity => _grContext != null;

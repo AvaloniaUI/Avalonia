@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPageFirstLookPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock Text="Navigation" FontWeight="SemiBold" FontSize="13" />
+
+        <Button Content="Push Page"
+                HorizontalAlignment="Stretch"
+                Click="OnPush" />
+        <Button Content="Pop"
+                HorizontalAlignment="Stretch"
+                Click="OnPop" />
+        <Button Content="Pop to Root"
+                HorizontalAlignment="Stretch"
+                Click="OnPopToRoot" />
+
+        <Separator />
+
+        <TextBlock Text="Options" FontWeight="SemiBold" FontSize="14" />
+
+        <CheckBox x:Name="HasNavBarCheck"
+                  Content="Has Navigation Bar"
+                  IsChecked="True"
+                  IsCheckedChanged="OnHasNavBarChanged" />
+        <CheckBox x:Name="HasBackButtonCheck"
+                  Content="Has Back Button"
+                  IsChecked="True" />
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="14" />
+        <TextBlock x:Name="StatusText"
+                   Text="Depth: 1"
+                   Opacity="0.7"
+                   TextWrapping="Wrap" />
+        <TextBlock x:Name="HeaderText"
+                   Text="Current: Home"
+                   Opacity="0.7"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>
