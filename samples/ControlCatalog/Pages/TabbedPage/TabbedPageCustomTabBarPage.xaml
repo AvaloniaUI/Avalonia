@@ -102,11 +102,15 @@
         </TabbedPage.Resources>
 
         <TabbedPage.Styles>
-          <!-- Tab strip: center, cap width -->
+          <!-- Tab strip background (adaptive light/dark) -->
           <Style Selector="TabControl">
             <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
+          </Style>
+
+          <!-- Tab strip border: center and cap width so it floats as a pill -->
+          <Style Selector="TabControl /template/ Border#PART_TabStrip">
             <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="MaxWidth"            Value="480" />
+            <Setter Property="MaxWidth"            Value="360" />
           </Style>
 
           <!-- Tab item: uniform width -->

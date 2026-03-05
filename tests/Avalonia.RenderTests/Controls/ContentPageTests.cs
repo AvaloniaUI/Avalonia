@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Themes.Simple;
 using Xunit;
 
@@ -19,6 +20,11 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         {
         }
 
+        private static Style FontStyle => new Style(x => x.OfType<TextBlock>())
+        {
+            Setters = { new Setter(TextBlock.FontFamilyProperty, TestFontFamily) }
+        };
+
         [Fact]
         public async Task ContentPage_Default_Content()
         {
@@ -34,6 +40,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Hello, ContentPage!",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         FontSize = 16,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
@@ -44,6 +51,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -115,6 +123,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Page Content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         FontSize = 14,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
@@ -125,6 +134,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }

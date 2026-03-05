@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Themes.Simple;
 using Xunit;
 
@@ -19,6 +20,11 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         {
         }
 
+        private static Style FontStyle => new Style(x => x.OfType<TextBlock>())
+        {
+            Setters = { new Setter(TextBlock.FontFamilyProperty, TestFontFamily) }
+        };
+
         private static TabbedPage CreateBasicTabbedPage() => new TabbedPage
         {
             Background = Brushes.White,
@@ -31,6 +37,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Home page",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -42,6 +49,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Favorites page",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -53,6 +61,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Settings page",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -75,6 +84,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -94,6 +104,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -113,6 +124,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -132,6 +144,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -151,6 +164,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -173,6 +187,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -194,6 +209,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -218,6 +234,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                             {
                                 Text = "First tab content",
                                 Foreground = Brushes.Black,
+                                FontFamily = TestFontFamily,
                                 HorizontalAlignment = HorizontalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center
                             }
@@ -229,6 +246,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                             {
                                 Text = "Second tab content",
                                 Foreground = Brushes.Black,
+                                FontFamily = TestFontFamily,
                                 HorizontalAlignment = HorizontalAlignment.Center,
                                 VerticalAlignment = VerticalAlignment.Center
                             }
@@ -238,6 +256,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -263,6 +282,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         {
                             Text = "Home page",
                             Foreground = Brushes.Black,
+                            FontFamily = TestFontFamily,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center
                         }
@@ -275,6 +295,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         {
                             Text = "Search page",
                             Foreground = Brushes.Black,
+                            FontFamily = TestFontFamily,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center
                         }
@@ -287,6 +308,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         {
                             Text = "Settings page",
                             Foreground = Brushes.Black,
+                            FontFamily = TestFontFamily,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center
                         }
@@ -304,6 +326,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -329,6 +352,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         {
                             Text = "Home page",
                             Foreground = Brushes.Black,
+                            FontFamily = TestFontFamily,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center
                         }
@@ -341,6 +365,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         {
                             Text = "Search page",
                             Foreground = Brushes.Black,
+                            FontFamily = TestFontFamily,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center
                         }
@@ -353,6 +378,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                         {
                             Text = "Settings page",
                             Foreground = Brushes.Black,
+                            FontFamily = TestFontFamily,
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center
                         }
@@ -370,6 +396,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }

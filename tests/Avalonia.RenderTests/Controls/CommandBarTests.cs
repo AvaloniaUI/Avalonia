@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Themes.Simple;
 using Xunit;
 
@@ -18,6 +19,11 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             : base(@"Controls\CommandBar")
         {
         }
+
+        private static Style FontStyle => new Style(x => x.OfType<TextBlock>())
+        {
+            Setters = { new Setter(TextBlock.FontFamilyProperty, TestFontFamily) }
+        };
 
         [Fact]
         public async Task CommandBar_Default_PrimaryCommands()
@@ -73,6 +79,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -131,6 +138,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }

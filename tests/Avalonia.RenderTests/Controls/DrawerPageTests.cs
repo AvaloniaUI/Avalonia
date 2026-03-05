@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Themes.Simple;
 using Xunit;
 
@@ -17,6 +18,11 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             : base(@"Controls\DrawerPage")
         {
         }
+
+        private static Style FontStyle => new Style(x => x.OfType<TextBlock>())
+        {
+            Setters = { new Setter(TextBlock.FontFamilyProperty, TestFontFamily) }
+        };
 
         [Fact]
         public async Task DrawerPage_Closed_ShowsTopBar()
@@ -34,6 +40,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Drawer content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         Margin = new Thickness(16),
                         VerticalAlignment = VerticalAlignment.Top
                     },
@@ -41,6 +48,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Detail content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -48,6 +56,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -70,6 +79,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Drawer content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         Margin = new Thickness(16),
                         VerticalAlignment = VerticalAlignment.Top
                     },
@@ -77,6 +87,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Detail content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -84,6 +95,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -105,6 +117,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Locked drawer",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         Margin = new Thickness(16),
                         VerticalAlignment = VerticalAlignment.Top
                     },
@@ -112,6 +125,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Detail content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -119,6 +133,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -152,6 +167,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Detail content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -159,6 +175,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -183,6 +200,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Drawer content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         Margin = new Thickness(16),
                         VerticalAlignment = VerticalAlignment.Top
                     },
@@ -190,6 +208,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Detail content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -197,6 +216,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -230,6 +250,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Detail content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -237,6 +258,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -261,6 +283,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Drawer content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         Margin = new Thickness(16),
                         VerticalAlignment = VerticalAlignment.Top
                     },
@@ -268,6 +291,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Detail content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -275,6 +299,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -297,6 +322,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Split drawer",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         Margin = new Thickness(16),
                         VerticalAlignment = VerticalAlignment.Top
                     },
@@ -304,6 +330,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Detail content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -311,6 +338,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -334,6 +362,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Right drawer",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         Margin = new Thickness(16),
                         VerticalAlignment = VerticalAlignment.Top
                     },
@@ -341,6 +370,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Detail content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -348,6 +378,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -370,6 +401,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Top drawer",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         Margin = new Thickness(16),
                         VerticalAlignment = VerticalAlignment.Top
                     },
@@ -377,6 +409,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Detail content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -384,6 +417,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -406,6 +440,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Bottom drawer",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         Margin = new Thickness(16),
                         VerticalAlignment = VerticalAlignment.Top
                     },
@@ -413,6 +448,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Detail content",
                         Foreground = Brushes.Black,
+                        FontFamily = TestFontFamily,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     }
@@ -420,6 +456,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             };
 
             target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
