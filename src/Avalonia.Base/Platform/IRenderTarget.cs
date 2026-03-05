@@ -25,16 +25,18 @@ namespace Avalonia.Platform
         /// <summary>
         /// Creates an <see cref="IDrawingContextImpl"/> for a rendering session.
         /// </summary>
-        /// <param name="useScaledDrawing">Apply DPI reported by the render target as a hidden transform matrix</param>
-        IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing);
+        /// <param name="sceneInfo">Information about the scene that's about to be rendered into this render target.
+        /// This is expected to be reported to the underlying platform and affect the framebuffer size, however
+        /// the implementation may choose to ignore that information.
+        /// </param>
+        /// <param name="properties">Returns various properties about the returned drawing context</param>
+        IDrawingContextImpl CreateDrawingContext(RenderTargetSceneInfo sceneInfo, out RenderTargetDrawingContextProperties properties);
 
         /// <summary>
-        /// Creates an <see cref="IDrawingContextImpl"/> for a rendering session.
+        /// Indicates if the render target is currently ready to be rendered to
         /// </summary>
-        /// <param name="expectedPixelSize">The pixel size of the surface</param>
-        /// <param name="properties">Returns various properties about the returned drawing context</param>
-        IDrawingContextImpl CreateDrawingContext(
-            PixelSize expectedPixelSize,
-            out RenderTargetDrawingContextProperties properties);
+        bool IsReady => true;
+        
+        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling);
     }
 }

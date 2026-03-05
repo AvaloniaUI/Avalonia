@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
@@ -31,7 +31,7 @@ namespace Avalonia.Headless
         public HeadlessWindowImpl(bool isPopup, PixelFormat frameBufferFormat)
         {
             IsPopup = isPopup;
-            Surfaces = new object[] { this };
+            Surfaces = [this];
             _keyboard = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
             _screen = new HeadlessScreensStub();
             _mousePointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
@@ -51,7 +51,7 @@ namespace Avalonia.Headless
         public Size? FrameSize => null;
         public double RenderScaling { get; } = 1;
         public double DesktopScaling => RenderScaling;
-        public IEnumerable<object> Surfaces { get; }
+        public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
