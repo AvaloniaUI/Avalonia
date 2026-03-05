@@ -314,28 +314,30 @@ public class CommandBarDefaultsTests : ScopedTestBase
         => Assert.NotNull(new CommandBar().OverflowItems);
 
     [Fact]
-    public void PrimaryCommands_CanBeSetToNull()
-    {
-        var cb = new CommandBar();
-        cb.PrimaryCommands = null;
-        Assert.Null(cb.PrimaryCommands);
-    }
-
-    [Fact]
-    public void SecondaryCommands_CanBeSetToNull()
-    {
-        var cb = new CommandBar();
-        cb.SecondaryCommands = null;
-        Assert.Null(cb.SecondaryCommands);
-    }
-
-    [Fact]
     public void PrimaryCommands_StartsEmpty()
-        => Assert.Empty(new CommandBar().PrimaryCommands!);
+        => Assert.Empty(new CommandBar().PrimaryCommands);
 
     [Fact]
     public void SecondaryCommands_StartsEmpty()
-        => Assert.Empty(new CommandBar().SecondaryCommands!);
+        => Assert.Empty(new CommandBar().SecondaryCommands);
+
+    [Fact]
+    public void PrimaryCommands_ReturnsNewListWhenNull()
+    {
+        var cb = new CommandBar();
+        cb.ClearValue(CommandBar.PrimaryCommandsProperty);
+        Assert.NotNull(cb.PrimaryCommands);
+        Assert.Empty(cb.PrimaryCommands);
+    }
+
+    [Fact]
+    public void SecondaryCommands_ReturnsNewListWhenNull()
+    {
+        var cb = new CommandBar();
+        cb.ClearValue(CommandBar.SecondaryCommandsProperty);
+        Assert.NotNull(cb.SecondaryCommands);
+        Assert.Empty(cb.SecondaryCommands);
+    }
 
     [Fact]
     public void VisiblePrimaryCommands_StartsEmpty()

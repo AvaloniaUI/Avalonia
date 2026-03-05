@@ -169,7 +169,17 @@ namespace Avalonia.Controls
         [Content]
         public IList<ICommandBarElement> PrimaryCommands
         {
-            get => GetValue(PrimaryCommandsProperty)!;
+            get
+            {
+                var value = GetValue(PrimaryCommandsProperty);
+                if (value is null)
+                {
+                    var list = new ObservableCollection<ICommandBarElement>();
+                    SetCurrentValue(PrimaryCommandsProperty, (IList<ICommandBarElement>)list);
+                    return list;
+                }
+                return value;
+            }
             set => SetValue(PrimaryCommandsProperty, value);
         }
 
@@ -178,7 +188,17 @@ namespace Avalonia.Controls
         /// </summary>
         public IList<ICommandBarElement> SecondaryCommands
         {
-            get => GetValue(SecondaryCommandsProperty)!;
+            get
+            {
+                var value = GetValue(SecondaryCommandsProperty);
+                if (value is null)
+                {
+                    var list = new ObservableCollection<ICommandBarElement>();
+                    SetCurrentValue(SecondaryCommandsProperty, (IList<ICommandBarElement>)list);
+                    return list;
+                }
+                return value;
+            }
             set => SetValue(SecondaryCommandsProperty, value);
         }
 
