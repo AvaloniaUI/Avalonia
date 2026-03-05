@@ -1009,6 +1009,14 @@ namespace Avalonia.Win32
             if (hwnd == _hwnd)
                 return true;
 
+            return IsOurWindowGlobal(hwnd);
+        }
+
+        internal static bool IsOurWindowGlobal(IntPtr hwnd)
+        {
+            if (hwnd == IntPtr.Zero)
+                return false;
+
             lock (s_instances)
                 for (int i = 0; i < s_instances.Count; i++)
                     if (s_instances[i]._hwnd == hwnd)
