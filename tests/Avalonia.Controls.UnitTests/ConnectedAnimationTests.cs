@@ -485,15 +485,16 @@ public class ConnectedAnimationTests : ScopedTestBase
     }
 
     [Fact]
-    public void Configuration_DirectWithNullDuration_Uses150ms()
+    public void Configuration_DirectWithNullDuration_UsesServiceDefaultDuration()
     {
         var service = CreateService();
+        service.DefaultDuration = TimeSpan.FromMilliseconds(400);
         var animation = service.PrepareToAnimate("hero", new Border());
         animation.Configuration = new DirectConnectedAnimationConfiguration { Duration = null };
 
         animation.ResolveTimingAndEasing(service, out var resolvedDuration, out _, out _, out _);
 
-        Assert.Equal(TimeSpan.FromMilliseconds(150), resolvedDuration);
+        Assert.Equal(TimeSpan.FromMilliseconds(400), resolvedDuration);
     }
 
     [Fact]

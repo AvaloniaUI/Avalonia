@@ -40,7 +40,7 @@ namespace Avalonia.Animation
     {
         /// <summary>
         /// Gets or sets the duration of the animation.
-        /// When <see langword="null"/> a default of 150 ms is used.
+        /// When <see langword="null"/>, <see cref="ConnectedAnimationService.DefaultDuration"/> is used.
         /// </summary>
         public TimeSpan? Duration { get; set; }
     }

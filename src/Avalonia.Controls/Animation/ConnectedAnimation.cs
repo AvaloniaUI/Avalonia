@@ -702,7 +702,7 @@ namespace Avalonia.Animation
         {
             if (Configuration is DirectConnectedAnimationConfiguration direct)
             {
-                duration      = direct.Duration ?? TimeSpan.FromMilliseconds(150);
+                duration      = direct.Duration ?? service.DefaultDuration;
                 easing        = s_directEasing;
                 useGravityDip = false;
                 useShadow     = false;
