@@ -427,23 +427,13 @@ public partial class CompositionPage : UserControl
         centerAnim.InsertKeyFrame(0.5f, new RelativePoint(0.8, 0.5, RelativeUnit.Relative));
         centerAnim.InsertKeyFrame(1f, new RelativePoint(0.2, 0.5, RelativeUnit.Relative));
 
-        var radiusX = compositor.CreateRelativeScalarKeyFrameAnimation();
-        radiusX.Duration = TimeSpan.FromSeconds(3);
-        radiusX.IterationBehavior = AnimationIterationBehavior.Forever;
-        radiusX.InsertKeyFrame(0f, new(0.3f, RelativeUnit.Relative));
-        radiusX.InsertKeyFrame(0.5f, new(0.6f, RelativeUnit.Relative));
-        radiusX.InsertKeyFrame(1f, new(0.3f, RelativeUnit.Relative));
-
-        var radiusY = compositor.CreateRelativeScalarKeyFrameAnimation();
-        radiusY.Duration = radiusX.Duration;
-        radiusY.IterationBehavior = AnimationIterationBehavior.Forever;
-        radiusY.InsertKeyFrame(0f, new(0.3f, RelativeUnit.Relative));
-        radiusY.InsertKeyFrame(0.5f, new(0.4f, RelativeUnit.Relative));
-        radiusY.InsertKeyFrame(1f, new(0.3f, RelativeUnit.Relative));
-
         brush.StartAnimation("Center", centerAnim);
-        brush.StartAnimation("RadiusX", radiusX);
-        brush.StartAnimation("RadiusY", radiusY);
+        var radiusXExpression = compositor.CreateExpressionAnimation(
+            "RelativeScalar(Clamp(0.2 + Abs(this.Target.Center.X - 0.5) * 0.9, 0.2, 0.85), RelativeUnit.Relative)");
+        var radiusYExpression = compositor.CreateExpressionAnimation(
+            "RelativeScalar(Clamp(0.2 + Abs(this.Target.Center.Y - 0.5) * 0.9, 0.2, 0.85), RelativeUnit.Relative)");
+        brush.StartAnimation("RadiusX", radiusXExpression);
+        brush.StartAnimation("RadiusY", radiusYExpression);
 
         AnimateGradientStops(brush);
     }
@@ -476,6 +466,9 @@ public partial class CompositionPage : UserControl
         angleAnim.InsertKeyFrame(0f, 0f);
         angleAnim.InsertKeyFrame(1f, 360f);
         brush.StartAnimation("Angle", angleAnim);
+        var centerExpression = compositor.CreateExpressionAnimation(
+            "RelativePoint(Abs(Cos(ToRadians(this.Target.Angle))), Abs(Sin(ToRadians(this.Target.Angle))), RelativeUnit.Relative)");
+        brush.StartAnimation("Center", centerExpression);
 
         AnimateGradientStops(brush, false);
     }
