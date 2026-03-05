@@ -410,7 +410,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
         }
 
         return isOutput
-            ? context.ContentResolver?.OpenOutputStream(uri)
+            ? context.ContentResolver?.OpenOutputStream(uri, "wt")
             : context.ContentResolver?.OpenInputStream(uri);
     }
 

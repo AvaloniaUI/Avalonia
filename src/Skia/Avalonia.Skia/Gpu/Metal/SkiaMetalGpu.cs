@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Metal;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Metal;
@@ -49,7 +50,7 @@ internal class SkiaMetalGpu : ISkiaGpu
     public IScopedResource<GRContext> TryGetGrContext() =>
         ScopedResource<GRContext>.Create(GrContext, EnsureCurrent().Dispose);
 
-    public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
+    public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
     {
         foreach (var surface in surfaces)
         {
@@ -61,6 +62,19 @@ internal class SkiaMetalGpu : ISkiaGpu
         }
 
         return null;
+    }
+
+    public bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
+    {
+        foreach (var surface in surfaces)
+        {
+            if (surface is IMetalPlatformSurface)
+            {
+                return surface.IsReady;
+            }
+        }
+
+        return false;
     }
 
     public class SkiaMetalRenderTarget : ISkiaGpuRenderTarget
@@ -80,7 +94,7 @@ internal class SkiaMetalGpu : ISkiaGpu
             _target = null;
         }
 
-        public ISkiaGpuRenderSession BeginRenderingSession(PixelSize? expectedPixelSize)
+        public ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             // TODO: use expectedPixelSize
             var session = (_target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget))).BeginRendering();
@@ -95,6 +109,8 @@ internal class SkiaMetalGpu : ISkiaGpu
         }
 
         public bool IsCorrupted => false;
+
+        public bool IsReady => _target?.IsReady ?? false;
     }
     
     internal class SkiaMetalRenderSession : ISkiaGpuRenderSession

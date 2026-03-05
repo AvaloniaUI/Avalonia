@@ -16,6 +16,7 @@ using Avalonia.Input.TextInput;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -211,7 +212,7 @@ namespace Avalonia.X11
                 SetWmClass(_handle, _platform.Options.WmClass);
             }
 
-            var surfaces = new List<object>
+            var surfaces = new List<IPlatformRenderSurface>
             {
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
@@ -481,7 +482,7 @@ namespace Avalonia.X11
         
         public double DesktopScaling => RenderScaling;
 
-        public IEnumerable<object> Surfaces { get; }
+        public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }

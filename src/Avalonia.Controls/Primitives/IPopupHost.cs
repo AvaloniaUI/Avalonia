@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Primitives
     /// <remarks>
     /// A popup host can be either be a popup window created by the operating system
     /// (<see cref="PopupRoot"/>) or an <see cref="OverlayPopupHost"/> which is created
-    /// on an <see cref="OverlayLayer"/>.
+    /// on an <see cref="PopupOverlayLayer"/>.
     /// </remarks>
     internal interface IPopupHost : IDisposable, IFocusScope
     {

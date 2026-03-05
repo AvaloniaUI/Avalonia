@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Embedding.Offscreen;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Input;
 using Avalonia.Remote.Protocol.Viewport;
@@ -270,7 +270,7 @@ namespace Avalonia.Controls.Remote.Server
             return l.DesiredSize;
         }
 
-        public override IEnumerable<object> Surfaces => new[] { this };
+        public override IPlatformRenderSurface[] Surfaces => [this];
 
         private Framebuffer GetOrCreateFramebuffer()
         {
