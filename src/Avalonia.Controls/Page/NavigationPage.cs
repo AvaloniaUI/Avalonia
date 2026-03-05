@@ -50,6 +50,7 @@ namespace Avalonia.Controls
         private BarLayoutBehavior _effectiveBarLayoutBehavior = BarLayoutBehavior.Inset;
         private readonly Stack<Page> _modalStack = new();
         private IReadOnlyList<Page>? _cachedNavigationStack;
+        private IReadOnlyList<Page>? _cachedModalStack;
         private ContentPresenter? _modalBackPresenter;
         private ContentPresenter? _modalPresenter;
         private ContentPresenter? _topCommandBarPresenter;
@@ -430,9 +431,21 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the current modal stack.
+        /// Gets the current modal stack. Index 0 is the oldest (bottom-most) modal;
+        /// the last index is the most recently pushed (topmost) modal.
         /// </summary>
-        public IReadOnlyCollection<Page> ModalStack => _modalStack;
+        public IReadOnlyList<Page> ModalStack
+        {
+            get
+            {
+                if (_cachedModalStack != null)
+                    return _cachedModalStack;
+                var result = new List<Page>(_modalStack);
+                result.Reverse();
+                _cachedModalStack = result;
+                return _cachedModalStack;
+            }
+        }
 
         /// <summary>
         /// Gets the number of pages in the navigation stack.
@@ -699,6 +712,7 @@ namespace Avalonia.Controls
                 modal.Navigation = null;
                 modal.SetInNavigationPage(false);
             }
+            _cachedModalStack = null;
 
             foreach (var p in NavigationStack)
             {
@@ -1105,6 +1119,7 @@ namespace Avalonia.Controls
                 coveredPage?.SendNavigatedFrom(new NavigatedFromEventArgs(coveredPage, NavigationType.Push));
 
                 _modalStack.Push(page);
+                _cachedModalStack = null;
                 page.Navigation = this;
                 page.SetInNavigationPage(true);
                 page.SafeAreaPadding = SafeAreaPadding;
@@ -1180,6 +1195,7 @@ namespace Avalonia.Controls
             try
             {
                 var modal = _modalStack.Pop();
+                _cachedModalStack = null;
 
                 var revealedPageForNav = _modalStack.Count > 0 ? (Page?)_modalStack.Peek() : CurrentPage;
                 modal.SendNavigatedFrom(new NavigatedFromEventArgs(revealedPageForNav, NavigationType.Pop));
@@ -1306,6 +1322,7 @@ namespace Avalonia.Controls
                     modal.SetInNavigationPage(false);
                     ModalPopped?.Invoke(this, new ModalPoppedEventArgs(modal));
                 }
+                _cachedModalStack = null;
 
                 var newCurrentPage = CurrentPage;
                 newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Pop));
@@ -1345,20 +1362,21 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                var arr = stack.ToArray();
                 bool found = false;
-                stack.Clear();
-                for (int i = arr.Length - 1; i >= 0; i--)
-                {
-                    if (!found && ReferenceEquals(arr[i], page))
-                    {
-                        found = true;
-                        continue;
-                    }
-                    stack.Push(arr[i]);
-                }
+                foreach (var p in stack)
+                    if (ReferenceEquals(p, page)) { found = true; break; }
                 if (!found)
                     return;
+
+                var retained = new List<Page>(stack.Count - 1);
+                foreach (var p in stack)
+                {
+                    if (!ReferenceEquals(p, page))
+                        retained.Add(p);
+                }
+                stack.Clear();
+                for (int i = retained.Count - 1; i >= 0; i--)
+                    stack.Push(retained[i]);
             }
             else if (Pages is IList<Page> list)
             {

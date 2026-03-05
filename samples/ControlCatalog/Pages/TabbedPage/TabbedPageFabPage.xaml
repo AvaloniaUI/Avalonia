@@ -140,7 +140,7 @@
                                    Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
                       </StackPanel>
                     </StackPanel>
-                    <TextBlock Text="Just shipped a new feature! The whole team nailed it."
+                    <TextBlock Text="Just shipped dark mode support with Avalonia."
                                FontSize="12" TextWrapping="Wrap" />
                     <StackPanel Orientation="Horizontal" Spacing="16">
                       <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
@@ -206,7 +206,7 @@
                                    Foreground="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
                       </StackPanel>
                     </StackPanel>
-                    <TextBlock Text="Avalonia UI is seriously underrated for cross-platform apps."
+                    <TextBlock Text="One codebase, every platform. That's Avalonia."
                                FontSize="12" TextWrapping="Wrap" />
                     <StackPanel Orientation="Horizontal" Spacing="16">
                       <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">

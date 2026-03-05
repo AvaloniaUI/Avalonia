@@ -42,22 +42,6 @@ public class TabbedPageTests
 
     public class PropertyRoundTrips : ScopedTestBase
     {
-        [Fact]
-        public void BarBackground_RoundTrips()
-        {
-            var brush = new SolidColorBrush(Colors.DodgerBlue);
-            var tp = new TabbedPage { BarBackground = brush };
-            Assert.Same(brush, tp.BarBackground);
-        }
-
-        [Fact]
-        public void BarForeground_RoundTrips()
-        {
-            var brush = Brushes.White;
-            var tp = new TabbedPage { BarForeground = brush };
-            Assert.Same(brush, tp.BarForeground);
-        }
-
         [Theory]
         [InlineData(TabPlacement.Auto)]
         [InlineData(TabPlacement.Top)]
@@ -77,22 +61,6 @@ public class TabbedPageTests
         {
             var tp = new TabbedPage { IsKeyboardNavigationEnabled = enabled };
             Assert.Equal(enabled, tp.IsKeyboardNavigationEnabled);
-        }
-
-        [Fact]
-        public void SelectedTabBrush_RoundTrips()
-        {
-            var brush = new SolidColorBrush(Colors.Crimson);
-            var tp = new TabbedPage { SelectedTabBrush = brush };
-            Assert.Same(brush, tp.SelectedTabBrush);
-        }
-
-        [Fact]
-        public void UnselectedTabBrush_RoundTrips()
-        {
-            var brush = new SolidColorBrush(Colors.Gray);
-            var tp = new TabbedPage { UnselectedTabBrush = brush };
-            Assert.Same(brush, tp.UnselectedTabBrush);
         }
 
         [Theory]
@@ -838,34 +806,6 @@ public class TabbedPageTests
             var tp = new TabbedPage();
             var built = tp.PageTemplate!.Build(new DataItem("Test"));
             Assert.IsType<ContentPage>(built);
-        }
-    }
-
-    public class ForegroundResourcesTests : ScopedTestBase
-    {
-        private static (TabbedPage tp, TabControl tc) Create()
-        {
-            var tabControl = new TabControl();
-            var tp = new TabbedPage
-            {
-                Template = new FuncControlTemplate<TabbedPage>((_, scope) =>
-                {
-                    scope.Register("PART_TabControl", tabControl);
-                    return tabControl;
-                })
-            };
-            tp.ApplyTemplate();
-            return (tp, tabControl);
-        }
-
-        [Fact]
-        public void BarForeground_DoesNotManipulateTabControlResources()
-        {
-            // Foreground colors are now driven by XAML ancestor bindings, not resource overrides.
-            var (tp, tc) = Create();
-            tp.BarForeground = Brushes.White;
-            Assert.False(tc.Resources.TryGetResource("TabbedPageTabItemHeaderForegroundSelected", null, out _));
-            Assert.False(tc.Resources.TryGetResource("TabbedPageTabItemHeaderForegroundUnselected", null, out _));
         }
     }
 

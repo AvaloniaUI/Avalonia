@@ -622,9 +622,9 @@ public class NavigationPageTests
         }
 
         [Fact]
-        public async Task ModalStack_EnumeratesLIFO()
+        public async Task ModalStack_IsOrderedBottomToTop()
         {
-            // Doc: "The top (most recently pushed) modal is enumerated first."
+            // Index 0 = oldest (bottom-most); last index = topmost, consistent with NavigationStack.
             var nav = new NavigationPage();
             await nav.PushAsync(new ContentPage());
             var m1 = new ContentPage { Header = "M1" };
@@ -634,7 +634,7 @@ public class NavigationPageTests
             await nav.PushModalAsync(m2);
             await nav.PushModalAsync(m3);
 
-            Assert.Equal(new[] { m3, m2, m1 }, nav.ModalStack);
+            Assert.Equal(new[] { m1, m2, m3 }, nav.ModalStack);
         }
 
         [Fact]

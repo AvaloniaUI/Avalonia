@@ -18,10 +18,10 @@ namespace Avalonia.Controls
         IReadOnlyList<Page> NavigationStack { get; }
 
         /// <summary>
-        /// Gets the current modal stack.
-        /// Ordering is implementation-defined.
+        /// Gets the current modal stack. Index 0 is the oldest (bottom-most) modal;
+        /// the last index is the most recently pushed (topmost) modal.
         /// </summary>
-        IReadOnlyCollection<Page> ModalStack { get; }
+        IReadOnlyList<Page> ModalStack { get; }
 
         /// <summary>
         /// Gets the number of pages in the navigation stack.

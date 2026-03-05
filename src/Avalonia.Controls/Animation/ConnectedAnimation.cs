@@ -47,6 +47,9 @@ namespace Avalonia.Animation
     /// </remarks>
     internal class ConnectedAnimation : IDisposable
     {
+        private const double CoordinatedFadeStartThreshold = 0.6;
+        private const double CoordinatedFadeRange = 0.4;
+
         private readonly string _key;
         private readonly ConnectedAnimationService _service;
 
@@ -131,8 +134,11 @@ namespace Avalonia.Animation
         /// Starts the animation towards <paramref name="destination"/>.
         /// Returns <see langword="false"/> if the animation has already been consumed or disposed.
         /// </summary>
-        public bool TryStart(Visual destination) =>
-            TryStart(destination, Array.Empty<Visual>());
+        public bool TryStart(Visual destination)
+        {
+            ArgumentNullException.ThrowIfNull(destination);
+            return TryStart(destination, Array.Empty<Visual>());
+        }
 
         /// <summary>
         /// Starts the animation towards <paramref name="destination"/> with optional
@@ -141,6 +147,8 @@ namespace Avalonia.Animation
         /// </summary>
         public bool TryStart(Visual destination, IReadOnlyList<Visual> coordinatedElements)
         {
+            ArgumentNullException.ThrowIfNull(destination);
+            ArgumentNullException.ThrowIfNull(coordinatedElements);
             if (_isConsumed || _disposed)
                 return false;
 
@@ -474,9 +482,9 @@ namespace Avalonia.Animation
                 if (crossFadeOverlay != null)
                     crossFadeOverlay.Opacity = ep;
 
-                if (progress > 0.6)
+                if (progress > CoordinatedFadeStartThreshold)
                 {
-                    var cp = (progress - 0.6) / 0.4;
+                    var cp = (progress - CoordinatedFadeStartThreshold) / CoordinatedFadeRange;
                     for (int j = 0; j < coordinatedElements.Count; j++)
                     {
                         if (ReferenceEquals(coordinatedElements[j], destination))
@@ -622,9 +630,9 @@ namespace Avalonia.Animation
                     transT.Y = bty;
                 }
 
-                if (progress > 0.6)
+                if (progress > CoordinatedFadeStartThreshold)
                 {
-                    var cp = (progress - 0.6) / 0.4;
+                    var cp = (progress - CoordinatedFadeStartThreshold) / CoordinatedFadeRange;
                     for (int j = 0; j < coordinatedElements.Count; j++)
                     {
                         if (ReferenceEquals(coordinatedElements[j], destination))
