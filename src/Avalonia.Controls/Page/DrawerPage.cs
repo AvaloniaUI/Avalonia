@@ -85,10 +85,10 @@ namespace Avalonia.Controls
                 validate: ValidateLength);
 
         /// <summary>
-        /// Defines the <see cref="DrawerBreakpointWidth"/> property.
+        /// Defines the <see cref="DrawerBreakpointLength"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> DrawerBreakpointWidthProperty =
-            AvaloniaProperty.Register<DrawerPage, double>(nameof(DrawerBreakpointWidth), 0d);
+        public static readonly StyledProperty<double> DrawerBreakpointLengthProperty =
+            AvaloniaProperty.Register<DrawerPage, double>(nameof(DrawerBreakpointLength), 0d);
 
         /// <summary>
         /// Defines the <see cref="IsGestureEnabled"/> property.
@@ -343,12 +343,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the width threshold for switching to overlay mode.
+        /// Gets or sets the size threshold for switching to overlay mode. Set to 0 to disable.
         /// </summary>
-        public double DrawerBreakpointWidth
+        public double DrawerBreakpointLength
         {
-            get => GetValue(DrawerBreakpointWidthProperty);
-            set => SetValue(DrawerBreakpointWidthProperty, value);
+            get => GetValue(DrawerBreakpointLengthProperty);
+            set => SetValue(DrawerBreakpointLengthProperty, value);
         }
 
         /// <summary>
@@ -603,11 +603,11 @@ namespace Avalonia.Controls
             }
             else if (change.Property == DrawerBehaviorProperty ||
                      change.Property == DrawerLayoutBehaviorProperty ||
-                     change.Property == DrawerBreakpointWidthProperty)
+                     change.Property == DrawerBreakpointLengthProperty)
             {
                 UpdateSplitViewDisplayMode();
             }
-            else if (change.Property == BoundsProperty && DrawerBreakpointWidth > 0)
+            else if (change.Property == BoundsProperty && DrawerBreakpointLength > 0)
             {
                 UpdateSplitViewDisplayMode();
             }
@@ -860,7 +860,7 @@ namespace Avalonia.Controls
             if (_splitView == null)
                 return;
 
-            if (DrawerBreakpointWidth > 0 && previousMode != mode)
+            if (DrawerBreakpointLength > 0 && previousMode != mode)
             {
                 if (mode == SplitViewDisplayMode.Inline)
                 {
@@ -888,9 +888,13 @@ namespace Avalonia.Controls
                     return SplitViewDisplayMode.Overlay;
             }
 
-            var breakpoint = DrawerBreakpointWidth;
-            if (!IsVerticalPlacement && breakpoint > 0 && Bounds.Width > 0 && Bounds.Width < breakpoint)
-                return SplitViewDisplayMode.Overlay;
+            var breakpoint = DrawerBreakpointLength;
+            if (breakpoint > 0)
+            {
+                var length = IsVerticalPlacement ? Bounds.Height : Bounds.Width;
+                if (length > 0 && length < breakpoint)
+                    return SplitViewDisplayMode.Overlay;
+            }
 
             switch (DrawerLayoutBehavior)
             {
