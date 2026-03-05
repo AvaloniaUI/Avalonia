@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -167,6 +168,7 @@ namespace Avalonia.Controls
         /// Gets or sets the collection of primary commands displayed in the bar.
         /// </summary>
         [Content]
+        [SuppressMessage("AvaloniaProperty", "AVP1030:StyledProperty accessors should not have side effects", Justification = "Necessary for now to avoid returning null.")]
         public IList<ICommandBarElement> PrimaryCommands
         {
             get
@@ -186,6 +188,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the collection of secondary commands shown in the overflow menu.
         /// </summary>
+        [SuppressMessage("AvaloniaProperty", "AVP1030:StyledProperty accessors should not have side effects", Justification = "Necessary for now to avoid returning null.")]
         public IList<ICommandBarElement> SecondaryCommands
         {
             get
