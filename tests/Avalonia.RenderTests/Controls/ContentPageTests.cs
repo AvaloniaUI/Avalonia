@@ -36,12 +36,11 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 {
                     Background = Brushes.White,
                     Header = "My Page",
-                    Content = new TextBlock
+                    Content = new Border
                     {
-                        Text = "Hello, ContentPage!",
-                        Foreground = Brushes.Black,
-                        FontFamily = TestFontFamily,
-                        FontSize = 16,
+                        Width = 120,
+                        Height = 40,
+                        Background = new SolidColorBrush(Color.Parse("#F5F5F5")),
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     },
@@ -119,12 +118,11 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                             }
                         }
                     },
-                    Content = new TextBlock
+                    Content = new Border
                     {
-                        Text = "Page Content",
-                        Foreground = Brushes.Black,
-                        FontFamily = TestFontFamily,
-                        FontSize = 14,
+                        Width = 120,
+                        Height = 40,
+                        Background = new SolidColorBrush(Color.Parse("#F5F5F5")),
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center
                     },

@@ -24,6 +24,15 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             Setters = { new Setter(TextBlock.FontFamilyProperty, TestFontFamily) }
         };
 
+        private static Border PageContent() => new Border
+        {
+            Width = 80,
+            Height = 40,
+            Background = new SolidColorBrush(Color.Parse("#F5F5F5")),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
         [Fact]
         public async Task NavigationPage_SinglePage_ShowsNavBar()
         {
@@ -35,15 +44,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             {
                 Header = "Home",
                 Background = Brushes.White,
-                Content = new TextBlock
-                {
-                    Text = "Welcome to NavigationPage",
-                    Foreground = Brushes.Black,
-                    FontFamily = TestFontFamily,
-                    FontSize = 14,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                },
+                Content = PageContent(),
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 VerticalContentAlignment = VerticalAlignment.Center
             });
@@ -65,15 +66,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             {
                 Header = "Home",
                 Background = Brushes.White,
-                Content = new TextBlock
-                {
-                    Text = "Page 1",
-                    Foreground = Brushes.Black,
-                    FontFamily = TestFontFamily,
-                    FontSize = 14,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                },
+                Content = PageContent(),
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 VerticalContentAlignment = VerticalAlignment.Center
             });
@@ -82,15 +75,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             {
                 Header = "Details",
                 Background = Brushes.White,
-                Content = new TextBlock
-                {
-                    Text = "Page 2",
-                    Foreground = Brushes.Black,
-                    FontFamily = TestFontFamily,
-                    FontSize = 14,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                },
+                Content = PageContent(),
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 VerticalContentAlignment = VerticalAlignment.Center
             }, null);
@@ -113,15 +98,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             {
                 Header = "Green Theme",
                 Background = Brushes.White,
-                Content = new TextBlock
-                {
-                    Text = "Custom bar background",
-                    Foreground = Brushes.Black,
-                    FontFamily = TestFontFamily,
-                    FontSize = 14,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                },
+                Content = PageContent(),
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 VerticalContentAlignment = VerticalAlignment.Center
             });
