@@ -65,6 +65,17 @@ namespace Avalonia.Controls
                     includeSymbol: false);
             }
         }
+
+        /// <summary>
+        /// This method is obsolete now, since the necessary validation is handled by the TabControl.
+        /// It will be removed in a future release of Avalonia.
+        /// </summary>
+        // TODO-13: Remove this unused method 
+        [Obsolete]
+        protected virtual void ValidateSelection()
+        {
+            // Empty body for compatibility
+        }
         
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
