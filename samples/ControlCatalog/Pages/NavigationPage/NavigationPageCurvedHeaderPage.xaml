@@ -27,7 +27,7 @@
 
         <TextBlock Text="API Notes" FontSize="13" FontWeight="SemiBold" />
         <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
-                   Text="The curved shape is achieved entirely in page content: no NavigationPage API changes needed. A future per-page SetBarBackground(page, brush) API would allow the Overlay back-button foreground to be driven by the page theme rather than the global BarForeground." />
+                   Text="The curved shape is achieved entirely in page content: no NavigationPage API changes needed. A future per-page SetBarBackground(page, brush) API would allow the Overlay back-button foreground to be driven by the page theme rather than the global NavigationBarForeground resource." />
 
 
       </StackPanel>
@@ -36,9 +36,12 @@
     <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
             BorderThickness="1" CornerRadius="8" ClipToBounds="True">
       <NavigationPage x:Name="NavPage"
-                           Background="#f6f7f8"
-                           BarBackground="Transparent"
-                           BarForeground="White" />
+                      Background="#f6f7f8">
+        <NavigationPage.Resources>
+          <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
+          <SolidColorBrush x:Key="NavigationBarForeground" Color="White" />
+        </NavigationPage.Resources>
+      </NavigationPage>
     </Border>
   </DockPanel>
 

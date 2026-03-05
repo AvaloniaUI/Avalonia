@@ -26,7 +26,11 @@
 
       <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
               BorderThickness="1" CornerRadius="8" ClipToBounds="True">
-        <NavigationPage x:Name="NavPage" BarBackground="Transparent" />
+        <NavigationPage x:Name="NavPage">
+          <NavigationPage.Resources>
+            <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
+          </NavigationPage.Resources>
+        </NavigationPage>
       </Border>
     </DockPanel>
 

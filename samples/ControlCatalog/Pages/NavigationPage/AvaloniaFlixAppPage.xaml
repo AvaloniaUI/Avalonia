@@ -148,10 +148,13 @@
 
         <DrawerPage.Content>
           <NavigationPage x:Name="DetailNav"
-                               Background="{StaticResource FlixBg}"
-                               BarBackground="{StaticResource FlixBg}"
-                               BarForeground="White"
-                               BarHeight="52" />
+                          Background="{StaticResource FlixBg}"
+                          BarHeight="52">
+            <NavigationPage.Resources>
+              <SolidColorBrush x:Key="NavigationBarBackground" Color="#0A0A0A" />
+              <SolidColorBrush x:Key="NavigationBarForeground" Color="White" />
+            </NavigationPage.Resources>
+          </NavigationPage>
         </DrawerPage.Content>
       </DrawerPage>
     </Border>

@@ -213,9 +213,12 @@
         <DrawerPage.Content>
           <NavigationPage x:Name="NavPage"
                           Background="{StaticResource EcoBgLight}"
-                          BarBackground="{StaticResource EcoBgLight}"
-                          BarForeground="#1A2E1C"
-                          BarHeight="52" />
+                          BarHeight="52">
+            <NavigationPage.Resources>
+              <SolidColorBrush x:Key="NavigationBarBackground" Color="#F1F8E9" />
+              <SolidColorBrush x:Key="NavigationBarForeground" Color="#1A2E1C" />
+            </NavigationPage.Resources>
+          </NavigationPage>
         </DrawerPage.Content>
 
       </DrawerPage>

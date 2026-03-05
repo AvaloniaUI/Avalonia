@@ -271,8 +271,8 @@ public partial class RetroGamingAppPage : UserControl
         };
 
         NavigationPage.SetBarLayoutBehavior(page, BarLayoutBehavior.Overlay);
-        page.NavigatedTo   += (_, _) => { if (_nav != null) _nav.BarBackground = Brushes.Transparent; };
-        page.NavigatedFrom += (_, _) => { if (_nav != null) _nav.BarBackground = new SolidColorBrush(SurfaceColor); };
+        page.NavigatedTo   += (_, _) => { if (_nav != null) _nav.Resources["NavigationBarBackground"] = Brushes.Transparent; };
+        page.NavigatedFrom += (_, _) => { if (_nav != null) _nav.Resources["NavigationBarBackground"] = new SolidColorBrush(SurfaceColor); };
 
         var cmdBar = new StackPanel
         {

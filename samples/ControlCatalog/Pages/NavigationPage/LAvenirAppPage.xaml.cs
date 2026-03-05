@@ -154,17 +154,17 @@ public partial class LAvenirAppPage : UserControl
         };
         NavigationPage.SetBottomCommandBar(detail, BuildFloatingBar(price));
 
-        _navPage.Background    = new SolidColorBrush(BgDark);
-        _navPage.BarBackground = new SolidColorBrush(BgDark);
-        _navPage.BarForeground = Brushes.White;
+        _navPage.Background = new SolidColorBrush(BgDark);
+        _navPage.Resources["NavigationBarBackground"] = new SolidColorBrush(BgDark);
+        _navPage.Resources["NavigationBarForeground"] = Brushes.White;
 
         detail.NavigatedFrom += (_, _) =>
         {
             if (_navPage != null)
             {
-                _navPage.Background    = new SolidColorBrush(BgLight);
-                _navPage.BarBackground = new SolidColorBrush(BgLight);
-                _navPage.BarForeground = new SolidColorBrush(TextDark);
+                _navPage.Background = new SolidColorBrush(BgLight);
+                _navPage.Resources["NavigationBarBackground"] = new SolidColorBrush(BgLight);
+                _navPage.Resources["NavigationBarForeground"] = new SolidColorBrush(TextDark);
             }
         };
 

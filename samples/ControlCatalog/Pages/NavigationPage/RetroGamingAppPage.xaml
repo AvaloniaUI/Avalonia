@@ -34,10 +34,13 @@
             BorderThickness="1" CornerRadius="8" ClipToBounds="True">
       <Panel>
         <NavigationPage x:Name="RetroNav"
-                             Background="{StaticResource RetroBg}"
-                             BarBackground="{StaticResource RetroSurface}"
-                             BarForeground="{StaticResource RetroCyan}"
-                             BarHeight="64" />
+                        Background="{StaticResource RetroBg}"
+                        BarHeight="64">
+          <NavigationPage.Resources>
+            <SolidColorBrush x:Key="NavigationBarBackground" Color="#2d1b4e" />
+            <SolidColorBrush x:Key="NavigationBarForeground" Color="#00ffff" />
+          </NavigationPage.Resources>
+        </NavigationPage>
       </Panel>
     </Border>
   </DockPanel>

@@ -30,13 +30,25 @@
             ClipToBounds="True">
       <TabbedPage x:Name="DemoTabs" TabPlacement="Bottom">
         <ContentPage Header="Browse">
-          <NavigationPage x:Name="BrowseNav" BarBackground="Transparent" />
+          <NavigationPage x:Name="BrowseNav">
+            <NavigationPage.Resources>
+              <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
+            </NavigationPage.Resources>
+          </NavigationPage>
         </ContentPage>
         <ContentPage Header="Search">
-          <NavigationPage x:Name="SearchNav" BarBackground="Transparent" />
+          <NavigationPage x:Name="SearchNav">
+            <NavigationPage.Resources>
+              <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
+            </NavigationPage.Resources>
+          </NavigationPage>
         </ContentPage>
         <ContentPage Header="Account">
-          <NavigationPage x:Name="AccountNav" BarBackground="Transparent" />
+          <NavigationPage x:Name="AccountNav">
+            <NavigationPage.Resources>
+              <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
+            </NavigationPage.Resources>
+          </NavigationPage>
         </ContentPage>
       </TabbedPage>
     </Border>

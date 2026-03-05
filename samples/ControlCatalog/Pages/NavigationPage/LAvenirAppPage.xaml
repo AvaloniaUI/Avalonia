@@ -149,10 +149,13 @@
         </DrawerPage.DrawerFooter>
         <DrawerPage.Content>
           <NavigationPage x:Name="NavPage"
-                           Background="{StaticResource LAvenirBg}"
-                           BarBackground="{StaticResource LAvenirBg}"
-                           BarForeground="#1e293b"
-                           BarHeight="52" />
+                          Background="{StaticResource LAvenirBg}"
+                          BarHeight="52">
+            <NavigationPage.Resources>
+              <SolidColorBrush x:Key="NavigationBarBackground" Color="#f6f6f8" />
+              <SolidColorBrush x:Key="NavigationBarForeground" Color="#1e293b" />
+            </NavigationPage.Resources>
+          </NavigationPage>
         </DrawerPage.Content>
       </DrawerPage>
     </Border>

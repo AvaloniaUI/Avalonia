@@ -42,7 +42,7 @@ namespace ControlCatalog.Pages
         {
             if (DemoNav == null)
                 return;
-            DemoNav.BarBackground = BarBgCombo.SelectedIndex switch
+            IBrush? brush = BarBgCombo.SelectedIndex switch
             {
                 1 => new SolidColorBrush(Colors.DodgerBlue),
                 2 => new SolidColorBrush(Colors.DarkSlateGray),
@@ -52,19 +52,27 @@ namespace ControlCatalog.Pages
                 6 => new SolidColorBrush(Color.FromArgb(80, 20, 20, 20)),
                 _ => null
             };
+            if (brush != null)
+                DemoNav.Resources["NavigationBarBackground"] = brush;
+            else
+                DemoNav.Resources.Remove("NavigationBarBackground");
         }
 
         private void OnBarFgChanged(object? sender, SelectionChangedEventArgs e)
         {
             if (DemoNav == null)
                 return;
-            DemoNav.BarForeground = BarFgCombo.SelectedIndex switch
+            IBrush? brush = BarFgCombo.SelectedIndex switch
             {
                 1 => Brushes.White,
                 2 => Brushes.Black,
                 3 => Brushes.Yellow,
                 _ => null
             };
+            if (brush != null)
+                DemoNav.Resources["NavigationBarForeground"] = brush;
+            else
+                DemoNav.Resources.Remove("NavigationBarForeground");
         }
 
         private void OnBarHeightChanged(object? sender, Avalonia.Controls.Primitives.RangeBaseValueChangedEventArgs e)

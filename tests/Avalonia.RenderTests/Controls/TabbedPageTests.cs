@@ -161,8 +161,9 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             var tabbedPage = CreateBasicTabbedPage();
             tabbedPage.TabPlacement = TabPlacement.Top;
             tabbedPage.SelectedIndex = 0;
-            tabbedPage.BarBackground = new SolidColorBrush(Color.Parse("#2196F3"));
-            tabbedPage.BarForeground = Brushes.White;
+            tabbedPage.Resources["TabbedPageTabStripBackground"] = new SolidColorBrush(Color.Parse("#2196F3"));
+            tabbedPage.Resources["TabbedPageTabItemHeaderForegroundSelected"] = Brushes.White;
+            tabbedPage.Resources["TabbedPageTabItemHeaderForegroundUnselected"] = Brushes.White;
 
             var target = new Decorator
             {
@@ -182,8 +183,8 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             var tabbedPage = CreateBasicTabbedPage();
             tabbedPage.TabPlacement = TabPlacement.Bottom;
             tabbedPage.SelectedIndex = 1;
-            tabbedPage.SelectedTabBrush = new SolidColorBrush(Color.Parse("#E91E63"));
-            tabbedPage.UnselectedTabBrush = new SolidColorBrush(Color.Parse("#9E9E9E"));
+            tabbedPage.Resources["TabbedPageTabItemHeaderForegroundSelected"] = new SolidColorBrush(Color.Parse("#E91E63"));
+            tabbedPage.Resources["TabbedPageTabItemHeaderForegroundUnselected"] = new SolidColorBrush(Color.Parse("#9E9E9E"));
 
             var target = new Decorator
             {

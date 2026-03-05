@@ -21,19 +21,10 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         [Fact]
         public async Task NavigationPage_SinglePage_ShowsNavBar()
         {
-            var target = new Decorator
-            {
-                Width = 400,
-                Height = 300,
-                Child = new NavigationPage
-                {
-                    Background = Brushes.White,
-                    BarBackground = new SolidColorBrush(Color.Parse("#1565C0")),
-                    BarForeground = Brushes.White,
-                }
-            };
-
-            var nav = (NavigationPage)((Decorator)target).Child!;
+            var nav = new NavigationPage { Background = Brushes.White };
+            nav.Resources["NavigationBarBackground"] = new SolidColorBrush(Color.Parse("#1565C0"));
+            nav.Resources["NavigationBarForeground"] = Brushes.White;
+            var target = new Decorator { Width = 400, Height = 300, Child = nav };
             await nav.PushAsync(new ContentPage
             {
                 Header = "Home",
@@ -58,19 +49,10 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         [Fact]
         public async Task NavigationPage_TwoPages_ShowsBackButton()
         {
-            var target = new Decorator
-            {
-                Width = 400,
-                Height = 300,
-                Child = new NavigationPage
-                {
-                    Background = Brushes.White,
-                    BarBackground = new SolidColorBrush(Color.Parse("#1565C0")),
-                    BarForeground = Brushes.White,
-                }
-            };
-
-            var nav = (NavigationPage)((Decorator)target).Child!;
+            var nav = new NavigationPage { Background = Brushes.White };
+            nav.Resources["NavigationBarBackground"] = new SolidColorBrush(Color.Parse("#1565C0"));
+            nav.Resources["NavigationBarForeground"] = Brushes.White;
+            var target = new Decorator { Width = 400, Height = 300, Child = nav };
             await nav.PushAsync(new ContentPage
             {
                 Header = "Home",
@@ -111,20 +93,11 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         [Fact]
         public async Task NavigationPage_CustomBarBackground()
         {
-            var target = new Decorator
-            {
-                Width = 400,
-                Height = 300,
-                Child = new NavigationPage
-                {
-                    Background = Brushes.White,
-                    BarBackground = new SolidColorBrush(Color.Parse("#2E7D32")),
-                    BarForeground = Brushes.White,
-                    HasShadow = true
-                }
-            };
+            var nav = new NavigationPage { Background = Brushes.White, HasShadow = true };
+            nav.Resources["NavigationBarBackground"] = new SolidColorBrush(Color.Parse("#2E7D32"));
+            nav.Resources["NavigationBarForeground"] = Brushes.White;
+            var target = new Decorator { Width = 400, Height = 300, Child = nav };
 
-            var nav = (NavigationPage)((Decorator)target).Child!;
             await nav.PushAsync(new ContentPage
             {
                 Header = "Green Theme",

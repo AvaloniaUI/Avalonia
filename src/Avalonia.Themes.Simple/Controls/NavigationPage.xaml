@@ -10,10 +10,11 @@
 
   <StreamGeometry x:Key="NavigationPageBackIcon">M12.7347,4.20949 C13.0332,3.92233 13.508,3.93153 13.7952,4.23005 C14.0823,4.52857 14.0731,5.00335 13.7746,5.29051 L5.50039,13.25 L24.2532,13.25 C24.6674,13.25 25.0032,13.5858 25.0032,13.9999982 C25.0032,14.4142 24.6674,14.75 24.2532,14.75 L5.50137,14.75 L13.7746,22.7085 C14.0731,22.9957 14.0823,23.4705 13.7952,23.769 C13.508,24.0675 13.0332,24.0767 12.7347,23.7896 L3.30673,14.7202 C2.89776,14.3268 2.89776,13.6723 3.30673,13.2788 L12.7347,4.20949 Z</StreamGeometry>
 
+  <SolidColorBrush x:Key="NavigationBarBackground" Color="{DynamicResource ThemeControlMidColor}" />
+  <SolidColorBrush x:Key="NavigationBarForeground" Color="{DynamicResource ThemeForegroundColor}" />
+
   <ControlTheme x:Key="{x:Type NavigationPage}" TargetType="NavigationPage">
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BarBackground" Value="{DynamicResource ThemeControlMidBrush}" />
-    <Setter Property="BarForeground" Value="{DynamicResource ThemeForegroundBrush}" />
     <Setter Property="PageTransition">
       <Setter.Value>
         <PageSlide Duration="0:0:0.3" Orientation="Horizontal" FillMode="Forward" />
@@ -56,7 +57,7 @@
                   VerticalAlignment="Top"
                   ClipToBounds="True"
                   Height="{TemplateBinding EffectiveBarHeight}"
-                  Background="{TemplateBinding BarBackground}">
+                  Background="{DynamicResource NavigationBarBackground}">
             <Grid Margin="12,0,0,0" ColumnDefinitions="Auto, *, Auto">
               <Grid.Styles>
                 <Style Selector="Button#PART_BackButton /template/ ContentPresenter#PART_ContentPresenter">
@@ -94,14 +95,14 @@
               <Button x:Name="PART_BackButton"
                       Grid.Column="0"
                       Background="Transparent"
-                      Foreground="{TemplateBinding BarForeground}"
+                      Foreground="{DynamicResource NavigationBarForeground}"
                       IsVisible="{TemplateBinding IsBackButtonEffectivelyVisible}"
                       VerticalAlignment="Stretch"
                       Padding="8,0"
                       ToolTip.Tip="{x:Null}">
                 <Panel Background="Transparent">
                   <Path Data="{DynamicResource NavigationPageBackIcon}"
-                        Fill="{TemplateBinding BarForeground}"
+                        Fill="{DynamicResource NavigationBarForeground}"
                         Width="24"
                         Height="24"
                         Stretch="Uniform"
@@ -119,7 +120,7 @@
               <ContentPresenter Name="PART_Header"
                                 Grid.Column="1"
                                 FontSize="18"
-                                Foreground="{TemplateBinding BarForeground}"
+                                Foreground="{DynamicResource NavigationBarForeground}"
                                 Content="{Binding CurrentPage?.Header, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
@@ -130,7 +131,7 @@
                                 Grid.Column="2"
                                 HorizontalAlignment="Right"
                                 VerticalContentAlignment="Stretch"
-                                Foreground="{TemplateBinding BarForeground}"
+                                Foreground="{DynamicResource NavigationBarForeground}"
                                 Content="{Binding CurrentPage?.(NavigationPage.TopCommandBar), RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}">
                 <ContentPresenter.Styles>
                   <Style Selector="CommandBar">

@@ -84,18 +84,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<NavigationPage, bool>(nameof(IsModalVisible));
 
         /// <summary>
-        /// Defines the <see cref="BarBackground"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IBrush?> BarBackgroundProperty =
-            AvaloniaProperty.Register<NavigationPage, IBrush?>(nameof(BarBackground));
-
-        /// <summary>
-        /// Defines the <see cref="BarForeground"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IBrush?> BarForegroundProperty =
-            AvaloniaProperty.Register<NavigationPage, IBrush?>(nameof(BarForeground));
-
-        /// <summary>
         /// Defines the <see cref="PageTransition"/> property.
         /// </summary>
         public static readonly StyledProperty<IPageTransition?> PageTransitionProperty =
@@ -268,24 +256,6 @@ namespace Avalonia.Controls
         {
             SetCurrentValue(PagesProperty, new Stack<Page>());
             GestureRecognizers.Add(new SwipeGestureRecognizer { EdgeSize = EdgeGestureWidth });
-        }
-
-        /// <summary>
-        /// Gets or sets the background brush of the navigation bar.
-        /// </summary>
-        public IBrush? BarBackground
-        {
-            get => GetValue(BarBackgroundProperty);
-            set => SetValue(BarBackgroundProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the foreground brush of the navigation bar.
-        /// </summary>
-        public IBrush? BarForeground
-        {
-            get => GetValue(BarForegroundProperty);
-            set => SetValue(BarForegroundProperty, value);
         }
 
         /// <summary>
@@ -719,7 +689,7 @@ namespace Avalonia.Controls
                 p.Navigation = null;
                 p.SetInNavigationPage(false);
             }
-            _cachedNavigationStack = null;
+            InvalidateNavigationStackCache();
         }
 
         protected override void UpdateContentSafeAreaPadding()
@@ -793,7 +763,7 @@ namespace Avalonia.Controls
                 list.Add(page);
 
             _pageSet.Add(page);
-            _cachedNavigationStack = null;
+            InvalidateNavigationStackCache();
 
             if (page is ILogical logical && Pages is not INotifyCollectionChanged)
                 LogicalChildren.Add(logical);
@@ -835,7 +805,7 @@ namespace Avalonia.Controls
             if (old is ILogical oldLogical && Pages is not INotifyCollectionChanged)
                 LogicalChildren.Remove(oldLogical);
 
-            _cachedNavigationStack = null;
+            InvalidateNavigationStackCache();
             _isPop = true;
             UpdateActivePage();
 
@@ -994,7 +964,7 @@ namespace Avalonia.Controls
                     }
                 }
 
-                _cachedNavigationStack = null;
+                InvalidateNavigationStackCache();
                 _isPop = true;
                 UpdateActivePage();
 
@@ -1075,7 +1045,7 @@ namespace Avalonia.Controls
                     }
                 }
 
-                _cachedNavigationStack = null;
+                InvalidateNavigationStackCache();
                 _isPop = true;
                 UpdateActivePage();
 
@@ -1403,11 +1373,12 @@ namespace Avalonia.Controls
 
             page.Navigation = null;
             page.SetInNavigationPage(false);
+            page.SafeAreaPadding = default;
 
             if (Pages is not INotifyCollectionChanged)
                 LogicalChildren.Remove(page);
 
-            _cachedNavigationStack = null;
+            InvalidateNavigationStackCache();
             UpdateIsBackButtonEffectivelyVisible();
 
             PageRemoved?.Invoke(this, new PageRemovedEventArgs(page));
@@ -1465,11 +1436,12 @@ namespace Avalonia.Controls
             _pageSet.Add(page);
             page.Navigation = this;
             page.SetInNavigationPage(true);
+            page.SafeAreaPadding = SafeAreaPadding;
 
             if (Pages is not System.Collections.Specialized.INotifyCollectionChanged)
                 LogicalChildren.Add(page);
 
-            _cachedNavigationStack = null;
+            InvalidateNavigationStackCache();
             UpdateIsBackButtonEffectivelyVisible();
 
             PageInserted?.Invoke(this, new PageInsertedEventArgs(page, before));
@@ -1561,6 +1533,8 @@ namespace Avalonia.Controls
 
                 _pageBackPresenter.IsVisible = false;
                 _pageBackPresenter.Content = null;
+                _pageBackPresenter.RenderTransform = null;
+                _pageBackPresenter.Opacity = 1;
 
                 if (page is Control pCtrl && pCtrl.Parent is ContentPresenter strayCp)
                 {
@@ -1644,7 +1618,7 @@ namespace Avalonia.Controls
             UpdateBarLayoutBehaviorEffective();
             UpdateEffectiveBarHeight();
 
-            _cachedNavigationStack = null;
+            InvalidateNavigationStackCache();
             UpdateContentSafeAreaPadding();
             UpdateIsBackButtonEffectivelyVisible();
             UpdateIsBackButtonEffectivelyEnabled();
@@ -1709,7 +1683,7 @@ namespace Avalonia.Controls
                 pushList.Add(page);
 
             _pageSet.Add(page);
-            _cachedNavigationStack = null;
+            InvalidateNavigationStackCache();
 
             if (Pages is not INotifyCollectionChanged)
             {
@@ -1747,6 +1721,8 @@ namespace Avalonia.Controls
 
             (_modalPresenter, _modalBackPresenter) = (_modalBackPresenter, _modalPresenter);
         }
+
+        private void InvalidateNavigationStackCache() => _cachedNavigationStack = null;
 
         internal void UpdateIsBackButtonEffectivelyVisible()
         {
