@@ -70,7 +70,7 @@ internal class SkiaMetalGpu : ISkiaGpu
         {
             if (surface is IMetalPlatformSurface)
             {
-                return surface is not IPlatformRenderSurface prs || prs.IsReady;
+                return surface.IsReady;
             }
         }
 

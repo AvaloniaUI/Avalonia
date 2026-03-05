@@ -92,7 +92,7 @@ internal class VulkanSkiaGpu : ISkiaGpu
             if (surface is IVulkanKhrSurfacePlatformSurface
                 || (factory?.CanRenderToSurface(Vulkan, surface) == true))
             {
-                return surface is not IPlatformRenderSurface prs || prs.IsReady;
+                return surface.IsReady;
             }
         }
 

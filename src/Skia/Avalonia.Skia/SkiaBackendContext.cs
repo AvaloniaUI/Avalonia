@@ -81,7 +81,7 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
         {
             if (surface is IFramebufferPlatformSurface)
             {
-                return surface is not IPlatformRenderSurface prs || prs.IsReady;
+                return surface.IsReady;
             }
         }
 

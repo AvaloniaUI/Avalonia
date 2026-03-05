@@ -94,7 +94,7 @@ namespace Avalonia.Skia
                 if (customRenderTargetFactory?.CanRenderToSurface(_glContext, surface) == true
                     || surface is IGlPlatformSurface)
                 {
-                    return surface is not IPlatformRenderSurface prs || prs.IsReady;
+                    return surface.IsReady;
                 }
             }
 
