@@ -87,32 +87,33 @@ public:
         return (__bridge void*) queue;
     }
     
-    HRESULT ImportIOSurface(void *handle, AvnPixelFormat pixelFormat, IAvnMetalTexture **ppv) override { 
-        auto surf = (IOSurfaceRef)handle;
-        auto width = IOSurfaceGetWidth(surf);
-        auto height = IOSurfaceGetHeight(surf);
-        
-        auto desc = [MTLTextureDescriptor new];
-        if(pixelFormat == kAvnRgba8888)
-            desc.pixelFormat = MTLPixelFormatRGBA8Unorm;
-        else if(pixelFormat == kAvnBgra8888)
-            desc.pixelFormat = MTLPixelFormatBGRA8Unorm;
-        else
-            return E_INVALIDARG;
-        desc.textureType = MTLTextureType2D;
-        desc.width = width;
-        desc.height = height;
-        desc.depth = 1;
-        desc.mipmapLevelCount = 1;
-        desc.sampleCount = 1;
-        desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
-        
-        auto texture = [device newTextureWithDescriptor:desc iosurface:surf plane:0];
-        if(texture == nullptr)
-            return E_FAIL;
-        *ppv = new AvnMetalTexture(texture);
-        return S_OK;
-        
+    HRESULT ImportIOSurface(void *handle, AvnPixelFormat pixelFormat, IAvnMetalTexture **ppv) override {
+        @autoreleasepool {
+            auto surf = (IOSurfaceRef)handle;
+            auto width = IOSurfaceGetWidth(surf);
+            auto height = IOSurfaceGetHeight(surf);
+
+            auto desc = [MTLTextureDescriptor new];
+            if(pixelFormat == kAvnRgba8888)
+                desc.pixelFormat = MTLPixelFormatRGBA8Unorm;
+            else if(pixelFormat == kAvnBgra8888)
+                desc.pixelFormat = MTLPixelFormatBGRA8Unorm;
+            else
+                return E_INVALIDARG;
+            desc.textureType = MTLTextureType2D;
+            desc.width = width;
+            desc.height = height;
+            desc.depth = 1;
+            desc.mipmapLevelCount = 1;
+            desc.sampleCount = 1;
+            desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
+
+            auto texture = [device newTextureWithDescriptor:desc iosurface:surf plane:0];
+            if(texture == nullptr)
+                return E_FAIL;
+            *ppv = new AvnMetalTexture(texture);
+            return S_OK;
+        }
     }
     
     HRESULT ImportSharedEvent(void *mtlSharedEventInstance, IAvnMTLSharedEvent**ppv) override {
@@ -134,16 +135,18 @@ public:
     {
         if (@available(macOS 12.0, *))
         {
-            auto e = dynamic_cast<AvnMTLSharedEvent*>(ev);
-            if(e == nullptr)
-                return E_FAIL;;
-            auto buf = [queue commandBuffer];
-            if(wait)
-                [buf encodeWaitForEvent:e->GetEvent() value:value];
-            else
-                [buf encodeSignalEvent:e->GetEvent() value:value];
-            [buf commit];
-            return S_OK;
+            @autoreleasepool {
+                auto e = dynamic_cast<AvnMTLSharedEvent*>(ev);
+                if(e == nullptr)
+                    return E_FAIL;
+                auto buf = [queue commandBuffer];
+                if(wait)
+                    [buf encodeWaitForEvent:e->GetEvent() value:value];
+                else
+                    [buf encodeSignalEvent:e->GetEvent() value:value];
+                [buf commit];
+                return S_OK;
+            }
         }
         else
             return E_FAIL;
@@ -204,9 +207,11 @@ public:
 
     ~AvnMetalRenderSession()
     {
-        auto buffer = [_queue commandBuffer];
-        [buffer presentDrawable: _drawable];
-        [buffer commit];
+        @autoreleasepool {
+            auto buffer = [_queue commandBuffer];
+            [buffer presentDrawable: _drawable];
+            [buffer commit];
+        }
     }
 };
 
@@ -227,26 +232,28 @@ public:
     }
 
     HRESULT BeginDrawing(IAvnMetalRenderingSession **ret) override {
-        if([NSThread isMainThread])
-        {
-            // Flush all existing rendering
-            auto buffer = [_device->queue commandBuffer];
-            [buffer commit];
-            [buffer waitUntilCompleted];
-            _size = PendingSize;
-            _scaling= PendingScaling;
-            CGSize layerSize = {(CGFloat)_size.Width, (CGFloat)_size.Height};
+        @autoreleasepool {
+            if([NSThread isMainThread])
+            {
+                // Flush all existing rendering
+                auto buffer = [_device->queue commandBuffer];
+                [buffer commit];
+                [buffer waitUntilCompleted];
+                _size = PendingSize;
+                _scaling= PendingScaling;
+                CGSize layerSize = {(CGFloat)_size.Width, (CGFloat)_size.Height};
 
-            [_layer setDrawableSize: layerSize];
+                [_layer setDrawableSize: layerSize];
+            }
+            auto drawable = [_layer nextDrawable];
+            if(drawable == nil)
+            {
+                ret = nil;
+                return E_FAIL;
+            }
+            *ret = new AvnMetalRenderSession(_device, _layer, drawable, _size, _scaling);
+            return 0;
         }
-        auto drawable = [_layer nextDrawable];
-        if(drawable == nil)
-        {
-            ret = nil;
-            return E_FAIL;
-        }
-        *ret = new AvnMetalRenderSession(_device, _layer, drawable, _size, _scaling);
-        return 0;
     }
 };
 
@@ -289,15 +296,16 @@ class AvnMetalDisplay : public ComSingleObject<IAvnMetalDisplay, &IID_IAvnMetalD
 public:
     FORWARD_IUNKNOWN()
     HRESULT CreateDevice(IAvnMetalDevice **ret) override {
-
-        auto device = MTLCreateSystemDefaultDevice();
-        if(device == nil) {
-            ret = nil;
-            return E_FAIL;
+        @autoreleasepool {
+            auto device = MTLCreateSystemDefaultDevice();
+            if(device == nil) {
+                ret = nil;
+                return E_FAIL;
+            }
+            auto queue = [device newCommandQueue];
+            *ret = new AvnMetalDevice(device, queue);
+            return S_OK;
         }
-        auto queue = [device newCommandQueue];
-        *ret = new AvnMetalDevice(device, queue);
-        return S_OK;
     }
 };
 
