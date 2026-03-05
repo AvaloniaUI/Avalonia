@@ -142,24 +142,24 @@ namespace Avalonia.Win32.WinRT.Composition
                 throw new RenderTargetCorruptedException();
             var transaction = _window.BeginTransaction();
 
-            bool forceResize = false;
-            var supportTransparency = _drawingSurface.AlphaMode == DirectXAlphaMode.Premultiplied;
-            if (_window.IsTransparency != supportTransparency)
-            {
-                // Re-create the surface with correct alpha mode if the transparency support is not correct. This can happen when the transparency level is changed.
-                _surface.Dispose();
-                _surfaceInterop.Dispose();
-                _drawingSurface.Dispose();
-
-                CreateSurface(_window);
-
-                // The _drawingSurface.Size != _size, so that require force resize to update the size of surface.
-                forceResize = true;
-            }
-
             bool needsEndDraw = false;
             try
             {
+                bool forceResize = false;
+                var supportTransparency = _drawingSurface.AlphaMode == DirectXAlphaMode.Premultiplied;
+                if (_window.IsTransparency != supportTransparency)
+                {
+                    // Re-create the surface with correct alpha mode if the transparency support is not correct. This can happen when the transparency level is changed.
+                    _surface.Dispose();
+                    _surfaceInterop.Dispose();
+                    _drawingSurface.Dispose();
+
+                    CreateSurface(_window);
+
+                    // The _drawingSurface.Size != _size, so that require force resize to update the size of surface.
+                    forceResize = true;
+                }
+
                 var size = _window.WindowInfo.Size;
                 var scale = _window.WindowInfo.Scaling;
                 _window.ResizeIfNeeded(size);
