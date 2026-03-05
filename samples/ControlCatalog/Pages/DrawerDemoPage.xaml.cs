@@ -54,6 +54,9 @@ namespace ControlCatalog.Pages
             ("Showcases", "ModernApp",
                 "Travel social app using a top-placement DrawerPage. A slide-down nav pane gives access to Discover, My Trips, Profile, and Settings. Features destination cards, story circles, an experience feed, a stats profile, and a travel gallery.",
                 () => new ModernAppPage()),
+            ("Showcases", "Controls Gallery App",
+                "Controls gallery app using DrawerPage CompactInline mode. Dark Fluent palette, accent pill selection indicator, search box that fades in when open, expandable category groups, and Settings pinned to the footer.",
+                () => new ControlsGalleryAppPage()),
         };
 
         public DrawerDemoPage()
