@@ -54,12 +54,14 @@ namespace Avalonia.Skia
 
         private class SurfaceWrapper : IGlPlatformSurface
         {
-            private readonly object _surface;
+            private readonly IPlatformRenderSurface _surface;
 
-            public SurfaceWrapper( object surface)
+            public SurfaceWrapper(IPlatformRenderSurface surface)
             {
                 _surface = surface;
             }
+
+            public bool IsReady => _surface.IsReady;
 
             public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
             {

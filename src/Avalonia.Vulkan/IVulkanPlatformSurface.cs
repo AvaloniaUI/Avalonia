@@ -11,6 +11,6 @@ public interface IVulkanKhrSurfacePlatformSurface : IDisposable, IPlatformRender
 
 public interface IVulkanKhrSurfacePlatformSurfaceFactory
 {
-    bool CanRenderToSurface(IVulkanPlatformGraphicsContext context, object surface);
-    IVulkanKhrSurfacePlatformSurface CreateSurface(IVulkanPlatformGraphicsContext context, object surface);
+    bool CanRenderToSurface(IVulkanPlatformGraphicsContext context, IPlatformRenderSurface surface);
+    IVulkanKhrSurfacePlatformSurface CreateSurface(IVulkanPlatformGraphicsContext context, IPlatformRenderSurface surface);
 }
