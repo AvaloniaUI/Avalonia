@@ -743,6 +743,21 @@ public class DrawerPageTests
         }
 
         [Fact]
+        public void Content_SetBeforeAttach_NavigatedTo_NavigationTypeIsPush()
+        {
+            var page = new ContentPage { Header = "Home" };
+            NavigatedToEventArgs? args = null;
+            page.NavigatedTo += (_, e) => args = e;
+
+            var dp = new DrawerPage { Content = page };
+            var root = new TestRoot { Child = dp };
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.NotNull(args);
+            Assert.Equal(NavigationType.Push, args!.NavigationType);
+        }
+
+        [Fact]
         public void Content_SetToSameInstance_NoLifecycleEvents()
         {
             // Re-assigning the same Content instance must not re-fire lifecycle events.

@@ -114,17 +114,23 @@ namespace Avalonia.Controls
 
             if (change.Property == PageProperty)
             {
-                SetCurrentValue(ContentProperty, change.GetNewValue<Page?>());
+                var oldPage = change.GetOldValue<Page?>();
+                var newPage = change.GetNewValue<Page?>();
 
-                if (_insetManager != null && Presenter != null && Presenter.Child is Page page)
-                    page.SafeAreaPadding = _insetManager.SafeAreaPadding;
+                SetCurrentValue(ContentProperty, newPage);
+
+                if (_insetManager != null && newPage != null)
+                    newPage.SafeAreaPadding = _insetManager.SafeAreaPadding;
+
+                oldPage?.SendNavigatedFrom(new NavigatedFromEventArgs(newPage, NavigationType.Replace));
+                newPage?.SendNavigatedTo(new NavigatedToEventArgs(oldPage, NavigationType.Replace));
             }
         }
 
         private void ContentPresenter_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == ContentPresenter.ChildProperty
-                && Presenter?.Child is Page page
+                && e.NewValue is Page page
                 && _insetManager != null)
             {
                 page.SafeAreaPadding = _insetManager.SafeAreaPadding;

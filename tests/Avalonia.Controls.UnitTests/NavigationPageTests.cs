@@ -432,6 +432,61 @@ public class NavigationPageTests
         }
 
         [Fact]
+        public async Task PopToRoot_InvokesNavigatedFrom_OnCurrentPage()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage { Header = "Root" };
+            var top = new ContentPage { Header = "Top" };
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
+
+            NavigatedFromEventArgs? args = null;
+            top.NavigatedFrom += (_, e) => args = e;
+
+            await nav.PopToRootAsync();
+
+            Assert.NotNull(args);
+            Assert.Equal(NavigationType.PopToRoot, args!.NavigationType);
+            Assert.Same(root, args!.DestinationPage);
+        }
+
+        [Fact]
+        public async Task PopToRoot_InvokesNavigatedTo_OnRootPage()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage { Header = "Root" };
+            var top = new ContentPage { Header = "Top" };
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
+
+            NavigatedToEventArgs? args = null;
+            root.NavigatedTo += (_, e) => args = e;
+
+            await nav.PopToRootAsync();
+
+            Assert.NotNull(args);
+            Assert.Equal(NavigationType.PopToRoot, args!.NavigationType);
+            Assert.Same(top, args!.PreviousPage);
+        }
+
+        [Fact]
+        public async Task PopToRoot_NavigatedFrom_FiresAfterStateChange()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage { Header = "Root" };
+            var top = new ContentPage { Header = "Top" };
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
+
+            int stackDepthAtEvent = -1;
+            top.NavigatedFrom += (_, _) => stackDepthAtEvent = nav.StackDepth;
+
+            await nav.PopToRootAsync();
+
+            Assert.Equal(1, stackDepthAtEvent);
+        }
+
+        [Fact]
         public async Task PopToRoot_WhenAlreadyAtRoot_DoesNothing()
         {
             var nav = new NavigationPage();
@@ -679,6 +734,142 @@ public class NavigationPageTests
 
             var result = await nav.PopModalAsync();
             Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task PushModal_InvokesNavigatedFrom_OnCoveredPage_WithPushModalType()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage { Header = "Root" };
+            await nav.PushAsync(root);
+
+            NavigatedFromEventArgs? args = null;
+            root.NavigatedFrom += (_, e) => args = e;
+
+            await nav.PushModalAsync(new ContentPage { Header = "Modal" });
+
+            Assert.NotNull(args);
+            Assert.Equal(NavigationType.PushModal, args!.NavigationType);
+        }
+
+        [Fact]
+        public async Task PushModal_InvokesNavigatedTo_OnModalPage_WithPushModalType()
+        {
+            var nav = new NavigationPage();
+            await nav.PushAsync(new ContentPage());
+
+            var modal = new ContentPage { Header = "Modal" };
+            NavigatedToEventArgs? args = null;
+            modal.NavigatedTo += (_, e) => args = e;
+
+            await nav.PushModalAsync(modal);
+
+            Assert.NotNull(args);
+            Assert.Equal(NavigationType.PushModal, args!.NavigationType);
+        }
+
+        [Fact]
+        public async Task PopModal_InvokesNavigatedFrom_OnPoppedModal_WithPopModalType()
+        {
+            var nav = new NavigationPage();
+            await nav.PushAsync(new ContentPage());
+            var modal = new ContentPage { Header = "Modal" };
+            await nav.PushModalAsync(modal);
+
+            NavigatedFromEventArgs? args = null;
+            modal.NavigatedFrom += (_, e) => args = e;
+
+            await nav.PopModalAsync();
+
+            Assert.NotNull(args);
+            Assert.Equal(NavigationType.PopModal, args!.NavigationType);
+        }
+
+        [Fact]
+        public async Task PopModal_InvokesNavigatedTo_OnRevealedPage_WithPopModalType()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage { Header = "Root" };
+            await nav.PushAsync(root);
+            await nav.PushModalAsync(new ContentPage { Header = "Modal" });
+
+            NavigatedToEventArgs? args = null;
+            root.NavigatedTo += (_, e) => args = e;
+
+            await nav.PopModalAsync();
+
+            Assert.NotNull(args);
+            Assert.Equal(NavigationType.PopModal, args!.NavigationType);
+        }
+
+        [Fact]
+        public async Task PushModal_NavigatedFrom_DestinationPage_IsTheModal()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage { Header = "Root" };
+            await nav.PushAsync(root);
+
+            var modal = new ContentPage { Header = "Modal" };
+            NavigatedFromEventArgs? args = null;
+            root.NavigatedFrom += (_, e) => args = e;
+
+            await nav.PushModalAsync(modal);
+
+            Assert.NotNull(args);
+            Assert.Same(modal, args!.DestinationPage);
+        }
+
+        [Fact]
+        public async Task PushModal_NavigatedTo_PreviousPage_IsCoveredPage()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage { Header = "Root" };
+            await nav.PushAsync(root);
+
+            var modal = new ContentPage { Header = "Modal" };
+            NavigatedToEventArgs? args = null;
+            modal.NavigatedTo += (_, e) => args = e;
+
+            await nav.PushModalAsync(modal);
+
+            Assert.NotNull(args);
+            Assert.Same(root, args!.PreviousPage);
+        }
+
+        [Fact]
+        public async Task PopModal_NavigatedFrom_DestinationPage_IsRevealedPage()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage { Header = "Root" };
+            var modal = new ContentPage { Header = "Modal" };
+            await nav.PushAsync(root);
+            await nav.PushModalAsync(modal);
+
+            NavigatedFromEventArgs? args = null;
+            modal.NavigatedFrom += (_, e) => args = e;
+
+            await nav.PopModalAsync();
+
+            Assert.NotNull(args);
+            Assert.Same(root, args!.DestinationPage);
+        }
+
+        [Fact]
+        public async Task PopModal_NavigatedTo_PreviousPage_IsPoppedModal()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage { Header = "Root" };
+            var modal = new ContentPage { Header = "Modal" };
+            await nav.PushAsync(root);
+            await nav.PushModalAsync(modal);
+
+            NavigatedToEventArgs? args = null;
+            root.NavigatedTo += (_, e) => args = e;
+
+            await nav.PopModalAsync();
+
+            Assert.NotNull(args);
+            Assert.Same(modal, args!.PreviousPage);
         }
     }
 
@@ -1058,6 +1249,62 @@ public class NavigationPageTests
 
             Assert.True(navigatedTo);
         }
+
+        [Fact]
+        public async Task PopAllModals_NavigatedFrom_NavigationTypeIsPopModal()
+        {
+            var nav = new NavigationPage();
+            await nav.PushAsync(new ContentPage());
+            var m1 = new ContentPage();
+            var m2 = new ContentPage();
+            await nav.PushModalAsync(m1);
+            await nav.PushModalAsync(m2);
+
+            NavigationType? m1Type = null;
+            NavigationType? m2Type = null;
+            m1.NavigatedFrom += (_, e) => m1Type = e.NavigationType;
+            m2.NavigatedFrom += (_, e) => m2Type = e.NavigationType;
+
+            await nav.PopAllModalsAsync();
+
+            Assert.Equal(NavigationType.PopModal, m1Type);
+            Assert.Equal(NavigationType.PopModal, m2Type);
+        }
+
+        [Fact]
+        public async Task PopAllModals_NavigatedTo_NavigationTypeIsPopModal()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            await nav.PushAsync(root);
+            await nav.PushModalAsync(new ContentPage());
+
+            NavigationType? type = null;
+            root.NavigatedTo += (_, e) => type = e.NavigationType;
+
+            await nav.PopAllModalsAsync();
+
+            Assert.Equal(NavigationType.PopModal, type);
+        }
+
+        [Fact]
+        public async Task PopAllModals_NavigatedTo_PreviousPageIsTopModal()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            var m1 = new ContentPage();
+            var m2 = new ContentPage();
+            await nav.PushAsync(root);
+            await nav.PushModalAsync(m1);
+            await nav.PushModalAsync(m2);
+
+            Page? previousPage = null;
+            root.NavigatedTo += (_, e) => previousPage = e.PreviousPage;
+
+            await nav.PopAllModalsAsync();
+
+            Assert.Same(m2, previousPage);
+        }
     }
 
     public class ReplaceTests : ScopedTestBase
@@ -1233,6 +1480,97 @@ public class NavigationPageTests
             await nav.PopToPageAsync(target);
 
             Assert.Equal(NavigationType.Pop, receivedType);
+        }
+
+        [Fact]
+        public async Task PopToPageAsync_IntermediatePages_NavigationTypeIsPop()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            var target = new ContentPage();
+            var middle = new ContentPage();
+            var top = new ContentPage();
+            await nav.PushAsync(root);
+            await nav.PushAsync(target);
+            await nav.PushAsync(middle);
+            await nav.PushAsync(top);
+
+            NavigationType? middleType = null;
+            NavigationType? topType = null;
+            middle.NavigatedFrom += (_, e) => middleType = e.NavigationType;
+            top.NavigatedFrom += (_, e) => topType = e.NavigationType;
+
+            await nav.PopToPageAsync(target);
+
+            Assert.Equal(NavigationType.Pop, topType);
+            Assert.Equal(NavigationType.Pop, middleType);
+        }
+
+        [Fact]
+        public async Task PopToPageAsync_PageNotInStack_ThrowsArgumentException()
+        {
+            var nav = new NavigationPage();
+            await nav.PushAsync(new ContentPage());
+
+            var stranger = new ContentPage();
+            await Assert.ThrowsAsync<ArgumentException>(() => nav.PopToPageAsync(stranger));
+        }
+    }
+
+    public class ModalTransitionCancellationTests : ScopedTestBase
+    {
+        [Fact]
+        public async Task PushModalAsync_CancelledTransition_StillFiresLifecycleEvents()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            await nav.PushAsync(root);
+
+            var modal = new ContentPage();
+            bool navigatedFromFired = false;
+            bool navigatedToFired = false;
+            bool modalPushedFired = false;
+            root.NavigatedFrom += (_, _) => navigatedFromFired = true;
+            modal.NavigatedTo += (_, _) => navigatedToFired = true;
+            nav.ModalPushed += (_, _) => modalPushedFired = true;
+
+            await nav.PushModalAsync(modal, null);
+
+            Assert.True(navigatedFromFired);
+            Assert.True(navigatedToFired);
+            Assert.True(modalPushedFired);
+            Assert.Equal(1, nav.ModalStack.Count);
+            Assert.Same(modal, nav.ModalStack[0]);
+        }
+
+        [Fact]
+        public async Task PopAllModalsAsync_CancelledTransition_StillClearsStackAndFiresEvents()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            await nav.PushAsync(root);
+
+            var m1 = new ContentPage();
+            var m2 = new ContentPage();
+            await nav.PushModalAsync(m1);
+            await nav.PushModalAsync(m2);
+
+            bool m1PoppedFired = false;
+            bool m2PoppedFired = false;
+            bool rootNavigatedToFired = false;
+            nav.ModalPopped += (_, e) =>
+            {
+                if (ReferenceEquals(e.Modal, m1)) m1PoppedFired = true;
+                if (ReferenceEquals(e.Modal, m2)) m2PoppedFired = true;
+            };
+            root.NavigatedTo += (_, _) => rootNavigatedToFired = true;
+
+            await nav.PopAllModalsAsync(null);
+
+            Assert.Equal(0, nav.ModalStack.Count);
+            Assert.True(m1PoppedFired);
+            Assert.True(m2PoppedFired);
+            Assert.True(rootNavigatedToFired);
         }
     }
 

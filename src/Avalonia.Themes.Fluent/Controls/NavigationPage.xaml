@@ -61,8 +61,7 @@
                   ZIndex="1"
                   VerticalAlignment="Top"
                   ClipToBounds="True"
-                  Height="{TemplateBinding EffectiveBarHeight}"
-                  Background="{DynamicResource NavigationBarBackground}">
+                  Height="{TemplateBinding EffectiveBarHeight}">
             <Grid Margin="12,0,0,0" ColumnDefinitions="Auto, *, Auto">
               <Grid.Styles>
                 <Style Selector="Button#PART_BackButton /template/ ContentPresenter#PART_ContentPresenter">
@@ -191,12 +190,17 @@
       </ControlTemplate>
     </Setter>
 
-    <!-- :nav-bar-inset → spacer reserves nav-bar height so content is pushed below -->
+    <!-- Default nav bar background, overridable via a more-specific style selector -->
+    <Style Selector="^ /template/ Border#PART_NavigationBar">
+      <Setter Property="Background" Value="{DynamicResource NavigationBarBackground}" />
+    </Style>
+
+    <!-- :nav-bar-inset: spacer reserves nav-bar height so content is pushed below -->
     <Style Selector="^:nav-bar-inset /template/ Border#PART_NavBarSpacer">
       <Setter Property="IsVisible" Value="True" />
     </Style>
 
-    <!-- :nav-bar-compact → collapse CommandBar labels when bar is too short -->
+    <!-- :nav-bar-compact: collapse CommandBar labels when bar is too short -->
     <Style Selector="^:nav-bar-compact /template/ ContentPresenter#PART_TopCommandBar CommandBar">
       <Setter Property="DefaultLabelPosition" Value="Collapsed" />
     </Style>

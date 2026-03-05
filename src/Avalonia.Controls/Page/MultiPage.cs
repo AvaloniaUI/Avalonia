@@ -92,6 +92,19 @@ namespace Avalonia.Controls
                 CurrentPageChanged?.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Sealed: routes no-argument calls to <see cref="UpdateActivePage(NavigationType)"/>
+        /// using <see cref="NavigationType.Replace"/> as the default. Subclasses must override
+        /// the typed overload, not this method.
+        /// </summary>
+        protected sealed override void UpdateActivePage() => UpdateActivePage(NavigationType.Replace);
+
+        /// <summary>
+        /// Called when the active child page changes.
+        /// </summary>
+        /// <param name="navigationType">The reason for the page change.</param>
+        protected virtual void UpdateActivePage(NavigationType navigationType) { }
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -172,7 +185,32 @@ namespace Avalonia.Controls
             }
 
             PagesChanged?.Invoke(this, e);
-            UpdateActivePage();
+
+            var navType = NavigationType.Replace;
+            var current = CurrentPage;
+            if (current != null)
+            {
+                bool currentRemoved = false;
+                if (e.Action == NotifyCollectionChangedAction.Remove ||
+                    e.Action == NotifyCollectionChangedAction.Replace)
+                {
+                    if (e.OldItems != null)
+                        foreach (var old in e.OldItems)
+                            if (ReferenceEquals(old, current)) { currentRemoved = true; break; }
+                }
+                else if (e.Action == NotifyCollectionChangedAction.Reset)
+                {
+                    currentRemoved = true;
+                    if (Pages != null)
+                        foreach (var item in Pages)
+                            if (ReferenceEquals(item, current)) { currentRemoved = false; break; }
+                }
+
+                if (currentRemoved)
+                    navType = NavigationType.Remove;
+            }
+
+            UpdateActivePage(navType);
         }
     }
 }

@@ -241,11 +241,11 @@ namespace Avalonia.Controls
             IsBackButtonEffectivelyEnabledProperty.Changed.AddClassHandler<NavigationPage>((x, e) =>
                 x.ApplyBackButtonEnabled(e.GetNewValue<bool>()));
 
-            ContentProperty.Changed.AddClassHandler<NavigationPage>(async (x, e) =>
+            ContentProperty.Changed.AddClassHandler<NavigationPage>((x, e) =>
             {
                 if (e.NewValue is not Page page || x.StackDepth > 0)
                     return;
-                await x.PushAsync(page);
+                _ = x.PushAsync(page);
             });
         }
 
@@ -387,11 +387,11 @@ namespace Avalonia.Controls
                 {
                     var result = new List<Page>(stack);
                     result.Reverse();
-                    _cachedNavigationStack = result;
+                    _cachedNavigationStack = result.AsReadOnly();
                 }
                 else if (Pages is IEnumerable<Page> enumerable)
                 {
-                    _cachedNavigationStack = new List<Page>(enumerable);
+                    _cachedNavigationStack = new List<Page>(enumerable).AsReadOnly();
                 }
                 else
                     _cachedNavigationStack = Array.Empty<Page>();
@@ -412,7 +412,7 @@ namespace Avalonia.Controls
                     return _cachedModalStack;
                 var result = new List<Page>(_modalStack);
                 result.Reverse();
-                _cachedModalStack = result;
+                _cachedModalStack = result.AsReadOnly();
                 return _cachedModalStack;
             }
         }
@@ -449,15 +449,9 @@ namespace Avalonia.Controls
         public static void SetHasBackButton(Page page, bool value) =>
             page.SetValue(HasBackButtonProperty, value);
 
-        /// <summary>
-        /// Gets the header for the specified page.
-        /// </summary>
         public static object? GetHeader(Page page) =>
             page.GetValue(Page.HeaderProperty);
 
-        /// <summary>
-        /// Sets the header for the specified page.
-        /// </summary>
         public static void SetHeader(Page page, object? header) =>
             page.SetValue(Page.HeaderProperty, header);
 
@@ -659,13 +653,15 @@ namespace Avalonia.Controls
 
             RemoveHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
 
-            _currentTransition?.Cancel();
-            _currentTransition?.Dispose();
+            var t = _currentTransition;
             _currentTransition = null;
+            t?.Cancel();
+            t?.Dispose();
 
-            _currentModalTransition?.Cancel();
-            _currentModalTransition?.Dispose();
+            var mt = _currentModalTransition;
             _currentModalTransition = null;
+            mt?.Cancel();
+            mt?.Dispose();
 
             _hasNavigationBarSub?.Dispose();
             _hasNavigationBarSub = null;
@@ -933,11 +929,6 @@ namespace Avalonia.Controls
                         return;
                 }
 
-                if (currentPage != null)
-                {
-                    currentPage.SendNavigatedFrom(new NavigatedFromEventArgs(rootPage, NavigationType.PopToRoot));
-                }
-
                 bool isIncc = Pages is INotifyCollectionChanged;
 
                 void TearDownPopped(Page popped)
@@ -947,6 +938,8 @@ namespace Avalonia.Controls
                         LogicalChildren.Remove(poppedLogical);
                     popped.Navigation = null;
                     popped.SetInNavigationPage(false);
+                    popped.SendNavigatedFrom(new NavigatedFromEventArgs(rootPage, NavigationType.PopToRoot));
+                    Popped?.Invoke(this, new NavigationEventArgs(popped, NavigationType.PopToRoot));
                 }
 
                 if (Pages is Stack<Page> stack)
@@ -969,6 +962,7 @@ namespace Avalonia.Controls
                 UpdateActivePage();
 
                 var newCurrentPage = CurrentPage;
+
                 if (newCurrentPage != null)
                 {
                     newCurrentPage.SendNavigatedTo(new NavigatedToEventArgs(currentPage, NavigationType.PopToRoot));
@@ -1077,6 +1071,7 @@ namespace Avalonia.Controls
         /// </summary>
         public async Task PushModalAsync(Page page)
         {
+            ArgumentNullException.ThrowIfNull(page);
             if (_isNavigating)
                 return;
 
@@ -1086,7 +1081,6 @@ namespace Avalonia.Controls
                 var previousModal = _modalStack.Count > 0 ? (Page?)_modalStack.Peek() : null;
 
                 var coveredPage = previousModal ?? CurrentPage;
-                coveredPage?.SendNavigatedFrom(new NavigatedFromEventArgs(coveredPage, NavigationType.Push));
 
                 _modalStack.Push(page);
                 _cachedModalStack = null;
@@ -1116,7 +1110,17 @@ namespace Avalonia.Controls
                     _currentModalTransition?.Cancel();
                     _currentModalTransition?.Dispose();
                     _currentModalTransition = new CancellationTokenSource();
-                    await effectiveModalTransition.Start(null, _modalPresenter, forward: true, _currentModalTransition.Token);
+                    var modalCt = _currentModalTransition.Token;
+                    try
+                    {
+                        await effectiveModalTransition.Start(null, _modalPresenter, forward: true, modalCt);
+                    }
+                    catch (OperationCanceledException) { /* Transition cancelled; lifecycle events still fire below. */ }
+                    catch (Exception ex)
+                    {
+                        Logger.TryGet(LogEventLevel.Error, LogArea.Control)
+                            ?.Log(this, "Modal transition threw an unhandled exception: {Exception}", ex);
+                    }
 
                     if (_modalBackPresenter != null)
                     {
@@ -1131,7 +1135,8 @@ namespace Avalonia.Controls
 
                 SetCurrentValue(IsModalVisibleProperty, true);
 
-                page.SendNavigatedTo(new NavigatedToEventArgs(coveredPage, NavigationType.Push));
+                coveredPage?.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.PushModal));
+                page.SendNavigatedTo(new NavigatedToEventArgs(coveredPage, NavigationType.PushModal));
                 ModalPushed?.Invoke(this, new ModalPushedEventArgs(page));
             }
             finally
@@ -1167,9 +1172,6 @@ namespace Avalonia.Controls
                 var modal = _modalStack.Pop();
                 _cachedModalStack = null;
 
-                var revealedPageForNav = _modalStack.Count > 0 ? (Page?)_modalStack.Peek() : CurrentPage;
-                modal.SendNavigatedFrom(new NavigatedFromEventArgs(revealedPageForNav, NavigationType.Pop));
-
                 modal.Navigation = null;
                 modal.SetInNavigationPage(false);
 
@@ -1191,12 +1193,19 @@ namespace Avalonia.Controls
                         _currentModalTransition?.Cancel();
                         _currentModalTransition?.Dispose();
                         _currentModalTransition = new CancellationTokenSource();
+                        var popCt1 = _currentModalTransition.Token;
                         try
                         {
-                            await effectiveModalTransition.Start(_modalPresenter, null, forward: false, _currentModalTransition.Token);
+                            await effectiveModalTransition.Start(_modalPresenter, null, forward: false, popCt1);
                             SwapModalPresenters();
                             if (_modalBackPresenter != null)
                                 _modalBackPresenter.Content = null;
+                        }
+                        catch (OperationCanceledException) { /* Transition cancelled; lifecycle events still fire below. */ }
+                        catch (Exception ex)
+                        {
+                            Logger.TryGet(LogEventLevel.Error, LogArea.Control)
+                                ?.Log(this, "Modal transition threw an unhandled exception: {Exception}", ex);
                         }
                         finally
                         {
@@ -1215,9 +1224,16 @@ namespace Avalonia.Controls
                         _currentModalTransition?.Cancel();
                         _currentModalTransition?.Dispose();
                         _currentModalTransition = new CancellationTokenSource();
+                        var popCt2 = _currentModalTransition.Token;
                         try
                         {
-                            await effectiveModalTransition.Start(_modalPresenter, null, forward: false, _currentModalTransition.Token);
+                            await effectiveModalTransition.Start(_modalPresenter, null, forward: false, popCt2);
+                        }
+                        catch (OperationCanceledException) { /* Transition cancelled; lifecycle events still fire below. */ }
+                        catch (Exception ex)
+                        {
+                            Logger.TryGet(LogEventLevel.Error, LogArea.Control)
+                                ?.Log(this, "Modal transition threw an unhandled exception: {Exception}", ex);
                         }
                         finally
                         {
@@ -1233,7 +1249,8 @@ namespace Avalonia.Controls
                 }
 
                 var revealedPage = _modalStack.Count > 0 ? (Page?)_modalStack.Peek() : CurrentPage;
-                revealedPage?.SendNavigatedTo(new NavigatedToEventArgs(modal, NavigationType.Pop));
+                modal.SendNavigatedFrom(new NavigatedFromEventArgs(revealedPage, NavigationType.PopModal));
+                revealedPage?.SendNavigatedTo(new NavigatedToEventArgs(modal, NavigationType.PopModal));
 
                 ModalPopped?.Invoke(this, new ModalPoppedEventArgs(modal));
                 return modal;
@@ -1277,17 +1294,28 @@ namespace Avalonia.Controls
                     _currentModalTransition?.Cancel();
                     _currentModalTransition?.Dispose();
                     _currentModalTransition = new CancellationTokenSource();
-                    await effectiveModalTransition.Start(_modalPresenter, null, forward: false, _currentModalTransition.Token);
+                    try
+                    {
+                        await effectiveModalTransition.Start(_modalPresenter, null, forward: false, _currentModalTransition.Token);
+                    }
+                    catch (OperationCanceledException) { /* Transition cancelled; lifecycle events still fire below. */ }
+                    catch (Exception ex)
+                    {
+                        Logger.TryGet(LogEventLevel.Error, LogArea.Control)
+                            ?.Log(this, "Modal transition threw an unhandled exception: {Exception}", ex);
+                    }
                 }
 
                 SetCurrentValue(ModalContentProperty, (object?)null);
                 SetCurrentValue(IsModalVisibleProperty, false);
 
+                Page? topModal = _modalStack.Count > 0 ? _modalStack.Peek() : null;
+
                 while (_modalStack.Count > 0)
                 {
                     var modal = _modalStack.Pop();
                     var nextPage = _modalStack.Count > 0 ? (Page?)_modalStack.Peek() : CurrentPage;
-                    modal.SendNavigatedFrom(new NavigatedFromEventArgs(nextPage, NavigationType.Pop));
+                    modal.SendNavigatedFrom(new NavigatedFromEventArgs(nextPage, NavigationType.PopModal));
                     modal.Navigation = null;
                     modal.SetInNavigationPage(false);
                     ModalPopped?.Invoke(this, new ModalPoppedEventArgs(modal));
@@ -1295,7 +1323,7 @@ namespace Avalonia.Controls
                 _cachedModalStack = null;
 
                 var newCurrentPage = CurrentPage;
-                newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Pop));
+                newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(topModal, NavigationType.PopModal));
             }
             finally
             {
@@ -1489,7 +1517,9 @@ namespace Avalonia.Controls
             finally { _hasOverrideTransition = false; _overrideTransition = null; }
         }
 
-        protected override void UpdateActivePage()
+        // navigationType is intentionally unused; lifecycle events are fired in each navigation
+        // method directly and transition direction is controlled by _isPop.
+        protected override void UpdateActivePage(NavigationType navigationType)
         {
             bool isPop = _isPop;
             _isPop = false;
@@ -1625,9 +1655,6 @@ namespace Avalonia.Controls
             UpdateDrawerToggleIcon();
         }
 
-        /// <summary>
-        /// Runs the page transition and cleans up presenters on completion.
-        /// </summary>
         private async Task RunPageTransitionAsync(
             IPageTransition transition,
             ContentPresenter from,
@@ -1708,9 +1735,6 @@ namespace Avalonia.Controls
             page.SendNavigatedTo(new NavigatedToEventArgs(replacedPage, NavigationType.Replace));
         }
 
-        /// <summary>
-        /// Swaps front and back modal presenters.
-        /// </summary>
         private void SwapModalPresenters()
         {
             if (_modalPresenter == null || _modalBackPresenter == null)
@@ -1780,10 +1804,11 @@ namespace Avalonia.Controls
 
             if (StackDepth <= 1 && showToggle)
             {
-                if (GetBackButtonContent(CurrentPage) is null)
+                if (GetBackButtonContent(CurrentPage) is null
+                    && this.TryFindResource("NavigationPageMenuIcon", out var iconData)
+                    && iconData is StreamGeometry geometry)
                 {
-                    this.TryFindResource("NavigationPageMenuIcon", out var iconData);
-                    SetBackButtonContent(CurrentPage, new PathIcon { Data = iconData as StreamGeometry });
+                    SetBackButtonContent(CurrentPage, new PathIcon { Data = geometry });
                 }
             }
             else

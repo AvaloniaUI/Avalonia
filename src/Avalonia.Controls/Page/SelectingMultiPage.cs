@@ -49,7 +49,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Commits a selection change and fires lifecycle events on the outgoing and incoming pages.
         /// </summary>
-        protected void CommitSelection(int newIndex, Page? newPage)
+        protected void CommitSelection(int newIndex, Page? newPage, NavigationType navigationType = NavigationType.Replace)
         {
             var previousPage = _selectedPage;
             SetAndRaise(SelectedIndexProperty, ref _selectedIndex, newIndex);
@@ -61,12 +61,12 @@ namespace Avalonia.Controls
 
                 if (previousPage != null)
                 {
-                    previousPage.SendNavigatedFrom(new NavigatedFromEventArgs(newPage, NavigationType.Replace));
+                    previousPage.SendNavigatedFrom(new NavigatedFromEventArgs(newPage, navigationType));
                 }
 
                 if (newPage != null)
                 {
-                    newPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
+                    newPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, navigationType));
                 }
             }
         }

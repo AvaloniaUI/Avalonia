@@ -248,7 +248,12 @@ namespace Avalonia.Controls
             {
                 int target = FindNearestEnabledTab(newIndex);
                 if (target < 0)
+                {
+                    _ignoringDisabledSelection = true;
+                    try { _tabControl.SelectedIndex = SelectedIndex; }
+                    finally { _ignoringDisabledSelection = false; }
                     return;
+                }
 
                 _ignoringDisabledSelection = true;
                 try { _tabControl.SelectedIndex = target; }
@@ -257,12 +262,12 @@ namespace Avalonia.Controls
                 if (target == SelectedIndex)
                     return;
 
-                CommitSelection(target, ResolvePageAtIndex(target));
+                CommitSelection(target, ResolvePageAtIndex(target), NavigationType.Replace);
                 UpdateContentSafeAreaPadding();
                 return;
             }
 
-            CommitSelection(newIndex, newPage);
+            CommitSelection(newIndex, newPage, NavigationType.Replace);
             UpdateContentSafeAreaPadding();
         }
 
@@ -444,12 +449,12 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void UpdateActivePage()
+        protected override void UpdateActivePage(NavigationType navigationType)
         {
             if (_tabControl != null)
             {
                 int index = _tabControl.SelectedIndex;
-                CommitSelection(index, _tabControl.SelectedItem as Page ?? ResolvePageAtIndex(index));
+                CommitSelection(index, _tabControl.SelectedItem as Page ?? ResolvePageAtIndex(index), navigationType);
                 UpdateContentSafeAreaPadding();
             }
         }

@@ -260,17 +260,15 @@ namespace Avalonia.Controls
             if (drawer._suppressDrawerEvents)
                 return value;
 
-            // Prevent opening when the drawer is disabled.
             if (value && drawer.DrawerBehavior == DrawerBehavior.Disabled)
                 return false;
 
-            // Raise Closing and allow it to be cancelled.
             if (!value && drawer.GetValue(IsOpenProperty) && drawer.DrawerBehavior != DrawerBehavior.Disabled)
             {
                 var args = new DrawerClosingEventArgs(ClosingEvent);
                 drawer.RaiseEvent(args);
                 if (args.Cancel)
-                    return true; // Stay open.
+                    return true;
             }
 
             return value;
@@ -672,7 +670,7 @@ namespace Avalonia.Controls
             if (!_hasHadFirstPage && CurrentPage != null)
             {
                 _hasHadFirstPage = true;
-                CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Replace));
+                CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Push));
             }
         }
 

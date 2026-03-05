@@ -56,8 +56,7 @@
                   ZIndex="1"
                   VerticalAlignment="Top"
                   ClipToBounds="True"
-                  Height="{TemplateBinding EffectiveBarHeight}"
-                  Background="{DynamicResource NavigationBarBackground}">
+                  Height="{TemplateBinding EffectiveBarHeight}">
             <Grid Margin="12,0,0,0" ColumnDefinitions="Auto, *, Auto">
               <Grid.Styles>
                 <Style Selector="Button#PART_BackButton /template/ ContentPresenter#PART_ContentPresenter">
@@ -170,6 +169,11 @@
         </Panel>
       </ControlTemplate>
     </Setter>
+
+    <!-- Default nav bar background, overridable via a more-specific style selector -->
+    <Style Selector="^ /template/ Border#PART_NavigationBar">
+      <Setter Property="Background" Value="{DynamicResource NavigationBarBackground}" />
+    </Style>
 
     <Style Selector="^:nav-bar-inset /template/ Border#PART_NavBarSpacer">
       <Setter Property="IsVisible" Value="True" />

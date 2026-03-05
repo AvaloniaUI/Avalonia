@@ -28,6 +28,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// The current top page was replaced with a new one.
         /// </summary>
-        Replace
+        Replace,
+        /// <summary>
+        /// A modal page was pushed on top of the navigation stack.
+        /// </summary>
+        PushModal,
+        /// <summary>
+        /// A modal page was popped from the navigation stack.
+        /// </summary>
+        PopModal
     }
 }
