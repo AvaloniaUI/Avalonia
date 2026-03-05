@@ -16,6 +16,7 @@ namespace ControlCatalog.Pages
             InitializeComponent();
             Loaded += (_, _) =>
             {
+                AddTabs(5);
                 DemoTabs.SelectionChanged += (_, _) => RefreshStats();
             };
         }

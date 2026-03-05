@@ -20,6 +20,10 @@ namespace ControlCatalog.Pages
             if (ItalicToggle.IsChecked == true) active.Add("Italic");
             if (UnderlineToggle.IsChecked == true) active.Add("Underline");
             FormatStatus.Text = active.Count > 0 ? $"Active: {string.Join(", ", active)}" : "Active: (none)";
+
+            ForceBoldCheck.IsChecked = BoldToggle.IsChecked;
+            ForceItalicCheck.IsChecked = ItalicToggle.IsChecked;
+            ForceUnderlineCheck.IsChecked = UnderlineToggle.IsChecked;
         }
 
         private void OnForceBoldChanged(object? sender, RoutedEventArgs e)

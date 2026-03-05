@@ -60,7 +60,6 @@
     <Setter Property="CornerRadius" Value="{DynamicResource TabbedPageTabStripCornerRadius}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TabbedPageTabStripBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource TabbedPageTabStripBorderThickness}" />
-    <Setter Property="Margin" Value="{DynamicResource TabbedPageTabStripMargin}" />
     <Setter Property="Padding" Value="{DynamicResource TabbedPageTabStripPadding}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -70,7 +69,7 @@
                   CornerRadius="{TemplateBinding CornerRadius}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
-                  Margin="{TemplateBinding Margin}"
+                  Margin="{DynamicResource TabbedPageTabStripMargin}"
                   Padding="{TemplateBinding Padding}"
                   DockPanel.Dock="{TemplateBinding TabStripPlacement}">
             <ItemsPresenter Name="PART_ItemsPresenter">
