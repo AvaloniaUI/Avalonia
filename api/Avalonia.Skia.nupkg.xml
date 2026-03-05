@@ -86,6 +86,12 @@
     <Right>current/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Right>
   </Suppression>
   <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Skia.SkiaSharpExtensions.ToSKFilterQuality(Avalonia.Media.Imaging.BitmapInterpolationMode)</Target>
+    <Left>baseline/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Left>
+    <Right>current/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Right>
+  </Suppression>
+  <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
     <Target>M:Avalonia.Skia.ISkiaGpu.TryCreateRenderTarget(System.Collections.Generic.IEnumerable{Avalonia.Platform.Surfaces.IPlatformRenderSurface})</Target>
     <Left>baseline/Avalonia.Skia/lib/net10.0/Avalonia.Skia.dll</Left>
