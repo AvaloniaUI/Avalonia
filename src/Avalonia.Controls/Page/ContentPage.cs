@@ -1,3 +1,4 @@
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -131,6 +132,8 @@ namespace Avalonia.Controls
             get => GetValue(BottomCommandBarProperty);
             set => SetValue(BottomCommandBarProperty, value);
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new ContentPageAutomationPeer(this);
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {

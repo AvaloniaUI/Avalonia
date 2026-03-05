@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Automation;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
@@ -1893,5 +1894,7 @@ namespace Avalonia.Controls
             _navBarShadow.Margin = new Thickness(0, EffectiveBarHeight, 0, 0);
             _navBarShadow.IsVisible = HasShadow && IsNavBarEffectivelyVisible;
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new NavigationPageAutomationPeer(this);
     }
 }

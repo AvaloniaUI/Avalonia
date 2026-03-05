@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Animation;
+using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -567,6 +568,8 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new TabbedPageAutomationPeer(this);
 
         private void FocusSelectedTabItem()
         {

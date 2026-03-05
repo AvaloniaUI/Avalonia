@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
@@ -1009,5 +1010,7 @@ namespace Avalonia.Controls
             bool hideTopBar = Content is NavigationPage navPage && navPage.IsNavBarEffectivelyVisible;
             PseudoClasses.Set(":detail-is-navpage", hideTopBar);
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new DrawerPageAutomationPeer(this);
     }
 }
