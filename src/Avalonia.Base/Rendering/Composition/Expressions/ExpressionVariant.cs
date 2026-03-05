@@ -23,7 +23,8 @@ namespace Avalonia.Rendering.Composition.Expressions
         Quaternion,
         Color,
         RelativePoint,
-        RelativeScalar
+        RelativeScalar, 
+        RelativeUnit
     }
 
     /// <summary>
@@ -49,6 +50,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         [FieldOffset(4)] public Color Color;
         [FieldOffset(4)] public RelativePoint RelativePoint;
         [FieldOffset(4)] public RelativeScalar RelativeScalar;
+        [FieldOffset(4)] public RelativeUnit RelativeUnit;
 
         public ExpressionVariant GetProperty(string property)
         {
@@ -238,6 +240,17 @@ namespace Avalonia.Rendering.Composition.Expressions
                     return (float)RelativePoint.Point.X;
                 if (ReferenceEquals(property, "Y"))
                     return (float)RelativePoint.Point.Y;
+                if (ReferenceEquals(property, "Unit"))
+                    return RelativePoint.Unit;
+                return default;
+            }
+
+            if (Type == VariantType.RelativeScalar)
+            {
+                if (ReferenceEquals(property, "Scalar"))
+                    return RelativeScalar.Scalar;
+                if (ReferenceEquals(property, "Unit"))
+                    return RelativeScalar.Unit;
                 return default;
             }
 
@@ -351,7 +364,13 @@ namespace Avalonia.Rendering.Composition.Expressions
                 RelativeScalar = value
             };
 
-        //TODO: RelativePoint/Scalar operators
+        public static implicit operator ExpressionVariant(RelativeUnit value) =>
+            new ExpressionVariant
+            {
+                Type = VariantType.RelativeUnit,
+                RelativeUnit = value
+            };
+
         public static ExpressionVariant operator +(ExpressionVariant left, ExpressionVariant right)
         {
             if (left.Type != right.Type || left.Type == VariantType.Invalid)
@@ -386,6 +405,19 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Quaternion)
                 return left.Quaternion + right.Quaternion;
+
+            if (left.Type == VariantType.RelativePoint && left.RelativePoint.Unit == right.RelativePoint.Unit)
+            {
+                return new RelativePoint(
+                    left.RelativePoint.Point.X + right.RelativePoint.Point.X,
+                    left.RelativePoint.Point.Y + right.RelativePoint.Point.Y,
+                    left.RelativePoint.Unit);
+            }
+
+            if (left.Type == VariantType.RelativeScalar && left.RelativeScalar.Unit == right.RelativeScalar.Unit)
+            {
+                return new RelativeScalar(left.RelativeScalar.Scalar + right.RelativeScalar.Scalar, left.RelativeScalar.Unit);
+            }
 
             return default;
         }
@@ -425,6 +457,19 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (left.Type == VariantType.Quaternion)
                 return left.Quaternion - right.Quaternion;
 
+            if (left.Type == VariantType.RelativePoint && left.RelativePoint.Unit == right.RelativePoint.Unit)
+            {
+                return new RelativePoint(
+                    left.RelativePoint.Point.X - right.RelativePoint.Point.X,
+                    left.RelativePoint.Point.Y - right.RelativePoint.Point.Y,
+                    left.RelativePoint.Unit);
+            }
+
+            if (left.Type == VariantType.RelativeScalar && left.RelativeScalar.Unit == right.RelativeScalar.Unit)
+            {
+                return new RelativeScalar(left.RelativeScalar.Scalar - right.RelativeScalar.Scalar, left.RelativeScalar.Unit);
+            }
+
             return default;
         }
 
@@ -463,6 +508,12 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Quaternion)
                 return -left.Quaternion;
+
+            if (left.Type == VariantType.RelativePoint)
+                return new RelativePoint(-left.RelativePoint.Point.X, -left.RelativePoint.Point.Y, left.RelativePoint.Unit);
+
+            if (left.Type == VariantType.RelativeScalar)
+                return new RelativeScalar(-left.RelativeScalar.Scalar, left.RelativeScalar.Unit);
 
             return default;
         }
@@ -532,6 +583,41 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (left.Type == VariantType.Quaternion && right.Type == VariantType.Scalar)
                 return left.Quaternion * right.Scalar;
 
+            if (left.Type == VariantType.RelativePoint && right.Type == VariantType.Scalar)
+                return new RelativePoint(left.RelativePoint.Point.X * right.Scalar, left.RelativePoint.Point.Y * right.Scalar, left.RelativePoint.Unit);
+
+            if (left.Type == VariantType.RelativePoint && right.Type == VariantType.Double)
+                return new RelativePoint(left.RelativePoint.Point.X * right.Double, left.RelativePoint.Point.Y * right.Double, left.RelativePoint.Unit);
+
+            if (left.Type == VariantType.Scalar && right.Type == VariantType.RelativePoint)
+                return new RelativePoint(left.Scalar * right.RelativePoint.Point.X, left.Scalar * right.RelativePoint.Point.Y, right.RelativePoint.Unit);
+
+            if (left.Type == VariantType.Double && right.Type == VariantType.RelativePoint)
+                return new RelativePoint(left.Double * right.RelativePoint.Point.X, left.Double * right.RelativePoint.Point.Y, right.RelativePoint.Unit);
+
+            if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.Scalar)
+                return new RelativeScalar(left.RelativeScalar.Scalar * right.Scalar, left.RelativeScalar.Unit);
+
+            if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.Double)
+                return new RelativeScalar(left.RelativeScalar.Scalar * right.Double, left.RelativeScalar.Unit);
+
+            if (left.Type == VariantType.Scalar && right.Type == VariantType.RelativeScalar)
+                return new RelativeScalar(left.Scalar * right.RelativeScalar.Scalar, right.RelativeScalar.Unit);
+
+            if (left.Type == VariantType.Double && right.Type == VariantType.RelativeScalar)
+                return new RelativeScalar(left.Double * right.RelativeScalar.Scalar, right.RelativeScalar.Unit);
+
+            if (left.Type == VariantType.RelativePoint && right.Type == VariantType.RelativePoint && left.RelativePoint.Unit == right.RelativePoint.Unit)
+            {
+                return new RelativePoint(
+                    left.RelativePoint.Point.X * right.RelativePoint.Point.X,
+                    left.RelativePoint.Point.Y * right.RelativePoint.Point.Y,
+                    left.RelativePoint.Unit);
+            }
+
+            if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.RelativeScalar && left.RelativeScalar.Unit == right.RelativeScalar.Unit)
+                return new RelativeScalar(left.RelativeScalar.Scalar * right.RelativeScalar.Scalar, left.RelativeScalar.Unit);
+
             return default;
         }
 
@@ -585,6 +671,29 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (left.Type == VariantType.Quaternion && right.Type == VariantType.Quaternion)
                 return left.Quaternion / right.Quaternion;
 
+            if (left.Type == VariantType.RelativePoint && right.Type == VariantType.Scalar)
+                return new RelativePoint(left.RelativePoint.Point.X / right.Scalar, left.RelativePoint.Point.Y / right.Scalar, left.RelativePoint.Unit);
+
+            if (left.Type == VariantType.RelativePoint && right.Type == VariantType.Double)
+                return new RelativePoint(left.RelativePoint.Point.X / right.Double, left.RelativePoint.Point.Y / right.Double, left.RelativePoint.Unit);
+
+            if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.Scalar)
+                return new RelativeScalar(left.RelativeScalar.Scalar / right.Scalar, left.RelativeScalar.Unit);
+
+            if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.Double)
+                return new RelativeScalar(left.RelativeScalar.Scalar / right.Double, left.RelativeScalar.Unit);
+
+            if (left.Type == VariantType.RelativePoint && right.Type == VariantType.RelativePoint && left.RelativePoint.Unit == right.RelativePoint.Unit)
+            {
+                return new RelativePoint(
+                    left.RelativePoint.Point.X / right.RelativePoint.Point.X,
+                    left.RelativePoint.Point.Y / right.RelativePoint.Point.Y,
+                    left.RelativePoint.Unit);
+            }
+
+            if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.RelativeScalar && left.RelativeScalar.Unit == right.RelativeScalar.Unit)
+                return new RelativeScalar(left.RelativeScalar.Scalar / right.RelativeScalar.Scalar, left.RelativeScalar.Unit);
+
             return default;
         }
 
@@ -636,6 +745,9 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (Type == VariantType.RelativeScalar)
                 return RelativeScalar == right.RelativeScalar;
 
+            if (Type == VariantType.RelativeUnit)
+                return RelativeUnit == right.RelativeUnit;
+
             return default;
         }
 
@@ -660,6 +772,8 @@ namespace Avalonia.Rendering.Composition.Expressions
                 return left.Scalar % right.Scalar;
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double % right.Double;
+            if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.RelativeScalar && left.RelativeScalar.Unit == right.RelativeScalar.Unit)
+                return new RelativeScalar(left.RelativeScalar.Scalar % right.RelativeScalar.Scalar, left.RelativeScalar.Unit);
             return default;
         }
 
@@ -669,6 +783,8 @@ namespace Avalonia.Rendering.Composition.Expressions
                 return left.Scalar < right.Scalar;
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double < right.Double;
+            if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.RelativeScalar && left.RelativeScalar.Unit == right.RelativeScalar.Unit)
+                return left.RelativeScalar.Scalar < right.RelativeScalar.Scalar;
             return default;
         }
 
@@ -679,6 +795,8 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double > right.Double;
+            if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.RelativeScalar && left.RelativeScalar.Unit == right.RelativeScalar.Unit)
+                return left.RelativeScalar.Scalar > right.RelativeScalar.Scalar;
             return default;
         }
 
@@ -840,7 +958,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 }
             }
 
-            if (typeof(T) == typeof(Avalonia.Media.Color))
+            if (typeof(T) == typeof(Color))
             {
                 if (Type == VariantType.Color)
                 {
@@ -864,6 +982,15 @@ namespace Avalonia.Rendering.Composition.Expressions
                 if (Type == VariantType.RelativeScalar)
                 {
                     res = (T)(object)RelativeScalar;
+                    return true;
+                }
+            }
+
+            if (typeof(T) == typeof(RelativeUnit))
+            {
+                if (Type == VariantType.RelativeUnit)
+                {
+                    res = (T)(object)RelativeUnit;
                     return true;
                 }
             }
@@ -910,14 +1037,17 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (typeof(T) == typeof(Quaternion))
                 return (Quaternion)(object)v;
 
-            if (typeof(T) == typeof(Avalonia.Media.Color))
-                return (Avalonia.Media.Color)(object)v;
+            if (typeof(T) == typeof(Color))
+                return (Color)(object)v;
 
             if (typeof(T) == typeof(RelativePoint))
                 return (RelativePoint)(object)v;
 
             if (typeof(T) == typeof(RelativeScalar))
                 return (RelativeScalar)(object)v;
+
+            if (typeof(T) == typeof(RelativeUnit))
+                return (RelativeUnit)(object)v;
 
             throw new ArgumentException("Invalid variant type: " + typeof(T));
         }
@@ -960,6 +1090,8 @@ namespace Avalonia.Rendering.Composition.Expressions
                 return RelativePoint.ToString();
             if (Type == VariantType.RelativeScalar)
                 return RelativeScalar.ToString();
+            if (Type == VariantType.RelativeUnit)
+                return RelativeUnit.ToString();
             if (Type == VariantType.Invalid)
                 return "Invalid";
             return "Unknown";
