@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.Windows.Forms;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32.Interoperability;
@@ -20,7 +21,8 @@ public class WinFormsAvaloniaMessageFilter : IMessageFilter
         // Handle them first.
         if (m.Msg >= (int)WindowsMessage.WM_KEYFIRST &&
             m.Msg <= (int)WindowsMessage.WM_KEYLAST &&
-            WindowImpl.IsOurWindowGlobal(m.HWnd))
+            WindowImpl.IsOurWindowGlobal(m.HWnd) &&
+            !IsInsideWinForms(m.HWnd))
         {
             var msg = new MSG
             {
@@ -36,5 +38,11 @@ public class WinFormsAvaloniaMessageFilter : IMessageFilter
         }
 
         return false;
+    }
+
+    private static bool IsInsideWinForms(IntPtr hwnd)
+    {
+        var parentHwnd = GetParent(hwnd);
+        return parentHwnd != IntPtr.Zero && Control.FromHandle(parentHwnd) is WinFormsAvaloniaControlHost;
     }
 }
