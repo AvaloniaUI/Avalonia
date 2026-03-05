@@ -5,11 +5,12 @@
     <Style Selector="Button.icon-btn">
       <Setter Property="Width" Value="40"/>
       <Setter Property="Height" Value="40"/>
-      <Setter Property="CornerRadius" Value="12"/>
+      <Setter Property="CornerRadius" Value="20"/>
       <Setter Property="Background" Value="#1a1a1a"/>
       <Setter Property="Foreground" Value="#94a3b8"/>
       <Setter Property="Padding" Value="8"/>
-      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="BorderBrush" Value="#4D256af4"/>
+      <Setter Property="BorderThickness" Value="1"/>
     </Style>
   </UserControl.Styles>
 
@@ -18,12 +19,12 @@
 
       <!-- Header: avatar + greeting + bell -->
       <Grid ColumnDefinitions="Auto,*,Auto" Margin="16,20,16,8">
-        <Border Width="44" Height="44" CornerRadius="22" ClipToBounds="True"
-                BorderBrush="#4D256af4" BorderThickness="2">
-          <Border.Background>
-            <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/profile_avatar.jpg"
-                        Stretch="UniformToFill"/>
-          </Border.Background>
+        <Border Width="44" Height="44" CornerRadius="22"
+                BorderBrush="#4D256af4" BorderThickness="2"
+                ClipToBounds="True">
+          <Image Source="avares://ControlCatalog/Assets/Pulse/profile_avatar.jpg"
+                 Stretch="UniformToFill"
+                 Margin="-2"/>
         </Border>
         <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
           <TextBlock Text="WELCOME BACK" FontSize="10" FontWeight="Medium"
@@ -31,8 +32,8 @@
           <TextBlock Text="Alex Johnson" FontSize="18" FontWeight="Bold" Foreground="White"/>
         </StackPanel>
         <Button Grid.Column="2" Classes="icon-btn" VerticalAlignment="Center">
-          <PathIcon Data="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
-                    Width="18" Height="18"/>
+          <Path Data="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+                Fill="#94a3b8" Width="18" Height="18" Stretch="Uniform"/>
         </Button>
       </Grid>
 

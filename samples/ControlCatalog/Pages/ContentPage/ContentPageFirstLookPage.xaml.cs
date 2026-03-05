@@ -8,6 +8,15 @@ namespace ControlCatalog.Pages
 {
     public partial class ContentPageFirstLookPage : UserControl
     {
+        private static readonly Color[] PageColors =
+        [
+            Color.FromRgb(0xE3, 0xF2, 0xFD), // blue
+            Color.FromRgb(0xF3, 0xE5, 0xF5), // purple
+            Color.FromRgb(0xE8, 0xF5, 0xE9), // green
+            Color.FromRgb(0xFF, 0xF8, 0xE1), // amber
+            Color.FromRgb(0xFB, 0xE9, 0xE7), // deep orange
+        ];
+
         private int _pageCount;
 
         public ContentPageFirstLookPage()
@@ -47,10 +56,11 @@ namespace ControlCatalog.Pages
             StatusText.Text = $"Depth: {DemoNav.StackDepth} | Current: {DemoNav.CurrentPage?.Header}";
         }
 
-        private static ContentPage MakePage(string header, string body) =>
+        private ContentPage MakePage(string header, string body) =>
             new ContentPage
             {
                 Header = header,
+                Background = new SolidColorBrush(PageColors[_pageCount % PageColors.Length]),
                 Content = new StackPanel
                 {
                     HorizontalAlignment = HorizontalAlignment.Center,
