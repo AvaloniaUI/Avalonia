@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPageCollectionPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Page Collection" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
+                   Text="Populate a TabbedPage by adding ContentPage objects directly to the Pages collection. Add and remove pages dynamically at runtime." />
+
+        <Separator />
+
+        <TextBlock Text="Tab Management" FontWeight="SemiBold" FontSize="13" />
+        <Button Content="Add Page" Click="OnAddPage" HorizontalAlignment="Stretch" />
+        <Button Content="Remove Last Page" Click="OnRemoveLast" HorizontalAlignment="Stretch" />
+        <Button Content="Clear All" Click="OnClearAll" HorizontalAlignment="Stretch" />
+
+        <Separator />
+
+        <TextBlock x:Name="StatusText" Text="3 tabs" Opacity="0.7" TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <TabbedPage x:Name="DemoTabs" TabPlacement="Top">
+        <ContentPage Header="Today">
+          <StackPanel Margin="16" Spacing="8">
+            <TextBlock Text="Today" FontSize="24" FontWeight="Bold" />
+            <TextBlock Text="Your daily overview and tasks." TextWrapping="Wrap" Opacity="0.7" />
+          </StackPanel>
+        </ContentPage>
+        <ContentPage Header="Schedule">
+          <StackPanel Margin="16" Spacing="8">
+            <TextBlock Text="Schedule" FontSize="24" FontWeight="Bold" />
+            <TextBlock Text="Upcoming events and appointments." TextWrapping="Wrap" Opacity="0.7" />
+          </StackPanel>
+        </ContentPage>
+        <ContentPage Header="Settings">
+          <StackPanel Margin="16" Spacing="8">
+            <TextBlock Text="Settings" FontSize="24" FontWeight="Bold" />
+            <TextBlock Text="Manage your preferences." TextWrapping="Wrap" Opacity="0.7" />
+          </StackPanel>
+        </ContentPage>
+      </TabbedPage>
+    </Border>
+  </DockPanel>
+</UserControl>

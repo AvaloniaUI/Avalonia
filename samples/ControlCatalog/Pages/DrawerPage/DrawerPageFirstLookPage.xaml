@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.DrawerPageFirstLookPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <Button Content="Toggle Drawer"
+                HorizontalAlignment="Stretch"
+                Click="OnToggleDrawer" />
+
+        <Separator />
+
+        <CheckBox x:Name="GestureCheck"
+                  Content="Gesture Enabled"
+                  IsChecked="True"
+                  IsCheckedChanged="OnGestureChanged" />
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="14" />
+        <TextBlock x:Name="StatusText"
+                   Text="Drawer: Closed"
+                   Opacity="0.7"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <DrawerPage x:Name="DemoDrawer"
+                  Header="First Look"
+                  DrawerLength="250">
+        <DrawerPage.DrawerHeader>
+          <Border Padding="16" Background="#1976D2">
+            <TextBlock Text="Menu" FontSize="18" FontWeight="SemiBold" Foreground="White" />
+          </Border>
+        </DrawerPage.DrawerHeader>
+        <DrawerPage.Drawer>
+          <ListBox x:Name="DrawerMenu" SelectionChanged="OnMenuSelectionChanged">
+            <ListBoxItem Content="Home" />
+            <ListBoxItem Content="Settings" />
+            <ListBoxItem Content="Profile" />
+            <ListBoxItem Content="About" />
+          </ListBox>
+        </DrawerPage.Drawer>
+        <DrawerPage.Content>
+          <ContentPage Header="Home">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+              <TextBlock Text="Home Page" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" />
+              <TextBlock Text="Swipe from the left edge or use the hamburger button to open the drawer."
+                         FontSize="13" Opacity="0.7" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="300" />
+            </StackPanel>
+          </ContentPage>
+        </DrawerPage.Content>
+      </DrawerPage>
+    </Border>
+  </DockPanel>
+</UserControl>

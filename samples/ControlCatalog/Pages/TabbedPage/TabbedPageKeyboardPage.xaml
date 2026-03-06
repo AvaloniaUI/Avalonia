@@ -1,0 +1,108 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPageKeyboardPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Keyboard Navigation" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <CheckBox x:Name="KeyboardCheck" Content="Enable Keyboard Navigation" IsChecked="True"
+                  IsCheckedChanged="OnKeyboardChanged" />
+
+        <Separator />
+
+        <TextBlock Text="Key Bindings" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
+                   Text="Click the TabbedPage to give it focus, then:" />
+
+        <Border Background="{DynamicResource SystemControlBackgroundListLowBrush}"
+                CornerRadius="4" Padding="8,6" Margin="0,4,0,0">
+          <StackPanel Spacing="6">
+            <TextBlock FontSize="12" FontWeight="SemiBold" Text="Always available" />
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="4,0,0,0">
+              <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                      CornerRadius="3" Padding="4,1" Margin="0,0,8,0">
+                <TextBlock FontSize="11" FontFamily="Consolas,Menlo,monospace" Text="Ctrl+Tab" />
+              </Border>
+              <TextBlock Grid.Column="1" FontSize="11" Opacity="0.7" Text="Next tab" VerticalAlignment="Center" />
+
+              <Border Grid.Row="1" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                      CornerRadius="3" Padding="4,1" Margin="0,4,8,0">
+                <TextBlock FontSize="11" FontFamily="Consolas,Menlo,monospace" Text="Ctrl+Shift+Tab" />
+              </Border>
+              <TextBlock Grid.Row="1" Grid.Column="1" FontSize="11" Opacity="0.7" Text="Previous tab"
+                         VerticalAlignment="Center" Margin="0,4,0,0" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <Border Background="{DynamicResource SystemControlBackgroundListLowBrush}"
+                CornerRadius="4" Padding="8,6" Margin="0,4,0,0">
+          <StackPanel Spacing="6">
+            <TextBlock x:Name="ArrowKeysHeader" FontSize="12" FontWeight="SemiBold"
+                       Text="Top / Bottom placement" />
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="4,0,0,0">
+              <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                      CornerRadius="3" Padding="4,1" Margin="0,0,8,0">
+                <TextBlock x:Name="NextKeyText" FontSize="11" FontFamily="Consolas,Menlo,monospace" Text="→" />
+              </Border>
+              <TextBlock Grid.Column="1" FontSize="11" Opacity="0.7" Text="Next tab" VerticalAlignment="Center" />
+
+              <Border Grid.Row="1" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                      CornerRadius="3" Padding="4,1" Margin="0,4,8,0">
+                <TextBlock x:Name="PrevKeyText" FontSize="11" FontFamily="Consolas,Menlo,monospace" Text="←" />
+              </Border>
+              <TextBlock Grid.Row="1" Grid.Column="1" FontSize="11" Opacity="0.7" Text="Previous tab"
+                         VerticalAlignment="Center" Margin="0,4,0,0" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <Separator />
+
+        <TextBlock Text="Tab Placement" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock FontSize="11" Opacity="0.5" TextWrapping="Wrap"
+                   Text="Arrow key direction changes with placement." />
+        <ComboBox x:Name="PlacementCombo" SelectedIndex="0"
+                  SelectionChanged="OnPlacementChanged" HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="Top" />
+          <ComboBoxItem Content="Bottom" />
+          <ComboBoxItem Content="Left" />
+          <ComboBoxItem Content="Right" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock x:Name="StatusText" Text="Selected: Home (0)" Opacity="0.7" FontSize="12" TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <TabbedPage x:Name="DemoTabs" TabPlacement="Top" SelectionChanged="OnSelectionChanged">
+        <ContentPage Header="Home">
+          <TextBlock Text="Home" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="20" Opacity="0.7" />
+        </ContentPage>
+        <ContentPage Header="Search">
+          <TextBlock Text="Search" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="20" Opacity="0.7" />
+        </ContentPage>
+        <ContentPage Header="Alerts">
+          <TextBlock Text="Alerts" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="20" Opacity="0.7" />
+        </ContentPage>
+        <ContentPage Header="Settings">
+          <TextBlock Text="Settings" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     FontSize="20" Opacity="0.7" />
+        </ContentPage>
+      </TabbedPage>
+    </Border>
+  </DockPanel>
+</UserControl>

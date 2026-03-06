@@ -1,0 +1,171 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ContentPageSafeAreaPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <CheckBox x:Name="AutoApplyCheck"
+                  Content="AutomaticallyApplySafeAreaPadding"
+                  IsChecked="True"
+                  IsCheckedChanged="OnAutoApplyChanged" />
+
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7">
+          When enabled, ContentPage absorbs SafeAreaPadding into the content
+          presenter, keeping page content in the visible area. Set to false
+          to manage insets manually.
+        </TextBlock>
+
+        <Separator />
+
+        <TextBlock Text="Simulated Insets" FontWeight="SemiBold" FontSize="13" />
+
+        <TextBlock Text="Top" FontSize="12" Opacity="0.8" />
+        <DockPanel>
+          <TextBlock x:Name="TopValue"
+                     DockPanel.Dock="Right"
+                     Text="44"
+                     FontSize="12" Opacity="0.6"
+                     VerticalAlignment="Center"
+                     Width="28" TextAlignment="Right" />
+          <Slider x:Name="TopSlider"
+                  Minimum="0" Maximum="80" Value="44"
+                  TickFrequency="1"
+                  ValueChanged="OnInsetChanged" />
+        </DockPanel>
+
+        <TextBlock Text="Bottom" FontSize="12" Opacity="0.8" />
+        <DockPanel>
+          <TextBlock x:Name="BottomValue"
+                     DockPanel.Dock="Right"
+                     Text="34"
+                     FontSize="12" Opacity="0.6"
+                     VerticalAlignment="Center"
+                     Width="28" TextAlignment="Right" />
+          <Slider x:Name="BottomSlider"
+                  Minimum="0" Maximum="60" Value="34"
+                  TickFrequency="1"
+                  ValueChanged="OnInsetChanged" />
+        </DockPanel>
+
+        <TextBlock Text="Left" FontSize="12" Opacity="0.8" />
+        <DockPanel>
+          <TextBlock x:Name="LeftValue"
+                     DockPanel.Dock="Right"
+                     Text="0"
+                     FontSize="12" Opacity="0.6"
+                     VerticalAlignment="Center"
+                     Width="28" TextAlignment="Right" />
+          <Slider x:Name="LeftSlider"
+                  Minimum="0" Maximum="60" Value="0"
+                  TickFrequency="1"
+                  ValueChanged="OnInsetChanged" />
+        </DockPanel>
+
+        <TextBlock Text="Right" FontSize="12" Opacity="0.8" />
+        <DockPanel>
+          <TextBlock x:Name="RightValue"
+                     DockPanel.Dock="Right"
+                     Text="0"
+                     FontSize="12" Opacity="0.6"
+                     VerticalAlignment="Center"
+                     Width="28" TextAlignment="Right" />
+          <Slider x:Name="RightSlider"
+                  Minimum="0" Maximum="60" Value="0"
+                  TickFrequency="1"
+                  ValueChanged="OnInsetChanged" />
+        </DockPanel>
+
+        <Separator />
+
+        <TextBlock Text="About" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="4">
+          <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.8">
+            • On real devices SafeAreaPadding is set by PageNavigationHost
+              from IInsetsManager (iOS, Android).
+          </TextBlock>
+          <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.8">
+            • ContentPage.AutomaticallyApplySafeAreaPadding defaults to true.
+              Set to false when your layout manages insets manually.
+          </TextBlock>
+          <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.8">
+            • Child pages inside a ContentPage receive the remaining insets
+              via SafeAreaPadding propagation.
+          </TextBlock>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="12"
+            ClipToBounds="True"
+            MaxWidth="320"
+            HorizontalAlignment="Center">
+      <Panel>
+        <ContentPage x:Name="SamplePage"
+                     Header="Safe Area Demo"
+                     HorizontalContentAlignment="Stretch"
+                     VerticalContentAlignment="Stretch">
+          <Grid RowDefinitions="Auto,*">
+            <Border Grid.Row="0"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                    Padding="12,8">
+              <StackPanel Spacing="2">
+                <TextBlock x:Name="SafeAreaInfo"
+                           FontSize="11" FontFamily="Consolas,Courier New,monospace"
+                           Opacity="0.8" />
+                <TextBlock x:Name="AutoApplyInfo"
+                           FontSize="11" Opacity="0.8" />
+              </StackPanel>
+            </Border>
+
+            <StackPanel Grid.Row="1"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="8">
+              <TextBlock Text="Page Content"
+                         FontSize="18" FontWeight="Bold"
+                         HorizontalAlignment="Center" />
+              <TextBlock TextWrapping="Wrap"
+                         TextAlignment="Center"
+                         FontSize="12" Opacity="0.6">
+                When enabled, the content presenter absorbs the inset,
+                keeping content visible above the status bar and home indicator.
+              </TextBlock>
+            </StackPanel>
+          </Grid>
+        </ContentPage>
+
+        <!-- Pink overlays to simulate device insets -->
+        <Border x:Name="TopInsetIndicator"
+                Background="#FF5252" Opacity="0.35"
+                VerticalAlignment="Top">
+          <TextBlock Text="Safe Area (simulated)"
+                     FontSize="10" Opacity="0.9"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     Margin="0,4" />
+        </Border>
+        <Border x:Name="BottomInsetIndicator"
+                Background="#FF5252" Opacity="0.35"
+                VerticalAlignment="Bottom">
+          <TextBlock Text="Safe Area (simulated)"
+                     FontSize="10" Opacity="0.9"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     Margin="0,4" />
+        </Border>
+        <Border x:Name="LeftInsetIndicator"
+                Background="#FF5252" Opacity="0.35"
+                HorizontalAlignment="Left" />
+        <Border x:Name="RightInsetIndicator"
+                Background="#FF5252" Opacity="0.35"
+                HorizontalAlignment="Right" />
+      </Panel>
+    </Border>
+  </DockPanel>
+</UserControl>
