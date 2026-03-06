@@ -51,10 +51,10 @@ public class DrawerPageTests
         [InlineData(600.0)]
         [InlineData(800.0)]
         [InlineData(1200.0)]
-        public void DrawerBreakpointWidth_RoundTrips(double width)
+        public void DrawerBreakpointLength_RoundTrips(double width)
         {
-            var dp = new DrawerPage { DrawerBreakpointWidth = width };
-            Assert.Equal(width, dp.DrawerBreakpointWidth);
+            var dp = new DrawerPage { DrawerBreakpointLength = width };
+            Assert.Equal(width, dp.DrawerBreakpointLength);
         }
 
         [Theory]
@@ -830,25 +830,95 @@ public class DrawerPageTests
         }
 
         [Fact]
-        public void DrawerBreakpointWidth_BeforeLayout_DoesNotOverrideLayoutBehavior()
+        public void DrawerBreakpointLength_BeforeLayout_DoesNotOverrideLayoutBehavior()
         {
             var dp = new DrawerPage
             {
                 DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
-                DrawerBreakpointWidth = 1200
+                DrawerBreakpointLength = 1200
             };
             Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
         }
 
         [Fact]
-        public void DrawerBreakpointWidth_Zero_DoesNotOverrideLayoutBehavior()
+        public void DrawerBreakpointLength_Zero_DoesNotOverrideLayoutBehavior()
         {
             // Breakpoint == 0 means the feature is disabled; DrawerLayoutBehavior drives DisplayMode.
             var dp = new DrawerPage
             {
                 DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
-                DrawerBreakpointWidth = 0
+                DrawerBreakpointLength = 0
             };
+            Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Left)]
+        [InlineData(DrawerPlacement.Right)]
+        public void DrawerBreakpointLength_Horizontal_BelowBreakpoint_ForcesOverlay(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointLength = 1200,
+                DrawerPlacement = placement
+            };
+            dp.Measure(new Size(800, 600));
+            dp.Arrange(new Rect(0, 0, 800, 600));
+
+            Assert.Equal(SplitViewDisplayMode.Overlay, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Left)]
+        [InlineData(DrawerPlacement.Right)]
+        public void DrawerBreakpointLength_Horizontal_AboveBreakpoint_UsesConfiguredLayout(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointLength = 600,
+                DrawerPlacement = placement
+            };
+            dp.Measure(new Size(800, 600));
+            dp.Arrange(new Rect(0, 0, 800, 600));
+
+            Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Top)]
+        [InlineData(DrawerPlacement.Bottom)]
+        public void DrawerBreakpointLength_Vertical_BelowBreakpoint_ForcesOverlay(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointLength = 800,
+                DrawerPlacement = placement
+            };
+            dp.Measure(new Size(800, 600));
+            dp.Arrange(new Rect(0, 0, 800, 600));
+
+            // Vertical: breakpoint compares against Bounds.Height (600 < 800 → Overlay)
+            Assert.Equal(SplitViewDisplayMode.Overlay, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Top)]
+        [InlineData(DrawerPlacement.Bottom)]
+        public void DrawerBreakpointLength_Vertical_AboveBreakpoint_UsesConfiguredLayout(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointLength = 400,
+                DrawerPlacement = placement
+            };
+            dp.Measure(new Size(800, 600));
+            dp.Arrange(new Rect(0, 0, 800, 600));
+
+            // Vertical: breakpoint compares against Bounds.Height (600 > 400 → Inline)
             Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
         }
     }
