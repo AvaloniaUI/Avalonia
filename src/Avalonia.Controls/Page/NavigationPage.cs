@@ -43,6 +43,7 @@ namespace Avalonia.Controls
         private ContentPresenter? _pagePresenter;
         private ContentPresenter? _pageBackPresenter;
         private CancellationTokenSource? _currentTransition;
+        private Task? _lastPageTransitionTask;
         private CancellationTokenSource? _currentModalTransition;
         private Border? _navBar;
         private Border? _navBarShadow;
@@ -776,8 +777,10 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Performs the stack mutation and lifecycle events for a pop. The visual transition runs
-        /// subsequently via <see cref="UpdateActivePage"/>.
+        /// Performs the stack mutation for a pop. The visual transition runs
+        /// subsequently via <see cref="UpdateActivePage"/>. Callers are responsible
+        /// for firing lifecycle events (SendNavigatedFrom, SendNavigatedTo, Popped)
+        /// after awaiting the page transition.
         /// </summary>
         private Page? ExecutePopCore()
         {
@@ -810,11 +813,6 @@ namespace Avalonia.Controls
             {
                 old.Navigation = null;
                 old.SetInNavigationPage(false);
-
-                var newCurrentPage = CurrentPage;
-                old.SendNavigatedFrom(new NavigatedFromEventArgs(newCurrentPage, NavigationType.Pop));
-                newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(old, NavigationType.Pop));
-                Popped?.Invoke(this, new NavigationEventArgs(old, NavigationType.Pop));
             }
 
             return old;
@@ -886,7 +884,19 @@ namespace Avalonia.Controls
                         return null;
                 }
 
-                return ExecutePopCore();
+                var old = ExecutePopCore();
+
+                await AwaitPageTransitionAsync();
+
+                if (old != null)
+                {
+                    var newCurrentPage = CurrentPage;
+                    old.SendNavigatedFrom(new NavigatedFromEventArgs(newCurrentPage, NavigationType.Pop));
+                    newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(old, NavigationType.Pop));
+                    Popped?.Invoke(this, new NavigationEventArgs(old, NavigationType.Pop));
+                }
+
+                return old;
             }
             finally
             {
@@ -931,6 +941,7 @@ namespace Avalonia.Controls
                 }
 
                 bool isIncc = Pages is INotifyCollectionChanged;
+                var poppedPages = new List<Page>();
 
                 void TearDownPopped(Page popped)
                 {
@@ -939,8 +950,7 @@ namespace Avalonia.Controls
                         LogicalChildren.Remove(poppedLogical);
                     popped.Navigation = null;
                     popped.SetInNavigationPage(false);
-                    popped.SendNavigatedFrom(new NavigatedFromEventArgs(rootPage, NavigationType.PopToRoot));
-                    Popped?.Invoke(this, new NavigationEventArgs(popped, NavigationType.PopToRoot));
+                    poppedPages.Add(popped);
                 }
 
                 if (Pages is Stack<Page> stack)
@@ -961,6 +971,14 @@ namespace Avalonia.Controls
                 InvalidateNavigationStackCache();
                 _isPop = true;
                 UpdateActivePage();
+
+                await AwaitPageTransitionAsync();
+
+                foreach (var popped in poppedPages)
+                {
+                    popped.SendNavigatedFrom(new NavigatedFromEventArgs(rootPage, NavigationType.PopToRoot));
+                    Popped?.Invoke(this, new NavigationEventArgs(popped, NavigationType.PopToRoot));
+                }
 
                 var newCurrentPage = CurrentPage;
 
@@ -1013,6 +1031,7 @@ namespace Avalonia.Controls
                 }
 
                 bool isIncc = Pages is INotifyCollectionChanged;
+                var poppedPages = new List<Page>();
 
                 void TearDownPopped(Page popped)
                 {
@@ -1021,8 +1040,7 @@ namespace Avalonia.Controls
                         LogicalChildren.Remove(poppedLogical);
                     popped.Navigation = null;
                     popped.SetInNavigationPage(false);
-                    popped.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Pop));
-                    Popped?.Invoke(this, new NavigationEventArgs(popped, NavigationType.Pop));
+                    poppedPages.Add(popped);
                 }
 
                 if (Pages is Stack<Page> stack)
@@ -1043,6 +1061,14 @@ namespace Avalonia.Controls
                 InvalidateNavigationStackCache();
                 _isPop = true;
                 UpdateActivePage();
+
+                await AwaitPageTransitionAsync();
+
+                foreach (var popped in poppedPages)
+                {
+                    popped.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Pop));
+                    Popped?.Invoke(this, new NavigationEventArgs(popped, NavigationType.Pop));
+                }
 
                 var newCurrentPage = CurrentPage;
                 if (newCurrentPage != null)
@@ -1356,7 +1382,14 @@ namespace Avalonia.Controls
             {
                 if (stack.Count > 0 && ReferenceEquals(stack.Peek(), page))
                 {
-                    ExecutePopCore();
+                    var old = ExecutePopCore();
+                    if (old != null)
+                    {
+                        var newCurrentPage = CurrentPage;
+                        old.SendNavigatedFrom(new NavigatedFromEventArgs(newCurrentPage, NavigationType.Pop));
+                        newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(old, NavigationType.Pop));
+                        Popped?.Invoke(this, new NavigationEventArgs(old, NavigationType.Pop));
+                    }
                     PageRemoved?.Invoke(this, new PageRemovedEventArgs(page));
                     return;
                 }
@@ -1387,7 +1420,14 @@ namespace Avalonia.Controls
 
                 if (idx == list.Count - 1)
                 {
-                    ExecutePopCore();
+                    var old = ExecutePopCore();
+                    if (old != null)
+                    {
+                        var newCurrentPage = CurrentPage;
+                        old.SendNavigatedFrom(new NavigatedFromEventArgs(newCurrentPage, NavigationType.Pop));
+                        newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(old, NavigationType.Pop));
+                        Popped?.Invoke(this, new NavigationEventArgs(old, NavigationType.Pop));
+                    }
                     PageRemoved?.Invoke(this, new PageRemovedEventArgs(page));
                     return;
                 }
@@ -1595,12 +1635,14 @@ namespace Avalonia.Controls
                         oldPresenter.ZIndex = 0;
                     }
 
-                    _ = RunPageTransitionAsync(resolvedTransition, oldPresenter, newPresenter, !isPop, cancel.Token);
+                    _lastPageTransitionTask = RunPageTransitionAsync(resolvedTransition, oldPresenter, newPresenter, !isPop, cancel.Token);
 
                     (_pagePresenter, _pageBackPresenter) = (newPresenter, oldPresenter);
                 }
                 else
                 {
+                    _lastPageTransitionTask = null;
+
                     _pagePresenter.Content = page;
                     _pagePresenter.IsVisible = page != null;
                     _pagePresenter.ZIndex = 0;
@@ -1684,6 +1726,16 @@ namespace Avalonia.Controls
             from.Content = null;
             from.RenderTransform = null;
             from.Opacity = 1;
+        }
+
+        private async Task AwaitPageTransitionAsync()
+        {
+            var task = _lastPageTransitionTask;
+            if (task != null)
+            {
+                _lastPageTransitionTask = null;
+                await task;
+            }
         }
 
         /// <summary>
