@@ -103,8 +103,9 @@ namespace Avalonia.Animation.Animators
         /// <inheritdoc/>  
         public override double Interpolate(double progress, double oldValue, double newValue)
         {
-            _subject2?.OnNext(((newValue - oldValue) * progress) + oldValue);
-            return default;
+            var interpolatedValue = ((newValue - oldValue) * progress) + oldValue;
+            _subject2?.OnNext(interpolatedValue);
+            return interpolatedValue;
         }
     }
 }

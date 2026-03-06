@@ -95,7 +95,7 @@ namespace Avalonia.Base.UnitTests.Animation
         }
         
         [Fact]
-        public void Dont_Set_Properties_When_IsEffectivelyVisible_Is_False()
+        public void Pause_Animation_When_IsEffectivelyVisible_Is_False()
         {
             var keyframe1 = new KeyFrame()
             {
@@ -123,35 +123,42 @@ namespace Avalonia.Base.UnitTests.Animation
             var border = new Border() { Height = 100d, Width = 100d };
 
             var clock = new TestClock();
-            var animationRun = animation.RunAsync(border, clock);
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
 
             border.Measure(Size.Infinity);
             border.Arrange(new Rect(border.DesiredSize));
-            
+
             clock.Step(TimeSpan.Zero);
 
             clock.Step(TimeSpan.FromSeconds(0));
             Assert.Equal(100d, border.Width);
 
+            // Hide the border — this should pause the animation clock.
             border.IsVisible = false;
-            
-            clock.Step(TimeSpan.FromSeconds(3+1.5));
-            
-            // There shouldn't be any change on properties.
+
+            clock.Step(TimeSpan.FromSeconds(4.5));
+
+            // Width should not change while invisible (animation is paused).
             Assert.Equal(100d, border.Width);
 
+            // Show the border — animation resumes from where it left off.
             border.IsVisible = true;
-            
-            clock.Step(TimeSpan.FromSeconds(3+3));
-            Assert.Equal(border.Width, 200d);
 
-            clock.Step(TimeSpan.FromSeconds(14));
+            // The pause absorbed 4.5s of wall-clock time, so internal time = wall - 4.5.
+            // To reach internal time 6s (end of iteration 1, cue 1.0 -> width 200):
+            // wall = 4.5 + 6 = 10.5
+            clock.Step(TimeSpan.FromSeconds(10.5));
+            Assert.Equal(200d, border.Width);
+
+            // To complete the animation (internal time 14s triggers trailing delay of iter 2):
+            // wall = 4.5 + 14 = 18.5
+            clock.Step(TimeSpan.FromSeconds(18.5));
             Assert.True(animationRun.Status == TaskStatus.RanToCompletion);
-            Assert.Equal(border.Width, 100d);
+            Assert.Equal(100d, border.Width);
         }
         
         [Fact]
-        public void Dont_Set_Properties_When_IsEffectivelyVisible_Is_False_Nested()
+        public void Pause_Animation_When_IsEffectivelyVisible_Is_False_Nested()
         {
             var keyframe1 = new KeyFrame()
             {
@@ -181,33 +188,79 @@ namespace Avalonia.Base.UnitTests.Animation
             var borderParent = new Border { Child = border };
 
             var clock = new TestClock();
-            var animationRun = animation.RunAsync(border, clock);
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
 
             border.Measure(Size.Infinity);
             border.Arrange(new Rect(border.DesiredSize));
-            
+
             clock.Step(TimeSpan.Zero);
 
             clock.Step(TimeSpan.FromSeconds(0));
             Assert.Equal(100d, border.Width);
 
+            // Hide the parent — this makes border.IsEffectivelyVisible false,
+            // which should pause the animation clock.
             borderParent.IsVisible = false;
-            
-            clock.Step(TimeSpan.FromSeconds(3+1.5));
 
-            // There shouldn't be any change on properties.
+            clock.Step(TimeSpan.FromSeconds(4.5));
+
+            // Width should not change while parent is invisible (animation is paused).
             Assert.Equal(100d, border.Width);
-            
-            borderParent.IsVisible = true;
-            
-            clock.Step(TimeSpan.FromSeconds(3+3));
-            Assert.Equal(border.Width, 200d);
 
-            clock.Step(TimeSpan.FromSeconds(14));
+            // Show the parent — animation resumes from where it left off.
+            borderParent.IsVisible = true;
+
+            // The pause absorbed 4.5s of wall-clock time, so internal time = wall - 4.5.
+            // To reach internal time 6s (end of iteration 1, cue 1.0 -> width 200):
+            // wall = 4.5 + 6 = 10.5
+            clock.Step(TimeSpan.FromSeconds(10.5));
+            Assert.Equal(200d, border.Width);
+
+            // To complete the animation (internal time 14s triggers trailing delay of iter 2):
+            // wall = 4.5 + 14 = 18.5
+            clock.Step(TimeSpan.FromSeconds(18.5));
             Assert.True(animationRun.Status == TaskStatus.RanToCompletion);
-            Assert.Equal(border.Width, 100d);
+            Assert.Equal(100d, border.Width);
         }
         
+        [Fact]
+        public void Stop_And_Dispose_Animation_When_Detached_From_Visual_Tree()
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
+            };
+            var keyframe2 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
+            };
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(10),
+                IterationCount = new IterationCount(1),
+                Children = { keyframe2, keyframe1 }
+            };
+            var border = new Border() { Height = 100d, Width = 50d };
+            var root = new TestRoot(border);
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
+            clock.Step(TimeSpan.Zero);
+            clock.Step(TimeSpan.FromSeconds(0));
+            Assert.False(animationRun.IsCompleted);
+
+            // Detach from visual tree
+            root.Child = null;
+
+            // Animation should be completed/disposed
+            Assert.True(animationRun.IsCompleted);
+
+            // Further clock ticks should not affect the border
+            var widthAfterDetach = border.Width;
+            clock.Step(TimeSpan.FromSeconds(5));
+            clock.Step(TimeSpan.FromSeconds(10));
+            Assert.Equal(widthAfterDetach, border.Width);
+        }
+
         [Fact]
         public void Check_FillModes_Start_and_End_Values_if_Retained()
         {
