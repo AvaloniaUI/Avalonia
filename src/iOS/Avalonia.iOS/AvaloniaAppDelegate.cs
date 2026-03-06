@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Versioning;
 using Foundation;
 using Avalonia.Controls.ApplicationLifetimes;
 using UIKit;
@@ -11,7 +12,12 @@ namespace Avalonia.iOS
         event EventHandler<ActivatedEventArgs> Deactivated;
     }
 
-    public class AvaloniaAppDelegate<TApp> : UIResponder, IUIApplicationDelegate, IAvaloniaAppDelegate
+    internal interface IAvaloniaAppInternalDelegate
+    {
+        bool ContinueUserActivity(NSUserActivity userActivity);
+    }
+
+    public class AvaloniaAppDelegate<TApp> : UIResponder, IUIApplicationDelegate, IAvaloniaAppDelegate, IAvaloniaAppInternalDelegate
         where TApp : Application, new()
     {
         private EventHandler<ActivatedEventArgs>? _onActivated, _onDeactivated;
@@ -27,45 +33,56 @@ namespace Avalonia.iOS
             add { _onActivated += value; }
             remove { _onActivated -= value; }
         }
+
         event EventHandler<ActivatedEventArgs> IAvaloniaAppDelegate.Deactivated
         {
             add { _onDeactivated += value; }
             remove { _onDeactivated -= value; }
         }
 
-        protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>().UseiOS();
+        protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<TApp>().UseiOS(this);
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
 
         [Export("window")]
         public UIWindow? Window { get; set; }
 
+        [Export("application:configurationForConnectingSceneSession:options:")]
+        [SupportedOSPlatform("ios13.0")]
+        [SupportedOSPlatform("tvos13.0")]
+        [SupportedOSPlatform("maccatalyst")]
+        public UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
+        {
+            var config = new UISceneConfiguration(null, connectingSceneSession.Role);
+            config.DelegateType = typeof(AvaloniaSceneDelegate);
+            return config;
+        }
+
         [Export("application:didFinishLaunchingWithOptions:")]
-        public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
+        public bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions)
         {
             var builder = CreateAppBuilder();
             builder = CustomizeAppBuilder(builder);
 
             var lifetime = new SingleViewLifetime();
-
-            builder.AfterApplicationSetup(_ =>
-            {
-                Window = new UIWindow();
-
-                var view = new AvaloniaView();
-                lifetime.View = view;
-                var controller = new DefaultAvaloniaViewController
-                {
-                    View = view
-                };
-                Window.RootViewController = controller;
-                view.InitWithController(controller);
-            });
-
+            builder.AfterApplicationSetup(_ => CreateAndInitWindow(lifetime));
             builder.SetupWithLifetime(lifetime);
 
-            Window!.MakeKeyAndVisible();
+            Window?.MakeKeyAndVisible();
 
             return true;
+        }
+
+        private void CreateAndInitWindow(SingleViewLifetime lifetime)
+        {
+            if (OperatingSystem.IsIOSVersionAtLeast(13) ||
+                OperatingSystem.IsTvOSVersionAtLeast(13) ||
+                OperatingSystem.IsMacCatalyst())
+            {
+                return;
+            }
+
+            Window = new UIWindow();
+            AvaloniaSceneDelegate.InitWindow(Window, lifetime);
         }
 
         [Export("application:openURL:options:")]
@@ -83,6 +100,25 @@ namespace Avalonia.iOS
                 {
                     _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));   
                 }
+                return true;
+            }
+
+            return false;
+        }
+
+        [Export("application:continueUserActivity:restorationHandler:")]
+        public bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
+        {
+            return ((IAvaloniaAppInternalDelegate)this).ContinueUserActivity(userActivity);
+        }
+
+        bool IAvaloniaAppInternalDelegate.ContinueUserActivity(NSUserActivity userActivity)
+        {
+            if (userActivity.ActivityType == NSUserActivityType.BrowsingWeb &&
+                Uri.TryCreate(userActivity.WebPageUrl?.ToString(), UriKind.RelativeOrAbsolute, out var uri))
+            {
+                // Activation using a univeral link or web browser-to-native app Handoff
+                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));
                 return true;
             }
 

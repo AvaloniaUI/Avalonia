@@ -19,9 +19,7 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var conv = new KeySplineTypeConverter();
 
-            var keySpline = (KeySpline)conv.ConvertFrom(input);
-
-            Assert.NotNull(keySpline);
+            var keySpline = Assert.IsAssignableFrom<KeySpline>(conv.ConvertFrom(input));
 
             Assert.Equal(1, keySpline.ControlPointX1);
             Assert.Equal(2, keySpline.ControlPointY1);
@@ -36,7 +34,7 @@ namespace Avalonia.Base.UnitTests.Animation
         {
             var conv = new KeySplineTypeConverter();
 
-            Assert.ThrowsAny<Exception>(() => (KeySpline)conv.ConvertFrom(input));
+            Assert.ThrowsAny<Exception>(() => (KeySpline?)conv.ConvertFrom(input));
         }
 
         [Theory]
@@ -132,7 +130,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var clock = new TestClock();
 
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             // position is what you'd expect at end and beginning
             clock.Step(TimeSpan.Zero);
@@ -187,7 +185,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var clock = new TestClock();
 
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             // position is what you'd expect at end and beginning
             clock.Step(TimeSpan.Zero);
@@ -212,6 +210,110 @@ namespace Avalonia.Base.UnitTests.Animation
             clock.Step(TimeSpan.Parse("00:00:14.6495256"));
             expected = 1.8016358493761722;
             Assert.True(Math.Abs(rotateTransform.Angle - expected) <= tolerance);
+        }
+
+        // https://github.com/AvaloniaUI/Avalonia/issues/15704
+        [Theory]
+        [InlineData(nameof(BackEaseIn))]
+        [InlineData(nameof(BackEaseOut))]
+        [InlineData(nameof(BackEaseInOut))]
+        [InlineData(nameof(ElasticEaseIn))]
+        [InlineData(nameof(ElasticEaseOut))]
+        [InlineData(nameof(ElasticEaseInOut))]
+        public void KeySpline_Progress_Less_Than_Zero_Or_Greater_Than_One_Works(string easingType)
+        {
+            var easing = Easing.Parse(easingType);
+
+            var animation = new Avalonia.Animation.Animation
+            {
+                Duration = TimeSpan.FromSeconds(1.0),
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Cue = new Cue(0.0),
+                        Setters = { new Setter(TranslateTransform.YProperty, 10.0) }
+                    },
+                    new KeyFrame
+                    {
+                        Cue = new Cue(1.0),
+                        Setters = { new Setter(TranslateTransform.YProperty, 20.0) }
+                    }
+                },
+                IterationCount = new IterationCount(5),
+                PlaybackDirection = PlaybackDirection.Alternate,
+                Easing = easing
+            };
+
+            var transform = new TranslateTransform(0.0, 50.0);
+            var rect = new Rectangle { RenderTransform = transform };
+
+            var clock = new TestClock();
+
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(10.0, transform.Y, 0.0001);
+
+            for (var time = TimeSpan.FromSeconds(0.1); time < animation.Duration; time += TimeSpan.FromSeconds(0.1))
+            {
+                clock.Step(time);
+                Assert.True(double.IsFinite(transform.Y));
+                Assert.NotEqual(10.0, transform.Y);
+                Assert.NotEqual(20.0, transform.Y);
+            }
+
+            clock.Step(animation.Duration);
+            Assert.Equal(20.0, transform.Y, 0.0001);
+        }
+
+        [Theory]
+        [InlineData(nameof(BackEaseIn))]
+        [InlineData(nameof(BackEaseOut))]
+        [InlineData(nameof(BackEaseInOut))]
+        [InlineData(nameof(ElasticEaseIn))]
+        [InlineData(nameof(ElasticEaseOut))]
+        [InlineData(nameof(ElasticEaseInOut))]
+        public void KeySpline_Progress_Less_Than_Zero_Or_Greater_Than_One_Works_With_Single_KeyFrame(string easingType)
+        {
+            var easing = Easing.Parse(easingType);
+
+            var animation = new Avalonia.Animation.Animation
+            {
+                Duration = TimeSpan.FromSeconds(1.0),
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Cue = new Cue(1.0),
+                        Setters = { new Setter(TranslateTransform.YProperty, 10.0) }
+                    }
+                },
+                IterationCount = new IterationCount(5),
+                PlaybackDirection = PlaybackDirection.Alternate,
+                Easing = easing
+            };
+
+            var transform = new TranslateTransform(0.0, 50.0);
+            var rect = new Rectangle { RenderTransform = transform };
+
+            var clock = new TestClock();
+
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(50.0, transform.Y, 0.0001);
+
+            for (var time = TimeSpan.FromSeconds(0.1); time < animation.Duration; time += TimeSpan.FromSeconds(0.1))
+            {
+                clock.Step(time);
+                Assert.True(double.IsFinite(transform.Y));
+                Assert.NotEqual(50.0, transform.Y);
+                Assert.NotEqual(10.0, transform.Y);
+            }
+
+            clock.Step(animation.Duration);
+            Assert.Equal(10.0, transform.Y, 0.0001);
         }
     }
 }

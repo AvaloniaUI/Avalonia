@@ -10,15 +10,15 @@ public readonly record struct GlyphMetrics
     /// <summary>
     /// Distance from the top extremum of the glyph to the y-origin.
     /// </summary>
-    public int YBearing{ get; init; }
+    public int YBearing { get; init; }
 
     /// <summary>
     /// Distance from the left extremum of the glyph to the right extremum.
     /// </summary>
-    public int Width{ get; init; }
+    public ushort Width { get; init; }
 
     /// <summary>
     /// Distance from the top extremum of the glyph to the bottom extremum.
     /// </summary>
-    public int Height{ get; init; }
+    public ushort Height { get; init; }
 }

@@ -27,7 +27,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
 #endif
     }
 
-    public override LtrbRect OwnContentBounds => _renderCommands?.Bounds ?? default;
+    public override LtrbRect? ComputeOwnContentBounds() => _renderCommands?.Bounds;
 
     protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
     {
@@ -36,24 +36,17 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
             _renderCommands?.Dispose();
             _renderCommands = reader.ReadObject<ServerCompositionRenderData?>();
             _renderCommands?.AddObserver(this);
+            InvalidateContent();
         }
         base.DeserializeChangesCore(reader, committedAt);
     }
 
-    protected override void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
-        IDirtyRectTracker dirtyRects)
+    protected override void RenderCore(ServerVisualRenderContext context, LtrbRect currentTransformedClip)
     {
-        if (_renderCommands != null 
-            && currentTransformedClip.Intersects(TransformedOwnContentBounds)
-            && dirtyRects.Intersects(TransformedOwnContentBounds))
-        {
-            _renderCommands.Render(canvas);
-        }
-
-        base.RenderCore(canvas, currentTransformedClip, dirtyRects);
+        _renderCommands?.Render(context.Canvas);
     }
-    
-    public void DependencyQueuedInvalidate(IServerRenderResource sender) => ValuesInvalidated();
+
+    public void DependencyQueuedInvalidate(IServerRenderResource sender) => InvalidateContent();
     
 #if DEBUG
     public override string ToString()

@@ -28,9 +28,8 @@ namespace Avalonia.Controls
 
         static Label()
         {
-            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Label>((lbl, args) => lbl.LabelActivated(args));
-            // IsTabStopProperty.OverrideDefaultValue<Label>(false)
-            FocusableProperty.OverrideDefaultValue<Label>(false);
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<Label>(OnAccessKeyPressed);
+            IsTabStopProperty.OverrideDefaultValue<Label>(false);
         }
 
         /// <summary>
@@ -40,13 +39,11 @@ namespace Avalonia.Controls
         {
         }
 
-        /// <summary>
-        /// Method which focuses <see cref="Target"/> input element
-        /// </summary>
-        private void LabelActivated(RoutedEventArgs args)
+
+        /// <inheritdoc />
+        protected override void OnAccessKey(RoutedEventArgs e)
         {
-            Target?.Focus();
-            args.Handled = Target != null;
+            LabelActivated(e);
         }
 
         /// <summary>
@@ -62,9 +59,25 @@ namespace Avalonia.Controls
             base.OnPointerPressed(e);
         }
 
+        /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new LabelAutomationPeer(this);
+        }
+
+        private void LabelActivated(RoutedEventArgs e)
+        {
+            Target?.Focus();
+            e.Handled = Target != null;
+        }
+
+        private static void OnAccessKeyPressed(Label label, AccessKeyPressedEventArgs e)
+        {
+            if (e is not { Handled: false, Target: null }) 
+                return;
+            
+            e.Target = label.Target;
+            e.Handled = true;
         }
     }
 }

@@ -39,12 +39,16 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// <param name="defaultPriority">
     /// The default binding priority for the expression.
     /// </param>
+    /// <param name="targetProperty">The target property being bound to.</param>
     /// <param name="isDataValidationEnabled">Whether data validation is enabled.</param>
     public UntypedBindingExpressionBase(
         BindingPriority defaultPriority,
+        AvaloniaProperty? targetProperty = null,
         bool isDataValidationEnabled = false)
     {
         Priority = defaultPriority;
+        TargetProperty = targetProperty;
+        TargetType = targetProperty?.PropertyType ?? typeof(object);
         _isDataValidationEnabled = isDataValidationEnabled;
     }
 
@@ -86,7 +90,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// Gets the target type of the binding expression; that is, the type that values produced by
     /// the expression should be converted to.
     /// </summary>
-    public Type TargetType { get; private set; } = typeof(object);
+    public Type TargetType { get; private set; }
 
     AvaloniaProperty IValueEntry.Property => TargetProperty ?? throw new Exception();
 
@@ -200,7 +204,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     internal void AttachAndStart(
         IBindingExpressionSink subscriber,
         AvaloniaObject target,
-        AvaloniaProperty targetProperty,
+        AvaloniaProperty? targetProperty,
         BindingPriority priority)
     {
         AttachCore(subscriber, null, target, targetProperty, priority);
@@ -216,11 +220,10 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// The binding expression is already instantiated on an AvaloniaObject.
     /// </exception>
     /// <remarks>
-    /// This method is mostly here for backwards compatibility with <see cref="InstancedBinding"/>
-    /// and unit testing and we may want to remove it in future. In particular its usefulness in
-    /// terms of unit testing is limited in that it preserves the semantics of binding expressions
-    /// as expected by unit tests, not necessarily the semantics that will be used when the
-    /// expression is used as an <see cref="IValueEntry"/> instantiated in a
+    /// This method is mostly here for unit testing and we may want to remove it in future. In
+    /// particular its usefulness is limited in that it preserves the semantics of binding
+    /// expressions as expected by unit tests, not necessarily the semantics that will be used
+    /// when the expression is used as an <see cref="IValueEntry"/> instantiated in a
     /// <see cref="ValueStore"/>. Unit tests should be migrated to not test the behaviour of
     /// binding expressions through an observable, and instead test the behaviour of the binding
     /// when applied to an <see cref="AvaloniaObject"/>.
@@ -257,17 +260,19 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         IBindingExpressionSink sink,
         ImmediateValueFrame? frame,
         AvaloniaObject target,
-        AvaloniaProperty targetProperty,
+        AvaloniaProperty? targetProperty,
         BindingPriority priority)
     {
         if (_sink is not null)
             throw new InvalidOperationException("BindingExpression was already attached.");
+        if (TargetProperty is not null && TargetProperty != targetProperty)
+            throw new InvalidOperationException("BindingExpression was already attached to a different property.");
 
         _sink = sink;
         _frame = frame;
         _target = new(target);
         TargetProperty = targetProperty;
-        TargetType = targetProperty.PropertyType;
+        TargetType = targetProperty?.PropertyType ?? typeof(object);
         Priority = priority;
     }
 
@@ -403,6 +408,9 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// <param name="error">The new binding or data validation error.</param>
     private protected void PublishValue(object? value, BindingError? error = null)
     {
+        Debug.Assert(value is not BindingNotification);
+        Debug.Assert(value != BindingOperations.DoNothing);
+
         if (!IsRunning)
             return;
 

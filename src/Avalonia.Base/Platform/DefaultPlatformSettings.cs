@@ -18,7 +18,7 @@ namespace Avalonia.Platform
         {
             return type switch
             {
-                PointerType.Touch => new(10, 10),
+                PointerType.Touch or PointerType.Pen => new(10, 10),
                 _ => new(4, 4),
             };
         }
@@ -27,7 +27,7 @@ namespace Avalonia.Platform
         {
             return type switch
             {
-                PointerType.Touch => new(16, 16),
+                PointerType.Touch or PointerType.Pen => new(16, 16),
                 _ => new(4, 4),
             };
         }

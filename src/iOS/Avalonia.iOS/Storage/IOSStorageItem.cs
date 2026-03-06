@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
+using Avalonia.Reactive;
 using Foundation;
 
 using UIKit;
@@ -132,7 +134,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
         return Task.CompletedTask;
     }
 
-    public Task<string?> SaveBookmarkAsync()
+    public unsafe Task<string?> SaveBookmarkAsync()
     {
         try
         {
@@ -141,7 +143,7 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
                 return Task.FromResult<string?>(null);
             }
 
-            var newBookmark = Url.CreateBookmarkData(NSUrlBookmarkCreationOptions.SuitableForBookmarkFile, Array.Empty<string>(), null, out var bookmarkError);
+            using var newBookmark = Url.CreateBookmarkData(NSUrlBookmarkCreationOptions.SuitableForBookmarkFile, [], null, out var bookmarkError);
             if (bookmarkError is not null)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.IOSPlatform)?.
@@ -149,8 +151,9 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
                 return Task.FromResult<string?>(null);
             }
 
+            var bytes = new Span<byte>((void*)newBookmark.Bytes, (int)newBookmark.Length);
             return Task.FromResult<string?>(
-                newBookmark.GetBase64EncodedString(NSDataBase64EncodingOptions.None));
+                StorageBookmarkHelper.EncodeBookmark(IOSStorageProvider.PlatformKey, bytes));
         }
         finally
         {
@@ -171,12 +174,38 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
 
     public Task<Stream> OpenReadAsync()
     {
-        return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, SecurityScopedAncestorUrl, FileAccess.Read));
+        return Task.FromResult(CreateStream(FileMode.Open, FileAccess.Read));
     }
 
     public Task<Stream> OpenWriteAsync()
     {
-        return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, SecurityScopedAncestorUrl, FileAccess.Write));
+        return Task.FromResult(CreateStream(FileMode.Create, FileAccess.Write));
+    }
+
+    private Stream CreateStream(FileMode fileMode, FileAccess fileAccess)
+    {
+        using var document = new UIDocument(Url);
+        var path = document.FileUrl.Path!;
+        var scopeCreated = SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
+
+        FileStream stream;
+        try
+        {
+            stream = new FileStream(path, fileMode, fileAccess);
+        }
+        catch
+        {
+            if (scopeCreated)
+                SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
+            throw;
+        }
+
+        return scopeCreated ?
+            new SecurityScopedStream(stream, Disposable.Create(() =>
+            {
+                SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
+            })) :
+            stream;
     }
 }
 
@@ -286,5 +315,37 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
         {
             SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
         }
+    }
+
+    private NSUrl? GetItem(string name, bool isDirectory)
+    {
+        try
+        {
+            SecurityScopedAncestorUrl.StartAccessingSecurityScopedResource();
+
+            var path = System.IO.Path.Combine(FilePath, name);
+            if (NSFileManager.DefaultManager.FileExists(path, ref isDirectory))
+            {
+                return new NSUrl(path, isDirectory);
+            }
+
+            return null;
+        }
+        finally
+        {
+            SecurityScopedAncestorUrl.StopAccessingSecurityScopedResource();
+        }
+    }
+
+    public Task<IStorageFolder?> GetFolderAsync(string name)
+    {
+        var url = GetItem(name, true);
+        return Task.FromResult<IStorageFolder?>(url is null ? null : new IOSStorageFolder(url));
+    }
+
+    public Task<IStorageFile?> GetFileAsync(string name)
+    {
+        var url = GetItem(name, false);
+        return Task.FromResult<IStorageFile?>(url is null ? null : new IOSStorageFile(url));
     }
 }

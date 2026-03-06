@@ -6,6 +6,8 @@ using Avalonia.Layout;
 using System;
 using System.Globalization;
 using Avalonia.Controls.Utils;
+using Avalonia.Automation.Peers;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -18,12 +20,15 @@ namespace Avalonia.Controls
     [TemplatePart("PART_FlyoutButtonContentGrid", typeof(Grid))]
     [TemplatePart("PART_HourTextBlock",           typeof(TextBlock))]
     [TemplatePart("PART_MinuteTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PART_SecondTextBlock",         typeof(TextBlock))]
     [TemplatePart("PART_PeriodTextBlock",         typeof(TextBlock))]
     [TemplatePart("PART_PickerPresenter",         typeof(TimePickerPresenter))]
     [TemplatePart("PART_Popup",                   typeof(Popup))]
     [TemplatePart("PART_SecondColumnDivider",     typeof(Rectangle))]
     [TemplatePart("PART_SecondPickerHost",        typeof(Border))]
+    [TemplatePart("PART_ThirdColumnDivider",      typeof(Rectangle))]
     [TemplatePart("PART_ThirdPickerHost",         typeof(Border))]
+    [TemplatePart("PART_FourthPickerHost",        typeof(Border))]
     [PseudoClasses(":hasnotime")]
     public class TimePicker : TemplatedControl
     {
@@ -32,12 +37,24 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<int> MinuteIncrementProperty =
             AvaloniaProperty.Register<TimePicker, int>(nameof(MinuteIncrement), 1, coerce: CoerceMinuteIncrement);
+        
+        /// <summary>
+        /// Defines the <see cref="SecondIncrement"/> property
+        /// </summary>
+        public static readonly StyledProperty<int> SecondIncrementProperty =
+            AvaloniaProperty.Register<TimePicker, int>(nameof(SecondIncrement), 1, coerce: CoerceSecondIncrement);
 
         /// <summary>
         /// Defines the <see cref="ClockIdentifier"/> property
         /// </summary>
         public static readonly StyledProperty<string> ClockIdentifierProperty =
            AvaloniaProperty.Register<TimePicker, string>(nameof(ClockIdentifier), "12HourClock", coerce: CoerceClockIdentifier);
+        
+        /// <summary>
+        /// Defines the <see cref="UseSeconds"/> property
+        /// </summary>
+        public static readonly StyledProperty<bool> UseSecondsProperty =
+            AvaloniaProperty.Register<TimePicker, bool>(nameof(UseSeconds), false, coerce: CoerceUseSeconds);
 
         /// <summary>
         /// Defines the <see cref="SelectedTime"/> property
@@ -52,11 +69,14 @@ namespace Avalonia.Controls
         private Border? _firstPickerHost;
         private Border? _secondPickerHost;
         private Border? _thirdPickerHost;
+        private Border? _fourthPickerHost;
         private TextBlock? _hourText;
         private TextBlock? _minuteText;
+        private TextBlock? _secondText;
         private TextBlock? _periodText;
         private Rectangle? _firstSplitter;
         private Rectangle? _secondSplitter;
+        private Rectangle? _thirdSplitter;
         private Grid? _contentGrid;
         private Popup? _popup;
 
@@ -85,6 +105,23 @@ namespace Avalonia.Controls
 
             return value;
         }
+        
+        /// <summary>
+        /// Gets or sets the second increment in the picker
+        /// </summary>
+        public int SecondIncrement
+        {
+            get => GetValue(SecondIncrementProperty);
+            set => SetValue(SecondIncrementProperty, value);
+        }
+
+        private static int CoerceSecondIncrement(AvaloniaObject sender, int value)
+        {
+            if (value < 1 || value > 59)
+                throw new ArgumentOutOfRangeException(null, "1 >= SecondIncrement <= 59");
+
+            return value;
+        }
 
         /// <summary>
         /// Gets or sets the clock identifier, either 12HourClock or 24HourClock
@@ -100,6 +137,24 @@ namespace Avalonia.Controls
         {
             if (!(string.IsNullOrEmpty(value) || value == "12HourClock" || value == "24HourClock"))
                 throw new ArgumentException("Invalid ClockIdentifier", default(string));
+
+            return value;
+        }
+        
+        /// <summary>
+        /// Gets or sets the use seconds switch, either true or false
+        /// </summary>
+        public bool UseSeconds
+        {
+
+            get => GetValue(UseSecondsProperty);
+            set => SetValue(UseSecondsProperty, value);
+        }
+
+        private static bool CoerceUseSeconds(AvaloniaObject sender, bool value)
+        {
+            if (!(value == true || value == false))
+                throw new ArgumentException("Invalid UseSeconds", default(bool).ToString());
 
             return value;
         }
@@ -135,13 +190,16 @@ namespace Avalonia.Controls
             _firstPickerHost = e.NameScope.Find<Border>("PART_FirstPickerHost");
             _secondPickerHost = e.NameScope.Find<Border>("PART_SecondPickerHost");
             _thirdPickerHost = e.NameScope.Find<Border>("PART_ThirdPickerHost");
+            _fourthPickerHost = e.NameScope.Find<Border>("PART_FourthPickerHost");
 
             _hourText = e.NameScope.Find<TextBlock>("PART_HourTextBlock");
             _minuteText = e.NameScope.Find<TextBlock>("PART_MinuteTextBlock");
+            _secondText = e.NameScope.Find<TextBlock>("PART_SecondTextBlock");
             _periodText = e.NameScope.Find<TextBlock>("PART_PeriodTextBlock");
 
             _firstSplitter = e.NameScope.Find<Rectangle>("PART_FirstColumnDivider");
             _secondSplitter = e.NameScope.Find<Rectangle>("PART_SecondColumnDivider");
+            _thirdSplitter = e.NameScope.Find<Rectangle>("PART_ThirdColumnDivider");
 
             _contentGrid = e.NameScope.Find<Grid>("PART_FlyoutButtonContentGrid");
 
@@ -160,7 +218,9 @@ namespace Avalonia.Controls
                 _presenter.Dismissed += OnDismissPicker;
 
                 _presenter[!TimePickerPresenter.MinuteIncrementProperty] = this[!MinuteIncrementProperty];
+                _presenter[!TimePickerPresenter.SecondIncrementProperty] = this[!SecondIncrementProperty];
                 _presenter[!TimePickerPresenter.ClockIdentifierProperty] = this[!ClockIdentifierProperty];
+                _presenter[!TimePickerPresenter.UseSecondsProperty] = this[!UseSecondsProperty];
             }
         }
 
@@ -172,7 +232,16 @@ namespace Avalonia.Controls
             {
                 SetSelectedTimeText();
             }
+            else if (change.Property == SecondIncrementProperty)
+            {
+                SetSelectedTimeText();
+            }
             else if (change.Property == ClockIdentifierProperty)
+            {
+                SetGrid();
+                SetSelectedTimeText();
+            }
+            else if (change.Property == UseSecondsProperty)
             {
                 SetGrid();
                 SetSelectedTimeText();
@@ -191,11 +260,17 @@ namespace Avalonia.Controls
                 return;
 
             var use24HourClock = ClockIdentifier == "24HourClock";
+            var canUseSeconds = _secondText is not null && _fourthPickerHost is not null && _thirdSplitter is not null;
 
             var columnsD = new ColumnDefinitions();
             columnsD.Add(new ColumnDefinition(GridLength.Star));
             columnsD.Add(new ColumnDefinition(GridLength.Auto));
             columnsD.Add(new ColumnDefinition(GridLength.Star));
+            if (canUseSeconds && UseSeconds)
+            {
+                columnsD.Add(new ColumnDefinition(GridLength.Auto));
+                columnsD.Add(new ColumnDefinition(GridLength.Star));
+            }
             if (!use24HourClock)
             {
                 columnsD.Add(new ColumnDefinition(GridLength.Auto));
@@ -204,16 +279,37 @@ namespace Avalonia.Controls
 
             _contentGrid.ColumnDefinitions = columnsD;
 
-            _thirdPickerHost!.IsVisible = !use24HourClock;
-            _secondSplitter!.IsVisible = !use24HourClock;
+            if (canUseSeconds)
+            {
+                _thirdPickerHost!.IsVisible = UseSeconds;
+                _secondSplitter!.IsVisible = UseSeconds;
+                _fourthPickerHost!.IsVisible = !use24HourClock;
+                _thirdSplitter!.IsVisible = !use24HourClock;
+            }
+            else
+            {
+                _thirdPickerHost!.IsVisible = !use24HourClock;
+                _secondSplitter!.IsVisible = !use24HourClock;
+            }
 
             Grid.SetColumn(_firstPickerHost!, 0);
             Grid.SetColumn(_secondPickerHost!, 2);
 
-            Grid.SetColumn(_thirdPickerHost, use24HourClock ? 0 : 4);
-
-            Grid.SetColumn(_firstSplitter!, 1);
-            Grid.SetColumn(_secondSplitter, use24HourClock ? 0 : 3);
+            if (canUseSeconds)
+            {
+                var amPmColumn = (UseSeconds) ? 6 : 4;
+                Grid.SetColumn(_thirdPickerHost!, UseSeconds ? 4 : 0);
+                Grid.SetColumn(_fourthPickerHost!, use24HourClock ? 0 : amPmColumn);
+                Grid.SetColumn(_firstSplitter!, 1);
+                Grid.SetColumn(_secondSplitter!, UseSeconds ? 3 : 0);
+                Grid.SetColumn(_thirdSplitter!, use24HourClock ? 0 : amPmColumn-1);
+            }
+            else
+            {
+                Grid.SetColumn(_thirdPickerHost, use24HourClock ? 0 : 4);
+                Grid.SetColumn(_firstSplitter!, 1);
+                Grid.SetColumn(_secondSplitter, use24HourClock ? 0 : 3);
+            }
         }
 
         private void SetSelectedTimeText()
@@ -230,11 +326,16 @@ namespace Avalonia.Controls
                 {
                     var hr = newTime.Hours;
                     hr = hr > 12 ? hr - 12 : hr == 0 ? 12 : hr;
-                    newTime = new TimeSpan(hr, newTime.Minutes, 0);
+                    newTime = new TimeSpan(hr, newTime.Minutes, newTime.Seconds);
                 }
 
                 _hourText.Text = newTime.ToString("%h");
                 _minuteText.Text = newTime.ToString("mm");
+                if (_secondText is not null)
+                {
+                    _secondText.Text = newTime.ToString("ss");
+                }
+
                 PseudoClasses.Set(":hasnotime", false);
 
                 _periodText.Text = time.Value.Hours >= 12 ? TimeUtils.GetPMDesignator() : TimeUtils.GetAMDesignator();
@@ -244,11 +345,18 @@ namespace Avalonia.Controls
                 // By clearing local value, we reset text property to the value from the template.
                 _hourText.ClearValue(TextBlock.TextProperty);
                 _minuteText.ClearValue(TextBlock.TextProperty);
+                if (_secondText is not null)
+                {
+                    _secondText.ClearValue(TextBlock.TextProperty);
+                }
+
                 PseudoClasses.Set(":hasnotime", true);
 
                 _periodText.Text = DateTime.Now.Hour >= 12 ?  TimeUtils.GetPMDesignator() :  TimeUtils.GetAMDesignator();
             }
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new TimePickerAutomationPeer(this);
 
         protected virtual void OnSelectedTimeChanged(TimeSpan? oldTime, TimeSpan? newTime)
         {
@@ -273,7 +381,7 @@ namespace Avalonia.Controls
             // Overlay popup hosts won't get measured until the next layout pass, but we need the
             // template to be applied to `_presenter` now. Detect this case and force a layout pass.
             if (!_presenter.IsMeasureValid)
-                (VisualRoot as ILayoutRoot)?.LayoutManager?.ExecuteInitialLayoutPass();
+                this.GetLayoutManager()?.ExecuteInitialLayoutPass();
 
             var deltaY = _presenter.GetOffsetForPopup();
 
@@ -299,14 +407,6 @@ namespace Avalonia.Controls
         public void Clear()
         {
             SetCurrentValue(SelectedTimeProperty, null);
-        }
-
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
-        {
-            base.UpdateDataValidation(property, state, error);
-
-            if (property == SelectedTimeProperty)
-                DataValidationErrors.SetError(this, error);
         }
     }
 }

@@ -1,8 +1,11 @@
 using System;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Diagnostics;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
@@ -26,7 +29,9 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
             Popup.WindowManagerAddShadowHintProperty.AddOwner<PopupRoot>();
 
-        private PopupPositionerParameters _positionerParameters;        
+        private PopupPositionRequest? _popupPositionRequest;
+        private Size _popupSize;
+        private bool _needsUpdate;
 
         /// <summary>
         /// Initializes static members of the <see cref="PopupRoot"/> class.
@@ -124,23 +129,24 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdatePosition()
         {
-            PlatformImpl?.PopupPositioner?.Update(_positionerParameters);
+            if (_needsUpdate && _popupPositionRequest is not null)
+            {
+                _needsUpdate = false;
+                PlatformImpl?.PopupPositioner?
+                    .Update(ParentTopLevel, _popupPositionRequest, _popupSize, FlowDirection);
+            }
         }
 
-        public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
-            PopupAnchor anchor = PopupAnchor.None,
-            PopupGravity gravity = PopupGravity.None,
-            PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
-            Rect? rect = null)
+        void IPopupHost.ConfigurePosition(PopupPositionRequest request)
         {
-            _positionerParameters.ConfigurePosition(ParentTopLevel, target,
-                placement, offset, anchor, gravity, constraintAdjustment, rect, FlowDirection);
-
-            if (_positionerParameters.Size != default)
-                UpdatePosition();
+            _popupPositionRequest = request;
+            _needsUpdate = true;
+            UpdatePosition();
         }
 
         public void SetChild(Control? control) => Content = control;
+
+        public void TakeFocus() => PlatformImpl?.TakeFocus();
 
         Visual IPopupHost.HostedVisualTreeRoot => this;
         
@@ -184,10 +190,15 @@ namespace Avalonia.Controls.Primitives
             return new Size(width, height);
         }
 
-        protected override sealed Size ArrangeSetBounds(Size size)
+        private protected sealed override Size ArrangeSetBounds(Size size)
         {
-            _positionerParameters.Size = size;
-            UpdatePosition();
+            if (_popupSize != size)
+            {
+                _popupSize = size;
+                _needsUpdate = true;
+                UpdatePosition();
+            }
+
             return ClientSize;
         }
 

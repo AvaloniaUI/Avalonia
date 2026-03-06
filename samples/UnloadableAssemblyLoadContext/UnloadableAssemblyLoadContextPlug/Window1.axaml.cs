@@ -1,8 +1,5 @@
-﻿using System.Diagnostics;
-using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using AvaloniaPlug;
 
 namespace UnloadableAssemblyLoadContextPlug;
 

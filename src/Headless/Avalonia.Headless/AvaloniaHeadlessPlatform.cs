@@ -8,6 +8,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
+using System.Collections.Generic;
 
 namespace Avalonia.Headless
 {
@@ -57,26 +58,37 @@ namespace Avalonia.Headless
                 _frameBufferFormat = frameBufferFormat;
             }
             public IWindowImpl CreateWindow() => new HeadlessWindowImpl(false, _frameBufferFormat);
+            public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
 
             public IWindowImpl CreateEmbeddableWindow() => throw new PlatformNotSupportedException();
 
-            public IPopupImpl CreatePopup() => new HeadlessWindowImpl(true, _frameBufferFormat);
-
             public ITrayIconImpl? CreateTrayIcon() => null;
+
+            public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+            {
+                for (var i = 0; i < windows.Length; ++i)
+                {
+                    zOrder[i] = (windows[i] as HeadlessWindowImpl)?.ZOrder ?? 0;
+                }
+            }
         }
         
         internal static void Initialize(AvaloniaHeadlessPlatformOptions opts)
         {
+            var clipboardImpl = new HeadlessClipboardImplStub();
+            var clipboard = new Clipboard(clipboardImpl);
+
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(null))
-                .Bind<IClipboard>().ToSingleton<HeadlessClipboardStub>()
+                .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
+                .Bind<IClipboard>().ToConstant(clipboard)
                 .Bind<ICursorFactory>().ToSingleton<HeadlessCursorFactoryStub>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
                 .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts.FrameBufferFormat))
-                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }));
             Compositor = new Compositor( null);
         }
 
@@ -108,7 +120,8 @@ namespace Avalonia.Headless
                 builder = builder.UseRenderingSubsystem(HeadlessPlatformRenderInterface.Initialize, "Headless");
             return builder
                 .UseStandardRuntimePlatformSubsystem()
-                .UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless");
+                .UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless")
+                .UseHarfBuzz();
         }
     }
 }

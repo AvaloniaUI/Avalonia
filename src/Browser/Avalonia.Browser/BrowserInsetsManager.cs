@@ -6,30 +6,25 @@ namespace Avalonia.Browser
 {
     internal class BrowserInsetsManager : InsetsManagerBase
     {
-        public BrowserInsetsManager()
-        {
-            DomHelper.InitSafeAreaPadding();
-        }
-
         public override bool? IsSystemBarVisible
         {
             get
             {
-                return DomHelper.IsFullscreen();
+                return DomHelper.IsFullscreen(BrowserWindowingPlatform.GlobalThis);
             }
             set
             {
-                DomHelper.SetFullscreen(!value ?? false);
+                _ = DomHelper.SetFullscreen(BrowserWindowingPlatform.GlobalThis, !value ?? false);
             }
         }
 
-        public override bool DisplayEdgeToEdge { get; set; }
+        public override bool DisplayEdgeToEdgePreference { get; set; }
 
         public override Thickness SafeAreaPadding
         {
             get
             {
-                var padding = DomHelper.GetSafeAreaPadding();
+                var padding = DomHelper.GetSafeAreaPadding(BrowserWindowingPlatform.GlobalThis);
 
                 return new Thickness(padding[0], padding[1], padding[2], padding[3]);
             }

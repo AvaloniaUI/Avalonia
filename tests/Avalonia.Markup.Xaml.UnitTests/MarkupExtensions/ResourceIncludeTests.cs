@@ -12,8 +12,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
     public class ResourceIncludeTests : XamlTestBase
     {
-        [Fact]
-        public void ResourceInclude_Loads_ResourceDictionary()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void ResourceInclude_Loads_ResourceDictionary(bool createSourceInfo)
         {
             var documents = new[]
             {
@@ -37,9 +39,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </UserControl>")
             };
 
+            var config = new RuntimeXamlLoaderConfiguration { CreateSourceInfo = createSourceInfo };
+            
             using (StartWithResources())
             {
-                var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+                var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents, config);
                 var userControl = Assert.IsType<UserControl>(compiled[1]);
                 var border = userControl.GetControl<Border>("border");
 
@@ -127,25 +131,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     }
     
     // See https://github.com/AvaloniaUI/Avalonia/issues/11172
-    public class LocaleCollection : IResourceProvider
+    public class LocaleCollection : ResourceProvider
     {
         private readonly Dictionary<object, IResourceProvider> _langs = new();
+        
+        public override bool HasResources => true;
 
-        public IResourceHost? Owner { get; private set; }
-
-        public bool HasResources => true;
-
-        public event EventHandler? OwnerChanged
-        {
-            add { }
-            remove { }
-        }
-
-        public void AddOwner(IResourceHost owner) => Owner = owner;
-
-        public void RemoveOwner(IResourceHost owner) => Owner = null;
-
-        public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
+        public override bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
             if (_langs.TryGetValue("English", out var res))
             {

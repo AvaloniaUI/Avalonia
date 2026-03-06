@@ -36,7 +36,7 @@ public static class View
         return await reader.ReadToEndAsync();
     }
 
-    public static CSharpCompilation CreateAvaloniaCompilation(string excludedPattern = null)
+    public static CSharpCompilation CreateAvaloniaCompilation(string? excludedPattern = null)
     {
         var compilation = CSharpCompilation
             .Create("AvaloniaLib", options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))

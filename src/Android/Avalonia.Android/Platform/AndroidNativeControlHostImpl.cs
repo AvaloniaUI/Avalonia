@@ -52,7 +52,7 @@ namespace Avalonia.Android.Platform
             };
         }
 
-        public bool IsCompatibleWith(IPlatformHandle handle) => handle.HandleDescriptor == AndroidViewControlHandle.AndroidDescriptor;
+        public bool IsCompatibleWith(IPlatformHandle handle) => handle.HandleDescriptor == AndroidViewControlHandle.AndroidViewDescriptor;
 
         private class AndroidNativeControlAttachment : INativeControlHostControlTopLevelAttachment
         {

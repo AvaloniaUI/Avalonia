@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Avalonia.Reactive;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Skia.Helpers;
 using SkiaSharp;
 
@@ -11,7 +10,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that writes to a surface.
     /// </summary>
-    internal class SurfaceRenderTarget : IDrawingContextLayerImpl, IDrawableBitmapImpl
+    internal class SurfaceRenderTarget : IDrawingContextLayerImpl, IDrawableBitmapImpl, IDrawingContextLayerWithRenderContextAffinityImpl
     {
         private readonly ISkiaSurface _surface;
         private readonly SKCanvas _canvas;
@@ -73,6 +72,8 @@ namespace Avalonia.Skia
             _canvas = canvas;
         }
 
+        public RenderTargetProperties Properties => default;
+
         /// <summary>
         /// Create backing Skia surface.
         /// </summary>
@@ -113,6 +114,13 @@ namespace Avalonia.Skia
             };
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
+        }
+
+        public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
+            out RenderTargetDrawingContextProperties properties)
+        {
+            properties = default;
+            return CreateDrawingContext(false);
         }
 
         public bool IsCorrupted => _gpu?.IsLost == true;
@@ -164,12 +172,12 @@ namespace Avalonia.Skia
         public bool CanBlit => true;
 
         /// <inheritdoc />
-        public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
+        public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKSamplingOptions samplingOptions, SKPaint paint)
         {
             using var image = SnapshotImage();
-            context.Canvas.DrawImage(image, sourceRect, destRect, paint);
+            context.Canvas.DrawImage(image, sourceRect, destRect, samplingOptions, paint);
         }
-        
+
         /// <summary>
         /// Create Skia image snapshot from a surface.
         /// </summary>
@@ -233,6 +241,15 @@ namespace Avalonia.Skia
             public ISkiaGpuRenderSession? Session;
 
             public bool DisableManualFbo;
+        }
+
+        public bool HasRenderContextAffinity => _grContext != null;
+        public IBitmapImpl CreateNonAffinedSnapshot()
+        {
+            if (!HasRenderContextAffinity)
+                throw new InvalidOperationException();
+            using var image = SnapshotImage();
+            return new ImmutableBitmap(image.ToRasterImage(true));
         }
     }
 }

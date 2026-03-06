@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
+  <av:ImportTypes>Types.xml</av:ImportTypes>
+  <!--
+      org.a11y.atspi.EditableText:
+      @short_description: An interface that provides methods for modifying
+      textual content of components which support editing.
+  -->
+  <interface name="org.a11y.atspi.EditableText">
+
+    <!--
+        Version: The version of this interface.
+
+        This property is incremented by one every time a new method, signal, or property
+        is added to this interface.
+    -->
+    <property name="version" type="u" access="read"/>
+
+    <!--
+        SetTextContents:
+
+        @newContents: a character string, encoded in UTF-8, which is to
+        become the new text contents of the object.
+
+        Replace the entire text contents of the accessible with the given text.
+
+        Returns: True if successful, false otherwise.
+    -->
+    <method name="SetTextContents">
+      <arg direction="in" name="newContents" type="s"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        InsertText:
+
+        @position: an integer indicating the character offset at which to
+        insert the new text.
+
+        @text: a string representing the text to insert, in UTF-8 encoding.
+        @length:  the number of characters of text to insert, in bytes. If the
+        byte count of text is less than or equal to length, the entire contents
+        of text will be inserted.
+
+        Inserts text into an #AtspiEditableText object.
+        As with all character offsets, the specified @position may not be the
+        same as the resulting byte offset, since the text is in a
+        variable-width encoding.
+
+        Returns: True if successful, false otherwise.
+    -->
+    <method name="InsertText">
+      <arg direction="in" name="position" type="i"/>
+      <arg direction="in" name="text" type="s"/>
+      <arg direction="in" name="length" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        CopyText:
+
+        @startPos: an integer indicating the starting character offset
+        of the text to copy.
+
+        @endPos: an integer indicating the offset of the first character
+        past the end of the text section to be copied.
+
+        Copies text from an accessible object into the system clipboard.
+    -->
+    <method name="CopyText">
+      <arg direction="in" name="startPos" type="i"/>
+      <arg direction="in" name="endPos" type="i"/>
+    </method>
+
+    <!--
+        CutText:
+
+        @startPos: an integer indicating the starting character offset
+        of the text to cut.
+
+        @endPos: an integer indicating the offset of the first character
+        past the end of the text section to be cut.
+
+        Deletes text from an accessible object, copying the excised portion
+        into the system clipboard.
+
+        Returns: True if successful, false otherwise.
+    -->
+    <method name="CutText">
+      <arg direction="in" name="startPos" type="i"/>
+      <arg direction="in" name="endPos" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        DeleteText:
+
+        @startPos: an integer indicating the starting character offset
+        of the text to delete.
+
+        @endPos: an integer indicating the offset of the first character
+        past the end of the text section to be deleted.
+
+        Deletes text from an accessible object, without copying the
+        excised portion into the system clipboard.
+
+        Returns: True if successful, false otherwise.
+    -->
+    <method name="DeleteText">
+      <arg direction="in" name="startPos" type="i"/>
+      <arg direction="in" name="endPos" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+    <!--
+        PasteText:
+
+        @position: an integer indicating the character offset at which to
+        insert the new text.
+
+        Inserts text from the system clipboard into an accessible object.
+        As with all character offsets, the specified @position may not be the
+        same as the resulting byte offset, since the text is in a
+        variable-width encoding.
+
+        Returns: True if successful, false otherwise.
+    -->
+    <method name="PasteText">
+      <arg direction="in" name="position" type="i"/>
+      <arg direction="out" type="b"/>
+    </method>
+
+  </interface>
+</node>

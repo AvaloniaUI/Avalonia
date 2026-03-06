@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="IntegrationTestApp.TopmostWindowTest"
+        Title="TopmostWindowTest"
+        Width="640"
+        Height="480">
+  <Grid>
+    <TextBox Name="CurrentPosition"
+             Grid.Column="1"
+             Grid.Row="3"
+             IsReadOnly="True" />
+    <Button HorizontalAlignment="Center" Name="MoveButton" VerticalAlignment="Center" Click="Button_OnClick">Move</Button>
+  </Grid>
+</Window>

@@ -228,7 +228,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 server = server.AddMembers(DeclareField($"CompositionProperty<{serverPropertyType}>", CompositionPropertyField(prop),
                     EqualsValueClause(ParseExpression(
                         $"CompositionProperty.Register<{serverName}, {serverPropertyType}>(\"{prop.Name}\", obj => (({serverName})obj).{fieldName}, (obj, v) => (({serverName})obj).{fieldName} = v, {compositionPropertyVariantGetter})")),
-                    SyntaxKind.InternalKeyword, SyntaxKind.StaticKeyword));
+                    SyntaxKind.InternalKeyword, SyntaxKind.ReadOnlyKeyword, SyntaxKind.StaticKeyword));
                 
                 if (prop.DefaultValue != null)
                 {
@@ -310,8 +310,9 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             var fieldName = PropertyBackingFieldName(prop);
             return client
                     .AddMembers(DeclareField(prop.Type, fieldName))
-                    .AddMembers(PropertyDeclaration(propType, prop.Name)
-                        .AddModifiers(prop.Internal ? SyntaxKind.InternalKeyword : SyntaxKind.PublicKeyword)
+                    .AddMembers(PropertyDeclaration(propType, prop.ClientName ?? prop.Name)
+                        .AddModifiers(
+                            prop.Private ? SyntaxKind.PrivateKeyword : prop.Internal ? SyntaxKind.InternalKeyword : SyntaxKind.PublicKeyword)
                         .AddAccessorListAccessors(
                             AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
                                 Block(ReturnStatement(IdentifierName(fieldName)))),
@@ -322,6 +323,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                                             IdentifierName(fieldName),
                                             IdentifierName("value")),
                                         Block(
+                                            ParseStatement($"Validate{prop.Name}Change({fieldName}, value);"),
                                             ParseStatement("On" + prop.Name + "Changing();"),
                                             ParseStatement("changed = true;"),
                                             GeneratePropertySetterAssignment(cl, prop, isObject, isNullable))
@@ -331,6 +333,12 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                                     ParseStatement($"if(changed) On" + prop.Name + "Changed();")
                                 )).WithModifiers(TokenList(prop.InternalSet ? new[]{Token(SyntaxKind.InternalKeyword)} : Array.Empty<SyntaxToken>()))
                         ))
+                    .AddMembers(MethodDeclaration(ParseTypeName("void"), "Validate" + prop.Name + "Change")
+                        .AddModifiers(SyntaxKind.PartialKeyword).WithSemicolonToken(Semicolon())
+                        .WithParameterList(ParameterList(SeparatedList<ParameterSyntax>([
+                            Parameter(Identifier("oldValue")).WithType(propType),
+                            Parameter(Identifier("newValue")).WithType(propType)
+                        ]))))
                     .AddMembers(MethodDeclaration(ParseTypeName("void"), "On" + prop.Name + "Changed")
                         .AddModifiers(SyntaxKind.PartialKeyword).WithSemicolonToken(Semicolon()))
                     .AddMembers(MethodDeclaration(ParseTypeName("void"), "On" + prop.Name + "Changing")
@@ -527,19 +535,6 @@ return;
 ";
             code += $"{prop.Name} =  {readValueCode};";
             return body.AddStatements(ParseStatement(code));
-        }
-
-        static ClassDeclarationSyntax WithGetPropertyForAnimation(ClassDeclarationSyntax cl, BlockSyntax body)
-        {
-            if (body.Statements.Count == 0)
-                return cl;
-            body = body.AddStatements(
-                ParseStatement("return base.GetPropertyForAnimation(name);"));
-            var method = ((MethodDeclarationSyntax) ParseMemberDeclaration(
-                    $"public override Avalonia.Rendering.Composition.Expressions.ExpressionVariant GetPropertyForAnimation(string name){{}}")!)
-                .WithBody(body);
-
-            return cl.AddMembers(method);
         }
 
         static ClassDeclarationSyntax WithGetCompositionProperty(ClassDeclarationSyntax cl, BlockSyntax body)

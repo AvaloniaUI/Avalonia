@@ -7,6 +7,7 @@
     <Setter Property="FontFamily" Value="{DynamicResource ContentControlThemeFontFamily}" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="FontStyle" Value="Normal" />
+    <Setter Property="Inline.TextDecorations" Value="" />
     <Setter Property="Template">
       <ControlTemplate>
         <LayoutTransformControl LayoutTransform="{TemplateBinding Transform}">

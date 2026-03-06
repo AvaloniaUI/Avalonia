@@ -11,8 +11,11 @@ internal sealed class ParentDataContextNode : DataContextNodeBase
     private static readonly AvaloniaObject s_unset = new();
     private AvaloniaObject? _parent = s_unset;
 
-    protected override void OnSourceChanged(object source, Exception? dataValidationError)
+    protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
+        if (!ValidateNonNullSource(source))
+            return;
+
         if (source is AvaloniaObject newElement)
             newElement.PropertyChanged += OnPropertyChanged;
 

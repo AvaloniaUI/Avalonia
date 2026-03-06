@@ -9,8 +9,6 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Android\Avalonia.Android\Avalonia.Android.csproj" Condition="'$(_AvaloniaAndroidTarget)' == 'true'" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" Condition="'$(_AvaloniaIOSTarget)' == 'true'" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Browser\Avalonia.Browser\Avalonia.Browser.csproj" Condition="'$(_AvaloniaBrowserTarget)' == 'true'" />
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Tizen\Avalonia.Tizen\Avalonia.Tizen.csproj" Condition="'$(_AvaloniaTizenTarget)' == 'true'" />
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Tizen\Avalonia.Tizen\Avalonia.Tizen.csproj" Condition="'$(_AvaloniaTizenTarget)' == 'true'" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" Condition="'$(_AvaloniaDesktopTarget)' == 'true'" />
   </ItemGroup>
 

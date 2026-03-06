@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
+using Avalonia.FreeDesktop.AtSpi;
 using Avalonia.FreeDesktop.DBusIme;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -17,6 +17,8 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Vulkan;
 using Avalonia.X11;
+using Avalonia.X11.Clipboard;
+using Avalonia.X11.Dispatching;
 using Avalonia.X11.Glx;
 using Avalonia.X11.Vulkan;
 using Avalonia.X11.Screens;
@@ -27,19 +29,21 @@ namespace Avalonia.X11
     internal class AvaloniaX11Platform : IWindowingPlatform
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
+        private X11AtSpiAccessibility? _accessibility;
+        internal AtSpiServer? AtSpiServer => _accessibility?.Server;
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
-        public Dictionary<IntPtr, X11PlatformThreading.EventHandler> Windows =
-            new Dictionary<IntPtr, X11PlatformThreading.EventHandler>();
-        public XI2Manager XI2;
-        public X11Info Info { get; private set; }
-        public X11Screens X11Screens { get; private set; }
-        public Compositor Compositor { get; private set; }
-        public IScreenImpl Screens { get; private set; }
-        public X11PlatformOptions Options { get; private set; }
+        public Dictionary<IntPtr, X11EventDispatcher.EventHandler> Windows { get; } = new ();
+        public XI2Manager? XI2 { get; private set; }
+        public X11Info Info { get; private set; } = null!;
+        public X11Screens X11Screens { get; private set; } = null!;
+        public Compositor Compositor { get; private set; } = null!;
+        public IScreenImpl Screens { get; private set; } = null!;
+        public X11PlatformOptions Options { get; private set; } = null!;
         public IntPtr OrphanedWindow { get; private set; }
-        public X11Globals Globals { get; private set; }
-        public XResources Resources { get; private set; }
+        public X11Globals Globals { get; private set; } = null!;
+        public XResources Resources { get; private set; } = null!;
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
+        public IX11PlatformDispatcher DispatcherImpl { get; private set; } = null!;
 
         public void Initialize(X11PlatformOptions options)
         {
@@ -68,22 +72,28 @@ namespace Avalonia.X11
             Info = new X11Info(Display, DeferredDisplay, useXim);
             Globals = new X11Globals(this);
             Resources = new XResources(this);
-            //TODO: log
-            if (options.UseDBusMenu)
-                DBusHelper.TryInitialize();
 
             IRenderTimer timer = options.ShouldRenderOnUIThread
                ? new UiThreadRenderTimer(60)
                : new SleepLoopRenderTimer(60);
 
+            var clipboardImpl = new X11ClipboardImpl(this);
+            var clipboard = new Input.Platform.Clipboard(clipboardImpl);
+
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
-                .Bind<IWindowingPlatform>().ToConstant(this)
-                .Bind<IDispatcherImpl>().ToConstant(new X11PlatformThreading(this))
+                .Bind<IWindowingPlatform>().ToConstant(this);
+            DispatcherImpl = options.UseGLibMainLoop
+                ? new GlibDispatcherImpl(this)
+                : new X11PlatformThreading(this);
+            Dispatcher.InitializeUIThreadDispatcher(DispatcherImpl);
+            AvaloniaLocator.CurrentMutable
                 .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
-                .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
+                .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
+                .Bind<IClipboard>().ToConstant(clipboard)
                 .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
@@ -92,9 +102,7 @@ namespace Avalonia.X11
             Screens = X11Screens = new X11Screens(this);
             if (Info.XInputVersion != null)
             {
-                var xi2 = new XI2Manager();
-                if (xi2.Init(this))
-                    XI2 = xi2;
+                XI2 = XI2Manager.TryCreate(this);
             }
 
             var graphics = InitializeGraphics(options, Info);
@@ -105,12 +113,18 @@ namespace Avalonia.X11
 
             Compositor = new Compositor(graphics);
             AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
+            
+            _accessibility = new X11AtSpiAccessibility(this);
+            _accessibility.Initialize();
         }
+
+        internal void TrackWindow(X11Window window) => _accessibility?.TrackWindow(window);
+        internal void UntrackWindow(X11Window window) => _accessibility?.UntrackWindow(window);
 
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
 
-        private static uint[] X11IconConverter(IWindowIconImpl icon)
+        private static uint[] X11IconConverter(IWindowIconImpl? icon)
         {
             if (!(icon is X11IconData x11icon))
                 return Array.Empty<uint>();
@@ -133,6 +147,8 @@ namespace Avalonia.X11
         {
             return new X11Window(this, null);
         }
+
+        public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
 
         public IWindowImpl CreateEmbeddableWindow()
         {
@@ -163,31 +179,30 @@ namespace Avalonia.X11
 
         private static bool ShouldUseXim()
         {
+            // Priority: AVALONIA_IM_MODULE > GTK_IM_MODULE >= QT_IM_MODULE
+            string? imeOverride = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
+            if (string.IsNullOrEmpty(imeOverride))
+                imeOverride = Environment.GetEnvironmentVariable("GTK_IM_MODULE");
+            if (string.IsNullOrEmpty(imeOverride))
+                imeOverride = Environment.GetEnvironmentVariable("QT_IM_MODULE");
+
             // Check if we are forbidden from using IME
-            if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"
-                || Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "none"
-                || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "none")
-                return true;
-            
+            if (imeOverride == "none")
+                return false;
+
             // Check if XIM is configured
             var modifiers = Environment.GetEnvironmentVariable("XMODIFIERS");
-            if (modifiers == null)
-                return false;
-            if (modifiers.Contains("@im=none") || modifiers.Contains("@im=null"))
-                return false;
-            if (!modifiers.Contains("@im="))
-                return false;
-            
-            // Check if we are configured to use it
-            if (Environment.GetEnvironmentVariable("GTK_IM_MODULE") == "xim"
-                || Environment.GetEnvironmentVariable("QT_IM_MODULE") == "xim"
-                || Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "xim")
-                return true;
-            
+            if (modifiers is not null && modifiers.Contains("@im="))
+            {
+                // If XIM is explicitly requested, or no IME override is configured
+                if (imeOverride == "xim" || string.IsNullOrEmpty(imeOverride))
+                    return true;
+            }
+
             return false;
         }
         
-        private static IPlatformGraphics InitializeGraphics(X11PlatformOptions opts, X11Info info)
+        private static IPlatformGraphics? InitializeGraphics(X11PlatformOptions opts, X11Info info)
         {
             if (opts.RenderingMode is null || !opts.RenderingMode.Any())
             {
@@ -227,6 +242,83 @@ namespace Avalonia.X11
             }
 
             throw new InvalidOperationException($"{nameof(X11PlatformOptions)}.{nameof(X11PlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
+        }
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> outputZOrder)
+        {
+            // a mapping of parent windows to their children, sorted by z-order (bottom to top)
+            var windowsChildren = new Dictionary<IntPtr, List<IntPtr>>();
+
+            var indexInWindowsSpan = new Dictionary<IntPtr, int>();
+            for (var i = 0; i < windows.Length; i++)
+                if (windows[i] is X11Window { Handle: { } handle })
+                    indexInWindowsSpan[handle.Handle] = i;
+
+            foreach (var window in windows)
+            {
+                if (window is not X11Window x11Window)
+                    continue;
+
+                var node = x11Window.Handle.Handle;
+                while (node != IntPtr.Zero)
+                {
+                    if (windowsChildren.ContainsKey(node))
+                    {
+                        break;
+                    }
+
+                    if (XQueryTree(Info.Display, node, out _, out var parent,
+                            out var childrenPtr, out var childrenCount) == 0)
+                    {
+                        break;
+                    }
+
+                    if (childrenPtr != IntPtr.Zero)
+                    {
+                        unsafe
+                        {
+                            var children = (IntPtr*)childrenPtr;
+                            windowsChildren[node] = new List<IntPtr>(childrenCount);
+                            for (var i = 0; i < childrenCount; i++)
+                            {
+                                windowsChildren[node].Add(children[i]);
+                            }
+
+                            XFree(childrenPtr);
+                        }
+                    }
+
+                    node = parent;
+                }
+            }
+
+            var stack = new Stack<IntPtr>();
+            var zOrder = 0;
+            stack.Push(Info.RootWindow);
+
+            while (stack.Count > 0)
+            {
+                var currentWindow = stack.Pop();
+
+                if (!windowsChildren.TryGetValue(currentWindow, out var children))
+                {
+                    continue;
+                }
+
+                if (indexInWindowsSpan.TryGetValue(currentWindow, out var index))
+                {
+                    outputZOrder[index] = zOrder;
+                }
+
+                zOrder++;
+
+                // Children are returned bottom to top, so we need to push them in reverse order
+                // In order to traverse bottom children first
+                for (int i = children.Count - 1; i >= 0; i--)
+                {
+                    stack.Push(children[i]);
+                }
+            }
         }
     }
 }
@@ -345,11 +437,16 @@ namespace Avalonia
             // llvmpipe is a software GL rasterizer. If it's returned by glGetString,
             // that usually means that something in the system is horribly misconfigured
             // and sometimes attempts to use GLX might cause a segfault
-            "llvmpipe"
+            "llvmpipe",
+            // SVGA3D is a driver for VMWare virtual GPU
+            // There were reports of various glitches like parts of the UI not being rendered
+            // Given that VMs are mostly used by testing, we've decided to blacklist that driver
+            // for now
+            "SVGA3D"
         };
 
         
-        public string WmClass { get; set; }
+        public string? WmClass { get; set; }
 
         /// <summary>
         /// Enables multitouch support. The default value is true.
@@ -367,11 +464,46 @@ namespace Avalonia
         /// </summary>
         public bool? UseRetainedFramebuffer { get; set; }
 
+        /// <summary>
+        /// If this option is set to true, GMainLoop and GSource based dispatcher implementation will be used instead
+        /// of epoll-based one.
+        /// Use this if you need to use GLib-based libraries on the main thread
+        /// </summary>
+        public bool UseGLibMainLoop { get; set; }
+
+        /// <summary>
+        /// Enables client-side drawn window decorations on X11.
+        /// When true and ExtendClientAreaToDecorationsHint is set on a window,
+        /// Avalonia will draw its own decorations (titlebar, borders, resize grips)
+        /// instead of using the X11 window manager decorations.
+        /// </summary>
+        [Experimental("AVALONIA_X11_CSD"
+            #if NET10_0_OR_GREATER
+            , Message = "Experimental, used mostly for testing"
+            #endif
+            )]
+        public bool? EnableDrawnDecorations
+        {
+            get => EnableDrawnDecorationsInternal;
+            set => EnableDrawnDecorationsInternal = value;
+        }
+
+        internal bool? EnableDrawnDecorationsInternal { get; set; }
+
+        /// <summary>
+        /// If Avalonia is in control of a run loop, we propagate exceptions by stopping the run loop frame
+        /// and rethrowing an exception. However, if there is no Avalonia-controlled run loop frame,
+        /// there is no way to report such exceptions, since allowing those to escape native->managed call boundary
+        /// will likely brick GLib machinery since it's not aware of managed Exceptions
+        /// This property allows to inspect such exceptions before they will be ignored
+        /// </summary>
+        public Action<Exception>? ExternalGLibMainLoopExceptionLogger { get; set; }
+
         public X11PlatformOptions()
         {
             try
             {
-                WmClass = Assembly.GetEntryAssembly()?.GetName()?.Name;
+                WmClass = Assembly.GetEntryAssembly()?.GetName().Name;
             }
             catch
             {
@@ -391,7 +523,7 @@ namespace Avalonia
             return builder;
         }
 
-        public static void InitializeX11Platform(X11PlatformOptions options = null) =>
+        public static void InitializeX11Platform(X11PlatformOptions? options = null) =>
             new AvaloniaX11Platform().Initialize(options ?? new X11PlatformOptions());
     }
 

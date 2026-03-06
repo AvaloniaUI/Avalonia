@@ -29,9 +29,21 @@ namespace Avalonia.Input
 
         public void OnNext(RawInputEventArgs value)
         {
-            if (value is RawPointerEventArgs args
-                && args.Root == _inputRoot
-                && value.Device is IPointerDevice pointerDevice)
+            if (value is RawDragEvent dragArgs)
+            {
+                // When a platform drag operation is in progress, the application does not receive
+                // pointer move events until after the drop event. This is a problem because if a
+                // popup is shown at the pointer position in the drop event, it will be shown at
+                // the position at which the drag was initiated, not the position at which the drop
+                // occurred.
+                //
+                // Solve this by updating the last known pointer position when a drag event occurs.
+                _lastKnownPosition = _inputRoot.RootElement.PointToScreen(dragArgs.Location);
+            }
+
+            else if (value is RawPointerEventArgs args
+                     && args.Root == _inputRoot
+                     && value.Device is IPointerDevice pointerDevice)
             {
                 if (pointerDevice != _lastActivePointerDevice)
                 {
@@ -52,7 +64,7 @@ namespace Avalonia.Input
                             args.InputModifiers.ToKeyModifiers());
                     }
                 }
-                else if (args.Type is RawPointerEventType.TouchBegin or RawPointerEventType.TouchUpdate && args.Root is Visual visual)
+                else if (args.Type is RawPointerEventType.TouchBegin or RawPointerEventType.TouchUpdate && args.Root.RootElement is {} visual)
                 {
                     _lastKnownPosition = visual.PointToScreen(args.Position);
                 }
@@ -65,9 +77,11 @@ namespace Avalonia.Input
                         args.InputModifiers.ToKeyModifiers());
                 }
                 else if (pointerDevice.TryGetPointer(args) is { } pointer &&
-                    pointer.Type != PointerType.Touch)
+                    pointer.Type != PointerType.Touch && args.Type != RawPointerEventType.CancelCapture)
                 {
-                    var element = pointer.Captured ?? args.InputHitTestResult.firstEnabledAncestor;
+                    var element = GetEffectivePointerOverElement(
+                        args.InputHitTestResult.firstEnabledAncestor,
+                        pointer.Captured);
 
                     SetPointerOver(pointer, args.Root, element, args.Timestamp, args.Position,
                         new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),
@@ -84,15 +98,23 @@ namespace Avalonia.Input
 
                 if (dirtyRect.Contains(clientPoint))
                 {
-                    var element = pointer.Captured ?? _inputRoot.InputHitTest(clientPoint);
+                    var element = GetEffectivePointerOverElement(
+                        _inputRoot.RootElement.InputHitTest(clientPoint),
+                        pointer.Captured);
+
                     SetPointerOver(pointer, _inputRoot, element, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
                 }
-                else if (!((Visual)_inputRoot).Bounds.Contains(clientPoint))
+                else if (!_inputRoot.RootElement.Bounds.Contains(clientPoint))
                 {
                     ClearPointerOver(pointer, _inputRoot, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
                 }
             }
         }
+
+        private static IInputElement? GetEffectivePointerOverElement(IInputElement? hitTestElement, IInputElement? captured)
+            => captured is not null && hitTestElement != captured ?
+                null :
+                hitTestElement;
 
         private void ClearPointerOver()
         {
@@ -118,16 +140,16 @@ namespace Avalonia.Input
             // so GetPosition won't return invalid values.
 #pragma warning disable CS0618
             var e = new PointerEventArgs(InputElement.PointerExitedEvent, element, pointer,
-                position.HasValue ? root as Visual : null, position.HasValue ? position.Value : default,
+                position.HasValue ? root.RootElement : null, position.HasValue ? position.Value : default,
                 timestamp, properties, inputModifiers);
 #pragma warning restore CS0618
 
             if (element is Visual v && !v.IsAttachedToVisualTree)
             {
                 // element has been removed from visual tree so do top down cleanup
-                if (root.IsPointerOver)
+                if (root.RootElement.IsPointerOver)
                 {
-                    ClearChildrenPointerOver(e, root, true);
+                    ClearChildrenPointerOver(e, root.RootElement, true);
                 }
             }
             while (element != null)
@@ -169,7 +191,7 @@ namespace Avalonia.Input
             ulong timestamp, Point position, PointerPointProperties properties, KeyModifiers inputModifiers)
         {
             var pointerOverElement = root.PointerOverElement;
-            var screenPosition = ((Visual)root).PointToScreen(position);
+            var screenPosition = (root.RootElement).PointToScreen(position);
             _lastKnownPosition = screenPosition;
 
             if (element != pointerOverElement)
@@ -207,7 +229,7 @@ namespace Avalonia.Input
             el = root.PointerOverElement;
 
 #pragma warning disable CS0618
-            var e = new PointerEventArgs(InputElement.PointerExitedEvent, el, pointer, (Visual)root, position,
+            var e = new PointerEventArgs(InputElement.PointerExitedEvent, el, pointer, root.RootElement, position,
                 timestamp, properties, inputModifiers);
 #pragma warning restore CS0618
             if (el is Visual v && branch != null && !v.IsAttachedToVisualTree)
@@ -243,7 +265,7 @@ namespace Avalonia.Input
 
         private static Point PointToClient(IInputRoot root, PixelPoint p)
         {
-            return ((Visual)root).PointToClient(p);
+            return (root.RootElement).PointToClient(p);
         }
     }
 }

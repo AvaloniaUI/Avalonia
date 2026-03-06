@@ -6,7 +6,7 @@ namespace Avalonia.Markup.Xaml;
 internal struct EagerParentStackEnumerator
 {
     private IAvaloniaXamlIlEagerParentStackProvider? _provider;
-    private IReadOnlyList<object>? _currentParents;
+    private IReadOnlyList<object>? _currentParentsStack;
     private int _currentIndex; // only valid when _currentParents isn't null
 
     public EagerParentStackEnumerator(IAvaloniaXamlIlEagerParentStackProvider? provider)
@@ -16,18 +16,18 @@ internal struct EagerParentStackEnumerator
     {
         while (_provider is not null)
         {
-            if (_currentParents is null)
+            if (_currentParentsStack is null)
             {
-                _currentParents = _provider.DirectParents;
-                _currentIndex = _currentParents.Count;
+                _currentParentsStack = _provider.DirectParentsStack;
+                _currentIndex = _currentParentsStack.Count;
             }
 
             --_currentIndex;
 
             if (_currentIndex >= 0)
-                return _currentParents[_currentIndex];
+                return _currentParentsStack[_currentIndex];
 
-            _currentParents = null;
+            _currentParentsStack = null;
             _provider = _provider.ParentProvider;
         }
 

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Avalonia.Skia.RenderTests;
@@ -8,20 +10,26 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests;
-#else
-namespace Avalonia.Direct2D1.RenderTests;
-#endif
 
 class CrossFactAttribute : FactAttribute
 {
-    
+    public CrossFactAttribute(
+        [CallerFilePath] string? sourceFilePath = null,
+        [CallerLineNumber] int sourceLineNumber = -1
+    ) : base(sourceFilePath, sourceLineNumber)
+    {
+    }
 }
 
 class CrossTheoryAttribute : TheoryAttribute
 {
-    
+    public CrossTheoryAttribute(
+        [CallerFilePath] string? sourceFilePath = null,
+        [CallerLineNumber] int sourceLineNumber = -1
+    ) : base(sourceFilePath, sourceLineNumber)
+    {
+    }
 }
 
 public class CrossTestBase : IDisposable
@@ -35,6 +43,8 @@ public class CrossTestBase : IDisposable
 
     protected void RenderAndCompare(CrossControl root, [CallerMemberName] string? testName = null, double dpi = 96)
     {
+        ArgumentException.ThrowIfNullOrEmpty(testName, nameof(testName));
+
         var dir = Path.Combine(TestRenderHelper.GetTestsDirectory(), "TestFiles", "CrossTests", _groupName);
         if (!Directory.Exists(dir))
             Directory.CreateDirectory(dir);

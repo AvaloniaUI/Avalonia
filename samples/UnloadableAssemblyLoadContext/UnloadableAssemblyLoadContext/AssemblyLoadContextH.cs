@@ -22,13 +22,16 @@ public class AssemblyLoadContextH : AssemblyLoadContext
         Unloading += (sender) =>
         {
             AvaloniaPropertyRegistry.Instance.UnregisterByModule(sender.Assemblies.First().DefinedTypes);
-            Application.Current.Styles.Remove(MainWindow.Style);
-            AssetLoader.InvalidateAssemblyCache(sender.Assemblies.First().GetName().Name);
-            MainWindow.Style= null;
+
+            if (MainWindow.Style is { } style)
+                Application.Current?.Styles.Remove(style);
+
+            AssetLoader.InvalidateAssemblyCache(sender.Assemblies.First().GetName().Name!);
+            MainWindow.Style = null;
         };
     }
 
-    protected override Assembly Load(AssemblyName assemblyName)
+    protected override Assembly? Load(AssemblyName assemblyName)
     {
         var assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
         if (assemblyPath != null)

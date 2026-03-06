@@ -7,16 +7,38 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests.Media
-#endif
 {
     public class RadialGradientBrushTests : TestBase
     {
         public RadialGradientBrushTests() : base(@"Media\RadialGradientBrush")
         {
+        }
+
+        [Fact]
+        public async Task RadialGradientBrush_Partial_Cover()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 200,
+                Child = new Border
+                {
+                    Background = new RadialGradientBrush
+                    {
+                        GradientStops =
+                        {
+                            new GradientStop { Color = Colors.White, Offset = 0 },
+                            new GradientStop { Color = Color.Parse("#00DD00"), Offset = 0.7 }
+                        },
+                        GradientOrigin = new RelativePoint(0.7, 0.15, RelativeUnit.Relative)
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]

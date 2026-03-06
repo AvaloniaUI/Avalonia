@@ -1,9 +1,7 @@
 using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Avalonia.Native.Interop;
 using Avalonia.Rendering;
-#nullable enable
 
 namespace Avalonia.Native;
 

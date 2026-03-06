@@ -255,14 +255,14 @@ namespace Avalonia.Controls
         {
             if (_knobsPanelPressed)
             {
-                if(_knobsPanel != null)
-                {
-                    _knobsPanel.Transitions = null;
-                }
                 var difference = e.GetPosition(_switchKnob) - _switchStartPoint;
 
                 if ((!_isDragging) && (System.Math.Abs(difference.X) > 3))
                 {
+                    if (_knobsPanel != null)
+                    {
+                        _knobsPanel.Transitions = null;
+                    }
                     _isDragging = true;
                     PseudoClasses.Set(":dragging", true);
                 }

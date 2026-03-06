@@ -1,3 +1,4 @@
+#pragma warning disable CA1069
 namespace Avalonia.Media
 {
     /// <summary>
@@ -22,7 +23,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Specifies an "ultra light" font weight.
         /// </summary>
-        UltraLight = 200,
+        UltraLight = ExtraLight,
 
         /// <summary>
         /// Specifies a "light" font weight.
@@ -42,7 +43,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Specifies a "regular" font weight.
         /// </summary>
-        Regular = 400,
+        Regular = Normal,
 
         /// <summary>
         /// Specifies a "medium" font weight.
@@ -52,7 +53,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Specifies a "demi-bold" font weight.
         /// </summary>
-        DemiBold = 600,
+        DemiBold = SemiBold,
 
         /// <summary>
         /// Specifies a "semi-bold" font weight.
@@ -72,7 +73,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Specifies an "ultra bold" font weight.
         /// </summary>
-        UltraBold = 800,
+        UltraBold = ExtraBold,
 
         /// <summary>
         /// Specifies a "black" font weight.
@@ -82,7 +83,12 @@ namespace Avalonia.Media
         /// <summary>
         /// Specifies a "heavy" font weight.
         /// </summary>
-        Heavy = 900,
+        Heavy = Black,
+
+        /// <summary>
+        /// Specifies a "solid" font weight.
+        /// </summary>
+        Solid = Black,
 
         /// <summary>
         /// Specifies an "extra black" font weight.

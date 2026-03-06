@@ -31,8 +31,7 @@
                                 HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                 Content="{TemplateBinding Content}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                RecognizesAccessKey="True" />
+                                ContentTemplate="{TemplateBinding ContentTemplate}" />
 
               <PathIcon Name="DropDownGlyph"
                         Grid.Column="1"
@@ -49,6 +48,10 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
 
     <Style Selector="^ /template/ PathIcon#DropDownGlyph">
       <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />

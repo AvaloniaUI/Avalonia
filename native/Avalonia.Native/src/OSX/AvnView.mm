@@ -7,23 +7,23 @@
 #include "AvnView.h"
 #include "automation.h"
 #import "WindowInterfaces.h"
+#import "WindowImpl.h"
 
 @implementation AvnView
 {
-    ComPtr<WindowBaseImpl> _parent;
+    ComObjectWeakPtr<TopLevelImpl> _parent;
     NSTrackingArea* _area;
-    bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed;
     AvnInputModifiers _modifierState;
     NSEvent* _lastMouseDownEvent;
     AvnPixelSize _lastPixelSize;
     NSObject<IRenderTarget>* _currentRenderTarget;
     AvnPlatformResizeReason _resizeReason;
-    AvnAccessibilityElement* _accessibilityChild;
     NSRect _cursorRect;
     NSMutableAttributedString* _text;
     NSRange _selectedRange;
     NSRange _markedRange;
     NSEvent* _lastKeyDownEvent;
+    NSMutableArray* _accessibilityChildren;
 }
 
 - (void)onClosed
@@ -42,7 +42,8 @@
 - (void) updateRenderTarget
 {
     if(_currentRenderTarget) {
-        [_currentRenderTarget resize:_lastPixelSize withScale:static_cast<float>([[self window] backingScaleFactor])];
+        AvnPixelSize size { MAX(_lastPixelSize.Width, 1), MAX(_lastPixelSize.Height, 1) };
+        [_currentRenderTarget resize:size withScale:static_cast<float>([[self window] backingScaleFactor])];
         [self setNeedsDisplayInRect:[self frame]];
     }
 }
@@ -67,7 +68,7 @@
     [self updateLayer];
 }
 
--(AvnView*)  initWithParent: (WindowBaseImpl*) parent
+-(AvnView*)  initWithParent: (TopLevelImpl*) parent
 {
     self = [super init];
     [self setWantsLayer:YES];
@@ -131,7 +132,8 @@
         _area = nullptr;
     }
 
-    if (_parent == nullptr)
+    auto parent = _parent.tryGet();
+    if (parent == nullptr)
     {
         return;
     }
@@ -143,7 +145,7 @@
     _area = [[NSTrackingArea alloc] initWithRect:rect options:options owner:self userInfo:nullptr];
     [self addTrackingArea:_area];
 
-    _parent->UpdateCursor();
+    parent->UpdateCursor();
 
     auto fsize = [self convertSizeToBacking: [self frame].size];
 
@@ -155,26 +157,28 @@
 
         auto reason = [self inLiveResize] ? ResizeUser : _resizeReason;
 
-        _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height}, reason);
+        parent->TopLevelEvents->Resized(FromNSSize(newSize), reason);
     }
 }
 
 - (void)updateLayer
 {
     AvnInsidePotentialDeadlock deadlock;
-    if (_parent == nullptr)
+    auto parent = _parent.tryGet();
+    if (parent == nullptr)
     {
         return;
     }
 
-    _parent->BaseEvents->RunRenderPriorityJobs();
+    parent->TopLevelEvents->RunRenderPriorityJobs();
 
-    if (_parent == nullptr)
+    parent = _parent.tryGet();
+    if (parent == nullptr)
     {
         return;
     }
 
-    _parent->BaseEvents->Paint();
+    parent->TopLevelEvents->Paint();
 }
 
 - (void)drawRect:(NSRect)dirtyRect
@@ -188,16 +192,6 @@
     return pt;
 }
 
-+ (AvnPoint)toAvnPoint:(CGPoint)p
-{
-    AvnPoint result;
-
-    result.X = p.x;
-    result.Y = p.y;
-
-    return result;
-}
-
 - (void) viewDidChangeBackingProperties
 {
     auto fsize = [self convertSizeToBacking: [self frame].size];
@@ -205,9 +199,10 @@
     _lastPixelSize.Height = (int)fsize.height;
     [self updateRenderTarget];
 
-    if(_parent != nullptr)
+    auto parent = _parent.tryGet();
+    if(parent != nullptr)
     {
-        _parent->BaseEvents->ScalingChanged([_parent->Window backingScaleFactor]);
+        parent->TopLevelEvents->ScalingChanged([[self window] backingScaleFactor]);
     }
 
     [super viewDidChangeBackingProperties];
@@ -215,29 +210,41 @@
 
 - (bool) ignoreUserInput:(bool)trigerInputWhenDisabled
 {
-    if(_parent == nullptr)
+    auto parent = _parent.tryGet();
+    if(parent == nullptr)
     {
         return TRUE;
     }
+    
+    id<AvnWindowProtocol> parentWindow = nullptr;
 
-    auto parentWindow = _parent->GetWindowProtocol();
+    if([[self window] conformsToProtocol:@protocol(AvnWindowProtocol)]){
+        parentWindow = (id<AvnWindowProtocol>)[self window];
+    }
 
-    if(parentWindow == nil || ![parentWindow shouldTryToHandleEvents])
+    if(parentWindow != nullptr && ![parentWindow shouldTryToHandleEvents])
     {
         if(trigerInputWhenDisabled)
         {
-            auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
-
-            if(window != nullptr)
-            {
-                window->WindowEvents->GotInputWhenDisabled();
+            auto windowImpl = _parent.tryGetWithCast<WindowImpl>();
+            
+            if(windowImpl == nullptr){
+                return FALSE;
             }
+            
+            windowImpl->WindowEvents->GotInputWhenDisabled();
         }
 
         return TRUE;
     }
 
     return FALSE;
+}
+
+static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
+{
+    *xTilt =  tilt.x * 90;
+    *yTilt = -tilt.y * 90;
 }
 
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
@@ -249,9 +256,13 @@
         return;
     }
 
-    auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
-    auto avnPoint = [AvnView toAvnPoint:localPoint];
-    auto point = [self translateLocalPoint:avnPoint];
+    NSPoint eventLocation = [event locationInWindow];
+    
+    auto viewLocation = [self convertPoint:NSMakePoint(0, 0) toView:nil];
+    
+    auto localPoint = NSMakePoint(eventLocation.x - viewLocation.x, viewLocation.y - eventLocation.y);
+    
+    auto point = ToAvnPoint(localPoint);
     AvnVector delta = { 0, 0};
 
     if(type == Wheel)
@@ -285,6 +296,57 @@
         delta.Y = [event deltaY];
     }
 
+    float pressure = 0.5f;
+    float xTilt = 0.0f;
+    float yTilt = 0.0f;
+    AvnPointerDeviceType pointerType = AvnPointerDeviceType::Mouse;
+
+    switch (event.type)
+    {
+        case NSEventTypeLeftMouseDown:
+        case NSEventTypeLeftMouseDragged:
+        case NSEventTypeRightMouseDown:
+        case NSEventTypeRightMouseDragged:
+        case NSEventTypeOtherMouseDown:
+        case NSEventTypeOtherMouseDragged:
+            switch (event.subtype)
+            {
+                case NSEventSubtypeTabletPoint:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = event.pressure;
+                    ConvertTilt(event.tilt, &xTilt, &yTilt);
+                    break;
+                case NSEventSubtypeTabletProximity:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = 0.0f;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case NSEventTypeLeftMouseUp:
+        case NSEventTypeRightMouseUp:
+        case NSEventTypeOtherMouseUp:
+        case NSEventTypeMouseMoved:
+            switch (event.subtype)
+            {
+                case NSEventSubtypeTabletPoint:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = 0.0f;
+                    ConvertTilt(event.tilt, &xTilt, &yTilt);
+                    break;
+                case NSEventSubtypeTabletProximity:
+                    pointerType = AvnPointerDeviceType::Pen;
+                    pressure = 0.0f;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+
     uint64_t timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
@@ -297,11 +359,27 @@
                             )
             )
             )
-        [self becomeFirstResponder];
-
-    if(_parent != nullptr)
     {
-        _parent->BaseEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
+        auto windowBase = _parent.tryGetWithCast<WindowBaseImpl>();
+        
+        if(windowBase != nullptr){
+            auto parent = windowBase->Parent.tryGet();
+            
+            if(parent != nullptr){
+                auto parentWindow = parent->Window;
+                
+                if(parentWindow != nullptr)
+                    [parentWindow makeFirstResponder:parent->View];
+            }
+        } else{
+            [self becomeFirstResponder];
+        }
+    }
+       
+    auto parent = _parent.tryGet();
+    if(parent != nullptr)
+    {
+        parent->TopLevelEvents->RawMouseEvent(type, pointerType, timestamp, modifiers, point, delta, pressure, xTilt, yTilt);
     }
 
     [super mouseMoved:event];
@@ -309,8 +387,56 @@
 
 - (BOOL) resignFirstResponder
 {
-    _parent->BaseEvents->LostFocus();
+    auto window = [self window];
+    if (window != nullptr && window.keyWindow)
+    {
+        [self onLostFocus];
+    }
+    
     return YES;
+}
+
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow
+{
+    auto oldWindow = [self window];
+    if (oldWindow == newWindow)
+    {
+        // viewWillMoveToWindow can be called with the same window when the view hierarchy changes
+        return;
+    }
+
+    if (oldWindow != nullptr)
+    {
+        [[NSNotificationCenter defaultCenter]
+            removeObserver:self
+            name:@"NSWindowDidResignKeyNotification"
+            object: oldWindow];
+    }
+
+    if (newWindow != nullptr)
+    {
+        [[NSNotificationCenter defaultCenter]
+            addObserver:self
+            selector:@selector(windowDidResignKey:)
+            name:@"NSWindowDidResignKeyNotification"
+            object: newWindow];
+    }
+}
+
+- (void)windowDidResignKey:(NSNotification*)notification
+{
+    auto window = [self window];
+    if (window != nullptr && notification.object == window && [window firstResponder] == self)
+    {
+        [self onLostFocus];
+    }
+}
+
+- (void)onLostFocus
+{
+    auto parent = _parent.tryGet();
+    if (parent)
+        parent->TopLevelEvents->LostFocus();
 }
 
 - (void)mouseMoved:(NSEvent *)event
@@ -320,7 +446,6 @@
 
 - (void)mouseDown:(NSEvent *)event
 {
-    _isLeftPressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:LeftButtonDown];
 }
@@ -332,16 +457,12 @@
     switch(event.buttonNumber)
     {
         case 2:
-        case 3:
-            _isMiddlePressed = true;
             [self mouseEvent:event withType:MiddleButtonDown];
             break;
-        case 4:
-            _isXButton1Pressed = true;
+        case 3:
             [self mouseEvent:event withType:XButton1Down];
             break;
-        case 5:
-            _isXButton2Pressed = true;
+        case 4:
             [self mouseEvent:event withType:XButton2Down];
             break;
 
@@ -352,14 +473,12 @@
 
 - (void)rightMouseDown:(NSEvent *)event
 {
-    _isRightPressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:RightButtonDown];
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
-    _isLeftPressed = false;
     [self mouseEvent:event withType:LeftButtonUp];
 }
 
@@ -368,16 +487,12 @@
     switch(event.buttonNumber)
     {
         case 2:
-        case 3:
-            _isMiddlePressed = false;
             [self mouseEvent:event withType:MiddleButtonUp];
             break;
-        case 4:
-            _isXButton1Pressed = false;
+        case 3:
             [self mouseEvent:event withType:XButton1Up];
             break;
-        case 5:
-            _isXButton2Pressed = false;
+        case 4:
             [self mouseEvent:event withType:XButton2Up];
             break;
 
@@ -388,7 +503,6 @@
 
 - (void)rightMouseUp:(NSEvent *)event
 {
-    _isRightPressed = false;
     [self mouseEvent:event withType:RightButtonUp];
 }
 
@@ -436,6 +550,7 @@
 
 - (void)mouseEntered:(NSEvent *)event
 {
+    [self mouseEvent:event withType:Move];
     [super mouseEntered:event];
 }
 
@@ -447,7 +562,8 @@
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
 {
-    if([self ignoreUserInput: false] || _parent == nullptr)
+    auto parent = _parent.tryGet();
+    if([self ignoreUserInput: false] || parent == nullptr)
     {
         return;
     }
@@ -461,7 +577,12 @@
     auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
     auto modifiers = [self getModifiers:[event modifierFlags]];
 
-    _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+    parent->TopLevelEvents->RawKeyEvent(type, timestamp, modifiers, key, physicalKey, keySymbolUtf8);
+}
+
+- (void)setModifiers:(NSEventModifierFlags)modifierFlags
+{
+    _modifierState = [self getModifiers:modifierFlags];
 }
 
 - (void)flagsChanged:(NSEvent *)event
@@ -521,12 +642,14 @@
 }
 
 - (bool) handleKeyDown: (NSTimeInterval) timestamp withKey:(AvnKey)key withPhysicalKey:(AvnPhysicalKey)physicalKey withModifiers:(AvnInputModifiers)modifiers withKeySymbol:(NSString*)keySymbol {
-    return _parent->BaseEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, [keySymbol UTF8String]);
+    auto parent = _parent.tryGet();
+    return parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, modifiers, key, physicalKey, [keySymbol UTF8String]);
 }
 
 - (void)keyDown:(NSEvent *)event
 {
-    if([self ignoreUserInput: false] || _parent == nullptr)
+    auto parent = _parent.tryGet();
+    if([self ignoreUserInput: false] || parent == nullptr)
     {
         return;
     }
@@ -543,7 +666,7 @@
     auto modifiers = [self getModifiers:[event modifierFlags]];
     
     //InputMethod is active
-    if(_parent->InputMethod->IsActive()){
+    if(parent->InputMethod->IsActive()){
         auto hasInputModifier = modifiers != AvnInputModifiersNone;
         
         //Handle keyDown first if an input modifier is present
@@ -575,7 +698,7 @@
             if(keySymbol != nullptr && key != AvnKeyEnter){
                 auto timestamp = static_cast<uint64_t>([event timestamp] * 1000);
                 
-                _parent->BaseEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
+                parent->TopLevelEvents->RawTextInputEvent(timestamp, [keySymbol UTF8String]);
             }
         }
     }
@@ -608,15 +731,17 @@
     if (mod & NSEventModifierFlagCommand)
         rv |= Windows;
 
-    if (_isLeftPressed)
+    NSUInteger pressedButtons = [NSEvent pressedMouseButtons];
+        
+    if (pressedButtons & (1 << 0))  // Left mouse button
         rv |= LeftMouseButton;
-    if (_isMiddlePressed)
-        rv |= MiddleMouseButton;
-    if (_isRightPressed)
+    if (pressedButtons & (1 << 1))  // Right mouse button
         rv |= RightMouseButton;
-    if (_isXButton1Pressed)
+    if (pressedButtons & (1 << 2))  // Middle mouse button
+        rv |= MiddleMouseButton;
+    if (pressedButtons & (1 << 3))  // X1 button
         rv |= XButton1MouseButton;
-    if (_isXButton2Pressed)
+    if (pressedButtons & (1 << 4))  // X2 button
         rv |= XButton2MouseButton;
 
     return (AvnInputModifiers)rv;
@@ -651,16 +776,18 @@
     }
     
     _markedRange = NSMakeRange(_selectedRange.location, [markedText length]);
-        
-    if(_parent->InputMethod->IsActive()){
-        _parent->InputMethod->Client->SetPreeditText((char*)[markedText UTF8String]);
+    auto parent = _parent.tryGet();
+
+    if(parent->InputMethod->IsActive()){
+        parent->InputMethod->Client->SetPreeditText((char*)[markedText UTF8String]);
     }
 }
 
 - (void)unmarkText
 {
-    if(_parent->InputMethod->IsActive()){
-        _parent->InputMethod->Client->SetPreeditText(nullptr);
+    auto parent = _parent.tryGet();
+    if(parent->InputMethod->IsActive()){
+        parent->InputMethod->Client->SetPreeditText(nullptr);
     }
     
     _markedRange = NSMakeRange(_selectedRange.location, 0);
@@ -688,7 +815,8 @@
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
 {
-    if(_parent == nullptr){
+    auto parent = _parent.tryGet();
+    if(parent == nullptr){
         return;
     }
     
@@ -707,7 +835,7 @@
         
     uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
         
-    _parent->BaseEvents->RawTextInputEvent(timestamp, [text UTF8String]);
+    parent->TopLevelEvents->RawTextInputEvent(timestamp, [text UTF8String]);
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
@@ -717,7 +845,8 @@
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    if(!_parent->InputMethod->IsActive()){
+    auto parent = _parent.tryGet();
+    if(!parent->InputMethod->IsActive()){
         return NSZeroRect;
     }
     
@@ -726,16 +855,20 @@
 
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
 {
-    auto localPoint = [self convertPoint:[info draggingLocation] toView:self];
-    auto avnPoint = [AvnView toAvnPoint:localPoint];
-    auto point = [self translateLocalPoint:avnPoint];
+    NSPoint eventLocation = [info draggingLocation];
+    auto viewLocation = [self convertPoint:NSMakePoint(0, 0) toView:nil];
+    auto localPoint = NSMakePoint(eventLocation.x - viewLocation.x, viewLocation.y - eventLocation.y);
+    auto point = ToAvnPoint(localPoint);
     auto modifiers = [self getModifiers:[[NSApp currentEvent] modifierFlags]];
     NSDragOperation nsop = [info draggingSourceOperationMask];
 
     auto effects = ConvertDragDropEffects(nsop);
-    int reffects = (int)_parent->BaseEvents
+    auto parent = _parent.tryGet();
+    if (!parent)
+      return NSDragOperationNone;
+    int reffects = (int)parent->TopLevelEvents
             ->DragEvent(type, point, modifiers, effects,
-                    CreateClipboard([info draggingPasteboard], nil),
+                    CreateClipboard([info draggingPasteboard]),
                     GetAvnDataObjectHandleFromDraggingInfo(info));
 
     NSDragOperation ret = static_cast<NSDragOperation>(0);
@@ -795,35 +928,78 @@
     _resizeReason = reason;
 }
 
-- (AvnAccessibilityElement *) accessibilityChild
-{
-    if (_accessibilityChild == nil)
-    {
-        auto peer = _parent->BaseEvents->GetAutomationPeer();
-
-        if (peer == nil)
-            return nil;
-
-        _accessibilityChild = [AvnAccessibilityElement acquire:peer];
-    }
-
-    return _accessibilityChild;
-}
-
 - (NSArray *)accessibilityChildren
 {
-    auto child = [self accessibilityChild];
-    return NSAccessibilityUnignoredChildrenForOnlyChild(child);
+    if (_accessibilityChildren == nil)
+        [self recalculateAccessibiltyChildren];
+    return _accessibilityChildren;
 }
 
-- (id)accessibilityHitTest:(NSPoint)point
+- (id _Nullable) accessibilityHitTest:(NSPoint)point
 {
-    return [[self accessibilityChild] accessibilityHitTest:point];
+    if (![[self window] isKindOfClass:[AvnWindow class]])
+        return self;
+
+    auto window = (AvnWindow*)[self window];
+    auto peer = [window automationPeer];
+
+    if (peer == nullptr || !peer->IsRootProvider())
+        return nil;
+
+    auto clientPoint = [window convertPointFromScreen:point];
+    auto localPoint = [self translateLocalPoint:ToAvnPoint(clientPoint)];
+    auto hit = peer->RootProvider_GetPeerFromPoint(localPoint);
+    return [AvnAccessibilityElement acquire:hit];
 }
 
-- (id)accessibilityFocusedUIElement
+- (void)raiseAccessibilityChildrenChanged
 {
-    return [[self accessibilityChild] accessibilityFocusedUIElement];
+    auto changed = _accessibilityChildren ? [NSMutableSet setWithArray:_accessibilityChildren] : [NSMutableSet set];
+
+    [self recalculateAccessibiltyChildren];
+
+    if (_accessibilityChildren)
+        [changed addObjectsFromArray:_accessibilityChildren];
+
+    NSAccessibilityPostNotificationWithUserInfo(
+        self,
+        NSAccessibilityLayoutChangedNotification,
+        @{ NSAccessibilityUIElementsKey: [changed allObjects]});
+}
+
+- (void)recalculateAccessibiltyChildren
+{
+    _accessibilityChildren = [[NSMutableArray alloc] init];
+
+    if (![[self window] isKindOfClass:[AvnWindow class]])
+    {
+        return;
+    }
+
+    // The accessibility children of the Window are exposed as children
+    // of the AvnView.
+    auto window = (AvnWindow*)[self window];
+    auto peer = [window automationPeer];
+    if (peer == nullptr)
+    {
+        return;
+    }
+    auto childPeers = peer->GetChildren();
+    auto childCount = childPeers != nullptr ? childPeers->GetCount() : 0;
+
+    if (childCount > 0)
+    {
+        for (int i = 0; i < childCount; ++i)
+        {
+            IAvnAutomationPeer* child;
+
+            if (childPeers->Get(i, &child) == S_OK)
+            {
+                id element = [AvnAccessibilityElement acquire:child];
+                [_accessibilityChildren addObject:element];
+            }
+        }
+    }
 }
 
 - (void) setText:(NSString *)text{

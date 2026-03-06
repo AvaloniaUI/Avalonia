@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia.Compatibility;
-using Avalonia.Metadata;
 
 namespace Avalonia.Platform.Storage.FileIO;
 
@@ -44,18 +43,23 @@ internal class BclLauncher : ILauncher
         {
             // If no associated application/json MimeType is found xdg-open opens return error
             // but it tries to open it anyway using the console editor (nano, vim, other..)
-            ShellExec($"xdg-open {urlOrFile}", waitForExit: false);
+            var args = EscapeForShell(urlOrFile);
+            ShellExecRaw($"xdg-open \\\"{args}\\\"", waitForExit: false);
             return true;
         }
         else if (OperatingSystemEx.IsWindows() || OperatingSystemEx.IsMacOS())
         {
-            using var process = Process.Start(new ProcessStartInfo
+            var info = new ProcessStartInfo
             {
                 FileName = OperatingSystemEx.IsWindows() ? urlOrFile : "open",
-                Arguments = OperatingSystemEx.IsMacOS() ? $"{urlOrFile}" : "",
                 CreateNoWindow = true,
                 UseShellExecute = OperatingSystemEx.IsWindows()
-            });
+            };
+            // Using the argument list avoids having to escape spaces and other special 
+            // characters that are part of valid macos file and folder paths.
+            if (OperatingSystemEx.IsMacOS())
+                info.ArgumentList.Add(urlOrFile);
+            using var process = Process.Start(info);
             return true;
         }
         else
@@ -63,17 +67,18 @@ internal class BclLauncher : ILauncher
             return false;
         }
     }
-
-    private static void ShellExec(string cmd, bool waitForExit = true)
+    
+    private static string EscapeForShell(string input) => Regex
+        .Replace(input, "(?=[`~!#&*()|;'<>])", "\\")
+        .Replace("\"", "\\\\\\\"");
+    
+    private static void ShellExecRaw(string cmd, bool waitForExit = true)
     {
-        var escapedArgs = Regex.Replace(cmd, "(?=[`~!#&*()|;'<>])", "\\")
-            .Replace("\"", "\\\\\\\"");
-
         using (var process = Process.Start(
                    new ProcessStartInfo
                    {
                        FileName = "/bin/sh",
-                       Arguments = $"-c \"{escapedArgs}\"",
+                       Arguments = $"-c \"{cmd}\"",
                        RedirectStandardOutput = true,
                        UseShellExecute = false,
                        CreateNoWindow = true,

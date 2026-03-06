@@ -1,15 +1,14 @@
+﻿using System;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Xunit;
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests.Controls
-#endif
 {
     public class TextBlockTests : TestBase
     {
@@ -145,5 +144,285 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             await RenderToFile(target);
             CompareImages();
         }
+
+        [Win32Fact("Has text")]
+        public async Task Should_Draw_Run_With_Background()
+        {
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 200,
+                Height = 50,
+                Child = new TextBlock
+                {
+                    FontFamily = new FontFamily("Courier New"),
+                    FontSize = 12,
+                    Foreground = Brushes.Black,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    TextWrapping = TextWrapping.NoWrap,
+                    Inlines = new InlineCollection
+                    {
+                        new Run
+                        {
+                            Text = "Neque porro quisquam",
+                            Background = Brushes.Red
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+
+        [InlineData(150, 200, TextWrapping.NoWrap)]
+        [InlineData(44, 200, TextWrapping.NoWrap)]
+        [InlineData(44, 400, TextWrapping.Wrap)]
+        [Win32Theory("Has text")]
+        public async Task Should_Measure_Arrange_TextBlock(double width, double height, TextWrapping textWrapping)
+        {
+            var text = "Hello World";
+
+            var target = new StackPanel { Width = 200, Height = height };
+
+            target.Children.Add(new TextBlock 
+            { 
+                Text = text, 
+                Background = Brushes.Red, 
+                HorizontalAlignment = HorizontalAlignment.Left, 
+                TextAlignment = TextAlignment.Left,
+                Width = width, 
+                TextWrapping = textWrapping 
+            });
+            target.Children.Add(new TextBlock 
+            { 
+                Text = text,
+                Background = Brushes.Red, 
+                HorizontalAlignment = HorizontalAlignment.Left, 
+                TextAlignment = TextAlignment.Center, 
+                Width = width, 
+                TextWrapping = textWrapping 
+            });
+            target.Children.Add(new TextBlock 
+            { 
+                Text = text, 
+                Background = Brushes.Red, 
+                HorizontalAlignment = HorizontalAlignment.Left, 
+                TextAlignment = TextAlignment.Right, 
+                Width = width, 
+                TextWrapping = textWrapping 
+            });
+
+            target.Children.Add(new TextBlock
+            {
+                Text = text,
+                Background = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextAlignment = TextAlignment.Left,
+                Width = width,
+                TextWrapping = textWrapping
+            });
+            target.Children.Add(new TextBlock
+            {
+                Text = text,
+                Background = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextAlignment = TextAlignment.Center,
+                Width = width,
+                TextWrapping = textWrapping
+            });
+            target.Children.Add(new TextBlock
+            {
+                Text = text,
+                Background = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextAlignment = TextAlignment.Right,
+                Width = width,
+                TextWrapping = textWrapping
+            });
+
+            target.Children.Add(new TextBlock
+            {
+                Text = text,
+                Background = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                TextAlignment = TextAlignment.Left,
+                Width = width,
+                TextWrapping = textWrapping
+            });
+            target.Children.Add(new TextBlock
+            {
+                Text = text,
+                Background = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                TextAlignment = TextAlignment.Center,
+                Width = width,
+                TextWrapping = textWrapping
+            });
+            target.Children.Add(new TextBlock
+            {
+                Text = text,
+                Background = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                TextAlignment = TextAlignment.Right,
+                Width = width,
+                TextWrapping = textWrapping
+            });
+
+            var testName = $"Should_Measure_Arrange_TextBlock_{width}_{textWrapping}";
+
+            await RenderToFile(target, testName);
+            CompareImages(testName);
+        }
+
+        [Win32Fact("Has text")]
+        public async Task Should_Keep_TrailingWhiteSpace()
+        {
+            // <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            //   <TextBlock Margin="0 10 0 0" HorizontalAlignment="Center" VerticalAlignment="Center" Background="Magenta" FontSize="44" Text="aaaa" FontFamily="Courier New"/>
+            //   <TextBlock Margin="0 10 0 0" HorizontalAlignment="Center" VerticalAlignment="Center" Background="Magenta" FontSize="44" Text="a a " FontFamily="Courier New"/>
+            //   <TextBlock Margin="0 10 0 0" HorizontalAlignment="Center" VerticalAlignment="Center" Background="Magenta" FontSize="44" Text="    " FontFamily="Courier New"/>
+            //   <TextBlock Margin="0 10 0 0" HorizontalAlignment="Center" VerticalAlignment="Center" Background="Magenta" FontSize="44" Text="LLLL" FontFamily="Courier New"/>
+            // </StackPanel>
+
+            var target = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Width = 300,
+                Height = 300,
+            };
+            target.Children.Add(CreateText("aaaa"));
+            target.Children.Add(CreateText("a a "));
+            target.Children.Add(CreateText("    "));
+            target.Children.Add(CreateText("LLLL"));
+
+            var testName = $"Should_Keep_TrailingWhiteSpace";
+            await RenderToFile(target, testName);
+            CompareImages(testName);
+
+            static TextBlock CreateText(string text) => new TextBlock
+            {
+                Margin = new Thickness(0, 10, 0, 0),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Background = Brushes.Magenta,
+                FontSize = 44,
+                Text = text,
+                FontFamily = new FontFamily("Courier New")
+            };
+        }
+
+        [Win32Fact("Has text")]
+        public async Task Should_Account_For_Overhang_Leading_And_Trailing()
+        {
+            var target = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Width = 300,
+                Height = 600,
+                Background = new SolidColorBrush(Colors.White), // Required antialiasing to work for Overhang
+            };
+
+            target.Children.Add(CreateText("f"));
+            target.Children.Add(CreateText("y"));
+            target.Children.Add(CreateText("ff"));
+            target.Children.Add(CreateText("yy"));
+            target.Children.Add(CreateText("faaf"));
+            target.Children.Add(CreateText("yaay"));
+            target.Children.Add(CreateText("y y "));
+            target.Children.Add(CreateText("f f "));
+
+            var testName = $"Should_Account_For_Overhang_Leading_And_Trailing";
+            await RenderToFile(target, testName);
+            CompareImages(testName);
+
+            const string symbolsFont = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Source Serif 4 36pt";
+            static TextBlock CreateText(string text) => new TextBlock
+            {
+                ClipToBounds = false,
+                Margin = new Thickness(4),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Background = Brushes.Magenta,
+                FontStyle = FontStyle.Italic,
+                FontSize = 44,
+                Text = text,
+                FontFamily = new FontFamily(symbolsFont)
+            };
+        }
+
+        [Win32Fact("Has text")]
+        public async Task Should_Draw_MultiLineText_WithOverHandLeadingTrailing()
+        {
+            var target = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Width = 600,
+                Height = 200,
+                Background = new SolidColorBrush(Colors.White), // Required antialiasing to work for Overhang
+            };
+
+            target.Children.Add(CreateText("fff Why this is a\nbig text yyy\nyyy with multiple lines fff"));
+
+            var testName = $"Should_Draw_MultiLineText_WithOverHandLeadingTrailing";
+            await RenderToFile(target, testName);
+            CompareImages(testName);
+
+            const string symbolsFont = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Source Serif 4 36pt";
+            static TextBlock CreateText(string text) => new TextBlock
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                TextAlignment = TextAlignment.Center,
+                Background = Brushes.Magenta,
+                FontStyle = FontStyle.Italic,
+                FontSize = 44,
+                Text = text,
+                FontFamily = new FontFamily(symbolsFont)
+            };
+        }
+        
+        [InlineData(TextRenderingMode.Antialias, TextHintingMode.None)]
+        [InlineData(TextRenderingMode.Alias, TextHintingMode.None)]
+        [InlineData(TextRenderingMode.Antialias, TextHintingMode.Light)]
+        [InlineData(TextRenderingMode.Alias, TextHintingMode.Light)]
+        [Win32Theory("Depends on the backend")]
+        public async Task Should_Render_TextBlock_With_TextOptions(
+            TextRenderingMode textRenderingMode, 
+            TextHintingMode textHintingMode)
+        {
+            var textBlock = new TextBlock
+            {
+                FontFamily = TestFontFamily,
+                FontSize = 24,
+                Foreground = Brushes.Black,
+                Text = "TextOptions",
+                Background = Brushes.LightGray,
+                Padding = new Thickness(10)
+            };
+            
+            TextOptions.SetTextOptions(textBlock, new TextOptions
+            {
+                TextRenderingMode = textRenderingMode,
+                TextHintingMode = textHintingMode
+            });
+
+            var target = new Border
+            {
+                Width = 300,
+                Height = 100,
+                Background = Brushes.White,
+                Child = textBlock
+            };
+
+            var testName = $"Should_Render_TextBlock_With_TextOptions_{textRenderingMode}_{textHintingMode}";
+            await RenderToFile(target, testName);
+            CompareImages(testName);
+        }
+
     }
 }

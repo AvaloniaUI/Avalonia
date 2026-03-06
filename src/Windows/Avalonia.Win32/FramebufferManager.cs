@@ -49,7 +49,7 @@ namespace Avalonia.Win32
 
                 return fb = new LockedFramebuffer(
                     framebufferData.Data.Address, framebufferData.Size, framebufferData.RowBytes,
-                    GetCurrentDpi(), s_format, _onDisposeAction);
+                    GetCurrentDpi(), s_format, AlphaFormat.Premul, _onDisposeAction);
             }
             finally
             {
@@ -88,7 +88,7 @@ namespace Avalonia.Win32
 
         private Vector GetCurrentDpi()
         {
-            if (UnmanagedMethods.ShCoreAvailable && Win32Platform.WindowsVersion > PlatformConstants.Windows8)
+            if (UnmanagedMethods.ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
             {
                 var monitor =
                     UnmanagedMethods.MonitorFromWindow(_hwnd, UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);

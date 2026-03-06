@@ -61,7 +61,7 @@
         </Border.ContextMenu>
         <TextBlock Text="Dynamically Generated"/>
       </Border>
-      <Border x:Name="CustomContextRequestedBorder">
+      <Border x:Name="CustomContextRequestedBorder" ContextRequested="CustomContextRequested">
         <Border.ContextMenu>
           <ContextMenu>
             <MenuItem Header="Should never be visible" />
@@ -71,7 +71,7 @@
       </Border>
       <Border x:Name="CancellableContextBorder">
         <Border.ContextMenu>
-          <ContextMenu>
+          <ContextMenu Opening="ContextFlyoutPage_Opening" Closing="ContextFlyoutPage_Closing">
             <MenuItem>
               <MenuItem.Header>
                 <CheckBox x:Name="CancelCloseCheckBox" Content="Cancel close" />

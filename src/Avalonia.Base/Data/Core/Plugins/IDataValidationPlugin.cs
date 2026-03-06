@@ -5,7 +5,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Defines how data validation is observed by an <see cref="BindingExpression"/>.
     /// </summary>
-    public interface IDataValidationPlugin
+    internal interface IDataValidationPlugin
     {
         /// <summary>
         /// Checks whether this plugin can handle data validation on the specified object.

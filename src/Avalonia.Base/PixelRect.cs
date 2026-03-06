@@ -433,7 +433,7 @@ namespace Avalonia
         /// <returns>The parsed <see cref="PixelRect"/>.</returns>
         public static PixelRect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelRect."))
+            using (var tokenizer = new SpanStringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelRect."))
             {
                 return new PixelRect(
                     tokenizer.ReadInt32(),

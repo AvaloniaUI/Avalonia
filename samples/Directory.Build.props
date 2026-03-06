@@ -2,9 +2,11 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)..\src\tools\Avalonia.Designer.HostApp\bin\Debug\netstandard2.0\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
+    <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)..\src\tools\Avalonia.Designer.HostApp\bin\Debug\$(AvsCurrentTargetFramework)\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <LangVersion>12</LangVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <LangVersion>14.0</LangVersion>
+    <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);CS8002</NoWarn> <!-- ignore signing warnings for samples -->
   </PropertyGroup>
 

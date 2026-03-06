@@ -35,7 +35,7 @@ internal class InsetsManager : InsetsManagerBase
     }
     public event EventHandler<bool>? DisplayEdgeToEdgeChanged;
 
-    public override bool DisplayEdgeToEdge
+    public override bool DisplayEdgeToEdgePreference
     {
         get => _displayEdgeToEdge;
         set

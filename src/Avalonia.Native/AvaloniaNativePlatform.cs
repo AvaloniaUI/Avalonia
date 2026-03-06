@@ -1,6 +1,8 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Compatibility;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -11,7 +13,6 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using MicroCom.Runtime;
-#nullable enable
 
 namespace Avalonia.Native
 {
@@ -29,7 +30,12 @@ namespace Avalonia.Native
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
-            var result = new AvaloniaNativePlatform(MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true));
+            var factoryProxy = MicroComRuntime.CreateProxyFor<IAvaloniaNativeFactory>(factory, true);
+
+            AvaloniaLocator.CurrentMutable.Bind<IAvaloniaNativeFactory>().ToConstant(factoryProxy);
+            
+            var result = new AvaloniaNativePlatform(factoryProxy);
+            
             result.DoInitialize(options);
 
             return result;
@@ -58,6 +64,11 @@ namespace Avalonia.Native
         public void SetupApplicationMenuExporter()
         {
             var exporter = new AvaloniaNativeMenuExporter(_factory);
+        }
+
+        public void SetupApplicationDockMenuExporter()
+        {
+            _ = new AvaloniaNativeMenuExporter(_factory, AvaloniaNativeMenuExporter.MenuTarget.Dock);
         }
 
         public void SetupApplicationName()
@@ -100,21 +111,26 @@ namespace Avalonia.Native
                 _factory.MacOptions.SetDisableSetProcessName(macOpts.DisableSetProcessName ? 1 : 0);
             }
 
+            var clipboardImpl = new ClipboardImpl(_factory.CreateClipboard());
+            var clipboard = new Clipboard(clipboardImpl);
+
+            Dispatcher.InitializeUIThreadDispatcher(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()));
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>()
-                .ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
+                .Bind<IScreenImpl>().ToConstant(new ScreenImpl(_factory.CreateScreens))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToConstant(new NativePlatformSettings(_factory.CreatePlatformSettings()))
                 .Bind<IWindowingPlatform>().ToConstant(this)
-                .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
+                .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
+                .Bind<IClipboard>().ToConstant(clipboard)
                 .Bind<IRenderTimer>().ToConstant(new ThreadProxyRenderTimer(new AvaloniaNativeRenderTimer(_factory.CreatePlatformRenderTimer())))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
                 .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()))
-                .Bind<IActivatableLifetime>().ToSingleton<MacOSActivatableLifetime>();
+                .Bind<IActivatableLifetime>().ToSingleton<MacOSActivatableLifetime>()
+                .Bind<IStorageProviderFactory>().ToConstant(new StorageProviderApi(_factory.CreateStorageProvider(), options.AppSandboxEnabled));
 
             var hotkeys = new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt);
             hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
@@ -124,13 +140,21 @@ namespace Avalonia.Native
 
             AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(hotkeys);
 
+            AvaloniaLocator.CurrentMutable.Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>()
+                    {
+                        { Key.Back , "⌫" }, { Key.Down , "↓" }, { Key.End , "↘" }, { Key.Escape , "⎋" },
+                        { Key.Home , "↖" }, { Key.Left , "←" }, { Key.Return , "↩" }, { Key.PageDown , "⇟" },
+                        { Key.PageUp , "⇞" }, { Key.Right , "→" }, { Key.Space , "␣" }, { Key.Tab , "⇥" },
+                        { Key.Up , "↑" }
+                    }, ctrl: "⌃", meta: "⌘", shift: "⇧", alt: "⌥"));
+
             foreach (var mode in _options.RenderingMode)
             {
                 if (mode == AvaloniaNativeRenderingMode.OpenGl)
                 {
                     try
                     {
-                        _platformGraphics = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
+                        _platformGraphics = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay(), _factory);
                         break;
                     }
                     catch (Exception)
@@ -180,12 +204,25 @@ namespace Avalonia.Native
 
         public IWindowImpl CreateWindow()
         {
-            return new WindowImpl(_factory, _options);
+            return new WindowImpl(_factory, _options ?? new AvaloniaNativePlatformOptions());
         }
 
         public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
+        }
+        
+        public ITopLevelImpl CreateEmbeddableTopLevel()
+        {
+            return new EmbeddableTopLevelImpl(_factory);
+        }
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+        {
+            for (var i = 0; i < windows.Length; i++)
+            {
+                zOrder[i] = (windows[i] as WindowImpl)?.ZOrder?.ToInt64() ?? 0;
+            }
         }
     }
 }

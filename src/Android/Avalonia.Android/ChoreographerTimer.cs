@@ -1,33 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
-
-using Android.OS;
-using Android.Views;
-
 using Avalonia.Reactive;
 using Avalonia.Rendering;
+using static Avalonia.Android.Platform.SkiaPlatform.AndroidFramebuffer;
 
-using Java.Lang;
+using Looper = Android.OS.Looper;
 
 namespace Avalonia.Android
 {
-    internal sealed class ChoreographerTimer : Java.Lang.Object, IRenderTimer, Choreographer.IFrameCallback
+    internal sealed class ChoreographerTimer : IRenderTimer
     {
         private readonly object _lock = new();
-
-        private readonly Thread _thread;
-        private readonly TaskCompletionSource<Choreographer> _choreographer = new();
-
-        private readonly ISet<AvaloniaView> _views = new HashSet<AvaloniaView>();
+        private readonly TaskCompletionSource<IntPtr> _choreographer = new();
+        private readonly AutoResetEvent _event = new(false);
+        private readonly GCHandle _timerHandle;
+        private readonly HashSet<AvaloniaView> _views = new();
 
         private Action<TimeSpan>? _tick;
+        private long _lastTime;
         private int _count;
 
         public ChoreographerTimer()
         {
-            _thread = new Thread(Loop);
-            _thread.Start();
+            _timerHandle = GCHandle.Alloc(this);
+            new Thread(Loop)
+            {
+                Priority = ThreadPriority.AboveNormal,
+                Name = "Choreographer Thread"
+            }.Start();
+            new Thread(RenderLoop)
+            {
+                Priority = ThreadPriority.AboveNormal,
+                Name = "Render Thread"
+            }.Start();
         }
 
         public bool RunsInBackground => true;
@@ -43,7 +51,7 @@ namespace Avalonia.Android
 
                     if (_count == 1)
                     {
-                        _choreographer.Task.Result.PostFrameCallback(this);
+                        PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
                     }
                 }
             }
@@ -65,7 +73,7 @@ namespace Avalonia.Android
 
                 if (_views.Count == 1)
                 {
-                    _choreographer.Task.Result.PostFrameCallback(this);
+                    PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
                 }
             }
 
@@ -83,20 +91,63 @@ namespace Avalonia.Android
         private void Loop()
         {
             Looper.Prepare();
-            _choreographer.SetResult(Choreographer.Instance!);
+            _choreographer.SetResult(AChoreographer_getInstance());
             Looper.Loop();
         }
 
-        public void DoFrame(long frameTimeNanos)
+        private void RenderLoop()
         {
-            _tick?.Invoke(TimeSpan.FromTicks(frameTimeNanos / 100));
+            while (true)
+            {
+                _event.WaitOne();
+                long time;
+                lock (_lock)
+                {
+                    time = _lastTime;
+                }
+                _tick?.Invoke(TimeSpan.FromTicks(time / 100));
+            }
+        }
 
+        private void DoFrameCallback(long frameTimeNanos, IntPtr data)
+        {
             lock (_lock)
             {
                 if (_count > 0 && _views.Count > 0)
                 {
-                    Choreographer.Instance!.PostFrameCallback(this);
+                    PostFrameCallback(_choreographer.Task.Result, data);
                 }
+                _lastTime = frameTimeNanos;
+                _event.Set();
+            }
+        }
+
+        private static unsafe void PostFrameCallback(IntPtr choreographer, IntPtr data)
+        {
+            // AChoreographer_postFrameCallback is deprecated on 10.0+. 
+            if (OperatingSystem.IsAndroidVersionAtLeast(29))
+            {
+                AChoreographer_postFrameCallback64(choreographer, &FrameCallback64, data);
+            }
+            else
+            {
+                AChoreographer_postFrameCallback(choreographer, &FrameCallback, data);
+            }
+
+            return;
+
+            [UnmanagedCallersOnly]
+            static void FrameCallback(int frameTimeNanos, IntPtr data)
+            {
+                var timer = (ChoreographerTimer)GCHandle.FromIntPtr(data).Target!;
+                timer.DoFrameCallback(frameTimeNanos, data);
+            }
+
+            [UnmanagedCallersOnly]
+            static void FrameCallback64(long frameTimeNanos, IntPtr data)
+            {
+                var timer = (ChoreographerTimer)GCHandle.FromIntPtr(data).Target!;
+                timer.DoFrameCallback(frameTimeNanos, data);
             }
         }
     }

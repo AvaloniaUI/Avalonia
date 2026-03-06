@@ -20,7 +20,13 @@
                       Content="UseLightDismissOverlayMode"
                       IsChecked="{Binding UseLightDismissOverlayMode, ElementName=SplitView}" />
 
-        <ToggleSwitch OffContent="Left" OnContent="Right" Content="Placement" IsChecked="{Binding !IsLeft}" />
+        <ComboBox Name="Placement" Width="170" Margin="10" SelectedIndex="{Binding Placement}">
+          <ComboBoxItem>Left</ComboBoxItem>
+          <ComboBoxItem>Right</ComboBoxItem>
+          <ComboBoxItem>Top</ComboBoxItem>
+          <ComboBoxItem>Bottom</ComboBoxItem>
+        </ComboBox>
+        
 
         <TextBlock Text="DisplayMode" />
         <ComboBox Name="DisplayModeSelector" Width="170" Margin="10" SelectedIndex="{Binding DisplayMode}">
@@ -52,6 +58,7 @@
             BorderThickness="1">
         <!--{Binding SelectedItem.Tag, ElementName=PaneBackgroundSelector}-->
         <SplitView Name="SplitView"
+                      
                       PanePlacement="{Binding PanePlacement}"
                       PaneBackground="{Binding ((Control)SelectedItem).Tag, ElementName=PaneBackgroundSelector, FallbackValue={x:Null}}"
                       OpenPaneLength="{Binding Value, ElementName=OpenPaneLengthSlider}"

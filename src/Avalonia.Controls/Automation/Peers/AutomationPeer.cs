@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Automation.Provider;
+using Avalonia.Metadata;
 
 namespace Avalonia.Automation.Peers
 {
@@ -47,6 +48,19 @@ namespace Avalonia.Automation.Peers
         Table,
         TitleBar,
         Separator,
+        Expander,
+    }
+
+    public enum AutomationLandmarkType
+    {
+        Banner,
+        Complementary,
+        ContentInfo,
+        Region,
+        Form,
+        Main,
+        Navigation,
+        Search,
     }
 
     /// <summary>
@@ -63,95 +77,458 @@ namespace Avalonia.Automation.Peers
         /// Gets the accelerator key combinations for the element that is associated with the UI
         /// Automation peer.
         /// </summary>
+        /// <remarks>
+        /// An accelerator key (sometimes called a shortcut key) exposes a key combination for
+        /// which can be used to invoke an action, for example, an "Open..." menu item on Windows
+        /// often has an accelerator key of "Ctrl+O".
+        /// 
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_AcceleratorKeyPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public string? GetAcceleratorKey() => GetAcceleratorKeyCore();
 
         /// <summary>
         /// Gets the access key for the element that is associated with the automation peer.
         /// </summary>
+        /// <remarks>
+        /// An access key (sometimes called a mnemonic) is a character in the text of a menu, menu
+        /// item, or label of a control such as a button, that activates the associated function.
+        /// For example, to open the File menu, for which the access key is typically F, the user
+        /// would press ALT+F.
+        /// 
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_AccessKeyPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public string? GetAccessKey() => GetAccessKeyCore();
 
         /// <summary>
         /// Gets the control type for the element that is associated with the UI Automation peer.
         /// </summary>
+        /// <remarks>
+        /// Gets the type of the element.
+        /// 
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_ControlTypePropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityRole</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public AutomationControlType GetAutomationControlType() => GetControlTypeOverrideCore();
 
         /// <summary>
         /// Gets the automation ID of the element that is associated with the UI Automation peer.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_AutomationIdPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityIdentifier</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public string? GetAutomationId() => GetAutomationIdCore();
 
         /// <summary>
         /// Gets the bounding rectangle of the element that is associated with the automation peer
         /// in top-level coordinates.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>IRawElementProviderFragment.get_BoundingRectangle</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityFrame</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public Rect GetBoundingRectangle() => GetBoundingRectangleCore();
 
         /// <summary>
         /// Gets the child automation peers.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>IRawElementProviderFragment.Navigate</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityChildren</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public IReadOnlyList<AutomationPeer> GetChildren() => GetOrCreateChildrenCore();
 
         /// <summary>
         /// Gets a string that describes the class of the element.
         /// </summary>
-        public string GetClassName() => GetClassNameCore() ?? string.Empty;
+        /// <remarks>
+        /// A string containing the class name for the automation element as assigned by the
+        /// control developer. This is often the C# class name of the control.
+        /// 
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_ClassNamePropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string GetClassName() => GetClassNameOverrideCore() ?? string.Empty;
 
         /// <summary>
         /// Gets the automation peer for the label that is targeted to the element.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>
+        /// Identifies an automation peer representing an element which that contains the text
+        /// label for this element.
+        /// 
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_LabeledByPropertyId</c> (not yet implemented)</description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityLabelUIElements</c> (not yet implemented)</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public AutomationPeer? GetLabeledBy() => GetLabeledByCore();
 
         /// <summary>
         /// Gets a human-readable localized string that represents the type of the control that is
         /// associated with this automation peer.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_LocalizedControlTypePropertyId</c> (not yet implemented)</description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public string GetLocalizedControlType() => GetLocalizedControlTypeCore();
 
         /// <summary>
         /// Gets text that describes the element that is associated with this automation peer.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_NamePropertyId</c> (not yet implemented)</description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>
+        ///       When the control type is <see cref="AutomationControlType.Text"/>, this value is
+        ///       exposed by both <c>NSAccessibilityProtocol.accessibilityTitle</c> and
+        ///       <c>NSAccessibilityProtocol.accessibilityValue</c> .
+        ///     </description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public string GetName() => GetNameCore() ?? string.Empty;
+
+        /// <summary>
+        /// Gets text that provides help for the element that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_HelpTextPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityHelp</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string GetHelpText() => GetHelpTextCore() ?? string.Empty;
+
+        /// <summary>
+        /// Gets text that provides a placeholder for the element that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityPlaceholderValue</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string GetPlaceholderText() => GetPlaceholderTextCore() ?? string.Empty;
+
+        /// <summary>
+        /// Gets the control type for the element that is associated with the UI Automation peer.
+        /// </summary>
+        /// <remarks>
+        /// Gets the type of the element.
+        ///
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_LandmarkTypePropertyId</c>, <c>UIA_LocalizedLandmarkTypePropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityRole</c>, <c>NSAccessibilityProtocol.accessibilitySubrole</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public AutomationLandmarkType? GetLandmarkType() => GetLandmarkTypeCore();
+
+        /// <summary>
+        /// Gets the heading level that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_HeadingLevelPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityValue</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public int GetHeadingLevel() => GetHeadingLevelCore();
+
+
+        /// <summary>
+        /// Gets the item type that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_ItemTypePropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string? GetItemType() => GetItemTypeCore();
+
+        /// <summary>
+        /// Gets the item status that is associated with this automation peer.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_ItemStatusPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public string? GetItemStatus() => GetItemStatusCore();
 
         /// <summary>
         /// Gets the <see cref="AutomationPeer"/> that is the parent of this <see cref="AutomationPeer"/>.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>IRawElementProviderFragment.Navigate</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityParent</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public AutomationPeer? GetParent() => GetParentCore();
 
         /// <summary>
         /// Gets the <see cref="AutomationPeer"/> that is the root of this <see cref="AutomationPeer"/>'s
         /// visual tree.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description>No mapping, but used internally to translate coordinates.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        [PrivateApi]
         public AutomationPeer? GetVisualRoot() => GetVisualRootCore();
+
+        /// <summary>
+        /// Gets the <see cref="AutomationPeer"/> that is the root of this <see cref="AutomationPeer"/>'s
+        /// visual tree.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityTopLevelUIElement</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        [PrivateApi]
+        public AutomationPeer? GetAutomationRoot() => GetAutomationRootCore();
 
         /// <summary>
         /// Gets a value that indicates whether the element that is associated with this automation
         /// peer currently has keyboard focus.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_HasKeyboardFocusPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.isAccessibilityFocused</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public bool HasKeyboardFocus() => HasKeyboardFocusCore();
 
         /// <summary>
         /// Gets a value that indicates whether the element that is associated with this automation
         /// peer contains data that is presented to the user.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_IsContentElementPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public bool IsContentElement() => IsContentElementOverrideCore();
 
         /// <summary>
         /// Gets a value that indicates whether the element is understood by the user as
         /// interactive or as contributing to the logical structure of the control in the GUI.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_IsControlElementPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.isAccessibilityElement</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public bool IsControlElement() => IsControlElementOverrideCore();
 
         /// <summary>
         /// Gets a value indicating whether the control is enabled for user interaction.
         /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_IsEnabledPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description><c>NSAccessibilityProtocol.isAccessibilityEnabled</c></description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public bool IsEnabled() => IsEnabledCore();
 
         /// <summary>
         /// Gets a value that indicates whether the element can accept keyboard focus.
         /// </summary>
         /// <returns></returns>
+        /// <remarks>
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_IsKeyboardFocusablePropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
         public bool IsKeyboardFocusable() => IsKeyboardFocusableCore();
+
+        /// <summary>
+        /// Gets a value that indicates whether an element is off the screen.
+        /// </summary>
+        /// <remarks>
+        /// This property does not indicate whether the element is visible. In some circumstances,
+        /// an element is on the screen but is still not visible. For example, if the element is
+        /// on the screen but obscured by other elements, it might not be visible. In this case,
+        /// the method returns false.
+        /// 
+        /// <list type="table">
+        ///   <item>
+        ///     <term>Windows</term>
+        ///     <description><c>UIA_IsOffscreenPropertyId</c></description>
+        ///   </item>
+        ///   <item>
+        ///     <term>macOS</term>
+        ///     <description>No mapping.</description>
+        ///   </item>
+        /// </list>
+        /// </remarks>
+        public bool IsOffscreen() => IsOffscreenCore();
 
         /// <summary>
         /// Sets the keyboard focus on the element that is associated with this automation peer.
@@ -163,6 +540,12 @@ namespace Avalonia.Automation.Peers
         /// </summary>
         /// <returns>true if a context menu is present for the element; otherwise false.</returns>
         public bool ShowContextMenu() => ShowContextMenuCore();
+
+        /// <summary>
+        /// Gets the current live setting that is associated with this this automation peer.
+        /// </summary>
+        /// <returns>The live setting to use for automation.</returns>
+        public AutomationLiveSetting GetLiveSetting() => GetLiveSettingCore();
 
         /// <summary>
         /// Tries to get a provider of the specified type from the peer.
@@ -225,6 +608,8 @@ namespace Avalonia.Automation.Peers
                 AutomationControlType.SplitButton => "split button",
                 AutomationControlType.HeaderItem => "header item",
                 AutomationControlType.TitleBar => "title bar",
+                AutomationControlType.Expander => "group",
+                AutomationControlType.None => (GetLandmarkType()?.ToString() ?? controlType.ToString()).ToLowerInvariant(),
                 _ => controlType.ToString().ToLowerInvariant(),
             };
         }
@@ -239,21 +624,34 @@ namespace Avalonia.Automation.Peers
         protected abstract string GetClassNameCore();
         protected abstract AutomationPeer? GetLabeledByCore();
         protected abstract string? GetNameCore();
+        protected virtual string? GetHelpTextCore() => null;
+        protected virtual string? GetPlaceholderTextCore() => null;
+        protected virtual AutomationLandmarkType? GetLandmarkTypeCore() => null;
+        protected virtual int GetHeadingLevelCore() => 0;
+        protected virtual string? GetItemTypeCore() => null;
+        protected virtual string? GetItemStatusCore() => null;
         protected abstract AutomationPeer? GetParentCore();
         protected abstract bool HasKeyboardFocusCore();
         protected abstract bool IsContentElementCore();
         protected abstract bool IsControlElementCore();
         protected abstract bool IsEnabledCore();
         protected abstract bool IsKeyboardFocusableCore();
+        protected virtual bool IsOffscreenCore() => false;
         protected abstract void SetFocusCore();
         protected abstract bool ShowContextMenuCore();
+        protected virtual AutomationLiveSetting GetLiveSettingCore() => AutomationLiveSetting.Off;
 
         protected virtual AutomationControlType GetControlTypeOverrideCore()
         {
             return GetAutomationControlTypeCore();
         }
 
-        protected virtual AutomationPeer? GetVisualRootCore()
+        protected virtual string GetClassNameOverrideCore()
+        {
+            return GetClassNameCore();
+        }
+
+        private protected virtual AutomationPeer? GetAutomationRootCore()
         {
             var peer = this;
             var parent = peer.GetParent();
@@ -266,6 +664,8 @@ namespace Avalonia.Automation.Peers
 
             return peer;
         }
+
+        private protected virtual AutomationPeer? GetVisualRootCore() => GetAutomationRootCore();
 
 
         protected virtual bool IsContentElementOverrideCore()

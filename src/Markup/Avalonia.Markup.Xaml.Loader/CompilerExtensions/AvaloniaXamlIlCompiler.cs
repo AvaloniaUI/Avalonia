@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Markup.Xaml.Loader.CompilerExtensions.Transformers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX;
@@ -17,9 +18,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
     class AvaloniaXamlIlCompiler : XamlILCompiler
     {
-        private readonly IXamlType _contextType;
+        private readonly IXamlType _contextType = null!;
         private readonly AvaloniaXamlIlDesignPropertiesTransformer _designTransformer;
         private readonly AvaloniaBindingExtensionTransformer _bindingTransformer;
+        private readonly AvaloniaXamlIlAddSourceInfoTransformer _addSourceInfoTransformer;
+        private readonly AvaloniaXamlResourceTransformer _resourceTransformer;
 
         private AvaloniaXamlIlCompiler(TransformerConfiguration configuration, XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> emitMappings)
             : base(configuration, emitMappings, true)
@@ -47,6 +50,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlResolveClassesPropertiesTransformer(),
                 new AvaloniaXamlIlTransformInstanceAttachedProperties(),
                 new AvaloniaXamlIlTransformSyntheticCompiledBindingMembers());
+
+
             InsertAfter<PropertyReferenceResolver>(
                 new AvaloniaXamlIlAvaloniaPropertyResolver(),
                 new AvaloniaXamlIlReorderClassesPropertiesTransformer(),
@@ -56,17 +61,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertBefore<ContentConvertTransformer>(
                 new AvaloniaXamlIlControlThemeTransformer(),
                 new AvaloniaXamlIlSelectorTransformer(),
+                new AvaloniaXamlIlQueryTransformer(),
                 new AvaloniaXamlIlDuplicateSettersChecker(),
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlBindingPathParser(),
-                new AvaloniaXamlIlPropertyPathTransformer(),
                 new AvaloniaXamlIlSetterTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlStyleValidatorTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
                 new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer(),
-                new AvaloniaXamlIlThemeVariantProviderTransformer()
+                new AvaloniaXamlIlThemeVariantProviderTransformer(),
+                new AvaloniaXamlIlDataTemplateWarningsTransformer()
             );
             InsertBefore<ConvertPropertyValuesToAssignmentsTransformer>(
                 new AvaloniaXamlIlOptionMarkupExtensionTransformer());
@@ -84,13 +90,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 );
 
             InsertBeforeMany(new [] { typeof(DeferredContentTransformer), typeof(AvaloniaXamlIlCompiledBindingsMetadataRemover) },
-                new AvaloniaXamlIlDeferredResourceTransformer());
+                _resourceTransformer = new AvaloniaXamlResourceTransformer());
+
+            InsertBefore<AvaloniaXamlIlTransformInstanceAttachedProperties>(new AvaloniaXamlIlTransformRoutedEvent());
 
             Transformers.Add(new AvaloniaXamlIlControlTemplatePriorityTransformer());
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
             Transformers.Add(new AvaloniaXamlIlEnsureResourceDictionaryCapacityTransformer());
             Transformers.Add(new AvaloniaXamlIlRootObjectScope());
 
+            Transformers.Add(_addSourceInfoTransformer = new AvaloniaXamlIlAddSourceInfoTransformer());
+            
             Emitters.Add(new AvaloniaNameScopeRegistrationXamlIlNodeEmitter());
             Emitters.Add(new AvaloniaXamlIlRootObjectScope.Emitter());
             
@@ -118,6 +128,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         public const string PopulateName = "__AvaloniaXamlIlPopulate";
         public const string BuildName = "__AvaloniaXamlIlBuild";
+
+        public bool CreateSourceInfo
+        {
+            get => _addSourceInfoTransformer.CreateSourceInfo || _resourceTransformer.CreateSourceInfo; 
+            set => _addSourceInfoTransformer.CreateSourceInfo = _resourceTransformer.CreateSourceInfo = value; 
+        }
 
         public bool IsDesignMode
         {
@@ -154,7 +170,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 #if !XAMLX_CECIL_INTERNAL
         [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
 #endif
-        public XamlDocument Parse(string xaml, IXamlType overrideRootType)
+        public XamlDocument Parse(string xaml, IXamlType? overrideRootType)
         {
             var parsed = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
             {
@@ -190,7 +206,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return parsed;
         }
 
-        public void Compile(XamlDocument document, XamlDocumentTypeBuilderProvider typeBuilderProvider, string baseUri, IFileSource fileSource)
+        public void Compile(XamlDocument document, XamlDocumentTypeBuilderProvider typeBuilderProvider, string? baseUri, IFileSource? fileSource)
         {
             Compile(
                 document,
@@ -209,7 +225,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 #if !XAMLX_CECIL_INTERNAL
         [RequiresUnreferencedCode(XamlX.TrimmingMessages.DynamicXamlReference)]
 #endif
-        public void ParseAndCompile(string xaml, string baseUri, IFileSource fileSource, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlType overrideRootType)
+        public void ParseAndCompile(string xaml, string? baseUri, IFileSource fileSource, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlType overrideRootType)
         {
             var parsed = Parse(xaml, overrideRootType);
 

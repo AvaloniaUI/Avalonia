@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
+using Avalonia.Platform;
 using Avalonia.Win32.DirectX;
 using MicroCom.Runtime;
 using static Avalonia.OpenGL.Egl.EglConsts;
@@ -63,31 +64,50 @@ namespace Avalonia.Win32.OpenGl.Angle
             {
                 using var factory = MicroComRuntime.CreateProxyFor<IDXGIFactory1>(pDxgiFactory, true);
 
+                var selectionCallback = AvaloniaLocator.Current.GetService<Win32PlatformOptions>()
+                    ?.GraphicsAdapterSelectionCallback;
+                
                 void* pAdapter = null;
+                
+                var applyArmAdrenoBlacklist = RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
+                
                 // As for now, we only need to redefine default adapter only on ARM64 just in case of Adreno GPU.
-                var redefineDefaultAdapter = RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
+                var redefineDefaultAdapter =
+                    selectionCallback != null
+                    || applyArmAdrenoBlacklist;
+                
                 if (redefineDefaultAdapter)
                 {
                     ushort adapterIndex = 0;
-                    var adapters = new List<(IDXGIAdapter1 adapter, string name)>();
+                    var adapters = new List<(IDXGIAdapter1 adapter, PlatformGraphicsDeviceAdapterDescription desc)>();
                     while (factory.EnumAdapters1(adapterIndex, &pAdapter) == 0)
                     {
                         var adapter = MicroComRuntime.CreateProxyFor<IDXGIAdapter1>(pAdapter, true);
                         var desc = adapter.Desc1;
-                        var name = Marshal.PtrToStringUni(new IntPtr(desc.Description))!.ToLowerInvariant();
-                        adapters.Add((adapter, name));
+                        var name = Marshal.PtrToStringUni(new IntPtr(desc.Description))?.ToLowerInvariant();
+                        var luid = BitConverter.GetBytes(desc.AdapterLuid);
+                        adapters.Add((adapter, new() { Description = name, DeviceLuid = luid }));
                         adapterIndex++;
                     }
 
                     if (adapters.Count == 0)
                         throw new OpenGlException("No adapters found");
 
-                    chosenAdapter = adapters
-                        .OrderByDescending(x =>
-                            // Put adreno in lower priority - it's broken in Avalonia.
-                            x.name.Contains("adreno") ? -1 : 0)
-                        .First().adapter
-                        .CloneReference();
+                    if (applyArmAdrenoBlacklist && adapters.Count > 1)
+                    {
+                        for (var c = adapters.Count - 1; c >= 0; c--)
+                            if (adapters[c].desc.Description?.Contains("adreno") == true)
+                            {
+                                adapters[c].adapter.Dispose();
+                                adapters.RemoveAt(c);
+                            }
+                    }
+
+                    var chosenAdapterIndex = 0;
+                    if (selectionCallback != null)
+                        chosenAdapterIndex = selectionCallback(adapters.Select(a => a.desc).ToArray());
+
+                    chosenAdapter = adapters[chosenAdapterIndex].adapter.CloneReference();
 
                     foreach (var a in adapters)
                         a.adapter.Dispose();

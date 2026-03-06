@@ -1,6 +1,6 @@
 ﻿using Android.App;
 using Android.Content.PM;
-using Avalonia;
+using Android.OS;
 using Avalonia.Android;
 using static Android.Content.Intent;
 
@@ -11,18 +11,24 @@ using static Android.Content.Intent;
 namespace ControlCatalog.Android
 {
     [Activity(Label = "ControlCatalog.Android", Theme = "@style/MyTheme.NoActionBar", Icon = "@drawable/icon", MainLauncher = true, Exported = true, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
-    // CategoryBrowsable and DataScheme are required for Protocol activation.
     // CategoryLeanbackLauncher is required for Android TV.
-    [IntentFilter(new [] { ActionView }, Categories = new [] { CategoryDefault, CategoryBrowsable, CategoryLeanbackLauncher }, DataScheme = "avln" )]
-    public class MainActivity : AvaloniaMainActivity<App>
+    [IntentFilter(new[] { ActionView }, Categories = new[] { CategoryDefault, CategoryLeanbackLauncher })]
+    public class MainActivity : AvaloniaMainActivity
     {
-        protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
+    }
+
+    /// <summary>
+    /// Special activity to handle OpenUri activation.
+    /// `AvaloniaActivity` internally will redirect parameters to the Avalonia Application.
+    /// </summary>
+    [Activity(NoHistory = true, LaunchMode = LaunchMode.SingleTop, Exported = true, Theme = "@android:style/Theme.NoDisplay")]
+    [IntentFilter(new[] { ActionView }, Categories = new[] { CategoryDefault, CategoryBrowsable }, DataScheme = "avln")]
+    public class DataSchemeActivity : AvaloniaActivity
+    {
+        protected override void OnCreate(Bundle? savedInstanceState)
         {
-            return base.CustomizeAppBuilder(builder)
-                 .AfterSetup(_ =>
-                 {
-                     Pages.EmbedSample.Implementation = new EmbedSampleAndroid();
-                 });
+            base.OnCreate(savedInstanceState);
+            Finish();
         }
     }
 }

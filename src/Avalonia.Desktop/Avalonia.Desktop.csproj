@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,6 +9,7 @@
     <ProjectReference Include="../../src/Avalonia.Native/Avalonia.Native.csproj" />
     <ProjectReference Include="../../packages/Avalonia/Avalonia.csproj" />
     <ProjectReference Include="../Avalonia.X11/Avalonia.X11.csproj" />
+    <ProjectReference Include="..\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
   </ItemGroup>
 
   <Import Project="..\..\build\TrimmingEnable.props" />

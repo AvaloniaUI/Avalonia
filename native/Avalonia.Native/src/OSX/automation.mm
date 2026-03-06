@@ -1,66 +1,20 @@
 #include "common.h"
 #include "automation.h"
+#include "AvnAutomationNode.h"
 #include "AvnString.h"
 #include "INSWindowHolder.h"
 #include "AvnView.h"
-
-@interface AvnAccessibilityElement (Events)
-- (void) raiseChildrenChanged;
-@end
-
-@interface AvnRootAccessibilityElement : AvnAccessibilityElement
-- (AvnView *) ownerView;
-- (AvnRootAccessibilityElement *) initWithPeer:(IAvnAutomationPeer *) peer owner:(AvnView*) owner;
-- (void) raiseFocusChanged;
-@end
-
-class AutomationNode : public ComSingleObject<IAvnAutomationNode, &IID_IAvnAutomationNode>
-{
-public:
-    FORWARD_IUNKNOWN()
-
-    AutomationNode(AvnAccessibilityElement* owner)
-    {
-        _owner = owner;
-    }
-    
-    AvnAccessibilityElement* GetOwner()
-    {
-        return _owner;
-    }
-    
-    virtual void Dispose() override
-    {
-        _owner = nil;
-    }
-    
-    virtual void ChildrenChanged () override
-    {
-        [_owner raiseChildrenChanged];
-    }
-    
-    virtual void PropertyChanged (AvnAutomationProperty property) override
-    {
-        
-    }
-    
-    virtual void FocusChanged () override
-    {
-        [(AvnRootAccessibilityElement*)_owner raiseFocusChanged];
-    }
-    
-private:
-    __strong AvnAccessibilityElement* _owner;
-};
+#include "WindowInterfaces.h"
 
 @implementation AvnAccessibilityElement
 {
     IAvnAutomationPeer* _peer;
-    AutomationNode* _node;
+    AvnAutomationNode* _node;
     NSMutableArray* _children;
+    NSArray<NSString*>* _attributeNames;
 }
 
-+ (AvnAccessibilityElement *)acquire:(IAvnAutomationPeer *)peer
++ (NSAccessibilityElement *)acquire:(IAvnAutomationPeer *)peer
 {
     if (peer == nullptr)
         return nil;
@@ -68,9 +22,14 @@ private:
     auto instance = peer->GetNode();
     
     if (instance != nullptr)
-        return dynamic_cast<AutomationNode*>(instance)->GetOwner();
+        return dynamic_cast<AvnAutomationNode*>(instance)->GetOwner();
     
-    if (peer->IsRootProvider())
+    if (peer->IsInteropPeer())
+    {
+        auto view = (__bridge NSAccessibilityElement*)peer->InteropPeer_GetNativeControlHandle();
+        return view;
+    }
+    else if (peer->IsRootProvider())
     {
         auto window = peer->RootProvider_GetWindow();
         
@@ -80,9 +39,9 @@ private:
             return nil;
         }
         
-        auto holder = dynamic_cast<INSWindowHolder*>(window);
+        auto holder = dynamic_cast<INSViewHolder*>(window);
         auto view = holder->GetNSView();
-        return [[AvnRootAccessibilityElement alloc] initWithPeer:peer owner:view];
+        return (NSAccessibilityElement*)[view window];
     }
     else
     {
@@ -94,7 +53,7 @@ private:
 {
     self = [super init];
     _peer = peer;
-    _node = new AutomationNode(self);
+    _node = new AvnAutomationNode(self);
     _peer->SetNode(_node);
     return self;
 }
@@ -137,8 +96,8 @@ private:
         case AutomationEdit: return NSAccessibilityTextFieldRole;
         case AutomationHyperlink: return NSAccessibilityLinkRole;
         case AutomationImage: return NSAccessibilityImageRole;
-        case AutomationListItem: return NSAccessibilityRowRole;
-        case AutomationList: return NSAccessibilityTableRole;
+        case AutomationListItem: return NSAccessibilityGroupRole;
+        case AutomationList: return NSAccessibilityListRole;
         case AutomationMenu: return NSAccessibilityMenuBarRole;
         case AutomationMenuBar: return NSAccessibilityMenuBarRole;
         case AutomationMenuItem: return NSAccessibilityMenuItemRole;
@@ -147,7 +106,7 @@ private:
         case AutomationScrollBar: return NSAccessibilityScrollBarRole;
         case AutomationSlider: return NSAccessibilitySliderRole;
         case AutomationSpinner: return NSAccessibilityIncrementorRole;
-        case AutomationStatusBar: return NSAccessibilityTableRole;
+        case AutomationStatusBar: return NSAccessibilityGroupRole;
         case AutomationTab: return NSAccessibilityTabGroupRole;
         case AutomationTabItem: return NSAccessibilityRadioButtonRole;
         case AutomationText: return NSAccessibilityStaticTextRole;
@@ -164,15 +123,80 @@ private:
         case AutomationSplitButton: return NSAccessibilityPopUpButtonRole;
         case AutomationWindow: return NSAccessibilityWindowRole;
         case AutomationPane: return NSAccessibilityGroupRole;
-        case AutomationHeader: return NSAccessibilityGroupRole;
+        case AutomationHeader: return @"AXHeading";
         case AutomationHeaderItem:  return NSAccessibilityButtonRole;
         case AutomationTable: return NSAccessibilityTableRole;
         case AutomationTitleBar: return NSAccessibilityGroupRole;
+        case AutomationExpander: return NSAccessibilityDisclosureTriangleRole;
         // Treat unknown roles as generic group container items. Returning
         // NSAccessibilityUnknownRole is also possible but makes the screen
        // reader focus on the item instead of passing focus to child items.
         default: return NSAccessibilityGroupRole;
     }
+}
+
+- (NSAccessibilitySubrole)accessibilitySubrole
+{
+    auto controlType = _peer->GetAutomationControlType();
+    switch (controlType) {
+        case AutomationList: return @"AXContentList";
+    }
+
+    auto landmarkType = _peer->GetLandmarkType();
+    switch (landmarkType) {
+        case LandmarkBanner: return @"AXLandmarkBanner";
+        case LandmarkComplementary: return @"AXLandmarkComplementary";
+        case LandmarkContentInfo: return @"AXLandmarkContentInfo";
+        case LandmarkRegion: return @"AXLandmarkRegion";
+        case LandmarkForm: return @"AXLandmarkForm";
+        case LandmarkMain: return @"AXLandmarkMain";
+        case LandmarkNavigation: return @"AXLandmarkNavigation";
+        case LandmarkSearch: return @"AXLandmarkSearch";
+    }
+
+    return NSAccessibilityUnknownSubrole;
+}
+
+- (NSString *)accessibilityRoleDescription
+{
+    auto landmarkType = _peer->GetLandmarkType();
+    switch (landmarkType) {
+        case LandmarkBanner: return @"banner";
+        case LandmarkComplementary: return @"complementary";
+        case LandmarkContentInfo: return @"content";
+        case LandmarkRegion: return @"region";
+        case LandmarkForm: return @"form";
+        case LandmarkMain: return @"main";
+        case LandmarkNavigation: return @"navigation";
+        case LandmarkSearch: return @"search";
+    }
+    return NSAccessibilityRoleDescription([self accessibilityRole], [self accessibilitySubrole]);
+}
+
+// Note: Apple has deprecated this API, but it's still used to set attributes not supported by NSAccessibility
+- (NSArray<NSString *> *)accessibilityAttributeNames
+{
+    if (_attributeNames == nil)
+    {
+        _attributeNames = @[
+            @"AXARIALive", // kAXARIALiveAttribute
+        ];
+    }
+    return _attributeNames;
+}
+
+- (id)accessibilityAttributeValue:(NSAccessibilityAttributeName)attribute
+{
+    if ([attribute isEqualToString:@"AXARIALive" /* kAXARIALiveAttribute */])
+    {
+        switch (_peer->GetLiveSetting())
+        {
+            case LiveSettingPolite: return @"polite";
+            case LiveSettingAssertive: return @"assertive";
+        }
+        return nil;
+    }
+    return nil;
 }
 
 - (NSString *)accessibilityIdentifier
@@ -189,6 +213,16 @@ private:
     }
     
     return [super accessibilityTitle];
+}
+
+- (NSString *)accessibilityHelp
+{
+    return GetNSStringAndRelease(_peer->GetHelpText()); 
+}
+
+- (NSString *)accessibilityPlaceholderValue
+{
+    return GetNSStringAndRelease(_peer->GetPlaceholderText());
 }
 
 - (id)accessibilityValue
@@ -213,8 +247,28 @@ private:
     {
         return GetNSStringAndRelease(_peer->GetName());
     }
+    else if (_peer->GetAutomationControlType() == AutomationHeader)
+    {
+        return [NSNumber numberWithInt:_peer->GetHeadingLevel()];
+    }
 
     return [super accessibilityValue];
+}
+
+- (void)setAccessibilityValue:(id)newValue
+{
+    if (_peer->IsValueProvider())
+    {
+        if (newValue == nil)
+            _peer->ValueProvider_SetValue(nil);
+        else if ([newValue isKindOfClass:[NSString class]])
+            _peer->ValueProvider_SetValue([(NSString*)newValue UTF8String]);
+    }
+    else if (_peer->IsRangeValueProvider())
+    {
+        if ([newValue isKindOfClass:[NSNumber class]])
+            _peer->RangeValueProvider_SetValue([(NSNumber*)newValue doubleValue]);
+    }
 }
 
 - (id)accessibilityMinValue
@@ -256,25 +310,8 @@ private:
 
 - (NSRect)accessibilityFrame
 {
-    id topLevel = [self accessibilityTopLevelUIElement];
-    auto result = NSZeroRect;
-
-    if ([topLevel isKindOfClass:[AvnRootAccessibilityElement class]])
-    {
-        auto root = (AvnRootAccessibilityElement*)topLevel;
-        auto view = [root ownerView];
-        
-        if (view)
-        {
-            auto window = [view window];
-            auto bounds = ToNSRect(_peer->GetBoundingRectangle());
-            auto windowBounds = [view convertRect:bounds toView:nil];
-            auto screenBounds = [window convertRectToScreen:windowBounds];
-            result = screenBounds;
-        }
-    }
-
-    return result;
+    auto bounds = _peer->GetBoundingRectangle();
+    return [self rectToScreen:bounds];
 }
 
 - (id)accessibilityParent
@@ -389,6 +426,24 @@ private:
     return [super isAccessibilitySelectorAllowed:selector];
 }
 
+- (NSRect)rectToScreen:(AvnRect)rect
+{
+    id topLevel = [self accessibilityTopLevelUIElement];
+
+    if (![topLevel isKindOfClass:[AvnWindow class]])
+        return NSZeroRect;
+
+    auto window = (AvnWindow*)topLevel;
+    auto view = [window view];
+
+    if (view == nil)
+        return NSZeroRect;
+
+    auto nsRect = ToNSRect(rect);
+    auto windowRect = [view convertRect:nsRect toView:nil];
+    return [window convertRectToScreen:windowRect];
+}
+
 - (void)raiseChildrenChanged
 {
     auto changed = _children ? [NSMutableSet setWithArray:_children] : [NSMutableSet set];
@@ -404,8 +459,15 @@ private:
         @{ NSAccessibilityUIElementsKey: [changed allObjects]});
 }
 
-- (void)raisePropertyChanged
+- (void)raisePropertyChanged:(AvnAutomationProperty)property
 {
+    if (property == AutomationPeer_Name && _peer->GetLiveSetting() != LiveSettingOff)
+        [self raiseLiveRegionChanged];
+}
+
+- (void)raiseLiveRegionChanged
+{
+    NSAccessibilityPostNotification(self, @"AXLiveRegionChanged" /* kAXLiveRegionChangedNotification */);
 }
 
 - (void)setAccessibilityFocused:(BOOL)accessibilityFocused
@@ -429,7 +491,7 @@ private:
             
             if (childPeers->Get(i, &child) == S_OK)
             {
-                auto element = [AvnAccessibilityElement acquire:child];
+                id element = [AvnAccessibilityElement acquire:child];
                 [_children addObject:element];
             }
         }
@@ -439,66 +501,5 @@ private:
         _children = nil;
     }
 }
-
-@end
-
-@implementation AvnRootAccessibilityElement
-{
-    AvnView* _owner;
-}
-
-- (AvnRootAccessibilityElement *)initWithPeer:(IAvnAutomationPeer *)peer owner:(AvnView *)owner
-{
-    self = [super initWithPeer:peer];
-    _owner = owner;
-
-    // Seems we need to raise a focus changed notification here if we have focus
-    auto focusedPeer = [self peer]->RootProvider_GetFocus();
-    id focused = [AvnAccessibilityElement acquire:focusedPeer];
-
-    if (focused)
-        NSAccessibilityPostNotification(focused, NSAccessibilityFocusedUIElementChangedNotification);
-    
-    return self;
-}
-
-- (AvnView *)ownerView
-{
-    return _owner;
-}
-
-- (id)accessibilityFocusedUIElement
-{
-    auto focusedPeer = [self peer]->RootProvider_GetFocus();
-    return [AvnAccessibilityElement acquire:focusedPeer];
-}
-
-- (id)accessibilityHitTest:(NSPoint)point
-{
-    auto clientPoint = [[_owner window] convertPointFromScreen:point];
-    auto localPoint = [_owner translateLocalPoint:ToAvnPoint(clientPoint)];
-    auto hit = [self peer]->RootProvider_GetPeerFromPoint(localPoint);
-    return [AvnAccessibilityElement acquire:hit];
-}
-
-- (id)accessibilityParent
-{
-    return _owner;
-}
-
-- (void)raiseFocusChanged
-{
-    id focused = [self accessibilityFocusedUIElement];
-    NSAccessibilityPostNotification(focused, NSAccessibilityFocusedUIElementChangedNotification);
-}
-
-// Although this method is marked as deprecated we get runtime warnings if we don't handle it.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-implementations"
-- (void)accessibilityPerformAction:(NSAccessibilityActionName)action
-{
-    [_owner accessibilityPerformAction:action];
-}
-#pragma clang diagnostic pop
 
 @end

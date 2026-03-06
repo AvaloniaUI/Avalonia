@@ -33,10 +33,13 @@ internal partial class Program
             })
             .StartBrowserAppAsync("out", options);
 
-        if (Application.Current!.ApplicationLifetime is ISingleTopLevelApplicationLifetime lifetime)
+        Dispatcher.UIThread.Invoke(() =>
         {
-            lifetime.TopLevel!.RendererDiagnostics.DebugOverlays = RendererDebugOverlays.Fps;
-        }
+            if (Application.Current!.ApplicationLifetime is ISingleTopLevelApplicationLifetime lifetime)
+            {
+                lifetime.TopLevel!.RendererDiagnostics.DebugOverlays = RendererDebugOverlays.Fps;
+            }
+        });
     }
 
     // Test with multiple AvaloniaView at once. 

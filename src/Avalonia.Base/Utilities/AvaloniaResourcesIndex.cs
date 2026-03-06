@@ -67,14 +67,6 @@ namespace Avalonia.Utilities
             }
         }
 
-        [Obsolete]
-        public static void WriteResources(Stream output, List<(string Path, int Size, Func<Stream> Open)> resources)
-        {
-            WriteResources(output,
-                resources.Select(r => new AvaloniaResourcesEntry { Path = r.Path, Open = r.Open, Size = r.Size })
-                    .ToList());
-        }
-
         public static void WriteResources(Stream output, IReadOnlyList<AvaloniaResourcesEntry> resources)
         {
             var entries = new List<AvaloniaResourcesIndexEntry>();

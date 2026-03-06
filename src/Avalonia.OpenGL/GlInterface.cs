@@ -2,12 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using Avalonia.Metadata;
 using Avalonia.Platform.Interop;
 using Avalonia.SourceGenerator;
 using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.OpenGL
 {
+    /// <summary>
+    /// GlInterface only includes essential members and members necessary for Avalonia itself.
+    /// It is not a general-purpose interface for OpenGL API.
+    /// </summary>
+    /// <remarks>
+    /// Use <see cref="GlInterface.GetProcAddress"/> to get GL procedures you need, or integrate it with third-party GL wrappers.
+    /// </remarks>
     public unsafe partial class GlInterface : GlBasicInfoInterface
     {
         private readonly Func<string, IntPtr> _getProcAddress;
@@ -50,16 +58,38 @@ namespace Avalonia.OpenGL
         {
         }
 
+        /// <summary>
+        /// Returns an OpenGL function by name.
+        /// </summary>
+        /// <param name="proc">Function name.</param>
+        /// <returns>Handle of function, which can be casted to unmanaged function pointer.</returns>
         public IntPtr GetProcAddress(string proc) => _getProcAddress(proc);
-
-        [GetProcAddress("glGetError")]
-        public partial int GetError();
 
         [GetProcAddress("glClearStencil")]
         public partial void ClearStencil(int s);
 
         [GetProcAddress("glClearColor")]
         public partial void ClearColor(float r, float g, float b, float a);
+        
+        [GetProcAddress("glClearDepth", true)]
+        internal partial void ClearDepthDouble(double value);
+        
+        [GetProcAddress("glClearDepthf", true)]
+        internal partial void ClearDepthFloat(float value);
+
+        public void ClearDepth(float value)
+        {
+            if(IsClearDepthDoubleAvailable)
+                ClearDepthDouble(value);
+            else if (IsClearDepthFloatAvailable)
+                _addr_ClearDepthFloat(value);
+        }
+        
+        [GetProcAddress("glDepthFunc")]
+        public partial void DepthFunc(int value);
+        
+        [GetProcAddress("glDepthMask")]
+        public partial void DepthMask(int value);
 
         [GetProcAddress("glClear")]
         public partial void Clear(int bits);
@@ -313,12 +343,17 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glUniform1f")]
         public partial void Uniform1f(int location, float falue);
 
+        [GetProcAddress("glUniform1i")]
+        public partial void Uniform1i(int location, int value);
 
         [GetProcAddress("glUniformMatrix4fv")]
         public partial void UniformMatrix4fv(int location, int count, bool transpose, void* value);
 
         [GetProcAddress("glEnable")]
         public partial void Enable(int what);
+        
+        [GetProcAddress("glDisable")]
+        public partial void Disable(int what);
 
         [GetProcAddress("glDeleteBuffers")]
         public partial void DeleteBuffers(int count, int* buffers);

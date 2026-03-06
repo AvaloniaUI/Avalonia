@@ -10,9 +10,10 @@
     <AllowParallelTestExecution>True</AllowParallelTestExecution>
     <CustomBuildProperties>
       <Value>RunApiCompat = false</Value>
-      <Value>TargetFrameworks = net8.0;netstandard2.0</Value>
+      <Value>TargetFrameworks = net10.0</Value>
     </CustomBuildProperties>
     <EnableRDI>False</EnableRDI>
+    <IgnoreThisComponentCompletely>True</IgnoreThisComponentCompletely>
     <ProjectConfigStoragePathRelativeToSolutionDir>.ncrunch</ProjectConfigStoragePathRelativeToSolutionDir>
     <RdiConfigured>True</RdiConfigured>
     <SolutionConfigured>True</SolutionConfigured>

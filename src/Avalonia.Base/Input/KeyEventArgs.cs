@@ -5,7 +5,7 @@ namespace Avalonia.Input;
 /// <summary>
 /// Provides information specific to a keyboard event.
 /// </summary>
-public class KeyEventArgs : RoutedEventArgs
+public class KeyEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
 {
     /// <summary>
     /// <para>
@@ -33,9 +33,6 @@ public class KeyEventArgs : RoutedEventArgs
     /// <seealso cref="KeySymbol"/>
     public Key Key { get; init; }
 
-    /// <summary>
-    /// Gets the key modifiers for the associated event.
-    /// </summary>
     public KeyModifiers KeyModifiers { get; init; }
 
     /// <summary>

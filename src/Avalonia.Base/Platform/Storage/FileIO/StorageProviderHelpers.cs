@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace Avalonia.Platform.Storage.FileIO;
 
 internal static class StorageProviderHelpers
 {
-    public static IStorageItem? TryCreateBclStorageItem(string path)
+    public static BclStorageItem? TryCreateBclStorageItem(string? path)
     {
         if (!string.IsNullOrWhiteSpace(path))
         {
@@ -28,31 +29,47 @@ internal static class StorageProviderHelpers
         return null;
     }
 
-    public static Uri FilePathToUri(string path)
+    public static string? TryGetPathFromFileUri(Uri? uri)
     {
-        var uriPath = new StringBuilder(path)
-            .Replace("%", $"%{(int)'%':X2}")
-            .Replace("[", $"%{(int)'[':X2}")
-            .Replace("]", $"%{(int)']':X2}")
-            .ToString();
-
-        return new UriBuilder("file", string.Empty) { Path = uriPath }.Uri;
+        // android "content:", browser and ios relative links are ignored.
+        return uri is { IsAbsoluteUri: true, Scheme: "file" } ? uri.LocalPath : null;
     }
-    
-    public static bool TryFilePathToUri(string path, [NotNullWhen(true)] out Uri? uri)
+
+    public static Uri UriFromFilePath(string path, bool isDirectory)
+    {
+        var uriPath = new StringBuilder();
+        bool isLongPath = path.StartsWith(@"\\?\", StringComparison.Ordinal);//Windows long path prefix
+        if (isLongPath)
+        {
+            uriPath.Append(path, 4, path.Length - 4);
+        }
+        else
+        {
+            uriPath.Append(path);
+        }
+        uriPath = uriPath.Replace("%", $"%{(int)'%':X2}")
+                                    .Replace("[", $"%{(int)'[':X2}")
+                                    .Replace("]", $"%{(int)']':X2}");
+        if (!path.EndsWith('/') && isDirectory)
+        {
+            uriPath.Append('/');
+        }
+
+        return new UriBuilder("file", string.Empty) { Path = uriPath.ToString() }.Uri;
+    }
+
+    public static Uri? TryGetUriFromFilePath(string path, bool isDirectory)
     {
         try
         {
-            uri = FilePathToUri(path);
-            return true;
+            return UriFromFilePath(path, isDirectory);
         }
         catch
         {
-            uri = null;
-            return false;
+            return null;
         }
     }
-    
+
     [return: NotNullIfNotNull(nameof(path))]
     public static string? NameWithExtension(string? path, string? defaultExtension, FilePickerFileType? filter)
     {

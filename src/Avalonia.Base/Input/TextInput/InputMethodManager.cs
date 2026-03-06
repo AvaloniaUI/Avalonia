@@ -10,7 +10,7 @@ namespace Avalonia.Input.TextInput
         private IInputElement? _focusedElement;
         private Interactive? _visualRoot;
         private TextInputMethodClient? _client;
-        private readonly TransformTrackingHelper _transformTracker = new TransformTrackingHelper();
+        private readonly TransformTrackingHelper _transformTracker = new TransformTrackingHelper(true);
 
         public TextInputMethodManager()
         {
@@ -132,7 +132,7 @@ namespace Avalonia.Input.TextInput
                 InputMethod.AddTextInputMethodClientRequeryRequestedHandler(_visualRoot,
                     TextInputMethodClientRequeryRequested);
             
-            var inputMethod = ((element as Visual)?.VisualRoot as ITextInputMethodRoot)?.InputMethod;
+            var inputMethod = ((element as Visual)?.GetInputRoot())?.InputMethod;
 
             if (_im != inputMethod)
             {

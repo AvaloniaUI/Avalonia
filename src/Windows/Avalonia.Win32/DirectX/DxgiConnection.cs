@@ -1,12 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Rendering;
-using static Avalonia.Win32.Interop.UnmanagedMethods;
-using static Avalonia.Win32.DirectX.DirectXUnmanagedMethods;
+
 using MicroCom.Runtime;
+
+using Windows.Win32;
+using Windows.Win32.Graphics.Gdi;
+
+using static Avalonia.Win32.DirectX.DirectXUnmanagedMethods;
+using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32.DirectX
 {
@@ -111,6 +118,8 @@ namespace Avalonia.Win32.DirectX
 
             ushort adapterIndex = 0;
 
+            Dictionary<HMONITOR /*MonitorHandler*/, uint /*Frequency*/> monitorFrequencies = GetAllMonitorFrequencies();
+
             // this looks odd, but that's just how one enumerates adapters in DXGI 
             while (fact.EnumAdapters(adapterIndex, &adapterPointer) == 0)
             {
@@ -122,19 +131,14 @@ namespace Avalonia.Win32.DirectX
                     using var output = MicroComRuntime.CreateProxyFor<IDXGIOutput>(outputPointer, true);
                     DXGI_OUTPUT_DESC outputDesc = output.Desc;
 
+                    var hMonitor = new HMONITOR(outputDesc.Monitor.Value);
 
-                    // this handle need not closing, by the way. 
-                    HANDLE monitorH = outputDesc.Monitor;
-                    MONITORINFOEXW monInfo = default;
-                    // by setting cbSize we tell Windows to fully populate the extended info 
+                    var frequency =
+                        monitorFrequencies.TryGetValue(hMonitor, out uint frequencyValue) ?
+                            frequencyValue :
+                            highestRefreshRate;
 
-                    monInfo.Base.cbSize = sizeof(MONITORINFOEXW);
-                    GetMonitorInfoW(monitorH, (IntPtr)(&monInfo));
-
-                    DEVMODEW devMode = default;
-                    EnumDisplaySettingsW(outputDesc.DeviceName, ENUM_CURRENT_SETTINGS, &devMode);
-
-                    if (highestRefreshRate < devMode.dmDisplayFrequency)
+                    if (highestRefreshRate < frequency)
                     {
                         // ooh I like this output! 
                         if (_output is not null)
@@ -143,7 +147,7 @@ namespace Avalonia.Win32.DirectX
                             _output = null;
                         }
                         _output = MicroComRuntime.CloneReference(output);
-                        highestRefreshRate = devMode.dmDisplayFrequency;
+                        highestRefreshRate = frequency;
                     }
                     // and then increment index to move onto the next monitor 
                     outputIndex++;
@@ -152,6 +156,33 @@ namespace Avalonia.Win32.DirectX
                 adapterIndex++;
             }
 
+        }
+
+        private unsafe Dictionary<HMONITOR /*MonitorHandler*/, uint /*Frequency*/> GetAllMonitorFrequencies()
+        {
+            var monitorHandlers = ScreenImpl.GetAllDisplayMonitorHandlers();
+            var dictionary = new Dictionary<HMONITOR /*MonitorHandler*/, uint /*Frequency*/>(monitorHandlers.Count);
+
+            foreach (var monitorHandler in monitorHandlers)
+            {
+                var info = MONITORINFOEX.Create();
+                var hMonitor = new HMONITOR(monitorHandler);
+                PInvoke.GetMonitorInfo(hMonitor, (MONITORINFO*)&info);
+
+                var deviceMode = new DEVMODEW
+                {
+                    dmFields = DEVMODE_FIELD_FLAGS.DM_DISPLAYORIENTATION | DEVMODE_FIELD_FLAGS.DM_DISPLAYFREQUENCY,
+                    dmSize = (ushort)Marshal.SizeOf<DEVMODEW>()
+                };
+                PInvoke.EnumDisplaySettings(info.szDevice.ToString(), ENUM_DISPLAY_SETTINGS_MODE.ENUM_CURRENT_SETTINGS,
+                    ref deviceMode);
+
+                var frequency = deviceMode.dmDisplayFrequency;
+
+                dictionary[hMonitor] = frequency;
+            }
+
+            return dictionary;
         }
 
         // Used the windows composition as a blueprint for this startup/creation 
@@ -177,6 +208,7 @@ namespace Avalonia.Win32.DirectX
             });
             thread.IsBackground = true;
             thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Name = "DxgiRenderTimerLoop";
             thread.Start();
             // block until 
             return tcs.Task.Result;

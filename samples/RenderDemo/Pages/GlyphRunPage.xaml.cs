@@ -22,14 +22,14 @@ namespace RenderDemo.Pages
 
     public class GlyphRunControl : Control
     {
-        private IGlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
+        private GlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
         private readonly Random _rand = new Random();
         private ushort[] _glyphIndices = new ushort[1];
         private char[] _characters = new char[1];
         private float _fontSize = 20;
         private int _direction = 10;
 
-        private DispatcherTimer _timer;
+        private DispatcherTimer? _timer;
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -48,7 +48,7 @@ namespace RenderDemo.Pages
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            _timer.Stop();
+            _timer?.Stop();
 
             _timer = null;
         }
@@ -69,7 +69,7 @@ namespace RenderDemo.Pages
 
             _fontSize += _direction;
 
-            _glyphIndices[0] = _glyphTypeface.GetGlyph(c);
+            _glyphIndices[0] = _glyphTypeface.CharacterToGlyphMap[c];
 
             _characters[0] = c;
 
@@ -81,14 +81,14 @@ namespace RenderDemo.Pages
 
     public class GlyphRunGeometryControl : Control
     {
-        private IGlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
+        private GlyphTypeface _glyphTypeface = Typeface.Default.GlyphTypeface;
         private readonly Random _rand = new Random();
         private ushort[] _glyphIndices = new ushort[1];
         private char[] _characters = new char[1];
         private float _fontSize = 20;
         private int _direction = 10;
 
-        private DispatcherTimer _timer;
+        private DispatcherTimer? _timer;
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -107,7 +107,7 @@ namespace RenderDemo.Pages
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            _timer.Stop();
+            _timer?.Stop();
 
             _timer = null;
         }
@@ -128,7 +128,7 @@ namespace RenderDemo.Pages
 
             _fontSize += _direction;
 
-            _glyphIndices[0] = _glyphTypeface.GetGlyph(c);
+            _glyphIndices[0] = _glyphTypeface.CharacterToGlyphMap[c];
 
             _characters[0] = c;
 

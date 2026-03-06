@@ -30,13 +30,13 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new TestVisual();
             var child = new TestVisual();
-            var parents = new List<Visual>();
+            var parents = new List<Visual?>();
 
             child.GetObservable(Visual.VisualParentProperty).Subscribe(x => parents.Add(x));
             target.AddChild(child);
             target.RemoveChild(child);
 
-            Assert.Equal(new Visual[] { null, target, null }, parents);
+            Assert.Equal([null, target, null], parents);
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Avalonia.Base.UnitTests
 
             var result = children.Select(x => x.GetVisualParent()).ToList();
 
-            Assert.Equal(new Visual[] { null, null }, result);
+            Assert.Equal([null, null], result);
         }
 
         [Fact]
@@ -73,18 +73,19 @@ namespace Avalonia.Base.UnitTests
             var root = new TestRoot();
             var called1 = false;
             var called2 = false;
-
+            
             child1.AttachedToVisualTree += (s, e) =>
             {
-                Assert.Equal(e.Parent, root);
-                Assert.Equal(e.Root, root);
+                // TODO: Tests are running against TestRoot, so behavior DOES NOT match the actual TopLevel.
+                Assert.Equal(e.AttachmentPoint, root);
+                Assert.Equal(e.RootVisual, root);
                 called1 = true;
             };
 
             child2.AttachedToVisualTree += (s, e) =>
             {
-                Assert.Equal(e.Parent, root);
-                Assert.Equal(e.Root, root);
+                Assert.Equal(e.AttachmentPoint, root);
+                Assert.Equal(e.RootVisual, root);
                 called2 = true;
             };
 
@@ -107,15 +108,16 @@ namespace Avalonia.Base.UnitTests
 
             child1.DetachedFromVisualTree += (s, e) =>
             {
-                Assert.Equal(e.Parent, root);
-                Assert.Equal(e.Root, root);
+                // TODO: Tests are running against TestRoot, so behavior DOES NOT match the actual TopLevel.
+                Assert.Equal(e.AttachmentPoint, root);
+                Assert.Equal(e.RootVisual, root);
                 called1 = true;
             };
 
             child2.DetachedFromVisualTree += (s, e) =>
             {
-                Assert.Equal(e.Parent, root);
-                Assert.Equal(e.Root, root);
+                Assert.Equal(e.AttachmentPoint, root);
+                Assert.Equal(e.RootVisual, root);
                 called2 = true;
             };
 

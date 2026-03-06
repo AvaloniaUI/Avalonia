@@ -77,6 +77,17 @@ internal class BlobReadableStream : Stream
         return bytesRead.Length;
     }
 
+    public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+    {
+        var task = ReadAsync(buffer, offset, count, default);
+        return TaskToAsyncResult.Begin(task, callback, state);
+    }
+
+    public override int EndRead(IAsyncResult asyncResult)
+    {
+        return TaskToAsyncResult.End<int>(asyncResult);
+    }
+
     protected override void Dispose(bool disposing)
     {
         if (_jSReference is { } jsReference)

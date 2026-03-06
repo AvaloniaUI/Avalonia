@@ -31,7 +31,6 @@
                               ContentTemplate="{TemplateBinding HeaderTemplate}"
                               VerticalAlignment="Center"
                               HorizontalAlignment="Stretch"
-                              RecognizesAccessKey="True"
                               Margin="{TemplateBinding Padding}"/>
             <Popup Name="PART_Popup"
                    WindowManagerAddShadowHint="False"
@@ -60,6 +59,10 @@
         </Border>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style> 
 
     <Style Selector="^:selected">
       <Style Selector="^ /template/ Border#PART_LayoutRoot">

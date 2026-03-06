@@ -1,6 +1,7 @@
 <UserControl x:Class="ControlCatalog.MainView"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:ControlCatalog"
              xmlns:controls="using:ControlSamples"
              xmlns:models="using:ControlCatalog.Models"
              xmlns:pages="using:ControlCatalog.Pages"
@@ -18,6 +19,9 @@
       <TabItem Header="Composition">
         <pages:CompositionPage />
       </TabItem>
+      <TabItem Header="Accelerator">
+        <pages:AcceleratorPage />
+      </TabItem>
       <TabItem Header="Acrylic">
         <pages:AcrylicPage />
       </TabItem>
@@ -29,6 +33,9 @@
       </TabItem>
       <TabItem Header="Border">
         <pages:BorderPage />
+      </TabItem>
+      <TabItem Header="BitmapCache">
+        <pages:BitmapCachePage />
       </TabItem>
       <TabItem Header="Buttons">
         <pages:ButtonsPage />
@@ -56,6 +63,9 @@
       </TabItem>
       <TabItem Header="ComboBox">
         <pages:ComboBoxPage />
+      </TabItem>
+      <TabItem Header="Container Queries">
+        <pages:ContainerQueryPage />
       </TabItem>
       <TabItem Header="ContextFlyout">
         <pages:ContextFlyoutPage />
@@ -127,6 +137,9 @@
       <TabItem Header="OpenGL">
         <pages:OpenGlPage />
       </TabItem>
+      <TabItem Header="OpenGL Lease">
+        <pages:OpenGlLeasePage />
+      </TabItem>
       <TabItem Header="Platform Information">
         <pages:PlatformInfoPage />
       </TabItem>
@@ -193,38 +206,47 @@
       <TabItem Header="HeaderedContentControl">
         <pages:HeaderedContentPage />
       </TabItem>
+      <TabItem Header="Screens">
+        <pages:ScreenPage />
+      </TabItem>
       <FlyoutBase.AttachedFlyout>
         <Flyout>
           <StackPanel Width="152" Spacing="8">
             <ComboBox x:Name="Decorations"
                       HorizontalAlignment="Stretch"
-                      SelectedIndex="0">
+                      SelectedIndex="0"
+                      SelectionChanged="Decorations_SelectionChanged"
+                      ToolTip.Tip="System Decorations">
               <ComboBox.Items>
-                <SystemDecorations>None</SystemDecorations>
-                <SystemDecorations>BorderOnly</SystemDecorations>
-                <SystemDecorations>Full</SystemDecorations>
+                <WindowDecorations>None</WindowDecorations>
+                <WindowDecorations>BorderOnly</WindowDecorations>
+                <WindowDecorations>Full</WindowDecorations>
               </ComboBox.Items>
             </ComboBox>
-            <ComboBox x:Name="ThemeVariants"
-                      HorizontalAlignment="Stretch"
+            <ComboBox HorizontalAlignment="Stretch"
                       DisplayMemberBinding="{Binding Key, x:DataType=ThemeVariant}"
-                      SelectedIndex="0">
+                      SelectedIndex="0"
+                      SelectionChanged="ThemeVariants_SelectionChanged"
+                      ToolTip.Tip="Theme Variant">
               <ComboBox.Items>
                 <ThemeVariant>Default</ThemeVariant>
                 <ThemeVariant>Light</ThemeVariant>
                 <ThemeVariant>Dark</ThemeVariant>
               </ComboBox.Items>
             </ComboBox>
-            <ComboBox x:Name="Themes"
-                      HorizontalAlignment="Stretch"
-                      SelectedIndex="0">
+            <ComboBox HorizontalAlignment="Stretch"
+                      SelectedItem="{x:Static local:App.CurrentTheme}"
+                      SelectionChanged="Themes_SelectionChanged"
+                      ToolTip.Tip="Catalog Theme">
               <ComboBox.Items>
                 <models:CatalogTheme>Fluent</models:CatalogTheme>
                 <models:CatalogTheme>Simple</models:CatalogTheme>
               </ComboBox.Items>
             </ComboBox>
-            <ComboBox x:Name="TransparencyLevels"
-                      HorizontalAlignment="Stretch">
+            <ComboBox HorizontalAlignment="Stretch"
+                      SelectedIndex="0"
+                      SelectionChanged="TransparencyLevels_SelectionChanged"
+                      ToolTip.Tip="Window Transparency Level">
               <ComboBox.Items>
                 <WindowTransparencyLevel>None</WindowTransparencyLevel>
                 <WindowTransparencyLevel>Transparent</WindowTransparencyLevel>
@@ -233,9 +255,10 @@
                 <WindowTransparencyLevel>Mica</WindowTransparencyLevel>
               </ComboBox.Items>
             </ComboBox>
-            <ComboBox x:Name="FlowDirection"
-                      HorizontalAlignment="Stretch"
-                      SelectedIndex="0">
+            <ComboBox HorizontalAlignment="Stretch"
+                      SelectedIndex="0"
+                      SelectionChanged="FlowDirection_SelectionChanged"
+                      ToolTip.Tip="Flow Direction">
               <ComboBox.Items>
                 <FlowDirection>LeftToRight</FlowDirection>
                 <FlowDirection>RightToLeft</FlowDirection>
@@ -243,7 +266,8 @@
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
                       ItemsSource="{Binding WindowStates}"
-                      SelectedItem="{Binding WindowState}" />
+                      SelectedItem="{Binding WindowState}"
+                      ToolTip.Tip="Window State"/>
           </StackPanel>
         </Flyout>
       </FlyoutBase.AttachedFlyout>

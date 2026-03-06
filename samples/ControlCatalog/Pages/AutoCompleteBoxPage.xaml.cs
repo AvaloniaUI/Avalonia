@@ -1,38 +1,18 @@
-using Avalonia.Controls;
-using Avalonia.LogicalTree;
-using Avalonia.Markup.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Data.Converters;
+using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.LogicalTree;
 using ControlCatalog.Models;
 
 namespace ControlCatalog.Pages
 {
-    public class AutoCompleteBoxPage : UserControl
+    public partial class AutoCompleteBoxPage : UserControl
     {
-        public class StateData
-        {
-            public string Name { get; private set; }
-            public string Abbreviation { get; private set; }
-            public string Capital { get; private set; }
-
-            public StateData(string name, string abbreviatoin, string capital)
-            {
-                Name = name;
-                Abbreviation = abbreviatoin;
-                Capital = capital;
-            }
-
-            public override string ToString()
-            {
-                return Name;
-            }
-        }
-
         private static StateData[] BuildAllStates()
         {
             return new StateData[]
@@ -90,7 +70,7 @@ namespace ControlCatalog.Pages
             };
         }
         public StateData[] States { get; private set; }
-        
+
         private static LinkedList<string>[] BuildAllSentences()
         {
             return new string[]
@@ -107,7 +87,7 @@ namespace ControlCatalog.Pages
 
         public AutoCompleteBoxPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             States = BuildAllStates();
             Sentences = BuildAllSentences();
@@ -125,16 +105,13 @@ namespace ControlCatalog.Pages
             binding.Bindings.Add(new Binding("Name"));
             binding.Bindings.Add(new Binding("Abbreviation"));
 
-            var multibindingBox = this.Get<AutoCompleteBox>("MultiBindingBox");
-            multibindingBox.ValueMemberBinding = binding;
+            MultiBindingBox.ValueMemberBinding = binding;
 
-            var asyncBox = this.Get<AutoCompleteBox>("AsyncBox");
-            asyncBox.AsyncPopulator = PopulateAsync;
+            AsyncBox.AsyncPopulator = PopulateAsync;
 
-            var customAutocompleteBox = this.Get<AutoCompleteBox>("CustomAutocompleteBox");
-            customAutocompleteBox.ItemsSource = Sentences.SelectMany(x => x);
-            customAutocompleteBox.TextFilter = LastWordContains;
-            customAutocompleteBox.TextSelector = AppendWord;
+            CustomAutocompleteBox.ItemsSource = Sentences.SelectMany(x => x);
+            CustomAutocompleteBox.TextFilter = LastWordContains;
+            CustomAutocompleteBox.TextSelector = AppendWord;
         }
         private IEnumerable<AutoCompleteBox> GetAllAutoCompleteBox()
         {
@@ -145,7 +122,8 @@ namespace ControlCatalog.Pages
 
         private static bool StringContains(string str, string? query)
         {
-            if (query == null) return false;
+            if (query == null)
+                return false;
             return str.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
         }
         private async Task<IEnumerable<object>> PopulateAsync(string? searchText, CancellationToken cancellationToken)
@@ -195,11 +173,6 @@ namespace ControlCatalog.Pages
                 return string.Join(" ", parts);
             }
             return string.Empty;
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

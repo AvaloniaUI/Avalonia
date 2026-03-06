@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 
@@ -11,7 +12,7 @@ public partial class Dispatcher
     private bool _explicitBackgroundProcessingRequested;
     private const int MaximumInputStarvationTimeInFallbackMode = 50;
     private const int MaximumInputStarvationTimeInExplicitProcessingExplicitMode = 50;
-    private readonly int _maximumInputStarvationTime;
+    private int _maximumInputStarvationTime;
     
     void RequestBackgroundProcessing()
     {
@@ -100,9 +101,9 @@ public partial class Dispatcher
 
     internal static void ResetBeforeUnitTests()
     {
-        s_uiThread = null;
+        ResetGlobalState();
     }
-    
+
     internal static void ResetForUnitTests()
     {
         if (s_uiThread == null)
@@ -121,19 +122,26 @@ public partial class Dispatcher
             if (job == null || job.Priority <= DispatcherPriority.Inactive)
             {
                 s_uiThread.ShutdownImpl();
-                s_uiThread = null;
+                ResetGlobalState();
                 return;
             }
 
             s_uiThread.ExecuteJob(job);
         }
-
     }
+
     
     private void ExecuteJob(DispatcherOperation job)
     {
         lock (InstanceLock)
+        {
+            if(job.Status != DispatcherOperationStatus.Pending)
+                return;
+            
             _queue.RemoveItem(job);
+            job.Status = DispatcherOperationStatus.Executing;
+        }
+
         job.Execute();
         // The backend might be firing timers with a low priority,
         // so we manually check if our high priority timers are due for execution
@@ -235,11 +243,16 @@ public partial class Dispatcher
         }
     }
 
-    internal void Abort(DispatcherOperation operation)
+    internal bool Abort(DispatcherOperation operation)
     {
         lock (InstanceLock)
+        {
+            if (operation.Status != DispatcherOperationStatus.Pending)
+                return false;
             _queue.RemoveItem(operation);
-        operation.DoAbort();
+            operation.Status = DispatcherOperationStatus.Aborted;
+        }
+        return true;
     }
     
     // Returns whether or not the priority was set.
@@ -269,5 +282,26 @@ public partial class Dispatcher
     {
         lock (InstanceLock)
             return _queue.MaxPriority >= priority;
+    }
+
+    /// <summary>
+    /// Gets all pending jobs, unordered, without removing them.
+    /// </summary>
+    /// <remarks>Only use between unit tests!</remarks>
+    /// <returns>A list of jobs.</returns>
+    internal List<DispatcherOperation> GetJobs()
+    {
+        lock (InstanceLock)
+            return _queue.PeekAll();
+    }
+
+    /// <summary>
+    /// Clears all pending jobs.
+    /// </summary>
+    /// <remarks>Only use between unit tests!</remarks>
+    internal void ClearJobs()
+    {
+        lock (InstanceLock)
+            _queue.Clear();
     }
 }

@@ -85,6 +85,7 @@ namespace Avalonia.Controls.Primitives
         private bool _isExpanded;
         private CompositeDisposable? _ownerSubscriptions;
         private ScrollViewer? _owner;
+        private bool _isDragging;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollBar"/> class. 
@@ -92,6 +93,7 @@ namespace Avalonia.Controls.Primitives
         static ScrollBar()
         {
             Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragDelta(e), RoutingStrategies.Bubble);
+            Thumb.DragStartedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragStart(e), RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>((x, e) => x.OnThumbDragComplete(e), RoutingStrategies.Bubble);
 
             FocusableProperty.OverrideMetadata<ScrollBar>(new(false));
@@ -257,6 +259,27 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+        {
+            base.OnPointerWheelChanged(e);
+
+            // We need to handle pointer wheel event to allow scrolling with the pointer wheel. So we raise the event on the scrollviewer's presenter
+            if (!e.Handled && _owner?.Presenter is { } presenter && VisualRoot is Visual root)
+            {
+                e.Handled = true;
+                e = new PointerWheelEventArgs(
+                    this,
+                    e.Pointer,
+                    root,
+                    e.GetPosition(root),
+                    e.Timestamp,
+                    new PointerPointProperties((RawInputModifiers)e.KeyModifiers, PointerUpdateKind.Other),
+                    e.KeyModifiers,
+                    e.Delta);
+                presenter.RaiseEvent(e);
+            }
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -304,7 +327,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerExited(e);
 
-            if (AllowAutoHide)
+            if (AllowAutoHide && !_isDragging)
             {
                 CollapseAfterDelay();
             }
@@ -470,8 +493,21 @@ namespace Avalonia.Controls.Primitives
         {
             OnScroll(ScrollEventType.ThumbTrack);
         }
+
+        private void OnThumbDragStart(VectorEventArgs e)
+        {
+            _isDragging = true;
+        }
+
         private void OnThumbDragComplete(VectorEventArgs e)
         {
+            _isDragging = false;
+
+            if (AllowAutoHide && !IsPointerOver)
+            {
+                CollapseAfterDelay();
+            }
+
             OnScroll(ScrollEventType.EndScroll);
         }
 

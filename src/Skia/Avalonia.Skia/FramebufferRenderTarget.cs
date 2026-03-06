@@ -10,7 +10,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that renders to a framebuffer surface. No gpu acceleration available.
     /// </summary>
-    internal class FramebufferRenderTarget : IRenderTargetWithProperties
+    internal class FramebufferRenderTarget : IRenderTarget
     {
         private SKImageInfo _currentImageInfo;
         private IntPtr _currentFramebufferAddress;
@@ -50,10 +50,15 @@ namespace Avalonia.Skia
 
         /// <inheritdoc />
         public IDrawingContextImpl CreateDrawingContext(bool scaleDrawingToDpi) =>
-            CreateDrawingContext(scaleDrawingToDpi, out _);
+            CreateDrawingContextCore(scaleDrawingToDpi,   out _);
 
         /// <inheritdoc />
-        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing, out RenderTargetDrawingContextProperties properties)
+        public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
+            out RenderTargetDrawingContextProperties properties)
+            => CreateDrawingContextCore(false, out properties);
+        
+        IDrawingContextImpl CreateDrawingContextCore(bool scaleDrawingToDpi,
+            out RenderTargetDrawingContextProperties properties)
         {
             if (_renderTarget == null)
                 throw new ObjectDisposedException(nameof(FramebufferRenderTarget));
@@ -62,7 +67,7 @@ namespace Avalonia.Skia
             var framebuffer = _renderTargetWithProperties?.Lock(out lockProperties) ?? _renderTarget.Lock();
             var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
                 framebuffer.Format.ToSkColorType(),
-                framebuffer.Format == PixelFormat.Rgb565 ? SKAlphaType.Opaque : SKAlphaType.Premul);
+                framebuffer.AlphaFormat.ToSkAlphaType());
 
             CreateSurface(framebufferImageInfo, framebuffer);
             _hadConversionShim |= _conversionShim != null;
@@ -77,7 +82,7 @@ namespace Avalonia.Skia
             {
                 Surface = _framebufferSurface,
                 Dpi = framebuffer.Dpi,
-                ScaleDrawingToDpi = useScaledDrawing
+                ScaleDrawingToDpi = scaleDrawingToDpi
             };
 
             properties = new()
@@ -119,6 +124,14 @@ namespace Avalonia.Skia
             FreeSurface();
             
             _currentFramebufferAddress = framebuffer.Address;
+
+            // A surface with a width/height of 0 is invalid and can't be created
+            if (desiredImageInfo.Width <= 0 || desiredImageInfo.Height <= 0)
+            {
+                throw new ArgumentException(
+                    $"Unable to create a surface with size {desiredImageInfo.Width}x{desiredImageInfo.Height}",
+                    nameof(desiredImageInfo));
+            }
 
             var surface = SKSurface.Create(desiredImageInfo, _currentFramebufferAddress, 
                 framebuffer.RowBytes, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -8,12 +10,13 @@ namespace Avalonia.Headless.UnitTests;
 public class ThreadingTests
 {
 #if NUNIT
-    [AvaloniaTest, Timeout(10000)]
+    [AvaloniaTest]
 #elif XUNIT
-    [AvaloniaFact(Timeout = 10000)]
+    [AvaloniaFact]
 #endif
     public void Should_Be_On_Dispatcher_Thread()
     {
+        ValidateTestContext();
         Dispatcher.UIThread.VerifyAccess();
     }
 
@@ -28,26 +31,46 @@ public class ThreadingTests
     }
     
 #if NUNIT
-    [AvaloniaTheory, Timeout(10000), TestCase(1), TestCase(10), TestCase(100)]
+    [AvaloniaTheory, TestCase(1), TestCase(10), TestCase(100)]
 #elif XUNIT
-    [AvaloniaTheory(Timeout = 10000), InlineData(1), InlineData(10), InlineData(100)]
+    [AvaloniaTheory, InlineData(1), InlineData(10), InlineData(100)]
 #endif
     public async Task DispatcherTimer_Works_On_The_Same_Thread(int interval)
     {
+        AssertHelper.NotNull(SynchronizationContext.Current);
+        ValidateTestContext();
+        var currentThread = Thread.CurrentThread;
+
         await Task.Delay(100);
 
-        var currentThread = Thread.CurrentThread;
+        ValidateTestContext();
+        AssertHelper.Same(currentThread, Thread.CurrentThread);
+
         var tcs = new TaskCompletionSource();
-        var hasCompleted = false;
 
         DispatcherTimer.RunOnce(() =>
         {
-            hasCompleted = currentThread == Thread.CurrentThread;
-
-            tcs.SetResult();
+            try
+            {
+                ValidateTestContext();
+                AssertHelper.Same(currentThread, Thread.CurrentThread);
+                tcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
         }, TimeSpan.FromTicks(interval));
 
         await tcs.Task; 
-        Assert.True(hasCompleted);
+    }
+
+    private void ValidateTestContext([CallerMemberName] string runningMethodName = null)
+    {
+#if NUNIT
+        var testName = TestContext.CurrentContext.Test.Name;
+        // Test.Name also includes parameters.
+        AssertHelper.Equal(testName.Split('(').First(), runningMethodName);
+#endif
     }
 }

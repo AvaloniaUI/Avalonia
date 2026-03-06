@@ -1,6 +1,7 @@
 //This file will contain actual IID structures
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
+#include "menu.h"
 
 static NSString* s_appTitle = @"Avalonia";
 static int disableSetProcessName = 0;
@@ -129,14 +130,22 @@ public:
         }
     }
     
-    virtual HRESULT SetShowInDock(int show)  override
+    virtual HRESULT SetShowInDock(int show) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
-            AvnDesiredActivationPolicy = show
-                ? NSApplicationActivationPolicyRegular : NSApplicationActivationPolicyAccessory;
+            NSApplication* app = [NSApplication sharedApplication];
+            NSApplicationActivationPolicy requestedPolicy = show
+                ? NSApplicationActivationPolicyRegular
+                : NSApplicationActivationPolicyAccessory;
+            
+            if ([app activationPolicy] != requestedPolicy)
+            {
+                [app setActivationPolicy:requestedPolicy];
+            }
+            
             return S_OK;
         }
     }
@@ -225,6 +234,19 @@ public:
         return (IAvnMacOptions*)new MacOptions();
     }
     
+    virtual HRESULT CreateTopLevel(IAvnTopLevelEvents* cb,
+                                           IAvnTopLevel** ppv) override {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            if(cb == nullptr || ppv == nullptr)
+                return E_POINTER;
+            *ppv = CreateAvnTopLevel(cb);
+            return S_OK;
+        }
+    }
+    
     virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv)  override
     {
         START_COM_CALL;
@@ -263,24 +285,24 @@ public:
         }
     }
     
-    virtual HRESULT CreateSystemDialogs(IAvnSystemDialogs** ppv) override
+    virtual HRESULT CreateStorageProvider(IAvnStorageProvider** ppv) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
-            *ppv = ::CreateSystemDialogs();
+            *ppv = ::CreateStorageProvider();
             return  S_OK;
         }
     }
     
-    virtual HRESULT CreateScreens (IAvnScreens** ppv) override
+    virtual HRESULT CreateScreens (IAvnScreenEvents* cb, IAvnScreens** ppv) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
-            *ppv = ::CreateScreens ();
+            *ppv = ::CreateScreens (cb);
             return S_OK;
         }
     }
@@ -291,18 +313,7 @@ public:
         
         @autoreleasepool
         {
-            *ppv = ::CreateClipboard (nil, nil);
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT CreateDndClipboard(IAvnClipboard** ppv) override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            *ppv = ::CreateClipboard (nil, [NSPasteboardItem new]);
+            *ppv = ::CreateClipboard(nil);
             return S_OK;
         }
     }
@@ -457,6 +468,32 @@ public:
             return S_OK;
         }
     }
+    
+    virtual HRESULT ImportMTLSharedEvent(void* event, IAvnMTLSharedEvent** ppv) override
+    {
+        START_COM_CALL;
+        *ppv = ::ImportMTLSharedEvent(event);
+        return *ppv != nullptr ? S_OK : E_FAIL;
+    }
+    
+    HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement **ppv) override {
+        START_COM_CALL;
+        *ppv = ::CreateMemoryManagementHelper();
+        return S_OK;
+    }
+
+    virtual HRESULT SetDockMenu(IAvnMenu* dockMenu) override
+    {
+        START_COM_CALL;
+
+        @autoreleasepool
+        {
+            auto nativeMenu = dynamic_cast<AvnAppMenu*>(dockMenu);
+            ::SetDockMenu(nativeMenu != nullptr ? nativeMenu->GetNative() : nil);
+            return S_OK;
+        }
+    }
+
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
@@ -480,6 +517,15 @@ NSSize ToNSSize (AvnSize s)
     NSSize result;
     result.width = s.Width;
     result.height = s.Height;
+    
+    return result;
+}
+
+AvnSize FromNSSize (NSSize s)
+{
+    AvnSize result;
+    result.Width = s.width;
+    result.Height = s.height;
     
     return result;
 }

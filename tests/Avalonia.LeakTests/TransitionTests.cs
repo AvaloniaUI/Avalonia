@@ -1,23 +1,15 @@
 ﻿using System;
 using Avalonia.Animation;
 using Avalonia.Controls;
-using Avalonia.Data;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
-using JetBrains.dotMemoryUnit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Avalonia.LeakTests
 {
-    [DotMemoryUnit(FailIfRunWithoutSupport = false)]
-    public class TransitionTests
+    public class TransitionTests : ScopedTestBase
     {
-        public TransitionTests(ITestOutputHelper atr)
-        {
-            DotMemoryUnitTestOutput.SetOutputMethod(atr.WriteLine);
-        }
-
         [Fact]
         public void Transition_On_StyledProperty_Is_Freed()
         {
@@ -25,19 +17,11 @@ namespace Avalonia.LeakTests
 
             using (UnitTestApplication.Start(TestServices.StyledWindow.With(globalClock: clock)))
             {
-                Func<Border> run = () =>
+                WeakReference Run()
                 {
-                    var border = new Border
-                    {
-                        Transitions = new Transitions()
-                        {
-                            new DoubleTransition
-                            {
-                                Duration = TimeSpan.FromSeconds(1),
-                                Property = Border.OpacityProperty,
-                            }
-                        }
-                    };
+                    var opacityTransition = new DoubleTransition { Duration = TimeSpan.FromSeconds(1), Property = Border.OpacityProperty, };
+
+                    var border = new Border { Transitions = new Transitions() { opacityTransition } };
                     var window = new Window();
                     window.Content = border;
                     window.Show();
@@ -49,22 +33,27 @@ namespace Avalonia.LeakTests
 
                     Assert.Equal(0.5, border.Opacity);
 
+                    var transitionInstance = border.TryGetTransitionInstance(opacityTransition);
+                    Assert.NotNull(transitionInstance);
+
                     clock.Pulse(TimeSpan.FromSeconds(1));
 
                     Assert.Equal(0, border.Opacity);
 
                     window.Close();
 
-                    return border;
-                };
+                    return new WeakReference(transitionInstance);
+                }
 
-                var result = run();
+                var weakTransitionInstance = Run();
+                Assert.True(weakTransitionInstance.IsAlive);
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<TransitionInstance>()).ObjectsCount));
+                CollectGarbage();
+
+                Assert.False(weakTransitionInstance.IsAlive);
             }
         }
-        
+
         [Fact]
         public void Shared_Transition_Collection_Is_Not_Leaking()
         {
@@ -84,8 +73,8 @@ namespace Avalonia.LeakTests
                     BasedOn = Application.Current?.Resources[typeof(Button)] as ControlTheme,
                     Setters = { new Setter(Animatable.TransitionsProperty, sharedTransitions) }
                 };
-                
-                Func<Window> run = () =>
+
+                WeakReference Run()
                 {
                     var button = new Button() { Theme = controlTheme };
                     var window = new Window();
@@ -94,13 +83,15 @@ namespace Avalonia.LeakTests
                     window.Content = null;
                     window.Close();
 
-                    return window;
-                };
+                    return new WeakReference(button);
+                }
 
-                var result = run();
+                var weakButton = Run();
+                Assert.True(weakButton.IsAlive);
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Button>()).ObjectsCount));
+                CollectGarbage();
+
+                Assert.False(weakButton.IsAlive);
             }
         }
 
@@ -122,28 +113,38 @@ namespace Avalonia.LeakTests
                     BasedOn = Application.Current?.Resources[typeof(Button)] as ControlTheme,
                     Setters = { new Setter(Animatable.TransitionsProperty, sharedTransitions) }
                 };
-                
-                Func<Window> run = () =>
+
+                WeakReference Run()
                 {
                     var window = new Window();
                     window.Show();
+                    var button = new Button() { Theme = controlTheme };
                     window.Content = new UserControl
                     {
-                        Content = new Button() { Theme = controlTheme },
+                        Content = button,
                         // When invisible, Button won't be attached to the visual tree
                         IsVisible = false
                     };
                     window.Content = null;
                     window.Close();
 
-                    return window;
-                };
+                    return new WeakReference(button);
+                }
 
-                var result = run();
+                var weakButton = Run();
+                Assert.True(weakButton.IsAlive);
 
-                dotMemory.Check(memory =>
-                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Button>()).ObjectsCount));
+                CollectGarbage();
+
+                Assert.False(weakButton.IsAlive);
             }
+        }
+
+        private static void CollectGarbage()
+        {
+            // Process all Loaded events to free control reference(s)
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+            GC.Collect();
         }
     }
 }

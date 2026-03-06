@@ -1,5 +1,5 @@
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
@@ -7,7 +7,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Embedding;
-using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.LinuxFramebuffer;
@@ -19,8 +18,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
-
-#nullable enable
 
 namespace Avalonia.LinuxFramebuffer
 {
@@ -65,14 +62,15 @@ namespace Avalonia.LinuxFramebuffer
                 ? new UiThreadRenderTimer(opts.Fps)
                 : new DefaultRenderTimer(opts.Fps);
             
+            Dispatcher.InitializeUIThreadDispatcher(new EpollDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)))
                 .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformIconLoader>().ToSingleton<LinuxFramebufferIconLoaderStub>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
-                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"));
             
             Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
         }
@@ -144,7 +142,10 @@ namespace Avalonia.LinuxFramebuffer
         {
             get
             {
-                EnsureTopLevel();
+                if (_topLevel == null)
+                {
+                    EnsureTopLevel();
+                }
                 return _topLevel;
             }
         }

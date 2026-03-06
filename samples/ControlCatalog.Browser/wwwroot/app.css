@@ -3,8 +3,8 @@
     position: absolute;
     height: 100%;
     width: 100%;
-    background: #1b2a4e;
-    font-family: 'Nunito', sans-serif;
+    background: white;
+    font-family: 'Outfit', sans-serif;
     justify-content: center;
     align-items: center;
     display: flex;
@@ -12,27 +12,47 @@
 }
 
 .avalonia-splash h2 {
+    font-weight: 400;
     font-size: 1.5rem;
-    color: #8b44ac;
 }
 
 .avalonia-splash a {
-    color: white;
     text-decoration: none;
     font-size: 2.5rem;
-    display: block;
-}
-
-.avalonia-splash img {
-    opacity: 0.05;
-    height: 35%;
-    position: absolute;
-    right: 3%;
-    bottom: 3%;
+    display: block;   
 }
 
 .avalonia-splash.splash-close {
     transition: opacity 200ms, display 200ms;
     display: none;
     opacity: 0;
+}
+
+/* Light theme styles */
+@media (prefers-color-scheme: light) {
+    .avalonia-splash {
+        background: white;
+    }
+
+    .avalonia-splash h2 {
+        color: #1b2a4e;
+    }
+
+    .avalonia-splash a {
+        color: #0D6EFD;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .avalonia-splash {
+        background: #1b2a4e;
+    }
+
+    .avalonia-splash h2 {
+        color: white;
+    }
+
+    .avalonia-splash a {
+        color: white;
+    }
 }

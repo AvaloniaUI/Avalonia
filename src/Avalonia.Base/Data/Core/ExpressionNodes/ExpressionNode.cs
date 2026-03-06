@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 
@@ -61,16 +62,6 @@ internal abstract class ExpressionNode
     }
 
     /// <summary>
-    /// Resets the node to its uninitialized state when the <see cref="Owner"/> is unsubscribed.
-    /// </summary>
-    public void Reset()
-    {
-        SetSource(null, null);
-        _source = null;
-        _value = AvaloniaProperty.UnsetValue;
-    }
-
-    /// <summary>
     /// Sets the owner binding.
     /// </summary>
     /// <param name="owner">The owner binding.</param>
@@ -101,28 +92,26 @@ internal abstract class ExpressionNode
     /// </param>
     public void SetSource(object? source, Exception? dataValidationError)
     {
-        var oldSource = Source;
-
-        if (source == AvaloniaProperty.UnsetValue)
-            source = null;
+        if (_source?.TryGetTarget(out var oldSource) != true)
+            oldSource = AvaloniaProperty.UnsetValue;
 
         if (source == oldSource)
             return;
 
-        if (oldSource is not null)
+        if (oldSource is not null && oldSource != AvaloniaProperty.UnsetValue)
             Unsubscribe(oldSource);
 
-        _source = new(source);
-
-        if (source is null)
+        if (source == AvaloniaProperty.UnsetValue)
         {
-            // If the source is null then the value is null. We explicitly do not want to call
+            // If the source is unset then the value is unset. We explicitly do not want to call
             // OnSourceChanged as we don't want to raise errors for subsequent nodes in the
             // binding change.
+            _source = null;
             _value = AvaloniaProperty.UnsetValue;
         }
         else
         {
+            _source = new(source);
             try { OnSourceChanged(source, dataValidationError); }
             catch (Exception e) { SetError(e); }
         }
@@ -187,13 +176,20 @@ internal abstract class ExpressionNode
             else if (notification.ErrorType == BindingErrorType.DataValidationError)
             {
                 if (notification.HasValue)
-                    SetValue(notification.Value, notification.Error);
+                {
+                    if (notification.Value is BindingNotification n)
+                        SetValue(n);
+                    else
+                        SetValue(notification.Value, notification.Error);
+                }
                 else
+                {
                     SetDataValidationError(notification.Error!);
+                }
             }
             else
             {
-                SetValue(notification.Value, null);
+                SetValue(notification.Value);
             }
         }
         else
@@ -215,24 +211,28 @@ internal abstract class ExpressionNode
     protected void SetValue(object? value, Exception? dataValidationError = null)
     {
         Debug.Assert(value is not BindingNotification);
+        _value = value;
+        Owner?.OnNodeValueChanged(Index, value, dataValidationError);
+    }
 
-        if (Owner is null)
-            return;
-
-        // We raise a change notification if:
-        //
-        // - This is the initial value (_value is null)
-        // - There is a data validation error
-        // - There is no data validation error, but the owner has one
-        // - The new value is different to the old value
-        if (_value is null ||
-            dataValidationError is not null ||
-            (dataValidationError is null && Owner.ErrorType == BindingErrorType.DataValidationError) ||
-            !Equals(value, _value))
+    /// <summary>
+    /// Called from <see cref="OnSourceChanged(object?, Exception?)"/> to validate that the source
+    /// is non-null and raise a node error if it is not.
+    /// </summary>
+    /// <param name="source">The expression node source.</param>
+    /// <returns>
+    /// True if the source is non-null; otherwise, false.
+    /// </returns>
+    protected bool ValidateNonNullSource([NotNullWhen(true)] object? source)
+    {
+        if (source is null)
         {
-            _value = value;
-            Owner.OnNodeValueChanged(Index, value, dataValidationError);
+            Owner?.OnNodeError(Index - 1, "Value is null.");
+            _value = null;
+            return false;
         }
+
+        return true;
     }
 
     /// <summary>
@@ -243,7 +243,7 @@ internal abstract class ExpressionNode
     /// <param name="dataValidationError">
     /// Any data validation error reported by the previous expression node.
     /// </param>
-    protected abstract void OnSourceChanged(object source, Exception? dataValidationError);
+    protected abstract void OnSourceChanged(object? source, Exception? dataValidationError);
 
     /// <summary>
     /// When implemented in a derived class, unsubscribes from the previous source.

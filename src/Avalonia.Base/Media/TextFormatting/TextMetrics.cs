@@ -5,7 +5,7 @@
     /// </summary>
     public readonly record struct TextMetrics
     {
-        public TextMetrics(IGlyphTypeface glyphTypeface, double fontRenderingEmSize)
+        public TextMetrics(GlyphTypeface glyphTypeface, double fontRenderingEmSize)
         {
             var fontMetrics = glyphTypeface.Metrics;
 
@@ -18,6 +18,8 @@
             Descent = fontMetrics.Descent * scale;
 
             LineGap = fontMetrics.LineGap * scale;
+
+            Baseline = -Ascent + LineGap * 0.5;
 
             LineHeight = Descent - Ascent + LineGap;
 
@@ -34,6 +36,11 @@
         /// Em size of font used to format and display text
         /// </summary>
         public double FontRenderingEmSize { get; }
+
+        /// <summary>
+        /// Gets the distance from the top to the baseline of the line of text.
+        /// </summary>
+        public double Baseline { get; }
 
         /// <summary>
         /// Gets the recommended distance above the baseline.

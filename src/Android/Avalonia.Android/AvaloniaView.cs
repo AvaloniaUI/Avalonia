@@ -5,6 +5,8 @@ using Android.Content.Res;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.View;
+using AndroidX.CustomView.Widget;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
@@ -15,16 +17,19 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Android
 {
-    public class AvaloniaView : FrameLayout
+    public partial class AvaloniaView : FrameLayout
     {
         private EmbeddableControlRoot _root;
         private readonly ViewImpl _view;
+        private readonly ExploreByTouchHelper _accessHelper;
 
         private IDisposable? _timerSubscription;
+        private bool _surfaceCreated;
 
         public AvaloniaView(Context context) : base(context)
         {
             _view = new ViewImpl(this);
+
             AddView(_view.View);
 
             _root = new EmbeddableControlRoot(_view);
@@ -32,6 +37,31 @@ namespace Avalonia.Android
 
             this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
             OnConfigurationChanged();
+
+            _view.InternalView.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+            _view.InternalView.SurfaceWindowDestroyed += InternalView_SurfaceWindowDestroyed;
+
+            _accessHelper = new AvaloniaAccessHelper(this);
+            ViewCompat.SetAccessibilityDelegate(this, _accessHelper);
+        }
+
+        private void InternalView_SurfaceWindowCreated(object? sender, EventArgs e)
+        {
+            _surfaceCreated = true;
+
+            if (Visibility == ViewStates.Visible)
+            {
+                OnVisibilityChanged(true);
+
+                _root?.InvalidateMeasure();
+                Invalidate();
+            }
+        }
+
+        private void InternalView_SurfaceWindowDestroyed(object? sender, EventArgs e)
+        {
+            OnVisibilityChanged(false);
+            _surfaceCreated = false;
         }
 
         internal TopLevelImpl TopLevelImpl => _view;
@@ -43,16 +73,12 @@ namespace Avalonia.Android
             set { _root.Content = value; }
         }
 
-        protected override void Dispose(bool disposing)
+        internal new void Dispose()
         {
-            base.Dispose(disposing);
+            OnVisibilityChanged(false);
+            _surfaceCreated = false;
             _root?.Dispose();
             _root = null!;
-        }
-
-        public override bool DispatchKeyEvent(KeyEvent? e)
-        {
-            return _view.View.DispatchKeyEvent(e);
         }
 
         [SupportedOSPlatform("android24.0")]
@@ -68,9 +94,11 @@ namespace Avalonia.Android
             OnVisibilityChanged(visibility == ViewStates.Visible);
         }
 
-        private void OnVisibilityChanged(bool isVisible)
+        internal void OnVisibilityChanged(bool isVisible)
         {
-            if (isVisible)
+            if (_root == null || !_surfaceCreated)
+                return;
+            if (isVisible && _timerSubscription == null)
             {
                 if (AvaloniaLocator.Current.GetService<IRenderTimer>() is ChoreographerTimer timer)
                 {
@@ -84,10 +112,11 @@ namespace Avalonia.Android
                     (insetsManager as AndroidInsetsManager)?.ApplyStatusBarState();
                 }
             }
-            else
+            else if (!isVisible && _timerSubscription != null)
             {
                 _root.StopRendering();
                 _timerSubscription?.Dispose();
+                _timerSubscription = null;
             }
         }
         
@@ -104,6 +133,7 @@ namespace Avalonia.Android
                 var settings =
                     AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
                 settings?.OnViewConfigurationChanged(context);
+                ((AndroidScreens)_view.TryGetFeature<IScreenImpl>()!).OnChanged();
             }
         }
 
@@ -111,7 +141,6 @@ namespace Avalonia.Android
         {
             public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView)
             {
-                View.Focusable = true;
                 View.FocusChange += ViewImpl_FocusChange;
             }
 

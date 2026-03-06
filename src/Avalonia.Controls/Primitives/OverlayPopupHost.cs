@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Diagnostics;
+using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Threading;
-using Avalonia.VisualTree;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -17,21 +19,29 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Transform?> TransformProperty =
             PopupRoot.TransformProperty.AddOwner<OverlayPopupHost>();
 
-        private readonly OverlayLayer _overlayLayer;
+        private readonly PopupOverlayLayer _overlayLayer;
         private readonly ManagedPopupPositioner _positioner;
-        private PopupPositionerParameters _positionerParameters;
+        private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
+        internal IKeyboardNavigationHandler Tests_KeyboardNavigationHandler => _keyboardNavigationHandler!;
         private Point _lastRequestedPosition;
-        private bool _shown;
+        private PopupPositionRequest? _popupPositionRequest;
+        private Size _popupSize;
+        private bool _needsUpdate;
 
-        public OverlayPopupHost(OverlayLayer overlayLayer)
+        static OverlayPopupHost()
+            => KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<OverlayPopupHost>(KeyboardNavigationMode.Cycle);
+
+        internal OverlayPopupHost(PopupOverlayLayer overlayLayer)
         {
             _overlayLayer = overlayLayer;
             _positioner = new ManagedPopupPositioner(this);
+            _keyboardNavigationHandler = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
+            _keyboardNavigationHandler?.SetOwner(this);
         }
 
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", Justification = "Explicit set")]
-        public void SetChild(Control? control)
+        void IPopupHost.SetChild(Control? control)
         {
             Content = control;
         }
@@ -51,7 +61,7 @@ namespace Avalonia.Controls.Primitives
             get => false;
             set { /* Not currently supported in overlay popups */ }
         }
-
+        
         /// <inheritdoc />
         internal override Interactive? InteractiveParent => Parent as Interactive;
 
@@ -62,47 +72,51 @@ namespace Avalonia.Controls.Primitives
         public void Show()
         {
             _overlayLayer.Children.Add(this);
-            _shown = true;
+
+            if (Content is Visual { IsAttachedToVisualTree: false })
+            {
+                // We need to force a measure pass so any descendants are built, for focus to work.
+                UpdateLayout();
+            }
         }
 
         /// <inheritdoc />
         public void Hide()
         {
             _overlayLayer.Children.Remove(this);
-            _shown = false;
+        }
+
+        void IPopupHost.TakeFocus()
+        {
+            // Nothing to do here: overlay popups are implemented inside the window.
         }
 
         /// <inheritdoc />
-        public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
-            PopupAnchor anchor = PopupAnchor.None, PopupGravity gravity = PopupGravity.None,
-            PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
-            Rect? rect = null)
+        void IPopupHost.ConfigurePosition(PopupPositionRequest positionRequest)
         {
-            _positionerParameters.ConfigurePosition((TopLevel)_overlayLayer.GetVisualRoot()!, target, placement, offset, anchor,
-                gravity, constraintAdjustment, rect, FlowDirection);
+            _popupPositionRequest = positionRequest;
+            _needsUpdate = true;
             UpdatePosition();
         }
 
         /// <inheritdoc />
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if (_positionerParameters.Size != finalSize)
+            if (_popupSize != finalSize)
             {
-                _positionerParameters.Size = finalSize;
+                _popupSize = finalSize;
+                _needsUpdate = true;
                 UpdatePosition();
             }
             return base.ArrangeOverride(finalSize);
         }
 
-
         private void UpdatePosition()
         {
-            // Don't bother the positioner with layout system artifacts
-            if (_positionerParameters.Size.Width == 0 || _positionerParameters.Size.Height == 0)
-                return;
-            if (_shown)
+            if (_needsUpdate && _popupPositionRequest is not null)
             {
-                _positioner.Update(_positionerParameters);
+                _needsUpdate = false;
+                _positioner.Update(TopLevel.GetTopLevel(_overlayLayer)!, _popupPositionRequest, _popupSize, FlowDirection);
             }
         }
 
@@ -136,17 +150,18 @@ namespace Avalonia.Controls.Primitives
         }
 
         double IManagedPopupPositionerPopup.Scaling => 1;
-
-        // TODO12: mark PrivateAPI or internal.
-        [Unstable("PopupHost is consireded an internal API. Use Popup or any Popup-based controls (Flyout, Tooltip) instead.")]
-        public static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver)
+        
+        internal static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver, bool shouldUseOverlayLayer)
         {
-            if (TopLevel.GetTopLevel(target) is { } topLevel && topLevel.PlatformImpl?.CreatePopup() is { } popupImpl)
+            if (!shouldUseOverlayLayer)
             {
-                return new PopupRoot(topLevel, popupImpl, dependencyResolver);
+                if (TopLevel.GetTopLevel(target) is { } topLevel && topLevel.PlatformImpl?.CreatePopup() is { } popupImpl)
+                {
+                    return new PopupRoot(topLevel, popupImpl, dependencyResolver);
+                }
             }
 
-            if (OverlayLayer.GetOverlayLayer(target) is { } overlayLayer)
+            if (PopupOverlayLayer.GetPopupOverlayLayer(target) is { } overlayLayer)
             {
                 return new OverlayPopupHost(overlayLayer);
             }

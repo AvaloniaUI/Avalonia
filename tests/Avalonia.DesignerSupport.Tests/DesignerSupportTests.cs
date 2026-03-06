@@ -13,42 +13,41 @@ using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
 using Avalonia.Remote.Protocol.Viewport;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Avalonia.DesignerSupport.Tests
 {
     public class DesignerSupportTests
     {
-        private const string DesignerAppPath = "../../../../../src/tools/Avalonia.Designer.HostApp/bin/$BUILD/netstandard2.0/Avalonia.Designer.HostApp.dll";
-        private readonly Xunit.Abstractions.ITestOutputHelper outputHelper;
+        private const string DesignerAppPath = "../../../../../src/tools/Avalonia.Designer.HostApp/bin/$BUILD/$TFM/Avalonia.Designer.HostApp.dll";
+        private readonly ITestOutputHelper outputHelper;
 
-        public DesignerSupportTests(Xunit.Abstractions.ITestOutputHelper outputHelper)
+        public DesignerSupportTests(ITestOutputHelper outputHelper)
         {
             this.outputHelper = outputHelper;
         }
 
-        [SkippableTheory,
+        [Theory,
          InlineData(
-            @"..\..\..\..\..\tests/Avalonia.DesignerSupport.TestApp/bin/$BUILD/net8.0/",
+            @"..\..\..\..\..\tests/Avalonia.DesignerSupport.TestApp/bin/$BUILD/$TFM/",
             "Avalonia.DesignerSupport.TestApp",
             "Avalonia.DesignerSupport.TestApp.dll",
             @"..\..\..\..\..\tests\Avalonia.DesignerSupport.TestApp\MainWindow.xaml",
             "win32"),
          InlineData(
-            @"..\..\..\..\..\samples\ControlCatalog.NetCore\bin\$BUILD\net8.0\",
-            "ControlCatalog.NetCore",
+            @"..\..\..\..\..\samples\ControlCatalog.Desktop\bin\$BUILD\$TFM\",
+            "ControlCatalog.Desktop",
             "ControlCatalog.dll",
             @"..\..\..\..\..\samples\ControlCatalog\MainWindow.xaml",
             "win32"),
         InlineData(
-            @"..\..\..\..\..\tests/Avalonia.DesignerSupport.TestApp/bin/$BUILD/net8.0/",
+            @"..\..\..\..\..\tests/Avalonia.DesignerSupport.TestApp/bin/$BUILD/$TFM/",
             "Avalonia.DesignerSupport.TestApp",
             "Avalonia.DesignerSupport.TestApp.dll",
             @"..\..\..\..\..\tests\Avalonia.DesignerSupport.TestApp\MainWindow.xaml",
             "avalonia-remote"),
         InlineData(
-            @"..\..\..\..\..\samples\ControlCatalog.NetCore\bin\$BUILD\net8.0\",
-            "ControlCatalog.NetCore",
+            @"..\..\..\..\..\samples\ControlCatalog.Desktop\bin\$BUILD\$TFM\",
+            "ControlCatalog.Desktop",
             "ControlCatalog.dll",
             @"..\..\..\..\..\samples\ControlCatalog\MainWindow.xaml",
             "avalonia-remote")]
@@ -63,7 +62,7 @@ namespace Avalonia.DesignerSupport.Tests
             xamlFile = Path.GetFullPath(xamlFile.Replace('\\', Path.DirectorySeparatorChar));
             
             if (method == "win32")
-                Skip.IfNot(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+                Assert.SkipUnless(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), "Windows-only");
 
             var xaml = File.ReadAllText(xamlFile);
             string buildType;
@@ -72,7 +71,9 @@ namespace Avalonia.DesignerSupport.Tests
 #else
             buildType = "Release";
 #endif
-            outputDir = outputDir.Replace("$BUILD", buildType);
+            var tfm = $"net{Environment.Version.ToString(2)}";
+
+            outputDir = outputDir.Replace("$BUILD", buildType).Replace("$TFM", tfm);
 
             var assemblyPath = Path.Combine(outputDir, assemblyName);
             Assert.True(File.Exists(assemblyPath), "File.Exists(assemblyPath)");
@@ -80,7 +81,7 @@ namespace Avalonia.DesignerSupport.Tests
             var sessionId = Guid.NewGuid();
             long handle = 0;
             bool success = false;
-            string error = null;
+            string? error = null;
 
             var resultMessageReceivedToken = new CancellationTokenSource();
 
@@ -133,7 +134,7 @@ namespace Avalonia.DesignerSupport.Tests
 
             var cmdline =
                 $"exec --runtimeconfig \"{outputDir}{executableName}.runtimeconfig.json\" --depsfile \"{outputDir}{executableName}.deps.json\" "
-                + $" \"{DesignerAppPath.Replace("$BUILD", buildType)}\" "
+                + $" \"{DesignerAppPath.Replace("$BUILD", buildType).Replace("$TFM", tfm)}\" "
                 + $"--transport tcp-bson://127.0.0.1:{port}/ --session-id {sessionId} --method {method} \"{outputDir}{executableName}.dll\"";
 
             using (var proc = new Process

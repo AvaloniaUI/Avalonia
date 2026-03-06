@@ -9,7 +9,7 @@
             <Style Selector="DockPanel.WithContentTemplates">
                 <Style Selector="^ TabItem">
                     <Setter Property="ContentTemplate">
-                        <DataTemplate x:CompileBindings="False">
+                        <DataTemplate x:DataType="x:Object">
                             <Border BorderBrush="Red" BorderThickness="10">
                                 <ContentPresenter Content="{Binding}"/>
                             </Border>

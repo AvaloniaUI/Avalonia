@@ -1,5 +1,8 @@
+using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
@@ -10,11 +13,7 @@ namespace ControlCatalog.Pages
         {
             InitializeComponent();
 
-            var afp = this.FindControl<Panel>("AttachedFlyoutPanel");
-            if (afp != null)
-            {
-                afp.DoubleTapped += Afp_DoubleTapped;
-            }
+            AttachedFlyoutPanel.DoubleTapped += Afp_DoubleTapped;
 
             SetXamlTexts();
         }
@@ -29,7 +28,7 @@ namespace ControlCatalog.Pages
 
         private void SetXamlTexts()
         {
-            var bfxt = this.Get<TextBlock>("ButtonFlyoutXamlText");
+            var bfxt = ButtonFlyoutXamlText;
             bfxt.Text = "<Button Content=\"Click me!\">\n" +
                         "    <Button.Flyout>\n" +
                         "        <Flyout>\n" +
@@ -39,7 +38,7 @@ namespace ControlCatalog.Pages
                         "        </Flyout>\n" +
                         "    </Button.Flyout>\n</Button>";
 
-            var mfxt = this.Get<TextBlock>("MenuFlyoutXamlText");
+            var mfxt = this.MenuFlyoutXamlText;
             mfxt.Text = "<Button Content=\"Click me!\">\n" +
                     "    <Button.Flyout>\n" +
                     "        <MenuFlyout>\n" +
@@ -48,7 +47,7 @@ namespace ControlCatalog.Pages
                     "        </MenuFlyout>\n" +
                     "    </Button.Flyout>\n</Button>";
 
-            var afxt = this.Get<TextBlock>("AttachedFlyoutXamlText");
+            var afxt = this.AttachedFlyoutXamlText;
             afxt.Text = "<Panel Name=\"AttachedFlyoutPanel\">\n" +
                 "    <FlyoutBase.AttachedFlyout>\n" +
                 "        <Flyout>\n" +
@@ -60,7 +59,7 @@ namespace ControlCatalog.Pages
                 "\n\n In DoubleTapped handler:\n" +
                 "FlyoutBase.ShowAttachedFlyout(AttachedFlyoutPanel);";
 
-            var sfxt = this.Get<TextBlock>("SharedFlyoutXamlText");
+            var sfxt = this.SharedFlyoutXamlText;
             sfxt.Text = "Declare a flyout in Resources:\n" +
                 "<Window.Resources>\n" +
                 "    <Flyout x:Key=\"SharedFlyout\">\n" +
@@ -70,6 +69,26 @@ namespace ControlCatalog.Pages
                 "    </Flyout>\n</Window.Resources>\n\n" +
                 "Then attach the flyout where you want it:\n" +
                 "<Button Content=\"Launch Flyout here\" Flyout=\"{StaticResource SharedFlyout}\" />";
+        }
+
+        public void CustomPlacementCallback(CustomPopupPlacement placement)
+        {
+            var r = new Random().Next();
+            placement.Anchor = (r % 4) switch
+            {
+                1 => PopupAnchor.Top,
+                2 => PopupAnchor.Left,
+                3 => PopupAnchor.Right,
+                _ => PopupAnchor.Bottom,
+            };
+            placement.Gravity = (r % 4) switch
+            {
+                1 => PopupGravity.Top,
+                2 => PopupGravity.Left,
+                3 => PopupGravity.Right,
+                _ => PopupGravity.Bottom,
+            };
+            placement.Offset = new Point(r % 20, r % 20);
         }
     }
 }

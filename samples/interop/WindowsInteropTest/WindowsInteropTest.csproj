@@ -1,14 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net461;$(AvsCurrentWindowsTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentWindowsTargetFramework)</TargetFrameworks>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\..\..\src\Windows\Avalonia.Win32.Interoperability\Avalonia.Win32.Interoperability.csproj" />
     <ProjectReference Include="..\..\ControlCatalog\ControlCatalog.csproj" />

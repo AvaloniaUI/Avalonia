@@ -28,56 +28,69 @@ namespace Avalonia.Animation.Animators
             if (Count == 0)
                 return neutralValue;
 
-            var (beforeKeyFrame, afterKeyFrame) = FindKeyFrames(animationTime);
+            var (from, to) = GetKeyFrames(animationTime, neutralValue);
 
-            double beforeTime, afterTime;
-            T beforeValue, afterValue;
+            var progress = (animationTime - from.Time) / (to.Time - from.Time);
 
-            if (beforeKeyFrame is null)
-            {
-                beforeTime = 0.0;
-                beforeValue = afterKeyFrame is { FillBefore: true, Value: T fillValue } ? fillValue : neutralValue;
-            }
-            else
-            {
-                beforeTime = beforeKeyFrame.Cue.CueValue;
-                beforeValue = beforeKeyFrame.Value is T value ? value : neutralValue;
-            }
-
-            if (afterKeyFrame is null)
-            {
-                afterTime = 1.0;
-                afterValue = beforeKeyFrame is { FillAfter: true, Value: T fillValue } ? fillValue : neutralValue;
-            }
-            else
-            {
-                afterTime = afterKeyFrame.Cue.CueValue;
-                afterValue = afterKeyFrame.Value is T value ? value : neutralValue;
-            }
-
-            var progress = (animationTime - beforeTime) / (afterTime - beforeTime);
-
-            if (afterKeyFrame?.KeySpline is { } keySpline)
+            if (to.KeySpline is { } keySpline)
                 progress = keySpline.GetSplineProgress(progress);
 
-            return Interpolate(progress, beforeValue, afterValue);
+            return Interpolate(progress, from.Value, to.Value);
         }
 
-        private (AnimatorKeyFrame? Before, AnimatorKeyFrame? After) FindKeyFrames(double time)
+        private (KeyFrameInfo From, KeyFrameInfo To) GetKeyFrames(double time, T neutralValue)
         {
             Debug.Assert(Count >= 1);
 
-            for (var i = 0; i < Count; i++)
+            // Before or right at the first frame which isn't at time 0.0: interpolate between 0.0 and the first frame.
+            var firstFrame = this[0];
+            var firstTime = firstFrame.Cue.CueValue;
+            if (time <= firstTime && firstTime > 0.0)
             {
-                var keyFrame = this[i];
-                var keyFrameTime = keyFrame.Cue.CueValue;
-
-                if (time < keyFrameTime || keyFrameTime == 1.0)
-                    return (i > 0 ? this[i - 1] : null, keyFrame);
+                var beforeValue = firstFrame.FillBefore ? GetTypedValue(firstFrame.Value, neutralValue) : neutralValue;
+                return (
+                    new KeyFrameInfo(0.0, beforeValue, firstFrame.KeySpline),
+                    KeyFrameInfo.FromKeyFrame(firstFrame, neutralValue));
             }
 
-            return (this[Count - 1], null);
+            // Between two frames: interpolate between the previous frame and the next frame.
+            for (var i = 1; i < Count; ++i)
+            {
+                var frame = this[i];
+                if (time <= frame.Cue.CueValue)
+                {
+                    return (
+                        KeyFrameInfo.FromKeyFrame(this[i - 1], neutralValue),
+                        KeyFrameInfo.FromKeyFrame(this[i], neutralValue));
+                }
+            }
+
+            // Past the last frame which is at time 1.0: interpolate between the last two frames.
+            var lastFrame = this[Count - 1];
+            if (lastFrame.Cue.CueValue >= 1.0)
+            {
+                if (Count == 1)
+                {
+                    var beforeValue = lastFrame.FillBefore ? GetTypedValue(lastFrame.Value, neutralValue) : neutralValue;
+                    return (
+                        new KeyFrameInfo(0.0, beforeValue, lastFrame.KeySpline),
+                        KeyFrameInfo.FromKeyFrame(lastFrame, neutralValue));
+                }
+
+                return (
+                    KeyFrameInfo.FromKeyFrame(this[Count - 2], neutralValue),
+                    KeyFrameInfo.FromKeyFrame(lastFrame, neutralValue));
+            }
+
+            // Past the last frame which isn't at time 1.0: interpolate between the last frame and 1.0.
+            var afterValue = lastFrame.FillAfter ? GetTypedValue(lastFrame.Value, neutralValue) : neutralValue;
+            return (
+                KeyFrameInfo.FromKeyFrame(lastFrame, neutralValue),
+                new KeyFrameInfo(1.0, afterValue, lastFrame.KeySpline));
         }
+
+        private static T GetTypedValue(object? untypedValue, T neutralValue)
+            => untypedValue is T value ? value : neutralValue;
 
         public virtual IDisposable BindAnimation(Animatable control, IObservable<T> instance)
         {
@@ -107,5 +120,15 @@ namespace Avalonia.Animation.Animators
         /// Interpolates in-between two key values given the desired progress time.
         /// </summary>
         public abstract T Interpolate(double progress, T oldValue, T newValue);
+
+        private readonly struct KeyFrameInfo(double time, T value, KeySpline? keySpline)
+        {
+            public readonly double Time = time;
+            public readonly T Value = value;
+            public readonly KeySpline? KeySpline = keySpline;
+
+            public static KeyFrameInfo FromKeyFrame(AnimatorKeyFrame source, T neutralValue)
+                => new(source.Cue.CueValue, GetTypedValue(source.Value, neutralValue), source.KeySpline);
+        }
     }
 }

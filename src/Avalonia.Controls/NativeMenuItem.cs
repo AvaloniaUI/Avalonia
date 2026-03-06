@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -118,11 +119,11 @@ namespace Avalonia.Controls
         }
         
         /// <inheritdoc cref="MenuItem.ToggleTypeProperty"/>
-        public static readonly StyledProperty<NativeMenuItemToggleType> ToggleTypeProperty =
-            AvaloniaProperty.Register<NativeMenuItem, NativeMenuItemToggleType>(nameof(ToggleType));
+        public static readonly StyledProperty<MenuItemToggleType> ToggleTypeProperty =
+            AvaloniaProperty.Register<NativeMenuItem, MenuItemToggleType>(nameof(ToggleType));
 
         /// <inheritdoc cref="MenuItem.ToggleType"/>
-        public NativeMenuItemToggleType ToggleType
+        public MenuItemToggleType ToggleType
         {
             get => GetValue(ToggleTypeProperty);
             set => SetValue(ToggleTypeProperty, value);
@@ -164,7 +165,10 @@ namespace Avalonia.Controls
 
         void CanExecuteChanged()
         {
-            SetCurrentValue(IsEnabledProperty, Command?.CanExecute(CommandParameter) ?? true);
+            if (!Dispatcher.UIThread.CheckAccess())
+                Dispatcher.UIThread.Invoke(() => CanExecuteChanged());
+            else
+                SetCurrentValue(IsEnabledProperty, Command?.CanExecute(CommandParameter) ?? true);
         }
 
         public bool HasClickHandlers => Click != null;
@@ -227,13 +231,5 @@ namespace Avalonia.Controls
                 DebugDisplayHelper.AppendOptionalValue(builder, nameof(Header), Header, true);
             }
         }
-    }
-
-    // TODO12: remove this enum and use MenuItemToggleType only 
-    public enum NativeMenuItemToggleType
-    {
-        None = MenuItemToggleType.None,
-        CheckBox = MenuItemToggleType.CheckBox,
-        Radio = MenuItemToggleType.Radio
     }
 }

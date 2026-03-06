@@ -3,40 +3,55 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Input.TextInput;
+using Avalonia.Layout;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests
-#endif
 {
-    public class TestRenderRoot : Decorator, IRenderRoot
+    public class TestRenderRoot : Decorator, IPresentationSource, IInputRoot, ILayoutRoot
     {
         private readonly IRenderTarget _renderTarget;
         public Size ClientSize { get; private set; }
-        internal IRenderer Renderer { get; private set; }
-        IRenderer IRenderRoot.Renderer => Renderer;
-        IHitTester IRenderRoot.HitTester => new NullHitTester();
+        internal CompositingRenderer Renderer { get; private set; } = null!;
+        IRenderer IPresentationSource.Renderer => Renderer;
+        IHitTester IPresentationSource.HitTester => new NullHitTester();
+        public IInputRoot InputRoot => this;
+
+        ILayoutRoot IPresentationSource.LayoutRoot => this;
+
+        public double LayoutScaling => 1d;
+
+        public ILayoutManager LayoutManager { get; }
+
+        Layoutable ILayoutRoot.RootVisual => this;
+
+        public Visual? RootVisual => this;
         public double RenderScaling { get; }
 
         public TestRenderRoot(double scaling, IRenderTarget renderTarget)
         {
             _renderTarget = renderTarget;
             RenderScaling = scaling;
+            LayoutManager = new LayoutManager(this);
+
         }
         
         class NullHitTester : IHitTester
         {
-            public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter) => Array.Empty<Visual>();
+            public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter) => Array.Empty<Visual>();
 
-            public Visual HitTestFirst(Point p, Visual root, Func<Visual, bool> filter) => null;
+            public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter) => null;
         }
 
-        internal void Initialize(IRenderer renderer, Control child)
+        internal void Initialize(CompositingRenderer renderer, Control child)
         {
             Renderer = renderer;
+            SetPresentationSourceForRootVisual(this);
+            Renderer.CompositionTarget.Root = this.CompositionVisual;
             Child = child;
             Width = child.Width;
             Height = child.Height;
@@ -54,5 +69,12 @@ namespace Avalonia.Direct2D1.RenderTests
         public Point PointToClient(PixelPoint point) => point.ToPoint(RenderScaling);
 
         public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling);
+        
+        public IFocusManager? FocusManager { get; }
+        public IPlatformSettings? PlatformSettings { get; }
+        public IInputElement? PointerOverElement { get; set; }
+        public ITextInputMethodImpl? InputMethod { get; }
+        public InputElement RootElement => this;
+        public InputElement FocusRoot => this;
     }
 }

@@ -24,7 +24,7 @@ namespace Avalonia.Controls
                 {
                     return "";
                 }
-                
+
                 if (_parent.CaretIndex != _presenter.CaretIndex)
                 {
                     _presenter.SetCurrentValue(TextPresenter.CaretIndexProperty, _parent.CaretIndex);
@@ -34,7 +34,7 @@ namespace Avalonia.Controls
                 {
                     _presenter.SetCurrentValue(TextPresenter.TextProperty, _parent.Text);
                 }
-                
+
                 var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_presenter.CaretIndex, false);
 
                 var textLine = _presenter.TextLayout.TextLines[lineIndex];
@@ -118,6 +118,7 @@ namespace Avalonia.Controls
             if (_parent != null)
             {
                 _parent.PropertyChanged -= OnParentPropertyChanged;
+                _parent.Tapped -= OnParentTapped;
             }
 
             _parent = parent;
@@ -125,6 +126,7 @@ namespace Avalonia.Controls
             if (_parent != null)
             {
                 _parent.PropertyChanged += OnParentPropertyChanged;
+                _parent.Tapped += OnParentTapped;
             }
 
             var oldPresenter = _presenter;
@@ -133,7 +135,7 @@ namespace Avalonia.Controls
             {
                 oldPresenter.ClearValue(TextPresenter.PreeditTextProperty);
 
-                oldPresenter.CaretBoundsChanged -= (s,e) => RaiseCursorRectangleChanged();
+                oldPresenter.CaretBoundsChanged -= (s, e) => RaiseCursorRectangleChanged();
             }
 
             _presenter = presenter;
@@ -146,6 +148,11 @@ namespace Avalonia.Controls
             RaiseTextViewVisualChanged();
 
             RaiseCursorRectangleChanged();
+        }
+
+        private void OnParentTapped(object? sender, Input.TappedEventArgs e)
+        {
+            RaiseInputPaneActivationRequested();
         }
 
         public override void SetPreeditText(string? preeditText) => SetPreeditText(preeditText, null);
@@ -163,6 +170,11 @@ namespace Avalonia.Controls
 
         private static string GetTextLineText(TextLine textLine)
         {
+            if (textLine.Length == 0)
+            {
+                return string.Empty;
+            }
+
             var builder = StringBuilderCache.Acquire(textLine.Length);
 
             foreach (var run in textLine.TextRuns)

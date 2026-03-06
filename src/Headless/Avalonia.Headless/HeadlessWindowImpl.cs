@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
@@ -19,12 +20,12 @@ namespace Avalonia.Headless
         private static int _nextGlobalZOrder = 1;
 
         private readonly IKeyboardDevice _keyboard;
+        private readonly IScreenImpl _screen;
         private readonly Stopwatch _st = Stopwatch.StartNew();
         private readonly Pointer _mousePointer;
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
         private readonly PixelFormat _frameBufferFormat;
-        private int _zOrder;
         public bool IsPopup { get; }
 
         public HeadlessWindowImpl(bool isPopup, PixelFormat frameBufferFormat)
@@ -32,6 +33,7 @@ namespace Avalonia.Headless
             IsPopup = isPopup;
             Surfaces = new object[] { this };
             _keyboard = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
+            _screen = new HeadlessScreensStub();
             _mousePointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
             MouseDevice = new MouseDevice(_mousePointer);
             ClientSize = new Size(1024, 768);
@@ -57,9 +59,7 @@ namespace Avalonia.Headless
 
         public Compositor Compositor => AvaloniaHeadlessPlatform.Compositor!;
 
-        public void Invalidate(Rect rect)
-        {
-        }
+        public int ZOrder { get; private set; }
 
         public void SetInputRoot(IInputRoot inputRoot)
         {
@@ -84,7 +84,7 @@ namespace Avalonia.Headless
         {
             if (activate)
             {
-                _zOrder = _nextGlobalZOrder++;
+                ZOrder = _nextGlobalZOrder++;
                 Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);
             }
         }
@@ -94,21 +94,11 @@ namespace Avalonia.Headless
             Dispatcher.UIThread.Post(() => Deactivated?.Invoke(), DispatcherPriority.Input);
         }
 
-        public void BeginMoveDrag()
-        {
-
-        }
-
-        public void BeginResizeDrag(WindowEdge edge)
-        {
-
-        }
-
         public PixelPoint Position { get; set; }
         public Action<PixelPoint>? PositionChanged { get; set; }
         public void Activate()
         {
-            _zOrder = _nextGlobalZOrder++;
+            ZOrder = _nextGlobalZOrder++;
             Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);
         }
 
@@ -150,7 +140,6 @@ namespace Avalonia.Headless
 
         }
 
-        public IScreenImpl Screen { get; } = new HeadlessScreensStub();
         public WindowState WindowState { get; set; }
         public Action<WindowState>? WindowStateChanged { get; set; }
         public void SetTitle(string? title)
@@ -176,6 +165,14 @@ namespace Avalonia.Headless
         public void CanResize(bool value)
         {
 
+        }
+
+        public void SetCanMinimize(bool value)
+        {
+        }
+
+        public void SetCanMaximize(bool value)
+        {
         }
 
         public Func<WindowCloseReason, bool>? Closing { get; set; }
@@ -205,6 +202,7 @@ namespace Avalonia.Headless
             public int RowBytes => _fb.RowBytes;
             public Vector Dpi => _fb.Dpi;
             public PixelFormat Format => _fb.Format;
+            public AlphaFormat AlphaFormat => _fb.AlphaFormat;
         }
 
         public ILockedFramebuffer Lock()
@@ -247,7 +245,7 @@ namespace Avalonia.Headless
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
-        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+        public WindowTransparencyLevel TransparencyLevel { get; set; } = WindowTransparencyLevel.Transparent;
 
         public Action? GotInputWhenDisabled { get; set; }
 
@@ -256,6 +254,7 @@ namespace Avalonia.Headless
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         public bool NeedsManagedDecorations => false;
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations { get; }
 
         public Thickness ExtendedMargins => new Thickness();
 
@@ -266,9 +265,14 @@ namespace Avalonia.Headless
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
         public object? TryGetFeature(Type featureType)
         {
-        	if(featureType == typeof(IClipboard))
+        	if (featureType == typeof(IClipboard))
             {
                 return AvaloniaLocator.Current.GetRequiredService<IClipboard>();
+            }
+
+            if (featureType == typeof(IScreenImpl))
+            {
+                return _screen;
             }
 
             return null;
@@ -347,8 +351,8 @@ namespace Avalonia.Headless
             Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, InputRoot!,
                 point, delta, modifiers));
         }
-        
-        void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
+
+        void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataTransfer data, DragDropEffects effects, RawInputModifiers modifiers)
         {
             var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
             Input?.Invoke(new RawDragEvent(device, type, InputRoot!, point, data, effects, modifiers));
@@ -356,7 +360,8 @@ namespace Avalonia.Headless
 
         void IWindowImpl.Move(PixelPoint point)
         {
-
+            Position = point;
+            PositionChanged?.Invoke(point);
         }
 
         public IPopupImpl? CreatePopup()
@@ -372,7 +377,15 @@ namespace Avalonia.Headless
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel)
         {
-            
+            foreach (var item in transparencyLevel)
+            {
+                if (item == WindowTransparencyLevel.Transparent) {
+                    TransparencyLevel = item;
+                    return;
+                }
+            }
+
+            TransparencyLevel = WindowTransparencyLevel.None;
         }
 
         public void SetParent(IWindowImpl? parent)
@@ -385,7 +398,7 @@ namespace Avalonia.Headless
             
         }
 
-        public void SetSystemDecorations(SystemDecorations enabled)
+        public void SetWindowDecorations(WindowDecorations enabled)
         {
             
         }
@@ -405,11 +418,6 @@ namespace Avalonia.Headless
             
         }
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {
-            
-        }
-
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
             
@@ -420,13 +428,8 @@ namespace Avalonia.Headless
             
         }
 
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
+        public void TakeFocus() 
         {
-            for (int i = 0; i < windows.Length; ++i)
-            {
-                if (windows[i].PlatformImpl is HeadlessWindowImpl headlessWindowImpl)
-                    zOrder[i] = headlessWindowImpl._zOrder;
-            }
         }
     }
 }

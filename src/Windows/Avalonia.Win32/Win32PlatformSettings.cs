@@ -18,8 +18,8 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
     {
         return type switch
         {
-            PointerType.Touch => new(10, 10),
-            _ => new(GetSystemMetrics(SystemMetric.SM_CXDRAG), GetSystemMetrics(SystemMetric.SM_CYDRAG)),
+            PointerType.Mouse => new(GetSystemMetrics(SystemMetric.SM_CXDRAG), GetSystemMetrics(SystemMetric.SM_CYDRAG)),
+            _ => base.GetTapSize(type)
         };
     }
 
@@ -27,8 +27,8 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
     {
         return type switch
         {
-            PointerType.Touch => new(16, 16),
-            _ => new(GetSystemMetrics(SystemMetric.SM_CXDOUBLECLK), GetSystemMetrics(SystemMetric.SM_CYDOUBLECLK)),
+            PointerType.Mouse => new(GetSystemMetrics(SystemMetric.SM_CXDOUBLECLK), GetSystemMetrics(SystemMetric.SM_CYDOUBLECLK)),
+            _ => base.GetDoubleTapSize(type)
         };
     }
 

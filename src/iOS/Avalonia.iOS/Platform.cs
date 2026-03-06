@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -52,6 +52,7 @@ namespace Avalonia
             return builder
                 .UseStandardRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(() => iOS.Platform.Register(appDelegate), "iOS")
+                .UseHarfBuzz()
                 .UseSkia();
         }
 
@@ -76,15 +77,23 @@ namespace Avalonia.iOS
             Timer ??= new DisplayLinkTimer();
             var keyboard = new KeyboardDevice();
 
+            Dispatcher.InitializeUIThreadDispatcher(DispatcherImpl.Instance);
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformGraphics>().ToConstant(Graphics)
                 .Bind<ICursorFactory>().ToConstant(new CursorFactoryStub())
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoaderStub())
+                .Bind<IScreenImpl>().ToSingleton<iOSScreens>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>()
+                    {
+                        { Key.Back , "⌫" }, { Key.Down , "↓" }, { Key.End , "↘" }, { Key.Escape , "⎋" },
+                        { Key.Home , "↖" }, { Key.Left , "←" }, { Key.Return , "↩" }, { Key.PageDown , "⇟" },
+                        { Key.PageUp , "⇞" }, { Key.Right , "→" }, { Key.Space , "␣" }, { Key.Tab , "⇥" },
+                        { Key.Up , "↑" }
+                    }, ctrl: "⌃", meta: "⌘", shift: "⇧", alt: "⌥"))
                 .Bind<IRenderTimer>().ToConstant(Timer)
-                .Bind<IDispatcherImpl>().ToConstant(DispatcherImpl.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(keyboard);
 
             if (appDelegate is not null)

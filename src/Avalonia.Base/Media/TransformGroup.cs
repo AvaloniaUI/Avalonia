@@ -20,12 +20,14 @@ namespace Avalonia.Media
             Justification = "Collection properties shouldn't be set with SetCurrentValue.")]
         public TransformGroup()
         {
-            _childTransformChangedHandler = (_, _) =>
-            {
-                _lastMatrix = null;
-                RaiseChanged();
-            };
-            Children = new Transforms();
+            _childTransformChangedHandler = (_, _) => OnTransformInvalidated();
+            Children = [];
+        }
+
+        private void OnTransformInvalidated()
+        {
+            _lastMatrix = null;
+            RaiseChanged();
         }
 
         /// <summary>
@@ -79,10 +81,20 @@ namespace Avalonia.Media
                     // Ensure reset behavior is Remove
                     newTransforms.ResetBehavior = ResetBehavior.Remove;
                     _childrenNotificationSubscription = newTransforms.ForEachItem(
-                        (tr) => tr.Changed += _childTransformChangedHandler,
-                        (tr) => tr.Changed -= _childTransformChangedHandler,
-                        () => { });
+                        added: (tr) =>
+                        {
+                            tr.Changed += _childTransformChangedHandler;
+                            OnTransformInvalidated();
+                        },
+                        removed: (tr) =>
+                        {
+                            tr.Changed -= _childTransformChangedHandler;
+                            OnTransformInvalidated();
+                        },
+                        reset: () => { });
                 }
+
+                OnTransformInvalidated();
             }
         }
     }

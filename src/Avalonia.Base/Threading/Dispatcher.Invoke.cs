@@ -445,7 +445,8 @@ public partial class Dispatcher
             // so it is safe to modify the operation outside of the lock.
             // Just mark the operation as aborted, which we can safely
             // return to the user.
-            operation.DoAbort();
+            operation.Status = DispatcherOperationStatus.Aborted;
+            operation.CallAbortCallbacks();
         }
     }
 
@@ -540,13 +541,6 @@ public partial class Dispatcher
         return result;
     }
 
-    /// <inheritdoc/>
-    public void Post(Action action, DispatcherPriority priority = default)
-    {
-        _ = action ?? throw new ArgumentNullException(nameof(action));
-        InvokeAsyncImpl(new DispatcherOperation(this, priority, action, true), CancellationToken.None);
-    }
-
     /// <summary>
     ///     Executes the specified Func&lt;Task&gt; asynchronously on the
     ///     thread that the Dispatcher was created on
@@ -618,6 +612,17 @@ public partial class Dispatcher
     /// Posts an action that will be invoked on the dispatcher thread.
     /// </summary>
     /// <param name="action">The method.</param>
+    /// <param name="priority">The priority with which to invoke the method.</param>
+    public void Post(Action action, DispatcherPriority priority = default)
+    {
+        _ = action ?? throw new ArgumentNullException(nameof(action));
+        InvokeAsyncImpl(new DispatcherOperation(this, priority, action, true), CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Posts an action that will be invoked on the dispatcher thread.
+    /// </summary>
+    /// <param name="action">The method.</param>
     /// <param name="arg">The argument of method to call.</param>
     /// <param name="priority">The priority with which to invoke the method.</param>
     public void Post(SendOrPostCallback action, object? arg, DispatcherPriority priority = default)
@@ -671,4 +676,70 @@ public partial class Dispatcher
     /// </summary>
     public DispatcherPriorityAwaitable<T> AwaitWithPriority<T>(Task<T> task, DispatcherPriority priority) =>
         new(this, task, priority);
+    
+    /// <summary>
+    /// Creates an awaitable object that asynchronously resumes execution on the dispatcher.
+    /// </summary>
+    /// <returns>
+    /// An awaitable object that asynchronously resumes execution on the dispatcher.
+    /// </returns>
+    /// <remarks>
+    /// This method is equivalent to calling the <see cref="Resume(DispatcherPriority)"/> method
+    /// and passing in <see cref="DispatcherPriority.Background"/>.
+    /// </remarks>
+    public DispatcherPriorityAwaitable Resume() =>
+        Resume(DispatcherPriority.Background);
+
+    /// <summary>``
+    /// Creates an awaitable object that asynchronously resumes execution on the dispatcher. The work that occurs
+    /// when control returns to the code awaiting the result of this method is scheduled with the specified priority.
+    /// </summary>
+    /// <param name="priority">The priority at which to schedule the continuation.</param>
+    /// <returns>
+    /// An awaitable object that asynchronously resumes execution on the dispatcher.
+    /// </returns>
+    public DispatcherPriorityAwaitable Resume(DispatcherPriority priority)
+    {
+        DispatcherPriority.Validate(priority, nameof(priority));
+        return new(this, null, priority);
+    }
+
+    /// <summary>
+    /// Creates an awaitable object that asynchronously yields control back to the current dispatcher
+    /// and provides an opportunity for the dispatcher to process other events.
+    /// </summary>
+    /// <returns>
+    /// An awaitable object that asynchronously yields control back to the current dispatcher
+    /// and provides an opportunity for the dispatcher to process other events.
+    /// </returns>
+    /// <remarks>
+    /// This method is equivalent to calling the <see cref="Yield(DispatcherPriority)"/> method
+    /// and passing in <see cref="DispatcherPriority.Background"/>.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// The current thread is not the UI thread.
+    /// </exception>
+    public static DispatcherPriorityAwaitable Yield() =>
+        Yield(DispatcherPriority.Background);
+
+    /// <summary>
+    /// Creates an cawaitable object that asynchronously yields control back to the current dispatcher
+    /// and provides an opportunity for the dispatcher to process other events. The work that occurs when
+    /// control returns to the code awaiting the result of this method is scheduled with the specified priority.
+    /// </summary>
+    /// <param name="priority">The priority at which to schedule the continuation.</param>
+    /// <returns>
+    /// An awaitable object that asynchronously yields control back to the current dispatcher
+    /// and provides an opportunity for the dispatcher to process other events.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The current thread is not the UI thread.
+    /// </exception>
+    public static DispatcherPriorityAwaitable Yield(DispatcherPriority priority)
+    {
+        // TODO12: Update to use Dispatcher.CurrentDispatcher once multi-dispatcher support is merged
+        var current = UIThread;
+        current.VerifyAccess();
+        return UIThread.Resume(priority);
+    }
 }

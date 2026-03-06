@@ -23,8 +23,11 @@ internal sealed class StreamNode : ExpressionNode, IObserver<object?>
     void IObserver<object?>.OnError(Exception error) { }
     void IObserver<object?>.OnNext(object? value) => SetValue(value);
 
-    protected override void OnSourceChanged(object source, Exception? dataValidationError)
+    protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
+        if (!ValidateNonNullSource(source))
+            return;
+
         if (_plugin.Start(new(source)) is { } accessor)
         {
             _subscription = accessor.Subscribe(this);

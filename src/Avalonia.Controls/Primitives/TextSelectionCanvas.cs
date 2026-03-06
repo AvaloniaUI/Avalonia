@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
@@ -18,6 +18,7 @@ namespace Avalonia.Controls.Primitives
         private TextPresenter? _presenter;
         private TextBox? _textBox;
         private bool _showHandle;
+        private bool _canShowContextMenu = true;
 
         internal bool ShowHandles
         {
@@ -33,7 +34,7 @@ namespace Avalonia.Controls.Primitives
                     _caretHandle.IsVisible = false;
                 }
 
-                IsVisible = value;
+                IsVisible = !string.IsNullOrEmpty(_presenter?.Text) && value;
             }
         }
 
@@ -65,9 +66,22 @@ namespace Avalonia.Controls.Primitives
             _caretHandle.SetTopLeft(default);
             _endHandle.SetTopLeft(default);
 
+            _startHandle.PointerReleased += Handle_PointerReleased;
+            _caretHandle.PointerReleased += Handle_PointerReleased;
+            _endHandle.PointerReleased += Handle_PointerReleased;
+
+            _startHandle.Holding += Caret_Holding;
+            _caretHandle.Holding += Caret_Holding;
+            _endHandle.Holding += Caret_Holding;
+
             IsVisible = ShowHandles;
 
             ClipToBounds = false;
+        }
+
+        private void Handle_PointerReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            ShowContextMenu();
         }
 
         private void Handle_DragStarted(object? sender, VectorEventArgs e)
@@ -92,6 +106,7 @@ namespace Avalonia.Controls.Primitives
 
         private void CaretHandle_DragDelta(object? sender, VectorEventArgs e)
         {
+            _canShowContextMenu = false;
             if (_presenter != null && _textBox != null)
             {
                 var point = ToPresenter(_caretHandle.IndicatorPosition);
@@ -149,7 +164,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     if (position >= _textBox.SelectionEnd)
                         position = _textBox.SelectionEnd - 1;
-                        _textBox.SelectionStart = position;
+                    _textBox.SelectionStart = position;
                 }
                 else
                 {
@@ -162,13 +177,12 @@ namespace Avalonia.Controls.Primitives
                 var selectionEnd = _textBox.SelectionEnd;
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
+                var rects = new List<Rect>(_presenter.TextLayout.HitTestTextRange(start, length));
 
-                var rects = _presenter.TextLayout.HitTestTextRange(start, length);
-
-                if (rects.Any())
+                if (rects.Count > 0)
                 {
-                    var first = rects.First();
-                    var last = rects.Last();
+                    var first = rects[0];
+                    var last = rects[rects.Count -1];
 
                     if (handle.SelectionHandleType == SelectionHandleType.Start)
                         handle?.SetTopLeft(ToLayer(first.BottomLeft));
@@ -204,7 +218,12 @@ namespace Avalonia.Controls.Primitives
 
         public void MoveHandlesToSelection()
         {
-            if (_presenter == null || _textBox == null || _startHandle.IsDragging || _endHandle.IsDragging)
+            if (_presenter == null
+                || _textBox == null
+                || _startHandle.IsDragging
+                || _endHandle.IsDragging
+                || _textBox.ContextFlyout?.IsOpen == true
+                || _textBox.ContextMenu?.IsOpen == true)
             {
                 return;
             }
@@ -222,12 +241,12 @@ namespace Avalonia.Controls.Primitives
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
 
-                var rects = _presenter.TextLayout.HitTestTextRange(start, length);
+                var rects = new List<Rect>(_presenter.TextLayout.HitTestTextRange(start, length));
 
-                if (rects.Any())
+                if (rects.Count > 0)
                 {
-                    var first = rects.First();
-                    var last = rects.Last();
+                    var first = rects[0];
+                    var last = rects[rects.Count - 1];
 
                     if (!_startHandle.IsDragging)
                     {
@@ -252,6 +271,19 @@ namespace Avalonia.Controls.Primitives
         {
             if (_presenter == textPresenter)
                 return;
+
+            if (_textBox != null)
+            {
+                _textBox.RemoveHandler(TextBox.TextChangingEvent, TextChanged);
+                _textBox.RemoveHandler(KeyDownEvent, TextBoxKeyDown);
+
+                _textBox.PropertyChanged -= TextBoxPropertyChanged;
+                _textBox.EffectiveViewportChanged -= TextBoxEffectiveViewportChanged;
+                _textBox.SizeChanged -= TextBox_SizeChanged;
+
+                _textBox = null;
+            }
+
             _presenter = textPresenter;
             if (_presenter != null)
             {
@@ -261,30 +293,17 @@ namespace Avalonia.Controls.Primitives
                 {
                     _textBox.AddHandler(TextBox.TextChangingEvent, TextChanged, handledEventsToo: true);
                     _textBox.AddHandler(KeyDownEvent, TextBoxKeyDown, handledEventsToo: true);
-                    _textBox.AddHandler(LostFocusEvent, TextBoxLostFocus, handledEventsToo: true);
-                    _textBox.AddHandler(PointerReleasedEvent, TextBoxPointerReleased, handledEventsToo: true);
-                    _textBox.AddHandler(Gestures.HoldingEvent, TextBoxHolding, handledEventsToo: true);
 
                     _textBox.PropertyChanged += TextBoxPropertyChanged;
                     _textBox.EffectiveViewportChanged += TextBoxEffectiveViewportChanged;
+                    _textBox.SizeChanged += TextBox_SizeChanged;
                 }
             }
-            else
-            {
-                if (_textBox != null)
-                {
-                    _textBox.RemoveHandler(TextBox.TextChangingEvent, TextChanged);
-                    _textBox.RemoveHandler(KeyDownEvent, TextBoxKeyDown);
-                    _textBox.RemoveHandler(PointerReleasedEvent, TextBoxPointerReleased);
-                    _textBox.RemoveHandler(LostFocusEvent, TextBoxLostFocus);
-                    _textBox.RemoveHandler(Gestures.HoldingEvent, TextBoxHolding);
+        }
 
-                    _textBox.PropertyChanged -= TextBoxPropertyChanged;
-                    _textBox.EffectiveViewportChanged -= TextBoxEffectiveViewportChanged;
-                }
-
-                _textBox = null;
-            }
+        private void TextBox_SizeChanged(object? sender, SizeChangedEventArgs e)
+        {
+            InvalidateMeasure();
         }
 
         private void TextBoxEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
@@ -296,7 +315,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void TextBoxHolding(object? sender, HoldingRoutedEventArgs e)
+        private void Caret_Holding(object? sender, HoldingRoutedEventArgs e)
         {
             if (ShowContextMenu())
                 e.Handled = true;
@@ -304,7 +323,7 @@ namespace Avalonia.Controls.Primitives
 
         internal bool ShowContextMenu()
         {
-            if (_textBox != null)
+            if (_textBox != null && _canShowContextMenu)
             {
                 if (_textBox.ContextFlyout is PopupFlyoutBase flyout)
                 {
@@ -345,18 +364,17 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
+            _canShowContextMenu = true;
+
             return false;
         }
 
-        private void TextBoxPointerReleased(object? sender, PointerReleasedEventArgs e)
+        internal void Show()
         {
-            if (e.Pointer.Type != PointerType.Mouse)
-            {
-                ShowHandles = true;
+            ShowHandles = true;
 
-                MoveHandlesToSelection();
-                EnsureVisible();
-            }
+            MoveHandlesToSelection();
+            EnsureVisible();
         }
 
         private void TextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -367,11 +385,6 @@ namespace Avalonia.Controls.Primitives
                 MoveHandlesToSelection();
                 EnsureVisible();
             }
-        }
-
-        private void TextBoxLostFocus(object? sender, RoutedEventArgs e)
-        {
-            ShowHandles = false;
         }
 
         private void TextBoxKeyDown(object? sender, KeyEventArgs e)

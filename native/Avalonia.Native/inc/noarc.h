@@ -9,3 +9,6 @@ public:
 };
 
 #define START_ARP_CALL CppAutoreleasePool __autoreleasePool
+extern void ReleaseNSObject(void* obj);
+extern void RetainNSObject(void* obj);
+extern uint64_t GetRetainCountForNSObject(void* obj);

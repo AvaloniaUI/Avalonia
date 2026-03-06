@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -21,15 +24,13 @@ public class CompilerDynamicDependenciesGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(invocationSyntaxes.Collect(), static (context, invocations) =>
         {
             var types = invocations
-                .Select(t => t.ArgumentList.Arguments[0].GetText().ToString())
+                .Select(t => t.ArgumentList.Arguments[0].GetText().ToString().Trim('"'))
+                .Append("System.Action")
+                .Concat(Enumerable.Range(1, 16).Select(i => $"System.Action`{i}"))
+                .Concat(Enumerable.Range(1, 17).Select(i => $"System.Func`{i}"))
                 .Distinct()
-                .Select(t => t
-                    .Replace("\"", "")
-                    .Replace("`1", "<>")
-                    .Replace("`2", "<,>")
-                    .Replace("`3", "<,,>")
-                    .Replace("`4", "<,,,>"))
-                .OrderBy(t => t)
+                .Select(ToCSharpTypeName)
+                .OrderBy(t => t, StringComparer.Ordinal)
                 .ToArray();
             if (types.Length == 0)
             {
@@ -73,5 +74,14 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var str = attributesBuilder.ToString();
             context.AddSource("CompilerDynamicDependenciesAttribute.generated.cs", attributesBuilder.ToString());
         });
+    }
+
+    private static string ToCSharpTypeName(string clrTypeName)
+    {
+        var index = clrTypeName.LastIndexOf('`');
+        if (index < 0 || !int.TryParse(clrTypeName.Substring(index + 1), NumberStyles.None, CultureInfo.InvariantCulture, out var argCount))
+            return clrTypeName;
+
+        return $"{clrTypeName.Substring(0, index)}<{new string(',', argCount - 1)}>";
     }
 }

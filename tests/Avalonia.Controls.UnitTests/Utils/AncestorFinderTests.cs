@@ -1,15 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Controls.Utils;
-using Avalonia.VisualTree;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Utils
 {
-    public class AncestorFinderTests
+    public class AncestorFinderTests : ScopedTestBase
     {
         [Fact]
         public void SanityCheck()
@@ -19,7 +15,7 @@ namespace Avalonia.Controls.UnitTests.Utils
             var grandParent = new Border();
             var grandParent2 = new Border();
 
-            StyledElement currentParent = null;
+            StyledElement? currentParent = null;
             var subscription = AncestorFinder.Create(child, typeof (Border)).Subscribe(s => currentParent = s);
 
             Assert.Null(currentParent);

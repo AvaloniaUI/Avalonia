@@ -1,6 +1,9 @@
 using System;
+using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Reactive;
+using Avalonia.Styling;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 #nullable enable
@@ -74,37 +77,37 @@ namespace Avalonia.Layout
         /// Defines the <see cref="Width"/> property.
         /// </summary>
         public static readonly StyledProperty<double> WidthProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(Width), double.NaN);
+            AvaloniaProperty.Register<Layoutable, double>(nameof(Width), double.NaN, validate: ValidateDimension);
 
         /// <summary>
         /// Defines the <see cref="Height"/> property.
         /// </summary>
         public static readonly StyledProperty<double> HeightProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(Height), double.NaN);
+            AvaloniaProperty.Register<Layoutable, double>(nameof(Height), double.NaN, validate: ValidateDimension);
 
         /// <summary>
         /// Defines the <see cref="MinWidth"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MinWidthProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(MinWidth));
+            AvaloniaProperty.Register<Layoutable, double>(nameof(MinWidth), validate: ValidateMinimumDimension);
 
         /// <summary>
         /// Defines the <see cref="MaxWidth"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MaxWidthProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(MaxWidth), double.PositiveInfinity);
+            AvaloniaProperty.Register<Layoutable, double>(nameof(MaxWidth), double.PositiveInfinity, validate: ValidateMaximumDimension);
 
         /// <summary>
         /// Defines the <see cref="MinHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MinHeightProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(MinHeight));
+            AvaloniaProperty.Register<Layoutable, double>(nameof(MinHeight), validate: ValidateMinimumDimension);
 
         /// <summary>
         /// Defines the <see cref="MaxHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MaxHeightProperty =
-            AvaloniaProperty.Register<Layoutable, double>(nameof(MaxHeight), double.PositiveInfinity);
+            AvaloniaProperty.Register<Layoutable, double>(nameof(MaxHeight), double.PositiveInfinity, validate: ValidateMaximumDimension);
 
         /// <summary>
         /// Defines the <see cref="Margin"/> property.
@@ -135,6 +138,7 @@ namespace Avalonia.Layout
         private Rect? _previousArrange;
         private EventHandler<EffectiveViewportChangedEventArgs>? _effectiveViewportChanged;
         private EventHandler? _layoutUpdated;
+        private bool _isAttachingToVisualTree;
 
         /// <summary>
         /// Initializes static members of the <see cref="Layoutable"/> class.
@@ -153,6 +157,10 @@ namespace Avalonia.Layout
                 VerticalAlignmentProperty);
         }
 
+        private static bool ValidateDimension(double value) => double.IsNaN(value) || ValidateMinimumDimension(value);
+        private static bool ValidateMinimumDimension(double value) => !double.IsPositiveInfinity(value) && ValidateMaximumDimension(value);
+        private static bool ValidateMaximumDimension(double value) => value >= 0;
+
         /// <summary>
         /// Occurs when the element's effective viewport changes.
         /// </summary>
@@ -160,7 +168,7 @@ namespace Avalonia.Layout
         {
             add
             {
-                if (_effectiveViewportChanged is null && VisualRoot is ILayoutRoot r)
+                if (_effectiveViewportChanged is null && this.GetLayoutRoot() is {} r && !_isAttachingToVisualTree)
                 {
                     r.LayoutManager.RegisterEffectiveViewportListener(this);
                 }
@@ -172,7 +180,7 @@ namespace Avalonia.Layout
             {
                 _effectiveViewportChanged -= value;
 
-                if (_effectiveViewportChanged is null && VisualRoot is ILayoutRoot r)
+                if (_effectiveViewportChanged is null && this.GetLayoutRoot() is {} r)
                 {
                     r.LayoutManager.UnregisterEffectiveViewportListener(this);
                 }
@@ -186,7 +194,7 @@ namespace Avalonia.Layout
         {
             add
             {
-                if (_layoutUpdated is null && VisualRoot is ILayoutRoot r)
+                if (_layoutUpdated is null && this.GetLayoutRoot() is {} r && !_isAttachingToVisualTree)
                 {
                     r.LayoutManager.LayoutUpdated += LayoutManagedLayoutUpdated;
                 }
@@ -198,7 +206,7 @@ namespace Avalonia.Layout
             {
                 _layoutUpdated -= value;
 
-                if (_layoutUpdated is null && VisualRoot is ILayoutRoot r)
+                if (_layoutUpdated is null && this.GetLayoutRoot() is {} r)
                 {
                     r.LayoutManager.LayoutUpdated -= LayoutManagedLayoutUpdated;
                 }
@@ -212,7 +220,8 @@ namespace Avalonia.Layout
         /// You should not usually need to call this method explictly, the layout manager will
         /// schedule layout passes itself.
         /// </remarks>
-        public void UpdateLayout() => (this.GetVisualRoot() as ILayoutRoot)?.LayoutManager?.ExecuteLayoutPass();
+        
+        public void UpdateLayout() => this.GetLayoutManager()?.ExecuteLayoutPass();
 
         /// <summary>
         /// Gets or sets the width of the element.
@@ -362,6 +371,9 @@ namespace Avalonia.Layout
 
             if (!IsMeasureValid || _previousMeasure != availableSize)
             {
+                using var activity = Diagnostic.MeasuringLayoutable()?
+                    .AddTag(Diagnostic.Tags.Control, this);
+
                 var previousDesiredSize = DesiredSize;
                 var desiredSize = default(Size);
 
@@ -412,6 +424,9 @@ namespace Avalonia.Layout
 
             if (!IsArrangeValid || _previousArrange != rect)
             {
+                using var activity = Diagnostic.ArrangingLayoutable()?
+                    .AddTag(Diagnostic.Tags.Control, this);
+
                 Logger.TryGet(LogEventLevel.Verbose, LogArea.Layout)?.Log(this, "Arrange to {Rect} ", rect);
 
                 IsArrangeValid = true;
@@ -434,7 +449,7 @@ namespace Avalonia.Layout
 
                 if (IsAttachedToVisualTree)
                 {
-                    (VisualRoot as ILayoutRoot)?.LayoutManager.InvalidateMeasure(this);
+                    this.GetLayoutManager()?.InvalidateMeasure(this);
                     InvalidateVisual();
                 }
                 OnMeasureInvalidated();
@@ -451,12 +466,15 @@ namespace Avalonia.Layout
                 Logger.TryGet(LogEventLevel.Verbose, LogArea.Layout)?.Log(this, "Invalidated arrange");
 
                 IsArrangeValid = false;
-                (VisualRoot as ILayoutRoot)?.LayoutManager?.InvalidateArrange(this);
+                this.GetLayoutManager()?.InvalidateArrange(this);
                 InvalidateVisual();
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Called when a child control's desired size changes.
+        /// </summary>
+        /// <param name="control">The child control.</param>
         internal void ChildDesiredSizeChanged(Layoutable control)
         {
             if (!_measuring)
@@ -532,53 +550,72 @@ namespace Avalonia.Layout
                 if (useLayoutRounding)
                 {
                     scale = LayoutHelper.GetLayoutScale(this);
-                    margin = LayoutHelper.RoundLayoutThickness(margin, scale, scale);
+                    margin = LayoutHelper.RoundLayoutThickness(margin, scale);
                 }
 
                 ApplyStyling();
                 ApplyTemplate();
 
-                var constrained = LayoutHelper.ApplyLayoutConstraints(
-                    this,
+                var minMax = new MinMax(this);
+
+                var constrainedSize = LayoutHelper.ApplyLayoutConstraints(
+                    minMax,
                     availableSize.Deflate(margin));
-                var measured = MeasureOverride(constrained);
 
-                var width = measured.Width;
-                var height = measured.Height;
+                var isContainer = false;
+                ContainerSizing containerSizing = ContainerSizing.Normal;
 
+                if (Container.GetQueryProvider(this) is { } queryProvider && Container.GetSizing(this) is { } sizing && sizing != ContainerSizing.Normal)
                 {
-                    double widthCache = Width;
-
-                    if (!double.IsNaN(widthCache))
-                    {
-                        width = widthCache;
-                    }
+                    isContainer = true;
+                    containerSizing = sizing;
+                    queryProvider.SetSize(constrainedSize.Width, constrainedSize.Height, containerSizing);
                 }
 
-                width = Math.Min(width, MaxWidth);
-                width = Math.Max(width, MinWidth);
+                var measured = MeasureOverride(constrainedSize);
 
+                var width = MathUtilities.Clamp(measured.Width, minMax.MinWidth, minMax.MaxWidth);
+                var height = MathUtilities.Clamp(measured.Height, minMax.MinHeight, minMax.MaxHeight);
+
+                if (isContainer)
                 {
-                    double heightCache = Height;
-
-                    if (!double.IsNaN(heightCache))
+                    switch (containerSizing)
                     {
-                        height = heightCache;
+                        case ContainerSizing.Width:
+                            width = double.IsInfinity(constrainedSize.Width) ? width : constrainedSize.Width;
+                            break;
+                        case ContainerSizing.Height:
+                            width = measured.Width;
+                            height = double.IsInfinity(constrainedSize.Height) ? height : constrainedSize.Height;
+                            break;
+                        case ContainerSizing.WidthAndHeight:
+                            width = double.IsInfinity(constrainedSize.Width) ? width : constrainedSize.Width;
+                            height = double.IsInfinity(constrainedSize.Height) ? height : constrainedSize.Height;
+                            break;
                     }
                 }
-
-                height = Math.Min(height, MaxHeight);
-                height = Math.Max(height, MinHeight);
 
                 if (useLayoutRounding)
                 {
-                    (width, height) = LayoutHelper.RoundLayoutSizeUp(new Size(width, height), scale, scale);
+                    (width, height) = LayoutHelper.RoundLayoutSizeUp(new Size(width, height), scale);
                 }
 
-                width = Math.Min(width, availableSize.Width);
-                height = Math.Min(height, availableSize.Height);
+                width += margin.Left + margin.Right;
+                height += margin.Top + margin.Bottom;
 
-                return NonNegative(new Size(width, height).Inflate(margin));
+                if (width > availableSize.Width)
+                    width = availableSize.Width;
+
+                if (height > availableSize.Height)
+                    height = availableSize.Height;
+
+                if (width < 0)
+                    width = 0;
+
+                if (height < 0)
+                    height = 0;
+
+                return new Size(width, height);
             }
             else
             {
@@ -606,8 +643,13 @@ namespace Avalonia.Layout
                 if (visual is Layoutable layoutable)
                 {
                     layoutable.Measure(availableSize);
-                    width = Math.Max(width, layoutable.DesiredSize.Width);
-                    height = Math.Max(height, layoutable.DesiredSize.Height);
+                    var childSize = layoutable.DesiredSize;
+
+                    if (childSize.Width > width)
+                        width = childSize.Width;
+
+                    if (childSize.Height > height)
+                        height = childSize.Height;
                 }
             }
 
@@ -638,12 +680,19 @@ namespace Avalonia.Layout
                 // If the margin isn't pre-rounded some sizes will be offset by 1 pixel in certain scales.
                 if (useLayoutRounding)
                 {
-                    margin = LayoutHelper.RoundLayoutThickness(margin, scale, scale);
+                    margin = LayoutHelper.RoundLayoutThickness(margin, scale);
                 }
 
-                var availableSizeMinusMargins = new Size(
-                    Math.Max(0, finalRect.Width - margin.Left - margin.Right),
-                    Math.Max(0, finalRect.Height - margin.Top - margin.Bottom));
+
+                var availableWidthMinusMargins = finalRect.Width - margin.Left - margin.Right;
+                if (availableWidthMinusMargins < 0)
+                    availableWidthMinusMargins = 0;
+
+                var availableHeightMinusMargins = finalRect.Height - margin.Top - margin.Bottom;
+                if (availableHeightMinusMargins < 0)
+                    availableHeightMinusMargins = 0;
+
+                var availableSizeMinusMargins = new Size(availableWidthMinusMargins, availableHeightMinusMargins);
                 var horizontalAlignment = HorizontalAlignment;
                 var verticalAlignment = VerticalAlignment;
                 var size = availableSizeMinusMargins;
@@ -658,12 +707,12 @@ namespace Avalonia.Layout
                     size = size.WithHeight(Math.Min(size.Height, DesiredSize.Height - margin.Top - margin.Bottom));
                 }
 
-                size = LayoutHelper.ApplyLayoutConstraints(this, size);
+                size = LayoutHelper.ApplyLayoutConstraints(new MinMax(this), size);
 
                 if (useLayoutRounding)
                 {
-                    size = LayoutHelper.RoundLayoutSizeUp(size, scale, scale);
-                    availableSizeMinusMargins = LayoutHelper.RoundLayoutSizeUp(availableSizeMinusMargins, scale, scale);
+                    size = LayoutHelper.RoundLayoutSizeUp(size, scale);
+                    availableSizeMinusMargins = LayoutHelper.RoundLayoutSizeUp(availableSizeMinusMargins, scale);
                 }
 
                 size = ArrangeOverride(size).Constrain(size);
@@ -690,13 +739,14 @@ namespace Avalonia.Layout
                         break;
                 }
 
+                var origin = new Point(originX, originY);
+
                 if (useLayoutRounding)
                 {
-                    originX = LayoutHelper.RoundLayoutValue(originX, scale);
-                    originY = LayoutHelper.RoundLayoutValue(originY, scale);
+                    origin = LayoutHelper.RoundLayoutPoint(origin, scale);
                 }
 
-                Bounds = new Rect(originX, originY, size.Width, size.Height);
+                Bounds = new Rect(origin, size);
             }
         }
 
@@ -731,11 +781,20 @@ namespace Avalonia.Layout
             InvalidateMeasure();
         }
 
+        /// <inheritdoc />
         protected override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToVisualTreeCore(e);
+            _isAttachingToVisualTree = true;
+            try
+            {
+                base.OnAttachedToVisualTreeCore(e);
+            }
+            finally
+            {
+                _isAttachingToVisualTree = false;
+            }
 
-            if (e.Root is ILayoutRoot r)
+            if (this.GetLayoutRoot() is {} r)
             {
                 if (_layoutUpdated is object)
                 {
@@ -751,7 +810,7 @@ namespace Avalonia.Layout
 
         protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            if (e.Root is ILayoutRoot r)
+            if (this.GetLayoutRoot() is {} r)
             {
                 if (_layoutUpdated is object)
                 {
@@ -794,7 +853,7 @@ namespace Avalonia.Layout
                     // they will need to be registered with the layout manager now that they
                     // are again effectively visible. If IsEffectivelyVisible becomes an observable
                     // property then we can piggy-pack on that; for the moment we do this manually.
-                    if (VisualRoot is ILayoutRoot layoutRoot)
+                    if (this.GetLayoutRoot() is {} layoutRoot)
                     {
                         var count = VisualChildren.Count;
 
@@ -866,11 +925,10 @@ namespace Avalonia.Layout
         /// <returns>True if the rect is invalid; otherwise false.</returns>
         private static bool IsInvalidRect(Rect rect)
         {
-            return rect.Width < 0 || rect.Height < 0 ||
-                double.IsInfinity(rect.X) || double.IsInfinity(rect.Y) ||
-                double.IsInfinity(rect.Width) || double.IsInfinity(rect.Height) ||
-                double.IsNaN(rect.X) || double.IsNaN(rect.Y) ||
-                double.IsNaN(rect.Width) || double.IsNaN(rect.Height);
+            return MathUtilities.IsNegativeOrNonFinite(rect.Width) ||
+                MathUtilities.IsNegativeOrNonFinite(rect.Height) ||
+                !MathUtilities.IsFinite(rect.X) ||
+                !MathUtilities.IsFinite(rect.Y);
         }
 
         /// <summary>
@@ -881,9 +939,8 @@ namespace Avalonia.Layout
         /// <returns>True if the size is invalid; otherwise false.</returns>
         private static bool IsInvalidSize(Size size)
         {
-            return size.Width < 0 || size.Height < 0 ||
-                double.IsInfinity(size.Width) || double.IsInfinity(size.Height) ||
-                double.IsNaN(size.Width) || double.IsNaN(size.Height);
+            return MathUtilities.IsNegativeOrNonFinite(size.Width) ||
+                MathUtilities.IsNegativeOrNonFinite(size.Height);
         }
 
         /// <summary>

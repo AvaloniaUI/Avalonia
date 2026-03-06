@@ -24,6 +24,11 @@ namespace Avalonia.Controls
             set => SetValue(ReverseOrderProperty, value);
         }
 
+        static ReversibleStackPanel()
+        {
+            AffectsArrange<ReversibleStackPanel>(ReverseOrderProperty);
+        }
+
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {

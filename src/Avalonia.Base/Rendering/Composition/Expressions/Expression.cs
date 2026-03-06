@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using Avalonia.Rendering.Composition.Server;
@@ -27,6 +28,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         protected abstract string Print();
         public override string ToString() => Print();
 
+        [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = TrimmingMessages.DesignTimeSupressWarningMessage)]
         internal static string OperatorName(ExpressionType t)
         {
             var attr = typeof(ExpressionType).GetMember(t.ToString())[0]

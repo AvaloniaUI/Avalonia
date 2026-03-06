@@ -6,15 +6,15 @@ namespace ControlCatalog.ViewModels
 {
     public class SplitViewPageViewModel : ViewModelBase
     {
-        private bool _isLeft = true;
         private int _displayMode = 3; //CompactOverlay
+        private int _placement = 0; //Left
 
-        public bool IsLeft
+        public int Placement
         {
-            get => _isLeft;
+            get => _placement;
             set
             {
-                this.RaiseAndSetIfChanged(ref _isLeft, value);
+                this.RaiseAndSetIfChanged(ref _placement, value);
                 this.RaisePropertyChanged(nameof(PanePlacement));
             }
         }
@@ -29,7 +29,15 @@ namespace ControlCatalog.ViewModels
             }
         }
 
-        public SplitViewPanePlacement PanePlacement => _isLeft ? SplitViewPanePlacement.Left : SplitViewPanePlacement.Right;
+        public SplitViewPanePlacement PanePlacement =>
+            _placement switch
+            {
+                0 => SplitViewPanePlacement.Left,
+                1 => SplitViewPanePlacement.Right,
+                2 => SplitViewPanePlacement.Top,
+                3 => SplitViewPanePlacement.Bottom,
+                _ => SplitViewPanePlacement.Left
+            };
         
         public SplitViewDisplayMode CurrentDisplayMode
         {

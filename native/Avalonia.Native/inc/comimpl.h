@@ -7,9 +7,10 @@
 #define COMIMPL_H_INCLUDED
 
 #include <cstring>
+#include <memory>
 
 /**
- START_COM_CALL causes AddRef to be called at the beggining of a function.
+ START_COM_CALL causes AddRef to be called at the beginning of a function.
  When a function is exited, it causes ReleaseRef to be called.
  This ensures that the object cannot be destroyed whilst the function is running.
  For example: Window Show is called, which triggers an event, and user calls Close inside the event
@@ -100,6 +101,13 @@ public:
         return _obj;
     }
     
+    template<class TCast> ComPtr<TCast> dynamicCast()
+    {
+        if(_obj == nullptr)
+            return nullptr;
+        return dynamic_cast<TCast*>(_obj);
+    }
+    
     TInterface** getPPV()
     {
         return &_obj;
@@ -130,10 +138,18 @@ public:
     }
 };
 
+class ComObjectWeakRefToken
+{
+public:
+    bool Alive = true;
+};
+
+
 class ComObject : public virtual IUnknown
 {
 private:
     unsigned int _refCount;
+    std::shared_ptr<ComObjectWeakRefToken> _weakRefs;
 public:
     
     virtual ULONG AddRef()
@@ -157,10 +173,22 @@ public:
         _refCount = 1;
         
     }
+    
     virtual ~ComObject()
     {
+        if(_weakRefs)
+            _weakRefs->Alive = false;
     }
     
+    std::shared_ptr<ComObjectWeakRefToken> __GetWeakRefToken()
+    {
+        if(_weakRefs == nullptr)
+        {
+            _weakRefs = std::make_shared<ComObjectWeakRefToken>();
+        }
+        return _weakRefs;
+    }
+
     
     virtual ::HRESULT STDMETHODCALLTYPE QueryInterfaceImpl(REFIID riid, void **ppvObject) = 0;
     
@@ -187,6 +215,41 @@ protected:
 
 };
 
+
+template<class TClass>
+class ComObjectWeakPtr
+{
+private:
+    std::shared_ptr<ComObjectWeakRefToken> _token;
+    TClass* _rawPtr;
+public:
+    ComPtr<TClass> tryGet()
+    {
+        if(_rawPtr == nullptr)
+            return nullptr;
+        if(_token->Alive)
+            return _rawPtr;
+        return nullptr;
+    }
+    
+    template<class TCast> ComPtr<TCast> tryGetWithCast()
+    {
+        return tryGet().template dynamicCast<TCast>();
+    }
+    
+    ComObjectWeakPtr(TClass* obj)
+    {
+        _rawPtr = obj;
+        if(obj)
+            _token = obj->__GetWeakRefToken();
+    }
+    
+    ComObjectWeakPtr()
+    {
+        _rawPtr = nullptr;
+        _token = nullptr;
+    }
+};
 
 #define FORWARD_IUNKNOWN() \
 virtual ULONG Release() override \

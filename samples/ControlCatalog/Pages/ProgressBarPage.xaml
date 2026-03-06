@@ -30,8 +30,6 @@
       </StackPanel>
 
       <StackPanel Spacing="10">
-        <ProgressBar VerticalAlignment="Center" IsIndeterminate="True" 
-                     Minimum="{Binding #minimum.Value}" Maximum="{Binding #maximum.Value}"/>
         <ProgressBar VerticalAlignment="Center" Value="5" Maximum="10" />
         <ProgressBar VerticalAlignment="Center" Value="50" />
         <ProgressBar VerticalAlignment="Center" Value="50" Minimum="25" Maximum="75" />

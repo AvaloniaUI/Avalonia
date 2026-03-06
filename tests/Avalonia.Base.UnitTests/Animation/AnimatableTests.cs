@@ -98,7 +98,7 @@ namespace Avalonia.Base.UnitTests.Animation
         [Theory]
         [InlineData(null)] //null value
         [InlineData("stringValue")] //string value
-        public void Invalid_Values_In_Animation_Should_Not_Crash_Animations(object invalidValue)
+        public void Invalid_Values_In_Animation_Should_Not_Crash_Animations(object? invalidValue)
         {
             var keyframe1 = new KeyFrame()
             {
@@ -127,7 +127,7 @@ namespace Avalonia.Base.UnitTests.Animation
             var rect = new Rectangle() { Width = 11, };
 
             var clock = new TestClock();
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             clock.Step(TimeSpan.Zero);
             Assert.Equal(1, rect.Width);
@@ -226,7 +226,7 @@ namespace Avalonia.Base.UnitTests.Animation
                 0.5));
             target.Invocations.Clear();
 
-            var root = (TestRoot)control.Parent;
+            var root = (TestRoot?)control.Parent;
             Assert.NotNull(root);
             root.Child = null;
             control.Opacity = 0.8;
@@ -675,8 +675,8 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         private static Control CreateStyledControl(
-            ITransition transition1 = null,
-            ITransition transition2 = null)
+            ITransition? transition1 = null,
+            ITransition? transition2 = null)
         {
             transition1 = transition1 ?? CreateTarget().Object;
             transition2 = transition2 ?? CreateTransition(Layoutable.WidthProperty).Object;

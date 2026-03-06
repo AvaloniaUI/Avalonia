@@ -65,6 +65,18 @@ namespace Avalonia.Rendering.Composition
             throw new ArgumentException("Unknown property " + propertyName);
         }
 
+        /// <summary>Disconnects an animation from the specified property and stops the animation.</summary>
+        /// <param name="propertyName">The name of the property to disconnect the animation from.</param>
+        public void StopAnimation(string propertyName)
+        {
+            if (propertyName is null)
+                throw new ArgumentNullException(nameof(propertyName));
+            if (Server is not ServerObject srv)
+                return;
+            var prop = srv.GetCompositionProperty(propertyName) ?? throw new ArgumentException("Unknown property " + propertyName);
+            srv.Animations?.RemoveAnimationForProperty(prop);
+        }
+
         /// <summary>
         /// Starts an animation group.
         /// The StartAnimationGroup method on CompositionObject lets you start CompositionAnimationGroup.
@@ -124,6 +136,27 @@ namespace Avalonia.Rendering.Composition
             }
 
             throw new ArgumentException();
+        }
+
+        /// <summary>Stops an animation group.</summary>
+        /// <param name="grp">The animation group to stop.</param>
+        public void StopAnimationGroup(ICompositionAnimationBase grp)
+        {
+            if (grp is CompositionAnimation animation)
+            {
+                if (animation.Target == null)
+                    throw new ArgumentException("Animation Target can't be null");
+                StopAnimation(animation.Target);
+            }
+            else if (grp is CompositionAnimationGroup group)
+            {
+                foreach (var a in group.Animations)
+                {
+                    if (a.Target == null)
+                        throw new ArgumentException("Animation Target can't be null");
+                    StopAnimation(a.Target);
+                }
+            }
         }
 
         protected void RegisterForSerialization()

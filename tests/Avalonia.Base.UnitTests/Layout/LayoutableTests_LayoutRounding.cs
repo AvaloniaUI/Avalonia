@@ -6,7 +6,7 @@ using Xunit.Sdk;
 
 namespace Avalonia.Base.UnitTests.Layout
 {
-    public class LayoutableTests_LayoutRounding
+    public class LayoutableTests_LayoutRounding : ScopedTestBase
     {
         [Theory]
         [InlineData(100, 100)]
@@ -112,7 +112,7 @@ namespace Avalonia.Base.UnitTests.Layout
         {
             if (!expected.NearlyEquals(actual))
             {
-                throw new EqualException(expected, actual);
+                throw EqualException.ForMismatchedValues(expected, actual);
             }
         }
 
@@ -120,7 +120,7 @@ namespace Avalonia.Base.UnitTests.Layout
         {
             if (!expected.NearlyEquals(actual))
             {
-                throw new EqualException(expected, actual);
+                throw EqualException.ForMismatchedValues(expected, actual);
             }
         }
 

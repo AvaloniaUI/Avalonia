@@ -8,6 +8,7 @@
                       Background="{TemplateBinding Background}"
                       BorderBrush="{TemplateBinding BorderBrush}"
                       BorderThickness="{TemplateBinding BorderThickness}"
+                      BringIntoViewOnFocusChange="False"
                       HorizontalScrollBarVisibility="Hidden"
                       VerticalScrollBarVisibility="Hidden">
           <ItemsPresenter Name="PART_ItemsPresenter"

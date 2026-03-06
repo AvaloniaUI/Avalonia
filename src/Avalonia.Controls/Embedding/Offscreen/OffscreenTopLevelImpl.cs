@@ -29,6 +29,10 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public abstract IEnumerable<object> Surfaces { get; }
 
+        public virtual double DesktopScaling => _scaling;
+
+        public IPlatformHandle? Handle { get; }
+
         public Size ClientSize
         {
             get => _clientSize;

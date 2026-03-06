@@ -46,25 +46,6 @@ class CompositionBorderVisual : CompositionDrawListVisual
         {
         }
 
-        protected override void RenderCore(CompositorDrawingContextProxy canvas, LtrbRect currentTransformedClip,
-            IDirtyRectTracker dirtyRects)
-        {
-            if (ClipToBounds)
-            {
-                var clipRect = Root!.SnapToDevicePixels(new Rect(new Size(Size.X, Size.Y)));
-                if (_cornerRadius == default)
-                    canvas.PushClip(clipRect);
-                else
-                    canvas.PushClip(new RoundedRect(clipRect, _cornerRadius));
-            }
-
-            base.RenderCore(canvas, currentTransformedClip, dirtyRects);
-            
-            if(ClipToBounds)
-                canvas.PopClip();
-            
-        }
-
         protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
         {
             base.DeserializeChangesCore(reader, committedAt);
@@ -72,7 +53,16 @@ class CompositionBorderVisual : CompositionDrawListVisual
                 _cornerRadius = reader.Read<CornerRadius>();
         }
 
-        protected override bool HandlesClipToBounds => true;
+
+        protected override void PushClipToBounds(IDrawingContextImpl canvas)
+        {
+            var clipRect = new Rect(new Size(Size.X, Size.Y));
+            if (_cornerRadius == default)
+                canvas.PushClip(clipRect);
+            else
+                canvas.PushClip(new RoundedRect(clipRect, _cornerRadius));
+        }
+
     }
 
 }

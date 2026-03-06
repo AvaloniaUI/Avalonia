@@ -36,7 +36,18 @@ public class UriExtensionsTests
     [InlineData("C:\\\\Work\\Projects.txt")]
     public void Should_Convert_File_Path_To_Uri_And_Back(string path)
     {
-        var uri = StorageProviderHelpers.FilePathToUri(path);
+        var uri = StorageProviderHelpers.UriFromFilePath(path, false);
+
+        Assert.Equal(path, uri.LocalPath);
+    }
+
+    [Theory]
+   
+    [InlineData(@"\\?\D:\abcdefgh\abcdefgh\abcdefabcdefgh\abcdefghabcdefghabcdefgha\bcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefgh\abcdefghabcdefghabcdefgha\bcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefgh",
+        @"D:\abcdefgh\abcdefgh\abcdefabcdefgh\abcdefghabcdefghabcdefgha\bcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefgh\abcdefghabcdefghabcdefgha\bcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefgh")]
+    public void Should_Convert_Long_File_Path_To_Uri_And_Back(string prepath,string path)
+    {
+        var uri = StorageProviderHelpers.UriFromFilePath(prepath, false);
 
         Assert.Equal(path, uri.LocalPath);
     }

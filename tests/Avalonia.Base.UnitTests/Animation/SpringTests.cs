@@ -16,7 +16,7 @@ public class SpringTests
     {
         var conv = new SpringTypeConverter();
 
-        var spring = (Spring)conv.ConvertFrom(input);
+        var spring = Assert.IsAssignableFrom<Spring>(conv.ConvertFrom(input));
 
         Assert.NotNull(spring);
         Assert.Equal(1, spring.Mass);
@@ -32,7 +32,7 @@ public class SpringTests
     {
         var conv = new SpringTypeConverter();
 
-        Assert.ThrowsAny<Exception>(() => (Spring)conv.ConvertFrom(input));
+        Assert.ThrowsAny<Exception>(() => (Spring?)conv.ConvertFrom(input));
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public class SpringTests
         var rect = new Rectangle() { RenderTransform = rotateTransform };
 
         var clock = new TestClock();
-        animation.RunAsync(rect, clock);
+        animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
         clock.Step(TimeSpan.Zero);
         Assert.Equal(-2.5, rotateTransform.Angle);

@@ -12,6 +12,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 using Avalonia.Vulkan;
 
 namespace Avalonia
@@ -23,6 +24,7 @@ namespace Avalonia
             return builder
                 .UseAndroidRuntimePlatformSubsystem()
                 .UseWindowingSubsystem(() => AndroidPlatform.Initialize(), "Android")
+                .UseHarfBuzz()
                 .UseSkia();
         }
     }
@@ -79,15 +81,16 @@ namespace Avalonia.Android
         {
             Options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
 
+            Dispatcher.InitializeUIThreadDispatcher(new AndroidDispatcherImpl());
             AvaloniaLocator.CurrentMutable
                 .Bind<ICursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
                 .Bind<IPlatformSettings>().ToSingleton<AndroidPlatformSettings>()
-                .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
                 .Bind<IActivatableLifetime>().ToConstant(new AndroidActivatableLifetime());
 
             var graphics = InitializeGraphics(Options);

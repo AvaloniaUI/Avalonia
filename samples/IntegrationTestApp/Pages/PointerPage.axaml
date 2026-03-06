@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="IntegrationTestApp.Pages.PointerPage">
+  <StackPanel>
+    <!-- Trigger with PointerPressed rather using a Button so we have access to the pointer. -->
+    <Border Name="PointerPageShowDialog"
+            Background="{DynamicResource ButtonBackground}"
+            HorizontalAlignment="Left"
+            Padding="{DynamicResource ButtonPadding}"
+            AutomationProperties.AccessibilityView="Control"
+            PointerPressed="PointerPageShowDialog_PointerPressed">
+      <TextBlock>Show Dialog</TextBlock>
+    </Border>
+    <TextBlock Name="PointerCaptureStatus"/>
+  </StackPanel>
+</UserControl>

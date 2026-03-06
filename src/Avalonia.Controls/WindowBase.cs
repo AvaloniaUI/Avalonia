@@ -47,11 +47,12 @@ namespace Avalonia.Controls
         public WindowBase(IWindowBaseImpl impl) : this(impl, AvaloniaLocator.Current)
         {
             CreatePlatformImplBinding(TopmostProperty, topmost => PlatformImpl!.SetTopmost(topmost));
+            
+            FrameSize = impl.FrameSize;
         }
 
         public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver? dependencyResolver) : base(impl, dependencyResolver)
         {
-            Screens = new Screens(impl.Screen);
             impl.Activated = HandleActivated;
             impl.Deactivated = HandleDeactivated;
             impl.PositionChanged = HandlePositionChanged;
@@ -106,7 +107,9 @@ namespace Avalonia.Controls
             private set => SetAndRaise(IsActiveProperty, ref _isActive, value);
         }
 
-        public Screens Screens { get; }
+        /// <inheritdoc cref="TopLevel.Screens"/>
+        public new Screens Screens => base.Screens
+            ?? throw new InvalidOperationException("Windowing backend wasn't properly initialized.");
 
         /// <summary>
         /// Gets or sets the owner of the window.
@@ -129,7 +132,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the scaling factor for Window positioning and sizing.
         /// </summary>
-        public double DesktopScaling => PlatformImpl?.DesktopScaling ?? 1;
+        public double DesktopScaling => DesktopScalingOverride ?? PlatformImpl?.DesktopScaling ?? 1;
+
+        private protected double? DesktopScalingOverride { get; set; }
         
         /// <summary>
         /// Activates the window.
@@ -195,6 +200,7 @@ namespace Avalonia.Controls
 
             if (change.Property == IsVisibleProperty)
             {
+                VisualRoot?.IsVisible = change.GetNewValue<bool>();
                 IsVisibleChanged(change);
             }
         }
@@ -212,6 +218,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnOpened(EventArgs e)
         {
+            FrameSize = PlatformImpl?.FrameSize;
+            
             // Window must manually raise Loaded/Unloaded events as it is a visual root and
             // does not raise OnAttachedToVisualTreeCore/OnDetachedFromVisualTreeCore events
             ScheduleOnLoadedCore();
@@ -278,6 +286,8 @@ namespace Avalonia.Controls
 
             var constraint = LayoutHelper.ApplyLayoutConstraints(this, availableSize);
 
+            Avalonia.Styling.Container.GetQueryProvider(this)?.SetSize(constraint.Width, constraint.Height, Avalonia.Styling.Container.GetSizing(this));
+
             return MeasureOverride(constraint);
         }
 
@@ -302,7 +312,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="size">The requested size of the window.</param>
         /// <returns>The actual size of the window.</returns>
-        protected virtual Size ArrangeSetBounds(Size size) => size;
+        private protected virtual Size ArrangeSetBounds(Size size) => size;
 
         /// <summary>
         /// Handles a window position change notification from 

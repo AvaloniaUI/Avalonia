@@ -1,9 +1,9 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Avalonia.Reactive;
 using System.Threading.Tasks;
-using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
@@ -15,49 +15,51 @@ using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-using Avalonia.Threading;
 
 namespace Avalonia.DesignerSupport.Remote
 {
     class WindowStub : IWindowImpl, IPopupImpl
     {
-        public Action Deactivated { get; set; }
-        public Action Activated { get; set; }
-        public IPlatformHandle Handle { get; }
+        public Action? Deactivated { get; set; }
+        public Action? Activated { get; set; }
+        public IPlatformHandle? Handle { get; }
         public Size MaxAutoSizeHint { get; }
         public Size ClientSize { get; }
         public Size? FrameSize => null;
         public double RenderScaling { get; } = 1.0;
         public double DesktopScaling => 1.0;
-        public IEnumerable<object> Surfaces { get; }
-        public Action<RawInputEventArgs> Input { get; set; }
-        public Action<Rect> Paint { get; set; }
-        public Action<Size, WindowResizeReason> Resized { get; set; }
-        public Action<double> ScalingChanged { get; set; }
-        public Func<WindowCloseReason, bool> Closing { get; set; }
-        public Action Closed { get; set; }
-        public Action LostFocus { get; set; }
+        public IEnumerable<object> Surfaces => [];
+        public Action<RawInputEventArgs>? Input { get; set; }
+        public Action<Rect>? Paint { get; set; }
+        public Action<Size, WindowResizeReason>? Resized { get; set; }
+        public Action<double>? ScalingChanged { get; set; }
+        public Func<WindowCloseReason, bool>? Closing { get; set; }
+        public Action? Closed { get; set; }
+        public Action? LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
         public IPopupImpl CreatePopup() => new WindowStub(this);
 
         public PixelPoint Position { get; set; }
-        public Action<PixelPoint> PositionChanged { get; set; }
+        public Action<PixelPoint>? PositionChanged { get; set; }
         public WindowState WindowState { get; set; }
-        public Action<WindowState> WindowStateChanged { get; set; }
+        public Action<WindowState>? WindowStateChanged { get; set; }
 
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }        
+        public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
-        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+        public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations => IsClientAreaExtendedToDecorations
+            ? PlatformRequestedDrawnDecoration.TitleBar
+            : default;
         public Thickness ExtendedMargins { get; } = new Thickness();
 
         public Thickness OffScreenMargin { get; } = new Thickness();
 
-        public WindowStub(IWindowImpl parent = null)
+        public WindowStub(IWindowImpl? parent = null)
         {
             if (parent != null)
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(parent,
-                    (_, size, __) =>
+                    (_, size, _) =>
                     {
                         Resize(size, WindowResizeReason.Unspecified);
                     }));
@@ -91,7 +93,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
 
-        public void SetCursor(ICursorImpl cursor)
+        public void SetCursor(ICursorImpl? cursor)
         {
         }
 
@@ -123,14 +125,12 @@ namespace Avalonia.DesignerSupport.Remote
         {
 
         }
-
-        public IScreenImpl Screen { get; } = new ScreenStub();
-
+        
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
         }
 
-        public void SetTitle(string title)
+        public void SetTitle(string? title)
         {
         }
 
@@ -138,11 +138,11 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetSystemDecorations(SystemDecorations enabled)
+        public void SetWindowDecorations(WindowDecorations enabled)
         {
         }
 
-        public void SetIcon(IWindowIconImpl icon)
+        public void SetIcon(IWindowIconImpl? icon)
         {
         }
 
@@ -154,11 +154,19 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetCanMinimize(bool value)
+        {
+        }
+
+        public void SetCanMaximize(bool value)
+        {
+        }
+
         public void SetTopmost(bool value)
         {
         }
 
-        public void SetParent(IWindowImpl parent)
+        public void SetParent(IWindowImpl? parent)
         {
         }
 
@@ -170,19 +178,13 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {
-        }
-
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
         }
 
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder) => throw new NotSupportedException();
+        public IPopupPositioner? PopupPositioner { get; }
 
-        public IPopupPositioner PopupPositioner { get; }
-
-        public Action GotInputWhenDisabled { get; set; }
+        public Action? GotInputWhenDisabled { get; set; }
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevel) { }
 
@@ -199,20 +201,35 @@ namespace Avalonia.DesignerSupport.Remote
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
-        public object TryGetFeature(Type featureType) => null;
+
+        public object? TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IStorageProvider))
+            {
+                return new NoopStorageProvider();
+            }
+
+            if (featureType == typeof(IScreenImpl))
+            {
+                return new ScreenStub();
+            }
+
+            return null;
+        }
+        public void TakeFocus() { }
     }
 
     class ClipboardStub : IClipboard
     {
-        public Task<string> GetTextAsync() => Task.FromResult("");
-
-        public Task SetTextAsync(string text) => Task.CompletedTask;
-
         public Task ClearAsync() => Task.CompletedTask;
-        public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
-        public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
-        public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
+        public Task SetDataAsync(IAsyncDataTransfer? dataTransfer) => Task.CompletedTask;
+
+        public Task<IAsyncDataTransfer?> TryGetDataAsync() => Task.FromResult<IAsyncDataTransfer?>(null);
+
+        public Task FlushAsync() => Task.CompletedTask;
+
+        public Task<IAsyncDataTransfer?> TryGetInProcessDataAsync() => Task.FromResult<IAsyncDataTransfer?>(null);
     }
 
     class CursorFactoryStub : ICursorFactory
@@ -243,26 +260,20 @@ namespace Avalonia.DesignerSupport.Remote
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap) => new IconStub();
     }
 
-    class ScreenStub : IScreenImpl
+    class ScreenStub : ScreensBase<int, PlatformScreen>
     {
-        public int ScreenCount => 1;
+        protected override IReadOnlyList<int> GetAllScreenKeys() => new[] { 1 };
 
-        public IReadOnlyList<Screen> AllScreens { get; } =
-            new Screen[] { new Screen(1, new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true) };
+        protected override PlatformScreen CreateScreenFromKey(int key) => new PlatformScreenStub(key);
 
-        public Screen ScreenFromPoint(PixelPoint point)
+        private class PlatformScreenStub : PlatformScreen
         {
-            return ScreenHelper.ScreenFromPoint(point, AllScreens);
-        }
-
-        public Screen ScreenFromRect(PixelRect rect)
-        {
-            return ScreenHelper.ScreenFromRect(rect, AllScreens);
-        }
-
-        public Screen ScreenFromWindow(IWindowBaseImpl window)
-        {
-            return ScreenHelper.ScreenFromWindow(window, AllScreens);
+            public PlatformScreenStub(int key) : base(new PlatformHandle((nint) key, nameof(ScreenStub))) 
+            {
+                Scaling = 1;
+                Bounds = WorkingArea = new PixelRect(0, 0, 4000, 4000);
+                IsPrimary = true;
+            }
         }
     }
 
@@ -275,9 +286,14 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public override bool CanSave => false;
-        public override Task<IStorageFile> SaveFilePickerAsync(FilePickerSaveOptions options)
+        public override Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
         {
-            return Task.FromResult<IStorageFile>(null);
+            return Task.FromResult<IStorageFile?>(null);
+        }
+
+        public override Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+        {
+            return Task.FromResult(new SaveFilePickerResult());
         }
 
         public override bool CanPickFolder => false;

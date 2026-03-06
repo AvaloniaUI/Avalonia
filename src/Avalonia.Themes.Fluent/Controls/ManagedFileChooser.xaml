@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:dialogs="using:Avalonia.Dialogs"
         xmlns:internal="using:Avalonia.Dialogs.Internal"
@@ -166,7 +166,7 @@
                   <Path Data="M 0 7 L 7 0 L 14 7 M 7 0 L 7 16" Stroke="{CompiledBinding $parent[Button].Foreground}" StrokeThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,1,0,-1"/>
                 </Button>
                 <Button Command="{Binding Refresh}" DockPanel.Dock="Right" Margin="8,0,0,0">
-                  <Path Data="M18.62 3.32c.39 0 .7.29.76.66v3c0 .39-.28.7-.66.76h-3a.77.77 0 0 1-.1-1.52h1.08a7.42 7.42 0 1 0 2.65 4.37.77.77 0 1 1 1.5-.3 8.94 8.94 0 1 1-3-5.12V4.09c0-.43.35-.77.77-.77Z" 
+                  <Path Data="M18.62 3.32c.39 0 .7.29.76.66v3c0 .39-.28.7-.66.76h-3a.77.77 0 0 1-.1-1.52h1.08a7.42 7.42 0 1 0 2.65 4.37.77.77 0 1 1 1.5-.3 8.94 8.94 0 1 1-3-5.12V4.09c0-.43.35-.77.77-.77Z"
                         Fill="{CompiledBinding $parent[Button].Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="-2,-4,0,0"/>
                 </Button>
                 <TextBox x:Name="Location" Text="{Binding Location}">
@@ -184,7 +184,7 @@
                       IsVisible="{Binding ShowFilters}"
                       ItemsSource="{Binding Filters}"
                       SelectedItem="{Binding SelectedFilter}" />
-                  <TextBox Text="{Binding FileName}" Watermark="{DynamicResource StringManagedFileChooserFileNameWatermark}" IsVisible="{Binding !SelectingFolder}" />
+                  <TextBox Text="{Binding FileName}" PlaceholderText="{DynamicResource StringManagedFileChooserFileNamePlaceholder}" IsVisible="{Binding !SelectingFolder}" />
                 </DockPanel>
                 <CheckBox IsChecked="{Binding ShowHiddenFiles}" Content="{DynamicResource StringManagedFileChooserShowHiddenFilesText}" DockPanel.Dock="Left"/>
                 <UniformGrid x:Name="Finalize" HorizontalAlignment="Right" Rows="1">
@@ -344,7 +344,7 @@
       <Setter Property="Margin" Value="4,0,0,0"/>
     </Style>
   </ControlTheme>
-  
+
   <ControlTheme x:Key="{x:Type dialogs:ManagedFileChooserOverwritePrompt}" TargetType="dialogs:ManagedFileChooserOverwritePrompt">
     <Setter Property="MinWidth" Value="270" />
     <Setter Property="MaxWidth" Value="400" />

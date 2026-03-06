@@ -1,4 +1,6 @@
 ﻿using System;
+using Avalonia.Layout;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -24,6 +26,18 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<int> FirstColumnProperty =
             AvaloniaProperty.Register<UniformGrid, int>(nameof(FirstColumn));
+
+        /// <summary>
+        /// Defines the <see cref="RowSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> RowSpacingProperty =
+            AvaloniaProperty.Register<UniformGrid, double>(nameof(RowSpacing), 0);
+
+        /// <summary>
+        /// Defines the <see cref="ColumnSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> ColumnSpacingProperty =
+            AvaloniaProperty.Register<UniformGrid, double>(nameof(ColumnSpacing), 0);
 
         private int _rows;
         private int _columns;
@@ -60,6 +74,24 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(FirstColumnProperty, value);
         }
 
+        /// <summary>
+        /// Specifies the spacing between rows.
+        /// </summary>
+        public double RowSpacing
+        {
+            get => GetValue(RowSpacingProperty);
+            set => SetValue(RowSpacingProperty, value);
+        }
+
+        /// <summary>
+        /// Specifies the spacing between columns.
+        /// </summary>
+        public double ColumnSpacing
+        {
+            get => GetValue(ColumnSpacingProperty);
+            set => SetValue(ColumnSpacingProperty, value);
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             UpdateRowsAndColumns();
@@ -67,7 +99,9 @@ namespace Avalonia.Controls.Primitives
             var maxWidth = 0d;
             var maxHeight = 0d;
 
-            var childAvailableSize = new Size(availableSize.Width / _columns, availableSize.Height / _rows);
+            var childAvailableSize = new Size(
+                (availableSize.Width - (_columns - 1) * ColumnSpacing) / _columns,
+                (availableSize.Height - (_rows - 1) * RowSpacing) / _rows);
 
             foreach (var child in Children)
             {
@@ -84,7 +118,20 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            return new Size(maxWidth * _columns, maxHeight * _rows);
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                maxWidth = LayoutHelper.RoundLayoutValue(maxWidth, scale);
+                maxHeight = LayoutHelper.RoundLayoutValue(maxHeight, scale);
+            }
+
+            var totalWidth = maxWidth * _columns + ColumnSpacing * (_columns - 1);
+            var totalHeight = maxHeight * _rows + RowSpacing * (_rows - 1);
+
+            totalWidth = Math.Max(totalWidth, 0);
+            totalHeight = Math.Max(totalHeight, 0);
+
+            return new Size(totalWidth, totalHeight);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -92,8 +139,19 @@ namespace Avalonia.Controls.Primitives
             var x = FirstColumn;
             var y = 0;
 
-            var width = finalSize.Width / _columns;
-            var height = finalSize.Height / _rows;
+            var columnSpacing = ColumnSpacing;
+            var rowSpacing = RowSpacing;
+
+            var width = Math.Max((finalSize.Width - (_columns - 1) * columnSpacing) / _columns, 0);
+            var height = Math.Max((finalSize.Height - (_rows - 1) * rowSpacing) / _rows, 0);
+
+            // If layout rounding is enabled, round the per-cell unit size to integral device units.
+            if (UseLayoutRounding)
+            {
+                var scale = LayoutHelper.GetLayoutScale(this);
+                width = LayoutHelper.RoundLayoutValue(width, scale);
+                height = LayoutHelper.RoundLayoutValue(height, scale);
+            }
 
             foreach (var child in Children)
             {
@@ -102,7 +160,13 @@ namespace Avalonia.Controls.Primitives
                     continue;
                 }
 
-                child.Arrange(new Rect(x * width, y * height, width, height));
+                var rect = new Rect(
+                    x * (width + columnSpacing),
+                    y * (height + rowSpacing),
+                    width,
+                    height);
+
+                child.Arrange(rect);
 
                 x++;
 
@@ -121,7 +185,7 @@ namespace Avalonia.Controls.Primitives
             _rows = Rows;
             _columns = Columns;
 
-            if (FirstColumn >= Columns)
+            if (FirstColumn >= _columns)
             {
                 SetCurrentValue(FirstColumnProperty, 0);
             }

@@ -1,10 +1,9 @@
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public class TabStripPage : UserControl
+    public partial class TabStripPage : UserControl
     {
         public TabStripPage()
         {
@@ -12,7 +11,7 @@ namespace ControlCatalog.Pages
 
             DataContext = new TabControlPageViewModel
             {
-                Tabs = new []
+                Tabs = new[]
                 {
                     new TabControlPageViewModelItem()
                     {
@@ -29,11 +28,6 @@ namespace ControlCatalog.Pages
                     },
                 }
             };
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

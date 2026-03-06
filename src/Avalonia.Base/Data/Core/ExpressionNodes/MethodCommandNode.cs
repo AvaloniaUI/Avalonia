@@ -39,8 +39,11 @@ internal sealed class MethodCommandNode : ExpressionNode, IWeakEventSubscriber<P
         builder.Append("()");
     }
 
-    protected override void OnSourceChanged(object source, Exception? dataValidationError)
+    protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
+        if (!ValidateNonNullSource(source))
+            return;
+
         if (source is INotifyPropertyChanged newInpc)
             WeakEvents.ThreadSafePropertyChanged.Subscribe(newInpc, this);
 

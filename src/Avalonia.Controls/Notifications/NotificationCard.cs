@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;

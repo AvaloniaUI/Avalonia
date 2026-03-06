@@ -39,7 +39,8 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
             DataContextProperty.Changed.AddClassHandler<TabItem>((x, e) => x.UpdateHeader(e));
             AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabItem>(AutomationControlType.TabItem);
-            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<TabItem>((tabItem, args) => tabItem.TabItemActivated(args));
+            AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<TabItem>(IsOffscreenBehavior.FromClip);
+            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<TabItem>(OnAccessKeyPressed);
         }
 
         /// <summary>
@@ -60,12 +61,44 @@ namespace Avalonia.Controls
             set => SetValue(IsSelectedProperty, value);
         }
 
+        /// <inheritdoc />
+        protected override void OnAccessKey(RoutedEventArgs e)
+        {
+            Focus();
+            SetCurrentValue(IsSelectedProperty, true);
+            e.Handled = true;
+        }
+
         protected override AutomationPeer OnCreateAutomationPeer() => new ListItemAutomationPeer(this);
 
-        [Obsolete("Owner manages its children properties by itself")]
-        protected void SubscribeToOwnerProperties(AvaloniaObject owner)
+        private static void OnAccessKeyPressed(TabItem tabItem, AccessKeyPressedEventArgs e)
         {
+            if (e.Handled || (e.Target != null && tabItem.IsSelected))
+                return;
+
+            e.Target = tabItem;
+            e.Handled = true;
         }
+
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+            UpdateSelectionFromEvent(e);
+        }
+
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+            UpdateSelectionFromEvent(e);
+        }
+
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+            UpdateSelectionFromEvent(e);
+        }
+
+        protected bool UpdateSelectionFromEvent(RoutedEventArgs e) => SelectingItemsControl.ItemsControlFromItemContainer(this)?.UpdateSelectionFromEvent(this, e) ?? false;
 
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
         {
@@ -93,12 +126,6 @@ namespace Avalonia.Controls
                     SetCurrentValue(HeaderProperty, obj.NewValue);
                 }
             }
-        }
-
-        private void TabItemActivated(RoutedEventArgs args)
-        {
-            SetCurrentValue(IsSelectedProperty, true);
-            args.Handled = true;
         }
     }
 }

@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="IntegrationTestApp.Pages.MenuPage">
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Name="RootMenuItem" Header="_Root">
+        <MenuItem Name="Child1MenuItem" Header="_Child 1" InputGesture="Ctrl+O" Click="MenuClicked"/>
+        <MenuItem Name="Child2MenuItem" Header="C_hild 2">
+          <MenuItem Name="GrandchildMenuItem" Header="_Grandchild" Click="MenuClicked"/>
+        </MenuItem>
+      </MenuItem>
+    </Menu>
+    <StackPanel>
+      <TextBlock Name="ClickedMenuItem">None</TextBlock>
+      <Button Name="MenuClickedMenuItemReset" Click="MenuClickedMenuItemReset_Click">Reset</Button>
+      <TextBox Name="MenuFocusTest"/>
+    </StackPanel>
+  </DockPanel>
+</UserControl>

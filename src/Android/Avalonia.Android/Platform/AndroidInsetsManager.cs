@@ -4,6 +4,7 @@ using Android.App;
 using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
+using AndroidX.Core.Graphics;
 using AndroidX.Core.View;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Animation.Easings;
@@ -18,14 +19,17 @@ namespace Avalonia.Android.Platform
     {
         private readonly Activity _activity;
         private readonly TopLevelImpl _topLevel;
-        private bool _displayEdgeToEdge;
+        private bool _displaysEdgeToEdge;
         private bool? _systemUiVisibility;
         private SystemBarTheme? _statusBarTheme;
         private bool? _isDefaultSystemBarLightTheme;
         private Color? _systemBarColor;
         private InputPaneState _state;
         private Rect _previousRect;
+        private Insets? _previousImeInset;
+        private bool _displayEdgeToEdgePreference;
         private readonly bool _usesLegacyLayouts;
+        private readonly bool _isDisplayEdgeToEdgeForced;
 
         private AndroidWindow Window => _activity.Window ?? throw new InvalidOperationException("Activity.Window must be set."); 
         
@@ -48,29 +52,42 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        public bool DisplayEdgeToEdge
+        public bool DisplayEdgeToEdgePreference
         {
-            get => _displayEdgeToEdge;
+            get => _displayEdgeToEdgePreference;
             set
             {
-                _displayEdgeToEdge = value;
+                _displayEdgeToEdgePreference = value;
 
-                if (OperatingSystem.IsAndroidVersionAtLeast(28) && Window.Attributes is { } attributes)
-                {
-                    attributes.LayoutInDisplayCutoutMode = value ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
-                }
+               UpdateDisplayEdgeToEgdeState();
+            }
+        }
 
-                WindowCompat.SetDecorFitsSystemWindows(Window, !value);
+        private void UpdateDisplayEdgeToEgdeState()
+        {
+            if (_isDisplayEdgeToEdgeForced)
+            {
+                _displaysEdgeToEdge = true;
+                return;
+            }
 
-                if (value)
-                {
-                    Window.AddFlags(WindowManagerFlags.TranslucentStatus);
-                    Window.AddFlags(WindowManagerFlags.TranslucentNavigation);
-                }
-                else
-                {
-                    SystemBarColor = _systemBarColor;
-                }
+            _displaysEdgeToEdge = _displayEdgeToEdgePreference;
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(28) && Window.Attributes is { } attributes)
+            {
+                attributes.LayoutInDisplayCutoutMode = _displayEdgeToEdgePreference ? LayoutInDisplayCutoutMode.ShortEdges : LayoutInDisplayCutoutMode.Default;
+            }
+
+            WindowCompat.SetDecorFitsSystemWindows(Window, !_displayEdgeToEdgePreference);
+
+            if (_displayEdgeToEdgePreference)
+            {
+                Window.AddFlags(WindowManagerFlags.TranslucentStatus);
+                Window.AddFlags(WindowManagerFlags.TranslucentNavigation);
+            }
+            else
+            {
+                SystemBarColor = _systemBarColor;
             }
         }
 
@@ -78,6 +95,9 @@ namespace Avalonia.Android.Platform
         {
             _activity = activity;
             _topLevel = topLevel;
+
+            // Better detection for target sdk and running api level. Apps can change their target sdk and bypass dotnet's fixed target sdk level.
+            _isDisplayEdgeToEdgeForced = _activity.ApplicationContext?.ApplicationInfo?.TargetSdkVersion >= (BuildVersionCodes)35 && Build.VERSION.SdkInt >= (BuildVersionCodes)35;
 
             ViewCompat.SetOnApplyWindowInsetsListener(Window.DecorView, this);
 
@@ -87,7 +107,7 @@ namespace Avalonia.Android.Platform
                 _activity.Window?.DecorView.ViewTreeObserver?.AddOnGlobalLayoutListener(this);
             }
 
-            DisplayEdgeToEdge = false;
+            DisplayEdgeToEdgePreference = false;
 
             ViewCompat.SetWindowInsetsAnimationCallback(Window.DecorView, this);
         }
@@ -103,14 +123,17 @@ namespace Avalonia.Android.Platform
                     var renderScaling = _topLevel.RenderScaling;
 
                     var inset = insets.GetInsets(
-                        _displayEdgeToEdge ?
+                        DisplaysEdgeToEdge ?
                             WindowInsetsCompat.Type.StatusBars() | WindowInsetsCompat.Type.NavigationBars() |
                             WindowInsetsCompat.Type.DisplayCutout() : 0);
 
-                    return new Thickness(inset.Left / renderScaling,
-                        inset.Top / renderScaling,
-                        inset.Right / renderScaling,
-                        inset.Bottom / renderScaling);
+                    if (inset is not null)
+                    {
+                        return new Thickness(inset.Left / renderScaling,
+                            inset.Top / renderScaling,
+                            inset.Right / renderScaling,
+                            inset.Bottom / renderScaling);
+                    }
                 }
 
                 return default;
@@ -125,9 +148,10 @@ namespace Avalonia.Android.Platform
 
                 if (insets != null)
                 {
-                    var navbarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars()).Bottom;
+                    var navbarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars())?.Bottom ?? 0;
+                    var imeInset = insets.GetInsets(WindowInsetsCompat.Type.Ime())?.Bottom ?? 0;
 
-                    var height = Math.Max((float)((insets.GetInsets(WindowInsetsCompat.Type.Ime()).Bottom - navbarInset) / _topLevel.RenderScaling), 0);
+                    var height = Math.Max((float)((imeInset - navbarInset) / _topLevel.RenderScaling), 0);
 
                     return new Rect(0, _topLevel.ClientSize.Height - SafeAreaPadding.Bottom - height, _topLevel.ClientSize.Width, height);
                 }
@@ -136,7 +160,7 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        public WindowInsetsCompat OnApplyWindowInsets(View v, WindowInsetsCompat insets)
+        public WindowInsetsCompat? OnApplyWindowInsets(View? v, WindowInsetsCompat? insets)
         {
             insets = ViewCompat.OnApplyWindowInsets(v, insets);
             NotifySafeAreaChanged(SafeAreaPadding);
@@ -146,7 +170,19 @@ namespace Avalonia.Android.Platform
                 _previousRect = OccludedRect;
             }
 
-            State = insets.IsVisible(WindowInsetsCompat.Type.Ime()) ? InputPaneState.Open : InputPaneState.Closed;
+            State = insets is not null && insets.IsVisible(WindowInsetsCompat.Type.Ime()) ? InputPaneState.Open : InputPaneState.Closed;
+
+            // Workaround for weird inset values for android 11
+            if(Build.VERSION.SdkInt == BuildVersionCodes.R)
+            {
+                var imeInset = insets?.GetInsets(WindowInsetsCompat.Type.Ime());
+                _previousImeInset ??= imeInset;
+                if ((imeInset?.Bottom ?? 0) != (_previousImeInset?.Bottom ?? 0))
+                {
+                    NotifyStateChanged(State, _previousRect, OccludedRect, TimeSpan.Zero, null);
+                }
+                _previousImeInset = imeInset;
+            }
 
             return insets;
         }
@@ -191,11 +227,6 @@ namespace Avalonia.Android.Platform
             {
                 _statusBarTheme = value;
 
-                if (!_topLevel.View.IsShown)
-                {
-                    return;
-                }
-
                 var compat = new WindowInsetsControllerCompat(Window, _topLevel.View);
 
                 if (_isDefaultSystemBarLightTheme == null)
@@ -229,11 +260,6 @@ namespace Avalonia.Android.Platform
             {
                 _systemUiVisibility = value;
 
-                if (!_topLevel.View.IsShown)
-                {
-                    return;
-                }
-
                 var compat = WindowCompat.GetInsetsController(Window, _topLevel.View);
 
                 if (value == null || value.Value)
@@ -259,23 +285,40 @@ namespace Avalonia.Android.Platform
             {
                 _systemBarColor = value;
 
-                if (_systemBarColor is { } color && !_displayEdgeToEdge && _activity.Window != null)
+                if (_isDisplayEdgeToEdgeForced)
+                {
+                    // Allow having fully transparent navbars when on api level 35
+                    if (OperatingSystem.IsAndroidVersionAtLeast(36))
+                        Window.NavigationBarContrastEnforced = false;
+                    else if (OperatingSystem.IsAndroidVersionAtLeast(35))
+                        Window.NavigationBarContrastEnforced = _systemBarColor != Colors.Transparent;
+                    return;
+                }
+
+                if (_systemBarColor is { } color && !_displaysEdgeToEdge && _activity.Window != null)
                 {
                     _activity.Window.ClearFlags(WindowManagerFlags.TranslucentStatus);
                     _activity.Window.ClearFlags(WindowManagerFlags.TranslucentNavigation);
                     _activity.Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
 
                     var androidColor = global::Android.Graphics.Color.Argb(color.A, color.R, color.G, color.B);
-                    _activity.Window.SetStatusBarColor(androidColor);
 
-                    if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+                    // Status and navigation bar colors can't be changed at all with API level >= 35
+                    if (!OperatingSystem.IsAndroidVersionAtLeast(35))
                     {
-                        // As we can only change the navigation bar's foreground api 26 and newer, we only change the background color if running on those versions
-                        _activity.Window.SetNavigationBarColor(androidColor);
+                        _activity.Window.SetStatusBarColor(androidColor);
+
+                        if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+                        {
+                            // As we can only change the navigation bar's foreground api 26 and newer, we only change the background color if running on those versions
+                            _activity.Window.SetNavigationBarColor(androidColor);
+                        }
                     }
                 }
             }
         }
+
+        public bool DisplaysEdgeToEdge => _displaysEdgeToEdge;
 
         internal void ApplyStatusBarState()
         {
@@ -284,18 +327,18 @@ namespace Avalonia.Android.Platform
             SystemBarColor = _systemBarColor;
         }
 
-        public override WindowInsetsAnimationCompat.BoundsCompat OnStart(WindowInsetsAnimationCompat animation, WindowInsetsAnimationCompat.BoundsCompat bounds)
+        public override WindowInsetsAnimationCompat.BoundsCompat? OnStart(WindowInsetsAnimationCompat? animation, WindowInsetsAnimationCompat.BoundsCompat? bounds)
         {
-            if ((animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
+            if (animation is not null && bounds is not null && (animation.TypeMask & WindowInsetsCompat.Type.Ime()) != 0)
             {
                 var insets = ViewCompat.GetRootWindowInsets(Window.DecorView);
 
                 if (insets != null)
                 {
-                    var navbarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars()).Bottom;
-                    var height = Math.Max(0, (float)((bounds.LowerBound.Bottom - navbarInset) / _topLevel.RenderScaling));
+                    var navbarInset = insets.GetInsets(WindowInsetsCompat.Type.NavigationBars())?.Bottom ?? 0;
+                    var height = Math.Max(0, (float)(((bounds.LowerBound?.Bottom ?? 0) - navbarInset) / _topLevel.RenderScaling));
                     var upperRect = new Rect(0, _topLevel.ClientSize.Height - SafeAreaPadding.Bottom - height, _topLevel.ClientSize.Width, height);
-                    height = Math.Max(0, (float)((bounds.UpperBound.Bottom - navbarInset) / _topLevel.RenderScaling));
+                    height = Math.Max(0, (float)(((bounds.UpperBound?.Bottom ?? 0) - navbarInset) / _topLevel.RenderScaling));
                     var lowerRect = new Rect(0, _topLevel.ClientSize.Height - SafeAreaPadding.Bottom - height, _topLevel.ClientSize.Width, height);
 
                     var duration = TimeSpan.FromMilliseconds(animation.DurationMillis);
@@ -309,7 +352,7 @@ namespace Avalonia.Android.Platform
             return base.OnStart(animation, bounds);
         }
 
-        public override WindowInsetsCompat OnProgress(WindowInsetsCompat insets, IList<WindowInsetsAnimationCompat> runningAnimations)
+        public override WindowInsetsCompat? OnProgress(WindowInsetsCompat? insets, IList<WindowInsetsAnimationCompat>? runningAnimations)
         {
             return insets;
         }

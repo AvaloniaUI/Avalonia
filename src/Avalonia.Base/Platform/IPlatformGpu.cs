@@ -12,6 +12,19 @@ public interface IPlatformGraphics
 }
 
 [Unstable]
+public interface IPlatformGraphicsWithFeatures : IPlatformGraphics, IOptionalFeatureProvider
+{
+    
+}
+
+[Unstable]
+public interface IPlatformGraphicsReadyStateFeature
+{
+    bool IsReady { get; }
+    bool UsesContexts { get; }
+}
+
+[Unstable]
 public interface IPlatformGraphicsContext : IDisposable, IOptionalFeatureProvider
 {
     bool IsLost { get; }

@@ -31,21 +31,25 @@ internal class BrowserPlatformSettings : DefaultPlatformSettings
         };
     }
 
+    public void OnValuesChanged(bool isDarkMode, bool isHighContrast)
+    {
+        _isDarkMode = isDarkMode;
+        _isHighContrast = isHighContrast;
+        OnColorValuesChanged(GetColorValues());
+    }
+    
     private void EnsureBackend()
     {
         if (!_isInitialized)
         {
             // WASM module has async nature of initialization. We can't native code right away during components registration. 
             _isInitialized = true;
-
-            var obj = DomHelper.ObserveDarkMode((isDarkMode, isHighContrast) =>
+            var values = DomHelper.GetDarkMode(BrowserWindowingPlatform.GlobalThis);
+            if (values.Length == 2)
             {
-                _isDarkMode = isDarkMode;
-                _isHighContrast = isHighContrast;
-                OnColorValuesChanged(GetColorValues());
-            });
-            _isDarkMode = obj.GetPropertyAsBoolean("isDarkMode");
-            _isHighContrast = obj.GetPropertyAsBoolean("isHighContrast");
+                _isDarkMode = values[0] > 0;
+                _isHighContrast = values[1] > 0;
+            }
         }
     }
 }

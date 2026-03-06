@@ -13,7 +13,7 @@ namespace Avalonia.Controls
     /// </remarks>
     public class Classes : AvaloniaList<string>, IPseudoClasses
     {
-        private SafeEnumerableList<IClassesChangedListener>? _listeners;
+        private SafeEnumerableHashSet<IClassesChangedListener>? _listeners;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Classes"/> class.

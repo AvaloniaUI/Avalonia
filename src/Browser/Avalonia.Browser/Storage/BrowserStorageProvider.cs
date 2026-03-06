@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Browser.Interop;
 using Avalonia.Platform.Storage;
@@ -12,8 +13,11 @@ namespace Avalonia.Browser.Storage;
 
 internal class BrowserStorageProvider : IStorageProvider
 {
+    internal static ReadOnlySpan<byte> BrowserBookmarkKey => "browser"u8;
     internal const string PickerCancelMessage = "The user aborted a request";
     internal const string NoPermissionsMessage = "Permissions denied";
+    internal const string FileFolderNotFoundMessage = "A requested file or directory could not be found";
+    internal const string TypeMissmatchMessage = "The path supplied exists, but was not an entry of requested type";
 
     public bool CanOpen => true;
     public bool CanSave => true;
@@ -86,6 +90,12 @@ internal class BrowserStorageProvider : IStorageProvider
         }
     }
 
+    public async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
+    {
+        var file = await SaveFilePickerAsync(options).ConfigureAwait(false);
+        return new SaveFilePickerResult { File = file };
+    }
+
     public async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
     {
         await AvaloniaModule.ImportStorage();
@@ -104,16 +114,12 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
-        await AvaloniaModule.ImportStorage();
-        var item = await StorageHelper.OpenBookmark(bookmark);
-        return item is not null ? new JSStorageFile(item) : null;
+        return await DecodeBookmark(bookmark) as IStorageBookmarkFile;
     }
-
+    
     public async Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
-        await AvaloniaModule.ImportStorage();
-        var item = await StorageHelper.OpenBookmark(bookmark);
-        return item is not null ? new JSStorageFolder(item) : null;
+        return await DecodeBookmark(bookmark) as IStorageBookmarkFolder;
     }
 
     public Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
@@ -158,6 +164,24 @@ internal class BrowserStorageProvider : IStorageProvider
 
         return (types, !includeAll);
     }
+
+    private async Task<IStorageBookmarkItem?> DecodeBookmark(string bookmark)
+    {
+        await AvaloniaModule.ImportStorage();
+        var item = StorageBookmarkHelper.TryDecodeBookmark(BrowserBookmarkKey, bookmark, out var bytes) switch
+        {
+            StorageBookmarkHelper.DecodeResult.Success => await StorageHelper.OpenBookmark(Encoding.UTF8.GetString(bytes!)),
+            // Attempt to decode 11.0 browser bookmarks
+            StorageBookmarkHelper.DecodeResult.InvalidFormat => await StorageHelper.OpenBookmark(bookmark),
+            _ => null
+        };
+        return item?.GetPropertyAsString("kind") switch
+        {
+            "directory" => new JSStorageFolder(item),
+            "file" => new JSStorageFile(item),
+            _ => null
+        };
+    }
 }
 
 internal abstract class JSStorageItem : IStorageBookmarkItem
@@ -188,14 +212,16 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
 
     public bool CanBookmark => StorageHelper.HasNativeFilePicker();
 
-    public Task<string?> SaveBookmarkAsync()
+    public async Task<string?> SaveBookmarkAsync()
     {
         if (!CanBookmark)
         {
-            return Task.FromResult<string?>(null);
+            return null;
         }
 
-        return StorageHelper.SaveBookmark(FileHandle);
+        var nativeBookmark = await StorageHelper.SaveBookmark(FileHandle);
+        return nativeBookmark is null ? null
+            : StorageBookmarkHelper.EncodeBookmark(BrowserStorageProvider.BrowserBookmarkKey, nativeBookmark);
     }
 
     public Task<IStorageFolder?> GetParentAsync()
@@ -215,11 +241,13 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
             throw new InvalidOperationException("Destination folder must be initialized the StorageProvider API.");
         }
 
-        var storageItem = await StorageHelper.MoveAsync(FileHandle, folder.FileHandle);
-        if (storageItem is null)
+        var itemHandle = await StorageHelper.MoveAsync(FileHandle, folder.FileHandle);
+        if (itemHandle is null)
         {
             return null;
         }
+        
+        var storageItem = StorageHelper.StorageItemFromHandle(itemHandle)!;
 
         var kind = storageItem.GetPropertyAsString("kind");
         return kind switch
@@ -336,12 +364,13 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
     {
         try
         {
-            var storageFile = await StorageHelper.CreateFile(FileHandle, name);
-            if (storageFile is null)
+            var fileHandle = await StorageHelper.CreateFile(FileHandle, name);
+            if (fileHandle is null)
             {
                 return null;
             }
-
+            
+            var storageFile = StorageHelper.StorageItemFromHandle(fileHandle)!;
             return new JSStorageFile(storageFile);
         }
         catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
@@ -354,17 +383,63 @@ internal class JSStorageFolder : JSStorageItem, IStorageBookmarkFolder
     {
         try
         {
-            var storageFile = await StorageHelper.CreateFolder(FileHandle, name);
-            if (storageFile is null)
+            var folderHandler = await StorageHelper.CreateFolder(FileHandle, name);
+            if (folderHandler is null)
             {
                 return null;
             }
-
-            return new JSStorageFolder(storageFile);
+            
+            var storageFolder = StorageHelper.StorageItemFromHandle(folderHandler)!;
+            return new JSStorageFolder(storageFolder);
         }
         catch (JSException ex) when (ex.Message == BrowserStorageProvider.NoPermissionsMessage)
         {
             throw new UnauthorizedAccessException("User denied permissions to open the file", ex);
         }
     }
+
+    public async Task<IStorageFolder?> GetFolderAsync(string name)
+    {
+        try
+        {
+            var folderHandle = await StorageHelper.GetFolder(FileHandle, name);
+            if (folderHandle is null)
+            {
+                return null;
+            }
+            
+            var storageFolder = StorageHelper.StorageItemFromHandle(folderHandle)!;
+
+            return new JSStorageFolder(storageFolder);
+        }
+        catch (JSException ex) when (ShouldSupressErrorOnFileAccess(ex))
+        {
+            return null;
+        }
+    }
+
+    public async Task<IStorageFile?> GetFileAsync(string name)
+    {
+        try
+        {
+            var fileHandle = await StorageHelper.GetFile(FileHandle, name);
+            if (fileHandle is null)
+            {
+                return null;
+            }
+            
+            var storageFile = StorageHelper.StorageItemFromHandle(fileHandle)!;
+
+            return new JSStorageFile(storageFile);
+        }
+        catch (JSException ex) when (ShouldSupressErrorOnFileAccess(ex))
+        {
+            return null;
+        }
+    }
+
+    private static bool ShouldSupressErrorOnFileAccess(JSException ex) =>
+        ex.Message == BrowserStorageProvider.NoPermissionsMessage ||
+        ex.Message.Contains(BrowserStorageProvider.TypeMissmatchMessage, StringComparison.Ordinal) ||
+        ex.Message.Contains(BrowserStorageProvider.FileFolderNotFoundMessage, StringComparison.Ordinal);
 }

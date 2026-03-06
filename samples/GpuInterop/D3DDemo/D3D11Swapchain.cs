@@ -1,22 +1,22 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-using SharpDX.Direct3D11;
-using SharpDX.DXGI;
-using DxgiFactory1 = SharpDX.DXGI.Factory1;
-using D3DDevice = SharpDX.Direct3D11.Device;
-using DxgiResource = SharpDX.DXGI.Resource;
+using Silk.NET.Core.Native;
+using Silk.NET.Direct3D11;
+using Silk.NET.DXGI;
+using static Silk.NET.Core.Native.SilkMarshal;
 
 namespace GpuInterop.D3DDemo;
 
 class D3D11Swapchain : SwapchainBase<D3D11SwapchainImage>
 {
-    private readonly D3DDevice _device;
+    private readonly ComPtr<ID3D11Device> _device;
 
-    public D3D11Swapchain(D3DDevice device, ICompositionGpuInterop interop, CompositionDrawingSurface target)
+    public D3D11Swapchain(ComPtr<ID3D11Device> device, ICompositionGpuInterop interop, CompositionDrawingSurface target)
         : base(interop, target)
     {
         _device = device;
@@ -24,7 +24,7 @@ class D3D11Swapchain : SwapchainBase<D3D11SwapchainImage>
 
     protected override D3D11SwapchainImage CreateImage(PixelSize size) => new(_device, size, Interop, Target);
 
-    public IDisposable BeginDraw(PixelSize size, out RenderTargetView view)
+    public IDisposable BeginDraw(PixelSize size, out ComPtr<ID3D11RenderTargetView> view)
     {
         var rv = BeginDrawCore(size, out var image);
         view = image.RenderTargetView;
@@ -37,53 +37,67 @@ public class D3D11SwapchainImage : ISwapchainImage
     public PixelSize Size { get; }
     private readonly ICompositionGpuInterop _interop;
     private readonly CompositionDrawingSurface _target;
-    private readonly Texture2D _texture;
-    private readonly KeyedMutex _mutex;
+    private ComPtr<ID3D11Texture2D> _texture;
+    private ComPtr<IDXGIKeyedMutex> _mutex;
+    private ComPtr<ID3D11RenderTargetView> _renderTargetView;
     private readonly IntPtr _handle;
     private PlatformGraphicsExternalImageProperties _properties;
     private ICompositionImportedGpuImage? _imported;
-    public Task? LastPresent { get; private set; }
-    public RenderTargetView RenderTargetView { get; }
 
-    public D3D11SwapchainImage(D3DDevice device, PixelSize size,
+    public Task? LastPresent { get; private set; }
+    public ComPtr<ID3D11RenderTargetView> RenderTargetView => _renderTargetView;
+
+    public unsafe D3D11SwapchainImage(
+        ComPtr<ID3D11Device> device,
+        PixelSize size,
         ICompositionGpuInterop interop,
         CompositionDrawingSurface target)
     {
         Size = size;
         _interop = interop;
         _target = target;
-        _texture = new Texture2D(device,
-            new Texture2DDescription
-            {
-                Format = Format.R8G8B8A8_UNorm,
-                Width = size.Width,
-                Height = size.Height,
-                ArraySize = 1,
-                MipLevels = 1,
-                SampleDescription = new SampleDescription { Count = 1, Quality = 0 },
-                CpuAccessFlags = default,
-                OptionFlags = ResourceOptionFlags.SharedKeyedmutex,
-                BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource
-            });
-        _mutex = _texture.QueryInterface<KeyedMutex>();
-        using (var res = _texture.QueryInterface<DxgiResource>())
-            _handle = res.SharedHandle;
+
+        ComPtr<ID3D11Texture2D> texture = default;
+        var textureDesc = new Texture2DDesc
+        {
+            Format = Format.FormatR8G8B8A8Unorm,
+            Width = (uint)size.Width,
+            Height = (uint)size.Height,
+            ArraySize = 1,
+            MipLevels = 1,
+            SampleDesc = new SampleDesc(1, 0),
+            Usage = Usage.Default,
+            BindFlags = (uint)(BindFlag.RenderTarget | BindFlag.ShaderResource),
+            CPUAccessFlags = 0,
+            MiscFlags = (uint)ResourceMiscFlag.SharedKeyedmutex
+        };
+        ThrowHResult(device.CreateTexture2D(&textureDesc, (SubresourceData*)null, texture.GetAddressOf()));
+        _texture = texture;
+
+        _mutex = _texture.QueryInterface<IDXGIKeyedMutex>();
+        using (var res = _texture.QueryInterface<IDXGIResource>())
+        {
+            void* handle = null;
+            ThrowHResult(res.GetSharedHandle(ref handle));
+            _handle = (IntPtr)handle;
+        }
+
         _properties = new PlatformGraphicsExternalImageProperties
         {
             Width = size.Width, Height = size.Height, Format = PlatformGraphicsExternalImageFormat.B8G8R8A8UNorm
         };
 
-        RenderTargetView = new RenderTargetView(device, _texture);
+        ThrowHResult(device.CreateRenderTargetView(_texture, null, ref _renderTargetView));
     }
 
     public void BeginDraw()
     {
-        _mutex.Acquire(0, int.MaxValue);
+        _mutex.AcquireSync(0, int.MaxValue);
     }
 
     public void Present()
     {
-        _mutex.Release(1);
+        _mutex.ReleaseSync(1);
         _imported ??= _interop.ImportImage(
             new PlatformHandle(_handle, KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureGlobalSharedHandle),
             _properties);
@@ -103,7 +117,7 @@ public class D3D11SwapchainImage : ISwapchainImage
                 // Ignore
             }
 
-        RenderTargetView.Dispose();
+        _renderTargetView.Dispose();
         _mutex.Dispose();
         _texture.Dispose();
     }

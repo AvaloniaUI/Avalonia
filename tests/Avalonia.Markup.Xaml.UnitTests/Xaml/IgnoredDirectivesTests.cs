@@ -19,7 +19,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <TextBlock x:Name='target' x:FieldModifier='Public' Text='Foo'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var target = window.FindControl<TextBlock>("target");
+                var target = window.GetControl<TextBlock>("target");
 
                 window.ApplyTemplate();
                 target.ApplyTemplate();

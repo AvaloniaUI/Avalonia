@@ -1,19 +1,12 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Controls;
 
 namespace ControlCatalog.Pages
 {
-    public class AcrylicPage : UserControl
+    public partial class AcrylicPage : UserControl
     {
         public AcrylicPage()
         {
-            this.InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
+            InitializeComponent();
         }
     }
 }

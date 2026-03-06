@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection.Emit;
 using XamlX;
@@ -25,9 +26,9 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
             var optionAttribute = context.GetAvaloniaTypes().MarkupExtensionOptionAttribute;
             var defaultOptionAttribute = context.GetAvaloniaTypes().MarkupExtensionDefaultOptionAttribute;
 
-            var typeArgument = type.GenericArguments?.FirstOrDefault();
+            var typeArgument = type.GenericArguments.FirstOrDefault();
 
-            IXamlAstValueNode defaultValue = null;
+            IXamlAstValueNode? defaultValue = null;
             var values = new List<OptionsMarkupExtensionBranch>();
 
             if (objectNode.Arguments.FirstOrDefault() is { } argument)
@@ -64,7 +65,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
                         var optionsPropNode = onObj.Children.OfType<XamlAstXamlPropertyValueNode>()
                             .SingleOrDefault(v => v.Property.GetClrProperty().Name == "Options")
                             ?.Values.Single();
-                        var options = (optionsPropNode as XamlAstTextNode)?.Text?.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                        var options = (optionsPropNode as XamlAstTextNode)?.Text.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
                             ?? Array.Empty<string>();
                         if (options.Length == 0)
                         {
@@ -128,8 +129,8 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
                         throw new XamlTransformException("MarkupExtension option must not be null", li);
                     }
 
-                    var optionAsString = option.ToString();
-                    IXamlAstValueNode optionNode = null;
+                    var optionAsString = option.ToString() ?? string.Empty;
+                    IXamlAstValueNode? optionNode = null;
                     foreach (var method in methods)
                     {
                         try
@@ -184,7 +185,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
 
         IXamlAstValueNode TransformNode(
             IReadOnlyCollection<IXamlAstValueNode> values,
-            IXamlType suggestedType,
+            IXamlType? suggestedType,
             IXamlLineInfo line)
         {
             if (suggestedType is not null)
@@ -212,7 +213,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
         public OptionsMarkupExtensionNode(
             XamlMarkupExtensionNode original,
             OptionsMarkupExtensionBranch[] branches,
-            IXamlAstValueNode defaultNode,
+            IXamlAstValueNode? defaultNode,
             IXamlType contextParameter)
             : base(
             original.Value,
@@ -232,9 +233,9 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
             base.VisitChildren(visitor);
         }
 
-        public bool ConvertToReturnType(AstTransformationContext context, IXamlType type, out OptionsMarkupExtensionNode res)
+        public bool ConvertToReturnType(AstTransformationContext context, IXamlType type, [NotNullWhen(true)] out OptionsMarkupExtensionNode? res)
         {
-            IXamlAstValueNode convertedDefaultNode = null;
+            IXamlAstValueNode? convertedDefaultNode = null;
 
             if (ProvideValue.ExtensionNodeContainer.DefaultNode is { } defaultNode)
             {
@@ -255,7 +256,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
                 return false;
             }
 
-            res = new OptionsMarkupExtensionNode(this, convertedBranches, convertedDefaultNode, _contextParameter);
+            res = new OptionsMarkupExtensionNode(this, convertedBranches!, convertedDefaultNode, _contextParameter);
             return true;
         }
     }
@@ -264,19 +265,19 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
     {
         public OptionsMarkupExtensionNodesContainer(
             OptionsMarkupExtensionBranch[] branches,
-            IXamlAstValueNode defaultNode) : base(branches.FirstOrDefault()?.Value ?? defaultNode)
+            IXamlAstValueNode? defaultNode) : base((branches.FirstOrDefault()?.Value ?? defaultNode)!)
         {
             Branches = branches;
             DefaultNode = defaultNode;
         }
 
         public OptionsMarkupExtensionBranch[] Branches { get; }
-        public IXamlAstValueNode DefaultNode { get; private set; }
+        public IXamlAstValueNode? DefaultNode { get; private set; }
 
         public override void VisitChildren(IXamlAstVisitor visitor)
         {
             VisitList(Branches, visitor);
-            DefaultNode = (IXamlAstValueNode)DefaultNode?.Visit(visitor);
+            DefaultNode = (IXamlAstValueNode?)DefaultNode?.Visit(visitor);
         }
 
         public IXamlType GetReturnType()
@@ -333,13 +334,17 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
         public bool IsPrivate => false;
         public bool IsFamily => false;
         public bool IsStatic => false;
+        public bool ContainsGenericParameters => false;
+        public bool IsGenericMethod => false;
+        public bool IsGenericMethodDefinition => false;
         public IXamlType ReturnType => ExtensionNodeContainer.GetReturnType();
         public IReadOnlyList<IXamlType> Parameters { get; }
         public IXamlType DeclaringType { get; }
         public IXamlMethod MakeGenericMethod(IReadOnlyList<IXamlType> typeArguments) => throw new NotImplementedException();
-        public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => Array.Empty<IXamlCustomAttribute>();
-
+        public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => [];
         public IXamlParameterInfo GetParameterInfo(int index) => new AnonymousParameterInfo(Parameters[index], index);
+        public IReadOnlyList<IXamlType> GenericParameters => [];
+        public IReadOnlyList<IXamlType> GenericArguments => [];
 
         public void EmitCall(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
@@ -351,7 +356,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
             // - markup ext "@this" instance (always)
             // We always pop context from the stack, as this method decide by itself either context is needed.
             // We store "@this" as a local variable. But only if any conditional method is an instance method.
-            IXamlLocal @this = null;
+            IXamlLocal? @this = null;
             if (Parameters.Count > 0)
             {
                 codeGen.Pop();
@@ -377,7 +382,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
                 }
                 if (!branch.ConditionMethod.IsStatic)
                 {
-                    codeGen.Ldloc(@this);
+                    codeGen.Ldloc(@this!);
                 }
                 context.Emit(branch.Option, codeGen, branch.Option.Type.GetClrType());
                 codeGen.EmitCall(branch.ConditionMethod);
@@ -402,7 +407,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
             codeGen.MarkLabel(ret);
         }
 
-        public bool Equals(IXamlMethod other) => ReferenceEquals(this, other);
+        public bool Equals(IXamlMethod? other) => ReferenceEquals(this, other);
     }
 }
 

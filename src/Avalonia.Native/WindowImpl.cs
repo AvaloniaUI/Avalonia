@@ -6,18 +6,21 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
+using Avalonia.Rendering;
+using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
     internal class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         private readonly AvaloniaNativePlatformOptions _opts;
-        IAvnWindow _native;
+        private readonly IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
-        private readonly AvaloniaNativeTextInputMethod _inputMethod;
         private bool _canResize = true;
+        private bool _canMaximize = true;
+        private Controls.WindowDecorations _decorations = Controls.WindowDecorations.Full;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(factory)
         {
@@ -26,12 +29,15 @@ namespace Avalonia.Native
             
             using (var e = new WindowEvents(this))
             {
-                Init(_native = factory.CreateWindow(e), factory.CreateScreens());
+                Init(new MacOSTopLevelHandle(_native = factory.CreateWindow(e)));
             }
 
             _nativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
-            
-            _inputMethod = new AvaloniaNativeTextInputMethod(_native);
+        }
+
+        internal sealed override void Init(MacOSTopLevelHandle handle)
+        {
+            base.Init(handle);
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents
@@ -65,7 +71,7 @@ namespace Avalonia.Native
                 _parent.GotInputWhenDisabled?.Invoke();
             }
         }
-
+        
         public new IAvnWindow Native => _native;
 
         public void CanResize(bool value)
@@ -74,9 +80,22 @@ namespace Avalonia.Native
             _native.SetCanResize(value.AsComBool());
         }
 
-        public void SetSystemDecorations(Controls.SystemDecorations enabled)
+        public void SetCanMinimize(bool value)
         {
+            _native.SetCanMinimize(value.AsComBool());
+        }
+
+        public void SetCanMaximize(bool value)
+        {
+            _canMaximize = value;
+            _native.SetCanMaximize(value.AsComBool());
+        }
+
+        public void SetWindowDecorations(Controls.WindowDecorations enabled)
+        {
+            _decorations = enabled;
             _native.SetDecorations((Interop.SystemDecorations)enabled);
+            InvalidateExtendedMargins();
         }
 
         public void SetTitleBarColor(Avalonia.Media.Color color)
@@ -84,7 +103,7 @@ namespace Avalonia.Native
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });
         }
 
-        public void SetTitle(string title)
+        public void SetTitle(string? title)
         {
             _native.SetTitle(title ?? "");
         }
@@ -95,10 +114,12 @@ namespace Avalonia.Native
             set => _native.SetWindowState((AvnWindowState)value);
         }
 
-        public Action<WindowState> WindowStateChanged { get; set; }        
+        public Action<WindowState>? WindowStateChanged { get; set; }
 
-        public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
+        public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
+        // Extension is handled by native backend
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations => default;
         public Thickness ExtendedMargins { get; private set; }
 
         public Thickness OffScreenMargin { get; } = new Thickness();
@@ -121,8 +142,9 @@ namespace Avalonia.Native
             {
                 if(e.Type == RawPointerEventType.LeftButtonDown)
                 {
-                    var window = _inputRoot as Window;
-                    var visual = window?.Renderer.HitTestFirst(e.Position, window, x =>
+                    // TODO: Casts like this are evil
+                    var source = (PresentationSource?)_inputRoot;
+                    var visual = source?.Renderer.HitTestFirst(e.Position, source.RootElement, x =>
                             {
                                 if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
                                 {
@@ -135,10 +157,17 @@ namespace Avalonia.Native
                     {
                         if (_doubleClickHelper.IsDoubleClick(e.Timestamp, e.Position))
                         {
-                            if (_canResize)
+                            switch (WindowState)
                             {
-                                WindowState = WindowState is WindowState.Maximized or WindowState.FullScreen ?
-                                    WindowState.Normal : WindowState.Maximized;
+                                case WindowState.Maximized or WindowState.FullScreen
+                                when _canResize:
+                                    WindowState = WindowState.Normal;
+                                    break;
+
+                                case WindowState.Normal
+                                when _canMaximize:
+                                    WindowState = WindowState.Maximized;
+                                    break;
                             }
                         }
                         else
@@ -154,13 +183,16 @@ namespace Avalonia.Native
         
         private void InvalidateExtendedMargins()
         {
-            if (WindowState ==  WindowState.FullScreen)
+            if(_native is MicroComProxyBase pb && pb.IsDisposed) 
+                return;
+
+            if (WindowState ==  WindowState.FullScreen || !_isExtended || _decorations != Controls.WindowDecorations.Full)
             {
                 ExtendedMargins = new Thickness();
             }
             else
             {
-                ExtendedMargins = _isExtended ? new Thickness(0, _extendTitleBarHeight == -1 ? _native.ExtendTitleBarHeight : _extendTitleBarHeight, 0, 0) : new Thickness();
+                ExtendedMargins = new Thickness(0, _extendTitleBarHeight == -1 ? _native.ExtendTitleBarHeight : _extendTitleBarHeight, 0, 0);
             }
 
             ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
@@ -177,20 +209,12 @@ namespace Avalonia.Native
         }
 
         /// <inheritdoc/>
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {   
-            _native.SetExtendClientAreaHints ((AvnExtendClientAreaChromeHints)hints);
-        }
-
-        /// <inheritdoc/>
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
             _extendTitleBarHeight = titleBarHeight;
             _native.SetExtendTitleBarHeight(titleBarHeight);
 
-            ExtendedMargins = _isExtended ? new Thickness(0, titleBarHeight == -1 ? _native.ExtendTitleBarHeight : titleBarHeight, 0, 0) : new Thickness();
-
-            ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
+            InvalidateExtendedMargins();
         }
 
         /// <inheritdoc/>
@@ -201,35 +225,42 @@ namespace Avalonia.Native
             // NO OP On OSX
         }
 
-        public void SetIcon(IWindowIconImpl icon)
+        public void SetIcon(IWindowIconImpl? icon)
         {
             // NO OP on OSX
         }
 
-        public Func<WindowCloseReason, bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool>? Closing { get; set; }
 
         public void Move(PixelPoint point) => Position = point;
 
-        public override IPopupImpl CreatePopup() =>
-            _opts.OverlayPopups ? null : new PopupImpl(_factory, this);
+        public override IPopupImpl? CreatePopup() =>
+            _opts.OverlayPopups ? null : new PopupImpl(Factory, this);
 
-        public Action GotInputWhenDisabled { get; set; }
+        public Action? GotInputWhenDisabled { get; set; }
 
-        public void SetParent(IWindowImpl parent)
+        public void SetParent(IWindowImpl? parent)
         {
-            _native.SetParent(((WindowImpl)parent)?.Native);
+            _native.SetParent(((WindowImpl?)parent)?.Native);
         }
 
         public void SetEnabled(bool enable)
         {
             _native.SetEnabled(enable.AsComBool());
+
+            // Showing a dialog should result in mouse capture being lost. macOS doesn't have the concept of mouse
+            // capture, so no we have no OS-level event to hook into. Instead, release the mouse capture when the
+            // owner window is disabled. This behavior matches win32, which sends a WM_CANCELMODE message when
+            // EnableWindow(hWnd, false) is called from SetEnabled.
+            if (!enable && MouseDevice is MouseDevice mouse)
+                mouse.PlatformCaptureLost();
         }
 
-        public override object TryGetFeature(Type featureType)
+        public override object? TryGetFeature(Type featureType)
         {
             if(featureType == typeof(ITextInputMethodImpl))
             {
-                return _inputMethod;
+                return InputMethod;
             } 
             
             if (featureType == typeof(ITopLevelNativeMenuExporter))
@@ -238,14 +269,6 @@ namespace Avalonia.Native
             }
             
             return base.TryGetFeature(featureType);
-        }
-
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
-        {
-            for (int i = 0; i < windows.Length; i++)
-            {
-                zOrder[i] = (windows[i].PlatformImpl as WindowImpl)?.ZOrder?.ToInt64() ?? 0;
-            }
         }
     }
 }

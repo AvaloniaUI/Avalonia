@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
-using Avalonia.Media.Fonts;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia
 {
@@ -57,16 +56,19 @@ namespace Avalonia
         public Action? RenderingSubsystemInitializer { get; private set; }
 
         /// <summary>
-        /// Gets a method to override a lifetime factory.
-        /// </summary>
-        [Obsolete("This property has no effect", true)]
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        public Func<Type, IApplicationLifetime?>? LifetimeOverride { get; private set; }
-
-        /// <summary>
         /// Gets the name of the currently selected rendering subsystem.
         /// </summary>
         public string? RenderingSubsystemName { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a method to call the initialize the text shaping subsystem.
+        /// </summary>
+        public Action? TextShapingSubsystemInitializer { get; private set; }
+
+        /// <summary>
+        /// Gets the name of the currently selected text shaping subsystem.
+        /// </summary>
+        public string? TextShapingSubsystemName { get; private set; }
 
         /// <summary>
         /// Gets a method to call after the <see cref="Application"/> is setup.
@@ -167,7 +169,7 @@ namespace Avalonia
         [PrivateApi]
         public AppBuilder AfterApplicationSetup(Action<AppBuilder> callback)
         {
-            AfterApplicationSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterPlatformServicesSetupCallback, callback);
+            AfterApplicationSetupCallback = (Action<AppBuilder>)Delegate.Combine(AfterApplicationSetupCallback, callback);
             return Self;
         }
 
@@ -232,6 +234,19 @@ namespace Avalonia
             RenderingSubsystemName = name;
             return Self;
         }
+
+        /// <summary>
+        /// Specifies a text shaping subsystem to use.
+        /// </summary>
+        /// <param name="initializer">The method to call to initialize the text shaping subsystem.</param>
+        /// <param name="name">The name of the text shaping subsystem.</param>
+        /// <returns>An <see cref="AppBuilder"/> instance.</returns>
+        public AppBuilder UseTextShapingSubsystem(Action initializer, string name = "")
+        {
+            TextShapingSubsystemInitializer = initializer;
+            TextShapingSubsystemName = name;
+            return Self;
+        }
         
         /// <summary>
         /// Specifies a runtime platform subsystem to use.
@@ -276,6 +291,17 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Adds support for validation using <c>System.ComponentModel.DataAnnotations</c>.
+        /// </summary>
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
+        public AppBuilder WithDataAnnotationsValidation()
+        {
+            if (!BindingPlugins.DataValidators.Any(x => x is DataAnnotationsValidationPlugin))
+                BindingPlugins.DataValidators.Insert(0, new DataAnnotationsValidationPlugin());
+            return Self;
+        }
+
+        /// <summary>
         /// Registers an action that is executed with the current font manager.
         /// </summary>
         /// <param name="action">The action.</param>
@@ -305,7 +331,12 @@ namespace Avalonia
 
             if (RenderingSubsystemInitializer == null)
             {
-                throw new InvalidOperationException("No rendering system configured.");
+                throw new InvalidOperationException("No rendering system configured. Consider calling UseSkia().");
+            }
+
+            if (TextShapingSubsystemInitializer == null)
+            {
+                throw new InvalidOperationException("No text shaping system configured. Consider calling UseHarfBuzz().");
             }
 
             if (_appFactory == null)
@@ -330,6 +361,7 @@ namespace Avalonia
         {
             _optionsInitializers?.Invoke();
             RuntimePlatformServicesInitializer?.Invoke();
+            TextShapingSubsystemInitializer?.Invoke();
             RenderingSubsystemInitializer?.Invoke();
             WindowingSubsystemInitializer?.Invoke();
             AfterPlatformServicesSetupCallback?.Invoke(Self);

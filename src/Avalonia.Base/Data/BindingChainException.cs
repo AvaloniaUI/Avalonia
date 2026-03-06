@@ -60,15 +60,15 @@ namespace Avalonia.Data
             {
                 if (Expression != null && ExpressionErrorPoint != null)
                 {
-                    return $"An error occured binding to '{Expression}' at '{ExpressionErrorPoint}': '{_message}'";
+                    return $"An error occurred binding to '{Expression}' at '{ExpressionErrorPoint}': '{_message}'";
                 }
                 else if (Expression != null)
                 {
-                    return $"An error occured binding to '{Expression}': '{_message}'";
+                    return $"An error occurred binding to '{Expression}': '{_message}'";
                 }
                 else
                 {
-                    return $"An error occured in a binding: '{_message}'";
+                    return $"An error occurred in a binding: '{_message}'";
                 }
             }
         }

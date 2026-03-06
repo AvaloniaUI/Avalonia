@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reactive.Subjects;
 using Avalonia.Controls;
@@ -22,7 +24,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button Name='button' Content='{Binding Foo}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 button.DataContext = new { Foo = "foo" };
                 window.ApplyTemplate();
@@ -47,7 +49,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 button.DataContext = new { Foo = "foo" };
                 window.ApplyTemplate();
@@ -72,9 +74,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
-                Assert.Same(button, ((NonControl)button.Tag).Control);
+                Assert.Same(button, ((NonControl)button.Tag!).Control);
             }
         }
 
@@ -94,11 +96,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Button>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 button.DataContext = new { Foo = "foo" };
 
-                Assert.Equal("foo", ((NonControl)button.Tag).String);
+                Assert.Equal("foo", ((NonControl)button.Tag!).String);
             }
         }
 
@@ -132,11 +134,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Border DataContext='{Binding Foo}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var border = (Border)window.Content;
+                var border = (Border)window.Content!;
 
                 window.DataContext = new { Foo = "foo" };
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
 
                 Assert.Equal("foo", border.DataContext);
             }
@@ -155,7 +157,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 </Window>";
 
                 var window = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
-                var textBlock = (TextBlock)window.Content;
+                var textBlock = (TextBlock)window.Content!;
 
                 textBlock.Tag = "foo";
 
@@ -178,7 +180,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </TextBlock>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = (TextBlock)window.Content;
+                var textBlock = (TextBlock)window.Content!;
 
                 window.ApplyTemplate();
 
@@ -204,10 +206,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button Name='button' />
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
 
                 Assert.True(button.IsVisible);
 
@@ -228,7 +230,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <TextBlock Name='textblock' Text='{Binding Observable^}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = (TextBlock)window.Content;
+                var textBlock = (TextBlock)window.Content!;
                 var observable = new BehaviorSubject<string>("foo");
 
                 window.DataContext = new { Observable = observable };
@@ -252,7 +254,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <TextBlock local:AttachedPropertyOwner.Double='{Binding}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = (TextBlock)window.Content;
+                var textBlock = (TextBlock)window.Content!;
 
                 window.DataContext = 5.6;
                 window.ApplyTemplate();
@@ -273,7 +275,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <local:TestControl Double='{Binding}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var testControl = (TestControl)window.Content;
+                var testControl = (TestControl)window.Content!;
 
                 window.DataContext = 5.6;
                 window.ApplyTemplate();
@@ -294,7 +296,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <TextBlock local:TestControl.Double='{Binding}'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = (TextBlock)window.Content;
+                var textBlock = (TextBlock)window.Content!;
 
                 window.DataContext = 5.6;
                 window.ApplyTemplate();
@@ -320,7 +322,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <TextBlock/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = (TextBlock)window.Content;
+                var textBlock = (TextBlock)window.Content!;
 
                 window.DataContext = 5.6;
                 window.ApplyTemplate();
@@ -345,7 +347,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <TextBlock Name='textBlock' Text=""{Binding Foo, StringFormat=" + fmt + @"}""/> 
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml); 
-                var textBlock = window.FindControl<TextBlock>("textBlock"); 
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 textBlock.DataContext = new { Foo = "world" };
                 window.ApplyTemplate(); 
@@ -375,7 +377,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </TextBlock> 
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var textBlock = window.FindControl<TextBlock>("textBlock");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
 
                 textBlock.DataContext = new WindowViewModel();
                 window.ApplyTemplate();
@@ -426,23 +428,132 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
+        [Theory]
+        [MemberData(nameof(NegationData))]
+        public void Negating_Object_Returns_Correct_Value(object value, bool? expected)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        Tag='{Binding !Object}'>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var viewModel = new WindowViewModel { Object = value };
+
+                window.DataContext = viewModel;
+                window.ApplyTemplate();
+
+                Assert.Equal(expected, window.Tag);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NegationData))]
+        public void Double_Negating_Object_Returns_Correct_Value(object value, bool? negated)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        Tag='{Binding !!Object}'>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var viewModel = new WindowViewModel { Object = value };
+
+                window.DataContext = viewModel;
+                window.ApplyTemplate();
+
+                var expected = negated.HasValue ? !negated : null;
+                Assert.Equal(expected, window.Tag);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NegationData))]
+        public void Negating_Object_Returns_Correct_Value_When_Bound_To_Bool(object value, bool? expected)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        IsVisible='{Binding !Object}'>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var viewModel = new WindowViewModel { Object = value };
+
+                window.DataContext = viewModel;
+                window.ApplyTemplate();
+
+                Assert.Equal(expected ?? false, window.IsVisible);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NegationData))]
+        public void Double_Negating_Object_Returns_Correct_Value_When_Bound_To_Bool(object value, bool? negated)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        IsVisible='{Binding !!Object}'>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var viewModel = new WindowViewModel { Object = value };
+
+                window.DataContext = viewModel;
+                window.ApplyTemplate();
+
+                var expected = negated.HasValue ? !negated : false;
+                Assert.Equal(expected, window.IsVisible);
+            }
+        }
+
+        public static IEnumerable<object?[]> NegationData()
+        {
+            yield return [true, false];
+            yield return [false, true];
+            yield return [null, true];
+            yield return [new object(), null];
+            yield return ["foo", null];
+            yield return ["true", false];
+            yield return ["false", true];
+            yield return [0, true];
+            yield return [1, false];
+            yield return [2, false];
+            yield return [-1, false];
+            yield return [0.0, true];
+            yield return [1.0, false];
+            yield return [2.0, false];
+            yield return [-1.0, false];
+            yield return [double.NaN, false];
+            yield return [double.PositiveInfinity, false];
+            yield return [double.NegativeInfinity, false];
+        }
+
         private class WindowViewModel
         {
             public bool ShowInTaskbar { get; set; }
-            public string Greeting1 { get; set; } = "Hello";
-            public string Greeting2 { get; set; } = "World";
+            public string? Greeting1 { get; set; } = "Hello";
+            public string? Greeting2 { get; set; } = "World";
+            public object? Object { get; set; }
         }
 
         public class CultureAppender : IValueConverter
         {
             public static CultureAppender Instance { get; } = new CultureAppender();
 
-            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
                 return $"{value}+{culture}";
             }
 
-            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
                 throw new NotImplementedException();
             }
@@ -461,7 +572,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button Name='button' Classes.MyClass='{Binding Foo}' Classes.MySecondClass='True' Classes='foo bar'/>
 </Window>";
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
-                var button = window.FindControl<Button>("button");
+                var button = window.GetControl<Button>("button");
 
                 button.DataContext = new { Foo = true };
                 window.ApplyTemplate();

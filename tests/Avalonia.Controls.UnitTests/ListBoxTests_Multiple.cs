@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ListBoxTests_Multiple
+    public class ListBoxTests_Multiple : ScopedTestBase
     {
         private MouseTestHelper _helper = new MouseTestHelper();
 
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
-                _helper.Click(target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Shift);
+                _helper.Click(target.Presenter!.Panel!.Children[2], modifiers: KeyModifiers.Shift);
 
                 Assert.Equal(new[] { "Foo", "Bar", "Baz" }, target.SelectedItems);
                 Assert.Equal(new[] { 0, 1, 2 }, SelectedContainers(target));
@@ -63,7 +63,7 @@ namespace Avalonia.Controls.UnitTests
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
 
-                SelectionChangedEventArgs receivedArgs = null;
+                SelectionChangedEventArgs? receivedArgs = null;
 
                 target.SelectionChanged += (_, args) => receivedArgs = args;
 
@@ -81,22 +81,23 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Empty(receivedArgs.AddedItems);
                 }
 
-                _helper.Click(target.Presenter.Panel.Children[1]);
+                var panel = target.Presenter!.Panel!;
+                _helper.Click(panel.Children[1]);
 
                 VerifyAdded("Bar");
 
                 receivedArgs = null;
-                _helper.Click(target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
+                _helper.Click(panel.Children[2], modifiers: KeyModifiers.Control);
 
                 VerifyAdded("Baz");
 
                 receivedArgs = null;
-                _helper.Click(target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Control);
+                _helper.Click(panel.Children[3], modifiers: KeyModifiers.Control);
 
                 VerifyAdded("Qux");
 
                 receivedArgs = null;
-                _helper.Click(target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Control);
+                _helper.Click(panel.Children[1], modifiers: KeyModifiers.Control);
 
                 VerifyRemoved("Bar");
             }
@@ -120,15 +121,16 @@ namespace Avalonia.Controls.UnitTests
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
-                _helper.Click(target.Presenter.Panel.Children[1]);
-                _helper.Click(target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
-                _helper.Click(target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Control);
+                var panel = target.Presenter!.Panel!;
+                _helper.Click(panel.Children[1]);
+                _helper.Click(panel.Children[2], modifiers: KeyModifiers.Control);
+                _helper.Click(panel.Children[3], modifiers: KeyModifiers.Control);
 
                 Assert.Equal(1, target.SelectedIndex);
                 Assert.Equal("Bar", target.SelectedItem);
                 Assert.Equal(new[] { "Bar", "Baz", "Qux" }, target.SelectedItems);
 
-                _helper.Click(target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Control);
+                _helper.Click(panel.Children[1], modifiers: KeyModifiers.Control);
 
                 Assert.Equal(2, target.SelectedIndex);
                 Assert.Equal("Baz", target.SelectedItem);
@@ -154,16 +156,48 @@ namespace Avalonia.Controls.UnitTests
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
-                _helper.Click(target.Presenter.Panel.Children[1]);
-                _helper.Click(target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
+                var panel = target.Presenter!.Panel!;
+                _helper.Click(panel.Children[1]);
+                _helper.Click(panel.Children[2], modifiers: KeyModifiers.Control);
 
                 Assert.Equal(1, target.SelectedIndex);
                 Assert.Equal("Bar", target.SelectedItem);
 
-                _helper.Click(target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
+                _helper.Click(panel.Children[2], modifiers: KeyModifiers.Control);
 
                 Assert.Equal(1, target.SelectedIndex);
                 Assert.Equal("Bar", target.SelectedItem);
+            }
+        }
+
+        [Fact]
+        public void ToggleModifier_And_Range_Should_Select_Second_Range()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    ItemsSource = new[] { "Foo", "Bar", "Baz", "Gap", "Boo", "Far", "Faz" },
+                    SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
+                };
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
+                var panel = target.Presenter!.Panel!;
+                // Select first range
+                _helper.Click(panel.Children[0]);
+                _helper.Click(panel.Children[2], modifiers: KeyModifiers.Shift);
+
+                // Select second range
+                _helper.Click(panel.Children[4], modifiers: KeyModifiers.Control);
+                _helper.Click(panel.Children[6], modifiers: KeyModifiers.Control | KeyModifiers.Shift);
+
+                Assert.Equal(new[] { "Foo", "Bar", "Baz", "Boo", "Far", "Faz" }, target.SelectedItems);
             }
         }
 
@@ -185,10 +219,9 @@ namespace Avalonia.Controls.UnitTests
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
-                _helper.Click(target.Presenter.Panel.Children[3]);
-                _helper.Click(target.Presenter.Panel.Children[4], modifiers: KeyModifiers.Control);
-
-                var panel = target.Presenter.Panel;
+                var panel = target.Presenter!.Panel!;
+                _helper.Click(panel.Children[3]);
+                _helper.Click(panel.Children[4], modifiers: KeyModifiers.Control);
 
                 Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
                 Assert.Equal(new[] { 3, 4 }, SelectedContainers(target));
@@ -213,10 +246,9 @@ namespace Avalonia.Controls.UnitTests
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
-                _helper.Click(target.Presenter.Panel.Children[3]);
-                _helper.Click(target.Presenter.Panel.Children[5], modifiers: KeyModifiers.Shift);
-
-                var panel = target.Presenter.Panel;
+                var panel = target.Presenter!.Panel!;
+                _helper.Click(panel.Children[3]);
+                _helper.Click(panel.Children[5], modifiers: KeyModifiers.Shift);
 
                 Assert.Equal(new[] { "Foo", "Bar", "Baz" }, target.SelectedItems);
                 Assert.Equal(new[] { 3, 4, 5 }, SelectedContainers(target));
@@ -241,10 +273,9 @@ namespace Avalonia.Controls.UnitTests
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
-                _helper.Click(target.Presenter.Panel.Children[0]);
-                _helper.Click(target.Presenter.Panel.Children[5], modifiers: KeyModifiers.Shift);
-
-                var panel = target.Presenter.Panel;
+                var panel = target.Presenter!.Panel!;
+                _helper.Click(panel.Children[0]);
+                _helper.Click(panel.Children[5], modifiers: KeyModifiers.Shift);
 
                 Assert.Equal(new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" }, target.SelectedItems);
                 Assert.Equal(new[] { 0, 1, 2, 3, 4, 5 }, SelectedContainers(target));
@@ -269,7 +300,7 @@ namespace Avalonia.Controls.UnitTests
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
 
-                SelectionChangedEventArgs receivedArgs = null;
+                SelectionChangedEventArgs? receivedArgs = null;
 
                 target.SelectionChanged += (_, args) => receivedArgs = args;
 
@@ -287,17 +318,18 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Empty(receivedArgs.AddedItems);
                 }
 
-                _helper.Click(target.Presenter.Panel.Children[1]);
+                var panel = target.Presenter!.Panel!;
+                _helper.Click(panel.Children[1]);
 
                 VerifyAdded("Bar");
 
                 receivedArgs = null;
-                _helper.Click(target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Shift);
+                _helper.Click(panel.Children[3], modifiers: KeyModifiers.Shift);
 
                 VerifyAdded("Baz", "Qux");
 
                 receivedArgs = null;
-                _helper.Click(target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Shift);
+                _helper.Click(panel.Children[2], modifiers: KeyModifiers.Shift);
 
                 VerifyRemoved("Qux");
             }
@@ -321,19 +353,20 @@ namespace Avalonia.Controls.UnitTests
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
-                _helper.Click(target.Presenter.Panel.Children[0]);
+                var panel = target.Presenter!.Panel!;
+                _helper.Click(panel.Children[0]);
 
                 Assert.Equal(new[] { "Foo" }, target.SelectedItems);
 
-                _helper.Click(target.Presenter.Panel.Children[4], modifiers: KeyModifiers.Control);
+                _helper.Click(panel.Children[4], modifiers: KeyModifiers.Control);
 
                 Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
 
-                _helper.Click(target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Control);
+                _helper.Click(panel.Children[3], modifiers: KeyModifiers.Control);
 
                 Assert.Equal(new[] { "Foo", "Bar", "Foo" }, target.SelectedItems);
 
-                _helper.Click(target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Control);
+                _helper.Click(panel.Children[1], modifiers: KeyModifiers.Control);
 
                 Assert.Equal(new[] { "Foo", "Bar", "Foo", "Bar" }, target.SelectedItems);
             }
@@ -359,9 +392,9 @@ namespace Avalonia.Controls.UnitTests
 
                 target.SelectAll();
 
-                Assert.Equal(3, target.SelectedItems.Count);
+                Assert.Equal(3, target.SelectedItems!.Count);
 
-                _helper.Click(target.Presenter.Panel.Children[0]);
+                _helper.Click(target.Presenter!.Panel!.Children[0]);
 
                 Assert.Equal(1, target.SelectedItems.Count);
                 Assert.Equal(new[] { "Foo", }, target.SelectedItems);
@@ -389,9 +422,9 @@ namespace Avalonia.Controls.UnitTests
 
                 target.SelectAll();
 
-                Assert.Equal(3, target.SelectedItems.Count);
+                Assert.Equal(3, target.SelectedItems!.Count);
 
-                _helper.Click(target.Presenter.Panel.Children[0], MouseButton.Right);
+                _helper.Click(target.Presenter!.Panel!.Children[0], MouseButton.Right);
 
                 Assert.Equal(3, target.SelectedItems.Count);
             }
@@ -416,13 +449,16 @@ namespace Avalonia.Controls.UnitTests
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
-                _helper.Click(target.Presenter.Panel.Children[0]);
-                _helper.Click(target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Shift);
+                var panel = target.Presenter!.Panel!;
+                _helper.Click(panel.Children[0]);
+                _helper.Click(panel.Children[1], modifiers: KeyModifiers.Shift);
 
+                Assert.NotNull(target.SelectedItems);
                 Assert.Equal(2, target.SelectedItems.Count);
 
-                _helper.Click(target.Presenter.Panel.Children[2], MouseButton.Right);
+                _helper.Click(panel.Children[2], MouseButton.Right);
 
+                Assert.NotNull(target.SelectedItems);
                 Assert.Equal(1, target.SelectedItems.Count);
             }
         }
@@ -447,9 +483,11 @@ namespace Avalonia.Controls.UnitTests
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
 
-                _helper.Click(target.Presenter.Panel.Children[0]);
-                _helper.Click(target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: KeyModifiers.Shift);
+                var panel = target.Presenter!.Panel!;
+                _helper.Click(panel.Children[0]);
+                _helper.Click(panel.Children[2], MouseButton.Right, modifiers: KeyModifiers.Shift);
 
+                Assert.NotNull(target.SelectedItems);
                 Assert.Equal(1, target.SelectedItems.Count);
             }
         }
@@ -474,9 +512,11 @@ namespace Avalonia.Controls.UnitTests
 
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
 
-                _helper.Click(target.Presenter.Panel.Children[0]);
-                _helper.Click(target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: KeyModifiers.Control);
+                var panel = target.Presenter!.Panel!;
+                _helper.Click(panel.Children[0]);
+                _helper.Click(panel.Children[2], MouseButton.Right, modifiers: KeyModifiers.Control);
 
+                Assert.NotNull(target.SelectedItems);
                 Assert.Equal(1, target.SelectedItems.Count);
             }
         }
@@ -502,19 +542,19 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new[] { "Foo", "Bar", }, target.SelectedItems);
             Assert.Equal(new[] { 0, 1 }, SelectedContainers(target));
-            Assert.True(target.ContainerFromIndex(1).IsFocused);
+            Assert.True(target.ContainerFromIndex(1)!.IsFocused);
 
             RaiseKeyEvent(target, Key.Down, KeyModifiers.Shift);
 
             Assert.Equal(new[] { "Foo", "Bar", "Baz", }, target.SelectedItems);
             Assert.Equal(new[] { 0, 1, 2 }, SelectedContainers(target));
-            Assert.True(target.ContainerFromIndex(2).IsFocused);
+            Assert.True(target.ContainerFromIndex(2)!.IsFocused);
 
             RaiseKeyEvent(target, Key.Up, KeyModifiers.Shift);
 
             Assert.Equal(new[] { "Foo", "Bar", }, target.SelectedItems);
             Assert.Equal(new[] { 0, 1 }, SelectedContainers(target));
-            Assert.True(target.ContainerFromIndex(1).IsFocused);
+            Assert.True(target.ContainerFromIndex(1)!.IsFocused);
         }
 
         [Fact]
@@ -539,7 +579,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new[] { "Foo", "Bar", "Baz" }, target.SelectedItems);
             Assert.Equal(new[] { 0, 1, 2 }, SelectedContainers(target));
-            Assert.True(target.ContainerFromIndex(2).IsFocused);
+            Assert.True(target.ContainerFromIndex(2)!.IsFocused);
         }
 
         [Fact]
@@ -563,19 +603,19 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
             Assert.Equal(new[] { 0, 1 }, SelectedContainers(target));
-            Assert.True(target.ContainerFromIndex(1).IsFocused);
+            Assert.True(target.ContainerFromIndex(1)!.IsFocused);
 
             RaiseKeyEvent(target, Key.Down, KeyModifiers.Control);
 
             Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
             Assert.Equal(new[] { 0, 1 }, SelectedContainers(target));
-            Assert.True(target.ContainerFromIndex(2).IsFocused);
+            Assert.True(target.ContainerFromIndex(2)!.IsFocused);
 
             RaiseKeyEvent(target, Key.Down, KeyModifiers.Shift);
 
             Assert.Equal(new[] { "Foo", "Bar", "Baz", "Qux" }, target.SelectedItems);
             Assert.Equal(new[] { 0, 1, 2, 3 }, SelectedContainers(target));
-            Assert.True(target.ContainerFromIndex(3).IsFocused);
+            Assert.True(target.ContainerFromIndex(3)!.IsFocused);
         }
 
         [Fact]
@@ -670,7 +710,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static IEnumerable<int> SelectedContainers(SelectingItemsControl target)
         {
-            return target.Presenter.Panel.Children
+            return target.Presenter!.Panel!.Children
                 .Select(x => x.Classes.Contains(":selected") ? target.IndexFromContainer(x) : -1)
                 .Where(x => x != -1);
         }

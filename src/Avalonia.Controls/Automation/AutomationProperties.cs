@@ -38,6 +38,9 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.AcceleratorKey attached property.
         /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetAcceleratorKey"/>.
+        /// </remarks>
         public static readonly AttachedProperty<string?> AcceleratorKeyProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, string?>(
                 "AcceleratorKey",
@@ -46,6 +49,11 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.AccessibilityView attached property.
         /// </summary>
+        /// <remarks>
+        /// The value of this property affects the default value of the
+        /// <see cref="AutomationPeer.IsContentElement"/> and
+        /// <see cref="AutomationPeer.IsControlElement"/> properties.
+        /// </remarks>
         public static readonly AttachedProperty<AccessibilityView> AccessibilityViewProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, AccessibilityView>(
                 "AccessibilityView",
@@ -54,6 +62,9 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.AccessKey attached property
         /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetAccessKey"/>.
+        /// </remarks>
         public static readonly AttachedProperty<string?> AccessKeyProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, string?>(
                 "AccessKey",
@@ -62,6 +73,9 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.AutomationId attached property.
         /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetAutomationId"/>.
+        /// </remarks>
         public static readonly AttachedProperty<string?> AutomationIdProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, string?>(
                 "AutomationId",
@@ -70,22 +84,77 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.ControlTypeOverride attached property.
         /// </summary>
+        /// <remarks>
+        /// This property affects the default value for
+        /// <see cref="AutomationPeer.GetAutomationControlType"/>.
+        /// </remarks>
         public static readonly AttachedProperty<AutomationControlType?> ControlTypeOverrideProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, AutomationControlType?>(
                 "ControlTypeOverride",
                 typeof(AutomationProperties));
 
         /// <summary>
+        /// Defines the AutomationProperties.ClassNameOverride attached property.
+        /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetClassName"/>.
+        /// </remarks>
+        public static readonly AttachedProperty<string?> ClassNameOverrideProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, string?>(
+                "ClassNameOverride",
+                typeof(AutomationProperties));
+
+        /// <summary>
+        /// Defines the AutomationProperties.IsControlElementOverride attached property.
+        /// </summary>
+        /// <remarks>
+        /// This property affects the default value for
+        /// <see cref="AutomationPeer.IsControlElement"/>.
+        /// </remarks>
+        public static readonly AttachedProperty<bool?> IsControlElementOverrideProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, bool?>(
+                "IsControlElementOverride",
+                typeof(AutomationProperties));
+
+        /// <summary>
         /// Defines the AutomationProperties.HelpText attached property.
         /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetHelpText"/>.
+        /// </remarks>
         public static readonly AttachedProperty<string?> HelpTextProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, string?>(
                 "HelpText",
                 typeof(AutomationProperties));
 
         /// <summary>
+        /// Defines the AutomationProperties.LandmarkType attached property.
+        /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetLandmarkType"/>
+        /// </remarks>
+        public static readonly AttachedProperty<AutomationLandmarkType?> LandmarkTypeProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, AutomationLandmarkType?>(
+                "LandmarkType",
+                typeof(AutomationProperties));
+
+        /// <summary>
+        /// Defines the AutomationProperties.HeadingLevel attached property.
+        /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetHeadingLevel"/>.
+        /// </remarks>
+        public static readonly AttachedProperty<int> HeadingLevelProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, int>(
+                "HeadingLevel",
+                typeof(AutomationProperties));
+
+        /// <summary>
         /// Defines the AutomationProperties.IsColumnHeader attached property.
         /// </summary>
+        /// <remarks>
+        /// This property currently has no effect.
+        /// </remarks>
         public static readonly AttachedProperty<bool> IsColumnHeaderProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, bool>(
                 "IsColumnHeader",
@@ -95,6 +164,9 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.IsRequiredForForm attached property.
         /// </summary>
+        /// <remarks>
+        /// This property currently has no effect.
+        /// </remarks>
         public static readonly AttachedProperty<bool> IsRequiredForFormProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, bool>(
                 "IsRequiredForForm",
@@ -104,6 +176,9 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.IsRowHeader attached property.
         /// </summary>
+        /// <remarks>
+        /// This property currently has no effect.
+        /// </remarks>
         public static readonly AttachedProperty<bool> IsRowHeaderProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, bool>(
                 "IsRowHeader",
@@ -113,6 +188,9 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.IsOffscreenBehavior attached property.
         /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.IsOffscreen"/>.
+        /// </remarks>
         public static readonly AttachedProperty<IsOffscreenBehavior> IsOffscreenBehaviorProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, IsOffscreenBehavior>(
                 "IsOffscreenBehavior",
@@ -122,6 +200,9 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.ItemStatus attached property.
         /// </summary>
+        /// <remarks>
+        /// This property currently has no effect.
+        /// </remarks>
         public static readonly AttachedProperty<string?> ItemStatusProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, string?>(
                 "ItemStatus",
@@ -130,6 +211,9 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.ItemType attached property.
         /// </summary>
+        /// <remarks>
+        /// This property currently has no effect.
+        /// </remarks>
         public static readonly AttachedProperty<string?> ItemTypeProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, string?>(
                 "ItemType",
@@ -138,6 +222,9 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.LabeledBy attached property.
         /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetLabeledBy"/>.
+        /// </remarks>
         public static readonly AttachedProperty<Control> LabeledByProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, Control>(
                 "LabeledBy",
@@ -146,6 +233,9 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.LiveSetting attached property.
         /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetLiveSetting"/> and controls whether live region changed events are emitted.
+        /// </remarks>
         public static readonly AttachedProperty<AutomationLiveSetting> LiveSettingProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, AutomationLiveSetting>(
                 "LiveSetting",
@@ -155,6 +245,9 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.Name attached attached property.
         /// </summary>
+        /// <remarks>
+        /// This property affects the default value for <see cref="AutomationPeer.GetName"/>.
+        /// </remarks>
         public static readonly AttachedProperty<string?> NameProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, string?>(
                 "Name",
@@ -164,6 +257,8 @@ namespace Avalonia.Automation
         /// Defines the AutomationProperties.PositionInSet attached property.
         /// </summary>
         /// <remarks>
+        /// NOTE: This property currently has no effect.
+        /// 
         /// The PositionInSet property describes the ordinal location of the element within a set
         /// of elements which are considered to be siblings. PositionInSet works in coordination
         /// with the SizeOfSet property to describe the ordinal location in the set.
@@ -178,6 +273,8 @@ namespace Avalonia.Automation
         /// Defines the AutomationProperties.SizeOfSet attached property.
         /// </summary>
         /// <remarks>
+        /// NOTE: This property currently has no effect.
+        /// 
         /// The SizeOfSet property describes the count of automation elements in a group or set
         /// that are considered to be siblings. SizeOfSet works in coordination with the PositionInSet
         /// property to describe the count of items in the set.
@@ -189,7 +286,7 @@ namespace Avalonia.Automation
                 AutomationSizeOfSetDefault);
 
         /// <summary>
-        /// Helper for setting AcceleratorKey property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="AcceleratorKeyProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetAcceleratorKey(StyledElement element, string value)
         {
@@ -198,7 +295,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading AcceleratorKey property from a StyledElement.
+        /// Helper for reading the value of the <see cref="AcceleratorKeyProperty"/> on a StyledElement.
         /// </summary>
         public static string? GetAcceleratorKey(StyledElement element)
         {
@@ -207,7 +304,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting AccessibilityView property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="AccessibilityViewProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetAccessibilityView(StyledElement element, AccessibilityView value)
         {
@@ -216,7 +313,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading AccessibilityView property from a StyledElement.
+        /// Helper for reading the value of the <see cref="AccessibilityViewProperty"/> on a StyledElement.
         /// </summary>
         public static AccessibilityView GetAccessibilityView(StyledElement element)
         {
@@ -225,7 +322,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting AccessKey property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="AccessKeyProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetAccessKey(StyledElement element, string value)
         {
@@ -234,7 +331,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading AccessKey property from a StyledElement.
+        /// Helper for reading the value of the <see cref="AccessKeyProperty"/> on a StyledElement.
         /// </summary>
         public static string? GetAccessKey(StyledElement element)
         {
@@ -243,7 +340,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting AutomationId property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="AutomationIdProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetAutomationId(StyledElement element, string? value)
         {
@@ -252,7 +349,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading AutomationId property from a StyledElement.
+        /// Helper for reading the value of the <see cref="AutomationIdProperty"/> on a StyledElement.
         /// </summary>
         public static string? GetAutomationId(StyledElement element)
         {
@@ -261,7 +358,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting ControlTypeOverride property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="ControlTypeOverrideProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetControlTypeOverride(StyledElement element, AutomationControlType? value)
         {
@@ -270,7 +367,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading ControlTypeOverride property from a StyledElement.
+        /// Helper for reading the value of the <see cref="ControlTypeOverrideProperty"/> on a StyledElement.
         /// </summary>
         public static AutomationControlType? GetControlTypeOverride(StyledElement element)
         {
@@ -279,7 +376,43 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting HelpText property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="ClassNameOverrideProperty"/> on a StyledElement. 
+        /// </summary>
+        public static void SetClassNameOverride(StyledElement element, string? value)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            element.SetValue(ClassNameOverrideProperty, value);
+        }
+
+        /// <summary>
+        /// Helper for reading the value of the <see cref="ClassNameOverrideProperty"/> on a StyledElement.
+        /// </summary>
+        public static string? GetClassNameOverride(StyledElement element)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            return element.GetValue(ClassNameOverrideProperty);
+        }
+
+        /// <summary>
+        /// Helper for setting the value of the <see cref="IsControlElementOverrideProperty"/> on a StyledElement. 
+        /// </summary>
+        public static void SetIsControlElementOverride(StyledElement element, bool? value)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            element.SetValue(IsControlElementOverrideProperty, value);
+        }
+
+        /// <summary>
+        /// Helper for reading the value of the <see cref="IsControlElementOverrideProperty"/> on a StyledElement.
+        /// </summary>
+        public static bool? GetIsControlElementOverride(StyledElement element)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            return element.GetValue(IsControlElementOverrideProperty);
+        }
+
+        /// <summary>
+        /// Helper for setting the value of the <see cref="HelpTextProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetHelpText(StyledElement element, string? value)
         {
@@ -288,7 +421,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading HelpText property from a StyledElement.
+        /// Helper for reading the value of the <see cref="HelpTextProperty"/> on a StyledElement.
         /// </summary>
         public static string? GetHelpText(StyledElement element)
         {
@@ -297,7 +430,43 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting IsColumnHeader property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="LandmarkTypeProperty"/> on a StyledElement.
+        /// </summary>
+        public static void SetLandmarkType(StyledElement element, AutomationLandmarkType? value)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            element.SetValue(LandmarkTypeProperty, value);
+        }
+
+        /// <summary>
+        /// Helper for reading the value of the <see cref="LandmarkTypeProperty"/> on a StyledElement.
+        /// </summary>
+        public static AutomationLandmarkType? GetLandmarkType(StyledElement element)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            return element.GetValue(LandmarkTypeProperty);
+        }
+
+        /// <summary>
+        /// Helper for setting the value of the <see cref="HeadingLevelProperty"/> on a StyledElement.
+        /// </summary>
+        public static void SetHeadingLevel(StyledElement element, int value)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            element.SetValue(HeadingLevelProperty, value);
+        }
+
+        /// <summary>
+        /// Helper for reading the value of the <see cref="HeadingLevelProperty"/> on a StyledElement.
+        /// </summary>
+        public static int GetHeadingLevel(StyledElement element)
+        {
+            _ = element ?? throw new ArgumentNullException(nameof(element));
+            return element.GetValue(HeadingLevelProperty);
+        }
+
+        /// <summary>
+        /// Helper for setting the value of the <see cref="IsColumnHeaderProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetIsColumnHeader(StyledElement element, bool value)
         {
@@ -306,7 +475,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading IsColumnHeader property from a StyledElement.
+        /// Helper for reading the value of the <see cref="IsColumnHeaderProperty"/> on a StyledElement.
         /// </summary>
         public static bool GetIsColumnHeader(StyledElement element)
         {
@@ -315,7 +484,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting IsRequiredForForm property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="IsRequiredForFormProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetIsRequiredForForm(StyledElement element, bool value)
         {
@@ -324,7 +493,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading IsRequiredForForm property from a StyledElement.
+        /// Helper for reading the value of the <see cref="IsRequiredForFormProperty"/> on a StyledElement.
         /// </summary>
         public static bool GetIsRequiredForForm(StyledElement element)
         {
@@ -333,7 +502,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading IsRowHeader property from a StyledElement.
+        /// Helper for reading the value of the <see cref="IsRowHeaderProperty"/> on a StyledElement.
         /// </summary>
         public static bool GetIsRowHeader(StyledElement element)
         {
@@ -342,7 +511,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting IsRowHeader property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="IsRowHeaderProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetIsRowHeader(StyledElement element, bool value)
         {
@@ -351,7 +520,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting IsOffscreenBehavior property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="IsOffscreenBehaviorProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetIsOffscreenBehavior(StyledElement element, IsOffscreenBehavior value)
         {
@@ -360,7 +529,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading IsOffscreenBehavior property from a StyledElement.
+        /// Helper for reading the value of the <see cref="IsOffscreenBehaviorProperty"/> on a StyledElement.
         /// </summary>
         public static IsOffscreenBehavior GetIsOffscreenBehavior(StyledElement element)
         {
@@ -369,7 +538,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting ItemStatus property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="ItemStatusProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetItemStatus(StyledElement element, string? value)
         {
@@ -378,7 +547,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading ItemStatus property from a StyledElement.
+        /// Helper for reading the value of the <see cref="ItemStatusProperty"/> on a StyledElement.
         /// </summary>
         public static string? GetItemStatus(StyledElement element)
         {
@@ -387,7 +556,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting ItemType property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="ItemTypeProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetItemType(StyledElement element, string? value)
         {
@@ -396,7 +565,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading ItemType property from a StyledElement.
+        /// Helper for reading the value of the <see cref="ItemTypeProperty"/> on a StyledElement.
         /// </summary>
         public static string? GetItemType(StyledElement element)
         {
@@ -405,7 +574,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting LabeledBy property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="LabeledByProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetLabeledBy(StyledElement element, Control value)
         {
@@ -414,7 +583,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading LabeledBy property from a StyledElement.
+        /// Helper for reading the value of the <see cref="LabeledByProperty"/> on a StyledElement.
         /// </summary>
         public static Control GetLabeledBy(StyledElement element)
         {
@@ -423,7 +592,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting LiveSetting property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="LiveSettingProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetLiveSetting(StyledElement element, AutomationLiveSetting value)
         {
@@ -432,7 +601,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading LiveSetting property from a StyledElement.
+        /// Helper for reading the value of the <see cref="LiveSettingProperty"/> on a StyledElement.
         /// </summary>
         public static AutomationLiveSetting GetLiveSetting(StyledElement element)
         {
@@ -441,7 +610,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting Name property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="NameProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetName(StyledElement element, string? value)
         {
@@ -450,7 +619,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading Name property from a StyledElement.
+        /// Helper for reading the value of the <see cref="NameProperty"/> on a StyledElement.
         /// </summary>
         public static string? GetName(StyledElement element)
         {
@@ -459,7 +628,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting PositionInSet property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="PositionInSetProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetPositionInSet(StyledElement element, int value)
         {
@@ -468,7 +637,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading PositionInSet property from a StyledElement.
+        /// Helper for reading the value of the <see cref="PositionInSetProperty"/> on a StyledElement.
         /// </summary>
         public static int GetPositionInSet(StyledElement element)
         {
@@ -477,7 +646,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for setting SizeOfSet property on a StyledElement. 
+        /// Helper for setting the value of the <see cref="SizeOfSetProperty"/> on a StyledElement. 
         /// </summary>
         public static void SetSizeOfSet(StyledElement element, int value)
         {
@@ -486,7 +655,7 @@ namespace Avalonia.Automation
         }
 
         /// <summary>
-        /// Helper for reading SizeOfSet property from a StyledElement.
+        /// Helper for reading the value of the <see cref="SizeOfSetProperty"/> on a StyledElement.
         /// </summary>
         public static int GetSizeOfSet(StyledElement element)
         {

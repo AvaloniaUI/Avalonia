@@ -1,8 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
-using Avalonia.Platform;
 using System;
 using System.ComponentModel.DataAnnotations;
 using Avalonia;
@@ -14,14 +12,14 @@ namespace ControlCatalog.ViewModels
     {
         private WindowState _windowState;
         private WindowState[] _windowStates = Array.Empty<WindowState>();
-        private ExtendClientAreaChromeHints _chromeHints = ExtendClientAreaChromeHints.PreferSystemChrome;
         private bool _extendClientAreaEnabled;
-        private bool _systemTitleBarEnabled;
-        private bool _preferSystemChromeEnabled;
         private double _titleBarHeight;
         private bool _isSystemBarVisible;
         private bool _displayEdgeToEdge;
         private Thickness _safeAreaPadding;
+        private bool _canResize;
+        private bool _canMinimize;
+        private bool _canMaximize;
 
         public MainWindowViewModel()
         {
@@ -49,87 +47,72 @@ namespace ControlCatalog.ViewModels
                 WindowState.FullScreen,
             };
 
-            this.PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName is nameof(SystemTitleBarEnabled) or nameof(PreferSystemChromeEnabled))
-                    {
-                        var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
-
-                        if (SystemTitleBarEnabled)
-                        {
-                            hints |= ExtendClientAreaChromeHints.SystemChrome;
-                        }
-                        if (PreferSystemChromeEnabled)
-                        {
-                            hints |= ExtendClientAreaChromeHints.PreferSystemChrome;
-                        }
-                        ChromeHints = hints;
-                    }
-                };
-
-            SystemTitleBarEnabled = true;            
             TitleBarHeight = -1;
+            CanResize = true;
+            CanMinimize = true;
+            CanMaximize = true;
         }        
         
-        public ExtendClientAreaChromeHints ChromeHints
-        {
-            get { return _chromeHints; }
-            set { this.RaiseAndSetIfChanged(ref _chromeHints, value); }
-        }
-
         public bool ExtendClientAreaEnabled
         {
             get { return _extendClientAreaEnabled; }
-            set { this.RaiseAndSetIfChanged(ref _extendClientAreaEnabled, value); }
-        }
-
-        public bool SystemTitleBarEnabled
-        {
-            get { return _systemTitleBarEnabled; }
-            set { this.RaiseAndSetIfChanged(ref _systemTitleBarEnabled, value); }
-        }
-
-        public bool PreferSystemChromeEnabled
-        {
-            get { return _preferSystemChromeEnabled; }
-            set { this.RaiseAndSetIfChanged(ref _preferSystemChromeEnabled, value); }
+            set { RaiseAndSetIfChanged(ref _extendClientAreaEnabled, value); }
         }
 
         public double TitleBarHeight
         {
             get { return _titleBarHeight; }
-            set { this.RaiseAndSetIfChanged(ref _titleBarHeight, value); }
+            set { RaiseAndSetIfChanged(ref _titleBarHeight, value); }
         }
 
         public WindowState WindowState
         {
             get { return _windowState; }
-            set { this.RaiseAndSetIfChanged(ref _windowState, value); }
+            set { RaiseAndSetIfChanged(ref _windowState, value); }
         }
 
         public WindowState[] WindowStates
         {
             get { return _windowStates; }
-            set { this.RaiseAndSetIfChanged(ref _windowStates, value); }
+            set { RaiseAndSetIfChanged(ref _windowStates, value); }
         }
 
         public bool IsSystemBarVisible
         {
             get { return _isSystemBarVisible; }
-            set { this.RaiseAndSetIfChanged(ref _isSystemBarVisible, value); }
+            set { RaiseAndSetIfChanged(ref _isSystemBarVisible, value); }
         }
 
         public bool DisplayEdgeToEdge
         {
             get { return _displayEdgeToEdge; }
-            set { this.RaiseAndSetIfChanged(ref _displayEdgeToEdge, value); }
+            set { RaiseAndSetIfChanged(ref _displayEdgeToEdge, value); }
         }
         
         public Thickness SafeAreaPadding
         {
             get { return _safeAreaPadding; }
-            set { this.RaiseAndSetIfChanged(ref _safeAreaPadding, value); }
+            set { RaiseAndSetIfChanged(ref _safeAreaPadding, value); }
         }
+
+        public bool CanResize
+        {
+            get { return _canResize; }
+            set { RaiseAndSetIfChanged(ref _canResize, value); }
+        }
+
+        public bool CanMinimize
+        {
+            get { return _canMinimize; }
+            set { RaiseAndSetIfChanged(ref _canMinimize, value); }
+        }
+
+        public bool CanMaximize
+        {
+            get { return _canMaximize; }
+            set { RaiseAndSetIfChanged(ref _canMaximize, value); }
+        }
+
 
         public MiniCommand AboutCommand { get; }
 
@@ -144,7 +127,7 @@ namespace ControlCatalog.ViewModels
         public DateTime? ValidatedDateExample
         {
             get => _validatedDateExample;
-            set => this.RaiseAndSetIfChanged(ref _validatedDateExample, value);
+            set => RaiseAndSetIfChanged(ref _validatedDateExample, value);
         }
     }
 }

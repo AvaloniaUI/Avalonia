@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Avalonia.Data;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Templates
 {
@@ -51,14 +52,10 @@ namespace Avalonia.Controls.Templates
             _itemsSelector = itemsSelector;
         }
 
-        /// <summary>
-        /// Selects the child items of an item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>The child items, or null if no child items.</returns>
-        public InstancedBinding ItemsSelector(object item)
+        public IDisposable BindChildren(AvaloniaObject target, AvaloniaProperty targetProperty, object item)
         {
-            return InstancedBinding.OneTime(_itemsSelector(item));
+            target.SetCurrentValue(targetProperty, _itemsSelector(item));
+            return Disposable.Empty;
         }
 
         /// <summary>

@@ -17,7 +17,7 @@ public static class StorageProviderExtensions
             return Task.FromResult(StorageProviderHelpers.TryCreateBclStorageItem(filePath) as IStorageFile);
         }
 
-        if (StorageProviderHelpers.TryFilePathToUri(filePath, out var uri))
+        if (StorageProviderHelpers.TryGetUriFromFilePath(filePath, false) is { } uri)
         {
             return provider.TryGetFileFromPathAsync(uri);
         }
@@ -34,7 +34,7 @@ public static class StorageProviderExtensions
             return Task.FromResult(StorageProviderHelpers.TryCreateBclStorageItem(folderPath) as IStorageFolder);
         }
 
-        if (StorageProviderHelpers.TryFilePathToUri(folderPath, out var uri))
+        if (StorageProviderHelpers.TryGetUriFromFilePath(folderPath, true) is { } uri)
         {
             return provider.TryGetFolderFromPathAsync(uri);
         }
@@ -56,21 +56,11 @@ public static class StorageProviderExtensions
     {
         // We can avoid double escaping of the path by checking for BclStorageFolder.
         // Ideally, `folder.Path.LocalPath` should also work, as that's only available way for the users.
-        if (item is BclStorageFolder storageFolder)
+        if (item is IStorageItemWithFileSystemInfo storageItem)
         {
-            return storageFolder.DirectoryInfo.FullName;
-        }
-        if (item is BclStorageFile storageFile)
-        {
-            return storageFile.FileInfo.FullName;
+            return storageItem.FileSystemInfo.FullName;
         }
 
-        if (item.Path is { IsAbsoluteUri: true, Scheme: "file" } absolutePath)
-        {
-            return absolutePath.LocalPath;
-        }
-
-        // android "content:", browser and ios relative links go here. 
-        return null;
+        return StorageProviderHelpers.TryGetPathFromFileUri(item.Path);
     }
 }

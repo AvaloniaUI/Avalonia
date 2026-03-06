@@ -101,7 +101,7 @@ namespace Avalonia
         /// <returns>The <see cref="Vector"/>.</returns>
         public static Vector Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Vector."))
+            using (var tokenizer = new SpanStringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Vector."))
             {
                 return new Vector(
                     tokenizer.ReadDouble(),

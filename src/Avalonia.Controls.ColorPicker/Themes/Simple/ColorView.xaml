@@ -183,11 +183,14 @@
                           Content="{TemplateBinding Content}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Padding="{TemplateBinding Padding}"
-                          RecognizesAccessKey="True"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
 
     <Style Selector="^:checked /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}" />
@@ -306,7 +309,8 @@
             <TabItem Theme="{StaticResource ColorViewTabItemTheme}"
                      IsVisible="{TemplateBinding IsColorSpectrumVisible}">
               <TabItem.Header>
-                <Border Height="{DynamicResource ColorViewTabStripHeight}">
+                <Border Height="{DynamicResource ColorViewTabStripHeight}"
+                        Background="Transparent">
                   <PathIcon Width="20"
                             Height="20"
                             Data="{DynamicResource ColorViewSpectrumIconGeometry}" />
@@ -371,7 +375,8 @@
             <TabItem Theme="{StaticResource ColorViewTabItemTheme}"
                      IsVisible="{TemplateBinding IsColorPaletteVisible}">
               <TabItem.Header>
-                <Border Height="{DynamicResource ColorViewTabStripHeight}">
+                <Border Height="{DynamicResource ColorViewTabStripHeight}"
+                        Background="Transparent">
                   <PathIcon Width="20"
                             Height="20"
                             Data="{DynamicResource ColorViewPaletteIconGeometry}" />
@@ -406,7 +411,8 @@
             <TabItem Theme="{StaticResource ColorViewTabItemTheme}"
                      IsVisible="{TemplateBinding IsColorComponentsVisible}">
               <TabItem.Header>
-                <Border Height="{DynamicResource ColorViewTabStripHeight}">
+                <Border Height="{DynamicResource ColorViewTabStripHeight}"
+                        Background="Transparent">
                   <PathIcon Width="20"
                             Height="20"
                             Data="{DynamicResource ColorViewComponentsIconGeometry}" />
@@ -467,6 +473,8 @@
                              AutomationProperties.Name="Hexadecimal Color"
                              Height="32"
                              MaxLength="9"
+                             Padding="10,6,6,5"
+                             VerticalContentAlignment="Center"
                              HorizontalAlignment="Stretch"
                              CornerRadius="0,0,0,0" />
                   </Grid>

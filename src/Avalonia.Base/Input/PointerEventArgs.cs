@@ -7,7 +7,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
-    public class PointerEventArgs : RoutedEventArgs
+    public class PointerEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     {
         private readonly Visual? _rootVisual;
         private readonly Point _rootVisualPosition;
@@ -143,9 +143,9 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Returns the current pointer point properties
+        /// Gets the state the pointer device had when this event occurred.
         /// </summary>
-        protected PointerPointProperties Properties => _properties;
+        public PointerPointProperties Properties => _properties;
     }
     
     public enum MouseButton
@@ -202,11 +202,26 @@ namespace Avalonia.Input
     {
         public IPointer Pointer { get; }
 
-        [Unstable("This constructor might be removed in 12.0. If you need to remove capture, use stable methods on the IPointer instance.,")]
+        [Unstable("This constructor might be removed in 12.0. If you need to remove capture, use stable methods on the IPointer instance.")]
         public PointerCaptureLostEventArgs(object source, IPointer pointer) : base(InputElement.PointerCaptureLostEvent)
         {
             Pointer = pointer;
             Source = source;
+        }
+    }
+
+    internal class PointerCaptureChangingEventArgs : RoutedEventArgs
+    {
+        public IPointer Pointer { get; }
+        public CaptureSource CaptureSource { get; }
+        public IInputElement? NewValue { get; }
+
+        internal PointerCaptureChangingEventArgs(object source, IPointer pointer, IInputElement? newValue, CaptureSource captureSource) : base(InputElement.PointerCaptureChangingEvent)
+        {
+            Pointer = pointer;
+            Source = source;
+            NewValue = newValue;
+            CaptureSource = captureSource;
         }
     }
 }

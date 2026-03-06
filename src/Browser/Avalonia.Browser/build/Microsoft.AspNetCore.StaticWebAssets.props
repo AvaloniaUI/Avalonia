@@ -10,7 +10,7 @@
       <SourceId>Avalonia.Browser</SourceId>
       <ContentRoot>$(_AvaloniaWebAssetsFolder)</ContentRoot>
       <BasePath>/</BasePath>
-      <RelativePath>$(WasmRuntimeAssetsLocation)/%(FileName)%(Extension)</RelativePath>
+      <RelativePath>$(_AvaloniaRuntimeAssetsLocation)/%(FileName)%(Extension)</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>All</AssetMode>
       <AssetRole>Primary</AssetRole>

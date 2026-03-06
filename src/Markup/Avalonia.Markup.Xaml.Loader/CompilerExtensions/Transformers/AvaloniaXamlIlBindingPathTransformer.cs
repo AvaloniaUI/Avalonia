@@ -14,7 +14,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         {
             if (node is XamlAstConstructableObjectNode binding && binding.Type.GetClrType().Equals(context.GetAvaloniaTypes().CompiledBindingExtension))
             {
-                IXamlType startType = null;
+                IXamlType? startType = null;
                 var sourceProperty = binding.Children.OfType<XamlPropertyAssignmentNode>().FirstOrDefault(c => c.Property.Name == "Source");
                 var dataTypeProperty = binding.Children.OfType<XamlPropertyAssignmentNode>().FirstOrDefault(c => c.Property.Name == "DataType");
                 if (sourceProperty?.Values.Count is 1)
@@ -23,11 +23,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     switch (sourceValue)
                     {
                         case XamlAstTextNode textNode:
-                            startType = textNode.Type?.GetClrType();
+                            startType = textNode.Type.GetClrType();
                             break;
 
                         case XamlMarkupExtensionNode extension:
-                            startType = extension.Type?.GetClrType();
+                            startType = extension.Type.GetClrType();
 
                             //let's try to infer StaticResource type from parent resources in xaml
                             if (extension.Value.Type.GetClrType().FullName == "Avalonia.Markup.Xaml.MarkupExtensions.StaticResourceExtension" &&
@@ -47,7 +47,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                 string getResourceValue_xKey(XamlPropertyAssignmentNode node)
                                     => node.Values.Count == 2 && node.Values[0] is XamlAstTextNode t ? t.Text : "";
 
-                                IXamlType getResourceValue_Type(XamlPropertyAssignmentNode node, IXamlType xamlType)
+                                IXamlType? getResourceValue_Type(XamlPropertyAssignmentNode node, IXamlType? xamlType)
                                     => node.Values.Count == 2 ? node.Values[1].Type.GetClrType() : xamlType;
 
                                 IEnumerable<XamlPropertyAssignmentNode> getResourceValues(IXamlAstNode node)
@@ -85,7 +85,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                                         .Where(o => styledElement.IsAssignableFrom(o.Type.GetClrType()))
                                                         .Select(o => o.Children.FirstOrDefault(p => matchProperty(p, styledElement, "Resources")))
                                                         .Where(r => r != null)
-                                                        .SelectMany(r => getResourceValues(r))
+                                                        .SelectMany(r => getResourceValues(r!))
                                                         .FirstOrDefault(r => getResourceValue_xKey(r) == key);
 
                                 if (resource != null)
@@ -96,7 +96,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             break;
 
                         case XamlStaticExtensionNode staticExtension:
-                            startType = staticExtension.Type?.GetClrType();
+                            startType = staticExtension.Type.GetClrType();
                             break;
                     }
                 }

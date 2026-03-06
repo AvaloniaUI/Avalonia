@@ -1,10 +1,8 @@
-using System;
 using Avalonia.Interactivity;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
-    public class TappedEventArgs : RoutedEventArgs
+    public class TappedEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     {
         private readonly PointerEventArgs lastPointerEventArgs;
 
@@ -17,7 +15,7 @@ namespace Avalonia.Input
         public IPointer Pointer => lastPointerEventArgs.Pointer;
         public KeyModifiers KeyModifiers => lastPointerEventArgs.KeyModifiers;
         public ulong Timestamp => lastPointerEventArgs.Timestamp;
-        
+
         public Point GetPosition(Visual? relativeTo) => lastPointerEventArgs.GetPosition(relativeTo);
     }
 }

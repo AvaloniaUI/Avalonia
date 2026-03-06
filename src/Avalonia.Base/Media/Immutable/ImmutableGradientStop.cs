@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Media.Immutable
+﻿using Avalonia.Utilities;
+
+namespace Avalonia.Media.Immutable
 {
     /// <summary>
     /// Describes the location and color of a transition point in a gradient.
@@ -7,7 +9,12 @@
     {
         public ImmutableGradientStop(double offset, Color color)
         {
-            Offset = offset;
+            if (MathUtilities.IsZero(offset))
+            {
+                offset = 0;
+            }
+
+            Offset = (offset < 0) ? 0 : (offset > 1) ? 1 : offset;
             Color = color;
         }
 

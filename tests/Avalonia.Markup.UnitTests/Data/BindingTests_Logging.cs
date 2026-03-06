@@ -2,14 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Controls;
-using Avalonia.Controls.Converters;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
-using Avalonia.Data.Core.Plugins;
 using Avalonia.Input;
 using Avalonia.Logging;
-using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.Reactive;
@@ -20,9 +17,9 @@ using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
-    public class BindingTests_Logging
+    public class BindingTests_Logging : ScopedTestBase
     {
-        public class DataContext
+        public class DataContext : ScopedTestBase
         {
             [Fact]
             public void Should_Not_Log_Missing_Member_On_Null_DataContext()
@@ -68,7 +65,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class Source
+        public class Source : ScopedTestBase
         {
             [Fact]
             public void Should_Log_Null_Source()
@@ -96,7 +93,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class LogicalAncestor
+        public class LogicalAncestor : ScopedTestBase
         {
             [Fact]
             public void Should_Log_Ancestor_Not_Found()
@@ -124,7 +121,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class VisualAncestor
+        public class VisualAncestor : ScopedTestBase
         {
             [Fact]
             public void Should_Log_Ancestor_Not_Found()
@@ -187,7 +184,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class NamedElement
+        public class NamedElement : ScopedTestBase
         {
             [Fact]
             public void Should_Log_NameScope_Not_Found()
@@ -233,7 +230,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class Converter
+        public class Converter : ScopedTestBase
         {
             [Fact]
             public void Should_Log_Error_For_Unconvertible_Type()
@@ -275,7 +272,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class Fallback
+        public class Fallback : ScopedTestBase
         {
             [Theory]
             [InlineData(true)]
@@ -305,8 +302,8 @@ namespace Avalonia.Markup.UnitTests.Data
             [InlineData(false)]
             public void Should_Log_Invalid_TargetNullValue(bool rooted)
             {
-                var target = new Decorator { };
-                var binding = new Binding() { TargetNullValue = "foo" };
+                var target = new Decorator { DataContext = new { Bar = (string?) null }  };
+                var binding = new Binding("Bar") { TargetNullValue = "foo" };
 
                 if (rooted)
                     new TestRoot(target);
@@ -314,7 +311,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 // An invalid target null value is invalid whether the control is rooted or not.
                 using (AssertLog(
                     target,
-                    "",
+                    binding.Path,
                     "Could not convert TargetNullValue 'foo' to 'System.Double'.",
                     level: LogEventLevel.Error,
                     property: Visual.OpacityProperty))
@@ -324,7 +321,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class NonControlDataContext
+        public class NonControlDataContext : ScopedTestBase
         {
             [Fact]
             public void Should_Not_Log_Missing_Member_On_Null_DataContext()
@@ -369,7 +366,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        public class CompiledBinding
+        public class CompiledBinding : ScopedTestBase
         {
             [Fact]
             public void Should_Log_For_Invalid_DataContext_Type()
@@ -485,6 +482,6 @@ namespace Avalonia.Markup.UnitTests.Data
             }
         }
 
-        private record LogMessage(LogEventLevel level, string area, object source, string messageTemplate, params object[] propertyValues);
+        private record LogMessage(LogEventLevel level, string area, object? source, string messageTemplate, params object?[] propertyValues);
     }
 }

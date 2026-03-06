@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -200,7 +201,7 @@ namespace Avalonia.PropertyStore
         {
             if (property.ValidateValue?.Invoke(value) == false)
             {
-                throw new ArgumentException($"{value} is not a valid value for '{property.Name}.");
+                throw new ArgumentException($"{value} is not a valid value for '{property.Name}'.");
             }
 
             if (priority != BindingPriority.LocalValue)
@@ -290,6 +291,42 @@ namespace Avalonia.PropertyStore
             if (property.Inherits && TryGetInheritedValue(property, out v))
                 return CastEffectiveValue<T>(v).Value;
             return property.GetDefaultValue(Owner);
+        }
+
+        public BindingExpressionBase? GetExpression(AvaloniaProperty property)
+        {
+            var evaluatedLocalValue = false;
+
+            bool TryGetLocalValue(out BindingExpressionBase? result)
+            {
+                if (!evaluatedLocalValue)
+                {
+                    evaluatedLocalValue = true;
+
+                    if (_localValueBindings?.TryGetValue(property.Id, out var o) == true)
+                    {
+                        result = o as BindingExpressionBase;
+                        return true;
+                    }
+                }
+
+                result = null;
+                return false;
+            }
+
+            for (var i = _frames.Count - 1; i >= 0; --i)
+            {
+                var frame = _frames[i];
+
+                if (frame.Priority > BindingPriority.LocalValue && TryGetLocalValue(out var localExpression))
+                    return localExpression;
+
+                if (frame.TryGetEntryIfActive(property, out var entry, out _))
+                    return entry as BindingExpressionBase;
+            }
+
+            TryGetLocalValue(out var e);
+            return e;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -468,7 +505,6 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="entry">The binding entry.</param>
         /// <param name="priority">The priority of binding which produced a new value.</param>
-        [Obsolete("TODO: Remove?")]
         public void OnBindingValueChanged(
             IValueEntry entry,
             BindingPriority priority)
@@ -555,10 +591,13 @@ namespace Avalonia.PropertyStore
                 return;
 
             var count = children.Count;
+            
+            var apArgs = new AvaloniaPropertyChangedEventArgs<T>(Owner, property, oldValue, value.Value, BindingPriority.Inherited, true);
+            var incpArgs = new PropertyChangedEventArgs(property.Name);
 
             for (var i = 0; i < count; ++i)
             {
-                children[i].GetValueStore().OnAncestorInheritedValueChanged(property, oldValue, value.Value);
+                children[i].GetValueStore().OnAncestorInheritedValueChanged(apArgs, incpArgs);
             }
         }
 
@@ -579,9 +618,12 @@ namespace Avalonia.PropertyStore
             {
                 var count = children.Count;
 
+                var apArgs = new AvaloniaPropertyChangedEventArgs<T>(Owner, property, oldValue, newValue, BindingPriority.Inherited, true);
+                var incpArgs = new PropertyChangedEventArgs(property.Name);
+
                 for (var i = 0; i < count; ++i)
                 {
-                    children[i].GetValueStore().OnAncestorInheritedValueChanged(property, oldValue, newValue);
+                    children[i].GetValueStore().OnAncestorInheritedValueChanged(apArgs, incpArgs);
                 }
             }
         }
@@ -592,7 +634,6 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="property">The previously bound property.</param>
         /// <param name="observer">The observer.</param>
-        [Obsolete("TODO: Remove?")]
         public void OnLocalValueBindingCompleted(AvaloniaProperty property, IDisposable observer)
         {
             if (_localValueBindings is not null &&
@@ -605,33 +646,24 @@ namespace Avalonia.PropertyStore
                 }
             }
         }
-
+        
         /// <summary>
         /// Called when an inherited property changes on the value store of the inheritance ancestor.
         /// </summary>
         /// <typeparam name="T">The property type.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="oldValue">The old value of the property.</param>
-        /// <param name="newValue">The new value of the property.</param>
-        public void OnAncestorInheritedValueChanged<T>(
-            StyledProperty<T> property,
-            T oldValue,
-            T newValue)
+        /// <param name="apArgs">Avalonia Property EventArgs to reuse.</param>
+        /// <param name="args">PropertyChangedEventArgs to reuse</param>
+        public void OnAncestorInheritedValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> apArgs, PropertyChangedEventArgs? args)
         {
-            Debug.Assert(property.Inherits);
-
+            
             // If the inherited value is set locally, propagation stops here.
-            if (_effectiveValues.ContainsKey(property))
+            if (_effectiveValues.ContainsKey(apArgs.Property))
                 return;
 
-            using var notifying = PropertyNotifying.Start(Owner, property);
+            using var notifying = PropertyNotifying.Start(Owner, apArgs.Property);
 
-            Owner.RaisePropertyChanged(
-                property,
-                oldValue,
-                newValue,
-                BindingPriority.Inherited,
-                true);
+            apArgs.SetSender(Owner);
+            Owner.RaisePropertyChanged(apArgs, args);
 
             var children = Owner.GetInheritanceChildren();
 
@@ -642,7 +674,7 @@ namespace Avalonia.PropertyStore
 
             for (var i = 0; i < count; ++i)
             {
-                children[i].GetValueStore().OnAncestorInheritedValueChanged(property, oldValue, newValue);
+                children[i].GetValueStore().OnAncestorInheritedValueChanged(apArgs, args);
             }
         }
 

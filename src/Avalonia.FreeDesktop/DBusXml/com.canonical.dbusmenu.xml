@@ -322,7 +322,7 @@ License version 3 and version 2.1 along with this program.  If not, see
 				<dox:d>event-specific data</dox:d>
 			</arg>
 			<arg type="u" name="timestamp" direction="in" >
-				<dox:d>The time that the event occured if available or the time the message was sent if not</dox:d>
+				<dox:d>The time that the event occurred if available or the time the message was sent if not</dox:d>
 			</arg>
 		</method>
 
@@ -427,7 +427,7 @@ License version 3 and version 2.1 along with this program.  If not, see
 				<dox:d>ID of the menu that should be activated</dox:d>
 			</arg>
 			<arg type="u" name="timestamp" direction="out" >
-				<dox:d>The time that the event occured</dox:d>
+				<dox:d>The time that the event occurred</dox:d>
 			</arg>
 		</signal>
 

@@ -12,8 +12,8 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
         private readonly EvDevDeviceDescription[] _deviceDescriptions;
         private readonly List<EvDevDeviceHandler> _handlers = new List<EvDevDeviceHandler>();
         private int _epoll;
-        private Action<RawInputEventArgs> _onInput;
-        private IInputRoot _inputRoot;
+        private Action<RawInputEventArgs>? _onInput;
+        private IInputRoot? _inputRoot;
 
         public EvDevBackend(EvDevDeviceDescription[] devices)
         {
@@ -53,7 +53,7 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
             for (var c = 0; c < _deviceDescriptions.Length; c++)
             {
                 var description = _deviceDescriptions[c];
-                var dev = EvDevDevice.Open(description.Path);
+                var dev = EvDevDevice.Open(description.Path ?? string.Empty);
                 EvDevDeviceHandler handler;
                 if (description is EvDevTouchScreenDeviceDescription touch)
                     handler = new EvDevSingleTouchScreen(dev, touch, info) { InputRoot = _inputRoot };
@@ -86,7 +86,7 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
             {
                 if (key.StartsWith("AVALONIA_EVDEV_DEVICE_"))
                 {
-                    var value = (string)env[key];
+                    var value = (string)env[key]!;
                     deviceDescriptions.Add(EvDevDeviceDescription.ParseFromEnv(value));
                 }
             }

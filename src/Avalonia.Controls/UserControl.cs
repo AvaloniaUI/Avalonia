@@ -1,3 +1,5 @@
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls
@@ -7,6 +9,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class UserControl : ContentControl
     {
-
+        protected override AutomationPeer OnCreateAutomationPeer() => new UserControlAutomationPeer(this);
     }
 }

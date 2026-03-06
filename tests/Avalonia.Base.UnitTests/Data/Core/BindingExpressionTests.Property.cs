@@ -226,6 +226,26 @@ namespace Avalonia.Base.UnitTests.Data.Core
             GC.KeepAlive(data);
         }
 
+        [Fact]
+        public void Converter_Should_Be_Called_On_PropertyChanged_Even_If_Property_Not_Changed()
+        {
+            // Issue #16137
+            var data = new ViewModel();
+            var converter = new PrefixConverter("foo");
+            var target = CreateTargetWithSource(
+                data,
+                o => o.IntValue,
+                converter: converter,
+                targetProperty: TargetClass.StringProperty);
+
+            Assert.Equal("foo0", target.String);
+
+            converter.Prefix = "bar";
+            data.RaisePropertyChanged(nameof(data.IntValue));
+
+            Assert.Equal("bar0", target.String);
+        }
+
         private class DerivedViewModel : ViewModel
         {
         }

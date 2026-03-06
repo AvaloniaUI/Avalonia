@@ -53,7 +53,7 @@ namespace Avalonia.Media
             {
                 for (int i = 0; i < points.Count; i++)
                 {
-                    ctx.LineTo(points[i]);
+                    ctx.LineTo(points[i], IsStroked);
                 }
             }
         }

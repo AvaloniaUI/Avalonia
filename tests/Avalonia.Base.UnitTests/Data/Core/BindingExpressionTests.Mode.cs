@@ -1,6 +1,5 @@
 using Avalonia.Data;
 using Xunit;
-using Xunit.Sdk;
 
 #nullable enable
 
@@ -9,21 +8,64 @@ namespace Avalonia.Base.UnitTests.Data.Core;
 public partial class BindingExpressionTests
 {
     [Fact]
-    public void OneTime_Binding_Sets_Target_Only_Once()
+    public void OneTime_Binding_Sets_Target_Only_Once_If_Data_Context_Does_Not_Change()
     {
-        var data = new ViewModel { StringValue = "foo" };
-        var target = CreateTargetWithSource(data, x => x.StringValue, mode: BindingMode.OneTime);
+        var data = new ViewModel { Next = new ViewModel { StringValue = "foo" } };
+        var target = CreateTarget<ViewModel, string?>(x => x.Next!.StringValue, mode: BindingMode.OneTime);
+        target.DataContext = data;
 
         Assert.Equal("foo", target.String);
 
-        data.StringValue = "bar";
+        data.Next!.StringValue = "bar";
         Assert.Equal("foo", target.String);
+
+        data.Next = new ViewModel { StringValue = "baz" };
+        Assert.Equal("foo", target.String);
+    }
+
+    [Fact]
+    public void OneTime_Binding_With_Simple_Path_Sets_Target_When_Data_Context_Changes()
+    {
+        var data1 = new ViewModel { StringValue = "foo" };
+        var target = CreateTarget<ViewModel, string?>(x => x.StringValue, mode: BindingMode.OneTime);
+        target.DataContext = data1;
+
+        Assert.Equal("foo", target.String);
+
+        var data2 = new ViewModel { StringValue = "bar" };
+        target.DataContext = data2;
+        Assert.Equal("bar", target.String);
+    }
+
+    [Fact]
+    public void OneTime_Binding_With_Complex_Path_Sets_Target_When_Data_Context_Changes()
+    {
+        var data1 = new ViewModel { Next = new ViewModel { StringValue = "foo" } };
+        var target = CreateTarget<ViewModel, string?>(x => x.Next!.StringValue, mode: BindingMode.OneTime);
+        target.DataContext = data1;
+
+        Assert.Equal("foo", target.String);
+
+        var data2 = new ViewModel { Next = new ViewModel { StringValue = "bar" } };
+        target.DataContext = data2;
+        Assert.Equal("bar", target.String);
+    }
+
+    [Fact]
+    public void OneTime_Binding_Without_Path_Sets_Target_When_Data_Context_Changes()
+    {
+        var target = CreateTarget<string, string?>(x => x, mode: BindingMode.OneTime);
+        target.DataContext = "foo";
+
+        Assert.Equal("foo", target.String);
+
+        target.DataContext = "bar";
+        Assert.Equal("bar", target.String);
     }
 
     [Fact]
     public void OneTime_Binding_Waits_For_DataContext()
     {
-        var data = new ViewModel { StringValue = "foo" };
         var target = CreateTarget<ViewModel, string?>(
             x => x.StringValue,
             mode: BindingMode.OneTime);
@@ -67,6 +109,31 @@ public partial class BindingExpressionTests
 
         data2.DoubleValue = 0.2;
         Assert.Equal(0.5, target.Double);
+    }
+
+    [Fact]
+    public void OneTime_Binding_Waits_For_DataContext_Without_Property_Path()
+    {
+        var target = CreateTarget<string?, string?>(
+            x => x,
+            mode: BindingMode.OneTime);
+
+        target.DataContext = "foo";
+
+        Assert.Equal("foo", target.String);
+    }
+
+    [Fact]
+    public void OneTime_Binding_Waits_For_DataContext_Without_Property_Path_With_StringFormat()
+    {
+        var target = CreateTarget<string?, string?>(
+            x => x,
+            mode: BindingMode.OneTime,
+            stringFormat: "bar: {0}");
+
+        target.DataContext = "foo";
+
+        Assert.Equal("bar: foo", target.String);
     }
 
     [Fact]

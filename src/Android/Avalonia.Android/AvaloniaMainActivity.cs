@@ -8,55 +8,40 @@ namespace Avalonia.Android;
 
 public class AvaloniaMainActivity : AvaloniaActivity
 {
-    private protected static SingleViewLifetime? Lifetime;
-
-    public override void OnCreate(Bundle? savedInstanceState, PersistableBundle? persistentState)
+    private protected override void InitializeAvaloniaView(object? initialContent)
     {
-        // Global IActivatableLifetime expects a main activity, so we need to replace it on each OnCreate.
+        if (Application is IAndroidApplication application && application.Lifetime is { } lifetime)
+        {
+            initialContent ??= lifetime.MainViewFactory?.Invoke();
+
+            _view = new AvaloniaView(this);
+
+            Content = initialContent;
+        }
+
+        if (_view is null)
+            throw new InvalidOperationException("Unknown error: AvaloniaView initialization has failed.");
+    }
+
+    protected override void OnResume()
+    {
+        base.OnResume();
+
         if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
             is AndroidActivatableLifetime activatableLifetime)
         {
-            activatableLifetime.Activity = this;
+            activatableLifetime.CurrentMainActivity = this;
         }
-
-        base.OnCreate(savedInstanceState, persistentState);
     }
 
-    private protected override void InitializeAvaloniaView(object? initialContent)
+    protected override void OnDestroy()
     {
-        // Android can run OnCreate + InitializeAvaloniaView multiple times per process lifetime.
-        // On each call we need to create new AvaloniaView, but we can't recreate Avalonia nor Avalonia controls.
-        // So, if lifetime was already created previously - recreate AvaloniaView.
-        // If not, initialize Avalonia, and create AvaloniaView inside of AfterSetup callback.
-        // We need this AfterSetup callback to match iOS/Browser behavior and ensure that view/toplevel is available in custom AfterSetup calls.
-        if (Lifetime is not null)
+        base.OnDestroy();
+
+        if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
+            is AndroidActivatableLifetime activatableLifetime && activatableLifetime.CurrentMainActivity == this)
         {
-            initialContent ??= Lifetime.MainView; 
-
-            Lifetime.Activity = this;
-            _view = new AvaloniaView(this) { Content = initialContent };
-        }
-        else
-        {
-            var builder = CreateAppBuilder();
-            builder = CustomizeAppBuilder(builder);
-
-            Lifetime = new SingleViewLifetime();
-            Lifetime.Activity = this;
- 
-            builder
-                .AfterApplicationSetup(_ =>
-                {
-                    _view = new AvaloniaView(this) { Content = initialContent };
-                })
-                .SetupWithLifetime(Lifetime);
-
-            // AfterPlatformServicesSetup should always be called. If it wasn't, we have an unusual problem.
-            if (_view is null)
-                throw new InvalidOperationException("Unknown error: AvaloniaView initialization has failed.");
+            activatableLifetime.CurrentMainActivity = null;
         }
     }
-
-    protected virtual AppBuilder CreateAppBuilder() => AppBuilder.Configure<Application>().UseAndroid();
-    protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
 }

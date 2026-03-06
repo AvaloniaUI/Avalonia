@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -18,6 +18,7 @@ using Avalonia.Utilities;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
+using System.Collections.Generic;
 
 namespace Avalonia
 {
@@ -55,7 +56,8 @@ namespace Avalonia.Win32
         }
 
         internal static Win32Platform Instance => s_instance;
-        internal static IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
+        internal IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
+        internal ScreenImpl Screen => (ScreenImpl)AvaloniaLocator.Current.GetRequiredService<IScreenImpl>();
 
         internal IntPtr Handle => _hwnd;
 
@@ -83,14 +85,19 @@ namespace Avalonia.Win32
 
             SetDpiAwareness();
 
+            Dispatcher.InitializeUIThreadDispatcher(s_instance._dispatcher);
+            
             var renderTimer = options.ShouldRenderOnUIThread ? new UiThreadRenderTimer(60) : new DefaultRenderTimer(60);
+            var clipboardImpl = new ClipboardImpl();
+            var clipboard = new Clipboard(clipboardImpl);
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
+                .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
+                .Bind<IClipboard>().ToConstant(clipboard)
                 .Bind<ICursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
                 .Bind<IPlatformSettings>().ToSingleton<Win32PlatformSettings>()
-                .Bind<IDispatcherImpl>().ToConstant(s_instance._dispatcher)
+                .Bind<IScreenImpl>().ToSingleton<ScreenImpl>()
                 .Bind<IRenderTimer>().ToConstant(renderTimer)
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control)
@@ -101,6 +108,7 @@ namespace Avalonia.Win32
                         new KeyGesture(Key.F10, KeyModifiers.Shift)
                     }
                 })
+                .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Win"))
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(NonPumpingWaitHelperImpl.Instance)
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
@@ -144,11 +152,22 @@ namespace Avalonia.Win32
             {
                 if (ShutdownRequested != null)
                 {
-                    var e = new ShutdownRequestedEventArgs();
+                    // https://learn.microsoft.com/en-us/windows/win32/shutdown/wm-queryendsession
+                    // > LPARAM lParam   // logoff option
+                    // >
+                    // > This parameter can be one or more of the following values. If this parameter is 0, the system is shutting down or restarting (it is not possible to determine which event is occurring).
+                    // >
+                    // > - ENDSESSION_CLOSEAPP 0x00000001 The application is using a file that must be replaced, the system is being serviced, or system resources are exhausted. For more information, see Guidelines for Applications.
+                    // > - ENDSESSION_CRITICAL 0x40000000 The application is forced to shut down.
+                    // > - ENDSESSION_LOGOFF 0x80000000 The user is logging off.
+                    var e = new ShutdownRequestedEventArgs()
+                    {
+                        IsOSShutdown = lParam == IntPtr.Zero,
+                    };
 
                     ShutdownRequested(this, e);
 
-                    if(e.Cancel)
+                    if (e.Cancel)
                     {
                         return IntPtr.Zero;
                     }
@@ -203,6 +222,8 @@ namespace Avalonia.Win32
             {
                 throw new Win32Exception();
             }
+
+            TrayIconImpl.ChangeWindowMessageFilter(_hwnd);
         }
 
         public ITrayIconImpl CreateTrayIcon()
@@ -215,10 +236,12 @@ namespace Avalonia.Win32
             return new WindowImpl();
         }
 
+        public ITopLevelImpl CreateEmbeddableTopLevel() => CreateEmbeddableWindow();
+
         public IWindowImpl CreateEmbeddableWindow()
         {
             var embedded = new EmbeddedWindowImpl();
-            embedded.Show(true, false);
+            embedded.Show(false, false);
             return embedded;
         }
 
@@ -300,6 +323,34 @@ namespace Avalonia.Win32
 
             if (dpiAwareness != Win32DpiAwareness.Unaware)
                 SetProcessDPIAware();
+        }
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+        {
+            var handlesToIndex = new Dictionary<IntPtr, int>(windows.Length);
+            var outputArray = new long[windows.Length];
+
+            for (int i = 0; i < windows.Length; i++)
+            {
+                if (windows[i] is WindowImpl platformImpl)
+                    handlesToIndex.Add(platformImpl.Handle.Handle, i);
+            }
+
+            long nextZOrder = 0;
+            bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam)
+            {
+                if (handlesToIndex.TryGetValue(hWnd, out var index))
+                {
+                    // We negate the z-order so that the topmost window has the highest number.
+                    outputArray[index] = -nextZOrder;
+                    nextZOrder++;
+                }
+                return nextZOrder < outputArray.Length;
+            }
+
+            EnumChildWindows(IntPtr.Zero, EnumWindowsProc, IntPtr.Zero);
+
+            outputArray.CopyTo(zOrder);
         }
     }
 }

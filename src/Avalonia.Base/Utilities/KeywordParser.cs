@@ -2,10 +2,7 @@ using System;
 
 namespace Avalonia.Utilities
 {
-#if !BUILDTASK
-    public
-#endif
-    static class KeywordParser
+    internal static class KeywordParser
     {
         public static bool CheckKeyword(this ref CharacterReader r, string keyword)
         {

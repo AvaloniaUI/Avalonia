@@ -1,10 +1,15 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using Avalonia.Controls.Embedding;
+using Avalonia.Input;
+using Avalonia.Input.Raw;
+using Avalonia.Reactive;
 using Avalonia.Win32.Interop;
-using WinFormsControl = System.Windows.Forms.Control;
 using AvControl = Avalonia.Controls.Control;
+using WinFormsControl = System.Windows.Forms.Control;
 
 namespace Avalonia.Win32.Interoperability;
 
@@ -12,10 +17,11 @@ namespace Avalonia.Win32.Interoperability;
 /// An element that allows you to host a Avalonia control on a Windows Forms page.
 /// </summary>
 [ToolboxItem(true)]
-public class WinFormsAvaloniaControlHost : WinFormsControl
+public class WinFormsAvaloniaControlHost : WinFormsControl, IMessageFilter
 {
     private AvControl? _content;
     private EmbeddableControlRoot? _root;
+    private IDisposable? _postProcessInputDisposable;
 
     private IntPtr WindowHandle => _root?.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
 
@@ -25,11 +31,35 @@ public class WinFormsAvaloniaControlHost : WinFormsControl
     public WinFormsAvaloniaControlHost()
     {
         SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+
+        var inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
+
+        if(inputManager != null )
+        {
+            _postProcessInputDisposable = inputManager.PostProcess.Subscribe(new AnonymousObserver<RawInputEventArgs>(PostProcessInput));
+        }
+    }
+
+    private void PostProcessInput(RawInputEventArgs args)
+    {
+        if (_root?.IsKeyboardFocusWithin == false)
+            return;
+
+        if(!args.Handled && args is RawTextInputEventArgs textArgs)
+        {
+            var text = textArgs.Text;
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                args.Handled = this.ProcessDialogChar(text[0]);
+            }
+        }
     }
 
     /// <summary>
     /// Gets or sets the Avalonia control hosted by the <see cref="WinFormsAvaloniaControlHost"/> element.
     /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public AvControl? Content
     {
         get => _content;
@@ -49,21 +79,29 @@ public class WinFormsAvaloniaControlHost : WinFormsControl
     /// <inheritdoc />
     protected override void OnHandleCreated(EventArgs e)
     {
-        _root = new();
-        _root.Content = _content;
-        _root.Prepare();
-        _root.StartRendering();
-        _root.GotFocus += RootGotFocus;
+        // EmbeddableControlRoot requires Avalonia to be initialized which is not done by the Windows Forms designer.
+        if (!DesignMode)
+        {
+            _root = new();
+            _root.Content = _content;
+            _root.Prepare();
+            _root.StartRendering();
+            _root.GotFocus += RootGotFocus;
 
-        FixPosition();
-        
-        UnmanagedMethods.SetParent(WindowHandle, Handle);
+            FixPosition();
+
+            UnmanagedMethods.SetParent(WindowHandle, Handle);
+        }
+
         base.OnHandleCreated(e);
+
+        System.Windows.Forms.Application.AddMessageFilter(this);
     }
 
     /// <inheritdoc />
     protected override void OnHandleDestroyed(EventArgs e)
     {
+        System.Windows.Forms.Application.RemoveMessageFilter(this);
         _root?.StopRendering();
         _root?.Dispose();
         _root = null;
@@ -78,6 +116,8 @@ public class WinFormsAvaloniaControlHost : WinFormsControl
             _root?.Dispose();
             _root = null;
         }
+        _postProcessInputDisposable?.Dispose();
+        _postProcessInputDisposable = null;
         base.Dispose(disposing);
     }
 
@@ -93,14 +133,14 @@ public class WinFormsAvaloniaControlHost : WinFormsControl
         if (handle != default)
             UnmanagedMethods.SetFocus(handle);
     }
-        
+
     private void FixPosition()
     {
         var handle = WindowHandle;
         if (handle != default && Width > 0 && Height > 0)
             UnmanagedMethods.MoveWindow(handle, 0, 0, Width, Height, true);
     }
-        
+
     /// <inheritdoc />
     protected override void OnResize(EventArgs e)
     {
@@ -111,6 +151,48 @@ public class WinFormsAvaloniaControlHost : WinFormsControl
     /// <inheritdoc />
     protected override void OnPaint(PaintEventArgs e)
     {
+        if (DesignMode)
+        {
+            const string message = "Avalonia control is disabled in design mode.";
 
+            using var pen = new Pen(SystemBrushes.ControlDark);
+            var outline = ClientSize - new SizeF(pen.Width, pen.Width);
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.DrawRectangle(pen, 0, 0, outline.Width, outline.Height);
+            e.Graphics.DrawLine(pen, 0, 0, outline.Width, outline.Height);
+            e.Graphics.DrawLine(pen, 0, outline.Height, outline.Width, 0);
+
+            var messageSize = e.Graphics.MeasureString(message, Font, ClientSize);
+            var messageLocation = new PointF(ClientSize.Width / 2 - messageSize.Width / 2, ClientSize.Height / 2 - messageSize.Height / 2);
+            var messageArea = new RectangleF(messageLocation, messageSize);
+            e.Graphics.DrawString(message, Font, SystemBrushes.ControlText, messageArea);
+        }
+    }
+
+    protected override bool IsInputChar(char charCode)
+    {
+        return true;
+    }
+
+    public bool PreFilterMessage(ref Message m)
+    {
+        var message = (UnmanagedMethods.WindowsMessage)m.Msg;
+
+        switch (message)
+        {
+            case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_NCMBUTTONDOWN:
+            case UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN:
+                if (_root?.PlatformImpl is WindowImpl impl && !impl.IsOurWindow(m.HWnd))
+                {
+                    impl.Deactivated?.Invoke();
+                }
+                break;
+        }
+
+        return false;
     }
 }

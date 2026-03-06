@@ -182,18 +182,18 @@ namespace Avalonia.Media
                     break;
             }
 
-            var origin = new Point();
+            var origin = baselineOrigin;
 
             switch (Location)
             {
-                case TextDecorationLocation.Baseline:
-                    origin += glyphRun.BaselineOrigin;
+                case TextDecorationLocation.Overline:
+                    origin += new Point(0, textMetrics.Ascent);
                     break;
                 case TextDecorationLocation.Strikethrough:
-                    origin += new Point(baselineOrigin.X, baselineOrigin.Y + textMetrics.StrikethroughPosition);
+                    origin += new Point(0, textMetrics.StrikethroughPosition);
                     break;
                 case TextDecorationLocation.Underline:
-                    origin += new Point(baselineOrigin.X, baselineOrigin.Y + textMetrics.UnderlinePosition);
+                    origin += new Point(0, textMetrics.UnderlinePosition);
                     break;
             }
 
@@ -255,7 +255,10 @@ namespace Avalonia.Media
                 }
             }
 
-            drawingContext.DrawLine(pen, origin, origin + new Point(glyphRun.Metrics.Width, 0));
+            var p1 = origin;
+            var p2 = p1 + new Point(glyphRun.Metrics.Width, 0);
+
+            drawingContext.DrawLine(pen, p1, p2);
         }
     }
 }

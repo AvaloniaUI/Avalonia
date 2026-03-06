@@ -16,7 +16,6 @@
 	<array>
 		<integer>1</integer>
 		<integer>2</integer>
-        <integer>3</integer>
 	</array>
     <key>UIRequiredDeviceCapabilities</key>
     <array>
@@ -38,5 +37,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
 </dict>
 </plist>

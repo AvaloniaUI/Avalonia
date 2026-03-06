@@ -18,7 +18,8 @@ namespace Avalonia.Controls.Primitives
         Day,
         Hour,
         Minute,
-        TimePeriod //AM or PM
+        TimePeriod, //AM or PM
+        Second,
     }
 
     public class DateTimePickerPanel : Panel, ILogicalScrollable
@@ -233,7 +234,7 @@ namespace Avalonia.Controls.Primitives
                         else
                             break;
                     }
-                    children.MoveRange(0, numCountsToMove, children.Count);
+                    children.MoveRange(0, numCountsToMove, children.Count - 1);
 
                     var scrollHeight = _extent.Height - Viewport.Height;
                     if (ShouldLoop && value.Y >= scrollHeight - _extentOne)
@@ -351,13 +352,13 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnAttachedToVisualTree(e);
             _parentScroller = this.GetVisualParent() as ScrollContentPresenter;
-            _parentScroller?.AddHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
+            _parentScroller?.AddHandler(InputElement.ScrollGestureEndedEvent, OnScrollGestureEnded);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            _parentScroller?.RemoveHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
+            _parentScroller?.RemoveHandler(InputElement.ScrollGestureEndedEvent, OnScrollGestureEnded);
             _parentScroller = null;
         }
 
@@ -516,6 +517,8 @@ namespace Avalonia.Controls.Primitives
                     return new TimeSpan(value, 0, 0).ToString(ItemFormat);
                 case DateTimePickerPanelType.Minute:
                     return new TimeSpan(0, value, 0).ToString(ItemFormat);
+                case DateTimePickerPanelType.Second:
+                    return new TimeSpan(0, 0, value).ToString(ItemFormat);
                 case DateTimePickerPanelType.TimePeriod:
                     return value == MinimumValue ? TimeUtils.GetAMDesignator() : TimeUtils.GetPMDesignator();
                 default:

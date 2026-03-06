@@ -14,7 +14,7 @@ namespace Avalonia.Controls
     /// </summary>
     [TemplatePart("PART_HorizontalScrollBar", typeof(ScrollBar))]
     [TemplatePart("PART_VerticalScrollBar",   typeof(ScrollBar))]
-    public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider, IInternalScroller
+    public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
         /// <summary>
         /// Defines the <see cref="BringIntoViewOnFocusChange "/> property.
@@ -284,7 +284,7 @@ namespace Avalonia.Controls
             get => HorizontalScrollBarVisibility != ScrollBarVisibility.Disabled;
         }
 
-        bool IInternalScroller.CanHorizontallyScroll => CanHorizontallyScroll;
+        bool IScrollable.CanHorizontallyScroll => CanHorizontallyScroll;
 
         /// <summary>
         /// Gets a value indicating whether the viewer can scroll vertically.
@@ -294,7 +294,7 @@ namespace Avalonia.Controls
             get => VerticalScrollBarVisibility != ScrollBarVisibility.Disabled;
         }
 
-        bool IInternalScroller.CanVerticallyScroll => CanVerticallyScroll;
+        bool IScrollable.CanVerticallyScroll => CanVerticallyScroll;
 
         /// <inheritdoc/>
         public Control? CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;

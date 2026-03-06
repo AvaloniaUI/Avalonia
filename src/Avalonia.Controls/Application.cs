@@ -30,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IApplicationPlatformEvents, IOptionalFeatureProvider
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IThemeVariantHost, IResourceHost, IOptionalFeatureProvider
     {
         /// <summary>
         /// The application-global data templates.
@@ -39,7 +39,6 @@ namespace Avalonia
 
         private Styles? _styles;
         private IResourceDictionary? _resources;
-        private bool _notifyingResourcesChanged;
         private Action<IReadOnlyList<IStyle>>? _stylesAdded;
         private Action<IReadOnlyList<IStyle>>? _stylesRemoved;
         private IApplicationLifetime? _applicationLifetime;
@@ -61,9 +60,6 @@ namespace Avalonia
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
-
-        [Obsolete("Use Application.Current.TryGetFeature<IActivatableLifetime>() instead.")]
-        public event EventHandler<UrlOpenedEventArgs>? UrlsOpened;
 
         /// <inheritdoc/>
         public event EventHandler? ActualThemeVariantChanged;
@@ -178,8 +174,8 @@ namespace Avalonia
         /// Currently supported lifetimes are:
         /// - <see cref="IClassicDesktopStyleApplicationLifetime"/>
         /// - <see cref="ISingleViewApplicationLifetime"/>
-        /// - <see cref="IControlledApplicationLifetime"/> 
-        /// - <see cref="IActivatableApplicationLifetime"/> 
+        /// - <see cref="ISingleTopLevelApplicationLifetime"/>
+        /// - <see cref="IControlledApplicationLifetime"/>
         /// </summary>
         public IApplicationLifetime? ApplicationLifetime
         {
@@ -252,7 +248,6 @@ namespace Avalonia
         public virtual void RegisterServices()
         {
             AvaloniaSynchronizationContext.InstallIfNeeded();
-            var focusManager = new FocusManager();
             InputManager = new InputManager();
 
             if (PlatformSettings is { } settings)
@@ -266,7 +261,6 @@ namespace Avalonia
                 .Bind<IGlobalDataTemplates>().ToConstant(this)
                 .Bind<IGlobalStyles>().ToConstant(this)
                 .Bind<IThemeVariantHost>().ToConstant(this)
-                .Bind<IFocusManager>().ToConstant(focusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
                 .Bind< IToolTipService>().ToConstant(new ToolTipService(InputManager))
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
@@ -285,34 +279,6 @@ namespace Avalonia
 
         public virtual void OnFrameworkInitializationCompleted()
         {
-        }
-        
-        void IApplicationPlatformEvents.RaiseUrlsOpened(string[] urls)
-        {
-            UrlsOpened?.Invoke(this, new UrlOpenedEventArgs (urls));
-        }
-
-        private void NotifyResourcesChanged(ResourcesChangedEventArgs e)
-        {
-            if (_notifyingResourcesChanged)
-            {
-                return;
-            }
-
-            try
-            {
-                _notifyingResourcesChanged = true;
-                ResourcesChanged?.Invoke(this, ResourcesChangedEventArgs.Empty);
-            }
-            finally
-            {
-                _notifyingResourcesChanged = false;
-            }
-        }
-
-        private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
-        {
-            NotifyResourcesChanged(e);
         }
 
         private string? _name;

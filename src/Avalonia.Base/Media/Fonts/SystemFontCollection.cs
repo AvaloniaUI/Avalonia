@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using Avalonia.Platform;
 
@@ -9,133 +9,137 @@ namespace Avalonia.Media.Fonts
 {
     internal class SystemFontCollection : FontCollectionBase
     {
-        private readonly FontManager _fontManager;
-        private readonly List<string> _familyNames;
+        private readonly IFontManagerImpl _platformImpl;
 
-        public SystemFontCollection(FontManager fontManager)
+        public SystemFontCollection(IFontManagerImpl platformImpl)
         {
-            _fontManager = fontManager;
-            _familyNames = fontManager.PlatformImpl.GetInstalledFontFamilyNames().ToList();
+            _platformImpl = platformImpl ?? throw new ArgumentNullException(nameof(platformImpl));
+
+            var familyNames = _platformImpl.GetInstalledFontFamilyNames().Where(x => !string.IsNullOrEmpty(x));
+
+            foreach (var familyName in familyNames)
+            {
+                AddFontFamily(familyName);
+            }
         }
 
         public override Uri Key => FontManager.SystemFontsKey;
 
-        public override FontFamily this[int index]
-        {
-            get
-            {
-                var familyName = _familyNames[index];
-
-                return new FontFamily(familyName);
-            }
-        }
-
-        public override int Count => _familyNames.Count;
-
-        public override IEnumerator<FontFamily> GetEnumerator()
-        {
-            foreach (var familyName in _familyNames)
-            {
-                yield return new FontFamily(familyName);
-            }
-        }
-
         public override bool TryGetGlyphTypeface(string familyName, FontStyle style, FontWeight weight,
-            FontStretch stretch, [NotNullWhen(true)] out IGlyphTypeface? glyphTypeface)
+            FontStretch stretch, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
-            glyphTypeface = null;
+            var typeface = new Typeface(familyName, style, weight, stretch).Normalize(out familyName);
 
-            var key = new FontCollectionKey(style, weight, stretch);
+            if (base.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
+            {
+                return true;
+            }
 
-            var glyphTypefaces = _glyphTypefaceCache.GetOrAdd(familyName,
-                (_) => new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>());
+            var key = typeface.ToFontCollectionKey();
 
-            if (glyphTypefaces.TryGetValue(key, out glyphTypeface))
+            //Check cache first to avoid unnecessary calls to the font manager
+            if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces) && glyphTypefaces.TryGetValue(key, out glyphTypeface))
             {
                 return glyphTypeface != null;
             }
 
-            if(!_fontManager.PlatformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface) || 
-                !glyphTypeface.FamilyName.Contains(familyName))
+            //Try to create the glyph typeface via system font manager
+            if (!_platformImpl.TryCreateGlyphTypeface(familyName, style, weight, stretch, out var platformTypeface))
             {
-                //Try to find nearest match if possible
-                TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface);
+                //Add null to cache to avoid future calls
+                TryAddGlyphTypeface(familyName, key, null);
+
+                return false;
             }
 
-            if(glyphTypeface is IGlyphTypeface2 glyphTypeface2)
+            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface);
+            if (glyphTypeface is null)
             {
-                var fontSimulations = FontSimulations.None;
-
-                if(style != FontStyle.Normal && glyphTypeface2.Style != style)
-                {
-                    fontSimulations |= FontSimulations.Oblique;
-                }
-
-                if((int)weight >= 600 && glyphTypeface2.Weight != weight)
-                {
-                    fontSimulations |= FontSimulations.Bold;
-                }
-
-                if(fontSimulations != FontSimulations.None && glyphTypeface2.TryGetStream(out var stream))
-                {
-                    using (stream)
-                    {
-                        _fontManager.PlatformImpl.TryCreateGlyphTypeface(stream, fontSimulations, out glyphTypeface);
-                    }
-                }
+                return false;
             }
 
-            glyphTypefaces.TryAdd(key, glyphTypeface);
+            //Add to cache with platform typeface family name first
+            TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface);
 
-            return glyphTypeface != null;
+            //Add to cache
+            if (!TryAddGlyphTypeface(glyphTypeface))
+            {
+                // Another thread may have added an entry for this key while we were creating the glyph typeface.
+                // Re-check the cache and yield the existing glyph typeface if present.
+                if (_glyphTypefaceCache.TryGetValue(familyName, out var existingMap) && existingMap.TryGetValue(key, out var existingTypeface) && existingTypeface != null)
+                {
+                    glyphTypeface = existingTypeface;
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            //Requested glyph typeface should be in cache now
+            return base.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface);
         }
 
-        public override void Initialize(IFontManagerImpl fontManager)
+        public override bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
         {
-            //We initialize the system font collection during construction.
+            return _platformImpl.TryGetFamilyTypefaces(familyName, out familyTypefaces);
         }
 
-        public void AddCustomFontSource(Uri source)
+        public override bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch, string? familyName,
+           CultureInfo? culture, out Typeface match)
         {
-            if (source is null)
+            var requestedKey = new FontCollectionKey { Style = style, Weight = weight, Stretch = stretch };
+
+            if (base.TryMatchCharacter(codepoint, style, weight, stretch, familyName, culture, out match))
             {
-                return;
-            }
+                var matchKey = match.ToFontCollectionKey();
 
-            LoadGlyphTypefaces(_fontManager.PlatformImpl, source);
-        }
-
-        private void LoadGlyphTypefaces(IFontManagerImpl fontManager, Uri source)
-        {
-            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
-
-            var fontAssets = FontFamilyLoader.LoadFontAssets(source);
-
-            foreach (var fontAsset in fontAssets)
-            {
-                var stream = assetLoader.Open(fontAsset);
-
-                if (fontManager.TryCreateGlyphTypeface(stream, FontSimulations.None, out var glyphTypeface))
+                if (requestedKey == matchKey)
                 {
-                    if (!_glyphTypefaceCache.TryGetValue(glyphTypeface.FamilyName, out var glyphTypefaces))
-                    {
-                        glyphTypefaces = new ConcurrentDictionary<FontCollectionKey, IGlyphTypeface?>();
-
-                        if (_glyphTypefaceCache.TryAdd(glyphTypeface.FamilyName, glyphTypefaces))
-                        {
-                            //Move the user defined system font to the start of the collection
-                            _familyNames.Insert(0, glyphTypeface.FamilyName);
-                        }
-                    }
-
-                    var key = new FontCollectionKey(
-                        glyphTypeface.Style,
-                        glyphTypeface.Weight,
-                        glyphTypeface.Stretch);
-
-                    glyphTypefaces.TryAdd(key, glyphTypeface);
+                    return true;
                 }
             }
+
+            if (_platformImpl.TryMatchCharacter(codepoint, style, weight, stretch, familyName, culture, out var platformTypeface))
+            {
+                // Construct the resulting Typeface
+                match = new Typeface(platformTypeface.FamilyName, platformTypeface.Style, platformTypeface.Weight,
+                       platformTypeface.Stretch);
+
+                // Compute the key for cache lookup this can be different from the requested key
+                var key = match.ToFontCollectionKey();
+
+                // Check cache first: if an entry exists and is non-null, match succeeded and we can return true.
+                if (_glyphTypefaceCache.TryGetValue(platformTypeface.FamilyName, out var glyphTypefaces) && glyphTypefaces.TryGetValue(key, out var existing))
+                {
+                    return existing != null;
+                }
+
+                // Not in cache yet: create glyph typeface and try to add it.
+                if (GlyphTypeface.TryCreate(platformTypeface) is not { } glyphTypeface)
+                {
+                    return false;
+                }
+
+                // Try adding with the platform typeface family name first.
+                TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface);
+
+                // Try adding the glyph typeface with the matched key.
+                if (TryAddGlyphTypeface(glyphTypeface, key))
+                {
+                    return true;
+                }
+
+                // TryAddGlyphTypeface failed: another thread may have added an entry. Re-check the cache.
+                if (_glyphTypefaceCache.TryGetValue(platformTypeface.FamilyName, out glyphTypefaces) && glyphTypefaces.TryGetValue(key, out existing))
+                {
+                    return existing != null;
+                }
+
+                return false;
+            }
+
+            return false;
         }
     }
 }

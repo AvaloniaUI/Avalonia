@@ -54,6 +54,7 @@ internal sealed class Switch<TSource> : IObservable<TSource>
 
             var innerObserver = new InnerObserver(this, id);
 
+            _innerSerialDisposable?.Dispose();
             _innerSerialDisposable = innerObserver;
             innerObserver.Disposable = value.Subscribe(innerObserver);
         }

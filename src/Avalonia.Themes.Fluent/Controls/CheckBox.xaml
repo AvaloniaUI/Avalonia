@@ -13,6 +13,7 @@
   </Design.PreviewWith>
 
   <StreamGeometry x:Key="CheckMarkPathData">M5.5 10.586 1.707 6.793A1 1 0 0 0 .293 8.207l4.5 4.5a1 1 0 0 0 1.414 0l11-11A1 1 0 0 0 15.793.293L5.5 10.586Z</StreamGeometry>
+  <x:Double x:Key="CheckBoxMinHeight">32</x:Double> 
   
   <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
     <Setter Property="Padding" Value="8,0,0,0" />
@@ -21,7 +22,7 @@
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-    <Setter Property="MinHeight" Value="32" />
+    <Setter Property="MinHeight" Value="{DynamicResource CheckBoxMinHeight}" />
     <Setter Property="Foreground" Value="{DynamicResource CheckBoxForegroundUnchecked}" />
     <Setter Property="Background" Value="{DynamicResource CheckBoxBackgroundUnchecked}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxBorderBrushUnchecked}" />
@@ -35,7 +36,7 @@
                   BorderThickness="{TemplateBinding BorderThickness}"
                   CornerRadius="{TemplateBinding CornerRadius}" />
 
-          <Grid VerticalAlignment="Top" Height="32">
+          <Grid VerticalAlignment="Top" Height="{DynamicResource CheckBoxMinHeight}">
             <Border x:Name="NormalRectangle"
                     BorderBrush="{DynamicResource CheckBoxCheckBackgroundStrokeUnchecked}"
                     Background="{DynamicResource CheckBoxCheckBackgroundFillUnchecked}"
@@ -61,7 +62,6 @@
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Content="{TemplateBinding Content}"
                           Margin="{TemplateBinding Padding}"
-                          RecognizesAccessKey="True"
                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                           TextWrapping="Wrap"
@@ -69,6 +69,10 @@
         </Grid>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
 
     <!-- Unchecked PointerOver State -->
     <Style Selector="^:pointerover">

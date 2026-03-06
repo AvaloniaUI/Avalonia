@@ -16,51 +16,29 @@ using System.Threading;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
+using Avalonia.Skia;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
-#if AVALONIA_SKIA
-using Avalonia.Skia;
-#else
-using Avalonia.Direct2D1;
-#endif
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
-#else
-namespace Avalonia.Direct2D1.RenderTests
-#endif
 {
     public class TestBase : IDisposable
     {
-#if AVALONIA_SKIA
         private static string s_fontUri = "resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests#Noto Mono";
-#else
-        private static string s_fontUri = "resm:Avalonia.Direct2D1.RenderTests.Assets?assembly=Avalonia.Direct2D1.RenderTests#Noto Mono";
-#endif
+
         public static FontFamily TestFontFamily = new FontFamily(s_fontUri);
 
-#if AVALONIA_SKIA3
-        // TODO: investigate why output is different.
-        // Most likely we need to use new SKSamplingOptions API, as old filters are broken with SKBitmap.
-        private const double AllowedError = 0.15;
-#else
         private const double AllowedError = 0.022;
-#endif
 
         public TestBase(string outputPath)
         {
             outputPath = outputPath.Replace('\\', Path.DirectorySeparatorChar);
             var testPath = GetTestsDirectory();
             var testFiles = Path.Combine(testPath, "TestFiles");
-#if AVALONIA_SKIA
-            var platform = "Skia";
-#else
-            var platform = "Direct2D1";
-#endif
-            OutputPath = Path.Combine(testFiles, platform, outputPath);
+            OutputPath = Path.Combine(testFiles, "Skia", outputPath);
 
             TestRenderHelper.BeginTest();
         }
@@ -99,7 +77,7 @@ namespace Avalonia.Direct2D1.RenderTests
                     var immediateError = TestRenderHelper.CompareImages(immediate!, expected);
                     if (immediateError > AllowedError)
                     {
-                        Assert.True(false, immediatePath + ": Error = " + immediateError);
+                        Assert.Fail(immediatePath + ": Error = " + immediateError);
                     }
                 }
 
@@ -108,13 +86,13 @@ namespace Avalonia.Direct2D1.RenderTests
                     var compositedError = TestRenderHelper.CompareImages(composited!, expected);
                     if (compositedError > AllowedError)
                     {
-                        Assert.True(false, compositedPath + ": Error = " + compositedError);
+                        Assert.Fail(compositedPath + ": Error = " + compositedError);
                     }
                 }
             }
         }
 
-        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "", string expectedName = null)
+        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "", string? expectedName = null)
         {
             var expectedPath = Path.Combine(OutputPath, (expectedName ?? testName) + ".expected.png");
             var actualPath = Path.Combine(OutputPath, testName + ".out.png");

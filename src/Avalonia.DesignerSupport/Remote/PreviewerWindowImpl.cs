@@ -37,13 +37,12 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public double DesktopScaling => 1.0;
+        public override double DesktopScaling => 1.0;
         public PixelPoint Position { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
         public Func<WindowCloseReason, bool> Closing { get; set; }
-        public IPlatformHandle Handle { get; }
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
         public Size MaxAutoSizeHint { get; } = new Size(4096, 4096);
@@ -65,6 +64,12 @@ namespace Avalonia.DesignerSupport.Remote
         
         public void Resize(Size clientSize, WindowResizeReason reason)
         {
+            // Don't let it clientSize be unconstrained or risk running Out Of Memory 
+            clientSize = new Size(
+                Math.Min(clientSize.Width, MaxAutoSizeHint.Width),
+                Math.Min(clientSize.Height, MaxAutoSizeHint.Height)
+            );
+
             _transport.Send(new RequestViewportResizeMessage
             {
                 Width = Math.Ceiling(clientSize.Width * RenderScaling),
@@ -83,11 +88,11 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public IScreenImpl Screen { get; } = new ScreenStub();
         public Action GotInputWhenDisabled { get; set; }        
         
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations { get; }
         public Thickness ExtendedMargins { get; } = new Thickness();
 
         public bool IsClientAreaExtendedToDecorations { get; }
@@ -102,7 +107,12 @@ namespace Avalonia.DesignerSupport.Remote
             {
                 return new NoopStorageProvider();
             }
-            
+
+            if (featureType == typeof(IScreenImpl))
+            {
+                return new ScreenStub();
+            }
+
             return base.TryGetFeature(featureType);
         }
         
@@ -114,7 +124,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetSystemDecorations(SystemDecorations enabled)
+        public void SetWindowDecorations(WindowDecorations enabled)
         {
         }
 
@@ -127,6 +137,14 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public void CanResize(bool value)
+        {
+        }
+
+        public void SetCanMinimize(bool value)
+        {
+        }
+
+        public void SetCanMaximize(bool value)
         {
         }
 
@@ -146,14 +164,8 @@ namespace Avalonia.DesignerSupport.Remote
         {            
         }
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {            
-        }
-
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {            
         }
-
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder) => throw new NotSupportedException();
     }
 }

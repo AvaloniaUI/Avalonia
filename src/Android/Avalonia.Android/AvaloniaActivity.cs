@@ -7,22 +7,28 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
+using Android.Window;
 using AndroidX.AppCompat.App;
+using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform;
 
 namespace Avalonia.Android;
 
 /// <summary>
 /// Common implementation of android activity that is integrated with Avalonia views.
-/// If you need a base class for main activity of Avalonia app, see <see cref="AvaloniaMainActivity"/> or <see cref="AvaloniaMainActivity{TApp}"/>.  
+/// If you need a base class for main activity of Avalonia app, see <see cref="AvaloniaMainActivity"/>.  
 /// </summary>
 public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
 {
     private EventHandler<ActivatedEventArgs>? _onActivated, _onDeactivated;
     private GlobalLayoutListener? _listener;
     private object? _content;
+    private bool _contentViewSet;
     internal AvaloniaView? _view;
+    private BackPressedCallback? _currentBackPressedCallback;
+    private bool _shouldNavigateBack;
 
     public Action<int, Result, Intent?>? ActivityResult { get; set; }
     public Action<int, string[], Permission[]>? RequestPermissionsResult { get; set; }
@@ -39,9 +45,37 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
                 _content = value;
                 if (_view is not null)
                 {
+                    if (!_contentViewSet)
+                    {
+                        _contentViewSet = true;
+
+                        SetContentView(_view);
+
+                        // By default, the view isn't focused if the activity is created anew, so we force focus.
+                        _view.RequestFocus();
+
+                        _listener = new GlobalLayoutListener(_view);
+
+                        _view.ViewTreeObserver?.AddOnGlobalLayoutListener(_listener);
+                    }
+
                     _view.Content = _content;
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Gets whether to call the default back handler after our back handler is called.
+    /// </summary>
+    internal bool ShouldNavigateBack
+    {
+        get
+        {
+            var goBack = _shouldNavigateBack;
+            _shouldNavigateBack = false;
+
+            return goBack;
         }
     }
 
@@ -60,6 +94,9 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
     [ObsoletedOSPlatform("android33.0")]
     public override void OnBackPressed()
     {
+        if (OperatingSystem.IsAndroidVersionAtLeast(33))
+            return;
+
         var eventArgs = new AndroidBackRequestedEventArgs();
 
         BackRequested?.Invoke(this, eventArgs);
@@ -76,40 +113,43 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
 
         base.OnCreate(savedInstanceState);
 
-        SetContentView(_view);
-
-        _listener = new GlobalLayoutListener(_view);
-
-        _view.ViewTreeObserver?.AddOnGlobalLayoutListener(_listener);
-
-        // TODO: we probably don't need to create AvaloniaView, if it's just a protocol activation, and main activity is already created.
-        if (Intent?.Data is {} androidUri
-            && androidUri.IsAbsolute
-            && Uri.TryCreate(androidUri.ToString(), UriKind.Absolute, out var uri))
+        if (Avalonia.Application.Current?.TryGetFeature<IActivatableLifetime>()
+            is AndroidActivatableLifetime activatableLifetime)
         {
-            if (uri.Scheme == Uri.UriSchemeFile)
-            {
-                if (AndroidStorageItem.CreateItem(this, androidUri) is { } item)
-                {
-                    _onActivated?.Invoke(this, new FileActivatedEventArgs(new [] { item }));
-                }
-            }
-            else
-            {
-                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));
-            }
+            activatableLifetime.CurrentIntendActivity = this;
         }
+
+        HandleIntent(Intent);
+    }
+
+    protected override void OnNewIntent(Intent? intent)
+    {
+        base.OnNewIntent(intent);
+
+        HandleIntent(intent);
     }
 
     protected override void OnStop()
     {
         _onDeactivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
+
+        if (OperatingSystem.IsAndroidVersionAtLeast(33))
+        {
+            _currentBackPressedCallback?.Remove();
+            _currentBackPressedCallback = null;
+        }
         base.OnStop();
     }
 
     protected override void OnStart()
     {
         _onActivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
+
+        if (OperatingSystem.IsAndroidVersionAtLeast(33))
+        {
+            _currentBackPressedCallback = new BackPressedCallback(this);
+            OnBackPressedDispatcher.AddCallback(this, _currentBackPressedCallback);
+        }
         base.OnStart();
     }
 
@@ -122,21 +162,27 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         {
             attributes.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
         }
+
+        // We inform the ContentView that it has become visible. OnVisibleChanged() sometimes doesn't get called. Issue #15807.
+        _view?.OnVisibilityChanged(true);
     }
 
     protected override void OnDestroy()
     {
         if (_view is not null)
         {
+            if (_listener is not null)
+            {
+                _view.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_listener);
+            }
             _view.Content = null;
-            _view.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_listener);
             _view.Dispose();
             _view = null;
         }
 
         base.OnDestroy();
     }
-        
+
     protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent? data)
     {
         base.OnActivityResult(requestCode, resultCode, data);
@@ -162,6 +208,35 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
         }
 
         _view = new AvaloniaView(this) { Content = initialContent };
+    }
+
+    private void HandleIntent(Intent? intent)
+    {
+        if (intent?.Data is { } androidUri
+            && androidUri.IsAbsolute
+            && Uri.TryCreate(androidUri.ToString(), UriKind.Absolute, out var uri))
+        {
+            if (uri.Scheme == Uri.UriSchemeFile || uri.Scheme == "content")
+            {
+                if (AndroidStorageItem.CreateItem(this, androidUri) is { } item)
+                {
+                    _onActivated?.Invoke(this, new FileActivatedEventArgs(new[] { item }));
+                }
+            }
+            else
+            {
+                _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));
+            }
+        }
+    }
+
+    public void OnBackInvoked()
+    {
+        var eventArgs = new AndroidBackRequestedEventArgs();
+
+        BackRequested?.Invoke(this, eventArgs);
+
+        _shouldNavigateBack = !eventArgs.Handled;
     }
 
     private class GlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener

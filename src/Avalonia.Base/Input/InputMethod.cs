@@ -43,7 +43,7 @@ namespace Avalonia.Input
         
         public static void RemoveTextInputMethodClientRequeryRequestedHandler(Interactive element, EventHandler<RoutedEventArgs> handler)
         {
-            element.AddHandler(TextInputMethodClientRequeryRequestedEvent, handler);
+            element.RemoveHandler(TextInputMethodClientRequeryRequestedEvent, handler);
         }
         
         private InputMethod()

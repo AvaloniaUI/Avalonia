@@ -18,5 +18,14 @@ namespace Avalonia.Diagnostics
         {
             return o.GetDiagnosticInternal(property);
         }
+
+        /// <summary>
+        /// Gets a value store diagnostics for a <see cref="AvaloniaObject"/>.
+        /// </summary>
+        /// <param name="avaloniaObject">The avalonia object.</param>
+        public static ValueStoreDiagnostic GetValueStoreDiagnostic(this AvaloniaObject avaloniaObject)
+        {
+            return avaloniaObject.GetValueStore().GetStoreDiagnostic();
+        }
     }
 }

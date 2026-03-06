@@ -5,13 +5,14 @@ using System.Threading.Tasks;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Markup.Parsers;
+using Avalonia.Data.Core.Parsers;
+using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class ExpressionObserverBuilderTests_Property
+    public class ExpressionObserverBuilderTests_Property : ScopedTestBase
     {
         [Fact]
         public async Task Should_Return_BindingNotification_Error_For_Broken_Chain()

@@ -29,7 +29,7 @@ namespace Avalonia.Styling
         {
             if (_selectorString == null)
             {
-                _selectorString = _parent.ToString(owner) + ' ';
+                _selectorString = _parent.ToString(owner, true) + ' ';
             }
 
             return _selectorString;

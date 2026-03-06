@@ -284,7 +284,8 @@ namespace Avalonia.Media
                 Clip,
                 GeometryClip,
                 OpacityMask,
-                RenderOptions
+                RenderOptions,
+                TextOptions
             }
 
             public RestoreState(DrawingContext context, PushedStateType type)
@@ -311,6 +312,8 @@ namespace Avalonia.Media
                     _context.PopOpacityMaskCore();
                 else if (_type == PushedStateType.RenderOptions)
                     _context.PopRenderOptionsCore();
+                else if (_type == PushedStateType.TextOptions)
+                    _context.PopTextOptionsCore();
             }
         }
 
@@ -417,13 +420,20 @@ namespace Avalonia.Media
         }
         protected abstract void PushRenderOptionsCore(RenderOptions renderOptions);
 
-        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
-        public PushedState PushPreTransform(Matrix matrix) => PushTransform(matrix);
-        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
-        public PushedState PushPostTransform(Matrix matrix) => PushTransform(matrix);
-        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
-        public PushedState PushTransformContainer() => PushTransform(Matrix.Identity);
-        
+        /// <summary>
+        /// Pushes text options for the drawing context.
+        /// </summary>
+        /// <param name="textOptions">The text options.</param>
+        /// <returns>A disposable to undo the text options.</returns>
+        public PushedState PushTextOptions(TextOptions textOptions)
+        {
+            PushTextOptionsCore(textOptions);
+            _states ??= StateStackPool.Get();
+            _states.Push(new RestoreState(this, RestoreState.PushedStateType.TextOptions));
+            return new PushedState(this);
+        }
+
+        protected abstract void PushTextOptionsCore(TextOptions textOptions);
         
         protected abstract void PushTransformCore(Matrix matrix);
 
@@ -433,6 +443,7 @@ namespace Avalonia.Media
         protected abstract void PopOpacityMaskCore();
         protected abstract void PopTransformCore();
         protected abstract void PopRenderOptionsCore();
+        protected abstract void PopTextOptionsCore();
         
         private static bool PenIsVisible(IPen? pen)
         {

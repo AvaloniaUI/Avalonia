@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -78,7 +76,7 @@ namespace Avalonia.Skia
         /// <summary>
         /// A Skia implementation of a <see cref="IStreamGeometryContextImpl"/>.
         /// </summary>
-        private class StreamContext : IStreamGeometryContextImpl, IGeometryContext2
+        private class StreamContext : IStreamGeometryContextImpl
         {
             private readonly StreamGeometryImpl _geometryImpl;
             private SKPath Stroke => _geometryImpl._strokePath;
@@ -87,6 +85,22 @@ namespace Avalonia.Skia
             private Point _startPoint;
             private bool _isFigureBroken;
             private bool Duplicate => _isFilled && !ReferenceEquals(_geometryImpl._fillPath, Stroke);
+
+            private void EnsureSeparateFillPath()
+            {
+                if (Stroke == Fill)
+                    _geometryImpl._fillPath = Stroke.Clone();
+            }
+            
+            private void BreakFigure()
+            {
+                if (!_isFigureBroken)
+                {
+                    _isFigureBroken = true;
+                    EnsureSeparateFillPath();
+                }
+                    
+            }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="StreamContext"/> class.
@@ -106,39 +120,10 @@ namespace Avalonia.Skia
             }
 
             /// <inheritdoc />
-            public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
+            public void BeginFigure(Point startPoint, bool isFilled = true)
             {
-                var arc = isLargeArc ? SKPathArcSize.Large : SKPathArcSize.Small;
-                var sweep = sweepDirection == SweepDirection.Clockwise
-                    ? SKPathDirection.Clockwise
-                    : SKPathDirection.CounterClockwise;
-                Stroke.ArcTo(
-                    (float)size.Width,
-                    (float)size.Height,
-                    (float)rotationAngle,
-                    arc,
-                    sweep,
-                    (float)point.X,
-                    (float)point.Y);
-                if (Duplicate)
-                    Fill.ArcTo(
-                        (float)size.Width,
-                        (float)size.Height,
-                        (float)rotationAngle,
-                        arc,
-                        sweep,
-                        (float)point.X,
-                        (float)point.Y);
-            }
-
-            /// <inheritdoc />
-            public void BeginFigure(Point startPoint, bool isFilled)
-            {
-                if (!isFilled)
-                {
-                    if (Stroke == Fill)
-                        _geometryImpl._fillPath = Stroke.Clone();
-                }
+                if (!isFilled) 
+                    EnsureSeparateFillPath();
 
                 _isFilled = isFilled;
                 _startPoint = startPoint;
@@ -149,37 +134,13 @@ namespace Avalonia.Skia
             }
 
             /// <inheritdoc />
-            public void CubicBezierTo(Point point1, Point point2, Point point3)
-            {
-                Stroke.CubicTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y, (float)point3.X, (float)point3.Y);
-                if (Duplicate)
-                    Fill.CubicTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y, (float)point3.X, (float)point3.Y);
-            }
-
-            /// <inheritdoc />
-            public void QuadraticBezierTo(Point point1, Point point2)
-            {
-                Stroke.QuadTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
-                if (Duplicate)
-                    Fill.QuadTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
-            }
-
-            /// <inheritdoc />
-            public void LineTo(Point point)
-            {
-                Stroke.LineTo((float)point.X, (float)point.Y);
-                if (Duplicate)
-                    Fill.LineTo((float)point.X, (float)point.Y);
-            }
-
-            /// <inheritdoc />
             public void EndFigure(bool isClosed)
             {
                 if (isClosed)
                 {
                     if (_isFigureBroken)
                     {
-                        LineTo(_startPoint);
+                        Stroke.LineTo(_startPoint.ToSKPoint());
                         _isFigureBroken = false;
                     }
                     else
@@ -196,7 +157,7 @@ namespace Avalonia.Skia
             }
 
             /// <inheritdoc />
-            public void LineTo(Point point, bool isStroked)
+            public void LineTo(Point point, bool isStroked = true)
             {
                 if (isStroked)
                 {
@@ -204,11 +165,7 @@ namespace Avalonia.Skia
                 }
                 else
                 {
-                    if (Stroke == Fill)
-                        _geometryImpl._fillPath = Stroke.Clone();
-
-                    _isFigureBroken = true;
-
+                    BreakFigure();
                     Stroke.MoveTo((float)point.X, (float)point.Y);
                 }
                 if (Duplicate)
@@ -216,7 +173,7 @@ namespace Avalonia.Skia
             }
 
             /// <inheritdoc />
-            public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked)
+            public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection, bool isStroked = true)
             {
                 var arc = isLargeArc ? SKPathArcSize.Large : SKPathArcSize.Small;
                 var sweep = sweepDirection == SweepDirection.Clockwise
@@ -236,11 +193,7 @@ namespace Avalonia.Skia
                 }
                 else
                 {
-                    if (Stroke == Fill)
-                        _geometryImpl._fillPath = Stroke.Clone();
-
-                    _isFigureBroken = true;
-
+                    BreakFigure();
                     Stroke.MoveTo((float)point.X, (float)point.Y);
                 }
                 if (Duplicate)
@@ -255,7 +208,7 @@ namespace Avalonia.Skia
             }
 
             /// <inheritdoc />
-            public void CubicBezierTo(Point point1, Point point2, Point point3, bool isStroked)
+            public void CubicBezierTo(Point point1, Point point2, Point point3, bool isStroked = true)
             {
                 if (isStroked)
                 {
@@ -263,11 +216,7 @@ namespace Avalonia.Skia
                 }
                 else
                 {
-                    if (Stroke == Fill)
-                        _geometryImpl._fillPath = Stroke.Clone();
-
-                    _isFigureBroken = true;
-
+                    BreakFigure();
                     Stroke.MoveTo((float)point3.X, (float)point3.Y);
                 }
                 if (Duplicate)
@@ -275,7 +224,7 @@ namespace Avalonia.Skia
             }
 
             /// <inheritdoc />
-            public void QuadraticBezierTo(Point point1, Point point2, bool isStroked)
+            public void QuadraticBezierTo(Point point1, Point point2, bool isStroked = true)
             {
                 if (isStroked)
                 {
@@ -283,11 +232,7 @@ namespace Avalonia.Skia
                 }
                 else
                 {
-                    if (Stroke == Fill)
-                        _geometryImpl._fillPath = Stroke.Clone();
-
-                    _isFigureBroken = true;
-
+                    BreakFigure();
                     Stroke.MoveTo((float)point2.X, (float)point2.Y);
                 }
                 if (Duplicate)

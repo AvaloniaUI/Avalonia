@@ -21,7 +21,7 @@ public class MiniCompilerTests
     {
         var xaml = XDocumentXamlParser.Parse(MiniValidXaml);
         var compilation = CreateBasicCompilation(MiniClass);
-        MiniCompiler.CreateDefault(new RoslynTypeSystem(compilation)).Transform(xaml);
+        MiniCompiler.CreateRoslyn(new RoslynTypeSystem(compilation)).Transform(xaml);
 
         Assert.NotNull(xaml.Root);
     }
@@ -31,7 +31,7 @@ public class MiniCompilerTests
     {
         var xaml = XDocumentXamlParser.Parse(AvaloniaXaml);
         var compilation = View.CreateAvaloniaCompilation();
-        MiniCompiler.CreateDefault(new RoslynTypeSystem(compilation)).Transform(xaml);
+        MiniCompiler.CreateRoslyn(new RoslynTypeSystem(compilation)).Transform(xaml);
 
         Assert.NotNull(xaml.Root);
     }

@@ -110,6 +110,45 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Transformed_Child_Control_With_ClipToBounds_True_Should_Be_Rendered()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                TestControl target;
+
+                var container = new Panel
+                {
+                    Width = 100,
+                    Height = 20,
+                    ClipToBounds = true,
+                    Children =
+                    {
+                        new Panel
+                        {
+                            Width = 100,
+                            Height = 20,
+                            RenderTransform = new TranslateTransform(0, 30),
+                            Children =
+                            {
+                                (target = new TestControl
+                                {
+                                    Width = 100,
+                                    Height = 20,
+                                    ClipToBounds = true,
+                                    RenderTransform = new TranslateTransform(0, -30),
+                                })
+                            }
+                        }
+                    }
+                };
+
+                Render(container);
+
+                Assert.True(target.Rendered);
+            }
+        }
+
+        [Fact]
         public void RenderTransform_Should_Be_Respected()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -176,7 +215,7 @@ namespace Avalonia.Base.UnitTests
             var ctx = CreateDrawingContext();
             control.Measure(Size.Infinity);
             control.Arrange(new Rect(control.DesiredSize));
-            ImmediateRenderer.Render(control, ctx);
+            ImmediateRenderer.Render(ctx, control);
         }
 
         private DrawingContext CreateDrawingContext()

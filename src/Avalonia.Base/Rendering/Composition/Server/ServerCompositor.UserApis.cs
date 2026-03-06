@@ -47,4 +47,40 @@ internal partial class ServerCompositor
         lock (_renderInterfaceFeaturesUserApiLock)
             return _renderInterfaceFeatureCache ??= RenderInterface.Value.PublicFeatures;
     }
+
+    public IBitmapImpl CreateCompositionVisualSnapshot(ServerCompositionVisual visual,
+        double scaling, bool renderChildren)
+    {
+        using (RenderInterface.EnsureCurrent())
+        {
+            var pixelSize = PixelSize.FromSize(new Size(visual.Size.X, visual.Size.Y), scaling);
+            
+            var scaleTransform = Matrix.CreateScale(scaling, scaling);
+            var invertRootTransform = visual.CombinedTransformMatrix.Invert();
+
+            IDrawingContextLayerImpl? target = null;
+            try
+            {
+                target = RenderInterface.Value.CreateOffscreenRenderTarget(pixelSize, new(scaling, scaling), true);
+                using (var canvas = target.CreateDrawingContext(false))
+                {
+                    canvas.Transform = scaleTransform;
+                    visual.Render(canvas, LtrbRect.Infinite, null, renderChildren);
+                }
+
+                if (target is IDrawingContextLayerWithRenderContextAffinityImpl affined
+                    && affined.HasRenderContextAffinity)
+                    return affined.CreateNonAffinedSnapshot();
+                
+                // We are returning the original target, so prevent it from being disposed
+                var rv = target;
+                target = null;
+                return rv;
+            }
+            finally
+            {
+                target?.Dispose();
+            }
+        }
+    }
 }

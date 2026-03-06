@@ -13,6 +13,16 @@
         /// <summary>
         /// The pane is shown to the right of content.
         /// </summary>
-        Right
+        Right,
+
+        /// <summary>
+        /// The pane is shown above the content.
+        /// </summary>
+        Top,
+
+        /// <summary>
+        /// The pane is shown below the content.
+        /// </summary>
+        Bottom
     }
 }

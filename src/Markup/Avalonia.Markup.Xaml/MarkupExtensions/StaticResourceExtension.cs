@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.Diagnostics;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
@@ -22,9 +24,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public object? ResourceKey { get; set; }
 
-        public object? ProvideValue(IServiceProvider serviceProvider)
+        // Keep instance method ProvideValue as simple as possible, increasing chance to inline it.
+        // With modern runtimes, inlining this method also helps to eliminate extension allocation completely. 
+        public object? ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider, ResourceKey);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static object? ProvideValue(IServiceProvider serviceProvider, object? resourceKey)
         {
-            if (ResourceKey is not { } resourceKey)
+            if (resourceKey is null)
             {
                 throw new ArgumentException("StaticResourceExtension.ResourceKey must be set.");
             }
@@ -58,6 +65,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             // which might be able to give us the resource.
             if (stack is not null)
             {
+                using var activity = Diagnostic.FindingResource()?
+                    .AddTag(Diagnostic.Tags.Key, resourceKey)
+                    .AddTag(Diagnostic.Tags.ThemeVariant, themeVariant);
+
                 // avoid allocations iterating the parents when possible
                 if (stack is IAvaloniaXamlIlEagerParentStackProvider eagerStack)
                 {
@@ -87,18 +98,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             {
                 // This is stored locally to avoid allocating closure in the outer scope.
                 var localTargetType = targetType;
-                var localInstance = this;
+                var localKeyInstance = resourceKey;
                 
-                DelayedBinding.Add(target, property, x => localInstance.GetValue(x, localTargetType));
+                DelayedBinding.Add(target, property, x => 
+                    ColorToBrushConverter.Convert(x.FindResource(localKeyInstance), localTargetType));
                 return AvaloniaProperty.UnsetValue;
             }
 
             throw new KeyNotFoundException($"Static resource '{resourceKey}' not found.");
-        }
-
-        private object? GetValue(StyledElement control, Type? targetType)
-        {
-            return ColorToBrushConverter.Convert(control.FindResource(ResourceKey!), targetType);
         }
 
         internal static ThemeVariant? GetDictionaryVariant(IAvaloniaXamlIlParentStackProvider? stack)

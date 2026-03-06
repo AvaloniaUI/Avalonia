@@ -147,7 +147,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var border = new Border { Child = canvas };
             var raised = 0;
 
-            void Attached(object sender, LogicalTreeAttachmentEventArgs e)
+            void Attached(object? sender, LogicalTreeAttachmentEventArgs e)
             {
                 Assert.Same(border, e.Source);
                 ++raised;
@@ -169,7 +169,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var border = new Border { Child = canvas };
             var raised = 0;
 
-            void Attached(object sender, LogicalTreeAttachmentEventArgs e)
+            void Attached(object? sender, LogicalTreeAttachmentEventArgs e)
             {
                 Assert.Same(root, e.Parent);
                 ++raised;
@@ -406,8 +406,8 @@ namespace Avalonia.Base.UnitTests.Styling
                 }
             };
 
-            var called = new List<string>();
-            void Record(object sender, EventArgs e) => called.Add(((StyledElement)sender).Name);
+            var called = new List<string?>();
+            void Record(object? sender, EventArgs e) => called.Add(((StyledElement)sender!).Name);
 
             root.DataContextChanged += Record;
 
@@ -449,9 +449,9 @@ namespace Avalonia.Base.UnitTests.Styling
 
             foreach (IDataContextEvents c in root.GetSelfAndLogicalDescendants())
             {
-                c.DataContextBeginUpdate += (s, e) => called.Add("begin " + ((StyledElement)s).Name);
-                c.DataContextChanged += (s, e) => called.Add("changed " + ((StyledElement)s).Name);
-                c.DataContextEndUpdate += (s, e) => called.Add("end " + ((StyledElement)s).Name);
+                c.DataContextBeginUpdate += (s, e) => called.Add("begin " + ((StyledElement)s!).Name);
+                c.DataContextChanged += (s, e) => called.Add("changed " + ((StyledElement)s!).Name);
+                c.DataContextEndUpdate += (s, e) => called.Add("end " + ((StyledElement)s!).Name);
             }
 
             root.DataContext = "foo";
@@ -501,11 +501,11 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var called = new List<string>();
 
-            foreach (IDataContextEvents c in new[] { children[0], children[0].Child, children[1] })
+            foreach (var c in new[] { children[0], (IDataContextEvents)children[0].Child!, children[1] })
             {
-                c.DataContextBeginUpdate += (s, e) => called.Add("begin " + ((StyledElement)s).Name);
-                c.DataContextChanged += (s, e) => called.Add("changed " + ((StyledElement)s).Name);
-                c.DataContextEndUpdate += (s, e) => called.Add("end " + ((StyledElement)s).Name);
+                c.DataContextBeginUpdate += (s, e) => called.Add("begin " + ((StyledElement)s!).Name);
+                c.DataContextChanged += (s, e) => called.Add("changed " + ((StyledElement)s!).Name);
+                c.DataContextEndUpdate += (s, e) => called.Add("end " + ((StyledElement)s!).Name);
             }
 
             root.Children.AddRange(children);
@@ -624,17 +624,17 @@ namespace Avalonia.Base.UnitTests.Styling
 
         private interface IDataContextEvents
         {
-            event EventHandler DataContextBeginUpdate;
-            event EventHandler DataContextChanged;
-            event EventHandler DataContextEndUpdate;
+            event EventHandler? DataContextBeginUpdate;
+            event EventHandler? DataContextChanged;
+            event EventHandler? DataContextEndUpdate;
         }
 
         private class TestControl : Decorator, IDataContextEvents
         {
-            public event EventHandler DataContextBeginUpdate;
-            public event EventHandler DataContextEndUpdate;
+            public event EventHandler? DataContextBeginUpdate;
+            public event EventHandler? DataContextEndUpdate;
 
-            public new AvaloniaObject InheritanceParent => base.InheritanceParent;
+            public new AvaloniaObject? InheritanceParent => base.InheritanceParent;
 
             protected override void OnDataContextBeginUpdate()
             {
@@ -651,8 +651,8 @@ namespace Avalonia.Base.UnitTests.Styling
 
         private class TestStackPanel : StackPanel, IDataContextEvents
         {
-            public event EventHandler DataContextBeginUpdate;
-            public event EventHandler DataContextEndUpdate;
+            public event EventHandler? DataContextBeginUpdate;
+            public event EventHandler? DataContextEndUpdate;
 
             protected override void OnDataContextBeginUpdate()
             {

@@ -7,6 +7,7 @@ public class DotNetConfigHelper
     public DotNetBuildSettings Build;
     public DotNetPackSettings Pack;
     public DotNetTestSettings Test;
+    public DotNetRunSettings Run;
 
     public DotNetConfigHelper(DotNetBuildSettings s)
     {
@@ -23,6 +24,11 @@ public class DotNetConfigHelper
         Test = s;
     }
 
+    public DotNetConfigHelper(DotNetRunSettings s)
+    {
+        Run = s;
+    }
+
     public DotNetConfigHelper AddProperty(string key, bool value) =>
         AddProperty(key, value.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
     public DotNetConfigHelper AddProperty(string key, string value)
@@ -30,6 +36,7 @@ public class DotNetConfigHelper
         Build = Build?.AddProperty(key, value);
         Pack = Pack?.AddProperty(key, value);
         Test = Test?.AddProperty(key, value);
+        Run = Run?.AddProperty(key, value);
 
         return this;
     }
@@ -39,6 +46,7 @@ public class DotNetConfigHelper
         Build = Build?.SetConfiguration(configuration);
         Pack = Pack?.SetConfiguration(configuration);
         Test = Test?.SetConfiguration(configuration);
+        Run = Run?.SetConfiguration(configuration);
         return this;
     }
 
@@ -47,10 +55,12 @@ public class DotNetConfigHelper
         Build = Build?.SetVerbosity(verbosity);
         Pack = Pack?.SetVerbosity(verbosity);
         Test = Test?.SetVerbosity(verbosity);
+        Run = Run?.SetVerbosity(verbosity);
         return this;
     }
 
     public static implicit operator DotNetConfigHelper(DotNetBuildSettings s) => new DotNetConfigHelper(s);
     public static implicit operator DotNetConfigHelper(DotNetPackSettings s) => new DotNetConfigHelper(s);
     public static implicit operator DotNetConfigHelper(DotNetTestSettings s) => new DotNetConfigHelper(s);
+    public static implicit operator DotNetConfigHelper(DotNetRunSettings s) => new DotNetConfigHelper(s);
 }

@@ -44,8 +44,11 @@ internal sealed class ArrayIndexerNode : ExpressionNode, ISettableNode
         return false;
     }
 
-    protected override void OnSourceChanged(object source, Exception? dataValidationError)
+    protected override void OnSourceChanged(object? source, Exception? dataValidationError)
     {
+        if (!ValidateNonNullSource(source))
+            return;
+
         if (source is Array array)
             SetValue(array.GetValue(_indexes));
         else

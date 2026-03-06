@@ -1,16 +1,23 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+#if NET6_0_OR_GREATER
+using ExecutionContext = System.Threading.ExecutionContext;
+#else
+using ExecutionContext = Avalonia.Threading.CulturePreservingExecutionContext;
+#endif
+
 namespace Avalonia.Threading;
 
+[DebuggerDisplay("{DebugDisplay}")]
 public class DispatcherOperation
 {
     protected readonly bool ThrowOnUiThread;
-    public DispatcherOperationStatus Status { get; protected set; }
+    public DispatcherOperationStatus Status { get; internal set; }
     public Dispatcher Dispatcher { get; }
 
     public DispatcherPriority Priority
@@ -25,20 +32,21 @@ public class DispatcherOperation
         }
     }
 
-    protected object? Callback;
+    protected internal object? Callback;
     protected object? TaskSource;
-    
+
     internal DispatcherOperation? SequentialPrev { get; set; }
     internal DispatcherOperation? SequentialNext { get; set; }
     internal DispatcherOperation? PriorityPrev { get; set; }
     internal DispatcherOperation? PriorityNext { get; set; }
     internal PriorityChain? Chain { get; set; }
-    
+
     internal bool IsQueued => Chain != null;
 
     private EventHandler? _aborted;
     private EventHandler? _completed;
     private DispatcherPriority _priority;
+    private readonly ExecutionContext? _executionContext;
 
     internal DispatcherOperation(Dispatcher dispatcher, DispatcherPriority priority, Action callback, bool throwOnUiThread) :
         this(dispatcher, priority, throwOnUiThread)
@@ -51,6 +59,17 @@ public class DispatcherOperation
         ThrowOnUiThread = throwOnUiThread;
         Priority = priority;
         Dispatcher = dispatcher;
+        _executionContext = ExecutionContext.Capture();
+    }
+
+    internal string DebugDisplay
+    {
+        get
+        {
+            var method = (Callback as Delegate)?.Method;
+            var methodDisplay = method is null ? "???" : method.DeclaringType + "." + method.Name;
+            return $"{methodDisplay} [{Priority}]";
+        }
     }
 
     /// <summary>
@@ -92,7 +111,7 @@ public class DispatcherOperation
                 _completed += value;
             }
         }
-        
+
         remove
         {
             lock(Dispatcher.InstanceLock)
@@ -101,16 +120,16 @@ public class DispatcherOperation
             }
         }
     }
-    
+
     public bool Abort()
     {
-        lock (Dispatcher.InstanceLock)
+        if (Dispatcher.Abort(this))
         {
-            if (Status != DispatcherOperationStatus.Pending)
-                return false;
-            Dispatcher.Abort(this);
+            CallAbortCallbacks();
             return true;
         }
+
+        return false;
     }
 
     /// <summary>
@@ -144,7 +163,7 @@ public class DispatcherOperation
                     // we throw an exception instead.
                     throw new InvalidOperationException("A thread cannot wait on operations already running on the same thread.");
                 }
-                
+
                 var cts = new CancellationTokenSource();
                 EventHandler finishedHandler = delegate
                 {
@@ -230,7 +249,7 @@ public class DispatcherOperation
     }
 
     public Task GetTask() => GetTaskCore();
-    
+
     /// <summary>
     ///     Returns an awaiter for awaiting the completion of the operation.
     /// </summary>
@@ -243,31 +262,40 @@ public class DispatcherOperation
         return GetTask().GetAwaiter();
     }
 
-    internal void DoAbort()
+    internal void CallAbortCallbacks()
     {
-        Status = DispatcherOperationStatus.Aborted;
         AbortTask();
         _aborted?.Invoke(this, EventArgs.Empty);
     }
-    
+
     internal void Execute()
     {
-        lock (Dispatcher.InstanceLock)
-        {
-            Status = DispatcherOperationStatus.Executing;
-        }
-
+        Debug.Assert(Status == DispatcherOperationStatus.Executing);
         try
         {
             using (AvaloniaSynchronizationContext.Ensure(Dispatcher, Priority))
-                InvokeCore();
+            {
+                if (_executionContext is { } executionContext)
+                {
+#if NET6_0_OR_GREATER
+                    ExecutionContext.Restore(executionContext);
+                    InvokeCore();
+#else
+                    ExecutionContext.Run(executionContext, static s => ((DispatcherOperation)s!).InvokeCore(), this);
+#endif
+                }
+                else
+                {
+                    InvokeCore();
+                }
+            }
         }
         finally
         {
             _completed?.Invoke(this, EventArgs.Empty);
         }
     }
-    
+
     protected virtual void InvokeCore()
     {
         try
@@ -299,8 +327,20 @@ public class DispatcherOperation
     }
 
     internal virtual object? GetResult() => null;
-    
-    protected virtual void AbortTask() => (TaskSource as TaskCompletionSource<object?>)?.SetCanceled();
+
+    protected virtual void AbortTask()
+    {
+        object? taskSource;
+        lock (Dispatcher.InstanceLock)
+        {
+            Debug.Assert(Status == DispatcherOperationStatus.Aborted);
+            // There is no way for TaskSource to become not-null after being null with aborted tasks,
+            // so it's safe to save it here and use after exiting the lock
+            taskSource = TaskSource;
+        }
+
+        (taskSource as TaskCompletionSource<object?>)?.SetCanceled();
+    }
 
     private static CancellationToken CreateCancelledToken()
     {
@@ -383,14 +423,14 @@ internal sealed class SendOrPostCallbackDispatcherOperation : DispatcherOperatio
 {
     private readonly object? _arg;
 
-    internal SendOrPostCallbackDispatcherOperation(Dispatcher dispatcher, DispatcherPriority priority, 
-        SendOrPostCallback callback, object? arg, bool throwOnUiThread) 
+    internal SendOrPostCallbackDispatcherOperation(Dispatcher dispatcher, DispatcherPriority priority,
+        SendOrPostCallback callback, object? arg, bool throwOnUiThread)
         : base(dispatcher, priority, throwOnUiThread)
     {
         Callback = callback;
         _arg = arg;
     }
-    
+
     protected override void InvokeCore()
     {
         try

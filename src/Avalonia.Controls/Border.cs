@@ -1,6 +1,3 @@
-using System;
-using Avalonia.Collections;
-using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -156,7 +153,7 @@ namespace Avalonia.Controls
                     var borderThickness = BorderThickness;
 
                     if (UseLayoutRounding)
-                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale, _scale);
+                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale);
 
                     _layoutThickness = borderThickness;
                 }

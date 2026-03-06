@@ -9,12 +9,14 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -24,7 +26,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ItemsControlTests
+    public class ItemsControlTests : ScopedTestBase
     {
         [Fact]
         public void Setting_ItemsSource_Should_Populate_Items()
@@ -977,6 +979,29 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ContainerClearing_Is_Raised_When_ItemsSource_Is_Cleared()
+        {
+            using var app = Start();
+            var itemsSource = new ObservableCollection<object> { "Foo", "Bar", "Baz" };
+            var target = CreateTarget(itemsSource: itemsSource);
+
+            var expectedContainers = itemsSource.Select(x => target.ContainerFromItem(x)).ToArray();
+            var actualContainers = new List<Control>();
+            var raised = 0;
+
+            target.ContainerClearing += (s, e) =>
+            {
+                actualContainers.Add(e.Container);
+                ++raised;
+            };
+
+            itemsSource.Clear();
+
+            Assert.Equal(3, raised);
+            Assert.Equal(expectedContainers, actualContainers);
+        }
+
+        [Fact]
         public void Handles_Recycling_Control_Items_Inside_Containers()
         {
             // Issue #10825
@@ -1031,7 +1056,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static ItemsControl CreateTarget(
             object? dataContext = null,
-            IBinding? displayMemberBinding = null,
+            BindingBase? displayMemberBinding = null,
             IList? items = null,
             IList? itemsSource = null,
             ControlTheme? itemContainerTheme = null,
@@ -1054,7 +1079,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static T CreateTarget<T>(
             object? dataContext = null,
-            IBinding? displayMemberBinding = null,
+            BindingBase? displayMemberBinding = null,
             IList? items = null,
             IList? itemsSource = null,
             ControlTheme? itemContainerTheme = null,
@@ -1193,7 +1218,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static void Layout(Control c)
         {
-            (c.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
+            c.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         private static ContentPresenter GetContainer(ItemsControl target, int index = 0)
@@ -1210,13 +1235,13 @@ namespace Avalonia.Controls.UnitTests
         {
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
-                    focusManager: new FocusManager(),
                     fontManagerImpl: new HeadlessFontManagerStub(),
                     keyboardDevice: () => new KeyboardDevice(),
                     keyboardNavigation: () => new KeyboardNavigationHandler(),
                     inputManager: new InputManager(),
                     renderInterface: new HeadlessPlatformRenderInterface(),
-                    textShaperImpl: new HeadlessTextShaperStub()));
+                    textShaperImpl: new HarfBuzzTextShaper(),
+                    assetLoader: new StandardAssetLoader()));
         }
 
         private class ItemsControlWithContainer : ItemsControl

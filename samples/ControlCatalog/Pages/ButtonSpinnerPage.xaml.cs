@@ -1,21 +1,13 @@
 ﻿using System;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages
 {
-    public class ButtonSpinnerPage : UserControl
+    public partial class ButtonSpinnerPage : UserControl
     {
         public ButtonSpinnerPage()
         {
-            this.InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
+            InitializeComponent();
         }
 
         public void OnSpin(object sender, SpinEventArgs e)

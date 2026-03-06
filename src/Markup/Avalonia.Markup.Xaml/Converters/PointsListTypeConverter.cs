@@ -17,7 +17,7 @@ namespace Avalonia.Markup.Xaml.Converters
         {
             var points = new List<Point>();
 
-            using (var tokenizer = new StringTokenizer((string)value, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PointsList."))
+            using (var tokenizer = new SpanStringTokenizer((string)value, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PointsList."))
             {
                 while (tokenizer.TryReadDouble(out double x))
                 {

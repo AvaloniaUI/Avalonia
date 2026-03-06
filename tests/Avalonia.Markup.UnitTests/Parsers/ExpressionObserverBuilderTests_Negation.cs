@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.Markup.Parsers;
+using Avalonia.Data.Core.Parsers;
+using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class ExpressionObserverBuilderTests_Negation
+    public class ExpressionObserverBuilderTests_Negation : ScopedTestBase
     {
         [Fact]
         public async Task Should_Negate_0()
@@ -22,7 +23,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var target = BuildAsObservable(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.True((bool)result);
+            Assert.True((bool)result!);
 
             GC.KeepAlive(data);
         }
@@ -34,7 +35,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var target = BuildAsObservable(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.False((bool)result);
+            Assert.False((bool)result!);
 
             GC.KeepAlive(data);
         }
@@ -46,7 +47,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var target = BuildAsObservable(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.True((bool)result);
+            Assert.True((bool)result!);
 
             GC.KeepAlive(data);
         }
@@ -58,7 +59,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var target = BuildAsObservable(data, "!Foo");
             var result = await target.Take(1);
 
-            Assert.False((bool)result);
+            Assert.False((bool)result!);
 
             GC.KeepAlive(data);
         }
@@ -164,19 +165,19 @@ namespace Avalonia.Markup.UnitTests.Parsers
                 enableDataValidation: enableDataValidation);
         }
 
-        private static IObservable<object> BuildAsObservable(object source, string path, bool enableDataValidation = false)
+        private static IObservable<object?> BuildAsObservable(object source, string path, bool enableDataValidation = false)
         {
             return Build(source, path, enableDataValidation).ToObservable();
         }
 
         private class Test : INotifyDataErrorInfo
         {
-            private string _dataValidationError;
+            private string? _dataValidationError;
 
             public bool Foo { get; set; }
-            public object Bar { get; set; }
+            public object? Bar { get; set; }
 
-            public string DataValidationError
+            public string? DataValidationError
             {
                 get => _dataValidationError;
                 set
@@ -190,11 +191,11 @@ namespace Avalonia.Markup.UnitTests.Parsers
             }
             public bool HasErrors => !string.IsNullOrWhiteSpace(DataValidationError);
 
-            public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+            public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
-            public IEnumerable GetErrors(string propertyName)
+            public IEnumerable GetErrors(string? propertyName)
             {
-                return DataValidationError is object ? new[] { DataValidationError } : null;
+                return DataValidationError is not null ? new[] { DataValidationError } : [];
             }
         }
     }

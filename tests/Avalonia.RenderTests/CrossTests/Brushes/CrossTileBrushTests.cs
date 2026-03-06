@@ -5,8 +5,6 @@ using Xunit;
 
 #if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests;
-#elif AVALONIA_D2D
-namespace Avalonia.Direct2D1.RenderTests;
 #else
 namespace Avalonia.RenderTests.WpfCompare;
 #endif
@@ -73,6 +71,68 @@ public class CrossTileBrushTests : CrossTestBase
         {
             Width = 100,
             Height = 100,
+            Background = brush
+        });
+
+    }
+
+    [CrossFact]
+    public void Should_Render_Aligned_TileBrush()
+    {
+        var brush = new CrossDrawingBrush
+        {
+            TileMode = TileMode.Tile,
+            AlignmentX = AlignmentX.Center,
+            AlignmentY = AlignmentY.Center,
+            Stretch = Stretch.Uniform,
+            Drawing = new CrossDrawingGroup()
+            {
+                Children = new List<CrossDrawing>()
+                {
+                    new CrossGeometryDrawing(new CrossRectangleGeometry(new(0, 0, 100, 150)))
+                    {
+                        Brush = new CrossSolidColorBrush(Colors.Crimson)
+                    },
+                }
+            }
+        };
+
+        RenderAndCompare(new CrossControl()
+        {
+            Width = 100,
+            Height = 100,
+            Background = brush
+        });
+
+    }
+
+    [CrossFact]
+    public void Should_Render_TileBrush_With_TileMode_None()
+    {
+        var brush = new CrossDrawingBrush
+        {
+            TileMode = TileMode.None,
+            Stretch = Stretch.Fill,
+            Viewbox = new Rect(0, 0, 50, 50),
+            ViewboxUnits = BrushMappingMode.Absolute,
+            Viewport = new Rect(0, 0, 50, 50),
+            ViewportUnits = BrushMappingMode.Absolute,
+            Drawing = new CrossDrawingGroup()
+            {
+                Children = new List<CrossDrawing>()
+                {
+                    new CrossGeometryDrawing(new CrossRectangleGeometry(new(0, 0, 50, 50)))
+                    {
+                        Brush = new CrossSolidColorBrush(Colors.Crimson)
+                    },
+                }
+            }
+        };
+
+        RenderAndCompare(new CrossControl()
+        {
+            Width = 200,
+            Height = 200,
             Background = brush
         });
 

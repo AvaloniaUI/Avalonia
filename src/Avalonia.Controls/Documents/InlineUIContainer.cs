@@ -18,10 +18,7 @@ namespace Avalonia.Controls.Documents
         public static readonly StyledProperty<Control> ChildProperty =
             AvaloniaProperty.Register<InlineUIContainer, Control>(nameof(Child));
 
-        static InlineUIContainer()
-        {
-            BaselineAlignmentProperty.OverrideDefaultValue<InlineUIContainer>(BaselineAlignment.Top);
-        }
+        private double _measuredWidth = double.NaN;
 
         /// <summary>
         /// Initializes a new instance of InlineUIContainer element.
@@ -56,11 +53,12 @@ namespace Avalonia.Controls.Documents
             set => SetValue(ChildProperty, value);
         }
 
-        internal override void BuildTextRun(IList<TextRun> textRuns)
+        internal override void BuildTextRun(IList<TextRun> textRuns, Size blockSize)
         {
-            if(!Child.IsMeasureValid)
+            if (_measuredWidth != blockSize.Width || !Child.IsMeasureValid)
             {
-                Child.Measure(Size.Infinity);
+                Child.Measure(new Size(blockSize.Width, double.PositiveInfinity));
+                _measuredWidth = blockSize.Width;
             }
 
             textRuns.Add(new EmbeddedControlRun(Child, CreateTextRunProperties()));
@@ -79,13 +77,24 @@ namespace Avalonia.Controls.Documents
                 if(change.OldValue is Control oldChild)
                 {
                     LogicalChildren.Remove(oldChild);
+                    InlineHost?.VisualChildren.Remove(oldChild);
                 }
 
                 if(change.NewValue is Control newChild)
                 {
                     LogicalChildren.Add(newChild);
+                    InlineHost?.VisualChildren.Add(newChild);
                 }
+
+                InlineHost?.Invalidate();
             }
+        }
+
+        internal override void OnInlineHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
+        {
+            var child = Child;
+            oldValue?.VisualChildren.Remove(child);
+            newValue?.VisualChildren.Add(child);
         }
     }
 }

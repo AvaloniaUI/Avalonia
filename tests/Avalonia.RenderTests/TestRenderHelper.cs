@@ -21,42 +21,27 @@ using Avalonia.UnitTests;
 using Avalonia.Utilities;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = SixLabors.ImageSharp.Image;
-#if AVALONIA_SKIA
+using Avalonia.Harfbuzz;
 using Avalonia.Skia;
-#else
-using Avalonia.Direct2D1;
-#endif
 
-#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests;
-#else
-namespace Avalonia.Direct2D1.RenderTests;
-#endif
 
 static class TestRenderHelper
 {
-    private static readonly TestDispatcherImpl s_dispatcherImpl =
-        new TestDispatcherImpl();
-
     static TestRenderHelper()
     {
-#if AVALONIA_SKIA
         SkiaPlatform.Initialize();
-#else
-            Direct2D1Platform.Initialize();
-#endif
-        AvaloniaLocator.CurrentMutable
-            .Bind<IDispatcherImpl>()
-            .ToConstant(s_dispatcherImpl);
-        
         AvaloniaLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(new StandardAssetLoader());
+        AvaloniaLocator.CurrentMutable.Bind<ITextShaperImpl>().ToConstant(new HarfBuzzTextShaper());
     }
     
     
     public static Task RenderToFile(Control target, string path, bool immediate, double dpi = 96)
     {
         var dir = Path.GetDirectoryName(path);
-        if (!Directory.Exists(dir)) 
+        Assert.NotNull(dir);
+
+        if (!Directory.Exists(dir))
             Directory.CreateDirectory(dir);
         
         var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
@@ -118,49 +103,27 @@ static class TestRenderHelper
 
     public static void BeginTest()
     {
-        s_dispatcherImpl.MainThread = Thread.CurrentThread;
+        Dispatcher.ResetBeforeUnitTests();
     }
 
     public static void EndTest()
     {
         if (Dispatcher.UIThread.CheckAccess()) 
             Dispatcher.UIThread.RunJobs();
+        Dispatcher.ResetForUnitTests();
     }
     
     public static string GetTestsDirectory()
     {
         var path = Directory.GetCurrentDirectory();
 
-        while (path.Length > 0 && Path.GetFileName(path) != "tests")
+        while (!string.IsNullOrEmpty(path) && Path.GetFileName(path) != "tests")
         {
             path = Path.GetDirectoryName(path);
         }
 
+        Assert.NotNull(path);
         return path;
-    }
-    
-    private class TestDispatcherImpl : IDispatcherImpl
-    {
-        public bool CurrentThreadIsLoopThread => MainThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
-
-        public Thread MainThread { get; set; }
-
-#pragma warning disable 67
-        public event Action Signaled;
-        public event Action Timer;
-#pragma warning restore 67
-
-        public void Signal()
-        {
-            // No-op
-        }
-
-        public long Now => 0;
-
-        public void UpdateTimer(long? dueTimeInMs)
-        {
-            // No-op
-        }
     }
 
     public static void AssertCompareImages(string actualPath, string expectedPath)
@@ -172,7 +135,7 @@ static class TestRenderHelper
 
             if (immediateError > 0.022)
             {
-                Assert.True(false, actualPath + ": Error = " + immediateError);
+                Assert.Fail(actualPath + ": Error = " + immediateError);
             }
         }
     }

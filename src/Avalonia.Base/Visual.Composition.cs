@@ -35,6 +35,7 @@ public partial class Visual
                 CompositionVisual.Children.Remove(ChildCompositionVisual);
                 
             CompositionVisual.DrawList = null;
+            CompositionVisual.OpacityMask = null;
             CompositionVisual = null;
         }
     }
@@ -141,12 +142,17 @@ public partial class Visual
         comp.Clip = Clip?.PlatformImpl;
         
         if (!Equals(comp.OpacityMask, OpacityMask))
-            comp.OpacityMask = OpacityMask?.ToImmutable();
+            comp.OpacityMask = OpacityMask;
 
+        var cacheMode = CacheMode?.GetForCompositor(comp.Compositor);
+        if (!ReferenceEquals(comp.CacheMode, cacheMode))
+            comp.CacheMode = cacheMode;
+        
         if (!comp.Effect.EffectEquals(Effect))
             comp.Effect = Effect?.ToImmutable();
 
         comp.RenderOptions = RenderOptions;
+        comp.TextOptions = TextOptions;
 
         var renderTransform = Matrix.Identity;
 

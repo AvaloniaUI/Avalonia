@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Parsers
 {
-    public class PropertyParserTests
+    public class PropertyParserTests : XamlTestBase
     {
         [Fact]
         public void Parses_Name()

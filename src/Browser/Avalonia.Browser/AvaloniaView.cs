@@ -12,7 +12,7 @@ namespace Avalonia.Browser
 
         /// <param name="divId">ID of the html element where avalonia content should be rendered.</param>
         public AvaloniaView(string divId)
-            : this(DomHelper.GetElementById(divId) ??
+            : this(DomHelper.GetElementById(divId, BrowserWindowingPlatform.GlobalThis) ??
                    throw new Exception($"Element with id '{divId}' was not found in the html document."))
         {
         }
@@ -47,7 +47,7 @@ namespace Avalonia.Browser
                 // Try to get local splash-screen of the specific host.
                 // If couldn't find - get global one by ID for compatibility.
                 var splash = DomHelper.GetElementsByClassName("avalonia-splash", host)
-                             ?? DomHelper.GetElementById("avalonia-splash");
+                             ?? DomHelper.GetElementById("avalonia-splash", BrowserWindowingPlatform.GlobalThis);
                 if (splash is not null)
                 {
                     DomHelper.AddCssClass(splash, "splash-close");

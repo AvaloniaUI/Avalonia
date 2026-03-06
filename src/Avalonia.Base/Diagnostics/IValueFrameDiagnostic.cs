@@ -4,9 +4,10 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Diagnostics;
 
+[PrivateApi]
 public record ValueEntryDiagnostic(AvaloniaProperty Property, object? Value);
 
-[Unstable]
+[PrivateApi]
 [NotClientImplementable]
 public interface IValueFrameDiagnostic
 {
@@ -18,8 +19,8 @@ public interface IValueFrameDiagnostic
         Style,
         Template
     }
-    
-    string? Description { get; }
+
+    object? Source { get; } 
     FrameType Type { get; }
     bool IsActive { get; }
     BindingPriority Priority { get; }

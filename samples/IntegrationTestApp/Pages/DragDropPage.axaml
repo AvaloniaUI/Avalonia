@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="IntegrationTestApp.Pages.DragDropPage">
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="4">
+      <Button Name="ResetDragDrop" Click="ResetDragDrop_Click" Margin="0,0,8,0">Reset</Button>
+      <TextBlock VerticalAlignment="Center">Drop Position: </TextBlock>
+      <TextBlock Name="DropPosition" VerticalAlignment="Center" Margin="4,0"/>
+      <TextBlock VerticalAlignment="Center" Margin="8,0,0,0">Status: </TextBlock>
+      <TextBlock Name="DragDropStatus" VerticalAlignment="Center" Margin="4,0"/>
+    </StackPanel>
+
+    <!-- Use a Grid with row definitions to create offset from window origin -->
+    <!-- The top spacer ensures the drag/drop controls are NOT at (0,0) -->
+    <Grid RowDefinitions="100,*">
+      <!-- Spacer row to offset controls from window origin -->
+      <Border Grid.Row="0" Background="LightGray">
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Text="Spacer (100px) - Controls below are offset from window origin"/>
+      </Border>
+
+      <!-- Drag and Drop test area -->
+      <Grid Grid.Row="1" ColumnDefinitions="*,*" Margin="20">
+        <!-- Drag Source -->
+        <Border Name="DragSource"
+                Grid.Column="0"
+                Background="CornflowerBlue"
+                Margin="10"
+                CornerRadius="8"
+                AutomationProperties.AccessibilityView="Content"
+                PointerPressed="DragSource_PointerPressed">
+          <TextBlock HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Text="Drag Source"
+                     Foreground="White"
+                     FontWeight="Bold"/>
+        </Border>
+
+        <!-- Drop Target -->
+        <Border Name="DropTarget"
+                Grid.Column="1"
+                Background="LightGreen"
+                Margin="10"
+                CornerRadius="8"
+                AutomationProperties.AccessibilityView="Content"
+                DragDrop.AllowDrop="True">
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Drop Target"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"/>
+            <TextBlock Name="DropTargetText"
+                       HorizontalAlignment="Center"
+                       Text="Drop items here"/>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Grid>
+  </DockPanel>
+</UserControl>

@@ -2,13 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.UnitTests;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
-    public class ScrollContentPresenterTests
+    public class ScrollContentPresenterTests : NameScopeTests
     {
         [Theory]
         [InlineData(HorizontalAlignment.Stretch, VerticalAlignment.Stretch, 10, 10, 80, 80)]
@@ -300,7 +302,10 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(1000, 1000));
             target.Arrange(new Rect(0, 0, 1000, 1000));
 
-            Assert.Equal(new Size(176.00000000000003, 176.00000000000003), target.Child!.DesiredSize);
+            var nonRoundedVieViewport = target.Child!.Bounds.Size.Inflate(
+                LayoutHelper.RoundLayoutThickness(target.Child.Margin, root.LayoutScaling));
+
+            Assert.Equal(new Size(176.00000000000003, 176.00000000000003), nonRoundedVieViewport);
             Assert.Equal(new Size(176, 176), target.Viewport);
             Assert.Equal(new Size(176, 176), target.Extent);
         }
@@ -355,6 +360,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 Width = 100,
                 Height = 100,
+                CanVerticallyScroll = true,
+                CanHorizontallyScroll = true,
                 Content = new Border
                 {
                     Width = 200,
@@ -397,6 +404,261 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.BringDescendantIntoView(border, new Rect(200, 200, 0, 0));
 
             Assert.Equal(new Vector(150, 150), target.Offset);
+        }
+
+        [Fact]
+        public void BringDescendantIntoView_Should_Move_Child_Even_With_Margin_In_Parent()
+        {
+            var namescope = new NameScope();
+            var content = new StackPanel()
+            {
+                Orientation = Orientation.Vertical,
+                Width = 100,
+                Margin = new Thickness(0, 200),
+            };
+
+            for(int i = 0; i < 100; i++)
+            {
+                var child = new Border
+                {
+                    Width = 100,
+                    Height = 20,
+                    Name = $"Border{i}"
+                }.RegisterInNameScope(namescope);
+                content.Children.Add(child);
+            }
+            var target = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
+                Width = 200,
+                Height = 100,
+                Content = new Decorator
+                {
+                    Child = content
+                }
+            };
+
+            NameScope.SetNameScope(target, namescope);
+
+            target.UpdateChild();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // Border20 is at position 0,600 with bottom at Y=620
+            var border20 = target.GetControl<Border>("Border20");
+            target.BringDescendantIntoView(border20, new Rect(border20.Bounds.Size));
+
+            // With viewport Height of 100, border becomes fully visible when alligned from the bottom at Offset Y=520, i.e. 620-100
+            Assert.Equal(new Vector(0, 520), target.Offset);
+
+            // Reset stack panel's margin
+            content.Margin = default;
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // Border20 is at position 0,800 with bottom at Y=820
+            var border40 = target.GetControl<Border>("Border40");
+            target.BringDescendantIntoView(border40, new Rect(border40.Bounds.Size));
+
+            // With viewport Height of 100, border becomes fully visible when alligned from the bottom at Offset Y=720, i.e. 820-100
+            Assert.Equal(new Vector(0, 720), target.Offset);
+        }
+
+        [Fact]
+        public void BringDescendantIntoView_Should_Not_Move_Child_If_Completely_In_View()
+        {
+            var namescope = new NameScope();
+            var content = new StackPanel()
+            {
+                Orientation = Orientation.Vertical,
+                Width = 100,
+            };
+
+            for(int i = 0; i < 100; i++)
+            {
+                var child = new Border
+                {
+                    Width = 100,
+                    Height = 20,
+                    Name = $"Border{i}"
+                }.RegisterInNameScope(namescope);
+                content.Children.Add(child);
+            }
+            var target = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
+                Width = 200,
+                Height = 100,
+                Content = new Decorator
+                {
+                    Child = content
+                }
+            };
+
+            NameScope.SetNameScope(target, namescope);
+
+            target.UpdateChild();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+            var border3 = target.GetControl<Border>("Border3");
+            target.BringDescendantIntoView(border3, new Rect(border3.Bounds.Size));
+
+            // Border3 is still in view, offset hasn't changed
+            Assert.Equal(new Vector(0, 0), target.Offset);
+        }
+
+        [Fact]
+        public void BringDescendantIntoView_Should_Move_Child_At_Least_Partially_Above_Viewport()
+        {
+            Border border = new Border
+            {
+                Width = 100,
+                Height = 20
+            };
+            var content = new StackPanel()
+            {
+                Orientation = Orientation.Vertical,
+                Width = 100,
+            };
+
+            for(int i = 0; i < 100; i++)
+            {
+                // border position will be (0,60)
+                var child = i == 3 ? border : new Border
+                {
+                    Width = 100,
+                    Height = 20,
+                };
+                content.Children.Add(child);
+            }
+            var target = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
+                Width = 200,
+                Height = 100,
+                Content = new Decorator
+                {
+                    Child = content
+                }
+            };
+
+            target.UpdateChild();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // move border to above the view port
+            target.Offset = new Vector(0, 90);
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.BringDescendantIntoView(border, new Rect(border.Bounds.Size));
+
+            Assert.Equal(new Vector(0, 60), target.Offset);
+
+            // move border to partially above the view port
+            target.Offset = new Vector(0, 70);
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.BringDescendantIntoView(border, new Rect(border.Bounds.Size));
+
+            Assert.Equal(new Vector(0, 60), target.Offset);
+        }
+
+        [Fact]
+        public void BringDescendantIntoView_Should_Not_Move_Child_If_Completely_Covers_Viewport()
+        {
+            Border border = new Border
+            {
+                Width = 100,
+                Height = 200
+            };
+            var content = new StackPanel()
+            {
+                Orientation = Orientation.Vertical,
+                Width = 100,
+            };
+
+            for (int i = 0; i < 100; i++)
+            {
+                // border position will be (0,60)
+                var child = i == 3 ? border : new Border
+                {
+                    Width = 100,
+                    Height = 20,
+                };
+                content.Children.Add(child);
+            }
+            var target = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
+                Width = 200,
+                Height = 100,
+                Content = new Decorator
+                {
+                    Child = content
+                }
+            };
+
+            target.UpdateChild();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+            // move border such that it's partially above viewport and partially below viewport
+            target.Offset = new Vector(0, 90);
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.BringDescendantIntoView(border, new Rect(border.Bounds.Size));
+
+            Assert.Equal(new Vector(0, 90), target.Offset);
+        }
+
+        [Fact]
+        public void BringDescendantIntoView_Should_Move_Child_At_Least_Partially_Below_Viewport()
+        {
+            Border border = new Border
+            {
+                Width = 100,
+                Height = 20
+            };
+            var content = new StackPanel()
+            {
+                Orientation = Orientation.Vertical,
+                Width = 100,
+            };
+
+            for (int i = 0; i < 100; i++)
+            {
+                // border position will be (0,180)
+                var child = i == 9 ? border : new Border
+                {
+                    Width = 100,
+                    Height = 20,
+                };
+                content.Children.Add(child);
+            }
+            var target = new ScrollContentPresenter
+            {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
+                Width = 200,
+                Height = 100,
+                Content = new Decorator
+                {
+                    Child = content
+                }
+            };
+
+            target.UpdateChild();
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // border is at (0, 180) and below the viewport
+            target.BringDescendantIntoView(border, new Rect(border.Bounds.Size));
+
+            Assert.Equal(new Vector(0, 100), target.Offset);
+
+            // move border to partially below the view port
+            target.Offset = new Vector(0, 90);
+            target.BringDescendantIntoView(border, new Rect(border.Bounds.Size));
         }
 
         [Fact]

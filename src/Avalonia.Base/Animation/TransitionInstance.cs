@@ -33,9 +33,17 @@ namespace Avalonia.Animation
             //                   ^- normalizedDelayEnd
             //                    [<----   normalizedInterpVal   --->]
 
-            var normalizedInterpVal = 1d;
+            double normalizedInterpVal;
 
-            if (!MathUtilities.AreClose(_duration.TotalSeconds, 0d))
+            if (t < _delay)
+            {
+                normalizedInterpVal = 0d;
+            }
+            else if (MathUtilities.AreClose(_duration.TotalSeconds, 0d))
+            {
+                normalizedInterpVal = 1d;
+            }
+            else
             {
                 var normalizedTotalDur = _delay + _duration;
                 var normalizedDelayEnd = _delay.TotalSeconds / normalizedTotalDur.TotalSeconds;

@@ -7,11 +7,13 @@
 #import <AppKit/AppKit.h>
 #include "WindowProtocol.h"
 #include "WindowBaseImpl.h"
+#include "AvnAccessibility.h"
 
-@interface AvnWindow : NSWindow <AvnWindowProtocol, NSWindowDelegate>
+@interface AvnWindow : NSWindow <AvnWindowProtocol, NSWindowDelegate, AvnAccessibility>
 -(AvnWindow* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
+-(AvnView* _Nullable) view;
 @end
 
-@interface AvnPanel : NSPanel <AvnWindowProtocol, NSWindowDelegate>
+@interface AvnPanel : NSPanel <AvnWindowProtocol, NSWindowDelegate, AvnAccessibility>
 -(AvnPanel* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent contentRect: (NSRect)contentRect styleMask: (NSWindowStyleMask)styleMask;
 @end

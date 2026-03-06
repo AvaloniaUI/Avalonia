@@ -8,21 +8,22 @@
 #include "AvnView.h"
 #include "automation.h"
 #include "WindowProtocol.h"
+#include "WindowImpl.h"
 
-WindowImpl::WindowImpl(IAvnWindowEvents *events) : WindowBaseImpl(events) {
+WindowImpl::WindowImpl(IAvnWindowEvents *events) : TopLevelImpl(events), WindowBaseImpl(events, false) {
     _isEnabled = true;
-    _children = std::list<WindowImpl*>();
     _isClientAreaExtended = false;
-    _extendClientHints = AvnDefaultChrome;
     _fullScreenActive = false;
     _canResize = true;
+    _canMinimize = true;
+    _canMaximize = true;
     _decorations = SystemDecorationsFull;
     _transitioningWindowState = false;
     _inSetWindowState = false;
     _lastWindowState = Normal;
     _actualWindowState = Normal;
     _lastTitle = @"";
-    _parent = nullptr;
+    Parent = nullptr;
     WindowEvents = events;
 
     [Window setHasShadow:true];
@@ -69,40 +70,7 @@ HRESULT WindowImpl::SetEnabled(bool enable) {
     @autoreleasepool {
         _isEnabled = enable;
         [GetWindowProtocol() setEnabled:enable];
-        UpdateStyle();
-        return S_OK;
-    }
-}
-
-HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        if(_parent != nullptr)
-        {
-            _parent->_children.remove(this);
-        }
-
-        auto cparent = dynamic_cast<WindowImpl *>(parent);
-        
-        _parent = cparent;
-
-        _isModal = _parent != nullptr;
-        
-        if(_parent != nullptr && Window != nullptr){
-            // If one tries to show a child window with a minimized parent window, then the parent window will be
-            // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
-            // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
-            if (cparent->WindowState() == Minimized)
-                cparent->SetWindowState(Normal);
-
-            [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-                
-            cparent->_children.push_back(this);
-                
-            UpdateStyle();
-        }
-
+        UpdateAppearance();
         return S_OK;
     }
 }
@@ -156,12 +124,12 @@ bool WindowImpl::CanBecomeKeyWindow()
 
 void WindowImpl::StartStateTransition() {
     _transitioningWindowState = true;
-    UpdateStyle();
+    UpdateAppearance();
 }
 
 void WindowImpl::EndStateTransition() {
     _transitioningWindowState = false;
-    UpdateStyle();
+    UpdateAppearance();
 
     // Ensure correct order of child windows after fullscreen transition.
     ZOrderChildWindows();
@@ -184,20 +152,11 @@ void WindowImpl::WindowStateChanged() {
             if (_isClientAreaExtended) {
                 if (_lastWindowState == FullScreen) {
                     // we exited fs.
-                    if (_extendClientHints & AvnOSXThickTitleBar) {
-                        Window.toolbar = [NSToolbar new];
-                        Window.toolbar.showsBaselineSeparator = false;
-                    }
-
                     [Window setTitlebarAppearsTransparent:true];
 
                     [StandardContainer setFrameSize:StandardContainer.frame.size];
                 } else if (state == FullScreen) {
                     // we entered fs.
-                    if (_extendClientHints & AvnOSXThickTitleBar) {
-                        Window.toolbar = nullptr;
-                    }
-
                     [Window setTitlebarAppearsTransparent:false];
 
                     [StandardContainer setFrameSize:StandardContainer.frame.size];
@@ -224,7 +183,8 @@ bool WindowImpl::IsZoomed() {
 void WindowImpl::DoZoom() {
     if (_decorations == SystemDecorationsNone ||
         _decorations == SystemDecorationsBorderOnly ||
-        _canResize == false) {
+        _canResize == false ||
+        _canMaximize == false) {
         [Window setFrame:[Window screen].visibleFrame display:true];
     } else {
         [Window performZoom:Window];
@@ -236,9 +196,25 @@ HRESULT WindowImpl::SetCanResize(bool value) {
 
     @autoreleasepool {
         _canResize = value;
-        UpdateStyle();
+        UpdateAppearance();
         return S_OK;
     }
+}
+
+HRESULT WindowImpl::SetCanMinimize(bool value) {
+    START_COM_ARP_CALL;
+
+    _canMinimize = value;
+    UpdateAppearance();
+    return S_OK;
+}
+
+HRESULT WindowImpl::SetCanMaximize(bool value) {
+    START_COM_ARP_CALL;
+
+    _canMaximize = value;
+    UpdateAppearance();
+    return S_OK;
 }
 
 HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
@@ -252,7 +228,11 @@ HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
             return S_OK;
         }
 
-        UpdateStyle();
+        UpdateAppearance();
+
+        if (_isClientAreaExtended) {
+            [StandardContainer ShowTitleBar:_decorations == SystemDecorationsFull];
+        }
 
         switch (_decorations) {
             case SystemDecorationsNone:
@@ -405,20 +385,9 @@ HRESULT WindowImpl::SetExtendClientArea(bool enable) {
 
                 [Window setTitlebarAppearsTransparent:true];
 
-                auto wantsTitleBar = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
+                [StandardContainer ShowTitleBar:_decorations == SystemDecorationsFull];
 
-                if (wantsTitleBar) {
-                    [StandardContainer ShowTitleBar:true];
-                } else {
-                    [StandardContainer ShowTitleBar:false];
-                }
-
-                if (_extendClientHints & AvnOSXThickTitleBar) {
-                    Window.toolbar = [NSToolbar new];
-                    Window.toolbar.showsBaselineSeparator = false;
-                } else {
-                    Window.toolbar = nullptr;
-                }
+                Window.toolbar = nullptr;
             } else {
                 Window.titleVisibility = NSWindowTitleVisible;
                 Window.toolbar = nullptr;
@@ -427,20 +396,9 @@ HRESULT WindowImpl::SetExtendClientArea(bool enable) {
             }
 
             [GetWindowProtocol() setIsExtended:enable];
-            UpdateStyle();
+            UpdateAppearance();
         }
 
-        return S_OK;
-    }
-}
-
-HRESULT WindowImpl::SetExtendClientAreaHints(AvnExtendClientAreaChromeHints hints) {
-    START_COM_CALL;
-
-    @autoreleasepool {
-        _extendClientHints = hints;
-
-        SetExtendClientArea(_isClientAreaExtended);
         return S_OK;
     }
 }
@@ -484,6 +442,10 @@ void WindowImpl::ExitFullScreenMode() {
 }
 
 HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
+    return SetWindowState(state, true);
+}
+
+HRESULT WindowImpl::SetWindowState(AvnWindowState state, bool shouldResize) {
     START_COM_CALL;
 
     @autoreleasepool {
@@ -507,61 +469,63 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
         if (_shown) {
             _actualWindowState = _lastWindowState;
 
-            switch (state) {
-                case Maximized:
-                    if (currentState == FullScreen) {
-                        ExitFullScreenMode();
-                    }
-
-                    lastPositionSet.X = 0;
-                    lastPositionSet.Y = 0;
-
-                    if ([Window isMiniaturized]) {
-                        [Window deminiaturize:Window];
-                    }
-
-                    if (!IsZoomed()) {
-                        DoZoom();
-                    }
-                    break;
-
-                case Minimized:
-                    if (currentState == FullScreen) {
-                        ExitFullScreenMode();
-                    } else {
-                        [Window miniaturize:Window];
-                    }
-                    break;
-
-                case FullScreen:
-                    if ([Window isMiniaturized]) {
-                        [Window deminiaturize:Window];
-                    }
-
-                    EnterFullScreenMode();
-                    break;
-
-                case Normal:
-                    if ([Window isMiniaturized]) {
-                        [Window deminiaturize:Window];
-                    }
-
-                    if (currentState == FullScreen) {
-                        ExitFullScreenMode();
-                    }
-
-                    if (IsZoomed()) {
-                        if (_decorations == SystemDecorationsFull) {
-                            DoZoom();
-                        } else {
-                            [Window setFrame:_preZoomSize display:true];
-                            auto newFrame = [Window contentRectForFrameRect:[Window frame]].size;
-
-                            [View setFrameSize:newFrame];
+            if (shouldResize) {
+                switch (state) {
+                    case Maximized:
+                        if (currentState == FullScreen) {
+                            ExitFullScreenMode();
                         }
 
-                    }
-                    break;
+                        lastPositionSet.X = 0;
+                        lastPositionSet.Y = 0;
+
+                        if ([Window isMiniaturized]) {
+                            [Window deminiaturize:Window];
+                        }
+
+                        if (!IsZoomed()) {
+                            DoZoom();
+                        }
+                        break;
+
+                    case Minimized:
+                        if (currentState == FullScreen) {
+                            ExitFullScreenMode();
+                        } else {
+                            [Window miniaturize:Window];
+                        }
+                        break;
+
+                    case FullScreen:
+                        if ([Window isMiniaturized]) {
+                            [Window deminiaturize:Window];
+                        }
+
+                        EnterFullScreenMode();
+                        break;
+
+                    case Normal:
+                        if ([Window isMiniaturized]) {
+                            [Window deminiaturize:Window];
+                        }
+
+                        if (currentState == FullScreen) {
+                            ExitFullScreenMode();
+                        }
+
+                        if (IsZoomed()) {
+                            if (_decorations == SystemDecorationsFull) {
+                                DoZoom();
+                            } else {
+                                [Window setFrame:_preZoomSize display:true];
+                                auto newFrame = [Window contentRectForFrameRect:[Window frame]].size;
+
+                                [View setFrameSize:newFrame];
+                            }
+
+                        }
+                        break;
+                }
             }
 
             WindowEvents->WindowStateChanged(_actualWindowState);
@@ -579,7 +543,7 @@ bool WindowImpl::IsModal() {
 }
 
 bool WindowImpl::IsOwned() {
-    return _parent != nullptr;
+    return Parent.tryGet() != nullptr;
 }
 
 NSWindowStyleMask WindowImpl::CalculateStyleMask() {
@@ -610,7 +574,7 @@ NSWindowStyleMask WindowImpl::CalculateStyleMask() {
             break;
     }
 
-    if (!IsOwned()) {
+    if (_canMinimize && !IsOwned()) {
         s |= NSWindowStyleMaskMiniaturizable;
     }
 
@@ -620,16 +584,14 @@ NSWindowStyleMask WindowImpl::CalculateStyleMask() {
     return s;
 }
 
-void WindowImpl::UpdateStyle() {
-    WindowBaseImpl::UpdateStyle();
+void WindowImpl::UpdateAppearance() {
+    WindowBaseImpl::UpdateAppearance();
     
     if (Window == nil) {
         return;
     }
 
-    bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
-    bool hasTrafficLights = (_decorations == SystemDecorationsFull) &&
-        (_isClientAreaExtended ? wantsChrome : true);
+    bool hasTrafficLights = (_decorations == SystemDecorationsFull);
     
     NSButton* closeButton = [Window standardWindowButton:NSWindowCloseButton];
     NSButton* miniaturizeButton = [Window standardWindowButton:NSWindowMiniaturizeButton];
@@ -638,7 +600,16 @@ void WindowImpl::UpdateStyle() {
     [closeButton setHidden:!hasTrafficLights];
     [closeButton setEnabled:_isEnabled];
     [miniaturizeButton setHidden:!hasTrafficLights];
-    [miniaturizeButton setEnabled:_isEnabled];
+    [miniaturizeButton setEnabled:_isEnabled && _canMinimize];
     [zoomButton setHidden:!hasTrafficLights];
-    [zoomButton setEnabled:CanZoom()];
+    [zoomButton setEnabled:CanZoom() || (([Window styleMask] & NSWindowStyleMaskFullScreen) != 0 && _isEnabled)];
+}
+
+extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
+{
+    @autoreleasepool
+    {
+        IAvnWindow* ptr = (IAvnWindow*)new WindowImpl(events);
+        return ptr;
+    }
 }

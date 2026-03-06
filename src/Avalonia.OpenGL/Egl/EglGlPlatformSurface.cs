@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Metadata;
 using Avalonia.OpenGL.Surfaces;
 
 namespace Avalonia.OpenGL.Egl
@@ -10,6 +11,12 @@ namespace Avalonia.OpenGL.Egl
             IntPtr Handle { get; }
             PixelSize Size { get; }
             double Scaling { get; }
+        }
+        
+        [PrivateApi]
+        public interface IEglWindowGlPlatformSurfaceInfoWithWaitPolicy : IEglWindowGlPlatformSurfaceInfo
+        {
+            public bool SkipWaits { get; }
         }
         
         private readonly IEglWindowGlPlatformSurfaceInfo _info;
@@ -40,12 +47,16 @@ namespace Avalonia.OpenGL.Egl
                 _info = info;
                 _currentSize = info.Size;
                 _handle = _info.Handle;
+                SkipWaits = info is IEglWindowGlPlatformSurfaceInfoWithWaitPolicy { SkipWaits: true };
             }
+
+            private protected override bool SkipWaits { get; }
 
             public override void Dispose() => _glSurface?.Dispose();
 
-            public override IGlPlatformSurfaceRenderingSession BeginDrawCore()
+            public override IGlPlatformSurfaceRenderingSession BeginDrawCore(PixelSize? expectedPixelSize)
             {
+                // TODO: use expectedPixelSize
                 if (_info.Size != _currentSize 
                     || _handle != _info.Handle
                     || _glSurface == null)

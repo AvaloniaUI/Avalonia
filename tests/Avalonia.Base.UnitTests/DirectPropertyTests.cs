@@ -8,11 +8,11 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void IsDirect_Property_Returns_True()
         {
-            var target = new DirectProperty<Class1, string>(
+            var target = new DirectProperty<Class1, string?>(
                 "test", 
                 o => null, 
                 null,
-                new DirectPropertyMetadata<string>());
+                new DirectPropertyMetadata<string?>());
 
             Assert.True(target.IsDirect);
         }
@@ -68,12 +68,12 @@ namespace Avalonia.Base.UnitTests
 
         private class Class1 : AvaloniaObject
         {
-            public static readonly DirectProperty<Class1, string> FooProperty =
-                AvaloniaProperty.RegisterDirect<Class1, string>(nameof(Foo), o => o.Foo, (o, v) => o.Foo = v);
+            public static readonly DirectProperty<Class1, string?> FooProperty =
+                AvaloniaProperty.RegisterDirect<Class1, string?>(nameof(Foo), o => o.Foo, (o, v) => o.Foo = v);
 
-            private string _foo = "foo";
+            private string? _foo = "foo";
 
-            public string Foo
+            public string? Foo
             {
                 get { return _foo; }
                 set { SetAndRaise(FooProperty, ref _foo, value); }

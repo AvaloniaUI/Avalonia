@@ -24,6 +24,7 @@ public class SetterTests : XamlTestBase
             var animation = (Animation.Animation)AvaloniaRuntimeXamlLoader.Load(xaml);
             var setter = (Setter)animation.Children[0].Setters[0];
 
+            Assert.NotNull(setter.Property);
             Assert.Equal(typeof(ContentControl), setter.Property.OwnerType);
         }
     }
@@ -45,6 +46,7 @@ public class SetterTests : XamlTestBase
             var animation = (Animation.Animation)AvaloniaRuntimeXamlLoader.Load(xaml);
             var setter = (Setter)animation.Children[0].Setters[0];
 
+            Assert.NotNull(setter.Property);
             Assert.Equal(typeof(ContentControl), setter.Property.OwnerType);
         }
     }

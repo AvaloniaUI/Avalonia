@@ -11,7 +11,7 @@ namespace Avalonia.Win32
         /// <summary>
         /// Windows 10 Anniversary Update
         /// </summary>
-        public static readonly Version Windows10_1607 = new Version(10, 0, 1607);
+        public static readonly Version Windows10_1607 = new Version(10, 0, 14393); // 3rd digit of the Version class is build number (which is 14393 for Windows 10 Version 1607)
         public static readonly Version Windows8 = new Version(6, 2);
         public static readonly Version Windows8_1 = new Version(6, 3);
         public static readonly Version Windows7 = new Version(6, 1);

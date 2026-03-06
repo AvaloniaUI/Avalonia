@@ -180,7 +180,7 @@ internal class RawEventGrouper : IDisposable
     {
         
         last.IntermediatePoints ??= new Lazy<IReadOnlyList<RawPointerPoint>?>(s_getPooledListDelegate);
-        ((PooledList<RawPointerPoint>)last.IntermediatePoints.Value!).Add(new RawPointerPoint { Position = last.Position });
+        ((PooledList<RawPointerPoint>)last.IntermediatePoints.Value!).Add(new RawPointerPoint { Position = last.Position, Pressure = last.Point.Pressure, ContactRect = last.Point.ContactRect, Twist = last.Point.Twist, XTilt = last.Point.XTilt, YTilt = last.Point.YTilt });
         last.Position = current.Position;
         last.Timestamp = current.Timestamp;
         last.InputModifiers = current.InputModifiers;

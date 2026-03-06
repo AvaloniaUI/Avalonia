@@ -1,9 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(AvsCurrentIOSTargetFramework);$(AvsCurrentTvOSTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(AvsCurrentMacCatalystTargetFramework);$(AvsCurrentIOSTargetFramework);$(AvsCurrentTvOSTargetFramework)</TargetFrameworks>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">$(AvsMinSupportedIOSVersion)</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">$(AvsMinSupportedTvOSVersion)</SupportedOSPlatformVersion>
-    <!-- Not yet enabled as a target framework -->
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">$(AvsMinSupportedMacCatalystVersion)</SupportedOSPlatformVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
@@ -13,6 +12,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
 
@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tvos'">
-    <Compile Remove="Storage/**/*.*" />
-    <Compile Remove="ClipboardImpl.cs" />
+    <Compile Remove="Storage/**/*" />
+    <Compile Remove="Clipboard/**/*" />
     <Compile Remove="UIKitInputPane.cs" />
   </ItemGroup>
 

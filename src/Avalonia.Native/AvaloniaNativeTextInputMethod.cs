@@ -1,9 +1,6 @@
 ﻿using System;
 using Avalonia.Input.TextInput;
-using Avalonia.Media.TextFormatting;
 using Avalonia.Native.Interop;
-
-#nullable enable
 
 namespace Avalonia.Native
 {
@@ -13,9 +10,9 @@ namespace Avalonia.Native
         private IAvnTextInputMethodClient? _nativeClient;
         private readonly IAvnTextInputMethod _inputMethod;
         
-        public AvaloniaNativeTextInputMethod(IAvnWindowBase nativeWindow)
+        public AvaloniaNativeTextInputMethod(IAvnTopLevel topLevel)
         {
-            _inputMethod = nativeWindow.InputMethod;
+            _inputMethod = topLevel.InputMethod;
         }
 
         public void Dispose()

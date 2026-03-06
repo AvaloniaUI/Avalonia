@@ -40,7 +40,7 @@ namespace Avalonia.Controls
             set
             {
                 Inner[key] = value;
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                RaiseResourcesChanged();
             }
         }
 
@@ -138,7 +138,7 @@ namespace Avalonia.Controls
         public void Add(object key, object? value)
         {
             Inner.Add(key, value);
-            Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+            RaiseResourcesChanged();
         }
 
         public void AddDeferred(object key, Func<IServiceProvider?, object?> factory)
@@ -147,12 +147,28 @@ namespace Avalonia.Controls
         public void AddDeferred(object key, IDeferredContent deferredContent)
             => Add(key, deferredContent);
 
+        public void AddNotSharedDeferred(object key, IDeferredContent deferredContent)
+            => Add(key, new NotSharedDeferredItem(deferredContent));
+
+        public void SetItems(IEnumerable<KeyValuePair<object, object?>> values)
+        {
+            try
+            {
+                foreach (var value in values)
+                    Inner[value.Key] = value.Value;
+            }
+            finally
+            {
+                RaiseResourcesChanged();
+            }
+        }
+        
         public void Clear()
         {
             if (_inner?.Count > 0)
             {
                 _inner.Clear();
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                RaiseResourcesChanged();
             }
         }
 
@@ -162,7 +178,7 @@ namespace Avalonia.Controls
         {
             if (_inner?.Remove(key) == true)
             {
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                RaiseResourcesChanged();
                 return true;
             }
 
@@ -236,12 +252,16 @@ namespace Avalonia.Controls
                     try
                     {
                         _lastDeferredItemKey = key;
-                        _inner[key] = value = deferred.Build(null) switch
+                        value = deferred.Build(null) switch
                         {
                             ITemplateResult t => t.Result,
                             { } v => v,
                             _ => null,
                         };
+                        if (deferred is not NotSharedDeferredItem)
+                        {
+                            _inner[key] = value;
+                        }
                     }
                     finally
                     {
@@ -250,7 +270,6 @@ namespace Avalonia.Controls
                 }
                 return true;
             }
-
             value = null;
             return false;
         }
@@ -297,7 +316,7 @@ namespace Avalonia.Controls
         {
             if ((_inner as ICollection<KeyValuePair<object, object?>>)?.Remove(item) == true)
             {
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                RaiseResourcesChanged();
                 return true;
             }
 
@@ -339,7 +358,7 @@ namespace Avalonia.Controls
 
             if (hasResources)
             {
-                owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Create());
             }
         }
 
@@ -366,7 +385,7 @@ namespace Avalonia.Controls
 
             if (hasResources)
             {
-                owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Create());
             }
         }
 
@@ -375,6 +394,12 @@ namespace Avalonia.Controls
             private readonly Func<IServiceProvider?,object?> _factory;
             public DeferredItem(Func<IServiceProvider?, object?> factory) => _factory = factory;
             public object? Build(IServiceProvider? serviceProvider) => _factory(serviceProvider);
+        }
+
+        private sealed class NotSharedDeferredItem(IDeferredContent deferredContent) : IDeferredContent
+        {
+            private readonly IDeferredContent _deferredContent = deferredContent ;
+            public object? Build(IServiceProvider? serviceProvider) => _deferredContent.Build(serviceProvider);
         }
     }
 }

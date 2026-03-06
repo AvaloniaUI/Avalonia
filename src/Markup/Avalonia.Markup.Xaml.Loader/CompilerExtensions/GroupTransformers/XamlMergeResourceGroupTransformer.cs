@@ -7,7 +7,6 @@ using XamlX.Ast;
 using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
-#nullable enable
 
 internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
 {
@@ -94,7 +93,7 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                     $"Node MergeResourceInclude is unable to resolve \"{originalAssetPath}\" path.", propertyNode, node);
             }
 
-            var singleRootObject = ((XamlManipulationGroupNode)targetDocumentRoot.Manipulation)
+            var singleRootObject = ((XamlManipulationGroupNode)targetDocumentRoot.Manipulation!)
                 .Children.OfType<XamlObjectInitializationNode>().Single();
             if (singleRootObject.Type != resourceDictionaryType)
             {

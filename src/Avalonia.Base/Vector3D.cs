@@ -15,7 +15,7 @@ public readonly record struct Vector3D(double X, double Y, double Z)
     /// <returns>The <see cref="Vector3D"/>.</returns>
     public static Vector3D Parse(string s)
     {
-        using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Vector."))
+        using (var tokenizer = new SpanStringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Vector."))
         {
             return new Vector3D(
                 tokenizer.ReadDouble(),

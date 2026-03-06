@@ -6,11 +6,13 @@ namespace Avalonia.Browser.Interop;
 
 internal static partial class AvaloniaModule
 {
-    private static readonly Lazy<Task> s_importMain = new(() =>
+    private static readonly Lazy<Task> s_importMain = new(ImportMainToCurrentContext);
+    
+    public static Task ImportMainToCurrentContext()
     {
         var options = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
         return JSHost.ImportAsync(MainModuleName, options.FrameworkAssetPathResolver!("avalonia.js"));
-    });
+    }
 
     private static readonly Lazy<Task> s_importStorage = new(() =>
     {

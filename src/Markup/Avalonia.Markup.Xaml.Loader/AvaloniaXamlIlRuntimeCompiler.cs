@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -33,14 +33,14 @@ namespace Avalonia.Markup.Xaml.XamlIl
     internal static class AvaloniaXamlIlRuntimeCompiler
     {
 #if !RUNTIME_XAML_CECIL
-        private static SreTypeSystem _sreTypeSystem;
-        private static Type _ignoresAccessChecksFromAttribute;
-        private static ModuleBuilder _sreBuilder;
-        private static IXamlType _sreContextType; 
-        private static XamlLanguageTypeMappings _sreMappings;
-        private static XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> _sreEmitMappings;
-        private static XamlXmlnsMappings _sreXmlns;
-        private static AssemblyBuilder _sreAsm;
+        private static SreTypeSystem? _sreTypeSystem;
+        private static Type? _ignoresAccessChecksFromAttribute;
+        private static ModuleBuilder? _sreBuilder;
+        private static IXamlType? _sreContextType;
+        private static XamlLanguageTypeMappings? _sreMappings;
+        private static XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult>? _sreEmitMappings;
+        private static XamlXmlnsMappings? _sreXmlns;
+        private static AssemblyBuilder? _sreAsm;
         private static bool _sreCanSave;
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = XamlX.TrimmingMessages.CanBeSafelyTrimmed)]
@@ -48,7 +48,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
         {
             if (_sreBuilder == null)
                 return;
-            var saveMethod = _sreAsm.GetType().GetMethods()
+            var saveMethod = _sreAsm!.GetType().GetMethods()
                 .FirstOrDefault(m => m.Name == "Save" && m.GetParameters().Length == 1);
             if (saveMethod == null)
                 return;
@@ -65,8 +65,24 @@ namespace Avalonia.Markup.Xaml.XamlIl
 
         [CompilerDynamicDependencies]
         [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
+        [MemberNotNull(nameof(_sreTypeSystem))]
+        [MemberNotNull(nameof(_sreBuilder))]
+        [MemberNotNull(nameof(_sreMappings))]
+        [MemberNotNull(nameof(_sreEmitMappings))]
+        [MemberNotNull(nameof(_sreXmlns))]
+        [MemberNotNull(nameof(_sreContextType))]
+        [MemberNotNull(nameof(_ignoresAccessChecksFromAttribute))]
         static void InitializeSre()
         {
+            // SRE backend doesn't load assemblies, unless they are already in the memory.
+            // At the very least, we should make sure that assemblies necessary for `AvaloniaXamlIlWellKnownTypes` are loaded.
+            // Root `Avalonia.Controls`.
+            GC.KeepAlive(typeof(Avalonia.Controls.Control));
+            // Root `Avalonia.Markup`.
+            GC.KeepAlive(typeof(Avalonia.Data.Binding));
+            // Root `System.ObjectModel`
+            GC.KeepAlive(typeof(System.ComponentModel.TypeConverterAttribute));
+
             if (_sreTypeSystem == null)
                 _sreTypeSystem = new SreTypeSystem();
             if (_sreBuilder == null)
@@ -81,8 +97,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
                         {
                             name, (AssemblyBuilderAccess)3,
                             Path.GetDirectoryName(typeof(AvaloniaXamlIlRuntimeCompiler).Assembly.GetModules()[0]
-                                .FullyQualifiedName)
-                        });
+                                .FullyQualifiedName)!
+                        })!;
                     else
                         _sreCanSave = false;
                 }
@@ -94,7 +110,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 _sreBuilder = _sreAsm.DefineDynamicModule("XamlIlLoader.ildump");
             }
 
-            if (_sreMappings == null)
+            if (_sreMappings is null || _sreEmitMappings is null)
                 (_sreMappings, _sreEmitMappings) = AvaloniaXamlIlLanguage.Configure(_sreTypeSystem);
             if (_sreXmlns == null)
                 _sreXmlns = XamlXmlnsMappings.Resolve(_sreTypeSystem, _sreMappings);
@@ -108,7 +124,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = XamlX.TrimmingMessages.CanBeSafelyTrimmed)]
-        static MethodInfo GetDefineDynamicAssembly() => AppDomain.CurrentDomain.GetType().GetMethods()
+        static MethodInfo? GetDefineDynamicAssembly() => AppDomain.CurrentDomain.GetType().GetMethods()
             .FirstOrDefault(m => m.Name == "DefineDynamicAssembly"
                                  && m.GetParameters().Length == 3 &&
                                  m.GetParameters()[2].ParameterType == typeof(string));
@@ -142,26 +158,83 @@ namespace Avalonia.Markup.Xaml.XamlIl
             ctorIl.Emit(OpCodes.Ret);
 
             tb.SetCustomAttribute(new CustomAttributeBuilder(
-                typeof(AttributeUsageAttribute).GetConstructor(new[] { typeof(AttributeTargets) }),
+                typeof(AttributeUsageAttribute).GetConstructor(new[] { typeof(AttributeTargets) })!,
                 new object[] { AttributeTargets.Assembly },
-                new[] { typeof(AttributeUsageAttribute).GetProperty("AllowMultiple") },
+                new[] { typeof(AttributeUsageAttribute).GetProperty(nameof(AttributeUsageAttribute.AllowMultiple))! },
                 new object[] { true }));
             
-            return tb.CreateTypeInfo();
+            return tb.CreateTypeInfo()!;
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2080", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
         static void EmitIgnoresAccessCheckToAttribute(AssemblyName assemblyName)
         {
             var name = assemblyName.Name;
-            if(string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(name))
                 return;
             var key = assemblyName.GetPublicKey();
             if (key != null && key.Length != 0)
                 name += ", PublicKey=" + BitConverter.ToString(key).Replace("-", "").ToUpperInvariant();
-            _sreAsm.SetCustomAttribute(new CustomAttributeBuilder(
-                _ignoresAccessChecksFromAttribute.GetConstructors()[0],
+            _sreAsm!.SetCustomAttribute(new CustomAttributeBuilder(
+                _ignoresAccessChecksFromAttribute!.GetConstructors()[0],
                 new object[] { name }));
+        }
+        
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = XamlX.TrimmingMessages.CanBeSafelyTrimmed)]
+        [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
+        static HashSet<Assembly> FindAssembliesGrantingInternalAccess(Assembly assembly)
+        {
+            var result = new HashSet<Assembly>();
+            if (assembly == null)
+                return result;
+
+            var assemblyName = assembly.GetName();
+            var publicKey = assemblyName.GetPublicKey();
+
+            // Search through all loaded assemblies to find those that grant InternalsVisibleTo to our assembly
+            foreach (var loadedAssembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                try
+                {
+                    var ivtAttributes = loadedAssembly.GetCustomAttributes(
+                        typeof(System.Runtime.CompilerServices.InternalsVisibleToAttribute), false);
+
+                    foreach (System.Runtime.CompilerServices.InternalsVisibleToAttribute ivt in ivtAttributes)
+                    {
+                        var ivtName = ivt.AssemblyName;
+                        if (string.IsNullOrWhiteSpace(ivtName))
+                            continue;
+
+                        // Parse the InternalsVisibleTo assembly name
+                        var ivtAssemblyName = new AssemblyName(ivtName);
+
+                        // Check if it matches our assembly name
+                        if (string.Equals(ivtAssemblyName.Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // If public key is specified in IVT, verify it matches
+                            var ivtPublicKey = ivtAssemblyName.GetPublicKey();
+                            if (ivtPublicKey != null && ivtPublicKey.Length > 0)
+                            {
+                                if (publicKey != null && publicKey.SequenceEqual(ivtPublicKey))
+                                {
+                                    result.Add(loadedAssembly);
+                                }
+                            }
+                            else
+                            {
+                                // No public key specified in IVT, just match by name
+                                result.Add(loadedAssembly);
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignore assemblies that throw exceptions when accessing attributes
+                }
+            }
+
+            return result;
         }
 
         static object LoadSre(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration)
@@ -202,8 +275,24 @@ namespace Avalonia.Markup.Xaml.XamlIl
         {
             InitializeSre();
             var localAssembly = configuration.LocalAssembly;
+
+            // Emit IgnoresAccessChecksTo for the local assembly
             if (localAssembly?.GetName() != null)
                 EmitIgnoresAccessCheckToAttribute(localAssembly.GetName());
+
+            // Also emit IgnoresAccessChecksTo for all assemblies that grant InternalsVisibleTo to the local assembly
+            // This allows the runtime compiler to access internal types from referenced assemblies
+            if (localAssembly != null)
+            {
+                var assembliesGrantingAccess = FindAssembliesGrantingInternalAccess(localAssembly);
+                foreach (var assembly in assembliesGrantingAccess)
+                {
+                    var name = assembly.GetName();
+                    if (name != null)
+                        EmitIgnoresAccessCheckToAttribute(name);
+                }
+            }
+
             var asm = localAssembly == null ? null : _sreTypeSystem.GetAssembly(localAssembly);
             var clrPropertyBuilder = _sreBuilder.DefineType("ClrProperties_" + Guid.NewGuid().ToString("N"));
             var indexerClosureType = _sreBuilder.DefineType("IndexerClosure_" + Guid.NewGuid().ToString("N"));
@@ -255,7 +344,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
             {
                 EnableIlVerification = true,
                 DefaultCompileBindings = configuration.UseCompiledBindingsByDefault,
-                IsDesignMode = configuration.DesignMode
+                IsDesignMode = configuration.DesignMode,
+                CreateSourceInfo = configuration.CreateSourceInfo,
             };
 
             var parsedDocuments = new List<XamlDocumentResource>();
@@ -267,14 +357,14 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 using (var sr = new StreamReader(document.XamlStream))
                     xaml = sr.ReadToEnd();
                 
-                IXamlType overrideType = null;
+                IXamlType? overrideType = null;
                 if (document.RootInstance != null)
                 {
                     overrideType = _sreTypeSystem.GetType(document.RootInstance.GetType());
                 }
 
                 var parsed = compiler.Parse(xaml, overrideType);
-                parsed.Document = "runtimexaml:" + parsedDocuments.Count;
+                parsed.Document = document.Document ?? ("runtimexaml" + parsedDocuments.Count);
                 compiler.Transform(parsed);
 
                 var xamlName = GetSafeUriIdentifier(document.BaseUri)
@@ -326,13 +416,16 @@ namespace Avalonia.Markup.Xaml.XamlIl
 
         [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
         [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = XamlX.TrimmingMessages.GeneratedTypes)]
-        static object LoadOrPopulate([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type created, object rootInstance, IServiceProvider parentServiceProvider)
+        static object LoadOrPopulate(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type created,
+            object? rootInstance,
+            IServiceProvider? parentServiceProvider)
         {
             var isp = Expression.Parameter(typeof(IServiceProvider));
 
 
             var epar = Expression.Parameter(typeof(object));
-            var populate = created.GetMethod(AvaloniaXamlIlCompiler.PopulateName);
+            var populate = created.GetMethod(AvaloniaXamlIlCompiler.PopulateName)!;
             isp = Expression.Parameter(typeof(IServiceProvider));
             var populateCb = Expression.Lambda<Action<IServiceProvider, object>>(
                 Expression.Call(populate, isp, Expression.Convert(epar, populate.GetParameters()[1].ParameterType)),
@@ -353,7 +446,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                             target => { populateCb(serviceProvider, target); }));
                     try
                     {
-                        return Activator.CreateInstance(targetType);
+                        return Activator.CreateInstance(targetType)!;
                     }
                     finally
                     {
@@ -363,7 +456,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 
                 var createCb = Expression.Lambda<Func<IServiceProvider, object>>(
                     Expression.Convert(Expression.Call(
-                        created.GetMethod(AvaloniaXamlIlCompiler.BuildName), isp), typeof(object)), isp).Compile();
+                        created.GetMethod(AvaloniaXamlIlCompiler.BuildName)!, isp), typeof(object)), isp).Compile();
                 return createCb(serviceProvider);
             }
             else
@@ -394,7 +487,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
 #endif
         }
 
-        private static string GetSafeUriIdentifier(Uri uri)
+        private static string? GetSafeUriIdentifier(Uri? uri)
         {
             return uri?.ToString()
                 .Replace(":", "_")

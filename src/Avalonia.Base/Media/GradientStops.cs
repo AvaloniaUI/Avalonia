@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Media.Immutable;
 
@@ -17,7 +16,17 @@ namespace Avalonia.Media
 
         public IReadOnlyList<ImmutableGradientStop> ToImmutable()
         {
-            return this.Select(x => new ImmutableGradientStop(x.Offset, x.Color)).ToArray();
+            var count = Count;
+            var stops = new ImmutableGradientStop[count];
+
+            for (var i = 0; i < count; i++)
+            {
+                var currentStop = this[i];
+
+                stops[i] = new ImmutableGradientStop(currentStop.Offset, currentStop.Color);
+            }
+
+            return stops;
         }
     }
 }

@@ -326,17 +326,6 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
-        {
-            if (property == SelectedDateProperty)
-            {
-                DataValidationErrors.SetError(this, error);
-            }
-
-            base.UpdateDataValidation(property, state, error);
-        }
-
-        /// <inheritdoc/>
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
@@ -581,7 +570,7 @@ namespace Avalonia.Controls
 
         private void Calendar_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
-             
+
             if (e.InitialPressMouseButton == MouseButton.Left)
             {
                 e.Handled = true;
@@ -730,7 +719,9 @@ namespace Avalonia.Controls
             // the TextParseError event
             try
             {
-                newSelectedDate = DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
+                newSelectedDate = SelectedDateFormat == CalendarDatePickerFormat.Custom && !string.IsNullOrEmpty(CustomDateFormatString) ?
+                    DateTime.ParseExact(text, CustomDateFormatString, DateTimeHelper.GetCurrentDateFormat()) :
+                    DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
 
                 if (Calendar.IsValidDateSelection(this._calendar!, newSelectedDate))
                 {
@@ -788,7 +779,7 @@ namespace Avalonia.Controls
                         return true;
                     }
                 case Key.Down:
-                    { 
+                    {
                         if ((e.KeyModifiers & KeyModifiers.Control) == KeyModifiers.Control)
                         {
                             TogglePopUp();
@@ -825,7 +816,7 @@ namespace Avalonia.Controls
                         }
                     }
                     DateTime? d = SetTextBoxValue(s);
-                    
+
                     if (SelectedDate != d)
                     {
                         SetCurrentValue(SelectedDateProperty, d);
@@ -889,33 +880,39 @@ namespace Avalonia.Controls
             if (_textBox != null)
             {
                 SetCurrentValue(TextProperty, String.Empty);
-                
-                if (string.IsNullOrEmpty(Watermark) && !UseFloatingWatermark)
+
+                if (string.IsNullOrEmpty(PlaceholderText) && !UseFloatingPlaceholder)
                 {
                     DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
                     _defaultText = string.Empty;
-                    var watermarkFormat = "<{0}>";
-                    string watermarkText;
+                    var placeholderFormat = "<{0}>";
+                    string placeholderText;
 
                     switch (SelectedDateFormat)
                     {
+                        case CalendarDatePickerFormat.Custom:
+                            {
+                                placeholderText = string.Format(CultureInfo.CurrentCulture, placeholderFormat, CustomDateFormatString);
+                                break;
+                            }
                         case CalendarDatePickerFormat.Long:
                             {
-                                watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, dtfi.LongDatePattern.ToString());
+                                placeholderText = string.Format(CultureInfo.CurrentCulture, placeholderFormat, dtfi.LongDatePattern.ToString());
                                 break;
                             }
                         case CalendarDatePickerFormat.Short:
                         default:
                             {
-                                watermarkText = string.Format(CultureInfo.CurrentCulture, watermarkFormat, dtfi.ShortDatePattern.ToString());
+                                placeholderText = string.Format(CultureInfo.CurrentCulture, placeholderFormat, dtfi.ShortDatePattern.ToString());
                                 break;
                             }
                     }
-                    _textBox.Watermark = watermarkText;
+
+                    _textBox.PlaceholderText = placeholderText;
                 }
                 else
                 {
-                    _textBox.ClearValue(TextBox.WatermarkProperty);
+                    _textBox.ClearValue(TextBox.PlaceholderTextProperty);
                 }
             }
         }

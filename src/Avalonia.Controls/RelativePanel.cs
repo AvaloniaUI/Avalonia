@@ -333,6 +333,22 @@ namespace Avalonia.Controls
                         : node.AlignBottomWithNode.Bottom * 0.5;
                 }
 
+                if (node.BelowNode != null)
+                {
+                    if (node.Top.IsNaN())
+                    {
+                        node.Top = AvailableSize.Height - node.BelowNode.Bottom;
+                    }
+                }
+                
+                if (node.RightOfNode != null)
+                {
+                    if (node.Left.IsNaN())
+                    {
+                        node.Left = AvailableSize.Width - node.RightOfNode.Right;
+                    }
+                }
+                
                 var availableHeight = AvailableSize.Height - node.Top - node.Bottom;
                 if (availableHeight.IsNaN())
                 {
@@ -383,10 +399,6 @@ namespace Avalonia.Controls
                         node.Right = node.RightOfNode.Right - childSize.Width;
                     }
 
-                    if (node.Left.IsNaN())
-                    {
-                        node.Left = AvailableSize.Width - node.RightOfNode.Right;
-                    }
                 }
 
                 if (node.BelowNode != null)
@@ -396,10 +408,6 @@ namespace Avalonia.Controls
                         node.Bottom = node.BelowNode.Bottom - childSize.Height;
                     }
 
-                    if (node.Top.IsNaN())
-                    {
-                        node.Top = AvailableSize.Height - node.BelowNode.Bottom;
-                    }
                 }
 
                 if (node.AlignHorizontalCenterWith != null)

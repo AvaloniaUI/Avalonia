@@ -6,7 +6,7 @@
 #ifndef AVALONIA_NATIVE_OSX_IWINDOWSTATECHANGED_H
 #define AVALONIA_NATIVE_OSX_IWINDOWSTATECHANGED_H
 
-struct IWindowStateChanged
+struct IWindowStateChanged: public IUnknown
 {
     virtual void WindowStateChanged () = 0;
     virtual void StartStateTransition () = 0;

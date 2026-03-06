@@ -38,6 +38,7 @@
     <Setter Property="BorderBrush" Value="{DynamicResource MenuFlyoutPresenterBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource OverlayCornerRadius}" />
+    <Setter Property="Focusable" Value="True" />
     <Setter Property="MaxWidth" Value="{DynamicResource FlyoutThemeMaxWidth}" />
     <Setter Property="MinHeight" Value="{DynamicResource MenuFlyoutThemeMinHeight}" />
     <Setter Property="Padding" Value="{DynamicResource MenuFlyoutPresenterThemePadding}" />

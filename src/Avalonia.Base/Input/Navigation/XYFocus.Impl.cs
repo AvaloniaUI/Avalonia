@@ -23,21 +23,21 @@ public partial class XYFocus
         
     }
     
-    private XYFocusAlgorithms.XYFocusManifolds mManifolds = new();
+    private XYFocusAlgorithms.XYFocusManifolds _manifolds = new();
     private PooledList<XYFocusParams> _pooledCandidates = new();
 
     private static readonly XYFocus _instance = new();
     
     internal XYFocusAlgorithms.XYFocusManifolds ResetManifolds()
     {
-        mManifolds.Reset();
-        return mManifolds;
+        _manifolds.Reset();
+        return _manifolds;
     }
 
     internal void SetManifoldsFromBounds(Rect bounds)
     {
-        mManifolds.VManifold = (bounds.Left, bounds.Right);
-        mManifolds.HManifold = (bounds.Top, bounds.Bottom);
+        _manifolds.VManifold = (bounds.Left, bounds.Right);
+        _manifolds.HManifold = (bounds.Top, bounds.Bottom);
     }
 
     internal void UpdateManifolds(
@@ -47,7 +47,7 @@ public partial class XYFocus
         bool ignoreClipping)
     {
         var candidateBounds = GetBoundsForRanking(candidate, ignoreClipping)!.Value;
-        XYFocusAlgorithms.UpdateManifolds(direction, elementBounds, candidateBounds, mManifolds);
+        XYFocusAlgorithms.UpdateManifolds(direction, elementBounds, candidateBounds, _manifolds);
     }
 
     internal static InputElement? TryDirectionalFocus(
@@ -92,6 +92,11 @@ public partial class XYFocus
             return null;
         }
 
+        if(!(XYFocusHelpers.FindXYSearchRoot(inputElement, keyDeviceType) is InputElement searchRoot))
+        {
+            return null;
+        }
+
         _instance.SetManifoldsFromBounds(bounds);
 
         return _instance.GetNextFocusableElement(direction, inputElement, engagedControl, true, new XYFocusOptions
@@ -99,7 +104,7 @@ public partial class XYFocus
             KeyDeviceType = keyDeviceType,
             FocusedElementBounds = bounds,
             UpdateManifold = true,
-            SearchRoot = owner as InputElement ?? inputElement.GetVisualRoot() as InputElement
+            SearchRoot = searchRoot
         });
     }
 
@@ -112,7 +117,9 @@ public partial class XYFocus
     {
         if (element == null) return null;
 
-        var root = (InputElement)element.GetVisualRoot()!;
+        var root = (InputElement?)element.VisualRoot;
+        if (root == null)
+            return null;
         var isRightToLeft = element.FlowDirection == FlowDirection.RightToLeft;
         var mode = GetStrategy(element, direction, xyFocusOptions.NavigationStrategyOverride);
 
@@ -256,7 +263,7 @@ public partial class XYFocus
                 if (updateManifolds)
                 {
                     // Update the manifolds with the newly selected focus
-                    XYFocusAlgorithms.UpdateManifolds(direction, bounds, param.Bounds, mManifolds);
+                    XYFocusAlgorithms.UpdateManifolds(direction, bounds, param.Bounds, _manifolds);
                 }
 
                 break;
@@ -341,7 +348,7 @@ public partial class XYFocus
                     XYFocusAlgorithms.ShouldCandidateBeConsideredForRanking(bounds, candidateBounds, maxRootBoundsDistance,
                         direction, exclusionBounds, ignoreCone))
                 {
-                    candidate.Score = XYFocusAlgorithms.GetScoreProjection(direction, bounds, candidateBounds, mManifolds, maxRootBoundsDistance);
+                    candidate.Score = XYFocusAlgorithms.GetScoreProjection(direction, bounds, candidateBounds, _manifolds, maxRootBoundsDistance);
                 }
                 else if (mode == XYFocusNavigationStrategy.NavigationDirectionDistance ||
                          mode == XYFocusNavigationStrategy.RectilinearDistance)
@@ -410,7 +417,7 @@ public partial class XYFocus
         while (parent != null)
         {
             var element = parent;
-            if (element is IInternalScroller scrollable)
+            if (element is IScrollable scrollable)
             {
                 var isHorizontallyScrollable = scrollable.CanHorizontallyScroll;
                 var isVerticallyScrollable = scrollable.CanVerticallyScroll;

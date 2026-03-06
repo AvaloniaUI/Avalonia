@@ -10,6 +10,7 @@ using Android.Provider;
 using Android.Webkit;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 using Java.Lang;
 using AndroidUri = Android.Net.Uri;
 using Exception = System.Exception;
@@ -53,7 +54,8 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
         }
 
         Activity.ContentResolver?.TakePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
-        return Uri.ToString();
+
+        return StorageBookmarkHelper.EncodeBookmark(AndroidStorageProvider.AndroidKey, Uri.ToString()!);
     }
 
     public async Task ReleaseBookmarkAsync()
@@ -157,7 +159,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     public Task<IStorageFile?> CreateFileAsync(string name)
     {
         var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
-        var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, Uri, mimeType, name);
+        var treeUri = GetTreeUri().treeUri;
+        var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, mimeType, name);
         if(newFile == null)
         {
             return Task.FromResult<IStorageFile?>(null);
@@ -168,7 +171,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
     public Task<IStorageFolder?> CreateFolderAsync(string name)
     {
-        var newFolder = DocumentsContract.CreateDocument(Activity.ContentResolver!, Uri, DocumentsContract.Document.MimeTypeDir, name);
+        var treeUri = GetTreeUri().treeUri;
+        var newFolder = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, DocumentsContract.Document.MimeTypeDir, name);
         if (newFolder == null)
         {
             return Task.FromResult<IStorageFolder?>(null);
@@ -203,7 +207,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                 }
             }
 
-            DocumentsContract.DeleteDocument(Activity.ContentResolver!, storageFolder.Uri);
+            var treeUri = GetTreeUri().treeUri;
+            DocumentsContract.DeleteDocument(Activity.ContentResolver!, treeUri!);
         }
     }
 
@@ -225,9 +230,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
             yield break;
         }
 
-        var root = PermissionRoot ?? Uri;
-        var folderId = root != Uri ? DocumentsContract.GetDocumentId(Uri) : DocumentsContract.GetTreeDocumentId(Uri);
-        var childrenUri = DocumentsContract.BuildChildDocumentsUriUsingTree(root, folderId);
+        var (root, childrenUri) = GetTreeUri();
 
         var projection = new[]
         {
@@ -292,6 +295,84 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
             return destination;
         }
     }
+
+    private async Task<IStorageItem?> GetItemAsync(string name, bool isDirectory)
+    {
+        if (!await EnsureExternalFilesPermission(false))
+        {
+            return null;
+        }
+
+        var contentResolver = Activity.ContentResolver;
+        if (contentResolver == null)
+        {
+            return null;
+        }
+
+        var (root, childrenUri) = GetTreeUri();
+
+        var projection = new[]
+        {
+            DocumentsContract.Document.ColumnDocumentId,
+            DocumentsContract.Document.ColumnMimeType,
+            DocumentsContract.Document.ColumnDisplayName
+        };
+
+        if (childrenUri != null)
+        {
+            using var cursor = contentResolver.Query(childrenUri, projection, null, null, null);
+            if (cursor != null)
+            {
+                while (cursor.MoveToNext())
+                {
+                    var id = cursor.GetString(0);
+                    var mime = cursor.GetString(1);
+
+                    var fileName = cursor.GetString(2);
+                    if (fileName != name)
+                    {
+                        continue;
+                    }                   
+
+                    bool mineDirectory = mime == DocumentsContract.Document.MimeTypeDir;
+                    if (isDirectory != mineDirectory)
+                    {
+                        return null;
+                    }
+
+                    var uri = DocumentsContract.BuildDocumentUriUsingTree(root, id);
+                    if (uri == null)
+                    {
+                        return null;
+                    }
+
+                    return isDirectory ? new AndroidStorageFolder(Activity, uri, false, this, root) :
+                        new AndroidStorageFile(Activity, uri, this, root);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public async Task<IStorageFolder?> GetFolderAsync(string name)
+    {
+        var folder = await GetItemAsync(name, true);
+        return (IStorageFolder?)folder;
+    }
+
+    public async Task<IStorageFile?> GetFileAsync(string name)
+    {
+        var file = await GetItemAsync(name, false);
+        return (IStorageFile?)file;
+    }
+
+    private (AndroidUri root, AndroidUri? treeUri) GetTreeUri()
+    {
+        var root = PermissionRoot ?? Uri;
+        var folderId = root != Uri ? DocumentsContract.GetDocumentId(Uri) : DocumentsContract.GetTreeDocumentId(Uri);
+        return (root, DocumentsContract.BuildChildDocumentsUriUsingTree(root, folderId));
+    }
 }
 
 internal sealed class WellKnownAndroidStorageFolder : AndroidStorageFolder
@@ -311,8 +392,10 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
     {
     }
 
-    public Task<Stream> OpenReadAsync() => Task.FromResult(OpenContentStream(Activity, Uri, false)
-        ?? throw new InvalidOperationException("Failed to open content stream"));
+    public Task<Stream> OpenReadAsync() => Task.FromResult(OpenRead());
+
+    public Stream OpenRead() => OpenContentStream(Activity, Uri, false)
+        ?? throw new InvalidOperationException("Failed to open content stream");
 
     public Task<Stream> OpenWriteAsync() => Task.FromResult(OpenContentStream(Activity, Uri, true)
         ?? throw new InvalidOperationException("Failed to open content stream"));
@@ -327,7 +410,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
         }
 
         return isOutput
-            ? context.ContentResolver?.OpenOutputStream(uri)
+            ? context.ContentResolver?.OpenOutputStream(uri, "wt")
             : context.ContentResolver?.OpenInputStream(uri);
     }
 

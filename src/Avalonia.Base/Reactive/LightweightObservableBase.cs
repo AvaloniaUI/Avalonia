@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Threading;
-using Avalonia.Threading;
 
 namespace Avalonia.Reactive
 {
@@ -20,7 +20,7 @@ namespace Avalonia.Reactive
         private List<IObserver<T>>? _observers = new List<IObserver<T>>();
 
         public bool HasObservers => _observers?.Count > 0;
-        
+
         public IDisposable Subscribe(IObserver<T> observer)
         {
             _ = observer ?? throw new ArgumentNullException(nameof(observer));
@@ -118,32 +118,61 @@ namespace Avalonia.Reactive
             if (Volatile.Read(ref _observers) != null)
             {
                 IObserver<T>[]? observers = null;
-                IObserver<T>? singleObserver = null;
+                int count = 0;
+
+                // Optimize for the common case of 1/2/3 observers.
+                IObserver<T>? observer0 = null;
+                IObserver<T>? observer1 = null;
+                IObserver<T>? observer2 = null;
                 lock (this)
                 {
                     if (_observers == null)
                     {
                         return;
                     }
-                    if (_observers.Count == 1)
+
+                    count = _observers.Count;
+                    switch (count)
                     {
-                        singleObserver = _observers[0];
-                    }
-                    else
-                    {
-                        observers = _observers.ToArray();
+                        case 3:
+                            observer0 = _observers[0];
+                            observer1 = _observers[1];
+                            observer2 = _observers[2];
+                            break;
+                        case 2:
+                            observer0 = _observers[0];
+                            observer1 = _observers[1];
+                            break;
+                        case 1:
+                            observer0 = _observers[0];
+                            break;
+                        case 0:
+                            return;
+                        default:
+                        {
+                            observers = ArrayPool<IObserver<T>>.Shared.Rent(count);
+                            _observers.CopyTo(observers);
+                            break;
+                        }
                     }
                 }
-                if (singleObserver != null)
+
+                if (observer0 != null)
                 {
-                    singleObserver.OnNext(value);
+                    observer0.OnNext(value);
+                    observer1?.OnNext(value);
+                    observer2?.OnNext(value);
                 }
-                else
+                else if (observers != null)
                 {
-                    foreach (var observer in observers!)
+                    for(int i = 0; i < count; i++)
                     {
-                        observer.OnNext(value);
+                        observers[i].OnNext(value);
+                        // Avoid memory leak by clearing the reference.
+                        observers[i] = null!;
                     }
+
+                    ArrayPool<IObserver<T>>.Shared.Return(observers);
                 }
             }
         }

@@ -14,7 +14,7 @@ namespace RenderDemo.Pages
             AffectsRender<PathMeasurementPage>(BoundsProperty);
         }
 
-        private RenderTargetBitmap _bitmap;
+        private RenderTargetBitmap? _bitmap;
 
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
@@ -24,7 +24,7 @@ namespace RenderDemo.Pages
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            _bitmap.Dispose();
+            _bitmap?.Dispose();
             _bitmap = null;
             base.OnDetachedFromLogicalTree(e);
         }
@@ -37,6 +37,9 @@ namespace RenderDemo.Pages
 
         public override void Render(DrawingContext context)
         {
+            if (_bitmap is null)
+                return;
+
             using (var bitmapCtx = _bitmap.CreateDrawingContext())
             {
                 var basePath = new PathGeometry();

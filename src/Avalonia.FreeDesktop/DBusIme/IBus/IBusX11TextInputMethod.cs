@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // TODO: Temporary workaround until Tmds is replaced.
 using System;
 using System.Threading.Tasks;
 using Avalonia.Input;
@@ -13,21 +14,20 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 {
     internal class IBusX11TextInputMethod : DBusTextInputMethodBase
     {
-        private OrgFreedesktopIBusService? _service;
-        private OrgFreedesktopIBusInputContext? _context;
-        private string? _preeditText;
+        private OrgFreedesktopIBusServiceProxy? _service;
+        private OrgFreedesktopIBusInputContextProxy? _context;
+        private string _preeditText = "";
         private int _preeditCursor;
-        private bool _preeditShown = true;
-        private int _insideReset = 0;
+        private int _insideReset;
 
         public IBusX11TextInputMethod(Connection connection) : base(connection, "org.freedesktop.portal.IBus") { }
 
         protected override async Task<bool> Connect(string name)
         {
-            var portal = new OrgFreedesktopIBusPortal(Connection, name, "/org/freedesktop/IBus");
+            var portal = new OrgFreedesktopIBusPortalProxy(Connection, name, "/org/freedesktop/IBus");
             var path = await portal.CreateInputContextAsync(GetAppName());
-            _service = new OrgFreedesktopIBusService(Connection, name, path);
-            _context = new OrgFreedesktopIBusInputContext(Connection, name, path);
+            _service = new OrgFreedesktopIBusServiceProxy(Connection, name, path);
+            _context = new OrgFreedesktopIBusInputContextProxy(Connection, name, path);
             AddDisposable(await _context.WatchCommitTextAsync(OnCommitText));
             AddDisposable(await _context.WatchForwardKeyEventAsync(OnForwardKey));
             AddDisposable(await _context.WatchUpdatePreeditTextAsync(OnUpdatePreedit));
@@ -39,41 +39,46 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         private void OnHidePreedit(Exception? obj)
         {
-            _preeditShown = false;
-            if (Client?.SupportsPreedit == true)
-                Client.SetPreeditText(null, null);
+            if (Client?.SupportsPreedit != true || string.IsNullOrEmpty(_preeditText))
+            {
+                return;
+            }
+            
+            _preeditText = "";
+                
+            Client?.SetPreeditText(_preeditText, 0);
         }
 
         private void OnShowPreedit(Exception? obj)
         {
-            _preeditShown = true;
-            if (Client?.SupportsPreedit == true)
-                Client.SetPreeditText(_preeditText, _preeditText == null ? null : _preeditCursor);
         }
 
-        private void OnUpdatePreedit(Exception? arg1, (DBusVariantItem text, uint cursor_pos, bool visible) preeditComponents)
+        private void OnUpdatePreedit(Exception? arg1, (VariantValue Text, uint CursorPos, bool Visible) preeditComponents)
         {
-            if (preeditComponents.text is { Value: DBusStructItem { Count: >= 3 } structItem } &&
-                structItem[2] is DBusStringItem stringItem)
+            string? preeditText;
+            
+            if (preeditComponents.Text is { Type: VariantValueType.Struct, Count: >= 3 } structItem && structItem.GetItem(2) is { Type: VariantValueType.String} stringItem)
             {
-                _preeditText = stringItem.Value;
-                _preeditCursor = _preeditText != null
-                    ? Utf16Utils.CharacterOffsetToStringOffset(_preeditText,
-                        (int)Math.Min(preeditComponents.cursor_pos, int.MaxValue), false)
-                    : 0;
-                
-                _preeditShown = true;
+                preeditText = stringItem.GetString();
             }
             else
             {
-                _preeditText = null;
-                _preeditShown = false;
-                _preeditCursor = 0;
+                preeditText = "";
             }
 
-            if (Client?.SupportsPreedit == true)
-                Client.SetPreeditText(
-                    _preeditShown ? _preeditText : null, _preeditCursor);
+            if (Client?.SupportsPreedit != true || preeditText == _preeditText)
+            {
+                return;
+            }
+            
+            _preeditText = preeditText;
+
+            _preeditCursor = !string.IsNullOrEmpty(_preeditText) ?
+                Utf16Utils.CharacterOffsetToStringOffset(_preeditText,
+                    (int)Math.Min(preeditComponents.CursorPos, int.MaxValue), false) :
+                0;
+            
+            Client.SetPreeditText(_preeditText, _preeditCursor);
         }
 
         private void OnForwardKey(Exception? e, (uint keyval, uint keycode, uint state) k)
@@ -102,13 +107,13 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             });
         }
 
-        private void OnCommitText(Exception? e, DBusVariantItem variantItem)
+        private void OnCommitText(Exception? e, VariantValue variantItem)
         {
-            if (_insideReset > 0) 
+            if (_insideReset > 0)
             {
                 // For some reason iBus can trigger a CommitText while being reset.
                 // Thankfully the signal is sent _during_ Reset call processing,
-                // so it arrives on-the-wire before Reset call result, so we can 
+                // so it arrives on-the-wire before Reset call result, so we can
                 // check if we have any pending Reset calls and ignore the signal here
                 return;
             }
@@ -118,8 +123,8 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
                 return;
             }
 
-            if (variantItem.Value is DBusStructItem { Count: >= 3 } structItem && structItem[2] is DBusStringItem stringItem)
-                FireCommit(stringItem.Value);
+            if (variantItem.Count >= 3 && variantItem.GetItem(2) is { Type: VariantValueType.String } stringItem)
+                FireCommit(stringItem.GetString());
         }
 
         protected override Task DisconnectAsync() => _service?.DestroyAsync() ?? Task.CompletedTask;
@@ -141,7 +146,6 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         protected override async Task ResetContextCore()
         {
-            _preeditShown = true;
             if (_context == null)
                 return;
             if (_context == null)

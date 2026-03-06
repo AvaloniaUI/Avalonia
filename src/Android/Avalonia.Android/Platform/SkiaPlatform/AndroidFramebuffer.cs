@@ -1,20 +1,19 @@
 using System;
 using System.Runtime.InteropServices;
-using Android.Runtime;
-using Android.Views;
+using System.Runtime.Versioning;
 using Avalonia.Platform;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class AndroidFramebuffer : ILockedFramebuffer
+    unsafe class AndroidFramebuffer : ILockedFramebuffer
     {
         private IntPtr _window;
 
-        public AndroidFramebuffer(Surface surface, double scaling)
+        public AndroidFramebuffer(InvalidationAwareSurfaceView surface, double scaling)
         {
             if(surface == null)
                 throw new ArgumentNullException(nameof(surface));
-            _window = ANativeWindow_fromSurface(JNIEnv.Handle, surface.Handle);
+            _window = (surface as IPlatformHandle).Handle;
             if (_window == IntPtr.Zero)
                 throw new Exception("Unable to obtain ANativeWindow");
             ANativeWindow_Buffer buffer;
@@ -24,12 +23,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 bottom = ANativeWindow_getHeight(_window)
             };
             Size = new PixelSize(rc.right, rc.bottom);
-            ANativeWindow_lock(_window, out buffer, ref rc);
+            ANativeWindow_lock(_window, &buffer, &rc);
 
-            Format = buffer.format == AndroidPixelFormat.WINDOW_FORMAT_RGB_565
-                ? PixelFormat.Rgb565 : PixelFormat.Rgba8888;
+            (Format, AlphaFormat, RowBytes) = buffer.format == AndroidPixelFormat.WINDOW_FORMAT_RGB_565 ?
+                (PixelFormat.Rgb565, AlphaFormat.Opaque, buffer.stride * 2) :
+                (PixelFormat.Rgba8888, AlphaFormat.Premul, buffer.stride * 4);
 
-            RowBytes = buffer.stride * (Format == PixelFormat.Rgb565 ? 2 : 4);
             Address = buffer.bits;
 
             Dpi = new Vector(96, 96) * scaling;
@@ -38,7 +37,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public void Dispose()
         {
             ANativeWindow_unlockAndPost(_window);
-            ANativeWindow_release(_window);
             _window = IntPtr.Zero;
             Address = IntPtr.Zero;
         }
@@ -48,6 +46,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public int RowBytes { get; }
         public Vector Dpi { get; }
         public PixelFormat Format { get; }
+        public AlphaFormat AlphaFormat { get; }
 
         [DllImport("android")]
         internal static extern IntPtr ANativeWindow_fromSurface(IntPtr jniEnv, IntPtr handle);
@@ -61,7 +60,20 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         internal static extern void ANativeWindow_unlockAndPost(IntPtr window);
 
         [DllImport("android")]
-        internal static extern int ANativeWindow_lock(IntPtr window, out ANativeWindow_Buffer outBuffer, ref ARect inOutDirtyBounds);
+        internal static extern IntPtr AChoreographer_getInstance();
+
+        [DllImport("android")]
+        [UnsupportedOSPlatform("android29.0")]
+        internal static extern void AChoreographer_postFrameCallback(
+            IntPtr choreographer, delegate* unmanaged<int, IntPtr, void> callback, IntPtr data);
+
+        [DllImport("android")]
+        [SupportedOSPlatform("android29.0")]
+        internal static extern void AChoreographer_postFrameCallback64(
+            IntPtr choreographer, delegate* unmanaged<long, IntPtr, void> callback, IntPtr data);
+
+        [DllImport("android")]
+        internal static extern int ANativeWindow_lock(IntPtr window, ANativeWindow_Buffer* outBuffer, ARect* inOutDirtyBounds);
         public enum AndroidPixelFormat
         {
             WINDOW_FORMAT_RGBA_8888 = 1,
@@ -69,6 +81,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             WINDOW_FORMAT_RGB_565 = 4,
         }
 
+        [StructLayout(LayoutKind.Sequential)]
         internal struct ARect
         {
             public int left;
@@ -76,10 +89,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             public int right;
             public int bottom;
         }
-        
+
+        [StructLayout(LayoutKind.Sequential)]
         internal struct ANativeWindow_Buffer
         {
-            // The number of pixels that are show horizontally.
+            // The number of pixels that are shown horizontally.
             public int width;
 
             // The number of pixels that are shown vertically.

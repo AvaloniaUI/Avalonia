@@ -346,7 +346,7 @@ namespace Avalonia.Controls
         {
             var key = e.Key;
 
-            if (key == Key.Space || key == Key.Enter)
+            if ((IsFocused && key == Key.Space) || key == Key.Enter)
             {
                 _isKeyboardPressed = true;
                 UpdatePseudoClasses();
@@ -360,7 +360,7 @@ namespace Avalonia.Controls
         {
             var key = e.Key;
 
-            if (key == Key.Space || key == Key.Enter)
+            if ((IsFocused && key == Key.Space) || key == Key.Enter)
             {
                 _isKeyboardPressed = false;
                 UpdatePseudoClasses();

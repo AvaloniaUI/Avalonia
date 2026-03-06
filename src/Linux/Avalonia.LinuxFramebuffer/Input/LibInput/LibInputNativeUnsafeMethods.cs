@@ -13,7 +13,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 
         static int OpenRestricted(IntPtr path, int flags, IntPtr userData)
         {
-            var fd = NativeUnsafeMethods.open(Marshal.PtrToStringAnsi(path), flags, 0);
+            var fd = NativeUnsafeMethods.open(Marshal.PtrToStringAnsi(path) ?? string.Empty, flags, 0);
             if (fd == -1)
                 return -Marshal.GetLastWin32Error();
 
@@ -31,7 +31,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         {
             s_Interface = (IntPtr*)Marshal.AllocHGlobal(IntPtr.Size * 2);
 
-            IntPtr Convert<TDelegate>(TDelegate del)
+            IntPtr Convert<TDelegate>(TDelegate del) where TDelegate : notnull
             {
                 GCHandle.Alloc(del);
                 return Marshal.GetFunctionPointerForDelegate(del);
@@ -55,6 +55,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         [DllImport(LibInput)]
         public extern static IntPtr libinput_path_remove_device(IntPtr device);
         
+        [DllImport(LibInput)]
+        public extern static int libinput_device_config_calibration_set_matrix(IntPtr device, float[] matrix);
+
         [DllImport(LibInput)]
         public extern static int libinput_get_fd(IntPtr ctx);
         

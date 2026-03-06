@@ -1,75 +1,61 @@
 using System;
-using System.Numerics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
-using Avalonia.Markup.Xaml;
 using Avalonia.Rendering.Composition;
 using Avalonia.Utilities;
 
 namespace ControlCatalog.Pages
 {
-    public class GesturePage : UserControl
+    public partial class GesturePage : UserControl
     {
         private bool _isInit;
         private double _currentScale;
 
         public GesturePage()
         {
-            this.InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
+            InitializeComponent();
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
 
-            if(_isInit)
+            if (_isInit)
             {
                 return;
             }
 
             _isInit = true;
 
-            SetPullHandlers(this.Find<Border>("TopPullZone"), false);
-            SetPullHandlers(this.Find<Border>("BottomPullZone"), true);
-            SetPullHandlers(this.Find<Border>("RightPullZone"), true);
-            SetPullHandlers(this.Find<Border>("LeftPullZone"), false);
+            SetPullHandlers(TopPullZone, false);
+            SetPullHandlers(BottomPullZone, true);
+            SetPullHandlers(RightPullZone, true);
+            SetPullHandlers(LeftPullZone, false);
 
-            var image = this.Get<Image>("PinchImage");
+            var image = PinchImage;
             SetPinchHandlers(image);
 
-            var reset = this.Get<Button>("ResetButton");
+            var reset = ResetButton;
 
             reset.Click += (_, _) =>
             {
                 var compositionVisual = ElementComposition.GetElementVisual(image);
 
-                if(compositionVisual!= null)
+                if (compositionVisual != null)
                 {
                     _currentScale = 1;
-                    compositionVisual.Scale = new (1,1,1);
+                    compositionVisual.Scale = new(1, 1, 1);
                     compositionVisual.Offset = default;
                     image.InvalidateMeasure();
                 }
             };
 
-
-
-            if (this.Find<Slider>("AngleSlider") is { } slider &&
-                this.Find<Panel>("RotationGesture") is { } rotationGesture
-               )
+            RotationGesture.AddHandler(InputElement.PinchEvent, (s, e) =>
             {
-                rotationGesture.AddHandler(Gestures.PinchEvent, (s, e) =>
-                {
-                    slider.Value = e.Angle;
-                });
-            }
+                AngleSlider.Value = e.Angle;
+            });
         }
 
         private void SetPinchHandlers(Control? control)
@@ -101,18 +87,18 @@ namespace ControlCatalog.Pages
                 {
                     compositionVisual.Scale = new(_currentScale, _currentScale, 1);
 
-                    if(currentOffset == default)
+                    if (currentOffset == default)
                     {
                         currentOffset = compositionVisual.Offset;
                     }
                 }
             };
 
-            control.AddHandler(Gestures.PinchEvent, (s, e) =>
+            control.AddHandler(InputElement.PinchEvent, (s, e) =>
             {
                 InitComposition(control!);
 
-                if(compositionVisual != null)
+                if (compositionVisual != null)
                 {
                     var scale = _currentScale * (float)e.Scale;
 
@@ -128,7 +114,7 @@ namespace ControlCatalog.Pages
                 }
             });
 
-            control.AddHandler(Gestures.PinchEndedEvent, (s, e) =>
+            control.AddHandler(InputElement.PinchEndedEvent, (s, e) =>
             {
                 InitComposition(control!);
 
@@ -138,7 +124,7 @@ namespace ControlCatalog.Pages
                 }
             });
 
-            control.AddHandler(Gestures.ScrollGestureEvent, (s, e) =>
+            control.AddHandler(InputElement.ScrollGestureEvent, (s, e) =>
             {
                 InitComposition(control!);
 
@@ -148,8 +134,8 @@ namespace ControlCatalog.Pages
 
                     var currentSize = control.Bounds.Size * _currentScale;
 
-                    currentOffset = new Vector3D(MathUtilities.Clamp(currentOffset.X, 0, currentSize.Width - control.Bounds.Width),
-                        (float)MathUtilities.Clamp(currentOffset.Y, 0, currentSize.Height - control.Bounds.Height),
+                    currentOffset = new Vector3D(Math.Clamp(currentOffset.X, 0, currentSize.Width - control.Bounds.Width),
+                        (float)Math.Clamp(currentOffset.Y, 0, currentSize.Height - control.Bounds.Height),
                         0);
 
                     compositionVisual.Offset = currentOffset * -1;
@@ -159,13 +145,8 @@ namespace ControlCatalog.Pages
             });
         }
 
-        private void SetPullHandlers(Control? control, bool inverse)
+        private void SetPullHandlers(Control control, bool inverse)
         {
-            if (control == null)
-            {
-                return;
-            }
-
             var ball = control.FindLogicalDescendantOfType<Border>();
 
             Vector3D defaultOffset = default;
@@ -190,7 +171,7 @@ namespace ControlCatalog.Pages
                 }
             };
 
-            control.AddHandler(Gestures.PullGestureEvent, (s, e) =>
+            control.AddHandler(InputElement.PullGestureEvent, (s, e) =>
             {
                 Vector3D center = new((float)control.Bounds.Center.X, (float)control.Bounds.Center.Y, 0);
                 InitComposition(ball!);
@@ -202,7 +183,7 @@ namespace ControlCatalog.Pages
                 }
             });
 
-            control.AddHandler(Gestures.PullGestureEndedEvent, (s, e) =>
+            control.AddHandler(InputElement.PullGestureEndedEvent, (s, e) =>
             {
                 InitComposition(ball!);
                 if (ballCompositionVisual != null)

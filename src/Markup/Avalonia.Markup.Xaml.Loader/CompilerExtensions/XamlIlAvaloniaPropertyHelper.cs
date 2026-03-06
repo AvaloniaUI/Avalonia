@@ -5,14 +5,13 @@ using Avalonia.Markup.Xaml.Parsers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using Avalonia.Utilities;
 using XamlX.Ast;
+using XamlX.Emit;
+using XamlX.IL;
 using XamlX.Transform;
 using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
-using XamlX.Emit;
-using XamlX.IL;
-
-using XamlIlEmitContext = XamlX.Emit.XamlEmitContext<XamlX.IL.IXamlILEmitter, XamlX.IL.XamlILNodeEmitResult>;
 using IXamlIlAstEmitableNode = XamlX.Emit.IXamlAstEmitableNode<XamlX.IL.IXamlILEmitter, XamlX.IL.XamlILNodeEmitResult>;
+using XamlIlEmitContext = XamlX.Emit.XamlEmitContext<XamlX.IL.IXamlILEmitter, XamlX.IL.XamlILNodeEmitResult>;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
@@ -51,9 +50,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         
         public static bool Emit(XamlIlEmitContext context, IXamlILEmitter emitter, IXamlProperty property)
         {
-            var type = (property.Getter ?? property.Setter).DeclaringType;
             var name = property.Name + "Property";
-            var found = type.Fields.FirstOrDefault(f => f.IsStatic && f.Name == name);
+            var found = property.DeclaringType.Fields.FirstOrDefault(f => f.IsStatic && f.Name == name);
             if (found == null)
                 return false;
 
@@ -66,10 +64,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         {
             XamlAstNamePropertyReference forgedReference;
 
-            var parsedPropertyName = PropertyParser.Parse(new CharacterReader(propertyName.AsSpan()));
+            var parsedPropertyName = PropertyParser.Parse(propertyName);
             if(parsedPropertyName.owner == null)
                 forgedReference = new XamlAstNamePropertyReference(lineInfo, selectorTypeReference,
                     propertyName, selectorTypeReference);
+            else if (string.IsNullOrWhiteSpace(parsedPropertyName.ns)
+                && string.Equals(parsedPropertyName.owner, "Classes", StringComparison.OrdinalIgnoreCase)
+                && !string.IsNullOrWhiteSpace(parsedPropertyName.name)
+                )
+            {
+                return new XamlIlAvaloniaClassProperty(context.GetAvaloniaTypes(), parsedPropertyName.name, lineInfo);
+            }
             else
             {
                 var xmlOwner = parsedPropertyName.ns;
@@ -88,12 +93,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return new XamlIlAvaloniaPropertyFieldNode(context.GetAvaloniaTypes(), lineInfo, found);
             }
 
-            var clrProperty =
-                ((XamlAstClrProperty)new PropertyReferenceResolver().Transform(context,
-                    forgedReference));
-            return new XamlIlAvaloniaPropertyNode(lineInfo,
-                context.Configuration.TypeSystem.GetType("Avalonia.AvaloniaProperty"),
-                clrProperty);
+            var clrProperty = (XamlAstClrProperty)new PropertyReferenceResolver().Transform(context, forgedReference);
+            var avaloniaPropertyBaseType = context.GetAvaloniaTypes().AvaloniaProperty;
+
+            // PropertyReferenceResolver.Transform failed resolving property, return empty stub from here:
+            if (clrProperty.DeclaringType == XamlPseudoType.Unknown)
+            {
+                return new XamlIlAvaloniaPropertyNode(lineInfo, avaloniaPropertyBaseType, clrProperty, XamlPseudoType.Unknown);
+            }
+
+            return new XamlIlAvaloniaPropertyNode(lineInfo, avaloniaPropertyBaseType, clrProperty);
         }
 
         public static IXamlType GetAvaloniaPropertyType(IXamlField field,
@@ -121,15 +130,25 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
     {
         IXamlType AvaloniaPropertyType { get; }
     }
-    
+
+    // Marker interface, used to identify whether the Avalonia property represents Classes
+    interface IXamlIlAvaloniaClassPropertyNode : IXamlIlAvaloniaPropertyNode
+    {
+
+    }
+
     class XamlIlAvaloniaPropertyNode : XamlAstNode, IXamlAstValueNode, IXamlIlAstEmitableNode, IXamlIlAvaloniaPropertyNode
     {
-        public XamlIlAvaloniaPropertyNode(IXamlLineInfo lineInfo, IXamlType type, XamlAstClrProperty property) : base(lineInfo)
+        public XamlIlAvaloniaPropertyNode(IXamlLineInfo lineInfo, IXamlType type, XamlAstClrProperty property, IXamlType propertyType) : base(lineInfo)
         {
             Type = new XamlAstClrTypeReference(this, type, false);
             Property = property;
-            AvaloniaPropertyType = Property.Getter?.ReturnType
-                                   ?? Property.Setters.First().Parameters[0];
+            AvaloniaPropertyType = propertyType;
+        }
+
+        public XamlIlAvaloniaPropertyNode(IXamlLineInfo lineInfo, IXamlType type, XamlAstClrProperty property)
+            : this(lineInfo, type, property, GetPropertyType(property))
+        {
         }
 
         public XamlAstClrProperty Property { get; }
@@ -143,6 +162,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         }
 
         public IXamlType AvaloniaPropertyType { get; }
+
+        private static IXamlType GetPropertyType(XamlAstClrProperty property) =>
+            property.Getter?.ReturnType
+            ?? property.Setters.FirstOrDefault()?.Parameters[0]
+            ?? throw new InvalidOperationException(
+                $"Unable to resolve \"{property.DeclaringType.Name}.{property.Name}\" property type. There is no setter or getter.");
     }
 
     class XamlIlAvaloniaPropertyFieldNode : XamlAstNode, IXamlAstValueNode, IXamlIlAstEmitableNode, IXamlIlAvaloniaPropertyNode
@@ -179,12 +204,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         public IXamlField AvaloniaProperty { get; }
         public XamlIlAvaloniaProperty(XamlAstClrProperty original, IXamlField field,
             AvaloniaXamlIlWellKnownTypes types)
-            :base(original, original.Name, original.DeclaringType, original.Getter, original.Setters)
+            :base(original, original.Name, original.DeclaringType, original.Getter, original.Setters, original.CustomAttributes)
         {
             var assignBinding = original.CustomAttributes.Any(ca => ca.Type.Equals(types.AssignBindingAttribute));
 
             AvaloniaProperty = field;
-            CustomAttributes = original.CustomAttributes;
             if (!assignBinding)
                 Setters.Insert(0, new BindingSetter(types, original.DeclaringType, field));
 
@@ -200,6 +224,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             Setters.Insert(0, new UnsetValueSetter(types, original.DeclaringType, field));
+            TypeConverters = original.TypeConverters;
         }
 
         abstract class AvaloniaPropertyCustomSetter : IXamlILOptimizedEmitablePropertySetter, IEquatable<AvaloniaPropertyCustomSetter>
@@ -211,11 +236,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 AvaloniaXamlIlWellKnownTypes types,
                 IXamlType declaringType,
                 IXamlField avaloniaProperty,
-                bool allowNull)
+                bool allowNull,
+                IReadOnlyList<IXamlType> parameters)
             {
                 Types = types;
                 AvaloniaProperty = avaloniaProperty;
                 TargetType = declaringType;
+                Parameters = parameters;
                 BinderParameters = new PropertySetterBinderParameters
                 {
                     AllowXNull = allowNull,
@@ -227,7 +254,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public PropertySetterBinderParameters BinderParameters { get; }
 
-            public IReadOnlyList<IXamlType> Parameters { get; set; }
+            public IReadOnlyList<IXamlType> Parameters { get; }
             public IReadOnlyList<IXamlCustomAttribute> CustomAttributes => Array.Empty<IXamlCustomAttribute>();
 
             public abstract void Emit(IXamlILEmitter emitter);
@@ -237,7 +264,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 IXamlILEmitter emitter,
                 IReadOnlyList<IXamlAstValueNode> arguments);
 
-            public bool Equals(AvaloniaPropertyCustomSetter other)
+            public bool Equals(AvaloniaPropertyCustomSetter? other)
             {
                 if (ReferenceEquals(null, other))
                     return false;
@@ -247,7 +274,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return GetType() == other.GetType() && AvaloniaProperty.Equals(other.AvaloniaProperty);
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
                 => Equals(obj as AvaloniaPropertyCustomSetter);
 
             public override int GetHashCode() 
@@ -256,21 +283,22 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         class BindingSetter : AvaloniaPropertyCustomSetter
         {
-            public BindingSetter(AvaloniaXamlIlWellKnownTypes types,
+            public BindingSetter(
+                AvaloniaXamlIlWellKnownTypes types,
                 IXamlType declaringType,
-                IXamlField avaloniaProperty) : base(types, declaringType, avaloniaProperty, false)
+                IXamlField avaloniaProperty)
+                : base(types, declaringType, avaloniaProperty, false, [types.BindingBase])
             {
-                Parameters = new[] { types.IBinding };
             }
 
             public override void Emit(IXamlILEmitter emitter)
             {
-                using (var bloc = emitter.LocalsPool.GetLocal(Types.IBinding))
+                using (var bloc = emitter.LocalsPool.GetLocal(Types.BindingBase))
                     emitter
                         .Stloc(bloc.Local)
                         .Ldsfld(AvaloniaProperty)
-                        .Ldloc(bloc.Local);
-                EmitAnchorAndBind(emitter);
+                        .Ldloc(bloc.Local)
+                        .EmitCall(Types.AvaloniaObjectBindMethod, true);
             }
 
             public override void EmitWithArguments(
@@ -280,35 +308,29 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 emitter.Ldsfld(AvaloniaProperty);
                 context.Emit(arguments[0], emitter, Parameters[0]);
-                EmitAnchorAndBind(emitter);
-            }
-
-            private void EmitAnchorAndBind(IXamlILEmitter emitter)
-            {
-                emitter
-                    .Ldnull() // TODO: provide anchor?
-                    .EmitCall(Types.AvaloniaObjectBindMethod, true);
+                emitter.EmitCall(Types.AvaloniaObjectBindMethod, true);
             }
         }
 
         class BindingWithPrioritySetter : AvaloniaPropertyCustomSetter
         {
-            public BindingWithPrioritySetter(AvaloniaXamlIlWellKnownTypes types,
+            public BindingWithPrioritySetter(
+                AvaloniaXamlIlWellKnownTypes types,
                 IXamlType declaringType,
-                IXamlField avaloniaProperty) : base(types, declaringType, avaloniaProperty, false)
+                IXamlField avaloniaProperty)
+                : base(types, declaringType, avaloniaProperty, false, [types.BindingPriority, types.BindingBase])
             {
-                Parameters = new[] { types.BindingPriority, types.IBinding };
             }
 
             public override void Emit(IXamlILEmitter emitter)
             {
-                using (var bloc = emitter.LocalsPool.GetLocal(Types.IBinding))
+                using (var bloc = emitter.LocalsPool.GetLocal(Types.BindingBase))
                     emitter
                         .Stloc(bloc.Local)
                         .Pop() // ignore priority
                         .Ldsfld(AvaloniaProperty)
-                        .Ldloc(bloc.Local);
-                EmitAnchorAndBind(emitter);
+                        .Ldloc(bloc.Local)
+                        .EmitCall(Types.AvaloniaObjectBindMethod, true);
             }
 
             public override void EmitWithArguments(
@@ -318,24 +340,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 emitter.Ldsfld(AvaloniaProperty);
                 context.Emit(arguments[1], emitter, Parameters[1]);
-                EmitAnchorAndBind(emitter);
-            }
-
-            private void EmitAnchorAndBind(IXamlILEmitter emitter)
-            {
-                emitter
-                    .Ldnull() // TODO: provide anchor?
-                    .EmitCall(Types.AvaloniaObjectBindMethod, true);
+                emitter.EmitCall(Types.AvaloniaObjectBindMethod, true);
             }
         }
 
         class SetValueWithPrioritySetter : AvaloniaPropertyCustomSetter
         {
-            public SetValueWithPrioritySetter(AvaloniaXamlIlWellKnownTypes types, IXamlType declaringType, IXamlField avaloniaProperty,
+            public SetValueWithPrioritySetter(
+                AvaloniaXamlIlWellKnownTypes types,
+                IXamlType declaringType,
+                IXamlField avaloniaProperty,
                 IXamlType propertyType)
-                : base(types, declaringType, avaloniaProperty, propertyType.AcceptsNull())
+                : base(types, declaringType, avaloniaProperty, propertyType.AcceptsNull(), [types.BindingPriority, propertyType])
             {
-                Parameters = new[] { types.BindingPriority, propertyType };
             }
 
             public override void Emit(IXamlILEmitter emitter)
@@ -379,10 +396,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         class UnsetValueSetter : AvaloniaPropertyCustomSetter
         {
-            public UnsetValueSetter(AvaloniaXamlIlWellKnownTypes types, IXamlType declaringType, IXamlField avaloniaProperty) 
-                : base(types, declaringType, avaloniaProperty, false)
+            public UnsetValueSetter(
+                AvaloniaXamlIlWellKnownTypes types,
+                IXamlType declaringType,
+                IXamlField avaloniaProperty)
+                : base(types, declaringType, avaloniaProperty, false, [types.UnsetValueType])
             {
-                Parameters = new[] { types.UnsetValueType };
             }
 
             public override void Emit(IXamlILEmitter codegen)
@@ -410,6 +429,49 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     .Ldc_I4(0)
                     .EmitCall(Types.AvaloniaObjectSetValueMethod, true);
             }
+        }
+    }
+
+    sealed class XamlIlAvaloniaClassProperty : XamlAstClrProperty,
+        IXamlIlAvaloniaClassPropertyNode,
+        IXamlAstValueNode,
+        IXamlAstLocalsEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
+    {
+        private readonly IXamlMethod _method;
+        private readonly AvaloniaXamlIlWellKnownTypes _types;
+        private readonly string _className;
+        private readonly IXamlAstTypeReference _type;
+        private readonly IXamlType _returnType;
+
+        public XamlIlAvaloniaClassProperty(AvaloniaXamlIlWellKnownTypes types,
+            string className,
+            IXamlLineInfo lineInfo) : base(lineInfo, className, types.Classes, null)
+        {
+            Parameters = [types.XamlIlTypes.String];
+            _method = types.GetClassProperty;
+            AvaloniaPropertyType = types.XamlIlTypes.Boolean;
+            _types = types;
+            _returnType = _types.AvaloniaPropertyT.MakeGenericType(types.XamlIlTypes.Boolean);
+            _type = new XamlAstClrTypeReference(this, _returnType, false);
+            _className = className;
+            Setters = [];
+        }
+
+        public IXamlType AvaloniaPropertyType { get; }
+        public IReadOnlyList<IXamlType> Parameters { get; }
+        public IXamlAstTypeReference Type => _type;
+
+        public PropertySetterBinderParameters BinderParameters { get; } = new PropertySetterBinderParameters();
+
+        public XamlILNodeEmitResult Emit(XamlEmitContextWithLocals<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter emitter)
+        {
+            using (var loc = emitter.LocalsPool.GetLocal(_types.XamlIlTypes.String))
+            {
+                emitter
+                    .Ldstr(_className);
+                emitter.EmitCall(_method, false);
+            }
+            return XamlILNodeEmitResult.Type(0, _returnType);
         }
     }
 }

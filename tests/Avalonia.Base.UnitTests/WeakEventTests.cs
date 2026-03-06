@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Utilities;
 using Xunit;
 
@@ -12,11 +8,11 @@ namespace Avalonia.Base.UnitTests
     {
         class EventSource
         {
-            public event EventHandler Event;
+            public event EventHandler? Event;
 
             public void Fire()
             {
-                Event?.Invoke(this, new EventArgs());
+                Event?.Invoke(this, EventArgs.Empty);
             }
 
             public static readonly WeakEvent<EventSource, EventArgs> WeakEv = WeakEvent.Register<EventSource>(
@@ -26,14 +22,14 @@ namespace Avalonia.Base.UnitTests
 
         class Subscriber : IWeakEventSubscriber<EventArgs>
         {
-            private readonly Action _onEvent;
+            private readonly Action? _onEvent;
 
-            public Subscriber(Action onEvent)
+            public Subscriber(Action? onEvent)
             {
                 _onEvent = onEvent;
             }
 
-            public void OnEvent(object sender, WeakEvent ev, EventArgs args)
+            public void OnEvent(object? sender, WeakEvent ev, EventArgs args)
             {
                 _onEvent?.Invoke();
             }

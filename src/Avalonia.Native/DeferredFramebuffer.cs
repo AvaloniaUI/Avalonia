@@ -9,13 +9,13 @@ namespace Avalonia.Native
     internal unsafe class DeferredFramebuffer : ILockedFramebuffer
     {
         private readonly IAvnSoftwareRenderTarget _renderTarget;
-        private readonly Action<Action<IAvnWindowBase>> _lockWindow;
+        private readonly Action<Action<IAvnTopLevel>> _lockTopLevel;
         
-        public DeferredFramebuffer(IAvnSoftwareRenderTarget renderTarget, Action<Action<IAvnWindowBase>> lockWindow,
+        public DeferredFramebuffer(IAvnSoftwareRenderTarget renderTarget, Action<Action<IAvnTopLevel>> lockTopLevel,
                                    int width, int height, Vector dpi)
         {
             _renderTarget = renderTarget;
-            _lockWindow = lockWindow;
+            _lockTopLevel = lockTopLevel;
             Address = Marshal.AllocHGlobal(width * height * 4);
             Size = new PixelSize(width, height);
             RowBytes = width * 4;
@@ -29,13 +29,14 @@ namespace Avalonia.Native
         public int RowBytes { get; set; }
         public Vector Dpi { get; set; }
         public PixelFormat Format { get; set; }
+        public AlphaFormat AlphaFormat { get; set; }
 
         public void Dispose()
         {
             if (Address == IntPtr.Zero)
                 return;
 
-            _lockWindow(win =>
+            _lockTopLevel(win =>
             {
                 var fb = new AvnFramebuffer
                 {

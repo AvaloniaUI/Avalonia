@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Avalonia.Data;
+using Avalonia.Data.Core.Plugins;
 using Avalonia.UnitTests;
 using Xunit;
-
-#nullable enable
 
 namespace Avalonia.Base.UnitTests.Data.Core;
 
@@ -128,6 +129,42 @@ public partial class BindingExpressionTests
             TargetClass.IntProperty,
             new ArgumentOutOfRangeException("value"),
             BindingErrorType.DataValidationError);
+
+        GC.KeepAlive(data);
+    }
+
+    [Fact]
+    public void Setter_Exception_Error_Is_Cleared_When_Reverting_To_Same_Valid_Value()
+    {
+        // Issue #20534: When a setter throws on an invalid value and the user
+        // reverts to the same valid value that was last successfully set, the
+        // validation error should be cleared.
+        var data = new ExceptionViewModel { MustBePositive = 5 };
+
+        var target = CreateTargetWithSource(
+            data,
+            o => o.MustBePositive,
+            enableDataValidation: true,
+            mode: BindingMode.TwoWay);
+
+        // Step 1: Set a valid value.
+        target.Int = 10;
+        Assert.Equal(10, data.MustBePositive);
+        AssertNoError(target, TargetClass.IntProperty);
+
+        // Step 2: Set an invalid value — setter throws, error appears.
+        target.Int = -5;
+        Assert.Equal(10, data.MustBePositive);
+        AssertBindingError(
+            target,
+            TargetClass.IntProperty,
+            new ArgumentOutOfRangeException("value"),
+            BindingErrorType.DataValidationError);
+
+        // Step 3: Revert to the same valid value (10). The error must clear.
+        target.Int = 10;
+        Assert.Equal(10, data.MustBePositive);
+        AssertNoError(target, TargetClass.IntProperty);
 
         GC.KeepAlive(data);
     }
@@ -271,6 +308,62 @@ public partial class BindingExpressionTests
         GC.KeepAlive(data);
     }
 
+    [Fact]
+    public void Updates_Data_Validation_For_Required_DataAnnotation()
+    {
+        if (!BindingPlugins.DataValidators.Any(x => x is DataAnnotationsValidationPlugin))
+            BindingPlugins.DataValidators.Insert(0, new DataAnnotationsValidationPlugin());
+
+        var data = new DataAnnotationsViewModel();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.RequiredString,
+            enableDataValidation: true);
+
+        AssertBindingError(
+            target,
+            TargetClass.StringProperty,
+            new DataValidationException("String is required!"),
+            BindingErrorType.DataValidationError);
+    }
+
+    [Fact]
+    public void Handles_Indei_And_DataAnnotations_On_Same_Class()
+    {
+        // Issue #15201
+        var data = new IndeiDataAnnotationsViewModel();
+        var target = CreateTargetWithSource(
+            data,
+            o => o.RequiredString,
+            enableDataValidation: true);
+
+        AssertBindingError(
+            target,
+            TargetClass.StringProperty,
+            new DataValidationException("String is required!"),
+            BindingErrorType.DataValidationError);
+    }
+
+    [Fact]
+    public void Setting_Valid_Value_Should_Clear_Binding_Error()
+    {
+        var data = new ViewModel { DoubleValue = 5.6 };
+        var target = CreateTargetWithSource(
+            data,
+            o => o.DoubleValue,
+            enableDataValidation: true,
+            mode: BindingMode.TwoWay,
+            targetProperty: TargetClass.StringProperty);
+
+        target.String = "5.6";
+        target.String = "5.6a";
+        target.String = "5.6";
+
+        AssertNoError(target, TargetClass.StringProperty);
+
+        GC.KeepAlive(data);
+    }
+
     public class ExceptionViewModel : NotifyingBase
     {
         private int _mustBePositive;
@@ -319,11 +412,12 @@ public partial class BindingExpressionTests
 
         public override bool HasErrors => _mustBePositive >= 0;
 
-        public override IEnumerable? GetErrors(string propertyName)
+        public override IEnumerable GetErrors(string? propertyName)
         {
-            IList<string>? result;
-            _errors.TryGetValue(propertyName, out result);
-            return result;
+            if (propertyName is not null && _errors.TryGetValue(propertyName, out var result))
+                return result;
+
+            return Array.Empty<string>();
         }
     }
 
@@ -338,8 +432,44 @@ public partial class BindingExpressionTests
         }
 
         public override bool HasErrors => false;
-        public override IEnumerable? GetErrors(string propertyName) => null;
+        public override IEnumerable GetErrors(string? propertyName) => Array.Empty<string>();
     }
+
+    private class DataAnnotationsViewModel : NotifyingBase
+    {
+        private string? _requiredString;
+
+        [Required(ErrorMessage = "String is required!")]
+        public string? RequiredString
+        {
+            get { return _requiredString; }
+            set { _requiredString = value; RaisePropertyChanged(); }
+        }
+    }
+
+    private class IndeiDataAnnotationsViewModel : IndeiBase
+    {
+        private string? _requiredString;
+
+        [Required(ErrorMessage = "String is required!")]
+        public string? RequiredString
+        {
+            get { return _requiredString; }
+            set { _requiredString = value; RaisePropertyChanged(); }
+        }
+
+        public override bool HasErrors => RequiredString is null;
+        
+        public override IEnumerable GetErrors(string? propertyName)
+        {
+            if (propertyName == nameof(RequiredString) && RequiredString is null)
+            {
+                return new[] { "String is required!" };
+            }
+
+            return Array.Empty<string>();
+        }
+    }   
 
     private static void AssertNoError(TargetClass target, AvaloniaProperty property)
     {

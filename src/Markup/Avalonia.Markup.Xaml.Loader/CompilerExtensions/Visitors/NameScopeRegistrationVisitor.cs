@@ -25,7 +25,7 @@ internal class NameScopeRegistrationVisitor : Dictionary<string, (IXamlType type
             && node is AvaloniaNameScopeRegistrationXamlIlNode nameScopeRegistration
             && nameScopeRegistration.Name is XamlAstTextNode textNode)
         {
-            this[textNode.Text] = (nameScopeRegistration.TargetType, textNode);
+            this[textNode.Text] = (nameScopeRegistration.TargetType ?? XamlPseudoType.Unknown, textNode);
         }
 
         return node;

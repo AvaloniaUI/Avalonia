@@ -11,6 +11,8 @@
     </Border>
   </Design.PreviewWith>
   
+  <x:Double x:Key="RadioButtonMinHeight">32</x:Double>
+  
   <ControlTheme x:Key="{x:Type RadioButton}" TargetType="RadioButton">
     <Setter Property="Background" Value="{DynamicResource RadioButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource RadioButtonForeground}" />
@@ -30,7 +32,7 @@
             BorderThickness="{TemplateBinding BorderThickness}"
             CornerRadius="{TemplateBinding CornerRadius}">
           <Grid ColumnDefinitions="20,*">
-            <Grid Height="32" VerticalAlignment="Top">
+            <Grid Height="{DynamicResource RadioButtonMinHeight}" VerticalAlignment="Top">
 
               <Ellipse
                   Name="OuterEllipse"
@@ -69,12 +71,15 @@
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 Content="{TemplateBinding Content}"
                 ContentTemplate="{TemplateBinding ContentTemplate}"
-                Foreground="{TemplateBinding Foreground}"
-                RecognizesAccessKey="True" />
+                Foreground="{TemplateBinding Foreground}" />
           </Grid>
         </Border>
       </ControlTemplate>
     </Setter>
+
+    <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="RecognizesAccessKey" Value="True" />
+    </Style>
 
     <!--  PointerOver State  -->
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">

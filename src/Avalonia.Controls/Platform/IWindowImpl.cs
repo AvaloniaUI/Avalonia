@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Metadata;
 
@@ -45,9 +46,9 @@ namespace Avalonia.Platform
         Action? GotInputWhenDisabled { get; set; }
 
         /// <summary>
-        /// Enables or disables system window decorations (title bar, buttons, etc)
+        /// Enables or disables window decorations (title bar, buttons, etc)
         /// </summary>
-        void SetSystemDecorations(SystemDecorations enabled);
+        void SetWindowDecorations(WindowDecorations enabled);
 
         /// <summary>
         /// Sets the icon of this window.
@@ -63,6 +64,16 @@ namespace Avalonia.Platform
         /// Enables or disables resizing of the window
         /// </summary>
         void CanResize(bool value);
+
+        /// <summary>
+        /// Enables or disables minimizing the window.
+        /// </summary>
+        void SetCanMinimize(bool value);
+
+        /// <summary>
+        /// Enables or disables maximizing the window.
+        /// </summary>
+        void SetCanMaximize(bool value);
 
         /// <summary>
         /// Gets or sets a method called before the underlying implementation is destroyed.
@@ -85,6 +96,12 @@ namespace Avalonia.Platform
         /// This property is used when <see cref="IsClientAreaExtendedToDecorations"/> is set.
         /// </summary>
         bool NeedsManagedDecorations { get; }
+
+        /// <summary>
+        /// Gets flags indicating which drawn decoration parts the platform requires.
+        /// For example, X11 needs shadow, border, and resize grips; Win32 only needs titlebar/buttons.
+        /// </summary>
+        PlatformRequestedDrawnDecoration RequestedDrawnDecorations { get; }
 
         /// <summary>
         /// Gets a thickness that describes the amount each side of the non-client area extends into the client area.
@@ -124,7 +141,6 @@ namespace Avalonia.Platform
         /// <summary>
         /// Minimum width of the window.
         /// </summary>
-        /// 
         void SetMinMaxSize(Size minSize, Size maxSize);
 
         /// <summary>
@@ -134,24 +150,9 @@ namespace Avalonia.Platform
         void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint);        
 
         /// <summary>
-        /// Sets hints that configure how the client area extends. 
-        /// </summary>
-        /// <param name="hints"></param>
-        void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints);
-
-        /// <summary>
         /// Sets how big the non-client titlebar area should be.
         /// </summary>
         /// <param name="titleBarHeight">-1 for platform default, otherwise the height in DIPs.</param>
         void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight);
-
-        /// <summary>
-        /// Fills zOrder with numbers that represent the relative order of the windows in the z-order.
-        /// The topmost window should have the highest number.
-        /// Both the windows and zOrder lists are expected to be the same length.
-        /// </summary>
-        /// <param name="windows">A span of windows to get their z-order</param>
-        /// <param name="zOrder">Span to be filled with associated window z-order</param>
-        internal void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder);
     }
 }
