@@ -124,7 +124,16 @@ namespace Avalonia.Animation
                 {
                     if (_clock is null || _clock.PlayState == PlayState.Stop)
                         return;
-                    _clock.PlayState = visual.IsEffectivelyVisible ? PlayState.Run : PlayState.Pause;
+                    if (visual.IsEffectivelyVisible)
+                    {
+                        if (_clock.PlayState == PlayState.Pause)
+                            _clock.PlayState = PlayState.Run;
+                    }
+                    else
+                    {
+                        if (_clock.PlayState == PlayState.Run)
+                            _clock.PlayState = PlayState.Pause;
+                    }
                 };
                 visual.IsEffectivelyVisibleChanged += _visibilityChangedHandler;
 
