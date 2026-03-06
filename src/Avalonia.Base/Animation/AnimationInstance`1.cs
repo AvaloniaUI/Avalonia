@@ -35,7 +35,7 @@ namespace Avalonia.Animation
         private readonly IClock _baseClock;
         private IClock? _clock;
         private EventHandler<AvaloniaPropertyChangedEventArgs>? _propertyChangedDelegate;
-        private IDisposable? _visibilityMonitorSub;
+        private EventHandler? _visibilityChangedHandler;
         private EventHandler<VisualTreeAttachmentEventArgs>? _detachedHandler;
 
         public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action? OnComplete, Func<double, T, T> Interpolator)
@@ -95,14 +95,19 @@ namespace Avalonia.Animation
             _targetControl.PropertyChanged -= _propertyChangedDelegate;
             timerSub.Dispose();
 
-            var visSub = _visibilityMonitorSub;
-            _visibilityMonitorSub = null;
-            visSub?.Dispose();
-
-            if (_targetControl is Visual visual && _detachedHandler is not null)
+            if (_targetControl is Visual visual)
             {
-                visual.DetachedFromVisualTree -= _detachedHandler;
-                _detachedHandler = null;
+                if (_visibilityChangedHandler is not null)
+                {
+                    visual.IsEffectivelyVisibleChanged -= _visibilityChangedHandler;
+                    _visibilityChangedHandler = null;
+                }
+
+                if (_detachedHandler is not null)
+                {
+                    visual.DetachedFromVisualTree -= _detachedHandler;
+                    _detachedHandler = null;
+                }
             }
 
             _clock!.PlayState = PlayState.Stop;
@@ -110,30 +115,18 @@ namespace Avalonia.Animation
 
         protected override void Subscribed()
         {
+            _clock = new Clock(_baseClock);
+            _timerSub = _clock.Subscribe(Step);
+
             if (_targetControl is Visual visual)
             {
-                // Subscribe the visibility monitor FIRST so it runs before Clock.Pulse.
-                // This ensures that when a visual becomes visible, PlayState is set to Run
-                // before the clock processes the tick, avoiding a lost frame.
-                _visibilityMonitorSub = _baseClock.Subscribe(new AnonymousObserver<TimeSpan>(_ =>
+                _visibilityChangedHandler = (_, _) =>
                 {
-                    // Don't modify a stopped/completed clock or one not yet created.
                     if (_clock is null || _clock.PlayState == PlayState.Stop)
                         return;
-                    if (visual.IsEffectivelyVisible)
-                    {
-                        if (_clock.PlayState == PlayState.Pause)
-                            _clock.PlayState = PlayState.Run;
-                    }
-                    else
-                    {
-                        if (_clock.PlayState == PlayState.Run)
-                            _clock.PlayState = PlayState.Pause;
-                    }
-                }));
-
-                _clock = new Clock(_baseClock);
-                _timerSub = _clock.Subscribe(Step);
+                    _clock.PlayState = visual.IsEffectivelyVisible ? PlayState.Run : PlayState.Pause;
+                };
+                visual.IsEffectivelyVisibleChanged += _visibilityChangedHandler;
 
                 // If already invisible when animation starts, pause immediately.
                 if (!visual.IsEffectivelyVisible)
@@ -142,11 +135,6 @@ namespace Avalonia.Animation
                 // Stop and dispose the animation when detached from the visual tree.
                 _detachedHandler = (_, _) => DoComplete();
                 visual.DetachedFromVisualTree += _detachedHandler;
-            }
-            else
-            {
-                _clock = new Clock(_baseClock);
-                _timerSub = _clock.Subscribe(Step);
             }
 
             _propertyChangedDelegate ??= ControlPropertyChanged;

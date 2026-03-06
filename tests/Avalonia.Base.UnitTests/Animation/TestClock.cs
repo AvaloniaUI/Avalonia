@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Animation;
-using Avalonia.Reactive;
 
 namespace Avalonia.Base.UnitTests.Animation
 {
@@ -10,37 +7,30 @@ namespace Avalonia.Base.UnitTests.Animation
     {
         private TimeSpan _curTime;
 
-        private readonly List<IObserver<TimeSpan>> _observers = new();
+        private IObserver<TimeSpan>? _observer;
 
         public PlayState PlayState { get; set; } = PlayState.Run;
 
         public void Dispose()
         {
-            var snapshot = _observers.ToArray();
-            _observers.Clear();
-            foreach (var observer in snapshot)
-                observer.OnCompleted();
+            _observer?.OnCompleted();
         }
 
         public void Step(TimeSpan time)
         {
-            var snapshot = _observers.ToArray();
-            foreach (var observer in snapshot)
-                observer.OnNext(time);
+            _observer?.OnNext(time);
         }
 
         public void Pulse(TimeSpan time)
         {
             _curTime += time;
-            var snapshot = _observers.ToArray();
-            foreach (var observer in snapshot)
-                observer.OnNext(_curTime);
+            _observer?.OnNext(_curTime);
         }
 
         public IDisposable Subscribe(IObserver<TimeSpan> observer)
         {
-            _observers.Add(observer);
-            return Disposable.Create(() => _observers.Remove(observer));
+            _observer = observer;
+            return this;
         }
     }
 }
