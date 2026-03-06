@@ -43,7 +43,7 @@ namespace Avalonia.Controls
         private ContentPresenter? _pagePresenter;
         private ContentPresenter? _pageBackPresenter;
         private CancellationTokenSource? _currentTransition;
-        private Task? _lastPageTransitionTask;
+        private Task _lastPageTransitionTask = Task.CompletedTask;
         private CancellationTokenSource? _currentModalTransition;
         private Border? _navBar;
         private Border? _navBarShadow;
@@ -779,8 +779,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Performs the stack mutation for a pop. The visual transition runs
         /// subsequently via <see cref="UpdateActivePage"/>. Callers are responsible
-        /// for firing lifecycle events (SendNavigatedFrom, SendNavigatedTo, Popped)
-        /// after awaiting the page transition.
+        /// for firing lifecycle events via <see cref="SendPopLifecycleEvents"/>
+        /// after awaiting the page transition where possible.
         /// </summary>
         private Page? ExecutePopCore()
         {
@@ -889,12 +889,7 @@ namespace Avalonia.Controls
                 await AwaitPageTransitionAsync();
 
                 if (old != null)
-                {
-                    var newCurrentPage = CurrentPage;
-                    old.SendNavigatedFrom(new NavigatedFromEventArgs(newCurrentPage, NavigationType.Pop));
-                    newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(old, NavigationType.Pop));
-                    Popped?.Invoke(this, new NavigationEventArgs(old, NavigationType.Pop));
-                }
+                    SendPopLifecycleEvents(old, NavigationType.Pop);
 
                 return old;
             }
@@ -1384,12 +1379,7 @@ namespace Avalonia.Controls
                 {
                     var old = ExecutePopCore();
                     if (old != null)
-                    {
-                        var newCurrentPage = CurrentPage;
-                        old.SendNavigatedFrom(new NavigatedFromEventArgs(newCurrentPage, NavigationType.Pop));
-                        newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(old, NavigationType.Pop));
-                        Popped?.Invoke(this, new NavigationEventArgs(old, NavigationType.Pop));
-                    }
+                        SendPopLifecycleEvents(old, NavigationType.Pop);
                     PageRemoved?.Invoke(this, new PageRemovedEventArgs(page));
                     return;
                 }
@@ -1422,12 +1412,7 @@ namespace Avalonia.Controls
                 {
                     var old = ExecutePopCore();
                     if (old != null)
-                    {
-                        var newCurrentPage = CurrentPage;
-                        old.SendNavigatedFrom(new NavigatedFromEventArgs(newCurrentPage, NavigationType.Pop));
-                        newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(old, NavigationType.Pop));
-                        Popped?.Invoke(this, new NavigationEventArgs(old, NavigationType.Pop));
-                    }
+                        SendPopLifecycleEvents(old, NavigationType.Pop);
                     PageRemoved?.Invoke(this, new PageRemovedEventArgs(page));
                     return;
                 }
@@ -1641,7 +1626,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    _lastPageTransitionTask = null;
+                    _lastPageTransitionTask = Task.CompletedTask;
 
                     _pagePresenter.Content = page;
                     _pagePresenter.IsVisible = page != null;
@@ -1728,14 +1713,23 @@ namespace Avalonia.Controls
             from.Opacity = 1;
         }
 
-        private async Task AwaitPageTransitionAsync()
+        private Task AwaitPageTransitionAsync()
         {
             var task = _lastPageTransitionTask;
-            if (task != null)
-            {
-                _lastPageTransitionTask = null;
-                await task;
-            }
+            _lastPageTransitionTask = Task.CompletedTask;
+            return task;
+        }
+
+        /// <summary>
+        /// Fires lifecycle events after a pop: SendNavigatedFrom on the old page,
+        /// SendNavigatedTo on the new current page, and raises the Popped event.
+        /// </summary>
+        private void SendPopLifecycleEvents(Page oldPage, NavigationType navigationType)
+        {
+            var newCurrentPage = CurrentPage;
+            oldPage.SendNavigatedFrom(new NavigatedFromEventArgs(newCurrentPage, navigationType));
+            newCurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(oldPage, navigationType));
+            Popped?.Invoke(this, new NavigationEventArgs(oldPage, navigationType));
         }
 
         /// <summary>
