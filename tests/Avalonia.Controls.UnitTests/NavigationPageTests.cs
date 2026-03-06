@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Animation;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.UnitTests;
@@ -873,6 +874,25 @@ public class NavigationPageTests
         }
     }
 
+    public class PropertyTests : ScopedTestBase
+    {
+        [Fact]
+        public void IsGestureEnabled_Default_IsTrue()
+        {
+            var nav = new NavigationPage();
+            Assert.True(nav.IsGestureEnabled);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void IsGestureEnabled_RoundTrips(bool value)
+        {
+            var nav = new NavigationPage { IsGestureEnabled = value };
+            Assert.Equal(value, nav.IsGestureEnabled);
+        }
+    }
+
     public class AttachedPropertyTests : ScopedTestBase
     {
         [Fact]
@@ -1304,6 +1324,27 @@ public class NavigationPageTests
             await nav.PopAllModalsAsync();
 
             Assert.Same(m2, previousPage);
+        }
+
+        [Fact]
+        public async Task PopAllModals_MultipleModals_NavigatedTo_FiredOnlyOnBaseCurrentPage()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage { Header = "Root" };
+            await nav.PushAsync(root);
+            var m1 = new ContentPage { Header = "M1" };
+            var m2 = new ContentPage { Header = "M2" };
+            await nav.PushModalAsync(m1);
+            await nav.PushModalAsync(m2);
+
+            var navigatedToPages = new List<string>();
+            root.NavigatedTo += (_, _) => navigatedToPages.Add("root");
+            m1.NavigatedTo += (_, _) => navigatedToPages.Add("m1");
+            m2.NavigatedTo += (_, _) => navigatedToPages.Add("m2");
+
+            await nav.PopAllModalsAsync();
+
+            Assert.Equal(["root"], navigatedToPages);
         }
     }
 

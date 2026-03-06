@@ -105,6 +105,21 @@ public class CarouselPageTests
             var cp = new CarouselPage { ItemsPanel = template };
             Assert.Same(template, cp.ItemsPanel);
         }
+
+        [Fact]
+        public void PageTemplate_RoundTrip()
+        {
+            var template = new FuncDataTemplate<Page>((_, _) => new ContentControl());
+            var cp = new CarouselPage { PageTemplate = template };
+            Assert.Same(template, cp.PageTemplate);
+        }
+
+        [Fact]
+        public void PageTemplate_CanBeSetToNull()
+        {
+            var cp = new CarouselPage { PageTemplate = null };
+            Assert.Null(cp.PageTemplate);
+        }
     }
 
     public class SelectionBehavior : ScopedTestBase
@@ -445,6 +460,21 @@ public class CarouselPageTests
             Assert.NotNull(args);
             Assert.Equal(NavigationType.Replace, args!.NavigationType);
         }
+
+        [Fact]
+        public void NavigatedTo_FirstAutoSelection_NavigationType_IsReplace()
+        {
+            var cp = new CarouselPage();
+            var page = new ContentPage { Header = "A" };
+
+            NavigatedToEventArgs? args = null;
+            page.NavigatedTo += (_, e) => args = e;
+
+            ((AvaloniaList<Page>)cp.Pages!).Add(page);
+
+            Assert.NotNull(args);
+            Assert.Equal(NavigationType.Replace, args!.NavigationType);
+        }
     }
 
     public class LogicalChildrenTests : ScopedTestBase
@@ -500,6 +530,18 @@ public class CarouselPageTests
             Assert.DoesNotContain(old1, cp.GetLogicalChildren());
             Assert.DoesNotContain(old2, cp.GetLogicalChildren());
             Assert.Contains(newPages[0], cp.GetLogicalChildren());
+        }
+
+        [Fact]
+        public void Pages_SetNull_ClearsLogicalChildren()
+        {
+            var cp = new CarouselPage();
+            var page = new ContentPage { Header = "A" };
+            ((AvaloniaList<Page>)cp.Pages!).Add(page);
+
+            cp.Pages = null;
+
+            Assert.DoesNotContain(page, cp.GetLogicalChildren());
         }
     }
 

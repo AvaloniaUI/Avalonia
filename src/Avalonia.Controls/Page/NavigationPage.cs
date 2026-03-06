@@ -1276,6 +1276,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Pops all modal pages using <see cref="ModalTransition"/>.
         /// </summary>
+        /// <remarks>
+        /// All modals are dismissed in a single transition rather than one-by-one, so lifecycle
+        /// events differ from calling <see cref="PopModalAsync()"/> in a loop:
+        /// <list type="bullet">
+        ///   <item><description>
+        ///     <see cref="Page.NavigatedFrom"/> fires on every dismissed modal in LIFO order.
+        ///   </description></item>
+        ///   <item><description>
+        ///     <see cref="Page.NavigatedTo"/> fires only on <see cref="Page.CurrentPage"/>.
+        ///     Intermediate modals are never shown, so they never receive <c>NavigatedTo</c>.
+        ///   </description></item>
+        /// </list>
+        /// </remarks>
         public async Task PopAllModalsAsync()
         {
             if (_modalStack.Count == 0)
@@ -1335,6 +1348,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Pops all modal pages using <paramref name="transition"/>.
         /// </summary>
+        /// <inheritdoc cref="PopAllModalsAsync()"/>
         public async Task PopAllModalsAsync(IPageTransition? transition)
         {
             _overrideTransition = transition;

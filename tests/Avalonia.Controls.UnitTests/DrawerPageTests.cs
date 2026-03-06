@@ -557,6 +557,26 @@ public class DrawerPageTests
 
             Assert.True(dp.IsOpen);
         }
+
+        [Fact]
+        public void IsOpen_RapidToggle_EventsFiredExactlyOncePerChange()
+        {
+            var dp = new DrawerPage();
+            int openedCount = 0;
+            int closedCount = 0;
+            dp.Opened += (_, _) => openedCount++;
+            dp.Closed += (_, _) => closedCount++;
+
+            for (int i = 0; i < 5; i++)
+            {
+                dp.IsOpen = true;
+                dp.IsOpen = false;
+            }
+
+            Assert.Equal(5, openedCount);
+            Assert.Equal(5, closedCount);
+            Assert.False(dp.IsOpen);
+        }
     }
 
     public class LifecycleEventTests : ScopedTestBase

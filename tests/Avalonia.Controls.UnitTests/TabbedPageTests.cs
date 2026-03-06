@@ -5,6 +5,8 @@ using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.UnitTests;
@@ -682,6 +684,51 @@ public class TabbedPageTests
         }
     }
 
+    public class KeyboardNavigationTests : ScopedTestBase
+    {
+        [Fact]
+        public void IsKeyboardNavigationEnabled_Default_IsTrue()
+        {
+            var tp = new TabbedPage();
+            Assert.True(tp.IsKeyboardNavigationEnabled);
+        }
+
+        [Fact]
+        public void IsKeyboardNavigationEnabled_False_RightKey_IsNotHandled()
+        {
+            var tp = new TestableTabbedPage { IsKeyboardNavigationEnabled = false };
+            tp.Pages = new AvaloniaList<Page> { new ContentPage(), new ContentPage() };
+            tp.SelectedIndex = 0;
+
+            bool handled = tp.SimulateKeyDownReturnsHandled(Key.Right);
+
+            Assert.False(handled);
+        }
+
+        [Fact]
+        public void IsKeyboardNavigationEnabled_False_CtrlTab_IsNotHandled()
+        {
+            var tp = new TestableTabbedPage { IsKeyboardNavigationEnabled = false };
+            tp.Pages = new AvaloniaList<Page> { new ContentPage(), new ContentPage() };
+            tp.SelectedIndex = 0;
+
+            bool handled = tp.SimulateKeyDownWithModifiersReturnsHandled(Key.Tab, KeyModifiers.Control);
+
+            Assert.False(handled);
+        }
+
+        [Fact]
+        public void IsKeyboardNavigationEnabled_True_NoTemplate_KeyIsNotHandled()
+        {
+            var tp = new TestableTabbedPage { IsKeyboardNavigationEnabled = true };
+            tp.Pages = new AvaloniaList<Page> { new ContentPage(), new ContentPage() };
+
+            bool handled = tp.SimulateKeyDownReturnsHandled(Key.Right);
+
+            Assert.False(handled);
+        }
+    }
+
     public class SelectingMultiPageTests : ScopedTestBase
     {
         [Fact]
@@ -816,5 +863,25 @@ public class TabbedPageTests
         public int CallFindNextEnabledTab(int start, int dir) => FindNextEnabledTab(start, dir);
 
         protected override void ApplySelectedIndex(int index) => base.ApplySelectedIndex(index);
+
+        public void SimulateKeyDown(Key key)
+        {
+            var e = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key };
+            OnKeyDown(e);
+        }
+
+        public bool SimulateKeyDownReturnsHandled(Key key)
+        {
+            var e = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key };
+            OnKeyDown(e);
+            return e.Handled;
+        }
+
+        public bool SimulateKeyDownWithModifiersReturnsHandled(Key key, KeyModifiers modifiers)
+        {
+            var e = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, KeyModifiers = modifiers };
+            OnKeyDown(e);
+            return e.Handled;
+        }
     }
 }
