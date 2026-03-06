@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ContentPageCommandBarPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Position" FontWeight="SemiBold" />
+        <ComboBox x:Name="PositionCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnPositionChanged">
+          <ComboBoxItem Content="Top" />
+          <ComboBoxItem Content="Bottom" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Manage Items" FontWeight="SemiBold" />
+        <CheckBox x:Name="UseIconCheck" Content="Use Icon (primary items)" />
+        <Button Content="Add Primary Item" HorizontalAlignment="Stretch" Click="OnAddPrimary" />
+        <Button Content="Add Secondary Item" HorizontalAlignment="Stretch" Click="OnAddSecondary" />
+        <Button Content="Add Separator" HorizontalAlignment="Stretch" Click="OnAddSeparator" />
+        <Button Content="Clear All" HorizontalAlignment="Stretch" Click="OnClearAll" />
+
+        <Separator />
+
+        <TextBlock Text="Navigation" FontWeight="SemiBold" />
+        <Button Content="Push Page" HorizontalAlignment="Stretch" Click="OnPush" />
+        <Button Content="Pop Page" HorizontalAlignment="Stretch" Click="OnPop" />
+
+        <Separator />
+
+        <TextBlock Text="About" FontWeight="SemiBold" />
+        <TextBlock Text="• NavigationPage.SetTopCommandBar(page, bar): places a CommandBar inside the navigation bar area at the top."
+                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+        <TextBlock Text="• NavigationPage.SetBottomCommandBar(page, bar): places a CommandBar below the page content at the bottom."
+                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+        <TextBlock Text="• Each ContentPage has its own CommandBar. It is replaced when navigating between pages."
+                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Grid Margin="12" RowDefinitions="Auto,*">
+      <TextBlock x:Name="StatusText"
+                 Text="No items added"
+                 FontSize="12"
+                 Opacity="0.7"
+                 Margin="0,0,0,8" />
+      <Border Grid.Row="1"
+              BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+              BorderThickness="1"
+              CornerRadius="6"
+              ClipToBounds="True">
+        <NavigationPage x:Name="DemoNav" />
+      </Border>
+    </Grid>
+  </DockPanel>
+</UserControl>

@@ -73,9 +73,8 @@ partial class BrowserWebGlRenderTarget : BrowserRenderTarget, IGlPlatformSurface
             // No-op
         }
 
-        public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedPixelSize)
+        public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
-            // TODO: use expectedPixelSize
             var s = _target._sizeGetter();
             _target.UpdateSize(s.Size);
             var restoreContext = _target.GlContext.EnsureCurrent();
