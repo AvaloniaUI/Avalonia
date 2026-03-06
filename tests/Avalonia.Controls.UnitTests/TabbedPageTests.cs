@@ -729,6 +729,149 @@ public class TabbedPageTests
         }
     }
 
+    public class KeyboardNavigationWithTemplateTests : ScopedTestBase
+    {
+        // Builds a TabbedPage with a real PART_TabControl wired up so OnKeyDown can navigate.
+        private static TestableTabbedPage MakeTabbed(int pageCount, int selectedIndex = 0,
+            TabPlacement placement = TabPlacement.Top)
+        {
+            var tp = new TestableTabbedPage { TabPlacement = placement };
+            for (int i = 0; i < pageCount; i++)
+                ((AvaloniaList<Page>)tp.Pages!).Add(new ContentPage { Header = $"Tab {i}" });
+
+            tp.Template = new FuncControlTemplate<TabbedPage>((parent, scope) =>
+                new TabControl
+                {
+                    Name = "PART_TabControl",
+                    ItemsSource = parent.Pages,
+                }.RegisterInNameScope(scope));
+
+            _ = new TestRoot { Child = tp };
+            tp.ApplyTemplate();
+            tp.SelectedIndex = selectedIndex;
+            return tp;
+        }
+
+        [Fact]
+        public void RightKey_NavigatesToNextPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            tp.SimulateKeyDown(Key.Right);
+            Assert.Equal(1, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void LeftKey_NavigatesToPreviousPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 1);
+            tp.SimulateKeyDown(Key.Left);
+            Assert.Equal(0, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void DownKey_WithVerticalPlacement_NavigatesToNextPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0, placement: TabPlacement.Left);
+            tp.SimulateKeyDown(Key.Down);
+            Assert.Equal(1, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void UpKey_WithVerticalPlacement_NavigatesToPreviousPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 1, placement: TabPlacement.Left);
+            tp.SimulateKeyDown(Key.Up);
+            Assert.Equal(0, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void RightKey_AtLastPage_DoesNotNavigate()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 2);
+            tp.SimulateKeyDown(Key.Right);
+            Assert.Equal(2, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void LeftKey_AtFirstPage_DoesNotNavigate()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            tp.SimulateKeyDown(Key.Left);
+            Assert.Equal(0, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void RightKey_MarksEventHandled()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            bool handled = tp.SimulateKeyDownReturnsHandled(Key.Right);
+            Assert.True(handled);
+        }
+
+        [Fact]
+        public void RightKey_AtLastPage_DoesNotMarkEventHandled()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 2);
+            bool handled = tp.SimulateKeyDownReturnsHandled(Key.Right);
+            Assert.False(handled);
+        }
+
+        [Fact]
+        public void CtrlTab_NavigatesToNextPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            bool handled = tp.SimulateKeyDownWithModifiersReturnsHandled(Key.Tab, KeyModifiers.Control);
+            Assert.Equal(1, tp.SelectedIndex);
+            Assert.True(handled);
+        }
+
+        [Fact]
+        public void CtrlShiftTab_NavigatesToPreviousPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 1);
+            bool handled = tp.SimulateKeyDownWithModifiersReturnsHandled(Key.Tab, KeyModifiers.Control | KeyModifiers.Shift);
+            Assert.Equal(0, tp.SelectedIndex);
+            Assert.True(handled);
+        }
+
+        [Fact]
+        public void RtlFlowDirection_LeftKey_NavigatesToNextPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            tp.FlowDirection = FlowDirection.RightToLeft;
+            tp.SimulateKeyDown(Key.Left);
+            Assert.Equal(1, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void RtlFlowDirection_RightKey_NavigatesToPreviousPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 1);
+            tp.FlowDirection = FlowDirection.RightToLeft;
+            tp.SimulateKeyDown(Key.Right);
+            Assert.Equal(0, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void RightKey_SkipsDisabledTab()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            TabbedPage.SetIsTabEnabled((Page)((System.Collections.IList)tp.Pages!)[1]!, false);
+            tp.SimulateKeyDown(Key.Right);
+            Assert.Equal(2, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void RightKey_AllTabsAhead_Disabled_DoesNotNavigate()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            TabbedPage.SetIsTabEnabled((Page)((System.Collections.IList)tp.Pages!)[1]!, false);
+            TabbedPage.SetIsTabEnabled((Page)((System.Collections.IList)tp.Pages!)[2]!, false);
+            tp.SimulateKeyDown(Key.Right);
+            Assert.Equal(0, tp.SelectedIndex);
+        }
+    }
+
     public class SelectingMultiPageTests : ScopedTestBase
     {
         [Fact]

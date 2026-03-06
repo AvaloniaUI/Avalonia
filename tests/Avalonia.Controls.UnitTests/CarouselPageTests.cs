@@ -189,6 +189,18 @@ public class CarouselPageTests
 
             Assert.Same(cp.SelectedPage, cp.CurrentPage);
         }
+
+        [Fact]
+        public void Pages_SetNull_SelectedIndex_RetainsLastValue()
+        {
+            var cp = new CarouselPage();
+            ((AvaloniaList<Page>)cp.Pages!).Add(new ContentPage { Header = "A" });
+            Assert.Equal(0, cp.SelectedIndex);
+
+            cp.Pages = null;
+
+            Assert.Equal(0, cp.SelectedIndex);
+        }
     }
 
     public class SelectionChangedEvent : ScopedTestBase

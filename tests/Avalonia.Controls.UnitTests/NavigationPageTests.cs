@@ -145,8 +145,6 @@ public class NavigationPageTests
         [Fact]
         public async Task Push_ReentrantFromNavigatedTo_IsIgnoredNotThrown()
         {
-            // Verifies that a re-entrant Push called from inside a NavigatedTo
-            // lifecycle callback is silently ignored rather than throwing.
             var nav = new NavigationPage();
             var root = new ContentPage();
             await nav.PushAsync(root);
@@ -154,10 +152,62 @@ public class NavigationPageTests
             var second = new ContentPage();
             second.NavigatedTo += async (_, _) => await nav.PushAsync(new ContentPage());
 
-            await nav.PushAsync(second); // must not throw
+            await nav.PushAsync(second);
 
             Assert.Equal(2, nav.StackDepth);
             Assert.Same(second, nav.CurrentPage);
+        }
+    }
+
+    public class ReentrantNavigationTests : ScopedTestBase
+    {
+        [Fact]
+        public async Task Pop_ReentrantFromNavigatedTo_IsIgnored()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            var top = new ContentPage();
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
+
+            root.NavigatedTo += async (_, _) => await nav.PopAsync();
+
+            await nav.PopAsync();
+
+            Assert.Equal(1, nav.StackDepth);
+            Assert.Same(root, nav.CurrentPage);
+        }
+
+        [Fact]
+        public async Task PushModal_ReentrantFromNavigatedTo_IsIgnored()
+        {
+            var nav = new NavigationPage();
+            await nav.PushAsync(new ContentPage());
+
+            var modal = new ContentPage();
+            modal.NavigatedTo += async (_, _) => await nav.PushModalAsync(new ContentPage());
+
+            await nav.PushModalAsync(modal);
+
+            Assert.Equal(1, nav.ModalStack.Count);
+            Assert.Same(modal, nav.ModalStack[0]);
+        }
+
+        [Fact]
+        public async Task PopModal_ReentrantFromNavigatedTo_IsIgnored()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            var modal = new ContentPage();
+            await nav.PushAsync(root);
+            await nav.PushModalAsync(modal);
+
+            root.NavigatedTo += async (_, _) => await nav.PopModalAsync();
+
+            await nav.PopModalAsync();
+
+            Assert.Equal(0, nav.ModalStack.Count);
+            Assert.Same(root, nav.CurrentPage);
         }
     }
 
@@ -1180,7 +1230,7 @@ public class NavigationPageTests
             var nav = new NavigationPage();
             await nav.PushAsync(new ContentPage());
 
-            await nav.PopAllModalsAsync(); // must not throw
+            await nav.PopAllModalsAsync();
 
             Assert.Equal(0, nav.ModalStack.Count);
         }
