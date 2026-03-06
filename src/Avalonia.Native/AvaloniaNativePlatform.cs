@@ -66,6 +66,11 @@ namespace Avalonia.Native
             var exporter = new AvaloniaNativeMenuExporter(_factory);
         }
 
+        public void SetupApplicationDockMenuExporter()
+        {
+            _ = new AvaloniaNativeMenuExporter(_factory, AvaloniaNativeMenuExporter.MenuTarget.Dock);
+        }
+
         public void SetupApplicationName()
         {
             if (!string.IsNullOrWhiteSpace(Application.Current!.Name))
@@ -109,8 +114,8 @@ namespace Avalonia.Native
             var clipboardImpl = new ClipboardImpl(_factory.CreateClipboard());
             var clipboard = new Clipboard(clipboardImpl);
 
+            Dispatcher.InitializeUIThreadDispatcher(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()));
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>().ToConstant(new DispatcherImpl(_factory.CreatePlatformThreadingInterface()))
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IScreenImpl>().ToConstant(new ScreenImpl(_factory.CreateScreens))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()

@@ -18,17 +18,13 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var scope = AvaloniaLocator.EnterScope();
             var settingsMock = new Mock<IPlatformSettings>();
-            var dispatcherMock = new Mock<IDispatcherImpl>();
-
-            dispatcherMock.Setup(x => x.CurrentThreadIsLoopThread).Returns(true);
-
+            
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IPlatformSettings>().ToConstant(settingsMock.Object);
 
             using var app = UnitTestApplication.Start(
                 new TestServices(
-                    inputManager: new InputManager(),
-                    dispatcherImpl: dispatcherMock.Object));
+                    inputManager: new InputManager()));
 
             var renderer = new Mock<IHitTester>();
             var device = new MouseDevice();

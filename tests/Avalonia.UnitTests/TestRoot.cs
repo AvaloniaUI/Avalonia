@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Platform;
@@ -14,7 +15,7 @@ using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, IRenderRoot, IStyleHost, ILogicalRoot
+    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IStyleHost, ILogicalRoot, IPresentationSource, IInputRoot
     {
         private readonly NameScope _nameScope = new NameScope();
         private FocusManager? _focusManager;
@@ -26,6 +27,7 @@ namespace Avalonia.UnitTests
             LayoutManager = new LayoutManager(this);
             IsVisible = true;
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
+            SetPresentationSourceForRootVisual(this);
         }
 
         class NullHitTester : IHitTester
@@ -56,21 +58,30 @@ namespace Avalonia.UnitTests
         public double LayoutScaling { get; set; } = 1;
 
         internal ILayoutManager LayoutManager { get; set; }
+
+        ILayoutRoot IPresentationSource.LayoutRoot => this;
+
+        Layoutable ILayoutRoot.RootVisual => RootElement;
+
         ILayoutManager ILayoutRoot.LayoutManager => LayoutManager;
 
+        public Visual? RootVisual => this;
         public double RenderScaling => 1;
 
         internal IRenderer Renderer { get; set; }
         internal IHitTester HitTester { get; set; }
-        IRenderer IRenderRoot.Renderer => Renderer;
-        IHitTester IRenderRoot.HitTester => HitTester;
+        public IInputRoot InputRoot => this;
+        IRenderer IPresentationSource.Renderer => Renderer;
+        IHitTester IPresentationSource.HitTester => HitTester;
 
-        public IKeyboardNavigationHandler? KeyboardNavigationHandler => null;
         public IFocusManager FocusManager => _focusManager ??= new FocusManager(this);
         public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         public IInputElement? PointerOverElement { get; set; }
-        
+        public ITextInputMethodImpl? InputMethod { get; }
+        public InputElement RootElement => this;
+        public InputElement FocusRoot => this;
+
         public bool ShowAccessKeys { get; set; }
 
         public IStyleHost? StylingParent { get; set; }
@@ -84,12 +95,15 @@ namespace Avalonia.UnitTests
             {
                 var layerDc = new Mock<IDrawingContextImpl>();
                 var layer = new Mock<IDrawingContextLayerImpl>();
-                layer.Setup(x => x.CreateDrawingContext(It.IsAny<bool>())).Returns(layerDc.Object);
+                layer.Setup(x => x.CreateDrawingContext()).Returns(layerDc.Object);
                 return layer.Object;
             });
 
             var result = new Mock<IRenderTarget>();
-            result.Setup(x => x.CreateDrawingContext(It.IsAny<bool>())).Returns(dc.Object);
+            result.Setup(x => x.CreateDrawingContext(It.IsAny<IRenderTarget.RenderTargetSceneInfo>(),
+                    out It.Ref<RenderTargetDrawingContextProperties>.IsAny))
+                .Returns(dc.Object);
+            
             return result.Object;
         }
 
@@ -102,6 +116,7 @@ namespace Avalonia.UnitTests
         public Point PointToClient(PixelPoint p) => p.ToPoint(1);
 
         public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
+        
 
         public void RegisterChildrenNames()
         {

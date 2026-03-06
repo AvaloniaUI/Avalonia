@@ -110,7 +110,7 @@ namespace Avalonia.Input.GestureRecognizers
                     if (horizontalTriggered || verticalTriggered)
                     {
                         _swiping = true;
-                        
+
                         _trackedRootPoint = new Point(
                             horizontalTriggered
                                 ? _trackedRootPoint.X - (_trackedRootPoint.X >= rootPoint.X ? SwipeStartDistance : -SwipeStartDistance)

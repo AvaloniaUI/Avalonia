@@ -34,6 +34,7 @@ namespace Avalonia.Animation
         {
             _fadeOutAnimation = new Animation
             {
+                FillMode = FillMode.Forward,
                 Children =
                 {
                     new KeyFrame()
@@ -65,6 +66,7 @@ namespace Avalonia.Animation
             };
             _fadeInAnimation = new Animation
             {
+                FillMode = FillMode.Forward,
                 Children =
                 {
                     new KeyFrame()
@@ -124,6 +126,16 @@ namespace Avalonia.Animation
             set => _fadeOutAnimation.Easing = value;
         }
 
+        /// <summary>
+        /// Gets or sets the fill mode applied to both fade animations.
+        /// Defaults to <see cref="FillMode.Forward"/>.
+        /// </summary>
+        public FillMode FillMode
+        {
+            get => _fadeOutAnimation.FillMode;
+            set => _fadeOutAnimation.FillMode = _fadeInAnimation.FillMode = value;
+        }
+
         /// <inheritdoc cref="Start(Visual, Visual, CancellationToken)" />
         public async Task Start(Visual? from, Visual? to, CancellationToken cancellationToken)
         {
@@ -148,9 +160,7 @@ namespace Avalonia.Animation
             await Task.WhenAll(tasks);
 
             if (from != null && !cancellationToken.IsCancellationRequested)
-            {
                 from.IsVisible = false;
-            }
         }
 
         /// <summary>

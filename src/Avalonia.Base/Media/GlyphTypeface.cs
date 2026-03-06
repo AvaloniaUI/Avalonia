@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.CompilerServices;
+using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Cmap;
@@ -114,15 +114,19 @@ namespace Avalonia.Media
 
             HeadTable.TryLoad(this, out var headTable);
 
+            IsLastResort = (headTable is not null && (headTable.Flags & HeadFlags.LastResortFont) != 0) ||
+                           _cmapTable.Format == CmapFormat.Format13;
+
             var postTable = PostTable.Load(this);
 
             var isFixedPitch = postTable.IsFixedPitch;
             var underlineOffset = postTable.UnderlinePosition;
             var underlineSize = postTable.UnderlineThickness;
+            var designEmHeight = GetFontDesignEmHeight(headTable);
 
             Metrics = new FontMetrics
             {
-                DesignEmHeight = headTable?.UnitsPerEm ?? 0,
+                DesignEmHeight = designEmHeight,
                 Ascent = ascent,
                 Descent = descent,
                 LineGap = lineGap,
@@ -219,6 +223,37 @@ namespace Avalonia.Media
                 {
                     return CultureInfo.InvariantCulture;
                 }
+            }
+        }
+
+        private static ushort GetFontDesignEmHeight(HeadTable? headTable)
+        {
+            var unitsPerEm = headTable?.UnitsPerEm ?? 0;
+
+            // Bitmap fonts may specify 0 or miss the head table completely.
+            // Use 2048 as sensible default (used by most fonts).
+            if (unitsPerEm == 0)
+                unitsPerEm = 2048;
+
+            return unitsPerEm;
+        }
+
+        internal static GlyphTypeface? TryCreate(IPlatformTypeface typeface, FontSimulations fontSimulations = FontSimulations.None)
+        {
+            try
+            {
+                return new GlyphTypeface(typeface, fontSimulations);
+            }
+            catch (Exception ex)
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Fonts)?.Log(
+                    null,
+                    "Could not create glyph typeface from platform typeface named {FamilyName} with simulations {Simulations}: {Exception}",
+                    typeface.FamilyName,
+                    fontSimulations,
+                    ex);
+
+                return null;
             }
         }
 
@@ -334,6 +369,11 @@ namespace Avalonia.Media
                 return _textShaperTypeface;
             }
         }
+
+        /// <summary>
+        /// Gets whether the font should be used as a last resort, if no other fonts matched.
+        /// </summary>
+        internal bool IsLastResort { get; }
 
         /// <summary>
         /// Attempts to retrieve the horizontal advance width for the specified glyph.

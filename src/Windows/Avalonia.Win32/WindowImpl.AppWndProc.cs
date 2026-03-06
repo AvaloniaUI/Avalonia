@@ -60,7 +60,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_NCCALCSIZE when ToInt32(wParam) == 1:
                     {
-                        if (_windowProperties.Decorations == SystemDecorations.None)
+                        if (_windowProperties.Decorations == WindowDecorations.None)
                             return IntPtr.Zero;
 
                         // When the client area is extended into the frame, we are still requesting the standard styles matching
@@ -937,7 +937,7 @@ namespace Avalonia.Win32
                         return IntPtr.Zero;
                     }
                 case WindowsMessage.WM_GETOBJECT:
-                    if ((long)lParam == uiaRootObjectId && UiaCoreTypesApi.IsNetComInteropAvailable && _owner is Control control)
+                    if ((long)lParam == uiaRootObjectId && UiaCoreTypesApi.IsNetComInteropAvailable && _owner?.FocusRoot is Control control)
                     {
                         var peer = ControlAutomationPeer.CreatePeerForElement(control);
                         var node = AutomationNode.GetOrCreate(peer);

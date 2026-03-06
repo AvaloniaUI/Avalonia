@@ -11,6 +11,7 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Avalonia.Win32.Automation.Interop;
 using AAP = Avalonia.Automation.Provider;
 using UIA = Avalonia.Win32.Automation.Interop;
@@ -39,6 +40,7 @@ namespace Avalonia.Win32.Automation
             { AutomationElementIdentifiers.HelpTextProperty, UiaPropertyId.HelpText },
             { AutomationElementIdentifiers.LandmarkTypeProperty, UiaPropertyId.LandmarkType },
             { AutomationElementIdentifiers.HeadingLevelProperty, UiaPropertyId.HeadingLevel },
+            { AutomationElementIdentifiers.ItemStatusProperty, UiaPropertyId.ItemStatus },
             { ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty, UiaPropertyId.ExpandCollapseExpandCollapseState },
             { RangeValuePatternIdentifiers.IsReadOnlyProperty, UiaPropertyId.RangeValueIsReadOnly},
             { RangeValuePatternIdentifiers.MaximumProperty, UiaPropertyId.RangeValueMaximum },
@@ -82,8 +84,14 @@ namespace Avalonia.Win32.Automation
         {
             return InvokeSync(() =>
             {
-                if (GetRoot() is RootAutomationNode root)
-                    return root.ToScreen(Peer.GetBoundingRectangle());
+                if (Peer.GetVisualRoot() is ControlAutomationPeer root &&
+                    root.Owner.GetPresentationSource() is not null)
+                {
+                    var originalRect = Peer.GetBoundingRectangle();
+                    return new PixelRect(root.Owner.PointToScreen(originalRect.TopLeft),
+                        root.Owner.PointToScreen(originalRect.BottomRight)).ToRect(1);
+                }
+
                 return default;
             });
         }
@@ -135,6 +143,8 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.IsEnabled => InvokeSync(() => Peer.IsEnabled()),
                 UiaPropertyId.IsKeyboardFocusable => InvokeSync(() => Peer.IsKeyboardFocusable()),
                 UiaPropertyId.IsOffscreen => InvokeSync(() => Peer.IsOffscreen()),
+                UiaPropertyId.ItemType => InvokeSync(() => Peer.GetItemType()),
+                UiaPropertyId.ItemStatus => InvokeSync(() => Peer.GetItemStatus()),
                 UiaPropertyId.LocalizedControlType => InvokeSync(() => Peer.GetLocalizedControlType()),
                 UiaPropertyId.Name => InvokeSync(() => Peer.GetName()),
                 UiaPropertyId.HelpText => InvokeSync(() => Peer.GetHelpText()),
@@ -284,7 +294,7 @@ namespace Avalonia.Win32.Automation
         private RootAutomationNode? GetRoot()
         {
             Dispatcher.UIThread.VerifyAccess();
-            return GetOrCreate(Peer.GetVisualRoot()) as RootAutomationNode;
+            return GetOrCreate(Peer.GetAutomationRoot()) as RootAutomationNode;
         }
 
         private void OnPeerChildrenChanged(object? sender, EventArgs e)

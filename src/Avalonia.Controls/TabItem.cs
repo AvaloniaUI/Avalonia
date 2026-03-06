@@ -4,6 +4,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 
@@ -28,6 +29,18 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> IsSelectedProperty =
             SelectingItemsControl.IsSelectedProperty.AddOwner<TabItem>();
+
+        /// <summary>
+        /// Defines the <see cref="Icon"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Control?> IconProperty =
+            AvaloniaProperty.Register<TabItem, Control?>(nameof(Icon));
+
+        /// <summary>
+        /// Defines the <see cref="IndicatorTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> IndicatorTemplateProperty =
+            AvaloniaProperty.Register<TabItem, IDataTemplate?>(nameof(IndicatorTemplate));
 
         /// <summary>
         /// Initializes static members of the <see cref="TabItem"/> class.
@@ -59,6 +72,24 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsSelectedProperty);
             set => SetValue(IsSelectedProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the icon displayed alongside the tab header.
+        /// </summary>
+        public Control? Icon
+        {
+            get => GetValue(IconProperty);
+            set => SetValue(IconProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to render the selection indicator.
+        /// </summary>
+        public IDataTemplate? IndicatorTemplate
+        {
+            get => GetValue(IndicatorTemplateProperty);
+            set => SetValue(IndicatorTemplateProperty, value);
         }
 
         /// <inheritdoc />

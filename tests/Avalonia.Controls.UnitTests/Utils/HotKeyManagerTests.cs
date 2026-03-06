@@ -85,7 +85,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 target.ProcessRawEvent(new RawKeyEventArgs(target,
                     0,
-                    root,
+                    root.InputRoot,
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.Control,
@@ -129,7 +129,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 target.ProcessRawEvent(new RawKeyEventArgs(target,
                     0,
-                    root,
+                    root.InputRoot,
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.Control,
@@ -173,7 +173,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 target.ProcessRawEvent(new RawKeyEventArgs(target,
                     0,
-                    root,
+                    root.InputRoot,
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.Control,
@@ -184,7 +184,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 target.ProcessRawEvent(new RawKeyEventArgs(target,
                     0,
-                    root,
+                    root.InputRoot,
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.Control,
@@ -235,7 +235,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 target.ProcessRawEvent(new RawKeyEventArgs(target,
                     0,
-                    root,
+                    root.InputRoot,
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.Control,
@@ -246,7 +246,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
                 target.ProcessRawEvent(new RawKeyEventArgs(target,
                     0,
-                    root,
+                    root.InputRoot,
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.Control,

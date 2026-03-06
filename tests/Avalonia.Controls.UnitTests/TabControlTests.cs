@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia.Animation;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
+using Avalonia.Harfbuzz;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -259,51 +264,48 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void DataContexts_Should_Be_Correctly_Set()
         {
+            using var app = Start();
             var items = new object[]
             {
                 "Foo",
                 new Item("Bar"),
                 new TextBlock { Text = "Baz" },
                 new TabItem { Content = "Qux" },
-                new TabItem { Content = new TextBlock { Text = "Bob" } }
+                new TabItem { Content = new TextBlock { Text = "Bob" } },
+                new TabItem { DataContext = "Rob", Content = new TextBlock { Text = "Bob" } },
             };
 
             var target = new TabControl
             {
-                Template = TabControlTemplate(),
                 DataContext = "Base",
-                DataTemplates =
-                {
-                    new FuncDataTemplate<Item>((x, __) => new Button { Content = x })
-                },
                 ItemsSource = items,
             };
 
-            ApplyTemplate(target);
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
-            target.ContentPart!.UpdateChild();
-            var dataContext = ((TextBlock)target.ContentPart.Child!).DataContext;
+            var dataContext = ((TextBlock)target.ContentPart!.Child!).DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
-            target.ContentPart.UpdateChild();
             dataContext = ((Button)target.ContentPart.Child).DataContext;
             Assert.Equal(items[1], dataContext);
 
             target.SelectedIndex = 2;
-            target.ContentPart.UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Base", dataContext);
 
             target.SelectedIndex = 3;
-            target.ContentPart.UpdateChild();
             dataContext = ((TextBlock)target.ContentPart.Child).DataContext;
             Assert.Equal("Qux", dataContext);
 
             target.SelectedIndex = 4;
-            target.ContentPart.UpdateChild();
             dataContext = target.ContentPart.DataContext;
             Assert.Equal("Base", dataContext);
+
+            target.SelectedIndex = 5;
+            dataContext = target.ContentPart.Child.DataContext;
+            Assert.Equal("Rob", dataContext);
         }
 
         /// <summary>
@@ -719,16 +721,15 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(Key.A, 1)]
-        [InlineData(Key.L, 2)]
-        [InlineData(Key.D, 0)]
-        public void Should_TabControl_Recognizes_AccessKey(Key accessKey, int selectedTabIndex)
+        [InlineData(Key.A, "a", 1)]
+        [InlineData(Key.L, "l", 2)]
+        [InlineData(Key.D, "d", 0)]
+        public void Should_TabControl_Recognizes_AccessKey(Key accessKey, string accessKeySymbol, int selectedTabIndex)
         {
-            var ah = new AccessKeyHandler();
             var kd = new KeyboardDevice();
             using (UnitTestApplication.Start(TestServices.StyledWindow
                        .With(
-                           accessKeyHandler: ah,
+                           accessKeyHandler: () => new AccessKeyHandler(),
                            keyboardDevice: () => kd)
                    ))
             {
@@ -761,8 +762,8 @@ namespace Avalonia.Controls.UnitTests
                 ApplyTemplate(tabControl);
 
                 KeyDown(root, Key.LeftAlt);
-                KeyDown(root, accessKey, KeyModifiers.Alt);
-                KeyUp(root, accessKey, KeyModifiers.Alt);
+                KeyDown(root, accessKey, accessKeySymbol, KeyModifiers.Alt);
+                KeyUp(root, accessKey, accessKeySymbol, KeyModifiers.Alt);
                 KeyUp(root, Key.LeftAlt);
 
                 Assert.Equal(selectedTabIndex, tabControl.SelectedIndex);
@@ -789,25 +790,127 @@ namespace Avalonia.Controls.UnitTests
                 return topLevel;
             }
 
-            static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            static void KeyDown(IInputElement target, Key key, string? keySymbol = null, KeyModifiers modifiers = KeyModifiers.None)
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
                     RoutedEvent = InputElement.KeyDownEvent,
                     Key = key,
+                    KeySymbol = keySymbol,
                     KeyModifiers = modifiers,
                 });
             }
 
-            static void KeyUp(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            static void KeyUp(IInputElement target, Key key, string? keySymbol = null, KeyModifiers modifiers = KeyModifiers.None)
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
                     RoutedEvent = InputElement.KeyUpEvent,
                     Key = key,
+                    KeySymbol = keySymbol,
                     KeyModifiers = modifiers,
                 });
             }
+        }
+
+        [Fact]
+        public void PageTransition_Is_Null_By_Default()
+        {
+            var target = new TabControl { Template = TabControlTemplate() };
+            Assert.Null(target.PageTransition);
+        }
+
+        [Fact]
+        public void PageTransition_Round_Trips()
+        {
+            var transition = new CrossFade(TimeSpan.FromMilliseconds(100));
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                PageTransition = transition,
+            };
+            Assert.Same(transition, target.PageTransition);
+        }
+
+        [Fact]
+        public void PageTransition_Start_Is_Called_When_Tab_Switches()
+        {
+            using var app = Start();
+
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var target = new TabControl
+            {
+                PageTransition = transition.Object,
+                Items =
+                {
+                    new TabItem { Name = "first", Content = "Alpha" },
+                    new TabItem { Name = "second", Content = "Beta" },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // Switch tab — triggers shouldTransition = true and InvalidateArrange
+            target.SelectedIndex = 1;
+
+            // Execute layout pass to invoke ArrangeOverride, which fires the transition
+            root.LayoutManager.ExecuteLayoutPass();
+
+            transition.Verify(
+                t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.Is<bool>(f => f),   // forward = true (index 1 > 0)
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void PageTransition_Forward_Is_False_When_Switching_To_Earlier_Tab()
+        {
+            using var app = Start();
+
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var target = new TabControl
+            {
+                PageTransition = transition.Object,
+                Items =
+                {
+                    new TabItem { Name = "first", Content = "Alpha" },
+                    new TabItem { Name = "second", Content = "Beta" },
+                    new TabItem { Name = "third", Content = "Gamma" },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // Go forward to tab 2
+            target.SelectedIndex = 2;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // Now go backward to tab 0
+            target.SelectedIndex = 0;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            transition.Verify(
+                t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.Is<bool>(f => !f),  // forward = false (index 0 < 2)
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         private static IControlTemplate TabControlTemplate()
@@ -821,12 +924,21 @@ namespace Avalonia.Controls.UnitTests
                         {
                             Name = "PART_ItemsPresenter",
                         }.RegisterInNameScope(scope),
-                        new ContentPresenter
+                        new Panel
                         {
-                            Name = "PART_SelectedContentHost",
-                            [~ContentPresenter.ContentProperty] = new TemplateBinding(TabControl.SelectedContentProperty),
-                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabControl.SelectedContentTemplateProperty),
-                        }.RegisterInNameScope(scope)
+                            Children =
+                            {
+                                new ContentPresenter
+                                {
+                                    Name = "PART_SelectedContentHost2",
+                                    IsVisible = false,
+                                }.RegisterInNameScope(scope),
+                                new ContentPresenter
+                                {
+                                    Name = "PART_SelectedContentHost",
+                                }.RegisterInNameScope(scope),
+                            }
+                        }
                     }
                 });
         }
@@ -843,18 +955,47 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private class TestTopLevel : TopLevel
+        private static ControlTheme CreateTabControlControlTheme()
         {
-            private readonly ILayoutManager _layoutManager;
-            public bool IsClosed { get; private set; }
-
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
-                : base(impl)
+            return new ControlTheme(typeof(TabControl))
             {
-                _layoutManager = layoutManager ?? new LayoutManager(this);
-            }
+                Setters =
+                {
+                    new Setter(TabControl.TemplateProperty, TabControlTemplate()),
+                },
+            };
+        }
 
-            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
+        private static ControlTheme CreateTabItemControlTheme()
+        {
+            return new ControlTheme(typeof(TabItem))
+            {
+                Setters =
+                {
+                    new Setter(TabItem.TemplateProperty, TabItemTemplate()),
+                },
+            };
+        }
+        
+        private static TestRoot CreateRoot(Control child)
+        {
+            return new TestRoot
+            {
+                Resources =
+                {
+                    { typeof(TabControl), CreateTabControlControlTheme() },
+                    { typeof(TabItem), CreateTabItemControlTheme() },
+                },
+                DataTemplates =
+                {
+                    new FuncDataTemplate<Item>((x, _) => new Button { Content = x.Value })
+                },
+                Child = child,
+            };
+        }
+
+        private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl)
+        {
         }
 
         private static void Prepare(TabControl target)
@@ -892,6 +1033,19 @@ namespace Avalonia.Controls.UnitTests
             target.ContentPart!.ApplyTemplate();
         }
 
+        private IDisposable Start()
+        {
+            return UnitTestApplication.Start(
+                TestServices.MockThreadingInterface.With(
+                    fontManagerImpl: new HeadlessFontManagerStub(),
+                    keyboardDevice: () => new KeyboardDevice(),
+                    keyboardNavigation: () => new KeyboardNavigationHandler(),
+                    inputManager: new InputManager(),
+                    renderInterface: new HeadlessPlatformRenderInterface(),
+                    textShaperImpl: new HarfBuzzTextShaper(),
+                    assetLoader: new StandardAssetLoader()));
+        }
+
         private class Item
         {
             public Item(string value)
@@ -906,6 +1060,122 @@ namespace Avalonia.Controls.UnitTests
         {
             protected override Type StyleKeyOverride => typeof(TabControl);
             public new ISelectionModel Selection => base.Selection;
+        }
+
+        [Fact]
+        public void TabItem_Icon_DefaultIsNull()
+        {
+            var tabItem = new TabItem();
+            Assert.Null(tabItem.Icon);
+        }
+
+        [Fact]
+        public void TabItem_Icon_RoundTrips()
+        {
+            var tabItem = new TabItem();
+            var icon = new Avalonia.Controls.Shapes.Path
+            {
+                Data = new Avalonia.Media.EllipseGeometry { Rect = new Rect(0, 0, 10, 10) }
+            };
+            tabItem.Icon = icon;
+            Assert.Same(icon, tabItem.Icon);
+        }
+
+        [Fact]
+        public void TabItem_Icon_CanBeSetToNull()
+        {
+            var tabItem = new TabItem();
+            var icon = new Avalonia.Controls.Shapes.Path
+            {
+                Data = new Avalonia.Media.EllipseGeometry { Rect = new Rect(0, 0, 10, 10) }
+            };
+            tabItem.Icon = icon;
+            tabItem.Icon = null;
+            Assert.Null(tabItem.Icon);
+        }
+
+        [Fact]
+        public void TabItem_IndicatorTemplate_DefaultIsNull()
+        {
+            var tabItem = new TabItem();
+            Assert.Null(tabItem.IndicatorTemplate);
+        }
+
+        [Fact]
+        public void TabItem_IndicatorTemplate_RoundTrips()
+        {
+            var template = new FuncDataTemplate<object>((_, _) => new Border());
+            var tabItem = new TabItem { IndicatorTemplate = template };
+            Assert.Same(template, tabItem.IndicatorTemplate);
+        }
+
+        [Fact]
+        public void TabItem_IndicatorTemplate_CanBeSetToNull()
+        {
+            var template = new FuncDataTemplate<object>((_, _) => new Border());
+            var tabItem = new TabItem { IndicatorTemplate = template };
+            tabItem.IndicatorTemplate = null;
+            Assert.Null(tabItem.IndicatorTemplate);
+        }
+
+        [Fact]
+        public void TabControl_IndicatorTemplate_DefaultIsNull()
+        {
+            var tc = new TabControl();
+            Assert.Null(tc.IndicatorTemplate);
+        }
+
+        [Fact]
+        public void TabControl_IndicatorTemplate_RoundTrips()
+        {
+            var template = new FuncDataTemplate<object>((_, _) => new Border());
+            var tc = new TabControl { IndicatorTemplate = template };
+            Assert.Same(template, tc.IndicatorTemplate);
+        }
+
+        [Fact]
+        public void TabControl_IndicatorTemplate_CanBeSetToNull()
+        {
+            var template = new FuncDataTemplate<object>((_, _) => new Border());
+            var tc = new TabControl { IndicatorTemplate = template };
+            tc.IndicatorTemplate = null;
+            Assert.Null(tc.IndicatorTemplate);
+        }
+
+        [Fact]
+        public void TabControl_IndicatorTemplate_DoesNotOverwrite_UserSetTabItemIndicatorTemplate()
+        {
+            var tabItems = new[]
+            {
+                new TabItem { Header = "A" },
+                new TabItem { Header = "B" },
+            };
+            var userTemplate = new FuncDataTemplate<object>((_, _) => new Border());
+            tabItems[0].IndicatorTemplate = userTemplate;
+
+            var tabControlTemplate = new FuncDataTemplate<object>((_, _) => new TextBlock());
+            var tc = new TabControl
+            {
+                ItemsSource = tabItems,
+                IndicatorTemplate = tabControlTemplate,
+                Template = new FuncControlTemplate<TabControl>((_, scope) =>
+                {
+                    var ip = new ItemsPresenter { Name = "PART_ItemsPresenter" };
+                    scope.Register("PART_ItemsPresenter", ip);
+                    var cp = new ContentPresenter { Name = "PART_SelectedContentHost" };
+                    scope.Register("PART_SelectedContentHost", cp);
+                    return new Panel { Children = { ip, cp } };
+                })
+            };
+
+            var root = new TestRoot { Child = tc };
+            tc.ApplyTemplate();
+            tc.Presenter?.ApplyTemplate();
+
+            // TabItem with a local value must keep it
+            Assert.Same(userTemplate, tabItems[0].IndicatorTemplate);
+            // TabItem without a local value gets the TabControl template
+            Assert.Same(tabControlTemplate, tabItems[1].IndicatorTemplate);
         }
     }
 }

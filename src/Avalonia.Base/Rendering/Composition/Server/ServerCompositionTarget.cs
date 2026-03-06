@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Utilities;
 
@@ -20,7 +21,7 @@ namespace Avalonia.Rendering.Composition.Server
     internal partial class ServerCompositionTarget : IDisposable
     {
         private readonly ServerCompositor _compositor;
-        private readonly Func<IEnumerable<object>> _surfaces;
+        private readonly Func<IEnumerable<IPlatformRenderSurface>> _surfaces;
         private CompositionTargetOverlays _overlays;
         private static long s_nextId = 1;
         private IRenderTarget? _renderTarget;
@@ -39,13 +40,12 @@ namespace Avalonia.Rendering.Composition.Server
         public int RenderedVisuals { get; set; }
         public int VisitedVisuals { get; set; }
 
-        public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<object>> surfaces,
-            DiagnosticTextRenderer? diagnosticTextRenderer)
+        public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<IPlatformRenderSurface>> surfaces)
             : base(compositor)
         {
             _compositor = compositor;
             _surfaces = surfaces;
-            _overlays = new CompositionTargetOverlays(this, diagnosticTextRenderer);
+            _overlays = new CompositionTargetOverlays(this);
             var platformRender = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
 
             if (platformRender?.SupportsRegions == true && compositor.Options.UseRegionDirtyRectClipping != false)
@@ -142,6 +142,8 @@ namespace Avalonia.Rendering.Composition.Server
 
             try
             {
+                if (_renderTarget == null && !_compositor.IsReadyToCreateRenderTarget(_surfaces()))
+                    return;
                 _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
             }
             catch (RenderTargetNotReadyException)
@@ -161,13 +163,15 @@ namespace Avalonia.Rendering.Composition.Server
             if (!_redrawRequested)
                 return;
             
+            if (!_renderTarget.IsReady)
+                return;
+
             var needLayer = _overlays.RequireLayer // Check if we don't need overlays
                             // Check if render target can be rendered to directly and preserves the previous frame
                             || !(_renderTarget.Properties.RetainsPreviousFrameContents
                                  && _renderTarget.Properties.IsSuitableForDirectRendering);
             
-            using (var renderTargetContext = _renderTarget.CreateDrawingContext(
-                       this.PixelSize, out var properties))
+            using (var renderTargetContext = _renderTarget.CreateDrawingContext(new(PixelSize, Scaling), out var properties))
             using (var renderTiming = Diagnostic.BeginCompositorRenderPass())
             {
                 var fullRedraw = false;
@@ -204,7 +208,7 @@ namespace Avalonia.Rendering.Composition.Server
                     DirtyRects.FinalizeFrame(renderBounds);
                     if (_layer != null)
                     {
-                        using (var context = _layer.CreateDrawingContext(false))
+                        using (var context = _layer.CreateDrawingContext())
                             RenderRootToContextWithClip(context, Root);
 
                         renderTargetContext.Clear(Colors.Transparent);

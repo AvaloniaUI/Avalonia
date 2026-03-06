@@ -62,7 +62,7 @@ internal partial class ServerCompositor
             try
             {
                 target = RenderInterface.Value.CreateOffscreenRenderTarget(pixelSize, new(scaling, scaling), true);
-                using (var canvas = target.CreateDrawingContext(false))
+                using (var canvas = target.CreateDrawingContext())
                 {
                     canvas.Transform = scaleTransform;
                     visual.Render(canvas, LtrbRect.Infinite, null, renderChildren);

@@ -1,15 +1,23 @@
 using System;
 using System.Threading;
 using Avalonia.Interactivity;
-using Avalonia.Platform;
-using Avalonia.Threading;
 using Avalonia.Reactive;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
-    public static class Gestures
+    internal static class Gestures
     {
+        // These events are only used internally and not propagated through a route.
+        // They have routed event args as their target type because their args generated from
+        // PointerEventArgs. In order to prevent having identical classes with just their base class
+        // being different, these events use routed args.
+        public static event EventHandler<HoldingRoutedEventArgs>? Holding;
+        public static event EventHandler<TappedEventArgs>? Tapped;
+        public static event EventHandler<TappedEventArgs>? RightTapped;
+        public static event EventHandler<TappedEventArgs>? DoubleTapped;
+
         private record struct GestureState(GestureStateType Type, IPointer Pointer);
         private enum GestureStateType
         {
@@ -69,15 +77,15 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<SwipeGestureEndedEventArgs> SwipeGestureEndedEvent =
             RoutedEvent.Register<SwipeGestureEndedEventArgs>(
                 "SwipeGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
-        
+
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureMagnifyEvent =
             RoutedEvent.Register<PointerDeltaEventArgs>(
                 "PointerTouchPadGestureMagnify", RoutingStrategies.Bubble, typeof(Gestures));
-        
+
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureRotateEvent =
             RoutedEvent.Register<PointerDeltaEventArgs>(
                 "PointerTouchPadGestureRotate", RoutingStrategies.Bubble, typeof(Gestures));
-        
+
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureSwipeEvent =
             RoutedEvent.Register<PointerDeltaEventArgs>(
                 "PointerTouchPadGestureSwipe", RoutingStrategies.Bubble, typeof(Gestures));
@@ -122,6 +130,7 @@ namespace Avalonia.Input
         {
             element.SetValue(IsHoldWithMouseEnabledProperty, value);
         }
+
 
         static Gestures()
         {
@@ -218,10 +227,10 @@ namespace Avalonia.Input
             element.RemoveHandler(PointerTouchPadGestureSwipeEvent, handler);
 
         public static void RemoveScrollGestureHandler(Interactive element, EventHandler<ScrollGestureEventArgs> handler) =>
-            element.RemoveHandler(ScrollGestureEvent,handler);
+            element.RemoveHandler(ScrollGestureEvent, handler);
 
-        public static void RemoveScrollGestureEndedHandler(Interactive element,EventHandler<ScrollGestureEndedEventArgs> handler) =>
-            element.RemoveHandler(ScrollGestureEndedEvent,handler);
+        public static void RemoveScrollGestureEndedHandler(Interactive element, EventHandler<ScrollGestureEndedEventArgs> handler) =>
+            element.RemoveHandler(ScrollGestureEndedEvent, handler);
 
         public static void RemoveScrollGestureInertiaStartingHandler(Interactive element, EventHandler<ScrollGestureInertiaStartingEventArgs> handler) =>
             element.RemoveHandler(ScrollGestureInertiaStartingEvent, handler);
@@ -237,6 +246,7 @@ namespace Avalonia.Input
 
         public static void RemoveSwipeGestureEndedHandler(Interactive element, EventHandler<SwipeGestureEndedEventArgs> handler) =>
             element.RemoveHandler(SwipeGestureEndedEvent, handler);
+
 
         private static object? GetCaptured(RoutedEventArgs? args)
         {
@@ -257,11 +267,11 @@ namespace Avalonia.Input
                 var e = (PointerPressedEventArgs)ev;
                 var visual = (Visual)source;
 
-                if(s_gestureState != null)
+                if (s_gestureState != null)
                 {
-                    if(s_gestureState.Value.Type == GestureStateType.Holding && source is Interactive i)
+                    if (s_gestureState.Value.Type == GestureStateType.Holding && source is Interactive i)
                     {
-                        i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
+                        Holding?.Invoke(i, new HoldingRoutedEventArgs(HoldingState.Canceled, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
                     }
                     s_holdCancellationToken?.Cancel();
                     s_holdCancellationToken?.Dispose();
@@ -277,28 +287,29 @@ namespace Avalonia.Input
                     s_lastPressPoint = e.GetPosition((Visual)source);
                     s_holdCancellationToken = new CancellationTokenSource();
                     var token = s_holdCancellationToken.Token;
-                    var settings = ((IInputRoot?)visual.GetVisualRoot())?.PlatformSettings;
+                    var settings = visual.GetPlatformSettings();
 
                     if (settings != null)
                     {
                         DispatcherTimer.RunOnce(() =>
                         {
-                            if (s_gestureState != null && !token.IsCancellationRequested && source is InputElement i && GetIsHoldingEnabled(i) && (e.Pointer.Type != PointerType.Mouse || GetIsHoldWithMouseEnabled(i)))
+                            if (s_gestureState != null && !token.IsCancellationRequested && source is InputElement i && InputElement.GetIsHoldingEnabled(i) &&
+                            (e.Pointer.Type != PointerType.Mouse || InputElement.GetIsHoldWithMouseEnabled(i)))
                             {
                                 s_gestureState = new GestureState(GestureStateType.Holding, s_gestureState.Value.Pointer);
-                                i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Started, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
+                                Holding?.Invoke(i, new HoldingRoutedEventArgs(HoldingState.Started, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
                             }
                         }, settings.HoldWaitDuration);
                     }
                 }
                 else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
-                    if (s_lastPress.TryGetTarget(out var target) && 
-                        target == source && 
+                    if (s_lastPress.TryGetTarget(out var target) &&
+                        target == source &&
                         source is Interactive i)
                     {
                         s_gestureState = new GestureState(GestureStateType.DoubleTapped, e.Pointer);
-                        i.RaiseEvent(new TappedEventArgs(DoubleTappedEvent, e));
+                        DoubleTapped?.Invoke(i, new TappedEventArgs(InputElement.DoubleTappedEvent, e));
                     }
                 }
             }
@@ -318,7 +329,7 @@ namespace Avalonia.Input
                 source is Interactive i)
                 {
                     var point = e.GetCurrentPoint((Visual)target);
-                    var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
+                    var settings = i.GetPlatformSettings();
                     var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
                     var tapRect = new Rect(s_lastPressPoint, new Size())
                         .Inflate(new Thickness(tapSize.Width, tapSize.Height));
@@ -327,17 +338,19 @@ namespace Avalonia.Input
                     {
                         if (s_gestureState?.Type == GestureStateType.Holding)
                         {
-                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Completed, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
+                            Holding?.Invoke(i, new HoldingRoutedEventArgs(HoldingState.Completed, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
+
+                            RightTapped?.Invoke(i, new TappedEventArgs(InputElement.RightTappedEvent, e));
                         }
                         else if (e.InitialPressMouseButton == MouseButton.Right)
                         {
-                            i.RaiseEvent(new TappedEventArgs(RightTappedEvent, e));
+                            RightTapped?.Invoke(i, new TappedEventArgs(InputElement.RightTappedEvent, e));
                         }
                         //GestureStateType.DoubleTapped needed here to prevent invoking Tapped event when DoubleTapped is called.
                         //This behaviour matches UWP behaviour.
                         else if (s_gestureState?.Type != GestureStateType.DoubleTapped)
                         {
-                            i.RaiseEvent(new TappedEventArgs(TappedEvent, e));
+                            Tapped?.Invoke(i, new TappedEventArgs(InputElement.TappedEvent, e));
                         }
                     }
                     s_gestureState = null;
@@ -360,7 +373,6 @@ namespace Avalonia.Input
                     if (e.Pointer == s_gestureState?.Pointer && source is Interactive i)
                     {
                         var point = e.GetCurrentPoint((Visual)target);
-                        var settings = ((IInputRoot?)i.GetVisualRoot())?.PlatformSettings;
                         var holdSize = new Size(4, 4);
                         var holdRect = new Rect(s_lastPressPoint, new Size())
                             .Inflate(new Thickness(holdSize.Width, holdSize.Height));
@@ -372,15 +384,15 @@ namespace Avalonia.Input
 
                         if (s_gestureState.Value.Type == GestureStateType.Holding)
                         {
-                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
+                            Holding?.Invoke(i, new HoldingRoutedEventArgs(HoldingState.Canceled, s_lastPressPoint, s_gestureState.Value.Pointer.Type, e));
                         }
+
+                        s_holdCancellationToken?.Cancel();
+                        s_holdCancellationToken?.Dispose();
+                        s_holdCancellationToken = null;
+                        s_gestureState = null;
                     }
                 }
-
-                s_holdCancellationToken?.Cancel();
-                s_holdCancellationToken?.Dispose();
-                s_holdCancellationToken = null;
-                s_gestureState = null;
             }
         }
     }

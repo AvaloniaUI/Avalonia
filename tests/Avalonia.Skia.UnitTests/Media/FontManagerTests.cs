@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Fonts.Inter;
-using Avalonia.Headless;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.TextFormatting.Unicode;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
 using SkiaSharp;
 using Xunit;
@@ -436,6 +437,41 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void Should_Use_Last_Resort_Font_Last_MatchCharacter()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl())))
+            {
+                using (AvaloniaLocator.EnterScope())
+                {
+                    FontManager.Current.AddFontCollection(
+                        new EmbeddedFontCollection(
+                            new Uri("fonts:MyCollection"), //key
+                            new Uri("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests"))); //source
+
+                    var fontFamily = new FontFamily("fonts:MyCollection#Noto Sans");
+
+                    const string characters = "א𪜶";
+
+                    var codepoint1 = Codepoint.ReadAt(characters, 0, out _);
+                    Assert.Equal(0x5D0, codepoint1); // א
+
+                    // Typeface should come from the font collection - falling back to Noto Sans Hebrew
+                    Assert.True(FontManager.Current.TryMatchCharacter(codepoint1, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, fontFamily, null, out var typeface1));
+                    Assert.NotNull(typeface1.FontFamily.Key);
+                    Assert.Equal("Noto Sans Hebrew", typeface1.GlyphTypeface.FamilyName);
+
+                    var codepoint2 = Codepoint.ReadAt(characters, 1, out _);
+                    Assert.Equal(0x2A736, codepoint2); // 𪜶
+
+                    // Typeface should come from the font collection - falling back to Adobe Blank 2 VF R as a last resort
+                    Assert.True(FontManager.Current.TryMatchCharacter(codepoint2, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal, fontFamily, null, out var typeface2));
+                    Assert.NotNull(typeface2.FontFamily.Key);
+                    Assert.Equal("Adobe Blank 2 VF R", typeface2.GlyphTypeface.FamilyName);
+                }
+            }
+        }
+
         [InlineData("Arial")]
         [InlineData("#Arial")]
         [Win32Theory("Windows specific font")]
@@ -493,6 +529,95 @@ namespace Avalonia.Skia.UnitTests.Media
                     Assert.NotNull(typeface.FontFamily);
                 }
             }
+        }
+
+        [Fact]
+        public void TryGetGlyphTypeface_Should_Return_False_For_Font_Without_Supported_Cmap()
+        {
+            const string fontUri = "resm:Avalonia.Skia.UnitTests.Fonts.TestFontNoCmap412.ttf?assembly=Avalonia.Skia.UnitTests#TestFontNoCmap412";
+
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl()));
+            using var scope = AvaloniaLocator.EnterScope();
+
+            // Skia can load the font
+            AssertCanCreatePlatformTypeface();
+
+            // But Avalonia can't, because it has no supported cmap subtable
+            AssertCannotCreateGlyphTypeface();
+
+            void AssertCanCreatePlatformTypeface()
+            {
+                var fontManagerImpl = AvaloniaLocator.Current.GetRequiredService<IFontManagerImpl>();
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+                using var stream = assetLoader.Open(new Uri(fontUri));
+
+                Assert.True(fontManagerImpl.TryCreateGlyphTypeface(stream, FontSimulations.None, out var platformTypeface));
+                Assert.NotNull(platformTypeface);
+                Assert.Equal("TestFontNoCmap412", platformTypeface.FamilyName);
+            }
+
+            void AssertCannotCreateGlyphTypeface()
+            {
+                string? loggedTemplate = null;
+                object?[] loggedValues = [];
+
+                using var logSinkScope = TestLogSink.Start((level, area, _, template, values) =>
+                {
+                    if (level == LogEventLevel.Warning && area == LogArea.Fonts)
+                    {
+                        loggedTemplate = template;
+                        loggedValues = values;
+                    }
+                });
+
+                Assert.False(FontManager.Current.TryGetGlyphTypeface(new Typeface(fontUri), out _));
+                Assert.Equal(loggedTemplate, "Could not create glyph typeface from platform typeface named {FamilyName} with simulations {Simulations}: {Exception}");
+                Assert.Equal(3, loggedValues.Length);
+                Assert.Equal("TestFontNoCmap412", Assert.IsType<string>(loggedValues[0]));
+                Assert.Equal("No suitable cmap subtable found.", Assert.IsType<InvalidOperationException>(loggedValues[2]).Message);
+            }
+        }
+
+        [Theory]
+        [InlineData(FontWeight.Normal, "Inter")]
+        [InlineData(FontWeight.Bold, "Inter")]
+        [InlineData(FontWeight.SemiBold, "Inter SemiBold")]
+        [InlineData(FontWeight.SemiLight, "Inter Light")]
+        public void TryMatchCharacter_Should_Return_Correct_Weight(FontWeight requestedWeight, string expectedFamilyName)
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl()));
+            using var scope = AvaloniaLocator.EnterScope();
+
+            FontManager.Current.AddFontCollection(new InterFontCollection());
+
+            Assert.True(FontManager.Current.TryMatchCharacter(
+                'A', FontStyle.Normal, requestedWeight, FontStretch.Normal, new FontFamily("fonts:Inter#Inter"), null, out var typeface));
+
+            Assert.NotNull(typeface);
+            Assert.Equal(expectedFamilyName, typeface.GlyphTypeface.FamilyName);
+            Assert.Equal(requestedWeight, typeface.Weight);
+        }
+
+        [Theory]
+        [InlineData(FontStretch.Normal)]
+        [InlineData(FontStretch.Condensed)]
+        [InlineData(FontStretch.Expanded)]
+        [InlineData(FontStretch.SemiCondensed)]
+        [InlineData(FontStretch.SemiExpanded)]
+        public void TryMatchCharacter_Should_Return_Correct_Stretch(FontStretch requestedStretch)
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new FontManagerImpl()));
+            using var scope = AvaloniaLocator.EnterScope();
+
+            FontManager.Current.AddFontCollection(new InterFontCollection());
+
+            Assert.True(FontManager.Current.TryMatchCharacter(
+                'A', FontStyle.Normal, FontWeight.Normal, requestedStretch, new FontFamily("fonts:Inter#Inter"), null, out var typeface));
+
+            Assert.NotNull(typeface);
+            Assert.Equal("Inter", typeface.GlyphTypeface.FamilyName);
+            Assert.Equal(requestedStretch, typeface.Stretch);
         }
     }
 }

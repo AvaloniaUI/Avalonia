@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Reactive;
 
 namespace Avalonia.Rendering;
@@ -77,9 +78,16 @@ internal class PlatformRenderInterfaceContextManager
         return Disposable.Empty;
     }
     
-    public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+    public IRenderTarget CreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
     {
         EnsureValidBackendContext();
         return _backend!.CreateRenderTarget(surfaces);
+    }
+
+    public bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
+    {
+        if (_backend == null)
+            return IsReady;
+        return _backend.IsReadyToCreateRenderTarget(surfaces);
     }
 }

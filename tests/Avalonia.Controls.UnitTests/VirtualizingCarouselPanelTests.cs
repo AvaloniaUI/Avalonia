@@ -345,7 +345,7 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
-        private static void Layout(Control c) => ((ILayoutRoot)c.GetVisualRoot()!).LayoutManager.ExecuteLayoutPass();
+        private static void Layout(Control c) => c.GetLayoutManager()?.ExecuteLayoutPass();
 
         public class WrapSelectionTests : ScopedTestBase
         {
@@ -560,7 +560,7 @@ namespace Avalonia.Controls.UnitTests
                 // Simulate swipe with more X than Y
                 var e = new SwipeGestureEventArgs(1, new Vector(10, 2), default);
                 panel.RaiseEvent(e);
-                
+
                 Assert.True(carousel.IsSwiping);
             }
         }

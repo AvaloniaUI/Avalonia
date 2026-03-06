@@ -81,12 +81,12 @@ namespace Avalonia.Android
         {
             Options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
 
+            Dispatcher.InitializeUIThreadDispatcher(new AndroidDispatcherImpl());
             AvaloniaLocator.CurrentMutable
                 .Bind<ICursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
                 .Bind<IPlatformSettings>().ToSingleton<AndroidPlatformSettings>()
-                .Bind<IDispatcherImpl>().ToConstant(new AndroidDispatcherImpl())
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()

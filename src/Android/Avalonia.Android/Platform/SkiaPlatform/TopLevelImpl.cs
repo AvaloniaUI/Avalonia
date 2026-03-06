@@ -8,7 +8,6 @@ using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using Avalonia.Android.Platform.Input;
-using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls;
@@ -19,6 +18,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
@@ -97,7 +97,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public double DesktopScaling => RenderScaling;
         public IPlatformHandle Handle { get; }
 
-        public IEnumerable<object> Surfaces { get; }
+        public IPlatformRenderSurface[] Surfaces { get; }
 
         public Compositor Compositor => AndroidPlatform.Compositor ??
             throw new InvalidOperationException("Android backend wasn't initialized. Make sure .UseAndroid() was executed.");
@@ -254,7 +254,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            if (_view.Context is not AvaloniaMainActivity activity)
+            if (_view.Context is not AvaloniaActivity activity)
                 return;
 
             foreach (var level in transparencyLevels)
@@ -366,7 +366,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             return false;
         }
 
-        private static void SetBlurBehind(AvaloniaMainActivity activity, int radius)
+        private static void SetBlurBehind(AvaloniaActivity activity, int radius)
         {
             if (radius == 0)
                 activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);

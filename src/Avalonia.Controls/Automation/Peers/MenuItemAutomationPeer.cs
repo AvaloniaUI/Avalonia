@@ -20,7 +20,7 @@ namespace Avalonia.Automation.Peers
             {
                 if (Owner.HeaderPresenter?.Child is AccessText accessText)
                 {
-                    result = accessText.AccessKey.ToString();
+                    result = accessText.AccessKey;
                 }
             }
 

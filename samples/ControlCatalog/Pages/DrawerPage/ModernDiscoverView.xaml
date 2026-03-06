@@ -1,0 +1,360 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ModernDiscoverView">
+
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Spacing="0" Background="#f5f8f8">
+
+      <!-- Search bar -->
+      <Border Background="White" Padding="16,8,16,14">
+        <Border Background="#f5f8f8" CornerRadius="12" Padding="12,10">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <PathIcon Width="16" Height="16" Foreground="#8a9ba3"
+                      Data="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            <TextBlock Text="Search for destinations"
+                       Foreground="#8a9ba3" FontSize="14"
+                       VerticalAlignment="Center"/>
+          </StackPanel>
+        </Border>
+      </Border>
+
+      <!-- Featured Stories header -->
+      <Border Background="White" Padding="16,0,16,4">
+        <DockPanel>
+          <TextBlock Text="View all" FontSize="13" Foreground="#0dccf2"
+                     FontWeight="SemiBold" VerticalAlignment="Center"
+                     DockPanel.Dock="Right"/>
+          <TextBlock Text="Featured Stories" FontSize="15" FontWeight="Bold"
+                     Foreground="#0d1f22" VerticalAlignment="Center"/>
+        </DockPanel>
+      </Border>
+
+      <!-- Stories row -->
+      <Border Background="White" Padding="0,0,0,16">
+        <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+                      VerticalScrollBarVisibility="Disabled">
+          <StackPanel Orientation="Horizontal" Spacing="16" Margin="16,0">
+
+            <!-- Sarah -->
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
+              <Grid Width="62" Height="62">
+                <Border Width="57" Height="57" CornerRadius="999" ClipToBounds="True"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <Image Source="avares://ControlCatalog/Assets/ModernApp/story1.jpg"
+                         Stretch="UniformToFill"/>
+                </Border>
+                <Border Width="62" Height="62" CornerRadius="999"
+                        BorderBrush="#0dccf2" BorderThickness="2.5"
+                        Background="Transparent"/>
+              </Grid>
+              <TextBlock Text="Sarah" FontSize="11" TextAlignment="Center"
+                         Foreground="#0d1f22" MaxWidth="62"
+                         TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+
+            <!-- Mike -->
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
+              <Grid Width="62" Height="62">
+                <Border Width="57" Height="57" CornerRadius="999" ClipToBounds="True"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <Image Source="avares://ControlCatalog/Assets/ModernApp/story2.jpg"
+                         Stretch="UniformToFill"/>
+                </Border>
+                <Border Width="62" Height="62" CornerRadius="999"
+                        BorderBrush="#0dccf2" BorderThickness="2.5"
+                        Background="Transparent"/>
+              </Grid>
+              <TextBlock Text="Mike" FontSize="11" TextAlignment="Center"
+                         Foreground="#0d1f22" MaxWidth="62"
+                         TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+
+            <!-- Elena -->
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
+              <Grid Width="62" Height="62">
+                <Border Width="57" Height="57" CornerRadius="999" ClipToBounds="True"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <Image Source="avares://ControlCatalog/Assets/ModernApp/story3.jpg"
+                         Stretch="UniformToFill"/>
+                </Border>
+                <Border Width="62" Height="62" CornerRadius="999"
+                        BorderBrush="#0dccf2" BorderThickness="2.5"
+                        Background="Transparent"/>
+              </Grid>
+              <TextBlock Text="Elena" FontSize="11" TextAlignment="Center"
+                         Foreground="#0d1f22" MaxWidth="62"
+                         TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+
+            <!-- You (avatar) -->
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
+              <Grid Width="62" Height="62">
+                <Border Width="57" Height="57" CornerRadius="999" ClipToBounds="True"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <Image Source="avares://ControlCatalog/Assets/ModernApp/avatar.jpg"
+                         Stretch="UniformToFill"/>
+                </Border>
+                <Border Width="62" Height="62" CornerRadius="999"
+                        BorderBrush="#0dccf2" BorderThickness="2.5"
+                        Background="Transparent"/>
+              </Grid>
+              <TextBlock Text="You" FontSize="11" TextAlignment="Center"
+                         Foreground="#0d1f22" MaxWidth="62"
+                         TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+
+            <!-- + circle -->
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
+              <Border Width="62" Height="62" CornerRadius="999"
+                      BorderBrush="#0dccf2" BorderThickness="2.5">
+                <TextBlock Text="+" FontSize="28" Foreground="#0dccf2"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+              </Border>
+              <TextBlock Text="You" FontSize="11" TextAlignment="Center"
+                         Foreground="#0d1f22"/>
+            </StackPanel>
+
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+
+      <!-- Filter tabs -->
+      <Border Background="White" Padding="16,0,16,16">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <!-- Trending - active -->
+          <Border Background="#0dccf2" CornerRadius="999"
+                  BorderBrush="#0dccf2" BorderThickness="1"
+                  Padding="18,8">
+            <TextBlock Text="Trending" FontSize="13" FontWeight="SemiBold"
+                       Foreground="White"/>
+          </Border>
+          <!-- Popular - inactive -->
+          <Border Background="Transparent" CornerRadius="999"
+                  BorderBrush="#dde6e9" BorderThickness="1"
+                  Padding="18,8">
+            <TextBlock Text="Popular" FontSize="13" FontWeight="Normal"
+                       Foreground="#8a9ba3"/>
+          </Border>
+          <!-- Near Me - inactive -->
+          <Border Background="Transparent" CornerRadius="999"
+                  BorderBrush="#dde6e9" BorderThickness="1"
+                  Padding="18,8">
+            <TextBlock Text="Near Me" FontSize="13" FontWeight="Normal"
+                       Foreground="#8a9ba3"/>
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <!-- Featured Destinations header -->
+      <Border Padding="16,16,16,8">
+        <TextBlock Text="Featured Destinations" FontSize="16" FontWeight="Bold"
+                   Foreground="#0d1f22"/>
+      </Border>
+
+      <!-- Destination card 1: Mount Peak Adventure / Swiss Alps / favorited -->
+      <Border Padding="16,0,16,12">
+        <Border Height="190" CornerRadius="12" ClipToBounds="True" Background="#8a9ba3">
+          <Grid>
+            <Image Source="avares://ControlCatalog/Assets/ModernApp/dest_alps.jpg"
+                   Stretch="UniformToFill"/>
+            <Border>
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0%,40%" EndPoint="0%,100%">
+                  <GradientStop Color="#00000000" Offset="0"/>
+                  <GradientStop Color="#C8000000" Offset="1"/>
+                </LinearGradientBrush>
+              </Border.Background>
+            </Border>
+            <StackPanel VerticalAlignment="Bottom" Margin="14,0,14,14" Spacing="3">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <PathIcon Width="12" Height="12" Foreground="White"
+                          Data="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                <TextBlock Text="Swiss Alps" Foreground="White" FontSize="12" Opacity="0.9"/>
+              </StackPanel>
+              <TextBlock Text="Mount Peak Adventure" Foreground="White"
+                         FontSize="16" FontWeight="Bold"/>
+            </StackPanel>
+            <!-- Favorited (pink) heart -->
+            <Border Width="32" Height="32" CornerRadius="999"
+                    Background="#80FFFFFF"
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,10,10,0">
+              <PathIcon Width="16" Height="16" Foreground="#ff5c8a"
+                        Data="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </Border>
+          </Grid>
+        </Border>
+      </Border>
+
+      <!-- Destination card 2: The Whispering Woods / Pacific Northwest -->
+      <Border Padding="16,0,16,12">
+        <Border Height="190" CornerRadius="12" ClipToBounds="True" Background="#8a9ba3">
+          <Grid>
+            <Image Source="avares://ControlCatalog/Assets/ModernApp/dest_forest.jpg"
+                   Stretch="UniformToFill"/>
+            <Border>
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0%,40%" EndPoint="0%,100%">
+                  <GradientStop Color="#00000000" Offset="0"/>
+                  <GradientStop Color="#C8000000" Offset="1"/>
+                </LinearGradientBrush>
+              </Border.Background>
+            </Border>
+            <StackPanel VerticalAlignment="Bottom" Margin="14,0,14,14" Spacing="3">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <PathIcon Width="12" Height="12" Foreground="White"
+                          Data="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                <TextBlock Text="Pacific Northwest" Foreground="White" FontSize="12" Opacity="0.9"/>
+              </StackPanel>
+              <TextBlock Text="The Whispering Woods" Foreground="White"
+                         FontSize="16" FontWeight="Bold"/>
+            </StackPanel>
+            <!-- White heart -->
+            <Border Width="32" Height="32" CornerRadius="999"
+                    Background="#80FFFFFF"
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,10,10,0">
+              <PathIcon Width="16" Height="16" Foreground="White"
+                        Data="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </Border>
+          </Grid>
+        </Border>
+      </Border>
+
+      <!-- Destination card 3: Nordic Cabin Escape / Norway Highlands -->
+      <Border Padding="16,0,16,12">
+        <Border Height="190" CornerRadius="12" ClipToBounds="True" Background="#8a9ba3">
+          <Grid>
+            <Image Source="avares://ControlCatalog/Assets/ModernApp/dest_norway.jpg"
+                   Stretch="UniformToFill"/>
+            <Border>
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0%,40%" EndPoint="0%,100%">
+                  <GradientStop Color="#00000000" Offset="0"/>
+                  <GradientStop Color="#C8000000" Offset="1"/>
+                </LinearGradientBrush>
+              </Border.Background>
+            </Border>
+            <StackPanel VerticalAlignment="Bottom" Margin="14,0,14,14" Spacing="3">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <PathIcon Width="12" Height="12" Foreground="White"
+                          Data="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                <TextBlock Text="Norway Highlands" Foreground="White" FontSize="12" Opacity="0.9"/>
+              </StackPanel>
+              <TextBlock Text="Nordic Cabin Escape" Foreground="White"
+                         FontSize="16" FontWeight="Bold"/>
+            </StackPanel>
+            <!-- White heart -->
+            <Border Width="32" Height="32" CornerRadius="999"
+                    Background="#80FFFFFF"
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,10,10,0">
+              <PathIcon Width="16" Height="16" Foreground="White"
+                        Data="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </Border>
+          </Grid>
+        </Border>
+      </Border>
+
+      <!-- Popular Experiences header -->
+      <Border Padding="16,8,16,8">
+        <DockPanel>
+          <TextBlock Text="View all" FontSize="13" Foreground="#0dccf2"
+                     FontWeight="SemiBold" VerticalAlignment="Center"
+                     DockPanel.Dock="Right"/>
+          <TextBlock Text="Popular Experiences" FontSize="15" FontWeight="Bold"
+                     Foreground="#0d1f22" VerticalAlignment="Center"/>
+        </DockPanel>
+      </Border>
+
+      <!-- Experience card 1: Tokyo Night Life / $120 / 4.9 / 1.2k -->
+      <Border Padding="16,0,16,12">
+        <Border Background="White" CornerRadius="12" ClipToBounds="True">
+          <DockPanel>
+            <Border Width="105" Height="110" Background="#8a9ba3" ClipToBounds="True"
+                    DockPanel.Dock="Left">
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/exp_tokyo.jpg"
+                     Stretch="UniformToFill"/>
+            </Border>
+            <StackPanel Margin="12,10,12,10" Spacing="4">
+              <DockPanel>
+                <TextBlock Text="$120" FontSize="16" FontWeight="Bold"
+                           Foreground="#0dccf2"
+                           DockPanel.Dock="Right"
+                           VerticalAlignment="Top"/>
+                <TextBlock Text="Tokyo Night Life" FontSize="14" FontWeight="SemiBold"
+                           Foreground="#0d1f22" TextWrapping="Wrap"/>
+              </DockPanel>
+              <TextBlock Text="Experience the neon lights and hidden bars of Shinjuku with a local guide."
+                         FontSize="12" Foreground="#8a9ba3"
+                         TextWrapping="Wrap" MaxLines="2"/>
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                  <PathIcon Width="13" Height="13" Foreground="#ffb300"
+                            Data="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  <PathIcon Width="13" Height="13" Foreground="#ffb300"
+                            Data="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  <PathIcon Width="13" Height="13" Foreground="#ffb300"
+                            Data="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  <PathIcon Width="13" Height="13" Foreground="#ffb300"
+                            Data="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  <PathIcon Width="13" Height="13" Foreground="#ffb300"
+                            Data="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                </StackPanel>
+                <TextBlock Text="4.9 (1.2k)" FontSize="12" Foreground="#8a9ba3"
+                           VerticalAlignment="Center"/>
+              </StackPanel>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </Border>
+
+      <!-- Experience card 2: Angkor Wat Sunrise / $85 / 4.8 / 850 -->
+      <Border Padding="16,0,16,12">
+        <Border Background="White" CornerRadius="12" ClipToBounds="True">
+          <DockPanel>
+            <Border Width="105" Height="110" Background="#8a9ba3" ClipToBounds="True"
+                    DockPanel.Dock="Left">
+              <Image Source="avares://ControlCatalog/Assets/ModernApp/exp_angkor.jpg"
+                     Stretch="UniformToFill"/>
+            </Border>
+            <StackPanel Margin="12,10,12,10" Spacing="4">
+              <DockPanel>
+                <TextBlock Text="$85" FontSize="16" FontWeight="Bold"
+                           Foreground="#0dccf2"
+                           DockPanel.Dock="Right"
+                           VerticalAlignment="Top"/>
+                <TextBlock Text="Angkor Wat Sunrise" FontSize="14" FontWeight="SemiBold"
+                           Foreground="#0d1f22" TextWrapping="Wrap"/>
+              </DockPanel>
+              <TextBlock Text="Witness the breathtaking sunrise over the world's largest religious monument."
+                         FontSize="12" Foreground="#8a9ba3"
+                         TextWrapping="Wrap" MaxLines="2"/>
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                  <PathIcon Width="13" Height="13" Foreground="#ffb300"
+                            Data="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  <PathIcon Width="13" Height="13" Foreground="#ffb300"
+                            Data="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  <PathIcon Width="13" Height="13" Foreground="#ffb300"
+                            Data="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  <PathIcon Width="13" Height="13" Foreground="#ffb300"
+                            Data="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  <PathIcon Width="13" Height="13" Foreground="#ffb300"
+                            Data="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                </StackPanel>
+                <TextBlock Text="4.8 (850)" FontSize="12" Foreground="#8a9ba3"
+                           VerticalAlignment="Center"/>
+              </StackPanel>
+            </StackPanel>
+          </DockPanel>
+        </Border>
+      </Border>
+
+      <Border Height="24"/>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>
