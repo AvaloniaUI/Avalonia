@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Vulkan;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Vulkan;
@@ -77,10 +78,25 @@ internal class VulkanSkiaGpu : ISkiaGpu
     public IDisposable EnsureCurrent() => Vulkan.EnsureCurrent();
     
     
-    public ISkiaGpuRenderTarget TryCreateRenderTarget(IEnumerable<object> surfaces)
+    public ISkiaGpuRenderTarget TryCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
     {
         var target = Vulkan.CreateRenderTarget(surfaces);
         return new VulkanSkiaRenderTarget(this, target);
+    }
+
+    public bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
+    {
+        var factory = Vulkan.TryGetFeature<IVulkanKhrSurfacePlatformSurfaceFactory>();
+        foreach (var surface in surfaces)
+        {
+            if (surface is IVulkanKhrSurfacePlatformSurface
+                || (factory?.CanRenderToSurface(Vulkan, surface) == true))
+            {
+                return surface.IsReady;
+            }
+        }
+
+        return false;
     }
 
     

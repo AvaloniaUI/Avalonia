@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // TODO: Temporary workaround until Tmds is replaced.
 using System;
 using System.Collections.Generic;
 using Avalonia.DBus;

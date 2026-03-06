@@ -6,13 +6,14 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 
 
 namespace Avalonia.Skia.RenderTests
 {
-    public class TestRenderRoot : Decorator, IPresentationSource, IInputRoot, ILayoutRoot
+    public class TestRenderRoot : Decorator, IPresentationSource, IInputRoot, ILayoutRoot, ILogicalRoot
     {
         private readonly IRenderTarget _renderTarget;
         public Size ClientSize { get; private set; }

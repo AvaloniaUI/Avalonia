@@ -14,6 +14,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Avalonia.Win32.DirectX;
@@ -75,7 +76,7 @@ namespace Avalonia.Win32
         private readonly WindowsMouseDevice _mouseDevice;
         private readonly PenDevice _penDevice;
         private readonly FramebufferManager _framebuffer;
-        private readonly object? _glSurface;
+        private readonly IPlatformRenderSurface? _glSurface;
         private readonly bool _wmPointerEnabled;
 
         private readonly Win32NativeControlHost _nativeControlHost;
@@ -139,7 +140,7 @@ namespace Avalonia.Win32
                 IsResizable = true,
                 IsMinimizable = true,
                 IsMaximizable = true,
-                Decorations = SystemDecorations.Full
+                Decorations = WindowDecorations.Full
             };
 
             var surfaceFactory = AvaloniaLocator.Current.GetService<IWindowsSurfaceFactory>();
@@ -505,10 +506,10 @@ namespace Avalonia.Win32
             return result == 0;
         }
 
-        public IEnumerable<object> Surfaces
+        public IPlatformRenderSurface[] Surfaces
             => _glSurface is null ?
-                new object[] { Handle, _framebuffer } :
-                new object[] { Handle, _glSurface, _framebuffer };
+                [(IPlatformRenderSurface)Handle, _framebuffer] :
+                [(IPlatformRenderSurface)Handle, _glSurface, _framebuffer];
 
         public PixelPoint Position
         {
@@ -544,7 +545,7 @@ namespace Avalonia.Win32
             }
         }
 
-        private bool HasFullDecorations => _windowProperties.Decorations == SystemDecorations.Full;
+        private bool HasFullDecorations => _windowProperties.Decorations == WindowDecorations.Full;
 
 
         public void Move(PixelPoint point) => Position = point;
@@ -596,7 +597,7 @@ namespace Avalonia.Win32
             {
                 // We told Windows we have a caption, but since we're actually extending into it,
                 // it should be excluded from the final window bounds.
-                if (_windowProperties.Decorations != SystemDecorations.None)
+                if (_windowProperties.Decorations != WindowDecorations.None)
                 {
                     var borderOnlyRect = ClientRectToWindowRect(requestedClientRect, WindowStyles.WS_BORDER);
                     requestedWindowRect.top = borderOnlyRect.top;
@@ -893,7 +894,7 @@ namespace Avalonia.Win32
             UpdateWindowProperties(newWindowProperties);
         }
 
-        public void SetSystemDecorations(SystemDecorations value)
+        public void SetWindowDecorations(WindowDecorations value)
         {
             var newWindowProperties = _windowProperties;
 
@@ -1149,7 +1150,7 @@ namespace Avalonia.Win32
             borderCaptionThickness.left *= -1;
             borderCaptionThickness.top *= -1;
 
-            if (_windowProperties.Decorations == SystemDecorations.Full)
+            if (_windowProperties.Decorations == WindowDecorations.Full)
             {
                 if (_extendTitleBarHint != -1)
                     borderCaptionThickness.top = (int)(_extendTitleBarHint * RenderScaling);
@@ -1294,7 +1295,7 @@ namespace Avalonia.Win32
 
             newWindowProperties.WindowState = state;
 
-            UpdateWindowProperties(newWindowProperties, newWindowProperties.Decorations != SystemDecorations.Full);
+            UpdateWindowProperties(newWindowProperties, newWindowProperties.Decorations != WindowDecorations.Full);
 
             if (command.HasValue)
             {
@@ -1466,7 +1467,7 @@ namespace Avalonia.Win32
 
                 switch (newProperties.Decorations)
                 {
-                    case SystemDecorations.Full:
+                    case WindowDecorations.Full:
                         style |= WindowStyles.WS_BORDER | WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
 
                         if (newProperties.IsMinimizable)
@@ -1477,12 +1478,12 @@ namespace Avalonia.Win32
 
                         break;
 
-                    case SystemDecorations.BorderOnly:
+                    case WindowDecorations.BorderOnly:
                         style |= WindowStyles.WS_BORDER;
                         break;
                 }
 
-                if (newProperties.Decorations != SystemDecorations.None && newProperties.IsResizable)
+                if (newProperties.Decorations != WindowDecorations.None && newProperties.IsResizable)
                     style |= WindowStyles.WS_THICKFRAME;
 
                 var windowStates = GetWindowStateStyles();
@@ -1508,7 +1509,7 @@ namespace Avalonia.Win32
 
             if (!_isFullScreenActive && ((oldProperties.Decorations != newProperties.Decorations) || forceChanges))
             {
-                var margin = newProperties.Decorations == SystemDecorations.BorderOnly ? 1 : 0;
+                var margin = newProperties.Decorations == WindowDecorations.BorderOnly ? 1 : 0;
 
                 var margins = new MARGINS
                 {
@@ -1655,7 +1656,7 @@ namespace Avalonia.Win32
             public bool IsResizable;
             public bool IsMinimizable;
             public bool IsMaximizable;
-            public SystemDecorations Decorations;
+            public WindowDecorations Decorations;
             public bool IsFullScreen;
             public WindowState WindowState;
         }

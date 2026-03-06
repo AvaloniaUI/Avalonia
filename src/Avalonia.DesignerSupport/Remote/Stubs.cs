@@ -10,7 +10,9 @@ using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering;
@@ -28,7 +30,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Size? FrameSize => null;
         public double RenderScaling { get; } = 1.0;
         public double DesktopScaling => 1.0;
-        public IEnumerable<object> Surfaces => [];
+        public IPlatformRenderSurface[] Surfaces => [];
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
@@ -138,7 +140,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetSystemDecorations(SystemDecorations enabled)
+        public void SetWindowDecorations(WindowDecorations enabled)
         {
         }
 
@@ -235,7 +237,7 @@ namespace Avalonia.DesignerSupport.Remote
     class CursorFactoryStub : ICursorFactory
     {
         public ICursorImpl GetCursor(StandardCursorType cursorType) => new CursorStub();
-        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorStub();
+        public ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot) => new CursorStub();
 
         private class CursorStub : ICursorImpl
         {

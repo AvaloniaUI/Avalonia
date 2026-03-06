@@ -95,12 +95,15 @@ namespace Avalonia.UnitTests
             {
                 var layerDc = new Mock<IDrawingContextImpl>();
                 var layer = new Mock<IDrawingContextLayerImpl>();
-                layer.Setup(x => x.CreateDrawingContext(It.IsAny<bool>())).Returns(layerDc.Object);
+                layer.Setup(x => x.CreateDrawingContext()).Returns(layerDc.Object);
                 return layer.Object;
             });
 
             var result = new Mock<IRenderTarget>();
-            result.Setup(x => x.CreateDrawingContext(It.IsAny<bool>())).Returns(dc.Object);
+            result.Setup(x => x.CreateDrawingContext(It.IsAny<IRenderTarget.RenderTargetSceneInfo>(),
+                    out It.Ref<RenderTargetDrawingContextProperties>.IsAny))
+                .Returns(dc.Object);
+            
             return result.Object;
         }
 

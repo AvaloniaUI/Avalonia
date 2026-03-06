@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
 using Avalonia.Diagnostics;
+using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Threading;
@@ -48,7 +50,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     /// <param name="surfaces">
     /// A function returning the list of native platform's surfaces that can be consumed by rendering subsystems.
     /// </param>
-    public CompositingRenderer(IPresentationSource root, Compositor compositor, Func<IEnumerable<object>> surfaces)
+    public CompositingRenderer(IPresentationSource root, Compositor compositor, Func<IEnumerable<IPlatformRenderSurface>> surfaces)
     {
         _root = root;
         _compositor = compositor;

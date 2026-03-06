@@ -345,13 +345,13 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [PlatformTheory(TestPlatforms.MacOS)]
-        [InlineData(SystemDecorations.None)]
-        [InlineData(SystemDecorations.BorderOnly)]
-        [InlineData(SystemDecorations.Full)]
-        public void ExtendClientArea_SystemDecorations_Shows_Correct_Buttons(SystemDecorations decorations)
+        [InlineData(WindowDecorations.None)]
+        [InlineData(WindowDecorations.BorderOnly)]
+        [InlineData(WindowDecorations.Full)]
+        public void ExtendClientArea_SystemDecorations_Shows_Correct_Buttons(WindowDecorations decorations)
         {
             // #10650
-            using (OpenWindow(extendClientArea: true, systemDecorations: decorations))
+            using (OpenWindow(extendClientArea: true, windowDecorations: decorations))
             {
                 var secondaryWindow = GetWindow("SecondaryWindow");
 
@@ -359,7 +359,7 @@ namespace Avalonia.IntegrationTests.Appium
                 {
                     var chrome = secondaryWindow.GetSystemChromeButtons();
                 
-                    if (decorations == SystemDecorations.Full)
+                    if (decorations == WindowDecorations.Full)
                     {
                         Assert.NotNull(chrome.Close);
                         Assert.NotNull(chrome.Minimize);
@@ -374,7 +374,7 @@ namespace Avalonia.IntegrationTests.Appium
                 }
                 finally
                 {
-                    if (decorations != SystemDecorations.Full)
+                    if (decorations != WindowDecorations.Full)
                     {
                         secondaryWindow.FindElementByAccessibilityId("CurrentSystemDecorations").Click();
                         Session.FindElementByAccessibilityId("SystemDecorationsFull").SendClick();
@@ -388,7 +388,7 @@ namespace Avalonia.IntegrationTests.Appium
             ShowWindowMode mode = ShowWindowMode.NonOwned,
             WindowStartupLocation location = WindowStartupLocation.Manual,
             bool canResize = true,
-            SystemDecorations systemDecorations = SystemDecorations.Full,
+            WindowDecorations windowDecorations = WindowDecorations.Full,
             bool extendClientArea = false)
         {
             var sizeTextBox = Session.FindElementByAccessibilityId("ShowWindowSize");
@@ -417,10 +417,10 @@ namespace Avalonia.IntegrationTests.Appium
             if (canResizeCheckBox.GetIsChecked() != canResize)
                 canResizeCheckBox.Click();
 
-            if (systemDecorationsComboBox.GetComboBoxValue() != systemDecorations.ToString())
+            if (systemDecorationsComboBox.GetComboBoxValue() != windowDecorations.ToString())
             {
                 systemDecorationsComboBox.Click();
-                Session.FindElementByName(systemDecorations.ToString()).SendClick();
+                Session.FindElementByName(windowDecorations.ToString()).SendClick();
             }
             
             if (extendClientAreaCheckBox.GetIsChecked() != extendClientArea)

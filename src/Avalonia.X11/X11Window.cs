@@ -16,6 +16,7 @@ using Avalonia.Input.TextInput;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -211,7 +212,7 @@ namespace Avalonia.X11
                 SetWmClass(_handle, _platform.Options.WmClass);
             }
 
-            var surfaces = new List<object>
+            var surfaces = new List<IPlatformRenderSurface>
             {
                 new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
@@ -317,7 +318,7 @@ namespace Avalonia.X11
                               MotifDecorations.Maximize | MotifDecorations.Minimize | MotifDecorations.ResizeH;
 
             if (_popup 
-                || _systemDecorations == SystemDecorations.None) 
+                || _windowDecorations == WindowDecorations.None) 
                 decorations = 0;
 
             var isDisabled = !IsEnabled;
@@ -481,7 +482,7 @@ namespace Avalonia.X11
         
         public double DesktopScaling => RenderScaling;
 
-        public IEnumerable<object> Surfaces { get; }
+        public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
@@ -695,7 +696,7 @@ namespace Avalonia.X11
 
         private Thickness? GetFrameExtents()
         {
-            if (_systemDecorations != SystemDecorations.Full)
+            if (_windowDecorations != WindowDecorations.Full)
                 return new Thickness(0);
 
             XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_FRAME_EXTENTS, IntPtr.Zero,
@@ -865,8 +866,8 @@ namespace Avalonia.X11
             return rv;
         }
         
-        private SystemDecorations _requestedSystemDecorations = SystemDecorations.Full;
-        private SystemDecorations _systemDecorations = SystemDecorations.Full;
+        private WindowDecorations _requestedWindowDecorations = WindowDecorations.Full;
+        private WindowDecorations _windowDecorations = WindowDecorations.Full;
         private bool _canResize = true;
         private bool _canMinimize = true;
         private bool _canMaximize = true;
@@ -1179,9 +1180,9 @@ namespace Avalonia.X11
 
         public PixelPoint PointToScreen(Point point) => _mode.PointToScreen(point);
         
-        public void SetSystemDecorations(SystemDecorations enabled)
+        public void SetWindowDecorations(WindowDecorations enabled)
         {
-            _requestedSystemDecorations = enabled;
+            _requestedWindowDecorations = enabled;
             UpdateEffectiveSystemDecorations();
         }
 
@@ -1189,15 +1190,15 @@ namespace Avalonia.X11
         {
             // When extending client area, always hide WM decorations (we draw our own)
             var effective = _extendClientAreaToDecorations
-                ? SystemDecorations.None
-                : (_requestedSystemDecorations == SystemDecorations.Full
-                    ? SystemDecorations.Full
-                    : SystemDecorations.None);
+                ? WindowDecorations.None
+                : (_requestedWindowDecorations == WindowDecorations.Full
+                    ? WindowDecorations.Full
+                    : WindowDecorations.None);
 
-            if (_systemDecorations == effective)
+            if (_windowDecorations == effective)
                 return;
 
-            _systemDecorations = effective;
+            _windowDecorations = effective;
             UpdateMotifHints();
             UpdateSizeHints(null);
         }
