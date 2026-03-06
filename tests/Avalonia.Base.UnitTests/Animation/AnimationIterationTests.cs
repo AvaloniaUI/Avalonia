@@ -262,6 +262,89 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         [Fact]
+        public void Pause_Animation_When_Control_Starts_Invisible()
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
+            };
+            var keyframe2 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
+            };
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(3),
+                IterationCount = new IterationCount(1),
+                Children = { keyframe2, keyframe1 }
+            };
+
+            var border = new Border() { Height = 100d, Width = 100d, IsVisible = false };
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
+
+            // Clock ticks while invisible should not advance the animation.
+            clock.Step(TimeSpan.Zero);
+            clock.Step(TimeSpan.FromSeconds(1));
+            clock.Step(TimeSpan.FromSeconds(2));
+            Assert.Equal(100d, border.Width);
+            Assert.False(animationRun.IsCompleted);
+
+            // Make visible — animation starts from the beginning.
+            border.IsVisible = true;
+
+            // The pause absorbed 2s of wall-clock time, so to reach internal time 3s:
+            // wall = 2 + 3 = 5
+            clock.Step(TimeSpan.FromSeconds(5));
+            Assert.True(animationRun.IsCompleted);
+            Assert.Equal(100d, border.Width);
+        }
+
+        [Fact]
+        public void Animation_Plays_Correctly_After_Reattach()
+        {
+            var keyframe1 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 200d), }, Cue = new Cue(1d)
+            };
+            var keyframe2 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d), }, Cue = new Cue(0d)
+            };
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(5),
+                IterationCount = new IterationCount(1),
+                FillMode = FillMode.Forward,
+                Children = { keyframe2, keyframe1 }
+            };
+
+            var border = new Border() { Height = 100d, Width = 50d };
+            var root = new TestRoot(border);
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.False(animationRun.IsCompleted);
+
+            // Detach — animation completes.
+            root.Child = null;
+            Assert.True(animationRun.IsCompleted);
+
+            // Reattach and start a fresh animation.
+            root.Child = border;
+            var clock2 = new TestClock();
+            var animationRun2 = animation.RunAsync(border, clock2, TestContext.Current.CancellationToken);
+
+            clock2.Step(TimeSpan.Zero);
+            Assert.False(animationRun2.IsCompleted);
+
+            clock2.Step(TimeSpan.FromSeconds(5));
+            Assert.True(animationRun2.IsCompleted);
+            Assert.Equal(200d, border.Width);
+        }
+
+        [Fact]
         public void Check_FillModes_Start_and_End_Values_if_Retained()
         {
             var keyframe1 = new KeyFrame()
