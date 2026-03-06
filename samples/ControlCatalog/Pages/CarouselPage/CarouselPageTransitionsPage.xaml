@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CarouselPageTransitionsPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Page Transition" FontWeight="SemiBold" FontSize="13" />
+        <ComboBox x:Name="TransitionCombo" SelectedIndex="0"
+                  SelectionChanged="OnTransitionChanged"
+                  HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="None" />
+          <ComboBoxItem Content="CrossFade" />
+          <ComboBoxItem Content="Slide Horizontal" />
+          <ComboBoxItem Content="Slide Vertical" />
+        </ComboBox>
+
+        <Separator />
+
+        <TextBlock Text="Navigate" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="6">
+          <Button Content="Previous" Click="OnPrevious" HorizontalAlignment="Stretch" />
+          <Button Content="Next" Click="OnNext" HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock x:Name="StatusText" Text="Page 1 of 4 | Transition: None"
+                   Opacity="0.7" TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+      <CarouselPage x:Name="DemoCarousel"
+                    SelectionChanged="OnSelectionChanged">
+        <ContentPage Header="Page 1" Background="#BBDEFB">
+          <TextBlock Text="Page 1" FontSize="32" FontWeight="Bold"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </ContentPage>
+        <ContentPage Header="Page 2" Background="#C8E6C9">
+          <TextBlock Text="Page 2" FontSize="32" FontWeight="Bold"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </ContentPage>
+        <ContentPage Header="Page 3" Background="#FFE0B2">
+          <TextBlock Text="Page 3" FontSize="32" FontWeight="Bold"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </ContentPage>
+        <ContentPage Header="Page 4" Background="#E1BEE7">
+          <TextBlock Text="Page 4" FontSize="32" FontWeight="Bold"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </ContentPage>
+      </CarouselPage>
+    </Border>
+  </DockPanel>
+</UserControl>

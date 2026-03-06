@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CarouselPageGesturePage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Gesture Navigation" FontWeight="SemiBold" FontSize="13" />
+        <CheckBox x:Name="GestureCheck" Content="IsGestureEnabled"
+                  IsChecked="True" IsCheckedChanged="OnGestureChanged" />
+
+        <Separator />
+
+        <TextBlock Text="Keyboard Navigation" FontWeight="SemiBold" FontSize="13" />
+        <CheckBox x:Name="KeyboardCheck" Content="IsKeyboardNavigationEnabled"
+                  IsChecked="True" IsCheckedChanged="OnKeyboardChanged" />
+
+        <Separator />
+
+        <TextBlock Text="Hints" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock Text="• Swipe left/right to navigate (touch)" FontSize="11" Opacity="0.7" TextWrapping="Wrap" />
+        <TextBlock Text="• Mouse drag (left button) to navigate" FontSize="11" Opacity="0.7" TextWrapping="Wrap" />
+        <TextBlock Text="• Arrow keys / Home / End when focused" FontSize="11" Opacity="0.7" TextWrapping="Wrap" />
+        <TextBlock Text="• Mouse wheel scrolls pages" FontSize="11" Opacity="0.7" TextWrapping="Wrap" />
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock x:Name="StatusText" Text="—" Opacity="0.7" TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+      <CarouselPage x:Name="DemoCarousel"
+                    SelectionChanged="OnSelectionChanged">
+        <ContentPage Header="Page 1" Background="#BBDEFB">
+          <TextBlock Text="Page 1 — Swipe or drag to navigate"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     TextWrapping="Wrap" TextAlignment="Center" MaxWidth="200" FontSize="16" />
+        </ContentPage>
+        <ContentPage Header="Page 2" Background="#C8E6C9">
+          <TextBlock Text="Page 2 — Arrow keys also work when focused"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     TextWrapping="Wrap" TextAlignment="Center" MaxWidth="200" FontSize="16" />
+        </ContentPage>
+        <ContentPage Header="Page 3" Background="#FFE0B2">
+          <TextBlock Text="Page 3 — Disable gestures using the panel"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                     TextWrapping="Wrap" TextAlignment="Center" MaxWidth="200" FontSize="16" />
+        </ContentPage>
+      </CarouselPage>
+    </Border>
+  </DockPanel>
+</UserControl>
