@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using IntegrationTestApp.Models;
 using IntegrationTestApp.Pages;
 using IntegrationTestApp.ViewModels;
+using Page = IntegrationTestApp.Models.Page;
 
 namespace IntegrationTestApp
 {

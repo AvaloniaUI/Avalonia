@@ -1,0 +1,177 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ModernSettingsView">
+
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Background="#f5f8f8">
+
+      <!-- Profile row -->
+      <Border Background="White" Padding="16">
+        <StackPanel Orientation="Horizontal" Spacing="14">
+          <Border Width="52" Height="52" CornerRadius="999" ClipToBounds="True" Background="#8a9ba3">
+            <Image Source="avares://ControlCatalog/Assets/ModernApp/avatar.jpg"
+                   Stretch="UniformToFill"/>
+          </Border>
+          <StackPanel VerticalAlignment="Center" Spacing="2">
+            <TextBlock Text="Alex Johnson" FontSize="15"
+                       FontWeight="SemiBold" Foreground="#0d1f22"/>
+            <TextBlock Text="alex.j@example.com" FontSize="12" Foreground="#8a9ba3"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Height="8"/>
+
+      <!-- Account section -->
+      <StackPanel Spacing="0">
+        <Border Padding="16,16,16,6">
+          <TextBlock Text="ACCOUNT" FontSize="11" FontWeight="SemiBold"
+                     Foreground="#8a9ba3"/>
+        </Border>
+        <!-- Notifications -->
+        <Border BorderBrush="#dde6e9" BorderThickness="0,0,0,1">
+          <DockPanel Background="White">
+            <StackPanel Orientation="Horizontal" Spacing="6"
+                        VerticalAlignment="Center" Margin="0,0,12,0"
+                        DockPanel.Dock="Right">
+              <PathIcon Width="16" Height="16" Foreground="#8a9ba3"
+                        Data="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </StackPanel>
+            <Border Padding="16,14">
+              <TextBlock Text="Notifications" FontSize="14" Foreground="#0d1f22"/>
+            </Border>
+          </DockPanel>
+        </Border>
+        <!-- Privacy -->
+        <Border BorderBrush="#dde6e9" BorderThickness="0,0,0,1">
+          <DockPanel Background="White">
+            <StackPanel Orientation="Horizontal" Spacing="6"
+                        VerticalAlignment="Center" Margin="0,0,12,0"
+                        DockPanel.Dock="Right">
+              <PathIcon Width="16" Height="16" Foreground="#8a9ba3"
+                        Data="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </StackPanel>
+            <Border Padding="16,14">
+              <TextBlock Text="Privacy" FontSize="14" Foreground="#0d1f22"/>
+            </Border>
+          </DockPanel>
+        </Border>
+        <!-- Security -->
+        <Border BorderBrush="#dde6e9" BorderThickness="0,0,0,1">
+          <DockPanel Background="White">
+            <StackPanel Orientation="Horizontal" Spacing="6"
+                        VerticalAlignment="Center" Margin="0,0,12,0"
+                        DockPanel.Dock="Right">
+              <PathIcon Width="16" Height="16" Foreground="#8a9ba3"
+                        Data="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </StackPanel>
+            <Border Padding="16,14">
+              <TextBlock Text="Security" FontSize="14" Foreground="#0d1f22"/>
+            </Border>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+
+      <Border Height="8"/>
+
+      <!-- Preferences section -->
+      <StackPanel Spacing="0">
+        <Border Padding="16,16,16,6">
+          <TextBlock Text="PREFERENCES" FontSize="11" FontWeight="SemiBold"
+                     Foreground="#8a9ba3"/>
+        </Border>
+        <!-- Dark Mode with toggle -->
+        <Border BorderBrush="#dde6e9" BorderThickness="0,0,0,1">
+          <DockPanel Background="White">
+            <CheckBox IsChecked="False"
+                      DockPanel.Dock="Right"
+                      Margin="0,0,12,0"
+                      VerticalAlignment="Center"/>
+            <Border Padding="16,14">
+              <TextBlock Text="Dark Mode" FontSize="14" Foreground="#0d1f22"/>
+            </Border>
+          </DockPanel>
+        </Border>
+        <!-- Language -->
+        <Border BorderBrush="#dde6e9" BorderThickness="0,0,0,1">
+          <DockPanel Background="White">
+            <StackPanel Orientation="Horizontal" Spacing="6"
+                        VerticalAlignment="Center" Margin="0,0,12,0"
+                        DockPanel.Dock="Right">
+              <TextBlock Text="English" FontSize="12" Foreground="#8a9ba3"
+                         VerticalAlignment="Center"/>
+              <PathIcon Width="16" Height="16" Foreground="#8a9ba3"
+                        Data="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </StackPanel>
+            <Border Padding="16,14">
+              <TextBlock Text="Language" FontSize="14" Foreground="#0d1f22"/>
+            </Border>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+
+      <Border Height="8"/>
+
+      <!-- Support section -->
+      <StackPanel Spacing="0">
+        <Border Padding="16,16,16,6">
+          <TextBlock Text="SUPPORT" FontSize="11" FontWeight="SemiBold"
+                     Foreground="#8a9ba3"/>
+        </Border>
+        <!-- About -->
+        <Border BorderBrush="#dde6e9" BorderThickness="0,0,0,1">
+          <DockPanel Background="White">
+            <StackPanel Orientation="Horizontal" Spacing="6"
+                        VerticalAlignment="Center" Margin="0,0,12,0"
+                        DockPanel.Dock="Right">
+              <PathIcon Width="16" Height="16" Foreground="#8a9ba3"
+                        Data="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </StackPanel>
+            <Border Padding="16,14">
+              <TextBlock Text="About" FontSize="14" Foreground="#0d1f22"/>
+            </Border>
+          </DockPanel>
+        </Border>
+        <!-- Help Center -->
+        <Border BorderBrush="#dde6e9" BorderThickness="0,0,0,1">
+          <DockPanel Background="White">
+            <StackPanel Orientation="Horizontal" Spacing="6"
+                        VerticalAlignment="Center" Margin="0,0,12,0"
+                        DockPanel.Dock="Right">
+              <TextBlock Text="&#x2197;" FontSize="12" Foreground="#8a9ba3"
+                         VerticalAlignment="Center"/>
+              <PathIcon Width="16" Height="16" Foreground="#8a9ba3"
+                        Data="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </StackPanel>
+            <Border Padding="16,14">
+              <TextBlock Text="Help Center" FontSize="14" Foreground="#0d1f22"/>
+            </Border>
+          </DockPanel>
+        </Border>
+        <!-- Logout -->
+        <Border BorderBrush="#dde6e9" BorderThickness="0,0,0,1">
+          <DockPanel Background="White">
+            <StackPanel Orientation="Horizontal" Spacing="6"
+                        VerticalAlignment="Center" Margin="0,0,12,0"
+                        DockPanel.Dock="Right">
+              <PathIcon Width="16" Height="16" Foreground="#8a9ba3"
+                        Data="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </StackPanel>
+            <Border Padding="16,14">
+              <TextBlock Text="Logout" FontSize="14" Foreground="#0d1f22"/>
+            </Border>
+          </DockPanel>
+        </Border>
+      </StackPanel>
+
+      <!-- Version label -->
+      <Border Padding="16,16">
+        <TextBlock Text="Version 2.4.1 (Build 402)"
+                   FontSize="11" Foreground="#8a9ba3"
+                   HorizontalAlignment="Center"/>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

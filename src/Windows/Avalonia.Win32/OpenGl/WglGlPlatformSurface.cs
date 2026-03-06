@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using static Avalonia.OpenGL.GlConsts;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -43,7 +44,7 @@ namespace Avalonia.Win32.OpenGl
                 WglGdiResourceManager.ReleaseDC(_info.Handle, _hdc);
             }
 
-            public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedPixelSize)
+            public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
                 // TODO: use expectedPixelSize
                 var oldContext = _context.MakeCurrent(_hdc);

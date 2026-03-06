@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Metadata;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 
 namespace Avalonia.OpenGL.Egl
 {
@@ -54,7 +55,7 @@ namespace Avalonia.OpenGL.Egl
 
             public override void Dispose() => _glSurface?.Dispose();
 
-            public override IGlPlatformSurfaceRenderingSession BeginDrawCore(PixelSize? expectedPixelSize)
+            public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
                 // TODO: use expectedPixelSize
                 if (_info.Size != _currentSize 

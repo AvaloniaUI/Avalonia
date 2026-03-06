@@ -1,0 +1,74 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CommandBarOverflowPage">
+  <UserControl.Resources>
+    <StreamGeometry x:Key="AddIcon">M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z</StreamGeometry>
+    <StreamGeometry x:Key="SaveIcon">M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z</StreamGeometry>
+    <StreamGeometry x:Key="ShareIcon">M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L15.96,7.19C16.5,7.69 17.21,8 18,8A3,3 0 0,0 21,5A3,3 0 0,0 18,2A3,3 0 0,0 15,5C15,5.24 15.04,5.47 15.09,5.7L8.04,9.81C7.5,9.31 6.79,9 6,9A3,3 0 0,0 3,12A3,3 0 0,0 6,15C6.79,15 7.5,14.69 8.04,14.19L15.16,18.34C15.11,18.55 15.08,18.77 15.08,19C15.08,20.61 16.39,21.91 18,21.91C19.61,21.91 20.92,20.61 20.92,19C20.92,17.39 19.61,16.08 18,16.08Z</StreamGeometry>
+    <StreamGeometry x:Key="ExportIcon">M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M16,11V18.1L13.9,16L11.1,18.8L8.3,16L11.1,13.2L9,11.1L16,11Z</StreamGeometry>
+    <StreamGeometry x:Key="DeleteIcon">M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z</StreamGeometry>
+  </UserControl.Resources>
+
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock Text="OverflowButtonVisibility" />
+        <ComboBox x:Name="OverflowVisCombo"
+                  SelectedIndex="0"
+                  HorizontalAlignment="Stretch"
+                  SelectionChanged="OnOverflowVisChanged">
+          <ComboBoxItem Content="Auto" />
+          <ComboBoxItem Content="Visible" />
+          <ComboBoxItem Content="Collapsed" />
+        </ComboBox>
+
+        <CheckBox x:Name="IsOpenCheck"
+                  Content="IsOpen"
+                  IsCheckedChanged="OnIsOpenChanged" />
+
+        <CheckBox x:Name="IsStickyCheck"
+                  Content="IsSticky"
+                  IsCheckedChanged="OnIsStickyChanged" />
+
+        <Separator />
+
+        <Button Content="+ Add Primary"
+                HorizontalAlignment="Stretch"
+                Click="OnAddPrimary" />
+        <Button Content="+ Add Secondary"
+                HorizontalAlignment="Stretch"
+                Click="OnAddSecondary" />
+
+        <Separator />
+
+        <TextBlock Text="About" FontWeight="SemiBold" />
+        <TextBlock Text="Auto: overflow button shows when secondary commands exist. Visible: always show. Collapsed: never show."
+                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+        <TextBlock Text="IsSticky prevents the overflow from closing when clicking outside."
+                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" Margin="0,4,0,0" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <ScrollViewer>
+      <StackPanel Spacing="12" Margin="12,12,12,0">
+        <TextBlock Classes="h2">The overflow (···) button reveals secondary commands. Configure its visibility and behavior.</TextBlock>
+
+        <CommandBar x:Name="DemoBar" IsDynamicOverflowEnabled="True">
+          <CommandBar.PrimaryCommands>
+            <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
+            <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+            <AppBarButton Label="Share"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
+          </CommandBar.PrimaryCommands>
+          <CommandBar.SecondaryCommands>
+            <AppBarButton Label="Export"><AppBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></AppBarButton.Icon></AppBarButton>
+            <AppBarButton Label="Delete"><AppBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></AppBarButton.Icon></AppBarButton>
+          </CommandBar.SecondaryCommands>
+        </CommandBar>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

@@ -19,7 +19,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Transform?> TransformProperty =
             PopupRoot.TransformProperty.AddOwner<OverlayPopupHost>();
 
-        private readonly OverlayLayer _overlayLayer;
+        private readonly PopupOverlayLayer _overlayLayer;
         private readonly ManagedPopupPositioner _positioner;
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         internal IKeyboardNavigationHandler Tests_KeyboardNavigationHandler => _keyboardNavigationHandler!;
@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Primitives
         static OverlayPopupHost()
             => KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<OverlayPopupHost>(KeyboardNavigationMode.Cycle);
 
-        internal OverlayPopupHost(OverlayLayer overlayLayer)
+        internal OverlayPopupHost(PopupOverlayLayer overlayLayer)
         {
             _overlayLayer = overlayLayer;
             _positioner = new ManagedPopupPositioner(this);
@@ -161,7 +161,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            if (OverlayLayer.GetOverlayLayer(target) is { } overlayLayer)
+            if (PopupOverlayLayer.GetPopupOverlayLayer(target) is { } overlayLayer)
             {
                 return new OverlayPopupHost(overlayLayer);
             }

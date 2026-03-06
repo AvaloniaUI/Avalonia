@@ -1,0 +1,1072 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.LogicalTree;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.UnitTests;
+using Xunit;
+
+namespace Avalonia.Controls.UnitTests;
+
+public class DrawerPageTests
+{
+
+    public class PropertyRoundTrips : ScopedTestBase
+    {
+        [Fact]
+        public void IsOpen_Toggle()
+        {
+            var dp = new DrawerPage();
+            dp.IsOpen = true;
+            Assert.True(dp.IsOpen);
+            dp.IsOpen = false;
+            Assert.False(dp.IsOpen);
+        }
+
+        [Theory]
+        [InlineData(100.0)]
+        [InlineData(280.0)]
+        [InlineData(500.0)]
+        public void DrawerLength_RoundTrips(double length)
+        {
+            var dp = new DrawerPage { DrawerLength = length };
+            Assert.Equal(length, dp.DrawerLength);
+        }
+
+        [Theory]
+        [InlineData(40.0)]
+        [InlineData(56.0)]
+        [InlineData(80.0)]
+        public void CompactDrawerLength_RoundTrips(double length)
+        {
+            var dp = new DrawerPage { CompactDrawerLength = length };
+            Assert.Equal(length, dp.CompactDrawerLength);
+        }
+
+        [Theory]
+        [InlineData(600.0)]
+        [InlineData(800.0)]
+        [InlineData(1200.0)]
+        public void DrawerBreakpointWidth_RoundTrips(double width)
+        {
+            var dp = new DrawerPage { DrawerBreakpointWidth = width };
+            Assert.Equal(width, dp.DrawerBreakpointWidth);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void IsGestureEnabled_RoundTrips(bool value)
+        {
+            var dp = new DrawerPage { IsGestureEnabled = value };
+            Assert.Equal(value, dp.IsGestureEnabled);
+        }
+
+        [Theory]
+        [InlineData(DrawerBehavior.Auto)]
+        [InlineData(DrawerBehavior.Flyout)]
+        [InlineData(DrawerBehavior.Locked)]
+        [InlineData(DrawerBehavior.Disabled)]
+        public void DrawerBehavior_RoundTrips(DrawerBehavior behavior)
+        {
+            var dp = new DrawerPage { DrawerBehavior = behavior };
+            Assert.Equal(behavior, dp.DrawerBehavior);
+        }
+
+        [Theory]
+        [InlineData(DrawerLayoutBehavior.Overlay)]
+        [InlineData(DrawerLayoutBehavior.Split)]
+        [InlineData(DrawerLayoutBehavior.CompactOverlay)]
+        [InlineData(DrawerLayoutBehavior.CompactInline)]
+        public void DrawerLayoutBehavior_RoundTrips(DrawerLayoutBehavior behavior)
+        {
+            var dp = new DrawerPage { DrawerLayoutBehavior = behavior };
+            Assert.Equal(behavior, dp.DrawerLayoutBehavior);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Left)]
+        [InlineData(DrawerPlacement.Right)]
+        [InlineData(DrawerPlacement.Top)]
+        [InlineData(DrawerPlacement.Bottom)]
+        public void DrawerPlacement_RoundTrips(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage { DrawerPlacement = placement };
+            Assert.Equal(placement, dp.DrawerPlacement);
+        }
+
+        [Theory]
+        [InlineData(SplitViewDisplayMode.Overlay)]
+        [InlineData(SplitViewDisplayMode.CompactOverlay)]
+        [InlineData(SplitViewDisplayMode.Inline)]
+        [InlineData(SplitViewDisplayMode.CompactInline)]
+        public void DisplayMode_RoundTrips(SplitViewDisplayMode mode)
+        {
+            var dp = new DrawerPage { DisplayMode = mode };
+            Assert.Equal(mode, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(HorizontalAlignment.Left)]
+        [InlineData(HorizontalAlignment.Center)]
+        [InlineData(HorizontalAlignment.Right)]
+        [InlineData(HorizontalAlignment.Stretch)]
+        public void HorizontalContentAlignment_RoundTrips(HorizontalAlignment value)
+        {
+            var dp = new DrawerPage { HorizontalContentAlignment = value };
+            Assert.Equal(value, dp.HorizontalContentAlignment);
+        }
+
+        [Theory]
+        [InlineData(VerticalAlignment.Top)]
+        [InlineData(VerticalAlignment.Center)]
+        [InlineData(VerticalAlignment.Bottom)]
+        [InlineData(VerticalAlignment.Stretch)]
+        public void VerticalContentAlignment_RoundTrips(VerticalAlignment value)
+        {
+            var dp = new DrawerPage { VerticalContentAlignment = value };
+            Assert.Equal(value, dp.VerticalContentAlignment);
+        }
+
+        [Fact]
+        public void DrawerHeader_AcceptsString()
+        {
+            var dp = new DrawerPage { DrawerHeader = "My App" };
+            Assert.Equal("My App", dp.DrawerHeader);
+        }
+
+        [Fact]
+        public void DrawerHeader_AcceptsControl()
+        {
+            var ctrl = new TextBlock { Text = "My App" };
+            var dp = new DrawerPage { DrawerHeader = ctrl };
+            Assert.Same(ctrl, dp.DrawerHeader);
+        }
+
+        [Fact]
+        public void DrawerFooter_AcceptsString()
+        {
+            var dp = new DrawerPage { DrawerFooter = "v2.0" };
+            Assert.Equal("v2.0", dp.DrawerFooter);
+        }
+
+        [Fact]
+        public void DrawerFooter_AcceptsControl()
+        {
+            var ctrl = new TextBlock { Text = "Footer" };
+            var dp = new DrawerPage { DrawerFooter = ctrl };
+            Assert.Same(ctrl, dp.DrawerFooter);
+        }
+
+        [Fact]
+        public void DrawerIcon_AcceptsControl()
+        {
+            var icon = new PathIcon();
+            var dp = new DrawerPage { DrawerIcon = icon };
+            Assert.Same(icon, dp.DrawerIcon);
+        }
+
+        [Fact]
+        public void DrawerBackground_RoundTrips()
+        {
+            var brush = new SolidColorBrush(Colors.DodgerBlue);
+            var dp = new DrawerPage { DrawerBackground = brush };
+            Assert.Same(brush, dp.DrawerBackground);
+        }
+
+        [Fact]
+        public void DrawerHeaderBackground_RoundTrips()
+        {
+            var brush = new SolidColorBrush(Colors.Indigo);
+            var dp = new DrawerPage { DrawerHeaderBackground = brush };
+            Assert.Same(brush, dp.DrawerHeaderBackground);
+        }
+
+        [Fact]
+        public void DrawerHeaderForeground_RoundTrips()
+        {
+            var brush = Brushes.White;
+            var dp = new DrawerPage { DrawerHeaderForeground = brush };
+            Assert.Same(brush, dp.DrawerHeaderForeground);
+        }
+
+        [Fact]
+        public void DrawerFooterBackground_RoundTrips()
+        {
+            var brush = new SolidColorBrush(Colors.DarkGray);
+            var dp = new DrawerPage { DrawerFooterBackground = brush };
+            Assert.Same(brush, dp.DrawerFooterBackground);
+        }
+
+        [Fact]
+        public void DrawerFooterForeground_RoundTrips()
+        {
+            var brush = Brushes.LightGray;
+            var dp = new DrawerPage { DrawerFooterForeground = brush };
+            Assert.Same(brush, dp.DrawerFooterForeground);
+        }
+
+        [Fact]
+        public void DrawerTemplate_CanBeSetToNull()
+        {
+            var dp = new DrawerPage { DrawerTemplate = null };
+            Assert.Null(dp.DrawerTemplate);
+        }
+
+        [Fact]
+        public void ContentTemplate_CanBeSetToNull()
+        {
+            var dp = new DrawerPage { ContentTemplate = null };
+            Assert.Null(dp.ContentTemplate);
+        }
+
+        [Fact]
+        public void BackdropBrush_RoundTrips()
+        {
+            var brush = new SolidColorBrush(Color.FromArgb(128, 0, 0, 0));
+            var dp = new DrawerPage { BackdropBrush = brush };
+            Assert.Same(brush, dp.BackdropBrush);
+        }
+
+        [Fact]
+        public void BackdropBrush_CanBeSetToNull()
+        {
+            var dp = new DrawerPage { BackdropBrush = Brushes.Black };
+            dp.BackdropBrush = null;
+            Assert.Null(dp.BackdropBrush);
+        }
+
+        [Fact]
+        public void Header_RoundTrips()
+        {
+            var dp = new DrawerPage { Header = "My Drawer Page" };
+            Assert.Equal("My Drawer Page", dp.Header);
+        }
+
+        [Fact]
+        public void Icon_RoundTrips()
+        {
+            var icon = new Image();
+            var dp = new DrawerPage { Icon = icon };
+            Assert.Same(icon, dp.Icon);
+        }
+
+        [Fact]
+        public void SafeAreaPadding_RoundTrips()
+        {
+            var dp = new DrawerPage();
+            var padding = new Thickness(10, 20, 10, 34);
+            dp.SafeAreaPadding = padding;
+            Assert.Equal(padding, dp.SafeAreaPadding);
+        }
+
+        [Fact]
+        public void DrawerBehavior_Disabled_PreventsIsOpenSetToTrue()
+        {
+            var dp = new DrawerPage { DrawerBehavior = DrawerBehavior.Disabled };
+            dp.IsOpen = true;
+            Assert.False(dp.IsOpen);
+        }
+
+        [Fact]
+        public void Drawer_AcceptsString()
+        {
+            var dp = new DrawerPage { Drawer = "MenuContent" };
+            Assert.Equal("MenuContent", dp.Drawer);
+        }
+
+        [Fact]
+        public void Content_AcceptsString()
+        {
+            var dp = new DrawerPage { Content = "ContentValue" };
+            Assert.Equal("ContentValue", dp.Content);
+        }
+
+        [Fact]
+        public void Drawer_AcceptsContentPage()
+        {
+            var page = new ContentPage { Header = "Menu" };
+            var dp = new DrawerPage { Drawer = page };
+            Assert.Same(page, dp.Drawer);
+        }
+
+        [Fact]
+        public void Content_AcceptsContentPage()
+        {
+            var page = new ContentPage { Header = "Main" };
+            var dp = new DrawerPage { Content = page };
+            Assert.Same(page, dp.Content);
+        }
+    }
+
+    public class LogicalChildrenTests : ScopedTestBase
+    {
+        [Fact]
+        public void Drawer_SetPage_AddedToLogicalChildren()
+        {
+            var dp = new DrawerPage();
+            var drawer = new ContentPage { Header = "Menu" };
+            dp.Drawer = drawer;
+            Assert.Contains(drawer, ((ILogical)dp).LogicalChildren);
+        }
+
+        [Fact]
+        public void Content_SetPage_AddedToLogicalChildren()
+        {
+            var dp = new DrawerPage();
+            var detail = new ContentPage { Header = "Content" };
+            dp.Content = detail;
+            Assert.Contains(detail, ((ILogical)dp).LogicalChildren);
+        }
+
+        [Fact]
+        public void Drawer_Replaced_OldRemovedNewAdded()
+        {
+            var dp = new DrawerPage();
+            var first = new ContentPage { Header = "First" };
+            var second = new ContentPage { Header = "Second" };
+
+            dp.Drawer = first;
+            dp.Drawer = second;
+
+            var children = ((ILogical)dp).LogicalChildren;
+            Assert.DoesNotContain(first, children);
+            Assert.Contains(second, children);
+        }
+
+        [Fact]
+        public void Content_Replaced_OldRemovedNewAdded()
+        {
+            var dp = new DrawerPage();
+            var first = new ContentPage { Header = "First" };
+            var second = new ContentPage { Header = "Second" };
+
+            dp.Content = first;
+            dp.Content = second;
+
+            var children = ((ILogical)dp).LogicalChildren;
+            Assert.DoesNotContain(first, children);
+            Assert.Contains(second, children);
+        }
+
+        [Fact]
+        public void Drawer_SetToNull_RemovedFromLogicalChildren()
+        {
+            var dp = new DrawerPage();
+            var drawer = new ContentPage { Header = "Menu" };
+            dp.Drawer = drawer;
+            dp.Drawer = null;
+            Assert.DoesNotContain(drawer, ((ILogical)dp).LogicalChildren);
+        }
+
+        [Fact]
+        public void Content_SetToNull_RemovedFromLogicalChildren()
+        {
+            var dp = new DrawerPage();
+            var detail = new ContentPage { Header = "Content" };
+            dp.Content = detail;
+            dp.Content = null;
+            Assert.DoesNotContain(detail, ((ILogical)dp).LogicalChildren);
+        }
+
+        [Fact]
+        public void DrawerAndContent_BothSet_BothInLogicalChildren()
+        {
+            var dp = new DrawerPage();
+            var drawer = new ContentPage { Header = "Menu" };
+            var detail = new ContentPage { Header = "Home" };
+            dp.Drawer = drawer;
+            dp.Content = detail;
+
+            var children = ((ILogical)dp).LogicalChildren;
+            Assert.Contains(drawer, children);
+            Assert.Contains(detail, children);
+        }
+
+        [Fact]
+        public void Drawer_MultipleReplacements_OnlyLastInLogicalChildren()
+        {
+            var dp = new DrawerPage();
+            var first = new ContentPage { Header = "1st" };
+            var second = new ContentPage { Header = "2nd" };
+            var third = new ContentPage { Header = "3rd" };
+
+            dp.Drawer = first;
+            dp.Drawer = second;
+            dp.Drawer = third;
+
+            var children = ((ILogical)dp).LogicalChildren;
+            Assert.DoesNotContain(first, children);
+            Assert.DoesNotContain(second, children);
+            Assert.Contains(third, children);
+        }
+    }
+
+    public class DrawerEventTests : ScopedTestBase
+    {
+        [Fact]
+        public void IsOpen_SetTrue_FiresOpened()
+        {
+            var dp = new DrawerPage();
+            bool fired = false;
+            dp.Opened += (_, _) => fired = true;
+
+            dp.IsOpen = true;
+
+            Assert.True(fired);
+        }
+
+        [Fact]
+        public void IsOpen_SetFalse_FiresClosed()
+        {
+            var dp = new DrawerPage { IsOpen = true };
+            bool fired = false;
+            dp.Closed += (_, _) => fired = true;
+
+            dp.IsOpen = false;
+
+            Assert.True(fired);
+        }
+
+        [Fact]
+        public void IsOpen_SetFalse_FiresClosingBeforeClosed()
+        {
+            var dp = new DrawerPage { IsOpen = true };
+            var order = new List<string>();
+            dp.Closing += (_, _) => order.Add("Closing");
+            dp.Closed  += (_, _) => order.Add("Closed");
+
+            dp.IsOpen = false;
+
+            Assert.Equal(new[] { "Closing", "Closed" }, order);
+        }
+
+        [Fact]
+        public void Closing_Cancel_PreventsClose()
+        {
+            var dp = new DrawerPage { IsOpen = true };
+            dp.Closing += (_, e) => e.Cancel = true;
+
+            dp.IsOpen = false;
+
+            Assert.True(dp.IsOpen);
+        }
+
+        [Fact]
+        public void Closing_Cancel_DoesNotFireClosed()
+        {
+            var dp = new DrawerPage { IsOpen = true };
+            dp.Closing += (_, e) => e.Cancel = true;
+            bool closedFired = false;
+            dp.Closed += (_, _) => closedFired = true;
+
+            dp.IsOpen = false;
+
+            Assert.False(closedFired);
+        }
+
+        [Fact]
+        public void Closing_Cancel_DoesNotFireOpened()
+        {
+            var dp = new DrawerPage { IsOpen = true };
+            dp.Closing += (_, e) => e.Cancel = true;
+            bool openedFired = false;
+            dp.Opened += (_, _) => openedFired = true;
+
+            dp.IsOpen = false;
+
+            Assert.False(openedFired);
+        }
+
+        [Fact]
+        public void IsOpen_AlreadyTrue_SetTrue_DoesNotFireOpened()
+        {
+            var dp = new DrawerPage { IsOpen = true };
+            bool fired = false;
+            dp.Opened += (_, _) => fired = true;
+
+            dp.IsOpen = true;
+
+            Assert.False(fired);
+        }
+
+        [Fact]
+        public void IsOpen_AlreadyFalse_SetFalse_DoesNotFireClosingOrClosed()
+        {
+            var dp = new DrawerPage();
+            bool closingFired = false;
+            bool closedFired  = false;
+            dp.Closing += (_, _) => closingFired = true;
+            dp.Closed  += (_, _) => closedFired  = true;
+
+            dp.IsOpen = false;
+
+            Assert.False(closingFired);
+            Assert.False(closedFired);
+        }
+
+        [Fact]
+        public void IsOpen_SetTrue_DoesNotFireClosing()
+        {
+            var dp = new DrawerPage();
+            bool closingFired = false;
+            dp.Closing += (_, _) => closingFired = true;
+
+            dp.IsOpen = true;
+
+            Assert.False(closingFired);
+        }
+
+        [Fact]
+        public void DrawerBehavior_Locked_ForcesIsOpen_True()
+        {
+            var dp = new DrawerPage { DrawerBehavior = DrawerBehavior.Locked };
+            Assert.True(dp.IsOpen);
+        }
+
+        [Fact]
+        public void DrawerBehavior_Locked_WhileClosed_OpensWithoutFiringClosing()
+        {
+            var dp = new DrawerPage();
+            bool closingFired = false;
+            dp.Closing += (_, _) => closingFired = true;
+
+            dp.DrawerBehavior = DrawerBehavior.Locked;
+
+            Assert.True(dp.IsOpen);
+            Assert.False(closingFired);
+        }
+
+        [Fact]
+        public void Closing_Cancel_PreventsClose_EvenWithReentrantIsOpenFalse()
+        {
+            var dp = new DrawerPage { IsOpen = true };
+            dp.Closing += (_, e) => e.Cancel = true;
+
+            dp.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == DrawerPage.IsOpenProperty)
+                    dp.SetCurrentValue(DrawerPage.IsOpenProperty, false);
+            };
+
+            dp.IsOpen = false;
+
+            Assert.True(dp.IsOpen);
+        }
+    }
+
+    public class LifecycleEventTests : ScopedTestBase
+    {
+        [Fact]
+        public void IsOpen_Changes_NeverFirePageLifecycleEvents()
+        {
+            // Toggling IsOpen (open, close, repeated) must never raise page lifecycle events.
+            var page = new ContentPage { Header = "Content" };
+            var dp = new DrawerPage();
+            var root = new TestRoot { Child = dp };
+            dp.Content = page; // fires initial NavigatedTo
+
+            var events = new List<string>();
+            page.NavigatedTo   += (_, _) => events.Add("NavigatedTo");
+            page.NavigatedFrom += (_, _) => events.Add("NavigatedFrom");
+
+            dp.IsOpen = true;
+            dp.IsOpen = false;
+            dp.IsOpen = false; // same value
+
+            Assert.Empty(events);
+        }
+
+        [Fact]
+        public void Content_SetInitially_FiresNavigatedTo()
+        {
+            var page = new ContentPage { Header = "Home" };
+            var events = new List<string>();
+            page.NavigatedTo  += (_, _) => events.Add("NavigatedTo");
+
+            var dp = new DrawerPage();
+            var root = new TestRoot { Child = dp };
+            dp.Content = page;
+
+            Assert.Single(events);
+            Assert.Equal("NavigatedTo",  events[0]);
+        }
+
+        [Fact]
+        public void Content_SetInitially_SetsCurrentPage()
+        {
+            var page = new ContentPage { Header = "Home" };
+            var dp = new DrawerPage { Content = page };
+            Assert.Same(page, dp.CurrentPage);
+        }
+
+        [Fact]
+        public void Content_Changed_FiresLifecycleEventsInOrder()
+        {
+            var first = new ContentPage { Header = "First" };
+            var second = new ContentPage { Header = "Second" };
+            var dp = new DrawerPage();
+            var root = new TestRoot { Child = dp };
+            dp.Content = first;
+
+            var order = new List<string>();
+            first.NavigatedFrom += (_, _) => order.Add("NavigatedFrom");
+            second.NavigatedTo += (_, _) => order.Add("NavigatedTo");
+
+            dp.Content = second;
+
+            Assert.Equal(2, order.Count);
+            Assert.Equal("NavigatedFrom", order[0]);
+            Assert.Equal("NavigatedTo", order[1]);
+        }
+
+        [Fact]
+        public void Content_SetInitially_NavigatedTo_NavigationTypeIsReplace()
+        {
+            var page = new ContentPage { Header = "Home" };
+            NavigatedToEventArgs? args = null;
+            page.NavigatedTo += (_, e) => args = e;
+
+            var dp = new DrawerPage();
+            var root = new TestRoot { Child = dp };
+            dp.Content = page;
+
+            Assert.NotNull(args);
+            Assert.Equal(NavigationType.Replace, args!.NavigationType);
+        }
+
+        [Fact]
+        public void Content_Changed_NavigatedFromAndTo_NavigationTypeIsReplace()
+        {
+            var first = new ContentPage { Header = "First" };
+            var second = new ContentPage { Header = "Second" };
+            var dp = new DrawerPage();
+            var root = new TestRoot { Child = dp };
+            dp.Content = first;
+
+            NavigatedFromEventArgs? fromArgs = null;
+            NavigatedToEventArgs?   toArgs   = null;
+            first.NavigatedFrom  += (_, e) => fromArgs = e;
+            second.NavigatedTo   += (_, e) => toArgs   = e;
+
+            dp.Content = second;
+
+            Assert.NotNull(fromArgs);
+            Assert.Equal(NavigationType.Replace, fromArgs!.NavigationType);
+            Assert.NotNull(toArgs);
+            Assert.Equal(NavigationType.Replace, toArgs!.NavigationType);
+        }
+
+        [Fact]
+        public void Content_ChangedWhileOverlayDrawerOpen_NonPageDrawer_FiresLifecycleEvents()
+        {
+            var home    = new ContentPage { Header = "Home" };
+            var profile = new ContentPage { Header = "Profile" };
+            var dp = new DrawerPage
+            {
+                DisplayMode = SplitViewDisplayMode.Overlay,
+            };
+            var root = new TestRoot { Child = dp };
+            dp.Drawer = new StackPanel();
+            dp.Content = home;
+
+            var events = new List<string>();
+            home.NavigatedFrom   += (_, _) => events.Add("Home: NavigatedFrom");
+            profile.NavigatedTo  += (_, _) => events.Add("Profile: NavigatedTo");
+
+            dp.IsOpen = true;
+            Assert.Empty(events);
+
+            dp.Content = profile;
+            Assert.Equal(2, events.Count);
+            Assert.Equal("Home: NavigatedFrom", events[0]);
+            Assert.Equal("Profile: NavigatedTo", events[1]);
+        }
+
+        // --- Initial-attach lifecycle (the _hasHadFirstPage / OnLoaded fix) ---
+
+        [Fact]
+        public void Content_SetBeforeAttach_SuppressedUntilLoad()
+        {
+            // Events must NOT fire during XAML parsing (before VisualRoot is set).
+            var page = new ContentPage { Header = "Home" };
+            var events = new List<string>();
+            page.NavigatedTo += (_, _) => events.Add("NavigatedTo");
+
+            var _ = new DrawerPage { Content = page };
+
+            Assert.Empty(events);
+        }
+
+        [Fact]
+        public void Content_SetBeforeAttach_FiresLifecycleEventsOnLoad()
+        {
+            // Content set before the control enters the visual tree (simulating XAML parsing).
+            // Events must fire exactly once when the control is attached and Loaded fires.
+            var page = new ContentPage { Header = "Home" };
+            var events = new List<string>();
+            page.NavigatedTo += (_, _) => events.Add("NavigatedTo");
+
+            var dp = new DrawerPage { Content = page };
+            Assert.Empty(events); // suppressed before visual tree
+
+            var root = new TestRoot { Child = dp };
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken); // pump the posted Loaded dispatch
+
+            Assert.Single(events);
+            Assert.Equal("NavigatedTo", events[0]);
+        }
+
+        [Fact]
+        public void Content_SetBeforeAttach_ThenChangedAfterAttach_NoDoubleFire()
+        {
+            var first  = new ContentPage { Header = "First" };
+            var second = new ContentPage { Header = "Second" };
+
+            var dp = new DrawerPage { Content = first };
+            var root = new TestRoot { Child = dp };
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken); // fire the deferred NavigatedTo on first
+
+            var events = new List<string>();
+            first.NavigatedFrom += (_, _) => events.Add("First: NavigatedFrom");
+            second.NavigatedTo  += (_, _) => events.Add("Second: NavigatedTo");
+
+            dp.Content = second;
+
+            Assert.Equal(2, events.Count);
+            Assert.Equal("First: NavigatedFrom", events[0]);
+            Assert.Equal("Second: NavigatedTo",  events[1]);
+        }
+
+        [Fact]
+        public void Content_SetBeforeAttach_NavigatedTo_NavigationTypeIsPush()
+        {
+            var page = new ContentPage { Header = "Home" };
+            NavigatedToEventArgs? args = null;
+            page.NavigatedTo += (_, e) => args = e;
+
+            var dp = new DrawerPage { Content = page };
+            var root = new TestRoot { Child = dp };
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.NotNull(args);
+            Assert.Equal(NavigationType.Push, args!.NavigationType);
+        }
+
+        [Fact]
+        public void Content_SetToSameInstance_NoLifecycleEvents()
+        {
+            // Re-assigning the same Content instance must not re-fire lifecycle events.
+            var page = new ContentPage { Header = "Home" };
+            var dp = new DrawerPage();
+            var root = new TestRoot { Child = dp };
+            dp.Content = page; // initial assignment fires NavigatedTo
+
+            var events = new List<string>();
+            page.NavigatedTo   += (_, _) => events.Add("NavigatedTo");
+            page.NavigatedFrom += (_, _) => events.Add("NavigatedFrom");
+
+            dp.Content = page; // same instance — must not fire anything
+
+            Assert.Empty(events);
+        }
+    }
+
+
+    public class DisplayModeMappingTests : ScopedTestBase
+    {
+        [Fact]
+        public void DrawerLayoutBehavior_Overlay_MapsToOverlay()
+        {
+            var dp = new DrawerPage { DrawerLayoutBehavior = DrawerLayoutBehavior.Overlay };
+            Assert.Equal(SplitViewDisplayMode.Overlay, dp.DisplayMode);
+        }
+
+        [Fact]
+        public void DrawerLayoutBehavior_Split_MapsToInline()
+        {
+            var dp = new DrawerPage { DrawerLayoutBehavior = DrawerLayoutBehavior.Split };
+            Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
+        }
+
+        [Fact]
+        public void DrawerLayoutBehavior_CompactOverlay_MapsToCompactOverlay()
+        {
+            var dp = new DrawerPage { DrawerLayoutBehavior = DrawerLayoutBehavior.CompactOverlay };
+            Assert.Equal(SplitViewDisplayMode.CompactOverlay, dp.DisplayMode);
+        }
+
+        [Fact]
+        public void DrawerLayoutBehavior_CompactInline_MapsToCompactInline()
+        {
+            var dp = new DrawerPage { DrawerLayoutBehavior = DrawerLayoutBehavior.CompactInline };
+            Assert.Equal(SplitViewDisplayMode.CompactInline, dp.DisplayMode);
+        }
+
+        [Fact]
+        public void DrawerBehavior_Locked_OverridesCompactOverlay_ToInline()
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.CompactOverlay,
+                DrawerBehavior = DrawerBehavior.Locked
+            };
+            Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
+        }
+
+        [Fact]
+        public void DrawerBehavior_Flyout_OverridesCompactInline_ToOverlay()
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.CompactInline,
+                DrawerBehavior = DrawerBehavior.Flyout
+            };
+            Assert.Equal(SplitViewDisplayMode.Overlay, dp.DisplayMode);
+        }
+
+        [Fact]
+        public void DrawerBreakpointWidth_BeforeLayout_DoesNotOverrideLayoutBehavior()
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointWidth = 1200
+            };
+            Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
+        }
+
+        [Fact]
+        public void DrawerBreakpointWidth_Zero_DoesNotOverrideLayoutBehavior()
+        {
+            // Breakpoint == 0 means the feature is disabled; DrawerLayoutBehavior drives DisplayMode.
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointWidth = 0
+            };
+            Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
+        }
+    }
+
+    public class DisabledBehaviorClosingTests : ScopedTestBase
+    {
+        [Fact]
+        public void Closing_Cancel_CannotPreventDisabledClose()
+        {
+            var dp = new DrawerPage { IsOpen = true };
+            dp.Closing += (_, e) => e.Cancel = true;
+
+            dp.DrawerBehavior = DrawerBehavior.Disabled;
+
+            Assert.False(dp.IsOpen);
+        }
+
+        [Fact]
+        public void Closing_NotFired_WhenDisabledForcesClose()
+        {
+            var dp = new DrawerPage { IsOpen = true };
+            bool closingFired = false;
+            dp.Closing += (_, _) => closingFired = true;
+
+            dp.DrawerBehavior = DrawerBehavior.Disabled;
+
+            Assert.False(closingFired);
+        }
+    }
+
+    public class DrawerLengthValidationTests : ScopedTestBase
+    {
+        [Theory]
+        [InlineData(double.NaN)]
+        [InlineData(double.PositiveInfinity)]
+        [InlineData(double.NegativeInfinity)]
+        [InlineData(-1.0)]
+        [InlineData(-100.0)]
+        public void DrawerLength_RejectsInvalidValues(double invalid)
+        {
+            var dp = new DrawerPage { DrawerLength = 200.0 };
+            Assert.ThrowsAny<ArgumentException>(() => dp.DrawerLength = invalid);
+            Assert.Equal(200.0, dp.DrawerLength);
+        }
+
+        [Theory]
+        [InlineData(double.NaN)]
+        [InlineData(double.PositiveInfinity)]
+        [InlineData(double.NegativeInfinity)]
+        [InlineData(-1.0)]
+        [InlineData(-100.0)]
+        public void CompactDrawerLength_RejectsInvalidValues(double invalid)
+        {
+            var dp = new DrawerPage();
+            Assert.ThrowsAny<ArgumentException>(() => dp.CompactDrawerLength = invalid);
+            Assert.Equal(48.0, dp.CompactDrawerLength);
+        }
+
+        [Fact]
+        public void DrawerLength_AcceptsZero()
+        {
+            var dp = new DrawerPage { DrawerLength = 0 };
+            Assert.Equal(0.0, dp.DrawerLength);
+        }
+
+        [Fact]
+        public void CompactDrawerLength_AcceptsZero()
+        {
+            var dp = new DrawerPage { CompactDrawerLength = 0 };
+            Assert.Equal(0.0, dp.CompactDrawerLength);
+        }
+    }
+
+    public class EscapeKeyTests : ScopedTestBase
+    {
+        [Fact]
+        public void EscapeKey_ClosesOverlayDrawer()
+        {
+            var dp = new DrawerPage
+            {
+                DisplayMode = SplitViewDisplayMode.Overlay,
+                IsOpen = true,
+            };
+            var root = new TestRoot { Child = dp };
+
+            dp.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Escape });
+
+            Assert.False(dp.IsOpen);
+        }
+
+        [Fact]
+        public void EscapeKey_ClosesCompactOverlayDrawer()
+        {
+            var dp = new DrawerPage
+            {
+                DisplayMode = SplitViewDisplayMode.CompactOverlay,
+                IsOpen = true,
+            };
+            var root = new TestRoot { Child = dp };
+
+            dp.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Escape });
+
+            Assert.False(dp.IsOpen);
+        }
+
+        [Fact]
+        public void EscapeKey_DoesNotCloseInlineDrawer()
+        {
+            var dp = new DrawerPage
+            {
+                DisplayMode = SplitViewDisplayMode.Inline,
+                IsOpen = true,
+            };
+            var root = new TestRoot { Child = dp };
+
+            dp.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Escape });
+
+            Assert.True(dp.IsOpen);
+        }
+    }
+
+    public class SystemBackButtonTests : ScopedTestBase
+    {
+        private static RoutedEventArgs RaiseBackButton(DrawerPage dp)
+        {
+            var args = new RoutedEventArgs(Page.PageNavigationSystemBackButtonPressedEvent);
+            dp.RaiseEvent(args);
+            return args;
+        }
+
+        [Fact]
+        public void BackButton_ClosesOpenDrawer()
+        {
+            var dp = new DrawerPage { IsOpen = true };
+            var root = new TestRoot { Child = dp };
+
+            var args = RaiseBackButton(dp);
+
+            Assert.False(dp.IsOpen);
+            Assert.True(args.Handled);
+        }
+
+        [Fact]
+        public void BackButton_DoesNotCloseLockedDrawer()
+        {
+            var dp = new DrawerPage
+            {
+                DrawerBehavior = DrawerBehavior.Locked,
+                IsOpen = true
+            };
+            var root = new TestRoot { Child = dp };
+
+            var args = RaiseBackButton(dp);
+
+            Assert.True(dp.IsOpen);
+            Assert.False(args.Handled);
+        }
+
+        [Fact]
+        public void BackButton_DoesNotActOnDisabledDrawer()
+        {
+            var dp = new DrawerPage { DrawerBehavior = DrawerBehavior.Disabled };
+            var root = new TestRoot { Child = dp };
+
+            var args = RaiseBackButton(dp);
+
+            Assert.False(dp.IsOpen);
+            Assert.False(args.Handled);
+        }
+
+        [Fact]
+        public void BackButton_DoesNotActWhenAlreadyClosed()
+        {
+            var dp = new DrawerPage();
+            var root = new TestRoot { Child = dp };
+
+            var args = RaiseBackButton(dp);
+
+            Assert.False(dp.IsOpen);
+            Assert.False(args.Handled);
+        }
+    }
+
+    public class DrawerIconTests : ScopedTestBase
+    {
+        [Fact]
+        public void DrawerIcon_PathIcon_DoesNotCrashWhenTemplateApplied()
+        {
+            var icon = new PathIcon();
+            var dp = new DrawerPage { DrawerIcon = icon };
+            var root = new TestRoot { Child = dp };
+
+            // Changing DrawerIcon after template is applied must not throw.
+            var icon2 = new PathIcon();
+            dp.DrawerIcon = icon2;
+
+            Assert.Same(icon2, dp.DrawerIcon);
+        }
+    }
+
+    public class DetachmentTests : ScopedTestBase
+    {
+        [Fact]
+        public async Task OnDetached_ClearsDrawerPageReferenceOnNavigationPage()
+        {
+            var root = new TestRoot();
+            var nav = new NavigationPage();
+            var dp = new DrawerPage { Content = nav };
+            root.Child = dp;
+
+            // Detach: should clear the DrawerPage reference
+            root.Child = null;
+
+            // NavigationPage should no longer reference the DrawerPage.
+            // Pushing a page should not show a hamburger icon (which requires DrawerPage).
+            var page = new ContentPage();
+            await nav.PushAsync(page);
+            Assert.Null(NavigationPage.GetBackButtonContent(page));
+        }
+    }
+}

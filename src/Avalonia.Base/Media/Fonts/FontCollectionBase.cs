@@ -731,7 +731,7 @@ namespace Avalonia.Media.Fonts
             {
                 for (var i = 0; stretch + i < 9; i++)
                 {
-                    if (TryGetWithStretch(stretch, out glyphTypeface))
+                    if (TryGetWithStretch(stretch + i, out glyphTypeface))
                     {
                         return true;
                     }
@@ -741,7 +741,7 @@ namespace Avalonia.Media.Fonts
             {
                 for (var i = 0; stretch - i > 1; i++)
                 {
-                    if (TryGetWithStretch(stretch, out glyphTypeface))
+                    if (TryGetWithStretch(stretch - i, out glyphTypeface))
                     {
                         return true;
                     }
@@ -786,7 +786,7 @@ namespace Avalonia.Media.Fonts
                 //Look for available weights between the target and 500, in ascending order.
                 for (var i = 0; weight + i <= 500; i += 50)
                 {
-                    if (TryGetWithWeight(weight, out glyphTypeface))
+                    if (TryGetWithWeight(weight + i, out glyphTypeface))
                     {
                         return true;
                     }
@@ -795,7 +795,7 @@ namespace Avalonia.Media.Fonts
                 //If no match is found, look for available weights less than the target, in descending order.
                 for (var i = 0; weight - i >= 100; i += 50)
                 {
-                    if (TryGetWithWeight(weight, out glyphTypeface))
+                    if (TryGetWithWeight(weight - i, out glyphTypeface))
                     {
                         return true;
                     }
@@ -804,7 +804,7 @@ namespace Avalonia.Media.Fonts
                 //If no match is found, look for available weights greater than 500, in ascending order.
                 for (var i = 0; weight + i <= 900; i += 50)
                 {
-                    if (TryGetWithWeight(weight, out glyphTypeface))
+                    if (TryGetWithWeight(weight + i, out glyphTypeface))
                     {
                         return true;
                     }
@@ -816,7 +816,7 @@ namespace Avalonia.Media.Fonts
             {
                 for (var i = 0; weight - i >= 100; i += 50)
                 {
-                    if (TryGetWithWeight(weight, out glyphTypeface))
+                    if (TryGetWithWeight(weight - i, out glyphTypeface))
                     {
                         return true;
                     }
@@ -825,7 +825,7 @@ namespace Avalonia.Media.Fonts
                 //If no match is found, look for available weights less than the target, in descending order.
                 for (var i = 0; weight + i <= 900; i += 50)
                 {
-                    if (TryGetWithWeight(weight, out glyphTypeface))
+                    if (TryGetWithWeight(weight + i, out glyphTypeface))
                     {
                         return true;
                     }
@@ -837,7 +837,7 @@ namespace Avalonia.Media.Fonts
             {
                 for (var i = 0; weight + i <= 900; i += 50)
                 {
-                    if (TryGetWithWeight(weight, out glyphTypeface))
+                    if (TryGetWithWeight(weight + i, out glyphTypeface))
                     {
                         return true;
                     }
@@ -846,7 +846,7 @@ namespace Avalonia.Media.Fonts
                 //If no match is found, look for available weights less than the target, in descending order.
                 for (var i = 0; weight - i >= 100; i += 50)
                 {
-                    if (TryGetWithWeight(weight, out glyphTypeface))
+                    if (TryGetWithWeight(weight - i, out glyphTypeface))
                     {
                         return true;
                     }

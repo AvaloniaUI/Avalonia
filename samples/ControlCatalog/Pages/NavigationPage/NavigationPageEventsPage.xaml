@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NavigationPageEventsPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="280">
+      <StackPanel Margin="12" Spacing="16">
+        <TextBlock Text="Configuration" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock Text="Navigation" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="6">
+          <Button Content="Push Page"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPush" />
+          <Button Content="Pop"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPop" />
+          <Button Content="Pop to Root"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPopToRoot" />
+          <Button Content="Insert Page"
+                  HorizontalAlignment="Stretch"
+                  Click="OnInsertPage" />
+          <Button Content="Remove Page"
+                  HorizontalAlignment="Stretch"
+                  Click="OnRemovePage" />
+        </StackPanel>
+
+        <TextBlock Text="Modal" FontSize="13" FontWeight="SemiBold" />
+        <StackPanel Spacing="6">
+          <Button Content="Push Modal"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPushModal" />
+          <Button Content="Pop Modal"
+                  HorizontalAlignment="Stretch"
+                  Click="OnPopModal" />
+        </StackPanel>
+
+        <Separator />
+
+        <!-- Event Log -->
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Left" Text="Event Log" FontSize="13" FontWeight="SemiBold"
+                     VerticalAlignment="Center" />
+          <Button DockPanel.Dock="Right" Content="Clear" Click="OnClearLog"
+                  HorizontalAlignment="Right" Padding="8,2" FontSize="11" />
+        </DockPanel>
+        <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                CornerRadius="4" Padding="8" MinHeight="120" MaxHeight="250">
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="LogPanel" Spacing="1" />
+          </ScrollViewer>
+        </Border>
+
+        <Separator />
+        <TextBlock Text="NavigationPage exposes events for push, pop, insert, remove, and modal operations. Pages also fire NavigatedTo and NavigatedFrom on each navigation."
+                   TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>

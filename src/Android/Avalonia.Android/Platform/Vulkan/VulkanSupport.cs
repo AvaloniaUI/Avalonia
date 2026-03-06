@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Vulkan;
 
 namespace Avalonia.Android.Platform.Vulkan
@@ -24,10 +25,10 @@ namespace Avalonia.Android.Platform.Vulkan
 
         internal class VulkanSurfaceFactory : IVulkanKhrSurfacePlatformSurfaceFactory
         {
-            public bool CanRenderToSurface(IVulkanPlatformGraphicsContext context, object surface) =>
+            public bool CanRenderToSurface(IVulkanPlatformGraphicsContext context, IPlatformRenderSurface surface) =>
                 surface is INativePlatformHandleSurface handle;
 
-            public IVulkanKhrSurfacePlatformSurface CreateSurface(IVulkanPlatformGraphicsContext context, object handle) =>
+            public IVulkanKhrSurfacePlatformSurface CreateSurface(IVulkanPlatformGraphicsContext context, IPlatformRenderSurface handle) =>
                 new AndroidVulkanSurface((INativePlatformHandleSurface)handle);
         }
 

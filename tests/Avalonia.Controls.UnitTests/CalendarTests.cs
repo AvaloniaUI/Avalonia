@@ -1,8 +1,9 @@
 ﻿using Xunit;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.UnitTests;
 
 namespace Avalonia.Controls.UnitTests
@@ -366,6 +367,78 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(6, calendar.SelectedDates.Count);
             Assert.True(calendar.SelectedDates.Contains(earlierDate));
             Assert.True(calendar.SelectedDates.Contains(laterDate));
+        }
+
+        [Fact]
+        public void CalendarItem_Should_Reset_Mouse_Down_Flag_On_Detach_From_Visual_Tree()
+        {
+            var calendar = new Calendar();
+            calendar.SelectionMode = CalendarSelectionMode.SingleDate;
+
+            var calendarItem = new CalendarItem();
+            calendarItem.Owner = calendar;
+
+            // Attach CalendarItem to a visual tree
+            var root = new TestRoot(calendarItem);
+
+            // Create a day button and simulate mouse left button down,
+            // which sets the internal _isMouseLeftButtonDown flag to true.
+            var date1 = new DateTime(2024, 1, 15);
+            var dayButton1 = new CalendarDayButton { DataContext = date1 };
+
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            var props = new PointerPointProperties(RawInputModifiers.LeftMouseButton,
+                PointerUpdateKind.LeftButtonPressed);
+            var pressArgs = new PointerPressedEventArgs(dayButton1, pointer, root,
+                default, 0, props, KeyModifiers.None);
+
+            calendarItem.Cell_MouseLeftButtonDown(dayButton1, pressArgs);
+
+            // date1 should now be selected
+            Assert.Equal(1, calendar.SelectedDates.Count);
+            Assert.Equal(date1, calendar.SelectedDates[0]);
+
+            // Detach CalendarItem from visual tree (simulates popup closing
+            // during date selection without a PointerReleased event).
+            root.Child = null;
+
+            // Create a different day button and simulate mouse enter.
+            // Before the fix, _isMouseLeftButtonDown would still be true,
+            // causing hover to auto-select dates.
+            var date2 = new DateTime(2024, 1, 20);
+            var dayButton2 = new CalendarDayButton { DataContext = date2 };
+
+            calendarItem.Cell_MouseEntered(dayButton2, null!);
+
+            // The selected date should NOT have changed to date2,
+            // because the mouse-down flag was reset when detaching.
+            Assert.Equal(1, calendar.SelectedDates.Count);
+            Assert.Equal(date1, calendar.SelectedDates[0]);
+        }
+
+        [Fact]
+        public void CalendarItem_Should_Reset_YearView_Mouse_Down_Flag_On_Detach_From_Visual_Tree()
+        {
+            var calendar = new Calendar();
+            var calendarItem = new CalendarItem();
+            calendarItem.Owner = calendar;
+
+            // Attach CalendarItem to a visual tree
+            var root = new TestRoot(calendarItem);
+
+            // Use reflection to set the _isMouseLeftButtonDownYearView flag,
+            // since Month_CalendarButtonMouseDown is private.
+            var field = typeof(CalendarItem).GetField("_isMouseLeftButtonDownYearView",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            Assert.NotNull(field);
+            field!.SetValue(calendarItem, true);
+            Assert.True((bool)field.GetValue(calendarItem)!);
+
+            // Detach CalendarItem from visual tree
+            root.Child = null;
+
+            // Verify the flag was reset
+            Assert.False((bool)field.GetValue(calendarItem)!);
         }
     }
 }

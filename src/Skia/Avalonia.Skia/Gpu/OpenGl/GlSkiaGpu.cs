@@ -5,6 +5,7 @@ using Avalonia.Logging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 using static Avalonia.OpenGL.GlConsts;
 
@@ -53,12 +54,14 @@ namespace Avalonia.Skia
 
         private class SurfaceWrapper : IGlPlatformSurface
         {
-            private readonly object _surface;
+            private readonly IPlatformRenderSurface _surface;
 
-            public SurfaceWrapper( object surface)
+            public SurfaceWrapper(IPlatformRenderSurface surface)
             {
                 _surface = surface;
             }
+
+            public bool IsReady => _surface.IsReady;
 
             public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
             {
@@ -67,7 +70,7 @@ namespace Avalonia.Skia
             }
         }
 
-        public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
+        public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
         {
             var customRenderTargetFactory = _glContext.TryGetFeature<IGlPlatformSurfaceRenderTargetFactory>();
             foreach (var surface in surfaces)
@@ -83,6 +86,21 @@ namespace Avalonia.Skia
             }
 
             return null;
+        }
+
+        public bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
+        {
+            var customRenderTargetFactory = _glContext.TryGetFeature<IGlPlatformSurfaceRenderTargetFactory>();
+            foreach (var surface in surfaces)
+            {
+                if (customRenderTargetFactory?.CanRenderToSurface(_glContext, surface) == true
+                    || surface is IGlPlatformSurface)
+                {
+                    return surface.IsReady;
+                }
+            }
+
+            return false;
         }
 
         public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession? session)

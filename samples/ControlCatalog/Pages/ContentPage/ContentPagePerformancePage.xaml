@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ContentPagePerformancePage">
+  <Grid ColumnDefinitions="*,300">
+
+    <!-- Left: NavigationPage + log -->
+    <DockPanel Grid.Column="0" Margin="16">
+      <TextBlock DockPanel.Dock="Top"
+                 Text="Push pages of varying weight and observe how GC reclaims memory after pop."
+                 FontSize="13" Opacity="0.6" Margin="0,0,0,12" />
+
+      <DockPanel DockPanel.Dock="Bottom" Margin="0,12,0,0" Height="140">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+          <TextBlock Text="Operation Log" FontSize="13" FontWeight="SemiBold"
+                     VerticalAlignment="Center" />
+          <Button x:Name="ClearLogButton" Content="Clear" FontSize="11"
+                  Padding="8,2" HorizontalAlignment="Right" Click="OnClearLog" />
+        </DockPanel>
+        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1" CornerRadius="4" ClipToBounds="True">
+          <ScrollViewer x:Name="LogScrollViewer">
+            <StackPanel x:Name="LogPanel" Spacing="0" />
+          </ScrollViewer>
+        </Border>
+      </DockPanel>
+
+      <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+              BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+        <NavigationPage x:Name="NavPage">
+          <NavigationPage.Resources>
+            <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
+          </NavigationPage.Resources>
+        </NavigationPage>
+      </Border>
+    </DockPanel>
+
+    <!-- Right: dashboard -->
+    <Border Grid.Column="1"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1,0,0,0"
+            Padding="16">
+      <ScrollViewer>
+        <StackPanel Spacing="12">
+
+          <TextBlock Text="Metrics" FontSize="16" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+          <TextBlock x:Name="StackDepthText"    Text="Stack Depth: 0"         FontSize="13" />
+          <TextBlock x:Name="LiveInstancesText"  Text="Live Page Instances: 0" FontSize="13" />
+          <TextBlock x:Name="TotalCreatedText"   Text="Total Pages Created: 0" FontSize="13" />
+          <DockPanel>
+            <TextBlock x:Name="ManagedMemoryText" Text="Managed Heap: 0.0 MB" FontSize="13" />
+            <TextBlock x:Name="MemoryDeltaText"   Text=""                     FontSize="13"
+                       FontWeight="SemiBold" Margin="6,0,0,0" />
+          </DockPanel>
+
+          <Separator Margin="0,4" />
+
+          <TextBlock Text="Content Weight" FontSize="16" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+          <ComboBox x:Name="WeightCombo" HorizontalAlignment="Stretch" SelectedIndex="0">
+            <ComboBoxItem Content="Lightweight  (~50 KB)" />
+            <ComboBoxItem Content="Moderate  (~500 KB)" />
+            <ComboBoxItem Content="Heavy  (~2 MB)" />
+          </ComboBox>
+          <TextBlock Text="Sets the memory allocated by each new page. Push pages, pop them, then Force GC to see the heap drop."
+                     TextWrapping="Wrap" FontSize="11" Opacity="0.6" />
+
+          <Separator Margin="0,4" />
+
+          <TextBlock Text="Actions" FontSize="16" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+          <Button x:Name="PushButton"      Content="Push Page"    HorizontalAlignment="Stretch" Click="OnPush" />
+          <Button x:Name="Push5Button"     Content="Push 5 Pages" HorizontalAlignment="Stretch" Click="OnPush5" />
+          <Button x:Name="PopButton"       Content="Pop Page"     HorizontalAlignment="Stretch" Click="OnPop" />
+          <Button x:Name="PopToRootButton" Content="Pop to Root"  HorizontalAlignment="Stretch" Click="OnPopToRoot" />
+
+          <Separator Margin="0,4" />
+
+          <Button x:Name="ForceGCButton" Content="Force GC + Refresh"
+                  HorizontalAlignment="Stretch" Click="OnForceGC"
+                  Background="{DynamicResource SystemControlHighlightAccentBrush}"
+                  Foreground="White" />
+
+          <CheckBox x:Name="AutoRefreshCheck" Content="Auto-refresh (2s)"
+                    FontSize="13" IsCheckedChanged="OnAutoRefreshChanged" />
+
+          <Separator Margin="0,4" />
+
+          <TextBlock Text="Stack" FontSize="16" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+          <TextBlock Text="▲  Current (top)"  FontSize="11" Opacity="0.45" Margin="0,-4,0,0" />
+          <StackPanel x:Name="StackVisPanel" Spacing="4" />
+          <TextBlock Text="▼  Root (bottom)"  FontSize="11" Opacity="0.45" Margin="0,4,0,0" />
+
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
+  </Grid>
+</UserControl>

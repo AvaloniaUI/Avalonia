@@ -1,4 +1,4 @@
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -14,20 +14,15 @@ internal class RenderTargetBitmapImpl : WriteableBitmapImpl,
         SKImageInfo.PlatformColorType == SKColorType.Rgba8888 ? PixelFormats.Rgba8888 : PixelFormat.Bgra8888,
         Platform.AlphaFormat.Premul)
     {
-        _renderTarget = new FramebufferRenderTarget(this);
+        _renderTarget = new FramebufferRenderTarget(this, true);
     }
-
-    public RenderTargetProperties Properties => default;
-
-    IDrawingContextImpl IRenderTarget.CreateDrawingContext(bool useScaledDrawing) =>
-        _renderTarget.CreateDrawingContext(useScaledDrawing);
-
-    IDrawingContextImpl IRenderTarget.CreateDrawingContext(PixelSize expectedPixelSize,
-        out RenderTargetDrawingContextProperties properties)
+    
+    public IDrawingContextImpl CreateDrawingContext()
     {
-        properties = default;
-        return _renderTarget.CreateDrawingContext(false);
+        return _renderTarget.CreateDrawingContext(new IRenderTarget.RenderTargetSceneInfo(
+            PixelSize, Dpi.X / 96.0), out _);
     }
+
 
     public bool IsCorrupted => false;
     
@@ -36,6 +31,6 @@ internal class RenderTargetBitmapImpl : WriteableBitmapImpl,
         _renderTarget.Dispose();
         base.Dispose();
     }
-
+    
     public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
 }

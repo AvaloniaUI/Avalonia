@@ -2,6 +2,7 @@ using System;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.X11.Glx
@@ -39,11 +40,10 @@ namespace Avalonia.X11.Glx
             }
             
             public bool IsCorrupted => false;
-
-            public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedSize)
+            public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
-                var size = expectedSize ?? _info.Size;
-                if (expectedSize.HasValue)
+                var size = sceneInfo.Size;
+                //if (expectedSize.HasValue)
                 {
                     XLib.XConfigureResizeWindow(_context.Display.X11Info.DeferredDisplay,
                         _info.Handle, size.Width, size.Height);
