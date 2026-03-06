@@ -126,14 +126,14 @@ static class TestRenderHelper
         return path;
     }
 
-    public static void AssertCompareImages(string actualPath, string expectedPath)
+    public static void AssertCompareImages(string actualPath, string expectedPath, double tolerance = TestBase.DEFAULT_TOLERANCE)
     {
         using (var expected = Image.Load<Rgba32>(expectedPath))
         using (var actual = Image.Load<Rgba32>(actualPath))
         {
             double immediateError = TestRenderHelper.CompareImages(actual, expected);
 
-            if (immediateError > 0.022)
+            if (immediateError > tolerance)
             {
                 Assert.Fail(actualPath + ": Error = " + immediateError);
             }

@@ -30,7 +30,7 @@ namespace Avalonia.Skia.RenderTests
 
         public static FontFamily TestFontFamily = new FontFamily(s_fontUri);
 
-        private const double AllowedError = 0.022;
+        internal const double DEFAULT_TOLERANCE = 0.001;
 
         public TestBase(string outputPath)
         {
@@ -61,7 +61,7 @@ namespace Avalonia.Skia.RenderTests
         }
 
         protected void CompareImages([CallerMemberName] string testName = "",
-            bool skipImmediate = false,  bool skipCompositor = false)
+            bool skipImmediate = false,  bool skipCompositor = false, double tolerance = DEFAULT_TOLERANCE)
         {
             var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
@@ -74,7 +74,7 @@ namespace Avalonia.Skia.RenderTests
                 if (!skipImmediate)
                 {
                     var immediateError = TestRenderHelper.CompareImages(immediate!, expected);
-                    if (immediateError > AllowedError)
+                    if (immediateError > tolerance)
                     {
                         Assert.Fail(immediatePath + ": Error = " + immediateError);
                     }
@@ -83,7 +83,7 @@ namespace Avalonia.Skia.RenderTests
                 if (!skipCompositor)
                 {
                     var compositedError = TestRenderHelper.CompareImages(composited!, expected);
-                    if (compositedError > AllowedError)
+                    if (compositedError > tolerance)
                     {
                         Assert.Fail(compositedPath + ": Error = " + compositedError);
                     }
@@ -91,11 +91,11 @@ namespace Avalonia.Skia.RenderTests
             }
         }
 
-        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "", string? expectedName = null)
+        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "", string? expectedName = null, double tolerance = DEFAULT_TOLERANCE)
         {
             var expectedPath = Path.Combine(OutputPath, (expectedName ?? testName) + ".expected.png");
             var actualPath = Path.Combine(OutputPath, testName + ".out.png");
-            TestRenderHelper.AssertCompareImages(actualPath, expectedPath);
+            TestRenderHelper.AssertCompareImages(actualPath, expectedPath, tolerance);
         }
         
         private static string GetTestsDirectory() => TestRenderHelper.GetTestsDirectory();
