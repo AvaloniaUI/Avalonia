@@ -272,7 +272,7 @@ internal class RenderDataDrawingContext : DrawingContext
     /// <inheritdoc />
     protected override void PushEffectCore(IEffect effect, Rect bounds) => Push(new RenderDataEffectNode()
     {
-        Effect = effect,
+        Effect = effect.ToImmutable(),
         BoundsRect = bounds
     });
 

@@ -89,12 +89,21 @@ namespace Avalonia.Media
 
         internal override void DrawCore(DrawingContext context)
         {
-            var bounds = GetBounds();
-            var effectBounds = EffectBounds ?? bounds.Inflate(Effect?.GetEffectOutputPadding() ?? default);
+            // Compute effect bounds in local coordinate space (pre-transform)
+            // GetBounds() already includes transform, so we need to inverse-transform
+            // to get the local bounds, or compute bounds without applying transform
+            var localBounds = new Rect();
+            foreach (var drawing in Children)
+            {
+                localBounds = localBounds.Union(drawing.GetBounds());
+            }
+            var effectPadding = Effect?.GetEffectOutputPadding() ?? default;
+            var effectBounds = EffectBounds ?? localBounds.Inflate(effectPadding);
+            
             using (context.PushTransform(Transform?.Value ?? Matrix.Identity))
             using (context.PushOpacity(Opacity))
             using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
-            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, bounds) : default)
+            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, localBounds) : default)
             using (RenderOptions != null ? context.PushRenderOptions(RenderOptions.Value) : default)
             using (TextOptions != null ? context.PushTextOptions(TextOptions.Value) : default)
             using (Effect != null ? context.PushEffect(Effect, effectBounds) : default)
