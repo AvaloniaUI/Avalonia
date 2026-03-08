@@ -427,6 +427,7 @@ return;
             "bool",
             "float",
             "double",
+            "Vector",
             "Vector2",
             "Vector3",
             "Vector4",
