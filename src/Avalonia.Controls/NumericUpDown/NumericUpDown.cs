@@ -109,6 +109,12 @@ namespace Avalonia.Controls
                 defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
 
         /// <summary>
+        /// Defines the <see cref="ValueIfTextIsNullOrEmpty"/> property.
+        /// </summary>
+        public static readonly StyledProperty<decimal?> ValueIfTextIsNullOrEmptyProperty =
+            AvaloniaProperty.Register<NumericUpDown, decimal?>(nameof(ValueIfTextIsNullOrEmpty));
+        
+        /// <summary>
         /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
         public static readonly StyledProperty<string?> PlaceholderTextProperty =
@@ -313,6 +319,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(ValueProperty);
             set => SetValue(ValueProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the fallback value if the text is null or empty.
+        /// </summary>
+        public decimal? ValueIfTextIsNullOrEmpty
+        {
+            get => GetValue(ValueIfTextIsNullOrEmptyProperty);
+            set => SetValue(ValueIfTextIsNullOrEmptyProperty, value);
         }
 
         /// <summary>
@@ -703,7 +718,7 @@ namespace Avalonia.Controls
 
             if (string.IsNullOrEmpty(text))
             {
-                return result;
+                return ValueIfTextIsNullOrEmpty;
             }
 
             // Since the conversion from Value to text using a FormatString may not be parsable,
