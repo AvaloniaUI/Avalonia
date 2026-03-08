@@ -100,6 +100,31 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
+        [Theory]
+        [InlineData(10.0, 0.0)]
+        [InlineData(0.5, 0.5)]
+        [InlineData(-0.5, -0.5)]
+        [InlineData(null, null)]
+        public void FallbackValueIsApplied(double? value, double? fallbackValue)
+        {
+            RunTest((control, textbox) =>
+            {
+                // prepare the control
+                control.Value = (decimal?)value;
+                control.ValueIfTextIsNullOrEmpty = (decimal?)fallbackValue;
+                Assert.Equal(control.Value, (decimal?)value);
+                Assert.Equal(control.Text, textbox.Text);
+                
+                // clear textBox
+                textbox.Text = string.Empty;
+                Dispatcher.UIThread.RunJobs();
+                
+                // Assert that the fallback was set and the textBox displays it.
+                Assert.Equal(control.Value, (decimal?)fallbackValue);
+                Assert.Equal(control.Text, textbox.Text);
+            });
+        }
+        
         public static IEnumerable<object?[]> Increment_Decrement_TestData()
         {
             // if min and max are not defined and value was null, 0 should be ne new value after spin
