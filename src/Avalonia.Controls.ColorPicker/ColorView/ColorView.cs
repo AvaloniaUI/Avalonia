@@ -67,16 +67,20 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// This method is obsolete now, since the necessary validation is handled by the TabControl.
-        /// It will be removed in a future release of Avalonia.
+        /// Validates the tab/panel/page selection taking into account the visibility of each item
+        /// as well as the current selection.
         /// </summary>
+        /// <remarks>
+        /// Derived controls may re-implement this based on their default style / control template
+        /// and any specialized selection needs.
+        /// </remarks>
         // TODO-13: Remove this unused method 
-        [Obsolete]
+        [Obsolete("The necessary validation is now handled by the TabControl. This method will be removed in the next major release.")]
         protected virtual void ValidateSelection()
         {
-            // Empty body for compatibility
+            // Method is now obsolete and is no longer implemented
         }
-        
+
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
