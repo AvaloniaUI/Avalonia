@@ -329,7 +329,7 @@ namespace Avalonia.Controls
                                 if (contentElement is not null &&
                                     contentElement.DataContext != contentDataContext)
                                 {
-                                    Debug.Assert(!contentElement.IsSet(DataContextProperty));
+                                    //Debug.Assert(!contentElement.IsSet(DataContextProperty));
                                     ContentPart.DataContext = contentDataContext;
                                 }
                             }

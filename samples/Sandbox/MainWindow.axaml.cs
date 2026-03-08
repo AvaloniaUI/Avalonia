@@ -12,6 +12,7 @@ namespace Sandbox
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainWindowViewModel();
         }
     }
 }
