@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Controls.Platform;
@@ -42,6 +43,7 @@ namespace Avalonia.X11
         public X11Globals Globals { get; private set; } = null!;
         public XResources Resources { get; private set; } = null!;
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
+        public IX11PlatformDispatcher DispatcherImpl { get; private set; } = null!;
 
         public void Initialize(X11PlatformOptions options)
         {
@@ -79,10 +81,12 @@ namespace Avalonia.X11
             var clipboard = new Input.Platform.Clipboard(clipboardImpl);
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
-                .Bind<IWindowingPlatform>().ToConstant(this)
-                .Bind<IDispatcherImpl>().ToConstant<IDispatcherImpl>(options.UseGLibMainLoop
-                    ? new GlibDispatcherImpl(this)
-                    : new X11PlatformThreading(this))
+                .Bind<IWindowingPlatform>().ToConstant(this);
+            DispatcherImpl = options.UseGLibMainLoop
+                ? new GlibDispatcherImpl(this)
+                : new X11PlatformThreading(this);
+            Dispatcher.InitializeUIThreadDispatcher(DispatcherImpl);
+            AvaloniaLocator.CurrentMutable
                 .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
@@ -466,7 +470,26 @@ namespace Avalonia
         /// Use this if you need to use GLib-based libraries on the main thread
         /// </summary>
         public bool UseGLibMainLoop { get; set; }
-        
+
+        /// <summary>
+        /// Enables client-side drawn window decorations on X11.
+        /// When true and ExtendClientAreaToDecorationsHint is set on a window,
+        /// Avalonia will draw its own decorations (titlebar, borders, resize grips)
+        /// instead of using the X11 window manager decorations.
+        /// </summary>
+        [Experimental("AVALONIA_X11_CSD"
+            #if NET10_0_OR_GREATER
+            , Message = "Experimental, used mostly for testing"
+            #endif
+            )]
+        public bool? EnableDrawnDecorations
+        {
+            get => EnableDrawnDecorationsInternal;
+            set => EnableDrawnDecorationsInternal = value;
+        }
+
+        internal bool? EnableDrawnDecorationsInternal { get; set; }
+
         /// <summary>
         /// If Avalonia is in control of a run loop, we propagate exceptions by stopping the run loop frame
         /// and rethrowing an exception. However, if there is no Avalonia-controlled run loop frame,

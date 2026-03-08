@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Logging;
 using Avalonia.MicroCom;
 using Avalonia.OpenGL.Egl;
@@ -210,5 +212,5 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
     }
 
     public bool RequiresNoRedirectionBitmap => true;
-    public object CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new WinUiCompositedWindowSurface(_shared, info);
+    public IPlatformRenderSurface CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new WinUiCompositedWindowSurface(_shared, info);
 }

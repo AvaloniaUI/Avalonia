@@ -459,7 +459,7 @@ namespace Avalonia.Controls.UnitTests
                     ContextFlyout = flyout
                 };
                 var contextRequestedCount = 0;
-                target.AddHandler(Control.ContextRequestedEvent, (s, a) => contextRequestedCount++, Interactivity.RoutingStrategies.Tunnel);
+                target.AddHandler(InputElement.ContextRequestedEvent, (s, a) => contextRequestedCount++, Interactivity.RoutingStrategies.Tunnel);
 
                 var window = PreparedWindow(target);
                 window.Show();

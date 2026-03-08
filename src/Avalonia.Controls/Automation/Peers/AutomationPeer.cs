@@ -206,7 +206,7 @@ namespace Avalonia.Automation.Peers
         ///   </item>
         /// </list>
         /// </remarks>
-        public string GetClassName() => GetClassNameCore() ?? string.Empty;
+        public string GetClassName() => GetClassNameOverrideCore() ?? string.Empty;
 
         /// <summary>
         /// Gets the automation peer for the label that is targeted to the element.
@@ -644,6 +644,11 @@ namespace Avalonia.Automation.Peers
         protected virtual AutomationControlType GetControlTypeOverrideCore()
         {
             return GetAutomationControlTypeCore();
+        }
+
+        protected virtual string GetClassNameOverrideCore()
+        {
+            return GetClassNameCore();
         }
 
         private protected virtual AutomationPeer? GetAutomationRootCore()

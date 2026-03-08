@@ -52,6 +52,7 @@ namespace Avalonia.UnitTests
 
                 (AvaloniaLocator.Current.GetService<IToolTipService>() as ToolTipService)?.Dispose();
                 (AvaloniaLocator.Current.GetService<FontManager>() as IDisposable)?.Dispose();
+                (AvaloniaLocator.Current.GetService<IInputManager>() as IDisposable)?.Dispose();
 
                 Dispatcher.ResetForUnitTests();
                 scope.Dispose();
@@ -84,7 +85,6 @@ namespace Avalonia.UnitTests
                 .Bind<IPlatformRenderInterface?>().ToConstant(Services.RenderInterface)
                 .Bind<IFontManagerImpl?>().ToConstant(Services.FontManagerImpl)
                 .Bind<ITextShaperImpl?>().ToConstant(Services.TextShaperImpl)
-                .Bind<IDispatcherImpl?>().ToConstant(Services.DispatcherImpl)
                 .Bind<ICursorFactory?>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IWindowingPlatform?>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()

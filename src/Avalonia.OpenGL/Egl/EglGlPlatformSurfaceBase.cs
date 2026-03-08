@@ -1,5 +1,6 @@
 using System;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 
 namespace Avalonia.OpenGL.Egl
 {
@@ -22,17 +23,17 @@ namespace Avalonia.OpenGL.Egl
             
         }
 
-        public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedPixelSize)
+        public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             if (Context.IsLost)
                 throw new RenderTargetCorruptedException();
             
-            return BeginDrawCore(expectedPixelSize);
+            return BeginDrawCore(sceneInfo);
         }
 
         private protected virtual bool SkipWaits => false;
 
-        public abstract IGlPlatformSurfaceRenderingSession BeginDrawCore(PixelSize? expectedPixelSize);
+        public abstract IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo);
 
         protected IGlPlatformSurfaceRenderingSession BeginDraw(EglSurface surface,
             PixelSize size, double scaling, Action? onFinish = null, bool isYFlipped = false)

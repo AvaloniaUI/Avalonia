@@ -4,13 +4,13 @@ using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering.Composition;
@@ -80,7 +80,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     protected MacOSTopLevelHandle? _handle;
 
     private object _syncRoot = new object();
-    private IEnumerable<object>? _surfaces;
+    private IPlatformRenderSurface[]? _surfaces;
 
     public TopLevelImpl(IAvaloniaNativeFactory factory)
     {
@@ -99,7 +99,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
         _savedScaling = Native?.Scaling ?? 1;
         _nativeControlHost = new NativeControlHostImpl(Native!.CreateNativeControlHost());
         _platformBehaviorInhibition = new PlatformBehaviorInhibition(Factory.CreatePlatformBehaviorInhibition());
-        _surfaces = new object[] { new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this };
+        _surfaces = [new GlPlatformSurface(Native), new MetalPlatformSurface(Native), this];
         InputMethod = new AvaloniaNativeTextInputMethod(Native);
     }
 
@@ -134,7 +134,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
     }
 
     public double RenderScaling => _savedScaling;
-    public IEnumerable<object> Surfaces => _surfaces ?? Array.Empty<object>();
+    public IPlatformRenderSurface[] Surfaces => _surfaces ?? [];
     public Action<RawInputEventArgs>? Input { get; set; }
     public Action<Rect>? Paint { get; set; }
     public Action<Size, WindowResizeReason>? Resized { get; set; }
@@ -562,10 +562,11 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
             }
         }
 
-        public ILockedFramebuffer Lock()
+        
+        public ILockedFramebuffer Lock(IRenderTarget.RenderTargetSceneInfo sceneInfo, out FramebufferLockProperties properties)
         {
             ObjectDisposedException.ThrowIf(_target is null, this);
-
+            properties = default;
             var w = Math.Max(_parent._savedLogicalSize.Width * _parent._savedScaling, 1);
             var h = Math.Max(_parent._savedLogicalSize.Height * _parent._savedScaling, 1);
             var dpi = _parent._savedScaling * 96;
@@ -580,5 +581,7 @@ internal class TopLevelImpl : ITopLevelImpl, IFramebufferPlatformSurface
                 }
             }, (int)w, (int)h, new Vector(dpi, dpi));
         }
+
+        public bool RetainsFrameContents => false;
     }
 }

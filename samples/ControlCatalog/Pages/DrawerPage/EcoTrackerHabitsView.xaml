@@ -1,0 +1,189 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.EcoTrackerHabitsView">
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Active Habits section -->
+      <StackPanel Margin="16,20,16,0" Spacing="10">
+        <TextBlock Text="Active Habits"
+                   FontSize="16" FontWeight="SemiBold"
+                   Foreground="#1A2E1C"/>
+
+        <!-- Reusable Bottle -->
+        <Border CornerRadius="12" Background="White" Padding="12">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="44" Height="44" CornerRadius="12"
+                    Background="#192196F3"
+                    VerticalAlignment="Center">
+              <PathIcon Width="22" Height="22"
+                        Data="M12,20A6,6 0 0,1 6,14C6,10 12,3.25 12,3.25C12,3.25 18,10 18,14A6,6 0 0,1 12,20Z"
+                        Foreground="#2196F3"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+            </Border>
+            <StackPanel Grid.Column="1" Margin="12,0,0,0"
+                        VerticalAlignment="Center" Spacing="2">
+              <TextBlock Text="Reusable Bottle"
+                         FontSize="14" FontWeight="SemiBold"
+                         Foreground="#1A2E1C"/>
+              <TextBlock Text="12 day streak"
+                         FontSize="12"
+                         Foreground="#2196F3"/>
+            </StackPanel>
+            <PathIcon Grid.Column="2"
+                      Width="16" Height="16"
+                      Data="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"
+                      Foreground="#90A4AE"
+                      VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+        <!-- Walk to Work -->
+        <Border CornerRadius="12" Background="White" Padding="12">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="44" Height="44" CornerRadius="12"
+                    Background="#194CAF50"
+                    VerticalAlignment="Center">
+              <PathIcon Width="22" Height="22"
+                        Data="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"
+                        Foreground="#4CAF50"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+            </Border>
+            <StackPanel Grid.Column="1" Margin="12,0,0,0"
+                        VerticalAlignment="Center" Spacing="2">
+              <TextBlock Text="Walk to Work"
+                         FontSize="14" FontWeight="SemiBold"
+                         Foreground="#1A2E1C"/>
+              <TextBlock Text="8 day streak"
+                         FontSize="12"
+                         Foreground="#4CAF50"/>
+            </StackPanel>
+            <PathIcon Grid.Column="2"
+                      Width="16" Height="16"
+                      Data="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"
+                      Foreground="#90A4AE"
+                      VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+        <!-- Meatless Mondays -->
+        <Border CornerRadius="12" Background="White" Padding="12">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="44" Height="44" CornerRadius="12"
+                    Background="#198BC34A"
+                    VerticalAlignment="Center">
+              <PathIcon Width="22" Height="22"
+                        Data="M12 3C9 6 6 9 6 13C6 17.4 8.7 21 12 22C15.3 21 18 17.4 18 13C18 9 15 6 12 3Z"
+                        Foreground="#8BC34A"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+            </Border>
+            <StackPanel Grid.Column="1" Margin="12,0,0,0"
+                        VerticalAlignment="Center" Spacing="2">
+              <TextBlock Text="Meatless Mondays"
+                         FontSize="14" FontWeight="SemiBold"
+                         Foreground="#1A2E1C"/>
+              <TextBlock Text="4 week streak"
+                         FontSize="12"
+                         Foreground="#8BC34A"/>
+            </StackPanel>
+            <PathIcon Grid.Column="2"
+                      Width="16" Height="16"
+                      Data="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"
+                      Foreground="#90A4AE"
+                      VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+        <!-- Composting -->
+        <Border CornerRadius="12" Background="White" Padding="12">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="44" Height="44" CornerRadius="12"
+                    Background="#19FF9800"
+                    VerticalAlignment="Center">
+              <PathIcon Width="22" Height="22"
+                        Data="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                        Foreground="#FF9800"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+            </Border>
+            <StackPanel Grid.Column="1" Margin="12,0,0,0"
+                        VerticalAlignment="Center" Spacing="2">
+              <TextBlock Text="Composting"
+                         FontSize="14" FontWeight="SemiBold"
+                         Foreground="#1A2E1C"/>
+              <TextBlock Text="6 day streak"
+                         FontSize="12"
+                         Foreground="#FF9800"/>
+            </StackPanel>
+            <PathIcon Grid.Column="2"
+                      Width="16" Height="16"
+                      Data="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"
+                      Foreground="#90A4AE"
+                      VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+      </StackPanel>
+
+      <!-- Suggested Habits section -->
+      <StackPanel Margin="16,20,16,20" Spacing="10">
+        <TextBlock Text="Suggested Habits"
+                   FontSize="16" FontWeight="SemiBold"
+                   Foreground="#90A4AE"/>
+
+        <!-- Shorter Showers -->
+        <Border CornerRadius="10"
+                Background="#1E4CAF50"
+                BorderBrush="#3C4CAF50"
+                BorderThickness="1"
+                Padding="14,10">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2">
+              <TextBlock Text="Shorter Showers"
+                         FontSize="14" FontWeight="SemiBold"
+                         Foreground="#1B5E20"/>
+              <TextBlock Text="Save up to 50L per day"
+                         FontSize="12"
+                         Foreground="#2E7D32"/>
+            </StackPanel>
+            <TextBlock Grid.Column="1"
+                       Text="+ Add"
+                       FontSize="12" FontWeight="Bold"
+                       Foreground="#2E7D32"
+                       VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+        <!-- Unplug Devices -->
+        <Border CornerRadius="10"
+                Background="#1E4CAF50"
+                BorderBrush="#3C4CAF50"
+                BorderThickness="1"
+                Padding="14,10">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2">
+              <TextBlock Text="Unplug Devices"
+                         FontSize="14" FontWeight="SemiBold"
+                         Foreground="#1B5E20"/>
+              <TextBlock Text="Reduce standby energy usage"
+                         FontSize="12"
+                         Foreground="#2E7D32"/>
+            </StackPanel>
+            <TextBlock Grid.Column="1"
+                       Text="+ Add"
+                       FontSize="12" FontWeight="Bold"
+                       Foreground="#2E7D32"
+                       VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

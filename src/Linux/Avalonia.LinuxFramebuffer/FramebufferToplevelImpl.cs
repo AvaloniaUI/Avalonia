@@ -6,6 +6,7 @@ using Avalonia.Input.Raw;
 using Avalonia.LinuxFramebuffer.Input;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
  using Avalonia.Threading;
 
@@ -26,7 +27,7 @@ using Avalonia.Rendering.Composition;
             _inputQueue = new RawEventGrouper(groupedInput => Input?.Invoke(groupedInput),
                 LinuxFramebufferPlatform.EventGrouperDispatchQueue);
 
-            Surfaces = new object[] { _outputBackend };
+            Surfaces = [_outputBackend];
             _inputBackend.Initialize(this, e =>
                 Dispatcher.UIThread.Post(() => _inputQueue.HandleEvent(e), DispatcherPriority.Send ));
         }
@@ -60,7 +61,7 @@ using Avalonia.Rendering.Composition;
         public IPopupImpl? CreatePopup() => null;
 
         public double RenderScaling => _outputBackend.Scaling;
-        public IEnumerable<object> Surfaces { get; }
+        public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
