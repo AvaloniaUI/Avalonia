@@ -44,7 +44,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="ClipValueToMinMax"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> ClipValueToMinMaxProperty =
-            AvaloniaProperty.Register<NumericUpDown, bool>(nameof(ClipValueToMinMax));
+            AvaloniaProperty.Register<NumericUpDown, bool>(nameof(ClipValueToMinMax), true);
 
         /// <summary>
         /// Defines the <see cref="NumberFormat"/> property.
