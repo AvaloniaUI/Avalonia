@@ -721,8 +721,6 @@ namespace Avalonia.Controls
                 return MathUtilities.Clamp(result.Value, Minimum, Maximum);
             }
 
-            ValidateMinMax(result);
-
             return result;
         }
 
@@ -1201,22 +1199,6 @@ namespace Avalonia.Controls
                 result = outputValue;
             }
             return result;
-        }
-
-        private void ValidateMinMax(decimal? value)
-        {
-            if (!value.HasValue)
-            {
-                return;
-            }
-            if (value < Minimum)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), $"Value must be greater than Minimum value of {Minimum}");
-            }
-            else if (value > Maximum)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), $"Value must be less than Maximum value of {Maximum}");
-            }
         }
 
         /// <summary>
