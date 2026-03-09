@@ -770,10 +770,6 @@ namespace Avalonia.Controls
             page.SetInNavigationPage(true);
 
             UpdateActivePage();
-
-            previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Push));
-            page.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Push));
-            Pushed?.Invoke(this, new NavigationEventArgs(page, NavigationType.Push));
         }
 
         /// <summary>
@@ -842,6 +838,12 @@ namespace Avalonia.Controls
                 }
 
                 ExecutePushCore(page, previousPage);
+
+                await AwaitPageTransitionAsync();
+
+                previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Push));
+                page.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Push));
+                Pushed?.Invoke(this, new NavigationEventArgs(page, NavigationType.Push));
             }
             finally
             {
