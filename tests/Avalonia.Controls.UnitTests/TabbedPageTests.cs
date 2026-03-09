@@ -184,6 +184,18 @@ public class TabbedPageTests
         }
 
         [Fact]
+        public void Pages_SetNull_ClearsCurrentPage()
+        {
+            var tp = new TestableTabbedPage();
+            var page = new ContentPage();
+            tp.Pages = new AvaloniaList<Page> { page };
+            tp.CallCommitSelection(0, page);
+            Assert.NotNull(tp.CurrentPage);
+            tp.Pages = null;
+            Assert.Null(tp.CurrentPage);
+        }
+
+        [Fact]
         public void Pages_AddMultiple_AllBecomeLogicalChildren()
         {
             var tp = new TabbedPage();

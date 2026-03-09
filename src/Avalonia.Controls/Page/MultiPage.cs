@@ -87,6 +87,8 @@ namespace Avalonia.Controls
 
                 if (change.NewValue != null)
                     UpdateActivePage();
+                else
+                    SetCurrentValue(CurrentPageProperty, null);
             }
             else if (change.Property == CurrentPageProperty)
                 CurrentPageChanged?.Invoke(this, EventArgs.Empty);
