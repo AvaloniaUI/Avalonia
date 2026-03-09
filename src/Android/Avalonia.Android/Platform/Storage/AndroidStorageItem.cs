@@ -35,7 +35,7 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
     }
 
     internal AndroidUri Uri { get; set; }
-    
+
     protected Activity Activity => _activity ?? throw new ObjectDisposedException(nameof(AndroidStorageItem));
 
     public virtual string Name => GetColumnValue(Activity, Uri, DocumentsContract.Document.ColumnDisplayName)
@@ -67,7 +67,7 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
 
         Activity.ContentResolver?.ReleasePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
     }
-    
+
     public abstract Task<StorageItemProperties> GetBasicPropertiesAsync();
 
     protected static string? GetColumnValue(Context context, AndroidUri contentUri, string column, string? selection = null, string[]? selectionArgs = null)
@@ -124,12 +124,12 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
 
         return await _activity!.CheckPermission(Manifest.Permission.ReadExternalStorage);
     }
-    
+
     public void Dispose()
     {
         _activity = null;
     }
-    
+
     internal AndroidUri? PermissionRoot => _permissionRoot;
 
     public abstract Task DeleteAsync();
@@ -156,29 +156,43 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     {
     }
 
-    public Task<IStorageFile?> CreateFileAsync(string name)
+    public async Task<IStorageFile?> CreateFileAsync(string name)
     {
         var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
         var treeUri = GetTreeUri().treeUri;
+        var existingFile = await GetItemAsync(name, false) as IStorageFile;
+        if (existingFile != null)
+        {
+            // Uncommenting the following code will cause the file to be truncated when it is created:
+            // using var _ = await existingFile.OpenWriteAsync();
+            return existingFile;
+
+        }
         var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, mimeType, name);
         if(newFile == null)
         {
-            return Task.FromResult<IStorageFile?>(null);
+            return null;
         }
 
-        return Task.FromResult<IStorageFile?>(new AndroidStorageFile(Activity, newFile, this));
+        return new AndroidStorageFile(Activity, newFile, this);
     }
 
-    public Task<IStorageFolder?> CreateFolderAsync(string name)
+    public async Task<IStorageFolder?> CreateFolderAsync(string name)
     {
         var treeUri = GetTreeUri().treeUri;
+        var existingFolder = await GetItemAsync(name, true) as IStorageFolder;
+        if (existingFolder != null)
+        {
+            return existingFolder;
+        }
+
         var newFolder = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, DocumentsContract.Document.MimeTypeDir, name);
         if (newFolder == null)
         {
-            return Task.FromResult<IStorageFolder?>(null);
+            return null;
         }
 
-        return Task.FromResult<IStorageFolder?>(new AndroidStorageFolder(Activity, newFolder, false, this, PermissionRoot));
+        return new AndroidStorageFolder(Activity, newFolder, false, this, PermissionRoot);
     }
 
     public override async Task DeleteAsync()
@@ -332,7 +346,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                     if (fileName != name)
                     {
                         continue;
-                    }                   
+                    }
 
                     bool mineDirectory = mime == DocumentsContract.Document.MimeTypeDir;
                     if (isDirectory != mineDirectory)
