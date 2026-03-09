@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
+using Avalonia.Platform.Surfaces;
 
 namespace Avalonia.Platform
 {
@@ -214,7 +215,7 @@ namespace Avalonia.Platform
         /// The list of native platform surfaces that can be used for output.
         /// </param>
         /// <returns>An <see cref="IRenderTarget"/>.</returns>
-        IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
+        IRenderTarget CreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces);
 
         /// <summary>
         /// Creates an offscreen render target 
@@ -239,5 +240,10 @@ namespace Avalonia.Platform
         /// Maximum supported offscreen render target pixel size, or null if no limit
         /// </summary>
         public PixelSize? MaxOffscreenRenderTargetPixelSize { get; }
+        
+        /// <summary>
+        /// Checks if a render target can be created for the given surfaces and the preferred surface is ready
+        /// </summary>
+        bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces) => true;
     }
 }

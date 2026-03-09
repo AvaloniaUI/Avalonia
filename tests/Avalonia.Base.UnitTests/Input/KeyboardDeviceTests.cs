@@ -12,21 +12,28 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void Keypresses_Should_Be_Sent_To_Root_If_No_Focused_Element()
         {
-            var target = new KeyboardDevice();
-            var root = new Mock<IInputRoot>();
-
-            target.ProcessRawEvent(
-                new RawKeyEventArgs(
-                    target,
-                    0,
-                    root.Object,
-                    RawKeyEventType.KeyDown,
-                    Key.A,
-                    RawInputModifiers.None,
-                    PhysicalKey.A,
-                    "a"));
-
-            root.Verify(x => x.RaiseEvent(It.IsAny<KeyEventArgs>()));
+            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            {
+                var window = new Window();
+                window.FocusManager.ClearFocus();
+                int raised = 0;
+                window.KeyDown += (sender, ev) =>
+                {
+                    if (sender == window && ev.RoutedEvent == InputElement.KeyDownEvent)
+                        raised++;
+                };
+                KeyboardDevice.Instance!.ProcessRawEvent(
+                    new RawKeyEventArgs(
+                        KeyboardDevice.Instance,
+                        0,
+                        window.GetInputRoot()!,
+                        RawKeyEventType.KeyDown,
+                        Key.A,
+                        RawInputModifiers.None,
+                        PhysicalKey.A,
+                        "a"));
+                Assert.Equal(1, raised);
+            }
         }
 
         [Fact]
@@ -61,17 +68,24 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void TextInput_Should_Be_Sent_To_Root_If_No_Focused_Element()
         {
-            var target = new KeyboardDevice();
-            var root = new Mock<IInputRoot>();
-
-            target.ProcessRawEvent(
-                new RawTextInputEventArgs(
-                    target,
-                    0,
-                    root.Object,
-                    "Foo"));
-
-            root.Verify(x => x.RaiseEvent(It.IsAny<TextInputEventArgs>()));
+            using (UnitTestApplication.Start(TestServices.FocusableWindow))
+            {
+                var window = new Window();
+                window.FocusManager.ClearFocus();
+                int raised = 0;
+                window.TextInput += (sender, ev) =>
+                {
+                    if (sender == window && ev.RoutedEvent == InputElement.TextInputEvent)
+                        raised++;
+                };
+                KeyboardDevice.Instance!.ProcessRawEvent(
+                    new RawTextInputEventArgs(
+                        KeyboardDevice.Instance,
+                        0,
+                        window.GetInputRoot()!,
+                        "Foo"));
+                Assert.Equal(1, raised);
+            }
         }
 
         [Fact]

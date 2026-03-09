@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Reactive;
+using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
+using Avalonia.Layout;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-using System.Linq;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -118,9 +118,9 @@ namespace Avalonia.Controls.Presenters
         public ScrollContentPresenter()
         {
             AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
-            AddHandler(Gestures.ScrollGestureEvent, OnScrollGesture);
-            AddHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
-            AddHandler(Gestures.ScrollGestureInertiaStartingEvent, OnScrollGestureInertiaStartingEnded);
+            AddHandler(InputElement.ScrollGestureEvent, OnScrollGesture);
+            AddHandler(InputElement.ScrollGestureEndedEvent, OnScrollGestureEnded);
+            AddHandler(InputElement.ScrollGestureInertiaStartingEvent, OnScrollGestureInertiaStartingEnded);
 
             this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
         }

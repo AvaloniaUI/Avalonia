@@ -48,16 +48,6 @@ namespace Avalonia.Win32.Automation
             return GetOrCreate(focus);
         }
 
-        public Rect ToScreen(Rect rect)
-        {
-            if (WindowImpl is null)
-                return default;
-            return new PixelRect(
-                    WindowImpl.PointToScreen(rect.TopLeft),
-                    WindowImpl.PointToScreen(rect.BottomRight))
-                .ToRect(1);
-        }
-
         public override IRawElementProviderSimple? GetHostRawElementProvider()
         {
             var handle = WindowImpl?.Handle?.Handle ?? IntPtr.Zero;

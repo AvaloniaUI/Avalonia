@@ -49,9 +49,15 @@
       <TabItem Header="Canvas">
         <pages:CanvasPage />
       </TabItem>
+      <TabItem Header="CommandBar"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:CommandBarPage />
+      </TabItem>
       <TabItem Header="Carousel">
         <pages:CarouselPage />
       </TabItem>
+
       <TabItem Header="CheckBox">
         <pages:CheckBoxPage />
       </TabItem>
@@ -66,6 +72,11 @@
       </TabItem>
       <TabItem Header="Container Queries">
         <pages:ContainerQueryPage />
+      </TabItem>
+      <TabItem Header="ContentPage"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:ContentDemoPage />
       </TabItem>
       <TabItem Header="ContextFlyout">
         <pages:ContextFlyoutPage />
@@ -99,6 +110,11 @@
       <TabItem Header="Drag+Drop">
         <pages:DragAndDropPage />
       </TabItem>
+      <TabItem Header="DrawerPage"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:DrawerDemoPage />
+      </TabItem>
       <TabItem Header="Expander">
         <pages:ExpanderPage />
       </TabItem>
@@ -127,6 +143,11 @@
       </TabItem>
       <TabItem Header="Menu">
         <pages:MenuPage />
+      </TabItem>
+      <TabItem Header="NavigationPage"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:NavigationDemoPage />
       </TabItem>
       <TabItem Header="Notifications">
         <pages:NotificationsPage />
@@ -169,6 +190,11 @@
       </TabItem>
       <TabItem Header="SplitView">
         <pages:SplitViewPage />
+      </TabItem>
+      <TabItem Header="TabbedPage"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:TabbedDemoPage />
       </TabItem>
       <TabItem Header="TabControl">
         <pages:TabControlPage />
@@ -218,17 +244,19 @@
             <ComboBox x:Name="Decorations"
                       HorizontalAlignment="Stretch"
                       SelectedIndex="0"
-                      SelectionChanged="Decorations_SelectionChanged">
+                      SelectionChanged="Decorations_SelectionChanged"
+                      ToolTip.Tip="System Decorations">
               <ComboBox.Items>
-                <SystemDecorations>None</SystemDecorations>
-                <SystemDecorations>BorderOnly</SystemDecorations>
-                <SystemDecorations>Full</SystemDecorations>
+                <WindowDecorations>None</WindowDecorations>
+                <WindowDecorations>BorderOnly</WindowDecorations>
+                <WindowDecorations>Full</WindowDecorations>
               </ComboBox.Items>
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
                       DisplayMemberBinding="{Binding Key, x:DataType=ThemeVariant}"
                       SelectedIndex="0"
-                      SelectionChanged="ThemeVariants_SelectionChanged">
+                      SelectionChanged="ThemeVariants_SelectionChanged"
+                      ToolTip.Tip="Theme Variant">
               <ComboBox.Items>
                 <ThemeVariant>Default</ThemeVariant>
                 <ThemeVariant>Light</ThemeVariant>
@@ -237,7 +265,8 @@
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
                       SelectedItem="{x:Static local:App.CurrentTheme}"
-                      SelectionChanged="Themes_SelectionChanged">
+                      SelectionChanged="Themes_SelectionChanged"
+                      ToolTip.Tip="Catalog Theme">
               <ComboBox.Items>
                 <models:CatalogTheme>Fluent</models:CatalogTheme>
                 <models:CatalogTheme>Simple</models:CatalogTheme>
@@ -245,7 +274,8 @@
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
                       SelectedIndex="0"
-                      SelectionChanged="TransparencyLevels_SelectionChanged">
+                      SelectionChanged="TransparencyLevels_SelectionChanged"
+                      ToolTip.Tip="Window Transparency Level">
               <ComboBox.Items>
                 <WindowTransparencyLevel>None</WindowTransparencyLevel>
                 <WindowTransparencyLevel>Transparent</WindowTransparencyLevel>
@@ -256,7 +286,8 @@
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
                       SelectedIndex="0"
-                      SelectionChanged="FlowDirection_SelectionChanged">
+                      SelectionChanged="FlowDirection_SelectionChanged"
+                      ToolTip.Tip="Flow Direction">
               <ComboBox.Items>
                 <FlowDirection>LeftToRight</FlowDirection>
                 <FlowDirection>RightToLeft</FlowDirection>
@@ -264,7 +295,8 @@
             </ComboBox>
             <ComboBox HorizontalAlignment="Stretch"
                       ItemsSource="{Binding WindowStates}"
-                      SelectedItem="{Binding WindowState}" />
+                      SelectedItem="{Binding WindowState}"
+                      ToolTip.Tip="Window State"/>
           </StackPanel>
         </Flyout>
       </FlyoutBase.AttachedFlyout>

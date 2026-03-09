@@ -8,7 +8,6 @@
         xmlns:vm="clr-namespace:ControlCatalog.ViewModels;assembly=ControlCatalog"
         xmlns:v="using:ControlCatalog.Views"
         ExtendClientAreaToDecorationsHint="{Binding ExtendClientAreaEnabled}"
-        ExtendClientAreaChromeHints="{Binding ChromeHints}"
         ExtendClientAreaTitleBarHeightHint="{Binding TitleBarHeight}"
         CanResize="{Binding CanResize}"
         CanMinimize="{Binding CanMinimize}"

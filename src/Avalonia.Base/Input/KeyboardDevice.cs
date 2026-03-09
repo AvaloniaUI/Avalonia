@@ -191,15 +191,15 @@ namespace Avalonia.Input
                     // Clear keyboard focus from currently focused element
                     if (FocusedElement != null &&
                         (!((Visual)FocusedElement).IsAttachedToVisualTree ||
-                         _focusedRoot != ((Visual?)element)?.VisualRoot as IInputRoot) &&
+                         _focusedRoot != ((Visual?)element)?.GetInputRoot()) &&
                         _focusedRoot != null)
                     {
-                        ClearChildrenFocusWithin(_focusedRoot, true);
+                        ClearChildrenFocusWithin(_focusedRoot.RootElement, true);
                     }
 
                     SetIsFocusWithin(FocusedElement, element);
                     _focusedElement = element;
-                    _focusedRoot = ((Visual?)_focusedElement)?.VisualRoot as IInputRoot;
+                    _focusedRoot = (_focusedElement as Visual)?.GetInputRoot();
 
                     interactive?.RaiseEvent(new RoutedEventArgs(InputElement.LostFocusEvent));
 
@@ -225,7 +225,7 @@ namespace Avalonia.Input
             if(e.Handled)
                 return;
 
-            var element = FocusedElement ?? e.Root;
+            var element = FocusedElement ?? e.Root.FocusRoot;
 
             if (e is RawKeyEventArgs keyInput)
             {

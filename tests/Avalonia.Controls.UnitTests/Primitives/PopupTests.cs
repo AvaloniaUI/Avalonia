@@ -607,7 +607,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 window.Content = border;
 
                 hitTester.Setup(x =>
-                    x.HitTestFirst(new Point(10, 15), window, It.IsAny<Func<Visual, bool>>()))
+                    x.HitTestFirst(new Point(10, 15), (Visual)window.VisualRoot!, It.IsAny<Func<Visual, bool>>()))
                     .Returns(border);
 
                 border.PointerPressed += (s, e) =>
@@ -657,13 +657,22 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 button.Focus();
 
-                var inputRoot = Assert.IsAssignableFrom<IInputRoot>(popup.Host);
+                var inputRoot = ((Visual)popup.Host!).GetInputRoot();
 
-                var focusManager = inputRoot.FocusManager!;
+                var focusManager = inputRoot!.FocusManager!;
                 Assert.Same(button, focusManager.GetFocusedElement());
 
                 //Ensure focus remains in the popup
-                inputRoot.KeyboardNavigationHandler!.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
+#pragma warning disable CS0618 // Type or member is obsolete
+                var handler = popup.Host switch
+                {
+                    PopupRoot popupRoot => popupRoot.Tests_KeyboardNavigationHandler,
+                    OverlayPopupHost overlayPopupHost => overlayPopupHost.Tests_KeyboardNavigationHandler,
+                    _ => throw new InvalidOperationException("Unknown popup host type")
+                };
+                
+                handler.Move(focusManager.GetFocusedElement()!, NavigationDirection.Next);
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Same(textBox, focusManager.GetFocusedElement());
 
                 popup.Close();
@@ -702,9 +711,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 button.Focus();
 
-                var inputRoot = Assert.IsAssignableFrom<IInputRoot>(popup.Host);
+                var inputRoot = ((Visual)popup.Host!).GetInputRoot();
 
-                var focusManager = inputRoot.FocusManager!;
+                var focusManager = inputRoot!.FocusManager!;
                 Assert.Same(button, focusManager.GetFocusedElement());
 
                 border1.Child = null;
@@ -1170,7 +1179,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var ev = new PointerPressedEventArgs(
                     popupContent,
                     pointer,
-                    (PopupRoot)popupContent.VisualRoot!,
+                    (PopupRoot)TopLevel.GetTopLevel(popupContent)!,
                     new Point(50 , 50),
                     0,
                     new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),

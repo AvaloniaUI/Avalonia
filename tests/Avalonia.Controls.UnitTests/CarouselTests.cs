@@ -336,7 +336,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static void Layout(Carousel target)
         {
-            ((ILayoutRoot)target.GetVisualRoot()!).LayoutManager.ExecuteLayoutPass();
+            target.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         private static IControlTemplate CarouselTemplate()

@@ -5,7 +5,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Defines a plugin that handles the '^' stream binding operator.
     /// </summary>
-    public interface IStreamPlugin
+    internal interface IStreamPlugin
     {
         /// <summary>
         /// Checks whether this plugin handles the specified value.

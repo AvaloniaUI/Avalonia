@@ -149,7 +149,7 @@ namespace Avalonia.Controls.UnitTests
                 Prepare(target);
 
                 var contextRaised = false;
-                target.AddHandler(Control.ContextRequestedEvent, (sender, args) =>
+                target.AddHandler(InputElement.ContextRequestedEvent, (sender, args) =>
                 {
                     contextRaised = true;
                     args.Handled = true;

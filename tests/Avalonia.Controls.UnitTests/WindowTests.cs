@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -687,6 +686,26 @@ namespace Avalonia.Controls.UnitTests
             window.CanResize = false;
 
             Assert.False(window.CanMaximize);
+        }
+
+        [Fact]
+        public void FlowDirection_RTL_Should_Not_Result_In_Mirrored_Host()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object)));
+
+            var window = new Window
+            {
+                FlowDirection = FlowDirection.RightToLeft
+            };
+
+            var visualRoot = window.GetVisualRoot();
+            Assert.IsType<TopLevelHost>(visualRoot);
+
+            Assert.False(window.HasMirrorTransform);
+            Assert.False(visualRoot.HasMirrorTransform);
         }
 
         public class SizingTests : ScopedTestBase

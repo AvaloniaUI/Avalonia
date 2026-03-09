@@ -4,12 +4,11 @@ using System.Linq;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.Reactive;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -22,11 +21,11 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc cref="Popup.HorizontalOffsetProperty"/>
         public static readonly StyledProperty<double> HorizontalOffsetProperty =
             Popup.HorizontalOffsetProperty.AddOwner<PopupFlyoutBase>();
-        
+
         /// <inheritdoc cref="Popup.VerticalOffsetProperty"/>
         public static readonly StyledProperty<double> VerticalOffsetProperty =
             Popup.VerticalOffsetProperty.AddOwner<PopupFlyoutBase>();
-            
+
         /// <inheritdoc cref="Popup.PlacementAnchorProperty"/>
         public static readonly StyledProperty<PopupAnchor> PlacementAnchorProperty =
             Popup.PlacementAnchorProperty.AddOwner<PopupFlyoutBase>();
@@ -50,19 +49,19 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<bool> OverlayDismissEventPassThroughProperty =
             Popup.OverlayDismissEventPassThroughProperty.AddOwner<PopupFlyoutBase>();
-        
+
         /// <summary>
         /// Defines the <see cref="OverlayInputPassThroughElement"/> property
         /// </summary>
         public static readonly StyledProperty<IInputElement?> OverlayInputPassThroughElementProperty =
             Popup.OverlayInputPassThroughElementProperty.AddOwner<PopupFlyoutBase>();
-        
+
         /// <summary>
         /// Defines the <see cref="PlacementConstraintAdjustment"/> property
         /// </summary>
         public static readonly StyledProperty<PopupPositionerConstraintAdjustment> PlacementConstraintAdjustmentProperty =
             Popup.PlacementConstraintAdjustmentProperty.AddOwner<PopupFlyoutBase>();
-        
+
         private readonly Lazy<Popup> _popupLazy;
         private Rect? _enlargedPopupRect;
         private PixelRect? _enlargePopupRectScreenPixelRect;
@@ -147,7 +146,7 @@ namespace Avalonia.Controls.Primitives
             get => GetValue(OverlayDismissEventPassThroughProperty);
             set => SetValue(OverlayDismissEventPassThroughProperty, value);
         }
-        
+
         /// <summary>
         /// Gets or sets an element that should receive pointer input events even when underneath
         /// the flyout's overlay.
@@ -164,7 +163,7 @@ namespace Avalonia.Controls.Primitives
             get => GetValue(PlacementConstraintAdjustmentProperty);
             set => SetValue(PlacementConstraintAdjustmentProperty, value);
         }
-        
+
         IPopupHost? IPopupHostProvider.PopupHost => Popup?.Host;
 
         event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged
@@ -172,7 +171,7 @@ namespace Avalonia.Controls.Primitives
             add => _popupHostChangedHandler += value;
             remove => _popupHostChangedHandler -= value;
         }
-        
+
         public event EventHandler<CancelEventArgs>? Closing;
         public event EventHandler? Opening;
 
@@ -331,7 +330,7 @@ namespace Avalonia.Controls.Primitives
                     if (Popup?.Host is PopupRoot root)
                     {
                         // Get the popup root bounds and convert to screen coordinates
-                        
+
                         var tmp = root.Bounds.Inflate(100);
                         _enlargePopupRectScreenPixelRect = new PixelRect(root.PointToScreen(tmp.TopLeft), root.PointToScreen(tmp.BottomRight));
                     }
@@ -344,7 +343,7 @@ namespace Avalonia.Controls.Primitives
                     return;
                 }
 
-                if (Popup?.Host is PopupRoot && pArgs.Root is Visual eventRoot)
+                if (Popup?.Host is PopupRoot && pArgs.Root.RootElement is { } eventRoot)
                 {
                     // As long as the pointer stays within the enlargedPopupRect
                     // the flyout stays open. If it leaves, close it
@@ -373,7 +372,7 @@ namespace Avalonia.Controls.Primitives
         {
             Opening?.Invoke(this, args);
         }
-        
+
         protected virtual void OnClosing(CancelEventArgs args)
         {
             Closing?.Invoke(this, args);
@@ -475,11 +474,24 @@ namespace Avalonia.Controls.Primitives
                 if (args.OldValue is FlyoutBase)
                 {
                     c.ContextRequested -= OnControlContextRequested;
+                    c.ContextCanceled -= OnControlContextCanceled;
                 }
                 if (args.NewValue is FlyoutBase)
                 {
                     c.ContextRequested += OnControlContextRequested;
+                    c.ContextCanceled += OnControlContextCanceled;
                 }
+            }
+        }
+
+        private static void OnControlContextCanceled(object? sender, RoutedEventArgs e)
+        {
+            if (!e.Handled
+                && sender is Control control
+                && control.ContextFlyout is { } flyout
+                && flyout.IsOpen)
+            {
+                flyout.Hide();
             }
         }
 
@@ -525,7 +537,7 @@ namespace Avalonia.Controls.Primitives
 
         internal static void SetPresenterClasses(Control? presenter, Classes classes)
         {
-            if(presenter is null)
+            if (presenter is null)
             {
                 return;
             }

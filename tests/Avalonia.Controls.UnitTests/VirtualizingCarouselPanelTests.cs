@@ -344,6 +344,6 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
-        private static void Layout(Control c) => ((ILayoutRoot)c.GetVisualRoot()!).LayoutManager.ExecuteLayoutPass();
+        private static void Layout(Control c) => c.GetLayoutManager()?.ExecuteLayoutPass();
     }
 }

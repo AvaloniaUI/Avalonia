@@ -7,7 +7,7 @@ namespace Avalonia.Data.Core.Plugins
     /// Holds a registry of plugins used for bindings.
     /// </summary>
     [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
-    public static class BindingPlugins
+    internal static class BindingPlugins
     {
         internal static readonly List<IPropertyAccessorPlugin> s_propertyAccessors = new()
         {
@@ -17,7 +17,6 @@ namespace Avalonia.Data.Core.Plugins
 
         internal static readonly List<IDataValidationPlugin> s_dataValidators = new()
         {
-            new DataAnnotationsValidationPlugin(),
             new IndeiValidationPlugin(),
             new ExceptionValidationPlugin(),
         };

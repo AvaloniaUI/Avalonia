@@ -16,7 +16,7 @@ namespace Avalonia.Input
         
         private static Interactive? GetTarget(IInputRoot root, Point local)
         {
-            var hit = root.InputHitTest(local) as Visual;
+            var hit = root.RootElement?.InputHitTest(local) as Visual;
             var target = hit?.GetSelfAndVisualAncestors()?.OfType<Interactive>()?.FirstOrDefault();
             if (target != null && DragDrop.GetAllowDrop(target))
                 return target;
@@ -35,7 +35,7 @@ namespace Avalonia.Input
             if (target == null)
                 return DragDropEffects.None;
 
-            var p = ((Visual)inputRoot).TranslatePoint(point, target);
+            var p = (inputRoot.RootElement).TranslatePoint(point, target);
 
             if (!p.HasValue)
                 return DragDropEffects.None;

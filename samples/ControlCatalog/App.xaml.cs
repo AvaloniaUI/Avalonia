@@ -64,6 +64,40 @@ namespace ControlCatalog
             base.OnFrameworkInitializationCompleted();
         }
 
+        public void OnDockNewWindowClicked(object? sender, EventArgs e)
+        {
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime)
+            {
+                var window = new MainWindow();
+                window.Show();
+            }
+        }
+
+        public void OnDockShowMainWindowClicked(object? sender, EventArgs e)
+        {
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
+            {
+                desktopLifetime.MainWindow?.Activate();
+            }
+        }
+
+        private int _dockMenuItemCount;
+
+        public void OnDockAddItemClicked(object? sender, EventArgs e)
+        {
+            var dockMenu = NativeDock.GetMenu(this);
+            if (dockMenu is not null)
+            {
+                _dockMenuItemCount++;
+                var item = new NativeMenuItem($"New item {_dockMenuItemCount}");
+                item.Click += (_, _) =>
+                {
+                    dockMenu.Items.Remove(item);
+                };
+                dockMenu.Items.Insert(0, item);
+            }
+        }
+
         private CatalogTheme _prevTheme;
         public static CatalogTheme CurrentTheme => ((App)Current!)._prevTheme; 
         public static void SetCatalogThemes(CatalogTheme theme)

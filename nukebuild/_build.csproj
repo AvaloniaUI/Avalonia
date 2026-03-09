@@ -10,12 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="10.1.0" />
-    <PackageReference Include="MicroCom.CodeGenerator" Version="0.11.0" />
+    <PackageReference Include="Nuke.Common" />
+    <PackageReference Include="MicroCom.CodeGenerator" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
-    <PackageReference Include="Mono.Cecil" Version="0.11.6" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="18.0.2" PrivateAssets="All" />
-    <PackageReference Include="NuGet.Protocol" Version="7.0.1" />
+    <PackageReference Include="Mono.Cecil" />
+    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
+    <PackageReference Include="NuGet.Protocol" />
     <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[10.0.100]" />
     <PackageDownload Include="Microsoft.DotNet.ApiDiff.Tool" Version="[10.0.100-rtm.25531.102]" />
     <PackageDownload Include="dotnet-ilrepack" Version="[2.0.44]" />

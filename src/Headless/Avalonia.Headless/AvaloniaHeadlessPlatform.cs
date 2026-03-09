@@ -79,7 +79,6 @@ namespace Avalonia.Headless
             var clipboard = new Clipboard(clipboardImpl);
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(null))
                 .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
                 .Bind<IClipboard>().ToConstant(clipboard)
                 .Bind<ICursorFactory>().ToSingleton<HeadlessCursorFactoryStub>()
@@ -121,7 +120,8 @@ namespace Avalonia.Headless
                 builder = builder.UseRenderingSubsystem(HeadlessPlatformRenderInterface.Initialize, "Headless");
             return builder
                 .UseStandardRuntimePlatformSubsystem()
-                .UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless");
+                .UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless")
+                .UseHarfBuzz();
         }
     }
 }

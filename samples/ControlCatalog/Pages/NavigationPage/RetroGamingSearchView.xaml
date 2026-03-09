@@ -1,0 +1,239 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.RetroGamingSearchView"
+             Background="#120a1f">
+  <StackPanel Spacing="16" Margin="16,24,16,16">
+
+    <!-- Header row: title + close button -->
+    <Grid ColumnDefinitions="*,Auto">
+      <TextBlock Text="&gt; SEARCH GAMES"
+                 FontFamily="Courier New, monospace" FontSize="18" FontWeight="Bold"
+                 Foreground="#ffff00" VerticalAlignment="Center"/>
+      <Button x:Name="CloseBtn" Grid.Column="1"
+              Width="32" Height="32" Padding="0"
+              Background="Transparent"
+              BorderThickness="1" BorderBrush="#00ffff"
+              CornerRadius="0"
+              HorizontalContentAlignment="Center"
+              VerticalContentAlignment="Center">
+        <TextBlock Text="X" FontFamily="Courier New, monospace"
+                   FontSize="16" FontWeight="Bold" Foreground="#00ffff"/>
+      </Button>
+    </Grid>
+
+    <!-- Search box -->
+    <TextBox PlaceholderText="Type game name..."
+             FontFamily="Courier New, monospace" FontSize="14"
+             Background="#2d1b4e" Foreground="#e0d0ff"
+             BorderThickness="1" BorderBrush="#ad2bee"
+             CornerRadius="0" Padding="12,10"/>
+
+    <!-- Category filter chips -->
+    <WrapPanel Orientation="Horizontal">
+      <Button Padding="10,6" CornerRadius="0" Margin="0,0,6,6"
+              BorderThickness="1" BorderBrush="#7856a8"
+              Classes="retro-cat-btn">
+        <TextBlock Text="ALL" FontFamily="Courier New, monospace"
+                   FontSize="11" Foreground="#e0d0ff"/>
+      </Button>
+      <Button Padding="10,6" CornerRadius="0" Margin="0,0,6,6"
+              BorderThickness="1" BorderBrush="#7856a8"
+              Classes="retro-cat-btn">
+        <TextBlock Text="ACTION" FontFamily="Courier New, monospace"
+                   FontSize="11" Foreground="#e0d0ff"/>
+      </Button>
+      <Button Padding="10,6" CornerRadius="0" Margin="0,0,6,6"
+              BorderThickness="1" BorderBrush="#7856a8"
+              Classes="retro-cat-btn">
+        <TextBlock Text="RPG" FontFamily="Courier New, monospace"
+                   FontSize="11" Foreground="#e0d0ff"/>
+      </Button>
+      <Button Padding="10,6" CornerRadius="0" Margin="0,0,6,6"
+              BorderThickness="1" BorderBrush="#7856a8"
+              Classes="retro-cat-btn">
+        <TextBlock Text="RACING" FontFamily="Courier New, monospace"
+                   FontSize="11" Foreground="#e0d0ff"/>
+      </Button>
+      <Button Padding="10,6" CornerRadius="0" Margin="0,0,6,6"
+              BorderThickness="1" BorderBrush="#7856a8"
+              Classes="retro-cat-btn">
+        <TextBlock Text="PUZZLE" FontFamily="Courier New, monospace"
+                   FontSize="11" Foreground="#e0d0ff"/>
+      </Button>
+      <Button Padding="10,6" CornerRadius="0" Margin="0,0,6,6"
+              BorderThickness="1" BorderBrush="#7856a8"
+              Classes="retro-cat-btn">
+        <TextBlock Text="STRATEGY" FontFamily="Courier New, monospace"
+                   FontSize="11" Foreground="#e0d0ff"/>
+      </Button>
+    </WrapPanel>
+
+    <Border Height="1" Background="#3CFFFFFF" Margin="0,4"/>
+
+    <TextBlock Text="POPULAR SEARCHES"
+               FontFamily="Courier New, monospace" FontSize="12" FontWeight="Bold"
+               Foreground="#7856a8"/>
+
+    <!-- Search results list -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="2">
+
+        <!-- Cyber Ninja 2084 -->
+        <Button x:Name="SearchCyberNinjaBtn" Padding="8" CornerRadius="0"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                Classes="retro-list-btn">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="3" Height="28" Background="#ad2bee"
+                    VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock Text="Cyber Ninja 2084"
+                         FontFamily="Courier New, monospace" FontSize="13"
+                         FontWeight="Bold" Foreground="#e0d0ff"/>
+              <TextBlock Text="ACTION RPG"
+                         FontFamily="Courier New, monospace" FontSize="10"
+                         Foreground="#7856a8"/>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="&gt;"
+                       FontFamily="Courier New, monospace" FontSize="16"
+                       Foreground="#7856a8" VerticalAlignment="Center"/>
+          </Grid>
+        </Button>
+
+        <!-- Neon Racer -->
+        <Button x:Name="SearchNeonRacerBtn" Padding="8" CornerRadius="0"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                Classes="retro-list-btn">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="3" Height="28" Background="#ad2bee"
+                    VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock Text="Neon Racer"
+                         FontFamily="Courier New, monospace" FontSize="13"
+                         FontWeight="Bold" Foreground="#e0d0ff"/>
+              <TextBlock Text="RACING"
+                         FontFamily="Courier New, monospace" FontSize="10"
+                         Foreground="#7856a8"/>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="&gt;"
+                       FontFamily="Courier New, monospace" FontSize="16"
+                       Foreground="#7856a8" VerticalAlignment="Center"/>
+          </Grid>
+        </Button>
+
+        <!-- Dungeon Bit -->
+        <Button x:Name="SearchDungeonBitBtn" Padding="8" CornerRadius="0"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                Classes="retro-list-btn">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="3" Height="28" Background="#00cc88"
+                    VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock Text="Dungeon Bit"
+                         FontFamily="Courier New, monospace" FontSize="13"
+                         FontWeight="Bold" Foreground="#e0d0ff"/>
+              <TextBlock Text="RPG"
+                         FontFamily="Courier New, monospace" FontSize="10"
+                         Foreground="#7856a8"/>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="&gt;"
+                       FontFamily="Courier New, monospace" FontSize="16"
+                       Foreground="#7856a8" VerticalAlignment="Center"/>
+          </Grid>
+        </Button>
+
+        <!-- Forest Spirit -->
+        <Button x:Name="SearchForestSpiritBtn" Padding="8" CornerRadius="0"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                Classes="retro-list-btn">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="3" Height="28" Background="#ff9900"
+                    VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock Text="Forest Spirit"
+                         FontFamily="Courier New, monospace" FontSize="13"
+                         FontWeight="Bold" Foreground="#e0d0ff"/>
+              <TextBlock Text="PUZZLE"
+                         FontFamily="Courier New, monospace" FontSize="10"
+                         Foreground="#7856a8"/>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="&gt;"
+                       FontFamily="Courier New, monospace" FontSize="16"
+                       Foreground="#7856a8" VerticalAlignment="Center"/>
+          </Grid>
+        </Button>
+
+        <!-- Pixel Quest -->
+        <Button x:Name="SearchPixelQuestBtn" Padding="8" CornerRadius="0"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                Classes="retro-list-btn">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="3" Height="28" Background="#00ffff"
+                    VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock Text="Pixel Quest"
+                         FontFamily="Courier New, monospace" FontSize="13"
+                         FontWeight="Bold" Foreground="#e0d0ff"/>
+              <TextBlock Text="PLATFORMER"
+                         FontFamily="Courier New, monospace" FontSize="10"
+                         Foreground="#7856a8"/>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="&gt;"
+                       FontFamily="Courier New, monospace" FontSize="16"
+                       Foreground="#7856a8" VerticalAlignment="Center"/>
+          </Grid>
+        </Button>
+
+        <!-- Space Voids -->
+        <Button x:Name="SearchSpaceVoidsBtn" Padding="8" CornerRadius="0"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                Classes="retro-list-btn">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="3" Height="28" Background="#ffff00"
+                    VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock Text="Space Voids"
+                         FontFamily="Courier New, monospace" FontSize="13"
+                         FontWeight="Bold" Foreground="#e0d0ff"/>
+              <TextBlock Text="SHOOTER"
+                         FontFamily="Courier New, monospace" FontSize="10"
+                         Foreground="#7856a8"/>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="&gt;"
+                       FontFamily="Courier New, monospace" FontSize="16"
+                       Foreground="#7856a8" VerticalAlignment="Center"/>
+          </Grid>
+        </Button>
+
+        <!-- Cyber City -->
+        <Button x:Name="SearchCyberCityBtn" Padding="8" CornerRadius="0"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                Classes="retro-list-btn">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="3" Height="28" Background="#00ffff"
+                    VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock Text="Cyber City"
+                         FontFamily="Courier New, monospace" FontSize="13"
+                         FontWeight="Bold" Foreground="#e0d0ff"/>
+              <TextBlock Text="STRATEGY"
+                         FontFamily="Courier New, monospace" FontSize="10"
+                         Foreground="#7856a8"/>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="&gt;"
+                       FontFamily="Courier New, monospace" FontSize="16"
+                       Foreground="#7856a8" VerticalAlignment="Center"/>
+          </Grid>
+        </Button>
+
+      </StackPanel>
+    </ScrollViewer>
+
+  </StackPanel>
+</UserControl>
