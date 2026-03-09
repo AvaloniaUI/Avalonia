@@ -469,16 +469,11 @@ namespace Avalonia.Media.Fonts
 
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces))
             {
-                if (glyphTypefaces.TryGetValue(key, out glyphTypeface) && glyphTypeface != null)
-                {
-                    return true;
-                }
-
-                if (TryGetMatch(glyphTypefaces, key, allowNearestMatch, out glyphTypeface))
+                if (TryGetMatch(glyphTypefaces, key, allowNearestMatch, out glyphTypeface, out var isNearestMatch))
                 {
                     var matchedKey = glyphTypeface.ToFontCollectionKey();
 
-                    if (matchedKey != key)
+                    if (isNearestMatch && matchedKey != key)
                     {
                         if (TryCreateSyntheticGlyphTypeface(glyphTypeface, key.Style, key.Weight, key.Stretch, out var syntheticGlyphTypeface))
                         {
@@ -516,7 +511,7 @@ namespace Avalonia.Media.Fonts
                 {
                     // Exact match found in snapshot. Use the exact family name for lookup
                     if (_glyphTypefaceCache.TryGetValue(snapshot[mid].Name, out var exactGlyphTypefaces) &&
-                        TryGetMatch(exactGlyphTypefaces, key, allowNearestMatch, out glyphTypeface))
+                        TryGetMatch(exactGlyphTypefaces, key, allowNearestMatch, out glyphTypeface, out _))
                     {
                         return true;
                     }
@@ -554,7 +549,7 @@ namespace Avalonia.Media.Fonts
                     }
 
                     if (_glyphTypefaceCache.TryGetValue(fontFamily.Name, out glyphTypefaces) &&
-                        TryGetMatch(glyphTypefaces, key, allowNearestMatch, out glyphTypeface))
+                        TryGetMatch(glyphTypefaces, key, allowNearestMatch, out glyphTypeface, out _))
                     {
                         return true;
                     }
@@ -568,14 +563,22 @@ namespace Avalonia.Media.Fonts
             IDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
             bool allowNearestMatch,
-            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface,
+            out bool isNearestMatch)
         {
             if (glyphTypefaces.TryGetValue(key, out glyphTypeface) && glyphTypeface is not null)
+            {
+                isNearestMatch = false;
                 return true;
+            }
 
             if (allowNearestMatch && TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
+            {
+                isNearestMatch = true;
                 return true;
+            }
 
+            isNearestMatch = false;
             return false;
         }
 
