@@ -318,7 +318,7 @@ namespace Avalonia.Controls
             if (e.Property == Page.IconProperty)
             {
                 if (_pageContainerMap.TryGetValue(page, out var tabItem))
-                    tabItem.Icon = CreateIconControl(page.Icon);
+                    UpdateIconControl(tabItem, page.Icon);
             }
             else if (e.Property == Page.HeaderProperty)
             {
@@ -336,14 +336,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal static Control? CreateIconControl(object? icon)
         {
-            Geometry? geometry = icon switch
-            {
-                Geometry g => g,
-                PathIcon pi => pi.Data,
-                DrawingImage { Drawing: GeometryDrawing { Geometry: { } gd } } => gd,
-                string s when !string.IsNullOrEmpty(s) => Geometry.Parse(s),
-                _ => null
-            };
+            var geometry = ResolveIconGeometry(icon);
 
             if (geometry != null)
             {
@@ -372,6 +365,34 @@ namespace Avalonia.Controls
 
             return null;
         }
+
+        private static void UpdateIconControl(TabItem tabItem, object? icon)
+        {
+            var geometry = ResolveIconGeometry(icon);
+
+            if (geometry != null && tabItem.Icon is Path existingPath)
+            {
+                existingPath.Data = geometry;
+                return;
+            }
+
+            if (icon is IImage newImage && tabItem.Icon is Image existingImage)
+            {
+                existingImage.Source = newImage;
+                return;
+            }
+
+            tabItem.Icon = CreateIconControl(icon);
+        }
+
+        private static Geometry? ResolveIconGeometry(object? icon) => icon switch
+        {
+            Geometry g => g,
+            PathIcon pi => pi.Data,
+            DrawingImage { Drawing: GeometryDrawing { Geometry: { } gd } } => gd,
+            string s when !string.IsNullOrEmpty(s) => Geometry.Parse(s),
+            _ => null
+        };
 
         private int FindNearestEnabledTab(int disabledIndex)
         {
