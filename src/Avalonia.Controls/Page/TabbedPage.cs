@@ -47,7 +47,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="IsGestureEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsGestureEnabledProperty =
-            AvaloniaProperty.Register<TabbedPage, bool>(nameof(IsGestureEnabled), defaultValue: false);
+            AvaloniaProperty.Register<TabbedPage, bool>(nameof(IsGestureEnabled), defaultValue: true);
 
         /// <summary>
         /// Defines the <see cref="PageTransition"/> property.
