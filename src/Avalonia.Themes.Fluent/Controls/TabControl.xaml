@@ -35,7 +35,7 @@
             <ItemsPresenter Name="PART_ItemsPresenter"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
                             DockPanel.Dock="{TemplateBinding TabStripPlacement}" />
-            <Panel ClipToBounds="True">
+            <Panel Name="PART_SelectedContentDataContextHost" ClipToBounds="True">
               <ContentPresenter Name="PART_SelectedContentHost2"
                                 Margin="{TemplateBinding Padding}"
                                 HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"

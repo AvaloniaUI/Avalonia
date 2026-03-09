@@ -32,6 +32,7 @@ namespace Avalonia.Controls
         private CompositeDisposable? _selectedItemSubscriptions;
         private ContentPresenter? _contentPart;
         private ContentPresenter? _contentPresenter2;
+        private Control? _dataContextHost;
         private int _previousSelectedIndex = -1;
         private CancellationTokenSource? _currentTransition;
         private bool _shouldAnimate;
@@ -280,6 +281,7 @@ namespace Avalonia.Controls
             }
 
             container ??= ContainerFromIndex(SelectedIndex);
+
             if (container != null)
             {
                 if (SelectedContentTemplate != SelectContentTemplate(container.GetValue(ContentControl.ContentTemplateProperty)))
@@ -295,6 +297,15 @@ namespace Avalonia.Controls
                 bool isInitialFire = true;
 
                 _selectedItemSubscriptions = new CompositeDisposable(
+                    container.GetObservable(StyledElement.DataContextProperty).Subscribe(dc =>
+                    {
+                        // The selected content presenter needs to inherit the DataContext of the TabItem, but
+                        // the data context cannot be set directly on the ContentPresenter due to it calling
+                        // ClearValue(DataContextProperty) in ContentPresenter.UpdateChild. For this reason we
+                        // have a proxy element in the control template (PART_SelectedContentDataContextHost)
+                        // which is used to set the DataContext inherited by the content presenters.
+                        _dataContextHost?.DataContext = dc;
+                    }),
                     container.GetObservable(ContentControl.ContentProperty).Subscribe(content =>
                     {
                         var contentElement = content as StyledElement;
@@ -318,21 +329,7 @@ namespace Avalonia.Controls
                         }
                         else
                         {
-                            if (ContentPart != null)
-                            {
-                                ContentPart.Content = content;
-                                // When ContentPart displays a Control, it doesn't set its
-                                // DataContext to that of the Control's. If the content doesn't
-                                // set a DataContext it gets inherited from the TabControl.
-                                // Work around this by setting ContentPart's DataContext to
-                                // the content's original DataContext (inherited from container).
-                                if (contentElement is not null &&
-                                    contentElement.DataContext != contentDataContext)
-                                {
-                                    Debug.Assert(!contentElement.IsSet(DataContextProperty));
-                                    ContentPart.DataContext = contentDataContext;
-                                }
-                            }
+                            ContentPart?.Content = content;
                         }
 
                         isInitialFire = false;
@@ -375,6 +372,12 @@ namespace Avalonia.Controls
         {
             ItemsPresenterPart = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
             ItemsPresenterPart?.ApplyTemplate();
+
+            _dataContextHost = e.NameScope.Find<Control>("PART_SelectedContentDataContextHost");
+
+            // Initialize the data context host with the data context of the selected tab, if any.
+            if (_dataContextHost is not null && ContainerFromIndex(SelectedIndex) is { } selectedTab)
+                _dataContextHost.DataContext = selectedTab.DataContext;
 
             UpdateTabStripPlacement();
 
