@@ -110,6 +110,9 @@ namespace Avalonia.Controls
             if (_carousel != null)
             {
                 _carousel.SelectionChanged += OnCarouselSelectionChanged;
+                _carousel.PageTransition = PageTransition;
+                _carousel.ItemsPanel = ItemsPanel;
+                _carousel.ItemTemplate = PageTemplate;
                 _carousel.IsSwipeEnabled = IsGestureEnabled;
 
                 if (SelectedIndex >= 0)

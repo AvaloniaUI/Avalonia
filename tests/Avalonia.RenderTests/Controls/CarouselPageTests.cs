@@ -98,6 +98,22 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
+        public async Task CarouselPage_ThreePages_SecondSelected()
+        {
+            var cp = new CarouselPage { Background = Brushes.White, PageTransition = null };
+            ((IList)cp.Pages!).Add(MakePage("Page 1", "#1565C0", "#FFFFFF"));
+            ((IList)cp.Pages!).Add(MakePage("Page 2", "#2E7D32", "#FFFFFF"));
+            ((IList)cp.Pages!).Add(MakePage("Page 3", "#C62828", "#FFFFFF"));
+            cp.SelectedIndex = 1;
+
+            var target = new Decorator { Width = 400, Height = 300, Child = cp };
+            target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
+            await RenderToFile(target);
+            CompareImages(skipImmediate: true);
+        }
+
+        [Fact]
         public async Task CarouselPage_CustomBackground()
         {
             var cp = new CarouselPage
