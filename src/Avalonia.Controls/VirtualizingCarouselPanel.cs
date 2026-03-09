@@ -48,13 +48,17 @@ namespace Avalonia.Controls
         private const double SwipeCommitThreshold = 0.25;
         private const double VelocityCommitThreshold = 800;
         private const double MinSwipeDistanceForVelocityCommit = 0.05;
+        private const double RubberBandFactor = 0.3;
+        private const double MaxCompletionDuration = 0.35;
+        private const double MinCompletionDuration = 0.12;
 
         private DispatcherTimer? _completionTimer;
         private Carousel? _completionCarousel;
         private double _completionStartProgress;
         private double _completionEndProgress;
         private long _completionStartTimestamp;
-        private static readonly long CompletionDurationTicks = Stopwatch.Frequency / 4; // 250ms
+        private long _completionDurationTicks;
+        private bool _isRubberBanding;
 
 
         bool ILogicalScrollable.CanHorizontallyScroll
@@ -471,6 +475,7 @@ namespace Avalonia.Controls
             {
                 CanHorizontallySwipe = _swipeAxis != PageSlide.SlideAxis.Vertical,
                 CanVerticallySwipe = _swipeAxis != PageSlide.SlideAxis.Horizontal,
+                IsMouseEnabled = true,
             };
 
             GestureRecognizers.Add(_swipeGestureRecognizer);
@@ -521,7 +526,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    // The previous gesture was snapping back — discard the target.
+                    // The previous gesture was snapping back, discard the target.
                     ResetSwipeState();
                 }
 
@@ -547,6 +552,7 @@ namespace Avalonia.Controls
             if (!_isDragging)
             {
                 _isForward = delta > 0;
+                _isRubberBanding = false;
                 var currentIndex = _realizedIndex;
                 var targetIndex = _isForward ? currentIndex + 1 : currentIndex - 1;
 
@@ -556,23 +562,23 @@ namespace Avalonia.Controls
                     if (carousel.WrapSelection)
                         targetIndex = 0;
                     else
-                        return;
+                        _isRubberBanding = true;
                 }
                 else if (targetIndex < 0)
                 {
                     if (carousel.WrapSelection)
                         targetIndex = Items.Count - 1;
                     else
-                        return;
+                        _isRubberBanding = true;
                 }
 
-                if (targetIndex == currentIndex || targetIndex < 0 || targetIndex >= Items.Count)
+                if (!_isRubberBanding && (targetIndex == currentIndex || targetIndex < 0 || targetIndex >= Items.Count))
                     return;
 
                 _isDragging = true;
                 _swipeGestureId = e.Id;
                 _totalDelta = 0;
-                _swipeTargetIndex = targetIndex;
+                _swipeTargetIndex = _isRubberBanding ? -1 : targetIndex;
                 carousel.IsSwiping = true;
 
                 // Cancel any running transition
@@ -586,31 +592,36 @@ namespace Avalonia.Controls
                     _transitionFromIndex = -1;
                 }
 
-                // Realize the target item
-                _swipeTarget = GetOrCreateElement(Items, _swipeTargetIndex);
-                _swipeTarget.Measure(Bounds.Size);
-                _swipeTarget.Arrange(new Rect(Bounds.Size));
-                _swipeTarget.IsVisible = true;
+                if (!_isRubberBanding)
+                {
+                    // Realize the target item
+                    _swipeTarget = GetOrCreateElement(Items, _swipeTargetIndex);
+                    _swipeTarget.Measure(Bounds.Size);
+                    _swipeTarget.Arrange(new Rect(Bounds.Size));
+                    _swipeTarget.IsVisible = true;
+                }
             }
 
             _totalDelta += delta;
 
-            // Clamp totalDelta so it cannot cross zero — absorbs touch jitter
-            // without cancelling the entire gesture.
+            // Clamp so totalDelta cannot cross zero (absorbs touch jitter).
             if (_isForward)
                 _totalDelta = Math.Max(0, _totalDelta);
             else
                 _totalDelta = Math.Min(0, _totalDelta);
             
             var size = _lockedAxis == PageSlide.SlideAxis.Horizontal ? Bounds.Width : Bounds.Height;
-            if (size <= 0) return;
+            if (size <= 0)
+                return;
 
-            var progress = Math.Clamp(Math.Abs(_totalDelta) / size, 0, 1);
+            var rawProgress = Math.Clamp(Math.Abs(_totalDelta) / size, 0, 1);
+            var progress = _isRubberBanding
+                ? RubberBandFactor * Math.Sqrt(rawProgress)
+                : rawProgress;
 
-            // Drive the interactive transition if supported; otherwise swipe still navigates on release
             if (GetTransition() is IInteractivePageTransition interactive)
             {
-                interactive.Update(progress, _realized, _swipeTarget, _isForward, _lockedAxis);
+                interactive.Update(progress, _realized, _isRubberBanding ? null : _swipeTarget, _isForward);
             }
 
             e.Handled = true;
@@ -622,18 +633,28 @@ namespace Avalonia.Controls
                 return;
 
             var size = _lockedAxis == PageSlide.SlideAxis.Horizontal ? Bounds.Width : Bounds.Height;
-            var currentProgress = size > 0 ? Math.Abs(_totalDelta) / size : 0;
+            var rawProgress = size > 0 ? Math.Abs(_totalDelta) / size : 0;
+            var currentProgress = _isRubberBanding
+                ? RubberBandFactor * Math.Sqrt(rawProgress)
+                : rawProgress;
             var velocity = _lockedAxis == PageSlide.SlideAxis.Horizontal
                 ? Math.Abs(e.Velocity.X)
                 : Math.Abs(e.Velocity.Y);
-            var commit = (currentProgress >= SwipeCommitThreshold ||
-                         (velocity > VelocityCommitThreshold && currentProgress >= MinSwipeDistanceForVelocityCommit))
+            var commit = !_isRubberBanding
+                         && (currentProgress >= SwipeCommitThreshold ||
+                             (velocity > VelocityCommitThreshold && currentProgress >= MinSwipeDistanceForVelocityCommit))
                          && _swipeTarget is not null;
 
             _completionStartProgress = currentProgress;
             _completionEndProgress = commit ? 1.0 : 0.0;
             _completionStartTimestamp = Stopwatch.GetTimestamp();
             _completionCarousel = carousel;
+
+            var remainingDistance = Math.Abs(_completionEndProgress - _completionStartProgress);
+            var durationSeconds = velocity > 0
+                ? Math.Clamp(remainingDistance * size / velocity, MinCompletionDuration, MaxCompletionDuration)
+                : MaxCompletionDuration;
+            _completionDurationTicks = (long)(Stopwatch.Frequency * durationSeconds);
 
             if (_completionTimer is null)
             {
@@ -651,14 +672,15 @@ namespace Avalonia.Controls
         {
             var carousel = _completionCarousel!;
             var elapsedTicks = Stopwatch.GetTimestamp() - _completionStartTimestamp;
-            var ratio = Math.Min(1.0, (double)elapsedTicks / CompletionDurationTicks);
-            
-            var easedRatio = 1 - Math.Pow(1 - ratio, 3);
-            var progress = _completionStartProgress + (_completionEndProgress - _completionStartProgress) * easedRatio;
+            var ratio = Math.Min(1.0, (double)elapsedTicks / _completionDurationTicks);
+
+            // Ease-out: fast start, smooth deceleration
+            var eased = 1.0 - (1.0 - ratio) * (1.0 - ratio);
+            var progress = _completionStartProgress + (_completionEndProgress - _completionStartProgress) * eased;
 
             if (GetTransition() is IInteractivePageTransition interactive)
             {
-                interactive.Update(progress, _realized, _swipeTarget, _isForward, _lockedAxis);
+                interactive.Update(progress, _realized, _swipeTarget, _isForward);
             }
 
             if (ratio >= 1.0)
@@ -696,6 +718,7 @@ namespace Avalonia.Controls
                 _totalDelta = 0;
                 _swipeTarget = null;
                 _swipeTargetIndex = -1;
+                _isRubberBanding = false;
                 carousel.IsSwiping = false;
             }
         }
@@ -717,11 +740,13 @@ namespace Avalonia.Controls
             _totalDelta = 0;
             _swipeTarget = null;
             _swipeTargetIndex = -1;
+            _isRubberBanding = false;
         }
 
         private static void ResetVisualState(Control? control)
         {
-            if (control is null) return;
+            if (control is null)
+                return;
             control.RenderTransform = null;
             control.Opacity = 1;
             control.ZIndex = 0;

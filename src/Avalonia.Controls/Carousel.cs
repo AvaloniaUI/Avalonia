@@ -30,7 +30,7 @@ namespace Avalonia.Controls
                 o => o.IsSwiping);
 
         /// <summary>
-        /// The default value of <see cref="ItemsControl.ItemsPanelProperty"/> for 
+        /// The default value of <see cref="ItemsControl.ItemsPanelProperty"/> for
         /// <see cref="Carousel"/>.
         /// </summary>
         private static readonly FuncTemplate<Panel?> DefaultPanel =
@@ -59,6 +59,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets whether swipe gestures are enabled for navigating between pages.
+        /// When enabled, mouse pointer events are also accepted in addition to touch and pen.
         /// </summary>
         public bool IsSwipeEnabled
         {
@@ -110,12 +111,11 @@ namespace Avalonia.Controls
                 SelectedIndex = ItemCount - 1;
             }
         }
-        
+
         internal PageSlide.SlideAxis? GetTransitionAxis()
         {
             return PageTransition switch
             {
-                Rotate3DTransition r3d => r3d.Orientation,
                 PageSlide ps => ps.Orientation,
                 _ => null
             };
@@ -181,12 +181,11 @@ namespace Avalonia.Controls
                 _scroller.Offset = new(value, 0);
             }
 
-            if (change.Property == IsSwipeEnabledProperty || change.Property == PageTransitionProperty)
+            if (change.Property == IsSwipeEnabledProperty ||
+                change.Property == PageTransitionProperty)
             {
                 if (ItemsPanelRoot is VirtualizingCarouselPanel panel)
-                {
                     panel.RefreshGestureRecognizer();
-                }
             }
         }
     }

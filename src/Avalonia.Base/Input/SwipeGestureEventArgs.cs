@@ -16,11 +16,14 @@ namespace Avalonia.Input
         /// <param name="delta">The pixel delta since the last event.</param>
         /// <param name="velocity">The current swipe velocity in pixels per second.</param>
         public SwipeGestureEventArgs(int id, Vector delta, Vector velocity)
-            : base(Gestures.SwipeGestureEvent)
+            : base(InputElement.SwipeGestureEvent)
         {
             Id = id;
             Delta = delta;
             Velocity = velocity;
+            SwipeDirection = Math.Abs(delta.X) >= Math.Abs(delta.Y)
+                ? (delta.X >= 0 ? SwipeDirection.Right : SwipeDirection.Left)
+                : (delta.Y >= 0 ? SwipeDirection.Down : SwipeDirection.Up);
         }
 
         /// <summary>
@@ -37,6 +40,11 @@ namespace Avalonia.Input
         /// Gets the current swipe velocity in pixels per second.
         /// </summary>
         public Vector Velocity { get; }
+
+        /// <summary>
+        /// Gets the direction of the dominant swipe axis.
+        /// </summary>
+        public SwipeDirection SwipeDirection { get; }
 
         private static int s_nextId;
 

@@ -211,6 +211,7 @@ namespace Avalonia.Controls
         private Border? _topBar;
         private ToggleButton? _paneButton;
         private Border? _backdrop;
+        private Point _swipeStartPoint;
         private IDisposable? _navBarVisibleSub;
 
         private const double EdgeGestureWidth = 20;
@@ -675,6 +676,12 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+            _swipeStartPoint = e.GetPosition(this);
+        }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -714,8 +721,8 @@ namespace Avalonia.Controls
                         : EdgeGestureWidth;
 
                     bool inEdge = DrawerPlacement == DrawerPlacement.Bottom
-                        ? e.StartPoint.Y >= Bounds.Height - openGestureEdge
-                        : e.StartPoint.Y <= openGestureEdge;
+                        ? _swipeStartPoint.Y >= Bounds.Height - openGestureEdge
+                        : _swipeStartPoint.Y <= openGestureEdge;
 
                     if (towardPane && inEdge)
                     {
@@ -746,8 +753,8 @@ namespace Avalonia.Controls
                         : EdgeGestureWidth;
 
                     bool inEdge = IsPaneOnRight
-                        ? e.StartPoint.X >= Bounds.Width - openGestureEdge
-                        : e.StartPoint.X <= openGestureEdge;
+                        ? _swipeStartPoint.X >= Bounds.Width - openGestureEdge
+                        : _swipeStartPoint.X <= openGestureEdge;
 
                     if (towardPane && inEdge)
                     {

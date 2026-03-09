@@ -1,5 +1,3 @@
-using Avalonia.Animation;
-
 namespace Avalonia.Animation
 {
     /// <summary>
@@ -18,7 +16,6 @@ namespace Avalonia.Animation
         /// <param name="from">The visual being transitioned away from. May be null.</param>
         /// <param name="to">The visual being transitioned to. May be null.</param>
         /// <param name="forward">Whether the transition direction is forward (next) or backward (previous).</param>
-        /// <param name="orientation">The slide orientation for the transition.</param>
-        void Update(double progress, Visual? from, Visual? to, bool forward, PageSlide.SlideAxis orientation);
+        void Update(double progress, Visual? from, Visual? to, bool forward);
     }
 }

@@ -485,7 +485,7 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
-            public void Swiping_Backward_At_Start_Is_Blocked_When_WrapSelection_False()
+            public void Swiping_Backward_At_Start_RubberBands_When_WrapSelection_False()
             {
                 using var app = Start();
                 var items = new[] { "foo", "bar" };
@@ -497,7 +497,7 @@ namespace Avalonia.Controls.UnitTests
                 var e = new SwipeGestureEventArgs(1, new Vector(-10, 0), default);
                 panel.RaiseEvent(e);
 
-                Assert.False(carousel.IsSwiping);
+                Assert.True(carousel.IsSwiping);
                 Assert.Single(panel.Children);
             }
 
@@ -521,7 +521,7 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
-            public void Swiping_Forward_At_End_Is_Blocked_When_WrapSelection_False()
+            public void Swiping_Forward_At_End_RubberBands_When_WrapSelection_False()
             {
                 using var app = Start();
                 var items = new[] { "foo", "bar" };
@@ -545,7 +545,7 @@ namespace Avalonia.Controls.UnitTests
                 var e = new SwipeGestureEventArgs(1, new Vector(10, 0), default);
                 panel.RaiseEvent(e);
 
-                Assert.False(carousel.IsSwiping, "Carousel should NOT be swiping at the end boundary");
+                Assert.True(carousel.IsSwiping);
                 Assert.Single(panel.Children);
             }
 

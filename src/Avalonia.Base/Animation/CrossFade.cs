@@ -1,5 +1,4 @@
 using System;
-using Avalonia.Animation;
 using System.Collections.Generic;
 using Avalonia.Reactive;
 using System.Threading;
@@ -185,21 +184,13 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
-        public void Update(double progress, Visual? from, Visual? to, bool forward, PageSlide.SlideAxis orientation)
+        public void Update(double progress, Visual? from, Visual? to, bool forward)
         {
-            // Apply an ease-out curve
-            var eased = 1 - (1 - progress) * (1 - progress);
-
-            if (from != null)
-            {
-                from.Opacity = 1.0 - eased;
-                from.IsVisible = true;
-            }
-
+            if (from != null) from.Opacity = 1 - progress;
             if (to != null)
             {
-                to.Opacity = eased;
                 to.IsVisible = true;
+                to.Opacity = progress;
             }
         }
     }

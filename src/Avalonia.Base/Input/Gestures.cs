@@ -71,8 +71,7 @@ namespace Avalonia.Input
                 "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
 
         public static readonly RoutedEvent<SwipeGestureEventArgs> SwipeGestureEvent =
-            RoutedEvent.Register<SwipeGestureEventArgs>(
-                "SwipeGesture", RoutingStrategies.Bubble, typeof(Gestures));
+            InputElement.SwipeGestureEvent;
 
         public static readonly RoutedEvent<SwipeGestureEndedEventArgs> SwipeGestureEndedEvent =
             RoutedEvent.Register<SwipeGestureEndedEventArgs>(

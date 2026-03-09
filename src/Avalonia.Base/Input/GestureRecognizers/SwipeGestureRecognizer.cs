@@ -14,13 +14,6 @@ namespace Avalonia.Input.GestureRecognizers
     /// </remarks>
     public class SwipeGestureRecognizer : GestureRecognizer
     {
-        private static readonly int s_defaultSwipeStartDistance =
-            (int)((AvaloniaLocator.Current?.GetService<IPlatformSettings>()?.GetTapSize(PointerType.Touch).Height ?? 10) / 2);
-
-        private bool _canHorizontallySwipe;
-        private bool _canVerticallySwipe;
-        private int _swipeStartDistance = s_defaultSwipeStartDistance;
-
         private bool _swiping;
         private Point _trackedRootPoint;
         private IPointer? _tracking;
@@ -32,32 +25,45 @@ namespace Avalonia.Input.GestureRecognizers
         /// <summary>
         /// Defines the <see cref="CanHorizontallySwipe"/> property.
         /// </summary>
-        public static readonly DirectProperty<SwipeGestureRecognizer, bool> CanHorizontallySwipeProperty =
-            AvaloniaProperty.RegisterDirect<SwipeGestureRecognizer, bool>(nameof(CanHorizontallySwipe),
-                o => o.CanHorizontallySwipe, (o, v) => o.CanHorizontallySwipe = v);
+        public static readonly StyledProperty<bool> CanHorizontallySwipeProperty =
+            AvaloniaProperty.Register<SwipeGestureRecognizer, bool>(nameof(CanHorizontallySwipe));
 
         /// <summary>
         /// Defines the <see cref="CanVerticallySwipe"/> property.
         /// </summary>
-        public static readonly DirectProperty<SwipeGestureRecognizer, bool> CanVerticallySwipeProperty =
-            AvaloniaProperty.RegisterDirect<SwipeGestureRecognizer, bool>(nameof(CanVerticallySwipe),
-                o => o.CanVerticallySwipe, (o, v) => o.CanVerticallySwipe = v);
+        public static readonly StyledProperty<bool> CanVerticallySwipeProperty =
+            AvaloniaProperty.Register<SwipeGestureRecognizer, bool>(nameof(CanVerticallySwipe));
 
         /// <summary>
-        /// Defines the <see cref="SwipeStartDistance"/> property.
+        /// Defines the <see cref="Threshold"/> property.
         /// </summary>
-        public static readonly DirectProperty<SwipeGestureRecognizer, int> SwipeStartDistanceProperty =
-            AvaloniaProperty.RegisterDirect<SwipeGestureRecognizer, int>(nameof(SwipeStartDistance),
-                o => o.SwipeStartDistance, (o, v) => o.SwipeStartDistance = v,
-                unsetValue: s_defaultSwipeStartDistance);
+        /// <remarks>
+        /// A value of 0 (the default) causes the distance to be read from
+        /// <see cref="IPlatformSettings"/> at the time of the first gesture.
+        /// </remarks>
+        public static readonly StyledProperty<int> ThresholdProperty =
+            AvaloniaProperty.Register<SwipeGestureRecognizer, int>(nameof(Threshold), defaultValue: 0);
+
+        /// <summary>
+        /// Defines the <see cref="IsMouseEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsMouseEnabledProperty =
+            AvaloniaProperty.Register<SwipeGestureRecognizer, bool>(nameof(IsMouseEnabled), defaultValue: false);
+
+        /// <summary>
+        /// Defines the <see cref="IsEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsEnabledProperty =
+            AvaloniaProperty.Register<SwipeGestureRecognizer, bool>(nameof(IsEnabled), defaultValue: true);
+
 
         /// <summary>
         /// Gets or sets a value indicating whether horizontal swipes are tracked.
         /// </summary>
         public bool CanHorizontallySwipe
         {
-            get => _canHorizontallySwipe;
-            set => SetAndRaise(CanHorizontallySwipeProperty, ref _canHorizontallySwipe, value);
+            get => GetValue(CanHorizontallySwipeProperty);
+            set => SetValue(CanHorizontallySwipeProperty, value);
         }
 
         /// <summary>
@@ -65,25 +71,51 @@ namespace Avalonia.Input.GestureRecognizers
         /// </summary>
         public bool CanVerticallySwipe
         {
-            get => _canVerticallySwipe;
-            set => SetAndRaise(CanVerticallySwipeProperty, ref _canVerticallySwipe, value);
+            get => GetValue(CanVerticallySwipeProperty);
+            set => SetValue(CanVerticallySwipeProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets the distance the pointer must move before a swipe is recognized.
+        /// Gets or sets the minimum pointer movement in pixels before a swipe is recognized.
+        /// A value of 0 reads the threshold from <see cref="IPlatformSettings"/> at gesture time.
         /// </summary>
-        public int SwipeStartDistance
+        public int Threshold
         {
-            get => _swipeStartDistance;
-            set => SetAndRaise(SwipeStartDistanceProperty, ref _swipeStartDistance, value);
+            get => GetValue(ThresholdProperty);
+            set => SetValue(ThresholdProperty, value);
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether mouse pointer events trigger swipe gestures.
+        /// Defaults to <see langword="false"/>; touch and pen are always enabled.
+        /// </summary>
+        public bool IsMouseEnabled
+        {
+            get => GetValue(IsMouseEnabledProperty);
+            set => SetValue(IsMouseEnabledProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this recognizer responds to pointer events.
+        /// Defaults to <see langword="true"/>.
+        /// </summary>
+        public bool IsEnabled
+        {
+            get => GetValue(IsEnabledProperty);
+            set => SetValue(IsEnabledProperty, value);
+        }
+
 
         /// <inheritdoc/>
         protected override void PointerPressed(PointerPressedEventArgs e)
         {
+            if (!IsEnabled)
+                return;
+
             var point = e.GetCurrentPoint(null);
 
-            if (e.Pointer.Type is PointerType.Touch or PointerType.Pen or PointerType.Mouse
+            if ((e.Pointer.Type is PointerType.Touch or PointerType.Pen ||
+                 (IsMouseEnabled && e.Pointer.Type == PointerType.Mouse))
                 && point.Properties.IsLeftButtonPressed)
             {
                 EndGesture();
@@ -101,11 +133,12 @@ namespace Avalonia.Input.GestureRecognizers
             if (e.Pointer == _tracking)
             {
                 var rootPoint = e.GetPosition(null);
+                var threshold = GetEffectiveThreshold();
 
                 if (!_swiping)
                 {
-                    var horizontalTriggered = CanHorizontallySwipe && Math.Abs(_trackedRootPoint.X - rootPoint.X) > SwipeStartDistance;
-                    var verticalTriggered = CanVerticallySwipe && Math.Abs(_trackedRootPoint.Y - rootPoint.Y) > SwipeStartDistance;
+                    var horizontalTriggered = CanHorizontallySwipe && Math.Abs(_trackedRootPoint.X - rootPoint.X) > threshold;
+                    var verticalTriggered = CanVerticallySwipe && Math.Abs(_trackedRootPoint.Y - rootPoint.Y) > threshold;
 
                     if (horizontalTriggered || verticalTriggered)
                     {
@@ -113,10 +146,10 @@ namespace Avalonia.Input.GestureRecognizers
 
                         _trackedRootPoint = new Point(
                             horizontalTriggered
-                                ? _trackedRootPoint.X - (_trackedRootPoint.X >= rootPoint.X ? SwipeStartDistance : -SwipeStartDistance)
+                                ? _trackedRootPoint.X - (_trackedRootPoint.X >= rootPoint.X ? threshold : -threshold)
                                 : rootPoint.X,
                             verticalTriggered
-                                ? _trackedRootPoint.Y - (_trackedRootPoint.Y >= rootPoint.Y ? SwipeStartDistance : -SwipeStartDistance)
+                                ? _trackedRootPoint.Y - (_trackedRootPoint.Y >= rootPoint.Y ? threshold : -threshold)
                                 : rootPoint.Y);
 
                         Capture(e.Pointer);
@@ -174,6 +207,20 @@ namespace Avalonia.Input.GestureRecognizers
                 _lastTimestamp = 0;
                 _id = 0;
             }
+        }
+
+        private const double DefaultTapSize = 10;
+
+        private int GetEffectiveThreshold()
+        {
+            var configured = Threshold;
+            if (configured > 0)
+                return configured;
+
+            var tapSize = AvaloniaLocator.Current?.GetService<IPlatformSettings>()
+                ?.GetTapSize(PointerType.Touch).Height ?? DefaultTapSize;
+
+            return (int)(tapSize / 2);
         }
     }
 }

@@ -50,12 +50,12 @@ namespace Avalonia.Animation
         /// Gets the orientation of the animation.
         /// </summary>
         public SlideAxis Orientation { get; set; }
-        
+
         /// <summary>
         /// Gets or sets element entrance easing.
         /// </summary>
         public Easing SlideInEasing { get; set; } = new LinearEasing();
-        
+
         /// <summary>
         /// Gets or sets element exit easing.
         /// </summary>
@@ -152,8 +152,6 @@ namespace Avalonia.Animation
 
             if (from != null)
             {
-                // Hide BEFORE resetting transform so there is no single-frame flash
-                // where the element snaps back to position 0 while still visible.
                 from.IsVisible = false;
                 if (FillMode != FillMode.None)
                     from.RenderTransform = null;
@@ -164,31 +162,31 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
-        public virtual void Update(double progress, Visual? from, Visual? to, bool forward, SlideAxis orientation)
+        public virtual void Update(double progress, Visual? from, Visual? to, bool forward)
         {
             var parent = GetVisualParent(from, to);
-            var distance = orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
+            var distance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
+            var offset = distance * progress;
 
             if (from != null)
             {
-                var fromTranslate = from.RenderTransform as TranslateTransform ?? new TranslateTransform();
-                if (orientation == SlideAxis.Horizontal)
-                    fromTranslate.X = (forward ? -1 : 1) * progress * distance;
+                if (from.RenderTransform is not TranslateTransform ft)
+                    from.RenderTransform = ft = new TranslateTransform();
+                if (Orientation == SlideAxis.Horizontal)
+                    ft.X = forward ? -offset : offset;
                 else
-                    fromTranslate.Y = (forward ? -1 : 1) * progress * distance;
-                from.RenderTransform = fromTranslate;
-                from.IsVisible = true;
+                    ft.Y = forward ? -offset : offset;
             }
 
             if (to != null)
             {
-                var toTranslate = to.RenderTransform as TranslateTransform ?? new TranslateTransform();
-                if (orientation == SlideAxis.Horizontal)
-                    toTranslate.X = (forward ? 1 : -1) * (1 - progress) * distance;
-                else
-                    toTranslate.Y = (forward ? 1 : -1) * (1 - progress) * distance;
-                to.RenderTransform = toTranslate;
                 to.IsVisible = true;
+                if (to.RenderTransform is not TranslateTransform tt)
+                    to.RenderTransform = tt = new TranslateTransform();
+                if (Orientation == SlideAxis.Horizontal)
+                    tt.X = forward ? distance - offset : -(distance - offset);
+                else
+                    tt.Y = forward ? distance - offset : -(distance - offset);
             }
         }
 

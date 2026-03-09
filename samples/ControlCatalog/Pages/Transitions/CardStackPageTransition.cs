@@ -164,11 +164,11 @@ public class CardStackPageTransition : PageSlide
     }
 
     /// <inheritdoc />
-    public override void Update(double progress, Visual? from, Visual? to, bool forward, PageSlide.SlideAxis orientation)
+    public override void Update(double progress, Visual? from, Visual? to, bool forward)
     {
         var parent = GetVisualParent(from, to);
         var size = parent.Bounds.Size;
-        var isHorizontal = orientation == PageSlide.SlideAxis.Horizontal;
+        var isHorizontal = Orientation == PageSlide.SlideAxis.Horizontal;
         var distance = isHorizontal ? size.Width : size.Height;
         var rotationTarget = isHorizontal ? (forward ? -MaxSwipeAngle : MaxSwipeAngle) : 0.0;
         var startScale = 1.0 - BackCardScale;

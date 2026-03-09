@@ -88,9 +88,7 @@ public class WaveRevealPageTransition : PageSlide
 
         var parent = GetVisualParent(from, to);
         var size = parent.Bounds.Size;
-        var orientation = Orientation;
-
-        await AnimateProgress(0.0, 1.0, from, to, forward, orientation, cancellationToken);
+        await AnimateProgress(0.0, 1.0, from, to, forward, cancellationToken);
 
         if (to != null && !cancellationToken.IsCancellationRequested)
         {
@@ -104,12 +102,12 @@ public class WaveRevealPageTransition : PageSlide
     }
 
     /// <inheritdoc />
-    public override void Update(double progress, Visual? from, Visual? to, bool forward, PageSlide.SlideAxis orientation)
+    public override void Update(double progress, Visual? from, Visual? to, bool forward)
     {
         var parent = GetVisualParent(from, to);
         var size = parent.Bounds.Size;
         var centerOffset = WaveCenterOffset * CenterSensitivity;
-        var isHorizontal = orientation == PageSlide.SlideAxis.Horizontal;
+        var isHorizontal = Orientation == PageSlide.SlideAxis.Horizontal;
 
         if (to != null)
         {
@@ -152,7 +150,6 @@ public class WaveRevealPageTransition : PageSlide
         Visual? fromVisual,
         Visual? toVisual,
         bool forward,
-        PageSlide.SlideAxis orientation,
         CancellationToken cancellationToken)
     {
         var durationMs = Math.Max(Duration.TotalMilliseconds * Math.Abs(to - from), 50);
@@ -166,7 +163,7 @@ public class WaveRevealPageTransition : PageSlide
             var eased = SlideInEasing?.Ease(t) ?? t;
             var progress = from + (to - from) * eased;
 
-            Update(progress, fromVisual, toVisual, forward, orientation);
+            Update(progress, fromVisual, toVisual, forward);
 
             if (t >= 1.0)
                 break;
@@ -176,7 +173,7 @@ public class WaveRevealPageTransition : PageSlide
 
         if (!cancellationToken.IsCancellationRequested)
         {
-            Update(to, fromVisual, toVisual, forward, orientation);
+            Update(to, fromVisual, toVisual, forward);
         }
     }
 

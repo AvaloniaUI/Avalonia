@@ -8,7 +8,6 @@ namespace Avalonia.Animation;
 
 public class Rotate3DTransition: PageSlide
 {
-
     /// <summary>
     ///  Creates a new instance of the <see cref="Rotate3DTransition"/>
     /// </summary>
@@ -20,7 +19,7 @@ public class Rotate3DTransition: PageSlide
     {
         Depth = depth;
     }
-    
+
     /// <summary>
     ///  Defines the depth of the 3D Effect. If null, depth will be calculated automatically from the width or height
     ///  of the common parent of the visual being rotated.
@@ -28,12 +27,12 @@ public class Rotate3DTransition: PageSlide
     public double? Depth { get; set; }
 
     /// <summary>
-    ///  Creates a new instance of the <see cref="Rotate3DTransition"/>
+    /// Initializes a new instance of the <see cref="Rotate3DTransition"/> class.
     /// </summary>
     public Rotate3DTransition() { }
 
     /// <inheritdoc />
-    public override async Task Start(Visual? @from, Visual? to, bool forward, CancellationToken cancellationToken)
+    public override async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested)
         {
@@ -49,11 +48,12 @@ public class Rotate3DTransition: PageSlide
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        var depthSetter = new Setter {Property = Rotate3DTransform.DepthProperty, Value = Depth ?? center};
-        var centerZSetter = new Setter {Property = Rotate3DTransform.CenterZProperty, Value = -center / 2};
+        var depthSetter = new Setter { Property = Rotate3DTransform.DepthProperty, Value = Depth ?? center };
+        var centerZSetter = new Setter { Property = Rotate3DTransform.CenterZProperty, Value = -center / 2 };
 
-        KeyFrame CreateKeyFrame(double cue, double rotation, int zIndex, bool isVisible = true) => 
-            new() {
+        KeyFrame CreateKeyFrame(double cue, double rotation, int zIndex, bool isVisible = true) =>
+            new()
+            {
                 Setters =
                 {
                     new Setter { Property = rotateProperty, Value = rotation },
@@ -107,10 +107,8 @@ public class Rotate3DTransition: PageSlide
         if (!cancellationToken.IsCancellationRequested)
         {
             if (to != null)
-            {
                 to.ZIndex = 2;
-            }
-            
+
             if (from != null)
             {
                 from.IsVisible = false;
@@ -120,57 +118,38 @@ public class Rotate3DTransition: PageSlide
     }
 
     /// <inheritdoc/>
-    public override void Update(double progress, Visual? from, Visual? to, bool forward, SlideAxis orientation)
+    public override void Update(double progress, Visual? from, Visual? to, bool forward)
     {
         var parent = GetVisualParent(from, to);
-        var center = orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
+        var center = Orientation == SlideAxis.Vertical ? parent.Bounds.Height : parent.Bounds.Width;
         var depth = Depth ?? center;
-        var centerZ = -center / 2;
+        var sign = forward ? 1.0 : -1.0;
 
         if (from != null)
         {
-            var fromAngle = (forward ? -1 : 1) * progress * 90;
-            var fromTransform = from.RenderTransform as Rotate3DTransform ?? new Rotate3DTransform();
-            fromTransform.Depth = depth;
-            fromTransform.CenterZ = centerZ;
-
-            if (orientation == SlideAxis.Horizontal)
-            {
-                fromTransform.AngleY = fromAngle;
-                fromTransform.AngleX = 0;
-            }
-            else
-            {
-                fromTransform.AngleX = fromAngle;
-                fromTransform.AngleY = 0;
-            }
-
-            from.RenderTransform = fromTransform;
-            from.IsVisible = true;
+            if (from.RenderTransform is not Rotate3DTransform ft)
+                from.RenderTransform = ft = new Rotate3DTransform();
+            ft.Depth = depth;
+            ft.CenterZ = -center / 2;
             from.ZIndex = progress < 0.5 ? 2 : 1;
+            if (Orientation == SlideAxis.Horizontal)
+                ft.AngleY = -sign * 90.0 * progress;
+            else
+                ft.AngleX = -sign * 90.0 * progress;
         }
 
         if (to != null)
         {
-            var toAngle = (forward ? 1 : -1) * (1 - progress) * 90;
-            var toTransform = to.RenderTransform as Rotate3DTransform ?? new Rotate3DTransform();
-            toTransform.Depth = depth;
-            toTransform.CenterZ = centerZ;
-
-            if (orientation == SlideAxis.Horizontal)
-            {
-                toTransform.AngleY = toAngle;
-                toTransform.AngleX = 0;
-            }
-            else
-            {
-                toTransform.AngleX = toAngle;
-                toTransform.AngleY = 0;
-            }
-
-            to.RenderTransform = toTransform;
             to.IsVisible = true;
-            to.ZIndex = progress >= 0.5 ? 2 : 1;
+            if (to.RenderTransform is not Rotate3DTransform tt)
+                to.RenderTransform = tt = new Rotate3DTransform();
+            tt.Depth = depth;
+            tt.CenterZ = -center / 2;
+            to.ZIndex = progress < 0.5 ? 1 : 2;
+            if (Orientation == SlideAxis.Horizontal)
+                tt.AngleY = sign * 90.0 * (1.0 - progress);
+            else
+                tt.AngleX = sign * 90.0 * (1.0 - progress);
         }
     }
 }
