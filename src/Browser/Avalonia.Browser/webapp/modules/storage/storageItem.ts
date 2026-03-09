@@ -65,7 +65,7 @@ export class StorageItem {
 
         await item.verityPermissions("readwrite");
 
-        return await (item.handle as FileSystemFileHandle).createWritable({ keepExistingData: true });
+        return await (item.handle as FileSystemFileHandle).createWritable({ keepExistingData: false });
     }
 
     public static async getProperties(item: StorageItem): Promise<{ Size: number; LastModified: number; Type: string } | null> {
