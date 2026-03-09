@@ -90,7 +90,7 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
                 session.IsYFlipped ? GRSurfaceOrigin.BottomLeft : GRSurfaceOrigin.TopLeft,
                 SKColorType.Bgra8888);
 
-            return new SkiaMetalRenderSession(_gpu, surface, session);
+            return new SkiaMetalRenderSession(_gpu, surface, session, backendTarget);
         }
 
         public bool IsCorrupted => false;
@@ -101,14 +101,17 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
         private readonly SkiaMetalGpu _gpu;
         private SKSurface? _surface;
         private IMetalPlatformSurfaceRenderingSession? _session;
+        private GRBackendRenderTarget? _backendTarget;
 
-        public SkiaMetalRenderSession(SkiaMetalGpu gpu, 
+        public SkiaMetalRenderSession(SkiaMetalGpu gpu,
             SKSurface surface,
-            IMetalPlatformSurfaceRenderingSession session)
+            IMetalPlatformSurfaceRenderingSession session,
+            GRBackendRenderTarget backendTarget)
         {
             _gpu = gpu;
             _surface = surface;
             _session = session;
+            _backendTarget = backendTarget;
         }
 
         public void Dispose()
@@ -116,11 +119,13 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
             _surface?.Canvas.Flush();
             _surface?.Flush();
             _gpu._context?.Flush();
-            
+
             _surface?.Dispose();
             _surface = null;
             _session?.Dispose();
             _session = null;
+            _backendTarget?.Dispose();
+            _backendTarget = null;
         }
 
         public GRContext GrContext => _gpu._context!;
