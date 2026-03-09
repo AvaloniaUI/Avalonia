@@ -963,23 +963,27 @@ namespace Avalonia.Controls
             // in multiple ContentPresenters simultaneously.
             if (icon is PathIcon pathIcon)
             {
-                var clone = new PathIcon
-                {
-                    Data = pathIcon.Data,
-                    Width = pathIcon.Width,
-                    Height = pathIcon.Height,
-                };
+                var clone = new PathIcon { Data = pathIcon.Data };
 
-                if (pathIcon.IsSet(PathIcon.ForegroundProperty))
-                    clone.Foreground = pathIcon.Foreground;
-                if (pathIcon.IsSet(PathIcon.OpacityProperty))
-                    clone.Opacity = pathIcon.Opacity;
-                if (pathIcon.IsSet(PathIcon.RenderTransformProperty))
-                    clone.RenderTransform = pathIcon.RenderTransform;
-                if (pathIcon.IsSet(PathIcon.RenderTransformOriginProperty))
-                    clone.RenderTransformOrigin = pathIcon.RenderTransformOrigin;
+                CopyIfSet(pathIcon, clone, PathIcon.WidthProperty);
+                CopyIfSet(pathIcon, clone, PathIcon.HeightProperty);
+                CopyIfSet(pathIcon, clone, PathIcon.MarginProperty);
+                CopyIfSet(pathIcon, clone, PathIcon.HorizontalAlignmentProperty);
+                CopyIfSet(pathIcon, clone, PathIcon.VerticalAlignmentProperty);
+                CopyIfSet(pathIcon, clone, PathIcon.ForegroundProperty);
+                CopyIfSet(pathIcon, clone, PathIcon.OpacityProperty);
+                CopyIfSet(pathIcon, clone, PathIcon.RenderTransformProperty);
+                CopyIfSet(pathIcon, clone, PathIcon.RenderTransformOriginProperty);
+
+                clone.Classes.Replace(pathIcon.Classes);
 
                 return clone;
+
+                static void CopyIfSet<T>(AvaloniaObject src, AvaloniaObject dst, AvaloniaProperty<T> property)
+                {
+                    if (src.IsSet(property))
+                        dst.SetValue(property, src.GetValue(property));
+                }
             }
 
             // For other Control subtypes, return null to avoid a crash.

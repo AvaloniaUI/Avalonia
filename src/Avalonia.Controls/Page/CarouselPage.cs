@@ -263,21 +263,5 @@ namespace Avalonia.Controls
                    Pages is IList list ? list.Count : 0;
         }
 
-        private Page? ResolvePageAtIndex(int index)
-        {
-            if (Pages is IList<Page> list && index >= 0 && index < list.Count)
-                return list[index];
-            if (Pages != null)
-            {
-                int i = 0;
-                foreach (var pg in Pages)
-                {
-                    if (i == index)
-                        return pg;
-                    i++;
-                }
-            }
-            return null;
-        }
     }
 }

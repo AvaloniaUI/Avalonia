@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
@@ -95,6 +97,32 @@ namespace Avalonia.Controls
         protected void StoreSelectedIndex(int index)
         {
             SetAndRaise(SelectedIndexProperty, ref _selectedIndex, index);
+        }
+
+        /// <summary>
+        /// Returns the page at <paramref name="index"/> from <see cref="MultiPage.Pages"/>,
+        /// or <see langword="null"/> if the index is out of range.
+        /// </summary>
+        protected Page? ResolvePageAtIndex(int index)
+        {
+            if (Pages is IList<Page> genericList)
+                return (uint)index < (uint)genericList.Count ? genericList[index] : null;
+
+            if (Pages is IList list)
+                return (uint)index < (uint)list.Count ? list[index] as Page : null;
+
+            if (Pages != null)
+            {
+                int i = 0;
+                foreach (var page in Pages)
+                {
+                    if (i == index)
+                        return page;
+                    i++;
+                }
+            }
+
+            return null;
         }
     }
 }

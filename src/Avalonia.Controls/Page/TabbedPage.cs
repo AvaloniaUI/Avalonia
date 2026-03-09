@@ -423,13 +423,11 @@ namespace Avalonia.Controls
             return -1;
         }
 
-        private Page? ResolvePageAtIndex(int index)
+        private new Page? ResolvePageAtIndex(int index)
         {
             if (_tabControl?.ContainerFromIndex(index) is TabItem ti && _containerPageMap.TryGetValue(ti, out var p))
                 return p;
-            if (Pages is IList pages && (uint)index < (uint)pages.Count)
-                return pages[index] as Page;
-            return null;
+            return base.ResolvePageAtIndex(index);
         }
 
         private void SyncTabEnabledState(Page page)
