@@ -48,64 +48,76 @@ internal partial class TopLevelHost
     internal WindowDrawnDecorations? Decorations => _decorations;
 
     /// <summary>
-    /// Enables drawn window decorations with the specified parts.
-    /// Creates the decorations instance, applies the template, and inserts layers into the visual tree.
+    /// Updates drawn window decorations with the specified parts and window state.
+    /// When <paramref name="parts"/> is <c>null</c>, decorations are removed entirely.
+    /// When non-null (including <see cref="DrawnWindowDecorationParts.None"/>), the decoration
+    /// infrastructure is kept alive and parts/fullscreen state are updated.
     /// </summary>
-    internal void EnableDecorations(DrawnWindowDecorationParts parts)
+    internal void UpdateDrawnDecorations(DrawnWindowDecorationParts? parts, WindowState windowState)
     {
+        if (parts == null)
+        {
+            RemoveDecorations();
+            return;
+        }
+
+        var enabledParts = parts.Value;
+
         if (_decorations != null)
         {
             // Layers persist across part changes; pseudo-classes driven by EnabledParts
             // control visibility of individual decoration elements in the theme.
-            _decorations.EnabledParts = parts;
+            _decorations.EnabledParts = enabledParts;
             if (_resizeGrips != null)
-                _resizeGrips.IsVisible = parts.HasFlag(DrawnWindowDecorationParts.ResizeGrips);
-            return;
+                _resizeGrips.IsVisible = enabledParts.HasFlag(DrawnWindowDecorationParts.ResizeGrips);
+        }
+        else
+        {
+            _decorations = new WindowDrawnDecorations();
+            _decorations.EnabledParts = enabledParts;
+
+            // Set up logical parenting
+            LogicalChildren.Add(_decorations);
+
+            // Create layer wrappers
+            _underlay = new LayerWrapper() { [AutomationProperties.AutomationIdProperty] = "WindowChromeUnderlay" };
+            _overlay = new LayerWrapper()  { [AutomationProperties.AutomationIdProperty] = "WindowChromeOverlay" };
+            _fullscreenPopover = new LayerWrapper()
+            {
+                IsVisible = false, [AutomationProperties.AutomationIdProperty] = "PopoverWindowChrome"
+            };
+
+            // Insert layers: underlay below TopLevel, overlay and popover above
+            // Visual order: underlay(0), TopLevel(1), overlay(2), fullscreenPopover(3), resizeGrips(4)
+            VisualChildren.Insert(0, _underlay);
+            VisualChildren.Add(_overlay);
+            VisualChildren.Add(_fullscreenPopover);
+
+            // Always create resize grips; visibility is controlled by EnabledParts
+            _resizeGrips = new ResizeGripLayer();
+            _resizeGrips.IsVisible = enabledParts.HasFlag(DrawnWindowDecorationParts.ResizeGrips);
+            VisualChildren.Add(_resizeGrips);
+
+            // Attach to window if available
+            if (_topLevel is Window window)
+                _decorations.Attach(window);
+
+            // Subscribe to template changes to re-apply and geometry changes for resize grips
+            _decorations.EffectiveGeometryChanged += OnDecorationsGeometryChanged;
+            _decorationsSubscriptions = _decorations.GetObservable(WindowDrawnDecorations.TemplateProperty)
+                .Subscribe(_ => ApplyDecorationsTemplate());
+
+            ApplyDecorationsTemplate();
+            InvalidateMeasure();
         }
 
-        _decorations = new WindowDrawnDecorations();
-        _decorations.EnabledParts = parts;
-
-        // Set up logical parenting
-        LogicalChildren.Add(_decorations);
-
-        // Create layer wrappers
-        _underlay = new LayerWrapper() { [AutomationProperties.AutomationIdProperty] = "WindowChromeUnderlay" };
-        _overlay = new LayerWrapper()  { [AutomationProperties.AutomationIdProperty] = "WindowChromeOverlay" };
-        _fullscreenPopover = new LayerWrapper()
-        {
-            IsVisible = false, [AutomationProperties.AutomationIdProperty] = "PopoverWindowChrome"
-        };
-
-        // Insert layers: underlay below TopLevel, overlay and popover above
-        // Visual order: underlay(0), TopLevel(1), overlay(2), fullscreenPopover(3), resizeGrips(4)
-        VisualChildren.Insert(0, _underlay);
-        VisualChildren.Add(_overlay);
-        VisualChildren.Add(_fullscreenPopover);
-
-        // Always create resize grips; visibility is controlled by EnabledParts
-        _resizeGrips = new ResizeGripLayer();
-        _resizeGrips.IsVisible = parts.HasFlag(DrawnWindowDecorationParts.ResizeGrips);
-        VisualChildren.Add(_resizeGrips);
-
-        // Attach to window if available
-        if (_topLevel is Window window)
-            _decorations.Attach(window);
-
-        // Subscribe to template changes to re-apply and geometry changes for resize grips
-        _decorations.EffectiveGeometryChanged += OnDecorationsGeometryChanged;
-        _decorationsSubscriptions = _decorations.GetObservable(WindowDrawnDecorations.TemplateProperty)
-            .Subscribe(_ => ApplyDecorationsTemplate());
-
-        ApplyDecorationsTemplate();
-        InvalidateMeasure();
-        _decorationsOverlayPeer?.InvalidateChildren();
+        ApplyFullscreenState(windowState == WindowState.FullScreen);
     }
 
     /// <summary>
-    /// Disables drawn window decorations and removes all layers.
+    /// Removes drawn window decorations and all associated layers.
     /// </summary>
-    internal void DisableDecorations()
+    private void RemoveDecorations()
     {
         if (_decorations == null)
             return;
@@ -192,15 +204,15 @@ internal partial class TopLevelHost
     }
 
     /// <summary>
-    /// Shows or hides the fullscreen popover based on the window state.
-    /// Called by Window when window state changes.
+    /// Applies fullscreen-specific layer visibility: hides overlay/underlay and enables
+    /// popover hover detection, or restores normal state.
     /// </summary>
-    internal void SetFullscreenPopoverEnabled(bool enabled)
+    private void ApplyFullscreenState(bool isFullscreen)
     {
         if (_fullscreenPopover == null)
             return;
 
-        if (enabled)
+        if (isFullscreen)
         {
             // In fullscreen mode, hide overlay and underlay, enable popover hover detection
             if (_overlay != null)
