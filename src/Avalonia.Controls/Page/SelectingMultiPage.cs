@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -24,6 +25,14 @@ namespace Avalonia.Controls
                 nameof(SelectedPage),
                 o => o._selectedPage);
 
+        /// <summary>
+        /// Defines the <see cref="SelectionChanged"/> routed event.
+        /// </summary>
+        public static readonly RoutedEvent<PageSelectionChangedEventArgs> SelectionChangedEvent =
+            RoutedEvent.Register<SelectingMultiPage, PageSelectionChangedEventArgs>(
+                nameof(SelectionChanged),
+                RoutingStrategies.Bubble);
+
         private int _selectedIndex = -1;
         private Page? _selectedPage;
 
@@ -44,7 +53,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the selected page changes.
         /// </summary>
-        public event EventHandler<PageSelectionChangedEventArgs>? SelectionChanged;
+        public event EventHandler<PageSelectionChangedEventArgs>? SelectionChanged
+        {
+            add => AddHandler(SelectionChangedEvent, value);
+            remove => RemoveHandler(SelectionChangedEvent, value);
+        }
 
         /// <summary>
         /// Commits a selection change and fires lifecycle events on the outgoing and incoming pages.
@@ -57,7 +70,7 @@ namespace Avalonia.Controls
             SetCurrentValue(CurrentPageProperty, newPage);
             if (!ReferenceEquals(previousPage, newPage))
             {
-                SelectionChanged?.Invoke(this, new PageSelectionChangedEventArgs(previousPage, newPage));
+                RaiseEvent(new PageSelectionChangedEventArgs(SelectionChangedEvent, previousPage, newPage));
 
                 if (previousPage != null)
                 {
