@@ -16,13 +16,27 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Carousel, IPageTransition?>(nameof(PageTransition));
 
         /// <summary>
-        /// The default value of <see cref="ItemsControl.ItemsPanelProperty"/> for 
+        /// Defines the <see cref="IsSwipeEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsSwipeEnabledProperty =
+            AvaloniaProperty.Register<Carousel, bool>(nameof(IsSwipeEnabled), defaultValue: false);
+
+        /// <summary>
+        /// Defines the <see cref="IsSwiping"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Carousel, bool> IsSwipingProperty =
+            AvaloniaProperty.RegisterDirect<Carousel, bool>(nameof(IsSwiping),
+                o => o.IsSwiping);
+
+        /// <summary>
+        /// The default value of <see cref="ItemsControl.ItemsPanelProperty"/> for
         /// <see cref="Carousel"/>.
         /// </summary>
         private static readonly FuncTemplate<Panel?> DefaultPanel =
             new(() => new VirtualizingCarouselPanel());
 
         private IScrollable? _scroller;
+        private bool _isSwiping;
 
         /// <summary>
         /// Initializes static members of the <see cref="Carousel"/> class.
@@ -43,10 +57,34 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets whether swipe gestures are enabled for navigating between pages.
+        /// When enabled, mouse pointer events are also accepted in addition to touch and pen.
+        /// </summary>
+        public bool IsSwipeEnabled
+        {
+            get => GetValue(IsSwipeEnabledProperty);
+            set => SetValue(IsSwipeEnabledProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether a swipe gesture is currently in progress.
+        /// </summary>
+        public bool IsSwiping
+        {
+            get => _isSwiping;
+            internal set => SetAndRaise(IsSwipingProperty, ref _isSwiping, value);
+        }
+
+        /// <summary>
         /// Moves to the next item in the carousel.
         /// </summary>
         public void Next()
         {
+            if (ItemCount == 0)
+            {
+                return;
+            }
+
             if (SelectedIndex < ItemCount - 1)
             {
                 ++SelectedIndex;
@@ -58,10 +96,24 @@ namespace Avalonia.Controls
         /// </summary>
         public void Previous()
         {
+            if (ItemCount == 0)
+            {
+                return;
+            }
+
             if (SelectedIndex > 0)
             {
                 --SelectedIndex;
             }
+        }
+
+        internal PageSlide.SlideAxis? GetTransitionAxis()
+        {
+            return PageTransition switch
+            {
+                PageSlide ps => ps.Orientation,
+                _ => null
+            };
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -69,7 +121,9 @@ namespace Avalonia.Controls
             var result = base.ArrangeOverride(finalSize);
 
             if (_scroller is not null)
+            {
                 _scroller.Offset = new(SelectedIndex, 0);
+            }
 
             return result;
         }

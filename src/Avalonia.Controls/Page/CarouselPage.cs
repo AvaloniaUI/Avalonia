@@ -8,7 +8,6 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
-using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -23,10 +22,6 @@ namespace Avalonia.Controls
     public class CarouselPage : SelectingMultiPage
     {
         private Carousel? _carousel;
-        private readonly SwipeGestureRecognizer _swipeRecognizer = new SwipeGestureRecognizer
-        {
-            IsEnabled = true
-        };
 
         private static readonly FuncTemplate<Panel?> DefaultPanel =
             new FuncTemplate<Panel?>(() => new VirtualizingCarouselPanel());
@@ -64,8 +59,6 @@ namespace Avalonia.Controls
         public CarouselPage()
         {
             SetCurrentValue(PagesProperty, new AvaloniaList<Page>());
-            GestureRecognizers.Add(_swipeRecognizer);
-            AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
             AddHandler(PointerWheelChangedEvent, OnPointerWheelTunnel, RoutingStrategies.Tunnel);
         }
 
@@ -117,9 +110,12 @@ namespace Avalonia.Controls
             if (_carousel != null)
             {
                 _carousel.SelectionChanged += OnCarouselSelectionChanged;
+                _carousel.IsSwipeEnabled = IsGestureEnabled;
 
                 if (SelectedIndex >= 0)
+                {
                     _carousel.SelectedIndex = SelectedIndex;
+                }
 
                 UpdateActivePage();
             }
@@ -135,8 +131,8 @@ namespace Avalonia.Controls
                 _carousel.ItemsPanel = change.GetNewValue<ITemplate<Panel?>>();
             else if (change.Property == PageTemplateProperty && _carousel != null)
                 _carousel.ItemTemplate = change.GetNewValue<IDataTemplate?>();
-            else if (change.Property == IsGestureEnabledProperty)
-                _swipeRecognizer.IsEnabled = change.GetNewValue<bool>();
+            else if (change.Property == IsGestureEnabledProperty && _carousel != null)
+                _carousel.IsSwipeEnabled = change.GetNewValue<bool>();
         }
 
         protected override void UpdateActivePage(NavigationType navigationType)
@@ -181,7 +177,7 @@ namespace Avalonia.Controls
             if (e.Handled || !IsKeyboardNavigationEnabled)
                 return;
 
-            bool isRtl = FlowDirection == FlowDirection.RightToLeft;
+            bool isRtl = FlowDirection == Media.FlowDirection.RightToLeft;
             bool next = isRtl ? e.Key == Key.Left : e.Key == Key.Right;
             bool prev = isRtl ? e.Key == Key.Right : e.Key == Key.Left;
 
@@ -230,33 +226,6 @@ namespace Avalonia.Controls
             UpdateAccessibilityName(newIndex, GetPageCount(), newPage);
         }
 
-        private void OnSwipeGesture(object? sender, SwipeGestureEventArgs e)
-        {
-            if (!IsGestureEnabled)
-                return;
-
-            bool isRtl = FlowDirection == FlowDirection.RightToLeft;
-            int delta = (e.SwipeDirection, isRtl) switch
-            {
-                (SwipeDirection.Left,  false) => +1,
-                (SwipeDirection.Right, false) => -1,
-                (SwipeDirection.Left,  true)  => -1,
-                (SwipeDirection.Right, true)  => +1,
-                _ => 0
-            };
-
-            if (delta == 0)
-                return;
-
-            var pageCount = GetPageCount();
-            var next = SelectedIndex + delta;
-            if (next >= 0 && next < pageCount)
-            {
-                ApplySelectedIndex(next);
-                e.Handled = true;
-            }
-        }
-
         private void OnPointerWheelTunnel(object? sender, PointerWheelEventArgs e)
         {
             if (!IsGestureEnabled)
@@ -265,7 +234,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            bool isRtl = FlowDirection == FlowDirection.RightToLeft;
+            bool isRtl = FlowDirection == Media.FlowDirection.RightToLeft;
             var pageCount = GetPageCount();
             bool goNext = e.Delta.Y < 0 || (isRtl ? e.Delta.X < 0 : e.Delta.X > 0);
             bool goPrev = e.Delta.Y > 0 || (isRtl ? e.Delta.X > 0 : e.Delta.X < 0);

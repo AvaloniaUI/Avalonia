@@ -710,6 +710,81 @@ public class CarouselPageTests
         }
     }
 
+    public class InteractiveTransitionTests : ScopedTestBase
+    {
+        [Fact]
+        public void PageSlide_Update_AppliesTranslateTransformToFrom()
+        {
+            var parent = new Canvas { Width = 400, Height = 300 };
+            var from = new Border();
+            var to = new Border();
+            parent.Children.Add(from);
+            parent.Children.Add(to);
+            parent.Measure(new Size(400, 300));
+            parent.Arrange(new Rect(0, 0, 400, 300));
+
+            var slide = new PageSlide(TimeSpan.FromMilliseconds(300));
+            slide.Update(0.5, from, to, true);
+
+            Assert.IsType<TranslateTransform>(from.RenderTransform);
+            var ft = (TranslateTransform)from.RenderTransform!;
+            Assert.Equal(-200, ft.X);
+        }
+
+        [Fact]
+        public void PageSlide_Update_AppliesTranslateTransformToTo()
+        {
+            var parent = new Canvas { Width = 400, Height = 300 };
+            var from = new Border();
+            var to = new Border();
+            parent.Children.Add(from);
+            parent.Children.Add(to);
+            parent.Measure(new Size(400, 300));
+            parent.Arrange(new Rect(0, 0, 400, 300));
+
+            var slide = new PageSlide(TimeSpan.FromMilliseconds(300));
+            slide.Update(0.5, from, to, true);
+
+            Assert.IsType<TranslateTransform>(to.RenderTransform);
+            var tt = (TranslateTransform)to.RenderTransform!;
+            Assert.Equal(200, tt.X);
+        }
+
+        [Fact]
+        public void CrossFade_Update_SetsOpacity()
+        {
+            var from = new Border();
+            var to = new Border();
+
+            var crossFade = new CrossFade(TimeSpan.FromMilliseconds(300));
+            crossFade.Update(0.5, from, to, true);
+
+            Assert.Equal(0.5, from.Opacity, 2);
+            Assert.Equal(0.5, to.Opacity, 2);
+            Assert.True(to.IsVisible);
+        }
+
+    }
+
+    public class CarouselIsSwipeEnabledTests : ScopedTestBase
+    {
+        [Fact]
+        public void IsSwipeEnabled_DefaultIsFalse()
+        {
+            var carousel = new Carousel();
+            Assert.False(carousel.IsSwipeEnabled);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void IsSwipeEnabled_RoundTrips(bool value)
+        {
+            var carousel = new Carousel { IsSwipeEnabled = value };
+            Assert.Equal(value, carousel.IsSwipeEnabled);
+        }
+    }
+
     private sealed class TestPageTransition : IPageTransition
     {
         public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)

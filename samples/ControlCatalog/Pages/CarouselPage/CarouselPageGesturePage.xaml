@@ -40,6 +40,9 @@
             BorderThickness="1" CornerRadius="6" ClipToBounds="True">
       <CarouselPage x:Name="DemoCarousel"
                     SelectionChanged="OnSelectionChanged">
+        <CarouselPage.PageTransition>
+          <PageSlide Duration="0:0:0.3" Orientation="Horizontal" />
+        </CarouselPage.PageTransition>
         <ContentPage Header="Page 1" Background="#BBDEFB">
           <TextBlock Text="Page 1 — Swipe or drag to navigate"
                      HorizontalAlignment="Center" VerticalAlignment="Center"
