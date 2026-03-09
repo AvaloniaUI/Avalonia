@@ -22,6 +22,10 @@ namespace Avalonia.Controls
     [PseudoClasses(":first-page", ":last-page", ":vertical", ":horizontal")]
     public class PipsPager : TemplatedControl
     {
+        private const string PART_PreviousButton = "PART_PreviousButton";
+        private const string PART_NextButton = "PART_NextButton";
+        private const string PART_PipsPagerList = "PART_PipsPagerList";
+
         private Button? _previousButton;
         private Button? _nextButton;
         private ItemsControl? _pipsPagerList;
@@ -86,9 +90,19 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<PipsPager, ControlTheme?>(nameof(NextButtonStyle));
 
         /// <summary>
+        /// Defines the <see cref="SelectedIndexChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PipsPagerSelectedIndexChangedEventArgs> SelectedIndexChangedEvent =
+            RoutedEvent.Register<PipsPager, PipsPagerSelectedIndexChangedEventArgs>(nameof(SelectedIndexChanged), RoutingStrategies.Bubble);
+
+        /// <summary>
         /// Occurs when the selected index has changed.
         /// </summary>
-        public event EventHandler<PipsPagerSelectedIndexChangedEventArgs>? SelectedIndexChanged;
+        public event EventHandler<PipsPagerSelectedIndexChangedEventArgs>? SelectedIndexChanged
+        {
+            add => AddHandler(SelectedIndexChangedEvent, value);
+            remove => RemoveHandler(SelectedIndexChangedEvent, value);
+        }
 
         static PipsPager()
         {
@@ -215,9 +229,9 @@ namespace Avalonia.Controls
             }
 
             // Get template parts
-            _previousButton = e.NameScope.Find<Button>("PART_PreviousButton");
-            _nextButton = e.NameScope.Find<Button>("PART_NextButton");
-            _pipsPagerList = e.NameScope.Find<ItemsControl>("PART_PipsPagerList");
+            _previousButton = e.NameScope.Find<Button>(PART_PreviousButton);
+            _nextButton = e.NameScope.Find<Button>(PART_NextButton);
+            _pipsPagerList = e.NameScope.Find<ItemsControl>(PART_PipsPagerList);
 
             // Set up previous button
             if (_previousButton != null)
@@ -232,8 +246,6 @@ namespace Avalonia.Controls
                 _nextButton.Click += NextButton_Click;
                 AutomationProperties.SetName(_nextButton, "Next page");
             }
-
-            UpdateNavigationButtonIcons();
 
             // Set up pips list
             if (_pipsPagerList != null)
@@ -256,67 +268,44 @@ namespace Avalonia.Controls
             if (e.Handled)
                 return;
 
-            if (Orientation == Orientation.Horizontal)
-            {
-                if (e.Key == Key.Left)
-                {
-                    if (SelectedPageIndex > 0)
-                    {
-                        SetCurrentValue(SelectedPageIndexProperty, SelectedPageIndex - 1);
-                        e.Handled = true;
-                    }
-                }
-                else if (e.Key == Key.Right)
-                {
-                    if (SelectedPageIndex < NumberOfPages - 1)
-                    {
-                        SetCurrentValue(SelectedPageIndexProperty, SelectedPageIndex + 1);
-                        e.Handled = true;
-                    }
-                }
-            }
-            else
-            {
-                if (e.Key == Key.Up)
-                {
-                    if (SelectedPageIndex > 0)
-                    {
-                        SetCurrentValue(SelectedPageIndexProperty, SelectedPageIndex - 1);
-                        e.Handled = true;
-                    }
-                }
-                else if (e.Key == Key.Down)
-                {
-                    if (SelectedPageIndex < NumberOfPages - 1)
-                    {
-                        SetCurrentValue(SelectedPageIndexProperty, SelectedPageIndex + 1);
-                        e.Handled = true;
-                    }
-                }
-            }
+            var isHorizontal = Orientation == Orientation.Horizontal;
 
-            if (!e.Handled)
+            switch (e.Key)
             {
-                if (e.Key == Key.Home)
-                {
+                case Key.Left when isHorizontal:
+                case Key.Up when !isHorizontal:
+                    if (SelectedPageIndex > 0)
+                    {
+                        SetCurrentValue(SelectedPageIndexProperty, SelectedPageIndex - 1);
+                        e.Handled = true;
+                    }
+                    break;
+                case Key.Right when isHorizontal:
+                case Key.Down when !isHorizontal:
+                    if (SelectedPageIndex < NumberOfPages - 1)
+                    {
+                        SetCurrentValue(SelectedPageIndexProperty, SelectedPageIndex + 1);
+                        e.Handled = true;
+                    }
+                    break;
+                case Key.Home:
                     SetCurrentValue(SelectedPageIndexProperty, 0);
                     e.Handled = true;
-                }
-                else if (e.Key == Key.End)
-                {
+                    break;
+                case Key.End:
                     if (NumberOfPages > 0)
                     {
                         SetCurrentValue(SelectedPageIndexProperty, NumberOfPages - 1);
                         e.Handled = true;
                     }
-                }
+                    break;
             }
         }
 
         private void OnSelectedPageIndexChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var newIndex = (int)e.NewValue!;
-            var oldIndex = (int)e.OldValue!;
+            var newIndex = e.GetNewValue<int>();
+            var oldIndex = e.GetOldValue<int>();
 
             if (newIndex < 0)
             {
@@ -345,12 +334,12 @@ namespace Avalonia.Controls
             UpdatePseudoClasses();
             RequestScrollToSelectedPip();
 
-            SelectedIndexChanged?.Invoke(this, new PipsPagerSelectedIndexChangedEventArgs(oldIndex, newIndex));
+            RaiseEvent(new PipsPagerSelectedIndexChangedEventArgs(oldIndex, newIndex));
         }
 
         private void OnNumberOfPagesChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var newValue = (int)e.NewValue!;
+            var newValue = e.GetNewValue<int>();
 
             if (newValue < 0)
             {
@@ -405,7 +394,6 @@ namespace Avalonia.Controls
         {
             UpdatePseudoClasses();
             UpdatePagerSize();
-            UpdateNavigationButtonIcons();
         }
 
         private void OnMaxVisiblePipsChanged(AvaloniaPropertyChangedEventArgs e)
@@ -557,25 +545,7 @@ namespace Avalonia.Controls
              }
         }
 
-        private void UpdateNavigationButtonIcons()
-        {
-            var isVertical = Orientation == Orientation.Vertical;
 
-            if (_previousButton != null)
-            {
-                if (isVertical)
-                    _previousButton.Classes.Add("vertical");
-                else
-                    _previousButton.Classes.Remove("vertical");
-            }
 
-            if (_nextButton != null)
-            {
-                if (isVertical)
-                    _nextButton.Classes.Add("vertical");
-                else
-                    _nextButton.Classes.Remove("vertical");
-            }
-        }
     }
 }

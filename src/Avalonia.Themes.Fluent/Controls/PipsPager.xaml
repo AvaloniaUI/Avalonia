@@ -55,89 +55,11 @@
     </Style>
   </ControlTheme>
 
-  <!-- Previous button theme with built-in icon -->
-  <ControlTheme x:Key="PipsPagerPreviousButtonTheme" TargetType="Button" BasedOn="{StaticResource PipsPagerNavigationButtonTheme}">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Border Name="PART_Border"
-                Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}"
-                CornerRadius="{TemplateBinding CornerRadius}"
-                Padding="{TemplateBinding Padding}">
-          <PathIcon Name="Icon"
-                    Width="10" Height="10" 
-                    Data="{StaticResource PipsPagerPreviousPageButtonData}"
-                    Foreground="{TemplateBinding Foreground}" />
-        </Border>
-      </ControlTemplate>
-    </Setter>
-    
-    <!-- Use vertical arrow icon in vertical orientation -->
-    <Style Selector="^.vertical /template/ PathIcon#Icon">
-      <Setter Property="Data" Value="{StaticResource PipsPagerPreviousPageButtonVerticalData}" />
-    </Style>
-    
-    <Style Selector="^:pointerover /template/ Border#PART_Border">
-      <Setter Property="Background" Value="Transparent" />
-    </Style>
-    <Style Selector="^:pointerover">
-      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPointerOver}" />
-    </Style>
+  <!-- Previous button theme -->
+  <ControlTheme x:Key="PipsPagerPreviousButtonTheme" TargetType="Button" BasedOn="{StaticResource PipsPagerNavigationButtonTheme}" />
 
-    <Style Selector="^:pressed /template/ Border#PART_Border">
-      <Setter Property="Background" Value="Transparent" />
-    </Style>
-    <Style Selector="^:pressed">
-      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPressed}" />
-    </Style>
-
-    <Style Selector="^:disabled">
-      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundDisabled}" />
-    </Style>
-  </ControlTheme>
-
-  <!-- Next button theme with built-in icon -->
-  <ControlTheme x:Key="PipsPagerNextButtonTheme" TargetType="Button" BasedOn="{StaticResource PipsPagerNavigationButtonTheme}">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Border Name="PART_Border"
-                Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}"
-                CornerRadius="{TemplateBinding CornerRadius}"
-                Padding="{TemplateBinding Padding}">
-          <PathIcon Name="Icon"
-                    Width="10" Height="10" 
-                    Data="{StaticResource PipsPagerNextPageButtonData}"
-                    Foreground="{TemplateBinding Foreground}" />
-        </Border>
-      </ControlTemplate>
-    </Setter>
-    
-    <!-- Use vertical arrow icon in vertical orientation -->
-    <Style Selector="^.vertical /template/ PathIcon#Icon">
-      <Setter Property="Data" Value="{StaticResource PipsPagerNextPageButtonVerticalData}" />
-    </Style>
-    
-    <Style Selector="^:pointerover /template/ Border#PART_Border">
-      <Setter Property="Background" Value="Transparent" />
-    </Style>
-    <Style Selector="^:pointerover">
-      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPointerOver}" />
-    </Style>
-
-    <Style Selector="^:pressed /template/ Border#PART_Border">
-      <Setter Property="Background" Value="Transparent" />
-    </Style>
-    <Style Selector="^:pressed">
-      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPressed}" />
-    </Style>
-
-    <Style Selector="^:disabled">
-      <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundDisabled}" />
-    </Style>
-  </ControlTheme>
+  <!-- Next button theme -->
+  <ControlTheme x:Key="PipsPagerNextButtonTheme" TargetType="Button" BasedOn="{StaticResource PipsPagerNavigationButtonTheme}" />
 
   <ControlTheme x:Key="PipsPagerItemTheme" TargetType="ListBoxItem">
     <Setter Property="Width" Value="12" />
@@ -213,7 +135,10 @@
                   Theme="{TemplateBinding PreviousButtonStyle}"
                   IsVisible="{TemplateBinding IsPreviousButtonVisible}"
                   VerticalAlignment="Center"
-                  HorizontalAlignment="Center" />
+                  HorizontalAlignment="Center">
+            <PathIcon Name="PreviousButtonIcon" Width="10" Height="10"
+                      Data="{StaticResource PipsPagerPreviousPageButtonData}" />
+          </Button>
 
           <ListBox Name="PART_PipsPagerList"
                    Background="Transparent"
@@ -247,7 +172,10 @@
                   Theme="{TemplateBinding NextButtonStyle}"
                   IsVisible="{TemplateBinding IsNextButtonVisible}"
                   VerticalAlignment="Center"
-                  HorizontalAlignment="Center" />
+                  HorizontalAlignment="Center">
+            <PathIcon Name="NextButtonIcon" Width="10" Height="10"
+                      Data="{StaticResource PipsPagerNextPageButtonData}" />
+          </Button>
         </StackPanel>
       </ControlTemplate>
     </Setter>
@@ -264,6 +192,13 @@
     <Style Selector="^:vertical /template/ StackPanel#PART_RootPanel">
       <Setter Property="Orientation" Value="Vertical" />
       <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <Style Selector="^:vertical /template/ Button#PART_PreviousButton PathIcon#PreviousButtonIcon">
+      <Setter Property="Data" Value="{StaticResource PipsPagerPreviousPageButtonVerticalData}" />
+    </Style>
+    <Style Selector="^:vertical /template/ Button#PART_NextButton PathIcon#NextButtonIcon">
+      <Setter Property="Data" Value="{StaticResource PipsPagerNextPageButtonVerticalData}" />
     </Style>
 
     <Style Selector="^:first-page /template/ Button#PART_PreviousButton">

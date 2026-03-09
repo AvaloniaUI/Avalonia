@@ -1,13 +1,14 @@
-using System;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Provides data for the <see cref="PipsPager.SelectedIndexChanged"/> event.
     /// </summary>
-    public class PipsPagerSelectedIndexChangedEventArgs : EventArgs
+    public class PipsPagerSelectedIndexChangedEventArgs : RoutedEventArgs
     {
-        internal PipsPagerSelectedIndexChangedEventArgs(int oldIndex, int newIndex)
+        public PipsPagerSelectedIndexChangedEventArgs(int oldIndex, int newIndex)
+            : base(PipsPager.SelectedIndexChangedEvent)
         {
             OldIndex = oldIndex;
             NewIndex = newIndex;

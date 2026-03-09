@@ -32,16 +32,17 @@ namespace Avalonia.Skia.RenderTests
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
-                var buttonTemplate = new FuncControlTemplate<Button>((b, s) => 
-                    new Border 
-                    { 
-                        Background = Brushes.LightGray, 
-                        Child = new TextBlock 
-                        { 
+                var buttonTemplate = new FuncControlTemplate<Button>((b, s) =>
+                    new Border
+                    {
+                        Background = Brushes.LightGray,
+                        Child = new TextBlock
+                        {
                             [!TextBlock.TextProperty] = b[!Button.ContentProperty],
+                            FontFamily = TestFontFamily,
                             VerticalAlignment = VerticalAlignment.Center,
                             HorizontalAlignment = HorizontalAlignment.Center
-                        } 
+                        }
                     });
 
                 var prevButton = new Button
