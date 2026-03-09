@@ -5,11 +5,12 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Media;
-using Avalonia.Threading;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -52,14 +53,13 @@ namespace Avalonia.Controls
         private const double MaxCompletionDuration = 0.35;
         private const double MinCompletionDuration = 0.12;
 
-        private DispatcherTimer? _completionTimer;
-        private Carousel? _completionCarousel;
-        private double _completionStartProgress;
-        private double _completionEndProgress;
-        private long _completionStartTimestamp;
-        private long _completionDurationTicks;
-        private bool _isRubberBanding;
+        private static readonly StyledProperty<double> CompletionProgressProperty =
+            AvaloniaProperty.Register<VirtualizingCarouselPanel, double>("CompletionProgress");
 
+        private CancellationTokenSource? _completionCts;
+        private Carousel? _completionCarousel;
+        private double _completionEndProgress;
+        private bool _isRubberBanding;
 
         bool ILogicalScrollable.CanHorizontallyScroll
         {
@@ -485,7 +485,7 @@ namespace Avalonia.Controls
 
         private void TeardownGestureRecognizer()
         {
-            _completionTimer?.Stop();
+            _completionCts?.Cancel();
 
             if (_swipeGestureRecognizer is not null)
             {
@@ -503,9 +503,9 @@ namespace Avalonia.Controls
             if (ItemsControl is not Carousel carousel || !carousel.IsSwipeEnabled)
                 return;
 
-            if (_completionTimer is { IsEnabled: true })
+            if (_completionCts is { IsCancellationRequested: false })
             {
-                _completionTimer.Stop();
+                _completionCts.Cancel();
 
                 // A new swipe interrupted the completion animation.
                 // Finalize the previous gesture before starting a new one.
@@ -645,81 +645,94 @@ namespace Avalonia.Controls
                              (velocity > VelocityCommitThreshold && currentProgress >= MinSwipeDistanceForVelocityCommit))
                          && _swipeTarget is not null;
 
-            _completionStartProgress = currentProgress;
             _completionEndProgress = commit ? 1.0 : 0.0;
-            _completionStartTimestamp = Stopwatch.GetTimestamp();
             _completionCarousel = carousel;
 
-            var remainingDistance = Math.Abs(_completionEndProgress - _completionStartProgress);
+            var remainingDistance = Math.Abs(_completionEndProgress - currentProgress);
             var durationSeconds = velocity > 0
                 ? Math.Clamp(remainingDistance * size / velocity, MinCompletionDuration, MaxCompletionDuration)
                 : MaxCompletionDuration;
-            _completionDurationTicks = (long)(Stopwatch.Frequency * durationSeconds);
 
-            if (_completionTimer is null)
+            _completionCts?.Cancel();
+            _completionCts = new CancellationTokenSource();
+
+            SetValue(CompletionProgressProperty, currentProgress);
+
+            var animation = new Animation.Animation
             {
-                _completionTimer = new DispatcherTimer(
-                    TimeSpan.FromMilliseconds(16),
-                    DispatcherPriority.Render,
-                    OnCompletionTimerTick);
-            }
-            _completionTimer.Start();
+                FillMode = FillMode.Forward,
+                Easing = new QuadraticEaseOut(),
+                Duration = TimeSpan.FromSeconds(durationSeconds),
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters = { new Setter { Property = CompletionProgressProperty, Value = currentProgress } },
+                        Cue = new Cue(0d)
+                    },
+                    new KeyFrame
+                    {
+                        Setters = { new Setter { Property = CompletionProgressProperty, Value = _completionEndProgress } },
+                        Cue = new Cue(1d)
+                    }
+                }
+            };
 
             _isDragging = false;
+
+            _ = RunCompletionAnimation(animation, carousel, _completionCts.Token);
         }
 
-        private void OnCompletionTimerTick(object? sender, EventArgs e)
+        private async Task RunCompletionAnimation(Animation.Animation animation, Carousel carousel, CancellationToken cancellationToken)
         {
-            var carousel = _completionCarousel!;
-            var elapsedTicks = Stopwatch.GetTimestamp() - _completionStartTimestamp;
-            var ratio = Math.Min(1.0, (double)elapsedTicks / _completionDurationTicks);
+            await animation.RunAsync(this, null, cancellationToken);
 
-            // Ease-out: fast start, smooth deceleration
-            var eased = 1.0 - (1.0 - ratio) * (1.0 - ratio);
-            var progress = _completionStartProgress + (_completionEndProgress - _completionStartProgress) * eased;
+            if (cancellationToken.IsCancellationRequested)
+                return;
 
-            if (GetTransition() is IInteractivePageTransition interactive)
+            var commit = _completionEndProgress > 0.5;
+
+            if (commit && _swipeTarget is not null)
             {
-                interactive.Update(progress, _realized, _swipeTarget, _isForward);
+                var targetIndex = _swipeTargetIndex;
+                var targetElement = _swipeTarget;
+
+                if (_realized != null)
+                {
+                    ResetVisualState(_realized);
+                    RecycleElement(_realized);
+                }
+
+                _realized = targetElement;
+                _realizedIndex = targetIndex;
+                ResetVisualState(_realized);
+
+                carousel.SelectedIndex = targetIndex;
+            }
+            else
+            {
+                ResetSwipeState();
             }
 
-            if (ratio >= 1.0)
+            _totalDelta = 0;
+            _swipeTarget = null;
+            _swipeTargetIndex = -1;
+            _isRubberBanding = false;
+            carousel.IsSwiping = false;
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == CompletionProgressProperty)
             {
-                _completionTimer?.Stop();
-
-                var commit = _completionEndProgress > 0.5;
-
-                if (commit && _swipeTarget is not null)
+                var progress = change.GetNewValue<double>();
+                if (GetTransition() is IInteractivePageTransition interactive)
                 {
-                    // Snap to the new state
-                    var targetIndex = _swipeTargetIndex;
-                    var targetElement = _swipeTarget;
-
-                    // Swap the realized element before setting SelectedIndex
-                    // to prevent MeasureOverride from starting a NEW transition.
-                    if (_realized != null)
-                    {
-                        ResetVisualState(_realized);
-                        RecycleElement(_realized);
-                    }
-
-                    _realized = targetElement;
-                    _realizedIndex = targetIndex;
-                    ResetVisualState(_realized);
-                    
-                    carousel.SelectedIndex = targetIndex;
+                    interactive.Update(progress, _realized, _swipeTarget, _isForward);
                 }
-                else
-                {
-                    // Snap back
-                    ResetSwipeState();
-                }
-
-                _totalDelta = 0;
-                _swipeTarget = null;
-                _swipeTargetIndex = -1;
-                _isRubberBanding = false;
-                carousel.IsSwiping = false;
             }
         }
 
