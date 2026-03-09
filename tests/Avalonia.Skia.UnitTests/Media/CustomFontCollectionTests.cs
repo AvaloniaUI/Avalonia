@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Avalonia.Media;
@@ -29,20 +30,21 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 var infos = new[]
                 {
-                    new FontAssetInfo($"{AssetsNamespace}.AdobeBlank2VF.ttf", "Adobe Blank 2 VF R"),
-                    new FontAssetInfo($"{AssetsNamespace}.Inter-Regular.ttf", "Inter"),
-                    new FontAssetInfo($"{AssetsNamespace}.Manrope-Light.ttf", "Manrope Light"),
-                    new FontAssetInfo($"{AssetsNamespace}.MiSans-Normal.ttf", "MiSans Normal"),
-                    new FontAssetInfo($"{AssetsNamespace}.NISC18030.ttf", "GB18030 Bitmap"),
-                    new FontAssetInfo($"{AssetsNamespace}.NotoMono-Regular.ttf", "Noto Mono"),
-                    new FontAssetInfo($"{AssetsNamespace}.NotoSans-Italic.ttf", "Noto Sans"),
-                    new FontAssetInfo($"{AssetsNamespace}.NotoSansArabic-Regular.ttf", "Noto Sans Arabic"),
-                    new FontAssetInfo($"{AssetsNamespace}.NotoSansDeseret-Regular.ttf", "Noto Sans Deseret"),
-                    new FontAssetInfo($"{AssetsNamespace}.NotoSansHebrew-Regular.ttf", "Noto Sans Hebrew"),
-                    new FontAssetInfo($"{AssetsNamespace}.NotoSansMiao-Regular.ttf", "Noto Sans Miao"),
-                    new FontAssetInfo($"{AssetsNamespace}.NotoSansTamil-Regular.ttf", "Noto Sans Tamil"),
-                    new FontAssetInfo($"{AssetsNamespace}.SourceSerif4_36pt-Italic.ttf", "Source Serif 4 36pt"),
-                    new FontAssetInfo($"{AssetsNamespace}.TwitterColorEmoji-SVGinOT.ttf", "Twitter Color Emoji")
+                    new FontAssetInfo($"{AssetsNamespace}.AdobeBlank2VF.ttf", "Adobe Blank 2 VF R", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.Inter-Bold.ttf", "Inter", FontWeight.Bold),
+                    new FontAssetInfo($"{AssetsNamespace}.Inter-Regular.ttf", "Inter", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.Manrope-Light.ttf", "Manrope Light", FontWeight.Light),
+                    new FontAssetInfo($"{AssetsNamespace}.MiSans-Normal.ttf", "MiSans Normal", (FontWeight)305),
+                    new FontAssetInfo($"{AssetsNamespace}.NISC18030.ttf", "GB18030 Bitmap", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoMono-Regular.ttf", "Noto Mono", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoSans-Italic.ttf", "Noto Sans", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoSansArabic-Regular.ttf", "Noto Sans Arabic", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoSansDeseret-Regular.ttf", "Noto Sans Deseret", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoSansHebrew-Regular.ttf", "Noto Sans Hebrew", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoSansMiao-Regular.ttf", "Noto Sans Miao", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.NotoSansTamil-Regular.ttf", "Noto Sans Tamil", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.SourceSerif4_36pt-Italic.ttf", "Source Serif 4 36pt", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.TwitterColorEmoji-SVGinOT.ttf", "Twitter Color Emoji", FontWeight.Normal)
                 };
 
                 var assets = assetLoader.GetAssets(new Uri(AssetFonts, UriKind.Absolute), null)
@@ -51,6 +53,9 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 Assert.Equal(infos.Length, assets.Length);
 
+                var glyphTypefaces = new GlyphTypeface[infos.Length];
+
+                // Load fonts
                 for (var i = 0; i < infos.Length; ++i)
                 {
                     var info = infos[i];
@@ -63,8 +68,18 @@ namespace Avalonia.Skia.UnitTests.Media
 
                     Assert.True(fontCollection.TryAddGlyphTypeface(fontStream, out var glyphTypeface));
                     Assert.Equal(info.FamilyName, glyphTypeface.FamilyName);
+                    Assert.Equal(info.Weight, glyphTypeface.Weight);
 
-                    Assert.True(fontManager.TryGetGlyphTypeface(new Typeface($"fonts:custom#{info.FamilyName}"), out var secondGlyphTypeface));
+                    glyphTypefaces[i] = glyphTypeface;
+                }
+
+                // Check against the custom collection
+                for (var i = 0; i < infos.Length; ++i)
+                {
+                    var info = infos[i];
+                    var glyphTypeface = glyphTypefaces[i];
+
+                    Assert.True(fontManager.TryGetGlyphTypeface(new Typeface($"fonts:custom#{info.FamilyName}", weight: info.Weight), out var secondGlyphTypeface));
                     Assert.Same(glyphTypeface, secondGlyphTypeface);
                 }
             }
@@ -207,6 +222,6 @@ namespace Avalonia.Skia.UnitTests.Media
             public override Uri Key { get; } = key;
         }
 
-        private record struct FontAssetInfo(string Path, string FamilyName);
+        private record struct FontAssetInfo(string Path, string FamilyName, FontWeight Weight);
     }
 }

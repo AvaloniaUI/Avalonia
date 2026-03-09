@@ -168,7 +168,7 @@ namespace Avalonia.Media.Fonts
 
             var key = typeface.ToFontCollectionKey();
 
-            return TryGetGlyphTypeface(familyName, key, out glyphTypeface);
+            return TryGetGlyphTypeface(familyName, key, allowNearestMatch: true, out glyphTypeface);
         }
 
         public virtual bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
@@ -455,10 +455,15 @@ namespace Avalonia.Media.Fonts
         /// find the best match based on the provided <paramref name="key"/>.</remarks>
         /// <param name="familyName">The name of the font family to search for. This parameter is case-insensitive.</param>
         /// <param name="key">The key representing the desired font collection attributes.</param>
+        /// <param name="allowNearestMatch">Whether to allow a nearest match (as opposed to only an exact match).</param>
         /// <param name="glyphTypeface">When this method returns, contains the matching <see cref="GlyphTypeface"/> if a match is found; otherwise,
         /// <see langword="null"/>.</param>
         /// <returns><see langword="true"/> if a matching glyph typeface is found; otherwise, <see langword="false"/>.</returns>
-        protected bool TryGetGlyphTypeface(string familyName, FontCollectionKey key, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        protected bool TryGetGlyphTypeface(
+            string familyName,
+            FontCollectionKey key,
+            bool allowNearestMatch,
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
             glyphTypeface = null;
 
@@ -469,7 +474,7 @@ namespace Avalonia.Media.Fonts
                     return true;
                 }
 
-                if (TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
+                if (TryGetMatch(glyphTypefaces, key, allowNearestMatch, out glyphTypeface))
                 {
                     var matchedKey = glyphTypeface.ToFontCollectionKey();
 
@@ -511,7 +516,7 @@ namespace Avalonia.Media.Fonts
                 {
                     // Exact match found in snapshot. Use the exact family name for lookup
                     if (_glyphTypefaceCache.TryGetValue(snapshot[mid].Name, out var exactGlyphTypefaces) &&
-                        TryGetNearestMatch(exactGlyphTypefaces, key, out glyphTypeface))
+                        TryGetMatch(exactGlyphTypefaces, key, allowNearestMatch, out glyphTypeface))
                     {
                         return true;
                     }
@@ -549,12 +554,27 @@ namespace Avalonia.Media.Fonts
                     }
 
                     if (_glyphTypefaceCache.TryGetValue(fontFamily.Name, out glyphTypefaces) &&
-                        TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
+                        TryGetMatch(glyphTypefaces, key, allowNearestMatch, out glyphTypeface))
                     {
                         return true;
                     }
                 }
             }
+
+            return false;
+        }
+
+        private bool TryGetMatch(
+            IDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
+            FontCollectionKey key,
+            bool allowNearestMatch,
+            [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
+        {
+            if (glyphTypefaces.TryGetValue(key, out glyphTypeface) && glyphTypeface is not null)
+                return true;
+
+            if (allowNearestMatch && TryGetNearestMatch(glyphTypefaces, key, out glyphTypeface))
+                return true;
 
             return false;
         }
