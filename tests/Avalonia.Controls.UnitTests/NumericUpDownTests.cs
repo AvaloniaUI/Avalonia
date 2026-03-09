@@ -100,6 +100,33 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
+        [Theory]
+        [InlineData(0)]
+        [InlineData(50)]
+        [InlineData(100)]
+        [InlineData(-180)]
+        [InlineData(180)]
+        public void No_Clip_To_Min_Max_Can_Accept_Any_Value(double value)
+        {
+            RunTest((control, textbox) =>
+            {
+                // Set the allowed range of the control and disable clipping to the min/max.
+                control.ClipValueToMinMax = false;
+                control.Minimum = 0;
+                control.Maximum = 100;
+                
+                // type text
+                textbox.Text = value.ToString(CultureInfo.InvariantCulture);
+                
+                Dispatcher.UIThread.RunJobs();
+                
+                // Assert that the control's text is the same as the value.
+                Assert.Equal(value.ToString(CultureInfo.InvariantCulture), control.Text);
+                // Assert that the control's value is the same as the value.
+                Assert.Equal((decimal)value, control.Value);
+            });
+        }
+        
         public static IEnumerable<object?[]> Increment_Decrement_TestData()
         {
             // if min and max are not defined and value was null, 0 should be ne new value after spin
