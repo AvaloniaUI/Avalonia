@@ -913,6 +913,200 @@ namespace Avalonia.Controls.UnitTests
                 Times.Once);
         }
 
+        [Fact]
+        public void Switching_Tab_Should_Preserve_DataContext_Binding_On_UserControl_Content()
+        {
+            // Issue #18280: When switching tabs, a UserControl inside a TabItem has its
+            // DataContext set to null, causing two-way bindings on child controls (like
+            // DataGrid.SelectedItem) to propagate null back to the view model.
+            // Verify that after switching away and back, the DataContext binding still
+            // resolves correctly.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new TabDataContextViewModel { SelectedItem = "Item1" };
+
+            // Create a UserControl with an explicit DataContext binding,
+            // matching the issue scenario.
+            var userControl = new UserControl
+            {
+                [~UserControl.DataContextProperty] = new Binding("SelectedItem"),
+            };
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        Content = userControl,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        Content = "Other content",
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            // Verify initial state
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal("Item1", userControl.DataContext);
+
+            // Switch to second tab and back
+            target.SelectedIndex = 1;
+            target.SelectedIndex = 0;
+
+            // The UserControl's DataContext binding should still resolve correctly.
+            Assert.Equal("Item1", userControl.DataContext);
+
+            // Verify the binding is still live by changing the source property.
+            viewModel.SelectedItem = "Item2";
+            Assert.Equal("Item2", userControl.DataContext);
+        }
+
+        [Fact]
+        public void TabItem_Child_DataContext_Binding_Should_Work()
+        {
+            // Issue #20845: When a DataContext binding is placed on the child of a TabItem,
+            // the DataContext is null. The binding hasn't resolved when the content's
+            // DataContext is captured in UpdateSelectedContent, so the captured value is null.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            var viewModel = new MainViewModel();
+
+            // The view for the first tab has a DataContext binding to viewModel.Tab1
+            // (an instance of Tab1ViewModel).
+            var tab1View = new UserControl();
+            tab1View.Bind(UserControl.DataContextProperty, new Binding("Tab1"));
+
+            // Add a child TextBlock that binds to a property on Tab1ViewModel.
+            var textBlock = new TextBlock();
+            textBlock.Bind(TextBlock.TextProperty, new Binding("Name"));
+            tab1View.Content = textBlock;
+
+            // Create the tab control with the tab1View UserControl as its content.
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        Content = tab1View,
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            // The UserControl's DataContext should be the Tab1ViewModel.
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+
+            // The TextBlock should display the Name from Tab1ViewModel.
+            Assert.Equal("Tab 1 message here", textBlock.Text);
+        }
+
+        [Fact]
+        public void TabItem_Child_With_DataContext_Binding_Should_Propagate_To_Children()
+        {
+            // Issue #20845 (comment): Putting the DataContext binding on the TabItem itself
+            // is also broken. The child should inherit the TabItem's DataContext.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            var viewModel = new MainViewModel();
+
+            // The view for the first tab has a text block that binds to a property on
+            // Tab1ViewModel. The TabItem itself has a DataContext binding to viewModel.Tab1.
+            var textBlock = new TextBlock();
+            textBlock.Bind(TextBlock.TextProperty, new Binding("Name"));
+            var tab1View = new UserControl { Content = textBlock };
+
+            // Create the tab control with the tab1View UserControl as its content and
+            // a data context binding to viewModel.Tab1.
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        Content = tab1View,
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            // The TabItem's DataContext should be the Tab1ViewModel.
+            var tabItem = (TabItem)target.Items[0]!;
+            Assert.Same(viewModel.Tab1, tabItem.DataContext);
+
+            // The UserControl should inherit the TabItem's DataContext.
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+
+            // The TextBlock should display the Name from Tab1ViewModel.
+            Assert.Equal("Tab 1 message here", textBlock.Text);
+        }
+
+        [Fact]
+        public void Switching_Tabs_Should_Not_Null_Out_DataContext_Bound_Properties()
+        {
+            // Issue #20845: DataContext binding should survive tab switches.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+
+            var tab1View = new UserControl();
+            tab1View.Bind(UserControl.DataContextProperty, new Binding("Tab1"));
+            var textBlock = new TextBlock();
+            textBlock.Bind(TextBlock.TextProperty, new Binding("Name"));
+            tab1View.Content = textBlock;
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        Content = tab1View,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        Content = "Other content",
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+            Assert.Equal("Tab 1 message here", textBlock.Text);
+
+            // Switch to tab 2 and back
+            target.SelectedIndex = 1;
+            target.SelectedIndex = 0;
+
+            // DataContext binding should still be resolved correctly.
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+            Assert.Equal("Tab 1 message here", textBlock.Text);
+        }
+
         private static IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>
@@ -926,6 +1120,7 @@ namespace Avalonia.Controls.UnitTests
                         }.RegisterInNameScope(scope),
                         new Panel
                         {
+                            Name = "PART_SelectedContentDataContextHost",
                             Children =
                             {
                                 new ContentPresenter
@@ -938,7 +1133,7 @@ namespace Avalonia.Controls.UnitTests
                                     Name = "PART_SelectedContentHost",
                                 }.RegisterInNameScope(scope),
                             }
-                        }
+                        }.RegisterInNameScope(scope),
                     }
                 });
         }
@@ -1044,6 +1239,27 @@ namespace Avalonia.Controls.UnitTests
                     renderInterface: new HeadlessPlatformRenderInterface(),
                     textShaperImpl: new HarfBuzzTextShaper(),
                     assetLoader: new StandardAssetLoader()));
+        }
+
+        private class TabDataContextViewModel : NotifyingBase
+        {
+            private string? _selectedItem;
+
+            public string? SelectedItem
+            {
+                get => _selectedItem;
+                set => SetField(ref _selectedItem, value);
+            }
+        }
+
+        private class MainViewModel
+        {
+            public Tab1ViewModel Tab1 { get; set; } = new();
+        }
+
+        private class Tab1ViewModel
+        {
+            public string Name { get; set; } = "Tab 1 message here";
         }
 
         private class Item
