@@ -17,15 +17,20 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a control that lets the user navigate through a paginated collection using a set of pips.
     /// </summary>
-    [TemplatePart("PART_PreviousButton", typeof(Button))]
-    [TemplatePart("PART_NextButton", typeof(Button))]
-    [TemplatePart("PART_PipsPagerList", typeof(ListBox))]
-    [PseudoClasses(":first-page", ":last-page", ":vertical", ":horizontal")]
+    [TemplatePart(PART_PreviousButton, typeof(Button))]
+    [TemplatePart(PART_NextButton, typeof(Button))]
+    [TemplatePart(PART_PipsPagerList, typeof(ListBox))]
+    [PseudoClasses(PC_FirstPage, PC_LastPage, PC_Vertical, PC_Horizontal)]
     public class PipsPager : TemplatedControl
     {
         private const string PART_PreviousButton = "PART_PreviousButton";
         private const string PART_NextButton = "PART_NextButton";
         private const string PART_PipsPagerList = "PART_PipsPagerList";
+
+        private const string PC_FirstPage = ":first-page";
+        private const string PC_LastPage = ":last-page";
+        private const string PC_Vertical = ":vertical";
+        private const string PC_Horizontal = ":horizontal";
 
         private Button? _previousButton;
         private Button? _nextButton;
@@ -459,10 +464,10 @@ namespace Avalonia.Controls
 
         private void UpdatePseudoClasses()
         {
-            PseudoClasses.Set(":first-page", SelectedPageIndex == 0);
-            PseudoClasses.Set(":last-page", NumberOfPages > 0 && SelectedPageIndex >= NumberOfPages - 1);
-            PseudoClasses.Set(":vertical", Orientation == Orientation.Vertical);
-            PseudoClasses.Set(":horizontal", Orientation == Orientation.Horizontal);
+            PseudoClasses.Set(PC_FirstPage, SelectedPageIndex == 0);
+            PseudoClasses.Set(PC_LastPage, NumberOfPages > 0 && SelectedPageIndex >= NumberOfPages - 1);
+            PseudoClasses.Set(PC_Vertical, Orientation == Orientation.Vertical);
+            PseudoClasses.Set(PC_Horizontal, Orientation == Orientation.Horizontal);
         }
 
         private void OnPipsPagerListSizeChanged(object? sender, SizeChangedEventArgs e)
