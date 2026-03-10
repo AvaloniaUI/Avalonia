@@ -32,6 +32,7 @@ namespace Avalonia.Controls
         private ListBox? _pipsPagerList;
         private bool _scrollPending;
         private bool _updatingPagerSize;
+        private bool _isInitialLoad;
         private int _lastSelectedPageIndex;
         private CancellationTokenSource? _scrollAnimationCts;
         private PipsPagerTemplateSettings _templateSettings = new PipsPagerTemplateSettings();
@@ -215,6 +216,7 @@ namespace Avalonia.Controls
             _scrollAnimationCts?.Cancel();
             _scrollAnimationCts?.Dispose();
             _scrollAnimationCts = null;
+            _isInitialLoad = true;
 
             // Unsubscribe from previous button events
             if (_previousButton != null)
@@ -525,6 +527,15 @@ namespace Avalonia.Controls
                 ? scrollViewer.Extent.Width - scrollViewer.Viewport.Width
                 : scrollViewer.Extent.Height - scrollViewer.Viewport.Height;
             targetOffset = Math.Min(targetOffset, Math.Max(0, maxOffset));
+
+            if (_isInitialLoad)
+            {
+                _isInitialLoad = false;
+                scrollViewer.Offset = isHorizontal
+                    ? new Vector(targetOffset, scrollViewer.Offset.Y)
+                    : new Vector(scrollViewer.Offset.X, targetOffset);
+                return;
+            }
 
             AnimateScrollOffset(scrollViewer, targetOffset, isHorizontal);
         }
