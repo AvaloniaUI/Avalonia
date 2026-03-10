@@ -28,19 +28,7 @@ namespace Avalonia.Win32.Automation.Interop
         {
             get
             {
-#if NET8_0_OR_GREATER
                 return true;
-#else
-#if NET6_0_OR_GREATER
-                if (!System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
-                {
-                    return false;
-                }
-#endif
-                var comConfig =
-                    AppContext.GetData("System.Runtime.InteropServices.BuiltInComInterop.IsSupported") as string;
-                return comConfig == null || bool.Parse(comConfig);
-#endif
             }
         }
 
@@ -49,12 +37,7 @@ namespace Avalonia.Win32.Automation.Interop
             return RawUiaLookupId(type, ref guid);
         }
 
-#if NET7_0_OR_GREATER
         [LibraryImport("UIAutomationCore.dll", EntryPoint = "UiaLookupId", StringMarshalling = StringMarshalling.Utf8)]
         private static partial int RawUiaLookupId(AutomationIdType type, ref Guid guid);
-#else
-        [DllImport("UIAutomationCore.dll", EntryPoint = "UiaLookupId", CharSet = CharSet.Unicode)]
-        private static extern int RawUiaLookupId(AutomationIdType type, ref Guid guid);
-#endif
     }
 }

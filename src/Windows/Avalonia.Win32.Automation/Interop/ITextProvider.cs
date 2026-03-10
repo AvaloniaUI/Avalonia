@@ -15,22 +15,13 @@ internal enum SupportedTextSelection
     Multiple,
 }
 
-#if NET8_0_OR_GREATER
 [GeneratedComInterface(Options = ComInterfaceOptions.ManagedObjectWrapper)]
-#else
-[ComImport()]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-#endif
 [Guid("3589c92c-63f3-4367-99bb-ada653b77cf2")]
 internal partial interface ITextProvider
 {
-#if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<ITextRangeProvider>))]
-#endif
     ITextRangeProvider[] GetSelection();
-#if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<ITextRangeProvider>))]
-#endif
     ITextRangeProvider[] GetVisibleRanges();
     ITextRangeProvider RangeFromChild(IRawElementProviderSimple childElement);
 
