@@ -9,7 +9,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Media;
 
 namespace Avalonia.Controls
@@ -109,7 +108,6 @@ namespace Avalonia.Controls
 
             if (_carousel != null)
             {
-                _carousel.SelectionChanged += OnCarouselSelectionChanged;
                 _carousel.PageTransition = PageTransition;
                 _carousel.ItemsPanel = ItemsPanel;
                 _carousel.ItemTemplate = PageTemplate;
@@ -119,6 +117,8 @@ namespace Avalonia.Controls
                 {
                     _carousel.SelectedIndex = SelectedIndex;
                 }
+
+                _carousel.SelectionChanged += OnCarouselSelectionChanged;
 
                 UpdateActivePage();
             }
@@ -223,7 +223,11 @@ namespace Avalonia.Controls
         {
             if (_carousel == null)
                 return;
+
             var newIndex = _carousel.SelectedIndex;
+            if (newIndex == SelectedIndex && ReferenceEquals(_carousel.SelectedItem as Page, SelectedPage))
+                return;
+
             var newPage = _carousel.SelectedItem as Page ?? ResolvePageAtIndex(newIndex);
             CommitSelection(newIndex, newPage, NavigationType.Replace);
             UpdateAccessibilityName(newIndex, GetPageCount(), newPage);

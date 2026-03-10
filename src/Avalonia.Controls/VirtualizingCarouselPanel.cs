@@ -130,7 +130,11 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size availableSize)
         {
             var items = Items;
-            var index = (int)_offset.X;
+            // During a swipe _offset.X drives the animated position; otherwise use SelectedIndex.
+            var carousel = ItemsControl as Carousel;
+            var index = _gesturePointer is not null
+                ? (int)_offset.X
+                : (carousel?.SelectedIndex ?? (int)_offset.X);
 
             if (index != _realizedIndex)
             {
@@ -281,7 +285,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            if (_gesturePointer is not null || _realized is null)
+            if (_gesturePointer is not null || _realized is null || _completionCts is { IsCancellationRequested: false })
             {
                 return;
             }
@@ -290,40 +294,6 @@ namespace Avalonia.Controls
             if (!props.IsLeftButtonPressed)
             {
                 return;
-            }
-
-            // Cancel any ongoing completion animation
-            if (_completionCts is { IsCancellationRequested: false })
-            {
-                _completionCts.Cancel();
-
-                var wasCommit = _completionEndProgress > 0.5;
-                if (wasCommit && _swipeTarget is not null)
-                {
-                    if (_realized != null)
-                    {
-                        ResetVisualState(_realized);
-                        RecycleElement(_realized);
-                    }
-
-                    _realized = _swipeTarget;
-                    _realizedIndex = _swipeTargetIndex;
-                    ResetVisualState(_realized);
-
-                    _offset = new Vector(_swipeTargetIndex, 0);
-                    if (ItemsControl is Carousel carousel)
-                    {
-                        carousel.SelectedIndex = _swipeTargetIndex;
-                    }
-                }
-                else
-                {
-                    ResetSwipeState();
-                }
-
-                _swipeTarget = null;
-                _swipeTargetIndex = -1;
-                _totalDelta = 0;
             }
 
             _gesturePointer = e.Pointer;
@@ -519,6 +489,7 @@ namespace Avalonia.Controls
                 ResetSwipeState();
             }
 
+            _gestureDirectionDetermined = false;
             _gesturePointer = null;
         }
 
@@ -606,42 +577,51 @@ namespace Avalonia.Controls
 
         private async Task RunCompletionAnimation(Animation.Animation animation, Carousel carousel, CancellationToken cancellationToken)
         {
-            await animation.RunAsync(this, null, cancellationToken);
-
-            if (cancellationToken.IsCancellationRequested)
+            var activeCts = _completionCts;
+            try
             {
-                return;
-            }
+                await animation.RunAsync(this, null, cancellationToken);
 
-            var commit = _completionEndProgress > 0.5;
-
-            if (commit && _swipeTarget is not null)
-            {
-                var targetIndex = _swipeTargetIndex;
-                var targetElement = _swipeTarget;
-
-                if (_realized != null)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    ResetVisualState(_realized);
-                    RecycleElement(_realized);
+                    return;
                 }
 
-                _realized = targetElement;
-                _realizedIndex = targetIndex;
-                ResetVisualState(_realized);
+                var commit = _completionEndProgress > 0.5;
 
-                _offset = new Vector(targetIndex, 0);
-                carousel.SelectedIndex = targetIndex;
+                if (commit && _swipeTarget is not null)
+                {
+                    var targetIndex = _swipeTargetIndex;
+                    var targetElement = _swipeTarget;
 
-                _swipeTarget = null;
-                _swipeTargetIndex = -1;
-                _totalDelta = 0;
-                _isRubberBanding = false;
-                carousel.IsSwiping = false;
+                    if (_realized != null)
+                    {
+                        ResetVisualState(_realized);
+                        RecycleElement(_realized);
+                    }
+
+                    _realized = targetElement;
+                    _realizedIndex = targetIndex;
+                    ResetVisualState(_realized);
+
+                    _offset = new Vector(targetIndex, 0);
+                    carousel.SelectedIndex = targetIndex;
+
+                    _swipeTarget = null;
+                    _swipeTargetIndex = -1;
+                    _totalDelta = 0;
+                    _isRubberBanding = false;
+                    carousel.IsSwiping = false;
+                }
+                else
+                {
+                    ResetSwipeState();
+                }
             }
-            else
+            finally
             {
-                ResetSwipeState();
+                if (ReferenceEquals(_completionCts, activeCts))
+                    activeCts?.Cancel();
             }
         }
 
@@ -689,6 +669,9 @@ namespace Avalonia.Controls
 
         private void UpdateSwipeProgress(double progress, double size)
         {
+            if (_realized is null)
+                return;
+
             if (GetTransition() is IInteractivePageTransition interactive)
             {
                 interactive.Update(progress, _realized, _isRubberBanding ? null : _swipeTarget, _isForward);
