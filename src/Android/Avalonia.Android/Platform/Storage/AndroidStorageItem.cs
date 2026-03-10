@@ -217,18 +217,29 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     {
         DateTimeOffset? dateModified = null;
 
+        AndroidUri? queryUri = null;
+
         try
         {
-            var folderId = GetTreeDocumentId(Uri);
-            var uri = BuildDocumentUriUsingTree(Uri, folderId);
+            try
+            {
+                // When Uri is a tree URI, use its document id to build a document URI.
+                var folderId = GetTreeDocumentId(Uri);
+                queryUri = BuildDocumentUriUsingTree(Uri, folderId);
+            }
+            catch (UnsupportedOperationException)
+            {
+                // For non-root items, Uri may already be a document URI; use it directly.
+                queryUri = Uri;
+            }
 
-            if (uri != null)
+            if (queryUri != null)
             {
                 var projection = new[]
                 {
                     Document.ColumnLastModified
                 };
-                using var cursor = Activity.ContentResolver!.Query(uri, projection, null, null, null);
+                using var cursor = Activity.ContentResolver!.Query(queryUri, projection, null, null, null);
 
                 if (cursor?.MoveToFirst() == true)
                 {
