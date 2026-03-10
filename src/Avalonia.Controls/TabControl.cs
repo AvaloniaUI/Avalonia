@@ -306,7 +306,7 @@ namespace Avalonia.Controls
                             _contentPresenter2!.ContentTemplate = template;
                             _contentPresenter2!.IsVisible = true;
 
-                            if (content is Control)
+                            if (content is Control && template is null)
                                 _contentPresenter2.SetContentWithDataContext(content, container.DataContext);
                             else
                                 _contentPresenter2.Content = content;
@@ -319,7 +319,8 @@ namespace Avalonia.Controls
                         {
                             if (ContentPart != null)
                             {
-                                if (content is Control)
+                                var template = SelectContentTemplate(container.GetValue(ContentControl.ContentTemplateProperty));
+                                if (content is Control && template is null)
                                     ContentPart.SetContentWithDataContext(content, container.DataContext);
                                 else
                                     ContentPart.Content = content;
@@ -339,12 +340,15 @@ namespace Avalonia.Controls
                         // During a transition, ContentPart holds the old tab's content
                         // and _contentPresenter2 holds the new tab's content. Only update
                         // the presenter that is showing this container's content.
+                        // Only override DataContext when there's no ContentTemplate;
+                        // with a template, the presenter's DataContext should be the
+                        // content itself (so the template can bind to it).
                         if (_contentPresenter2 is { IsVisible: true })
                         {
-                            if (_contentPresenter2.Content is Control)
+                            if (_contentPresenter2.Content is Control && _contentPresenter2.ContentTemplate is null)
                                 _contentPresenter2.DataContext = dc;
                         }
-                        else if (ContentPart?.Content is Control)
+                        else if (ContentPart is { Content: Control } && ContentPart.ContentTemplate is null)
                         {
                             ContentPart.DataContext = dc;
                         }

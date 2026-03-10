@@ -523,7 +523,9 @@ namespace Avalonia.Controls.Presenters
             var overrideDataContext = _overrideDataContext;
             _overrideDataContext = default;
 
-            // Set the DataContext if the data isn't a control.
+            // Set the DataContext: use the caller-provided override if set,
+            // otherwise set to content when a template is present or content
+            // isn't a control, or clear for template-less control content.
             if (overrideDataContext.IsSet)
             {
                 DataContext = overrideDataContext.Value;
