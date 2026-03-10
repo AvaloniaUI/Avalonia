@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
@@ -297,8 +296,6 @@ namespace Avalonia.Controls
                 _selectedItemSubscriptions = new CompositeDisposable(
                     container.GetObservable(ContentControl.ContentProperty).Subscribe(content =>
                     {
-                        var contentElement = content as StyledElement;
-                        var contentDataContext = contentElement?.DataContext;
                         SelectedContent = content;
 
                         if (isInitialFire && shouldTransition)
@@ -306,11 +303,13 @@ namespace Avalonia.Controls
                             var template = SelectContentTemplate(container.GetValue(ContentControl.ContentTemplateProperty));
                             SelectedContentTemplate = template;
 
-                            _contentPresenter2!.Content = content;
-                            _contentPresenter2.ContentTemplate = template;
-                            _contentPresenter2.IsVisible = true;
-                            if (contentElement is not null && contentElement.DataContext != contentDataContext)
-                                _contentPresenter2.DataContext = contentDataContext;
+                            _contentPresenter2!.ContentTemplate = template;
+                            _contentPresenter2!.IsVisible = true;
+
+                            if (content is Control)
+                                _contentPresenter2.SetContentWithDataContext(content, container.DataContext);
+                            else
+                                _contentPresenter2.Content = content;
 
                             _pendingForward = forward;
                             _shouldAnimate = true;
@@ -320,18 +319,10 @@ namespace Avalonia.Controls
                         {
                             if (ContentPart != null)
                             {
-                                ContentPart.Content = content;
-                                // When ContentPart displays a Control, it doesn't set its
-                                // DataContext to that of the Control's. If the content doesn't
-                                // set a DataContext it gets inherited from the TabControl.
-                                // Work around this by setting ContentPart's DataContext to
-                                // the content's original DataContext (inherited from container).
-                                if (contentElement is not null &&
-                                    contentElement.DataContext != contentDataContext)
-                                {
-                                    Debug.Assert(!contentElement.IsSet(DataContextProperty));
-                                    ContentPart.DataContext = contentDataContext;
-                                }
+                                if (content is Control)
+                                    ContentPart.SetContentWithDataContext(content, container.DataContext);
+                                else
+                                    ContentPart.Content = content;
                             }
                         }
 
@@ -342,6 +333,21 @@ namespace Avalonia.Controls
                         SelectedContentTemplate = SelectContentTemplate(v);
                         if (ContentPart != null && !_shouldAnimate)
                             ContentPart.ContentTemplate = _selectedContentTemplate;
+                    }),
+                    container.GetObservable(StyledElement.DataContextProperty).Subscribe(dc =>
+                    {
+                        // During a transition, ContentPart holds the old tab's content
+                        // and _contentPresenter2 holds the new tab's content. Only update
+                        // the presenter that is showing this container's content.
+                        if (_contentPresenter2 is { IsVisible: true })
+                        {
+                            if (_contentPresenter2.Content is Control)
+                                _contentPresenter2.DataContext = dc;
+                        }
+                        else if (ContentPart?.Content is Control)
+                        {
+                            ContentPart.DataContext = dc;
+                        }
                     }));
 
                 IDataTemplate? SelectContentTemplate(IDataTemplate? containerTemplate) => containerTemplate ?? ContentTemplate;

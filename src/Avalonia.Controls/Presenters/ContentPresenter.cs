@@ -177,6 +177,7 @@ namespace Avalonia.Controls.Presenters
         private Control? _child;
         private bool _createdChild;
         private IRecyclingDataTemplate? _recyclingDataTemplate;
+        private (bool IsSet, object? Value) _overrideDataContext;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
 
         /// <summary>
@@ -420,6 +421,39 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         internal IContentPresenterHost? Host { get; private set; }
 
+        /// <summary>
+        /// Sets the <see cref="Content"/> and <see cref="StyledElement.DataContext"/> properties atomically,
+        /// ensuring that the content's DataContext is never temporarily set to an incorrect value.
+        /// </summary>
+        /// <param name="content">The new content.</param>
+        /// <param name="dataContext">The DataContext to set on the presenter.</param>
+        /// <remarks>
+        /// When <see cref="Content"/> is set to a <see cref="Control"/>, the presenter normally
+        /// clears its <see cref="StyledElement.DataContext"/> to allow the content to inherit it. This method
+        /// overrides that behavior, setting the <see cref="StyledElement.DataContext"/> to the specified value
+        /// before updating the child, preventing any intermediate state where the content could
+        /// inherit an incorrect DataContext from higher up the tree.
+        /// </remarks>
+        internal void SetContentWithDataContext(object? content, object? dataContext)
+        {
+            _overrideDataContext = (true, dataContext);
+
+            try
+            {
+                SetCurrentValue(ContentProperty, content);
+            }
+            finally
+            {
+                // If Content didn't change, UpdateChild wasn't called and the
+                // override wasn't consumed. Apply the DataContext directly.
+                if (_overrideDataContext.IsSet)
+                {
+                    _overrideDataContext = default;
+                    DataContext = dataContext;
+                }
+            }
+        }
+
         /// <inheritdoc/>
         public sealed override void ApplyTemplate()
         {
@@ -484,8 +518,17 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
+            // Consume the override immediately so any reentrant/cascading calls
+            // to UpdateChild don't incorrectly apply the stale override.
+            var overrideDataContext = _overrideDataContext;
+            _overrideDataContext = default;
+
             // Set the DataContext if the data isn't a control.
-            if (contentTemplate is { } || !(content is Control))
+            if (overrideDataContext.IsSet)
+            {
+                DataContext = overrideDataContext.Value;
+            }
+            else if (contentTemplate is { } || !(content is Control))
             {
                 DataContext = content;
             }
