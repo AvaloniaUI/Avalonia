@@ -626,10 +626,7 @@ namespace Avalonia.Controls
                 StartRendering();
             }
 
-            // Update fullscreen popover visibility
-            TopLevelHost.SetFullscreenPopoverEnabled(state == WindowState.FullScreen);
-
-            // Update decoration parts for the new window state
+            // Update decoration parts and fullscreen popover state for the new window state
             UpdateDrawnDecorationParts();
         }
 
@@ -643,13 +640,11 @@ namespace Avalonia.Controls
         
         private void UpdateDrawnDecorations()
         {
-            var needsDrawnDecorations = PlatformImpl?.NeedsManagedDecorations ?? false;
+            var parts = ComputeDecorationParts();
+            TopLevelHost.UpdateDrawnDecorations(parts, WindowState);
 
-            var parts = needsDrawnDecorations ? ComputeDecorationParts() : DrawnWindowDecorationParts.None;
-            if (parts != DrawnWindowDecorationParts.None)
+            if (parts != null)
             {
-                TopLevelHost.EnableDecorations(parts);
-
                 // Forward ExtendClientAreaTitleBarHeightHint to decoration TitleBarHeight
                 var decorations = TopLevelHost.Decorations;
                 if (decorations != null)
@@ -658,10 +653,6 @@ namespace Avalonia.Controls
                     if (hint >= 0)
                         decorations.TitleBarHeightOverride = hint;
                 }
-            }
-            else
-            {
-                TopLevelHost.DisableDecorations();
             }
             
             UpdateDrawnDecorationMargins();
@@ -676,11 +667,14 @@ namespace Avalonia.Controls
             if (TopLevelHost.Decorations == null)
                 return;
 
-            TopLevelHost.EnableDecorations(ComputeDecorationParts());
+            TopLevelHost.UpdateDrawnDecorations(ComputeDecorationParts(), WindowState);
         }
 
-        private Chrome.DrawnWindowDecorationParts ComputeDecorationParts()
+        private Chrome.DrawnWindowDecorationParts? ComputeDecorationParts()
         {
+            if (!(PlatformImpl?.NeedsManagedDecorations ?? false))
+                return null;
+
             var platformNeeds = PlatformImpl?.RequestedDrawnDecorations ?? PlatformRequestedDrawnDecoration.None;
             var parts = Chrome.DrawnWindowDecorationParts.None;
             if (WindowDecorations != WindowDecorations.None)
