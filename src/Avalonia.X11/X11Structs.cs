@@ -69,7 +69,7 @@ namespace Avalonia.X11 {
 		internal IntPtr		window;
 		internal IntPtr		root;
 		internal IntPtr		subwindow;
-		internal IntPtr		time;
+		internal UIntPtr	time;
 		internal int		x;
 		internal int		y;
 		internal int		x_root;
@@ -88,7 +88,7 @@ namespace Avalonia.X11 {
 		internal IntPtr		window;
 		internal IntPtr		root;
 		internal IntPtr		subwindow;
-		internal IntPtr		time;
+		internal UIntPtr	time;
 		internal int		x;
 		internal int		y;
 		internal int		x_root;
@@ -107,7 +107,7 @@ namespace Avalonia.X11 {
 		internal IntPtr		window;
 		internal IntPtr		root;
 		internal IntPtr		subwindow;
-		internal IntPtr		time;
+		internal UIntPtr	time;
 		internal int		x;
 		internal int		y;
 		internal int		x_root;
@@ -126,7 +126,7 @@ namespace Avalonia.X11 {
 		internal IntPtr		window;
 		internal IntPtr		root;
 		internal IntPtr		subwindow;
-		internal IntPtr		time;
+		internal UIntPtr	time;
 		internal int		x;
 		internal int		y;
 		internal int		x_root;
@@ -401,7 +401,7 @@ namespace Avalonia.X11 {
 		internal IntPtr		display;
 		internal IntPtr		window;
 		internal IntPtr		atom;
-		internal IntPtr		time;
+		internal UIntPtr	time;
 		internal int		state;
 	}
 
@@ -413,7 +413,7 @@ namespace Avalonia.X11 {
 		internal IntPtr		display;
 		internal IntPtr		window;
 		internal IntPtr		selection;
-		internal IntPtr		time;
+		internal UIntPtr	time;
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -427,7 +427,7 @@ namespace Avalonia.X11 {
 		internal IntPtr		selection;
 		internal IntPtr		target;
 		internal IntPtr		property;
-		internal IntPtr		time;
+		internal UIntPtr	time;
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -440,7 +440,7 @@ namespace Avalonia.X11 {
 		internal IntPtr		selection;
 		internal IntPtr		target;
 		internal IntPtr		property;
-		internal IntPtr		time;
+		internal UIntPtr	time;
 	}
 
 	[StructLayout(LayoutKind.Sequential)]

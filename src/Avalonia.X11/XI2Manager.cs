@@ -307,7 +307,7 @@ namespace Avalonia.X11
                         _pointerDevice.Valuators[scroller.Number].Value = 0;
                     }
 
-                    client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, (ulong)ev.time.ToInt64(),
+                    client.ScheduleXI2Input(new RawPointerEventArgs(client.MouseDevice, ev.time.ToUInt64(),
                         client.InputRoot,
                         RawPointerEventType.LeaveWindow, new Point(ev.event_x, ev.event_y), buttons));
                 }
@@ -557,7 +557,7 @@ namespace Avalonia.X11
             public ParsedDeviceEvent(XIDeviceEvent* ev)
             {
                 Type = ev->evtype;
-                Timestamp = (ulong)ev->time.ToInt64();
+                Timestamp = ev->time.ToUInt64();
                 var state = (XModifierMask)ev->mods.Effective;
                 if (state.HasAllFlags(XModifierMask.ShiftMask))
                     Modifiers |= RawInputModifiers.Shift;

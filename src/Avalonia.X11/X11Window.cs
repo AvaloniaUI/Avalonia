@@ -574,7 +574,7 @@ namespace Avalonia.X11
                             : ev.ButtonEvent.button == 6
                                 ? new Vector(1, 0)
                                 : new Vector(-1, 0);
-                    ScheduleInput(new RawMouseWheelEventArgs(_mouse, (ulong)ev.ButtonEvent.time.ToInt64(),
+                    ScheduleInput(new RawMouseWheelEventArgs(_mouse, ev.ButtonEvent.time.ToUInt64(),
                         _inputRoot, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), delta,
                         TranslateModifiers(ev.ButtonEvent.state)), ref ev);
                 }
@@ -781,7 +781,7 @@ namespace Avalonia.X11
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_FULLSCREEN);
                     ChangeWMAtoms(false, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
                         _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
-                    SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, _x11.LastActivityTimestamp,
+                    SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, (IntPtr)_x11.LastActivityTimestamp,
                         IntPtr.Zero);
                 }
                 WindowStateChanged?.Invoke(value);
@@ -972,7 +972,7 @@ namespace Avalonia.X11
             if (_inputRoot is null)
                 return;
             var mev = new RawPointerEventArgs(
-                _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
+                _mouse, ev.ButtonEvent.time.ToUInt64(), _inputRoot,
                 type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), TranslateModifiers(mods));
             ScheduleInput(mev, ref ev);
         }

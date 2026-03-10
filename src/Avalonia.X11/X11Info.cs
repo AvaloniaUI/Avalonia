@@ -27,7 +27,7 @@ namespace Avalonia.X11
         
         public Version? XInputVersion { get; }
 
-        public IntPtr LastActivityTimestamp { get; set; }
+        public UIntPtr LastActivityTimestamp { get; set; }
         public XVisualInfo? TransparentVisualInfo { get; }
         public bool HasXim { get; }
         public bool HasXSync { get; }
