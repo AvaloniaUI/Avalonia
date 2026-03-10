@@ -40,7 +40,8 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel);
         }
 
-        internal FocusManager()
+        [PrivateApi]
+        public FocusManager()
         {
         }
 
@@ -56,9 +57,14 @@ namespace Avalonia.Input
 
         private IInputElement? Current => KeyboardDevice.Instance?.FocusedElement;
 
-        private XYFocus _xyFocus = new();
-        private XYFocusOptions _xYFocusOptions = new XYFocusOptions();
+        private readonly XYFocus _xyFocus = new();
         private IInputElement? _contentRoot;
+
+        private XYFocusOptions DefaultFindFocusOptions
+            => field ??= new XYFocusOptions { UpdateManifold = false };
+
+        private XYFocusOptions DefaultMoveFocusOptions
+            => field ??= new XYFocusOptions();
 
         /// <inheritdoc />
         public IInputElement? GetFocusedElement() => Current;
@@ -166,15 +172,12 @@ namespace Avalonia.Input
         }
 
         /// <inheritdoc />
-        public bool TryMoveFocus(NavigationDirection direction)
+        public bool TryMoveFocus(NavigationDirection direction, FindNextElementOptions? options = null)
         {
-            return FindAndSetNextFocus(direction, _xYFocusOptions);
-        }
+            ValidateDirection(direction);
 
-        /// <inheritdoc />
-        public bool TryMoveFocus(NavigationDirection direction, FindNextElementOptions options)
-        {
-            return FindAndSetNextFocus(direction, ValidateAndCreateFocusOptions(direction, options));
+            var focusOptions = options is null ? DefaultMoveFocusOptions : CreateFocusOptions(options, true);
+            return FindAndSetNextFocus(direction, focusOptions);
         }
 
         /// <summary>
@@ -314,43 +317,38 @@ namespace Avalonia.Input
         }
 
         /// <inheritdoc />
-        public IInputElement? FindNextElement(NavigationDirection direction)
+        public IInputElement? FindNextElement(NavigationDirection direction, FindNextElementOptions? options = null)
         {
-            var xyOption = new XYFocusOptions()
-            {
-                UpdateManifold = false
-            };
+            ValidateDirection(direction);
 
-            return FindNextFocus(direction, xyOption);
+            var focusOptions = options is null ? DefaultFindFocusOptions : CreateFocusOptions(options, false);
+            return FindNextFocus(direction, focusOptions);
         }
 
-        /// <summary>
-        /// Retrieves the element that should receive focus based on the specified navigation direction (cannot be used with tab navigation).
-        /// </summary>
-        /// <param name="direction">The direction that focus moves from element to element within the app UI.</param>
-        /// <param name="options">The options to help identify the next element to receive focus with the provided navigation.</param>
-        /// <returns>The next element to receive focus.</returns>
-        public IInputElement? FindNextElement(NavigationDirection direction, FindNextElementOptions options)
+        private static void ValidateDirection(NavigationDirection direction)
         {
-            return FindNextFocus(direction, ValidateAndCreateFocusOptions(direction, options));
-        }
-
-        private static XYFocusOptions ValidateAndCreateFocusOptions(NavigationDirection direction, FindNextElementOptions options)
-        {
-            ArgumentNullException.ThrowIfNull(options);
-
-            if (direction is not NavigationDirection.Up
-                and not NavigationDirection.Down
-                and not NavigationDirection.Left
-                and not NavigationDirection.Right)
+            if (direction is not (
+                NavigationDirection.Next or
+                NavigationDirection.Previous or
+                NavigationDirection.Up or
+                NavigationDirection.Down or
+                NavigationDirection.Left or
+                NavigationDirection.Right))
             {
-                throw new ArgumentOutOfRangeException(nameof(direction),
-                        $"{direction} is not supported with FindNextElementOptions. Only Up, Down, Left and right are supported");
+                throw new ArgumentOutOfRangeException(
+                    nameof(direction),
+                    direction,
+                    $"Only {nameof(NavigationDirection.Next)}, {nameof(NavigationDirection.Previous)}, " +
+                    $"{nameof(NavigationDirection.Up)}, {nameof(NavigationDirection.Down)}," +
+                    $" {nameof(NavigationDirection.Left)} and {nameof(NavigationDirection.Right)} directions are supported");
             }
+        }
 
+        private static XYFocusOptions CreateFocusOptions(FindNextElementOptions options, bool updateManifold)
+        {
             return new XYFocusOptions
             {
-                UpdateManifold = false,
+                UpdateManifold = updateManifold,
                 SearchRoot = options.SearchRoot,
                 ExclusionRect = options.ExclusionRect,
                 FocusHintRectangle = options.FocusHintRectangle,
