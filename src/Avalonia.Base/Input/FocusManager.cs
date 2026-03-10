@@ -4,7 +4,6 @@ using System.Linq;
 using Avalonia.Input.Navigation;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
-using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -12,7 +11,6 @@ namespace Avalonia.Input
     /// <summary>
     /// Manages focus for the application.
     /// </summary>
-    [PrivateApi]
     public class FocusManager : IFocusManager
     {
         /// <summary>
@@ -42,19 +40,18 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel);
         }
 
-        public FocusManager()
+        internal FocusManager()
         {
-            _contentRoot = null;
         }
 
-        public FocusManager(IInputElement contentRoot)
+        /// <summary>
+        /// Gets or sets the content root for the focus management system.
+        /// </summary>
+        [PrivateApi]
+        public IInputElement? ContentRoot
         {
-            _contentRoot = contentRoot;
-        }
-        
-        internal void SetContentRoot(IInputElement? contentRoot)
-        {
-            _contentRoot = contentRoot;
+            get => _contentRoot;
+            set => _contentRoot = value;
         }
 
         private IInputElement? Current => KeyboardDevice.Instance?.FocusedElement;
@@ -63,17 +60,10 @@ namespace Avalonia.Input
         private XYFocusOptions _xYFocusOptions = new XYFocusOptions();
         private IInputElement? _contentRoot;
 
-        /// <summary>
-        /// Gets the currently focused <see cref="IInputElement"/>.
-        /// </summary>
+        /// <inheritdoc />
         public IInputElement? GetFocusedElement() => Current;
 
-        /// <summary>
-        /// Focuses a control.
-        /// </summary>
-        /// <param name="control">The control to focus.</param>
-        /// <param name="method">The method by which focus was changed.</param>
-        /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
+        /// <inheritdoc />
         public bool Focus(
             IInputElement? control,
             NavigationMethod method = NavigationMethod.Unspecified,
@@ -110,12 +100,7 @@ namespace Avalonia.Input
             }
         }
 
-        public void ClearFocus()
-        {
-            Focus(null);
-        }
-
-        public void ClearFocusOnElementRemoved(IInputElement removedElement, Visual oldParent)
+        internal void ClearFocusOnElementRemoved(IInputElement removedElement, Visual oldParent)
         {
             if (oldParent is IInputElement parentElement &&
                 GetFocusScope(parentElement) is StyledElement scope &&
@@ -129,6 +114,7 @@ namespace Avalonia.Input
                 Focus(null);
         }
 
+        [PrivateApi]
         public IInputElement? GetFocusedElement(IFocusScope scope)
         {
             return (scope as StyledElement)?.GetValue(FocusedElementProperty);
@@ -138,6 +124,7 @@ namespace Avalonia.Input
         /// Notifies the focus manager of a change in focus scope.
         /// </summary>
         /// <param name="scope">The new focus scope.</param>
+        [PrivateApi]
         public void SetFocusScope(IFocusScope scope)
         {
             if (GetFocusedElement(scope) is { } focused)
@@ -153,12 +140,14 @@ namespace Avalonia.Input
             }
         }
 
+        [PrivateApi]
         public void RemoveFocusRoot(IFocusScope scope)
         {
             if (scope == _focusRoot)
-                ClearFocus();
+                Focus(null);
         }
 
+        [PrivateApi]
         public static bool GetIsFocusScope(IInputElement e) => e is IFocusScope;
 
         /// <summary>
@@ -176,22 +165,13 @@ namespace Avalonia.Input
                 ?? (FocusManager?)AvaloniaLocator.Current.GetService<IFocusManager>();
         }
 
-        /// <summary>
-        /// Attempts to change focus from the element with focus to the next focusable element in the specified direction.
-        /// </summary>
-        /// <param name="direction">The direction to traverse (in tab order).</param>
-        /// <returns>true if focus moved; otherwise, false.</returns>
+        /// <inheritdoc />
         public bool TryMoveFocus(NavigationDirection direction)
         {
             return FindAndSetNextFocus(direction, _xYFocusOptions);
         }
 
-        /// <summary>
-        /// Attempts to change focus from the element with focus to the next focusable element in the specified direction, using the specified navigation options.
-        /// </summary>
-        /// <param name="direction">The direction to traverse (in tab order).</param>
-        /// <param name="options">The options to help identify the next element to receive focus with keyboard/controller/remote navigation.</param>
-        /// <returns>true if focus moved; otherwise, false.</returns>
+        /// <inheritdoc />
         public bool TryMoveFocus(NavigationDirection direction, FindNextElementOptions options)
         {
             return FindAndSetNextFocus(direction, ValidateAndCreateFocusOptions(direction, options));
@@ -295,10 +275,7 @@ namespace Avalonia.Input
             return true;
         }
 
-        /// <summary>
-        /// Retrieves the first element that can receive focus.
-        /// </summary>
-        /// <returns>The first focusable element.</returns>
+        /// <inheritdoc />
         public IInputElement? FindFirstFocusableElement()
         {
             var root = (_contentRoot as Visual)?.GetSelfAndVisualDescendants().FirstOrDefault(x => x is IInputElement) as IInputElement;
@@ -317,10 +294,7 @@ namespace Avalonia.Input
             return GetFirstFocusableElement(searchScope);
         }
 
-        /// <summary>
-        /// Retrieves the last element that can receive focus.
-        /// </summary>
-        /// <returns>The last focusable element.</returns>
+        /// <inheritdoc />
         public IInputElement? FindLastFocusableElement()
         {
             var root = (_contentRoot as Visual)?.GetSelfAndVisualDescendants().FirstOrDefault(x => x is IInputElement) as IInputElement;
@@ -339,11 +313,7 @@ namespace Avalonia.Input
             return GetFocusManager(searchScope)?.GetLastFocusableElement(searchScope);
         }
 
-        /// <summary>
-        /// Retrieves the element that should receive focus based on the specified navigation direction.
-        /// </summary>
-        /// <param name="direction"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public IInputElement? FindNextElement(NavigationDirection direction)
         {
             var xyOption = new XYFocusOptions()
@@ -367,6 +337,8 @@ namespace Avalonia.Input
 
         private static XYFocusOptions ValidateAndCreateFocusOptions(NavigationDirection direction, FindNextElementOptions options)
         {
+            ArgumentNullException.ThrowIfNull(options);
+
             if (direction is not NavigationDirection.Up
                 and not NavigationDirection.Down
                 and not NavigationDirection.Left
