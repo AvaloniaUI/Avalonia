@@ -543,6 +543,7 @@ namespace Avalonia.Controls
         private void AnimateScrollOffset(ScrollViewer scrollViewer, double targetOffset, bool isHorizontal)
         {
             _scrollAnimationCts?.Cancel();
+            _scrollAnimationCts?.Dispose();
             _scrollAnimationCts = new CancellationTokenSource();
             var token = _scrollAnimationCts.Token;
 

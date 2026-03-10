@@ -132,7 +132,7 @@ namespace Avalonia.Skia.RenderTests
 
             target.Measure(new Size(400, 150));
             target.Arrange(new Rect(0, 0, 400, 150));
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             await RenderToFile(target);
             CompareImages();
