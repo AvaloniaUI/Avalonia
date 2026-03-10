@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
 
 namespace Avalonia.Automation.Peers
 {
@@ -11,6 +9,8 @@ namespace Avalonia.Automation.Peers
     /// </summary>
     public class PipsPagerAutomationPeer : ControlAutomationPeer, ISelectionProvider
     {
+        private ListBox? _pipsList;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PipsPagerAutomationPeer"/> class.
         /// </summary>
@@ -39,14 +39,11 @@ namespace Avalonia.Automation.Peers
 
             if (owner.SelectedPageIndex >= 0 && owner.SelectedPageIndex < owner.NumberOfPages)
             {
-                // Try to get the container for the selected index
-                var pipsControl = owner.GetTemplateChildren()
-                    .OfType<ItemsControl>()
-                    .FirstOrDefault(x => x.Name == "PART_PipsPagerList");
+                _pipsList ??= owner.FindNameScope()?.Find<ListBox>("PART_PipsPagerList");
 
-                if (pipsControl != null)
+                if (_pipsList != null)
                 {
-                    var container = pipsControl.ContainerFromIndex(owner.SelectedPageIndex);
+                    var container = _pipsList.ContainerFromIndex(owner.SelectedPageIndex);
                     if (container is Control c)
                     {
                         var peer = GetOrCreate(c);

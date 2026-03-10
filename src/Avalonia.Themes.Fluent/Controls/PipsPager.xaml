@@ -102,7 +102,6 @@
       <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPressed}" />
     </Style>
 
-
     <Style Selector="^:selected /template/ Ellipse#Pip">
       <Setter Property="Width" Value="6" />
       <Setter Property="Height" Value="6" />
