@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Avalonia.Compatibility;
-using Avalonia.Platform;
-using Avalonia.Platform.Interop;
 using Avalonia.SourceGenerator;
 
 namespace Avalonia.OpenGL.Egl
@@ -25,9 +23,9 @@ namespace Avalonia.OpenGL.Egl
 
         static Func<string, IntPtr> Load()
         {
-            if(OperatingSystemEx.IsLinux())
+            if(OperatingSystem.IsLinux())
                 return Load("libEGL.so.1");
-            if (OperatingSystemEx.IsAndroid())
+            if (OperatingSystem.IsAndroid())
                 return Load("libEGL.so");
 
             throw new PlatformNotSupportedException();

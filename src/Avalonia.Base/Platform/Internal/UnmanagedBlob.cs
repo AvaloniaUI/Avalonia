@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Avalonia.Compatibility;
 
 namespace Avalonia.Platform.Internal;
 
@@ -117,7 +116,7 @@ internal class UnmanagedBlob : IDisposable
     // Could be replaced with https://github.com/dotnet/runtime/issues/40892 when it will be available.
     private IntPtr Alloc(int size)
     {
-        if (!OperatingSystemEx.IsLinux())
+        if (!OperatingSystem.IsLinux())
         {
             return Marshal.AllocHGlobal(size);
         }
@@ -135,7 +134,7 @@ internal class UnmanagedBlob : IDisposable
 
     private void Free(IntPtr ptr, int len)
     {
-        if (!OperatingSystemEx.IsLinux())
+        if (!OperatingSystem.IsLinux())
         {
             Marshal.FreeHGlobal(ptr);
         }
