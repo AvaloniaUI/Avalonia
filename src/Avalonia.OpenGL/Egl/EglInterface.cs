@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Avalonia.Compatibility;
 using Avalonia.SourceGenerator;
 
 namespace Avalonia.OpenGL.Egl
@@ -33,8 +32,8 @@ namespace Avalonia.OpenGL.Egl
 
         static Func<string, IntPtr> Load(string library)
         {
-            var lib = NativeLibraryEx.Load(library);
-            return (s) => NativeLibraryEx.TryGetExport(lib, s, out var address) ? address : default;
+            var lib = NativeLibrary.Load(library);
+            return (s) => NativeLibrary.TryGetExport(lib, s, out var address) ? address : default;
         }
 
         // ReSharper disable UnassignedGetOnlyAutoProperty
