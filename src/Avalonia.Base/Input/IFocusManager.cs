@@ -20,6 +20,10 @@ namespace Avalonia.Input
         /// <param name="method">The method by which focus was changed.</param>
         /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
         /// <returns>true if focus moved; otherwise, false.</returns>
+        /// <remarks>
+        /// If <paramref name="control"/> is null, this method clears the focus. However, it is not advised.
+        /// For a better user experience, focus should be moved to another element when possible.
+        /// </remarks>
         bool Focus(
             IInputElement? control,
             NavigationMethod method = NavigationMethod.Unspecified,
