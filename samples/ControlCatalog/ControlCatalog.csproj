@@ -19,6 +19,7 @@
     <AvaloniaResource Include="Assets\CurvedHeader\*" />
     <AvaloniaResource Include="Assets\RetroGaming\*" />
     <AvaloniaResource Include="Assets\ModernApp\*" />
+    <AvaloniaResource Include="Assets\Sanctuary\*" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\image1.jpg" />

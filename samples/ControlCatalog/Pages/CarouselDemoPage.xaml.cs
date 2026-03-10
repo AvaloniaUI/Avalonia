@@ -43,6 +43,9 @@ namespace ControlCatalog.Pages
                 () => new CarouselPagePerformancePage()),
 
             // Showcases
+            ("Showcases", "Sanctuary",
+                "Travel discovery app with 3 full-screen immersive pages. Each page has a real background photo, gradient overlay, and themed content. Built as a 1:1 replica of a Stitch design.",
+                () => new SanctuaryShowcasePage()),
             ("Showcases", "Care Companion",
                 "Healthcare onboarding with CarouselPage (3 pages), then a TabbedPage patient dashboard. Skip or complete onboarding to navigate to the dashboard via RemovePage.",
                 () => new CareCompanionAppPage()),
