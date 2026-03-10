@@ -1353,6 +1353,104 @@ namespace Avalonia.Controls.UnitTests
             Assert.DoesNotContain(viewModel.Tab2, oldContentDataContexts);
         }
 
+        [Fact]
+        public void ContentTemplate_With_Control_Content_Should_Set_DataContext_To_Content()
+        {
+            // When a TabItem has a ContentTemplate and its Content is a Control, the
+            // ContentPresenter should set DataContext = content (so the template can bind
+            // to the control's properties), not the TabItem's DataContext.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+            var userControl = new UserControl { Tag = "my-content" };
+
+            TextBlock? templateChild = null;
+            var contentTemplate = new FuncDataTemplate<UserControl>((x, _) =>
+            {
+                templateChild = new TextBlock();
+                templateChild.Bind(TextBlock.TextProperty, new Binding("Tag"));
+                return templateChild;
+            });
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        ContentTemplate = contentTemplate,
+                        Content = userControl,
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            // The ContentPresenter's DataContext should be the content (UserControl),
+            // not the TabItem's DataContext (Tab1ViewModel), because ContentTemplate is set.
+            Assert.Same(userControl, target.ContentPart!.DataContext);
+            Assert.NotNull(templateChild);
+            Assert.Equal("my-content", templateChild!.Text);
+        }
+
+        [Fact]
+        public void ContentTemplate_With_Control_Content_Should_Set_DataContext_To_Content_After_Tab_Switch()
+        {
+            // Same as above but verifies the behavior after switching tabs.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+            var userControl = new UserControl { Tag = "my-content" };
+
+            TextBlock? templateChild = null;
+            var contentTemplate = new FuncDataTemplate<UserControl>((x, _) =>
+            {
+                templateChild = new TextBlock();
+                templateChild.Bind(TextBlock.TextProperty, new Binding("Tag"));
+                return templateChild;
+            });
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        ContentTemplate = contentTemplate,
+                        Content = userControl,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        Content = "Other content",
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            Assert.Same(userControl, target.ContentPart!.DataContext);
+
+            // Switch away and back.
+            target.SelectedIndex = 1;
+            target.SelectedIndex = 0;
+
+            // DataContext should still be the content, not the TabItem's DataContext.
+            Assert.Same(userControl, target.ContentPart!.DataContext);
+            Assert.NotNull(templateChild);
+            Assert.Equal("my-content", templateChild!.Text);
+        }
+
         private class TabDataContextViewModel : NotifyingBase
         {
             private string? _selectedItem;
