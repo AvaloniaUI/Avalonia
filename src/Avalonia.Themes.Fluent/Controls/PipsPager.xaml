@@ -236,7 +236,7 @@
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="#72000000" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="#9E000000" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPressed" Color="#9E000000" />
-      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#72000000" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#FF000000" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundDisabled" Color="#51000000" />
       <SolidColorBrush x:Key="PipsPagerNavigationButtonBackground" Color="Transparent" />
       <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundPointerOver" Color="Transparent" />
@@ -265,7 +265,7 @@
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="#72000000" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="#9E000000" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPressed" Color="#9E000000" />
-      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#72000000" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#FF000000" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundDisabled" Color="#51000000" />
       <SolidColorBrush x:Key="PipsPagerNavigationButtonBackground" Color="Transparent" />
       <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundPointerOver" Color="Transparent" />
@@ -294,7 +294,7 @@
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForeground" Color="#8BFFFFFF" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPointerOver" Color="#C5FFFFFF" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundPressed" Color="#C5FFFFFF" />
-      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#8BFFFFFF" />
+      <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundSelected" Color="#FFFFFFFF" />
       <SolidColorBrush x:Key="PipsPagerSelectionIndicatorForegroundDisabled" Color="#3FFFFFFF" />
       <SolidColorBrush x:Key="PipsPagerNavigationButtonBackground" Color="Transparent" />
       <SolidColorBrush x:Key="PipsPagerNavigationButtonBackgroundPointerOver" Color="Transparent" />

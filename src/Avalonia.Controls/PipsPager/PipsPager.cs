@@ -475,12 +475,14 @@ namespace Avalonia.Controls
             if (_pipsPagerList == null)
                 return;
 
+            if (NumberOfPages <= MaxVisiblePips)
+                return;
+
             var container = _pipsPagerList.ContainerFromIndex(SelectedPageIndex);
-         
+
             if (container == null)
                 return;
 
-            // Use BringIntoView to properly scroll the selected item into view
             container.BringIntoView();
         }
 
