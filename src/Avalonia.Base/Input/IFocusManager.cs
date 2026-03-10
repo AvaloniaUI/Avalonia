@@ -16,16 +16,19 @@ namespace Avalonia.Input
         /// <summary>
         /// Focuses a control.
         /// </summary>
-        /// <param name="control">The control to focus.</param>
+        /// <param name="element">The control to focus.</param>
         /// <param name="method">The method by which focus was changed.</param>
         /// <param name="keyModifiers">Any key modifiers active at the time of focus.</param>
-        /// <returns>true if focus moved; otherwise, false.</returns>
+        /// <returns><c>true</c> if the focus moved to a control; otherwise, <c>false</c>.</returns>
         /// <remarks>
-        /// If <paramref name="control"/> is null, this method clears the focus. However, it is not advised.
+        /// If <paramref name="element"/> is null, this method tries to clear the focus. However, it is not advised.
         /// For a better user experience, focus should be moved to another element when possible.
+        ///
+        /// When this method return <c>true</c>, it is not guaranteed that the focus has been moved
+        /// to <paramref name="element"/>. The focus might have been redirected to another element.
         /// </remarks>
         bool Focus(
-            IInputElement? control,
+            IInputElement? element,
             NavigationMethod method = NavigationMethod.Unspecified,
             KeyModifiers keyModifiers = KeyModifiers.None);
 
@@ -38,7 +41,10 @@ namespace Avalonia.Input
         /// <see cref="NavigationDirection.Left"/>, <see cref="NavigationDirection.Right"/>,
         /// <see cref="NavigationDirection.Up"/> and <see cref="NavigationDirection.Down"/>.
         /// </param>
-        /// <param name="options">The options to help identify the next element to receive focus.</param>
+        /// <param name="options">
+        /// The options to help identify the next element to receive focus.
+        /// They only apply to directional navigation.
+        /// </param>
         /// <returns>true if focus moved; otherwise, false.</returns>
         bool TryMoveFocus(NavigationDirection direction, FindNextElementOptions? options = null);
 
@@ -63,7 +69,10 @@ namespace Avalonia.Input
         /// <see cref="NavigationDirection.Left"/>, <see cref="NavigationDirection.Right"/>,
         /// <see cref="NavigationDirection.Up"/> and <see cref="NavigationDirection.Down"/>.
         /// </param>
-        /// <param name="options">The options to help identify the next element to receive focus.</param>
+        /// <param name="options">
+        /// The options to help identify the next element to receive focus.
+        /// They only apply to directional navigation.
+        /// </param>
         /// <returns>The next element to receive focus, if any.</returns>
         IInputElement? FindNextElement(NavigationDirection direction, FindNextElementOptions? options = null);
     }

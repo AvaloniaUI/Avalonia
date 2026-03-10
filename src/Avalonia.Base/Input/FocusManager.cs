@@ -66,25 +66,25 @@ namespace Avalonia.Input
 
         /// <inheritdoc />
         public bool Focus(
-            IInputElement? control,
+            IInputElement? element,
             NavigationMethod method = NavigationMethod.Unspecified,
             KeyModifiers keyModifiers = KeyModifiers.None)
         {
             if (KeyboardDevice.Instance is not { } keyboardDevice)
                 return false;
 
-            if (control is not null)
+            if (element is not null)
             {
-                if (!CanFocus(control))
+                if (!CanFocus(element))
                     return false;
 
-                if (GetFocusScope(control) is StyledElement scope)
+                if (GetFocusScope(element) is StyledElement scope)
                 {
-                    scope.SetValue(FocusedElementProperty, control);
+                    scope.SetValue(FocusedElementProperty, element);
                     _focusRoot = GetFocusRoot(scope);
                 }
 
-                keyboardDevice.SetFocusedElement(control, method, keyModifiers);
+                keyboardDevice.SetFocusedElement(element, method, keyModifiers);
                 return true;
             }
             else if (_focusRoot?.GetValue(FocusedElementProperty) is { } restore &&
@@ -345,7 +345,7 @@ namespace Avalonia.Input
 
         private XYFocusOptions ToFocusOptions(FindNextElementOptions? options, bool updateManifold)
         {
-            // XYFocus only uses the options and never modifies them; we can cache them.
+            // XYFocus only uses the options and never modifies them; we can cache and reset them between calls.
             var focusOptions = _reusableFocusOptions;
             _reusableFocusOptions = null;
 
