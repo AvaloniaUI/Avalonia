@@ -15,6 +15,8 @@
           <ComboBoxItem Content="CrossFade" />
           <ComboBoxItem Content="Slide Horizontal" />
           <ComboBoxItem Content="Slide Vertical" />
+          <ComboBoxItem Content="Card Stack" />
+          <ComboBoxItem Content="Wave Reveal" />
         </ComboBox>
 
         <Separator />
