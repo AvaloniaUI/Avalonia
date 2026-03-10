@@ -244,14 +244,14 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                     catch (Exception ex)
                     {
                         Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
-                            .Log(this, "File LastModified metadata reader failed: '{Exception}'", ex);
+                            .Log(this, "Directory LastModified metadata reader failed: '{Exception}'", ex);
                     }
                 }
             }
         }
         catch (UnsupportedOperationException)
         {
-            // It's not possible to get parameters of some files/folders.
+            // Data may not be available for this item.
         }
 
         return Task.FromResult(new StorageItemProperties(null, null, dateModified));
