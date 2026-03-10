@@ -1829,4 +1829,98 @@ public class NavigationPageTests
         }
     }
 
+    public class IsNavigatingTests : ScopedTestBase
+    {
+        [Fact]
+        public void IsNavigating_FalseByDefault()
+        {
+            var nav = new NavigationPage();
+            Assert.False(nav.IsNavigating);
+        }
+
+        [Fact]
+        public async Task IsNavigating_TrueWhilePushInProgress()
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            var nav = CreateNavigationPage(new ControllableTransition(tcs.Task));
+
+            await nav.PushAsync(new ContentPage());
+
+            bool duringPush = false;
+            var pushTask = nav.PushAsync(new ContentPage());
+            duringPush = nav.IsNavigating;
+            tcs.SetResult(true);
+            await pushTask;
+
+            Assert.True(duringPush);
+        }
+
+        [Fact]
+        public async Task IsNavigating_FalseAfterPushCompletes()
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            var nav = CreateNavigationPage(new ControllableTransition(tcs.Task));
+
+            await nav.PushAsync(new ContentPage());
+            var pushTask = nav.PushAsync(new ContentPage());
+            tcs.SetResult(true);
+            await pushTask;
+
+            Assert.False(nav.IsNavigating);
+        }
+
+        private static NavigationPage CreateNavigationPage(IPageTransition? transition)
+        {
+            var nav = new NavigationPage
+            {
+                PageTransition = transition,
+                Template = new FuncControlTemplate<NavigationPage>((parent, ns) =>
+                {
+                    return new Panel
+                    {
+                        Children =
+                        {
+                            new Panel
+                            {
+                                Name = "PART_ContentHost",
+                                Children =
+                                {
+                                    new ContentPresenter { Name = "PART_PageBackPresenter" }.RegisterInNameScope(ns),
+                                    new ContentPresenter { Name = "PART_PagePresenter" }.RegisterInNameScope(ns),
+                                }
+                            }.RegisterInNameScope(ns),
+                            new Border { Name = "PART_NavigationBar",
+                                Child = new Button { Name = "PART_BackButton" }.RegisterInNameScope(ns) }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_TopCommandBar" }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_ModalBackPresenter" }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_ModalPresenter" }.RegisterInNameScope(ns),
+                        }
+                    };
+                })
+            };
+            var root = new TestRoot { Child = nav };
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            return nav;
+        }
+
+        private class ControllableTransition : IPageTransition
+        {
+            private readonly Task _gate;
+
+            public ControllableTransition(Task gate)
+            {
+                _gate = gate;
+            }
+
+            public async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+            {
+                if (to != null)
+                    to.IsVisible = true;
+                await _gate;
+                if (from != null)
+                    from.IsVisible = false;
+            }
+        }
+    }
+
 }

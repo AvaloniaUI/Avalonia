@@ -182,6 +182,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<NavigationPage, bool>(nameof(IsGestureEnabled), true);
 
         /// <summary>
+        /// Defines the <see cref="IsNavigating"/> property.
+        /// </summary>
+        public static readonly DirectProperty<NavigationPage, bool> IsNavigatingProperty =
+            AvaloniaProperty.RegisterDirect<NavigationPage, bool>(nameof(IsNavigating), o => o._isNavigating);
+
+        /// <summary>
         /// Defines the <see cref="CanGoBack"/> property.
         /// </summary>
         public static readonly DirectProperty<NavigationPage, bool> CanGoBackProperty =
@@ -365,6 +371,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets whether a navigation operation is currently in progress.
+        /// </summary>
+        public bool IsNavigating => _isNavigating;
+
+        /// <summary>
         /// Gets whether the navigation stack has more than one entry.
         /// </summary>
         public bool CanGoBack => _canGoBack;
@@ -451,9 +462,15 @@ namespace Avalonia.Controls
         public static void SetHasBackButton(Page page, bool value) =>
             page.SetValue(HasBackButtonProperty, value);
 
+        /// <summary>
+        /// Gets the header of the specified page.
+        /// </summary>
         public static object? GetHeader(Page page) =>
             page.GetValue(Page.HeaderProperty);
 
+        /// <summary>
+        /// Sets the header of the specified page.
+        /// </summary>
         public static void SetHeader(Page page, object? header) =>
             page.SetValue(Page.HeaderProperty, header);
 
@@ -823,7 +840,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var previousPage = CurrentPage;
@@ -847,7 +864,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -872,7 +889,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return null;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var currentPage = CurrentPage;
@@ -897,7 +914,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -922,7 +939,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var navigationStack = NavigationStack;
@@ -987,7 +1004,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -1015,7 +1032,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var currentPage = CurrentPage;
@@ -1075,7 +1092,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -1099,7 +1116,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var previousModal = _modalStack.Count > 0 ? (Page?)_modalStack.Peek() : null;
@@ -1165,7 +1182,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -1190,7 +1207,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return null;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var modal = _modalStack.Pop();
@@ -1281,7 +1298,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -1319,7 +1336,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var effectiveModalTransition = _hasOverrideTransition ? _overrideTransition : ModalTransition;
@@ -1364,7 +1381,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -1527,7 +1544,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var previousPage = CurrentPage;
@@ -1544,7 +1561,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
