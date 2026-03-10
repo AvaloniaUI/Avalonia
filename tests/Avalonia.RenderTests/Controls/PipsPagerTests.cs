@@ -137,5 +137,32 @@ namespace Avalonia.Skia.RenderTests
             await RenderToFile(target);
             CompareImages();
         }
+
+        [Fact]
+        public async Task PipsPager_Preselected_Index()
+        {
+            var pipsPager = new PipsPager
+            {
+                Template = CreatePipsPagerTemplate(),
+                NumberOfPages = 5,
+                SelectedPageIndex = 3
+            };
+
+            var target = new Border
+            {
+                Padding = new Thickness(20),
+                Background = Brushes.White,
+                Child = pipsPager,
+                Width = 400,
+                Height = 150
+            };
+
+            target.Measure(new Size(400, 150));
+            target.Arrange(new Rect(0, 0, 400, 150));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            await RenderToFile(target);
+            CompareImages();
+        }
     }
 }

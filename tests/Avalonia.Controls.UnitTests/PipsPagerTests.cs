@@ -524,6 +524,41 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(0, target.TemplateSettings.Pips.Count);
         }
 
+        [Fact]
+        public void Preselected_Index_Should_Be_Preserved_After_Template_Apply()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var target = new PipsPager
+            {
+                NumberOfPages = 20,
+                MaxVisiblePips = 5,
+                SelectedPageIndex = 15,
+                Template = GetTemplate()
+            };
+
+            var root = new TestRoot(target);
+            target.ApplyTemplate();
+
+            Assert.Equal(15, target.SelectedPageIndex);
+            Assert.True(target.Classes.Contains(":last-page") == false);
+            Assert.True(target.Classes.Contains(":first-page") == false);
+        }
+
+        [Fact]
+        public void Preselected_Last_Index_Should_Set_LastPage_PseudoClass()
+        {
+            var target = new PipsPager
+            {
+                NumberOfPages = 10,
+                SelectedPageIndex = 9
+            };
+
+            Assert.Equal(9, target.SelectedPageIndex);
+            Assert.True(target.Classes.Contains(":last-page"));
+            Assert.False(target.Classes.Contains(":first-page"));
+        }
+
         private static FuncControlTemplate<PipsPager> GetTemplate()
         {
             return new FuncControlTemplate<PipsPager>((parent, scope) =>
