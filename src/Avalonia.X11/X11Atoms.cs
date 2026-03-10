@@ -197,6 +197,20 @@ namespace Avalonia.X11
         public IntPtr INCR;
         public IntPtr _NET_WM_STATE_FOCUSED;
 
+        public IntPtr XdndActionCopy;
+        public IntPtr XdndActionLink;
+        public IntPtr XdndActionMove;
+        public IntPtr XdndAware;
+        public IntPtr XdndDrop;
+        public IntPtr XdndEnter;
+        public IntPtr XdndFinished;
+        public IntPtr XdndLeave;
+        public IntPtr XdndPosition;
+        public IntPtr XdndProxy;
+        public IntPtr XdndSelection;
+        public IntPtr XdndStatus;
+        public IntPtr XdndTypeList;
+
         private readonly Dictionary<string, IntPtr> _namesToAtoms  = new Dictionary<string, IntPtr>();
         private readonly Dictionary<IntPtr, string> _atomsToNames = new Dictionary<IntPtr, string>();
         public X11Atoms(IntPtr display)

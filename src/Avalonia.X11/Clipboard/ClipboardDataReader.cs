@@ -53,7 +53,7 @@ internal sealed class ClipboardDataReader(
                 null;
         }
 
-        if(DataFormat.Bitmap.Equals(format))
+        if (DataFormat.Bitmap.Equals(format))
         {
             using var data = result.AsStream();
 

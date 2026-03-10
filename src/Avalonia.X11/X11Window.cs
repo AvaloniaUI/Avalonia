@@ -27,6 +27,7 @@ using Avalonia.Input.Platform;
 using System.Runtime.InteropServices;
 using Avalonia.Dialogs;
 using Avalonia.Platform.Storage.FileIO;
+using Avalonia.X11.DragDrop;
 
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -34,7 +35,7 @@ using Avalonia.Platform.Storage.FileIO;
 namespace Avalonia.X11
 {
     internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
-        IX11OptionsToplevelImplFeature
+        IX11OptionsToplevelImplFeature, IXdndWindow
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
@@ -72,6 +73,7 @@ namespace Avalonia.X11
         private bool _usePositioningFlags = false;
         private X11WindowMode _mode;
         private IWindowIconImpl? _iconImpl;
+        private readonly XdndHandler? _xdndHandler;
 
         private enum XSyncState
         {
@@ -278,6 +280,9 @@ namespace Avalonia.X11
                     ? (IStorageProvider?)new ManagedStorageProvider(tl)
                     : null)
             });
+
+            if (AvaloniaLocator.Current.GetService<IDragDropDevice>() is { } dragDropDevice)
+                _xdndHandler = new XdndHandler(dragDropDevice, this, _x11.Display, _x11.Atoms);
 
             platform.X11Screens.Changed += OnScreensChanged;
         }
@@ -681,7 +686,8 @@ namespace Avalonia.X11
             }
             else if (ev.type == XEventName.ClientMessage)
             {
-                if (ev.ClientMessageEvent.message_type == _x11.Atoms.WM_PROTOCOLS)
+                var messageType = ev.ClientMessageEvent.message_type;
+                if (messageType == _x11.Atoms.WM_PROTOCOLS)
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
@@ -695,6 +701,14 @@ namespace Avalonia.X11
                         _xSyncState = XSyncState.WaitConfigure;
                     }
                 }
+                else if (messageType == _x11.Atoms.XdndEnter)
+                    _xdndHandler?.HandleXdndEnter(ev.ClientMessageEvent);
+                else if (messageType == _x11.Atoms.XdndPosition)
+                    _xdndHandler?.HandleXdndPosition(ev.ClientMessageEvent);
+                else if (messageType == _x11.Atoms.XdndLeave)
+                    _xdndHandler?.HandleXdndLeave(ev.ClientMessageEvent);
+                else if (messageType == _x11.Atoms.XdndDrop)
+                    _xdndHandler?.HandleXdndDrop(ev.ClientMessageEvent);
             }
             else if (ev.type == XEventName.KeyPress || ev.type == XEventName.KeyRelease)
             {
@@ -1302,7 +1316,9 @@ namespace Avalonia.X11
         }
 
         public IPlatformHandle Handle { get; }
-        
+
+        IntPtr IXdndWindow.Handle => _handle;
+
         public PixelPoint Position
         {
             get

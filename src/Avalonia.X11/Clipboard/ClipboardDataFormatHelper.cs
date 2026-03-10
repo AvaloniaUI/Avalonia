@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
-using Avalonia.Controls;
 using Avalonia.Input;
 
 namespace Avalonia.X11.Clipboard;
@@ -39,6 +39,48 @@ internal static class ClipboardDataFormatHelper
         }
 
         return null;
+    }
+
+    public static (DataFormat[] DataFormats, IntPtr[] TextFormatAtoms) ToDataFormats(IntPtr[] formatAtoms, X11Atoms atoms)
+    {
+        if (formatAtoms.Length == 0)
+            return ([], []);
+
+        var formats = new List<DataFormat>(formatAtoms.Length);
+        List<IntPtr>? textFormatAtoms = null;
+
+        var hasImage = false;
+
+        foreach (var formatAtom in formatAtoms)
+        {
+            if (ToDataFormat(formatAtom, atoms) is not { } format)
+                continue;
+
+            if (DataFormat.Text.Equals(format))
+            {
+                if (textFormatAtoms is null)
+                {
+                    formats.Add(format);
+                    textFormatAtoms = [];
+                }
+                textFormatAtoms.Add(formatAtom);
+            }
+            else
+            {
+                formats.Add(format);
+
+                if(!hasImage)
+                {
+                    if (format.Identifier is JpegFormatMimeType or PngFormatMimeType)
+                        hasImage = true;
+                }
+            }
+        }
+
+        if (hasImage)
+            formats.Add(DataFormat.Bitmap);
+
+        return (formats.ToArray(), textFormatAtoms?.ToArray() ?? []);
     }
 
     public static IntPtr ToAtom(DataFormat format, IntPtr[] textFormatAtoms, X11Atoms atoms, DataFormat[] dataFormats)
