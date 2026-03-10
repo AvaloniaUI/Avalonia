@@ -12,6 +12,7 @@ using Avalonia.Logging;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Java.Lang;
+using static Android.Provider.DocumentsContract;
 using AndroidUri = Android.Net.Uri;
 using Exception = System.Exception;
 using JavaFile = Java.IO.File;
@@ -35,10 +36,10 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
     }
 
     internal AndroidUri Uri { get; set; }
-    
+
     protected Activity Activity => _activity ?? throw new ObjectDisposedException(nameof(AndroidStorageItem));
 
-    public virtual string Name => GetColumnValue(Activity, Uri, DocumentsContract.Document.ColumnDisplayName)
+    public virtual string Name => GetColumnValue(Activity, Uri, Document.ColumnDisplayName)
                           ?? GetColumnValue(Activity, Uri, MediaStore.IMediaColumns.DisplayName)
                           ?? Uri.PathSegments?.LastOrDefault()?.Split("/", StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? string.Empty;
 
@@ -67,7 +68,7 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
 
         Activity.ContentResolver?.ReleasePersistableUriPermission(Uri, ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
     }
-    
+
     public abstract Task<StorageItemProperties> GetBasicPropertiesAsync();
 
     protected static string? GetColumnValue(Context context, AndroidUri contentUri, string column, string? selection = null, string[]? selectionArgs = null)
@@ -98,7 +99,7 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
             return null;
         }
 
-        if(_parent != null)
+        if (_parent != null)
         {
             return _parent;
         }
@@ -106,8 +107,8 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
         using var javaFile = new JavaFile(Uri.Path!);
 
         // Java file represents files AND directories. Don't be confused.
-        if (javaFile.ParentFile is {} parentFile
-            && AndroidUri.FromFile(parentFile) is {} androidUri)
+        if (javaFile.ParentFile is { } parentFile
+            && AndroidUri.FromFile(parentFile) is { } androidUri)
         {
             return new AndroidStorageFolder(Activity, androidUri, false);
         }
@@ -124,12 +125,12 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
 
         return await _activity!.CheckPermission(Manifest.Permission.ReadExternalStorage);
     }
-    
+
     public void Dispose()
     {
         _activity = null;
     }
-    
+
     internal AndroidUri? PermissionRoot => _permissionRoot;
 
     public abstract Task DeleteAsync();
@@ -138,8 +139,8 @@ internal abstract class AndroidStorageItem : IStorageBookmarkItem
 
     public static IStorageItem CreateItem(Activity activity, AndroidUri uri)
     {
-        var mimeType = GetColumnValue(activity, uri, DocumentsContract.Document.ColumnMimeType);
-        if (mimeType == DocumentsContract.Document.MimeTypeDir)
+        var mimeType = GetColumnValue(activity, uri, Document.ColumnMimeType);
+        if (mimeType == Document.MimeTypeDir)
         {
             return new AndroidStorageFolder(activity, uri, false);
         }
@@ -160,8 +161,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     {
         var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
         var treeUri = GetTreeUri().treeUri;
-        var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, mimeType, name);
-        if(newFile == null)
+        var newFile = CreateDocument(Activity.ContentResolver!, treeUri!, mimeType, name);
+        if (newFile == null)
         {
             return Task.FromResult<IStorageFile?>(null);
         }
@@ -172,7 +173,7 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     public Task<IStorageFolder?> CreateFolderAsync(string name)
     {
         var treeUri = GetTreeUri().treeUri;
-        var newFolder = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, DocumentsContract.Document.MimeTypeDir, name);
+        var newFolder = CreateDocument(Activity.ContentResolver!, treeUri!, Document.MimeTypeDir, name);
         if (newFolder == null)
         {
             return Task.FromResult<IStorageFolder?>(null);
@@ -197,24 +198,63 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
         {
             await foreach (var file in storageFolder.GetItemsAsync())
             {
-                if(file is AndroidStorageFolder folder)
+                if (file is AndroidStorageFolder folder)
                 {
                     await DeleteContents(folder);
                 }
-                else if(file is AndroidStorageFile storageFile)
+                else if (file is AndroidStorageFile storageFile)
                 {
                     await storageFile.DeleteAsync();
                 }
             }
 
             var treeUri = GetTreeUri().treeUri;
-            DocumentsContract.DeleteDocument(Activity.ContentResolver!, treeUri!);
+            DeleteDocument(Activity.ContentResolver!, treeUri!);
         }
     }
 
     public override Task<StorageItemProperties> GetBasicPropertiesAsync()
     {
-        return Task.FromResult(new StorageItemProperties());
+        DateTimeOffset? dateModified = null;
+
+        try
+        {
+            var folderId = GetTreeDocumentId(Uri);
+            var uri = BuildDocumentUriUsingTree(Uri, folderId);
+
+            if (uri != null)
+            {
+                var projection = new[]
+                {
+                    Document.ColumnLastModified
+                };
+                using var cursor = Activity.ContentResolver!.Query(uri, projection, null, null, null);
+
+                if (cursor?.MoveToFirst() == true)
+                {
+                    try
+                    {
+                        var columnIndex = cursor.GetColumnIndex(Document.ColumnLastModified);
+                        if (columnIndex != -1)
+                        {
+                            var longValue = cursor.GetLong(columnIndex);
+                            dateModified = longValue > 0 ? DateTimeOffset.FromUnixTimeMilliseconds(longValue) : null;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
+                            .Log(this, "File LastModified metadata reader failed: '{Exception}'", ex);
+                    }
+                }
+            }
+        }
+        catch (UnsupportedOperationException)
+        {
+            // It's not possible to get parameters of some files/folders.
+        }
+
+        return Task.FromResult(new StorageItemProperties(null, null, dateModified));
     }
 
     public async IAsyncEnumerable<IStorageItem> GetItemsAsync()
@@ -234,8 +274,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
         var projection = new[]
         {
-            DocumentsContract.Document.ColumnDocumentId,
-            DocumentsContract.Document.ColumnMimeType
+            Document.ColumnDocumentId,
+            Document.ColumnMimeType
         };
         if (childrenUri != null)
         {
@@ -247,8 +287,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                     var mime = cursor.GetString(1);
                     var id = cursor.GetString(0);
 
-                    bool isDirectory = mime == DocumentsContract.Document.MimeTypeDir;
-                    var uri = DocumentsContract.BuildDocumentUriUsingTree(root, id);
+                    bool isDirectory = mime == Document.MimeTypeDir;
+                    var uri = BuildDocumentUriUsingTree(root, id);
 
                     if (uri == null)
                     {
@@ -313,9 +353,9 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
         var projection = new[]
         {
-            DocumentsContract.Document.ColumnDocumentId,
-            DocumentsContract.Document.ColumnMimeType,
-            DocumentsContract.Document.ColumnDisplayName
+            Document.ColumnDocumentId,
+            Document.ColumnMimeType,
+            Document.ColumnDisplayName
         };
 
         if (childrenUri != null)
@@ -332,15 +372,15 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                     if (fileName != name)
                     {
                         continue;
-                    }                   
+                    }
 
-                    bool mineDirectory = mime == DocumentsContract.Document.MimeTypeDir;
+                    bool mineDirectory = mime == Document.MimeTypeDir;
                     if (isDirectory != mineDirectory)
                     {
                         return null;
                     }
 
-                    var uri = DocumentsContract.BuildDocumentUriUsingTree(root, id);
+                    var uri = BuildDocumentUriUsingTree(root, id);
                     if (uri == null)
                     {
                         return null;
@@ -370,8 +410,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     private (AndroidUri root, AndroidUri? treeUri) GetTreeUri()
     {
         var root = PermissionRoot ?? Uri;
-        var folderId = root != Uri ? DocumentsContract.GetDocumentId(Uri) : DocumentsContract.GetTreeDocumentId(Uri);
-        return (root, DocumentsContract.BuildChildDocumentsUriUsingTree(root, folderId));
+        var folderId = root != Uri ? GetDocumentId(Uri) : GetTreeDocumentId(Uri);
+        return (root, BuildChildDocumentsUriUsingTree(root, folderId));
     }
 }
 
@@ -419,10 +459,10 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
         if (!OperatingSystem.IsAndroidVersionAtLeast(24))
             return false;
 
-        if (!DocumentsContract.IsDocumentUri(context, uri))
+        if (!IsDocumentUri(context, uri))
             return false;
 
-        var value = GetColumnValue(context, uri, DocumentsContract.Document.ColumnFlags);
+        var value = GetColumnValue(context, uri, Document.ColumnFlags);
         if (!string.IsNullOrEmpty(value) && int.TryParse(value, out var flagsInt))
         {
             var flags = (DocumentContractFlags)flagsInt;
@@ -530,7 +570,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
 
         if (Activity != null)
         {
-            DocumentsContract.DeleteDocument(Activity.ContentResolver!, Uri);
+            DeleteDocument(Activity.ContentResolver!, Uri);
         }
     }
 
@@ -553,7 +593,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
                         storageFolder.Uri is { } targetParentUri &&
                         await GetParentAsync() is AndroidStorageFolder parentFolder)
                     {
-                        movedUri = DocumentsContract.MoveDocument(contentResolver, Uri, parentFolder.Uri, targetParentUri);
+                        movedUri = MoveDocument(contentResolver, Uri, parentFolder.Uri, targetParentUri);
                     }
                 }
                 catch (Exception)
