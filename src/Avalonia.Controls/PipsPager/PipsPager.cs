@@ -118,6 +118,9 @@ namespace Avalonia.Controls
             MaxVisiblePipsProperty.Changed.AddClassHandler<PipsPager>((x, e) => x.OnMaxVisiblePipsChanged(e));
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="PipsPager"/>.
+        /// </summary>
         public PipsPager()
         {
             UpdatePseudoClasses();
@@ -204,11 +207,13 @@ namespace Avalonia.Controls
             set => SetValue(NextButtonStyleProperty, value);
         }
 
+        /// <inheritdoc/>
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new PipsPagerAutomationPeer(this);
         }
 
+        /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
@@ -269,6 +274,7 @@ namespace Avalonia.Controls
             UpdatePagerSize();
         }
 
+        /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);

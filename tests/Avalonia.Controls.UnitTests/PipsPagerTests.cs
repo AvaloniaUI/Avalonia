@@ -251,7 +251,7 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot(target);
             target.ApplyTemplate();
 
-            var pipsList = target.GetVisualDescendants().OfType<ItemsControl>().First(i => i.Name == "PART_PipsPagerList");
+            var pipsList = target.GetVisualDescendants().OfType<ListBox>().First(i => i.Name == "PART_PipsPagerList");
 
             Assert.Equal(60, pipsList.Width);
 
@@ -533,7 +533,7 @@ namespace Avalonia.Controls.UnitTests
                     Children =
                     {
                         new Button { Name = "PART_PreviousButton" }.RegisterInNameScope(scope),
-                        new ItemsControl { Name = "PART_PipsPagerList" }.RegisterInNameScope(scope),
+                        new ListBox { Name = "PART_PipsPagerList" }.RegisterInNameScope(scope),
                         new Button { Name = "PART_NextButton" }.RegisterInNameScope(scope)
                     }
                 };
