@@ -59,12 +59,7 @@ namespace Avalonia.Input
 
         private readonly XYFocus _xyFocus = new();
         private IInputElement? _contentRoot;
-
-        private XYFocusOptions DefaultFindFocusOptions
-            => field ??= new XYFocusOptions { UpdateManifold = false };
-
-        private XYFocusOptions DefaultMoveFocusOptions
-            => field ??= new XYFocusOptions();
+        private XYFocusOptions? _reusableFocusOptions;
 
         /// <inheritdoc />
         public IInputElement? GetFocusedElement() => Current;
@@ -176,8 +171,10 @@ namespace Avalonia.Input
         {
             ValidateDirection(direction);
 
-            var focusOptions = options is null ? DefaultMoveFocusOptions : CreateFocusOptions(options, true);
-            return FindAndSetNextFocus(direction, focusOptions);
+            var focusOptions = ToFocusOptions(options, true);
+            var result = FindAndSetNextFocus(direction, focusOptions);
+            _reusableFocusOptions = focusOptions;
+            return result;
         }
 
         /// <summary>
@@ -321,8 +318,10 @@ namespace Avalonia.Input
         {
             ValidateDirection(direction);
 
-            var focusOptions = options is null ? DefaultFindFocusOptions : CreateFocusOptions(options, false);
-            return FindNextFocus(direction, focusOptions);
+            var focusOptions = ToFocusOptions(options, false);
+            var result = FindNextFocus(direction, focusOptions);
+            _reusableFocusOptions = focusOptions;
+            return result;
         }
 
         private static void ValidateDirection(NavigationDirection direction)
@@ -344,17 +343,29 @@ namespace Avalonia.Input
             }
         }
 
-        private static XYFocusOptions CreateFocusOptions(FindNextElementOptions options, bool updateManifold)
+        private XYFocusOptions ToFocusOptions(FindNextElementOptions? options, bool updateManifold)
         {
-            return new XYFocusOptions
+            // XYFocus only uses the options and never modifies them; we can cache them.
+            var focusOptions = _reusableFocusOptions;
+            _reusableFocusOptions = null;
+
+            if (focusOptions is null)
+                focusOptions = new XYFocusOptions();
+            else
+                focusOptions.Reset();
+
+            if (options is not null)
             {
-                UpdateManifold = updateManifold,
-                SearchRoot = options.SearchRoot,
-                ExclusionRect = options.ExclusionRect,
-                FocusHintRectangle = options.FocusHintRectangle,
-                NavigationStrategyOverride = options.NavigationStrategyOverride,
-                IgnoreOcclusivity = options.IgnoreOcclusivity
-            };
+                focusOptions.SearchRoot = options.SearchRoot;
+                focusOptions.ExclusionRect = options.ExclusionRect;
+                focusOptions.FocusHintRectangle = options.FocusHintRectangle;
+                focusOptions.NavigationStrategyOverride = options.NavigationStrategyOverride;
+                focusOptions.IgnoreOcclusivity = options.IgnoreOcclusivity;
+            }
+
+            focusOptions.UpdateManifold = updateManifold;
+
+            return focusOptions;
         }
 
         internal IInputElement? FindNextFocus(NavigationDirection direction, XYFocusOptions focusOptions, bool updateManifolds = true)
