@@ -24,14 +24,6 @@ namespace Avalonia.Win32.Automation.Interop
         internal const int UIA_E_NOCLICKABLEPOINT = unchecked((int)0x80040202);
         internal const int UIA_E_PROXYASSEMBLYNOTLOADED = unchecked((int)0x80040203);
 
-        internal static bool IsNetComInteropAvailable
-        {
-            get
-            {
-                return true;
-            }
-        }
-
         internal static int UiaLookupId(AutomationIdType type, ref Guid guid)
         {
             return RawUiaLookupId(type, ref guid);

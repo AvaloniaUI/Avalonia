@@ -213,12 +213,7 @@ public abstract class DataFormat : IEquatable<DataFormat>
         return true;
 
         static bool IsValidChar(char c)
-            => IsAsciiLetterOrDigit(c) || c == '.' || c == '-';
-
-        static bool IsAsciiLetterOrDigit(char c)
-        {
-            return char.IsAsciiLetterOrDigit(c);
-        }
+            => char.IsAsciiLetterOrDigit(c) || c == '.' || c == '-';
     }
 
     /// <inheritdoc />

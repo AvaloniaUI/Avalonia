@@ -174,17 +174,17 @@ namespace Avalonia.Media
 
                 // Try match with font style, weight or stretch and update accordingly.
                 var match = false;
-                if (EnumHelper.TryParse<FontStyle>(token, true, out var newStyle))
+                if (Enum.TryParse<FontStyle>(token, true, out var newStyle))
                 {
                     style = newStyle;
                     match = true;
                 }
-                else if (EnumHelper.TryParse<FontWeight>(token, true, out var newWeight))
+                else if (Enum.TryParse<FontWeight>(token, true, out var newWeight))
                 {
                     weight = newWeight;
                     match = true;
                 }
-                else if (EnumHelper.TryParse<FontStretch>(token, true, out var newStretch))
+                else if (Enum.TryParse<FontStretch>(token, true, out var newStretch))
                 {
                     stretch = newStretch;
                     match = true;
