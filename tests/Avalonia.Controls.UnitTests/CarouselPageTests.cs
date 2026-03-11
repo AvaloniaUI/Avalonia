@@ -783,6 +783,40 @@ public class CarouselPageTests
             var carousel = new Carousel { IsSwipeEnabled = value };
             Assert.Equal(value, carousel.IsSwipeEnabled);
         }
+
+        [Fact]
+        public void GetTransitionAxis_ReturnsNull_WhenNoTransition()
+        {
+            var carousel = new Carousel();
+            Assert.Null(carousel.GetTransitionAxis());
+        }
+
+        [Fact]
+        public void GetTransitionAxis_ReturnsNull_WhenNonPageSlideTransition()
+        {
+            var carousel = new Carousel { PageTransition = new CrossFade(TimeSpan.FromMilliseconds(200)) };
+            Assert.Null(carousel.GetTransitionAxis());
+        }
+
+        [Fact]
+        public void GetTransitionAxis_ReturnsVertical_WhenPageSlideVertical()
+        {
+            var carousel = new Carousel
+            {
+                PageTransition = new PageSlide(TimeSpan.FromMilliseconds(200), PageSlide.SlideAxis.Vertical)
+            };
+            Assert.Equal(PageSlide.SlideAxis.Vertical, carousel.GetTransitionAxis());
+        }
+
+        [Fact]
+        public void GetTransitionAxis_ReturnsVertical_WhenRotate3DVertical()
+        {
+            var carousel = new Carousel
+            {
+                PageTransition = new Rotate3DTransition(TimeSpan.FromMilliseconds(200), PageSlide.SlideAxis.Vertical)
+            };
+            Assert.Equal(PageSlide.SlideAxis.Vertical, carousel.GetTransitionAxis());
+        }
     }
 
     private sealed class TestPageTransition : IPageTransition
