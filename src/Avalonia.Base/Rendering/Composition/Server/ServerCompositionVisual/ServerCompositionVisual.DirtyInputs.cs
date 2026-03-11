@@ -146,8 +146,7 @@ partial class ServerCompositionVisual
     
     partial void OnParentChanging()
     {
-        if (Parent != null && _transformedSubTreeBounds.HasValue)
-            Parent.AddExtraDirtyRect(_transformedSubTreeBounds.Value);
+        AddTransformedSubTreeBoundsToParentDirtyRect();
         AttHelper_ParentChanging();
     }
 
