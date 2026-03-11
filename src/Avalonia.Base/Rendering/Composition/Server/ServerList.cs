@@ -16,12 +16,17 @@ namespace Avalonia.Rendering.Composition.Server
         {
             if (reader.Read<byte>() == 1)
             {
+                OnBeforeListClear();
                 List.Clear();
                 var count = reader.Read<int>();
                 for (var c = 0; c < count; c++) 
                     List.Add(reader.ReadObject<T>());
             }
             base.DeserializeChangesCore(reader, committedAt);
+        }
+
+        protected virtual void OnBeforeListClear()
+        {
         }
 
         public List<T>.Enumerator GetEnumerator() => List.GetEnumerator();
