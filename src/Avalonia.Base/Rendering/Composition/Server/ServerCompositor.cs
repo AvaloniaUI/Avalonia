@@ -129,7 +129,7 @@ namespace Avalonia.Rendering.Composition.Server
             
             if (hadBatches)
                 _ticksSinceLastCommit = 0;
-            else
+            else if (_ticksSinceLastCommit < CommitGraceTicks)
                 _ticksSinceLastCommit++;
         }
 
