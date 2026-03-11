@@ -52,8 +52,12 @@ namespace Avalonia.Rendering
 
                 var now = _st.Elapsed;
                 var timeTillNextTick = lastTick + _timeBetweenTicks - now;
-                if (timeTillNextTick.TotalMilliseconds > 1) Thread.Sleep(timeTillNextTick);
+                if (timeTillNextTick.TotalMilliseconds > 1)
+                    _wakeEvent.WaitOne(timeTillNextTick);
                 lastTick = now = _st.Elapsed;
+
+                if (_stopped)
+                    continue;
 
                 Tick?.Invoke(now);
             }

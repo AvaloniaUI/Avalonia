@@ -146,7 +146,11 @@ namespace Avalonia.Rendering
                     {
                         lock (_timerLock)
                         {
-                            if (_wakeupPending)
+                            if (!_running)
+                            {
+                                // Already stopped by Remove()
+                            }
+                            else if (_wakeupPending)
                             {
                                 _wakeupPending = false;
                             }
