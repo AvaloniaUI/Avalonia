@@ -22,8 +22,10 @@ public class CompositionTargetUpdateOnly : IDisposable
 
     class Timer : IRenderTimer
     {
-        event Action<TimeSpan> IRenderTimer.Tick { add { } remove { } }
+        public Action<TimeSpan>? Tick { get; set; }
         public bool RunsInBackground => false;
+        public void Start() { }
+        public void Stop() { }
     }
 
     class ManualScheduler : ICompositorScheduler
@@ -52,7 +54,7 @@ public class CompositionTargetUpdateOnly : IDisposable
     {
         _includeRender = includeRender;
         _app = UnitTestApplication.Start(TestServices.StyledWindow);
-        _compositor = new Compositor(new RenderLoop(new Timer()), null, true, new ManualScheduler(), true,
+        _compositor = new Compositor(RenderLoop.FromTimer(new Timer()), null, true, new ManualScheduler(), true,
             Dispatcher.UIThread, null);
         _target = _compositor.CreateCompositionTarget(() => [new NullFramebuffer()]);
         _target.PixelSize = new PixelSize(1000, 1000);
@@ -99,7 +101,7 @@ public class CompositionTargetUpdateOnly : IDisposable
     {
         _target.Root.Offset = new Vector3D(_target.Root.Offset.X == 0 ? 1 : 0, 0, 0);
         _compositor.Commit();
-        _compositor.Server.Render();
+        _compositor.Server.Render(false);
         if (!_includeRender)
             _target.Server.Update();
 

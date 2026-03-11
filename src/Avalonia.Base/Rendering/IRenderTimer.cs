@@ -10,17 +10,31 @@ namespace Avalonia.Rendering
     public interface IRenderTimer
     {
         /// <summary>
-        /// Raised when the render timer ticks to signal a new frame should be drawn.
+        /// Set by the render loop. The timer calls this on each tick.
         /// </summary>
         /// <remarks>
-        /// This event can be raised on any thread; it is the responsibility of the subscriber to
+        /// This can be called on any thread; it is the responsibility of the subscriber to
         /// switch execution to the right thread.
         /// </remarks>
-        event Action<TimeSpan> Tick;
+        Action<TimeSpan>? Tick { get; set; }
 
         /// <summary>
-        /// Indicates if the timer ticks on a non-UI thread
+        /// Indicates if the timer ticks on a non-UI thread.
         /// </summary>
         bool RunsInBackground { get; }
+
+        /// <summary>
+        /// Starts the timer. Called by the render loop under a lock.
+        /// Will not be called if the timer is already started.
+        /// May be called from any thread.
+        /// </summary>
+        void Start();
+
+        /// <summary>
+        /// Stops the timer. Called by the render loop under a lock.
+        /// Will not be called if the timer is already stopped.
+        /// Typically called from the timer's own tick thread (within the tick callback).
+        /// </summary>
+        void Stop();
     }
 }

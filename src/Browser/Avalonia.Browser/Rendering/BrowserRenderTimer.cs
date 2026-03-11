@@ -8,7 +8,6 @@ namespace Avalonia.Browser.Rendering;
 
 internal class BrowserRenderTimer : IRenderTimer
 {
-    private Action<TimeSpan>? _tick;
     private bool _started;
 
     public BrowserRenderTimer(bool isBackground)
@@ -18,19 +17,17 @@ internal class BrowserRenderTimer : IRenderTimer
 
     public bool RunsInBackground { get; }
 
-    public event Action<TimeSpan>? Tick
-    {
-        add
-        {
-            if (!BrowserWindowingPlatform.IsThreadingEnabled)
-                StartOnThisThread();
+    public Action<TimeSpan>? Tick { get; set; }
 
-            _tick += value;
-        }
-        remove
-        {
-            _tick -= value;
-        }
+    public void Start()
+    {
+        StartOnThisThread();
+    }
+
+    public void Stop()
+    {
+        // No-op: requestAnimationFrame is one-shot per frame,
+        // the render loop just won't request the next one.
     }
 
     public void StartOnThisThread()
@@ -45,9 +42,6 @@ internal class BrowserRenderTimer : IRenderTimer
 
     private void RenderFrameCallback(double timestamp)
     {
-        if (_tick is { } tick)
-        {
-            tick.Invoke(TimeSpan.FromMilliseconds(timestamp));
-        }
+        Tick?.Invoke(TimeSpan.FromMilliseconds(timestamp));
     }
 }

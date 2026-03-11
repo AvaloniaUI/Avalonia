@@ -8,10 +8,9 @@ namespace Avalonia.Rendering
     [PrivateApi]
     public class SleepLoopRenderTimer : IRenderTimer
     {
-        private Action<TimeSpan>? _tick;
-        private int _count;
-        private readonly object _lock = new object();
-        private bool _running;
+        private volatile bool _stopped = true;
+        private bool _threadStarted;
+        private readonly AutoResetEvent _wakeEvent = new(false);
         private readonly Stopwatch _st = Stopwatch.StartNew();
         private readonly TimeSpan _timeBetweenTicks;
 
@@ -19,57 +18,45 @@ namespace Avalonia.Rendering
         {
             _timeBetweenTicks = TimeSpan.FromSeconds(1d / fps);
         }
-        
-        public event Action<TimeSpan> Tick
-        {
-            add
-            {
-                lock (_lock)
-                {
-                    _tick += value;
-                    _count++;
-                    if (_running)
-                        return;
-                    _running = true;
-                    new Thread(LoopProc) { IsBackground = true }.Start();
-                }
 
-            }
-            remove
+        public Action<TimeSpan>? Tick { get; set; }
+
+        public bool RunsInBackground => true;
+
+        public void Start()
+        {
+            _stopped = false;
+            if (!_threadStarted)
             {
-                lock (_lock)
-                {
-                    _tick -= value;
-                    _count--;
-                }
+                _threadStarted = true;
+                new Thread(LoopProc) { IsBackground = true }.Start();
+            }
+            else
+            {
+                _wakeEvent.Set();
             }
         }
 
-        public bool RunsInBackground => true;
+        public void Stop()
+        {
+            _stopped = true;
+        }
 
         void LoopProc()
         {
             var lastTick = _st.Elapsed;
             while (true)
             {
+                if (_stopped)
+                    _wakeEvent.WaitOne();
+
                 var now = _st.Elapsed;
                 var timeTillNextTick = lastTick + _timeBetweenTicks - now;
                 if (timeTillNextTick.TotalMilliseconds > 1) Thread.Sleep(timeTillNextTick);
                 lastTick = now = _st.Elapsed;
-                lock (_lock)
-                {
-                    if (_count == 0)
-                    {
-                        _running = false;
-                        return;
-                    }
-                }
 
-                _tick?.Invoke(now);
-                
+                Tick?.Invoke(now);
             }
         }
-
-
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -13,52 +14,69 @@ namespace Avalonia.Rendering.Composition.Transport;
 /// </summary>
 internal abstract class BatchStreamPoolBase<T> : IDisposable
 {
+    private readonly Action<Func<bool>>? _startTimer;
     readonly Stack<T> _pool = new();
     bool _disposed;
     int _usage;
     readonly int[] _usageStatistics = new int[10];
     int _usageStatisticsSlot;
-    readonly bool _reclaimImmediately;
+    private readonly WeakReference<BatchStreamPoolBase<T>> _updateRef;
+    private readonly Dispatcher? _reclaimOnDispatcher;
+    private bool _timerIsRunning;
+    private ulong _currentUpdateTick, _lastActivityTick;
 
     public int CurrentUsage => _usage;
     public int CurrentPool => _pool.Count;
 
     public BatchStreamPoolBase(bool needsFinalize, bool reclaimImmediately, Action<Func<bool>>? startTimer = null)
     {
+        _startTimer = startTimer;
         if(!needsFinalize)
-            GC.SuppressFinalize(needsFinalize);
+            GC.SuppressFinalize(this);
 
-        var updateRef = new WeakReference<BatchStreamPoolBase<T>>(this);
-        if (
-            reclaimImmediately 
-            || Dispatcher.FromThread(Thread.CurrentThread) == null)
-            _reclaimImmediately = true;
-        else
-            StartUpdateTimer(startTimer, updateRef);
+        _updateRef = new WeakReference<BatchStreamPoolBase<T>>(this);
+        _reclaimOnDispatcher = !reclaimImmediately ? Dispatcher.FromThread(Thread.CurrentThread) : null;
+        EnsureUpdateTimer();
     }
+    
 
-    static void StartUpdateTimer(Action<Func<bool>>? startTimer, WeakReference<BatchStreamPoolBase<T>> updateRef)
+    void EnsureUpdateTimer()
     {
-        Func<bool> timerProc = () =>
+        if (_timerIsRunning || !NeedsTimer)
+            return;
+
+        var timerProc = GetTimerProc(_updateRef);
+        
+        if (_startTimer != null)
+            _startTimer(timerProc);
+        else
+        {
+            if (_reclaimOnDispatcher.CheckAccess())
+                DispatcherTimer.Run(timerProc, TimeSpan.FromSeconds(1));
+            _reclaimOnDispatcher.Invoke(() => DispatcherTimer.Run(timerProc, TimeSpan.FromSeconds(1)));
+        }
+
+        _timerIsRunning = true;
+        // Explicit capture
+        static Func<bool> GetTimerProc(WeakReference<BatchStreamPoolBase<T>> updateRef) => () =>
         {
             if (updateRef.TryGetTarget(out var target))
-            {
-                target.UpdateStatistics();
-                return true;
-            }
+                return target.UpdateTimerTick();
 
             return false;
         };
-        if (startTimer != null)
-            startTimer(timerProc);
-        else
-            DispatcherTimer.Run(timerProc, TimeSpan.FromSeconds(1));
     }
 
-    private void UpdateStatistics()
+    [MemberNotNullWhen(true, nameof(_reclaimOnDispatcher))]
+    private bool NeedsTimer => _reclaimOnDispatcher != null &&
+                               _currentUpdateTick - _lastActivityTick < (uint)_usageStatistics.Length * 2 + 1;
+    private bool ReclaimImmediately => _reclaimOnDispatcher == null;
+
+    private bool UpdateTimerTick()
     {
         lock (_pool)
         {
+            _currentUpdateTick++;
             var maximumUsage = _usageStatistics.Max();
             var recentlyUsedPooledSlots = maximumUsage - _usage;
             var keepSlots = Math.Max(recentlyUsedPooledSlots, 10);
@@ -67,7 +85,15 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
 
             _usageStatisticsSlot = (_usageStatisticsSlot + 1) % _usageStatistics.Length;
             _usageStatistics[_usageStatisticsSlot] = 0;
+
+            return _timerIsRunning = NeedsTimer;
         }
+    }
+
+    private void OnActivity()
+    {
+        _lastActivityTick = _currentUpdateTick;
+        EnsureUpdateTimer();
     }
 
     protected abstract T CreateItem();
@@ -90,6 +116,8 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
             if (_usageStatistics[_usageStatisticsSlot] < _usage)
                 _usageStatistics[_usageStatisticsSlot] = _usage;
             
+            OnActivity();
+            
             if (_pool.Count != 0)
                 return _pool.Pop();
         }
@@ -103,9 +131,10 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
         lock (_pool)
         {
             _usage--;
-            if (!_disposed && !_reclaimImmediately)
+            if (!_disposed && !ReclaimImmediately)
             {
                 _pool.Push(item);
+                OnActivity();
                 return;
             }
         }

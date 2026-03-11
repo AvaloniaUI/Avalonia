@@ -19,9 +19,8 @@ namespace Avalonia.Android
         private readonly GCHandle _timerHandle;
         private readonly HashSet<AvaloniaView> _views = new();
 
-        private Action<TimeSpan>? _tick;
+        private volatile bool _stopped = true;
         private long _lastTime;
-        private int _count;
 
         public ChoreographerTimer()
         {
@@ -40,29 +39,17 @@ namespace Avalonia.Android
 
         public bool RunsInBackground => true;
 
-        public event Action<TimeSpan> Tick
-        {
-            add
-            {
-                lock (_lock)
-                {
-                    _tick += value;
-                    _count++;
+        public Action<TimeSpan>? Tick { get; set; }
 
-                    if (_count == 1)
-                    {
-                        PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
-                    }
-                }
-            }
-            remove
-            {
-                lock (_lock)
-                {
-                    _tick -= value;
-                    _count--;
-                }
-            }
+        public void Start()
+        {
+            _stopped = false;
+            PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
+        }
+
+        public void Stop()
+        {
+            _stopped = true;
         }
 
         internal IDisposable SubscribeView(AvaloniaView view)
@@ -105,7 +92,7 @@ namespace Avalonia.Android
                 {
                     time = _lastTime;
                 }
-                _tick?.Invoke(TimeSpan.FromTicks(time / 100));
+                Tick?.Invoke(TimeSpan.FromTicks(time / 100));
             }
         }
 
@@ -113,7 +100,7 @@ namespace Avalonia.Android
         {
             lock (_lock)
             {
-                if (_count > 0 && _views.Count > 0)
+                if (!_stopped && _views.Count > 0)
                 {
                     PostFrameCallback(_choreographer.Task.Result, data);
                 }

@@ -17,8 +17,21 @@ namespace Avalonia.Win32.WinRT.Composition;
 internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFactory
 {
     private readonly WinUiCompositionShared _shared;
-    public event Action<TimeSpan>? Tick;
+    private readonly AutoResetEvent _wakeEvent = new(false);
+    private volatile bool _stopped = true;
+    public Action<TimeSpan>? Tick { get; set; }
     public bool RunsInBackground => true;
+
+    public void Start()
+    {
+        _stopped = false;
+        _wakeEvent.Set();
+    }
+
+    public void Stop()
+    {
+        _stopped = true;
+    }
     
     public WinUiCompositorConnection()
     {
@@ -58,7 +71,7 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
                 });
                 connect = new WinUiCompositorConnection();
                 AvaloniaLocator.CurrentMutable.Bind<IWindowsSurfaceFactory>().ToConstant(connect);
-                AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connect);
+                AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(connect));
                 tcs.SetResult(true);
 
             }
@@ -103,7 +116,10 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
             _currentCommit?.Dispose();
             _currentCommit = null;
             _parent.Tick?.Invoke(_st.Elapsed);
+            // Always schedule a commit so the current frame's work reaches DWM.
             ScheduleNextCommit();
+            if (_parent._stopped)
+                _parent._wakeEvent.WaitOne();
         }
 
         private void ScheduleNextCommit()

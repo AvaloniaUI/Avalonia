@@ -12,8 +12,7 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
     private readonly Stopwatch _stopwatch;
     private readonly Thread _timerThread;
     private readonly AutoResetEvent _autoResetEvent;
-    private Action<TimeSpan>? _tick;
-    private int _subscriberCount;
+    private volatile bool _active;
     private bool _registered;
 
     public ThreadProxyRenderTimer(IRenderTimer inner, int maxStackSize = 1 * 1024 * 1024)
@@ -24,47 +23,50 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
         _timerThread = new Thread(RenderTimerThreadFunc, maxStackSize) { Name = "RenderTimerLoop", IsBackground = true };
     }
 
-    public event Action<TimeSpan> Tick
+    public Action<TimeSpan>? Tick { get; set; }
+
+    public bool RunsInBackground => true;
+
+    public void Start()
     {
-        add
+        _active = true;
+        EnsureStarted();
+        _inner.Tick = InnerTick;
+        _inner.Start();
+    }
+
+    public void Stop()
+    {
+        // Don't call _inner.Stop() here — may be on the wrong thread.
+        // InnerTick will detect _active=false and call _inner.Stop() on the correct thread.
+        _active = false;
+    }
+
+    private void EnsureStarted()
+    {
+        if (!_registered)
         {
-            _tick += value;
-
-            if (!_registered)
-            {
-                _registered = true;
-                _timerThread.Start();
-            }
-
-            if (_subscriberCount++ == 0)
-            {
-                _inner.Tick += InnerTick;
-            }
+            _registered = true;
+            _stopwatch.Start();
+            _timerThread.Start();
         }
+    }
 
-        remove
+    private void InnerTick(TimeSpan obj)
+    {
+        if (!_active)
         {
-            if (--_subscriberCount == 0)
-            {
-                _inner.Tick -= InnerTick;
-            }
-
-            _tick -= value;
+            _inner.Stop();
+            return;
         }
+        _autoResetEvent.Set();
     }
 
     private void RenderTimerThreadFunc()
     {
         while (_autoResetEvent.WaitOne())
         {
-            _tick?.Invoke(_stopwatch.Elapsed);
+            Tick?.Invoke(_stopwatch.Elapsed);
         }
     }
-    
-    private void InnerTick(TimeSpan obj)
-    {
-        _autoResetEvent.Set();
-    }
-
-    public bool RunsInBackground => true;
 }

@@ -42,9 +42,9 @@ public class CompositorTestServices : IDisposable
         _app = UnitTestApplication.Start(services);
         try
         {
-            AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(Timer);
+            AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(Timer));
 
-            Compositor = new Compositor(new RenderLoop(Timer), null,
+            Compositor = new Compositor(RenderLoop.FromTimer(Timer), null,
                 true, new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
             var impl = new TopLevelImpl(Compositor, size ?? new Size(1000, 1000));
             TopLevel = new EmbeddableControlRoot(impl)
@@ -136,8 +136,10 @@ public class CompositorTestServices : IDisposable
 
     public class ManualRenderTimer : IRenderTimer
     {
-        public event Action<TimeSpan>? Tick;
+        public Action<TimeSpan>? Tick { get; set; }
         public bool RunsInBackground => false;
+        public void Start() { }
+        public void Stop() { }
         public void TriggerTick() => Tick?.Invoke(TimeSpan.Zero);
     }
 

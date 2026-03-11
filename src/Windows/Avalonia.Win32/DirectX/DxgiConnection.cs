@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
@@ -25,8 +26,10 @@ namespace Avalonia.Win32.DirectX
 
         public bool RunsInBackground => true;
 
-        public event Action<TimeSpan>? Tick;
+        public Action<TimeSpan>? Tick { get; set; }
         private readonly object _syncLock;
+        private readonly AutoResetEvent _wakeEvent = new(false);
+        private volatile bool _stopped = true;
 
         private IDXGIOutput? _output;
 
@@ -36,6 +39,17 @@ namespace Avalonia.Win32.DirectX
         public DxgiConnection(object syncLock)
         {
             _syncLock = syncLock;
+        }
+
+        public void Start()
+        {
+            _stopped = false;
+            _wakeEvent.Set();
+        }
+
+        public void Stop()
+        {
+            _stopped = true;
         }
         
         public static bool TryCreateAndRegister()
@@ -70,6 +84,9 @@ namespace Avalonia.Win32.DirectX
             {
                 try
                 {
+                    if (_stopped)
+                        _wakeEvent.WaitOne();
+
                     lock (_syncLock)
                     {
                         if (_output is not null)
@@ -199,7 +216,7 @@ namespace Avalonia.Win32.DirectX
                     var connection = new DxgiConnection(pumpLock);
 
                     AvaloniaLocator.CurrentMutable.Bind<IWindowsSurfaceFactory>().ToConstant(connection);
-                    AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connection);
+                    AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(connection));
                     tcs.SetResult(true);
                     connection.RunLoop();
                 }
