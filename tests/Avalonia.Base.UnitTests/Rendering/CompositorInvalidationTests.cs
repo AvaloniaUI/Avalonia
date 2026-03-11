@@ -145,7 +145,7 @@ public class CompositorInvalidationTests : CompositorTestsBase
 
             // The old child's rect (10,20 100x50) must appear in the dirty rects.
             s.RunJobs();
-            Assert.Contains(new Rect(10, 20, 100, 50).ToString(), s.Events.Rects.Select(r => r.ToString()));
+            Assert.Contains(new Rect(10, 20, 100, 50), s.Events.Rects);
         }
     }
 
