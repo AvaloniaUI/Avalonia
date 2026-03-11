@@ -148,7 +148,7 @@ partial class ServerCompositionVisual
         if (_combinedTransformDirty)
         {
             _ownTransform = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint, TransformMatrix, Scale,
-                RotationAngle, Orientation, Offset);
+                RotationAngle, Orientation, Offset + Translation);
             
             setDirtyForRender = setDirtyBounds = true;
             
