@@ -46,7 +46,6 @@ namespace Avalonia.Rendering.Composition.Server
         public ReadbackIndices Readback { get; } = new();
         
         private int _ticksSinceLastCommit;
-        private bool _hadUnreadyTargets;
         private const int CommitGraceTicks = 10;
 
         public ServerCompositor(IRenderLoop renderLoop, IPlatformGraphics? platformGraphics,
