@@ -36,7 +36,18 @@ namespace Avalonia.iOS
             });
             TimerThread.Start();
             UIApplication.Notifications.ObserveDidEnterBackground((_,__) => _link.Paused = true);
-            UIApplication.Notifications.ObserveWillEnterForeground((_, __) => Start());
+            UIApplication.Notifications.ObserveWillEnterForeground((_, __) =>
+            {
+                // Only resume if the timer was logically running before going to background.
+                // Don't call Start() — that would bypass the render loop's state machine.
+                if (!_stopped)
+                {
+                    _wakeupSent = false;
+                    var thread = _nsTimerThread;
+                    if (thread != null)
+                        _wakeupHelper.PerformSelector(new Selector("doWakeup"), thread, null, false);
+                }
+            });
         }
 
         public Thread TimerThread { get;  }
