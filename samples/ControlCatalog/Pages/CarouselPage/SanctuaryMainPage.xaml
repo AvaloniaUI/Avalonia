@@ -168,7 +168,7 @@
                 <Border ClipToBounds="True" Margin="-1">
                   <Border.Background>
                     <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
-                      <GradientStop Offset="0" Color="#CC000000" />
+                      <GradientStop Offset="0" Color="#66000000" />
                       <GradientStop Offset="0.5" Color="Transparent" />
                     </LinearGradientBrush>
                   </Border.Background>
@@ -193,7 +193,7 @@
                 <Border ClipToBounds="True" Margin="-1">
                   <Border.Background>
                     <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
-                      <GradientStop Offset="0" Color="#CC000000" />
+                      <GradientStop Offset="0" Color="#66000000" />
                       <GradientStop Offset="0.5" Color="Transparent" />
                     </LinearGradientBrush>
                   </Border.Background>
@@ -218,7 +218,7 @@
                 <Border ClipToBounds="True" Margin="-1">
                   <Border.Background>
                     <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
-                      <GradientStop Offset="0" Color="#CC000000" />
+                      <GradientStop Offset="0" Color="#66000000" />
                       <GradientStop Offset="0.5" Color="Transparent" />
                     </LinearGradientBrush>
                   </Border.Background>

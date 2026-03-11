@@ -23,7 +23,6 @@ public partial class CareCompanionAppPage : UserControl
     static readonly Color TextDark     = Color.Parse("#111827");
     static readonly Color TextMuted    = Color.Parse("#64748b");
     static readonly Color CardBg       = Colors.White;
-    static readonly Color BorderColor  = Color.Parse("#e5e7eb");
     static readonly Color SuccessGreen = Color.Parse("#10b981");
     static readonly Color WarningAmber = Color.Parse("#f59e0b");
 
@@ -120,37 +119,20 @@ public partial class CareCompanionAppPage : UserControl
             VerticalAlignment   = VerticalAlignment.Center,
         };
 
-    static StackPanel MakeDots(int count, int active)
+    static PipsPager MakePipsPager(int count, AvaCarouselPage carousel)
     {
-        var row = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center };
-        for (int i = 0; i < count; i++)
+        var pager = new PipsPager
         {
-            row.Children.Add(new Border
-            {
-                Width        = i == active ? 20 : 6,
-                Height       = 6,
-                CornerRadius = new CornerRadius(3),
-                Background   = new SolidColorBrush(i == active ? Primary : Color.Parse("#d1d5db")),
-                Margin       = new Thickness(3, 0),
-            });
-        }
-        return row;
-    }
+            NumberOfPages           = count,
+            IsPreviousButtonVisible = false,
+            IsNextButtonVisible     = false,
+            HorizontalAlignment     = HorizontalAlignment.Center,
+        };
 
-    static void RefreshDots(StackPanel panel, int count, int active)
-    {
-        panel.Children.Clear();
-        for (int i = 0; i < count; i++)
-        {
-            panel.Children.Add(new Border
-            {
-                Width        = i == active ? 20 : 6,
-                Height       = 6,
-                CornerRadius = new CornerRadius(3),
-                Background   = new SolidColorBrush(i == active ? Primary : Color.Parse("#d1d5db")),
-                Margin       = new Thickness(3, 0),
-            });
-        }
+        pager.Bind(PipsPager.SelectedPageIndexProperty,
+            new Avalonia.Data.Binding("SelectedIndex") { Source = carousel, Mode = Avalonia.Data.BindingMode.TwoWay });
+
+        return pager;
     }
 
     static Border ShadowWrap(Control ctrl, Color shadowColor)
@@ -175,28 +157,20 @@ public partial class CareCompanionAppPage : UserControl
         };
         NavigationPage.SetHasNavigationBar(carousel, false);
 
-        var dots1 = MakeDots(3, 0);
-        var dots2 = MakeDots(3, 1);
-        var dots3 = MakeDots(3, 2);
-        var allDots = new[] { dots1, dots2, dots3 };
+        var pips1 = MakePipsPager(3, carousel);
+        var pips2 = MakePipsPager(3, carousel);
+        var pips3 = MakePipsPager(3, carousel);
 
-        var p1 = BuildWelcomePage(carousel, dots1);
-        var p2 = BuildTrackPage(carousel, dots2);
-        var p3 = BuildResourcesPage(carousel, dots3);
+        var p1 = BuildWelcomePage(carousel, pips1);
+        var p2 = BuildTrackPage(carousel, pips2);
+        var p3 = BuildResourcesPage(carousel, pips3);
 
         carousel.Pages = new ObservableCollection<Page> { p1, p2, p3 };
-
-        carousel.SelectionChanged += (_, _) =>
-        {
-            var idx = carousel.SelectedIndex;
-            foreach (var d in allDots)
-                RefreshDots(d, 3, idx);
-        };
 
         return carousel;
     }
 
-    ContentPage BuildWelcomePage(AvaCarouselPage carousel, StackPanel dots)
+    ContentPage BuildWelcomePage(AvaCarouselPage carousel, PipsPager dots)
     {
         var page = new ContentPage { Background = new SolidColorBrush(CardBg) };
 
@@ -338,7 +312,7 @@ public partial class CareCompanionAppPage : UserControl
         return page;
     }
 
-    ContentPage BuildTrackPage(AvaCarouselPage carousel, StackPanel dots)
+    ContentPage BuildTrackPage(AvaCarouselPage carousel, PipsPager dots)
     {
         var page = new ContentPage { Background = new SolidColorBrush(CardBg) };
 
@@ -522,7 +496,7 @@ public partial class CareCompanionAppPage : UserControl
         return page;
     }
 
-    ContentPage BuildResourcesPage(AvaCarouselPage carousel, StackPanel dots)
+    ContentPage BuildResourcesPage(AvaCarouselPage carousel, PipsPager dots)
     {
         var page = new ContentPage { Background = new SolidColorBrush(CardBg) };
 

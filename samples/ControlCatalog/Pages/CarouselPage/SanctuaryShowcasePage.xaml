@@ -26,24 +26,6 @@
       <Setter Property="Background" Value="#10FFFFFF" />
     </Style>
 
-    <!-- Dot indicator button: no chrome, just the inner Border shows -->
-    <Style Selector="Button.dot">
-      <Setter Property="Padding" Value="0" />
-      <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="MinWidth" Value="0" />
-      <Setter Property="MinHeight" Value="0" />
-    </Style>
-    <Style Selector="Button.dot /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="Transparent" />
-    </Style>
-    <Style Selector="Button.dot:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="Transparent" />
-    </Style>
-    <Style Selector="Button.dot:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="Transparent" />
-    </Style>
   </UserControl.Styles>
 
   <DockPanel>
@@ -53,7 +35,7 @@
         <TextBlock Text="Sanctuary" FontSize="16" FontWeight="SemiBold"
                    Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
         <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
-                   Text="A travel discovery app with 3 full-screen immersive pages. Swipe, use arrow keys, tap the CTA buttons, or click the dot indicators to navigate." />
+                   Text="A travel discovery app with 3 full-screen immersive pages. Uses PipsPager with custom pill-shaped indicators. Swipe, use arrow keys, tap the CTA buttons, or click the pip indicators to navigate." />
         <Separator />
         <TextBlock Text="Design" FontSize="13" FontWeight="SemiBold" />
         <TextBlock FontSize="12" Text="Theme: Dark (#221710)" />
@@ -285,37 +267,67 @@
 
       </CarouselPage>
 
-      <!-- Shared animated dot indicators -->
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
-                  VerticalAlignment="Bottom" Spacing="6" Margin="0,0,0,20">
-        <Button Classes="dot" Tag="0" Click="OnDotClicked">
-          <Border x:Name="Dot0" Width="32" Height="8" CornerRadius="4" Background="#f47b25">
-            <Border.Transitions>
-              <Transitions>
-                <DoubleTransition Property="Width" Duration="0:0:0.25" Easing="CubicEaseOut" />
-              </Transitions>
-            </Border.Transitions>
-          </Border>
-        </Button>
-        <Button Classes="dot" Tag="1" Click="OnDotClicked">
-          <Border x:Name="Dot1" Width="8" Height="8" CornerRadius="4" Background="#4DFFFFFF">
-            <Border.Transitions>
-              <Transitions>
-                <DoubleTransition Property="Width" Duration="0:0:0.25" Easing="CubicEaseOut" />
-              </Transitions>
-            </Border.Transitions>
-          </Border>
-        </Button>
-        <Button Classes="dot" Tag="2" Click="OnDotClicked">
-          <Border x:Name="Dot2" Width="8" Height="8" CornerRadius="4" Background="#4DFFFFFF">
-            <Border.Transitions>
-              <Transitions>
-                <DoubleTransition Property="Width" Duration="0:0:0.25" Easing="CubicEaseOut" />
-              </Transitions>
-            </Border.Transitions>
-          </Border>
-        </Button>
-      </StackPanel>
+      <PipsPager HorizontalAlignment="Center"
+                 VerticalAlignment="Bottom" Margin="0,0,0,20"
+                 NumberOfPages="3"
+                 SelectedPageIndex="{Binding #DemoCarousel.SelectedIndex}"
+                 IsPreviousButtonVisible="False"
+                 IsNextButtonVisible="False">
+        <PipsPager.Styles>
+          <Style Selector="PipsPager /template/ ListBox ListBoxItem">
+            <Setter Property="Width" Value="38" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="ClipToBounds" Value="False" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Template">
+              <ControlTemplate>
+                <Grid Background="Transparent">
+                  <Border Name="Pip"
+                          Width="8" Height="8" CornerRadius="4"
+                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                          Background="#4DFFFFFF">
+                    <Border.Transitions>
+                      <Transitions>
+                        <DoubleTransition Property="Width" Duration="0:0:0.25" Easing="CubicEaseOut" />
+                        <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut" />
+                        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.25" Easing="CubicEaseOut" />
+                        <BrushTransition Property="Background" Duration="0:0:0.25" />
+                      </Transitions>
+                    </Border.Transitions>
+                  </Border>
+                </Grid>
+              </ControlTemplate>
+            </Setter>
+          </Style>
+          <Style Selector="PipsPager /template/ ListBox ListBoxItem:pointerover /template/ Border#Pip">
+            <Setter Property="Width" Value="10" />
+            <Setter Property="Height" Value="10" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Background" Value="#80FFFFFF" />
+          </Style>
+          <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected /template/ Border#Pip">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="8" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="#f47b25" />
+          </Style>
+          <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected:pointerover /template/ Border#Pip">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="8" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="#e0701f" />
+          </Style>
+          <Style Selector="PipsPager /template/ ListBox ListBoxItem:pressed /template/ Border#Pip">
+            <Setter Property="Width" Value="8" />
+            <Setter Property="Height" Value="8" />
+            <Setter Property="Background" Value="#f47b25" />
+          </Style>
+        </PipsPager.Styles>
+      </PipsPager>
 
       </Grid>
     </Border>

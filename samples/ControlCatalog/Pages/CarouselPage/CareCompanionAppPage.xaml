@@ -1,6 +1,60 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.CareCompanionAppPage">
+  <UserControl.Styles>
+    <Style Selector="PipsPager /template/ ListBox ListBoxItem">
+      <Setter Property="Width" Value="24" />
+      <Setter Property="Height" Value="24" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="2,0" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="ClipToBounds" Value="False" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid Background="Transparent">
+            <Border Name="Pip"
+                    Width="6" Height="6" CornerRadius="3"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Background="#d1d5db">
+              <Border.Transitions>
+                <Transitions>
+                  <DoubleTransition Property="Width" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                  <DoubleTransition Property="Height" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                  <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                  <BrushTransition Property="Background" Duration="0:0:0.2" />
+                </Transitions>
+              </Border.Transitions>
+            </Border>
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="PipsPager /template/ ListBox ListBoxItem:pointerover /template/ Border#Pip">
+      <Setter Property="Width" Value="8" />
+      <Setter Property="Height" Value="8" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Background" Value="#b0b0b0" />
+    </Style>
+    <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected /template/ Border#Pip">
+      <Setter Property="Width" Value="20" />
+      <Setter Property="Height" Value="6" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="Background" Value="#137fec" />
+    </Style>
+    <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected:pointerover /template/ Border#Pip">
+      <Setter Property="Width" Value="20" />
+      <Setter Property="Height" Value="6" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="Background" Value="#0a5bb5" />
+    </Style>
+    <Style Selector="PipsPager /template/ ListBox ListBoxItem:pressed /template/ Border#Pip">
+      <Setter Property="Width" Value="6" />
+      <Setter Property="Height" Value="6" />
+      <Setter Property="Background" Value="#909090" />
+    </Style>
+  </UserControl.Styles>
   <DockPanel>
     <ScrollViewer x:Name="InfoPanel" DockPanel.Dock="Right" Width="300">
       <StackPanel Margin="16" Spacing="16">
@@ -9,7 +63,7 @@
                    Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
 
         <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
-                   Text="A patient-focused healthcare companion app. CarouselPage handles onboarding (swipe or tap Next). Tapping Skip or Get Started pushes the TabbedPage dashboard and removes the onboarding from the navigation stack." />
+                   Text="A patient-focused healthcare companion app. CarouselPage handles onboarding (swipe or tap Next) with PipsPager as custom pill-shaped page indicators. Tapping Skip or Get Started pushes the TabbedPage dashboard and removes the onboarding from the navigation stack." />
 
         <Separator />
 
