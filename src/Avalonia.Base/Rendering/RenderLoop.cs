@@ -53,15 +53,17 @@ namespace Avalonia.Rendering
             _ = i ?? throw new ArgumentNullException(nameof(i));
             Dispatcher.UIThread.VerifyAccess();
 
+            bool shouldStart;
             lock (_items)
             {
                 _items.Add(i);
+                shouldStart = _items.Count == 1;
+            }
 
-                if (_items.Count == 1)
-                {
-                    _timer.Tick = TimerTick;
-                    Wakeup();
-                }
+            if (shouldStart)
+            {
+                _timer.Tick = TimerTick;
+                Wakeup();
             }
         }
 
@@ -70,21 +72,24 @@ namespace Avalonia.Rendering
         {
             _ = i ?? throw new ArgumentNullException(nameof(i));
             Dispatcher.UIThread.VerifyAccess();
+
+            bool shouldStop;
             lock (_items)
             {
                 _items.Remove(i);
+                shouldStop = _items.Count == 0;
+            }
 
-                if (_items.Count == 0)
+            if (shouldStop)
+            {
+                _timer.Tick = null;
+                lock (_timerLock)
                 {
-                    _timer.Tick = null;
-                    lock (_timerLock)
+                    if (_running)
                     {
-                        if (_running)
-                        {
-                            _running = false;
-                            _wakeupPending = false;
-                            _timer.Stop();
-                        }
+                        _running = false;
+                        _wakeupPending = false;
+                        _timer.Stop();
                     }
                 }
             }
