@@ -31,7 +31,7 @@ public partial class SanctuaryShowcasePage : UserControl
         if (nav == null)
             return;
 
-        var previousPages = nav.NavigationStack.ToList();
+        var carouselWrapper = nav.NavigationStack.LastOrDefault();
 
         var headerGrid = new Grid { ColumnDefinitions = new ColumnDefinitions("*, Auto") };
         headerGrid.Children.Add(new TextBlock
@@ -51,6 +51,7 @@ public partial class SanctuaryShowcasePage : UserControl
         };
         Grid.SetColumn(closeBtn, 1);
         headerGrid.Children.Add(closeBtn);
+        closeBtn.Click += async (_, _) => await nav.PopAsync(null);
 
         var mainPage = new ContentPage
         {
@@ -59,13 +60,11 @@ public partial class SanctuaryShowcasePage : UserControl
         };
         NavigationPage.SetHasBackButton(mainPage, false);
 
-        closeBtn.Click += async (_, _) =>
-        {
-            nav.RemovePage(mainPage);
-        };
-
         await nav.PushAsync(mainPage);
-        foreach (var page in previousPages)
-            nav.RemovePage(page);
+
+        if (carouselWrapper != null)
+        {
+            nav.RemovePage(carouselWrapper);
+        }
     }
 }

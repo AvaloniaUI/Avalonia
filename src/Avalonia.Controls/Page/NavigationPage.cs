@@ -1607,6 +1607,17 @@ namespace Avalonia.Controls
                 }
 
                 ExecuteReplaceCore(page, previousPage);
+
+                await AwaitPageTransitionAsync();
+
+                if (previousPage != null)
+                {
+                    previousPage.Navigation = null;
+                    previousPage.SetInNavigationPage(false);
+                    previousPage.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Replace));
+                }
+
+                page.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
             }
             finally
             {
@@ -1860,15 +1871,6 @@ namespace Avalonia.Controls
             page.SetInNavigationPage(true);
 
             UpdateActivePage();
-
-            if (replacedPage != null)
-            {
-                replacedPage.Navigation = null;
-                replacedPage.SetInNavigationPage(false);
-                replacedPage.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Replace));
-            }
-
-            page.SendNavigatedTo(new NavigatedToEventArgs(replacedPage, NavigationType.Replace));
         }
 
         private void SwapModalPresenters()

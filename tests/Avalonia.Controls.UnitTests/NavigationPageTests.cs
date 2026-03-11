@@ -1765,6 +1765,33 @@ public class NavigationPageTests
             Assert.False(poppedToRootDuringTransition);
         }
 
+        [Fact]
+        public async Task ReplaceAsync_LifecycleEvents_FireAfterTransition()
+        {
+            var tcs = new TaskCompletionSource();
+            var nav = CreateNavigationPage(null);
+
+            var root = new ContentPage { Header = "Root" };
+            await nav.PushAsync(root);
+
+            nav.PageTransition = new ControllableTransition(tcs.Task);
+
+            bool navigatedFromDuringTransition = false;
+            bool navigatedToDuringTransition = false;
+
+            var replacement = new ContentPage { Header = "Replacement" };
+            root.NavigatedFrom += (_, _) => navigatedFromDuringTransition = !tcs.Task.IsCompleted;
+            replacement.NavigatedTo += (_, _) => navigatedToDuringTransition = !tcs.Task.IsCompleted;
+
+            var replaceTask = nav.ReplaceAsync(replacement);
+
+            tcs.SetResult();
+            await replaceTask;
+
+            Assert.False(navigatedFromDuringTransition);
+            Assert.False(navigatedToDuringTransition);
+        }
+
         private static NavigationPage CreateNavigationPage(IPageTransition? transition)
         {
             var nav = new NavigationPage

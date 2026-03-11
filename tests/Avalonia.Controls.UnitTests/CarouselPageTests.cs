@@ -694,6 +694,62 @@ public class CarouselPageTests
         }
     }
 
+    public class WheelBehavior : ScopedTestBase
+    {
+        [Fact]
+        public void WheelDown_NavigatesForward()
+        {
+            var cp = MakeCarousel(3, selectedIndex: 0);
+            cp.SimulateWheel(new Vector(0, -1));
+            Assert.Equal(1, cp.SelectedIndex);
+        }
+
+        [Fact]
+        public void WheelUp_NavigatesBackward()
+        {
+            var cp = MakeCarousel(3, selectedIndex: 2);
+            cp.SimulateWheel(new Vector(0, 1));
+            Assert.Equal(1, cp.SelectedIndex);
+        }
+
+        [Fact]
+        public void WheelDown_AtLastPage_DoesNotHandleEvent()
+        {
+            var cp = MakeCarousel(3, selectedIndex: 2);
+            var handled = cp.SimulateWheelReturnsHandled(new Vector(0, -1));
+            Assert.Equal(2, cp.SelectedIndex);
+            Assert.False(handled);
+        }
+
+        [Fact]
+        public void WheelUp_AtFirstPage_DoesNotHandleEvent()
+        {
+            var cp = MakeCarousel(3, selectedIndex: 0);
+            var handled = cp.SimulateWheelReturnsHandled(new Vector(0, 1));
+            Assert.Equal(0, cp.SelectedIndex);
+            Assert.False(handled);
+        }
+
+        [Fact]
+        public void Wheel_WhenGestureDisabled_DoesNotHandleEvent()
+        {
+            var cp = MakeCarousel(3, selectedIndex: 0);
+            cp.IsGestureEnabled = false;
+            var handled = cp.SimulateWheelReturnsHandled(new Vector(0, -1));
+            Assert.Equal(0, cp.SelectedIndex);
+            Assert.False(handled);
+        }
+
+        private static TestableCarouselPage MakeCarousel(int count, int selectedIndex)
+        {
+            var cp = new TestableCarouselPage();
+            for (var i = 0; i < count; i++)
+                ((AvaloniaList<Page>)cp.Pages!).Add(new ContentPage { Header = $"P{i}" });
+            cp.SelectedIndex = selectedIndex;
+            return cp;
+        }
+    }
+
     private sealed class TestableCarouselPage : CarouselPage
     {
         public void SimulateKeyDown(Key key)
@@ -706,6 +762,24 @@ public class CarouselPageTests
         {
             var e = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key };
             OnKeyDown(e);
+            return e.Handled;
+        }
+
+        public void SimulateWheel(Vector delta)
+        {
+            SimulateWheelReturnsHandled(delta);
+        }
+
+        public bool SimulateWheelReturnsHandled(Vector delta)
+        {
+            var pointer = new FakePointer();
+            var e = new PointerWheelEventArgs(this, pointer, this, default, 0,
+                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.Other),
+                KeyModifiers.None, delta)
+            {
+                RoutedEvent = PointerWheelChangedEvent
+            };
+            RaiseEvent(e);
             return e.Handled;
         }
     }
@@ -823,5 +897,14 @@ public class CarouselPageTests
     {
         public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
             => Task.CompletedTask;
+    }
+
+    private sealed class FakePointer : IPointer
+    {
+        public int Id { get; } = Pointer.GetNextFreeId();
+        public void Capture(IInputElement? control) => Captured = control;
+        public IInputElement? Captured { get; set; }
+        public PointerType Type => PointerType.Mouse;
+        public bool IsPrimary => true;
     }
 }

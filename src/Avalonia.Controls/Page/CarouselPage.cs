@@ -238,10 +238,7 @@ namespace Avalonia.Controls
         private void OnPointerWheelTunnel(object? sender, PointerWheelEventArgs e)
         {
             if (!IsGestureEnabled)
-            {
-                e.Handled = true;
                 return;
-            }
 
             bool isRtl = IsRightToLeft;
             var pageCount = GetPageCount();
@@ -249,11 +246,15 @@ namespace Avalonia.Controls
             bool goPrev = e.Delta.Y > 0 || (isRtl ? e.Delta.X > 0 : e.Delta.X < 0);
 
             if (goNext && SelectedIndex < pageCount - 1)
+            {
                 ApplySelectedIndex(SelectedIndex + 1);
+                e.Handled = true;
+            }
             else if (goPrev && SelectedIndex > 0)
+            {
                 ApplySelectedIndex(SelectedIndex - 1);
-
-            e.Handled = true;
+                e.Handled = true;
+            }
         }
 
         protected override AutomationPeer OnCreateAutomationPeer() => new CarouselPageAutomationPeer(this);

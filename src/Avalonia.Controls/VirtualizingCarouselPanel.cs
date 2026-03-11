@@ -445,6 +445,7 @@ namespace Avalonia.Controls
                 var durationSeconds = Math.Clamp(remainingDistance * MaxCompletionDuration, MinCompletionDuration, MaxCompletionDuration);
 
                 _completionCts?.Cancel();
+                _completionCts?.Dispose();
                 _completionCts = new CancellationTokenSource();
 
                 SetValue(CompletionProgressProperty, currentProgress);
@@ -504,6 +505,8 @@ namespace Avalonia.Controls
             if (_isDragging || _completionCts is { IsCancellationRequested: false })
             {
                 _completionCts?.Cancel();
+                _completionCts?.Dispose();
+                _completionCts = null;
                 ResetSwipeState();
                 _gesturePointer = null;
                 _gestureDirectionDetermined = false;
@@ -625,7 +628,11 @@ namespace Avalonia.Controls
             finally
             {
                 if (ReferenceEquals(_completionCts, activeCts))
+                {
                     activeCts?.Cancel();
+                    activeCts?.Dispose();
+                    _completionCts = null;
+                }
             }
         }
 
