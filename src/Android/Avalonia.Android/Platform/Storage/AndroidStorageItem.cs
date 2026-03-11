@@ -158,16 +158,17 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
     public async Task<IStorageFile?> CreateFileAsync(string name)
     {
-        var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
-        var treeUri = GetTreeUri().treeUri;
+        // Try to return an existing file to avoid creating file (1).
         var existingFile = await GetItemAsync(name, false) as IStorageFile;
         if (existingFile != null)
         {
             // Uncommenting the following code will cause the file to be truncated when it is created:
             // using var _ = await existingFile.OpenWriteAsync();
             return existingFile;
-
         }
+        // Create new one and return it.
+        var treeUri = GetTreeUri().treeUri;
+        var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
         var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, mimeType, name);
         if(newFile == null)
         {
@@ -179,13 +180,14 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
 
     public async Task<IStorageFolder?> CreateFolderAsync(string name)
     {
-        var treeUri = GetTreeUri().treeUri;
+        // Try to return an existing folder to avoid creating folder (1).
         var existingFolder = await GetItemAsync(name, true) as IStorageFolder;
         if (existingFolder != null)
         {
             return existingFolder;
         }
-
+        // Create new one and return it.
+        var treeUri = GetTreeUri().treeUri;
         var newFolder = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, DocumentsContract.Document.MimeTypeDir, name);
         if (newFolder == null)
         {
