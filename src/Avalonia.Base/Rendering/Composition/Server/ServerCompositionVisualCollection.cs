@@ -5,7 +5,7 @@ namespace Avalonia.Rendering.Composition.Server
         protected override void OnBeforeListClear()
         {
             foreach (var child in List)
-                child.AddTransformedSubTreeBoundsToParentDirtyRect();
+                child.Parent = null;
         }
     }
 }
