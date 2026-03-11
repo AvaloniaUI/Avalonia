@@ -56,7 +56,9 @@ internal abstract class BatchStreamPoolBase<T> : IDisposable
                 if (_reclaimOnDispatcher.CheckAccess())
                     DispatcherTimer.Run(timerProc, TimeSpan.FromSeconds(1));
                 else
-                    _reclaimOnDispatcher.Invoke(() => DispatcherTimer.Run(timerProc, TimeSpan.FromSeconds(1)));
+                    _reclaimOnDispatcher.Post(
+                        () => DispatcherTimer.Run(timerProc, TimeSpan.FromSeconds(1)),
+                        DispatcherPriority.Normal);
             }
         }
 

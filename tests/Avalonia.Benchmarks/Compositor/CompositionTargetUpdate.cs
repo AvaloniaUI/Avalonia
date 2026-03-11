@@ -22,7 +22,7 @@ public class CompositionTargetUpdateOnly : IDisposable
 
     class Timer : IRenderTimer
     {
-        public Action<TimeSpan> Tick { get; set; }
+        public Action<TimeSpan> Tick { get; set; } = null!;
         public bool RunsInBackground => false;
         public void Start() { }
         public void Stop() { }

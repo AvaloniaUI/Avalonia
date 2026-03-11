@@ -16,7 +16,7 @@ namespace Avalonia.iOS
         private Stopwatch _st = Stopwatch.StartNew();
         private NSThread? _nsTimerThread;
         private volatile bool _wakeupSent;
-        private volatile bool _stopped;
+        private volatile bool _stopped = true;
         private readonly WakeupHelper _wakeupHelper;
 
         public DisplayLinkTimer()
@@ -27,6 +27,10 @@ namespace Avalonia.iOS
             TimerThread = new Thread(() =>
             {
                 _nsTimerThread = NSThread.Current;
+                // If Start() was called before the thread was ready, honor it now
+                if (!_stopped)
+                    _link.Paused = false;
+                _wakeupSent = false;
                 _link.AddToRunLoop(NSRunLoop.Current, NSRunLoopMode.Common);
                 NSRunLoop.Current.Run();
             });
