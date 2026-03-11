@@ -155,7 +155,7 @@ namespace Avalonia.Animation
         {
             try
             {
-                if (_targetControl is Visual { IsEffectivelyVisible: false })
+                if (_clock?.PlayState == PlayState.Pause)
                     return;
                 
                 InternalStep(frameTick); 
