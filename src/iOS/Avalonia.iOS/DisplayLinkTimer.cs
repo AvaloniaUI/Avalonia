@@ -68,11 +68,15 @@ namespace Avalonia.iOS
         public void Stop()
         {
             _stopped = true;
-            _link.Paused = true;
         }
 
         private void OnLinkTick()
         {
+            if (_stopped)
+            {
+                _link.Paused = true;
+                return;
+            }
             Tick?.Invoke(_st.Elapsed);
         }
         
