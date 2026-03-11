@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
@@ -199,6 +200,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<SplitViewDisplayMode> DisplayModeProperty =
             SplitView.DisplayModeProperty.AddOwner<DrawerPage>();
+
 
         private ContentPresenter? _contentPresenter;
         private ContentPresenter? _drawerPresenter;
@@ -535,7 +537,10 @@ namespace Avalonia.Controls
             UpdateIconPresenters();
 
             if (_backdrop != null)
+            {
                 _backdrop.PointerPressed += OnBackdropPressed;
+                AutomationProperties.SetAccessibilityView(_backdrop, AccessibilityView.Raw);
+            }
 
             ApplyForeground(_drawerHeaderPresenter, DrawerHeaderForeground);
             ApplyForeground(_drawerFooterPresenter, DrawerFooterForeground);

@@ -145,8 +145,10 @@ namespace Avalonia.Controls
                 var index = _carousel.SelectedIndex;
                 if (index >= 0)
                 {
-                    CommitSelection(index, _carousel.SelectedItem as Page ?? ResolvePageAtIndex(index), navigationType);
-                    UpdateAccessibilityName(index, GetPageCount(), _carousel.SelectedItem as Page);
+                    var page = _carousel.SelectedItem as Page ?? ResolvePageAtIndex(index);
+                    var pageCount = GetPageCount();
+                    CommitSelection(index, page, navigationType);
+                    UpdateAccessibilityName(index, pageCount, page);
                 }
                 else if (Pages is IList { Count: > 0 })
                 {
@@ -180,7 +182,7 @@ namespace Avalonia.Controls
             if (e.Handled || !IsKeyboardNavigationEnabled)
                 return;
 
-            bool isRtl = FlowDirection == Media.FlowDirection.RightToLeft;
+            bool isRtl = IsRightToLeft;
             bool next = isRtl ? e.Key == Key.Left : e.Key == Key.Right;
             bool prev = isRtl ? e.Key == Key.Right : e.Key == Key.Left;
 
@@ -241,7 +243,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            bool isRtl = FlowDirection == Media.FlowDirection.RightToLeft;
+            bool isRtl = IsRightToLeft;
             var pageCount = GetPageCount();
             bool goNext = e.Delta.Y < 0 || (isRtl ? e.Delta.X < 0 : e.Delta.X > 0);
             bool goPrev = e.Delta.Y > 0 || (isRtl ? e.Delta.X > 0 : e.Delta.X < 0);
@@ -259,10 +261,12 @@ namespace Avalonia.Controls
         private void UpdateAccessibilityName(int index, int pageCount, Page? page)
         {
             var header = page?.Header?.ToString();
-            var position = pageCount > 0 ? $"Page {index + 1} of {pageCount}" : $"Page {index + 1}";
-            var name = string.IsNullOrEmpty(header) ? position : $"{position}: {header}";
+            var position = pageCount > 0 ? $"Page {index + 1} of {pageCount}" : string.Empty;
+            var name = string.IsNullOrEmpty(header) ? position : string.IsNullOrEmpty(position) ? header : $"{position}: {header}";
             AutomationProperties.SetName(this, name);
         }
+
+        private bool IsRightToLeft => FlowDirection == Media.FlowDirection.RightToLeft;
 
         private int GetPageCount()
         {

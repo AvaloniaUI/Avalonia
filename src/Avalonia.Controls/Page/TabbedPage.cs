@@ -24,6 +24,7 @@ namespace Avalonia.Controls
     public class TabbedPage : SelectingMultiPage
     {
         private TabControl? _tabControl;
+        private bool _ignoringDisabledSelection;
         private readonly Dictionary<TabItem, Page> _containerPageMap = new();
         private readonly Dictionary<Page, TabItem> _pageContainerMap = new();
         private readonly SwipeGestureRecognizer _swipeRecognizer = new SwipeGestureRecognizer
@@ -234,8 +235,6 @@ namespace Avalonia.Controls
 
             _tabControl.IndicatorTemplate = IndicatorTemplate;
         }
-
-        private bool _ignoringDisabledSelection;
 
         private void TabControl_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {

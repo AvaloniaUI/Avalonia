@@ -7,7 +7,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class DrawerClosingEventArgs : RoutedEventArgs
     {
-        internal DrawerClosingEventArgs(RoutedEvent routedEvent) : base(routedEvent) { }
+        public DrawerClosingEventArgs(RoutedEvent routedEvent) : base(routedEvent) { }
 
         /// <summary>
         /// Gets or sets a value indicating whether the closing should be cancelled.

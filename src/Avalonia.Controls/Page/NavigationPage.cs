@@ -435,7 +435,7 @@ namespace Avalonia.Controls
         /// </summary>
         public int StackDepth
         {
-            get => Pages is System.Collections.ICollection c ? c.Count : 0;
+            get => Pages is ICollection c ? c.Count : 0;
         }
 
         /// <summary>
@@ -875,8 +875,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { await PushAsync(page); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                await PushAsync(page);
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -925,8 +932,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { return await PopAsync(); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                return await PopAsync();
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -1015,8 +1029,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { await PopToRootAsync(); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                await PopToRootAsync();
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -1103,8 +1124,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { await PopToPageAsync(page); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                await PopToPageAsync(page);
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -1193,8 +1221,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { await PushModalAsync(page); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                await PushModalAsync(page);
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -1309,8 +1344,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { return await PopModalAsync(); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                return await PopModalAsync();
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -1393,8 +1435,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { await PopAllModalsAsync(); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                await PopAllModalsAsync();
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -1525,7 +1574,7 @@ namespace Avalonia.Controls
             page.SetInNavigationPage(true);
             page.SafeAreaPadding = SafeAreaPadding;
 
-            if (Pages is not System.Collections.Specialized.INotifyCollectionChanged)
+            if (Pages is not INotifyCollectionChanged)
                 LogicalChildren.Add(page);
 
             InvalidateNavigationStackCache();
@@ -1572,8 +1621,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { await ReplaceAsync(page); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                await ReplaceAsync(page);
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         // navigationType is intentionally unused; lifecycle events are fired in each navigation
@@ -1872,7 +1928,6 @@ namespace Avalonia.Controls
             UpdateIsBackButtonEffectivelyVisible();
             UpdateDrawerToggleIcon();
         }
-
 
         private void UpdateDrawerToggleIcon()
         {

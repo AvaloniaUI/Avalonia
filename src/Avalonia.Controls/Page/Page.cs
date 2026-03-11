@@ -201,7 +201,7 @@ namespace Avalonia.Controls
                 UpdateContentSafeAreaPadding();
 
             if (change.Property == HeaderProperty)
-                AutomationProperties.SetName(this, change.NewValue as string ?? string.Empty);
+                AutomationProperties.SetName(this, change.GetNewValue<object?>() as string ?? string.Empty);
         }
 
         protected override void OnLoaded(RoutedEventArgs e)

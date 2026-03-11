@@ -12,7 +12,7 @@ public class CarouselPageAutomationPeer : ControlAutomationPeer
     public new CarouselPage Owner => (CarouselPage)base.Owner;
 
     protected override AutomationControlType GetAutomationControlTypeCore()
-        => AutomationControlType.List;
+        => AutomationControlType.Pane;
 
     protected override string? GetNameCore()
     {
