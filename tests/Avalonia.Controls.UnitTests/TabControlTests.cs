@@ -1046,6 +1046,438 @@ namespace Avalonia.Controls.UnitTests
                     assetLoader: new StandardAssetLoader()));
         }
 
+        [Fact]
+        public void Switching_Tab_Should_Preserve_DataContext_Binding_On_UserControl_Content()
+        {
+            // Issue #18280: When switching tabs, a UserControl inside a TabItem has its
+            // DataContext set to null, causing two-way bindings on child controls (like
+            // DataGrid.SelectedItem) to propagate null back to the view model.
+            // Verify that after switching away and back, the DataContext binding still
+            // resolves correctly.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new TabDataContextViewModel { SelectedItem = "Item1" };
+
+            // Create a UserControl with an explicit DataContext binding,
+            // matching the issue scenario.
+            var userControl = new UserControl
+            {
+                [~UserControl.DataContextProperty] = new Binding("SelectedItem"),
+            };
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        Content = userControl,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        Content = "Other content",
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            // Verify initial state
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal("Item1", userControl.DataContext);
+
+            // Switch to second tab and back
+            target.SelectedIndex = 1;
+            target.SelectedIndex = 0;
+
+            // The UserControl's DataContext binding should still resolve correctly.
+            Assert.Equal("Item1", userControl.DataContext);
+
+            // Verify the binding is still live by changing the source property.
+            viewModel.SelectedItem = "Item2";
+            Assert.Equal("Item2", userControl.DataContext);
+        }
+
+        [Fact]
+        public void TabItem_Child_DataContext_Binding_Should_Work()
+        {
+            // Issue #20845: When a DataContext binding is placed on the child of a TabItem,
+            // the DataContext is null. The binding hasn't resolved when the content's
+            // DataContext is captured in UpdateSelectedContent, so the captured value is null.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+
+            var tab1View = new UserControl();
+            tab1View.Bind(UserControl.DataContextProperty, new Binding("Tab1"));
+
+            // Add a child TextBlock that binds to a property on Tab1ViewModel.
+            var textBlock = new TextBlock();
+            textBlock.Bind(TextBlock.TextProperty, new Binding("Name"));
+            tab1View.Content = textBlock;
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        Content = tab1View,
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            // The UserControl's DataContext should be the Tab1ViewModel.
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+
+            // The TextBlock should display the Name from Tab1ViewModel.
+            Assert.Equal("Tab 1 message here", textBlock.Text);
+        }
+
+        [Fact]
+        public void TabItem_Child_With_DataContext_Binding_Should_Propagate_To_Children()
+        {
+            // Issue #20845 (comment): Putting the DataContext binding on the TabItem itself
+            // is also broken. The child should inherit the TabItem's DataContext.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+
+            var textBlock = new TextBlock();
+            textBlock.Bind(TextBlock.TextProperty, new Binding("Name"));
+            var tab1View = new UserControl { Content = textBlock };
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        Content = tab1View,
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            // The TabItem's DataContext should be the Tab1ViewModel.
+            var tabItem = (TabItem)target.Items[0]!;
+            Assert.Same(viewModel.Tab1, tabItem.DataContext);
+
+            // The UserControl should inherit the TabItem's DataContext.
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+
+            // The TextBlock should display the Name from Tab1ViewModel.
+            Assert.Equal("Tab 1 message here", textBlock.Text);
+        }
+
+        [Fact]
+        public void Switching_Tabs_Should_Not_Null_Out_DataContext_Bound_Properties()
+        {
+            // Issue #20845: DataContext binding should survive tab switches.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+
+            var tab1View = new UserControl();
+            tab1View.Bind(UserControl.DataContextProperty, new Binding("Tab1"));
+            var textBlock = new TextBlock();
+            textBlock.Bind(TextBlock.TextProperty, new Binding("Name"));
+            tab1View.Content = textBlock;
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        Content = tab1View,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        Content = "Other content",
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+            Assert.Equal("Tab 1 message here", textBlock.Text);
+
+            // Switch to tab 2 and back
+            target.SelectedIndex = 1;
+            target.SelectedIndex = 0;
+
+            // DataContext binding should still be resolved correctly.
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+            Assert.Equal("Tab 1 message here", textBlock.Text);
+        }
+
+        [Fact]
+        public void Content_Should_Not_Temporarily_Get_Wrong_DataContext_When_Switching_Tabs()
+        {
+            // When ContentPart.Content is set, ContentPresenter.UpdateChild clears its
+            // DataContext before we can set it to the container's DataContext. This causes
+            // the content to briefly inherit TabControl's DataContext instead of TabItem's.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+
+            var tab1View = new UserControl();
+            var tab2View = new UserControl();
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        Content = tab1View,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        [~TabItem.DataContextProperty] = new Binding("Tab2"),
+                        Content = tab2View,
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+
+            // Track all DataContext values the new content receives during the switch.
+            var dataContexts = new List<object?>();
+            tab2View.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == StyledElement.DataContextProperty)
+                    dataContexts.Add(e.NewValue);
+            };
+
+            target.SelectedIndex = 1;
+
+            // tab2View should only have received the correct DataContext (Tab2ViewModel).
+            // It should NOT have temporarily received the TabControl's DataContext (MainViewModel).
+            Assert.All(dataContexts, dc => Assert.Same(viewModel.Tab2, dc));
+            Assert.Same(viewModel.Tab2, tab2View.DataContext);
+        }
+
+        [Fact]
+        public void Transition_Should_Not_Apply_New_DataContext_To_Old_Content()
+        {
+            // When a PageTransition is set, the old content stays in ContentPart while the
+            // new content goes into _contentPresenter2. The DataContext subscription for the
+            // new container should not update ContentPart's DataContext (which still holds
+            // the old content).
+            using var app = Start();
+
+            var viewModel = new MainViewModel();
+
+            var tab1View = new UserControl();
+            var tab2View = new UserControl();
+
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var target = new TabControl
+            {
+                PageTransition = transition.Object,
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        Content = tab1View,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        [~TabItem.DataContextProperty] = new Binding("Tab2"),
+                        Content = tab2View,
+                    },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+
+            // Track all DataContext values the OLD content receives during the transition.
+            var oldContentDataContexts = new List<object?>();
+            tab1View.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == StyledElement.DataContextProperty)
+                    oldContentDataContexts.Add(e.NewValue);
+            };
+
+            // Switch tab — triggers transition
+            target.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // The old content (tab1View) should NOT have received Tab2's DataContext.
+            Assert.DoesNotContain(viewModel.Tab2, oldContentDataContexts);
+        }
+
+        [Fact]
+        public void ContentTemplate_With_Control_Content_Should_Set_DataContext_To_Content()
+        {
+            // When a TabItem has a ContentTemplate and its Content is a Control, the
+            // ContentPresenter should set DataContext = content (so the template can bind
+            // to the control's properties), not the TabItem's DataContext.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+            var userControl = new UserControl { Tag = "my-content" };
+
+            TextBlock? templateChild = null;
+            var contentTemplate = new FuncDataTemplate<UserControl>((x, _) =>
+            {
+                templateChild = new TextBlock();
+                templateChild.Bind(TextBlock.TextProperty, new Binding("Tag"));
+                return templateChild;
+            });
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        ContentTemplate = contentTemplate,
+                        Content = userControl,
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            // The ContentPresenter's DataContext should be the content (UserControl),
+            // not the TabItem's DataContext (Tab1ViewModel), because ContentTemplate is set.
+            Assert.Same(userControl, target.ContentPart!.DataContext);
+            Assert.NotNull(templateChild);
+            Assert.Equal("my-content", templateChild!.Text);
+        }
+
+        [Fact]
+        public void ContentTemplate_With_Control_Content_Should_Set_DataContext_To_Content_After_Tab_Switch()
+        {
+            // Same as above but verifies the behavior after switching tabs.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+            var userControl = new UserControl { Tag = "my-content" };
+
+            TextBlock? templateChild = null;
+            var contentTemplate = new FuncDataTemplate<UserControl>((x, _) =>
+            {
+                templateChild = new TextBlock();
+                templateChild.Bind(TextBlock.TextProperty, new Binding("Tag"));
+                return templateChild;
+            });
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        ContentTemplate = contentTemplate,
+                        Content = userControl,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        Content = "Other content",
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            Assert.Same(userControl, target.ContentPart!.DataContext);
+
+            // Switch away and back.
+            target.SelectedIndex = 1;
+            target.SelectedIndex = 0;
+
+            // DataContext should still be the content, not the TabItem's DataContext.
+            Assert.Same(userControl, target.ContentPart!.DataContext);
+            Assert.NotNull(templateChild);
+            Assert.Equal("my-content", templateChild!.Text);
+        }
+
+        private class TabDataContextViewModel : NotifyingBase
+        {
+            private string? _selectedItem;
+
+            public string? SelectedItem
+            {
+                get => _selectedItem;
+                set => SetField(ref _selectedItem, value);
+            }
+        }
+
+        private class MainViewModel
+        {
+            public Tab1ViewModel Tab1 { get; set; } = new();
+            public Tab2ViewModel Tab2 { get; set; } = new();
+        }
+
+        private class Tab1ViewModel
+        {
+            public string Name { get; set; } = "Tab 1 message here";
+        }
+
+        private class Tab2ViewModel
+        {
+            public string Name { get; set; } = "Tab 2 message here";
+        }
+
         private class Item
         {
             public Item(string value)
