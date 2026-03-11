@@ -55,6 +55,11 @@ namespace Avalonia.Input.TextInput
         public abstract string SurroundingText { get; }
 
         /// <summary>
+        /// Returns the text in the text visual.
+        /// </summary>
+        public abstract string Text { get; }
+
+        /// <summary>
         /// Gets the cursor rectangle relative to the TextViewVisual
         /// </summary>
         public abstract Rect CursorRectangle { get; }
@@ -63,6 +68,11 @@ namespace Avalonia.Input.TextInput
         /// Gets or sets the curent selection range within current surrounding text.
         /// </summary>
         public abstract TextSelection Selection { get; set; }
+
+        /// <summary>
+        /// Gets or sets the curent selection range within text.
+        /// </summary>
+        public abstract TextSelection SelectionInText { get; set; }
 
         /// <summary>
         /// Sets the non-committed input string

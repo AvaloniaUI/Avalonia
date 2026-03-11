@@ -25,14 +25,14 @@ namespace Avalonia.Android.Platform.Input
         {
             get
             {
-                var selection = _textInputMethod.Client?.Selection ?? default;
+                var selection = _textInputMethod.Client?.SelectionInText ?? default;
                 return new TextSelection(Math.Min(selection.Start, selection.End), Math.Max(selection.Start, selection.End));
             }
 
             set
             {
                 if (_textInputMethod.Client is { } client)
-                    client.Selection = value;
+                    client.SelectionInText = value;
             }
         }
 
@@ -86,7 +86,15 @@ namespace Avalonia.Android.Platform.Input
             }
         }
 
-        public string Text => _textInputMethod.Client?.SurroundingText ?? "";
+        public string Text
+        {
+            get
+            {
+                var client = _textInputMethod.Client;
+
+                return _textInputMethod.Client?.Text ?? "";
+            }
+        }
 
         public ExtractedText? ExtractedText => new ExtractedText
         {
@@ -103,7 +111,7 @@ namespace Avalonia.Android.Platform.Input
         {
             if (_textInputMethod.Client is { } client)
             {
-                client.Selection = new TextSelection(index, index + length);
+                client.SelectionInText = new TextSelection(index, index + length);
                 if (length > 0)
                     _textInputMethod?.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
             }
@@ -117,12 +125,12 @@ namespace Avalonia.Android.Platform.Input
                 var realEnd = Math.Max(start, end);
                 if (realEnd > realStart)
                 {
-                    client.Selection = new TextSelection(realStart, realEnd);
+                    client.SelectionInText = new TextSelection(realStart, realEnd);
                     _textInputMethod?.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
                 }
                 _topLevel.TextInput(text);
                 var index = realStart + text.Length;
-                client.Selection = new TextSelection(index, index);
+                client.SelectionInText = new TextSelection(index, index);
                 Composition = null;
             }
         }
