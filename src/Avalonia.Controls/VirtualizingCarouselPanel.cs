@@ -272,7 +272,7 @@ namespace Avalonia.Controls
 
             if (change.Property == CompletionProgressProperty)
             {
-                UpdateSwipeProgress(change.GetNewValue<double>(), Bounds.Width);
+                UpdateSwipeProgress(change.GetNewValue<double>(), GetSwipeSize());
             }
         }
 
@@ -317,25 +317,29 @@ namespace Avalonia.Controls
             }
 
             var pos = e.GetPosition(this);
-            var deltaX = pos.X - _gestureStartPosition.X;
+            var isVertical = IsVerticalSwipe();
+            var primaryDelta = isVertical
+                ? pos.Y - _gestureStartPosition.Y
+                : pos.X - _gestureStartPosition.X;
+            var crossDelta = isVertical
+                ? pos.X - _gestureStartPosition.X
+                : pos.Y - _gestureStartPosition.Y;
 
             if (!_gestureDirectionDetermined)
             {
-                var deltaY = pos.Y - _gestureStartPosition.Y;
-
-                if (Math.Abs(deltaX) < GestureDeadZone && Math.Abs(deltaY) < GestureDeadZone)
+                if (Math.Abs(primaryDelta) < GestureDeadZone && Math.Abs(crossDelta) < GestureDeadZone)
                 {
                     return;
                 }
 
-                if (Math.Abs(deltaY) > Math.Abs(deltaX))
+                if (Math.Abs(crossDelta) > Math.Abs(primaryDelta))
                 {
                     ResetGestureTracking();
                     return;
                 }
 
                 _gestureDirectionDetermined = true;
-                _isForward = deltaX < 0;
+                _isForward = primaryDelta < 0;
                 _isRubberBanding = false;
 
                 var targetIndex = _isForward ? _realizedIndex + 1 : _realizedIndex - 1;
@@ -372,7 +376,7 @@ namespace Avalonia.Controls
                     _swipeTarget = GetOrCreateElement(Items, _swipeTargetIndex);
                     _swipeTarget.Measure(Bounds.Size);
                     _swipeTarget.Arrange(new Rect(Bounds.Size));
-                    UpdateSwipeProgress(0, Bounds.Width);
+                    UpdateSwipeProgress(0, GetSwipeSize());
                     _swipeTarget.IsVisible = true;
                 }
 
@@ -387,7 +391,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            _totalDelta = deltaX;
+            _totalDelta = primaryDelta;
 
             // Clamp so delta cannot cross zero
             if (_isForward)
@@ -399,7 +403,7 @@ namespace Avalonia.Controls
                 _totalDelta = Math.Max(0, _totalDelta);
             }
 
-            var size = Bounds.Width;
+            var size = GetSwipeSize();
             if (size <= 0)
             {
                 return;
@@ -425,7 +429,7 @@ namespace Avalonia.Controls
 
             if (_isDragging && ItemsControl is Carousel carousel)
             {
-                var size = Bounds.Width;
+                var size = GetSwipeSize();
                 var rawProgress = size > 0 ? Math.Abs(_totalDelta) / size : 0;
                 var currentProgress = _isRubberBanding
                     ? RubberBandFactor * Math.Sqrt(rawProgress)
@@ -685,6 +689,7 @@ namespace Avalonia.Controls
         private void ApplyDefaultTransition(double progress, double size)
         {
             var offset = size * progress;
+            var vertical = IsVerticalSwipe();
 
             if (_realized != null)
             {
@@ -693,7 +698,14 @@ namespace Avalonia.Controls
                     _realized.RenderTransform = ft = new TranslateTransform();
                 }
 
-                ft.X = _isForward ? -offset : offset;
+                if (vertical)
+                {
+                    ft.Y = _isForward ? -offset : offset;
+                }
+                else
+                {
+                    ft.X = _isForward ? -offset : offset;
+                }
             }
 
             if (_swipeTarget != null && !_isRubberBanding)
@@ -704,11 +716,24 @@ namespace Avalonia.Controls
                     _swipeTarget.RenderTransform = tt = new TranslateTransform();
                 }
 
-                tt.X = _isForward ? size - offset : -(size - offset);
+                if (vertical)
+                {
+                    tt.Y = _isForward ? size - offset : -(size - offset);
+                }
+                else
+                {
+                    tt.X = _isForward ? size - offset : -(size - offset);
+                }
             }
         }
 
         private bool IsSwipeEnabled() => (ItemsControl as Carousel)?.IsSwipeEnabled == true;
+
+        private bool IsVerticalSwipe() =>
+            (ItemsControl as Carousel)?.GetTransitionAxis() == PageSlide.SlideAxis.Vertical;
+
+        private double GetSwipeSize() =>
+            IsVerticalSwipe() ? Bounds.Height : Bounds.Width;
 
         private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
         {
