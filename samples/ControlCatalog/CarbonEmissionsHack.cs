@@ -7,6 +7,9 @@ public class CarbonEmissionsHack
 {
     public static void SetTracksVisualTreeAttachment(Control control, bool value)
     {
+        if (!value)
+            return;
+
         const string className = "is-attached-to-visual-tree";
         if (control.IsAttachedToVisualTree())
             control.Classes.Add(className);

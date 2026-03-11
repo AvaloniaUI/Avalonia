@@ -16,6 +16,7 @@ namespace Avalonia.iOS
         private Stopwatch _st = Stopwatch.StartNew();
         private NSThread? _nsTimerThread;
         private volatile bool _wakeupSent;
+        private volatile bool _stopped;
         private readonly WakeupHelper _wakeupHelper;
 
         public DisplayLinkTimer()
@@ -40,6 +41,7 @@ namespace Avalonia.iOS
 
         public void Start()
         {
+            _stopped = false;
             if (_wakeupSent)
                 return;
             _wakeupSent = true;
@@ -50,6 +52,7 @@ namespace Avalonia.iOS
 
         public void Stop()
         {
+            _stopped = true;
             _link.Paused = true;
         }
 
@@ -69,7 +72,8 @@ namespace Avalonia.iOS
             public void DoWakeup()
             {
                 _owner._wakeupSent = false;
-                _owner._link.Paused = false;
+                if (!_owner._stopped)
+                    _owner._link.Paused = false;
             }
         }
     }

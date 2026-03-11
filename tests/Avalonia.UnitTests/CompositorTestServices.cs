@@ -42,9 +42,10 @@ public class CompositorTestServices : IDisposable
         _app = UnitTestApplication.Start(services);
         try
         {
-            AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(Timer));
+            var renderLoop = RenderLoop.FromTimer(Timer);
+            AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(renderLoop);
 
-            Compositor = new Compositor(RenderLoop.FromTimer(Timer), null,
+            Compositor = new Compositor(renderLoop, null,
                 true, new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
             var impl = new TopLevelImpl(Compositor, size ?? new Size(1000, 1000));
             TopLevel = new EmbeddableControlRoot(impl)
