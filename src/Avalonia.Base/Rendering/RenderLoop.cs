@@ -35,7 +35,7 @@ namespace Avalonia.Rendering
         private readonly IRenderTimer _timer;
         private readonly object _timerLock = new();
         private int _inTick;
-        private bool _hasItems;
+        private volatile bool _hasItems;
         private bool _running;
         private bool _wakeupPending;
         
