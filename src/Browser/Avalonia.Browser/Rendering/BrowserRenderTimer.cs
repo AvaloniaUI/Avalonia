@@ -20,13 +20,14 @@ internal class BrowserRenderTimer : IRenderTimer
 
     public Action<TimeSpan>? Tick
     {
-        get => _tick;
         set
         {
-            _tick = value;
-            if (value != null)
+            if (!BrowserWindowingPlatform.IsThreadingEnabled)
                 StartOnThisThread();
+
+            _tick = value;
         }
+        get => _tick;
     }
 
     public void StartOnThisThread()
@@ -41,6 +42,9 @@ internal class BrowserRenderTimer : IRenderTimer
 
     private void RenderFrameCallback(double timestamp)
     {
-        _tick?.Invoke(TimeSpan.FromMilliseconds(timestamp));
+        if (_tick is { } tick)
+        {
+            tick.Invoke(TimeSpan.FromMilliseconds(timestamp));
+        }
     }
 }
