@@ -241,14 +241,6 @@ namespace Avalonia.Win32.DirectX
             _compositionTarget?.Dispose();
         }
 
-        internal static bool RectsEqual(in RECT l, in RECT r)
-        {
-            return (l.left == r.left)
-                && (l.top == r.top)
-                && (l.right == r.right)
-                && (l.bottom == r.bottom);
-        }
-
         public bool IsTransparency => _transparencyLevel != WindowTransparencyLevel.None;
 
         public void SetTransparencyLevel(WindowTransparencyLevel transparencyLevel)
