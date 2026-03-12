@@ -12,7 +12,8 @@ namespace Avalonia.iOS
     class DisplayLinkTimer : IRenderTimer
     {
         private readonly CADisplayLink _link;
-        private Action<TimeSpan>? _tick;
+        private readonly object _lock = new();
+        private volatile Action<TimeSpan>? _tick;
         private Stopwatch _st = Stopwatch.StartNew();
         private NSThread? _nsTimerThread;
         private volatile bool _wakeupSent;
@@ -26,11 +27,13 @@ namespace Avalonia.iOS
             _link.Paused = true;
             TimerThread = new Thread(() =>
             {
-                _nsTimerThread = NSThread.Current;
-                // If Start() was called before the thread was ready, honor it now
-                if (!_stopped)
-                    _link.Paused = false;
-                _wakeupSent = false;
+                lock (_lock)
+                {
+                    _nsTimerThread = NSThread.Current;
+                    if (!_stopped)
+                        _link.Paused = false;
+                    _wakeupSent = false;
+                }
                 _link.AddToRunLoop(NSRunLoop.Current, NSRunLoopMode.Common);
                 NSRunLoop.Current.Run();
             });
@@ -38,14 +41,17 @@ namespace Avalonia.iOS
             UIApplication.Notifications.ObserveDidEnterBackground((_,__) => _link.Paused = true);
             UIApplication.Notifications.ObserveWillEnterForeground((_, __) =>
             {
-                // Only resume if the timer was logically running before going to background.
-                // Don't call Start() — that would bypass the render loop's state machine.
-                if (!_stopped)
+                lock (_lock)
                 {
-                    _wakeupSent = false;
-                    var thread = _nsTimerThread;
-                    if (thread != null)
-                        _wakeupHelper.PerformSelector(new Selector("doWakeup"), thread, null, false);
+                    // Only resume if the timer was logically running before going to background.
+                    // Don't call Start() — that would bypass the render loop's state machine.
+                    if (!_stopped)
+                    {
+                        _wakeupSent = false;
+                        var thread = _nsTimerThread;
+                        if (thread != null)
+                            _wakeupHelper.PerformSelector(new Selector("doWakeup"), thread, null, false);
+                    }
                 }
             });
         }
@@ -59,21 +65,24 @@ namespace Avalonia.iOS
             get => _tick;
             set
             {
-                if (value != null)
+                lock (_lock)
                 {
-                    _tick = value;
-                    _stopped = false;
-                    if (_wakeupSent)
-                        return;
-                    _wakeupSent = true;
-                    var thread = _nsTimerThread;
-                    if (thread != null)
-                        _wakeupHelper.PerformSelector(new Selector("doWakeup"), thread, null, false);
-                }
-                else
-                {
-                    _stopped = true;
-                    _tick = null;
+                    if (value != null)
+                    {
+                        _tick = value;
+                        _stopped = false;
+                        if (_wakeupSent)
+                            return;
+                        _wakeupSent = true;
+                        var thread = _nsTimerThread;
+                        if (thread != null)
+                            _wakeupHelper.PerformSelector(new Selector("doWakeup"), thread, null, false);
+                    }
+                    else
+                    {
+                        _stopped = true;
+                        _tick = null;
+                    }
                 }
             }
         }
@@ -98,9 +107,12 @@ namespace Avalonia.iOS
             [Export("doWakeup")]
             public void DoWakeup()
             {
-                _owner._wakeupSent = false;
-                if (!_owner._stopped)
-                    _owner._link.Paused = false;
+                lock (_owner._lock)
+                {
+                    _owner._wakeupSent = false;
+                    if (!_owner._stopped)
+                        _owner._link.Paused = false;
+                }
             }
         }
     }

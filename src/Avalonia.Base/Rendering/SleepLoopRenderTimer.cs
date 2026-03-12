@@ -8,7 +8,7 @@ namespace Avalonia.Rendering
     [PrivateApi]
     public class SleepLoopRenderTimer : IRenderTimer
     {
-        private Action<TimeSpan>? _tick;
+        private volatile Action<TimeSpan>? _tick;
         private volatile bool _stopped = true;
         private bool _threadStarted;
         private readonly AutoResetEvent _wakeEvent = new(false);
@@ -62,9 +62,6 @@ namespace Avalonia.Rendering
                 if (timeTillNextTick.TotalMilliseconds > 1)
                     _wakeEvent.WaitOne(timeTillNextTick);
                 lastTick = now = _st.Elapsed;
-
-                if (_stopped)
-                    continue;
 
                 _tick?.Invoke(now);
             }

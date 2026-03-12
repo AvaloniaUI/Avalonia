@@ -12,7 +12,8 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
     private readonly Stopwatch _stopwatch;
     private readonly Thread _timerThread;
     private readonly AutoResetEvent _autoResetEvent;
-    private Action<TimeSpan>? _tick;
+    private readonly object _lock = new();
+    private volatile Action<TimeSpan>? _tick;
     private volatile bool _active;
     private bool _registered;
 
@@ -29,19 +30,22 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
         get => _tick;
         set
         {
-            if (value != null)
+            lock (_lock)
             {
-                _tick = value;
-                _active = true;
-                EnsureStarted();
-                _inner.Tick = InnerTick;
-            }
-            else
-            {
-                // Don't set _inner.Tick = null here — may be on the wrong thread.
-                // InnerTick will detect _active=false and clear _inner.Tick on the correct thread.
-                _active = false;
-                _tick = null;
+                if (value != null)
+                {
+                    _tick = value;
+                    _active = true;
+                    EnsureStarted();
+                    _inner.Tick = InnerTick;
+                }
+                else
+                {
+                    // Don't set _inner.Tick = null here — may be on the wrong thread.
+                    // InnerTick will detect _active=false and clear _inner.Tick on the correct thread.
+                    _active = false;
+                    _tick = null;
+                }
             }
         }
     }
@@ -60,10 +64,13 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
 
     private void InnerTick(TimeSpan obj)
     {
-        if (!_active)
+        lock (_lock)
         {
-            _inner.Tick = null;
-            return;
+            if (!_active)
+            {
+                _inner.Tick = null;
+                return;
+            }
         }
         _autoResetEvent.Set();
     }

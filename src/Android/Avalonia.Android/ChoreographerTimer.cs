@@ -19,8 +19,9 @@ namespace Avalonia.Android
         private readonly GCHandle _timerHandle;
         private readonly HashSet<AvaloniaView> _views = new();
 
-        private Action<TimeSpan>? _tick;
+        private volatile Action<TimeSpan>? _tick;
         private volatile bool _stopped = true;
+        private bool _frameCallbackActive;
         private long _lastTime;
 
         public ChoreographerTimer()
@@ -45,16 +46,23 @@ namespace Avalonia.Android
             get => _tick;
             set
             {
-                if (value != null)
+                lock (_lock)
                 {
-                    _tick = value;
-                    _stopped = false;
-                    PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
-                }
-                else
-                {
-                    _stopped = true;
-                    _tick = null;
+                    if (value != null)
+                    {
+                        _tick = value;
+                        _stopped = false;
+                        if (!_frameCallbackActive && _views.Count > 0)
+                        {
+                            _frameCallbackActive = true;
+                            PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
+                        }
+                    }
+                    else
+                    {
+                        _stopped = true;
+                        _tick = null;
+                    }
                 }
             }
         }
@@ -65,8 +73,9 @@ namespace Avalonia.Android
             {
                 _views.Add(view);
 
-                if (_views.Count == 1)
+                if (!_frameCallbackActive && _views.Count == 1 && !_stopped)
                 {
+                    _frameCallbackActive = true;
                     PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
                 }
             }
@@ -110,6 +119,10 @@ namespace Avalonia.Android
                 if (!_stopped && _views.Count > 0)
                 {
                     PostFrameCallback(_choreographer.Task.Result, data);
+                }
+                else
+                {
+                    _frameCallbackActive = false;
                 }
                 _lastTime = frameTimeNanos;
                 _event.Set();

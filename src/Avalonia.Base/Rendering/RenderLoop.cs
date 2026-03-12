@@ -124,8 +124,11 @@ namespace Avalonia.Rendering
                 {
                     // Consume any pending wakeup — this tick will process its work.
                     // Only wakeups arriving during task execution will keep the timer running.
+                    // Also drop late ticks that arrive after the timer was stopped.
                     lock (_timerLock)
                     {
+                        if (!_running)
+                            return;
                         _wakeupPending = false;
                     }
 
