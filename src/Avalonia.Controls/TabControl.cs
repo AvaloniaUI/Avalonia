@@ -237,7 +237,7 @@ namespace Avalonia.Controls
 
         public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
         {
-            if (eventArgs is GotFocusEventArgs { NavigationMethod: not NavigationMethod.Directional })
+            if (eventArgs is FocusChangedEventArgs { NavigationMethod: not NavigationMethod.Directional })
             {
                 return false;
             }

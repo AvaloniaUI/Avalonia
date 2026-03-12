@@ -896,12 +896,12 @@ namespace Avalonia.Controls.Primitives
             {
                 case PointerEventArgs pointerEvent when ShouldTriggerSelection(container, pointerEvent):
                 case KeyEventArgs keyEvent when ShouldTriggerSelection(container, keyEvent):
-                case GotFocusEventArgs:
+                case FocusChangedEventArgs:
                     UpdateSelection(containerIndex, true,
                         ItemSelectionEventTriggers.HasRangeSelectionModifier(container, eventArgs),
                         ItemSelectionEventTriggers.HasToggleSelectionModifier(container, eventArgs),
                         eventArgs is PointerEventArgs { Properties.IsRightButtonPressed: true },
-                        eventArgs is GotFocusEventArgs);
+                        eventArgs is FocusChangedEventArgs);
 
                     eventArgs.Handled = true;
                     return true;
