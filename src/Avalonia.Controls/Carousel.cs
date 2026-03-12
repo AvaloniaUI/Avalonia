@@ -82,15 +82,13 @@ namespace Avalonia.Controls
         public void Next()
         {
             if (ItemCount == 0)
+            {
                 return;
+            }
 
             if (SelectedIndex < ItemCount - 1)
             {
                 ++SelectedIndex;
-            }
-            else if (WrapSelection)
-            {
-                SelectedIndex = 0;
             }
         }
 
@@ -100,15 +98,13 @@ namespace Avalonia.Controls
         public void Previous()
         {
             if (ItemCount == 0)
+            {
                 return;
+            }
 
             if (SelectedIndex > 0)
             {
                 --SelectedIndex;
-            }
-            else if (WrapSelection)
-            {
-                SelectedIndex = ItemCount - 1;
             }
         }
 

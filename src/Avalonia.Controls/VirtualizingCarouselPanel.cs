@@ -543,19 +543,9 @@ namespace Avalonia.Controls
                 var currentIndex = _realizedIndex;
                 var targetIndex = _isForward ? currentIndex + 1 : currentIndex - 1;
 
-                if (targetIndex >= Items.Count)
+                if (targetIndex < 0 || targetIndex >= Items.Count)
                 {
-                    if (carousel.WrapSelection)
-                        targetIndex = 0;
-                    else
-                        _isRubberBanding = true;
-                }
-                else if (targetIndex < 0)
-                {
-                    if (carousel.WrapSelection)
-                        targetIndex = Items.Count - 1;
-                    else
-                        _isRubberBanding = true;
+                    _isRubberBanding = true;
                 }
 
                 if (!_isRubberBanding && (targetIndex == currentIndex || targetIndex < 0 || targetIndex >= Items.Count))
