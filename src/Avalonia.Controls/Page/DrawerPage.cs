@@ -292,7 +292,10 @@ namespace Avalonia.Controls
 
         public DrawerPage()
         {
+            _swipeRecognizer.IsMouseEnabled = true;
             GestureRecognizers.Add(_swipeRecognizer);
+            AddHandler(PointerPressedEvent, OnSwipePointerPressed, handledEventsToo: true);
+            UpdateSwipeRecognizerAxes();
         }
 
         /// <summary>
@@ -618,6 +621,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == DrawerPlacementProperty)
             {
+                UpdateSwipeRecognizerAxes();
                 UpdatePanePlacement();
                 UpdateContentSafeAreaPadding();
             }
@@ -665,6 +669,12 @@ namespace Avalonia.Controls
                 nav.SetDrawerPage(null);
         }
 
+        private void UpdateSwipeRecognizerAxes()
+        {
+            _swipeRecognizer.CanVerticallySwipe = IsVerticalPlacement;
+            _swipeRecognizer.CanHorizontallySwipe = !IsVerticalPlacement;
+        }
+
         protected override void OnLoaded(RoutedEventArgs e)
         {
             base.OnLoaded(e);
@@ -676,9 +686,8 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        private void OnSwipePointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            base.OnPointerPressed(e);
             _swipeStartPoint = e.GetPosition(this);
         }
 

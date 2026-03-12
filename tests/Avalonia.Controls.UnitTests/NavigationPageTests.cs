@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Animation;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -1571,6 +1574,115 @@ public class NavigationPageTests
             Assert.True(m1PoppedFired);
             Assert.True(m2PoppedFired);
             Assert.True(rootNavigatedToFired);
+        }
+    }
+
+    public class SwipeGestureTests : ScopedTestBase
+    {
+        [Fact]
+        public async Task HandledPointerPressedAtEdge_AllowsSwipePop()
+        {
+            var nav = new NavigationPage();
+            var rootPage = new ContentPage { Header = "Root" };
+            var topPage = new ContentPage { Header = "Top" };
+
+            await nav.PushAsync(rootPage);
+            await nav.PushAsync(topPage);
+
+            var root = new TestRoot { Child = nav };
+            root.ExecuteInitialLayoutPass();
+
+            RaiseHandledPointerPressed(nav, new Point(5, 5));
+
+            var swipe = new SwipeGestureEventArgs(1, new Vector(-20, 0), default);
+            nav.RaiseEvent(swipe);
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.True(swipe.Handled);
+            Assert.Equal(1, nav.StackDepth);
+            Assert.Same(rootPage, nav.CurrentPage);
+        }
+
+        [Fact]
+        public async Task MouseEdgeDrag_AllowsSwipePop()
+        {
+            var nav = new NavigationPage
+            {
+                Width = 400,
+                Height = 300
+            };
+            var rootPage = new ContentPage { Header = "Root" };
+            var topPage = new ContentPage { Header = "Top" };
+
+            await nav.PushAsync(rootPage);
+            await nav.PushAsync(topPage);
+
+            var root = new TestRoot
+            {
+                ClientSize = new Size(400, 300),
+                Child = nav
+            };
+            root.ExecuteInitialLayoutPass();
+
+            var mouse = new MouseTestHelper();
+            mouse.Down(nav, position: new Point(5, 5));
+            mouse.Move(nav, new Point(40, 5));
+            mouse.Up(nav, position: new Point(40, 5));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(1, nav.StackDepth);
+            Assert.Same(rootPage, nav.CurrentPage);
+        }
+
+        [Fact]
+        public async Task SameGestureId_OnlyPops_One_Page()
+        {
+            var nav = new NavigationPage
+            {
+                Width = 400,
+                Height = 300
+            };
+            var page1 = new ContentPage { Header = "1" };
+            var page2 = new ContentPage { Header = "2" };
+            var page3 = new ContentPage { Header = "3" };
+
+            await nav.PushAsync(page1);
+            await nav.PushAsync(page2);
+            await nav.PushAsync(page3);
+
+            var root = new TestRoot
+            {
+                ClientSize = new Size(400, 300),
+                Child = nav
+            };
+            root.ExecuteInitialLayoutPass();
+
+            RaiseHandledPointerPressed(nav, new Point(5, 5));
+
+            nav.RaiseEvent(new SwipeGestureEventArgs(42, new Vector(-20, 0), default));
+            nav.RaiseEvent(new SwipeGestureEventArgs(42, new Vector(-30, 0), default));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(2, nav.StackDepth);
+            Assert.Same(page2, nav.CurrentPage);
+        }
+
+        private static void RaiseHandledPointerPressed(Interactive target, Point position)
+        {
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Touch, true);
+            var args = new PointerPressedEventArgs(
+                target,
+                pointer,
+                (Visual)target,
+                position,
+                timestamp: 1,
+                new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
+                KeyModifiers.None)
+            {
+                Handled = true
+            };
+
+            target.RaiseEvent(args);
         }
     }
 

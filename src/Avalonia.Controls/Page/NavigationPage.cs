@@ -68,6 +68,7 @@ namespace Avalonia.Controls
         private DrawerPage? _drawerPage;
         private IPageTransition? _overrideTransition;
         private Point _swipeStartPoint;
+        private int _lastSwipeGestureId;
         private bool _hasOverrideTransition;
         private readonly HashSet<object> _pageSet = new(ReferenceEqualityComparer.Instance);
 
@@ -257,7 +258,13 @@ namespace Avalonia.Controls
         public NavigationPage()
         {
             SetCurrentValue(PagesProperty, new Stack<Page>());
-            GestureRecognizers.Add(new SwipeGestureRecognizer());
+            GestureRecognizers.Add(new SwipeGestureRecognizer
+            {
+                CanHorizontallySwipe = true,
+                CanVerticallySwipe = false,
+                IsMouseEnabled = true
+            });
+            AddHandler(PointerPressedEvent, OnSwipePointerPressed, handledEventsToo: true);
         }
 
         /// <summary>
@@ -1824,7 +1831,7 @@ namespace Avalonia.Controls
 
         private void OnSwipeGesture(object? sender, SwipeGestureEventArgs e)
         {
-            if (!IsGestureEnabled || StackDepth <= 1 || _isNavigating || _modalStack.Count > 0)
+            if (!IsGestureEnabled || StackDepth <= 1 || _isNavigating || _modalStack.Count > 0 || e.Id == _lastSwipeGestureId)
                 return;
 
             bool inEdge = IsRtl
@@ -1839,13 +1846,13 @@ namespace Avalonia.Controls
             if (shouldPop)
             {
                 e.Handled = true;
+                _lastSwipeGestureId = e.Id;
                 _ = PopAsync();
             }
         }
 
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        private void OnSwipePointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            base.OnPointerPressed(e);
             _swipeStartPoint = e.GetPosition(this);
         }
 

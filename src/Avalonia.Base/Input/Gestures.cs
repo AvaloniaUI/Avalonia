@@ -74,8 +74,7 @@ namespace Avalonia.Input
             InputElement.SwipeGestureEvent;
 
         public static readonly RoutedEvent<SwipeGestureEndedEventArgs> SwipeGestureEndedEvent =
-            RoutedEvent.Register<SwipeGestureEndedEventArgs>(
-                "SwipeGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
+            InputElement.SwipeGestureEndedEvent;
 
         public static readonly RoutedEvent<PointerDeltaEventArgs> PointerTouchPadGestureMagnifyEvent =
             RoutedEvent.Register<PointerDeltaEventArgs>(

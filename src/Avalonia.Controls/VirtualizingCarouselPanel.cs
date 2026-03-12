@@ -420,11 +420,13 @@ namespace Avalonia.Controls
             var recycleKey = element.GetValue(RecycleKeyProperty);
             Debug.Assert(recycleKey is not null);
 
+            // Hide first so cleanup doesn't visibly snap transforms/opacity for a frame.
+            element.IsVisible = false;
             ResetVisualState(element);
 
             if (recycleKey == s_itemIsItsOwnContainer)
             {
-                element.IsVisible = false;
+                return;
             }
             else
             {
@@ -438,7 +440,6 @@ namespace Avalonia.Controls
                 }
 
                 pool.Push(element);
-                element.IsVisible = false;
             }
         }
 
@@ -514,14 +515,10 @@ namespace Avalonia.Controls
                 {
                     // The previous gesture was committing, finish it immediately.
                     if (_realized != null)
-                    {
-                        ResetVisualState(_realized);
                         RecycleElement(_realized);
-                    }
 
                     _realized = _swipeTarget;
                     _realizedIndex = _swipeTargetIndex;
-                    ResetVisualState(_realized);
                     carousel.SelectedIndex = _swipeTargetIndex;
                 }
                 else
@@ -690,6 +687,12 @@ namespace Avalonia.Controls
             if (cancellationToken.IsCancellationRequested)
                 return;
 
+            if (GetTransition() is IInteractivePageTransition interactive)
+            {
+                var swipeTarget = ReferenceEquals(_realized, _swipeTarget) ? null : _swipeTarget;
+                interactive.Update(_completionEndProgress, _realized, swipeTarget, _isForward);
+            }
+
             var commit = _completionEndProgress > 0.5;
 
             if (commit && _swipeTarget is not null)
@@ -697,15 +700,16 @@ namespace Avalonia.Controls
                 var targetIndex = _swipeTargetIndex;
                 var targetElement = _swipeTarget;
 
+                // Clear swipe target state before promoting it to the realized element so
+                // interactive transitions never receive the same control as both from/to.
+                _swipeTarget = null;
+                _swipeTargetIndex = -1;
+
                 if (_realized != null)
-                {
-                    ResetVisualState(_realized);
                     RecycleElement(_realized);
-                }
 
                 _realized = targetElement;
                 _realizedIndex = targetIndex;
-                ResetVisualState(_realized);
 
                 carousel.SelectedIndex = targetIndex;
             }
@@ -728,10 +732,14 @@ namespace Avalonia.Controls
 
             if (change.Property == CompletionProgressProperty)
             {
+                if (!_isDragging && _swipeTarget is null)
+                    return;
+
                 var progress = change.GetNewValue<double>();
                 if (GetTransition() is IInteractivePageTransition interactive)
                 {
-                    interactive.Update(progress, _realized, _swipeTarget, _isForward);
+                    var swipeTarget = ReferenceEquals(_realized, _swipeTarget) ? null : _swipeTarget;
+                    interactive.Update(progress, _realized, swipeTarget, _isForward);
                 }
             }
         }
@@ -744,10 +752,7 @@ namespace Avalonia.Controls
             ResetVisualState(_realized);
 
             if (_swipeTarget is not null)
-            {
-                ResetVisualState(_swipeTarget);
                 RecycleElement(_swipeTarget);
-            }
 
             _isDragging = false;
             _totalDelta = 0;

@@ -22,8 +22,8 @@ namespace Avalonia.Input
             Delta = delta;
             Velocity = velocity;
             SwipeDirection = Math.Abs(delta.X) >= Math.Abs(delta.Y)
-                ? (delta.X >= 0 ? SwipeDirection.Right : SwipeDirection.Left)
-                : (delta.Y >= 0 ? SwipeDirection.Down : SwipeDirection.Up);
+                ? (delta.X <= 0 ? SwipeDirection.Right : SwipeDirection.Left)
+                : (delta.Y <= 0 ? SwipeDirection.Down : SwipeDirection.Up);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Avalonia.Input
         /// <param name="id">The unique identifier for this gesture.</param>
         /// <param name="velocity">The swipe velocity at release in pixels per second.</param>
         public SwipeGestureEndedEventArgs(int id, Vector velocity)
-            : base(Gestures.SwipeGestureEndedEvent)
+            : base(InputElement.SwipeGestureEndedEvent)
         {
             Id = id;
             Velocity = velocity;

@@ -188,7 +188,7 @@ public class CardStackPageTransition : PageSlide
             }
 
             rotate.Angle = rotationTarget * progress;
-            from.IsVisible = progress < 1.0;
+            from.IsVisible = true;
             from.Opacity = 1;
             from.ZIndex = 1;
         }

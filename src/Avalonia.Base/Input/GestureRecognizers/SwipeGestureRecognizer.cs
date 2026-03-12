@@ -41,8 +41,8 @@ namespace Avalonia.Input.GestureRecognizers
         /// A value of 0 (the default) causes the distance to be read from
         /// <see cref="IPlatformSettings"/> at the time of the first gesture.
         /// </remarks>
-        public static readonly StyledProperty<int> ThresholdProperty =
-            AvaloniaProperty.Register<SwipeGestureRecognizer, int>(nameof(Threshold), defaultValue: 0);
+        public static readonly StyledProperty<double> ThresholdProperty =
+            AvaloniaProperty.Register<SwipeGestureRecognizer, double>(nameof(Threshold), defaultValue: 0d);
 
         /// <summary>
         /// Defines the <see cref="IsMouseEnabled"/> property.
@@ -55,7 +55,6 @@ namespace Avalonia.Input.GestureRecognizers
         /// </summary>
         public static readonly StyledProperty<bool> IsEnabledProperty =
             AvaloniaProperty.Register<SwipeGestureRecognizer, bool>(nameof(IsEnabled), defaultValue: true);
-
 
         /// <summary>
         /// Gets or sets a value indicating whether horizontal swipes are tracked.
@@ -79,7 +78,7 @@ namespace Avalonia.Input.GestureRecognizers
         /// Gets or sets the minimum pointer movement in pixels before a swipe is recognized.
         /// A value of 0 reads the threshold from <see cref="IPlatformSettings"/> at gesture time.
         /// </summary>
-        public int Threshold
+        public double Threshold
         {
             get => GetValue(ThresholdProperty);
             set => SetValue(ThresholdProperty, value);
@@ -104,7 +103,6 @@ namespace Avalonia.Input.GestureRecognizers
             get => GetValue(IsEnabledProperty);
             set => SetValue(IsEnabledProperty, value);
         }
-
 
         /// <inheritdoc/>
         protected override void PointerPressed(PointerPressedEventArgs e)
@@ -211,7 +209,7 @@ namespace Avalonia.Input.GestureRecognizers
 
         private const double DefaultTapSize = 10;
 
-        private int GetEffectiveThreshold()
+        private double GetEffectiveThreshold()
         {
             var configured = Threshold;
             if (configured > 0)
@@ -220,7 +218,7 @@ namespace Avalonia.Input.GestureRecognizers
             var tapSize = AvaloniaLocator.Current?.GetService<IPlatformSettings>()
                 ?.GetTapSize(PointerType.Touch).Height ?? DefaultTapSize;
 
-            return (int)(tapSize / 2);
+            return tapSize / 2;
         }
     }
 }
