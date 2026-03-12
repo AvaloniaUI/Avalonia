@@ -15,7 +15,7 @@ namespace Avalonia.Rendering
     [PrivateApi]
     public class DefaultRenderTimer : IRenderTimer
     {
-        private Action<TimeSpan>? _tick;
+        private volatile Action<TimeSpan>? _tick;
         private IDisposable? _subscription;
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Avalonia.Rendering
                 if (value != null)
                 {
                     _tick = value;
-                    _subscription = StartCore(InternalTick);
+                    _subscription ??= StartCore(InternalTick);
                 }
                 else
                 {

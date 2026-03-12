@@ -26,7 +26,7 @@ namespace Avalonia.Win32.DirectX
 
         public bool RunsInBackground => true;
 
-        private Action<TimeSpan>? _tick;
+        private volatile Action<TimeSpan>? _tick;
         private readonly object _syncLock;
         private readonly AutoResetEvent _wakeEvent = new(false);
         private volatile bool _stopped = true;

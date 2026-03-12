@@ -21,7 +21,7 @@ internal class DirectCompositionConnection : IRenderTimer, IWindowsSurfaceFactor
 {
     private static readonly Guid IID_IDCompositionDesktopDevice = Guid.Parse("5f4633fe-1e08-4cb8-8c75-ce24333f5602");
 
-    private Action<TimeSpan>? _tick;
+    private volatile Action<TimeSpan>? _tick;
     public bool RunsInBackground => true;
 
     private readonly DirectCompositionShared _shared;

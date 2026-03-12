@@ -19,7 +19,7 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
     private readonly WinUiCompositionShared _shared;
     private readonly AutoResetEvent _wakeEvent = new(false);
     private volatile bool _stopped = true;
-    private Action<TimeSpan>? _tick;
+    private volatile Action<TimeSpan>? _tick;
     public bool RunsInBackground => true;
 
     public Action<TimeSpan>? Tick
