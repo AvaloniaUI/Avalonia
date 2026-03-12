@@ -156,7 +156,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a pinch gesture occurs on the control.
+        /// Occurs when the user moves two contact points closer together.
         /// </summary>
         public event EventHandler<PinchEventArgs>? Pinch
         {
@@ -165,7 +165,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a pinch gesture ends on the control.
+        /// Occurs when the user releases both contact points used in a pinch gesture.
         /// </summary>
         public event EventHandler<PinchEndedEventArgs>? PinchEnded
         {
@@ -174,7 +174,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a pull gesture occurs on the control.
+        /// Occurs when the user drags from the edge of a control.
         /// </summary>
         public event EventHandler<PullGestureEventArgs>? PullGesture
         {
@@ -183,7 +183,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a pull gesture ends on the control.
+        /// Occurs when the user releases the pointer after a pull gesture.
         /// </summary>
         public event EventHandler<PullGestureEndedEventArgs>? PullGestureEnded
         {
@@ -192,7 +192,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a scroll gesture occurs on the control.
+        /// Occurs when the user continuously moves the pointer in the same direction within the control’s boundaries.
         /// </summary>
         public event EventHandler<ScrollGestureEventArgs>? ScrollGesture
         {
@@ -201,7 +201,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a scroll gesture inertia starts on the control.
+        /// Occurs within a scroll gesture, when the user releases the pointer, and scrolling continues by transitioning to momentum-based gliding movement.
         /// </summary>
         public event EventHandler<ScrollGestureInertiaStartingEventArgs>? ScrollGestureInertiaStarting
         {
@@ -210,7 +210,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a scroll gesture ends on the control.
+        /// Occurs when a scroll gesture has fully stopped, taking into account any inertial movement that continues the scroll after the user has released the pointer.
         /// </summary>
         public event EventHandler<ScrollGestureEndedEventArgs>? ScrollGestureEnded
         {
@@ -219,7 +219,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a touchpad magnify gesture occurs on the control.
+        /// Occurs when the user moves two contact points away from each other on a touchpad.
         /// </summary>
         public event EventHandler<PointerDeltaEventArgs>? PointerTouchPadGestureMagnify
         {
@@ -228,7 +228,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a touchpad rotate gesture occurs on the control.
+        /// Occurs when the user places two contact points and moves them in a circular motion on a touchpad.
         /// </summary>
         public event EventHandler<PointerDeltaEventArgs>? PointerTouchPadGestureRotate
         {
@@ -237,7 +237,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a swipe gesture occurs on the control.
+        /// Occurs when the user rapidly drags the pointer in a single direction across the control.
         /// </summary>
         public event EventHandler<SwipeGestureEventArgs>? SwipeGesture
         {
@@ -255,7 +255,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a touchpad swipe gesture occurs on the control.
+        /// Occurs when the user performs a rapid dragging motion in a single direction on a touchpad.
         /// </summary>
         public event EventHandler<PointerDeltaEventArgs>? PointerTouchPadGestureSwipe
         {
@@ -264,7 +264,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a tap gesture occurs on the control.
+        /// Occurs when the user briefly contacts and releases a single point, without significant movement.
         /// </summary>
         public event EventHandler<TappedEventArgs>? Tapped
         {
@@ -273,7 +273,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a right tap gesture occurs on the control.
+        /// Occurs when the user briefly contacts and releases a single point, without significant movement, using a mechanism on the input device recognized as a right button or equivalent.
         /// </summary>
         public event EventHandler<TappedEventArgs>? RightTapped
         {
@@ -282,7 +282,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a hold gesture occurs on the control.
+        /// Occurs when the user makes a single contact, then maintains contact beyond a given time threshold without releasing or making another contact.
         /// </summary>
         public event EventHandler<HoldingRoutedEventArgs>? Holding
         {
@@ -291,7 +291,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a double-tap gesture occurs on the control.
+        /// Occurs when the user briefly contacts and releases twice on a single point, without significant movement.
         /// </summary>
         public event EventHandler<TappedEventArgs>? DoubleTapped
         {

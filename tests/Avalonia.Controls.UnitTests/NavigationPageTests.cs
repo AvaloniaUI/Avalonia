@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -1576,7 +1580,6 @@ public class NavigationPageTests
             Assert.True(rootNavigatedToFired);
         }
     }
-
     public class SwipeGestureTests : ScopedTestBase
     {
         [Fact]
@@ -1683,6 +1686,166 @@ public class NavigationPageTests
             };
 
             target.RaiseEvent(args);
+        }
+    }
+
+    public class LifecycleAfterTransitionTests : ScopedTestBase
+    {
+        [Fact]
+        public async Task PushAsync_LifecycleEvents_FireAfterTransition()
+        {
+            var tcs = new TaskCompletionSource();
+            var transition = new ControllableTransition(tcs.Task);
+            var nav = CreateNavigationPage(transition);
+
+            var root = new ContentPage { Header = "Root" };
+            await nav.PushAsync(root);
+
+            bool navigatedFromDuringTransition = false;
+            bool navigatedToDuringTransition = false;
+            bool pushedDuringTransition = false;
+
+            var second = new ContentPage { Header = "Second" };
+            root.NavigatedFrom += (_, _) => navigatedFromDuringTransition = !tcs.Task.IsCompleted;
+            second.NavigatedTo += (_, _) => navigatedToDuringTransition = !tcs.Task.IsCompleted;
+            nav.Pushed += (_, _) => pushedDuringTransition = !tcs.Task.IsCompleted;
+
+            var pushTask = nav.PushAsync(second);
+
+            tcs.SetResult();
+            await pushTask;
+
+            Assert.False(navigatedFromDuringTransition);
+            Assert.False(navigatedToDuringTransition);
+            Assert.False(pushedDuringTransition);
+        }
+
+        [Fact]
+        public async Task PopAsync_LifecycleEvents_FireAfterTransition()
+        {
+            var tcs = new TaskCompletionSource();
+            var nav = CreateNavigationPage(null);
+
+            var root = new ContentPage { Header = "Root" };
+            var top = new ContentPage { Header = "Top" };
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
+
+            nav.PageTransition = new ControllableTransition(tcs.Task);
+
+            bool navigatedFromDuringTransition = false;
+            bool navigatedToDuringTransition = false;
+            bool poppedDuringTransition = false;
+
+            top.NavigatedFrom += (_, _) => navigatedFromDuringTransition = !tcs.Task.IsCompleted;
+            root.NavigatedTo += (_, _) => navigatedToDuringTransition = !tcs.Task.IsCompleted;
+            nav.Popped += (_, _) => poppedDuringTransition = !tcs.Task.IsCompleted;
+
+            var popTask = nav.PopAsync();
+
+            tcs.SetResult();
+            await popTask;
+
+            Assert.False(navigatedFromDuringTransition);
+            Assert.False(navigatedToDuringTransition);
+            Assert.False(poppedDuringTransition);
+        }
+
+        [Fact]
+        public async Task PopToRootAsync_LifecycleEvents_FireAfterTransition()
+        {
+            var tcs = new TaskCompletionSource();
+            var nav = CreateNavigationPage(null);
+
+            var root = new ContentPage { Header = "Root" };
+            var second = new ContentPage { Header = "Second" };
+            var third = new ContentPage { Header = "Third" };
+            await nav.PushAsync(root);
+            await nav.PushAsync(second);
+            await nav.PushAsync(third);
+
+            nav.PageTransition = new ControllableTransition(tcs.Task);
+
+            bool navigatedFromDuringTransition = false;
+            bool navigatedToDuringTransition = false;
+            bool poppedToRootDuringTransition = false;
+
+            second.NavigatedFrom += (_, _) => navigatedFromDuringTransition = !tcs.Task.IsCompleted;
+            third.NavigatedFrom += (_, _) => navigatedFromDuringTransition = !tcs.Task.IsCompleted;
+            root.NavigatedTo += (_, _) => navigatedToDuringTransition = !tcs.Task.IsCompleted;
+            nav.PoppedToRoot += (_, _) => poppedToRootDuringTransition = !tcs.Task.IsCompleted;
+
+            var popTask = nav.PopToRootAsync();
+
+            tcs.SetResult();
+            await popTask;
+
+            Assert.False(navigatedFromDuringTransition);
+            Assert.False(navigatedToDuringTransition);
+            Assert.False(poppedToRootDuringTransition);
+        }
+
+        private static NavigationPage CreateNavigationPage(IPageTransition? transition)
+        {
+            var nav = new NavigationPage
+            {
+                PageTransition = transition,
+                Template = NavigationPageTemplate()
+            };
+            var root = new TestRoot { Child = nav };
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            return nav;
+        }
+
+        private static IControlTemplate NavigationPageTemplate()
+        {
+            return new FuncControlTemplate<NavigationPage>((parent, ns) =>
+            {
+                var contentHost = new Panel
+                {
+                    Name = "PART_ContentHost",
+                    Children =
+                    {
+                        new ContentPresenter { Name = "PART_PageBackPresenter" }.RegisterInNameScope(ns),
+                        new ContentPresenter { Name = "PART_PagePresenter" }.RegisterInNameScope(ns),
+                    }
+                }.RegisterInNameScope(ns);
+
+                return new Panel
+                {
+                    Children =
+                    {
+                        new Border
+                        {
+                            Name = "PART_NavigationBar",
+                            Child = new Button { Name = "PART_BackButton" }.RegisterInNameScope(ns)
+                        }.RegisterInNameScope(ns),
+                        contentHost,
+                        new ContentPresenter { Name = "PART_TopCommandBar" }.RegisterInNameScope(ns),
+                        new ContentPresenter { Name = "PART_ModalBackPresenter" }.RegisterInNameScope(ns),
+                        new ContentPresenter { Name = "PART_ModalPresenter" }.RegisterInNameScope(ns),
+                    }
+                };
+            });
+        }
+
+        private class ControllableTransition : IPageTransition
+        {
+            private readonly Task _gate;
+
+            public ControllableTransition(Task gate)
+            {
+                _gate = gate;
+            }
+
+            public async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+            {
+                if (to != null)
+                    to.IsVisible = true;
+                await _gate;
+                if (from != null)
+                    from.IsVisible = false;
+            }
         }
     }
 

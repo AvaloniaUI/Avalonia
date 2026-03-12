@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public class TabStripItem : ListBoxItem
     {
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
             UpdateSelectionFromEvent(e);
