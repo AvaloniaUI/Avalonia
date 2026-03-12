@@ -20,8 +20,6 @@ namespace Avalonia.Android
         private readonly HashSet<AvaloniaView> _views = new();
 
         private volatile Action<TimeSpan>? _tick;
-        private volatile bool _stopped = true;
-        private bool _frameCallbackActive;
         private long _lastTime;
 
         public ChoreographerTimer()
@@ -41,30 +39,11 @@ namespace Avalonia.Android
 
         public bool RunsInBackground => true;
 
+        // TODO: start/stop on RenderLoop request
         public Action<TimeSpan>? Tick
         {
             get => _tick;
-            set
-            {
-                lock (_lock)
-                {
-                    if (value != null)
-                    {
-                        _tick = value;
-                        _stopped = false;
-                        if (!_frameCallbackActive && _views.Count > 0)
-                        {
-                            _frameCallbackActive = true;
-                            PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
-                        }
-                    }
-                    else
-                    {
-                        _stopped = true;
-                        _tick = null;
-                    }
-                }
-            }
+            set => _tick = value;
         }
 
         internal IDisposable SubscribeView(AvaloniaView view)
@@ -73,9 +52,8 @@ namespace Avalonia.Android
             {
                 _views.Add(view);
 
-                if (!_frameCallbackActive && _views.Count == 1 && !_stopped)
+                if (_views.Count == 1)
                 {
-                    _frameCallbackActive = true;
                     PostFrameCallback(_choreographer.Task.Result, GCHandle.ToIntPtr(_timerHandle));
                 }
             }
@@ -116,13 +94,9 @@ namespace Avalonia.Android
         {
             lock (_lock)
             {
-                if (!_stopped && _views.Count > 0)
+                if (_views.Count > 0)
                 {
                     PostFrameCallback(_choreographer.Task.Result, data);
-                }
-                else
-                {
-                    _frameCallbackActive = false;
                 }
                 _lastTime = frameTimeNanos;
                 _event.Set();

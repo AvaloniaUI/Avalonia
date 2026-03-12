@@ -1,6 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controlCatalog="clr-namespace:ControlCatalog"
              x:Class="ControlCatalog.Pages.ToolTipPage">
     <StackPanel Orientation="Vertical"
                 Spacing="4">
@@ -48,10 +47,9 @@
                     Margin="5"
                     Padding="50"
                     ToolTip.Tip="Hello"
-                    ToolTip.Placement="Top"
-                    controlCatalog:CarbonEmissionsHack.TracksVisualTreeAttachment="True">
+                    ToolTip.Placement="Top">
               <Border.Styles>
-                <Style Selector="Border.is-attached-to-visual-tree">
+                <Style Selector="Border">
                   <Style.Animations>
                     <Animation Duration="0:0:2" IterationCount="Infinite">
                       <KeyFrame KeyTime="0:0:0">
