@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using Avalonia.Controls;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
@@ -18,18 +20,21 @@ namespace Avalonia.Win32.DirectX
         private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _window;
         private readonly DxgiConnection _connection;
         private readonly IDXGIDevice? _dxgiDevice;
-        private readonly IDXGIFactory2? _dxgiFactory;
-        private readonly IDXGISwapChain1? _swapChain;
-        private readonly uint _flagsUsed;
+        private readonly IDXGIFactory2 _dxgiFactory;
+        private IDXGISwapChain1? _swapChain;
+        private DXGI_SWAP_CHAIN_FLAG _dxgiSwapChainDescFlagsUsed;
+        private const uint SwapChainDescBufferCount = 2;
 
         private IUnknown? _renderTexture;
-        private RECT _clientRect;
+        private PixelSize _size;
         private EglSurface? _surface;
 
-        public DxgiRenderTarget(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo window, EglContext context, DxgiConnection connection) : base(context)
+        public DxgiRenderTarget(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo window, EglContext context,
+            DxgiConnection connection, WindowTransparencyLevel transparencyLevel) : base(context)
         {
             _window = window;
             _connection = connection;
+            _transparencyLevel = transparencyLevel;
 
             // the D3D device is expected to at least be an ID3D11Device 
             // but how do I wrap an IntPtr as a managed IUnknown now? Like this. 
@@ -44,42 +49,58 @@ namespace Avalonia.Win32.DirectX
                 _dxgiFactory = MicroComRuntime.CreateProxyFor<IDXGIFactory2>(adapterPointer.GetParent(&factoryGuid), true);
             }
 
-            DXGI_SWAP_CHAIN_DESC1 dxgiSwapChainDesc = new DXGI_SWAP_CHAIN_DESC1();
+            CreateSurface(window.Size);
 
-            // standard swap chain really. 
-            dxgiSwapChainDesc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
-            dxgiSwapChainDesc.SampleDesc.Count = 1U;
-            dxgiSwapChainDesc.SampleDesc.Quality = 0U;
-            dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-            dxgiSwapChainDesc.AlphaMode = DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_IGNORE;
-            dxgiSwapChainDesc.Width = (uint)_window.Size.Width;
-            dxgiSwapChainDesc.Height = (uint)_window.Size.Height;
-            dxgiSwapChainDesc.BufferCount = 2U;
-            dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT.DXGI_SWAP_EFFECT_FLIP_DISCARD;
+            _dxgiFactory.MakeWindowAssociation(window.Handle, (uint)(DXGI_MWA.DXGI_MWA_NO_ALT_ENTER | DXGI_MWA.DXGI_MWA_NO_PRINT_SCREEN));
+        }
 
-            // okay I know this looks bad, but we're hitting our render-calls by awaiting via dxgi 
-            // this is done in the DxgiConnection itself 
-            _flagsUsed = dxgiSwapChainDesc.Flags = (uint)(DXGI_SWAP_CHAIN_FLAG.DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
+        [MemberNotNull(nameof(_swapChain))]
+        private void CreateSurface(PixelSize expectedPixelSize)
+        {
+            _swapChain?.Dispose();
+            _swapChain = null;
 
-            _swapChain = _dxgiFactory.CreateSwapChainForHwnd
-            (
+            var windowInfo = _window;
+            var size = expectedPixelSize;
+
+            //if (IsTransparency && DxgiConnection.IsTransparencySupported())
+            //{
+
+            //}
+            //else
+            {
+                DXGI_SWAP_CHAIN_DESC1 dxgiSwapChainDesc = new DXGI_SWAP_CHAIN_DESC1();
+
+                // standard swap chain really. 
+                dxgiSwapChainDesc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
+                dxgiSwapChainDesc.SampleDesc.Count = 1U;
+                dxgiSwapChainDesc.SampleDesc.Quality = 0U;
+                dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+                dxgiSwapChainDesc.AlphaMode = DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_IGNORE;
+                dxgiSwapChainDesc.Width = (uint) size.Width;
+                dxgiSwapChainDesc.Height = (uint)size.Height;
+                dxgiSwapChainDesc.BufferCount = SwapChainDescBufferCount;
+                dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT.DXGI_SWAP_EFFECT_FLIP_DISCARD;
+
+                _dxgiSwapChainDescFlagsUsed = DXGI_SWAP_CHAIN_FLAG.DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+                dxgiSwapChainDesc.Flags = (uint)_dxgiSwapChainDescFlagsUsed;
+
+                _swapChain = _dxgiFactory.CreateSwapChainForHwnd
+                (
                     _dxgiDevice,
-                    window.Handle,
+                    windowInfo.Handle,
                     &dxgiSwapChainDesc,
                     null,
                     null
-            );
+                );
+            }
 
-            _dxgiFactory.MakeWindowAssociation(window.Handle, (uint)(DXGI_MWA.DXGI_MWA_NO_ALT_ENTER | DXGI_MWA.DXGI_MWA_NO_PRINT_SCREEN));
-
-            GetClientRect(_window.Handle, out var pClientRect);
-            _clientRect = pClientRect;
+            _size = size;
         }
 
         /// <inheritdoc />
         public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
-            // TODO: use expectedPixelSize
             if (_swapChain is null)
             {
                 throw new InvalidOperationException("No chain to draw on");
@@ -90,12 +111,12 @@ namespace Avalonia.Win32.DirectX
             var success = false;
             try
             {
-                GetClientRect(_window.Handle, out var pClientRect);
-                if (!RectsEqual(pClientRect, _clientRect))
-                {
-                    // we gotta resize 
-                    _clientRect = pClientRect;
+                var size = sceneInfo.Size;
+                var scale = sceneInfo.Scaling;
 
+                if (_size != size)
+                {
+                    // we gotta resize
                     if (_renderTexture is not null)
                     {
                         _surface?.Dispose();
@@ -105,15 +126,13 @@ namespace Avalonia.Win32.DirectX
                         _renderTexture = null;
                     }
 
-                    _swapChain.ResizeBuffers(2,
-                        (ushort)(pClientRect.right - pClientRect.left),
-                        (ushort)(pClientRect.bottom - pClientRect.top),
+                    _swapChain.ResizeBuffers(SwapChainDescBufferCount,
+                        (ushort)size.Width, (ushort)size.Height,
                         DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
-                        (ushort)_flagsUsed
+                        (uint)_dxgiSwapChainDescFlagsUsed
                         );
+                    _size = size;
                 }
-
-                var size = _window.Size;
 
                 // Get swapchain texture here 
                 var texture = _renderTexture;
@@ -134,7 +153,7 @@ namespace Avalonia.Win32.DirectX
                         0, 0, size.Width, size.Height);
                 }
 
-                var res = base.BeginDraw(_surface, _window.Size, _window.Scaling, () =>
+                var res = base.BeginDraw(_surface, size, scale, () =>
                 {
                     _swapChain.Present((ushort)0U, (ushort)0U);
                     transaction?.Dispose();
@@ -178,5 +197,13 @@ namespace Avalonia.Win32.DirectX
                 && (l.bottom == r.bottom);
         }
 
+        public bool IsTransparency => _transparencyLevel != WindowTransparencyLevel.None;
+
+        public void SetTransparencyLevel(WindowTransparencyLevel transparencyLevel)
+        {
+            _transparencyLevel = transparencyLevel;
+        }
+
+        private WindowTransparencyLevel _transparencyLevel;
     }
 }
