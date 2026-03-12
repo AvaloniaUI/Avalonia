@@ -79,8 +79,8 @@ namespace Avalonia.Input
         /// <summary>
         /// Defines the <see cref="GotFocus"/> event.
         /// </summary>
-        public static readonly RoutedEvent<GotFocusEventArgs> GotFocusEvent =
-            RoutedEvent.Register<InputElement, GotFocusEventArgs>(nameof(GotFocus), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<FocusChangedEventArgs> GotFocusEvent =
+            RoutedEvent.Register<InputElement, FocusChangedEventArgs>(nameof(GotFocus), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="GettingFocus"/> event.
@@ -91,8 +91,8 @@ namespace Avalonia.Input
         /// <summary>
         /// Defines the <see cref="LostFocus"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> LostFocusEvent =
-            RoutedEvent.Register<InputElement, RoutedEventArgs>(nameof(LostFocus), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<FocusChangedEventArgs> LostFocusEvent =
+            RoutedEvent.Register<InputElement, FocusChangedEventArgs>(nameof(LostFocus), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="LosingFocus"/> event.
@@ -278,7 +278,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the control receives focus.
         /// </summary>
-        public event EventHandler<GotFocusEventArgs>? GotFocus
+        public event EventHandler<FocusChangedEventArgs>? GotFocus
         {
             add { AddHandler(GotFocusEvent, value); }
             remove { RemoveHandler(GotFocusEvent, value); }
@@ -296,7 +296,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the control loses focus.
         /// </summary>
-        public event EventHandler<RoutedEventArgs>? LostFocus
+        public event EventHandler<FocusChangedEventArgs>? LostFocus
         {
             add { AddHandler(LostFocusEvent, value); }
             remove { RemoveHandler(LostFocusEvent, value); }
@@ -593,7 +593,7 @@ namespace Avalonia.Input
             UpdateIsEffectivelyEnabled();
         }
 
-        private void OnGotFocusCore(GotFocusEventArgs e)
+        private void OnGotFocusCore(FocusChangedEventArgs e)
         {
             var isFocused = e.Source == this;
             _isFocusVisible = isFocused && (e.NavigationMethod == NavigationMethod.Directional || e.NavigationMethod == NavigationMethod.Tab);
@@ -617,11 +617,11 @@ namespace Avalonia.Input
         /// for this event.
         /// </summary>
         /// <param name="e">Data about the event.</param>
-        protected virtual void OnGotFocus(GotFocusEventArgs e)
+        protected virtual void OnGotFocus(FocusChangedEventArgs e)
         {
         }
 
-        private void OnLostFocusCore(RoutedEventArgs e)
+        private void OnLostFocusCore(FocusChangedEventArgs e)
         {
             _isFocusVisible = false;
             IsFocused = false;
@@ -634,7 +634,7 @@ namespace Avalonia.Input
         /// for this event.
         /// </summary>
         /// <param name="e">Data about the event.</param>
-        protected virtual void OnLostFocus(RoutedEventArgs e)
+        protected virtual void OnLostFocus(FocusChangedEventArgs e)
         {
         }
 

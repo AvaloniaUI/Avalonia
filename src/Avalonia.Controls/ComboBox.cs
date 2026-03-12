@@ -453,7 +453,7 @@ namespace Avalonia.Controls
             return new ComboBoxAutomationPeer(this);
         }
 
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             if (IsEditable && _inputTextBox != null)
             {
