@@ -103,7 +103,7 @@ internal class DirectCompositionConnection : IRenderTimer, IWindowsSurfaceFactor
             try
             {
                 if (_stopped)
-                    _wakeEvent.WaitOne();
+                    WaitHandle.WaitAny([_wakeEvent, cts.Token.WaitHandle]);
 
                 device.WaitForCommitCompletion();
                 _tick?.Invoke(_stopwatch.Elapsed);
