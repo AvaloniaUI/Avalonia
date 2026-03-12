@@ -218,6 +218,7 @@ namespace Avalonia.Controls
         private const double EdgeGestureWidth = 20;
         private bool _suppressDrawerEvents;
         private bool _hasHadFirstPage;
+        private Point _swipeStartPoint;
         private readonly SwipeGestureRecognizer _swipeRecognizer = new SwipeGestureRecognizer();
 
         private bool IsRtl => FlowDirection == FlowDirection.RightToLeft;
@@ -293,7 +294,10 @@ namespace Avalonia.Controls
 
         public DrawerPage()
         {
+            _swipeRecognizer.IsMouseEnabled = true;
             GestureRecognizers.Add(_swipeRecognizer);
+            AddHandler(PointerPressedEvent, OnSwipePointerPressed, handledEventsToo: true);
+            UpdateSwipeRecognizerAxes();
         }
 
         /// <summary>
@@ -622,6 +626,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == DrawerPlacementProperty)
             {
+                UpdateSwipeRecognizerAxes();
                 UpdatePanePlacement();
                 UpdateContentSafeAreaPadding();
             }
@@ -669,6 +674,12 @@ namespace Avalonia.Controls
                 nav.SetDrawerPage(null);
         }
 
+        private void UpdateSwipeRecognizerAxes()
+        {
+            _swipeRecognizer.CanVerticallySwipe = IsVerticalPlacement;
+            _swipeRecognizer.CanHorizontallySwipe = !IsVerticalPlacement;
+        }
+
         protected override void OnLoaded(RoutedEventArgs e)
         {
             base.OnLoaded(e);
@@ -678,6 +689,11 @@ namespace Avalonia.Controls
                 _hasHadFirstPage = true;
                 CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Push));
             }
+        }
+
+        private void OnSwipePointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            _swipeStartPoint = e.GetPosition(this);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -719,8 +735,8 @@ namespace Avalonia.Controls
                         : EdgeGestureWidth;
 
                     bool inEdge = DrawerPlacement == DrawerPlacement.Bottom
-                        ? e.StartPoint.Y >= Bounds.Height - openGestureEdge
-                        : e.StartPoint.Y <= openGestureEdge;
+                        ? _swipeStartPoint.Y >= Bounds.Height - openGestureEdge
+                        : _swipeStartPoint.Y <= openGestureEdge;
 
                     if (towardPane && inEdge)
                     {
@@ -751,8 +767,8 @@ namespace Avalonia.Controls
                         : EdgeGestureWidth;
 
                     bool inEdge = IsPaneOnRight
-                        ? e.StartPoint.X >= Bounds.Width - openGestureEdge
-                        : e.StartPoint.X <= openGestureEdge;
+                        ? _swipeStartPoint.X >= Bounds.Width - openGestureEdge
+                        : _swipeStartPoint.X <= openGestureEdge;
 
                     if (towardPane && inEdge)
                     {

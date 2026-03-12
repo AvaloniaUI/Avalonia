@@ -1,6 +1,7 @@
 using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
@@ -81,13 +82,15 @@ namespace Avalonia.Controls
         public void Next()
         {
             if (ItemCount == 0)
-            {
                 return;
-            }
 
             if (SelectedIndex < ItemCount - 1)
             {
                 ++SelectedIndex;
+            }
+            else if (WrapSelection)
+            {
+                SelectedIndex = 0;
             }
         }
 
@@ -97,13 +100,15 @@ namespace Avalonia.Controls
         public void Previous()
         {
             if (ItemCount == 0)
-            {
                 return;
-            }
 
             if (SelectedIndex > 0)
             {
                 --SelectedIndex;
+            }
+            else if (WrapSelection)
+            {
+                SelectedIndex = ItemCount - 1;
             }
         }
 
@@ -114,6 +119,40 @@ namespace Avalonia.Controls
                 PageSlide ps => ps.Orientation,
                 _ => null
             };
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (e.Handled || ItemCount == 0)
+                return;
+
+            var axis = GetTransitionAxis();
+            var isVertical = axis == PageSlide.SlideAxis.Vertical;
+            var isHorizontal = axis == PageSlide.SlideAxis.Horizontal;
+
+            switch (e.Key)
+            {
+                case Key.Left when !isVertical:
+                case Key.Up when !isHorizontal:
+                    Previous();
+                    e.Handled = true;
+                    break;
+                case Key.Right when !isVertical:
+                case Key.Down when !isHorizontal:
+                    Next();
+                    e.Handled = true;
+                    break;
+                case Key.Home:
+                    SelectedIndex = 0;
+                    e.Handled = true;
+                    break;
+                case Key.End:
+                    SelectedIndex = ItemCount - 1;
+                    e.Handled = true;
+                    break;
+            }
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -132,6 +171,9 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
             _scroller = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
+
+            if (ItemsPanelRoot is VirtualizingCarouselPanel panel)
+                panel.RefreshGestureRecognizer();
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -142,6 +184,13 @@ namespace Avalonia.Controls
             {
                 var value = change.GetNewValue<int>();
                 _scroller.Offset = new(value, 0);
+            }
+
+            if (change.Property == IsSwipeEnabledProperty ||
+                change.Property == PageTransitionProperty)
+            {
+                if (ItemsPanelRoot is VirtualizingCarouselPanel panel)
+                    panel.RefreshGestureRecognizer();
             }
         }
     }

@@ -8,6 +8,7 @@ using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Media;
 using Avalonia.Styling;
 
@@ -20,15 +21,6 @@ namespace Avalonia.Controls
     {
         private static readonly AttachedProperty<object?> RecycleKeyProperty =
             AvaloniaProperty.RegisterAttached<VirtualizingCarouselPanel, Control, object?>("RecycleKey");
-
-        private static readonly StyledProperty<double> CompletionProgressProperty =
-            AvaloniaProperty.Register<VirtualizingCarouselPanel, double>("CompletionProgress");
-
-        private const double SwipeCommitThreshold = 0.25;
-        private const double RubberBandFactor = 0.3;
-        private const double MaxCompletionDuration = 0.35;
-        private const double MinCompletionDuration = 0.12;
-        private const double GestureDeadZone = 10;
 
         private static readonly object s_itemIsItsOwnContainer = new object();
         private Size _extent;
@@ -44,18 +36,30 @@ namespace Avalonia.Controls
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
 
-        private IPointer? _gesturePointer;
+        private SwipeGestureRecognizer? _swipeGestureRecognizer;
+        private int _swipeGestureId;
         private bool _isDragging;
         private double _totalDelta;
         private bool _isForward;
         private Control? _swipeTarget;
         private int _swipeTargetIndex = -1;
-        private bool _isRubberBanding;
-        private Point _gestureStartPosition;
-        private bool _gestureDirectionDetermined;
+        private PageSlide.SlideAxis? _swipeAxis;
+        private PageSlide.SlideAxis _lockedAxis;
+
+        private const double SwipeCommitThreshold = 0.25;
+        private const double VelocityCommitThreshold = 800;
+        private const double MinSwipeDistanceForVelocityCommit = 0.05;
+        private const double RubberBandFactor = 0.3;
+        private const double MaxCompletionDuration = 0.35;
+        private const double MinCompletionDuration = 0.12;
+
+        private static readonly StyledProperty<double> CompletionProgressProperty =
+            AvaloniaProperty.Register<VirtualizingCarouselPanel, double>("CompletionProgress");
 
         private CancellationTokenSource? _completionCts;
+        private Carousel? _completionCarousel;
         private double _completionEndProgress;
+        private bool _isRubberBanding;
 
         bool ILogicalScrollable.CanHorizontallyScroll
         {
@@ -83,10 +87,7 @@ namespace Avalonia.Controls
             set
             {
                 if ((int)_offset.X != value.X)
-                {
                     InvalidateMeasure();
-                }
-
                 _offset = value;
             }
         }
@@ -127,14 +128,31 @@ namespace Avalonia.Controls
         Control? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, Control? from) => null;
         void ILogicalScrollable.RaiseScrollInvalidated(EventArgs e) => _scrollInvalidated?.Invoke(this, e);
 
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            RefreshGestureRecognizer();
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            TeardownGestureRecognizer();
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
+            // The panel can attach to the visual tree before it's attached to its Carousel.
+            // Ensure swipe wiring exists once measure runs with a live ItemsControl.
+            if (_swipeGestureRecognizer is null &&
+                ItemsControl is Carousel carousel &&
+                carousel.IsSwipeEnabled)
+            {
+                RefreshGestureRecognizer();
+            }
+
             var items = Items;
-            // During a swipe _offset.X drives the animated position; otherwise use SelectedIndex.
-            var carousel = ItemsControl as Carousel;
-            var index = _gesturePointer is not null
-                ? (int)_offset.X
-                : (carousel?.SelectedIndex ?? (int)_offset.X);
+            var index = (ItemsControl as Carousel)?.SelectedIndex ?? (int)_offset.X;
 
             if (index != _realizedIndex)
             {
@@ -142,30 +160,22 @@ namespace Avalonia.Controls
                 {
                     var cancelTransition = _transition is not null;
 
-                    // Cancel any already running transition, and recycle the element we're transitioning from.
                     if (cancelTransition)
                     {
                         _transition!.Cancel();
                         _transition = null;
                         if (_transitionFrom is not null)
-                        {
                             RecycleElement(_transitionFrom);
-                        }
-
                         _transitionFrom = null;
                         _transitionFromIndex = -1;
                     }
 
                     if (cancelTransition || GetTransition() is null)
                     {
-                        // If don't have a transition or we've just canceled a transition then recycle the element
-                        // we're moving from.
                         RecycleElement(_realized);
                     }
                     else
                     {
-                        // We have a transition to do: record the current element as the element we're transitioning
-                        // from and we'll start the transition in the arrange pass.
                         _transitionFrom = _realized;
                         _transitionFromIndex = _realizedIndex;
                     }
@@ -174,7 +184,6 @@ namespace Avalonia.Controls
                     _realizedIndex = -1;
                 }
 
-                // Get or create an element for the new item.
                 if (index >= 0 && index < items.Count)
                 {
                     _realized = GetOrCreateElement(items, index);
@@ -201,12 +210,6 @@ namespace Avalonia.Controls
         {
             var result = base.ArrangeOverride(finalSize);
 
-            if (_swipeTarget is not null && (_isDragging || _completionCts is { IsCancellationRequested: false }))
-            {
-                _swipeTarget.Measure(finalSize);
-                _swipeTarget.Arrange(new Rect(finalSize));
-            }
-
             if (_transition is null &&
                 _transitionFrom is not null &&
                 _realized is { } to &&
@@ -214,7 +217,7 @@ namespace Avalonia.Controls
             {
                 _transition = new CancellationTokenSource();
 
-                var forward = (_realizedIndex > _transitionFromIndex);
+                var forward = _realizedIndex > _transitionFromIndex;
                 if (Items.Count > 2)
                 {
                     forward = forward || (_transitionFromIndex == Items.Count - 1 && _realizedIndex == 0);
@@ -233,20 +236,11 @@ namespace Avalonia.Controls
         protected internal override Control? ContainerFromIndex(int index)
         {
             if (index < 0 || index >= Items.Count)
-            {
                 return null;
-            }
-
             if (index == _realizedIndex)
-            {
                 return _realized;
-            }
-
             if (Items[index] is Control c && c.GetValue(RecycleKeyProperty) == s_itemIsItsOwnContainer)
-            {
                 return c;
-            }
-
             return null;
         }
 
@@ -265,259 +259,14 @@ namespace Avalonia.Controls
             return null;
         }
 
-        /// <inheritdoc/>
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            base.OnPropertyChanged(change);
-
-            if (change.Property == CompletionProgressProperty)
-            {
-                UpdateSwipeProgress(change.GetNewValue<double>(), GetSwipeSize());
-            }
-        }
-
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
-        {
-            base.OnPointerPressed(e);
-
-            if (!IsSwipeEnabled())
-            {
-                return;
-            }
-
-            if (_gesturePointer is not null || _realized is null || _completionCts is { IsCancellationRequested: false })
-            {
-                return;
-            }
-
-            var props = e.GetCurrentPoint(this).Properties;
-            if (!props.IsLeftButtonPressed)
-            {
-                return;
-            }
-
-            _gesturePointer = e.Pointer;
-            _gestureStartPosition = e.GetPosition(this);
-            _gestureDirectionDetermined = false;
-            _isDragging = false;
-            _totalDelta = 0;
-            _isForward = true;
-            _swipeTarget = null;
-            _swipeTargetIndex = -1;
-            _isRubberBanding = false;
-        }
-
-        protected override void OnPointerMoved(PointerEventArgs e)
-        {
-            base.OnPointerMoved(e);
-
-            if (_gesturePointer != e.Pointer || _realized is null)
-            {
-                return;
-            }
-
-            var pos = e.GetPosition(this);
-            var isVertical = IsVerticalSwipe();
-            var primaryDelta = isVertical
-                ? pos.Y - _gestureStartPosition.Y
-                : pos.X - _gestureStartPosition.X;
-            var crossDelta = isVertical
-                ? pos.X - _gestureStartPosition.X
-                : pos.Y - _gestureStartPosition.Y;
-
-            if (!_gestureDirectionDetermined)
-            {
-                if (Math.Abs(primaryDelta) < GestureDeadZone && Math.Abs(crossDelta) < GestureDeadZone)
-                {
-                    return;
-                }
-
-                if (Math.Abs(crossDelta) > Math.Abs(primaryDelta))
-                {
-                    ResetGestureTracking();
-                    return;
-                }
-
-                _gestureDirectionDetermined = true;
-                _isForward = primaryDelta < 0;
-                _isRubberBanding = false;
-
-                var targetIndex = _isForward ? _realizedIndex + 1 : _realizedIndex - 1;
-
-                if (targetIndex < 0 || targetIndex >= Items.Count)
-                {
-                    _isRubberBanding = true;
-                }
-
-                // Cancel any existing page transition
-                if (_transition is not null)
-                {
-                    _transition.Cancel();
-                    _transition = null;
-                    if (_transitionFrom is not null)
-                    {
-                        RecycleElement(_transitionFrom);
-                    }
-
-                    _transitionFrom = null;
-                    _transitionFromIndex = -1;
-                }
-
-                _isDragging = true;
-                _swipeTargetIndex = _isRubberBanding ? -1 : targetIndex;
-
-                if (ItemsControl is Carousel carousel)
-                {
-                    carousel.IsSwiping = true;
-                }
-
-                if (!_isRubberBanding)
-                {
-                    _swipeTarget = GetOrCreateElement(Items, _swipeTargetIndex);
-                    _swipeTarget.Measure(Bounds.Size);
-                    _swipeTarget.Arrange(new Rect(Bounds.Size));
-                    UpdateSwipeProgress(0, GetSwipeSize());
-                    _swipeTarget.IsVisible = true;
-                }
-
-                e.Pointer.Capture(this);
-                e.Handled = true;
-                _gestureStartPosition = pos;
-                return;
-            }
-
-            if (!_isDragging)
-            {
-                return;
-            }
-
-            _totalDelta = primaryDelta;
-
-            // Clamp so delta cannot cross zero
-            if (_isForward)
-            {
-                _totalDelta = Math.Min(0, _totalDelta);
-            }
-            else
-            {
-                _totalDelta = Math.Max(0, _totalDelta);
-            }
-
-            var size = GetSwipeSize();
-            if (size <= 0)
-            {
-                return;
-            }
-
-            var rawProgress = Math.Clamp(Math.Abs(_totalDelta) / size, 0, 1);
-            var progress = _isRubberBanding
-                ? RubberBandFactor * Math.Sqrt(rawProgress)
-                : rawProgress;
-
-            UpdateSwipeProgress(progress, size);
-            e.Handled = true;
-        }
-
-        protected override void OnPointerReleased(PointerReleasedEventArgs e)
-        {
-            base.OnPointerReleased(e);
-
-            if (_gesturePointer != e.Pointer)
-            {
-                return;
-            }
-
-            if (_isDragging && ItemsControl is Carousel carousel)
-            {
-                var size = GetSwipeSize();
-                var rawProgress = size > 0 ? Math.Abs(_totalDelta) / size : 0;
-                var currentProgress = _isRubberBanding
-                    ? RubberBandFactor * Math.Sqrt(rawProgress)
-                    : rawProgress;
-
-                var commit = !_isRubberBanding
-                             && currentProgress >= SwipeCommitThreshold
-                             && _swipeTarget is not null;
-
-                _completionEndProgress = commit ? 1.0 : 0.0;
-
-                var remainingDistance = Math.Abs(_completionEndProgress - currentProgress);
-                var durationSeconds = Math.Clamp(remainingDistance * MaxCompletionDuration, MinCompletionDuration, MaxCompletionDuration);
-
-                _completionCts?.Cancel();
-                _completionCts?.Dispose();
-                _completionCts = new CancellationTokenSource();
-
-                SetValue(CompletionProgressProperty, currentProgress);
-
-                var animation = new Animation.Animation
-                {
-                    FillMode = FillMode.Forward,
-                    Easing = new QuadraticEaseOut(),
-                    Duration = TimeSpan.FromSeconds(durationSeconds),
-                    Children =
-                    {
-                        new KeyFrame
-                        {
-                            Setters = { new Setter { Property = CompletionProgressProperty, Value = currentProgress } },
-                            Cue = new Cue(0d)
-                        },
-                        new KeyFrame
-                        {
-                            Setters = { new Setter { Property = CompletionProgressProperty, Value = _completionEndProgress } },
-                            Cue = new Cue(1d)
-                        }
-                    }
-                };
-
-                _isDragging = false;
-
-                _ = RunCompletionAnimation(animation, carousel, _completionCts.Token);
-
-                e.Handled = true;
-            }
-
-            _gesturePointer = null;
-        }
-
-        protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
-        {
-            base.OnPointerCaptureLost(e);
-
-            if (_gesturePointer != e.Pointer)
-            {
-                return;
-            }
-
-            if (_isDragging)
-            {
-                ResetSwipeState();
-            }
-
-            _gestureDirectionDetermined = false;
-            _gesturePointer = null;
-        }
-
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
         {
             base.OnItemsChanged(items, e);
 
-            if (_isDragging || _completionCts is { IsCancellationRequested: false })
-            {
-                _completionCts?.Cancel();
-                _completionCts?.Dispose();
-                _completionCts = null;
-                ResetSwipeState();
-                _gesturePointer = null;
-                _gestureDirectionDetermined = false;
-            }
-
             void Add(int index, int count)
             {
                 if (index <= _realizedIndex)
-                {
                     _realizedIndex += count;
-                }
             }
 
             void Remove(int index, int count)
@@ -546,26 +295,20 @@ namespace Avalonia.Controls
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     if (e.OldStartingIndex < 0)
-                    {
                         goto case NotifyCollectionChangedAction.Reset;
-                    }
 
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     Add(e.NewStartingIndex, e.NewItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Move:
                     if (e.OldStartingIndex < 0)
-                    {
                         goto case NotifyCollectionChangedAction.Reset;
-                    }
 
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     var insertIndex = e.NewStartingIndex;
 
                     if (e.NewStartingIndex > e.OldStartingIndex)
-                    {
                         insertIndex -= e.OldItems.Count - 1;
-                    }
 
                     Add(insertIndex, e.NewItems!.Count);
                     break;
@@ -576,195 +319,36 @@ namespace Avalonia.Controls
                         _realized = null;
                         _realizedIndex = -1;
                     }
+
                     break;
             }
 
             InvalidateMeasure();
         }
 
-        private async Task RunCompletionAnimation(Animation.Animation animation, Carousel carousel, CancellationToken cancellationToken)
-        {
-            var activeCts = _completionCts;
-            try
-            {
-                await animation.RunAsync(this, null, cancellationToken);
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                var commit = _completionEndProgress > 0.5;
-
-                if (commit && _swipeTarget is not null)
-                {
-                    var targetIndex = _swipeTargetIndex;
-                    var targetElement = _swipeTarget;
-
-                    if (_realized != null)
-                    {
-                        ResetVisualState(_realized);
-                        RecycleElement(_realized);
-                    }
-
-                    _realized = targetElement;
-                    _realizedIndex = targetIndex;
-                    ResetVisualState(_realized);
-
-                    _offset = new Vector(targetIndex, 0);
-                    carousel.SelectedIndex = targetIndex;
-
-                    _swipeTarget = null;
-                    _swipeTargetIndex = -1;
-                    _totalDelta = 0;
-                    _isRubberBanding = false;
-                    carousel.IsSwiping = false;
-                }
-                else
-                {
-                    ResetSwipeState();
-                }
-            }
-            finally
-            {
-                if (ReferenceEquals(_completionCts, activeCts))
-                {
-                    activeCts?.Cancel();
-                    activeCts?.Dispose();
-                    _completionCts = null;
-                }
-            }
-        }
-
-        private void ResetSwipeState()
-        {
-            if (ItemsControl is Carousel carousel)
-            {
-                carousel.IsSwiping = false;
-            }
-
-            ResetVisualState(_realized);
-
-            if (_swipeTarget is not null)
-            {
-                ResetVisualState(_swipeTarget);
-                RecycleElement(_swipeTarget);
-            }
-
-            _isDragging = false;
-            _totalDelta = 0;
-            _swipeTarget = null;
-            _swipeTargetIndex = -1;
-            _isRubberBanding = false;
-        }
-
-        private static void ResetVisualState(Control? control)
-        {
-            if (control is null)
-            {
-                return;
-            }
-
-            control.RenderTransform = null;
-            control.Opacity = 1;
-            control.ZIndex = 0;
-            control.Clip = null;
-        }
-
-        private void ResetGestureTracking()
-        {
-            _gesturePointer = null;
-            _isDragging = false;
-            _gestureDirectionDetermined = false;
-        }
-
-        private void UpdateSwipeProgress(double progress, double size)
-        {
-            if (_realized is null)
-                return;
-
-            if (GetTransition() is IInteractivePageTransition interactive)
-            {
-                interactive.Update(progress, _realized, _isRubberBanding ? null : _swipeTarget, _isForward);
-            }
-            else
-            {
-                ApplyDefaultTransition(progress, size);
-            }
-        }
-
-        private void ApplyDefaultTransition(double progress, double size)
-        {
-            var offset = size * progress;
-            var vertical = IsVerticalSwipe();
-
-            if (_realized != null)
-            {
-                if (_realized.RenderTransform is not TranslateTransform ft)
-                {
-                    _realized.RenderTransform = ft = new TranslateTransform();
-                }
-
-                if (vertical)
-                {
-                    ft.Y = _isForward ? -offset : offset;
-                }
-                else
-                {
-                    ft.X = _isForward ? -offset : offset;
-                }
-            }
-
-            if (_swipeTarget != null && !_isRubberBanding)
-            {
-                _swipeTarget.IsVisible = true;
-                if (_swipeTarget.RenderTransform is not TranslateTransform tt)
-                {
-                    _swipeTarget.RenderTransform = tt = new TranslateTransform();
-                }
-
-                if (vertical)
-                {
-                    tt.Y = _isForward ? size - offset : -(size - offset);
-                }
-                else
-                {
-                    tt.X = _isForward ? size - offset : -(size - offset);
-                }
-            }
-        }
-
-        private bool IsSwipeEnabled() => (ItemsControl as Carousel)?.IsSwipeEnabled == true;
-
-        private bool IsVerticalSwipe() =>
-            (ItemsControl as Carousel)?.GetTransitionAxis() == PageSlide.SlideAxis.Vertical;
-
-        private double GetSwipeSize() =>
-            IsVerticalSwipe() ? Bounds.Height : Bounds.Width;
-
         private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
         {
             Debug.Assert(ItemContainerGenerator is not null);
 
-            var e = GetRealizedElement(index);
+            var element = GetRealizedElement(index);
 
-            if (e is null)
+            if (element is null)
             {
                 var item = items[index];
                 var generator = ItemContainerGenerator!;
 
                 if (generator.NeedsContainer(item, index, out var recycleKey))
                 {
-                    e = GetRecycledElement(item, index, recycleKey) ??
+                    element = GetRecycledElement(item, index, recycleKey) ??
                         CreateElement(item, index, recycleKey);
                 }
                 else
                 {
-                    e = GetItemAsOwnContainer(item, index);
+                    element = GetItemAsOwnContainer(item, index);
                 }
             }
 
-            return e;
+            return element;
         }
 
         private Control? GetRealizedElement(int index)
@@ -796,9 +380,7 @@ namespace Avalonia.Controls
             Debug.Assert(ItemContainerGenerator is not null);
 
             if (recycleKey is null)
-            {
                 return null;
-            }
 
             var generator = ItemContainerGenerator!;
 
@@ -836,26 +418,25 @@ namespace Avalonia.Controls
             var recycleKey = element.GetValue(RecycleKeyProperty);
             Debug.Assert(recycleKey is not null);
 
+            // Hide first so cleanup doesn't visibly snap transforms/opacity for a frame.
+            element.IsVisible = false;
             ResetVisualState(element);
 
             if (recycleKey == s_itemIsItsOwnContainer)
             {
-                element.IsVisible = false;
+                return;
             }
-            else
+
+            ItemContainerGenerator.ClearItemContainer(element);
+            _recyclePool ??= new();
+
+            if (!_recyclePool.TryGetValue(recycleKey, out var pool))
             {
-                ItemContainerGenerator.ClearItemContainer(element);
-                _recyclePool ??= new();
-
-                if (!_recyclePool.TryGetValue(recycleKey, out var pool))
-                {
-                    pool = new();
-                    _recyclePool.Add(recycleKey, pool);
-                }
-
-                pool.Push(element);
-                element.IsVisible = false;
+                pool = new();
+                _recyclePool.Add(recycleKey, pool);
             }
+
+            pool.Push(element);
         }
 
         private IPageTransition? GetTransition() => (ItemsControl as Carousel)?.PageTransition;
@@ -863,23 +444,318 @@ namespace Avalonia.Controls
         private void TransitionFinished(Task task)
         {
             if (task.IsCanceled)
-            {
                 return;
-            }
 
             if (task.IsFaulted)
-            {
                 _ = task.Exception;
-            }
 
             if (_transitionFrom is not null)
-            {
                 RecycleElement(_transitionFrom);
-            }
-
             _transition = null;
             _transitionFrom = null;
             _transitionFromIndex = -1;
+        }
+
+        /// <summary>
+        /// Refreshes the gesture recognizer based on the carousel's IsSwipeEnabled and PageTransition settings.
+        /// </summary>
+        internal void RefreshGestureRecognizer()
+        {
+            TeardownGestureRecognizer();
+
+            if (ItemsControl is not Carousel carousel || !carousel.IsSwipeEnabled)
+                return;
+
+            _swipeAxis = carousel.GetTransitionAxis();
+
+            _swipeGestureRecognizer = new SwipeGestureRecognizer
+            {
+                CanHorizontallySwipe = _swipeAxis != PageSlide.SlideAxis.Vertical,
+                CanVerticallySwipe = _swipeAxis != PageSlide.SlideAxis.Horizontal,
+                IsMouseEnabled = true,
+            };
+
+            GestureRecognizers.Add(_swipeGestureRecognizer);
+            AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
+            AddHandler(InputElement.SwipeGestureEndedEvent, OnSwipeGestureEnded);
+        }
+
+        private void TeardownGestureRecognizer()
+        {
+            _completionCts?.Cancel();
+
+            if (_swipeGestureRecognizer is not null)
+            {
+                _swipeGestureRecognizer.IsEnabled = false;
+                _swipeGestureRecognizer = null;
+            }
+
+            RemoveHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
+            RemoveHandler(InputElement.SwipeGestureEndedEvent, OnSwipeGestureEnded);
+            ResetSwipeState();
+        }
+
+        private void OnSwipeGesture(object? sender, SwipeGestureEventArgs e)
+        {
+            if (ItemsControl is not Carousel carousel || !carousel.IsSwipeEnabled)
+                return;
+
+            if (_completionCts is { IsCancellationRequested: false })
+            {
+                _completionCts.Cancel();
+
+                var wasCommit = _completionEndProgress > 0.5;
+                if (wasCommit && _swipeTarget is not null)
+                {
+                    if (_realized != null)
+                        RecycleElement(_realized);
+
+                    _realized = _swipeTarget;
+                    _realizedIndex = _swipeTargetIndex;
+                    carousel.SelectedIndex = _swipeTargetIndex;
+                }
+                else
+                {
+                    ResetSwipeState();
+                }
+
+                _swipeTarget = null;
+                _swipeTargetIndex = -1;
+                _totalDelta = 0;
+            }
+
+            if (_isDragging && e.Id != _swipeGestureId)
+                return;
+
+            if (!_isDragging)
+            {
+                _lockedAxis = _swipeAxis ?? (Math.Abs(e.Delta.X) >= Math.Abs(e.Delta.Y)
+                    ? PageSlide.SlideAxis.Horizontal
+                    : PageSlide.SlideAxis.Vertical);
+            }
+
+            var delta = _lockedAxis == PageSlide.SlideAxis.Horizontal ? e.Delta.X : e.Delta.Y;
+
+            if (!_isDragging)
+            {
+                _isForward = delta > 0;
+                _isRubberBanding = false;
+                var currentIndex = _realizedIndex;
+                var targetIndex = _isForward ? currentIndex + 1 : currentIndex - 1;
+
+                if (targetIndex >= Items.Count)
+                {
+                    if (carousel.WrapSelection)
+                        targetIndex = 0;
+                    else
+                        _isRubberBanding = true;
+                }
+                else if (targetIndex < 0)
+                {
+                    if (carousel.WrapSelection)
+                        targetIndex = Items.Count - 1;
+                    else
+                        _isRubberBanding = true;
+                }
+
+                if (!_isRubberBanding && (targetIndex == currentIndex || targetIndex < 0 || targetIndex >= Items.Count))
+                    return;
+
+                _isDragging = true;
+                _swipeGestureId = e.Id;
+                _totalDelta = 0;
+                _swipeTargetIndex = _isRubberBanding ? -1 : targetIndex;
+                carousel.IsSwiping = true;
+
+                if (_transition is not null)
+                {
+                    _transition.Cancel();
+                    _transition = null;
+                    if (_transitionFrom is not null)
+                        RecycleElement(_transitionFrom);
+                    _transitionFrom = null;
+                    _transitionFromIndex = -1;
+                }
+
+                if (!_isRubberBanding)
+                {
+                    _swipeTarget = GetOrCreateElement(Items, _swipeTargetIndex);
+                    _swipeTarget.Measure(Bounds.Size);
+                    _swipeTarget.Arrange(new Rect(Bounds.Size));
+                    _swipeTarget.IsVisible = true;
+                }
+            }
+
+            _totalDelta += delta;
+
+            if (_isForward)
+                _totalDelta = Math.Max(0, _totalDelta);
+            else
+                _totalDelta = Math.Min(0, _totalDelta);
+
+            var size = _lockedAxis == PageSlide.SlideAxis.Horizontal ? Bounds.Width : Bounds.Height;
+            if (size <= 0)
+                return;
+
+            var rawProgress = Math.Clamp(Math.Abs(_totalDelta) / size, 0, 1);
+            var progress = _isRubberBanding
+                ? RubberBandFactor * Math.Sqrt(rawProgress)
+                : rawProgress;
+
+            if (GetTransition() is IInteractivePageTransition interactive)
+            {
+                var swipeTarget = _isRubberBanding || ReferenceEquals(_realized, _swipeTarget) ? null : _swipeTarget;
+                interactive.Update(progress, _realized, swipeTarget, _isForward);
+            }
+
+            e.Handled = true;
+        }
+
+        private void OnSwipeGestureEnded(object? sender, SwipeGestureEndedEventArgs e)
+        {
+            if (!_isDragging || e.Id != _swipeGestureId || ItemsControl is not Carousel carousel)
+                return;
+
+            var size = _lockedAxis == PageSlide.SlideAxis.Horizontal ? Bounds.Width : Bounds.Height;
+            var rawProgress = size > 0 ? Math.Abs(_totalDelta) / size : 0;
+            var currentProgress = _isRubberBanding
+                ? RubberBandFactor * Math.Sqrt(rawProgress)
+                : rawProgress;
+            var velocity = _lockedAxis == PageSlide.SlideAxis.Horizontal
+                ? Math.Abs(e.Velocity.X)
+                : Math.Abs(e.Velocity.Y);
+            var commit = !_isRubberBanding &&
+                (currentProgress >= SwipeCommitThreshold ||
+                 (velocity > VelocityCommitThreshold && currentProgress >= MinSwipeDistanceForVelocityCommit)) &&
+                _swipeTarget is not null;
+
+            _completionEndProgress = commit ? 1.0 : 0.0;
+            _completionCarousel = carousel;
+
+            var remainingDistance = Math.Abs(_completionEndProgress - currentProgress);
+            var durationSeconds = velocity > 0
+                ? Math.Clamp(remainingDistance * size / velocity, MinCompletionDuration, MaxCompletionDuration)
+                : MaxCompletionDuration;
+
+            _completionCts?.Cancel();
+            _completionCts = new CancellationTokenSource();
+
+            SetValue(CompletionProgressProperty, currentProgress);
+
+            var animation = new Animation.Animation
+            {
+                FillMode = FillMode.Forward,
+                Easing = new QuadraticEaseOut(),
+                Duration = TimeSpan.FromSeconds(durationSeconds),
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Setters = { new Setter { Property = CompletionProgressProperty, Value = currentProgress } },
+                        Cue = new Cue(0d)
+                    },
+                    new KeyFrame
+                    {
+                        Setters = { new Setter { Property = CompletionProgressProperty, Value = _completionEndProgress } },
+                        Cue = new Cue(1d)
+                    }
+                }
+            };
+
+            _isDragging = false;
+
+            _ = RunCompletionAnimation(animation, carousel, _completionCts.Token);
+        }
+
+        private async Task RunCompletionAnimation(Animation.Animation animation, Carousel carousel, CancellationToken cancellationToken)
+        {
+            await animation.RunAsync(this, null, cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            if (GetTransition() is IInteractivePageTransition interactive)
+            {
+                var swipeTarget = ReferenceEquals(_realized, _swipeTarget) ? null : _swipeTarget;
+                interactive.Update(_completionEndProgress, _realized, swipeTarget, _isForward);
+            }
+
+            var commit = _completionEndProgress > 0.5;
+
+            if (commit && _swipeTarget is not null)
+            {
+                var targetIndex = _swipeTargetIndex;
+                var targetElement = _swipeTarget;
+
+                _swipeTarget = null;
+                _swipeTargetIndex = -1;
+
+                if (_realized != null)
+                    RecycleElement(_realized);
+
+                _realized = targetElement;
+                _realizedIndex = targetIndex;
+
+                carousel.SelectedIndex = targetIndex;
+            }
+            else
+            {
+                ResetSwipeState();
+            }
+
+            _totalDelta = 0;
+            _swipeTarget = null;
+            _swipeTargetIndex = -1;
+            _isRubberBanding = false;
+            carousel.IsSwiping = false;
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == CompletionProgressProperty)
+            {
+                if (!_isDragging && _swipeTarget is null)
+                    return;
+
+                var progress = change.GetNewValue<double>();
+                if (GetTransition() is IInteractivePageTransition interactive)
+                {
+                    var swipeTarget = ReferenceEquals(_realized, _swipeTarget) ? null : _swipeTarget;
+                    interactive.Update(progress, _realized, swipeTarget, _isForward);
+                }
+            }
+        }
+
+        private void ResetSwipeState()
+        {
+            _completionCarousel = null;
+
+            if (ItemsControl is Carousel carousel)
+                carousel.IsSwiping = false;
+
+            ResetVisualState(_realized);
+
+            if (_swipeTarget is not null)
+                RecycleElement(_swipeTarget);
+
+            _isDragging = false;
+            _totalDelta = 0;
+            _swipeTarget = null;
+            _swipeTargetIndex = -1;
+            _isRubberBanding = false;
+        }
+
+        private static void ResetVisualState(Control? control)
+        {
+            if (control is null)
+                return;
+            control.RenderTransform = null;
+            control.Opacity = 1;
+            control.ZIndex = 0;
+            control.Clip = null;
         }
     }
 }

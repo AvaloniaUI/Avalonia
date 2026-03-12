@@ -1,15 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Collections;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
+using Avalonia.Threading;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
@@ -781,6 +788,134 @@ public class CarouselPageTests
             };
             RaiseEvent(e);
             return e.Handled;
+        }
+    }
+
+    public class SwipeGestureTests : ScopedTestBase
+    {
+        [Fact]
+        public void MouseSwipe_Advances_Page()
+        {
+            var clock = new MockGlobalClock();
+            using var app = UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(globalClock: clock));
+            using var sync = UnitTestSynchronizationContext.Begin();
+
+            var (cp, carousel, panel) = CreateSwipeReadyCarouselPage();
+            var mouse = new MouseTestHelper();
+
+            mouse.Down(panel, position: new Point(200, 100));
+            mouse.Move(panel, new Point(40, 100));
+            mouse.Up(panel, position: new Point(40, 100));
+            clock.Pulse(TimeSpan.Zero);
+            clock.Pulse(TimeSpan.FromSeconds(1));
+            sync.ExecutePostedCallbacks();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(1, carousel.SelectedIndex);
+            Assert.Equal(1, cp.SelectedIndex);
+            Assert.Same(cp.Pages!.ElementAt(1), cp.CurrentPage);
+        }
+
+        [Fact]
+        public void TouchSwipe_Advances_Page()
+        {
+            var clock = new MockGlobalClock();
+            using var app = UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(globalClock: clock));
+            using var sync = UnitTestSynchronizationContext.Begin();
+
+            var (cp, carousel, panel) = CreateSwipeReadyCarouselPage();
+            var touch = new TouchTestHelper();
+
+            touch.Down(panel, new Point(200, 100));
+            touch.Move(panel, new Point(40, 100));
+            touch.Up(panel, new Point(40, 100));
+            clock.Pulse(TimeSpan.Zero);
+            clock.Pulse(TimeSpan.FromSeconds(1));
+            sync.ExecutePostedCallbacks();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(1, carousel.SelectedIndex);
+            Assert.Equal(1, cp.SelectedIndex);
+            Assert.Same(cp.Pages!.ElementAt(1), cp.CurrentPage);
+        }
+
+        private static (CarouselPage Page, Carousel Carousel, VirtualizingCarouselPanel Panel) CreateSwipeReadyCarouselPage()
+        {
+            var cp = new CarouselPage
+            {
+                Width = 400,
+                Height = 300,
+                IsGestureEnabled = true,
+                PageTransition = new PageSlide(TimeSpan.FromMilliseconds(1)),
+                Pages = new AvaloniaList<Page>
+                {
+                    new ContentPage { Header = "A", Content = new Border { Width = 400, Height = 300 } },
+                    new ContentPage { Header = "B", Content = new Border { Width = 400, Height = 300 } },
+                    new ContentPage { Header = "C", Content = new Border { Width = 400, Height = 300 } }
+                },
+                Template = new FuncControlTemplate<CarouselPage>((parent, scope) =>
+                    new Carousel
+                    {
+                        Name = "PART_Carousel",
+                        Template = CarouselTemplate(),
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Stretch,
+                        [~ItemsControl.ItemsSourceProperty] = parent[~CarouselPage.PagesProperty],
+                        [~ItemsControl.ItemTemplateProperty] = parent[~CarouselPage.PageTemplateProperty],
+                        [~ItemsControl.ItemsPanelProperty] = parent[~CarouselPage.ItemsPanelProperty],
+                        [~Carousel.PageTransitionProperty] = parent[~CarouselPage.PageTransitionProperty],
+                    }.RegisterInNameScope(scope))
+            };
+
+            var root = new TestRoot
+            {
+                ClientSize = new Size(400, 300),
+                Child = cp
+            };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var carousel = cp.GetVisualDescendants().OfType<Carousel>().Single();
+            var panel = Assert.IsType<VirtualizingCarouselPanel>(carousel.Presenter!.Panel!);
+            Assert.True(carousel.IsSwipeEnabled);
+            var recognizer = Assert.Single(panel.GestureRecognizers.OfType<SwipeGestureRecognizer>());
+            Assert.True(recognizer.IsEnabled);
+            Assert.True(recognizer.CanHorizontallySwipe);
+            return (cp, carousel, panel);
+        }
+
+        private static IControlTemplate CarouselTemplate()
+        {
+            return new FuncControlTemplate((c, ns) =>
+                new ScrollViewer
+                {
+                    Name = "PART_ScrollViewer",
+                    Template = ScrollViewerTemplate(),
+                    HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                    Content = new ItemsPresenter
+                    {
+                        Name = "PART_ItemsPresenter",
+                        [~ItemsPresenter.ItemsPanelProperty] = c[~ItemsControl.ItemsPanelProperty],
+                    }.RegisterInNameScope(ns)
+                }.RegisterInNameScope(ns));
+        }
+
+        private static FuncControlTemplate ScrollViewerTemplate()
+        {
+            return new FuncControlTemplate<ScrollViewer>((parent, scope) =>
+                new Panel
+                {
+                    Children =
+                    {
+                        new ScrollContentPresenter
+                        {
+                            Name = "PART_ContentPresenter",
+                        }.RegisterInNameScope(scope),
+                    }
+                });
         }
     }
 

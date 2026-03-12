@@ -1,55 +1,82 @@
 using System;
-using Avalonia.Logging;
-using Avalonia.Media;
+using System.Diagnostics;
+using Avalonia.Platform;
 
 namespace Avalonia.Input.GestureRecognizers
 {
     /// <summary>
-    /// A gesture recognizer that detects swipe gestures and raises
-    /// <see cref="InputElement.SwipeGestureEvent"/> on the target element when a swipe is confirmed.
+    /// A gesture recognizer that detects swipe gestures for paging interactions.
     /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="ScrollGestureRecognizer"/>, this recognizer is optimized for discrete
+    /// paging interactions (e.g., carousel navigation) rather than continuous scrolling.
+    /// It does not include inertia or friction physics.
+    /// </remarks>
     public class SwipeGestureRecognizer : GestureRecognizer
     {
+        private bool _swiping;
+        private Point _trackedRootPoint;
         private IPointer? _tracking;
-        private IPointer? _captured;
-        private Point _initialPosition;
-        private int _gestureId;
+        private int _id;
+
+        private Vector _velocity;
+        private long _lastTimestamp;
+
+        /// <summary>
+        /// Defines the <see cref="CanHorizontallySwipe"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> CanHorizontallySwipeProperty =
+            AvaloniaProperty.Register<SwipeGestureRecognizer, bool>(nameof(CanHorizontallySwipe));
+
+        /// <summary>
+        /// Defines the <see cref="CanVerticallySwipe"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> CanVerticallySwipeProperty =
+            AvaloniaProperty.Register<SwipeGestureRecognizer, bool>(nameof(CanVerticallySwipe));
 
         /// <summary>
         /// Defines the <see cref="Threshold"/> property.
         /// </summary>
+        /// <remarks>
+        /// A value of 0 (the default) causes the distance to be read from
+        /// <see cref="IPlatformSettings"/> at the time of the first gesture.
+        /// </remarks>
         public static readonly StyledProperty<double> ThresholdProperty =
-            AvaloniaProperty.Register<SwipeGestureRecognizer, double>(nameof(Threshold), 30d);
+            AvaloniaProperty.Register<SwipeGestureRecognizer, double>(nameof(Threshold), defaultValue: 0d);
 
         /// <summary>
-        /// Defines the <see cref="CrossAxisCancelThreshold"/> property.
+        /// Defines the <see cref="IsMouseEnabled"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> CrossAxisCancelThresholdProperty =
-            AvaloniaProperty.Register<SwipeGestureRecognizer, double>(
-                nameof(CrossAxisCancelThreshold), 8d);
-
-        /// <summary>
-        /// Defines the <see cref="EdgeSize"/> property.
-        /// Leading-edge start zone in px. 0 (default) = full area.
-        /// When &gt; 0, only starts tracking if the pointer is within this many px
-        /// of the leading edge (LTR: left; RTL: right).
-        /// </summary>
-        public static readonly StyledProperty<double> EdgeSizeProperty =
-            AvaloniaProperty.Register<SwipeGestureRecognizer, double>(nameof(EdgeSize), 0d);
+        public static readonly StyledProperty<bool> IsMouseEnabledProperty =
+            AvaloniaProperty.Register<SwipeGestureRecognizer, bool>(nameof(IsMouseEnabled), defaultValue: false);
 
         /// <summary>
         /// Defines the <see cref="IsEnabled"/> property.
-        /// When false, the recognizer ignores all pointer events.
-        /// Lets callers toggle the recognizer at runtime without needing to remove it from the
-        /// collection (GestureRecognizerCollection has Add but no Remove).
-        /// Default: true.
         /// </summary>
         public static readonly StyledProperty<bool> IsEnabledProperty =
-            AvaloniaProperty.Register<SwipeGestureRecognizer, bool>(nameof(IsEnabled), true);
+            AvaloniaProperty.Register<SwipeGestureRecognizer, bool>(nameof(IsEnabled), defaultValue: true);
 
         /// <summary>
-        /// Gets or sets the minimum distance in pixels the pointer must travel before a swipe
-        /// is recognized. Default is 30px.
+        /// Gets or sets a value indicating whether horizontal swipes are tracked.
+        /// </summary>
+        public bool CanHorizontallySwipe
+        {
+            get => GetValue(CanHorizontallySwipeProperty);
+            set => SetValue(CanHorizontallySwipeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether vertical swipes are tracked.
+        /// </summary>
+        public bool CanVerticallySwipe
+        {
+            get => GetValue(CanVerticallySwipeProperty);
+            set => SetValue(CanVerticallySwipeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the minimum pointer movement in pixels before a swipe is recognized.
+        /// A value of 0 reads the threshold from <see cref="IPlatformSettings"/> at gesture time.
         /// </summary>
         public double Threshold
         {
@@ -58,30 +85,18 @@ namespace Avalonia.Input.GestureRecognizers
         }
 
         /// <summary>
-        /// Gets or sets the maximum cross-axis drift in pixels allowed before the gesture is
-        /// cancelled. Default is 8px.
+        /// Gets or sets a value indicating whether mouse pointer events trigger swipe gestures.
+        /// Defaults to <see langword="false"/>; touch and pen are always enabled.
         /// </summary>
-        public double CrossAxisCancelThreshold
+        public bool IsMouseEnabled
         {
-            get => GetValue(CrossAxisCancelThresholdProperty);
-            set => SetValue(CrossAxisCancelThresholdProperty, value);
+            get => GetValue(IsMouseEnabledProperty);
+            set => SetValue(IsMouseEnabledProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets the leading-edge start zone in pixels. When greater than zero, tracking
-        /// only begins if the pointer is within this distance of the leading edge. Default is 0
-        /// (full area).
-        /// </summary>
-        public double EdgeSize
-        {
-            get => GetValue(EdgeSizeProperty);
-            set => SetValue(EdgeSizeProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the recognizer responds to pointer events.
-        /// Setting this to false is a lightweight alternative to removing the recognizer from
-        /// the collection. Default is true.
+        /// Gets or sets a value indicating whether this recognizer responds to pointer events.
+        /// Defaults to <see langword="true"/>.
         /// </summary>
         public bool IsEnabled
         {
@@ -89,104 +104,124 @@ namespace Avalonia.Input.GestureRecognizers
             set => SetValue(IsEnabledProperty, value);
         }
 
+        /// <inheritdoc/>
         protected override void PointerPressed(PointerPressedEventArgs e)
         {
-            if (!IsEnabled) return;
-            if (!e.GetCurrentPoint(null).Properties.IsLeftButtonPressed) return;
-            if (Target is not Visual visual) return;
-
-            var pos = e.GetPosition(visual);
-            var edgeSize = EdgeSize;
-
-            if (edgeSize > 0)
-            {
-                bool isRtl = visual.FlowDirection == FlowDirection.RightToLeft;
-                bool inEdge = isRtl
-                    ? pos.X >= visual.Bounds.Width - edgeSize
-                    : pos.X <= edgeSize;
-                if (!inEdge)
-                {
-                    Logger.TryGet(LogEventLevel.Verbose, LogArea.Control)?.Log(
-                        this, "SwipeGestureRecognizer: press at {Pos} outside edge zone ({EdgeSize}px), ignoring",
-                        pos, edgeSize);
-                    return;
-                }
-            }
-
-            _gestureId = SwipeGestureEventArgs.GetNextFreeId();
-            _tracking = e.Pointer;
-            _initialPosition = pos;
-
-            Logger.TryGet(LogEventLevel.Verbose, LogArea.Control)?.Log(
-                this, "SwipeGestureRecognizer: tracking started at {Pos} (pointer={PointerType})",
-                pos, e.Pointer.Type);
-        }
-
-        protected override void PointerMoved(PointerEventArgs e)
-        {
-            if (_tracking != e.Pointer || Target is not Visual visual) return;
-
-            var pos = e.GetPosition(visual);
-            double dx = pos.X - _initialPosition.X;
-            double dy = pos.Y - _initialPosition.Y;
-            double absDx = Math.Abs(dx);
-            double absDy = Math.Abs(dy);
-            double threshold = Threshold;
-
-            if (absDx < threshold && absDy < threshold)
+            if (!IsEnabled)
                 return;
 
-            SwipeDirection dir;
-            Vector delta;
-            if (absDx >= absDy)
+            var point = e.GetCurrentPoint(null);
+
+            if ((e.Pointer.Type is PointerType.Touch or PointerType.Pen ||
+                 (IsMouseEnabled && e.Pointer.Type == PointerType.Mouse))
+                && point.Properties.IsLeftButtonPressed)
             {
-                dir = dx > 0 ? SwipeDirection.Right : SwipeDirection.Left;
-                delta = new Vector(dx, 0);
+                EndGesture();
+                _tracking = e.Pointer;
+                _id = SwipeGestureEventArgs.GetNextFreeId();
+                _trackedRootPoint = point.Position;
+                _velocity = default;
+                _lastTimestamp = 0;
             }
-            else
-            {
-                dir = dy > 0 ? SwipeDirection.Down : SwipeDirection.Up;
-                delta = new Vector(0, dy);
-            }
-
-            Logger.TryGet(LogEventLevel.Verbose, LogArea.Control)?.Log(
-                this, "SwipeGestureRecognizer: swipe recognized — direction={Direction}, delta={Delta}",
-                dir, delta);
-
-            _tracking = null;
-            _captured = e.Pointer;
-            Capture(e.Pointer);
-            e.Handled = true;
-
-            var args = new SwipeGestureEventArgs(_gestureId, dir, delta, _initialPosition);
-            Target?.RaiseEvent(args);
         }
 
-        protected override void PointerReleased(PointerReleasedEventArgs e)
+        /// <inheritdoc/>
+        protected override void PointerMoved(PointerEventArgs e)
         {
-            if (_tracking == e.Pointer)
+            if (e.Pointer == _tracking)
             {
-                Logger.TryGet(LogEventLevel.Verbose, LogArea.Control)?.Log(
-                    this, "SwipeGestureRecognizer: pointer released without crossing threshold — gesture discarded");
-                _tracking = null;
-            }
+                var rootPoint = e.GetPosition(null);
+                var threshold = GetEffectiveThreshold();
 
-            if (_captured == e.Pointer)
-            {
-                (e.Pointer as Pointer)?.CaptureGestureRecognizer(null);
-                _captured = null;
+                if (!_swiping)
+                {
+                    var horizontalTriggered =
+                        CanHorizontallySwipe && Math.Abs(_trackedRootPoint.X - rootPoint.X) > threshold;
+                    var verticalTriggered =
+                        CanVerticallySwipe && Math.Abs(_trackedRootPoint.Y - rootPoint.Y) > threshold;
+
+                    if (horizontalTriggered || verticalTriggered)
+                    {
+                        _swiping = true;
+
+                        _trackedRootPoint = new Point(
+                            horizontalTriggered ?
+                                _trackedRootPoint.X - (_trackedRootPoint.X >= rootPoint.X ? threshold : -threshold) :
+                                rootPoint.X,
+                            verticalTriggered ?
+                                _trackedRootPoint.Y - (_trackedRootPoint.Y >= rootPoint.Y ? threshold : -threshold) :
+                                rootPoint.Y);
+
+                        Capture(e.Pointer);
+                    }
+                }
+
+                if (_swiping)
+                {
+                    var delta = _trackedRootPoint - rootPoint;
+
+                    var now = Stopwatch.GetTimestamp();
+                    if (_lastTimestamp > 0)
+                    {
+                        var elapsedSeconds = (double)(now - _lastTimestamp) / Stopwatch.Frequency;
+                        if (elapsedSeconds > 0)
+                        {
+                            var instantVelocity = delta / elapsedSeconds;
+                            _velocity = _velocity * 0.5 + instantVelocity * 0.5;
+                        }
+                    }
+
+                    _lastTimestamp = now;
+
+                    Target!.RaiseEvent(new SwipeGestureEventArgs(_id, delta, _velocity));
+                    _trackedRootPoint = rootPoint;
+                    e.Handled = true;
+                }
             }
         }
 
+        /// <inheritdoc/>
         protected override void PointerCaptureLost(IPointer pointer)
         {
-            if (_tracking == pointer)
+            if (pointer == _tracking)
+                EndGesture();
+        }
+
+        /// <inheritdoc/>
+        protected override void PointerReleased(PointerReleasedEventArgs e)
+        {
+            if (e.Pointer == _tracking && _swiping)
             {
-                Logger.TryGet(LogEventLevel.Verbose, LogArea.Control)?.Log(
-                    this, "SwipeGestureRecognizer: capture lost — gesture cancelled");
-                _tracking = null;
+                e.Handled = true;
+                EndGesture();
             }
-            _captured = null;
+        }
+
+        private void EndGesture()
+        {
+            _tracking = null;
+            if (_swiping)
+            {
+                _swiping = false;
+                Target!.RaiseEvent(new SwipeGestureEndedEventArgs(_id, _velocity));
+                _velocity = default;
+                _lastTimestamp = 0;
+                _id = 0;
+            }
+        }
+
+        private const double DefaultTapSize = 10;
+
+        private double GetEffectiveThreshold()
+        {
+            var configured = Threshold;
+            if (configured > 0)
+                return configured;
+
+            var tapSize = AvaloniaLocator.Current?.GetService<IPlatformSettings>()
+                ?.GetTapSize(PointerType.Touch).Height ?? DefaultTapSize;
+
+            return tapSize / 2;
         }
     }
 }
