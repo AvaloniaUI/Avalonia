@@ -12,6 +12,7 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
     private readonly Stopwatch _stopwatch;
     private readonly Thread _timerThread;
     private readonly AutoResetEvent _autoResetEvent;
+    private Action<TimeSpan>? _tick;
     private volatile bool _active;
     private bool _registered;
 
@@ -23,24 +24,29 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
         _timerThread = new Thread(RenderTimerThreadFunc, maxStackSize) { Name = "RenderTimerLoop", IsBackground = true };
     }
 
-    public Action<TimeSpan>? Tick { get; set; }
+    public Action<TimeSpan>? Tick
+    {
+        get => _tick;
+        set
+        {
+            if (value != null)
+            {
+                _tick = value;
+                _active = true;
+                EnsureStarted();
+                _inner.Tick = InnerTick;
+            }
+            else
+            {
+                // Don't set _inner.Tick = null here — may be on the wrong thread.
+                // InnerTick will detect _active=false and clear _inner.Tick on the correct thread.
+                _active = false;
+                _tick = null;
+            }
+        }
+    }
 
     public bool RunsInBackground => true;
-
-    public void Start()
-    {
-        _active = true;
-        EnsureStarted();
-        _inner.Tick = InnerTick;
-        _inner.Start();
-    }
-
-    public void Stop()
-    {
-        // Don't call _inner.Stop() here — may be on the wrong thread.
-        // InnerTick will detect _active=false and call _inner.Stop() on the correct thread.
-        _active = false;
-    }
 
     private void EnsureStarted()
     {
@@ -56,7 +62,7 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
     {
         if (!_active)
         {
-            _inner.Stop();
+            _inner.Tick = null;
             return;
         }
         _autoResetEvent.Set();
@@ -66,7 +72,7 @@ public sealed class ThreadProxyRenderTimer : IRenderTimer
     {
         while (_autoResetEvent.WaitOne())
         {
-            Tick?.Invoke(_stopwatch.Elapsed);
+            _tick?.Invoke(_stopwatch.Elapsed);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Avalonia.iOS
     class DisplayLinkTimer : IRenderTimer
     {
         private readonly CADisplayLink _link;
-        public Action<TimeSpan>? Tick { get; set; }
+        private Action<TimeSpan>? _tick;
         private Stopwatch _st = Stopwatch.StartNew();
         private NSThread? _nsTimerThread;
         private volatile bool _wakeupSent;
@@ -54,20 +54,28 @@ namespace Avalonia.iOS
         
         public bool RunsInBackground => true;
 
-        public void Start()
+        public Action<TimeSpan>? Tick
         {
-            _stopped = false;
-            if (_wakeupSent)
-                return;
-            _wakeupSent = true;
-            var thread = _nsTimerThread;
-            if (thread != null)
-                _wakeupHelper.PerformSelector(new Selector("doWakeup"), thread, null, false);
-        }
-
-        public void Stop()
-        {
-            _stopped = true;
+            get => _tick;
+            set
+            {
+                if (value != null)
+                {
+                    _tick = value;
+                    _stopped = false;
+                    if (_wakeupSent)
+                        return;
+                    _wakeupSent = true;
+                    var thread = _nsTimerThread;
+                    if (thread != null)
+                        _wakeupHelper.PerformSelector(new Selector("doWakeup"), thread, null, false);
+                }
+                else
+                {
+                    _stopped = true;
+                    _tick = null;
+                }
+            }
         }
 
         private void OnLinkTick()
@@ -77,7 +85,7 @@ namespace Avalonia.iOS
                 _link.Paused = true;
                 return;
             }
-            Tick?.Invoke(_st.Elapsed);
+            _tick?.Invoke(_st.Elapsed);
         }
         
         // NSObject subclass to allow PerformSelector dispatch to the timer run loop

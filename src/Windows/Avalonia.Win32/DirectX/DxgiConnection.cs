@@ -26,7 +26,7 @@ namespace Avalonia.Win32.DirectX
 
         public bool RunsInBackground => true;
 
-        public Action<TimeSpan>? Tick { get; set; }
+        private Action<TimeSpan>? _tick;
         private readonly object _syncLock;
         private readonly AutoResetEvent _wakeEvent = new(false);
         private volatile bool _stopped = true;
@@ -41,15 +41,23 @@ namespace Avalonia.Win32.DirectX
             _syncLock = syncLock;
         }
 
-        public void Start()
+        public Action<TimeSpan>? Tick
         {
-            _stopped = false;
-            _wakeEvent.Set();
-        }
-
-        public void Stop()
-        {
-            _stopped = true;
+            get => _tick;
+            set
+            {
+                if (value != null)
+                {
+                    _tick = value;
+                    _stopped = false;
+                    _wakeEvent.Set();
+                }
+                else
+                {
+                    _stopped = true;
+                    _tick = null;
+                }
+            }
         }
         
         public static bool TryCreateAndRegister()
@@ -111,7 +119,7 @@ namespace Avalonia.Win32.DirectX
                             // but theoretically someone could have a weirder setup out there 
                             DwmFlush();
                         }
-                        Tick?.Invoke(_stopwatch.Elapsed);
+                        _tick?.Invoke(_stopwatch.Elapsed);
                     }
                 }
                 catch (Exception ex)

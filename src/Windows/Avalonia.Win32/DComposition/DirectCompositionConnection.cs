@@ -21,7 +21,7 @@ internal class DirectCompositionConnection : IRenderTimer, IWindowsSurfaceFactor
 {
     private static readonly Guid IID_IDCompositionDesktopDevice = Guid.Parse("5f4633fe-1e08-4cb8-8c75-ce24333f5602");
 
-    public Action<TimeSpan>? Tick { get; set; }
+    private Action<TimeSpan>? _tick;
     public bool RunsInBackground => true;
 
     private readonly DirectCompositionShared _shared;
@@ -33,15 +33,23 @@ internal class DirectCompositionConnection : IRenderTimer, IWindowsSurfaceFactor
         _shared = shared;
     }
 
-    public void Start()
+    public Action<TimeSpan>? Tick
     {
-        _stopped = false;
-        _wakeEvent.Set();
-    }
-
-    public void Stop()
-    {
-        _stopped = true;
+        get => _tick;
+        set
+        {
+            if (value != null)
+            {
+                _tick = value;
+                _stopped = false;
+                _wakeEvent.Set();
+            }
+            else
+            {
+                _stopped = true;
+                _tick = null;
+            }
+        }
     }
     
     private static bool TryCreateAndRegisterCore()
@@ -98,7 +106,7 @@ internal class DirectCompositionConnection : IRenderTimer, IWindowsSurfaceFactor
                     _wakeEvent.WaitOne();
 
                 device.WaitForCommitCompletion();
-                Tick?.Invoke(_stopwatch.Elapsed);
+                _tick?.Invoke(_stopwatch.Elapsed);
             }
             catch (Exception ex)
             {

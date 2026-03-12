@@ -24,8 +24,6 @@ public class CompositionTargetUpdateOnly : IDisposable
     {
         public Action<TimeSpan> Tick { get; set; } = null!;
         public bool RunsInBackground => false;
-        public void Start() { }
-        public void Stop() { }
     }
 
     class ManualScheduler : ICompositorScheduler

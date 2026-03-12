@@ -24,9 +24,9 @@ namespace Avalonia.Rendering
     /// </summary>
     /// <remarks>
     /// The render loop is responsible for advancing the animation timer and updating the scene
-    /// graph for visible windows. It owns the sleep/wake state machine: calling
-    /// <see cref="IRenderTimer.Start"/> and <see cref="IRenderTimer.Stop"/> under a lock
-    /// so that timer implementations never see unbalanced or concurrent calls.
+    /// graph for visible windows. It owns the sleep/wake state machine: setting
+    /// <see cref="IRenderTimer.Tick"/> to a non-null callback to start the timer and to null to
+    /// stop it, under a lock so that timer implementations never see concurrent changes.
     /// </remarks>
     internal class DefaultRenderLoop : IRenderLoop
     {
@@ -35,6 +35,7 @@ namespace Avalonia.Rendering
         private readonly IRenderTimer _timer;
         private readonly object _timerLock = new();
         private int _inTick;
+        private bool _hasItems;
         private bool _running;
         private bool _wakeupPending;
         
@@ -62,7 +63,7 @@ namespace Avalonia.Rendering
 
             if (shouldStart)
             {
-                _timer.Tick = TimerTick;
+                _hasItems = true;
                 Wakeup();
             }
         }
@@ -82,14 +83,14 @@ namespace Avalonia.Rendering
 
             if (shouldStop)
             {
-                _timer.Tick = null;
+                _hasItems = false;
                 lock (_timerLock)
                 {
                     if (_running)
                     {
                         _running = false;
                         _wakeupPending = false;
-                        _timer.Stop();
+                        _timer.Tick = null;
                     }
                 }
             }
@@ -103,10 +104,10 @@ namespace Avalonia.Rendering
         {
             lock (_timerLock)
             {
-                if (_timer.Tick != null && !_running)
+                if (_hasItems && !_running)
                 {
                     _running = true;
-                    _timer.Start();
+                    _timer.Tick = TimerTick;
                 }
                 else
                 {
@@ -157,7 +158,7 @@ namespace Avalonia.Rendering
                             else
                             {
                                 _running = false;
-                                _timer.Stop();
+                                _timer.Tick = null;
                             }
                         }
                     }

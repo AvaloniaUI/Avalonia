@@ -19,18 +19,26 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
     private readonly WinUiCompositionShared _shared;
     private readonly AutoResetEvent _wakeEvent = new(false);
     private volatile bool _stopped = true;
-    public Action<TimeSpan>? Tick { get; set; }
+    private Action<TimeSpan>? _tick;
     public bool RunsInBackground => true;
 
-    public void Start()
+    public Action<TimeSpan>? Tick
     {
-        _stopped = false;
-        _wakeEvent.Set();
-    }
-
-    public void Stop()
-    {
-        _stopped = true;
+        get => _tick;
+        set
+        {
+            if (value != null)
+            {
+                _tick = value;
+                _stopped = false;
+                _wakeEvent.Set();
+            }
+            else
+            {
+                _stopped = true;
+                _tick = null;
+            }
+        }
     }
     
     public WinUiCompositorConnection()
@@ -115,7 +123,7 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
         {
             _currentCommit?.Dispose();
             _currentCommit = null;
-            _parent.Tick?.Invoke(_st.Elapsed);
+            _parent._tick?.Invoke(_st.Elapsed);
             // Always schedule a commit so the current frame's work reaches DWM.
             ScheduleNextCommit();
             if (_parent._stopped)

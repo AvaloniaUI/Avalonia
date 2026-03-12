@@ -9,6 +9,7 @@ internal sealed class AvaloniaNativeRenderTimer : NativeCallbackBase, IRenderTim
 {
     private readonly IAvnPlatformRenderTimer _platformRenderTimer;
     private readonly Stopwatch _stopwatch;
+    private Action<TimeSpan>? _tick;
     private bool _registered;
 
     public AvaloniaNativeRenderTimer(IAvnPlatformRenderTimer platformRenderTimer)
@@ -17,20 +18,26 @@ internal sealed class AvaloniaNativeRenderTimer : NativeCallbackBase, IRenderTim
         _stopwatch = Stopwatch.StartNew();
     }
 
-    public Action<TimeSpan>? Tick { get; set; }
+    public Action<TimeSpan>? Tick
+    {
+        get => _tick;
+        set
+        {
+            if (value != null)
+            {
+                _tick = value;
+                EnsureRegistered();
+                _platformRenderTimer.Start();
+            }
+            else
+            {
+                _platformRenderTimer.Stop();
+                _tick = null;
+            }
+        }
+    }
 
     public bool RunsInBackground => _platformRenderTimer.RunsInBackground().FromComBool();
-
-    public void Start()
-    {
-        EnsureRegistered();
-        _platformRenderTimer.Start();
-    }
-
-    public void Stop()
-    {
-        _platformRenderTimer.Stop();
-    }
 
     private void EnsureRegistered()
     {
@@ -48,6 +55,6 @@ internal sealed class AvaloniaNativeRenderTimer : NativeCallbackBase, IRenderTim
 
     public void Run()
     {
-        Tick?.Invoke(_stopwatch.Elapsed);
+        _tick?.Invoke(_stopwatch.Elapsed);
     }
 }

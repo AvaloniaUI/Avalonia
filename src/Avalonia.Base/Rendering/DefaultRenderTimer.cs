@@ -38,24 +38,24 @@ namespace Avalonia.Rendering
         public Action<TimeSpan>? Tick
         {
             get => _tick;
-            set => _tick = value;
+            set
+            {
+                if (value != null)
+                {
+                    _tick = value;
+                    _subscription = StartCore(InternalTick);
+                }
+                else
+                {
+                    _subscription?.Dispose();
+                    _subscription = null;
+                    _tick = null;
+                }
+            }
         }
 
         /// <inheritdoc />
         public virtual bool RunsInBackground => true;
-
-        /// <inheritdoc />
-        public void Start()
-        {
-            _subscription = StartCore(InternalTick);
-        }
-
-        /// <inheritdoc />
-        public void Stop()
-        {
-            _subscription?.Dispose();
-            _subscription = null;
-        }
 
         /// <summary>
         /// Provides the implementation of starting the timer.

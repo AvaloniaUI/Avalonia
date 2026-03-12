@@ -71,8 +71,6 @@ namespace Avalonia.DesignerSupport.Remote
         {
             public Action<TimeSpan>? Tick { get; set; }
             public bool RunsInBackground => false;
-            public void Start() { }
-            public void Stop() { }
         }
 
         public Compositor Compositor { get; } = new(RenderLoop.FromTimer(new DummyRenderTimer()), null);

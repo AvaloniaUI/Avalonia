@@ -8,6 +8,7 @@ namespace Avalonia.Rendering
     [PrivateApi]
     public class SleepLoopRenderTimer : IRenderTimer
     {
+        private Action<TimeSpan>? _tick;
         private volatile bool _stopped = true;
         private bool _threadStarted;
         private readonly AutoResetEvent _wakeEvent = new(false);
@@ -19,28 +20,34 @@ namespace Avalonia.Rendering
             _timeBetweenTicks = TimeSpan.FromSeconds(1d / fps);
         }
 
-        public Action<TimeSpan>? Tick { get; set; }
+        public Action<TimeSpan>? Tick
+        {
+            get => _tick;
+            set
+            {
+                if (value != null)
+                {
+                    _tick = value;
+                    _stopped = false;
+                    if (!_threadStarted)
+                    {
+                        _threadStarted = true;
+                        new Thread(LoopProc) { IsBackground = true }.Start();
+                    }
+                    else
+                    {
+                        _wakeEvent.Set();
+                    }
+                }
+                else
+                {
+                    _stopped = true;
+                    _tick = null;
+                }
+            }
+        }
 
         public bool RunsInBackground => true;
-
-        public void Start()
-        {
-            _stopped = false;
-            if (!_threadStarted)
-            {
-                _threadStarted = true;
-                new Thread(LoopProc) { IsBackground = true }.Start();
-            }
-            else
-            {
-                _wakeEvent.Set();
-            }
-        }
-
-        public void Stop()
-        {
-            _stopped = true;
-        }
 
         void LoopProc()
         {
@@ -59,7 +66,7 @@ namespace Avalonia.Rendering
                 if (_stopped)
                     continue;
 
-                Tick?.Invoke(now);
+                _tick?.Invoke(now);
             }
         }
     }
