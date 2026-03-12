@@ -12,8 +12,6 @@ using Avalonia.Win32.OpenGl.Angle;
 
 using MicroCom.Runtime;
 
-using static Avalonia.Win32.Interop.UnmanagedMethods;
-
 namespace Avalonia.Win32.DirectX
 {
     internal unsafe class DxgiRenderTarget : EglPlatformSurfaceRenderTargetBase
