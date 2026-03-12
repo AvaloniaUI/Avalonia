@@ -1,11 +1,17 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+
 using Avalonia.Controls;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Win32.DComposition;
+using Avalonia.Win32.Interop;
 using Avalonia.Win32.OpenGl.Angle;
+
 using MicroCom.Runtime;
+
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32.DirectX
@@ -54,37 +60,72 @@ namespace Avalonia.Win32.DirectX
             _dxgiFactory.MakeWindowAssociation(window.Handle, (uint)(DXGI_MWA.DXGI_MWA_NO_ALT_ENTER | DXGI_MWA.DXGI_MWA_NO_PRINT_SCREEN));
         }
 
+        private IDCompositionDesktopDevice? _compositionDesktopDevice;
+        private IDCompositionTarget? _compositionTarget;
+
         [MemberNotNull(nameof(_swapChain))]
         private void CreateSurface(PixelSize expectedPixelSize)
         {
             _swapChain?.Dispose();
             _swapChain = null;
 
+            _compositionDesktopDevice?.Dispose();
+            _compositionDesktopDevice = null;
+
+            _compositionTarget?.Dispose();
+            _compositionTarget = null;
+
+            _surface?.Dispose();
+            _surface = null;
+
+            _renderTexture?.Dispose();
+            _renderTexture = null;
+
             var windowInfo = _window;
             var size = expectedPixelSize;
 
-            //if (IsTransparency && DxgiConnection.IsTransparencySupported())
-            //{
+            DXGI_SWAP_CHAIN_DESC1 dxgiSwapChainDesc = new DXGI_SWAP_CHAIN_DESC1();
 
-            //}
-            //else
+            // standard swap chain really. 
+            dxgiSwapChainDesc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
+            dxgiSwapChainDesc.SampleDesc.Count = 1U;
+            dxgiSwapChainDesc.SampleDesc.Quality = 0U;
+            dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+            dxgiSwapChainDesc.AlphaMode = DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_IGNORE;
+            dxgiSwapChainDesc.Width = (uint)size.Width;
+            dxgiSwapChainDesc.Height = (uint)size.Height;
+            dxgiSwapChainDesc.BufferCount = SwapChainDescBufferCount;
+            dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT.DXGI_SWAP_EFFECT_FLIP_DISCARD;
+
+            _dxgiSwapChainDescFlagsUsed = DXGI_SWAP_CHAIN_FLAG.DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+            dxgiSwapChainDesc.Flags = (uint)_dxgiSwapChainDescFlagsUsed;
+
+            if (IsTransparency && DxgiConnection.IsTransparencySupported())
             {
-                DXGI_SWAP_CHAIN_DESC1 dxgiSwapChainDesc = new DXGI_SWAP_CHAIN_DESC1();
+                dxgiSwapChainDesc.AlphaMode = DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_PREMULTIPLIED;
 
-                // standard swap chain really. 
-                dxgiSwapChainDesc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
-                dxgiSwapChainDesc.SampleDesc.Count = 1U;
-                dxgiSwapChainDesc.SampleDesc.Quality = 0U;
-                dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-                dxgiSwapChainDesc.AlphaMode = DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_IGNORE;
-                dxgiSwapChainDesc.Width = (uint) size.Width;
-                dxgiSwapChainDesc.Height = (uint)size.Height;
-                dxgiSwapChainDesc.BufferCount = SwapChainDescBufferCount;
-                dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT.DXGI_SWAP_EFFECT_FLIP_DISCARD;
+                _swapChain = _dxgiFactory.CreateSwapChainForComposition(_dxgiDevice, &dxgiSwapChainDesc, null);
 
-                _dxgiSwapChainDescFlagsUsed = DXGI_SWAP_CHAIN_FLAG.DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-                dxgiSwapChainDesc.Flags = (uint)_dxgiSwapChainDescFlagsUsed;
+                Guid IID_IDCompositionDesktopDevice = Guid.Parse("5f4633fe-1e08-4cb8-8c75-ce24333f5602");
+                var result = NativeMethods.DCompositionCreateDevice2(default, IID_IDCompositionDesktopDevice, out var cDevice);
+                if (result != UnmanagedMethods.HRESULT.S_OK)
+                {
+                    throw new Win32Exception((int)result);
+                }
 
+                var device = MicroComRuntime.CreateProxyFor<IDCompositionDesktopDevice>(cDevice, ownsHandle: true);
+                _compositionDesktopDevice = device;
+                using IDCompositionVisual compositionVisual =
+                    device.CreateTargetForHwnd(windowInfo.Handle, topmost: true);
+                var compositionTarget = compositionVisual.QueryInterface<IDCompositionTarget>();
+                _compositionTarget = compositionTarget;
+                IDCompositionVisual container = device.CreateVisual();
+                container.SetContent(_swapChain);
+                compositionTarget.SetRoot(container);
+                device.Commit();
+            }
+            else
+            {
                 _swapChain = _dxgiFactory.CreateSwapChainForHwnd
                 (
                     _dxgiDevice,
@@ -113,6 +154,14 @@ namespace Avalonia.Win32.DirectX
             {
                 var size = sceneInfo.Size;
                 var scale = sceneInfo.Scaling;
+
+                var shouldTransparency = IsTransparency && DxgiConnection.IsTransparencySupported();
+                var isSupportTransparency = _swapChain.Desc1.AlphaMode is DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_PREMULTIPLIED or DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_STRAIGHT;
+
+                if (shouldTransparency != isSupportTransparency)
+                {
+                    CreateSurface(size);
+                }
 
                 if (_size != size)
                 {
@@ -187,6 +236,9 @@ namespace Avalonia.Win32.DirectX
             _swapChain?.Dispose();
             _surface?.Dispose();
             _renderTexture?.Dispose();
+
+            _compositionDesktopDevice?.Dispose();
+            _compositionTarget?.Dispose();
         }
 
         internal static bool RectsEqual(in RECT l, in RECT r)
