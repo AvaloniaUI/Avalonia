@@ -228,13 +228,8 @@ namespace ControlCatalog.Pages
                     try
                     {
                         // Sync disposal of StreamWriter is not supported on WASM
-#if NET6_0_OR_GREATER
                         await using var stream = await file.OpenWriteAsync();
                         await using var writer = new System.IO.StreamWriter(stream);
-#else
-                        using var stream = await file.OpenWriteAsync();
-                        using var writer = new System.IO.StreamWriter(stream);
-#endif
                         await writer.WriteLineAsync(openedFileContent.Text);
 
                         SetFolder(await file.GetParentAsync());
@@ -265,13 +260,8 @@ namespace ControlCatalog.Pages
                     if (result.File is { } file)
                     {
                         // Sync disposal of StreamWriter is not supported on WASM
-#if NET6_0_OR_GREATER
                         await using var stream = await file.OpenWriteAsync();
                         await using var writer = new System.IO.StreamWriter(stream);
-#else
-                        using var stream = await file.OpenWriteAsync();
-                        using var writer = new System.IO.StreamWriter(stream);
-#endif
                         if (result.SelectedFileType == FilePickerFileTypes.Xml)
                         {
                             await writer.WriteLineAsync("<sample>Test</sample>");
@@ -431,11 +421,7 @@ namespace ControlCatalog.Pages
 
         internal static async Task<string> ReadTextFromFile(IStorageFile file, int length)
         {
-#if NET6_0_OR_GREATER
             await using var stream = await file.OpenReadAsync();
-#else
-            using var stream = await file.OpenReadAsync();
-#endif
             using var reader = new System.IO.StreamReader(stream);
 
             // 4GB file test, shouldn't load more than 10000 chars into a memory.

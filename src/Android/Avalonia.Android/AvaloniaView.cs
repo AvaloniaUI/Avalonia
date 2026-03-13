@@ -100,7 +100,7 @@ namespace Avalonia.Android
                 return;
             if (isVisible && _timerSubscription == null)
             {
-                if (AvaloniaLocator.Current.GetService<IRenderTimer>() is ChoreographerTimer timer)
+                if (AndroidPlatform.Timer is { } timer)
                 {
                     _timerSubscription = timer.SubscribeView(this);
                 }

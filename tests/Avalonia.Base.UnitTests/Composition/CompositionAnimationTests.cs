@@ -88,7 +88,7 @@ public class CompositionAnimationTests : ScopedTestBase
     {
         using var scope = AvaloniaLocator.EnterScope();
         var compositor =
-            new Compositor(new RenderLoop(new CompositorTestServices.ManualRenderTimer()), null);
+            new Compositor(RenderLoop.FromTimer(new CompositorTestServices.ManualRenderTimer()), null);
         var target = compositor.CreateSolidColorVisual();
         var ani = new ScalarKeyFrameAnimation(compositor);
         foreach (var frame in data.Frames)
