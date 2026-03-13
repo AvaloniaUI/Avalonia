@@ -219,7 +219,7 @@ namespace Avalonia.X11
         public IntPtr display; /* Display the event was read from */
         public int extension; /* XI extension offset */
         public XiEventType evtype;
-        public IntPtr time;
+        public UIntPtr time;
         public int deviceid;
         public int sourceid;
         public int detail;
@@ -246,7 +246,7 @@ namespace Avalonia.X11
         public IntPtr display; /* Display the event was read from */
         public int extension; /* XI extension offset */
         public XiEventType evtype;
-        public IntPtr time;
+        public UIntPtr time;
         public int deviceid;
         public int sourceid;
         public XiEnterLeaveDetail detail;
@@ -287,7 +287,7 @@ namespace Avalonia.X11
         public IntPtr display; /* Display the event was read from */
         public int extension; /* XI extension offset */
         public XiEventType evtype;
-        public IntPtr time;
+        public UIntPtr time;
     }
 
     internal enum XiEventType
