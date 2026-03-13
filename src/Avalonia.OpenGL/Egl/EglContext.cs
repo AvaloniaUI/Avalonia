@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Avalonia.OpenGL.Features;
 using Avalonia.Platform;
 using Avalonia.Reactive;
 using static Avalonia.OpenGL.Egl.EglConsts;
@@ -37,6 +38,13 @@ namespace Avalonia.OpenGL.Egl
             {
                 GlInterface = GlInterface.FromNativeUtf8GetProcAddress(version, _egl.GetProcAddress);
                 _features = features.ToDictionary(x => x.Key, x => x.Value(this));
+
+                // Auto-register DMA-BUF external objects feature if no external objects feature is registered
+                if (!_features.ContainsKey(typeof(IGlContextExternalObjectsFeature)))
+                {
+                    if (EglDmaBufExternalObjectsFeature.TryCreate(this) is { } dmaBufFeature)
+                        _features[typeof(IGlContextExternalObjectsFeature)] = dmaBufFeature;
+                }
             }
         }
 

@@ -135,5 +135,35 @@ namespace Avalonia.OpenGL.Egl
         
         [GetProcAddress("eglQueryDeviceAttribEXT", true)]
         public partial bool QueryDeviceAttribExt(IntPtr display, int attr, out IntPtr res);
+
+        // EGL_KHR_image_base
+        [GetProcAddress("eglCreateImageKHR", true)]
+        public partial IntPtr CreateImageKHR(IntPtr dpy, IntPtr ctx, int target, IntPtr buffer, int[] attribs);
+
+        [GetProcAddress("eglDestroyImageKHR", true)]
+        public partial bool DestroyImageKHR(IntPtr dpy, IntPtr image);
+
+        // EGL_EXT_image_dma_buf_import_modifiers
+        [GetProcAddress("eglQueryDmaBufFormatsEXT", true)]
+        public partial bool QueryDmaBufFormatsEXT(IntPtr dpy, int maxFormats, int[]? formats, out int numFormats);
+
+        [GetProcAddress("eglQueryDmaBufModifiersEXT", true)]
+        public partial bool QueryDmaBufModifiersEXT(IntPtr dpy, int format, int maxModifiers, long[]? modifiers, int[]? externalOnly, out int numModifiers);
+
+        // EGL_KHR_fence_sync / EGL_ANDROID_native_fence_sync
+        [GetProcAddress("eglCreateSyncKHR", true)]
+        public partial IntPtr CreateSyncKHR(IntPtr dpy, int type, int[] attribs);
+
+        [GetProcAddress("eglDestroySyncKHR", true)]
+        public partial bool DestroySyncKHR(IntPtr dpy, IntPtr sync);
+
+        [GetProcAddress("eglClientWaitSyncKHR", true)]
+        public partial int ClientWaitSyncKHR(IntPtr dpy, IntPtr sync, int flags, long timeout);
+
+        [GetProcAddress("eglWaitSyncKHR", true)]
+        public partial int WaitSyncKHR(IntPtr dpy, IntPtr sync, int flags);
+
+        [GetProcAddress("eglDupNativeFenceFDANDROID", true)]
+        public partial int DupNativeFenceFDANDROID(IntPtr dpy, IntPtr sync);
     }
 }

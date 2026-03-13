@@ -82,4 +82,10 @@ internal unsafe partial class VulkanInstanceApi
     public partial void GetPhysicalDeviceProperties2(
         VkPhysicalDevice                            physicalDevice,
         VkPhysicalDeviceProperties2*                pProperties);
+
+    [GetProcAddress("vkGetPhysicalDeviceFormatProperties2", true)]
+    public partial void GetPhysicalDeviceFormatProperties2(
+        VkPhysicalDevice physicalDevice,
+        VkFormat format,
+        VkFormatProperties2* pFormatProperties);
 }

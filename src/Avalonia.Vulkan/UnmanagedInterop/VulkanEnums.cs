@@ -2,6 +2,16 @@ using System;
 
 namespace Avalonia.Vulkan.UnmanagedInterop
 {
+    internal static class VkQueueFamilyConstants
+    {
+        // VK_QUEUE_FAMILY_EXTERNAL (0xFFFFFFFE) — for ownership transfers to/from external APIs
+        public const uint VK_QUEUE_FAMILY_EXTERNAL = ~1u;
+
+        // VK_QUEUE_FAMILY_FOREIGN_EXT (0xFFFFFFFF) — for ownership transfers to/from foreign queues
+        // Provided by VK_EXT_queue_family_foreign
+        public const uint VK_QUEUE_FAMILY_FOREIGN_EXT = ~0u;
+    }
+
     internal enum VkResult
     {
         VK_SUCCESS = 0,
@@ -1901,6 +1911,15 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         VK_COMPONENT_SWIZZLE_G = 4,
         VK_COMPONENT_SWIZZLE_B = 5,
         VK_COMPONENT_SWIZZLE_A = 6,
+    }
+
+    [Flags]
+    enum VkFormatFeatureFlags : uint
+    {
+        VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT = 0x00000001,
+        VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT = 0x00000080,
+        VK_FORMAT_FEATURE_TRANSFER_SRC_BIT = 0x00004000,
+        VK_FORMAT_FEATURE_TRANSFER_DST_BIT = 0x00008000,
     }
 
     enum VkDependencyFlags

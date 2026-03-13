@@ -218,5 +218,47 @@ namespace Avalonia.OpenGL.Egl
         public const int  EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE = 0x33A6;
         
         public const int EGL_TEXTURE_INTERNAL_FORMAT_ANGLE = 0x345D;
+
+        // EGL_KHR_image_base
+        public const int EGL_NO_IMAGE_KHR = 0;
+
+        // EGL_EXT_image_dma_buf_import
+        public const int EGL_LINUX_DMA_BUF_EXT = 0x3270;
+        public const int EGL_LINUX_DRM_FOURCC_EXT = 0x3271;
+        public const int EGL_DMA_BUF_PLANE0_FD_EXT = 0x3272;
+        public const int EGL_DMA_BUF_PLANE0_OFFSET_EXT = 0x3273;
+        public const int EGL_DMA_BUF_PLANE0_PITCH_EXT = 0x3274;
+        public const int EGL_DMA_BUF_PLANE1_FD_EXT = 0x3275;
+        public const int EGL_DMA_BUF_PLANE1_OFFSET_EXT = 0x3276;
+        public const int EGL_DMA_BUF_PLANE1_PITCH_EXT = 0x3277;
+        public const int EGL_DMA_BUF_PLANE2_FD_EXT = 0x3278;
+        public const int EGL_DMA_BUF_PLANE2_OFFSET_EXT = 0x3279;
+        public const int EGL_DMA_BUF_PLANE2_PITCH_EXT = 0x327A;
+
+        // EGL_EXT_image_dma_buf_import_modifiers
+        public const int EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT = 0x3443;
+        public const int EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT = 0x3444;
+        public const int EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT = 0x3445;
+        public const int EGL_DMA_BUF_PLANE1_MODIFIER_HI_EXT = 0x3446;
+        public const int EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT = 0x3447;
+        public const int EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT = 0x3448;
+        public const int EGL_DMA_BUF_PLANE3_FD_EXT = 0x3440;
+        public const int EGL_DMA_BUF_PLANE3_OFFSET_EXT = 0x3441;
+        public const int EGL_DMA_BUF_PLANE3_PITCH_EXT = 0x3442;
+        public const int EGL_DMA_BUF_PLANE3_MODIFIER_LO_EXT = 0x3449;
+        public const int EGL_DMA_BUF_PLANE3_MODIFIER_HI_EXT = 0x344A;
+
+        // EGL_ANDROID_native_fence_sync
+        public const int EGL_SYNC_NATIVE_FENCE_ANDROID = 0x3144;
+        public const int EGL_SYNC_NATIVE_FENCE_FD_ANDROID = 0x3145;
+        public const int EGL_NO_NATIVE_FENCE_FD_ANDROID = -1;
+        public const int EGL_SYNC_NATIVE_FENCE_SIGNALED_ANDROID = 0x3146;
+
+        // EGL_KHR_fence_sync
+        public const int EGL_SYNC_FENCE_KHR = 0x30F9;
+        public const int EGL_SYNC_FLUSH_COMMANDS_BIT_KHR = 0x0001;
+        public const long EGL_FOREVER_KHR = unchecked((long)0xFFFFFFFFFFFFFFFF);
+        public const int EGL_CONDITION_SATISFIED_KHR = 0x30F6;
+        public const int EGL_TIMEOUT_EXPIRED_KHR = 0x30F5;
     }
 }

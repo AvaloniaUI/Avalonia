@@ -764,4 +764,67 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public void* pNext;
         public VkExternalMemoryHandleTypeFlagBits handleTypes;
     }
+
+    // DRM format modifier support (VK_EXT_image_drm_format_modifier)
+
+    struct VkSubresourceLayout
+    {
+        public VkDeviceSize offset;
+        public VkDeviceSize size;
+        public VkDeviceSize rowPitch;
+        public VkDeviceSize arrayPitch;
+        public VkDeviceSize depthPitch;
+    }
+
+    unsafe struct VkImageDrmFormatModifierExplicitCreateInfoEXT
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public ulong drmFormatModifier;
+        public uint32_t drmFormatModifierPlaneCount;
+        public VkSubresourceLayout* pPlaneLayouts;
+    }
+
+    unsafe struct VkDrmFormatModifierPropertiesEXT
+    {
+        public ulong drmFormatModifier;
+        public uint32_t drmFormatModifierPlaneCount;
+        public VkFormatFeatureFlags drmFormatModifierTilingFeatures;
+    }
+
+    unsafe struct VkDrmFormatModifierPropertiesListEXT
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public uint32_t drmFormatModifierCount;
+        public VkDrmFormatModifierPropertiesEXT* pDrmFormatModifierProperties;
+    }
+
+    unsafe struct VkFormatProperties2
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public VkFormatProperties formatProperties;
+    }
+
+    struct VkFormatProperties
+    {
+        public VkFormatFeatureFlags linearTilingFeatures;
+        public VkFormatFeatureFlags optimalTilingFeatures;
+        public VkFormatFeatureFlags bufferFeatures;
+    }
+
+    unsafe struct VkMemoryFdPropertiesKHR
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public uint32_t memoryTypeBits;
+    }
+
+    unsafe struct VkPhysicalDeviceExternalImageFormatInfo
+    {
+        public VkStructureType sType;
+        public void* pNext;
+        public VkExternalMemoryHandleTypeFlagBits handleType;
+    }
 }
