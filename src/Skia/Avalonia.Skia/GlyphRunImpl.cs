@@ -67,7 +67,7 @@ namespace Avalonia.Skia
 
             using var font = CreateFont(defaultTextOptions);
 
-            var runBounds = new Rect();
+            Rect? runBounds = null;
             var glyphBounds = ArrayPool<SKRect>.Shared.Rent(count);
 
             font.GetGlyphWidths(_glyphIndices, null, glyphBounds.AsSpan(0, count));
@@ -79,14 +79,23 @@ namespace Avalonia.Skia
                 var gBounds = glyphBounds[i];
                 var advance = glyphInfos[i].GlyphAdvance;
 
-                runBounds = runBounds.Union(new Rect(currentX + gBounds.Left, gBounds.Top, gBounds.Width, gBounds.Height));
+                var glyphRect = new Rect(currentX + gBounds.Left, gBounds.Top, gBounds.Width, gBounds.Height);
+                
+                if (runBounds == null)
+                {
+                    runBounds = glyphRect;
+                }
+                else
+                {
+                    runBounds = runBounds.Value.Union(glyphRect);
+                }
 
                 currentX += advance;
             }
             ArrayPool<SKRect>.Shared.Return(glyphBounds);
 
             BaselineOrigin = baselineOrigin;
-            Bounds = runBounds.Translate(new Vector(baselineOrigin.X, baselineOrigin.Y));
+            Bounds = (runBounds ?? new Rect()).Translate(new Vector(baselineOrigin.X, baselineOrigin.Y));
         }
 
         public double FontRenderingEmSize { get; }
