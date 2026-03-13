@@ -58,7 +58,7 @@ internal partial class X11Screens
             XRRGetOutputProperty(x11.Display, rrOutput, x11.Atoms.EDID, 0, EDIDStructureLength, false, false,
                 x11.Atoms.AnyPropertyType, out IntPtr actualType, out int actualFormat, out int bytesAfter, out _,
                 out IntPtr prop);
-            if (actualType != x11.Atoms.XA_INTEGER)
+            if (actualType != x11.Atoms.INTEGER)
                 return null;
             if (actualFormat != 8) // Expecting an byte array
                 return null;

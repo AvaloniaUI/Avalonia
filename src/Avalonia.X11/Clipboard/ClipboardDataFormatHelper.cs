@@ -19,7 +19,7 @@ internal static class ClipboardDataFormatHelper
 
         if (formatAtom == atoms.UTF16_STRING ||
             formatAtom == atoms.UTF8_STRING ||
-            formatAtom == atoms.XA_STRING ||
+            formatAtom == atoms.STRING ||
             formatAtom == atoms.OEMTEXT)
         {
             return DataFormat.Text;
@@ -92,7 +92,7 @@ internal static class ClipboardDataFormatHelper
 
     private static IntPtr GetPreferredStringFormatAtom(IntPtr[] textFormatAtoms, X11Atoms atoms)
     {
-        ReadOnlySpan<IntPtr> preferredFormats = [atoms.UTF16_STRING, atoms.UTF8_STRING, atoms.XA_STRING];
+        ReadOnlySpan<IntPtr> preferredFormats = [atoms.UTF16_STRING, atoms.UTF8_STRING, atoms.STRING];
 
         foreach (var preferredFormat in preferredFormats)
         {
@@ -111,7 +111,7 @@ internal static class ClipboardDataFormatHelper
         if (formatAtom == atoms.UTF8_STRING)
             return Encoding.UTF8;
 
-        if (formatAtom == atoms.XA_STRING || formatAtom == atoms.OEMTEXT)
+        if (formatAtom == atoms.STRING || formatAtom == atoms.OEMTEXT)
             return Encoding.ASCII;
 
         return null;

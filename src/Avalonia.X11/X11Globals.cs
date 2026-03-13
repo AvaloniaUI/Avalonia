@@ -109,13 +109,13 @@ namespace Avalonia.X11
         {
             XGetWindowProperty(_x11.Display, _rootWindow, _x11.Atoms._NET_SUPPORTING_WM_CHECK,
                 IntPtr.Zero, new IntPtr(IntPtr.Size), false,
-                _x11.Atoms.XA_WINDOW, out IntPtr actualType, out int actualFormat, out IntPtr nitems,
+                _x11.Atoms.WINDOW, out IntPtr actualType, out int actualFormat, out IntPtr nitems,
                 out IntPtr bytesAfter, out IntPtr prop);
             if (nitems.ToInt32() != 1)
                 return IntPtr.Zero;
             try
             {
-                if (actualType != _x11.Atoms.XA_WINDOW)
+                if (actualType != _x11.Atoms.WINDOW)
                     return IntPtr.Zero;
                 return *(IntPtr*)prop.ToPointer();
             }
@@ -197,7 +197,7 @@ namespace Avalonia.X11
             if (wm == IntPtr.Zero)
                 return WindowActivationTrackingMode.FocusEvents;
             var supportedFeatures = XGetWindowPropertyAsIntPtrArray(_x11.Display, _x11.RootWindow,
-                _x11.Atoms._NET_SUPPORTED, _x11.Atoms.XA_ATOM) ?? [];
+                _x11.Atoms._NET_SUPPORTED, _x11.Atoms.ATOM) ?? [];
 
             if (supportedFeatures.Contains(_x11.Atoms._NET_WM_STATE_FOCUSED))
                 return WindowActivationTrackingMode._NET_WM_STATE_FOCUSED;
