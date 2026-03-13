@@ -243,7 +243,7 @@ namespace Avalonia.X11.Clipboard
         private IntPtr GetOwner()
             => XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD);
         
-        private ClipboardReadSession OpenReadSession() => new(_platform);
+        private SelectionReadSession OpenReadSession() => ClipboardReadSessionFactory.CreateSession(_platform);
 
         private IntPtr[] ConvertDataTransfer(IAsyncDataTransfer? dataTransfer)
         {
@@ -326,7 +326,7 @@ namespace Avalonia.X11.Clipboard
         {
             using var session = OpenReadSession();
 
-            var formatAtoms = await session.SendFormatRequest() ?? [];
+            var formatAtoms = await session.SendFormatRequest(0) ?? [];
             return ClipboardDataFormatHelper.ToDataFormats(formatAtoms, _x11.Atoms);
         }
 

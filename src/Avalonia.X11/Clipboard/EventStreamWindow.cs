@@ -4,10 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
+using Avalonia.X11.DragDrop;
 
 namespace Avalonia.X11.Clipboard;
 
-internal class EventStreamWindow : IDisposable
+internal sealed class EventStreamWindow : IEventWaiter
 {
     private readonly AvaloniaX11Platform _platform;
     private IntPtr _handle;
@@ -73,22 +74,15 @@ internal class EventStreamWindow : IDisposable
         }
     }
 
-    public Task<XEvent?> WaitForEventAsync(Func<XEvent, bool> predicate, TimeSpan? timeout = null)
+    public Task<XEvent?> WaitForEventAsync(Func<XEvent, bool> predicate, TimeSpan timeout)
     {
-        timeout ??= TimeSpan.FromSeconds(5);
-        
-        if (timeout < TimeSpan.Zero)
-            throw new TimeoutException();
-        if(timeout > TimeSpan.FromDays(1))
-            throw new ArgumentOutOfRangeException(nameof(timeout));
-        
         var tcs = new TaskCompletionSource<XEvent?>();
-        _addedListeners.Add((predicate, tcs, _time.Elapsed + timeout.Value));
+        _addedListeners.Add((predicate, tcs, _time.Elapsed + timeout));
 
         _timeoutTimer.Start();
         return tcs.Task;
     }
-    
+
     public void Dispose()
     {
         _timeoutTimer.Stop();

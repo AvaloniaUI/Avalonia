@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.X11.Clipboard;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11.DragDrop;
@@ -23,12 +24,20 @@ internal sealed class DragDropDataTransfer(
 
     public Point? LastPosition { get; set; }
 
+    public IntPtr LastTimestamp { get; set; }
+
     protected override DataFormat[] ProvideFormats()
         => dataFormats;
 
     protected override PlatformDataTransferItem[] ProvideItems()
     {
         return [];
+    }
+
+    private SelectionReadSession CreateSession()
+    {
+        var eventWaiter = new SynchronousEventWaiter(display);
+        return new SelectionReadSession(display, targetWindow, atoms.XdndSelection, eventWaiter, atoms);
     }
 
     public override void Dispose()

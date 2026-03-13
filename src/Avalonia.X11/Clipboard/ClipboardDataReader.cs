@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input;
@@ -19,36 +18,33 @@ internal sealed class ClipboardDataReader(
     DataFormat[] dataFormats)
     : IDisposable
 {
-    private readonly X11Info _x11 = x11;
-    private readonly AvaloniaX11Platform _platform = platform;
-    private readonly IntPtr[] _textFormatAtoms = textFormatAtoms;
     private IntPtr _owner = owner;
 
     private bool IsOwnerStillValid()
-        => _owner != IntPtr.Zero && XGetSelectionOwner(_x11.Display, _x11.Atoms.CLIPBOARD) == _owner;
+        => _owner != IntPtr.Zero && XGetSelectionOwner(x11.Display, x11.Atoms.CLIPBOARD) == _owner;
     
     public async Task<object?> TryGetAsync(DataFormat format)
     {
         if (!IsOwnerStillValid())
             return null;
 
-        var formatAtom = ClipboardDataFormatHelper.ToAtom(format, _textFormatAtoms, _x11.Atoms, dataFormats);
+        var formatAtom = ClipboardDataFormatHelper.ToAtom(format, textFormatAtoms, x11.Atoms, dataFormats);
         if (formatAtom == IntPtr.Zero)
             return null;
 
-        using var session = new ClipboardReadSession(_platform);
-        var result = await session.SendDataRequest(formatAtom).ConfigureAwait(false);
+        using var session = ClipboardReadSessionFactory.CreateSession(platform);
+        var result = await session.SendDataRequest(formatAtom, 0).ConfigureAwait(false);
         return ConvertDataResult(result, format, formatAtom);
     }
 
-    private object? ConvertDataResult(ClipboardReadSession.GetDataResult? result, DataFormat format, IntPtr formatAtom)
+    private object? ConvertDataResult(SelectionReadSession.GetDataResult? result, DataFormat format, IntPtr formatAtom)
     {
         if (result is null)
             return null;
 
         if (DataFormat.Text.Equals(format))
         {
-            return ClipboardDataFormatHelper.TryGetStringEncoding(result.TypeAtom, _x11.Atoms) is { } textEncoding ?
+            return ClipboardDataFormatHelper.TryGetStringEncoding(result.TypeAtom, x11.Atoms) is { } textEncoding ?
                 textEncoding.GetString(result.AsBytes()) :
                 null;
         }

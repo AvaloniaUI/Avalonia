@@ -30,7 +30,7 @@ internal sealed class XdndHandler
         _atoms = atoms;
 
         IntPtr version = XdndVersion;
-        XChangeProperty(_display, _window.Handle, _atoms.XdndAware, _atoms.XA_ATOM, 32, PropertyMode.Replace, ref version, 1);
+        XChangeProperty(_display, _window.Handle, _atoms.XdndAware, _atoms.ATOM, 32, PropertyMode.Replace, ref version, 1);
     }
 
     public void HandleXdndEnter(in XClientMessageEvent message)
@@ -55,7 +55,7 @@ internal sealed class XdndHandler
 
         if (hasExtraFormats)
         {
-            if (XGetWindowPropertyAsIntPtrArray(_display, sourceWindow, _atoms.XdndTypeList, _atoms.XA_ATOM)
+            if (XGetWindowPropertyAsIntPtrArray(_display, sourceWindow, _atoms.XdndTypeList, _atoms.ATOM)
                 is { } formatList)
             {
                 foreach (var format in formatList)
@@ -97,6 +97,7 @@ internal sealed class XdndHandler
         var eventType = _currentDrag.LastPosition is null ? RawDragEventType.DragEnter : RawDragEventType.DragOver;
 
         _currentDrag.LastPosition = position;
+        _currentDrag.LastTimestamp = message.ptr4;
 
         var dragEnter = new RawDragEvent(
             _dragDropDevice,
@@ -130,6 +131,8 @@ internal sealed class XdndHandler
 
         XSendEvent(_display, sourceWindow, false, (IntPtr)EventMask.NoEventMask, ref evt);
         XFlush(_display);
+
+        _currentDrag.ReadText();
     }
 
     public void HandleXdndLeave(in XClientMessageEvent message)

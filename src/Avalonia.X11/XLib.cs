@@ -60,10 +60,13 @@ namespace Avalonia.X11
         public static extern IntPtr XDefaultRootWindow(IntPtr display);
 
         [DllImport(libX11)]
-        public static extern IntPtr XNextEvent(IntPtr display, out XEvent xevent);
+        public static extern int XNextEvent(IntPtr display, out XEvent xevent);
         
         [DllImport(libX11)]
-        public static extern IntPtr XNextEvent(IntPtr display, XEvent* xevent);
+        public static extern int XNextEvent(IntPtr display, XEvent* xevent);
+
+        [LibraryImport(libX11)]
+        public static partial int XPutBackEvent(IntPtr display, in XEvent evt);
 
         [DllImport(libX11)]
         public static extern int XConnectionNumber(IntPtr diplay);
