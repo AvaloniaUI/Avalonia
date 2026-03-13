@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -334,6 +334,7 @@ namespace Avalonia.Controls.Presenters
         protected override bool BypassFlowDirectionPolicies => true;
 
         internal TextSelectionHandleCanvas? TextSelectionHandleCanvas { get; set; }
+        internal TextBoxTextInputMethodClient? CurrentImClient { get; set; }
 
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
@@ -1026,15 +1027,7 @@ namespace Avalonia.Controls.Presenters
                 OnPreeditChanged(PreeditText, PreeditTextCursorPosition);
             }
 
-            if(change.Property == TextProperty)
-            {
-                if (!string.IsNullOrEmpty(PreeditText))
-                {
-                    SetCurrentValue(PreeditTextProperty, null);
-                }
-            }
-
-            if(change.Property == CaretIndexProperty)
+            if(change.Property == TextProperty || change.Property == CaretIndexProperty)
             {
                 if (!string.IsNullOrEmpty(PreeditText))
                 {
@@ -1067,7 +1060,7 @@ namespace Avalonia.Controls.Presenters
                 case nameof(SelectionStart):
                 case nameof(SelectionEnd):
                 case nameof(SelectionForegroundBrush):
-                case nameof(ShowSelectionHighlightProperty):
+                case nameof(ShowSelectionHighlight):
 
                 case nameof(PasswordChar):
                 case nameof(RevealPassword):

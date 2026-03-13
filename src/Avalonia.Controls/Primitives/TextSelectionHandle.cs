@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Primitives
 
         private Point _startPosition;
 
-        internal Point IndicatorPosition => IsDragging ? _startPosition.WithX(_startPosition.X) + _delta : Bounds.Position.WithX(Bounds.Position.X).WithY(Bounds.Y);
+        internal Point IndicatorPosition => IsDragging ? _startPosition + _delta : Bounds.Position;
 
         internal bool IsDragging { get; private set; }
 
@@ -51,7 +51,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDragStarted(e);
 
-            _startPosition = Bounds.Position;
+            _startPosition = GetTopLeft();
             _delta = default;
             IsDragging = true;
         }
@@ -59,9 +59,13 @@ namespace Avalonia.Controls.Primitives
         protected override void OnDragDelta(VectorEventArgs e)
         {
             base.OnDragDelta(e);
+            var newDelta = e.Vector;
 
-            _delta = e.Vector;
-            UpdateTextSelectionHandlePosition();
+            if (Math.Abs((newDelta - _delta).Length) > 0)
+            {
+                _delta = e.Vector;
+                UpdateTextSelectionHandlePosition();
+            }
         }
 
         protected override void OnDragCompleted(VectorEventArgs e)
@@ -134,6 +138,9 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
+            if (e.Pointer.Captured != this)
+                return;
+
             VectorEventArgs ev;
 
             if (!_lastPoint.HasValue)
@@ -163,8 +170,9 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            e.Handled = true;
             PseudoClasses.Add(":pressed");
+            e.Pointer.Capture(this);
+            var point = e.GetPosition(this);
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -184,6 +192,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             PseudoClasses.Remove(":pressed");
+            e.Pointer.Capture(null);
         }
     }
 }
