@@ -5,8 +5,11 @@ using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -179,6 +182,18 @@ public class TabbedPageTests
             tp.Pages = new AvaloniaList<Page> { page };
             tp.Pages = null;
             Assert.DoesNotContain(page, ((ILogical)tp).LogicalChildren);
+        }
+
+        [Fact]
+        public void Pages_SetNull_ClearsCurrentPage()
+        {
+            var tp = new TestableTabbedPage();
+            var page = new ContentPage();
+            tp.Pages = new AvaloniaList<Page> { page };
+            tp.CallCommitSelection(0, page);
+            Assert.NotNull(tp.CurrentPage);
+            tp.Pages = null;
+            Assert.Null(tp.CurrentPage);
         }
 
         [Fact]
@@ -682,6 +697,194 @@ public class TabbedPageTests
         }
     }
 
+    public class KeyboardNavigationTests : ScopedTestBase
+    {
+        [Fact]
+        public void IsKeyboardNavigationEnabled_Default_IsTrue()
+        {
+            var tp = new TabbedPage();
+            Assert.True(tp.IsKeyboardNavigationEnabled);
+        }
+
+        [Fact]
+        public void IsKeyboardNavigationEnabled_False_RightKey_IsNotHandled()
+        {
+            var tp = new TestableTabbedPage { IsKeyboardNavigationEnabled = false };
+            tp.Pages = new AvaloniaList<Page> { new ContentPage(), new ContentPage() };
+            tp.SelectedIndex = 0;
+
+            bool handled = tp.SimulateKeyDownReturnsHandled(Key.Right);
+
+            Assert.False(handled);
+        }
+
+        [Fact]
+        public void IsKeyboardNavigationEnabled_False_CtrlTab_IsNotHandled()
+        {
+            var tp = new TestableTabbedPage { IsKeyboardNavigationEnabled = false };
+            tp.Pages = new AvaloniaList<Page> { new ContentPage(), new ContentPage() };
+            tp.SelectedIndex = 0;
+
+            bool handled = tp.SimulateKeyDownWithModifiersReturnsHandled(Key.Tab, KeyModifiers.Control);
+
+            Assert.False(handled);
+        }
+
+        [Fact]
+        public void IsKeyboardNavigationEnabled_True_NoTemplate_KeyIsNotHandled()
+        {
+            var tp = new TestableTabbedPage { IsKeyboardNavigationEnabled = true };
+            tp.Pages = new AvaloniaList<Page> { new ContentPage(), new ContentPage() };
+
+            bool handled = tp.SimulateKeyDownReturnsHandled(Key.Right);
+
+            Assert.False(handled);
+        }
+    }
+
+    public class KeyboardNavigationWithTemplateTests : ScopedTestBase
+    {
+        // Builds a TabbedPage with a real PART_TabControl wired up so OnKeyDown can navigate.
+        private static TestableTabbedPage MakeTabbed(int pageCount, int selectedIndex = 0,
+            TabPlacement placement = TabPlacement.Top)
+        {
+            var tp = new TestableTabbedPage { TabPlacement = placement };
+            for (int i = 0; i < pageCount; i++)
+                ((AvaloniaList<Page>)tp.Pages!).Add(new ContentPage { Header = $"Tab {i}" });
+
+            tp.Template = new FuncControlTemplate<TabbedPage>((parent, scope) =>
+                new TabControl
+                {
+                    Name = "PART_TabControl",
+                    ItemsSource = parent.Pages,
+                }.RegisterInNameScope(scope));
+
+            _ = new TestRoot { Child = tp };
+            tp.ApplyTemplate();
+            tp.SelectedIndex = selectedIndex;
+            return tp;
+        }
+
+        [Fact]
+        public void RightKey_NavigatesToNextPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            tp.SimulateKeyDown(Key.Right);
+            Assert.Equal(1, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void LeftKey_NavigatesToPreviousPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 1);
+            tp.SimulateKeyDown(Key.Left);
+            Assert.Equal(0, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void DownKey_WithVerticalPlacement_NavigatesToNextPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0, placement: TabPlacement.Left);
+            tp.SimulateKeyDown(Key.Down);
+            Assert.Equal(1, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void UpKey_WithVerticalPlacement_NavigatesToPreviousPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 1, placement: TabPlacement.Left);
+            tp.SimulateKeyDown(Key.Up);
+            Assert.Equal(0, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void RightKey_AtLastPage_DoesNotNavigate()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 2);
+            tp.SimulateKeyDown(Key.Right);
+            Assert.Equal(2, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void LeftKey_AtFirstPage_DoesNotNavigate()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            tp.SimulateKeyDown(Key.Left);
+            Assert.Equal(0, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void RightKey_MarksEventHandled()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            bool handled = tp.SimulateKeyDownReturnsHandled(Key.Right);
+            Assert.True(handled);
+        }
+
+        [Fact]
+        public void RightKey_AtLastPage_DoesNotMarkEventHandled()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 2);
+            bool handled = tp.SimulateKeyDownReturnsHandled(Key.Right);
+            Assert.False(handled);
+        }
+
+        [Fact]
+        public void CtrlTab_NavigatesToNextPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            bool handled = tp.SimulateKeyDownWithModifiersReturnsHandled(Key.Tab, KeyModifiers.Control);
+            Assert.Equal(1, tp.SelectedIndex);
+            Assert.True(handled);
+        }
+
+        [Fact]
+        public void CtrlShiftTab_NavigatesToPreviousPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 1);
+            bool handled = tp.SimulateKeyDownWithModifiersReturnsHandled(Key.Tab, KeyModifiers.Control | KeyModifiers.Shift);
+            Assert.Equal(0, tp.SelectedIndex);
+            Assert.True(handled);
+        }
+
+        [Fact]
+        public void RtlFlowDirection_LeftKey_NavigatesToNextPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            tp.FlowDirection = FlowDirection.RightToLeft;
+            tp.SimulateKeyDown(Key.Left);
+            Assert.Equal(1, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void RtlFlowDirection_RightKey_NavigatesToPreviousPage()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 1);
+            tp.FlowDirection = FlowDirection.RightToLeft;
+            tp.SimulateKeyDown(Key.Right);
+            Assert.Equal(0, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void RightKey_SkipsDisabledTab()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            TabbedPage.SetIsTabEnabled((Page)((System.Collections.IList)tp.Pages!)[1]!, false);
+            tp.SimulateKeyDown(Key.Right);
+            Assert.Equal(2, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void RightKey_AllTabsAhead_Disabled_DoesNotNavigate()
+        {
+            var tp = MakeTabbed(3, selectedIndex: 0);
+            TabbedPage.SetIsTabEnabled((Page)((System.Collections.IList)tp.Pages!)[1]!, false);
+            TabbedPage.SetIsTabEnabled((Page)((System.Collections.IList)tp.Pages!)[2]!, false);
+            tp.SimulateKeyDown(Key.Right);
+            Assert.Equal(0, tp.SelectedIndex);
+        }
+    }
+
     public class SelectingMultiPageTests : ScopedTestBase
     {
         [Fact]
@@ -707,13 +910,13 @@ public class TabbedPageTests
         }
     }
 
-    public class CreateIconControlTests : ScopedTestBase
+    public class IconTests : ScopedTestBase
     {
         [Fact]
         public void Geometry_ReturnsPath()
         {
             var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-            var result = TabbedPage.CreateIconControl(geometry);
+            var result = TabbedPage.CreateIconContent(geometry);
             Assert.IsType<Path>(result);
             Assert.Same(geometry, ((Path)result!).Data);
         }
@@ -723,7 +926,7 @@ public class TabbedPageTests
         {
             var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
             var pathIcon = new PathIcon { Data = geometry };
-            var result = TabbedPage.CreateIconControl(pathIcon);
+            var result = TabbedPage.CreateIconContent(pathIcon);
             Assert.IsType<Path>(result);
             Assert.Same(geometry, ((Path)result!).Data);
         }
@@ -731,21 +934,21 @@ public class TabbedPageTests
         [Fact]
         public void EmptyString_ReturnsNull()
         {
-            var result = TabbedPage.CreateIconControl("");
+            var result = TabbedPage.CreateIconContent("");
             Assert.Null(result);
         }
 
         [Fact]
         public void NullString_ReturnsNull()
         {
-            var result = TabbedPage.CreateIconControl((string?)null);
+            var result = TabbedPage.CreateIconContent((string?)null);
             Assert.Null(result);
         }
 
         [Fact]
         public void Null_ReturnsNull()
         {
-            var result = TabbedPage.CreateIconControl(null);
+            var result = TabbedPage.CreateIconContent(null);
             Assert.Null(result);
         }
 
@@ -755,7 +958,7 @@ public class TabbedPageTests
             var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
             var drawing = new GeometryDrawing { Geometry = geometry };
             var drawingImage = new DrawingImage(drawing);
-            var result = TabbedPage.CreateIconControl(drawingImage);
+            var result = TabbedPage.CreateIconContent(drawingImage);
             Assert.IsType<Path>(result);
             Assert.Same(geometry, ((Path)result!).Data);
         }
@@ -764,14 +967,29 @@ public class TabbedPageTests
         public void Path_HasStretchUniform()
         {
             var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-            var result = TabbedPage.CreateIconControl(geometry);
+            var result = TabbedPage.CreateIconContent(geometry);
             Assert.Equal(Stretch.Uniform, ((Path)result!).Stretch);
+        }
+
+        [Fact]
+        public void Image_ReturnsImage()
+        {
+            var image = new TestImage();
+            var result = TabbedPage.CreateIconContent(image);
+            Assert.IsType<Image>(result);
+            Assert.Same(image, ((Image)result!).Source);
+        }
+
+        private sealed class TestImage : IImage
+        {
+            public Size Size => new Size(1, 1);
+            public void Draw(DrawingContext context, Rect sourceRect, Rect destRect) { }
         }
 
         [Fact]
         public void UnsupportedType_ReturnsNull()
         {
-            var result = TabbedPage.CreateIconControl(42);
+            var result = TabbedPage.CreateIconContent(42);
             Assert.Null(result);
         }
     }
@@ -809,6 +1027,86 @@ public class TabbedPageTests
         }
     }
 
+    public class SwipeGestureTests : ScopedTestBase
+    {
+        [Fact]
+        public void SameGestureId_OnlyAdvancesOneTab()
+        {
+            var tp = CreateSwipeReadyTabbedPage();
+
+            var firstSwipe = new SwipeGestureEventArgs(7, new Vector(20, 0), default);
+            var repeatedSwipe = new SwipeGestureEventArgs(7, new Vector(20, 0), default);
+
+            tp.RaiseEvent(firstSwipe);
+            tp.RaiseEvent(repeatedSwipe);
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.True(firstSwipe.Handled);
+            Assert.False(repeatedSwipe.Handled);
+            Assert.Equal(1, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void NewGestureId_CanAdvanceAgain()
+        {
+            var tp = CreateSwipeReadyTabbedPage();
+
+            tp.RaiseEvent(new SwipeGestureEventArgs(7, new Vector(20, 0), default));
+            tp.RaiseEvent(new SwipeGestureEventArgs(8, new Vector(20, 0), default));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(2, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void MouseSwipe_Advances_Tab()
+        {
+            var tp = CreateSwipeReadyTabbedPage();
+            var mouse = new MouseTestHelper();
+
+            mouse.Down(tp, position: new Point(200, 100));
+            mouse.Move(tp, new Point(160, 100));
+            mouse.Up(tp, position: new Point(160, 100));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(1, tp.SelectedIndex);
+        }
+
+        private static TabbedPage CreateSwipeReadyTabbedPage()
+        {
+            var tp = new TabbedPage
+            {
+                IsGestureEnabled = true,
+                Width = 400,
+                Height = 300,
+                TabPlacement = TabPlacement.Top,
+                SelectedIndex = 0,
+                Pages = new AvaloniaList<Page>
+                {
+                    new ContentPage { Header = "A" },
+                    new ContentPage { Header = "B" },
+                    new ContentPage { Header = "C" }
+                },
+                Template = new FuncControlTemplate<TabbedPage>((parent, scope) =>
+                {
+                    var tc = new TabControl { Name = "PART_TabControl" };
+                    tc.RegisterInNameScope(scope);
+                    return tc;
+                })
+            };
+
+            var root = new TestRoot
+            {
+                ClientSize = new Size(400, 300),
+                Child = tp
+            };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            return tp;
+        }
+    }
+
     private sealed class TestableTabbedPage : TabbedPage
     {
         public void CallCommitSelection(int index, Page? page) => CommitSelection(index, page);
@@ -816,5 +1114,47 @@ public class TabbedPageTests
         public int CallFindNextEnabledTab(int start, int dir) => FindNextEnabledTab(start, dir);
 
         protected override void ApplySelectedIndex(int index) => base.ApplySelectedIndex(index);
+
+        public void SimulateKeyDown(Key key)
+        {
+            var e = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key };
+            OnKeyDown(e);
+        }
+
+        public bool SimulateKeyDownReturnsHandled(Key key)
+        {
+            var e = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key };
+            OnKeyDown(e);
+            return e.Handled;
+        }
+
+        public bool SimulateKeyDownWithModifiersReturnsHandled(Key key, KeyModifiers modifiers)
+        {
+            var e = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, KeyModifiers = modifiers };
+            OnKeyDown(e);
+            return e.Handled;
+        }
+    }
+
+    public class VisualTreeLifecycleTests : ScopedTestBase
+    {
+        [Fact]
+        public void Detach_And_Reattach_CollectionChangedStillFiresPagesChanged()
+        {
+            var pages = new AvaloniaList<Page>();
+            var tp = new TabbedPage { Pages = pages };
+            var root = new TestRoot { Child = tp };
+
+            root.Child = null;
+            root.Child = tp;
+
+            int fireCount = 0;
+            tp.PagesChanged += (_, _) => fireCount++;
+
+            pages.Add(new ContentPage { Header = "A" });
+            pages.Add(new ContentPage { Header = "B" });
+
+            Assert.Equal(2, fireCount);
+        }
     }
 }

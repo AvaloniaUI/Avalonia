@@ -24,11 +24,14 @@ namespace Avalonia.Controls
     public class TabbedPage : SelectingMultiPage
     {
         private TabControl? _tabControl;
+        private bool _ignoringDisabledSelection;
         private readonly Dictionary<TabItem, Page> _containerPageMap = new();
         private readonly Dictionary<Page, TabItem> _pageContainerMap = new();
+        private int _lastSwipeGestureId;
         private readonly SwipeGestureRecognizer _swipeRecognizer = new SwipeGestureRecognizer
         {
-            IsEnabled = false
+            IsEnabled = false,
+            IsMouseEnabled = true
         };
 
         /// <summary>
@@ -83,15 +86,20 @@ namespace Avalonia.Controls
         public static void SetIsTabEnabled(Page page, bool value) =>
             page.SetValue(IsTabEnabledProperty, value);
 
+        static TabbedPage()
+        {
+            FocusableProperty.OverrideDefaultValue<TabbedPage>(true);
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TabbedPage"/> class.
         /// </summary>
         public TabbedPage()
         {
             SetCurrentValue(PagesProperty, new AvaloniaList<Page>());
-            Focusable = true;
             GestureRecognizers.Add(_swipeRecognizer);
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
+            UpdateSwipeRecognizerAxes();
         }
 
         /// <summary>
@@ -160,12 +168,12 @@ namespace Avalonia.Controls
                 _tabControl.SelectionChanged -= TabControl_SelectionChanged;
                 _tabControl.ContainerPrepared -= OnContainerPrepared;
                 _tabControl.ContainerClearing -= OnContainerClearing;
-
-                foreach (var page in _containerPageMap.Values)
-                    page.PropertyChanged -= OnPagePropertyChanged;
-                _containerPageMap.Clear();
-                _pageContainerMap.Clear();
             }
+
+            foreach (var page in _containerPageMap.Values)
+                page.PropertyChanged -= OnPagePropertyChanged;
+            _containerPageMap.Clear();
+            _pageContainerMap.Clear();
 
             _tabControl = e.NameScope.Find<TabControl>("PART_TabControl");
 
@@ -194,7 +202,10 @@ namespace Avalonia.Controls
             base.OnPropertyChanged(change);
 
             if (change.Property == TabPlacementProperty)
+            {
                 ApplyTabPlacement();
+                UpdateSwipeRecognizerAxes();
+            }
             else if (change.Property == PageTransitionProperty && _tabControl != null)
                 _tabControl.PageTransition = change.GetNewValue<IPageTransition?>();
             else if (change.Property == IndicatorTemplateProperty)
@@ -227,6 +238,14 @@ namespace Avalonia.Controls
             };
         }
 
+        private void UpdateSwipeRecognizerAxes()
+        {
+            var placement = ResolveTabPlacement();
+            var isHorizontal = placement == TabPlacement.Top || placement == TabPlacement.Bottom;
+            _swipeRecognizer.CanHorizontallySwipe = isHorizontal;
+            _swipeRecognizer.CanVerticallySwipe = !isHorizontal;
+        }
+
         private void ApplyIndicatorTemplate()
         {
             if (_tabControl == null)
@@ -234,8 +253,6 @@ namespace Avalonia.Controls
 
             _tabControl.IndicatorTemplate = IndicatorTemplate;
         }
-
-        private bool _ignoringDisabledSelection;
 
         private void TabControl_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
@@ -294,7 +311,7 @@ namespace Avalonia.Controls
 
             tabItem.IsEnabled = GetIsTabEnabled(page);
             tabItem.Header = page.Header;
-            tabItem.Icon = CreateIconControl(page.Icon);
+            tabItem.Icon = CreateIconContent(page.Icon);
 
             _containerPageMap[tabItem] = page;
             _pageContainerMap[page] = tabItem;
@@ -318,7 +335,7 @@ namespace Avalonia.Controls
             if (e.Property == Page.IconProperty)
             {
                 if (_pageContainerMap.TryGetValue(page, out var tabItem))
-                    tabItem.Icon = CreateIconControl(page.Icon);
+                    tabItem.Icon = CreateIconContent(page.Icon);
             }
             else if (e.Property == Page.HeaderProperty)
             {
@@ -334,7 +351,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Creates a visual control from a page icon value.
         /// </summary>
-        internal static Control? CreateIconControl(object? icon)
+        internal static Control? CreateIconContent(object? icon)
         {
             Geometry? geometry = icon switch
             {
@@ -362,13 +379,7 @@ namespace Avalonia.Controls
             }
 
             if (icon is IImage image)
-            {
-                return new Image
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Source = image,
-                };
-            }
+                return new Image { Source = image };
 
             return null;
         }
@@ -402,13 +413,11 @@ namespace Avalonia.Controls
             return -1;
         }
 
-        private Page? ResolvePageAtIndex(int index)
+        private new Page? ResolvePageAtIndex(int index)
         {
             if (_tabControl?.ContainerFromIndex(index) is TabItem ti && _containerPageMap.TryGetValue(ti, out var p))
                 return p;
-            if (Pages is IList pages && (uint)index < (uint)pages.Count)
-                return pages[index] as Page;
-            return null;
+            return base.ResolvePageAtIndex(index);
         }
 
         private void SyncTabEnabledState(Page page)
@@ -500,7 +509,8 @@ namespace Avalonia.Controls
 
         private void OnSwipeGesture(object? sender, SwipeGestureEventArgs e)
         {
-            if (!IsGestureEnabled || _tabControl == null) return;
+            if (!IsGestureEnabled || _tabControl == null || e.Id == _lastSwipeGestureId)
+                return;
 
             var placement = ResolveTabPlacement();
             bool isHorizontal = placement == TabPlacement.Top || placement == TabPlacement.Bottom;
@@ -524,6 +534,7 @@ namespace Avalonia.Controls
             {
                 _tabControl.SelectedIndex = next;
                 e.Handled = true;
+                _lastSwipeGestureId = e.Id;
             }
         }
 

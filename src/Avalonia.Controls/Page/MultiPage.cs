@@ -1,11 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -87,6 +85,8 @@ namespace Avalonia.Controls
 
                 if (change.NewValue != null)
                     UpdateActivePage();
+                else
+                    SetCurrentValue(CurrentPageProperty, null);
             }
             else if (change.Property == CurrentPageProperty)
                 CurrentPageChanged?.Invoke(this, EventArgs.Empty);

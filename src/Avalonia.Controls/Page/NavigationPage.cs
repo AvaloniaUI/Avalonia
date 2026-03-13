@@ -68,6 +68,8 @@ namespace Avalonia.Controls
         private bool _isBackButtonEffectivelyEnabled;
         private DrawerPage? _drawerPage;
         private IPageTransition? _overrideTransition;
+        private Point _swipeStartPoint;
+        private int _lastSwipeGestureId;
         private bool _hasOverrideTransition;
         private readonly HashSet<object> _pageSet = new(ReferenceEqualityComparer.Instance);
 
@@ -182,6 +184,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<NavigationPage, bool>(nameof(IsGestureEnabled), true);
 
         /// <summary>
+        /// Defines the <see cref="IsNavigating"/> property.
+        /// </summary>
+        public static readonly DirectProperty<NavigationPage, bool> IsNavigatingProperty =
+            AvaloniaProperty.RegisterDirect<NavigationPage, bool>(nameof(IsNavigating), o => o._isNavigating);
+
+        /// <summary>
         /// Defines the <see cref="CanGoBack"/> property.
         /// </summary>
         public static readonly DirectProperty<NavigationPage, bool> CanGoBackProperty =
@@ -257,7 +265,13 @@ namespace Avalonia.Controls
         public NavigationPage()
         {
             SetCurrentValue(PagesProperty, new Stack<Page>());
-            GestureRecognizers.Add(new SwipeGestureRecognizer { EdgeSize = EdgeGestureWidth });
+            GestureRecognizers.Add(new SwipeGestureRecognizer
+            {
+                CanHorizontallySwipe = true,
+                CanVerticallySwipe = false,
+                IsMouseEnabled = true
+            });
+            AddHandler(PointerPressedEvent, OnSwipePointerPressed, handledEventsToo: true);
         }
 
         /// <summary>
@@ -365,6 +379,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets whether a navigation operation is currently in progress.
+        /// </summary>
+        public bool IsNavigating => _isNavigating;
+
+        /// <summary>
         /// Gets whether the navigation stack has more than one entry.
         /// </summary>
         public bool CanGoBack => _canGoBack;
@@ -424,7 +443,7 @@ namespace Avalonia.Controls
         /// </summary>
         public int StackDepth
         {
-            get => Pages is System.Collections.ICollection c ? c.Count : 0;
+            get => Pages is ICollection c ? c.Count : 0;
         }
 
         /// <summary>
@@ -451,9 +470,15 @@ namespace Avalonia.Controls
         public static void SetHasBackButton(Page page, bool value) =>
             page.SetValue(HasBackButtonProperty, value);
 
+        /// <summary>
+        /// Gets the header of the specified page.
+        /// </summary>
         public static object? GetHeader(Page page) =>
             page.GetValue(Page.HeaderProperty);
 
+        /// <summary>
+        /// Sets the header of the specified page.
+        /// </summary>
         public static void SetHeader(Page page, object? header) =>
             page.SetValue(Page.HeaderProperty, header);
 
@@ -603,11 +628,7 @@ namespace Avalonia.Controls
                 _modalPresenter.IsVisible = IsModalVisible;
             }
 
-            foreach (var p in NavigationStack)
-            {
-                p.Navigation = this;
-                p.SetInNavigationPage(true);
-            }
+            RestoreNavigationState();
 
             ApplyNavBarVisibility();
             ApplyBackButtonEnabled(IsBackButtonEffectivelyEnabled);
@@ -646,6 +667,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
+            RestoreNavigationState();
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
         }
 
@@ -674,19 +696,7 @@ namespace Avalonia.Controls
             _barHeightSub?.Dispose();
             _barHeightSub = null;
 
-            while (_modalStack.Count > 0)
-            {
-                var modal = _modalStack.Pop();
-                modal.Navigation = null;
-                modal.SetInNavigationPage(false);
-            }
-            _cachedModalStack = null;
-
-            foreach (var p in NavigationStack)
-            {
-                p.Navigation = null;
-                p.SetInNavigationPage(false);
-            }
+            ClearNavigationState();
             InvalidateNavigationStackCache();
         }
 
@@ -809,6 +819,7 @@ namespace Avalonia.Controls
             {
                 old.Navigation = null;
                 old.SetInNavigationPage(false);
+                old.SafeAreaPadding = default;
             }
 
             return old;
@@ -823,7 +834,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var previousPage = CurrentPage;
@@ -847,7 +858,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -858,8 +869,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { await PushAsync(page); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                await PushAsync(page);
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -872,7 +890,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return null;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var currentPage = CurrentPage;
@@ -897,7 +915,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -908,8 +926,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { return await PopAsync(); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                return await PopAsync();
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -922,7 +947,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var navigationStack = NavigationStack;
@@ -947,6 +972,7 @@ namespace Avalonia.Controls
                         LogicalChildren.Remove(poppedLogical);
                     popped.Navigation = null;
                     popped.SetInNavigationPage(false);
+                    popped.SafeAreaPadding = default;
                     poppedPages.Add(popped);
                 }
 
@@ -987,7 +1013,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -998,8 +1024,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { await PopToRootAsync(); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                await PopToRootAsync();
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -1015,7 +1048,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var currentPage = CurrentPage;
@@ -1037,6 +1070,7 @@ namespace Avalonia.Controls
                         LogicalChildren.Remove(poppedLogical);
                     popped.Navigation = null;
                     popped.SetInNavigationPage(false);
+                    popped.SafeAreaPadding = default;
                     poppedPages.Add(popped);
                 }
 
@@ -1075,7 +1109,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -1086,8 +1120,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { await PopToPageAsync(page); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                await PopToPageAsync(page);
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -1099,7 +1140,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var previousModal = _modalStack.Count > 0 ? (Page?)_modalStack.Peek() : null;
@@ -1133,11 +1174,11 @@ namespace Avalonia.Controls
                     }
                     _currentModalTransition?.Cancel();
                     _currentModalTransition?.Dispose();
-                    _currentModalTransition = new CancellationTokenSource();
-                    var modalCt = _currentModalTransition.Token;
+                    var modalCts = new CancellationTokenSource();
+                    _currentModalTransition = modalCts;
                     try
                     {
-                        await effectiveModalTransition.Start(null, _modalPresenter, forward: true, modalCt);
+                        await effectiveModalTransition.Start(null, _modalPresenter, forward: true, modalCts.Token);
                     }
                     catch (OperationCanceledException) { /* Transition cancelled; lifecycle events still fire below. */ }
                     catch (Exception ex)
@@ -1145,11 +1186,18 @@ namespace Avalonia.Controls
                         Logger.TryGet(LogEventLevel.Error, LogArea.Control)
                             ?.Log(this, "Modal transition threw an unhandled exception: {Exception}", ex);
                     }
-
-                    if (_modalBackPresenter != null)
+                    finally
                     {
-                        _modalBackPresenter.IsVisible = false;
-                        _modalBackPresenter.Content = null;
+                        if (_modalBackPresenter != null)
+                        {
+                            _modalBackPresenter.IsVisible = false;
+                            _modalBackPresenter.Content = null;
+                        }
+                        if (ReferenceEquals(_currentModalTransition, modalCts))
+                        {
+                            _currentModalTransition = null;
+                            modalCts.Dispose();
+                        }
                     }
                 }
                 else
@@ -1165,7 +1213,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -1176,8 +1224,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { await PushModalAsync(page); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                await PushModalAsync(page);
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -1190,7 +1245,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return null;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var modal = _modalStack.Pop();
@@ -1216,11 +1271,11 @@ namespace Avalonia.Controls
 
                         _currentModalTransition?.Cancel();
                         _currentModalTransition?.Dispose();
-                        _currentModalTransition = new CancellationTokenSource();
-                        var popCt1 = _currentModalTransition.Token;
+                        var popCts1 = new CancellationTokenSource();
+                        _currentModalTransition = popCts1;
                         try
                         {
-                            await effectiveModalTransition.Start(_modalPresenter, null, forward: false, popCt1);
+                            await effectiveModalTransition.Start(_modalPresenter, null, forward: false, popCts1.Token);
                             SwapModalPresenters();
                             if (_modalBackPresenter != null)
                                 _modalBackPresenter.Content = null;
@@ -1234,6 +1289,11 @@ namespace Avalonia.Controls
                         finally
                         {
                             SetCurrentValue(ModalContentProperty, (object?)next);
+                            if (ReferenceEquals(_currentModalTransition, popCts1))
+                            {
+                                _currentModalTransition = null;
+                                popCts1.Dispose();
+                            }
                         }
                     }
                     else
@@ -1247,11 +1307,11 @@ namespace Avalonia.Controls
                     {
                         _currentModalTransition?.Cancel();
                         _currentModalTransition?.Dispose();
-                        _currentModalTransition = new CancellationTokenSource();
-                        var popCt2 = _currentModalTransition.Token;
+                        var popCts2 = new CancellationTokenSource();
+                        _currentModalTransition = popCts2;
                         try
                         {
-                            await effectiveModalTransition.Start(_modalPresenter, null, forward: false, popCt2);
+                            await effectiveModalTransition.Start(_modalPresenter, null, forward: false, popCts2.Token);
                         }
                         catch (OperationCanceledException) { /* Transition cancelled; lifecycle events still fire below. */ }
                         catch (Exception ex)
@@ -1263,6 +1323,11 @@ namespace Avalonia.Controls
                         {
                             SetCurrentValue(IsModalVisibleProperty, false);
                             SetCurrentValue(ModalContentProperty, (object?)null);
+                            if (ReferenceEquals(_currentModalTransition, popCts2))
+                            {
+                                _currentModalTransition = null;
+                                popCts2.Dispose();
+                            }
                         }
                     }
                     else
@@ -1281,7 +1346,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -1292,13 +1357,33 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { return await PopModalAsync(); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                return await PopModalAsync();
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
         /// Pops all modal pages using <see cref="ModalTransition"/>.
         /// </summary>
+        /// <remarks>
+        /// All modals are dismissed in a single transition rather than one-by-one, so lifecycle
+        /// events differ from calling <see cref="PopModalAsync()"/> in a loop:
+        /// <list type="bullet">
+        ///   <item><description>
+        ///     <see cref="Page.NavigatedFrom"/> fires on every dismissed modal in LIFO order.
+        ///   </description></item>
+        ///   <item><description>
+        ///     <see cref="Page.NavigatedTo"/> fires only on <see cref="Page.CurrentPage"/>.
+        ///     Intermediate modals are never shown, so they never receive <c>NavigatedTo</c>.
+        ///   </description></item>
+        /// </list>
+        /// </remarks>
         public async Task PopAllModalsAsync()
         {
             if (_modalStack.Count == 0)
@@ -1306,7 +1391,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var effectiveModalTransition = _hasOverrideTransition ? _overrideTransition : ModalTransition;
@@ -1317,16 +1402,25 @@ namespace Avalonia.Controls
                 {
                     _currentModalTransition?.Cancel();
                     _currentModalTransition?.Dispose();
-                    _currentModalTransition = new CancellationTokenSource();
+                    var allModalsCts = new CancellationTokenSource();
+                    _currentModalTransition = allModalsCts;
                     try
                     {
-                        await effectiveModalTransition.Start(_modalPresenter, null, forward: false, _currentModalTransition.Token);
+                        await effectiveModalTransition.Start(_modalPresenter, null, forward: false, allModalsCts.Token);
                     }
                     catch (OperationCanceledException) { /* Transition cancelled; lifecycle events still fire below. */ }
                     catch (Exception ex)
                     {
                         Logger.TryGet(LogEventLevel.Error, LogArea.Control)
                             ?.Log(this, "Modal transition threw an unhandled exception: {Exception}", ex);
+                    }
+                    finally
+                    {
+                        if (ReferenceEquals(_currentModalTransition, allModalsCts))
+                        {
+                            _currentModalTransition = null;
+                            allModalsCts.Dispose();
+                        }
                     }
                 }
 
@@ -1351,19 +1445,27 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
         /// <summary>
         /// Pops all modal pages using <paramref name="transition"/>.
         /// </summary>
+        /// <inheritdoc cref="PopAllModalsAsync()"/>
         public async Task PopAllModalsAsync(IPageTransition? transition)
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { await PopAllModalsAsync(); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                await PopAllModalsAsync();
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         /// <summary>
@@ -1419,7 +1521,11 @@ namespace Avalonia.Controls
                     return;
                 }
 
+                _hasOverrideTransition = true;
+                _overrideTransition = null;
                 list.RemoveAt(idx);
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
             }
             else return;
 
@@ -1462,7 +1568,7 @@ namespace Avalonia.Controls
                 for (int i = 0; i < arr.Length; i++)
                     if (ReferenceEquals(arr[i], before)) { beforeIdx = i; break; }
                 if (beforeIdx < 0)
-                    return;
+                    throw new InvalidOperationException("The 'before' page is not in the navigation stack.");
 
                 stack.Clear();
                 for (int i = arr.Length - 1; i >= 0; i--)
@@ -1480,7 +1586,7 @@ namespace Avalonia.Controls
                 for (int i = 0; i < list.Count; i++)
                     if (ReferenceEquals(list[i], before)) { beforeIdx = i; break; }
                 if (beforeIdx < 0)
-                    return;
+                    throw new InvalidOperationException("The 'before' page is not in the navigation stack.");
 
                 list.Insert(beforeIdx, page);
                 inserted = true;
@@ -1494,7 +1600,7 @@ namespace Avalonia.Controls
             page.SetInNavigationPage(true);
             page.SafeAreaPadding = SafeAreaPadding;
 
-            if (Pages is not System.Collections.Specialized.INotifyCollectionChanged)
+            if (Pages is not INotifyCollectionChanged)
                 LogicalChildren.Add(page);
 
             InvalidateNavigationStackCache();
@@ -1513,7 +1619,7 @@ namespace Avalonia.Controls
             if (_isNavigating)
                 return;
 
-            _isNavigating = true;
+            SetAndRaise(IsNavigatingProperty, ref _isNavigating, true);
             try
             {
                 var previousPage = CurrentPage;
@@ -1527,10 +1633,22 @@ namespace Avalonia.Controls
                 }
 
                 ExecuteReplaceCore(page, previousPage);
+
+                await AwaitPageTransitionAsync();
+
+                if (previousPage != null)
+                {
+                    previousPage.Navigation = null;
+                    previousPage.SetInNavigationPage(false);
+                    previousPage.SafeAreaPadding = default;
+                    previousPage.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Replace));
+                }
+
+                page.SendNavigatedTo(new NavigatedToEventArgs(previousPage, NavigationType.Replace));
             }
             finally
             {
-                _isNavigating = false;
+                SetAndRaise(IsNavigatingProperty, ref _isNavigating, false);
             }
         }
 
@@ -1541,8 +1659,15 @@ namespace Avalonia.Controls
         {
             _overrideTransition = transition;
             _hasOverrideTransition = true;
-            try { await ReplaceAsync(page); }
-            finally { _hasOverrideTransition = false; _overrideTransition = null; }
+            try
+            {
+                await ReplaceAsync(page);
+            }
+            finally
+            {
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
+            }
         }
 
         // navigationType is intentionally unused; lifecycle events are fired in each navigation
@@ -1773,15 +1898,6 @@ namespace Avalonia.Controls
             page.SetInNavigationPage(true);
 
             UpdateActivePage();
-
-            if (replacedPage != null)
-            {
-                replacedPage.Navigation = null;
-                replacedPage.SetInNavigationPage(false);
-                replacedPage.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Replace));
-            }
-
-            page.SendNavigatedTo(new NavigatedToEventArgs(replacedPage, NavigationType.Replace));
         }
 
         private void SwapModalPresenters()
@@ -1796,6 +1912,36 @@ namespace Avalonia.Controls
         }
 
         private void InvalidateNavigationStackCache() => _cachedNavigationStack = null;
+
+        private void RestoreNavigationState()
+        {
+            foreach (var page in NavigationStack)
+            {
+                page.Navigation = this;
+                page.SetInNavigationPage(true);
+            }
+
+            foreach (var modal in _modalStack)
+            {
+                modal.Navigation = this;
+                modal.SetInNavigationPage(true);
+            }
+        }
+
+        private void ClearNavigationState()
+        {
+            foreach (var modal in _modalStack)
+            {
+                modal.Navigation = null;
+                modal.SetInNavigationPage(false);
+            }
+
+            foreach (var page in NavigationStack)
+            {
+                page.Navigation = null;
+                page.SetInNavigationPage(false);
+            }
+        }
 
         internal void UpdateIsBackButtonEffectivelyVisible()
         {
@@ -1842,7 +1988,6 @@ namespace Avalonia.Controls
             UpdateDrawerToggleIcon();
         }
 
-
         private void UpdateDrawerToggleIcon()
         {
             if (_drawerPage == null || CurrentPage == null)
@@ -1871,16 +2016,29 @@ namespace Avalonia.Controls
 
         private void OnSwipeGesture(object? sender, SwipeGestureEventArgs e)
         {
-            if (!IsGestureEnabled || StackDepth <= 1 || _isNavigating || _modalStack.Count > 0)
+            if (!IsGestureEnabled || StackDepth <= 1 || _isNavigating || _modalStack.Count > 0 || e.Id == _lastSwipeGestureId)
                 return;
+
+            bool inEdge = IsRtl
+                ? _swipeStartPoint.X >= Bounds.Width - EdgeGestureWidth
+                : _swipeStartPoint.X <= EdgeGestureWidth;
+            if (!inEdge)
+                return;
+
             bool shouldPop = IsRtl
                 ? e.SwipeDirection == SwipeDirection.Left
                 : e.SwipeDirection == SwipeDirection.Right;
             if (shouldPop)
             {
                 e.Handled = true;
+                _lastSwipeGestureId = e.Id;
                 _ = PopAsync();
             }
+        }
+
+        private void OnSwipePointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            _swipeStartPoint = e.GetPosition(this);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

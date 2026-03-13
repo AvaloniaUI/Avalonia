@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -24,6 +27,14 @@ namespace Avalonia.Controls
                 nameof(SelectedPage),
                 o => o._selectedPage);
 
+        /// <summary>
+        /// Defines the <see cref="SelectionChanged"/> routed event.
+        /// </summary>
+        public static readonly RoutedEvent<PageSelectionChangedEventArgs> SelectionChangedEvent =
+            RoutedEvent.Register<SelectingMultiPage, PageSelectionChangedEventArgs>(
+                nameof(SelectionChanged),
+                RoutingStrategies.Bubble);
+
         private int _selectedIndex = -1;
         private Page? _selectedPage;
 
@@ -44,7 +55,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the selected page changes.
         /// </summary>
-        public event EventHandler<PageSelectionChangedEventArgs>? SelectionChanged;
+        public event EventHandler<PageSelectionChangedEventArgs>? SelectionChanged
+        {
+            add => AddHandler(SelectionChangedEvent, value);
+            remove => RemoveHandler(SelectionChangedEvent, value);
+        }
 
         /// <summary>
         /// Commits a selection change and fires lifecycle events on the outgoing and incoming pages.
@@ -57,7 +72,7 @@ namespace Avalonia.Controls
             SetCurrentValue(CurrentPageProperty, newPage);
             if (!ReferenceEquals(previousPage, newPage))
             {
-                SelectionChanged?.Invoke(this, new PageSelectionChangedEventArgs(previousPage, newPage));
+                RaiseEvent(new PageSelectionChangedEventArgs(SelectionChangedEvent, previousPage, newPage));
 
                 if (previousPage != null)
                 {
@@ -82,6 +97,32 @@ namespace Avalonia.Controls
         protected void StoreSelectedIndex(int index)
         {
             SetAndRaise(SelectedIndexProperty, ref _selectedIndex, index);
+        }
+
+        /// <summary>
+        /// Returns the page at <paramref name="index"/> from <see cref="MultiPage.Pages"/>,
+        /// or <see langword="null"/> if the index is out of range.
+        /// </summary>
+        protected Page? ResolvePageAtIndex(int index)
+        {
+            if (Pages is IList<Page> genericList)
+                return (uint)index < (uint)genericList.Count ? genericList[index] : null;
+
+            if (Pages is IList list)
+                return (uint)index < (uint)list.Count ? list[index] as Page : null;
+
+            if (Pages != null)
+            {
+                int i = 0;
+                foreach (var page in Pages)
+                {
+                    if (i == index)
+                        return page;
+                    i++;
+                }
+            }
+
+            return null;
         }
     }
 }

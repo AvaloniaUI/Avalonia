@@ -17,12 +17,26 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="PageTransition">
       <Setter.Value>
-        <PageSlide Duration="0:0:0.3" Orientation="Horizontal" FillMode="Forward" />
+        <PageSlide Duration="0:0:0.3" Orientation="Horizontal" FillMode="Forward">
+          <PageSlide.SlideInEasing>
+            <SplineEasing X1="0.16" Y1="1" X2="0.3" Y2="1" />
+          </PageSlide.SlideInEasing>
+          <PageSlide.SlideOutEasing>
+            <SplineEasing X1="0.2" Y1="0.85" X2="0.3" Y2="1" />
+          </PageSlide.SlideOutEasing>
+        </PageSlide>
       </Setter.Value>
     </Setter>
     <Setter Property="ModalTransition">
       <Setter.Value>
-        <PageSlide Duration="0:0:0.25" Orientation="Vertical" FillMode="Forward" />
+        <PageSlide Duration="0:0:0.25" Orientation="Vertical" FillMode="Forward">
+          <PageSlide.SlideInEasing>
+            <SplineEasing X1="0.16" Y1="1" X2="0.3" Y2="1" />
+          </PageSlide.SlideInEasing>
+          <PageSlide.SlideOutEasing>
+            <SplineEasing X1="0.2" Y1="0.85" X2="0.3" Y2="1" />
+          </PageSlide.SlideOutEasing>
+        </PageSlide>
       </Setter.Value>
     </Setter>
     <Setter Property="Template">

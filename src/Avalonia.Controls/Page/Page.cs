@@ -181,11 +181,18 @@ namespace Avalonia.Controls
         {
             OnNavigatingFrom(args);
 
+            if (args.Cancel)
+                return;
+
             var navigating = Navigating;
             if (navigating != null)
             {
                 foreach (Func<NavigatingFromEventArgs, Task> handler in navigating.GetInvocationList())
+                {
                     await handler(args);
+                    if (args.Cancel)
+                        return;
+                }
             }
         }
 
@@ -201,7 +208,7 @@ namespace Avalonia.Controls
                 UpdateContentSafeAreaPadding();
 
             if (change.Property == HeaderProperty)
-                AutomationProperties.SetName(this, change.NewValue as string ?? string.Empty);
+                AutomationProperties.SetName(this, change.GetNewValue<object?>() as string ?? string.Empty);
         }
 
         protected override void OnLoaded(RoutedEventArgs e)

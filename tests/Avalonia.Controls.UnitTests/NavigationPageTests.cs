@@ -6,9 +6,12 @@ using Avalonia.Animation;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
@@ -148,8 +151,6 @@ public class NavigationPageTests
         [Fact]
         public async Task Push_ReentrantFromNavigatedTo_IsIgnoredNotThrown()
         {
-            // Verifies that a re-entrant Push called from inside a NavigatedTo
-            // lifecycle callback is silently ignored rather than throwing.
             var nav = new NavigationPage();
             var root = new ContentPage();
             await nav.PushAsync(root);
@@ -157,10 +158,62 @@ public class NavigationPageTests
             var second = new ContentPage();
             second.NavigatedTo += async (_, _) => await nav.PushAsync(new ContentPage());
 
-            await nav.PushAsync(second); // must not throw
+            await nav.PushAsync(second);
 
             Assert.Equal(2, nav.StackDepth);
             Assert.Same(second, nav.CurrentPage);
+        }
+    }
+
+    public class ReentrantNavigationTests : ScopedTestBase
+    {
+        [Fact]
+        public async Task Pop_ReentrantFromNavigatedTo_IsIgnored()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            var top = new ContentPage();
+            await nav.PushAsync(root);
+            await nav.PushAsync(top);
+
+            root.NavigatedTo += async (_, _) => await nav.PopAsync();
+
+            await nav.PopAsync();
+
+            Assert.Equal(1, nav.StackDepth);
+            Assert.Same(root, nav.CurrentPage);
+        }
+
+        [Fact]
+        public async Task PushModal_ReentrantFromNavigatedTo_IsIgnored()
+        {
+            var nav = new NavigationPage();
+            await nav.PushAsync(new ContentPage());
+
+            var modal = new ContentPage();
+            modal.NavigatedTo += async (_, _) => await nav.PushModalAsync(new ContentPage());
+
+            await nav.PushModalAsync(modal);
+
+            Assert.Equal(1, nav.ModalStack.Count);
+            Assert.Same(modal, nav.ModalStack[0]);
+        }
+
+        [Fact]
+        public async Task PopModal_ReentrantFromNavigatedTo_IsIgnored()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            var modal = new ContentPage();
+            await nav.PushAsync(root);
+            await nav.PushModalAsync(modal);
+
+            root.NavigatedTo += async (_, _) => await nav.PopModalAsync();
+
+            await nav.PopModalAsync();
+
+            Assert.Equal(0, nav.ModalStack.Count);
+            Assert.Same(root, nav.CurrentPage);
         }
     }
 
@@ -641,6 +694,17 @@ public class NavigationPageTests
         }
 
         [Fact]
+        public async Task InsertPage_BeforeNotInStack_ThrowsInvalidOperationException()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            await nav.PushAsync(root);
+
+            var stranger = new ContentPage();
+            Assert.Throws<InvalidOperationException>(() => nav.InsertPage(new ContentPage(), stranger));
+        }
+
+        [Fact]
         public async Task RemovePage_PageNotInStack_IsNoOp()
         {
             var nav = new NavigationPage();
@@ -877,6 +941,25 @@ public class NavigationPageTests
         }
     }
 
+    public class PropertyTests : ScopedTestBase
+    {
+        [Fact]
+        public void IsGestureEnabled_Default_IsTrue()
+        {
+            var nav = new NavigationPage();
+            Assert.True(nav.IsGestureEnabled);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void IsGestureEnabled_RoundTrips(bool value)
+        {
+            var nav = new NavigationPage { IsGestureEnabled = value };
+            Assert.Equal(value, nav.IsGestureEnabled);
+        }
+    }
+
     public class AttachedPropertyTests : ScopedTestBase
     {
         [Fact]
@@ -1089,6 +1172,49 @@ public class NavigationPageTests
             Assert.True(handlerInvoked);
             Assert.Equal(2, nav.StackDepth);
         }
+
+        [Fact]
+        public async Task Navigating_CancelInFirstHandler_SkipsSubsequentHandlers()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            await nav.PushAsync(root);
+            var top = new ContentPage();
+            await nav.PushAsync(top);
+
+            bool secondHandlerInvoked = false;
+            top.Navigating += args => { args.Cancel = true; return Task.CompletedTask; };
+            top.Navigating += args => { secondHandlerInvoked = true; return Task.CompletedTask; };
+
+            await nav.PopAsync();
+
+            Assert.False(secondHandlerInvoked);
+            Assert.Equal(2, nav.StackDepth);
+        }
+
+        [Fact]
+        public async Task Navigating_CancelInOnNavigatingFrom_SkipsNavigatingEvent()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            await nav.PushAsync(root);
+
+            var top = new CancellingPage();
+            await nav.PushAsync(top);
+
+            bool asyncHandlerInvoked = false;
+            top.Navigating += args => { asyncHandlerInvoked = true; return Task.CompletedTask; };
+
+            await nav.PopAsync();
+
+            Assert.False(asyncHandlerInvoked);
+            Assert.Equal(2, nav.StackDepth);
+        }
+
+        private sealed class CancellingPage : ContentPage
+        {
+            protected override void OnNavigatingFrom(NavigatingFromEventArgs args) => args.Cancel = true;
+        }
     }
 
     public class LogicalChildrenTests : ScopedTestBase
@@ -1164,7 +1290,7 @@ public class NavigationPageTests
             var nav = new NavigationPage();
             await nav.PushAsync(new ContentPage());
 
-            await nav.PopAllModalsAsync(); // must not throw
+            await nav.PopAllModalsAsync();
 
             Assert.Equal(0, nav.ModalStack.Count);
         }
@@ -1308,6 +1434,27 @@ public class NavigationPageTests
             await nav.PopAllModalsAsync();
 
             Assert.Same(m2, previousPage);
+        }
+
+        [Fact]
+        public async Task PopAllModals_MultipleModals_NavigatedTo_FiredOnlyOnBaseCurrentPage()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage { Header = "Root" };
+            await nav.PushAsync(root);
+            var m1 = new ContentPage { Header = "M1" };
+            var m2 = new ContentPage { Header = "M2" };
+            await nav.PushModalAsync(m1);
+            await nav.PushModalAsync(m2);
+
+            var navigatedToPages = new List<string>();
+            root.NavigatedTo += (_, _) => navigatedToPages.Add("root");
+            m1.NavigatedTo += (_, _) => navigatedToPages.Add("m1");
+            m2.NavigatedTo += (_, _) => navigatedToPages.Add("m2");
+
+            await nav.PopAllModalsAsync();
+
+            Assert.Equal(["root"], navigatedToPages);
         }
     }
 
@@ -1674,6 +1821,33 @@ public class NavigationPageTests
             Assert.False(poppedToRootDuringTransition);
         }
 
+        [Fact]
+        public async Task ReplaceAsync_LifecycleEvents_FireAfterTransition()
+        {
+            var tcs = new TaskCompletionSource();
+            var nav = CreateNavigationPage(null);
+
+            var root = new ContentPage { Header = "Root" };
+            await nav.PushAsync(root);
+
+            nav.PageTransition = new ControllableTransition(tcs.Task);
+
+            bool navigatedFromDuringTransition = false;
+            bool navigatedToDuringTransition = false;
+
+            var replacement = new ContentPage { Header = "Replacement" };
+            root.NavigatedFrom += (_, _) => navigatedFromDuringTransition = !tcs.Task.IsCompleted;
+            replacement.NavigatedTo += (_, _) => navigatedToDuringTransition = !tcs.Task.IsCompleted;
+
+            var replaceTask = nav.ReplaceAsync(replacement);
+
+            tcs.SetResult();
+            await replaceTask;
+
+            Assert.False(navigatedFromDuringTransition);
+            Assert.False(navigatedToDuringTransition);
+        }
+
         private static NavigationPage CreateNavigationPage(IPageTransition? transition)
         {
             var nav = new NavigationPage
@@ -1735,6 +1909,270 @@ public class NavigationPageTests
                 if (from != null)
                     from.IsVisible = false;
             }
+        }
+    }
+
+    public class SwipeGestureTests : ScopedTestBase
+    {
+        [Fact]
+        public async Task HandledPointerPressedAtEdge_AllowsSwipePop()
+        {
+            var nav = new NavigationPage();
+            var rootPage = new ContentPage { Header = "Root" };
+            var topPage = new ContentPage { Header = "Top" };
+
+            await nav.PushAsync(rootPage);
+            await nav.PushAsync(topPage);
+
+            var root = new TestRoot { Child = nav };
+            root.ExecuteInitialLayoutPass();
+
+            RaiseHandledPointerPressed(nav, new Point(5, 5));
+
+            var swipe = new SwipeGestureEventArgs(1, new Vector(-20, 0), default);
+            nav.RaiseEvent(swipe);
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.True(swipe.Handled);
+            Assert.Equal(1, nav.StackDepth);
+            Assert.Same(rootPage, nav.CurrentPage);
+        }
+
+        [Fact]
+        public async Task MouseEdgeDrag_AllowsSwipePop()
+        {
+            var nav = new NavigationPage
+            {
+                Width = 400,
+                Height = 300
+            };
+            var rootPage = new ContentPage { Header = "Root" };
+            var topPage = new ContentPage { Header = "Top" };
+
+            await nav.PushAsync(rootPage);
+            await nav.PushAsync(topPage);
+
+            var root = new TestRoot
+            {
+                ClientSize = new Size(400, 300),
+                Child = nav
+            };
+            root.ExecuteInitialLayoutPass();
+
+            var mouse = new MouseTestHelper();
+            mouse.Down(nav, position: new Point(5, 5));
+            mouse.Move(nav, new Point(40, 5));
+            mouse.Up(nav, position: new Point(40, 5));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(1, nav.StackDepth);
+            Assert.Same(rootPage, nav.CurrentPage);
+        }
+
+        [Fact]
+        public async Task SameGestureId_OnlyPops_One_Page()
+        {
+            var nav = new NavigationPage
+            {
+                Width = 400,
+                Height = 300
+            };
+            var page1 = new ContentPage { Header = "1" };
+            var page2 = new ContentPage { Header = "2" };
+            var page3 = new ContentPage { Header = "3" };
+
+            await nav.PushAsync(page1);
+            await nav.PushAsync(page2);
+            await nav.PushAsync(page3);
+
+            var root = new TestRoot
+            {
+                ClientSize = new Size(400, 300),
+                Child = nav
+            };
+            root.ExecuteInitialLayoutPass();
+
+            RaiseHandledPointerPressed(nav, new Point(5, 5));
+
+            nav.RaiseEvent(new SwipeGestureEventArgs(42, new Vector(-20, 0), default));
+            nav.RaiseEvent(new SwipeGestureEventArgs(42, new Vector(-30, 0), default));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(2, nav.StackDepth);
+            Assert.Same(page2, nav.CurrentPage);
+        }
+
+        private static void RaiseHandledPointerPressed(Interactive target, Point position)
+        {
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Touch, true);
+            var args = new PointerPressedEventArgs(
+                target,
+                pointer,
+                (Visual)target,
+                position,
+                timestamp: 1,
+                new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
+                KeyModifiers.None)
+            {
+                Handled = true
+            };
+
+            target.RaiseEvent(args);
+        }
+    }
+
+    public class IsNavigatingTests : ScopedTestBase
+    {
+        [Fact]
+        public void IsNavigating_FalseByDefault()
+        {
+            var nav = new NavigationPage();
+            Assert.False(nav.IsNavigating);
+        }
+
+        [Fact]
+        public async Task IsNavigating_TrueWhilePushInProgress()
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            var nav = CreateNavigationPage(new ControllableTransition(tcs.Task));
+
+            await nav.PushAsync(new ContentPage());
+
+            bool duringPush = false;
+            var pushTask = nav.PushAsync(new ContentPage());
+            duringPush = nav.IsNavigating;
+            tcs.SetResult(true);
+            await pushTask;
+
+            Assert.True(duringPush);
+        }
+
+        [Fact]
+        public async Task IsNavigating_FalseAfterPushCompletes()
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            var nav = CreateNavigationPage(new ControllableTransition(tcs.Task));
+
+            await nav.PushAsync(new ContentPage());
+            var pushTask = nav.PushAsync(new ContentPage());
+            tcs.SetResult(true);
+            await pushTask;
+
+            Assert.False(nav.IsNavigating);
+        }
+
+        private static NavigationPage CreateNavigationPage(IPageTransition? transition)
+        {
+            var nav = new NavigationPage
+            {
+                PageTransition = transition,
+                Template = new FuncControlTemplate<NavigationPage>((parent, ns) =>
+                {
+                    return new Panel
+                    {
+                        Children =
+                        {
+                            new Panel
+                            {
+                                Name = "PART_ContentHost",
+                                Children =
+                                {
+                                    new ContentPresenter { Name = "PART_PageBackPresenter" }.RegisterInNameScope(ns),
+                                    new ContentPresenter { Name = "PART_PagePresenter" }.RegisterInNameScope(ns),
+                                }
+                            }.RegisterInNameScope(ns),
+                            new Border { Name = "PART_NavigationBar",
+                                Child = new Button { Name = "PART_BackButton" }.RegisterInNameScope(ns) }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_TopCommandBar" }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_ModalBackPresenter" }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_ModalPresenter" }.RegisterInNameScope(ns),
+                        }
+                    };
+                })
+            };
+            var root = new TestRoot { Child = nav };
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            return nav;
+        }
+
+        private class ControllableTransition : IPageTransition
+        {
+            private readonly Task _gate;
+
+            public ControllableTransition(Task gate)
+            {
+                _gate = gate;
+            }
+
+            public async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+            {
+                if (to != null)
+                    to.IsVisible = true;
+                await _gate;
+                if (from != null)
+                    from.IsVisible = false;
+            }
+        }
+    }
+
+    public class VisualTreeLifecycleTests : ScopedTestBase
+    {
+        [Fact]
+        public async Task Detach_And_Reattach_PreservesModalStack()
+        {
+            var nav = new NavigationPage
+            {
+                Template = new FuncControlTemplate<NavigationPage>((parent, ns) =>
+                {
+                    return new Panel
+                    {
+                        Children =
+                        {
+                            new Panel
+                            {
+                                Name = "PART_ContentHost",
+                                Children =
+                                {
+                                    new ContentPresenter { Name = "PART_PageBackPresenter" }.RegisterInNameScope(ns),
+                                    new ContentPresenter { Name = "PART_PagePresenter" }.RegisterInNameScope(ns),
+                                }
+                            }.RegisterInNameScope(ns),
+                            new Border
+                            {
+                                Name = "PART_NavigationBar",
+                                Child = new Button { Name = "PART_BackButton" }.RegisterInNameScope(ns)
+                            }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_TopCommandBar" }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_ModalBackPresenter" }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_ModalPresenter" }.RegisterInNameScope(ns),
+                        }
+                    };
+                })
+            };
+
+            var root = new TestRoot { Child = nav };
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var page = new ContentPage { Header = "Root" };
+            var modal = new ContentPage { Header = "Modal" };
+
+            await nav.PushAsync(page);
+            await nav.PushModalAsync(modal);
+
+            root.Child = null;
+
+            Assert.Single(nav.ModalStack);
+            Assert.Same(modal, nav.ModalStack[0]);
+            Assert.Null(modal.Navigation);
+            Assert.False(modal.IsInNavigationPage);
+
+            root.Child = nav;
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Single(nav.ModalStack);
+            Assert.Same(modal, nav.ModalStack[0]);
+            Assert.Same(nav, modal.Navigation);
+            Assert.True(modal.IsInNavigationPage);
         }
     }
 
