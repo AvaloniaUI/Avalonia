@@ -1,0 +1,116 @@
+name: Update API Suppressions
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+jobs:
+  update-api:
+    name: Update API Suppressions
+    if: >-
+      github.event.issue.pull_request
+      && contains(github.event.comment.body, '/update-api')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check maintainer permission
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: permLevel } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.payload.comment.user.login,
+            });
+            const allowed = ['admin', 'maintain', 'write'];
+            if (!allowed.includes(permLevel.permission)) {
+              core.setFailed(`User @${context.payload.comment.user.login} does not have write access.`);
+            }
+
+      - name: Add reaction to acknowledge command
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes',
+            });
+
+      - name: Get PR branch info
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            core.setOutput('ref', pr.head.ref);
+            core.setOutput('sha', pr.head.sha);
+            core.setOutput('repo', pr.head.repo.full_name);
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.pr.outputs.repo }}
+          ref: ${{ steps.pr.outputs.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Run ValidateApiDiff
+        run: dotnet run --project ./nukebuild/_build.csproj -- ValidateApiDiff
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No API suppression changes to commit."
+          else
+            git commit -m "Update API suppressions"
+            git push origin HEAD:${{ steps.pr.outputs.ref }}
+          fi
+
+      - name: Add success reaction
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'rocket',
+            });
+
+      - name: Report failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: '-1',
+            });
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ \`/update-api\` failed. [See logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}).`,
+            });
