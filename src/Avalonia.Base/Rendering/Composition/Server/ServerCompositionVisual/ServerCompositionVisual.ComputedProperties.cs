@@ -50,7 +50,7 @@ partial class ServerCompositionVisual
     private LtrbRect? _ownClipRect;
 
     
-    private bool _hasExtraDirtyRect;
+    private bool _needsToAddExtraDirtyRectToDirtyRegion;
     private LtrbRect _extraDirtyRect;
 
     public virtual LtrbRect? ComputeOwnContentBounds() => null;
@@ -107,7 +107,7 @@ partial class ServerCompositionVisual
         _isDirtyForRender |= fDirtyForRender;
         
         // If node itself is dirty for render, we don't need to keep track of extra dirty rects
-        _hasExtraDirtyRect = !fDirtyForRender && (_hasExtraDirtyRect || fAdditionalDirtyRegion);
+        _needsToAddExtraDirtyRectToDirtyRegion = !fDirtyForRender && (_needsToAddExtraDirtyRectToDirtyRegion || fAdditionalDirtyRegion);
     }
     
     public void RecomputeOwnProperties()
