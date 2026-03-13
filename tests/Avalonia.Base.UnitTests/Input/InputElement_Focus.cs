@@ -577,7 +577,7 @@ namespace Avalonia.Base.UnitTests.Input
                 };
 
                 target.Focus();
-                root.FocusManager.ClearFocus();
+                root.FocusManager.Focus(null);
 
                 Assert.Null(root.FocusManager.GetFocusedElement());
             }
