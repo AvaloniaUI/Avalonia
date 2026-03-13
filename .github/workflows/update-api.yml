@@ -71,7 +71,7 @@ jobs:
           global-json-file: global.json
 
       - name: Run ValidateApiDiff
-        run: dotnet run --project ./nukebuild/_build.csproj -- ValidateApiDiff
+        run: dotnet run --project ./nukebuild/_build.csproj -- ValidateApiDiff --update-api-suppression true
 
       - name: Commit and push changes
         run: |
