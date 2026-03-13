@@ -19,7 +19,7 @@ namespace Avalonia.Controls.Presenters
         public PanelContainerGenerator(ItemsPresenter presenter)
         {
             Debug.Assert(presenter.ItemsControl is not null);
-            Debug.Assert(presenter.Panel is not null or VirtualizingPanel);
+            Debug.Assert(presenter.Panel is not null);
             
             _presenter = presenter;
             _presenter.ItemsControl.ItemsView.PostCollectionChanged += OnItemsChanged;

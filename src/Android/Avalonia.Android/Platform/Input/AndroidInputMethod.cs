@@ -126,13 +126,28 @@ namespace Avalonia.Android.Platform.Input
 
             _inputConnection.IsInUpdate = true;
 
-            var selection = Client.Selection;
+            var selection = Client is IStructuredTextInput structured
+                ? ToTextSelection(structured.Selection)
+                : Client.Selection;
 
-            var composition = _inputConnection.EditBuffer.HasComposition ? _inputConnection.EditBuffer.Composition!.Value : new TextSelection(-1,-1);
+            var composition = Client is IStructuredTextInput structuredClient
+                ? structuredClient.CompositionRange is { } compositionRange
+                    ? ToTextSelection(compositionRange)
+                    : new TextSelection(-1, -1)
+                : _inputConnection.EditBuffer.HasComposition
+                    ? _inputConnection.EditBuffer.Composition!.Value
+                    : new TextSelection(-1, -1);
 
             _imm.UpdateSelection(_host, selection.Start, selection.End, composition.Start, composition.End);
 
             _inputConnection.IsInUpdate = false;
+        }
+
+        private static TextSelection ToTextSelection(ITextRange range)
+        {
+            var start = Math.Min(range.Start.Offset, range.End.Offset);
+            var end = Math.Max(range.Start.Offset, range.End.Offset);
+            return new TextSelection(start, end);
         }
 
         private void _client_SurroundingTextChanged(object? sender, EventArgs e)
