@@ -181,10 +181,10 @@ public class RenderingTests
         {
             Content = new Border
             {
-                Width = 100,
-                Height = 100,
                 Background = Brushes.Red
-            }
+            },
+            Width = 100,
+            Height = 100,
         };
 
         window.Show();
