@@ -311,7 +311,7 @@ namespace Avalonia.Controls
 
             tabItem.IsEnabled = GetIsTabEnabled(page);
             tabItem.Header = page.Header;
-            tabItem.Icon = CreateIconControl(page.Icon);
+            tabItem.Icon = CreateIconContent(page.Icon);
 
             _containerPageMap[tabItem] = page;
             _pageContainerMap[page] = tabItem;
@@ -335,7 +335,7 @@ namespace Avalonia.Controls
             if (e.Property == Page.IconProperty)
             {
                 if (_pageContainerMap.TryGetValue(page, out var tabItem))
-                    UpdateIconControl(tabItem, page.Icon);
+                    tabItem.Icon = CreateIconContent(page.Icon);
             }
             else if (e.Property == Page.HeaderProperty)
             {
@@ -351,9 +351,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Creates a visual control from a page icon value.
         /// </summary>
-        internal static Control? CreateIconControl(object? icon)
+        internal static Control? CreateIconContent(object? icon)
         {
-            var geometry = ResolveIconGeometry(icon);
+            Geometry? geometry = icon switch
+            {
+                Geometry g => g,
+                PathIcon pi => pi.Data,
+                DrawingImage { Drawing: GeometryDrawing { Geometry: { } gd } } => gd,
+                string s when !string.IsNullOrEmpty(s) => Geometry.Parse(s),
+                _ => null
+            };
 
             if (geometry != null)
             {
@@ -372,44 +379,10 @@ namespace Avalonia.Controls
             }
 
             if (icon is IImage image)
-            {
-                return new Image
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Source = image,
-                };
-            }
+                return new Image { Source = image };
 
             return null;
         }
-
-        private static void UpdateIconControl(TabItem tabItem, object? icon)
-        {
-            var geometry = ResolveIconGeometry(icon);
-
-            if (geometry != null && tabItem.Icon is Path existingPath)
-            {
-                existingPath.Data = geometry;
-                return;
-            }
-
-            if (icon is IImage newImage && tabItem.Icon is Image existingImage)
-            {
-                existingImage.Source = newImage;
-                return;
-            }
-
-            tabItem.Icon = CreateIconControl(icon);
-        }
-
-        private static Geometry? ResolveIconGeometry(object? icon) => icon switch
-        {
-            Geometry g => g,
-            PathIcon pi => pi.Data,
-            DrawingImage { Drawing: GeometryDrawing { Geometry: { } gd } } => gd,
-            string s when !string.IsNullOrEmpty(s) => Geometry.Parse(s),
-            _ => null
-        };
 
         private int FindNearestEnabledTab(int disabledIndex)
         {

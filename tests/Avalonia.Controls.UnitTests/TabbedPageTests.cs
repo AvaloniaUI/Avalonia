@@ -910,13 +910,13 @@ public class TabbedPageTests
         }
     }
 
-    public class CreateIconControlTests : ScopedTestBase
+    public class IconTests : ScopedTestBase
     {
         [Fact]
         public void Geometry_ReturnsPath()
         {
             var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-            var result = TabbedPage.CreateIconControl(geometry);
+            var result = TabbedPage.CreateIconContent(geometry);
             Assert.IsType<Path>(result);
             Assert.Same(geometry, ((Path)result!).Data);
         }
@@ -926,7 +926,7 @@ public class TabbedPageTests
         {
             var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
             var pathIcon = new PathIcon { Data = geometry };
-            var result = TabbedPage.CreateIconControl(pathIcon);
+            var result = TabbedPage.CreateIconContent(pathIcon);
             Assert.IsType<Path>(result);
             Assert.Same(geometry, ((Path)result!).Data);
         }
@@ -934,21 +934,21 @@ public class TabbedPageTests
         [Fact]
         public void EmptyString_ReturnsNull()
         {
-            var result = TabbedPage.CreateIconControl("");
+            var result = TabbedPage.CreateIconContent("");
             Assert.Null(result);
         }
 
         [Fact]
         public void NullString_ReturnsNull()
         {
-            var result = TabbedPage.CreateIconControl((string?)null);
+            var result = TabbedPage.CreateIconContent((string?)null);
             Assert.Null(result);
         }
 
         [Fact]
         public void Null_ReturnsNull()
         {
-            var result = TabbedPage.CreateIconControl(null);
+            var result = TabbedPage.CreateIconContent(null);
             Assert.Null(result);
         }
 
@@ -958,7 +958,7 @@ public class TabbedPageTests
             var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
             var drawing = new GeometryDrawing { Geometry = geometry };
             var drawingImage = new DrawingImage(drawing);
-            var result = TabbedPage.CreateIconControl(drawingImage);
+            var result = TabbedPage.CreateIconContent(drawingImage);
             Assert.IsType<Path>(result);
             Assert.Same(geometry, ((Path)result!).Data);
         }
@@ -967,14 +967,29 @@ public class TabbedPageTests
         public void Path_HasStretchUniform()
         {
             var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-            var result = TabbedPage.CreateIconControl(geometry);
+            var result = TabbedPage.CreateIconContent(geometry);
             Assert.Equal(Stretch.Uniform, ((Path)result!).Stretch);
+        }
+
+        [Fact]
+        public void Image_ReturnsImage()
+        {
+            var image = new TestImage();
+            var result = TabbedPage.CreateIconContent(image);
+            Assert.IsType<Image>(result);
+            Assert.Same(image, ((Image)result!).Source);
+        }
+
+        private sealed class TestImage : IImage
+        {
+            public Size Size => new Size(1, 1);
+            public void Draw(DrawingContext context, Rect sourceRect, Rect destRect) { }
         }
 
         [Fact]
         public void UnsupportedType_ReturnsNull()
         {
-            var result = TabbedPage.CreateIconControl(42);
+            var result = TabbedPage.CreateIconContent(42);
             Assert.Null(result);
         }
     }

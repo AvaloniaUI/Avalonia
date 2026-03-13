@@ -1002,48 +1002,15 @@ namespace Avalonia.Controls
                 _bottomPaneIconPresenter.Content = CreateIconContent(DrawerIcon);
         }
 
-        private static object? CreateIconContent(object? icon)
+        internal static object? CreateIconContent(object? icon) => icon switch
         {
-            if (icon is Geometry geometry)
-                return new PathIcon { Data = geometry };
-
-            if (icon is not Control)
-                return icon;
-
-            // For Control-typed icons, create an independent copy per presenter to avoid
-            // the "already has a visual parent" exception when the same instance is used
-            // in multiple ContentPresenters simultaneously.
-            if (icon is PathIcon pathIcon)
-            {
-                var clone = new PathIcon { Data = pathIcon.Data };
-
-                CopyIfSet(pathIcon, clone, PathIcon.WidthProperty);
-                CopyIfSet(pathIcon, clone, PathIcon.HeightProperty);
-                CopyIfSet(pathIcon, clone, PathIcon.MarginProperty);
-                CopyIfSet(pathIcon, clone, PathIcon.HorizontalAlignmentProperty);
-                CopyIfSet(pathIcon, clone, PathIcon.VerticalAlignmentProperty);
-                CopyIfSet(pathIcon, clone, PathIcon.ForegroundProperty);
-                CopyIfSet(pathIcon, clone, PathIcon.OpacityProperty);
-                CopyIfSet(pathIcon, clone, PathIcon.RenderTransformProperty);
-                CopyIfSet(pathIcon, clone, PathIcon.RenderTransformOriginProperty);
-                CopyIfSet(pathIcon, clone, PathIcon.IsVisibleProperty);
-                CopyIfSet(pathIcon, clone, PathIcon.FlowDirectionProperty);
-
-                clone.Classes.Replace(pathIcon.Classes);
-
-                return clone;
-
-                static void CopyIfSet<T>(AvaloniaObject src, AvaloniaObject dst, AvaloniaProperty<T> property)
-                {
-                    if (src.IsSet(property))
-                        dst.SetValue(property, src.GetValue(property));
-                }
-            }
-
-            // For other Control subtypes, return null to avoid a crash.
-            // Users should pass non-Control icon data instead.
-            return null;
-        }
+            Geometry g => new PathIcon { Data = g },
+            PathIcon pi => new PathIcon { Data = pi.Data },
+            DrawingImage { Drawing: GeometryDrawing { Geometry: { } gd } } => new PathIcon { Data = gd },
+            string s when !string.IsNullOrEmpty(s) => new PathIcon { Data = Geometry.Parse(s) },
+            IImage image => new Image { Source = image },
+            _ => null
+        };
 
         private void ApplyDrawerBackground()
         {
