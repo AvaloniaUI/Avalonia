@@ -1,7 +1,11 @@
 namespace Avalonia.Rendering.Composition.Drawing.Nodes;
 
-class RenderDataPushMatrixNode : RenderDataPushNode
+class RenderDataPushMatrixNode : RenderDataPushNode, IPoolableRenderDataItem
 {
+    private static readonly RenderDataNodePool<RenderDataPushMatrixNode> s_pool = new();
+
+    public static RenderDataPushMatrixNode Get() => s_pool.Get();
+
     public Matrix Matrix { get; set; }
 
     public override void Push(ref RenderDataNodeRenderContext context)
@@ -24,4 +28,10 @@ class RenderDataPushMatrixNode : RenderDataPushNode
     }
 
     public override Rect? Bounds => base.Bounds?.TransformToAABB(Matrix);
+
+    public void ReturnToPool()
+    {
+        Matrix = default;
+        s_pool.Return(this);
+    }
 }

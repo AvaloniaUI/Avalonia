@@ -5,13 +5,17 @@ using Avalonia.Rendering.SceneGraph;
 
 namespace Avalonia.Rendering.Composition.Drawing.Nodes;
 
-class RenderDataLineNode : IRenderDataItemWithServerResources
+class RenderDataLineNode : IRenderDataItemWithServerResources, IPoolableRenderDataItem
 {
+    private static readonly RenderDataNodePool<RenderDataLineNode> s_pool = new();
+
+    public static RenderDataLineNode Get() => s_pool.Get();
+
     public IPen? ServerPen { get; set; }
     public IPen? ClientPen { get; set; }
     public Point P1 { get; set; }
     public Point P2 { get; set; }
-    
+
     public bool HitTest(Point p)
     {
         if (ClientPen == null)
@@ -52,14 +56,23 @@ class RenderDataLineNode : IRenderDataItemWithServerResources
 
         return Math.Abs(distance) <= halfThickness;
     }
-    
 
-    public void Invoke(ref RenderDataNodeRenderContext context) 
+
+    public void Invoke(ref RenderDataNodeRenderContext context)
         => context.Context.DrawLine(ServerPen, P1, P2);
 
     public Rect? Bounds => LineBoundsHelper.CalculateBounds(P1, P2, ServerPen!);
     public void Collect(IRenderDataServerResourcesCollector collector)
     {
         collector.AddRenderDataServerResource(ServerPen);
+    }
+
+    public void ReturnToPool()
+    {
+        ServerPen = null;
+        ClientPen = null;
+        P1 = default;
+        P2 = default;
+        s_pool.Return(this);
     }
 }

@@ -17,6 +17,12 @@ namespace Avalonia.Threading
             }
         }
 
+        public void Return(T obj)
+        {
+            lock (_stack)
+                _stack.Push(obj);
+        }
+
         public void ReturnAndSetNull(ref T? obj)
         {
             if (obj == null)

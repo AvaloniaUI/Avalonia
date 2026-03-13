@@ -53,6 +53,14 @@ struct RenderDataNodeRenderContext : IDisposable
     }
 }
 
+/// <summary>
+/// Implemented by render data nodes that support object pooling to reduce GC pressure.
+/// </summary>
+interface IPoolableRenderDataItem
+{
+    void ReturnToPool();
+}
+
 interface IRenderDataItem
 {
     /// <summary>
@@ -78,8 +86,12 @@ interface IRenderDataItem
     bool HitTest(Point p);
 }
 
-class RenderDataCustomNode : IRenderDataItem, IDisposable
+class RenderDataCustomNode : IRenderDataItem, IDisposable, IPoolableRenderDataItem
 {
+    private static readonly RenderDataNodePool<RenderDataCustomNode> s_pool = new();
+
+    public static RenderDataCustomNode Get() => s_pool.Get();
+
     public ICustomDrawOperation? Operation { get; set; }
     public bool HitTest(Point p) => Operation?.HitTest(p) ?? false;
     public void Invoke(ref RenderDataNodeRenderContext context) => Operation?.Render(new(context.Context, false));
@@ -90,6 +102,12 @@ class RenderDataCustomNode : IRenderDataItem, IDisposable
     {
         Operation?.Dispose();
         Operation = null;
+    }
+
+    public void ReturnToPool()
+    {
+        Dispose();
+        s_pool.Return(this);
     }
 }
 
@@ -143,8 +161,12 @@ abstract class RenderDataPushNode : IRenderDataItem, IDisposable
     }
 }
 
-class RenderDataClipNode : RenderDataPushNode
+class RenderDataClipNode : RenderDataPushNode, IPoolableRenderDataItem
 {
+    private static readonly RenderDataNodePool<RenderDataClipNode> s_pool = new();
+
+    public static RenderDataClipNode Get() => s_pool.Get();
+
     public RoundedRect Rect { get; set; }
     public override void Push(ref RenderDataNodeRenderContext context) =>
         context.Context.PushClip(Rect);
@@ -158,13 +180,23 @@ class RenderDataClipNode : RenderDataPushNode
             return false;
         return base.HitTest(p);
     }
+
+    public void ReturnToPool()
+    {
+        Rect = default;
+        s_pool.Return(this);
+    }
 }
 
-class RenderDataGeometryClipNode : RenderDataPushNode
+class RenderDataGeometryClipNode : RenderDataPushNode, IPoolableRenderDataItem
 {
+    private static readonly RenderDataNodePool<RenderDataGeometryClipNode> s_pool = new();
+
+    public static RenderDataGeometryClipNode Get() => s_pool.Get();
+
     public IGeometryImpl? Geometry { get; set; }
     public bool Contains(Point p) => Geometry?.FillContains(p) ?? false;
-    
+
     public override void Push(ref RenderDataNodeRenderContext context)
     {
         if (Geometry != null)
@@ -183,10 +215,20 @@ class RenderDataGeometryClipNode : RenderDataPushNode
             return false;
         return base.HitTest(p);
     }
+
+    public void ReturnToPool()
+    {
+        Geometry = null;
+        s_pool.Return(this);
+    }
 }
 
-class RenderDataOpacityNode : RenderDataPushNode
+class RenderDataOpacityNode : RenderDataPushNode, IPoolableRenderDataItem
 {
+    private static readonly RenderDataNodePool<RenderDataOpacityNode> s_pool = new();
+
+    public static RenderDataOpacityNode Get() => s_pool.Get();
+
     public double Opacity { get; set; }
     public override void Push(ref RenderDataNodeRenderContext context)
     {
@@ -198,6 +240,12 @@ class RenderDataOpacityNode : RenderDataPushNode
     {
         if (Opacity != 1)
             context.Context.PopOpacity();
+    }
+
+    public void ReturnToPool()
+    {
+        Opacity = default;
+        s_pool.Return(this);
     }
 }
 
@@ -218,8 +266,12 @@ abstract class RenderDataBrushAndPenNode : IRenderDataItemWithServerResources
     public abstract bool HitTest(Point p);
 }
 
-class RenderDataRenderOptionsNode : RenderDataPushNode
+class RenderDataRenderOptionsNode : RenderDataPushNode, IPoolableRenderDataItem
 {
+    private static readonly RenderDataNodePool<RenderDataRenderOptionsNode> s_pool = new();
+
+    public static RenderDataRenderOptionsNode Get() => s_pool.Get();
+
     public RenderOptions RenderOptions { get; set; }
 
     public override void Push(ref RenderDataNodeRenderContext context)
@@ -231,10 +283,20 @@ class RenderDataRenderOptionsNode : RenderDataPushNode
     {
         context.Context.PopRenderOptions();
     }
+
+    public void ReturnToPool()
+    {
+        RenderOptions = default;
+        s_pool.Return(this);
+    }
 }
 
-class RenderDataTextOptionsNode : RenderDataPushNode
+class RenderDataTextOptionsNode : RenderDataPushNode, IPoolableRenderDataItem
 {
+    private static readonly RenderDataNodePool<RenderDataTextOptionsNode> s_pool = new();
+
+    public static RenderDataTextOptionsNode Get() => s_pool.Get();
+
     public TextOptions TextOptions { get; set; }
 
     public override void Push(ref RenderDataNodeRenderContext context)
@@ -245,5 +307,35 @@ class RenderDataTextOptionsNode : RenderDataPushNode
     public override void Pop(ref RenderDataNodeRenderContext context)
     {
         context.Context.PopTextOptions();
+    }
+
+    public void ReturnToPool()
+    {
+        TextOptions = default;
+        s_pool.Return(this);
+    }
+}
+
+static class RenderDataItemPoolHelper
+{
+    /// <summary>
+    /// Disposes disposable items and returns poolable items to their object pools.
+    /// Recurses into push node children.
+    /// </summary>
+    public static void DisposeAndReturnToPool(PooledInlineList<IRenderDataItem> items)
+    {
+        foreach (var item in items)
+        {
+            if (item is RenderDataPushNode pushNode)
+            {
+                DisposeAndReturnToPool(pushNode.Children);
+                pushNode.Children.Dispose();
+            }
+
+            if (item is IPoolableRenderDataItem poolable)
+                poolable.ReturnToPool();
+            else if (item is IDisposable disp)
+                disp.Dispose();
+        }
     }
 }
