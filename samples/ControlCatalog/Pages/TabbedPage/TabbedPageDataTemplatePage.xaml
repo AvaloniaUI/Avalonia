@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.TabbedPageDataTemplatePage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="240">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Data Templates" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
+                   Text="Bind a TabbedPage to a data collection and use PageTemplate to render each item as a ContentPage." />
+
+        <Separator />
+
+        <Button Content="Add Category" Click="OnAddCategory" HorizontalAlignment="Stretch" />
+        <Button Content="Remove Last" Click="OnRemoveCategory" HorizontalAlignment="Stretch" />
+
+        <Separator />
+
+        <TextBlock x:Name="StatusText" Text="3 categories" Opacity="0.7" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <Panel x:Name="TabbedPageHost" />
+    </Border>
+  </DockPanel>
+</UserControl>

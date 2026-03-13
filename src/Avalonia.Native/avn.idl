@@ -591,15 +591,6 @@ enum AvnMenuItemToggleType
     Radio
 }
 
-enum AvnExtendClientAreaChromeHints
-{
-    AvnNoChrome = 0,
-    AvnSystemChrome = 0x01,
-    AvnPreferSystemChrome = 0x02,
-    AvnOSXThickTitleBar = 0x08,
-    AvnDefaultChrome = AvnPreferSystemChrome,
-}
-
 enum AvnPlatformResizeReason
 {
     ResizeUnspecified,
@@ -810,7 +801,6 @@ interface IAvnWindow : IAvnWindowBase
      HRESULT GetWindowState(AvnWindowState*ret);
      HRESULT TakeFocusFromChildren();
      HRESULT SetExtendClientArea(bool enable);
-     HRESULT SetExtendClientAreaHints(AvnExtendClientAreaChromeHints hints);
      HRESULT GetExtendTitleBarHeight(double*ret);
      HRESULT SetExtendTitleBarHeight(double value);
      HRESULT GetWindowZOrder(long*ret);
@@ -938,13 +928,13 @@ interface IAvnSystemDialogEvents : IUnknown
 [uuid(4d7a47db-a944-4061-abe7-62cb6aa0ffd5)]
 interface IAvnStorageProvider : IUnknown
 {
-     void SelectFolderDialog(IAvnWindow* parentWindowHandle,
+     void SelectFolderDialog(IAvnTopLevel* parentTopLevel,
                              IAvnSystemDialogEvents* events,
                              bool allowMultiple,
                              [const] char* title,
                              [const] char* initialPath);
 
-     void OpenFileDialog(IAvnWindow* parentWindowHandle,
+     void OpenFileDialog(IAvnTopLevel* parentTopLevel,
                                  IAvnSystemDialogEvents* events,
                                  bool allowMultiple,
                                  [const] char* title,
@@ -952,7 +942,7 @@ interface IAvnStorageProvider : IUnknown
                                  [const] char* initialFile,
                                  IAvnFilePickerFileTypes* filters);
 
-     void SaveFileDialog(IAvnWindow* parentWindowHandle,
+     void SaveFileDialog(IAvnTopLevel* parentTopLevel,
                                  IAvnSystemDialogEvents* events,
                                  [const] char* title,
                                  [const] char* initialDirectory,

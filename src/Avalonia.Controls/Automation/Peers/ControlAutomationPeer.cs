@@ -147,10 +147,10 @@ namespace Avalonia.Automation.Peers
             EnsureConnected();
             return _parent;
         }
-
-        protected override AutomationPeer? GetVisualRootCore()
+        
+        private protected override AutomationPeer? GetVisualRootCore()
         {
-            if (Owner.GetVisualRoot() is Control c)
+            if (Owner?.PresentationSource?.InputRoot?.FocusRoot is Control c)
                 return CreatePeerForElement(c);
             return null;
         }
@@ -219,6 +219,11 @@ namespace Avalonia.Automation.Peers
             return AutomationProperties.GetControlTypeOverride(Owner) ?? GetAutomationControlTypeCore();
         }
 
+        protected override string GetClassNameOverrideCore()
+        {
+            return AutomationProperties.GetClassNameOverride(Owner) ?? GetClassNameCore();
+        }
+
         protected override bool IsContentElementOverrideCore()
         {
             var view = AutomationProperties.GetAccessibilityView(Owner);
@@ -227,6 +232,8 @@ namespace Avalonia.Automation.Peers
 
         protected override bool IsControlElementOverrideCore()
         {
+            if (AutomationProperties.GetIsControlElementOverride(Owner) is { } isControlElement)
+                return isControlElement;
             var view = AutomationProperties.GetAccessibilityView(Owner);
             return view == AccessibilityView.Default ? IsControlElementCore() : view >= AccessibilityView.Control;
         }
@@ -268,11 +275,13 @@ namespace Avalonia.Automation.Peers
 
         private void VisualChildrenChanged(object? sender, EventArgs e) => InvalidateChildren();
 
+        private protected virtual Visual? GetVisualParent() => Owner.GetVisualParent();
+
         private void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == Visual.IsVisibleProperty)
             {
-                var parent = Owner.GetVisualParent();
+                var parent = GetVisualParent();
                 if (parent is Control c)
                     (GetOrCreate(c) as ControlAutomationPeer)?.InvalidateChildren();
             }
@@ -303,7 +312,7 @@ namespace Avalonia.Automation.Peers
         {
             if (!_parentValid)
             {
-                var parent = Owner.GetVisualParent();
+                var parent = GetVisualParent();
 
                 while (parent is object)
                 {
@@ -311,6 +320,11 @@ namespace Avalonia.Automation.Peers
                     {
                         var parentPeer = GetOrCreate(c);
                         parentPeer.GetChildren();
+                        if (parentPeer is ControlAutomationPeer controlPeer)
+                        {
+                            parent = controlPeer.GetVisualParent();
+                            continue;
+                        }
                     }
 
                     parent = parent.GetVisualParent();

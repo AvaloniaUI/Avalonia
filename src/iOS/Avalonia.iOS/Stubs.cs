@@ -7,7 +7,7 @@ namespace Avalonia.iOS
 {
     internal class CursorFactoryStub : ICursorFactory
     {
-        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorImplStub();
+        public ICursorImpl CreateCursor(Avalonia.Media.Imaging.Bitmap cursor, PixelPoint hotSpot) => new CursorImplStub();
         ICursorImpl ICursorFactory.GetCursor(StandardCursorType cursorType) => new CursorImplStub();
 
         private class CursorImplStub : ICursorImpl

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Automation;
 using Avalonia.Controls;
-using Avalonia.Controls.Chrome;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -27,7 +26,7 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
         }
     }
 
-    protected abstract SystemDecorations Decorations { get; }
+    protected abstract WindowDecorations Decorations { get; }
 
     public static MatrixTheoryData<bool, WindowState> States
         => new([true, false], Enum.GetValues<WindowState>());
@@ -40,9 +39,8 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
         {
             CanResize = canResize,
             WindowState = state,
-            SystemDecorations = Decorations,
+            WindowDecorations = Decorations,
             ExtendClientAreaToDecorationsHint = true,
-            ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.PreferSystemChrome,
             Width = ClientWidth,
             Height = ClientHeight,
             WindowStartupLocation = WindowStartupLocation.Manual,
@@ -139,13 +137,15 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
 
     protected (double TitleBarHeight, double ButtonsHeight) GetTitleBarInfo()
     {
-        var titleBar = Window.GetVisualDescendants().OfType<TitleBar>().FirstOrDefault();
-        Assert.NotNull(titleBar);
+        var host = Window.GetVisualParent()!;
+        host.GetLayoutManager()!.ExecuteLayoutPass();
 
-        var buttons = titleBar.GetVisualDescendants().OfType<CaptionButtons>().FirstOrDefault();
-        Assert.NotNull(buttons);
-
-        return (titleBar.Height, buttons.Height);
+        var titlebar = host.GetVisualDescendants().FirstOrDefault(c => AutomationProperties.GetAutomationId(c) == "AvaloniaTitleBar");
+        var closeButton = host.GetVisualDescendants().FirstOrDefault(c => AutomationProperties.GetAutomationId(c) == "Close");
+        
+        return (
+            titlebar?.IsEffectivelyVisible == true ? titlebar.Bounds.Height : 0,
+            closeButton?.IsEffectivelyVisible == true ? closeButton.Bounds.Height : 0);
     }
 
     private void AssertNoTitleBar()
@@ -160,8 +160,8 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
 
     public sealed class DecorationsFull : ExtendClientAreaWindowTests
     {
-        protected override SystemDecorations Decorations
-            => SystemDecorations.Full;
+        protected override WindowDecorations Decorations
+            => WindowDecorations.Full;
 
         protected override void VerifyNormalState(bool canResize)
         {
@@ -182,35 +182,23 @@ public abstract class ExtendClientAreaWindowTests : IDisposable
 
     public sealed class DecorationsBorderOnly : ExtendClientAreaWindowTests
     {
-        protected override SystemDecorations Decorations
-            => SystemDecorations.BorderOnly;
+        protected override WindowDecorations Decorations
+            => WindowDecorations.BorderOnly;
 
         protected override void VerifyNormalState(bool canResize)
         {
             AssertHasBorder();
-
-            if (canResize)
-                AssertSmallTitleBarWithoutButtons();
-            else
-                AssertNoTitleBar();
+            AssertNoTitleBar();
         }
 
         protected override void VerifyMaximizedState()
             => AssertNoTitleBar();
-
-        private void AssertSmallTitleBarWithoutButtons()
-        {
-            var (titleBarHeight, buttonsHeight) = GetTitleBarInfo();
-            Assert.True(titleBarHeight < 10);
-            Assert.NotEqual(0, titleBarHeight);
-            Assert.Equal(0, buttonsHeight);
-        }
     }
 
     public sealed class DecorationsNone : ExtendClientAreaWindowTests
     {
-        protected override SystemDecorations Decorations
-            => SystemDecorations.None;
+        protected override WindowDecorations Decorations
+            => WindowDecorations.None;
 
         protected override void VerifyNormalState(bool canResize)
         {

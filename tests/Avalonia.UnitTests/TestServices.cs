@@ -15,34 +15,32 @@ namespace Avalonia.UnitTests
 {
     public class TestServices
     {
-        public static readonly TestServices StyledWindow = new TestServices(
+        public static TestServices StyledWindow => new TestServices(
             assetLoader: new StandardAssetLoader(),
             platform: new StandardRuntimePlatform(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             standardCursorFactory: new HeadlessCursorFactoryStub(),
             theme: () => CreateSimpleTheme(),
-            dispatcherImpl: new NullDispatcherImpl(),
             fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper(),
             windowingPlatform: new MockWindowingPlatform());
 
-        public static readonly TestServices MockPlatformRenderInterface = new TestServices(
+        public static TestServices MockPlatformRenderInterface => new TestServices(
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper());
 
-        public static readonly TestServices MockPlatformWrapper = new TestServices(
+        public static TestServices MockPlatformWrapper => new TestServices(
             platform: Mock.Of<IRuntimePlatform>());
 
-        public static readonly TestServices MockThreadingInterface = new TestServices(
-            dispatcherImpl: new NullDispatcherImpl(),
+        public static TestServices MockThreadingInterface => new TestServices(
             assetLoader: new StandardAssetLoader());
 
-        public static readonly TestServices MockWindowingPlatform = new TestServices(
+        public static TestServices MockWindowingPlatform => new TestServices(
             windowingPlatform: new MockWindowingPlatform());
 
-        public static readonly TestServices RealFocus = new TestServices(
+        public static TestServices RealFocus => new TestServices(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
@@ -51,7 +49,7 @@ namespace Avalonia.UnitTests
             fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper());
 
-        public static readonly TestServices FocusableWindow = new TestServices(
+        public static TestServices FocusableWindow => new TestServices(
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: () => new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
@@ -60,12 +58,11 @@ namespace Avalonia.UnitTests
             renderInterface: new HeadlessPlatformRenderInterface(),
             standardCursorFactory: new HeadlessCursorFactoryStub(),
             theme: () => CreateSimpleTheme(),
-            dispatcherImpl: new NullDispatcherImpl(),
             fontManagerImpl: new TestFontManager(),
             textShaperImpl: new HarfBuzzTextShaper(),
             windowingPlatform: new MockWindowingPlatform());
 
-        public static readonly TestServices TextServices = new TestServices(
+        public static TestServices TextServices => new TestServices(
             assetLoader: new StandardAssetLoader(),
             renderInterface: new HeadlessPlatformRenderInterface(),
             fontManagerImpl: new TestFontManager(),
@@ -82,12 +79,11 @@ namespace Avalonia.UnitTests
             IPlatformRenderInterface? renderInterface = null,
             ICursorFactory? standardCursorFactory = null,
             Func<IStyle>? theme = null,
-            IDispatcherImpl? dispatcherImpl = null,
             IFontManagerImpl? fontManagerImpl = null,
             ITextShaperImpl? textShaperImpl = null,
             IWindowImpl? windowImpl = null,
             IWindowingPlatform? windowingPlatform = null,
-            IAccessKeyHandler? accessKeyHandler = null)
+            Func<IAccessKeyHandler?>? accessKeyHandler = null)
         {
             AssetLoader = assetLoader;
             InputManager = inputManager;
@@ -102,7 +98,6 @@ namespace Avalonia.UnitTests
             TextShaperImpl = textShaperImpl;
             StandardCursorFactory = standardCursorFactory;
             Theme = theme;
-            DispatcherImpl = dispatcherImpl;
             WindowImpl = windowImpl;
             WindowingPlatform = windowingPlatform;
         }
@@ -110,7 +105,7 @@ namespace Avalonia.UnitTests
         public IAssetLoader? AssetLoader { get; }
         public IInputManager? InputManager { get; }
         internal IGlobalClock? GlobalClock { get; set; }
-        internal IAccessKeyHandler? AccessKeyHandler { get; }
+        internal Func<IAccessKeyHandler?>? AccessKeyHandler { get; }
         public Func<IKeyboardDevice?>? KeyboardDevice { get; }
         internal Func<IKeyboardNavigationHandler?>? KeyboardNavigation { get; }
         public Func<IMouseDevice?>? MouseDevice { get; }
@@ -120,7 +115,6 @@ namespace Avalonia.UnitTests
         public ITextShaperImpl? TextShaperImpl { get; }
         public ICursorFactory? StandardCursorFactory { get; }
         public Func<IStyle>? Theme { get; }
-        public IDispatcherImpl? DispatcherImpl { get; }
         public IWindowImpl? WindowImpl { get; }
         public IWindowingPlatform? WindowingPlatform { get; }
 
@@ -128,7 +122,7 @@ namespace Avalonia.UnitTests
             IAssetLoader? assetLoader = null,
             IInputManager? inputManager = null,
             IGlobalClock? globalClock = null,
-            IAccessKeyHandler? accessKeyHandler = null,
+            Func<IAccessKeyHandler?>? accessKeyHandler = null,
             Func<IKeyboardDevice?>? keyboardDevice = null,
             Func<IKeyboardNavigationHandler?>? keyboardNavigation = null,
             Func<IMouseDevice?>? mouseDevice = null,
@@ -138,7 +132,6 @@ namespace Avalonia.UnitTests
             IScheduler? scheduler = null,
             ICursorFactory? standardCursorFactory = null,
             Func<IStyle>? theme = null,
-            IDispatcherImpl? dispatcherImpl = null,
             IFontManagerImpl? fontManagerImpl = null,
             ITextShaperImpl? textShaperImpl = null,
             IWindowImpl? windowImpl = null,
@@ -158,7 +151,6 @@ namespace Avalonia.UnitTests
                 textShaperImpl: textShaperImpl ?? TextShaperImpl,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 theme: theme ?? Theme,
-                dispatcherImpl: dispatcherImpl ?? DispatcherImpl,
                 windowingPlatform: windowingPlatform ?? WindowingPlatform,
                 windowImpl: windowImpl ?? WindowImpl);
         }

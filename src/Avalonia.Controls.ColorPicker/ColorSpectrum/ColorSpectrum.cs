@@ -348,7 +348,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             // We only want to bother with the color name tool tip if we can provide color names.
             if (_selectionEllipsePanel != null &&
@@ -363,7 +363,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             // We only want to bother with the color name tool tip if we can provide color names.
             if (_selectionEllipsePanel != null &&

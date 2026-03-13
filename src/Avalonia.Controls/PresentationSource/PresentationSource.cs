@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls.Chrome;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.Layout;
@@ -6,6 +7,7 @@ using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls;
 
@@ -19,7 +21,8 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
     internal FocusManager FocusManager { get; } = new();
 
-    public PresentationSource(InputElement rootVisual, ITopLevelImpl platformImpl,
+    public PresentationSource(InputElement rootVisual, InputElement defaultFocusVisual,
+        ITopLevelImpl platformImpl,
         IAvaloniaDependencyResolver dependencyResolver, Func<Size> clientSizeProvider)
     {
         _clientSizeProvider = clientSizeProvider;
@@ -41,6 +44,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
         LayoutManager = CreateLayoutManager();
         
         RootVisual = rootVisual;
+        FocusRoot = defaultFocusVisual;
     }
 
     // In WPF it's a Visual and it's nullable. For now we have it as non-nullable InputElement since 
@@ -112,5 +116,40 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
     public PixelPoint? GetLastPointerPosition(Visual topLevel)
     {
         return _pointerOverPreProcessor?.LastPosition;
+    }
+    
+    private static bool ChromeHitTestFilter(Visual visual)
+    {
+        if (visual is not { IsVisible: true, IsAttachedToVisualTree: true } 
+            or not IInputElement { IsEffectivelyVisible: true, IsHitTestVisible: true })
+            return false;
+
+        // Allow traversal into any container that might contain chrome elements
+        return true;
+    }
+
+    private static WindowDecorationsElementRole? GetChromeRoleFromVisual(Visual? visual)
+    {
+        while (visual != null)
+        {
+            var role = Chrome.WindowDecorationProperties.GetElementRole(visual);
+            if (role != WindowDecorationsElementRole.None)
+                return role;
+            visual = visual.VisualParent;
+        }
+        return null;
+    }
+
+    WindowDecorationsElementRole? IInputRoot.HitTestChromeElement(Point point)
+    {
+        // Check all visuals at the point (not just topmost) because chrome elements
+        // may be in the underlay layer which sits below the TopLevel in the visual tree.
+        foreach (var visual in RootVisual.GetVisualsAt(point, ChromeHitTestFilter))
+        {
+            var role = GetChromeRoleFromVisual(visual);
+            if (role != null)
+                return role;
+        }
+        return null;
     }
 }

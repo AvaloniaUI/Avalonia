@@ -141,8 +141,8 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(0d, 11)]
-        [InlineData(0.5d, 21)]
+        [InlineData(0d, 10)]
+        [InlineData(0.5d, 20)]
         public void Scrolling_Up_To_Index_Does_Not_Create_A_Page_Of_Unrealized_Elements(double bufferFactor, int expectedCount)
         {
             using var app = App();
@@ -1097,9 +1097,9 @@ namespace Avalonia.Controls.UnitTests
             itemsControl.ItemsSource = null;
             root.LayoutManager.ExecuteLayoutPass();
 
-            // Should have no realized elements and 3 unrealized elements.
+            // Should have no realized elements and no unrealized elements.
             Assert.Equal(0, target.GetRealizedElements().Count);
-            Assert.Equal(3, target.Children.Count);
+            Assert.Equal(0, target.Children.Count);
 
             // Make the panel effectively invisible and set items.
             container.IsVisible = false;
@@ -1551,6 +1551,40 @@ namespace Avalonia.Controls.UnitTests
             // The container should still exist and be positioned outside the visible viewport.
             container = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
             Assert.Equal(new Rect(0, 125, 100, 25), container.Bounds);
+        }
+
+        [Fact]
+        public void Focused_Container_Is_Positioned_Correctly_When_Scrolled_Past_Items_With_Different_Heights()
+        {
+            using var app = App();
+
+            var items = Enumerable.Range(0, 20)
+                .Select(x => new ItemWithHeight(x, x < 10 ? 10 : 50))
+                .ToList();
+
+            var (target, _, _) = CreateTarget(items: items, itemTemplate: CanvasWithHeightTemplate);
+
+            var focused = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
+            focused.Focusable = true;
+            focused.Focus();
+
+            target.ScrollIntoView(15);
+            Layout(target);
+
+            Assert.True(target.FirstRealizedIndex > 5);
+
+            var firstIndex = target.FirstRealizedIndex;
+            var firstRealized = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(firstIndex));
+            var realized = target.GetRealizedElements()
+                .Where(x => x is not null)
+                .Cast<Control>()
+                .ToList();
+
+            var estimatedSize = realized.Average(x => x.DesiredSize.Height);
+            var expectedTop = firstRealized.Bounds.Top - ((firstIndex - 5) * estimatedSize);
+
+            focused = Assert.IsType<ContentPresenter>(target.ContainerFromIndex(5));
+            Assert.Equal(expectedTop, focused.Bounds.Top, 3);
         }
 
         [Theory]

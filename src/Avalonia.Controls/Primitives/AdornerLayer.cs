@@ -11,9 +11,6 @@ namespace Avalonia.Controls.Primitives
     /// Represents a surface for showing adorners.
     /// Adorners are always on top of the adorned element and are positioned to stay relative to the adorned element.
     /// </summary>
-    /// <remarks>
-    /// TODO: Need to track position of adorned elements and move the adorner if they move.
-    /// </remarks>
     public class AdornerLayer : Canvas
     {
         /// <summary>
@@ -55,7 +52,7 @@ namespace Avalonia.Controls.Primitives
             IsClipEnabledProperty.Changed.Subscribe(AdornerIsClipEnabledChanged);
         }
 
-        public AdornerLayer()
+        internal AdornerLayer()
         {
             Children.CollectionChanged += ChildrenCollectionChanged;
             _trackingHelper.SetVisual(this);

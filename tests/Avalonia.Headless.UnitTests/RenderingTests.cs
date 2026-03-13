@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 
 namespace Avalonia.Headless.UnitTests;
 
@@ -158,6 +159,8 @@ public class RenderingTests
         };
 
         window.Show();
+
+        Dispatcher.UIThread.RunJobs();
 
         var compositionVisual = ElementComposition.GetElementVisual(window)!;
         var snapshot = await compositionVisual.Compositor.CreateCompositionVisualSnapshot(compositionVisual, 1);

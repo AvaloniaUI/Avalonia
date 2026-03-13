@@ -19,7 +19,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Transform?> TransformProperty =
             PopupRoot.TransformProperty.AddOwner<OverlayPopupHost>();
 
-        private readonly OverlayLayer _overlayLayer;
+        private readonly PopupOverlayLayer _overlayLayer;
         private readonly ManagedPopupPositioner _positioner;
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         internal IKeyboardNavigationHandler Tests_KeyboardNavigationHandler => _keyboardNavigationHandler!;
@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Primitives
         static OverlayPopupHost()
             => KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<OverlayPopupHost>(KeyboardNavigationMode.Cycle);
 
-        public OverlayPopupHost(OverlayLayer overlayLayer)
+        internal OverlayPopupHost(PopupOverlayLayer overlayLayer)
         {
             _overlayLayer = overlayLayer;
             _positioner = new ManagedPopupPositioner(this);
@@ -41,7 +41,7 @@ namespace Avalonia.Controls.Primitives
 
         /// <inheritdoc />
         [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012", Justification = "Explicit set")]
-        public void SetChild(Control? control)
+        void IPopupHost.SetChild(Control? control)
         {
             Content = control;
         }
@@ -86,7 +86,7 @@ namespace Avalonia.Controls.Primitives
             _overlayLayer.Children.Remove(this);
         }
 
-        public void TakeFocus()
+        void IPopupHost.TakeFocus()
         {
             // Nothing to do here: overlay popups are implemented inside the window.
         }
@@ -150,9 +150,8 @@ namespace Avalonia.Controls.Primitives
         }
 
         double IManagedPopupPositionerPopup.Scaling => 1;
-
-        [PrivateApi]
-        public static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver, bool shouldUseOverlayLayer)
+        
+        internal static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver, bool shouldUseOverlayLayer)
         {
             if (!shouldUseOverlayLayer)
             {
@@ -162,7 +161,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
 
-            if (OverlayLayer.GetOverlayLayer(target) is { } overlayLayer)
+            if (PopupOverlayLayer.GetPopupOverlayLayer(target) is { } overlayLayer)
             {
                 return new OverlayPopupHost(overlayLayer);
             }

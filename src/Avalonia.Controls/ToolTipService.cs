@@ -38,7 +38,7 @@ namespace Avalonia.Controls
             if (e is RawPointerEventArgs pointerEvent)
             {
                 bool isTooltipEvent = false;
-                if (_tipControl?.GetValue(ToolTip.ToolTipProperty) is { } currentTip && e.Root.RootElement == currentTip.PopupHost)
+                if (_tipControl?.GetValue(ToolTip.ToolTipProperty) is { } currentTip && e.Root == (currentTip.PopupHost as Visual)?.GetInputRoot())
                 {
                     isTooltipEvent = true;
                     _lastTipEventTime = pointerEvent.Timestamp;

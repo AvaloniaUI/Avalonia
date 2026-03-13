@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="4.4.0" />
+    <PackageReference Include="NUnit" />
   </ItemGroup>
 
   <ItemGroup>

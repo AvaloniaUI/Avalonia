@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Automation.Provider;
+using Avalonia.Metadata;
 
 namespace Avalonia.Automation.Peers
 {
@@ -205,7 +206,7 @@ namespace Avalonia.Automation.Peers
         ///   </item>
         /// </list>
         /// </remarks>
-        public string GetClassName() => GetClassNameCore() ?? string.Empty;
+        public string GetClassName() => GetClassNameOverrideCore() ?? string.Empty;
 
         /// <summary>
         /// Gets the automation peer for the label that is targeted to the element.
@@ -398,13 +399,25 @@ namespace Avalonia.Automation.Peers
         ///     <term>Windows</term>
         ///     <description>No mapping, but used internally to translate coordinates.</description>
         ///   </item>
+        /// </list>
+        /// </remarks>
+        [PrivateApi]
+        public AutomationPeer? GetVisualRoot() => GetVisualRootCore();
+
+        /// <summary>
+        /// Gets the <see cref="AutomationPeer"/> that is the root of this <see cref="AutomationPeer"/>'s
+        /// visual tree.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
         ///   <item>
         ///     <term>macOS</term>
         ///     <description><c>NSAccessibilityProtocol.accessibilityTopLevelUIElement</c></description>
         ///   </item>
         /// </list>
         /// </remarks>
-        public AutomationPeer? GetVisualRoot() => GetVisualRootCore();
+        [PrivateApi]
+        public AutomationPeer? GetAutomationRoot() => GetAutomationRootCore();
 
         /// <summary>
         /// Gets a value that indicates whether the element that is associated with this automation
@@ -633,7 +646,12 @@ namespace Avalonia.Automation.Peers
             return GetAutomationControlTypeCore();
         }
 
-        protected virtual AutomationPeer? GetVisualRootCore()
+        protected virtual string GetClassNameOverrideCore()
+        {
+            return GetClassNameCore();
+        }
+
+        private protected virtual AutomationPeer? GetAutomationRootCore()
         {
             var peer = this;
             var parent = peer.GetParent();
@@ -646,6 +664,8 @@ namespace Avalonia.Automation.Peers
 
             return peer;
         }
+
+        private protected virtual AutomationPeer? GetVisualRootCore() => GetAutomationRootCore();
 
 
         protected virtual bool IsContentElementOverrideCore()

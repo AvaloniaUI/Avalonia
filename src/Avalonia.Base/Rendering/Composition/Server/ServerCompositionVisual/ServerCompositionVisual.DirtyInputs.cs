@@ -43,7 +43,9 @@ partial class ServerCompositionVisual
         | CompositionVisualChangedFields.Orientation
         | CompositionVisualChangedFields.OrientationAnimated
         | CompositionVisualChangedFields.Offset
-        | CompositionVisualChangedFields.OffsetAnimated;
+        | CompositionVisualChangedFields.OffsetAnimated
+        | CompositionVisualChangedFields.Translation
+        | CompositionVisualChangedFields.TranslationAnimated;
 
     private const CompositionVisualChangedFields ClipSizeDirtyMask =
         CompositionVisualChangedFields.Size
@@ -100,7 +102,8 @@ partial class ServerCompositionVisual
             || property == s_IdOfScaleProperty
             || property == s_IdOfRotationAngleProperty
             || property == s_IdOfOrientationProperty
-            || property == s_IdOfOffsetProperty) 
+            || property == s_IdOfOffsetProperty
+            || property == s_IdOfTranslationProperty) 
             TriggerCombinedTransformDirty();
 
         if (property == s_IdOfClipToBoundsProperty

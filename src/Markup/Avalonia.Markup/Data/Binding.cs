@@ -8,9 +8,7 @@ namespace Avalonia.Data;
 /// for new code.
 /// </summary>
 [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
-#if NET8_0_OR_GREATER
-    [RequiresDynamicCode(TrimmingMessages.ReflectionBindingRequiresDynamicCodeMessage)]
-#endif
+[RequiresDynamicCode(TrimmingMessages.ReflectionBindingRequiresDynamicCodeMessage)]
 public class Binding : ReflectionBinding
 {
     public Binding() { }

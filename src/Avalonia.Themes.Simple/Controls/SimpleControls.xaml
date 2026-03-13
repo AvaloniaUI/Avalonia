@@ -22,8 +22,7 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ComboBox.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Window.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Carousel.xaml" />
-        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CaptionButtons.xaml" />
-        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TitleBar.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/WindowDrawnDecorations.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TextBox.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/AutoCompleteBox.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/DataValidationErrors.xaml" />
@@ -41,6 +40,7 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabStripItem.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabControl.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabItem.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/PipsPager.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/PopupRoot.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/OverlayPopupHost.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/WindowNotificationManager.xaml" />
@@ -73,6 +73,11 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ThemeVariantScope.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/HeaderedContentControl.xaml"/>
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TextSelectionHandle.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CommandBar.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ContentPage.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/DrawerPage.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/NavigationPage.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabbedPage.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Styles.Resources>
