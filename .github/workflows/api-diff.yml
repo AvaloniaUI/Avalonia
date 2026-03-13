@@ -54,14 +54,16 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number,
             });
+            if (pr.head.repo.full_name !== `${context.repo.owner}/${context.repo.repo}`) {
+              core.setFailed('Cannot run /api-diff on fork PRs — would execute untrusted code.');
+              return;
+            }
             core.setOutput('ref', pr.head.ref);
             core.setOutput('sha', pr.head.sha);
-            core.setOutput('repo', pr.head.repo.full_name);
 
       - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
-          repository: ${{ steps.pr.outputs.repo }}
           ref: ${{ steps.pr.outputs.ref }}
 
       - name: Setup .NET
