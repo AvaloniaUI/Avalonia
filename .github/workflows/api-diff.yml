@@ -69,7 +69,7 @@ jobs:
       - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.pr.outputs.ref }}
+          ref: ${{ steps.pr.outputs.sha }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
