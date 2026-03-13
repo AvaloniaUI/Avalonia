@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Controls.Templates;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -577,6 +579,37 @@ public class DrawerPageTests
             Assert.Equal(5, openedCount);
             Assert.Equal(5, closedCount);
             Assert.False(dp.IsOpen);
+        }
+
+        [Fact]
+        public void BackdropPress_WithCanceledClose_FiresClosingOnce_WhenTemplateWasAppliedBeforeAttach()
+        {
+            var dp = new DrawerPage
+            {
+                Template = BackdropOnlyTemplate(),
+                IsOpen = true,
+                BackdropBrush = Brushes.Black,
+                DisplayMode = SplitViewDisplayMode.Overlay
+            };
+
+            dp.ApplyTemplate();
+
+            int closingCount = 0;
+            dp.Closing += (_, e) =>
+            {
+                closingCount++;
+                e.Cancel = true;
+            };
+
+            var root = new TestRoot { Child = dp };
+            root.ExecuteInitialLayoutPass();
+
+            var backdrop = Assert.Single(dp.GetVisualDescendants().OfType<Border>(), x => x.Name == "PART_Backdrop");
+
+            RaisePointerPressed(backdrop);
+
+            Assert.Equal(1, closingCount);
+            Assert.True(dp.IsOpen);
         }
     }
 
@@ -1212,6 +1245,36 @@ public class DrawerPageTests
 
             target.RaiseEvent(args);
         }
+    }
+
+    private static void RaisePointerPressed(Interactive target, Point? position = null)
+    {
+        var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Touch, true);
+        var args = new PointerPressedEventArgs(
+            target,
+            pointer,
+            (Visual)target,
+            position ?? default,
+            timestamp: 1,
+            new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
+            KeyModifiers.None);
+
+        target.RaiseEvent(args);
+    }
+
+    private static IControlTemplate BackdropOnlyTemplate()
+    {
+        return new FuncControlTemplate<DrawerPage>((_, scope) =>
+            new Canvas
+            {
+                Children =
+                {
+                    new Border
+                    {
+                        Name = "PART_Backdrop"
+                    }.RegisterInNameScope(scope)
+                }
+            });
     }
 
     public class DetachmentTests : ScopedTestBase

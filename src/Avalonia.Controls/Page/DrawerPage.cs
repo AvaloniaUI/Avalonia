@@ -523,8 +523,7 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
 
-            if (_backdrop != null)
-                _backdrop.PointerPressed -= OnBackdropPressed;
+            DetachBackdropPointerPressed();
 
             _contentPresenter = e.NameScope.Find<ContentPresenter>("PART_ContentPresenter");
             _drawerPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerPresenter");
@@ -542,7 +541,9 @@ namespace Avalonia.Controls
 
             if (_backdrop != null)
             {
-                _backdrop.PointerPressed += OnBackdropPressed;
+                if (IsAttachedToVisualTree)
+                    AttachBackdropPointerPressed();
+
                 AutomationProperties.SetAccessibilityView(_backdrop, AccessibilityView.Raw);
             }
 
@@ -654,8 +655,7 @@ namespace Avalonia.Controls
 
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
 
-            if (_backdrop != null)
-                _backdrop.PointerPressed += OnBackdropPressed;
+            AttachBackdropPointerPressed();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -664,14 +664,25 @@ namespace Avalonia.Controls
 
             RemoveHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
 
-            if (_backdrop != null)
-                _backdrop.PointerPressed -= OnBackdropPressed;
+            DetachBackdropPointerPressed();
 
             _navBarVisibleSub?.Dispose();
             _navBarVisibleSub = null;
 
             if (Content is NavigationPage nav)
                 nav.SetDrawerPage(null);
+        }
+
+        private void AttachBackdropPointerPressed()
+        {
+            if (_backdrop != null)
+                _backdrop.PointerPressed += OnBackdropPressed;
+        }
+
+        private void DetachBackdropPointerPressed()
+        {
+            if (_backdrop != null)
+                _backdrop.PointerPressed -= OnBackdropPressed;
         }
 
         private void UpdateSwipeRecognizerAxes()
