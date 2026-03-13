@@ -69,16 +69,11 @@ namespace Avalonia.DesignerSupport.Remote
 
         private sealed class DummyRenderTimer : IRenderTimer
         {
-            public event Action<TimeSpan> Tick
-            {
-                add { }
-                remove { }
-            }
-
+            public Action<TimeSpan>? Tick { get; set; }
             public bool RunsInBackground => false;
         }
 
-        public Compositor Compositor { get; } = new(new RenderLoop(new DummyRenderTimer()), null);
+        public Compositor Compositor { get; } = new(RenderLoop.FromTimer(new DummyRenderTimer()), null);
 
         public void Dispose()
         {

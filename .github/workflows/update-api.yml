@@ -71,6 +71,7 @@ jobs:
         with:
           ref: ${{ steps.pr.outputs.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          submodules: recursive
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
