@@ -198,6 +198,52 @@ public class CarouselPageTests
         }
 
         [Fact]
+        public void SelectedIndex_InvalidWithPages_CoercesToFirstPage()
+        {
+            var cp = new CarouselPage();
+            var page1 = new ContentPage { Header = "A" };
+            var page2 = new ContentPage { Header = "B" };
+            ((AvaloniaList<Page>)cp.Pages!).AddRange(new[] { page1, page2 });
+
+            cp.SelectedIndex = 999;
+
+            Assert.Equal(0, cp.SelectedIndex);
+            Assert.Same(page1, cp.SelectedPage);
+            Assert.Same(page1, cp.CurrentPage);
+        }
+
+        [Fact]
+        public void SelectedIndex_SetBeforePages_IsStored()
+        {
+            var cp = new CarouselPage();
+
+            cp.SelectedIndex = 2;
+
+            Assert.Equal(2, cp.SelectedIndex);
+            Assert.Null(cp.SelectedPage);
+            Assert.Null(cp.CurrentPage);
+        }
+
+        [Fact]
+        public void SelectedIndex_SetBeforePages_IsAppliedWhenPagesSet()
+        {
+            var cp = new CarouselPage
+            {
+                SelectedIndex = 2
+            };
+
+            var page1 = new ContentPage { Header = "A" };
+            var page2 = new ContentPage { Header = "B" };
+            var page3 = new ContentPage { Header = "C" };
+
+            cp.Pages = new AvaloniaList<Page> { page1, page2, page3 };
+
+            Assert.Equal(2, cp.SelectedIndex);
+            Assert.Same(page3, cp.SelectedPage);
+            Assert.Same(page3, cp.CurrentPage);
+        }
+
+        [Fact]
         public void Pages_SetNull_SelectedIndex_RetainsLastValue()
         {
             var cp = new CarouselPage();

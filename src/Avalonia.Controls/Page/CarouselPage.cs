@@ -155,9 +155,13 @@ namespace Avalonia.Controls
                     ApplySelectedIndex(0);
                 }
             }
-            else if (SelectedIndex < 0 && Pages is IList { Count: > 0 })
+            else if (Pages is IList { Count: > 0 })
             {
-                ApplySelectedIndex(0);
+                var index = CoercePreTemplateSelectedIndex(SelectedIndex);
+                var page = ResolvePageAtIndex(index);
+
+                if (index != SelectedIndex || !ReferenceEquals(SelectedPage, page))
+                    CommitSelection(index, page, navigationType);
             }
         }
 
@@ -170,9 +174,21 @@ namespace Avalonia.Controls
             }
             else
             {
-                // No template applied yet — commit directly so lifecycle events still fire.
-                var newPage = ResolvePageAtIndex(index);
-                CommitSelection(index, newPage);
+                var pageCount = GetPageCount();
+
+                if (pageCount > 0)
+                {
+                    // No template applied yet, normalize to a real page so the public state
+                    // matches the inner Carousel's always selected behavior.
+                    var coercedIndex = CoercePreTemplateSelectedIndex(index);
+                    var newPage = ResolvePageAtIndex(coercedIndex);
+                    CommitSelection(coercedIndex, newPage);
+                }
+                else
+                {
+                    // Preserve preselection until pages exist.
+                    StoreSelectedIndex(index);
+                }
             }
         }
 
@@ -273,6 +289,15 @@ namespace Avalonia.Controls
         {
             return Pages is ICollection<Page> col ? col.Count :
                    Pages is IList list ? list.Count : 0;
+        }
+
+        private int CoercePreTemplateSelectedIndex(int index)
+        {
+            var pageCount = GetPageCount();
+            if (pageCount <= 0)
+                return index;
+
+            return (uint)index < (uint)pageCount ? index : 0;
         }
 
     }
