@@ -384,7 +384,7 @@ namespace Avalonia.Controls.Primitives
             s_isInTouchMode = e.Pointer.Type != PointerType.Mouse;
         }
 
-        private void PresenterFocused(object? sender, GotFocusEventArgs e)
+        private void PresenterFocused(object? sender, FocusChangedEventArgs e)
         {
             if (_presenter != null && _presenter.SelectionStart != _presenter.SelectionEnd)
             {
