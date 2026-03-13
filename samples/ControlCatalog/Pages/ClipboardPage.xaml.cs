@@ -34,7 +34,10 @@ namespace ControlCatalog.Pages
         {
             InitializeComponent();
             _clipboardLastDataObjectChecker =
-                new DispatcherTimer(TimeSpan.FromSeconds(0.5), default, CheckLastDataObject);
+                new DispatcherTimer(TimeSpan.FromSeconds(0.5), default, CheckLastDataObject)
+                {
+                    IsEnabled = false
+                };
 
             using var asset = AssetLoader.Open(new Uri("avares://ControlCatalog/Assets/image1.jpg"));
             _defaultImage = new Bitmap(asset);

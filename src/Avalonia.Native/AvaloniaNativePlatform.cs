@@ -122,7 +122,7 @@ namespace Avalonia.Native
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
                 .Bind<IClipboard>().ToConstant(clipboard)
-                .Bind<IRenderTimer>().ToConstant(new ThreadProxyRenderTimer(new AvaloniaNativeRenderTimer(_factory.CreatePlatformRenderTimer())))
+                .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(new ThreadProxyRenderTimer(new AvaloniaNativeRenderTimer(_factory.CreatePlatformRenderTimer()))))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
