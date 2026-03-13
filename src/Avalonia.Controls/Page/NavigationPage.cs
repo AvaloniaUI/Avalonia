@@ -628,11 +628,7 @@ namespace Avalonia.Controls
                 _modalPresenter.IsVisible = IsModalVisible;
             }
 
-            foreach (var p in NavigationStack)
-            {
-                p.Navigation = this;
-                p.SetInNavigationPage(true);
-            }
+            RestoreAttachedPageState();
 
             ApplyNavBarVisibility();
             ApplyBackButtonEnabled(IsBackButtonEffectivelyEnabled);
@@ -671,6 +667,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
+            RestoreAttachedPageState();
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
         }
 
@@ -699,19 +696,7 @@ namespace Avalonia.Controls
             _barHeightSub?.Dispose();
             _barHeightSub = null;
 
-            while (_modalStack.Count > 0)
-            {
-                var modal = _modalStack.Pop();
-                modal.Navigation = null;
-                modal.SetInNavigationPage(false);
-            }
-            _cachedModalStack = null;
-
-            foreach (var p in NavigationStack)
-            {
-                p.Navigation = null;
-                p.SetInNavigationPage(false);
-            }
+            ClearAttachedPageState();
             InvalidateNavigationStackCache();
         }
 
@@ -1893,6 +1878,36 @@ namespace Avalonia.Controls
         }
 
         private void InvalidateNavigationStackCache() => _cachedNavigationStack = null;
+
+        private void RestoreAttachedPageState()
+        {
+            foreach (var page in NavigationStack)
+            {
+                page.Navigation = this;
+                page.SetInNavigationPage(true);
+            }
+
+            foreach (var modal in _modalStack)
+            {
+                modal.Navigation = this;
+                modal.SetInNavigationPage(true);
+            }
+        }
+
+        private void ClearAttachedPageState()
+        {
+            foreach (var modal in _modalStack)
+            {
+                modal.Navigation = null;
+                modal.SetInNavigationPage(false);
+            }
+
+            foreach (var page in NavigationStack)
+            {
+                page.Navigation = null;
+                page.SetInNavigationPage(false);
+            }
+        }
 
         internal void UpdateIsBackButtonEffectivelyVisible()
         {

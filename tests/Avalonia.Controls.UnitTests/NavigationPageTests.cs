@@ -750,6 +750,64 @@ public class NavigationPageTests
         }
 
         [Fact]
+        public async Task Detach_And_Reattach_PreservesModalStack()
+        {
+            var nav = new NavigationPage
+            {
+                Template = new FuncControlTemplate<NavigationPage>((parent, ns) =>
+                {
+                    return new Panel
+                    {
+                        Children =
+                        {
+                            new Panel
+                            {
+                                Name = "PART_ContentHost",
+                                Children =
+                                {
+                                    new ContentPresenter { Name = "PART_PageBackPresenter" }.RegisterInNameScope(ns),
+                                    new ContentPresenter { Name = "PART_PagePresenter" }.RegisterInNameScope(ns),
+                                }
+                            }.RegisterInNameScope(ns),
+                            new Border
+                            {
+                                Name = "PART_NavigationBar",
+                                Child = new Button { Name = "PART_BackButton" }.RegisterInNameScope(ns)
+                            }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_TopCommandBar" }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_ModalBackPresenter" }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_ModalPresenter" }.RegisterInNameScope(ns),
+                        }
+                    };
+                })
+            };
+
+            var root = new TestRoot { Child = nav };
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var page = new ContentPage { Header = "Root" };
+            var modal = new ContentPage { Header = "Modal" };
+
+            await nav.PushAsync(page);
+            await nav.PushModalAsync(modal);
+
+            root.Child = null;
+
+            Assert.Single(nav.ModalStack);
+            Assert.Same(modal, nav.ModalStack[0]);
+            Assert.Null(modal.Navigation);
+            Assert.False(modal.IsInNavigationPage);
+
+            root.Child = nav;
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Single(nav.ModalStack);
+            Assert.Same(modal, nav.ModalStack[0]);
+            Assert.Same(nav, modal.Navigation);
+            Assert.True(modal.IsInNavigationPage);
+        }
+
+        [Fact]
         public async Task PushModal_FiresModalPushedEvent()
         {
             var nav = new NavigationPage();

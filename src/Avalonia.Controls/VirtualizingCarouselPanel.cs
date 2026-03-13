@@ -215,12 +215,15 @@ namespace Avalonia.Controls
                 _realized is { } to &&
                 GetTransition() is { } transition)
             {
-                _transition = new CancellationTokenSource();
+                var transitionCts = new CancellationTokenSource();
+                _transition = transitionCts;
 
                 var forward = _realizedIndex > _transitionFromIndex;
 
-                transition.Start(_transitionFrom, to, forward, _transition.Token)
-                    .ContinueWith(TransitionFinished, TaskScheduler.FromCurrentSynchronizationContext());
+                transition.Start(_transitionFrom, to, forward, transitionCts.Token)
+                    .ContinueWith(
+                        t => TransitionFinished(t, transitionCts),
+                        TaskScheduler.FromCurrentSynchronizationContext());
             }
 
             return result;
@@ -436,19 +439,33 @@ namespace Avalonia.Controls
 
         private IPageTransition? GetTransition() => (ItemsControl as Carousel)?.PageTransition;
 
-        private void TransitionFinished(Task task)
+        private void TransitionFinished(Task task, CancellationTokenSource transitionCts)
         {
-            if (task.IsCanceled)
-                return;
+            try
+            {
+                if (task.IsFaulted)
+                    _ = task.Exception;
 
-            if (task.IsFaulted)
-                _ = task.Exception;
+                if (!ReferenceEquals(_transition, transitionCts))
+                    return;
 
-            if (_transitionFrom is not null)
-                RecycleElement(_transitionFrom);
-            _transition = null;
-            _transitionFrom = null;
-            _transitionFromIndex = -1;
+                if (task.IsCanceled)
+                    return;
+
+                if (_transitionFrom is not null)
+                    RecycleElement(_transitionFrom);
+
+                _transition = null;
+                _transitionFrom = null;
+                _transitionFromIndex = -1;
+            }
+            finally
+            {
+                if (ReferenceEquals(_transition, transitionCts))
+                    _transition = null;
+
+                transitionCts.Dispose();
+            }
         }
 
         /// <summary>
@@ -628,7 +645,8 @@ namespace Avalonia.Controls
                 : MaxCompletionDuration;
 
             _completionCts?.Cancel();
-            _completionCts = new CancellationTokenSource();
+            var completionCts = new CancellationTokenSource();
+            _completionCts = completionCts;
 
             SetValue(CompletionProgressProperty, currentProgress);
 
@@ -654,50 +672,61 @@ namespace Avalonia.Controls
 
             _isDragging = false;
 
-            _ = RunCompletionAnimation(animation, carousel, _completionCts.Token);
+            _ = RunCompletionAnimation(animation, carousel, completionCts);
         }
 
-        private async Task RunCompletionAnimation(Animation.Animation animation, Carousel carousel, CancellationToken cancellationToken)
+        private async Task RunCompletionAnimation(Animation.Animation animation, Carousel carousel, CancellationTokenSource completionCts)
         {
-            await animation.RunAsync(this, null, cancellationToken);
-
-            if (cancellationToken.IsCancellationRequested)
-                return;
-
-            if (GetTransition() is IInteractivePageTransition interactive)
+            try
             {
-                var swipeTarget = ReferenceEquals(_realized, _swipeTarget) ? null : _swipeTarget;
-                interactive.Update(_completionEndProgress, _realized, swipeTarget, _isForward);
-            }
+                var cancellationToken = completionCts.Token;
+                await animation.RunAsync(this, null, cancellationToken);
 
-            var commit = _completionEndProgress > 0.5;
+                if (cancellationToken.IsCancellationRequested)
+                    return;
 
-            if (commit && _swipeTarget is not null)
-            {
-                var targetIndex = _swipeTargetIndex;
-                var targetElement = _swipeTarget;
+                if (GetTransition() is IInteractivePageTransition interactive)
+                {
+                    var swipeTarget = ReferenceEquals(_realized, _swipeTarget) ? null : _swipeTarget;
+                    interactive.Update(_completionEndProgress, _realized, swipeTarget, _isForward);
+                }
 
+                var commit = _completionEndProgress > 0.5;
+
+                if (commit && _swipeTarget is not null)
+                {
+                    var targetIndex = _swipeTargetIndex;
+                    var targetElement = _swipeTarget;
+
+                    _swipeTarget = null;
+                    _swipeTargetIndex = -1;
+
+                    if (_realized != null)
+                        RecycleElement(_realized);
+
+                    _realized = targetElement;
+                    _realizedIndex = targetIndex;
+
+                    carousel.SelectedIndex = targetIndex;
+                }
+                else
+                {
+                    ResetSwipeState();
+                }
+
+                _totalDelta = 0;
                 _swipeTarget = null;
                 _swipeTargetIndex = -1;
-
-                if (_realized != null)
-                    RecycleElement(_realized);
-
-                _realized = targetElement;
-                _realizedIndex = targetIndex;
-
-                carousel.SelectedIndex = targetIndex;
+                _isRubberBanding = false;
+                carousel.IsSwiping = false;
             }
-            else
+            finally
             {
-                ResetSwipeState();
-            }
+                if (ReferenceEquals(_completionCts, completionCts))
+                    _completionCts = null;
 
-            _totalDelta = 0;
-            _swipeTarget = null;
-            _swipeTargetIndex = -1;
-            _isRubberBanding = false;
-            carousel.IsSwiping = false;
+                completionCts.Dispose();
+            }
         }
 
         /// <inheritdoc/>
