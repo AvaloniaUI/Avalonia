@@ -1120,4 +1120,26 @@ public class TabbedPageTests
             return e.Handled;
         }
     }
+
+    public class VisualTreeLifecycleTests : ScopedTestBase
+    {
+        [Fact]
+        public void Detach_And_Reattach_CollectionChangedStillFiresPagesChanged()
+        {
+            var pages = new AvaloniaList<Page>();
+            var tp = new TabbedPage { Pages = pages };
+            var root = new TestRoot { Child = tp };
+
+            root.Child = null;
+            root.Child = tp;
+
+            int fireCount = 0;
+            tp.PagesChanged += (_, _) => fireCount++;
+
+            pages.Add(new ContentPage { Header = "A" });
+            pages.Add(new ContentPage { Header = "B" });
+
+            Assert.Equal(2, fireCount);
+        }
+    }
 }

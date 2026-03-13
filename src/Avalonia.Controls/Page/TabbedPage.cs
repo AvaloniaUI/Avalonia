@@ -86,13 +86,17 @@ namespace Avalonia.Controls
         public static void SetIsTabEnabled(Page page, bool value) =>
             page.SetValue(IsTabEnabledProperty, value);
 
+        static TabbedPage()
+        {
+            FocusableProperty.OverrideDefaultValue<TabbedPage>(true);
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TabbedPage"/> class.
         /// </summary>
         public TabbedPage()
         {
             SetCurrentValue(PagesProperty, new AvaloniaList<Page>());
-            Focusable = true;
             GestureRecognizers.Add(_swipeRecognizer);
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
             UpdateSwipeRecognizerAxes();
@@ -164,12 +168,12 @@ namespace Avalonia.Controls
                 _tabControl.SelectionChanged -= TabControl_SelectionChanged;
                 _tabControl.ContainerPrepared -= OnContainerPrepared;
                 _tabControl.ContainerClearing -= OnContainerClearing;
-
-                foreach (var page in _containerPageMap.Values)
-                    page.PropertyChanged -= OnPagePropertyChanged;
-                _containerPageMap.Clear();
-                _pageContainerMap.Clear();
             }
+
+            foreach (var page in _containerPageMap.Values)
+                page.PropertyChanged -= OnPagePropertyChanged;
+            _containerPageMap.Clear();
+            _pageContainerMap.Clear();
 
             _tabControl = e.NameScope.Find<TabControl>("PART_TabControl");
 

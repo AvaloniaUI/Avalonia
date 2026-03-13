@@ -694,6 +694,17 @@ public class NavigationPageTests
         }
 
         [Fact]
+        public async Task InsertPage_BeforeNotInStack_ThrowsInvalidOperationException()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            await nav.PushAsync(root);
+
+            var stranger = new ContentPage();
+            Assert.Throws<InvalidOperationException>(() => nav.InsertPage(new ContentPage(), stranger));
+        }
+
+        [Fact]
         public async Task RemovePage_PageNotInStack_IsNoOp()
         {
             var nav = new NavigationPage();
@@ -747,64 +758,6 @@ public class NavigationPageTests
             await nav.PushModalAsync(m3);
 
             Assert.Equal(new[] { m1, m2, m3 }, nav.ModalStack);
-        }
-
-        [Fact]
-        public async Task Detach_And_Reattach_PreservesModalStack()
-        {
-            var nav = new NavigationPage
-            {
-                Template = new FuncControlTemplate<NavigationPage>((parent, ns) =>
-                {
-                    return new Panel
-                    {
-                        Children =
-                        {
-                            new Panel
-                            {
-                                Name = "PART_ContentHost",
-                                Children =
-                                {
-                                    new ContentPresenter { Name = "PART_PageBackPresenter" }.RegisterInNameScope(ns),
-                                    new ContentPresenter { Name = "PART_PagePresenter" }.RegisterInNameScope(ns),
-                                }
-                            }.RegisterInNameScope(ns),
-                            new Border
-                            {
-                                Name = "PART_NavigationBar",
-                                Child = new Button { Name = "PART_BackButton" }.RegisterInNameScope(ns)
-                            }.RegisterInNameScope(ns),
-                            new ContentPresenter { Name = "PART_TopCommandBar" }.RegisterInNameScope(ns),
-                            new ContentPresenter { Name = "PART_ModalBackPresenter" }.RegisterInNameScope(ns),
-                            new ContentPresenter { Name = "PART_ModalPresenter" }.RegisterInNameScope(ns),
-                        }
-                    };
-                })
-            };
-
-            var root = new TestRoot { Child = nav };
-            root.LayoutManager.ExecuteInitialLayoutPass();
-
-            var page = new ContentPage { Header = "Root" };
-            var modal = new ContentPage { Header = "Modal" };
-
-            await nav.PushAsync(page);
-            await nav.PushModalAsync(modal);
-
-            root.Child = null;
-
-            Assert.Single(nav.ModalStack);
-            Assert.Same(modal, nav.ModalStack[0]);
-            Assert.Null(modal.Navigation);
-            Assert.False(modal.IsInNavigationPage);
-
-            root.Child = nav;
-            root.LayoutManager.ExecuteInitialLayoutPass();
-
-            Assert.Single(nav.ModalStack);
-            Assert.Same(modal, nav.ModalStack[0]);
-            Assert.Same(nav, modal.Navigation);
-            Assert.True(modal.IsInNavigationPage);
         }
 
         [Fact]
@@ -1218,6 +1171,49 @@ public class NavigationPageTests
 
             Assert.True(handlerInvoked);
             Assert.Equal(2, nav.StackDepth);
+        }
+
+        [Fact]
+        public async Task Navigating_CancelInFirstHandler_SkipsSubsequentHandlers()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            await nav.PushAsync(root);
+            var top = new ContentPage();
+            await nav.PushAsync(top);
+
+            bool secondHandlerInvoked = false;
+            top.Navigating += args => { args.Cancel = true; return Task.CompletedTask; };
+            top.Navigating += args => { secondHandlerInvoked = true; return Task.CompletedTask; };
+
+            await nav.PopAsync();
+
+            Assert.False(secondHandlerInvoked);
+            Assert.Equal(2, nav.StackDepth);
+        }
+
+        [Fact]
+        public async Task Navigating_CancelInOnNavigatingFrom_SkipsNavigatingEvent()
+        {
+            var nav = new NavigationPage();
+            var root = new ContentPage();
+            await nav.PushAsync(root);
+
+            var top = new CancellingPage();
+            await nav.PushAsync(top);
+
+            bool asyncHandlerInvoked = false;
+            top.Navigating += args => { asyncHandlerInvoked = true; return Task.CompletedTask; };
+
+            await nav.PopAsync();
+
+            Assert.False(asyncHandlerInvoked);
+            Assert.Equal(2, nav.StackDepth);
+        }
+
+        private sealed class CancellingPage : ContentPage
+        {
+            protected override void OnNavigatingFrom(NavigatingFromEventArgs args) => args.Cancel = true;
         }
     }
 
@@ -2116,6 +2112,67 @@ public class NavigationPageTests
                 if (from != null)
                     from.IsVisible = false;
             }
+        }
+    }
+
+    public class VisualTreeLifecycleTests : ScopedTestBase
+    {
+        [Fact]
+        public async Task Detach_And_Reattach_PreservesModalStack()
+        {
+            var nav = new NavigationPage
+            {
+                Template = new FuncControlTemplate<NavigationPage>((parent, ns) =>
+                {
+                    return new Panel
+                    {
+                        Children =
+                        {
+                            new Panel
+                            {
+                                Name = "PART_ContentHost",
+                                Children =
+                                {
+                                    new ContentPresenter { Name = "PART_PageBackPresenter" }.RegisterInNameScope(ns),
+                                    new ContentPresenter { Name = "PART_PagePresenter" }.RegisterInNameScope(ns),
+                                }
+                            }.RegisterInNameScope(ns),
+                            new Border
+                            {
+                                Name = "PART_NavigationBar",
+                                Child = new Button { Name = "PART_BackButton" }.RegisterInNameScope(ns)
+                            }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_TopCommandBar" }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_ModalBackPresenter" }.RegisterInNameScope(ns),
+                            new ContentPresenter { Name = "PART_ModalPresenter" }.RegisterInNameScope(ns),
+                        }
+                    };
+                })
+            };
+
+            var root = new TestRoot { Child = nav };
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var page = new ContentPage { Header = "Root" };
+            var modal = new ContentPage { Header = "Modal" };
+
+            await nav.PushAsync(page);
+            await nav.PushModalAsync(modal);
+
+            root.Child = null;
+
+            Assert.Single(nav.ModalStack);
+            Assert.Same(modal, nav.ModalStack[0]);
+            Assert.Null(modal.Navigation);
+            Assert.False(modal.IsInNavigationPage);
+
+            root.Child = nav;
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Single(nav.ModalStack);
+            Assert.Same(modal, nav.ModalStack[0]);
+            Assert.Same(nav, modal.Navigation);
+            Assert.True(modal.IsInNavigationPage);
         }
     }
 

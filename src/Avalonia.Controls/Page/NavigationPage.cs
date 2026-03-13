@@ -628,7 +628,7 @@ namespace Avalonia.Controls
                 _modalPresenter.IsVisible = IsModalVisible;
             }
 
-            RestoreAttachedPageState();
+            RestoreNavigationState();
 
             ApplyNavBarVisibility();
             ApplyBackButtonEnabled(IsBackButtonEffectivelyEnabled);
@@ -667,7 +667,7 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            RestoreAttachedPageState();
+            RestoreNavigationState();
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
         }
 
@@ -696,7 +696,7 @@ namespace Avalonia.Controls
             _barHeightSub?.Dispose();
             _barHeightSub = null;
 
-            ClearAttachedPageState();
+            ClearNavigationState();
             InvalidateNavigationStackCache();
         }
 
@@ -819,6 +819,7 @@ namespace Avalonia.Controls
             {
                 old.Navigation = null;
                 old.SetInNavigationPage(false);
+                old.SafeAreaPadding = default;
             }
 
             return old;
@@ -971,6 +972,7 @@ namespace Avalonia.Controls
                         LogicalChildren.Remove(poppedLogical);
                     popped.Navigation = null;
                     popped.SetInNavigationPage(false);
+                    popped.SafeAreaPadding = default;
                     poppedPages.Add(popped);
                 }
 
@@ -1068,6 +1070,7 @@ namespace Avalonia.Controls
                         LogicalChildren.Remove(poppedLogical);
                     popped.Navigation = null;
                     popped.SetInNavigationPage(false);
+                    popped.SafeAreaPadding = default;
                     poppedPages.Add(popped);
                 }
 
@@ -1171,11 +1174,11 @@ namespace Avalonia.Controls
                     }
                     _currentModalTransition?.Cancel();
                     _currentModalTransition?.Dispose();
-                    _currentModalTransition = new CancellationTokenSource();
-                    var modalCt = _currentModalTransition.Token;
+                    var modalCts = new CancellationTokenSource();
+                    _currentModalTransition = modalCts;
                     try
                     {
-                        await effectiveModalTransition.Start(null, _modalPresenter, forward: true, modalCt);
+                        await effectiveModalTransition.Start(null, _modalPresenter, forward: true, modalCts.Token);
                     }
                     catch (OperationCanceledException) { /* Transition cancelled; lifecycle events still fire below. */ }
                     catch (Exception ex)
@@ -1183,11 +1186,18 @@ namespace Avalonia.Controls
                         Logger.TryGet(LogEventLevel.Error, LogArea.Control)
                             ?.Log(this, "Modal transition threw an unhandled exception: {Exception}", ex);
                     }
-
-                    if (_modalBackPresenter != null)
+                    finally
                     {
-                        _modalBackPresenter.IsVisible = false;
-                        _modalBackPresenter.Content = null;
+                        if (_modalBackPresenter != null)
+                        {
+                            _modalBackPresenter.IsVisible = false;
+                            _modalBackPresenter.Content = null;
+                        }
+                        if (ReferenceEquals(_currentModalTransition, modalCts))
+                        {
+                            _currentModalTransition = null;
+                            modalCts.Dispose();
+                        }
                     }
                 }
                 else
@@ -1261,11 +1271,11 @@ namespace Avalonia.Controls
 
                         _currentModalTransition?.Cancel();
                         _currentModalTransition?.Dispose();
-                        _currentModalTransition = new CancellationTokenSource();
-                        var popCt1 = _currentModalTransition.Token;
+                        var popCts1 = new CancellationTokenSource();
+                        _currentModalTransition = popCts1;
                         try
                         {
-                            await effectiveModalTransition.Start(_modalPresenter, null, forward: false, popCt1);
+                            await effectiveModalTransition.Start(_modalPresenter, null, forward: false, popCts1.Token);
                             SwapModalPresenters();
                             if (_modalBackPresenter != null)
                                 _modalBackPresenter.Content = null;
@@ -1279,6 +1289,11 @@ namespace Avalonia.Controls
                         finally
                         {
                             SetCurrentValue(ModalContentProperty, (object?)next);
+                            if (ReferenceEquals(_currentModalTransition, popCts1))
+                            {
+                                _currentModalTransition = null;
+                                popCts1.Dispose();
+                            }
                         }
                     }
                     else
@@ -1292,11 +1307,11 @@ namespace Avalonia.Controls
                     {
                         _currentModalTransition?.Cancel();
                         _currentModalTransition?.Dispose();
-                        _currentModalTransition = new CancellationTokenSource();
-                        var popCt2 = _currentModalTransition.Token;
+                        var popCts2 = new CancellationTokenSource();
+                        _currentModalTransition = popCts2;
                         try
                         {
-                            await effectiveModalTransition.Start(_modalPresenter, null, forward: false, popCt2);
+                            await effectiveModalTransition.Start(_modalPresenter, null, forward: false, popCts2.Token);
                         }
                         catch (OperationCanceledException) { /* Transition cancelled; lifecycle events still fire below. */ }
                         catch (Exception ex)
@@ -1308,6 +1323,11 @@ namespace Avalonia.Controls
                         {
                             SetCurrentValue(IsModalVisibleProperty, false);
                             SetCurrentValue(ModalContentProperty, (object?)null);
+                            if (ReferenceEquals(_currentModalTransition, popCts2))
+                            {
+                                _currentModalTransition = null;
+                                popCts2.Dispose();
+                            }
                         }
                     }
                     else
@@ -1382,16 +1402,25 @@ namespace Avalonia.Controls
                 {
                     _currentModalTransition?.Cancel();
                     _currentModalTransition?.Dispose();
-                    _currentModalTransition = new CancellationTokenSource();
+                    var allModalsCts = new CancellationTokenSource();
+                    _currentModalTransition = allModalsCts;
                     try
                     {
-                        await effectiveModalTransition.Start(_modalPresenter, null, forward: false, _currentModalTransition.Token);
+                        await effectiveModalTransition.Start(_modalPresenter, null, forward: false, allModalsCts.Token);
                     }
                     catch (OperationCanceledException) { /* Transition cancelled; lifecycle events still fire below. */ }
                     catch (Exception ex)
                     {
                         Logger.TryGet(LogEventLevel.Error, LogArea.Control)
                             ?.Log(this, "Modal transition threw an unhandled exception: {Exception}", ex);
+                    }
+                    finally
+                    {
+                        if (ReferenceEquals(_currentModalTransition, allModalsCts))
+                        {
+                            _currentModalTransition = null;
+                            allModalsCts.Dispose();
+                        }
                     }
                 }
 
@@ -1535,7 +1564,7 @@ namespace Avalonia.Controls
                 for (int i = 0; i < arr.Length; i++)
                     if (ReferenceEquals(arr[i], before)) { beforeIdx = i; break; }
                 if (beforeIdx < 0)
-                    return;
+                    throw new InvalidOperationException("The 'before' page is not in the navigation stack.");
 
                 stack.Clear();
                 for (int i = arr.Length - 1; i >= 0; i--)
@@ -1553,7 +1582,7 @@ namespace Avalonia.Controls
                 for (int i = 0; i < list.Count; i++)
                     if (ReferenceEquals(list[i], before)) { beforeIdx = i; break; }
                 if (beforeIdx < 0)
-                    return;
+                    throw new InvalidOperationException("The 'before' page is not in the navigation stack.");
 
                 list.Insert(beforeIdx, page);
                 inserted = true;
@@ -1879,7 +1908,7 @@ namespace Avalonia.Controls
 
         private void InvalidateNavigationStackCache() => _cachedNavigationStack = null;
 
-        private void RestoreAttachedPageState()
+        private void RestoreNavigationState()
         {
             foreach (var page in NavigationStack)
             {
@@ -1894,7 +1923,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void ClearAttachedPageState()
+        private void ClearNavigationState()
         {
             foreach (var modal in _modalStack)
             {

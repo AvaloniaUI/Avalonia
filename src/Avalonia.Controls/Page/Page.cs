@@ -181,11 +181,18 @@ namespace Avalonia.Controls
         {
             OnNavigatingFrom(args);
 
+            if (args.Cancel)
+                return;
+
             var navigating = Navigating;
             if (navigating != null)
             {
                 foreach (Func<NavigatingFromEventArgs, Task> handler in navigating.GetInvocationList())
+                {
                     await handler(args);
+                    if (args.Cancel)
+                        return;
+                }
             }
         }
 

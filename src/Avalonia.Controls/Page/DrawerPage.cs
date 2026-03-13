@@ -656,6 +656,7 @@ namespace Avalonia.Controls
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
 
             AttachBackdropPointerPressed();
+            RestoreNavigationState();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -666,6 +667,23 @@ namespace Avalonia.Controls
 
             DetachBackdropPointerPressed();
 
+            ClearNavigationState();
+        }
+
+        private void RestoreNavigationState()
+        {
+            if (Content is not NavigationPage nav)
+                return;
+
+            _navBarVisibleSub?.Dispose();
+            nav.SetDrawerPage(this);
+            _navBarVisibleSub = nav.GetObservable(NavigationPage.IsNavBarEffectivelyVisibleProperty)
+                .Subscribe(new AnonymousObserver<bool>(_ => UpdateDetailNavBarVisiblePseudoClass()));
+            UpdateDetailNavBarVisiblePseudoClass();
+        }
+
+        private void ClearNavigationState()
+        {
             _navBarVisibleSub?.Dispose();
             _navBarVisibleSub = null;
 
@@ -986,7 +1004,9 @@ namespace Avalonia.Controls
 
         private static object? CreateIconContent(object? icon)
         {
-            // Non-visual data (Geometry, IImage, string, etc.) can be shared across presenters.
+            if (icon is Geometry geometry)
+                return new PathIcon { Data = geometry };
+
             if (icon is not Control)
                 return icon;
 

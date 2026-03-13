@@ -1088,4 +1088,28 @@ public class CarouselPageTests
         public PointerType Type => PointerType.Mouse;
         public bool IsPrimary => true;
     }
+
+    public class VisualTreeLifecycleTests : ScopedTestBase
+    {
+        [Fact]
+        public void Detach_And_Reattach_CollectionChangedStillUpdatesSelection()
+        {
+            var pages = new AvaloniaList<Page>();
+            var cp = new CarouselPage { Pages = pages };
+            var root = new TestRoot { Child = cp };
+
+            var page1 = new ContentPage { Header = "A" };
+            pages.Add(page1);
+            Assert.Same(page1, cp.SelectedPage);
+
+            root.Child = null;
+            root.Child = cp;
+
+            var page2 = new ContentPage { Header = "B" };
+            pages.Add(page2);
+
+            pages.Remove(page1);
+            Assert.Same(page2, cp.SelectedPage);
+        }
+    }
 }

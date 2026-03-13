@@ -1277,7 +1277,7 @@ public class DrawerPageTests
             });
     }
 
-    public class DetachmentTests : ScopedTestBase
+    public class VisualTreeLifecycleTests : ScopedTestBase
     {
         [Fact]
         public async Task OnDetached_ClearsDrawerPageReferenceOnNavigationPage()
@@ -1295,6 +1295,24 @@ public class DrawerPageTests
             var page = new ContentPage();
             await nav.PushAsync(page);
             Assert.Null(NavigationPage.GetBackButtonContent(page));
+        }
+
+        [Fact]
+        public async Task Detach_And_Reattach_RestoresDrawerPageReference()
+        {
+            var nav = new NavigationPage();
+            var dp = new DrawerPage { Content = nav };
+            var root = new TestRoot { Child = dp };
+            var page = new ContentPage();
+            await nav.PushAsync(page);
+
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
+
+            root.Child = null;
+            Assert.False(nav.IsBackButtonEffectivelyVisible ?? false);
+
+            root.Child = dp;
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
         }
     }
 }

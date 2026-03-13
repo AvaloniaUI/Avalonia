@@ -287,8 +287,18 @@ namespace Avalonia.Controls
 
         private int GetPageCount()
         {
-            return Pages is ICollection<Page> col ? col.Count :
-                   Pages is IList list ? list.Count : 0;
+            if (Pages is ICollection<Page> col)
+                return col.Count;
+            if (Pages is IList list)
+                return list.Count;
+            if (Pages != null)
+            {
+                int count = 0;
+                foreach (var _ in Pages)
+                    count++;
+                return count;
+            }
+            return 0;
         }
 
         private int CoercePreTemplateSelectedIndex(int index)
