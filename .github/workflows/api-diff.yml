@@ -6,6 +6,10 @@ on:
 
 permissions: {}
 
+concurrency:
+  group: api-diff-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
 jobs:
   api-diff:
     name: Output API Diff

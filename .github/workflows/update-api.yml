@@ -6,6 +6,10 @@ on:
 
 permissions: {}
 
+concurrency:
+  group: update-api-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
 jobs:
   update-api:
     name: Update API Suppressions
