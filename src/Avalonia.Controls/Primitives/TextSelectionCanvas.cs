@@ -127,14 +127,17 @@ namespace Avalonia.Controls.Primitives
         {
             if (_presenter != null && _textBox != null)
             {
-                var point = ToPresenter(_caretHandle.IndicatorPosition);
+                var indicatorPosition = GetSearchPoint(_caretHandle);
+                var point = ToPresenter(indicatorPosition);
                 using var _ = BeginChange();
                 _presenter.MoveCaretToPoint(point);
                 var caretIndex = _presenter.CaretIndex;
                 _textBox.SetCurrentValue(TextBox.CaretIndexProperty, caretIndex);
                 _textBox.SetCurrentValue(TextBox.SelectionStartProperty, caretIndex);
                 _textBox.SetCurrentValue(TextBox.SelectionEndProperty, caretIndex);
-                ClampHandle(_caretHandle);
+
+                var caretBound = _presenter.GetCursorRectangle();
+                _caretHandle.SetTopLeft(ToLayer(caretBound.BottomLeft));
             }
         }
 
@@ -154,28 +157,6 @@ namespace Avalonia.Controls.Primitives
         private IDisposable? BeginChange()
         {
             return _presenter?.CurrentImClient?.BeginChange();
-        }
-
-        private void ClampHandle(TextSelectionHandle handle)
-        {
-            var bounds = _presenter?.GetTransformedBounds();
-
-            if (bounds.HasValue)
-            {
-                var point = _caretHandle.IndicatorPosition;
-                var rect = bounds.Value.Clip;
-                if (point.X < rect.X)
-                    point = point.WithX(rect.X);
-                if (point.X > rect.Right)
-                    point = point.WithX(rect.Right);
-                if (point.Y < rect.Y)
-                    point = point.WithY(rect.Y);
-                if (point.Y > rect.Bottom)
-                    point = point.WithY(rect.Bottom);
-
-
-                handle?.SetTopLeft(point);
-            }
         }
 
         private void Handle_DragCompleted(object? sender, VectorEventArgs e)
@@ -221,13 +202,25 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        private Point GetSearchPoint(TextSelectionHandle handle)
+        {
+            if (_presenter == null)
+                return default;
+
+            var caretBounds = _presenter.GetCursorRectangle();
+            var searchOffset = caretBounds.Height / 2;
+            var indicator = handle.IndicatorPosition;
+            return indicator.WithY(indicator.Y - searchOffset);
+        }
+
         private void DragSelectionHandle(TextSelectionHandle handle)
         {
             if (_presenter != null && _textBox != null)
             {
                 CloseFlyout();
 
-                var point = ToPresenter(handle.IndicatorPosition);
+                var indicatorPosiiton = GetSearchPoint(handle);
+                var point = ToPresenter(indicatorPosiiton);
                 point = point.WithY(point.Y - _presenter.FontSize / 2);
                 var hit = _presenter.TextLayout.HitTestPoint(point);
                 var position = hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;

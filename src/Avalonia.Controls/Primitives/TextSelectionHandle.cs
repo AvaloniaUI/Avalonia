@@ -10,13 +10,11 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public class TextSelectionHandle : Thumb
     {
-        private const int DragDetectionRadius = 2;
-
         internal SelectionHandleType SelectionHandleType { get; set; }
 
         private Point _startPosition;
 
-        internal Point IndicatorPosition => IsDragging ? _startPosition.WithX(_startPosition.X) + _delta : Bounds.Position.WithX(Bounds.Position.X).WithY(Bounds.Y);
+        internal Point IndicatorPosition => IsDragging ? _startPosition + _delta : Bounds.Position;
 
         internal bool IsDragging { get; private set; }
 
@@ -53,7 +51,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnDragStarted(e);
 
-            _startPosition = Bounds.Position;
+            _startPosition = GetTopLeft();
             _delta = default;
             IsDragging = true;
         }
@@ -63,7 +61,7 @@ namespace Avalonia.Controls.Primitives
             base.OnDragDelta(e);
             var newDelta = e.Vector;
 
-            if (Math.Abs((newDelta - _delta).Length) > DragDetectionRadius)
+            if (Math.Abs((newDelta - _delta).Length) > 0)
             {
                 _delta = e.Vector;
                 UpdateTextSelectionHandlePosition();
@@ -174,6 +172,7 @@ namespace Avalonia.Controls.Primitives
         {
             PseudoClasses.Add(":pressed");
             e.Pointer.Capture(this);
+            var point = e.GetPosition(this);
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
