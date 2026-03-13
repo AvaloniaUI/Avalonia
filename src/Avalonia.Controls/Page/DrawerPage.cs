@@ -1026,6 +1026,8 @@ namespace Avalonia.Controls
                 CopyIfSet(pathIcon, clone, PathIcon.OpacityProperty);
                 CopyIfSet(pathIcon, clone, PathIcon.RenderTransformProperty);
                 CopyIfSet(pathIcon, clone, PathIcon.RenderTransformOriginProperty);
+                CopyIfSet(pathIcon, clone, PathIcon.IsVisibleProperty);
+                CopyIfSet(pathIcon, clone, PathIcon.FlowDirectionProperty);
 
                 clone.Classes.Replace(pathIcon.Classes);
 

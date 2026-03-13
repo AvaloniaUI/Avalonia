@@ -1521,7 +1521,11 @@ namespace Avalonia.Controls
                     return;
                 }
 
+                _hasOverrideTransition = true;
+                _overrideTransition = null;
                 list.RemoveAt(idx);
+                _hasOverrideTransition = false;
+                _overrideTransition = null;
             }
             else return;
 
@@ -1636,6 +1640,7 @@ namespace Avalonia.Controls
                 {
                     previousPage.Navigation = null;
                     previousPage.SetInNavigationPage(false);
+                    previousPage.SafeAreaPadding = default;
                     previousPage.SendNavigatedFrom(new NavigatedFromEventArgs(page, NavigationType.Replace));
                 }
 
