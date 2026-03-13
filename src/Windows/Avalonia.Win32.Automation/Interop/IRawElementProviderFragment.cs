@@ -15,24 +15,15 @@ internal enum NavigateDirection
     LastChild,
 }
 
-#if NET8_0_OR_GREATER
 [GeneratedComInterface(Options = ComInterfaceOptions.ManagedObjectWrapper)]
-#else
-[ComImport()]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-#endif
 [Guid("f7063da8-8359-439c-9297-bbc5299a7d87")]
 internal partial interface IRawElementProviderFragment
 {
     IRawElementProviderFragment? Navigate(NavigateDirection direction);
-#if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<int>))]
-#endif
     int[]? GetRuntimeId();
     Rect GetBoundingRectangle();
-#if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
-#endif
     IRawElementProviderSimple[]? GetEmbeddedFragmentRoots();
     void SetFocus();
     IRawElementProviderFragmentRoot? GetFragmentRoot();

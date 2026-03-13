@@ -395,12 +395,7 @@ namespace Avalonia.X11
 
         private static int GetProcessId()
         {
-#if NET6_0_OR_GREATER
             var pid = Environment.ProcessId;
-#else
-            using var currentProcess = Process.GetCurrentProcess();
-            var pid = currentProcess.Id;
-#endif
             return pid;
         }
 
