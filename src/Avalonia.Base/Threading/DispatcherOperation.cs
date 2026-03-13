@@ -5,11 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-#if NET6_0_OR_GREATER
 using ExecutionContext = System.Threading.ExecutionContext;
-#else
-using ExecutionContext = Avalonia.Threading.CulturePreservingExecutionContext;
-#endif
 
 namespace Avalonia.Threading;
 
@@ -277,12 +273,8 @@ public class DispatcherOperation
             {
                 if (_executionContext is { } executionContext)
                 {
-#if NET6_0_OR_GREATER
                     ExecutionContext.Restore(executionContext);
                     InvokeCore();
-#else
-                    ExecutionContext.Run(executionContext, static s => ((DispatcherOperation)s!).InvokeCore(), this);
-#endif
                 }
                 else
                 {
