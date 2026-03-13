@@ -32,6 +32,7 @@ namespace Avalonia.Rendering
     {
         private readonly List<IRenderLoopTask> _items = new List<IRenderLoopTask>();
         private readonly List<IRenderLoopTask> _itemsCopy = new List<IRenderLoopTask>();
+        private Action<TimeSpan> _tick;
         private readonly IRenderTimer _timer;
         private readonly object _timerLock = new();
         private int _inTick;
@@ -46,6 +47,7 @@ namespace Avalonia.Rendering
         public DefaultRenderLoop(IRenderTimer timer)
         {
             _timer = timer;
+            _tick = TimerTick;
         }
 
         /// <inheritdoc/>
@@ -107,7 +109,7 @@ namespace Avalonia.Rendering
                 if (_hasItems && !_running)
                 {
                     _running = true;
-                    _timer.Tick = TimerTick;
+                    _timer.Tick = _tick;
                 }
                 else
                 {
