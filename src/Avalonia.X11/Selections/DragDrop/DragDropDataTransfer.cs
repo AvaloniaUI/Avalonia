@@ -1,21 +1,21 @@
 using System;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.X11.Clipboard;
 using static Avalonia.X11.XLib;
 
-namespace Avalonia.X11.DragDrop;
+namespace Avalonia.X11.Selections.DragDrop;
 
 /// <summary>
 /// Implementation of <see cref="IDataTransfer"/> for data being dragged into an Avalonia window via Xdnd.
 /// </summary>
 internal sealed class DragDropDataTransfer(
+    DragDropDataReader reader,
+    X11Atoms atoms,
+    DataFormat[] dataFormats,
     IntPtr display,
     IntPtr sourceWindow,
     IntPtr targetWindow,
-    IInputRoot inputRoot,
-    DataFormat[] dataFormats,
-    X11Atoms atoms)
+    IInputRoot inputRoot)
     : PlatformDataTransfer
 {
     public IntPtr SourceWindow { get; } = sourceWindow;
@@ -30,18 +30,12 @@ internal sealed class DragDropDataTransfer(
         => dataFormats;
 
     protected override PlatformDataTransferItem[] ProvideItems()
-    {
-        return [];
-    }
-
-    private SelectionReadSession CreateSession()
-    {
-        var eventWaiter = new SynchronousEventWaiter(display);
-        return new SelectionReadSession(display, targetWindow, atoms.XdndSelection, eventWaiter, atoms);
-    }
+        => reader.CreateItems();
 
     public override void Dispose()
     {
+        reader.Dispose();
+
         var evt = new XEvent
         {
             ClientMessageEvent = new XClientMessageEvent

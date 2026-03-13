@@ -17,11 +17,11 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Vulkan;
 using Avalonia.X11;
-using Avalonia.X11.Clipboard;
 using Avalonia.X11.Dispatching;
 using Avalonia.X11.Glx;
-using Avalonia.X11.Vulkan;
 using Avalonia.X11.Screens;
+using Avalonia.X11.Selections.Clipboard;
+using Avalonia.X11.Vulkan;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11

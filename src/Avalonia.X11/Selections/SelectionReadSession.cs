@@ -3,16 +3,18 @@ using System.Buffers;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia.X11.DragDrop;
 using static Avalonia.X11.XLib;
 
-namespace Avalonia.X11.Clipboard;
+namespace Avalonia.X11.Selections;
 
+/// <summary>
+/// A session used to read a X11 selection (Clipboard/Drag-and-Drop) from a given window.
+/// </summary>
 internal sealed class SelectionReadSession(
     IntPtr display,
     IntPtr window,
     IntPtr selection,
-    IEventWaiter eventWaiter,
+    IXEventWaiter eventWaiter,
     X11Atoms atoms)
     : IDisposable
 {
@@ -52,7 +54,7 @@ internal sealed class SelectionReadSession(
     {
         XGetWindowProperty(display, window, property, IntPtr.Zero, new IntPtr (0x7fffffff), true,
             (IntPtr)Atom.AnyPropertyType,
-            out var actualTypeAtom, out var actualFormat, out var nitems, out var bytes_after, out var prop);
+            out var actualTypeAtom, out var actualFormat, out var nitems, out _, out var prop);
         return new (prop, actualTypeAtom, actualFormat, nitems);
     }
 

@@ -4,11 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
-using Avalonia.X11.DragDrop;
 
-namespace Avalonia.X11.Clipboard;
+namespace Avalonia.X11.Selections.Clipboard;
 
-internal sealed class EventStreamWindow : IEventWaiter
+internal sealed class EventStreamWindow : IXEventWaiter
 {
     private readonly AvaloniaX11Platform _platform;
     private IntPtr _handle;

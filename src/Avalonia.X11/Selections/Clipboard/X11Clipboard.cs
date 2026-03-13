@@ -11,7 +11,7 @@ using Avalonia.Logging;
 using Avalonia.Platform.Storage;
 using static Avalonia.X11.XLib;
 
-namespace Avalonia.X11.Clipboard
+namespace Avalonia.X11.Selections.Clipboard
 {
     internal sealed class X11ClipboardImpl : IOwnedClipboardImpl
     {
@@ -106,7 +106,7 @@ namespace Avalonia.X11.Clipboard
                 {
                     return property;
                 }
-                else if (ClipboardDataFormatHelper.ToDataFormat(target, _x11.Atoms) is { } dataFormat)
+                else if (DataFormatHelper.ToDataFormat(target, _x11.Atoms) is { } dataFormat)
                 {
                     if (_storedDataTransfer is null)
                         return IntPtr.Zero;
@@ -161,7 +161,7 @@ namespace Avalonia.X11.Clipboard
             {
                 var text = dataTransfer.TryGetValueAsync(DataFormat.Text).GetAwaiter().GetResult();
 
-                return ClipboardDataFormatHelper.TryGetStringEncoding(targetFormatAtom, _x11.Atoms) is { } encoding ?
+                return DataFormatHelper.TryGetStringEncoding(targetFormatAtom, _x11.Atoms) is { } encoding ?
                     encoding.GetBytes(text ?? string.Empty) :
                     null;
             }
@@ -182,7 +182,7 @@ namespace Avalonia.X11.Clipboard
                 if (dataTransfer.TryGetValuesAsync(DataFormat.File).GetAwaiter().GetResult() is not { } files)
                     return null;
 
-                return ClipboardUriListHelper.FileUriListToUtf8Bytes(files);
+                return UriListHelper.FileUriListToUtf8Bytes(files);
             }
 
             if (format is DataFormat<string> stringFormat)
@@ -253,7 +253,7 @@ namespace Avalonia.X11.Clipboard
             {
                 foreach (var format in dataTransfer.Formats)
                 {
-                    foreach (var atom in ClipboardDataFormatHelper.ToAtoms(format, _textAtoms, _x11.Atoms))
+                    foreach (var atom in DataFormatHelper.ToAtoms(format, _textAtoms, _x11.Atoms))
                         atoms.Add(atom);
                 }
             }
@@ -317,8 +317,8 @@ namespace Avalonia.X11.Clipboard
                 return null;
 
             // Get the items while we're in an async method. This does not get values, except for DataFormat.File.
-            var reader = new ClipboardDataReader(_x11, _platform, textFormatAtoms, owner, dataFormats);
-            var items = await CreateItemsAsync(reader, dataFormats);
+            var reader = new ClipboardDataReader(_platform, textFormatAtoms, dataFormats, owner);
+            var items = await reader.CreateItemsAsync();
             return new ClipboardDataTransfer(reader, dataFormats, items);
         }
 
@@ -327,41 +327,7 @@ namespace Avalonia.X11.Clipboard
             using var session = OpenReadSession();
 
             var formatAtoms = await session.SendFormatRequest(0) ?? [];
-            return ClipboardDataFormatHelper.ToDataFormats(formatAtoms, _x11.Atoms);
-        }
-
-        private static async Task<IAsyncDataTransferItem[]> CreateItemsAsync(ClipboardDataReader reader, DataFormat[] formats)
-        {
-            List<DataFormat>? nonFileFormats = null;
-            var items = new List<IAsyncDataTransferItem>();
-            var hasFiles = false;
-
-            foreach (var format in formats)
-            {
-                if (DataFormat.File.Equals(format))
-                {
-                    if (hasFiles)
-                        continue;
-
-                    // We're reading the filenames ahead of time to generate the appropriate items.
-                    // This is async, so it should be fine.
-                    if (await reader.TryGetAsync(format) is IEnumerable<IStorageItem> storageItems)
-                    {
-                        hasFiles = true;
-
-                        foreach (var storageItem in storageItems)
-                            items.Add(PlatformDataTransferItem.Create(DataFormat.File, storageItem));
-                    }
-                }
-                else
-                    (nonFileFormats ??= new()).Add(format);
-            }
-
-            // Single item containing all formats except for DataFormat.File.
-            if (nonFileFormats is not null)
-                items.Add(new ClipboardDataTransferItem(reader, formats));
-
-            return items.ToArray();
+            return DataFormatHelper.ToDataFormats(formatAtoms, _x11.Atoms);
         }
 
         public Task SetDataAsync(IAsyncDataTransfer dataTransfer)

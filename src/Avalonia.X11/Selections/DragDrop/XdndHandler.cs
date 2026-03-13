@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.X11.Clipboard;
 using static Avalonia.X11.XLib;
 
-namespace Avalonia.X11.DragDrop;
+namespace Avalonia.X11.Selections.DragDrop;
 
 /// <summary>
 /// Manages XDND (drag and drop) for a given X11 window.
@@ -53,16 +52,13 @@ internal sealed class XdndHandler
 
         var formats = new HashSet<IntPtr>();
 
-        if (hasExtraFormats)
+        if (hasExtraFormats &&
+            XGetWindowPropertyAsIntPtrArray(_display, sourceWindow, _atoms.XdndTypeList, _atoms.ATOM) is { } formatList)
         {
-            if (XGetWindowPropertyAsIntPtrArray(_display, sourceWindow, _atoms.XdndTypeList, _atoms.ATOM)
-                is { } formatList)
+            foreach (var format in formatList)
             {
-                foreach (var format in formatList)
-                {
-                    if (format != 0)
-                        formats.Add(format);
-                }
+                if (format != 0)
+                    formats.Add(format);
             }
         }
         else
@@ -75,10 +71,18 @@ internal sealed class XdndHandler
                 formats.Add(message.ptr5);
         }
 
-        var (dataFormats, _) = ClipboardDataFormatHelper.ToDataFormats(formats.ToArray(), _atoms);
-        var drag = new DragDropDataTransfer(_display, sourceWindow, _window.Handle, inputRoot, dataFormats, _atoms);
+        var (dataFormats, textFormats) = DataFormatHelper.ToDataFormats(formats.ToArray(), _atoms);
 
-        _currentDrag = drag;
+        var reader = new DragDropDataReader(_atoms, textFormats, dataFormats, _display, _window.Handle);
+
+        _currentDrag = new DragDropDataTransfer(
+            reader,
+            _atoms,
+            dataFormats,
+            _display,
+            sourceWindow,
+            _window.Handle,
+            inputRoot);
     }
 
     public void HandleXdndPosition(in XClientMessageEvent message)
@@ -131,8 +135,6 @@ internal sealed class XdndHandler
 
         XSendEvent(_display, sourceWindow, false, (IntPtr)EventMask.NoEventMask, ref evt);
         XFlush(_display);
-
-        _currentDrag.ReadText();
     }
 
     public void HandleXdndLeave(in XClientMessageEvent message)

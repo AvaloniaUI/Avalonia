@@ -1,7 +1,7 @@
 using System;
 using static Avalonia.X11.XLib;
 
-namespace Avalonia.X11.Clipboard;
+namespace Avalonia.X11.Selections.Clipboard;
 
 internal static class ClipboardReadSessionFactory
 {

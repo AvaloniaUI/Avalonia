@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Avalonia.X11.DragDrop;
+namespace Avalonia.X11.Selections;
 
-internal interface IEventWaiter : IDisposable
+internal interface IXEventWaiter : IDisposable
 {
     Task<XEvent?> WaitForEventAsync(Func<XEvent, bool> predicate, TimeSpan timeout);
 }

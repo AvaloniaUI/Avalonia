@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using Avalonia.Input;
 
-namespace Avalonia.X11.Clipboard;
+namespace Avalonia.X11.Selections;
 
-internal static class ClipboardDataFormatHelper
+internal static class DataFormatHelper
 {
     private const string MimeTypeTextUriList = "text/uri-list";
     private const string AppPrefix = "application/avn-fmt.";

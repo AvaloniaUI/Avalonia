@@ -5,9 +5,13 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using static Avalonia.X11.XLib;
 
-namespace Avalonia.X11.DragDrop;
+namespace Avalonia.X11.Selections.DragDrop;
 
-internal sealed partial class SynchronousEventWaiter(IntPtr display) : IEventWaiter
+/// <summary>
+/// An implementation of <see cref="IXEventWaiter"/> that waits for an event synchronously by using its own event loop.
+/// Unprocessed events are put back onto the main queue after the wait.
+/// </summary>
+internal sealed partial class SynchronousXEventWaiter(IntPtr display) : IXEventWaiter
 {
     private const short POLLIN = 0x0001;
 
@@ -100,7 +104,7 @@ internal sealed partial class SynchronousEventWaiter(IntPtr display) : IEventWai
         }
     }
 
-    Task<XEvent?> IEventWaiter.WaitForEventAsync(Func<XEvent, bool> predicate, TimeSpan timeout)
+    Task<XEvent?> IXEventWaiter.WaitForEventAsync(Func<XEvent, bool> predicate, TimeSpan timeout)
         => Task.FromResult(WaitForEvent(predicate, timeout));
 
     void IDisposable.Dispose()

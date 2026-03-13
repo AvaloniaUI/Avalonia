@@ -1,7 +1,7 @@
 using System;
 using Avalonia.Input;
 
-namespace Avalonia.X11.DragDrop;
+namespace Avalonia.X11.Selections.DragDrop;
 
 internal interface IXdndWindow
 {
