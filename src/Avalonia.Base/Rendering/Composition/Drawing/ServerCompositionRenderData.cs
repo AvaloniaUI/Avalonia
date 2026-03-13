@@ -137,9 +137,7 @@ class ServerCompositionRenderData : SimpleServerRenderResource
         foreach (var r in _referencedResources)
             r.RemoveObserver(this);
         _referencedResources.Dispose();
-        foreach(var i in _items)
-            if (i is IDisposable disp)
-                disp.Dispose();
+        RenderDataItemPoolHelper.DisposeAndReturnToPool(_items);
         _items.Dispose();
     }
     
