@@ -10,6 +10,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -46,6 +47,25 @@ namespace Avalonia.Controls.UnitTests
             Assert.Single(target.Children);
             var container = Assert.IsType<ContentPresenter>(target.Children[0]);
             Assert.Equal("bar", container.Content);
+        }
+
+        [Fact]
+        public void Refreshing_Swipe_Wiring_Reuses_A_Single_Recognizer()
+        {
+            using var app = Start();
+            var items = new[] { "foo", "bar" };
+            var (target, carousel) = CreateTarget(items);
+
+            carousel.IsSwipeEnabled = true;
+            carousel.PageTransition = new PageSlide(TimeSpan.FromMilliseconds(1));
+            carousel.IsSwipeEnabled = false;
+            carousel.IsSwipeEnabled = true;
+            carousel.PageTransition = null;
+            carousel.PageTransition = new PageSlide(TimeSpan.FromMilliseconds(1));
+
+            var recognizers = target.GestureRecognizers.OfType<SwipeGestureRecognizer>().ToArray();
+            var recognizer = Assert.Single(recognizers);
+            Assert.True(recognizer.IsEnabled);
         }
 
         [Fact]
@@ -187,7 +207,7 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
-            public void Changing_SelectedIndex_transitions_forward_cycle()
+            public void Changing_SelectedIndex_From_First_To_Last_Transitions_Forward()
             {
                 using var app = Start();
                 Dispatcher.UIThread.Invoke(() => // This sets up a proper sync context
@@ -195,28 +215,23 @@ namespace Avalonia.Controls.UnitTests
                     var items = new Control[] { new Button(), new Canvas(), new Label() };
                     var transition = new Mock<IPageTransition>();
                     var (target, carousel) = CreateTarget(items, transition.Object);
-                    var cycleindexes = new[] { 1, 2, 0 };
 
-                    for (int cycleIndex = 0; cycleIndex < cycleindexes.Length; cycleIndex++)
-                    {
-                        carousel.SelectedIndex = cycleindexes[cycleIndex];
-                        Layout(target);
-                        
-                        Dispatcher.UIThread.RunJobs();
+                    carousel.SelectedIndex = 2;
+                    Layout(target);
 
-                        var index = cycleIndex;
-                        transition.Verify(x => x.Start(
-                                index > 0 ? items[cycleindexes[index - 1]] : items[0],
-                                items[cycleindexes[index]],
-                                true,
-                                It.IsAny<CancellationToken>()),
-                            Times.Once);
-                    }
+                    Dispatcher.UIThread.RunJobs();
+
+                    transition.Verify(x => x.Start(
+                            items[0],
+                            items[2],
+                            true,
+                            It.IsAny<CancellationToken>()),
+                        Times.Once);
                 });
             }
 
             [Fact]
-            public void Changing_SelectedIndex_transitions_backward_cycle()
+            public void Changing_SelectedIndex_From_Last_To_First_Transitions_Backward()
             {
                 using var app = Start();
                 Dispatcher.UIThread.Invoke(() => // This sets up a proper sync context
@@ -225,23 +240,20 @@ namespace Avalonia.Controls.UnitTests
                     var transition = new Mock<IPageTransition>();
                     var (target, carousel) = CreateTarget(items, transition.Object);
 
-                    var cycleindexes = new[] { 2, 1, 0 };
+                    carousel.SelectedIndex = 2;
+                    Layout(target);
+                    Dispatcher.UIThread.RunJobs();
 
-                    for (int cycleIndex = 0; cycleIndex < cycleindexes.Length; cycleIndex++)
-                    {
-                        carousel.SelectedIndex = cycleindexes[cycleIndex];
-                        Layout(target);
+                    carousel.SelectedIndex = 0;
+                    Layout(target);
+                    Dispatcher.UIThread.RunJobs();
 
-                        Dispatcher.UIThread.RunJobs();
-                        
-                        var index = cycleIndex;
-                        transition.Verify(x => x.Start(
-                                index > 0 ? items[cycleindexes[index - 1]] : items[0],
-                                items[cycleindexes[index]],
-                                false,
-                                It.IsAny<CancellationToken>()),
-                            Times.Once);
-                    }
+                    transition.Verify(x => x.Start(
+                            items[2],
+                            items[0],
+                            false,
+                            It.IsAny<CancellationToken>()),
+                        Times.Once);
                 });
             }
 
@@ -397,6 +409,36 @@ namespace Avalonia.Controls.UnitTests
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 Assert.True(hiddenWhenReset);
+            }
+
+            [Fact]
+            public void Swipe_Completion_Does_Not_Commit_When_Release_Velocity_Reverses_Direction()
+            {
+                var clock = new MockGlobalClock();
+
+                using var app = UnitTestApplication.Start(
+                    TestServices.MockPlatformRenderInterface.With(globalClock: clock));
+                using var sync = UnitTestSynchronizationContext.Begin();
+
+                var items = new Control[]
+                {
+                    new Border { Width = 1000, Height = 1000 },
+                    new Border { Width = 1000, Height = 1000 },
+                };
+                var transition = new TrackingInteractiveTransition();
+                var (panel, carousel) = CreateTarget(items, transition);
+                carousel.IsSwipeEnabled = true;
+
+                panel.RaiseEvent(new SwipeGestureEventArgs(1, new Vector(100, 0), default));
+                panel.RaiseEvent(new SwipeGestureEndedEventArgs(1, new Vector(-1000, 0)));
+
+                clock.Pulse(TimeSpan.Zero);
+                clock.Pulse(TimeSpan.FromSeconds(1));
+                sync.ExecutePostedCallbacks();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(0, carousel.SelectedIndex);
+                Assert.Same(items[0], carousel.SelectedItem);
             }
 
             private sealed class TrackingInteractiveTransition : IPageTransition, IInteractivePageTransition

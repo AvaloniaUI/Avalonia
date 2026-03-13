@@ -218,11 +218,6 @@ namespace Avalonia.Controls
                 _transition = new CancellationTokenSource();
 
                 var forward = _realizedIndex > _transitionFromIndex;
-                if (Items.Count > 2)
-                {
-                    forward = forward || (_transitionFromIndex == Items.Count - 1 && _realizedIndex == 0);
-                    forward = forward && !(_transitionFromIndex == 0 && _realizedIndex == Items.Count - 1);
-                }
 
                 transition.Start(_transitionFrom, to, forward, _transition.Token)
                     .ContinueWith(TransitionFinished, TaskScheduler.FromCurrentSynchronizationContext());
@@ -468,14 +463,18 @@ namespace Avalonia.Controls
 
             _swipeAxis = carousel.GetTransitionAxis();
 
-            _swipeGestureRecognizer = new SwipeGestureRecognizer
+            _swipeGestureRecognizer ??= new SwipeGestureRecognizer
             {
-                CanHorizontallySwipe = _swipeAxis != PageSlide.SlideAxis.Vertical,
-                CanVerticallySwipe = _swipeAxis != PageSlide.SlideAxis.Horizontal,
                 IsMouseEnabled = true,
             };
 
-            GestureRecognizers.Add(_swipeGestureRecognizer);
+            if (_swipeGestureRecognizer.Target is null)
+                GestureRecognizers.Add(_swipeGestureRecognizer);
+
+            _swipeGestureRecognizer.CanHorizontallySwipe = _swipeAxis != PageSlide.SlideAxis.Vertical;
+            _swipeGestureRecognizer.CanVerticallySwipe = _swipeAxis != PageSlide.SlideAxis.Horizontal;
+            _swipeGestureRecognizer.IsEnabled = true;
+
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
             AddHandler(InputElement.SwipeGestureEndedEvent, OnSwipeGestureEnded);
         }
@@ -487,7 +486,6 @@ namespace Avalonia.Controls
             if (_swipeGestureRecognizer is not null)
             {
                 _swipeGestureRecognizer.IsEnabled = false;
-                _swipeGestureRecognizer = null;
             }
 
             RemoveHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
@@ -611,17 +609,19 @@ namespace Avalonia.Controls
             var currentProgress = _isRubberBanding
                 ? RubberBandFactor * Math.Sqrt(rawProgress)
                 : rawProgress;
-            var velocity = _lockedAxis == PageSlide.SlideAxis.Horizontal
-                ? Math.Abs(e.Velocity.X)
-                : Math.Abs(e.Velocity.Y);
+            var axisVelocity = _lockedAxis == PageSlide.SlideAxis.Horizontal
+                ? e.Velocity.X
+                : e.Velocity.Y;
+            var directionalVelocity = _isForward ? axisVelocity : -axisVelocity;
             var commit = !_isRubberBanding &&
                 (currentProgress >= SwipeCommitThreshold ||
-                 (velocity > VelocityCommitThreshold && currentProgress >= MinSwipeDistanceForVelocityCommit)) &&
+                 (directionalVelocity > VelocityCommitThreshold && currentProgress >= MinSwipeDistanceForVelocityCommit)) &&
                 _swipeTarget is not null;
 
             _completionEndProgress = commit ? 1.0 : 0.0;
             _completionCarousel = carousel;
 
+            var velocity = Math.Abs(axisVelocity);
             var remainingDistance = Math.Abs(_completionEndProgress - currentProgress);
             var durationSeconds = velocity > 0
                 ? Math.Clamp(remainingDistance * size / velocity, MinCompletionDuration, MaxCompletionDuration)
