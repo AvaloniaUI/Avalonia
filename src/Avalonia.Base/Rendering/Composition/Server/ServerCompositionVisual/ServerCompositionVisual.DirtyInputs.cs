@@ -163,7 +163,7 @@ partial class ServerCompositionVisual
     
     protected void AddExtraDirtyRect(LtrbRect rect)
     {
-        _extraDirtyRect = _hasExtraDirtyRect ? _extraDirtyRect.Union(rect) : rect;
+        _extraDirtyRect = _delayPropagateHasExtraDirtyRects ? _extraDirtyRect.Union(rect) : rect;
         _delayPropagateHasExtraDirtyRects = true;
         EnqueueOwnPropertiesRecompute();
     }
