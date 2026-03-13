@@ -52,10 +52,7 @@
         ///   </item>
         ///   <item>
         ///     <term>macOS</term>
-        ///     <description>
-        ///       <c>NSAccessibilityProtocol.accessibilityPerformPick</c> (not implemented).
-        ///       <c>NSAccessibilityProtocol.setAccessibilitySelected</c> (not implemented).
-        ///     </description>
+        ///     <description><c>NSAccessibilityProtocol.setAccessibilitySelected</c></description>
         ///   </item>
         /// </list>
         /// </remarks>
@@ -72,9 +69,7 @@
         ///   </item>
         ///   <item>
         ///     <term>macOS</term>
-        ///     <description>
-        ///       <c>NSAccessibilityProtocol.setAccessibilitySelected</c> (not implemented).
-        ///     </description>
+        ///     <description><c>NSAccessibilityProtocol.setAccessibilitySelected</c></description>
         ///   </item>
         /// </list>
         /// </remarks>
@@ -91,7 +86,7 @@
         ///   </item>
         ///   <item>
         ///     <term>macOS</term>
-        ///     <description>No mapping.</description>
+        ///     <description><c>NSAccessibilityProtocol.accessibilityPerformPick</c></description>
         ///   </item>
         /// </list>
         /// </remarks>
