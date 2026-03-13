@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Avalonia.Compatibility;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -47,8 +45,8 @@ namespace Avalonia.Native
         {
             if (options.AvaloniaNativeLibraryPath != null)
             {
-                var lib = NativeLibraryEx.Load(options.AvaloniaNativeLibraryPath);
-                if (!NativeLibraryEx.TryGetExport(lib, "CreateAvaloniaNative", out var proc))
+                var lib = NativeLibrary.Load(options.AvaloniaNativeLibraryPath);
+                if (!NativeLibrary.TryGetExport(lib, "CreateAvaloniaNative", out var proc))
                 {
                     throw new InvalidOperationException(
                         "Unable to get \"CreateAvaloniaNative\" export from AvaloniaNativeLibrary library");

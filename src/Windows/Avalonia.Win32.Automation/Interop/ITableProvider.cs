@@ -12,22 +12,14 @@ internal enum RowOrColumnMajor
     ColumnMajor,
     Indeterminate,
 }
-#if NET8_0_OR_GREATER
+
 [GeneratedComInterface(Options = ComInterfaceOptions.ManagedObjectWrapper)]
-#else
-[ComImport()]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-#endif
 [Guid("9c860395-97b3-490a-b52a-858cc22af166")]
 internal partial interface ITableProvider
 {
-#if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
-#endif
     IRawElementProviderSimple[] GetRowHeaders();
-#if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(SafeArrayMarshaller<IRawElementProviderSimple>))]
-#endif
     IRawElementProviderSimple[] GetColumnHeaders();
     RowOrColumnMajor GetRowOrColumnMajor();
 }
