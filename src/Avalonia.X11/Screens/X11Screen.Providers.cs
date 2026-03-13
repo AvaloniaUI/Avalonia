@@ -56,7 +56,7 @@ internal partial class X11Screens
             if (!hasEDID)
                 return null;
             XRRGetOutputProperty(x11.Display, rrOutput, x11.Atoms.EDID, 0, EDIDStructureLength, false, false,
-                x11.Atoms.AnyPropertyType, out IntPtr actualType, out int actualFormat, out int bytesAfter, out _,
+                AnyPropertyType, out IntPtr actualType, out int actualFormat, out int bytesAfter, out _,
                 out IntPtr prop);
             if (actualType != x11.Atoms.INTEGER)
                 return null;
@@ -89,7 +89,7 @@ internal partial class X11Screens
                 IntPtr.Zero,
                 new IntPtr(128),
                 false,
-                x11.Atoms.AnyPropertyType,
+                AnyPropertyType,
                 out var type,
                 out var format,
                 out var count,

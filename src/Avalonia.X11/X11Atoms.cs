@@ -44,7 +44,6 @@ namespace Avalonia.X11
         private readonly IntPtr _display;
 
         // Our atoms
-        public readonly IntPtr AnyPropertyType = 0;
         public readonly IntPtr PRIMARY = 1;
         public readonly IntPtr SECONDARY = 2;
         public readonly IntPtr ARC = 3;
