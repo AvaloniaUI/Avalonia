@@ -1686,8 +1686,8 @@ namespace Avalonia.Controls
 
             if (text != null)
             {
-                var clickInfo = e.PointerEventArgs.GetCurrentPoint(this);
-                _presenter.MoveCaretToPoint(clickInfo.Position);
+                var position = e.PointerEventArgs.GetPosition(_presenter);
+                _presenter.MoveCaretToPoint(position);
                 var caretIndex = _presenter.CaretIndex;
                 var selectionStart = SelectionStart;
                 var selectionEnd = SelectionEnd;
@@ -1709,9 +1709,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        selectionStart = selectionEnd = caretIndex;
-
-                        SelectWord(text, caretIndex, selectionStart, selectionEnd);
+                        SelectWord(text, caretIndex, caretIndex, caretIndex);
 
                         _presenter?.TextSelectionHandleCanvas?.ShowOnFocused();
                     }
@@ -1806,7 +1804,7 @@ namespace Avalonia.Controls
                         var selectionStart = SelectionStart;
                         var selectionEnd = SelectionEnd;
 
-                        SelectWord(text, caretIndex, selectionStart, selectionEnd);
+                        SelectWord(text, caretIndex, caretIndex, caretIndex);
                     }
                 }
             }
