@@ -1,0 +1,83 @@
+<UserControl x:Class="ControlCatalog.Pages.ChildClippingPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:pages="using:ControlCatalog.Pages"
+             mc:Ignorable="d"
+             d:DesignHeight="800"
+             d:DesignWidth="400">
+  <ScrollViewer>
+    <StackPanel Margin="16" Spacing="16">
+      <TextBlock Classes="h2">Child Clipping</TextBlock>
+      <TextBlock TextWrapping="Wrap">
+        Border and ContentPresenter now clip only their children when ClipToBounds is enabled.
+        The control's own background and border are not clipped. Adorners respect rounded clips too.
+      </TextBlock>
+
+      <StackPanel Spacing="8">
+        <TextBlock Classes="h3">Border: Rounded Child Clip</TextBlock>
+        <Border Height="72"
+                Width="160"
+                Background="Red"
+                BorderBrush="Green"
+                BorderThickness="2"
+                CornerRadius="16"
+                ClipToBounds="True">
+          <Border Width="80"
+                  Height="72"
+                  Background="Blue"
+                  HorizontalAlignment="Right" />
+        </Border>
+        <TextBlock Text="Only the child is clipped; the border/background remain intact" />
+      </StackPanel>
+
+      <StackPanel Spacing="8">
+        <TextBlock Classes="h3">ContentPresenter: Rounded Child Clip</TextBlock>
+        <ContentPresenter Width="160"
+                          Height="72"
+                          Background="Red"
+                          BorderBrush="Green"
+                          BorderThickness="2"
+                          CornerRadius="16"
+                          ClipToBounds="True"
+                          HorizontalContentAlignment="Right">
+          <ContentPresenter.Content>
+            <Border Width="80"
+                    Height="72"
+                    Background="Blue" />
+          </ContentPresenter.Content>
+        </ContentPresenter>
+        <TextBlock Text="Only the child is clipped; the presenter background remains intact" />
+      </StackPanel>
+
+      <StackPanel Spacing="8">
+        <TextBlock Classes="h3">Adorner: Respects Rounded Clip</TextBlock>
+        <Border Width="160"
+                Height="160"
+                Background="Transparent"
+                BorderBrush="Black"
+                BorderThickness="4"
+                CornerRadius="24"
+                ClipToBounds="True">
+          <AdornerLayer.Adorner>
+            <Border Background="DeepSkyBlue"
+                    Opacity="0.6"
+                    AdornerLayer.IsClipEnabled="True" />
+          </AdornerLayer.Adorner>
+        </Border>
+        <TextBlock Text="Adorner is clipped to the rounded bounds of the adorned control" />
+      </StackPanel>
+
+      <StackPanel Spacing="8">
+        <TextBlock Classes="h3">Geometry Child Clip (Layout Clip)</TextBlock>
+        <pages:StarLayoutClipDecorator Width="200"
+                                       Height="200"
+                                       ClipToBounds="False">
+          <Border Background="DodgerBlue" />
+        </pages:StarLayoutClipDecorator>
+        <TextBlock Text="GetLayoutClip affects only children; ClipToBounds is not required" />
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

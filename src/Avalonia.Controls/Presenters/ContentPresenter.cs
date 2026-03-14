@@ -11,6 +11,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 using Avalonia.Styling;
 using Avalonia.Utilities;
 
@@ -179,6 +180,7 @@ namespace Avalonia.Controls.Presenters
         private IRecyclingDataTemplate? _recyclingDataTemplate;
         private (bool IsSet, object? Value) _overrideDataContext;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
+        private CompositionBorderVisual? _borderVisual;
 
         /// <summary>
         /// Initializes static members of the <see cref="ContentPresenter"/> class.
@@ -479,6 +481,14 @@ namespace Avalonia.Controls.Presenters
                 case nameof(BorderThickness):
                     _layoutThickness = null;
                     break;
+                case nameof(BackgroundSizing):
+                    if (_borderVisual != null)
+                        _borderVisual.BackgroundSizing = BackgroundSizing;
+                    break;
+                case nameof(CornerRadius):
+                    if (_borderVisual != null)
+                        _borderVisual.CornerRadius = CornerRadius;
+                    break;
             }
         }
 
@@ -609,6 +619,8 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public sealed override void Render(DrawingContext context)
         {
+            if (_borderVisual != null)
+                _borderVisual.BorderThickness = LayoutThickness;
             _borderRenderer.Render(
                 context,
                 Bounds.Size,
@@ -618,6 +630,35 @@ namespace Avalonia.Controls.Presenters
                 Background,
                 BorderBrush,
                 BoxShadow);
+        }
+
+        private protected override CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
+        {
+            return _borderVisual = new CompositionBorderVisual(compositor, this)
+            {
+                BackgroundSizing = BackgroundSizing,
+                CornerRadius = CornerRadius
+            };
+        }
+
+        protected override bool TryGetChildClipCore(out RoundedRect clip, out Geometry? geometryClip)
+        {
+            if (!ClipToBounds)
+            {
+                clip = default;
+                geometryClip = null;
+                return false;
+            }
+
+            var bounds = new Rect(Bounds.Size);
+            var keypoints = GeometryBuilder.CalculateRoundedCornersRectangleWinUI(
+                bounds,
+                LayoutThickness,
+                CornerRadius,
+                BackgroundSizing.InnerBorderEdge);
+            clip = keypoints.ToRoundedRect();
+            geometryClip = null;
+            return true;
         }
 
         private Control? CreateChild(object? content, Control? oldChild, IDataTemplate? template)

@@ -80,5 +80,35 @@ public class AdornerTests : TestBase
         await CheckAdornedContent(content, adorned, adorner,
             testName: "Focus_Adorner_Is_Properly_Clipped_Clip_" + clip);
     }
+
+    [Fact]
+    public async Task Adorner_Respects_Rounded_ClipToBounds()
+    {
+        Border adorned;
+        var content = new Border
+        {
+            Background = Brushes.DarkRed,
+            Padding = new Thickness(20),
+            Width = 240,
+            Height = 240,
+            Child = adorned = new Border
+            {
+                Width = 160,
+                Height = 160,
+                Background = Brushes.Transparent,
+                BorderBrush = Brushes.Black,
+                BorderThickness = new Thickness(6),
+                CornerRadius = new CornerRadius(28),
+                ClipToBounds = true
+            }
+        };
+
+        var adorner = new Border
+        {
+            Background = Brushes.DeepSkyBlue
+        };
+
+        await CheckAdornedContent(content, adorned, adorner, width: 260, height: 260);
+    }
     
 }

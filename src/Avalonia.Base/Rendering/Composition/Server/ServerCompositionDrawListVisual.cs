@@ -19,6 +19,9 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
     public readonly Visual UiVisual;
 #endif
     private ServerCompositionRenderData? _renderCommands;
+    private bool _hasChildClip;
+    private RoundedRect _childClip;
+    private IGeometryImpl? _childClipGeometry;
     
     public ServerCompositionDrawListVisual(ServerCompositor compositor, Visual v) : base(compositor)
     {
@@ -29,6 +32,10 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
 
     public override LtrbRect? ComputeOwnContentBounds() => _renderCommands?.Bounds;
 
+    public bool HasChildClip => _hasChildClip;
+    public RoundedRect ChildClip => _childClip;
+    public IGeometryImpl? ChildClipGeometry => _childClipGeometry;
+
     protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
     {
         if (reader.Read<byte>() == 1)
@@ -36,6 +43,13 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
             _renderCommands?.Dispose();
             _renderCommands = reader.ReadObject<ServerCompositionRenderData?>();
             _renderCommands?.AddObserver(this);
+            InvalidateContent();
+        }
+        if (reader.Read<byte>() == 1)
+        {
+            _hasChildClip = reader.Read<bool>();
+            _childClip = reader.Read<RoundedRect>();
+            _childClipGeometry = reader.ReadObject<IGeometryImpl?>();
             InvalidateContent();
         }
         base.DeserializeChangesCore(reader, committedAt);
