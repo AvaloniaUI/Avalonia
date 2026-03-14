@@ -1,9 +1,15 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+
+using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.Interop;
+using Avalonia.Win32.WinRT;
+
 using MicroCom.Runtime;
 
 namespace Avalonia.Win32.DComposition;
@@ -25,6 +31,7 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
     {
         _window ??= new DirectCompositedWindow(_info, _shared);
         SetBlur(_blurEffect);
+        _window.SetTransparencyLevel(_windowTransparencyLevel);
 
         return new DirectCompositedWindowRenderTarget(context, d3dDevice, _shared, _window);
     }
@@ -43,6 +50,14 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
         _blurEffect = enable;
         // _window?.SetBlur(enable);
     }
+
+    public void SetTransparencyLevel(WindowTransparencyLevel transparencyLevel)
+    {
+        _windowTransparencyLevel = transparencyLevel;
+        _window?.SetTransparencyLevel(transparencyLevel);
+    }
+
+    private WindowTransparencyLevel _windowTransparencyLevel;
 }
 
 internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarget
@@ -50,11 +65,13 @@ internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarg
     private static readonly Guid IID_ID3D11Texture2D = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
 
     private readonly IPlatformGraphicsContext _context;
+    private readonly DirectCompositionShared _shared;
     private readonly DirectCompositedWindow _window;
-    private readonly IDCompositionVirtualSurface _surface;
+    private IDCompositionVirtualSurface _surface;
     private bool _lost;
     private PixelSize _size;
     private readonly IUnknown _d3dDevice;
+    private bool _isSurfaceSupportTransparency;
 
     public DirectCompositedWindowRenderTarget(
         IPlatformGraphicsContext context, IntPtr d3dDevice,
@@ -63,13 +80,25 @@ internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarg
         _d3dDevice = MicroComRuntime.CreateProxyFor<IUnknown>(d3dDevice, false).CloneReference();
 
         _context = context;
+        _shared = shared;
         _window = window;
 
-        using (var surfaceFactory = shared.Device.CreateSurfaceFactory(_d3dDevice))
-        {
-            _surface = surfaceFactory.CreateVirtualSurface(1, 1, DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
-                DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_PREMULTIPLIED);
-        }
+        CreateSurface(window);
+    }
+
+    [MemberNotNull(nameof(_surface))]
+    private void CreateSurface(DirectCompositedWindow window)
+    {
+        using var surfaceFactory = _shared.Device.CreateSurfaceFactory(_d3dDevice);
+
+        const uint initialSize = 1;
+        var alphaMode = window.IsTransparency ?
+            DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_PREMULTIPLIED :
+            DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_IGNORE;
+        _isSurfaceSupportTransparency = window.IsTransparency;
+
+        _surface = surfaceFactory.CreateVirtualSurface(initialSize, initialSize, DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
+            alphaMode);
     }
 
     public void Dispose()
@@ -88,9 +117,19 @@ internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarg
         bool needsEndDraw = false;
         try
         {
+            bool forceResize = false;
+            if (_window.IsTransparency != _isSurfaceSupportTransparency)
+            {
+                _surface.Dispose();
+
+                CreateSurface(_window);
+
+                forceResize = true;
+            }
+
             var size = _window.WindowInfo.Size;
             var scale = _window.WindowInfo.Scaling;
-            if (_size != size)
+            if (forceResize || _size != size)
             {
                 _surface.Resize((ushort)size.Width, (ushort)size.Height);
                 _size = size;

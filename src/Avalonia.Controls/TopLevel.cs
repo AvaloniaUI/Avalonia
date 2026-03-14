@@ -203,9 +203,9 @@ namespace Avalonia.Controls
 
             _scaling = ValidateScaling(impl.RenderScaling);
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;
+            
 
-
-
+            
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
