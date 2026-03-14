@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using Tmds.DBus.Protocol;
-using Tmds.DBus.SourceGenerator;
+using Avalonia.DBus;
+using Avalonia.FreeDesktop.DBusXml;
 
 namespace Avalonia.FreeDesktop
 {
@@ -22,7 +22,7 @@ namespace Avalonia.FreeDesktop
             if (DBusHelper.DefaultConnection is not { } conn)
                 return;
 
-            _settings = new OrgFreedesktopPortalSettingsProxy(conn, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
+            _settings = new OrgFreedesktopPortalSettingsProxy(conn, "org.freedesktop.portal.Desktop", new DBusObjectPath("/org/freedesktop/portal/desktop"));
             _ = _settings.WatchSettingChangedAsync(SettingsChangedHandler);
             _ = TryGetInitialValuesAsync();
         }
@@ -43,13 +43,16 @@ namespace Avalonia.FreeDesktop
             try
             {
                 var version = await _settings!.GetVersionPropertyAsync();
-                VariantValue value;
+                DBusVariant value;
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "color-scheme");
                 else
+                {
                     // Unpack nested Variant
-                    value = (await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme")).GetVariantValue();
-                return ToColorScheme(value.GetUInt32());
+                    var outer = await _settings!.ReadAsync("org.freedesktop.appearance", "color-scheme");
+                    value = (DBusVariant)outer.Value;
+                }
+                return ToColorScheme((uint)value.Value);
             }
             catch (DBusException)
             {
@@ -62,11 +65,15 @@ namespace Avalonia.FreeDesktop
             try
             {
                 var version = await _settings!.GetVersionPropertyAsync();
-                VariantValue value;
+                DBusVariant value;
                 if (version >= 2)
                     value = await _settings!.ReadOneAsync("org.freedesktop.appearance", "accent-color");
                 else
-                    value = await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color");
+                {
+                    // Unpack nested Variant
+                    var outer = await _settings!.ReadAsync("org.freedesktop.appearance", "accent-color");
+                    value = (DBusVariant)outer.Value;
+                }
                 return ToAccentColor(value);
             }
             catch (DBusException)
@@ -75,20 +82,17 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private void SettingsChangedHandler(Exception? exception, (string Namespace, string Key, VariantValue Value) tuple)
+        private void SettingsChangedHandler(string ns, string key, DBusVariant value)
         {
-            if (exception is not null)
-                return;
-
-            switch (tuple)
+            switch ((ns, key))
             {
-                case ("org.freedesktop.appearance", "color-scheme", var colorScheme):
-                    _themeVariant = ToColorScheme(colorScheme.GetUInt32());
+                case ("org.freedesktop.appearance", "color-scheme"):
+                    _themeVariant = ToColorScheme((uint)value.Value);
                     _lastColorValues = BuildPlatformColorValues();
                     OnColorValuesChanged(_lastColorValues!);
                     break;
-                case ("org.freedesktop.appearance", "accent-color", var accentColor):
-                    _accentColor = ToAccentColor(accentColor);
+                case ("org.freedesktop.appearance", "accent-color"):
+                    _accentColor = ToAccentColor(value);
                     _lastColorValues = BuildPlatformColorValues();
                     OnColorValuesChanged(_lastColorValues!);
                     break;
@@ -117,16 +121,17 @@ namespace Avalonia.FreeDesktop
             return isDark ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light;
         }
 
-        private static Color? ToAccentColor(VariantValue value)
+        private static Color? ToAccentColor(DBusVariant value)
         {
             /*
             Indicates the system's preferred accent color as a tuple of RGB values
             in the sRGB color space, in the range [0,1].
             Out-of-range RGB values should be treated as an unset accent color.
              */
-            var r = value.GetItem(0).GetDouble();
-            var g = value.GetItem(1).GetDouble();
-            var b = value.GetItem(2).GetDouble();
+            var rgb = (DBusStruct)value.Value;
+            var r = (double)rgb[0];
+            var g = (double)rgb[1];
+            var b = (double)rgb[2];
             if (r is < 0 or > 1 || g is < 0 or > 1 || b is < 0 or > 1)
                 return null;
             return Color.FromRgb((byte)(r * 255), (byte)(g * 255), (byte)(b * 255));

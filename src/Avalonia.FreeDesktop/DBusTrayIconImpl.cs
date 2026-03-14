@@ -1,13 +1,13 @@
-﻿#pragma warning disable CS0618 // TODO: Temporary workaround until Tmds is replaced.
+#pragma warning disable CS0618 // TODO: Temporary workaround until Tmds is replaced.
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
+using Avalonia.DBus;
+using Avalonia.FreeDesktop.DBusXml;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using Tmds.DBus.Protocol;
-using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop
 {
@@ -16,15 +16,16 @@ namespace Avalonia.FreeDesktop
         private static int s_trayIconInstanceId;
         public static readonly (int, int, byte[]) EmptyPixmap = (1, 1, [255, 0, 0, 0]);
 
-        private readonly Connection? _connection;
+        private readonly DBusConnection? _connection;
         private readonly OrgFreedesktopDBusProxy? _dBus;
 
         private IDisposable? _serviceWatchDisposable;
-        private readonly PathHandler _pathHandler = new("/StatusNotifierItem");
+        private IDisposable? _registration;
         private readonly StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
         private OrgKdeStatusNotifierWatcherProxy? _statusNotifierWatcher;
         private (int, int, byte[]) _icon;
 
+        private readonly AvaloniaSynchronizationContext _synchronizationContext = new(DispatcherPriority.Input);
         private string? _sysTrayServiceName;
         private string? _tooltipText;
         private bool _isDisposed;
@@ -51,24 +52,42 @@ namespace Avalonia.FreeDesktop
 
             IsActive = true;
 
-            _dBus = new OrgFreedesktopDBusProxy(_connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
+            _dBus = new OrgFreedesktopDBusProxy(_connection, "org.freedesktop.DBus", new DBusObjectPath("/org/freedesktop/DBus"));
             var dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
 
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(dbusMenuPath, _connection);
 
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_connection, dbusMenuPath);
-            _pathHandler.Add(_statusNotifierItemDbusObj);
-            _connection.AddMethodHandler(_pathHandler);
             _statusNotifierItemDbusObj.ActivationDelegate += () => OnClicked?.Invoke();
 
-            WatchAsync();
+            _ = RegisterAndWatchAsync();
         }
 
-        private async void WatchAsync()
+        private async Task RegisterAndWatchAsync()
         {
             try
             {
-                _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync((_, x) => OnNameChange(x.Item1, x.Item3));
+                _registration = await _connection!.RegisterObjects(
+                    (DBusObjectPath)"/StatusNotifierItem",
+                    new object[] { _statusNotifierItemDbusObj! },
+                    _synchronizationContext);
+            }
+            catch (Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Error, "DBUS")
+                    ?.Log(this, "Failed to register StatusNotifierItem handler: {Exception}", e);
+                return;
+            }
+
+            await WatchAsync();
+        }
+
+        private async Task WatchAsync()
+        {
+            try
+            {
+                _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync(
+                    (name, _, newOwner) => OnNameChange(name, newOwner));
                 var nameOwner = await _dBus.GetNameOwnerAsync("org.kde.StatusNotifierWatcher");
                 OnNameChange("org.kde.StatusNotifierWatcher", nameOwner);
             }
@@ -88,7 +107,7 @@ namespace Avalonia.FreeDesktop
             if (!_serviceConnected && newOwner is not null)
             {
                 _serviceConnected = true;
-                _statusNotifierWatcher = new OrgKdeStatusNotifierWatcherProxy(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
+                _statusNotifierWatcher = new OrgKdeStatusNotifierWatcherProxy(_connection, "org.kde.StatusNotifierWatcher", new DBusObjectPath("/StatusNotifierWatcher"));
 
                 DestroyTrayIcon();
 
@@ -114,15 +133,24 @@ namespace Avalonia.FreeDesktop
 #endif
             var tid = s_trayIconInstanceId++;
 
-            // make sure not to add the path handle and connection method handler twice
-            if (_statusNotifierItemDbusObj!.PathHandler is null)
-                _pathHandler.Add(_statusNotifierItemDbusObj!);
-
-            _connection.RemoveMethodHandler(_pathHandler.Path);
-            _connection.AddMethodHandler(_pathHandler);
+            // Re-register the handler object if needed
+            _registration?.Dispose();
+            try
+            {
+                _registration = await _connection.RegisterObjects(
+                    (DBusObjectPath)"/StatusNotifierItem",
+                    new object[] { _statusNotifierItemDbusObj! },
+                    _synchronizationContext);
+            }
+            catch (Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Error, "DBUS")
+                    ?.Log(this, "Failed to register StatusNotifierItem handler: {Exception}", e);
+                return;
+            }
 
             _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
-            await _dBus!.RequestNameAsync(_sysTrayServiceName, 0);
+            await _connection.RequestNameAsync(_sysTrayServiceName);
             await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
             _statusNotifierItemDbusObj!.SetTitleAndTooltip(_tooltipText);
@@ -134,9 +162,9 @@ namespace Avalonia.FreeDesktop
             if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null || _sysTrayServiceName is null)
                 return;
 
-            _dBus!.ReleaseNameAsync(_sysTrayServiceName);
-            _pathHandler.Remove(_statusNotifierItemDbusObj);
-            _connection.RemoveMethodHandler(_pathHandler.Path);
+            _connection.ReleaseNameAsync(_sysTrayServiceName);
+            _registration?.Dispose();
+            _registration = null;
         }
 
         public void Dispose()
@@ -221,43 +249,74 @@ namespace Avalonia.FreeDesktop
     /// <remarks>
     /// Useful guide: https://web.archive.org/web/20210818173850/https://www.notmart.org/misc/statusnotifieritem/statusnotifieritem.html
     /// </remarks>
-    internal class StatusNotifierItemDbusObj : OrgKdeStatusNotifierItemHandler
+    internal class StatusNotifierItemDbusObj : IOrgKdeStatusNotifierItem
     {
-        public StatusNotifierItemDbusObj(Connection connection, ObjectPath dbusMenuPath)
-        {
-            Connection = connection;
-            Menu = dbusMenuPath;
-        }
+        private const string InterfaceName = "org.kde.StatusNotifierItem";
+        private readonly DBusConnection _connection;
 
-        public override Connection Connection { get; }
+        public StatusNotifierItemDbusObj(DBusConnection connection, string dbusMenuPath)
+        {
+            _connection = connection;
+            Menu = (DBusObjectPath)dbusMenuPath;
+        }
 
         public event Action? ActivationDelegate;
 
-        protected override ValueTask OnContextMenuAsync(Message message, int x, int y) => new();
+        // IOrgKdeStatusNotifierItem properties
+        public string Category { get; set; } = string.Empty;
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public int WindowId { get; } = 0;
+        public string IconThemePath { get; } = string.Empty;
+        public DBusObjectPath Menu { get; }
+        public bool ItemIsMenu { get; } = false;
+        public string IconName { get; } = string.Empty;
+        public List<IconPixmap> IconPixmap { get; set; } = [];
+        public string OverlayIconName { get; } = string.Empty;
+        public List<IconPixmap> OverlayIconPixmap { get; } = [];
+        public string AttentionIconName { get; } = string.Empty;
+        public List<IconPixmap> AttentionIconPixmap { get; } = [];
+        public string AttentionMovieName { get; } = string.Empty;
+        public ToolTip ToolTip { get; set; } = new(string.Empty, [], string.Empty, string.Empty);
 
-        protected override ValueTask OnActivateAsync(Message message, int x, int y)
+        // IOrgKdeStatusNotifierItem methods
+        public ValueTask ContextMenuAsync(int x, int y) => new();
+
+        public ValueTask ActivateAsync(int x, int y)
         {
             ActivationDelegate?.Invoke();
             return new ValueTask();
         }
 
-        protected override ValueTask OnSecondaryActivateAsync(Message message, int x, int y) => new();
+        public ValueTask SecondaryActivateAsync(int x, int y) => new();
 
-        protected override ValueTask OnScrollAsync(Message message, int delta, string orientation) => new();
+        public ValueTask ScrollAsync(int delta, string orientation) => new();
+
+        // Signal emission helpers
+        private void EmitSignal(string signalName, params object[] body)
+        {
+            var message = DBusMessage.CreateSignal(
+                (DBusObjectPath)"/StatusNotifierItem",
+                InterfaceName,
+                signalName,
+                body);
+            _ = _connection.SendMessageAsync(message);
+        }
 
         public void InvalidateAll()
         {
-            EmitNewTitle();
-            EmitNewIcon();
-            EmitNewAttentionIcon();
-            EmitNewOverlayIcon();
-            EmitNewToolTip();
-            EmitNewStatus(Status);
+            EmitSignal("NewTitle");
+            EmitSignal("NewIcon");
+            EmitSignal("NewAttentionIcon");
+            EmitSignal("NewOverlayIcon");
+            EmitSignal("NewToolTip");
+            EmitSignal("NewStatus", Status);
         }
 
         public void SetIcon((int, int, byte[]) dbusPixmap)
         {
-            IconPixmap = [dbusPixmap];
+            IconPixmap = [new IconPixmap(dbusPixmap.Item1, dbusPixmap.Item2, new List<byte>(dbusPixmap.Item3))];
             InvalidateAll();
         }
 

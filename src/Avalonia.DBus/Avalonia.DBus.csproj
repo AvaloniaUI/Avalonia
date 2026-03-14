@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
+    <DefineConstants Condition="'$(AvDBusInternal)' == 'true'">$(DefineConstants);AVDBUS_INTERNAL</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <AvDBusInternal>true</AvDBusInternal>
+    <AvDBusSourcePath>../../external/Avalonia.DBus/src/Avalonia.DBus</AvDBusSourcePath>
+  </PropertyGroup>
+
+  <Import Project="../../build/NullableEnable.props" />
+  <Import Project="../../build/DevAnalyzers.props" />
+  <Import Project="../../build/TrimmingEnable.props" />
+
+  <ItemGroup>
+    <Compile Include="$(AvDBusSourcePath)/**/*.cs"
+             Exclude="$(AvDBusSourcePath)/obj/**/*.cs"
+             LinkBase="Avalonia.DBus" />
+  </ItemGroup>
+
+</Project>

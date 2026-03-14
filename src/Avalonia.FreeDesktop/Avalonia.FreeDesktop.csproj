@@ -8,13 +8,24 @@
 
   <Import Project="../../build/TrimmingEnable.props" />
 
-  <ItemGroup>
-    <Compile Include="../Shared/IsExternalInit.cs" Link="IsExternalInit.cs" />
-  </ItemGroup>
+  <Import Project="../tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.props" />
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);AVDBUS_INTERNAL</DefineConstants>
+    <AvDBusInternal>true</AvDBusInternal>
+  </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tmds.DBus.Protocol" />
-    <PackageReference Include="Tmds.DBus.SourceGenerator" PrivateAssets="all" />
+    <Compile Include="../Avalonia.Controls/Utils/StringUtils.cs">
+      <Link>Shared/StringUtils.cs</Link>
+    </Compile>
+    <ProjectReference Include="..\Avalonia.DBus\Avalonia.DBus.csproj" />
+    <ProjectReference Include="../tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Include="../Shared/IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="DBusXml/Types.xml" />
     <AdditionalFiles Include="DBusXml/com.canonical.AppMenu.Registrar.xml" DBusGeneratorMode="Proxy" />
     <AdditionalFiles Include="DBusXml/com.canonical.dbusmenu.xml" DBusGeneratorMode="Handler" />
 

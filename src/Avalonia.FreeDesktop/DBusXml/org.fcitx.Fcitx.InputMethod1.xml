@@ -1,9 +1,16 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
-<node>
+<node xmlns:av="http://avaloniaui.net/dbus/1.0">
+ <av:ImportTypes>Types.xml</av:ImportTypes>
  <interface name="org.fcitx.Fcitx.InputMethod1">
   <method name="CreateInputContext">
-   <arg type="a(ss)" direction="in"/>
+   <arg type="a(ss)" direction="in">
+    <av:TypeDefinition>
+     <av:List>
+      <av:Struct Type="InputContextArg"/>
+     </av:List>
+    </av:TypeDefinition>
+   </arg>
    <arg type="o" direction="out"/>
    <arg type="ay" direction="out"/>
    <annotation name="org.qtproject.QtDBus.QtTypeName.In0" value="FcitxInputContextArgumentList" />

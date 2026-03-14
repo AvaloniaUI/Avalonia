@@ -1,6 +1,7 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
-<node>
+<node xmlns:av="http://avaloniaui.net/dbus/1.0">
+  <av:ImportTypes>Types.xml</av:ImportTypes>
   <interface name="org.fcitx.Fcitx.InputContext1">
     <method name="FocusIn">
     </method>
@@ -45,7 +46,13 @@
       <arg name="langCode" type="s"/>
     </signal>
     <signal name="UpdateFormattedPreedit">
-      <arg name="str" type="a(si)" />
+      <arg name="str" type="a(si)">
+        <av:TypeDefinition>
+          <av:List>
+            <av:Struct Type="FormattedPreeditSegment"/>
+          </av:List>
+        </av:TypeDefinition>
+      </arg>
       <arg name="cursorpos" type="i"/>
       <!-- qt4 / 5 seems use in/out differently -->
       <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="FcitxFormattedPreeditList" />
