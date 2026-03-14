@@ -786,6 +786,29 @@ namespace Avalonia.Controls
                 PageDown();
                 e.Handled = true;
             }
+            else if (e.Source == this)
+            {
+                if (e.Key == Key.Left)
+                {
+                    LineLeft();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Right)
+                {
+                    LineRight();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Up)
+                {
+                    LineUp();
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Down)
+                {
+                    LineDown();
+                    e.Handled = true;
+                }
+            }
         }
 
         /// <summary>
