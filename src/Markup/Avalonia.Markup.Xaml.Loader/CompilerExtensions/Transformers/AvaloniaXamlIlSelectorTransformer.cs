@@ -210,7 +210,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             var selector = Create(parsed, (p, n) 
-                => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", true, node, true));
+                => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", false, node, true));
             pn.Values[0] = selector;
 
             var templateType = GetLastTemplateTypeFromSelector(selector);
