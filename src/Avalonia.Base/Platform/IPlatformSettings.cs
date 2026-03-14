@@ -37,12 +37,17 @@ namespace Avalonia.Platform
         /// Holding duration between pointer press and when event is fired.
         /// </summary>
         TimeSpan HoldWaitDuration { get; }
-        
+
         /// <summary>
         /// Get a configuration for platform-specific hotkeys in an Avalonia application.
         /// </summary>
         PlatformHotkeyConfiguration HotkeyConfiguration { get; }
-        
+
+        /// <summary>
+        /// Gets the preferred application language as specified in the operating system settings.
+        /// </summary>
+        string PreferredApplicationLanguage { get; }
+
         /// <summary>
         /// Gets current system color values including dark mode and accent colors.
         /// </summary>
@@ -52,5 +57,10 @@ namespace Avalonia.Platform
         /// Raises when current system color values are changed. Including changing of a dark mode and accent colors.
         /// </summary>
         event EventHandler<PlatformColorValues>? ColorValuesChanged;
+
+        /// <summary>
+        /// Raises when the preferred application language is changed in the operating system settings.
+        /// </summary>
+        event EventHandler? PreferredApplicationLanguageChanged;
     }
 }
