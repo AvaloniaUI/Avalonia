@@ -12,7 +12,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Defines a cross-fade animation between two <see cref="Visual"/>s.
     /// </summary>
-    public class CrossFade : IPageTransition
+    public class CrossFade : IPageTransition, IInteractivePageTransition
     {
         private readonly Animation _fadeOutAnimation;
         private readonly Animation _fadeInAnimation;
@@ -181,6 +181,17 @@ namespace Avalonia.Animation
         Task IPageTransition.Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
         {
             return Start(from, to, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public void Update(double progress, Visual? from, Visual? to, bool forward)
+        {
+            if (from != null) from.Opacity = 1 - progress;
+            if (to != null)
+            {
+                to.IsVisible = true;
+                to.Opacity = progress;
+            }
         }
     }
 }

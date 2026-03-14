@@ -12,7 +12,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Transitions between two pages by sliding them horizontally or vertically.
     /// </summary>
-    public class PageSlide : IPageTransition
+    public class PageSlide : IPageTransition, IInteractivePageTransition
     {
         /// <summary>
         /// The axis on which the PageSlide should occur
@@ -50,12 +50,12 @@ namespace Avalonia.Animation
         /// Gets the orientation of the animation.
         /// </summary>
         public SlideAxis Orientation { get; set; }
-        
+
         /// <summary>
         /// Gets or sets element entrance easing.
         /// </summary>
         public Easing SlideInEasing { get; set; } = new LinearEasing();
-        
+
         /// <summary>
         /// Gets or sets element exit easing.
         /// </summary>
@@ -152,8 +152,6 @@ namespace Avalonia.Animation
 
             if (from != null)
             {
-                // Hide BEFORE resetting transform so there is no single-frame flash
-                // where the element snaps back to position 0 while still visible.
                 from.IsVisible = false;
                 if (FillMode != FillMode.None)
                     from.RenderTransform = null;
@@ -161,6 +159,35 @@ namespace Avalonia.Animation
 
             if (to != null && FillMode != FillMode.None)
                 to.RenderTransform = null;
+        }
+
+        /// <inheritdoc/>
+        public virtual void Update(double progress, Visual? from, Visual? to, bool forward)
+        {
+            var parent = GetVisualParent(from, to);
+            var distance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
+            var offset = distance * progress;
+
+            if (from != null)
+            {
+                if (from.RenderTransform is not TranslateTransform ft)
+                    from.RenderTransform = ft = new TranslateTransform();
+                if (Orientation == SlideAxis.Horizontal)
+                    ft.X = forward ? -offset : offset;
+                else
+                    ft.Y = forward ? -offset : offset;
+            }
+
+            if (to != null)
+            {
+                to.IsVisible = true;
+                if (to.RenderTransform is not TranslateTransform tt)
+                    to.RenderTransform = tt = new TranslateTransform();
+                if (Orientation == SlideAxis.Horizontal)
+                    tt.X = forward ? distance - offset : -(distance - offset);
+                else
+                    tt.Y = forward ? distance - offset : -(distance - offset);
+            }
         }
 
         /// <summary>

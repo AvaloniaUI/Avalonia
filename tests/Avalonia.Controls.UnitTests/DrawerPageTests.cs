@@ -1049,6 +1049,80 @@ public class DrawerPageTests
         }
     }
 
+    public class SwipeGestureTests : ScopedTestBase
+    {
+        [Fact]
+        public void HandledPointerPressedAtEdge_AllowsSwipeOpen()
+        {
+            var dp = new DrawerPage
+            {
+                DrawerPlacement = DrawerPlacement.Left,
+                DisplayMode = SplitViewDisplayMode.Overlay,
+                Width = 400,
+                Height = 300
+            };
+
+            var root = new TestRoot
+            {
+                ClientSize = new Size(400, 300),
+                Child = dp
+            };
+            root.ExecuteInitialLayoutPass();
+
+            RaiseHandledPointerPressed(dp, new Point(5, 5));
+
+            var swipe = new SwipeGestureEventArgs(1, new Vector(-20, 0), default);
+            dp.RaiseEvent(swipe);
+
+            Assert.True(swipe.Handled);
+            Assert.True(dp.IsOpen);
+        }
+
+        [Fact]
+        public void MouseEdgeDrag_AllowsSwipeOpen()
+        {
+            var dp = new DrawerPage
+            {
+                DrawerPlacement = DrawerPlacement.Left,
+                DisplayMode = SplitViewDisplayMode.Overlay,
+                Width = 400,
+                Height = 300
+            };
+
+            var root = new TestRoot
+            {
+                ClientSize = new Size(400, 300),
+                Child = dp
+            };
+            root.ExecuteInitialLayoutPass();
+
+            var mouse = new MouseTestHelper();
+            mouse.Down(dp, position: new Point(5, 5));
+            mouse.Move(dp, new Point(40, 5));
+            mouse.Up(dp, position: new Point(40, 5));
+
+            Assert.True(dp.IsOpen);
+        }
+
+        private static void RaiseHandledPointerPressed(Interactive target, Point position)
+        {
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Touch, true);
+            var args = new PointerPressedEventArgs(
+                target,
+                pointer,
+                (Visual)target,
+                position,
+                timestamp: 1,
+                new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
+                KeyModifiers.None)
+            {
+                Handled = true
+            };
+
+            target.RaiseEvent(args);
+        }
+    }
+
     public class DetachmentTests : ScopedTestBase
     {
         [Fact]

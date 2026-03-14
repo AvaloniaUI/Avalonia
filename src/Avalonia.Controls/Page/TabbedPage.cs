@@ -26,9 +26,11 @@ namespace Avalonia.Controls
         private TabControl? _tabControl;
         private readonly Dictionary<TabItem, Page> _containerPageMap = new();
         private readonly Dictionary<Page, TabItem> _pageContainerMap = new();
+        private int _lastSwipeGestureId;
         private readonly SwipeGestureRecognizer _swipeRecognizer = new SwipeGestureRecognizer
         {
-            IsEnabled = false
+            IsEnabled = false,
+            IsMouseEnabled = true
         };
 
         /// <summary>
@@ -92,6 +94,7 @@ namespace Avalonia.Controls
             Focusable = true;
             GestureRecognizers.Add(_swipeRecognizer);
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
+            UpdateSwipeRecognizerAxes();
         }
 
         /// <summary>
@@ -194,7 +197,10 @@ namespace Avalonia.Controls
             base.OnPropertyChanged(change);
 
             if (change.Property == TabPlacementProperty)
+            {
                 ApplyTabPlacement();
+                UpdateSwipeRecognizerAxes();
+            }
             else if (change.Property == PageTransitionProperty && _tabControl != null)
                 _tabControl.PageTransition = change.GetNewValue<IPageTransition?>();
             else if (change.Property == IndicatorTemplateProperty)
@@ -225,6 +231,14 @@ namespace Avalonia.Controls
                 TabPlacement.Right => Dock.Right,
                 _ => Dock.Top
             };
+        }
+
+        private void UpdateSwipeRecognizerAxes()
+        {
+            var placement = ResolveTabPlacement();
+            var isHorizontal = placement == TabPlacement.Top || placement == TabPlacement.Bottom;
+            _swipeRecognizer.CanHorizontallySwipe = isHorizontal;
+            _swipeRecognizer.CanVerticallySwipe = !isHorizontal;
         }
 
         private void ApplyIndicatorTemplate()
@@ -500,7 +514,8 @@ namespace Avalonia.Controls
 
         private void OnSwipeGesture(object? sender, SwipeGestureEventArgs e)
         {
-            if (!IsGestureEnabled || _tabControl == null) return;
+            if (!IsGestureEnabled || _tabControl == null || e.Id == _lastSwipeGestureId)
+                return;
 
             var placement = ResolveTabPlacement();
             bool isHorizontal = placement == TabPlacement.Top || placement == TabPlacement.Bottom;
@@ -524,6 +539,7 @@ namespace Avalonia.Controls
             {
                 _tabControl.SelectedIndex = next;
                 e.Handled = true;
+                _lastSwipeGestureId = e.Id;
             }
         }
 

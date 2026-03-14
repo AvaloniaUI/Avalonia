@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -9,7 +10,9 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -345,5 +348,382 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static void Layout(Control c) => c.GetLayoutManager()?.ExecuteLayoutPass();
+
+        public class WrapSelectionTests : ScopedTestBase
+        {
+            [Fact]
+            public void Next_Wraps_To_First_Item_When_WrapSelection_Enabled()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var (target, carousel) = CreateTarget(items);
+
+                carousel.WrapSelection = true;
+                carousel.SelectedIndex = 2; // Last item
+                Layout(target);
+
+                carousel.Next();
+                Layout(target);
+
+                Assert.Equal(0, carousel.SelectedIndex);
+            }
+
+            [Fact]
+            public void Next_Does_Not_Wrap_When_WrapSelection_Disabled()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var (target, carousel) = CreateTarget(items);
+
+                carousel.WrapSelection = false;
+                carousel.SelectedIndex = 2; // Last item
+                Layout(target);
+
+                carousel.Next();
+                Layout(target);
+
+                Assert.Equal(2, carousel.SelectedIndex); // Should stay at last item
+            }
+
+            [Fact]
+            public void Previous_Wraps_To_Last_Item_When_WrapSelection_Enabled()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var (target, carousel) = CreateTarget(items);
+
+                carousel.WrapSelection = true;
+                carousel.SelectedIndex = 0; // First item
+                Layout(target);
+
+                carousel.Previous();
+                Layout(target);
+
+                Assert.Equal(2, carousel.SelectedIndex); // Should wrap to last item
+            }
+
+            [Fact]
+            public void Previous_Does_Not_Wrap_When_WrapSelection_Disabled()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var (target, carousel) = CreateTarget(items);
+
+                carousel.WrapSelection = false;
+                carousel.SelectedIndex = 0; // First item
+                Layout(target);
+
+                carousel.Previous();
+                Layout(target);
+
+                Assert.Equal(0, carousel.SelectedIndex); // Should stay at first item
+            }
+
+            [Fact]
+            public void WrapSelection_Works_With_Two_Items()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar" };
+                var (target, carousel) = CreateTarget(items);
+
+                carousel.WrapSelection = true;
+                carousel.SelectedIndex = 1;
+                Layout(target);
+
+                carousel.Next();
+                Layout(target);
+
+                Assert.Equal(0, carousel.SelectedIndex);
+
+                carousel.Previous();
+                Layout(target);
+
+                Assert.Equal(1, carousel.SelectedIndex);
+            }
+
+            [Fact]
+            public void WrapSelection_Does_Not_Apply_To_Single_Item()
+            {
+                using var app = Start();
+                var items = new[] { "foo" };
+                var (target, carousel) = CreateTarget(items);
+
+                carousel.WrapSelection = true;
+                carousel.SelectedIndex = 0;
+                Layout(target);
+
+                carousel.Next();
+                Layout(target);
+
+                Assert.Equal(0, carousel.SelectedIndex);
+
+                carousel.Previous();
+                Layout(target);
+
+                Assert.Equal(0, carousel.SelectedIndex);
+            }
+        }
+
+        public class Gestures : ScopedTestBase
+        {
+            [Fact]
+            public void Swiping_Forward_Realizes_Next_Item()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar" };
+                var (panel, carousel) = CreateTarget(items);
+                carousel.IsSwipeEnabled = true;
+
+                // Simulate swipe start (delta X > 0)
+                var e = new SwipeGestureEventArgs(1, new Vector(10, 0), default);
+                panel.RaiseEvent(e);
+
+                Assert.True(carousel.IsSwiping);
+                Assert.Equal(2, panel.Children.Count);
+                var target = panel.Children[1] as Control;
+                Assert.NotNull(target);
+                Assert.True(target.IsVisible);
+                Assert.Equal("bar", ((target as ContentPresenter)?.Content));
+            }
+
+            [Fact]
+            public void Swiping_Backward_At_Start_RubberBands_When_WrapSelection_False()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar" };
+                var (panel, carousel) = CreateTarget(items);
+                carousel.IsSwipeEnabled = true;
+                carousel.WrapSelection = false;
+
+                // Simulate swipe start (delta X < 0)
+                var e = new SwipeGestureEventArgs(1, new Vector(-10, 0), default);
+                panel.RaiseEvent(e);
+
+                Assert.True(carousel.IsSwiping);
+                Assert.Single(panel.Children);
+            }
+
+            [Fact]
+            public void Swiping_Backward_At_Start_Wraps_When_WrapSelection_True()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar", "baz" };
+                var (panel, carousel) = CreateTarget(items);
+                carousel.IsSwipeEnabled = true;
+                carousel.WrapSelection = true;
+
+                // Simulate swipe start (delta X < 0)
+                var e = new SwipeGestureEventArgs(1, new Vector(-10, 0), default);
+                panel.RaiseEvent(e);
+
+                Assert.True(carousel.IsSwiping);
+                Assert.Equal(2, panel.Children.Count);
+                var target = panel.Children[1] as Control;
+                Assert.Equal("baz", ((target as ContentPresenter)?.Content));
+            }
+
+            [Fact]
+            public void Swiping_Forward_At_End_RubberBands_When_WrapSelection_False()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar" };
+                var (panel, carousel) = CreateTarget(items);
+                carousel.IsSwipeEnabled = true;
+                carousel.WrapSelection = false;
+                carousel.SelectedIndex = 1;
+
+                Layout(panel);
+                Layout(panel);
+
+                Assert.Equal(2, ((IReadOnlyList<string>?)carousel.ItemsSource)?.Count);
+                Assert.Equal(1, carousel.SelectedIndex);
+                Assert.False(carousel.WrapSelection, "WrapSelection should be false");
+
+                // Verify the correct item is realized at index 1 before the swipe
+                var container = Assert.IsType<ContentPresenter>(panel.Children[0]);
+                Assert.Equal("bar", container.Content);
+
+                // Simulate swipe start (delta X > 0)
+                var e = new SwipeGestureEventArgs(1, new Vector(10, 0), default);
+                panel.RaiseEvent(e);
+
+                Assert.True(carousel.IsSwiping);
+                Assert.Single(panel.Children);
+            }
+
+            [Fact]
+            public void Swiping_Locks_To_Dominant_Axis()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar" };
+                var (panel, carousel) = CreateTarget(items, new CrossFade(TimeSpan.FromSeconds(1)));
+                carousel.IsSwipeEnabled = true;
+
+                // Simulate swipe with more X than Y
+                var e = new SwipeGestureEventArgs(1, new Vector(10, 2), default);
+                panel.RaiseEvent(e);
+
+                Assert.True(carousel.IsSwiping);
+            }
+
+            [Fact]
+            public void Swipe_Completion_Does_Not_Update_With_Same_From_And_To()
+            {
+                var clock = new MockGlobalClock();
+
+                using var app = UnitTestApplication.Start(
+                    TestServices.MockPlatformRenderInterface.With(globalClock: clock));
+                using var sync = UnitTestSynchronizationContext.Begin();
+
+                var items = new[] { "foo", "bar" };
+                var transition = new TrackingInteractiveTransition();
+                var (panel, carousel) = CreateTarget(items, transition);
+                carousel.IsSwipeEnabled = true;
+
+                panel.RaiseEvent(new SwipeGestureEventArgs(1, new Vector(1000, 0), default));
+                panel.RaiseEvent(new SwipeGestureEndedEventArgs(1, new Vector(1000, 0)));
+
+                clock.Pulse(TimeSpan.Zero);
+                clock.Pulse(TimeSpan.FromSeconds(1));
+                sync.ExecutePostedCallbacks();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.True(transition.UpdateCallCount > 0);
+                Assert.False(transition.SawAliasedUpdate);
+                Assert.Equal(1d, transition.LastProgress);
+                Assert.Equal(1, carousel.SelectedIndex);
+            }
+
+            [Fact]
+            public void Swipe_Completion_Keeps_Target_Final_Interactive_Visual_State()
+            {
+                var clock = new MockGlobalClock();
+
+                using var app = UnitTestApplication.Start(
+                    TestServices.MockPlatformRenderInterface.With(globalClock: clock));
+                using var sync = UnitTestSynchronizationContext.Begin();
+
+                var items = new[] { "foo", "bar" };
+                var transition = new TransformTrackingInteractiveTransition();
+                var (panel, carousel) = CreateTarget(items, transition);
+                carousel.IsSwipeEnabled = true;
+
+                panel.RaiseEvent(new SwipeGestureEventArgs(1, new Vector(1000, 0), default));
+                panel.RaiseEvent(new SwipeGestureEndedEventArgs(1, new Vector(1000, 0)));
+
+                clock.Pulse(TimeSpan.Zero);
+                clock.Pulse(TimeSpan.FromSeconds(1));
+                sync.ExecutePostedCallbacks();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(1, carousel.SelectedIndex);
+                var realized = Assert.Single(panel.Children.OfType<ContentPresenter>(), x => Equals(x.Content, "bar"));
+                Assert.NotNull(transition.LastTargetTransform);
+                Assert.Same(transition.LastTargetTransform, realized.RenderTransform);
+            }
+
+            [Fact]
+            public void Swipe_Completion_Hides_Outgoing_Page_Before_Resetting_Visual_State()
+            {
+                var clock = new MockGlobalClock();
+
+                using var app = UnitTestApplication.Start(
+                    TestServices.MockPlatformRenderInterface.With(globalClock: clock));
+                using var sync = UnitTestSynchronizationContext.Begin();
+
+                var items = new[] { "foo", "bar" };
+                var transition = new OutgoingTransformTrackingInteractiveTransition();
+                var (panel, carousel) = CreateTarget(items, transition);
+                carousel.IsSwipeEnabled = true;
+
+                var outgoing = Assert.Single(panel.Children.OfType<ContentPresenter>(), x => Equals(x.Content, "foo"));
+                bool? hiddenWhenReset = null;
+                outgoing.PropertyChanged += (_, args) =>
+                {
+                    if (args.Property == Visual.RenderTransformProperty &&
+                        args.GetNewValue<ITransform?>() is null)
+                    {
+                        hiddenWhenReset = !outgoing.IsVisible;
+                    }
+                };
+
+                panel.RaiseEvent(new SwipeGestureEventArgs(1, new Vector(1000, 0), default));
+                panel.RaiseEvent(new SwipeGestureEndedEventArgs(1, new Vector(1000, 0)));
+
+                clock.Pulse(TimeSpan.Zero);
+                clock.Pulse(TimeSpan.FromSeconds(1));
+                sync.ExecutePostedCallbacks();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.True(hiddenWhenReset);
+            }
+
+            private sealed class TrackingInteractiveTransition : IPageTransition, IInteractivePageTransition
+            {
+                public int UpdateCallCount { get; private set; }
+                public bool SawAliasedUpdate { get; private set; }
+                public double LastProgress { get; private set; }
+
+                public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+                    => Task.CompletedTask;
+
+                public void Update(double progress, Visual? from, Visual? to, bool forward)
+                {
+                    UpdateCallCount++;
+                    LastProgress = progress;
+
+                    if (from is not null && ReferenceEquals(from, to))
+                        SawAliasedUpdate = true;
+                }
+            }
+
+            private sealed class TransformTrackingInteractiveTransition : IPageTransition, IInteractivePageTransition
+            {
+                public TransformGroup? LastTargetTransform { get; private set; }
+
+                public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+                    => Task.CompletedTask;
+
+                public void Update(double progress, Visual? from, Visual? to, bool forward)
+                {
+                    if (to is not Control target)
+                        return;
+
+                    if (target.RenderTransform is not TransformGroup group)
+                    {
+                        group = new TransformGroup
+                        {
+                            Children =
+                            {
+                                new ScaleTransform(),
+                                new TranslateTransform()
+                            }
+                        };
+                        target.RenderTransform = group;
+                    }
+
+                    var scale = Assert.IsType<ScaleTransform>(group.Children[0]);
+                    var translate = Assert.IsType<TranslateTransform>(group.Children[1]);
+                    scale.ScaleX = scale.ScaleY = 0.9 + (0.1 * progress);
+                    translate.X = 100 * (1 - progress);
+                    LastTargetTransform = group;
+                }
+            }
+
+            private sealed class OutgoingTransformTrackingInteractiveTransition : IPageTransition, IInteractivePageTransition
+            {
+                public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+                    => Task.CompletedTask;
+
+                public void Update(double progress, Visual? from, Visual? to, bool forward)
+                {
+                    if (from is Control source)
+                        source.RenderTransform = new TranslateTransform(100 * progress, 0);
+
+                    if (to is Control target)
+                        target.RenderTransform = new TranslateTransform(100 * (1 - progress), 0);
+                }
+            }
+        }
     }
 }
