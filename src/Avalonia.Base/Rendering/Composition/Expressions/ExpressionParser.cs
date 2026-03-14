@@ -39,7 +39,10 @@ namespace Avalonia.Rendering.Composition.Expressions
                 expr = new KeywordExpression(ExpressionKeyword.False);
             else if (parser.TryParseKeywordLowerCase("this.target"))
                 expr = new KeywordExpression(ExpressionKeyword.Target);
-
+            else if (parser.TryParseKeywordLowerCase("relativeunit.relative"))
+                expr = new FunctionCallExpression("RelativeUnit.Relative", []);
+            else if (parser.TryParseKeywordLowerCase("relativeunit.absolute"))
+                expr = new FunctionCallExpression("RelativeUnit.Absolute", []);
             if (expr != null)
                 return true;
 
@@ -246,7 +249,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 else if (parser.TryParseCall(out var functionName))
                 {
                     var parameterList = new List<Expression>();
-                    while (true)
+                    while (!parser.TryConsume(')'))
                     {
                         parameterList.Add(ParseTillTerminator(ref parser, ",)", false, true, out var closingToken));
                         if (closingToken == ')')
