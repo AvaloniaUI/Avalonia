@@ -6,7 +6,8 @@
              xmlns:models="using:ControlCatalog.Models"
              xmlns:pages="using:ControlCatalog.Pages"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
-             x:DataType="viewModels:MainWindowViewModel">
+             x:DataType="viewModels:MainWindowViewModel"
+             TextScaling.IsEnabled="True">
   <Grid>
     <Grid.Styles>
       <Style Selector="TextBlock.h2">
