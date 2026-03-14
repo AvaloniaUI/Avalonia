@@ -88,6 +88,15 @@ internal sealed class PlatformDrawingContext : DrawingContext
     
     protected override void PushTextOptionsCore(TextOptions textOptions) => _impl.PushTextOptions(textOptions);
 
+    /// <inheritdoc />
+    protected override void PushEffectCore(IEffect effect, Rect bounds)
+    {
+        if (_impl is IDrawingContextImplWithEffects effectImpl)
+        {
+            effectImpl.PushEffect(bounds, effect);
+        }
+    }
+
     protected override void PopClipCore() => _impl.PopClip();
 
     protected override void PopGeometryClipCore() => _impl.PopGeometryClip();
@@ -103,6 +112,15 @@ internal sealed class PlatformDrawingContext : DrawingContext
     protected override void PopRenderOptionsCore() => _impl.PopRenderOptions();
     
     protected override void PopTextOptionsCore() => _impl.PopTextOptions();
+
+    /// <inheritdoc />
+    protected override void PopEffectCore()
+    {
+        if (_impl is IDrawingContextImplWithEffects effectImpl)
+        {
+            effectImpl.PopEffect();
+        }
+    }
 
     protected override void DisposeCore()
     {
