@@ -71,7 +71,15 @@ namespace Avalonia.Controls.Primitives
 
         public static AdornerLayer? GetAdornerLayer(Visual visual)
         {
-            return visual.FindAncestorOfType<VisualLayerManager>()?.AdornerLayer;
+            // Check if the visual is inside an OverlayLayer with a dedicated AdornerLayer
+            foreach (var ancestor in visual.GetVisualAncestors())
+            {
+                if (ancestor is OverlayLayer { AdornerLayer: { } overlayAdorner })
+                    return overlayAdorner;
+                if (ancestor is VisualLayerManager vlm)
+                    return vlm.AdornerLayer;
+            }
+            return null;
         }
 
         public static bool GetIsClipEnabled(Visual adorner)

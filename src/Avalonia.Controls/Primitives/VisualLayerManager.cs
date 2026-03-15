@@ -13,13 +13,22 @@ namespace Avalonia.Controls.Primitives
 
         private ILogicalRoot? _logicalRoot;
         private readonly List<Control> _layers = new();
+        private OverlayLayer? _overlayLayer;
 
-        public bool IsPopup { get; set; }
+        public bool EnableAdornerLayer { get; set; } = true;
 
-        internal AdornerLayer AdornerLayer
+        public bool EnableOverlayLayer { get; set; }
+
+        internal bool EnablePopupOverlayLayer { get; set; }
+
+        public bool EnableTextSelectorLayer { get; set; }
+
+        internal AdornerLayer? AdornerLayer
         {
             get
             {
+                if (!EnableAdornerLayer)
+                    return null;
                 var rv = FindLayer<AdornerLayer>();
                 if (rv == null)
                     AddLayer(rv = new AdornerLayer(), AdornerZIndex);
@@ -31,7 +40,7 @@ namespace Avalonia.Controls.Primitives
         {
             get
             {
-                if (IsPopup)
+                if (!EnablePopupOverlayLayer)
                     return null;
                 var rv = FindLayer<PopupOverlayLayer>();
                 if (rv == null)
@@ -44,12 +53,21 @@ namespace Avalonia.Controls.Primitives
         {
             get
             {
-                if (IsPopup)
+                if (!EnableOverlayLayer)
                     return null;
-                var rv = FindLayer<OverlayLayer>();
-                if (rv == null)
-                    AddLayer(rv = new OverlayLayer(), OverlayZIndex);
-                return rv;
+                if (_overlayLayer == null)
+                {
+                    _overlayLayer = new OverlayLayer();
+                    var adorner = new AdornerLayer();
+                    _overlayLayer.AdornerLayer = adorner;
+                    
+                    var panel = new Panel();
+                    panel.Children.Add(_overlayLayer);
+                    panel.Children.Add(adorner);
+                    
+                    AddLayer(panel, OverlayZIndex);
+                }
+                return _overlayLayer;
             }
         }
 
@@ -57,7 +75,7 @@ namespace Avalonia.Controls.Primitives
         {
             get
             {
-                if (IsPopup)
+                if (!EnableTextSelectorLayer)
                     return null;
                 var rv = FindLayer<TextSelectorLayer>();
                 if (rv == null)
