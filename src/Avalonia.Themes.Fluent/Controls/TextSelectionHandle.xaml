@@ -1,13 +1,16 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
-    <Border>
-      <Image Stretch="Uniform" HorizontalAlignment="Left"
-             Cursor="Arrow"
-             Name="PART_HandlePathIcon"
-             Height="{DynamicResource TextSelectHandleSize}"
-             Source="{DynamicResource TextSelectionHandleDrawing}"/>
-    </Border>
+    <Grid>
+      <Border>
+        <Image Stretch="Uniform" HorizontalAlignment="Left"
+               Cursor="Arrow"
+               Name="PART_HandlePathIcon"
+               Height="{DynamicResource TextSelectHandleSize}"
+               Source="{DynamicResource TextSelectionHandleDrawing}">
+        </Image>
+      </Border>
+    </Grid>
   </Design.PreviewWith>
   <x:Double x:Key="TextSelectHandleSize">32</x:Double>
 
@@ -76,18 +79,40 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate>
-          <Border Padding="0,0,0,10" IsHitTestVisible="True" Background="Transparent">
-            <Image Stretch="Uniform"
-                   Cursor="Arrow"
-                   Name="PART_HandlePathIcon"
-                   Height="{DynamicResource TextSelectHandleSize}"
-                   Source="{DynamicResource TextSelectionHandleDrawing}"/>
-          </Border>
+          <Grid>
+            <Border Padding="0,0,0,10" IsHitTestVisible="True" Background="Transparent">
+              <Image Stretch="Uniform"
+                     Cursor="Arrow"
+                     Name="PART_HandlePathIcon"
+                     Height="{DynamicResource TextSelectHandleSize}"
+                     Source="{DynamicResource TextSelectionHandleDrawing}"/>
+            </Border>
+            <Border Background="Transparent"
+                    Name="PART_Indicator"
+                    HorizontalAlignment="Center"
+                    Width="1" 
+                    VerticalAlignment="Top" 
+                    Height="5"/>
+          </Grid>
         </ControlTemplate>
       </Setter.Value>
     </Setter>
     <Style Selector="^.caret /template/ Image#PART_HandlePathIcon">
       <Setter Property="Source" Value="{DynamicResource TextCaretHandleDrawing}" />
+    </Style>
+    <Style Selector="^.start /template/ Image#PART_HandlePathIcon">
+      <Setter Property="RenderTransform">
+        <ScaleTransform ScaleX="-1" ScaleY="1"/>
+      </Setter>
+    </Style>
+    <Style Selector="^.caret /template/ Border#PART_Indicator">
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="^.end /template/ Border#PART_Indicator">
+      <Setter Property="HorizontalAlignment" Value="Left" />
+    </Style>
+    <Style Selector="^.start /template/ Border#PART_Indicator">
+      <Setter Property="HorizontalAlignment" Value="Right" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>
