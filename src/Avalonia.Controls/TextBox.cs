@@ -1845,7 +1845,7 @@ namespace Avalonia.Controls
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (_presenter == null)
+            if (_presenter == null || e.Pointer.Captured != _presenter)
             {
                 return;
             }

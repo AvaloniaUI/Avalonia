@@ -15,8 +15,8 @@ namespace Avalonia.Controls.Primitives
         private static bool s_isInTouchMode;
 
         private readonly TextSelectionHandle _caretHandle;
-        private readonly TextSelectionHandle _startHandle;
-        private readonly TextSelectionHandle _endHandle;
+        private readonly TextSelectionHandle _handle1;
+        private readonly TextSelectionHandle _handle2;
         private TextPresenter? _presenter;
         private TextBox? _textBox;
         private bool _showHandle;
@@ -32,8 +32,8 @@ namespace Avalonia.Controls.Primitives
 
                 if (!value)
                 {
-                    _startHandle.IsVisible = false;
-                    _endHandle.IsVisible = false;
+                    _handle1.IsVisible = false;
+                    _handle2.IsVisible = false;
                     _caretHandle.IsVisible = false;
                 }
 
@@ -44,37 +44,37 @@ namespace Avalonia.Controls.Primitives
         public TextSelectionHandleCanvas()
         {
             _caretHandle = new TextSelectionHandle() { SelectionHandleType = SelectionHandleType.Caret };
-            _startHandle = new TextSelectionHandle();
-            _endHandle = new TextSelectionHandle();
+            _handle1 = new TextSelectionHandle();
+            _handle2 = new TextSelectionHandle();
+
+            _caretHandle.SelectionHandleType = SelectionHandleType.Caret;
+            _handle1.SelectionHandleType = SelectionHandleType.Start;
+            _handle2.SelectionHandleType = SelectionHandleType.End;
 
             Children.Add(_caretHandle);
-            Children.Add(_startHandle);
-            Children.Add(_endHandle);
+            Children.Add(_handle1);
+            Children.Add(_handle2);
 
             _caretHandle.DragStarted += Handle_DragStarted;
             _caretHandle.DragDelta += CaretHandle_DragDelta;
             _caretHandle.DragCompleted += Handle_DragCompleted;
-            _startHandle.DragDelta += StartHandle_DragDelta;
-            _startHandle.DragCompleted += Handle_DragCompleted;
-            _startHandle.DragStarted += Handle_DragStarted;
-            _endHandle.DragDelta += EndHandle_DragDelta;
-            _endHandle.DragCompleted += Handle_DragCompleted;
-            _endHandle.DragStarted += Handle_DragStarted;
+            _handle1.DragDelta += StartHandle_DragDelta;
+            _handle1.DragCompleted += Handle_DragCompleted;
+            _handle1.DragStarted += Handle_DragStarted;
+            _handle2.DragDelta += EndHandle_DragDelta;
+            _handle2.DragCompleted += Handle_DragCompleted;
+            _handle2.DragStarted += Handle_DragStarted;
 
-            _caretHandle.Classes.Add("caret");
-            _startHandle.Classes.Add("start");
-            _endHandle.Classes.Add("end");
-
-            _startHandle.SetTopLeft(default);
+            _handle1.SetTopLeft(default);
             _caretHandle.SetTopLeft(default);
-            _endHandle.SetTopLeft(default);
+            _handle2.SetTopLeft(default);
 
-            _startHandle.ContextCanceled += Caret_ContextCanceled;
+            _handle1.ContextCanceled += Caret_ContextCanceled;
             _caretHandle.ContextCanceled += Caret_ContextCanceled;
-            _endHandle.ContextCanceled += Caret_ContextCanceled;
-            _startHandle.ContextRequested += Caret_ContextRequested;
+            _handle2.ContextCanceled += Caret_ContextCanceled;
+            _handle1.ContextRequested += Caret_ContextRequested;
             _caretHandle.ContextRequested += Caret_ContextRequested;
-            _endHandle.ContextRequested += Caret_ContextRequested;
+            _handle2.ContextRequested += Caret_ContextRequested;
 
             IsVisible = ShowHandles;
 
@@ -176,20 +176,23 @@ namespace Avalonia.Controls.Primitives
                 if (bounds == null)
                     return;
 
-                var hasSelection = _presenter.SelectionStart != _presenter.SelectionEnd;
+                var clip = bounds.Value.Clip.Inflate(_textBox?.Padding ?? new Thickness(4, 0));
 
-                _startHandle.IsVisible = ShowHandles && hasSelection &&
-                    !IsOccluded(new Point(GetLeft(_startHandle), GetTop(_startHandle)));
-                _endHandle.IsVisible = ShowHandles && hasSelection &&
-                    !IsOccluded(new Point(GetLeft(_endHandle), GetTop(_endHandle)));
+                var isSelectionDragging = _handle1.IsDragging || _handle2.IsDragging;
+
+                var hasSelection = _presenter.SelectionStart != _presenter.SelectionEnd || isSelectionDragging;
+
+                _handle1.IsVisible = ShowHandles && hasSelection &&
+                    !IsOccluded(_handle1.IndicatorPosition);
+                _handle2.IsVisible = ShowHandles && hasSelection &&
+                    !IsOccluded(_handle2.IndicatorPosition);
                 _caretHandle.IsVisible = ShowHandles && !hasSelection &&
-                    !IsOccluded(new Point(GetLeft(_caretHandle), GetTop(_caretHandle)));
+                    !IsOccluded(_caretHandle.IndicatorPosition);
 
                 bool IsOccluded(Point point)
                 {
-                    return !bounds.Value.Clip.Contains(point);
+                    return !clip.Contains(point);
                 }
-
 
                 if (ShowHandles && !hasSelection)
                 {
@@ -219,53 +222,48 @@ namespace Avalonia.Controls.Primitives
             {
                 CloseFlyout();
 
-                var indicatorPosiiton = GetSearchPoint(handle);
-                var point = ToPresenter(indicatorPosiiton);
-                point = point.WithY(point.Y - _presenter.FontSize / 2);
-                var hit = _presenter.TextLayout.HitTestPoint(point);
-                var position = hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
+                var position = GetTextPosition(handle);
 
-                var otherHandle = handle == _startHandle ? _endHandle : _startHandle;
+                var otherHandle = handle == _handle1 ? _handle2 : _handle1;
+
+                var otherPosition = GetTextPosition(otherHandle);
+
+                if (position == otherPosition)
+                {
+                    position = handle.SelectionHandleType == SelectionHandleType.Start ? position - 1 : position + 1;
+
+                    position = Math.Clamp(position, 0, (_textBox.Text?.Length - 1) ?? 1);
+                }
+
                 using var _ = BeginChange();
 
                 if (handle.SelectionHandleType == SelectionHandleType.Start)
                 {
-                    if (position >= _textBox.SelectionEnd)
-                        position = _textBox.SelectionEnd - 1;
+                    position = position > _textBox.SelectionEnd ? _textBox.SelectionEnd - 1 : position;
                     _textBox.SetCurrentValue(TextBox.SelectionStartProperty, position);
                 }
                 else
                 {
-                    if (position <= _textBox.SelectionStart)
-                        position = _textBox.SelectionStart + 1;
+                    position = position < _textBox.SelectionStart ? _textBox.SelectionStart + 1 : position;
                     _textBox.SetCurrentValue(TextBox.SelectionEndProperty, position);
                 }
 
-                var selectionStart = _textBox.SelectionStart;
-                var selectionEnd = _textBox.SelectionEnd;
-                var start = Math.Min(selectionStart, selectionEnd);
-                var length = Math.Max(selectionStart, selectionEnd) - start;
-                var rects = new List<Rect>(_presenter.TextLayout.HitTestTextRange(start, length));
+                otherHandle.InvalidateVisual();
 
-                if (rects.Count > 0)
-                {
-                    var first = rects[0];
-                    var last = rects[rects.Count - 1];
-
-                    if (handle.SelectionHandleType == SelectionHandleType.Start)
-                        handle?.SetTopLeft(ToLayer(first.BottomLeft));
-                    else
-                        handle?.SetTopLeft(ToLayer(last.BottomRight));
-
-                    if (otherHandle.SelectionHandleType == SelectionHandleType.Start)
-                        otherHandle?.SetTopLeft(ToLayer(first.BottomLeft));
-                    else
-                        otherHandle?.SetTopLeft(ToLayer(last.BottomRight));
-                }
-
-                _presenter?.MoveCaretToTextPosition(position);
+                _presenter.MoveCaretToTextPosition(position);
+                var caretBound = _presenter.GetCursorRectangle();
+                handle.SetTopLeft(ToLayer(handle.SelectionHandleType == SelectionHandleType.Start ? caretBound.BottomLeft : caretBound.BottomLeft));
 
                 EnsureVisible();
+            }
+
+            int GetTextPosition(TextSelectionHandle handle)
+            {
+                var indicatorPosition = GetSearchPoint(handle);
+                var point = ToPresenter(indicatorPosition);
+                var hit = _presenter.TextLayout.HitTestPoint(point);
+                var position = hit.CharacterHit.FirstCharacterIndex + hit.CharacterHit.TrailingLength;
+                return position;
             }
         }
 
@@ -282,9 +280,9 @@ namespace Avalonia.Controls.Primitives
         public void MoveHandlesToSelection()
         {
             if (_presenter == null
-                || _startHandle.IsDragging
+                || _handle1.IsDragging
                 || _caretHandle.IsDragging
-                || _endHandle.IsDragging)
+                || _handle2.IsDragging)
             {
                 return;
             }
@@ -309,21 +307,11 @@ namespace Avalonia.Controls.Primitives
                     var first = rects[0];
                     var last = rects[rects.Count - 1];
 
-                    if (!_startHandle.IsDragging)
-                    {
-                        _startHandle.SetTopLeft(ToLayer(first.BottomLeft));
-                        _startHandle.SelectionHandleType = selectionStart < selectionEnd ?
-                            SelectionHandleType.Start :
-                            SelectionHandleType.End;
-                    }
+                    var position = _handle1.SelectionHandleType == SelectionHandleType.Start ? first.BottomLeft : last.BottomRight;
+                    _handle1.SetTopLeft(ToLayer(position));
 
-                    if (!_endHandle.IsDragging)
-                    {
-                        _endHandle.SetTopLeft(ToLayer(last.BottomRight));
-                        _endHandle.SelectionHandleType = selectionStart > selectionEnd ?
-                            SelectionHandleType.Start :
-                            SelectionHandleType.End;
-                    }
+                    position = _handle2.SelectionHandleType == SelectionHandleType.Start ? first.BottomLeft : last.BottomRight;
+                    _handle2.SetTopLeft(ToLayer(position));
                 }
             }
 
@@ -418,10 +406,10 @@ namespace Avalonia.Controls.Primitives
 
                     if (_textBox.SelectionStart != _textBox.SelectionEnd)
                     {
-                        if (_startHandle.IsEffectivelyVisible)
-                            handle = _startHandle;
-                        else if (_endHandle.IsEffectivelyVisible)
-                            handle = _endHandle;
+                        if (_handle1.IsEffectivelyVisible)
+                            handle = _handle1;
+                        else if (_handle2.IsEffectivelyVisible)
+                            handle = _handle2;
                     }
                     else
                     {
@@ -433,11 +421,17 @@ namespace Avalonia.Controls.Primitives
 
                     if (handle != null)
                     {
+                        var oldVerticalOffset = flyout.VerticalOffset;
+                        var oldHorizontalOffset = flyout.HorizontalOffset;
+                        var oldPlacement = flyout.Placement;
                         var topLeft = ToPresenter(handle.GetTopLeft());
                         flyout.VerticalOffset = topLeft.Y - verticalOffset;
                         flyout.HorizontalOffset = topLeft.X;
                         flyout.Placement = PlacementMode.TopEdgeAlignedLeft;
                         _textBox.RaiseEvent(new ContextRequestedEventArgs());
+                        flyout.VerticalOffset = oldVerticalOffset;
+                        flyout.HorizontalOffset = oldHorizontalOffset;
+                        flyout.Placement = oldPlacement;
 
                         return true;
                     }

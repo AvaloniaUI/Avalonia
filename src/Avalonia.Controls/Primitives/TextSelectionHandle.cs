@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Drawing;
+using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -8,19 +10,35 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A controls that enables easy control over text selection using touch based input
     /// </summary>
+    [TemplatePart("PART_Indicator", typeof(Border))]
     public class TextSelectionHandle : Thumb
     {
-        internal SelectionHandleType SelectionHandleType { get; set; }
+        internal SelectionHandleType SelectionHandleType
+        {
+            get => field;
+            set
+            {
+                field = value;
+                UpdateHandleClasses();
+            }
+        }
 
-        private Point _startPosition;
-
-        internal Point IndicatorPosition => IsDragging ? _startPosition + _delta : Bounds.Position;
+        internal Point IndicatorPosition
+        {
+            get
+            {
+                var topLeft = GetTopLeft();
+                return topLeft.WithX(topLeft.X + GetIndicatorOffset());
+            }
+        }
 
         internal bool IsDragging { get; private set; }
 
+        private Point _startPosition;
         private Vector _delta;
         private Point? _lastPoint;
-        private TranslateTransform? _transform;
+        private Border? _indicator;
+        private Point? _initialRequestedPosition;
 
         static TextSelectionHandle()
         {
@@ -29,23 +47,33 @@ namespace Avalonia.Controls.Primitives
             DragCompletedEvent.AddClassHandler<TextSelectionHandle>((x, e) => x.OnDragCompleted(e), RoutingStrategies.Bubble);
         }
 
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            base.OnAttachedToVisualTree(e);
+            base.OnApplyTemplate(e);
 
-            if (_transform == null)
+            _indicator = e.NameScope.Get<Border>("PART_Indicator");
+
+            UpdateHandleClasses();
+        }
+
+        protected override void OnSizeChanged(SizeChangedEventArgs e)
+        {
+            base.OnSizeChanged(e);
+
+            if(_initialRequestedPosition.HasValue)
             {
-                _transform = new TranslateTransform();
+                SetTopLeft(_initialRequestedPosition.Value);
+                _initialRequestedPosition = null;
             }
-
-            RenderTransform = _transform;
         }
 
         protected override void OnLoaded(RoutedEventArgs args)
         {
             base.OnLoaded(args);
 
-            InvalidateMeasure();
+            UpdateHandleClasses();
+
+            InvalidateVisual();
         }
         protected override void OnDragStarted(VectorEventArgs e)
         {
@@ -64,7 +92,9 @@ namespace Avalonia.Controls.Primitives
             if (Math.Abs((newDelta - _delta).Length) > 0)
             {
                 _delta = e.Vector;
-                UpdateTextSelectionHandlePosition();
+                var point = _startPosition + _delta;
+                Canvas.SetTop(this, point.Y);
+                Canvas.SetLeft(this, point.X);
             }
         }
 
@@ -76,39 +106,21 @@ namespace Avalonia.Controls.Primitives
             _startPosition = default;
         }
 
-        private void UpdateTextSelectionHandlePosition()
-        {
-            SetTopLeft(IndicatorPosition);
-        }
-
         protected override void ArrangeCore(Rect finalRect)
         {
-            base.ArrangeCore(finalRect);
+            UpdateHandleClasses();
 
-            if (_transform != null)
-            {
-                if (SelectionHandleType == SelectionHandleType.Caret)
-                {
-                    HasMirrorTransform = true;
-                    _transform.X = Bounds.Width / 2 * -1;
-                }
-                else if (SelectionHandleType == SelectionHandleType.Start)
-                {
-                    HasMirrorTransform = true;
-                    _transform.X = Bounds.Width * -1;
-                }
-                else
-                {
-                    HasMirrorTransform = false;
-                    _transform.X = 0;
-                }
-            }
+            base.ArrangeCore(finalRect);
         }
 
         internal void SetTopLeft(Point point)
         {
+            if(_indicator == null)
+            {
+                _initialRequestedPosition = point;
+            }
             Canvas.SetTop(this, point.Y);
-            Canvas.SetLeft(this, point.X);
+            Canvas.SetLeft(this, point.X - GetIndicatorOffset());
         }
 
         internal Point GetTopLeft()
@@ -193,6 +205,34 @@ namespace Avalonia.Controls.Primitives
 
             PseudoClasses.Remove(":pressed");
             e.Pointer.Capture(null);
+        }
+
+        internal double GetIndicatorOffset()
+        {
+            return _indicator?.Bounds.Center.X ?? SelectionHandleType switch
+            {
+                SelectionHandleType.Caret => Bounds.Width / 2,
+                SelectionHandleType.Start => Bounds.Width,
+                SelectionHandleType.End => 0,
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        private void UpdateHandleClasses()
+        {
+            Classes.Remove("caret");
+            Classes.Remove("start");
+            Classes.Remove("end");
+
+            Classes.Add(SelectionHandleType switch
+            {
+                SelectionHandleType.Caret => "caret",
+                SelectionHandleType.Start => "start",
+                SelectionHandleType.End => "end",
+                _ => throw new NotImplementedException(),
+            });
+
+            InvalidateVisual();
         }
     }
 }
