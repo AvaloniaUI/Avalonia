@@ -117,10 +117,10 @@ internal static class DataFormatHelper
         return atoms.GetAtom(systemName);
     }
 
-    public static IntPtr[] ToAtoms(DataFormat format, IntPtr[] textFormatAtoms, X11Atoms atoms)
+    public static IntPtr[] ToAtoms(DataFormat format, X11Atoms atoms)
     {
         if (DataFormat.Text.Equals(format))
-            return textFormatAtoms;
+            return atoms.TextFormats;
 
         if (DataFormat.File.Equals(format))
             return [atoms.GetAtom(MimeTypeTextUriList)];

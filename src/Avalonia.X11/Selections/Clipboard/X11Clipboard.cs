@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
-using Avalonia.Platform.Storage;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11.Selections.Clipboard
@@ -20,8 +19,6 @@ namespace Avalonia.X11.Selections.Clipboard
         private IAsyncDataTransfer? _storedDataTransfer;
         private readonly IntPtr _handle;
         private TaskCompletionSource<bool>? _storeAtomTcs;
-        private readonly IntPtr[] _textAtoms;
-        private readonly IntPtr _avaloniaSaveTargetsAtom;
         private readonly int _maximumPropertySize;
 
         public X11ClipboardImpl(AvaloniaX11Platform platform)
@@ -29,14 +26,6 @@ namespace Avalonia.X11.Selections.Clipboard
             _platform = platform;
             _x11 = platform.Info;
             _handle = CreateEventWindow(platform, OnEvent);
-            _avaloniaSaveTargetsAtom = XInternAtom(_x11.Display, "AVALONIA_SAVE_TARGETS_PROPERTY_ATOM", false);
-            _textAtoms = new[]
-            {
-                _x11.Atoms.STRING,
-                _x11.Atoms.OEMTEXT,
-                _x11.Atoms.UTF8_STRING,
-                _x11.Atoms.UTF16_STRING
-            }.Where(a => a != IntPtr.Zero).ToArray();
 
             var extendedMaxRequestSize = XExtendedMaxRequestSize(_platform.Display);
             var maxRequestSize = XMaxRequestSize(_platform.Display);
@@ -253,7 +242,7 @@ namespace Avalonia.X11.Selections.Clipboard
             {
                 foreach (var format in dataTransfer.Formats)
                 {
-                    foreach (var atom in DataFormatHelper.ToAtoms(format, _textAtoms, _x11.Atoms))
+                    foreach (var atom in DataFormatHelper.ToAtoms(format, _x11.Atoms))
                         atoms.Add(atom);
                 }
             }
@@ -287,10 +276,10 @@ namespace Avalonia.X11.Selections.Clipboard
                     _storeAtomTcs = new TaskCompletionSource<bool>();
 
                 var atoms = ConvertDataTransfer(dataTransfer);
-                XChangeProperty(_x11.Display, _handle, _avaloniaSaveTargetsAtom, _x11.Atoms.ATOM, 32,
+                XChangeProperty(_x11.Display, _handle, _x11.Atoms.AVALONIA_SAVE_TARGETS_PROPERTY_ATOM, _x11.Atoms.ATOM, 32,
                     PropertyMode.Replace, atoms, atoms.Length);
                 XConvertSelection(_x11.Display, _x11.Atoms.CLIPBOARD_MANAGER, _x11.Atoms.SAVE_TARGETS,
-                    _avaloniaSaveTargetsAtom, _handle, IntPtr.Zero);
+                    _x11.Atoms.AVALONIA_SAVE_TARGETS_PROPERTY_ATOM, _handle, IntPtr.Zero);
                 await _storeAtomTcs.Task;
             }
         }

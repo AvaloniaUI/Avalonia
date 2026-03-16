@@ -196,6 +196,7 @@ namespace Avalonia.X11
         public IntPtr _KDE_NET_WM_BLUR_BEHIND_REGION;
         public IntPtr INCR;
         public IntPtr _NET_WM_STATE_FOCUSED;
+        public IntPtr AVALONIA_SAVE_TARGETS_PROPERTY_ATOM;
 
         public IntPtr XdndActionCopy;
         public IntPtr XdndActionLink;
@@ -213,10 +214,14 @@ namespace Avalonia.X11
 
         private readonly Dictionary<string, IntPtr> _namesToAtoms  = new Dictionary<string, IntPtr>();
         private readonly Dictionary<IntPtr, string> _atomsToNames = new Dictionary<IntPtr, string>();
+
+        public IntPtr[] TextFormats { get; }
+
         public X11Atoms(IntPtr display)
         {
             _display = display;
             PopulateAtoms(display);
+            TextFormats = [STRING, OEMTEXT, UTF8_STRING, UTF16_STRING];
         }
 
         private void InitAtom(ref IntPtr field, string name, IntPtr value)
