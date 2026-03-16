@@ -26,18 +26,18 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Sets the value of the <see cref="TextProperty"/> attached property to a given <see cref="Control"/>.
         /// </summary>
-        /// <param name="control">The control.</param>
+        /// <param name="element">The control.</param>
         /// <param name="text">The search text to set.</param>
-        public static void SetText(AvaloniaObject control, string? text)
-            => control.SetValue(TextProperty, text);
+        public static void SetText(AvaloniaObject element, string? text)
+            => element.SetValue(TextProperty, text);
 
         /// <summary>
         /// Gets the value of the <see cref="TextProperty"/> attached property from a given <see cref="Control"/>.
         /// </summary>
-        /// <param name="control">The control.</param>
+        /// <param name="element">The control.</param>
         /// <returns>The search text.</returns>
-        public static string? GetText(AvaloniaObject control)
-            => control.GetValue(TextProperty);
+        public static string? GetText(AvaloniaObject element)
+            => element.GetValue(TextProperty);
 
         /// <summary>
         /// Sets the value of the <see cref="TextBindingProperty"/> attached property to a given element.
