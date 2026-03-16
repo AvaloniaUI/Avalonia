@@ -208,8 +208,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 throw new XamlSelectorsTransformException("Unable to parse selector: " + e.Message, node, e);
             }
 
+            // Selectors should resolve control types only.
+            // isMarkupExtension = false to prevent resolving selector types to XExtension.
             var selector = Create(parsed, (p, n) 
-                => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", true, node, true));
+                => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", false, node, true));
             pn.Values[0] = selector;
 
             var templateType = GetLastTemplateTypeFromSelector(selector);
