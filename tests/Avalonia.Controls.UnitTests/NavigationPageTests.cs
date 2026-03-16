@@ -1580,6 +1580,7 @@ public class NavigationPageTests
             Assert.True(rootNavigatedToFired);
         }
     }
+
     public class SwipeGestureTests : ScopedTestBase
     {
         [Fact]

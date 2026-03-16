@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input;
 
-public class SwipeGestureRecognizerTests
+public class SwipeGestureRecognizerTests : ScopedTestBase
 {
     [Fact]
     public void Does_Not_Raise_Swipe_When_Both_Axes_Are_Disabled()
