@@ -1,6 +1,5 @@
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
-using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -15,7 +14,7 @@ namespace Avalonia.Controls.Primitives
         /// This property is usually applied to an item container directly.
         /// </summary>
         public static readonly AttachedProperty<string?> TextProperty
-            = AvaloniaProperty.RegisterAttached<Interactive, string?>("Text", typeof(TextSearch));
+            = AvaloniaProperty.RegisterAttached<AvaloniaObject, string?>("Text", typeof(TextSearch));
 
         /// <summary>
         /// Defines the TextBinding attached property.
@@ -29,7 +28,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="text">The search text to set.</param>
-        public static void SetText(Interactive control, string? text)
+        public static void SetText(AvaloniaObject control, string? text)
             => control.SetValue(TextProperty, text);
 
         /// <summary>
@@ -37,7 +36,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="control">The control.</param>
         /// <returns>The search text.</returns>
-        public static string? GetText(Interactive control)
+        public static string? GetText(AvaloniaObject control)
             => control.GetValue(TextProperty);
 
         /// <summary>
@@ -80,9 +79,9 @@ namespace Avalonia.Controls.Primitives
 
             string? text;
 
-            if (item is Interactive interactive)
+            if (item is AvaloniaObject obj)
             {
-                text = interactive.GetValue(TextProperty);
+                text = obj.GetValue(TextProperty);
                 if (!string.IsNullOrEmpty(text))
                     return text;
             }
