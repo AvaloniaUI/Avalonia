@@ -167,7 +167,7 @@ namespace Avalonia.X11
         public static extern int XSetWMProtocols(IntPtr display, IntPtr window, IntPtr[] protocols, int count);
 
         [DllImport(libX11)]
-        public static extern int XGrabPointer(IntPtr display, IntPtr window, bool owner_events, EventMask event_mask,
+        public static extern GrabResult XGrabPointer(IntPtr display, IntPtr window, bool owner_events, EventMask event_mask,
             GrabMode pointer_mode, GrabMode keyboard_mode, IntPtr confine_to, IntPtr cursor, IntPtr timestamp);
 
         [DllImport(libX11)]
@@ -179,7 +179,7 @@ namespace Avalonia.X11
 
         [DllImport(libX11)]
         public static extern bool XTranslateCoordinates(IntPtr display, IntPtr src_w, IntPtr dest_w, int src_x,
-            int src_y, out int intdest_x_return, out int dest_y_return, out IntPtr child_return);
+            int src_y, out int dest_x_return, out int dest_y_return, out IntPtr child_return);
 
         [DllImport(libX11)]
         public static extern bool XGetGeometry(IntPtr display, IntPtr window, out IntPtr root, out int x, out int y,
@@ -760,5 +760,14 @@ namespace Avalonia.X11
 
         public static int XkbSetGroupForCoreState(int state, int newGroup)
             => (state & ~(0x3 << 13)) | ((newGroup & 0x3) << 13);
+
+        public enum GrabResult
+        {
+            GrabSuccess = 0,
+            AlreadyGrabbed = 1,
+            GrabInvalidTime = 2,
+            GrabNotViewable = 3,
+            GrabFrozen = 4,
+        }
     }
 }

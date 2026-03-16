@@ -15,8 +15,7 @@ internal sealed class DragDropDataTransfer(
     IntPtr display,
     IntPtr sourceWindow,
     IntPtr targetWindow,
-    IInputRoot inputRoot,
-    byte xdndVersion)
+    IInputRoot inputRoot)
     : PlatformDataTransfer
 {
     public IntPtr SourceWindow { get; } = sourceWindow;
@@ -59,8 +58,6 @@ internal sealed class DragDropDataTransfer(
     public override void Dispose()
     {
         reader.Dispose();
-
-        if (xdndVersion >= 5)
-            SendXdndFinished();
+        SendXdndFinished();
     }
 }

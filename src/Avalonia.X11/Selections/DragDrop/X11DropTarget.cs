@@ -3,20 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using static Avalonia.X11.Selections.DragDrop.XdndConstants;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11.Selections.DragDrop;
 
 /// <summary>
-/// Manages XDND (drag and drop) for a given X11 window.
+/// Manages an XDND target for a given X11 window.
 /// Specs: https://www.freedesktop.org/wiki/Specifications/XDND/
 /// </summary>
 internal sealed class X11DropTarget
 {
-    // Spec: every application that supports XDND version N must also support all previous versions (3 to N-1).
-    private const byte MinXdndVersion = 3;
-    private const byte XdndVersion = 5;
-
     private readonly IDragDropDevice _dragDropDevice;
     private readonly IXdndWindow _window;
     private readonly IntPtr _display;
@@ -84,8 +81,7 @@ internal sealed class X11DropTarget
             _display,
             sourceWindow,
             _window.Handle,
-            inputRoot,
-            version);
+            inputRoot);
     }
 
     public void HandleXdndPosition(in XClientMessageEvent message)
