@@ -50,6 +50,7 @@ namespace Avalonia.Controls
         private const double VelocityCommitThreshold = 800;
         private const double MinSwipeDistanceForVelocityCommit = 0.05;
         private const double RubberBandFactor = 0.3;
+        private const double RubberBandReturnDuration = 0.16;
         private const double MaxCompletionDuration = 0.35;
         private const double MinCompletionDuration = 0.12;
 
@@ -57,7 +58,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<VirtualizingCarouselPanel, double>("CompletionProgress");
 
         private CancellationTokenSource? _completionCts;
-        private Carousel? _completionCarousel;
         private double _completionEndProgress;
         private bool _isRubberBanding;
 
@@ -487,6 +487,7 @@ namespace Avalonia.Controls
         private void TeardownGestureRecognizer()
         {
             _completionCts?.Cancel();
+            _completionCts = null;
 
             if (_swipeGestureRecognizer is not null)
             {
@@ -507,13 +508,11 @@ namespace Avalonia.Controls
             if (_completionCts is { IsCancellationRequested: false })
             {
                 _completionCts.Cancel();
+                _completionCts = null;
 
-                // A new swipe interrupted the completion animation.
-                // Finalize the previous gesture before starting a new one.
                 var wasCommit = _completionEndProgress > 0.5;
                 if (wasCommit && _swipeTarget is not null)
                 {
-                    // The previous gesture was committing, finish it immediately.
                     if (_realized != null)
                         RecycleElement(_realized);
 
@@ -523,7 +522,6 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    // The previous gesture was snapping back, discard the target.
                     ResetSwipeState();
                 }
 
@@ -532,13 +530,12 @@ namespace Avalonia.Controls
                 _totalDelta = 0;
             }
 
-            // Ignore events from a different gesture sequence.
             if (_isDragging && e.Id != _swipeGestureId)
                 return;
 
             if (!_isDragging)
             {
-                // Lock the axis on gesture start. Use the configured axis, or detect from the first delta
+                // Lock the axis on gesture start to keep diagonal drags stable.
                 _lockedAxis = _swipeAxis ?? (Math.Abs(e.Delta.X) >= Math.Abs(e.Delta.Y) ?
                     PageSlide.SlideAxis.Horizontal :
                     PageSlide.SlideAxis.Vertical);
@@ -553,7 +550,6 @@ namespace Avalonia.Controls
                 var currentIndex = _realizedIndex;
                 var targetIndex = _isForward ? currentIndex + 1 : currentIndex - 1;
 
-                // Handle wrapping and boundary check
                 if (targetIndex >= Items.Count)
                 {
                     if (carousel.WrapSelection)
@@ -578,7 +574,6 @@ namespace Avalonia.Controls
                 _swipeTargetIndex = _isRubberBanding ? -1 : targetIndex;
                 carousel.IsSwiping = true;
 
-                // Cancel any running transition
                 if (_transition is not null)
                 {
                     _transition.Cancel();
@@ -591,7 +586,6 @@ namespace Avalonia.Controls
 
                 if (!_isRubberBanding)
                 {
-                    // Realize the target item
                     _swipeTarget = GetOrCreateElement(Items, _swipeTargetIndex);
                     _swipeTarget.Measure(Bounds.Size);
                     _swipeTarget.Arrange(new Rect(Bounds.Size));
@@ -643,22 +637,24 @@ namespace Avalonia.Controls
                          && _swipeTarget is not null;
 
             _completionEndProgress = commit ? 1.0 : 0.0;
-            _completionCarousel = carousel;
-
             var remainingDistance = Math.Abs(_completionEndProgress - currentProgress);
-            var durationSeconds = velocity > 0
+            var durationSeconds = _isRubberBanding
+                ? RubberBandReturnDuration
+                : velocity > 0
                 ? Math.Clamp(remainingDistance * size / velocity, MinCompletionDuration, MaxCompletionDuration)
                 : MaxCompletionDuration;
+            Easing easing = _isRubberBanding ? new SineEaseOut() : new QuadraticEaseOut();
 
             _completionCts?.Cancel();
-            _completionCts = new CancellationTokenSource();
+            var completionCts = new CancellationTokenSource();
+            _completionCts = completionCts;
 
             SetValue(CompletionProgressProperty, currentProgress);
 
             var animation = new Animation.Animation
             {
                 FillMode = FillMode.Forward,
-                Easing = new QuadraticEaseOut(),
+                Easing = easing,
                 Duration = TimeSpan.FromSeconds(durationSeconds),
                 Children =
                 {
@@ -677,52 +673,65 @@ namespace Avalonia.Controls
 
             _isDragging = false;
 
-            _ = RunCompletionAnimation(animation, carousel, _completionCts.Token);
+            _ = RunCompletionAnimation(animation, carousel, completionCts);
         }
 
-        private async Task RunCompletionAnimation(Animation.Animation animation, Carousel carousel, CancellationToken cancellationToken)
+        private async Task RunCompletionAnimation(
+            Animation.Animation animation,
+            Carousel carousel,
+            CancellationTokenSource completionCts)
         {
-            await animation.RunAsync(this, null, cancellationToken);
+            var cancellationToken = completionCts.Token;
 
-            if (cancellationToken.IsCancellationRequested)
-                return;
-
-            if (GetTransition() is IInteractivePageTransition interactive)
+            try
             {
-                var swipeTarget = ReferenceEquals(_realized, _swipeTarget) ? null : _swipeTarget;
-                interactive.Update(_completionEndProgress, _realized, swipeTarget, _isForward);
-            }
+                await animation.RunAsync(this, null, cancellationToken);
 
-            var commit = _completionEndProgress > 0.5;
+                if (cancellationToken.IsCancellationRequested)
+                    return;
 
-            if (commit && _swipeTarget is not null)
-            {
-                var targetIndex = _swipeTargetIndex;
-                var targetElement = _swipeTarget;
+                if (GetTransition() is IInteractivePageTransition interactive)
+                {
+                    var swipeTarget = ReferenceEquals(_realized, _swipeTarget) ? null : _swipeTarget;
+                    interactive.Update(_completionEndProgress, _realized, swipeTarget, _isForward);
+                }
 
-                // Clear swipe target state before promoting it to the realized element so
-                // interactive transitions never receive the same control as both from/to.
+                var commit = _completionEndProgress > 0.5;
+
+                if (commit && _swipeTarget is not null)
+                {
+                    var targetIndex = _swipeTargetIndex;
+                    var targetElement = _swipeTarget;
+
+                    // Clear swipe target state before promoting it to the realized element so
+                    // interactive transitions never receive the same control as both from/to.
+                    _swipeTarget = null;
+                    _swipeTargetIndex = -1;
+
+                    if (_realized != null)
+                        RecycleElement(_realized);
+
+                    _realized = targetElement;
+                    _realizedIndex = targetIndex;
+
+                    carousel.SelectedIndex = targetIndex;
+                }
+                else
+                {
+                    ResetSwipeState();
+                }
+
+                _totalDelta = 0;
                 _swipeTarget = null;
                 _swipeTargetIndex = -1;
-
-                if (_realized != null)
-                    RecycleElement(_realized);
-
-                _realized = targetElement;
-                _realizedIndex = targetIndex;
-
-                carousel.SelectedIndex = targetIndex;
+                _isRubberBanding = false;
+                carousel.IsSwiping = false;
             }
-            else
+            finally
             {
-                ResetSwipeState();
+                if (ReferenceEquals(_completionCts, completionCts))
+                    _completionCts = null;
             }
-
-            _totalDelta = 0;
-            _swipeTarget = null;
-            _swipeTargetIndex = -1;
-            _isRubberBanding = false;
-            carousel.IsSwiping = false;
         }
 
         /// <inheritdoc/>
@@ -732,7 +741,9 @@ namespace Avalonia.Controls
 
             if (change.Property == CompletionProgressProperty)
             {
-                if (!_isDragging && _swipeTarget is null)
+                var isCompletionAnimating = _completionCts is { IsCancellationRequested: false };
+
+                if (!_isDragging && _swipeTarget is null && !isCompletionAnimating)
                     return;
 
                 var progress = change.GetNewValue<double>();

@@ -474,7 +474,6 @@ namespace Avalonia.Controls.UnitTests
                 var (panel, carousel) = CreateTarget(items);
                 carousel.IsSwipeEnabled = true;
 
-                // Simulate swipe start (delta X > 0)
                 var e = new SwipeGestureEventArgs(1, new Vector(10, 0), default);
                 panel.RaiseEvent(e);
 
@@ -495,7 +494,6 @@ namespace Avalonia.Controls.UnitTests
                 carousel.IsSwipeEnabled = true;
                 carousel.WrapSelection = false;
 
-                // Simulate swipe start (delta X < 0)
                 var e = new SwipeGestureEventArgs(1, new Vector(-10, 0), default);
                 panel.RaiseEvent(e);
 
@@ -512,7 +510,6 @@ namespace Avalonia.Controls.UnitTests
                 carousel.IsSwipeEnabled = true;
                 carousel.WrapSelection = true;
 
-                // Simulate swipe start (delta X < 0)
                 var e = new SwipeGestureEventArgs(1, new Vector(-10, 0), default);
                 panel.RaiseEvent(e);
 
@@ -539,11 +536,9 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(1, carousel.SelectedIndex);
                 Assert.False(carousel.WrapSelection, "WrapSelection should be false");
 
-                // Verify the correct item is realized at index 1 before the swipe
                 var container = Assert.IsType<ContentPresenter>(panel.Children[0]);
                 Assert.Equal("bar", container.Content);
 
-                // Simulate swipe start (delta X > 0)
                 var e = new SwipeGestureEventArgs(1, new Vector(10, 0), default);
                 panel.RaiseEvent(e);
 
@@ -559,7 +554,6 @@ namespace Avalonia.Controls.UnitTests
                 var (panel, carousel) = CreateTarget(items, new CrossFade(TimeSpan.FromSeconds(1)));
                 carousel.IsSwipeEnabled = true;
 
-                // Simulate swipe with more X than Y
                 var e = new SwipeGestureEventArgs(1, new Vector(10, 2), default);
                 panel.RaiseEvent(e);
 
@@ -658,6 +652,45 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(hiddenWhenReset);
             }
 
+            [Fact]
+            public void RubberBand_Swipe_Release_Animates_Back_Through_Intermediate_Progress()
+            {
+                var clock = new MockGlobalClock();
+
+                using var app = UnitTestApplication.Start(
+                    TestServices.MockPlatformRenderInterface.With(globalClock: clock));
+                using var sync = UnitTestSynchronizationContext.Begin();
+
+                var items = new[] { "foo", "bar" };
+                var transition = new ProgressTrackingInteractiveTransition();
+                var (panel, carousel) = CreateTarget(items, transition);
+                carousel.IsSwipeEnabled = true;
+                carousel.WrapSelection = false;
+
+                panel.RaiseEvent(new SwipeGestureEventArgs(1, new Vector(-100, 0), default));
+
+                var releaseStartProgress = transition.Progresses[^1];
+                var updatesBeforeRelease = transition.Progresses.Count;
+
+                panel.RaiseEvent(new SwipeGestureEndedEventArgs(1, default));
+
+                clock.Pulse(TimeSpan.Zero);
+                clock.Pulse(TimeSpan.FromSeconds(0.1));
+                sync.ExecutePostedCallbacks();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                var postReleaseProgresses = transition.Progresses.Skip(updatesBeforeRelease).ToArray();
+
+                Assert.Contains(postReleaseProgresses, p => p > 0 && p < releaseStartProgress);
+
+                clock.Pulse(TimeSpan.FromSeconds(1));
+                sync.ExecutePostedCallbacks();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(0d, transition.Progresses[^1]);
+                Assert.Equal(0, carousel.SelectedIndex);
+            }
+
             private sealed class TrackingInteractiveTransition : IPageTransition, IInteractivePageTransition
             {
                 public int UpdateCallCount { get; private set; }
@@ -674,6 +707,19 @@ namespace Avalonia.Controls.UnitTests
 
                     if (from is not null && ReferenceEquals(from, to))
                         SawAliasedUpdate = true;
+                }
+            }
+
+            private sealed class ProgressTrackingInteractiveTransition : IPageTransition, IInteractivePageTransition
+            {
+                public List<double> Progresses { get; } = new();
+
+                public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+                    => Task.CompletedTask;
+
+                public void Update(double progress, Visual? from, Visual? to, bool forward)
+                {
+                    Progresses.Add(progress);
                 }
             }
 
