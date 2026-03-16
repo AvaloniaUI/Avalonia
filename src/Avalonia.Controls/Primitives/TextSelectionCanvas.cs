@@ -107,7 +107,7 @@ namespace Avalonia.Controls.Primitives
 
         private void Caret_ContextRequested(object? sender, ContextRequestedEventArgs e)
         {
-            ShowFlyout(e);
+            ShowFlyout();
             e.Handled = true;
         }
 
@@ -154,13 +154,17 @@ namespace Avalonia.Controls.Primitives
         public void Hide()
         {
             ShowHandles = false;
+            s_isInTouchMode = false;
         }
 
-        internal void ShowOnFocused()
+        internal void Show(bool forceTouchMode = false)
         {
+            s_isInTouchMode = s_isInTouchMode || forceTouchMode;
             if (s_isInTouchMode)
             {
                 MoveHandlesToSelection();
+
+                ShowFlyout();
             }
         }
 
@@ -411,7 +415,7 @@ namespace Avalonia.Controls.Primitives
                 _layoutListener.Attach(_presenter);
                 _presenter.AddHandler(KeyDownEvent, PresenterKeyDown, handledEventsToo: true);
                 _presenter.AddHandler(TappedEvent, PresenterTapped);
-                _presenter.AddHandler(PointerPressedEvent, PresenterPressed);
+                _presenter.AddHandler(PointerPressedEvent, PresenterPressed, handledEventsToo: true);
                 _presenter.AddHandler(GotFocusEvent, PresenterFocused, handledEventsToo: true);
 
                 _textBox = _presenter.FindAncestorOfType<TextBox>();
@@ -456,7 +460,7 @@ namespace Avalonia.Controls.Primitives
             InvalidateMeasure();
         }
 
-        internal bool ShowFlyout(ContextRequestedEventArgs e)
+        internal bool ShowFlyout()
         {
             if (_textBox != null)
             {
@@ -499,21 +503,9 @@ namespace Avalonia.Controls.Primitives
                         return true;
                     }
                 }
-                else
-                {
-                    _textBox.RaiseEvent(new ContextRequestedEventArgs(e));
-                }
             }
 
             return false;
-        }
-
-        internal void Show()
-        {
-            ShowHandles = true;
-
-            MoveHandlesToSelection();
-            EnsureVisible();
         }
 
         private void TextBox_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)

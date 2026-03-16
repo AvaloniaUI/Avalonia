@@ -497,7 +497,6 @@ namespace Avalonia.Controls.Presenters
         public void HideCaret()
         {
             _caretBlink = false;
-            RemoveTextSelectionCanvas();
             _caretTimer?.Stop();
             InvalidateTextLayout();
         }
@@ -945,7 +944,7 @@ namespace Avalonia.Controls.Presenters
             ResetCaretTimer();
         }
 
-        private void EnsureTextSelectionLayer()
+        internal void EnsureTextSelectionLayer()
         {
             if (TextSelectionHandleCanvas == null)
             {
@@ -964,7 +963,7 @@ namespace Avalonia.Controls.Presenters
                 _layer?.Add(TextSelectionHandleCanvas);
         }
 
-        private void RemoveTextSelectionCanvas()
+        internal void RemoveTextSelectionCanvas()
         {
             if(_layer != null && TextSelectionHandleCanvas is { } canvas)
             {
@@ -978,11 +977,8 @@ namespace Avalonia.Controls.Presenters
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            if (TextSelectionHandleCanvas is { } c)
-            {
-                _layer?.Remove(c);
-                c.SetPresenter(null);
-            }
+
+            RemoveTextSelectionCanvas();
 
             if (_caretTimer != null)
             {

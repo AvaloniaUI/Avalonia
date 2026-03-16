@@ -1110,7 +1110,7 @@ namespace Avalonia.Controls
             _presenter?.ShowCaret();
 
             if (SelectionStart != SelectionEnd)
-                _presenter?.TextSelectionHandleCanvas?.ShowOnFocused();
+                _presenter?.TextSelectionHandleCanvas?.Show();
         }
 
         protected override void OnLostFocus(FocusChangedEventArgs e)
@@ -1126,6 +1126,7 @@ namespace Avalonia.Controls
                 }
 
                 SetCurrentValue(RevealPasswordProperty, false);
+                _presenter?.RemoveTextSelectionCanvas();
             }
 
             UpdateCommandStates();
@@ -1710,8 +1711,17 @@ namespace Avalonia.Controls
                     else
                     {
                         SelectWord(text, caretIndex, caretIndex, caretIndex);
+                    }
 
-                        _presenter?.TextSelectionHandleCanvas?.ShowOnFocused();
+                    _presenter?.EnsureTextSelectionLayer();
+
+                    if (SelectionStart != SelectionEnd)
+                    {
+                        _presenter?.TextSelectionHandleCanvas?.Show(true);
+                    }
+                    else
+                    {
+                        _presenter?.RaiseEvent(new ContextRequestedEventArgs(e.PointerEventArgs));
                     }
                 }
 
@@ -1740,6 +1750,7 @@ namespace Avalonia.Controls
             {
                 if (e.Pointer.Type == PointerType.Mouse && clickInfo.Properties.IsLeftButtonPressed)
                 {
+                    _presenter.TextSelectionHandleCanvas?.Hide();
                     _currentClickCount = e.ClickCount;
                     var point = e.GetPosition(_presenter);
 
