@@ -11,6 +11,8 @@ namespace Avalonia.Controls.Primitives
 {
     internal class TextSelectionHandleCanvas : Canvas
     {
+        private static bool s_shouldWrapAroundSelection;
+
         private const int ContextMenuPadding = 16;
         private static bool s_isInTouchMode;
 
@@ -22,6 +24,9 @@ namespace Avalonia.Controls.Primitives
         private bool _showHandle;
         private IDisposable? _showDisposable;
         private PresenterVisualListener _layoutListener;
+        private int? _savedSelectionStart;
+        private int? _saveSelectionEnd;
+        private SelectionHandleType? _initialHandleType;
 
         internal bool ShowHandles
         {
@@ -41,6 +46,11 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        static TextSelectionHandleCanvas()
+        {
+            s_shouldWrapAroundSelection = !OperatingSystem.IsAndroid();
+        }
+
         public TextSelectionHandleCanvas()
         {
             _caretHandle = new TextSelectionHandle() { SelectionHandleType = SelectionHandleType.Caret };
@@ -58,10 +68,10 @@ namespace Avalonia.Controls.Primitives
             _caretHandle.DragStarted += Handle_DragStarted;
             _caretHandle.DragDelta += CaretHandle_DragDelta;
             _caretHandle.DragCompleted += Handle_DragCompleted;
-            _handle1.DragDelta += StartHandle_DragDelta;
+            _handle1.DragDelta += SelectionHandle_DragDelta;
             _handle1.DragCompleted += Handle_DragCompleted;
             _handle1.DragStarted += Handle_DragStarted;
-            _handle2.DragDelta += EndHandle_DragDelta;
+            _handle2.DragDelta += SelectionHandle_DragDelta;
             _handle2.DragCompleted += Handle_DragCompleted;
             _handle2.DragStarted += Handle_DragStarted;
 
@@ -103,6 +113,9 @@ namespace Avalonia.Controls.Primitives
 
         private void Handle_DragStarted(object? sender, VectorEventArgs e)
         {
+            _savedSelectionStart = _textBox?.SelectionStart;
+            _saveSelectionEnd = _textBox?.SelectionEnd;
+            _initialHandleType = (sender as TextSelectionHandle)?.SelectionHandleType;
             CloseFlyout();
         }
 
@@ -111,16 +124,13 @@ namespace Avalonia.Controls.Primitives
             _presenter?.RaiseEvent(new Interactivity.RoutedEventArgs(InputElement.ContextCanceledEvent));
         }
 
-        private void EndHandle_DragDelta(object? sender, VectorEventArgs e)
+        private void SelectionHandle_DragDelta(object? sender, VectorEventArgs e)
         {
             if (sender is TextSelectionHandle handle)
+            {
                 DragSelectionHandle(handle);
-        }
-
-        private void StartHandle_DragDelta(object? sender, VectorEventArgs e)
-        {
-            if (sender is TextSelectionHandle handle)
-                DragSelectionHandle(handle);
+                e.Handled = true;
+            }
         }
 
         private void CaretHandle_DragDelta(object? sender, VectorEventArgs e)
@@ -161,6 +171,21 @@ namespace Avalonia.Controls.Primitives
 
         private void Handle_DragCompleted(object? sender, VectorEventArgs e)
         {
+            _savedSelectionStart = -1;
+            _saveSelectionEnd = -1;
+
+            if (!_handle1.IsDragging)
+            {
+                _handle1.NeedsIndicatorUpdate = true;
+                _handle1.SelectionHandleType = SelectionHandleType.Start;
+            }
+
+            if (!_handle2.IsDragging)
+            {
+                _handle2.NeedsIndicatorUpdate = true;
+                _handle2.SelectionHandleType = SelectionHandleType.End;
+            }
+
             MoveHandlesToSelection();
         }
 
@@ -226,35 +251,67 @@ namespace Avalonia.Controls.Primitives
 
                 var otherHandle = handle == _handle1 ? _handle2 : _handle1;
 
-                var otherPosition = GetTextPosition(otherHandle);
-
-                if (position == otherPosition)
-                {
-                    position = handle.SelectionHandleType == SelectionHandleType.Start ? position - 1 : position + 1;
-
-                    position = Math.Clamp(position, 0, (_textBox.Text?.Length - 1) ?? 1);
-                }
-
                 using var _ = BeginChange();
 
-                if (handle.SelectionHandleType == SelectionHandleType.Start)
+                // Some platforms do not allow handles to cause selection bounds to reverse, i.e. allow handles to move over each other.
+                if (!s_shouldWrapAroundSelection)
                 {
-                    position = position > _textBox.SelectionEnd ? _textBox.SelectionEnd - 1 : position;
-                    _textBox.SetCurrentValue(TextBox.SelectionStartProperty, position);
+                    if (handle.SelectionHandleType == SelectionHandleType.Start)
+                    {
+                        position = position >= _textBox.SelectionEnd ? _textBox.SelectionEnd - 1 : position;
+                        _textBox.SetCurrentValue(TextBox.SelectionStartProperty, position);
+                    }
+                    else
+                    {
+                        position = position <= _textBox.SelectionStart ? _textBox.SelectionStart + 1 : position;
+                        _textBox.SetCurrentValue(TextBox.SelectionEndProperty, position);
+                    }
                 }
                 else
                 {
-                    position = position < _textBox.SelectionStart ? _textBox.SelectionStart + 1 : position;
-                    _textBox.SetCurrentValue(TextBox.SelectionEndProperty, position);
-                }
+                    // For platforms that do, update the handle types for each and adjust selection.
 
-                otherHandle.InvalidateVisual();
+                    if (_initialHandleType == SelectionHandleType.Start)
+                    {
+                        // If handle was previously the selection end, set new selection end to the previous selection start.
+                        bool hasPositionSwapped = position > _saveSelectionEnd;
+                        var otherPosition = _saveSelectionEnd;
+
+                        if (position == otherPosition)
+                        {
+                            position = hasPositionSwapped ? Math.Min(position + 1, (_textBox.Text?.Length - 1) ?? 0)
+                                : Math.Max(position - 1, 0);
+                        }
+
+                        _textBox.SetCurrentValue(TextBox.SelectionStartProperty, hasPositionSwapped ? otherPosition : position);
+                        _textBox.SetCurrentValue(TextBox.SelectionEndProperty, hasPositionSwapped ? position : otherPosition);
+
+                        otherHandle.SelectionHandleType = hasPositionSwapped ? SelectionHandleType.Start : SelectionHandleType.End;
+                    }
+                    else
+                    {
+                        // If handle was previously the selection start, set new selection start to the previous selection end.
+                        bool hasPositionSwapped = position < _savedSelectionStart;
+                        var otherPosition = _savedSelectionStart;
+
+                        if (position == otherPosition)
+                        {
+                            position = !hasPositionSwapped ? Math.Min(position + 1, (_textBox.Text?.Length - 1) ?? 0)
+                                : Math.Max(position - 1, 0);
+                        }
+
+                        _textBox.SetCurrentValue(TextBox.SelectionStartProperty, hasPositionSwapped ? position : otherPosition);
+                        _textBox.SetCurrentValue(TextBox.SelectionEndProperty, hasPositionSwapped ? otherPosition : position);
+
+                        otherHandle.SelectionHandleType = hasPositionSwapped ? SelectionHandleType.End : SelectionHandleType.Start;
+                    }
+                }
 
                 _presenter.MoveCaretToTextPosition(position);
                 var caretBound = _presenter.GetCursorRectangle();
                 handle.SetTopLeft(ToLayer(handle.SelectionHandleType == SelectionHandleType.Start ? caretBound.BottomLeft : caretBound.BottomLeft));
 
-                EnsureVisible();
+                MoveHandlesToSelection();
             }
 
             int GetTextPosition(TextSelectionHandle handle)
@@ -279,10 +336,7 @@ namespace Avalonia.Controls.Primitives
 
         public void MoveHandlesToSelection()
         {
-            if (_presenter == null
-                || _handle1.IsDragging
-                || _caretHandle.IsDragging
-                || _handle2.IsDragging)
+            if (_presenter == null)
             {
                 return;
             }
@@ -291,9 +345,14 @@ namespace Avalonia.Controls.Primitives
             var selectionEnd = _presenter.SelectionEnd;
             var hasSelection = selectionStart != selectionEnd;
 
-            var points = _presenter.GetCaretPoints();
+            ShowHandles = true;
 
-            _caretHandle.SetTopLeft(ToLayer(points.Item2));
+            if (!_caretHandle.IsDragging)
+            {
+                var points = _presenter.GetCaretPoints();
+
+                _caretHandle.SetTopLeft(ToLayer(points.Item2));
+            }
 
             if (hasSelection)
             {
@@ -307,15 +366,19 @@ namespace Avalonia.Controls.Primitives
                     var first = rects[0];
                     var last = rects[rects.Count - 1];
 
-                    var position = _handle1.SelectionHandleType == SelectionHandleType.Start ? first.BottomLeft : last.BottomRight;
-                    _handle1.SetTopLeft(ToLayer(position));
+                    if (!_handle1.IsDragging)
+                    {
+                        var position = _handle1.SelectionHandleType == SelectionHandleType.Start ? first.BottomLeft : last.BottomRight;
+                        _handle1.SetTopLeft(ToLayer(position));
+                    }
 
-                    position = _handle2.SelectionHandleType == SelectionHandleType.Start ? first.BottomLeft : last.BottomRight;
-                    _handle2.SetTopLeft(ToLayer(position));
+                    if (!_handle2.IsDragging)
+                    {
+                        var position = _handle2.SelectionHandleType == SelectionHandleType.Start ? first.BottomLeft : last.BottomRight;
+                        _handle2.SetTopLeft(ToLayer(position));
+                    }
                 }
             }
-
-            ShowHandles = true;
 
             EnsureVisible();
         }
@@ -475,6 +538,7 @@ namespace Avalonia.Controls.Primitives
             s_isInTouchMode = false;
         }
 
+        // Listener to layout changes for presenter.
         private class PresenterVisualListener
         {
             private List<Visual> _attachedVisuals = new List<Visual>();

@@ -33,12 +33,13 @@ namespace Avalonia.Controls.Primitives
         }
 
         internal bool IsDragging { get; private set; }
+        internal bool NeedsIndicatorUpdate { get; set; }
 
         private Point _startPosition;
         private Vector _delta;
         private Point? _lastPoint;
         private Border? _indicator;
-        private Point? _initialRequestedPosition;
+        private Point? _lastRequestedPosition;
 
         static TextSelectionHandle()
         {
@@ -51,7 +52,17 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnApplyTemplate(e);
 
+            if (_indicator != null)
+            {
+                _indicator.LayoutUpdated -= Indicator_LayoutUpdated;
+            }
+
             _indicator = e.NameScope.Get<Border>("PART_Indicator");
+
+            if (_indicator != null)
+            {
+                _indicator.LayoutUpdated += Indicator_LayoutUpdated;
+            }
 
             UpdateHandleClasses();
         }
@@ -60,10 +71,11 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnSizeChanged(e);
 
-            if(_initialRequestedPosition.HasValue)
+            if (_lastRequestedPosition.HasValue)
             {
-                SetTopLeft(_initialRequestedPosition.Value);
-                _initialRequestedPosition = null;
+                SetTopLeft(_lastRequestedPosition.Value);
+                _lastRequestedPosition = null;
+                NeedsIndicatorUpdate = false;
             }
         }
 
@@ -89,9 +101,9 @@ namespace Avalonia.Controls.Primitives
             base.OnDragDelta(e);
             var newDelta = e.Vector;
 
-            if (Math.Abs((newDelta - _delta).Length) > 0)
+            if (!e.Handled && Math.Abs((newDelta - _delta).Length) > 0)
             {
-                _delta = e.Vector;
+                _delta = newDelta;
                 var point = _startPosition + _delta;
                 Canvas.SetTop(this, point.Y);
                 Canvas.SetLeft(this, point.X);
@@ -100,10 +112,10 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnDragCompleted(VectorEventArgs e)
         {
-            base.OnDragCompleted(e);
             IsDragging = false;
-
             _startPosition = default;
+            base.OnDragCompleted(e);
+
         }
 
         protected override void ArrangeCore(Rect finalRect)
@@ -113,11 +125,21 @@ namespace Avalonia.Controls.Primitives
             base.ArrangeCore(finalRect);
         }
 
+        private void Indicator_LayoutUpdated(object? sender, EventArgs e)
+        {
+            if (NeedsIndicatorUpdate && _lastRequestedPosition is not null)
+            {
+                SetTopLeft(_lastRequestedPosition.Value);
+
+                NeedsIndicatorUpdate = !(_indicator?.IsArrangeValid ?? true);
+            }
+        }
+
         internal void SetTopLeft(Point point)
         {
-            if(_indicator == null)
+            if (_indicator == null || NeedsIndicatorUpdate)
             {
-                _initialRequestedPosition = point;
+                _lastRequestedPosition = point;
             }
             Canvas.SetTop(this, point.Y);
             Canvas.SetLeft(this, point.X - GetIndicatorOffset());
@@ -231,7 +253,6 @@ namespace Avalonia.Controls.Primitives
                 SelectionHandleType.End => "end",
                 _ => throw new NotImplementedException(),
             });
-
             InvalidateVisual();
         }
     }
