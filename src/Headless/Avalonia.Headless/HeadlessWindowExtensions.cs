@@ -20,9 +20,9 @@ public static class HeadlessWindowExtensions
     /// <returns>Bitmap with last rendered frame. Null, if nothing was rendered.</returns>
     public static WriteableBitmap? CaptureRenderedFrame(this TopLevel topLevel)
     {
-        Dispatcher.UIThread.RunJobs();
-        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-        return topLevel.GetLastRenderedFrame();
+        WriteableBitmap? bitmap = null;
+        topLevel.RunJobsOnImpl(w => bitmap = w.GetLastRenderedFrame());
+        return bitmap;
     }
 
     /// <summary>
