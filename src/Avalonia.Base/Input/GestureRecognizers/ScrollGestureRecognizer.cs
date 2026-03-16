@@ -33,6 +33,7 @@ namespace Avalonia.Input.GestureRecognizers
         private TimeSpan _lastTime;
         private TimeSpan _inertiaStartTime;
         private int _currentInertiaGestureId;
+        private Point _delta;
 
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
@@ -140,7 +141,13 @@ namespace Avalonia.Input.GestureRecognizers
                 {
                     var vector = _trackedRootPoint - rootPoint;
 
-                    _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), _pointerPressedPoint - rootPoint);
+                    var oldDelta = _delta;
+                    _delta = _pointerPressedPoint - rootPoint;
+
+                    if (oldDelta == _delta)
+                        return;
+
+                    _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), _delta);
 
                     _lastMoveTimestamp = e.Timestamp;
                     var scrollEventArgs = new ScrollGestureEventArgs(_gestureId, vector);
@@ -169,7 +176,10 @@ namespace Avalonia.Input.GestureRecognizers
                 _stopWatch?.Stop();
                 _stopWatch = null;
                 _inertia = default;
+                _delta = default;
                 _scrolling = false;
+                _velocityTracker?.Dispose();
+                _velocityTracker = null;
                 Target!.RaiseEvent(new ScrollGestureEndedEventArgs(_gestureId));
                 _gestureId = 0;
                 _lastMoveTimestamp = null;
