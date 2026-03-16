@@ -22,6 +22,8 @@ namespace Avalonia.X11
         private const string libXInput = "libXi.so.6";
         private const string libXCursor = "libXcursor.so.1";
 
+        public static readonly IntPtr AnyPropertyType = IntPtr.Zero;
+
         [DllImport(libX11)]
         public static extern IntPtr XOpenDisplay(IntPtr display);
 
