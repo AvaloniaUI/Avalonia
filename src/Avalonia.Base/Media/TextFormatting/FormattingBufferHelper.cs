@@ -52,11 +52,7 @@ namespace Avalonia.Media.TextFormatting
             // dictionary is in fact larger than that: it has entries and buckets, but let's only count our data here
             if (IsBufferTooLarge<KeyValuePair<TKey, TValue>>(approximateCapacity))
             {
-#if NET6_0_OR_GREATER
                 dictionary.TrimExcess();
-#else
-                dictionary = new Dictionary<TKey, TValue>();
-#endif
             }
         }
 
@@ -67,18 +63,7 @@ namespace Avalonia.Media.TextFormatting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint RoundUpToPowerOf2(uint value)
         {
-#if NET6_0_OR_GREATER
             return BitOperations.RoundUpToPowerOf2(value);
-#else
-            // Based on https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-            --value;
-            value |= value >> 1;
-            value |= value >> 2;
-            value |= value >> 4;
-            value |= value >> 8;
-            value |= value >> 16;
-            return value + 1;
-#endif
         }
     }
 }

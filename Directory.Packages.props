@@ -36,6 +36,7 @@
     <PackageVersion Include="Nito.AsyncEx.Context" Version="5.1.2" />
     <PackageVersion Include="NuGet.Protocol" Version="7.0.1" />
     <PackageVersion Include="Nuke.Common" Version="10.1.0" />
+    <PackageVersion Include="Numerge" Version="1.0.0" />
     <PackageVersion Include="NUnit" Version="4.4.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.1.0" />
     <PackageVersion Include="Quamotion.RemoteViewing" Version="1.1.211" />

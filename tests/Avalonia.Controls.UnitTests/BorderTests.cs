@@ -1,9 +1,6 @@
+using System;
 using Avalonia.Layout;
-using Avalonia.Media;
-using Avalonia.Rendering;
 using Avalonia.UnitTests;
-using Avalonia.VisualTree;
-using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -45,14 +42,31 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new Rect(6, 6, 0, 0), content.Bounds);
         }
-        
+
+        [Fact]
+        public void Should_Reject_NaN_Or_Infinite_Thicknesses()
+        {
+            var target = new Border();
+
+            SetValues(target, Layoutable.MarginProperty);
+            SetValues(target, Decorator.PaddingProperty);
+            SetValues(target, Border.BorderThicknessProperty);
+
+            static void SetValues(Border target, AvaloniaProperty<Thickness> property)
+            {
+                Assert.Throws<ArgumentException>(() => target.SetValue(property, new Thickness(0, 0, 0, double.NaN)));
+                Assert.Throws<ArgumentException>(() => target.SetValue(property, new Thickness(0, 0, 0, double.PositiveInfinity)));
+                Assert.Throws<ArgumentException>(() => target.SetValue(property, new Thickness(0, 0, 0, double.NegativeInfinity)));
+            }
+        }
+
         public class UseLayoutRounding : ScopedTestBase
         {
             [Fact]
             public void Measure_Rounds_Padding()
             {
-                var target = new Border 
-                { 
+                var target = new Border
+                {
                     Padding = new Thickness(1),
                     Child = new Canvas
                     {

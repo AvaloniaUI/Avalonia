@@ -58,13 +58,13 @@ public class WindowDrawnDecorations : StyledElement
     /// Defines the <see cref="DefaultFrameThickness"/> property.
     /// </summary>
     public static readonly StyledProperty<Thickness> DefaultFrameThicknessProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultFrameThickness));
+        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultFrameThickness), validate: Border.BorderThicknessProperty.ValidateValue);
 
     /// <summary>
     /// Defines the <see cref="DefaultShadowThickness"/> property.
     /// </summary>
     public static readonly StyledProperty<Thickness> DefaultShadowThicknessProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultShadowThickness));
+        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultShadowThickness), validate: Border.BorderThicknessProperty.ValidateValue);
 
     /// <summary>
     /// Defines the <see cref="TitleBarHeight"/> property.
