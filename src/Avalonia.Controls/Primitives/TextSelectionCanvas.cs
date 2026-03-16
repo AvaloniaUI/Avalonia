@@ -11,7 +11,7 @@ namespace Avalonia.Controls.Primitives
 {
     internal class TextSelectionHandleCanvas : Canvas
     {
-        private static bool s_shouldWrapAroundSelection;
+        private static readonly bool s_shouldWrapAroundSelection;
 
         private const int ContextMenuPadding = 16;
         private static bool s_isInTouchMode;
@@ -164,7 +164,7 @@ namespace Avalonia.Controls.Primitives
             {
                 MoveHandlesToSelection();
 
-                ShowFlyout();
+                CheckStateAndShowFlyout();
             }
         }
 
@@ -191,6 +191,16 @@ namespace Avalonia.Controls.Primitives
             }
 
             MoveHandlesToSelection();
+            CheckStateAndShowFlyout();
+        }
+
+        private void CheckStateAndShowFlyout()
+        {
+            if (_textBox?.SelectionStart != _textBox?.SelectionEnd && !(_handle1.IsDragging || _handle2.IsDragging))
+            {
+                // Show flyout if there's a selection
+                ShowFlyout();
+            }
         }
 
         private void EnsureVisible()
@@ -403,6 +413,7 @@ namespace Avalonia.Controls.Primitives
                 if (_textBox != null)
                 {
                     _textBox.PropertyChanged -= TextBox_PropertyChanged;
+                    _textBox.RemoveHandler(ScrollGestureEvent, TextBoxScrolling);
                 }
                 _textBox = null;
 
@@ -423,8 +434,14 @@ namespace Avalonia.Controls.Primitives
                 if (_textBox != null)
                 {
                     _textBox.PropertyChanged += TextBox_PropertyChanged;
+                    _textBox.AddHandler(ScrollGestureEvent, TextBoxScrolling, handledEventsToo: true);
                 }
             }
+        }
+
+        private void TextBoxScrolling(object? sender, ScrollGestureEventArgs e)
+        {
+            CloseFlyout();
         }
 
         private void PresenterPressed(object? sender, PointerPressedEventArgs e)

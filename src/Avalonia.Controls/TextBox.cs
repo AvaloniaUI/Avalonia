@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
@@ -30,6 +29,7 @@ namespace Avalonia.Controls
     [TemplatePart("PART_TextPresenter", typeof(TextPresenter), IsRequired = true)]
     [TemplatePart("PART_ScrollViewer", typeof(ScrollViewer))]
     [PseudoClasses(":empty")]
+    [PseudoClasses(":touch-mode")]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
         /// <summary>
@@ -1820,6 +1820,8 @@ namespace Avalonia.Controls
                 }
             }
 
+            UpdatePseudoclasses();
+
             e.Pointer.Capture(_presenter);
             e.Handled = true;
         }
@@ -2475,6 +2477,7 @@ namespace Avalonia.Controls
         private void UpdatePseudoclasses()
         {
             PseudoClasses.Set(":empty", string.IsNullOrEmpty(Text));
+            PseudoClasses.Set(":touch-mode", _isInTouchMode);
         }
 
         private bool IsPasswordBox => PasswordChar != default(char);
