@@ -1184,6 +1184,7 @@ namespace Avalonia.Win32
         {
             if (!_shown)
             {
+                ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
                 return;
             }
 
