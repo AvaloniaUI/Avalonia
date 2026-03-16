@@ -15,6 +15,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -2049,6 +2050,226 @@ namespace Avalonia.Controls.UnitTests
             var client = eventArgs.Client;
             Assert.NotNull(client);
             Assert.Equal(string.Empty, client.SurroundingText);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Can_Read_Document_Range()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "Line1\nLine2",
+                CaretIndex = 0
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            Assert.Equal(0, structured.DocumentStart.Offset);
+            Assert.Equal(textBox.Text!.Length, structured.DocumentEnd.Offset);
+            Assert.Equal(textBox.Text, structured.GetText(structured.DocumentRange));
+
+            var backwardPointer = structured.CreatePointer(2, LogicalDirection.Backward);
+            Assert.Equal(2, backwardPointer.Offset);
+            Assert.Equal(LogicalDirection.Backward, backwardPointer.LogicalDirection);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_Composition_Mutates_Text_And_Commits()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "Hello",
+                CaretIndex = 5
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            structured.SetCompositionText("!", 1);
+
+            Assert.Equal("Hello!", textBox.Text);
+            Assert.NotNull(structured.CompositionRange);
+            Assert.Equal(5, structured.CompositionRange!.Start.Offset);
+            Assert.Equal(6, structured.CompositionRange!.End.Offset);
+
+            structured.CommitComposition();
+
+            Assert.Null(structured.CompositionRange);
+            Assert.Equal("Hello!", textBox.Text);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_ReplaceText_Replaces_Selection()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "abcde",
+                SelectionStart = 1,
+                SelectionEnd = 4
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            structured.ReplaceText(structured.Selection, "ZZ");
+
+            Assert.Equal("aZZe", textBox.Text);
+            Assert.Equal(3, textBox.SelectionStart);
+            Assert.Equal(3, textBox.SelectionEnd);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_ReplaceText_Raises_TextChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "abc",
+                CaretIndex = 3
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            var eventCount = 0;
+            structured.TextChanged += (_, _) => eventCount++;
+
+            var end = structured.DocumentEnd;
+            structured.ReplaceText(structured.CreateRange(end, end), "!");
+
+            Assert.Equal("abc!", textBox.Text);
+            Assert.Equal(1, eventCount);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_SetCompositionText_Raises_CompositionChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "text",
+                CaretIndex = 4
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            var eventCount = 0;
+            structured.CompositionChanged += (_, _) => eventCount++;
+
+            structured.SetCompositionText("!", 1);
+            structured.CommitComposition();
+
+            Assert.Equal("text!", textBox.Text);
+            Assert.Equal(2, eventCount);
+            Assert.Null(structured.CompositionRange);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_ReplaceText_Raises_CaretPositionChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "abc",
+                CaretIndex = 3
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            var eventCount = 0;
+            structured.CaretPositionChanged += (_, _) => eventCount++;
+
+            var end = structured.DocumentEnd;
+            structured.ReplaceText(structured.CreateRange(end, end), "!");
+
+            Assert.Equal("abc!", textBox.Text);
+            Assert.True(eventCount > 0);
+        }
+
+        [Fact]
+        public void InputMethodClient_StructuredTextInput_SetSelection_Raises_CaretPositionChanged()
+        {
+            using var _ = UnitTestApplication.Start(Services);
+
+            var textBox = new TextBox
+            {
+                Template = CreateTemplate(),
+                Text = "abcdef",
+                CaretIndex = 6
+            };
+            textBox.ApplyTemplate();
+
+            var eventArgs = new TextInputMethodClientRequestedEventArgs
+            {
+                RoutedEvent = InputElement.TextInputMethodClientRequestedEvent
+            };
+            textBox.RaiseEvent(eventArgs);
+
+            var structured = Assert.IsAssignableFrom<IStructuredTextInput>(eventArgs.Client);
+
+            var eventCount = 0;
+            structured.CaretPositionChanged += (_, _) => eventCount++;
+
+            var start = structured.CreatePointer(1, LogicalDirection.Forward);
+            var end = structured.CreatePointer(4, LogicalDirection.Backward);
+            structured.Selection = structured.CreateRange(start, end);
+
+            Assert.Equal(1, textBox.SelectionStart);
+            Assert.Equal(4, textBox.SelectionEnd);
+            Assert.True(eventCount > 0);
         }
 
         [Fact]
