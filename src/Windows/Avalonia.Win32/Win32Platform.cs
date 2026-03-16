@@ -98,7 +98,7 @@ namespace Avalonia.Win32
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
                 .Bind<IPlatformSettings>().ToSingleton<Win32PlatformSettings>()
                 .Bind<IScreenImpl>().ToSingleton<ScreenImpl>()
-                .Bind<IRenderTimer>().ToConstant(renderTimer)
+                .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(renderTimer))
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control)
                 {

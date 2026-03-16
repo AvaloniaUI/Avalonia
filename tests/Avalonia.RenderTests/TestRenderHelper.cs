@@ -76,7 +76,7 @@ static class TestRenderHelper
         {
             var timer = new ManualRenderTimer();
 
-            var compositor = new Compositor(new RenderLoop(timer), null, true,
+            var compositor = new Compositor(RenderLoop.FromTimer(timer), null, true,
                 new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
             using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, factory.DefaultPixelFormat,
                        factory.DefaultAlphaFormat))

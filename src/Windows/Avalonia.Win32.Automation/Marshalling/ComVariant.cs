@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 
 namespace Avalonia.Win32.Automation.Marshalling;
 
-#if NET7_0_OR_GREATER
 // Oversimplified ComVariant implementation based on https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Runtime/InteropServices/Marshalling/ComVariant.cs
 // Available 
 [StructLayout(LayoutKind.Explicit)]
@@ -306,4 +305,3 @@ internal struct ComVariant : IDisposable
         private set => _typeUnion._vt = (ushort)value;
     }
 }
-#endif
