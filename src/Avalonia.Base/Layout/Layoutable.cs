@@ -161,10 +161,7 @@ namespace Avalonia.Layout
         private static bool ValidateMinimumDimension(double value) => !double.IsPositiveInfinity(value) && ValidateMaximumDimension(value);
         private static bool ValidateMaximumDimension(double value) => value >= 0;
 
-        private static bool ValidateThicknessDimension(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
-        private static bool ValidateThickness(Thickness value) => 
-            ValidateThicknessDimension(value.Left) && ValidateThicknessDimension(value.Top) && 
-            ValidateThicknessDimension(value.Right) && ValidateThicknessDimension(value.Bottom);
+        private static bool ValidateThickness(Thickness value) => double.IsFinite(value.Left) && double.IsFinite(value.Top) && double.IsFinite(value.Right) && double.IsFinite(value.Bottom);
 
         /// <summary>
         /// Occurs when the element's effective viewport changes.
