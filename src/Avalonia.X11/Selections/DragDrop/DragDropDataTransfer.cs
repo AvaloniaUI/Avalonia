@@ -15,7 +15,8 @@ internal sealed class DragDropDataTransfer(
     IntPtr display,
     IntPtr sourceWindow,
     IntPtr targetWindow,
-    IInputRoot inputRoot)
+    IInputRoot inputRoot,
+    byte xdndVersion)
     : PlatformDataTransfer
 {
     public IntPtr SourceWindow { get; } = sourceWindow;
@@ -32,10 +33,8 @@ internal sealed class DragDropDataTransfer(
     protected override PlatformDataTransferItem[] ProvideItems()
         => reader.CreateItems();
 
-    public override void Dispose()
+    private void SendXdndFinished()
     {
-        reader.Dispose();
-
         var evt = new XEvent
         {
             ClientMessageEvent = new XClientMessageEvent
@@ -55,5 +54,13 @@ internal sealed class DragDropDataTransfer(
 
         XSendEvent(display, SourceWindow, false, (IntPtr)EventMask.NoEventMask, ref evt);
         XFlush(display);
+    }
+
+    public override void Dispose()
+    {
+        reader.Dispose();
+
+        if (xdndVersion >= 5)
+            SendXdndFinished();
     }
 }

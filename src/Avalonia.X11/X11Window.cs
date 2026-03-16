@@ -71,7 +71,7 @@ namespace Avalonia.X11
         private bool _usePositioningFlags = false;
         private X11WindowMode _mode;
         private IWindowIconImpl? _iconImpl;
-        private readonly XdndHandler? _xdndHandler;
+        private readonly X11DropTarget? _dropTarget;
 
         private enum XSyncState
         {
@@ -280,7 +280,7 @@ namespace Avalonia.X11
             });
 
             if (AvaloniaLocator.Current.GetService<IDragDropDevice>() is { } dragDropDevice)
-                _xdndHandler = new XdndHandler(dragDropDevice, this, _x11.Display, _x11.Atoms);
+                _dropTarget = new X11DropTarget(dragDropDevice, this, _x11.Display, _x11.Atoms);
 
             platform.X11Screens.Changed += OnScreensChanged;
         }
@@ -700,13 +700,13 @@ namespace Avalonia.X11
                     }
                 }
                 else if (messageType == _x11.Atoms.XdndEnter)
-                    _xdndHandler?.HandleXdndEnter(ev.ClientMessageEvent);
+                    _dropTarget?.HandleXdndEnter(ev.ClientMessageEvent);
                 else if (messageType == _x11.Atoms.XdndPosition)
-                    _xdndHandler?.HandleXdndPosition(ev.ClientMessageEvent);
+                    _dropTarget?.HandleXdndPosition(ev.ClientMessageEvent);
                 else if (messageType == _x11.Atoms.XdndLeave)
-                    _xdndHandler?.HandleXdndLeave(ev.ClientMessageEvent);
+                    _dropTarget?.HandleXdndLeave(ev.ClientMessageEvent);
                 else if (messageType == _x11.Atoms.XdndDrop)
-                    _xdndHandler?.HandleXdndDrop(ev.ClientMessageEvent);
+                    _dropTarget?.HandleXdndDrop(ev.ClientMessageEvent);
             }
             else if (ev.type == XEventName.KeyPress || ev.type == XEventName.KeyRelease)
             {

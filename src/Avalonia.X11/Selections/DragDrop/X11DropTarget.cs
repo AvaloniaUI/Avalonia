@@ -11,8 +11,10 @@ namespace Avalonia.X11.Selections.DragDrop;
 /// Manages XDND (drag and drop) for a given X11 window.
 /// Specs: https://www.freedesktop.org/wiki/Specifications/XDND/
 /// </summary>
-internal sealed class XdndHandler
+internal sealed class X11DropTarget
 {
+    // Spec: every application that supports XDND version N must also support all previous versions (3 to N-1).
+    private const byte MinXdndVersion = 3;
     private const byte XdndVersion = 5;
 
     private readonly IDragDropDevice _dragDropDevice;
@@ -21,7 +23,7 @@ internal sealed class XdndHandler
     private readonly X11Atoms _atoms;
     private DragDropDataTransfer? _currentDrag;
 
-    public XdndHandler(IDragDropDevice dragDropDevice, IXdndWindow window, IntPtr _display, X11Atoms atoms)
+    public X11DropTarget(IDragDropDevice dragDropDevice, IXdndWindow window, IntPtr _display, X11Atoms atoms)
     {
         _dragDropDevice = dragDropDevice;
         _window = window;
@@ -40,7 +42,7 @@ internal sealed class XdndHandler
         // Spec: If the version number in the XdndEnter message is higher than what the target can support,
         // the target should ignore the source.
         var version = (byte)((message.ptr2 >> 24) & 0xFF);
-        if (version > XdndVersion)
+        if (version is < MinXdndVersion or > XdndVersion)
             return;
 
         // If we ever receive a new XdndEnter message while a drag is in progress, it means something went wrong.
@@ -82,7 +84,8 @@ internal sealed class XdndHandler
             _display,
             sourceWindow,
             _window.Handle,
-            inputRoot);
+            inputRoot,
+            version);
     }
 
     public void HandleXdndPosition(in XClientMessageEvent message)
