@@ -127,6 +127,7 @@ class ClipboardReadSession : IDisposable
             Append(part);
         }
 
+        ms.Position = 0L;
         return new(null, ms, actualTypeAtom);
     }
     
