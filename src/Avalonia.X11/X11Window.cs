@@ -70,6 +70,7 @@ namespace Avalonia.X11
         private bool _useCompositorDrivenRenderWindowResize = false;
         private bool _usePositioningFlags = false;
         private X11WindowMode _mode;
+        private IWindowIconImpl? _iconImpl;
 
         private enum XSyncState
         {
@@ -1453,6 +1454,11 @@ namespace Avalonia.X11
 
         public void SetIcon(IWindowIconImpl? icon)
         {
+            if (ReferenceEquals(_iconImpl, icon))
+                return;
+
+            _iconImpl = icon;
+
             if (icon != null)
             {
                 var data = ((X11IconData)icon).Data;

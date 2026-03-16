@@ -797,6 +797,9 @@ namespace Avalonia.Win32
 
         public void SetIcon(IWindowIconImpl? icon)
         {
+            if (ReferenceEquals(_iconImpl, icon))
+                return;
+
             _iconImpl = (IconImpl?)icon;
             ClearIconCache();
             RefreshIcon();
