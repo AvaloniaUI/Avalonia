@@ -1,4 +1,3 @@
-using System;
 using Avalonia.Input;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -7,7 +6,6 @@ namespace Avalonia.Controls;
 
 internal partial class PresentationSource
 {
-    private readonly Func<Size> _clientSizeProvider;
     public CompositingRenderer Renderer { get; }
     IRenderer IPresentationSource.Renderer => Renderer;
     Visual IPresentationSource.RootVisual => RootVisual;
@@ -16,7 +14,7 @@ internal partial class PresentationSource
     public IHitTester? HitTesterOverride { get; set; }
     
     public double RenderScaling => PlatformImpl?.RenderScaling ?? 1;
-    public Size ClientSize => _clientSizeProvider();
+    public Size ClientSize => PlatformImpl?.ClientSize ?? default;
     
     public void SceneInvalidated(object? sender, SceneInvalidatedEventArgs sceneInvalidatedEventArgs)
     {

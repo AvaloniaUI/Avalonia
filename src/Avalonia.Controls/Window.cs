@@ -96,6 +96,7 @@ namespace Avalonia.Controls
         private Thickness _offScreenMargin;
         private bool _canHandleResized = false;
         private Size _arrangeBounds;
+        private bool _isForcedDecorationMode;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -245,7 +246,10 @@ namespace Avalonia.Controls
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
-            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
+            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x =>
+            {
+                ResizePlatformImpl(x, WindowResizeReason.Application);
+            });
 
             CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
             CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon((icon ?? s_defaultIcon.Value)?.PlatformImpl));
@@ -641,6 +645,10 @@ namespace Avalonia.Controls
         private void UpdateDrawnDecorations()
         {
             var parts = ComputeDecorationParts();
+            
+            // Detect forced mode: platform needs managed decorations but app hasn't opted in
+            _isForcedDecorationMode = parts != null && !IsExtendedIntoWindowDecorations;
+
             TopLevelHost.UpdateDrawnDecorations(parts, WindowState);
 
             if (parts != null)
@@ -715,7 +723,9 @@ namespace Avalonia.Controls
             var decorations = TopLevelHost.Decorations;
             if (decorations == null)
             {
+                // Only use platform margins if drawn decorations are not active
                 WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
+                TopLevelHost.DecorationInset = default;
                 return;
             }
 
@@ -726,11 +736,25 @@ namespace Avalonia.Controls
                 ? decorations.FrameThickness : default;
             var shadow = parts.HasFlag(Chrome.DrawnWindowDecorationParts.Shadow)
                 ? decorations.ShadowThickness : default;
-            WindowDecorationMargin = new Thickness(
+            var margin = new Thickness(
                 frame.Left + shadow.Left,
                 titleBarHeight + frame.Top + shadow.Top,
                 frame.Right + shadow.Right,
                 frame.Bottom + shadow.Bottom);
+
+            if (_isForcedDecorationMode)
+            {
+                // In forced mode, app is unaware of decorations.
+                // TopLevelHost insets the Window child; WindowDecorationMargin stays zero.
+                WindowDecorationMargin = default;
+                TopLevelHost.DecorationInset = margin;
+            }
+            else
+            {
+                // In extended mode, app handles the margin itself.
+                WindowDecorationMargin = margin;
+                TopLevelHost.DecorationInset = default;
+            }
         }
 
         private void OnTitleBarHeightHintChanged()
@@ -889,6 +913,15 @@ namespace Avalonia.Controls
                 // Enable drawn decorations before layout so margins are computed
                 UpdateDrawnDecorations();
                 
+                // In forced mode, adjust ClientSize to reflect usable content area
+                if (_isForcedDecorationMode)
+                {
+                    var inset = TopLevelHost.DecorationInset;
+                    ClientSize = new Size(
+                        Math.Max(0, ClientSize.Width - inset.Left - inset.Right),
+                        Math.Max(0, ClientSize.Height - inset.Top - inset.Bottom));
+                }
+                
                 _shown = true;
                 IsVisible = true;
 
@@ -932,10 +965,18 @@ namespace Avalonia.Controls
 
                 DesktopScalingOverride = null;
 
-                if (clientSizeChanged || ClientSize != PlatformImpl?.ClientSize)
+                // In forced mode, compare against adjusted platform size
+                var platformClientSize = PlatformImpl?.ClientSize ?? default;
+                var comparableClientSize = _isForcedDecorationMode
+                    ? new Size(
+                        Math.Max(0, platformClientSize.Width - TopLevelHost.DecorationInset.Left - TopLevelHost.DecorationInset.Right),
+                        Math.Max(0, platformClientSize.Height - TopLevelHost.DecorationInset.Top - TopLevelHost.DecorationInset.Bottom))
+                    : platformClientSize;
+
+                if (clientSizeChanged || ClientSize != comparableClientSize)
                 {
                     // Previously it was called before ExecuteInitialLayoutPass
-                    PlatformImpl?.Resize(ClientSize, WindowResizeReason.Layout);
+                    ResizePlatformImpl(ClientSize, WindowResizeReason.Layout);
 
                     // we do not want PlatformImpl?.Resize to trigger HandleResized yet because it will set Width and Height.
                     // So perform some important actions from HandleResized
@@ -989,6 +1030,20 @@ namespace Avalonia.Controls
 
                 return result;
             }
+        }
+
+        private void ResizePlatformImpl(Size size, WindowResizeReason reason)
+        {
+            // In forced mode, add decoration inset so platform gets full frame size
+            if (_isForcedDecorationMode)
+            {
+                var inset = TopLevelHost.DecorationInset;
+                size = new Size(
+                    size.Width + inset.Left + inset.Right,
+                    size.Height + inset.Top + inset.Bottom);
+            }
+            if (PlatformImpl?.ClientSize != size)
+                PlatformImpl?.Resize(size, reason);
         }
 
         /// <summary>
@@ -1226,6 +1281,14 @@ namespace Avalonia.Controls
         {
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
+            if (_isForcedDecorationMode)
+            {
+                clientSize = PlatformImpl?.ClientSize ?? clientSize;
+                var inset = TopLevelHost.DecorationInset;
+                clientSize = new Size(
+                    Math.Max(0, clientSize.Width - inset.Left - inset.Right),
+                    Math.Max(0, clientSize.Height - inset.Top - inset.Bottom));
+            }
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
             var useAutoWidth = sizeToContent.HasAllFlags(SizeToContent.Width);
             var useAutoHeight = sizeToContent.HasAllFlags(SizeToContent.Height);
@@ -1282,11 +1345,19 @@ namespace Avalonia.Controls
             return result;
         }
 
+        // HACK: Needs to fix maximize->normal transition, otherwise the layout pass will break window size
+        internal bool ResizeWindowInTopLevelHost => _canHandleResized && _isForcedDecorationMode;
+        
         private protected sealed override Size ArrangeSetBounds(Size size)
         {
             _arrangeBounds = size;
-            if (_canHandleResized)
-                PlatformImpl?.Resize(size, WindowResizeReason.Layout);
+            // In forced decoration mode, TopLevelHost.ArrangeOverride handles the Resize call
+            // because it knows the full frame size and can detect genuine content size changes
+            // vs stale layout during window state transitions.
+            if (_canHandleResized && !_isForcedDecorationMode)
+            {
+                ResizePlatformImpl(size, WindowResizeReason.Layout);
+            }
             return ClientSize;
         }
 
@@ -1304,13 +1375,20 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         internal override void HandleResized(Size clientSize, WindowResizeReason reason)
         {
+            // In forced decoration mode, the platform's clientSize includes decoration area.
+            // Subtract the decoration inset so Window.ClientSize reflects the usable content area.
+            if (_isForcedDecorationMode)
+            {
+                var inset = TopLevelHost.DecorationInset;
+                clientSize = new Size(
+                    Math.Max(0, clientSize.Width - inset.Left - inset.Right),
+                    Math.Max(0, clientSize.Height - inset.Top - inset.Bottom));
+            }
+
             if (_canHandleResized && (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height)))
             {
                 var sizeToContent = SizeToContent;
 
-                // If auto-sizing is enabled, and the resize came from a user resize (or the reason was
-                // unspecified) then turn off auto-resizing for any window dimension that is not equal
-                // to the requested size.
                 if (sizeToContent != SizeToContent.Manual &&
                     CanResize &&
                     reason == WindowResizeReason.Unspecified ||

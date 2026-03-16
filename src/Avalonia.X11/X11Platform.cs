@@ -491,6 +491,27 @@ namespace Avalonia
         internal bool? EnableDrawnDecorationsInternal { get; set; }
 
         /// <summary>
+        /// Forces client-side drawn window decorations on X11 for all windows,
+        /// even when the app has not opted in via ExtendClientAreaToDecorationsHint.
+        /// In this mode, Window.ClientSize reflects the usable content area
+        /// (platform client size minus decoration margins) and the app is unaware
+        /// of the decorations.
+        /// Implies EnableDrawnDecorations = true.
+        /// </summary>
+        [Experimental("AVALONIA_X11_FORCE_CSD"
+            #if NET10_0_OR_GREATER
+            , Message = "Experimental, used mostly for testing"
+            #endif
+            )]
+        public bool ForceDrawnDecorations
+        {
+            get => ForceDrawnDecorationsInternal;
+            set => ForceDrawnDecorationsInternal = value;
+        }
+
+        internal bool ForceDrawnDecorationsInternal { get; set; }
+
+        /// <summary>
         /// If Avalonia is in control of a run loop, we propagate exceptions by stopping the run loop frame
         /// and rethrowing an exception. However, if there is no Avalonia-controlled run loop frame,
         /// there is no way to report such exceptions, since allowing those to escape native->managed call boundary
