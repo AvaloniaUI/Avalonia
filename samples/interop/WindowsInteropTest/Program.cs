@@ -1,6 +1,7 @@
 ﻿using System;
 using ControlCatalog;
 using Avalonia;
+using Avalonia.Win32.Interoperability;
 
 namespace WindowsInteropTest
 {
@@ -14,6 +15,7 @@ namespace WindowsInteropTest
         {
             System.Windows.Forms.Application.EnableVisualStyles();
             System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
+            System.Windows.Forms.Application.AddMessageFilter(new WinFormsAvaloniaMessageFilter());
             AppBuilder.Configure<App>()
                 .UseWin32()
                 .UseSkia()
