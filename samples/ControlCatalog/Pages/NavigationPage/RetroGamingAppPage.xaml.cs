@@ -51,11 +51,30 @@ public partial class RetroGamingAppPage : UserControl
             _infoPanel.IsVisible = Bounds.Width >= 650;
     }
 
+    void ApplyHomeNavigationBarAppearance()
+    {
+        if (_nav == null)
+            return;
+
+        _nav.Resources["NavigationBarBackground"] = new SolidColorBrush(SurfaceColor);
+        _nav.Resources["NavigationBarForeground"] = new SolidColorBrush(CyanColor);
+    }
+
+    void ApplyDetailNavigationBarAppearance()
+    {
+        if (_nav == null)
+            return;
+
+        _nav.Resources["NavigationBarBackground"] = Brushes.Transparent;
+        _nav.Resources["NavigationBarForeground"] = new SolidColorBrush(CyanColor);
+    }
+
     ContentPage BuildHomePage()
     {
         var page = new ContentPage { Background = new SolidColorBrush(BgColor) };
         page.Header = BuildPixelArcadeLogo();
         NavigationPage.SetTopCommandBar(page, BuildNavBarRight());
+        ApplyHomeNavigationBarAppearance();
 
         var panel = new Panel();
         panel.Children.Add(BuildHomeTabbedPage());
@@ -260,7 +279,8 @@ public partial class RetroGamingAppPage : UserControl
 
     async void PushDetailPage(string gameTitle)
     {
-        if (_nav == null) return;
+        if (_nav == null)
+            return;
 
         var detailView = new RetroGamingDetailView(gameTitle);
 
@@ -271,8 +291,13 @@ public partial class RetroGamingAppPage : UserControl
         };
 
         NavigationPage.SetBarLayoutBehavior(page, BarLayoutBehavior.Overlay);
-        page.NavigatedTo   += (_, _) => { if (_nav != null) _nav.Resources["NavigationBarBackground"] = Brushes.Transparent; };
-        page.NavigatedFrom += (_, _) => { if (_nav != null) _nav.Resources["NavigationBarBackground"] = new SolidColorBrush(SurfaceColor); };
+        page.Navigating += args =>
+        {
+            if (args.NavigationType == NavigationType.Pop)
+                ApplyHomeNavigationBarAppearance();
+
+            return Task.CompletedTask;
+        };
 
         var cmdBar = new StackPanel
         {
@@ -301,6 +326,10 @@ public partial class RetroGamingAppPage : UserControl
         cmdBar.Children.Add(shareBtn);
         NavigationPage.SetTopCommandBar(page, cmdBar);
 
+        ApplyDetailNavigationBarAppearance();
         await _nav.PushAsync(page);
+
+        if (!ReferenceEquals(_nav.CurrentPage, page))
+            ApplyHomeNavigationBarAppearance();
     }
 }

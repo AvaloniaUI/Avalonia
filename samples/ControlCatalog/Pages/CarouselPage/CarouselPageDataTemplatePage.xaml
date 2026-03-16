@@ -8,12 +8,13 @@
                    Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
 
         <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
-                   Text="Bind a CarouselPage to an ObservableCollection and add or remove pages at runtime." />
+                   Text="Bind a CarouselPage to a view-model collection, render each item with PageTemplate, and switch templates at runtime." />
 
         <Separator />
 
         <Button Content="Add Page" Click="OnAddPage" HorizontalAlignment="Stretch" />
         <Button Content="Remove Last" Click="OnRemovePage" HorizontalAlignment="Stretch" />
+        <Button Content="Switch Template" Click="OnSwitchTemplate" HorizontalAlignment="Stretch" />
 
         <Separator />
 
@@ -22,12 +23,6 @@
           <Button Content="Previous" Click="OnPrevious" HorizontalAlignment="Stretch" />
           <Button Content="Next" Click="OnNext" HorizontalAlignment="Stretch" />
         </StackPanel>
-
-        <Separator />
-
-        <TextBlock Text="Template" FontWeight="SemiBold" FontSize="13" />
-        <Button x:Name="SwitchTemplateButton" Content="Switch Template" Click="OnSwitchTemplate"
-                HorizontalAlignment="Stretch" />
 
         <Separator />
 

@@ -7,6 +7,10 @@ namespace Avalonia.Controls
     /// </summary>
     public class DrawerClosingEventArgs : RoutedEventArgs
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DrawerClosingEventArgs"/> class.
+        /// </summary>
+        /// <param name="routedEvent">The routed event associated with these event data.</param>
         public DrawerClosingEventArgs(RoutedEvent routedEvent) : base(routedEvent) { }
 
         /// <summary>

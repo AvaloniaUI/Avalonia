@@ -5,6 +5,8 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageGesturePage : UserControl
     {
+        private bool _initialized;
+
         public NavigationPageGesturePage()
         {
             InitializeComponent();
@@ -13,6 +15,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
             await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Page 1", "← Drag from the left edge to go back", 0), null);
             await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Page 2", "← Drag from the left edge to go back", 1), null);
             await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Page 3", "← Drag from the left edge to go back", 2), null);

@@ -59,6 +59,26 @@ public partial class LAvenirAppPage : UserControl
             _infoPanel.IsVisible = Bounds.Width >= 650;
     }
 
+    void ApplyRootNavigationBarAppearance()
+    {
+        if (_navPage == null)
+            return;
+
+        _navPage.Background = new SolidColorBrush(BgLight);
+        _navPage.Resources["NavigationBarBackground"] = new SolidColorBrush(BgLight);
+        _navPage.Resources["NavigationBarForeground"] = new SolidColorBrush(TextDark);
+    }
+
+    void ApplyDetailNavigationBarAppearance()
+    {
+        if (_navPage == null)
+            return;
+
+        _navPage.Background = new SolidColorBrush(BgDark);
+        _navPage.Resources["NavigationBarBackground"] = new SolidColorBrush(BgDark);
+        _navPage.Resources["NavigationBarForeground"] = Brushes.White;
+    }
+
     TabbedPage BuildMenuTabbedPage()
     {
         var tp = new TabbedPage
@@ -92,6 +112,7 @@ public partial class LAvenirAppPage : UserControl
             VerticalAlignment = VerticalAlignment.Center,
             TextAlignment     = TextAlignment.Center,
         };
+        ApplyRootNavigationBarAppearance();
 
         NavigationPage.SetTopCommandBar(tp, new Button
         {
@@ -144,7 +165,8 @@ public partial class LAvenirAppPage : UserControl
 
     async void PushDishDetail(string name, string price, string description, string imageFile)
     {
-        if (_navPage == null) return;
+        if (_navPage == null)
+            return;
 
         var detail = new ContentPage
         {
@@ -153,22 +175,19 @@ public partial class LAvenirAppPage : UserControl
             Header     = name,
         };
         NavigationPage.SetBottomCommandBar(detail, BuildFloatingBar(price));
-
-        _navPage.Background = new SolidColorBrush(BgDark);
-        _navPage.Resources["NavigationBarBackground"] = new SolidColorBrush(BgDark);
-        _navPage.Resources["NavigationBarForeground"] = Brushes.White;
-
-        detail.NavigatedFrom += (_, _) =>
+        detail.Navigating += args =>
         {
-            if (_navPage != null)
-            {
-                _navPage.Background = new SolidColorBrush(BgLight);
-                _navPage.Resources["NavigationBarBackground"] = new SolidColorBrush(BgLight);
-                _navPage.Resources["NavigationBarForeground"] = new SolidColorBrush(TextDark);
-            }
+            if (args.NavigationType == NavigationType.Pop)
+                ApplyRootNavigationBarAppearance();
+
+            return Task.CompletedTask;
         };
 
+        ApplyDetailNavigationBarAppearance();
         await _navPage.PushAsync(detail);
+
+        if (!ReferenceEquals(_navPage.CurrentPage, detail))
+            ApplyRootNavigationBarAppearance();
     }
 
     Border BuildFloatingBar(string price)

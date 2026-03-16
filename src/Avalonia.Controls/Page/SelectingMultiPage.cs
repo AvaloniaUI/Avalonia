@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Interactivity;
 
@@ -64,6 +63,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Commits a selection change and fires lifecycle events on the outgoing and incoming pages.
         /// </summary>
+        /// <remarks>
+        /// Raises <see cref="SelectionChanged"/>, then <see cref="Page.NavigatedFrom"/> on the outgoing
+        /// page and <see cref="Page.NavigatedTo"/> on the incoming page. If the incoming and outgoing
+        /// pages are the same object no events are fired. Subclasses should call this method rather
+        /// than modifying selection state directly.
+        /// </remarks>
         protected void CommitSelection(int newIndex, Page? newPage, NavigationType navigationType = NavigationType.Replace)
         {
             var previousPage = _selectedPage;
@@ -105,11 +110,8 @@ namespace Avalonia.Controls
         /// </summary>
         protected Page? ResolvePageAtIndex(int index)
         {
-            if (Pages is IList<Page> genericList)
-                return (uint)index < (uint)genericList.Count ? genericList[index] : null;
-
-            if (Pages is IList list)
-                return (uint)index < (uint)list.Count ? list[index] as Page : null;
+            if (Pages is IList<Page> list)
+                return (uint)index < (uint)list.Count ? list[index] : null;
 
             if (Pages != null)
             {

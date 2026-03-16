@@ -1,15 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -58,7 +62,18 @@ namespace Avalonia.Controls
         public CarouselPage()
         {
             SetCurrentValue(PagesProperty, new AvaloniaList<Page>());
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
             AddHandler(PointerWheelChangedEvent, OnPointerWheelTunnel, RoutingStrategies.Tunnel);
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            RemoveHandler(PointerWheelChangedEvent, OnPointerWheelTunnel);
         }
 
         /// <summary>
@@ -102,23 +117,27 @@ namespace Avalonia.Controls
             base.OnApplyTemplate(e);
 
             if (_carousel != null)
+            {
                 _carousel.SelectionChanged -= OnCarouselSelectionChanged;
+                _carousel.ContainerPrepared -= OnCarouselContainerPrepared;
+            }
 
             _carousel = e.NameScope.Find<Carousel>("PART_Carousel");
 
             if (_carousel != null)
             {
+                _carousel.SelectionChanged += OnCarouselSelectionChanged;
+                _carousel.ContainerPrepared += OnCarouselContainerPrepared;
                 _carousel.PageTransition = PageTransition;
                 _carousel.ItemsPanel = ItemsPanel;
                 _carousel.ItemTemplate = PageTemplate;
                 _carousel.IsSwipeEnabled = IsGestureEnabled;
+                _carousel.ItemsSource = (IEnumerable?)ItemsSource ?? Pages;
 
                 if (SelectedIndex >= 0)
                 {
                     _carousel.SelectedIndex = SelectedIndex;
                 }
-
-                _carousel.SelectionChanged += OnCarouselSelectionChanged;
 
                 UpdateActivePage();
             }
@@ -133,9 +152,20 @@ namespace Avalonia.Controls
             else if (change.Property == ItemsPanelProperty && _carousel != null)
                 _carousel.ItemsPanel = change.GetNewValue<ITemplate<Panel?>>();
             else if (change.Property == PageTemplateProperty && _carousel != null)
+            {
                 _carousel.ItemTemplate = change.GetNewValue<IDataTemplate?>();
+                if (ItemsSource != null)
+                    UpdateActivePage();
+            }
             else if (change.Property == IsGestureEnabledProperty && _carousel != null)
                 _carousel.IsSwipeEnabled = change.GetNewValue<bool>();
+            else if (change.Property == ItemsSourceProperty && _carousel != null)
+            {
+                _carousel.ItemsSource = change.GetNewValue<IEnumerable?>() ?? Pages;
+                UpdateActivePage();
+            }
+            else if (change.Property == PagesProperty && ItemsSource == null && _carousel != null)
+                _carousel.ItemsSource = change.GetNewValue<IEnumerable<Page>?>();
         }
 
         protected override void UpdateActivePage(NavigationType navigationType)
@@ -145,23 +175,27 @@ namespace Avalonia.Controls
                 var index = _carousel.SelectedIndex;
                 if (index >= 0)
                 {
-                    var page = _carousel.SelectedItem as Page ?? ResolvePageAtIndex(index);
-                    var pageCount = GetPageCount();
-                    CommitSelection(index, page, navigationType);
-                    UpdateAccessibilityName(index, pageCount, page);
+                    UpdateSelection(index, navigationType);
                 }
-                else if (Pages is IList { Count: > 0 })
+                else if (GetPageCount() > 0)
                 {
                     ApplySelectedIndex(0);
                 }
             }
-            else if (Pages is IList { Count: > 0 })
+            else if (GetPageCount() > 0)
             {
                 var index = CoercePreTemplateSelectedIndex(SelectedIndex);
-                var page = ResolvePageAtIndex(index);
+                if (ItemsSource != null)
+                {
+                    StoreSelectedIndex(index);
+                }
+                else
+                {
+                    var page = ResolvePageAtIndex(index);
 
-                if (index != SelectedIndex || !ReferenceEquals(SelectedPage, page))
-                    CommitSelection(index, page, navigationType);
+                    if (index != SelectedIndex || !ReferenceEquals(SelectedPage, page))
+                        CommitSelection(index, page, navigationType);
+                }
             }
         }
 
@@ -169,7 +203,6 @@ namespace Avalonia.Controls
         {
             if (_carousel != null)
             {
-                // Delegate to the internal Carousel; lifecycle events fire via OnCarouselSelectionChanged.
                 _carousel.SelectedIndex = index;
             }
             else
@@ -178,11 +211,16 @@ namespace Avalonia.Controls
 
                 if (pageCount > 0)
                 {
-                    // No template applied yet, normalize to a real page so the public state
-                    // matches the inner Carousel's always selected behavior.
                     var coercedIndex = CoercePreTemplateSelectedIndex(index);
-                    var newPage = ResolvePageAtIndex(coercedIndex);
-                    CommitSelection(coercedIndex, newPage);
+                    if (ItemsSource != null)
+                    {
+                        StoreSelectedIndex(coercedIndex);
+                    }
+                    else
+                    {
+                        var newPage = ResolvePageAtIndex(coercedIndex);
+                        CommitSelection(coercedIndex, newPage);
+                    }
                 }
                 else
                 {
@@ -243,12 +281,25 @@ namespace Avalonia.Controls
                 return;
 
             var newIndex = _carousel.SelectedIndex;
-            if (newIndex == SelectedIndex && ReferenceEquals(_carousel.SelectedItem as Page, SelectedPage))
+            var newPage = ResolveDisplayedPageAtIndex(newIndex);
+            if (newIndex == SelectedIndex && ReferenceEquals(newPage, SelectedPage))
                 return;
 
-            var newPage = _carousel.SelectedItem as Page ?? ResolvePageAtIndex(newIndex);
-            CommitSelection(newIndex, newPage, NavigationType.Replace);
-            UpdateAccessibilityName(newIndex, GetPageCount(), newPage);
+            UpdateSelection(newIndex, NavigationType.Replace);
+        }
+
+        private void OnCarouselContainerPrepared(object? sender, ContainerPreparedEventArgs e)
+        {
+            if (_carousel == null || e.Index != _carousel.SelectedIndex)
+                return;
+
+            Dispatcher.UIThread.Post(
+                () =>
+                {
+                    if (_carousel != null && _carousel.SelectedIndex == e.Index)
+                        UpdateSelection(e.Index, NavigationType.Replace);
+                },
+                DispatcherPriority.Loaded);
         }
 
         private void OnPointerWheelTunnel(object? sender, PointerWheelEventArgs e)
@@ -280,6 +331,9 @@ namespace Avalonia.Controls
             var header = page?.Header?.ToString();
             var position = pageCount > 0 ? $"Page {index + 1} of {pageCount}" : string.Empty;
             var name = string.IsNullOrEmpty(header) ? position : string.IsNullOrEmpty(position) ? header : $"{position}: {header}";
+            // CarouselPageAutomationPeer.GetNameCore reads this via base.GetNameCore(), which returns
+            // AutomationProperties.Name when set. Position and header are encoded here rather than in the
+            // peer so that the name stays current without requiring the peer to re-query the carousel state.
             AutomationProperties.SetName(this, name);
         }
 
@@ -287,14 +341,19 @@ namespace Avalonia.Controls
 
         private int GetPageCount()
         {
-            if (Pages is ICollection<Page> col)
+            if (_carousel != null)
+                return _carousel.ItemCount;
+
+            var source = (IEnumerable?)ItemsSource ?? Pages;
+
+            if (source is ICollection nonGenericCol)
+                return nonGenericCol.Count;
+            if (source is ICollection<Page> col)
                 return col.Count;
-            if (Pages is IList list)
-                return list.Count;
-            if (Pages != null)
+            if (source != null)
             {
                 int count = 0;
-                foreach (var _ in Pages)
+                foreach (var _ in source)
                     count++;
                 return count;
             }
@@ -308,6 +367,52 @@ namespace Avalonia.Controls
                 return index;
 
             return (uint)index < (uint)pageCount ? index : 0;
+        }
+
+        private void UpdateSelection(int index, NavigationType navigationType)
+        {
+            var page = ResolveDisplayedPageAtIndex(index);
+            var pageCount = GetPageCount();
+
+            if (page == null && ItemsSource != null)
+            {
+                StoreSelectedIndex(index);
+                UpdateAccessibilityName(index, pageCount, null);
+                return;
+            }
+
+            CommitSelection(index, page, navigationType);
+            UpdateAccessibilityName(index, pageCount, page);
+        }
+
+        private Page? ResolveDisplayedPageAtIndex(int index)
+        {
+            if (index < 0)
+                return null;
+
+            if (_carousel?.ContainerFromIndex(index) is { } container)
+                return TryGetPageFromContainer(container);
+
+            return ItemsSource == null ? ResolvePageAtIndex(index) : null;
+        }
+
+        private static Page? TryGetPageFromContainer(Control container)
+        {
+            if (container is Page page)
+                return page;
+
+            if (container is ContentPresenter presenter)
+            {
+                if (presenter.Child == null)
+                    presenter.UpdateChild();
+
+                return presenter.Child as Page;
+            }
+
+            if (container is ContentControl contentControl)
+                return contentControl.Content as Page;
+
+            return container.GetVisualDescendants().OfType<Page>().FirstOrDefault();
         }
 
     }

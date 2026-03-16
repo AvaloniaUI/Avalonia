@@ -19,7 +19,6 @@
       <ControlTemplate>
         <Carousel Name="PART_Carousel"
                   Background="{TemplateBinding Background}"
-                  ItemsSource="{TemplateBinding Pages}"
                   ItemTemplate="{TemplateBinding PageTemplate}"
                   PageTransition="{TemplateBinding PageTransition}"
                   ItemsPanel="{TemplateBinding ItemsPanel}"

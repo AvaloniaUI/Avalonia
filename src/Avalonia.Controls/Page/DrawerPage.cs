@@ -296,7 +296,6 @@ namespace Avalonia.Controls
         {
             _swipeRecognizer.IsMouseEnabled = true;
             GestureRecognizers.Add(_swipeRecognizer);
-            AddHandler(PointerPressedEvent, OnSwipePointerPressed, handledEventsToo: true);
             UpdateSwipeRecognizerAxes();
         }
 
@@ -324,6 +323,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets whether the drawer pane is currently open.
         /// </summary>
+        /// <remarks>
+        /// Setting this property to <see langword="true"/> while <see cref="DrawerBehavior"/> is
+        /// <see cref="DrawerBehavior.Disabled"/> is a no-op; the value is coerced back to
+        /// <see langword="false"/>. When closing programmatically, the <see cref="Closing"/> event
+        /// is raised and can be cancelled; if cancelled, the property reverts to
+        /// <see langword="true"/>. The <see cref="Closing"/> event is not raised when the drawer
+        /// is forced closed because <see cref="DrawerBehavior"/> is set to
+        /// <see cref="DrawerBehavior.Disabled"/>.
+        /// </remarks>
         public bool IsOpen
         {
             get => GetValue(IsOpenProperty);
@@ -575,6 +583,7 @@ namespace Avalonia.Controls
 
                 if (change.Property == ContentProperty)
                 {
+                    _hasHadFirstPage = false;
                     _navBarVisibleSub?.Dispose();
                     _navBarVisibleSub = null;
 
@@ -616,6 +625,9 @@ namespace Avalonia.Controls
                      change.Property == DrawerBreakpointLengthProperty)
             {
                 UpdateSplitViewDisplayMode();
+
+                if (change.Property == DrawerBehaviorProperty && Content is NavigationPage nav)
+                    nav.SetDrawerPage(this);
             }
             else if (change.Property == BoundsProperty && DrawerBreakpointLength > 0)
             {
@@ -654,6 +666,7 @@ namespace Avalonia.Controls
             base.OnAttachedToVisualTree(e);
 
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
+            AddHandler(PointerPressedEvent, OnSwipePointerPressed, handledEventsToo: true);
 
             AttachBackdropPointerPressed();
             RestoreNavigationState();
@@ -664,6 +677,7 @@ namespace Avalonia.Controls
             base.OnDetachedFromVisualTree(e);
 
             RemoveHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
+            RemoveHandler(PointerPressedEvent, OnSwipePointerPressed);
 
             DetachBackdropPointerPressed();
 

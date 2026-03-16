@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Animation;
 using Avalonia.Collections;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
@@ -1024,6 +1025,348 @@ public class TabbedPageTests
             var tp = new TabbedPage();
             var built = tp.PageTemplate!.Build(new DataItem("Test"));
             Assert.IsType<ContentPage>(built);
+        }
+
+        [Fact]
+        public void ViewModelItems_WithPageTemplate_BuildContainersAsContentPages()
+        {
+            var items = new System.Collections.ObjectModel.ObservableCollection<DataItem>
+            {
+                new("Electronics"),
+                new("Books"),
+            };
+
+            var tp = new TabbedPage
+            {
+                Width = 400, Height = 300,
+                ItemsSource = items,
+                PageTemplate = new FuncDataTemplate<DataItem>(
+                    (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
+                Template = CreateTabbedPageTemplate(),
+            };
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = tp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var logicals = ((ILogical)tp).LogicalChildren;
+            Assert.Contains(logicals, l => l is ContentPage cp && cp.Header?.ToString() == "Electronics");
+            Assert.Contains(logicals, l => l is ContentPage cp && cp.Header?.ToString() == "Books");
+        }
+
+        [Fact]
+        public void ItemsSource_SelectedPage_IsNotNullAfterContainersRealized()
+        {
+            var items = new System.Collections.ObjectModel.ObservableCollection<DataItem>
+            {
+                new("First"),
+                new("Second"),
+            };
+
+            var tp = new TabbedPage
+            {
+                Width = 400, Height = 300,
+                ItemsSource = items,
+                PageTemplate = new FuncDataTemplate<DataItem>(
+                    (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
+                Template = CreateTabbedPageTemplate(),
+            };
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = tp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.NotNull(tp.SelectedPage);
+            Assert.Equal(0, tp.SelectedIndex);
+            Assert.IsType<ContentPage>(tp.SelectedPage);
+            Assert.Equal("First", tp.SelectedPage!.Header?.ToString());
+        }
+
+        [Fact]
+        public void NonListItemsSource_SelectedPage_And_AutomationName_AreResolved()
+        {
+            var tp = new TabbedPage
+            {
+                Width = 400, Height = 300,
+                ItemsSource = EnumerateItems(new("First"), new("Second")),
+                PageTemplate = new FuncDataTemplate<DataItem>(
+                    (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
+                Template = CreateTabbedPageTemplate(),
+            };
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = tp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.NotNull(tp.SelectedPage);
+            Assert.Equal("First", tp.SelectedPage!.Header?.ToString());
+            Assert.Equal("Tab 1 of 2: First", new Avalonia.Automation.Peers.TabbedPageAutomationPeer(tp).GetName());
+
+            tp.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.NotNull(tp.SelectedPage);
+            Assert.Equal("Second", tp.SelectedPage!.Header?.ToString());
+            Assert.Equal("Tab 2 of 2: Second", new Avalonia.Automation.Peers.TabbedPageAutomationPeer(tp).GetName());
+        }
+
+        [Fact]
+        public void ItemsSource_SelectionChanged_ReportsCorrectPage()
+        {
+            var items = new System.Collections.ObjectModel.ObservableCollection<DataItem>
+            {
+                new("Alpha"),
+                new("Beta"),
+            };
+
+            var tp = new TabbedPage
+            {
+                Width = 400, Height = 300,
+                ItemsSource = items,
+                PageTemplate = new FuncDataTemplate<DataItem>(
+                    (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
+                Template = CreateTabbedPageTemplate(),
+            };
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = tp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Page? reportedPage = null;
+            tp.SelectionChanged += (_, e) => reportedPage = e.CurrentPage;
+
+            tp.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.NotNull(tp.SelectedPage);
+            Assert.Equal(1, tp.SelectedIndex);
+            Assert.Equal("Beta", tp.SelectedPage!.Header?.ToString());
+            Assert.NotNull(reportedPage);
+            Assert.Equal("Beta", reportedPage!.Header?.ToString());
+        }
+
+        [Fact]
+        public void ViewModelItems_RemovedFromCollection_TemplateCreatedPageRemovedFromLogicalChildren()
+        {
+            var items = new System.Collections.ObjectModel.ObservableCollection<DataItem>
+            {
+                new("A"),
+                new("B"),
+            };
+
+            var tp = new TabbedPage
+            {
+                Width = 400, Height = 300,
+                ItemsSource = items,
+                PageTemplate = new FuncDataTemplate<DataItem>(
+                    (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
+                Template = CreateTabbedPageTemplate(),
+            };
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = tp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            items.RemoveAt(1);
+            root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var logicals = ((ILogical)tp).LogicalChildren;
+            Assert.DoesNotContain(logicals, l => l is ContentPage cp && cp.Header?.ToString() == "B");
+        }
+
+        [Fact]
+        public void ItemsSource_Replaced_NoPhantomLogicalChildren()
+        {
+            var first = new System.Collections.ObjectModel.ObservableCollection<DataItem>
+            {
+                new("One"),
+                new("Two"),
+            };
+            var second = new System.Collections.ObjectModel.ObservableCollection<DataItem>
+            {
+                new("Three"),
+                new("Four"),
+            };
+
+            var tp = new TabbedPage
+            {
+                Width = 400, Height = 300,
+                ItemsSource = first,
+                PageTemplate = new FuncDataTemplate<DataItem>(
+                    (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
+                Template = CreateTabbedPageTemplate(),
+            };
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = tp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            tp.ItemsSource = second;
+            root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var logicals = ((ILogical)tp).LogicalChildren;
+            Assert.DoesNotContain(logicals, l => l is ContentPage cp && cp.Header?.ToString() == "One");
+            Assert.DoesNotContain(logicals, l => l is ContentPage cp && cp.Header?.ToString() == "Two");
+            Assert.Contains(logicals, l => l is ContentPage cp && cp.Header?.ToString() == "Three");
+            Assert.Contains(logicals, l => l is ContentPage cp && cp.Header?.ToString() == "Four");
+        }
+
+        [Fact]
+        public void PageTemplate_ChangedAfterContainersRealized_RebuildsExistingContainers()
+        {
+            var items = new System.Collections.ObjectModel.ObservableCollection<DataItem>
+            {
+                new("X"),
+                new("Y"),
+            };
+
+            var tp = new TabbedPage
+            {
+                Width = 400, Height = 300,
+                ItemsSource = items,
+                PageTemplate = new FuncDataTemplate<DataItem>(
+                    (item, _) => new ContentPage { Header = "old-" + item!.Name }, supportsRecycling: false),
+                Template = CreateTabbedPageTemplate(),
+            };
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = tp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            tp.PageTemplate = new FuncDataTemplate<DataItem>(
+                (item, _) => new ContentPage { Header = "new-" + item!.Name }, supportsRecycling: false);
+            root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var logicals = ((ILogical)tp).LogicalChildren;
+            Assert.DoesNotContain(logicals, l => l is ContentPage cp && cp.Header?.ToString()?.StartsWith("old-") == true);
+            Assert.Contains(logicals, l => l is ContentPage cp && cp.Header?.ToString() == "new-X");
+            Assert.Contains(logicals, l => l is ContentPage cp && cp.Header?.ToString() == "new-Y");
+        }
+
+        [Fact]
+        public void PageTemplate_ChangedAfterContainersRealized_UpdatesSelectedPage()
+        {
+            var items = new System.Collections.ObjectModel.ObservableCollection<DataItem>
+            {
+                new("A"),
+                new("B"),
+            };
+
+            var tp = new TabbedPage
+            {
+                Width = 400, Height = 300,
+                ItemsSource = items,
+                PageTemplate = new FuncDataTemplate<DataItem>(
+                    (item, _) => new ContentPage { Header = "old-" + item!.Name }, supportsRecycling: false),
+                Template = CreateTabbedPageTemplate(),
+            };
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = tp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            tp.PageTemplate = new FuncDataTemplate<DataItem>(
+                (item, _) => new ContentPage { Header = "new-" + item!.Name }, supportsRecycling: false);
+            root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.NotNull(tp.SelectedPage);
+            Assert.Equal("new-A", tp.SelectedPage!.Header?.ToString());
+        }
+
+        [Fact]
+        public void ReapplyingTemplate_DoesNotLeavePhantomLogicalChildren()
+        {
+            var items = new System.Collections.ObjectModel.ObservableCollection<DataItem>
+            {
+                new("A"),
+                new("B"),
+            };
+
+            var tp = new TabbedPage
+            {
+                Width = 400, Height = 300,
+                ItemsSource = items,
+                PageTemplate = new FuncDataTemplate<DataItem>(
+                    (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
+                Template = CreateTabbedPageTemplate(),
+            };
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = tp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var firstSelectedPage = tp.SelectedPage;
+
+            tp.Template = CreateTabbedPageTemplate();
+            root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(2, ((ILogical)tp).LogicalChildren.Count);
+            Assert.DoesNotContain(firstSelectedPage!, ((ILogical)tp).LogicalChildren);
+        }
+
+        [Fact]
+        public void PageTemplate_SetToNullAfterContainersRealized_ClearsGeneratedPages()
+        {
+            var items = new System.Collections.ObjectModel.ObservableCollection<DataItem>
+            {
+                new("A"),
+                new("B"),
+            };
+
+            var tp = new TabbedPage
+            {
+                Width = 400, Height = 300,
+                ItemsSource = items,
+                PageTemplate = new FuncDataTemplate<DataItem>(
+                    (item, _) => new ContentPage { Header = item!.Name }, supportsRecycling: false),
+                Template = CreateTabbedPageTemplate(),
+            };
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = tp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var originalSelectedPage = tp.SelectedPage;
+
+            tp.PageTemplate = null;
+            root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Null(tp.SelectedPage);
+            Assert.Null(tp.CurrentPage);
+            Assert.Empty(((ILogical)tp).LogicalChildren);
+            Assert.DoesNotContain(originalSelectedPage!, ((ILogical)tp).LogicalChildren);
+        }
+
+        private static FuncControlTemplate<TabbedPage> CreateTabbedPageTemplate()
+        {
+            return new FuncControlTemplate<TabbedPage>((parent, scope) =>
+            {
+                var tc = new TabControl
+                {
+                    Name = "PART_TabControl",
+                    Template = new FuncControlTemplate<TabControl>((_, tcScope) =>
+                        new ItemsPresenter
+                        {
+                            Name = "PART_ItemsPresenter",
+                        }.RegisterInNameScope(tcScope)),
+                };
+                tc.RegisterInNameScope(scope);
+                return tc;
+            });
+        }
+
+        private static IEnumerable<DataItem> EnumerateItems(params DataItem[] items)
+        {
+            foreach (var item in items)
+                yield return item;
         }
     }
 

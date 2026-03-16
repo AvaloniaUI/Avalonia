@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
-using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -10,88 +11,92 @@ namespace ControlCatalog.Pages
 {
     public partial class CarouselPageDataTemplatePage : UserControl
     {
-        private static readonly (string Name, string Color, string Description)[] InitialData =
+        private sealed class CityViewModel
         {
-            ("Tokyo",     "#1565C0", "The neon-lit capital of Japan, where ancient temples meet futuristic skylines."),
-            ("Amsterdam", "#2E7D32", "A city of canals, bicycles, and world-class museums."),
-            ("New York",  "#6A1B9A", "The city that never sleeps — a cultural and financial powerhouse."),
-            ("Sydney",    "#B71C1C", "Iconic harbour, golden beaches and the world-famous Opera House."),
+            public string Name { get; }
+            public string Color { get; }
+            public string Description { get; }
+
+            public CityViewModel(string name, string color, string description)
+            {
+                Name = name;
+                Color = color;
+                Description = description;
+            }
+        }
+
+        private static readonly CityViewModel[] InitialData =
+        {
+            new("Tokyo", "#1565C0",
+                "The neon-lit capital of Japan, where ancient temples meet futuristic skylines."),
+            new("Amsterdam", "#2E7D32", "A city of canals, bicycles, and world-class museums."),
+            new("New York", "#6A1B9A", "The city that never sleeps — a cultural and financial powerhouse."),
+            new("Sydney", "#B71C1C", "Iconic harbour, golden beaches and the world-famous Opera House."),
         };
 
-        private static readonly (string Name, string Color, string Description)[] AddData =
+        private static readonly CityViewModel[] AddData =
         {
-            ("Paris",     "#E65100", "The city of light, love, and the Eiffel Tower."),
-            ("Barcelona", "#00695C", "Art, architecture, and vibrant street life on the Mediterranean coast."),
-            ("Kyoto",     "#880E4F", "Japan's ancient capital, a living museum of traditional culture."),
+            new("Paris", "#E65100", "The city of light, love, and the Eiffel Tower."),
+            new("Barcelona", "#00695C", "Art, architecture, and vibrant street life on the Mediterranean coast."),
+            new("Kyoto", "#880E4F", "Japan's ancient capital, a living museum of traditional culture."),
         };
 
-        private readonly ObservableCollection<Page> _pages = new();
+        private readonly ObservableCollection<CityViewModel> _items = new();
         private int _addCounter;
-        private bool _isCardStyle = true;
+        private bool _useCardTemplate = true;
         private AvaCarouselPage? _carouselPage;
 
         public CarouselPageDataTemplatePage()
         {
             InitializeComponent();
             Loaded += OnLoaded;
-            Unloaded += OnUnloaded;
         }
 
         private void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            foreach (var (name, color, desc) in InitialData)
-                _pages.Add(CreatePage(name, color, desc, _isCardStyle));
+            if (_carouselPage != null)
+                return;
 
+            foreach (var vm in InitialData)
+                _items.Add(vm);
             _addCounter = InitialData.Length;
+            _useCardTemplate = true;
 
-            _carouselPage = new AvaCarouselPage { Pages = _pages };
+            _carouselPage = new AvaCarouselPage { ItemsSource = _items, PageTemplate = CreatePageTemplate() };
+
             _carouselPage.SelectionChanged += OnSelectionChanged;
-
             CarouselHost.Children.Add(_carouselPage);
             UpdateStatus();
         }
 
-        private void OnUnloaded(object? sender, RoutedEventArgs e)
-        {
-            if (_carouselPage != null)
-                _carouselPage.SelectionChanged -= OnSelectionChanged;
-        }
-
-        private void OnSelectionChanged(object? sender, PageSelectionChangedEventArgs e)
-        {
-            UpdateStatus();
-        }
+        private void OnSelectionChanged(object? sender, PageSelectionChangedEventArgs e) => UpdateStatus();
 
         private void OnAddPage(object? sender, RoutedEventArgs e)
         {
             var idx = _addCounter % AddData.Length;
-            var (name, color, desc) = AddData[idx];
+            var vm = AddData[idx];
             var suffix = _addCounter >= AddData.Length ? $" {_addCounter / AddData.Length + 1}" : "";
-            _pages.Add(CreatePage(name + suffix, color, desc, _isCardStyle));
+            _items.Add(new CityViewModel(vm.Name + suffix, vm.Color, vm.Description));
             _addCounter++;
             UpdateStatus();
         }
 
-        private void OnSwitchTemplate(object? sender, RoutedEventArgs e)
-        {
-            _isCardStyle = !_isCardStyle;
-            foreach (var page in _pages.OfType<ContentPage>())
-            {
-                var (color, desc) = ((string, string))page.Tag!;
-                page.Content = _isCardStyle
-                    ? BuildCardContent(page.Header?.ToString()!, color, desc)
-                    : BuildBoldContent(page.Header?.ToString()!, color);
-            }
-            SwitchTemplateButton.Content = "Switch Template";
-        }
-
         private void OnRemovePage(object? sender, RoutedEventArgs e)
         {
-            if (_pages.Count > 0)
+            if (_items.Count > 0)
             {
-                _pages.RemoveAt(_pages.Count - 1);
+                _items.RemoveAt(_items.Count - 1);
                 UpdateStatus();
             }
+        }
+
+        private void OnSwitchTemplate(object? sender, RoutedEventArgs e)
+        {
+            if (_carouselPage == null)
+                return;
+
+            _useCardTemplate = !_useCardTemplate;
+            _carouselPage.PageTemplate = CreatePageTemplate();
         }
 
         private void OnPrevious(object? sender, RoutedEventArgs e)
@@ -106,30 +111,36 @@ namespace ControlCatalog.Pages
         {
             if (_carouselPage == null)
                 return;
-            if (_carouselPage.SelectedIndex < _pages.Count - 1)
+            if (_carouselPage.SelectedIndex < _items.Count - 1)
                 _carouselPage.SelectedIndex++;
         }
 
         private void UpdateStatus()
         {
-            var count = _pages.Count;
+            var count = _items.Count;
             var index = _carouselPage?.SelectedIndex ?? -1;
-            StatusText.Text = count == 0
-                ? "No pages"
-                : $"Page {index + 1} of {count} (index {index})";
+            StatusText.Text = count == 0 ? "No pages" : $"Page {index + 1} of {count} (index {index})";
         }
 
-        private static ContentPage CreatePage(string name, string color, string description, bool cardStyle) => new()
+        private IDataTemplate CreatePageTemplate()
         {
-            Header = name,
-            Tag = (color, description),
-            Content = cardStyle
-                ? BuildCardContent(name, color, description)
-                : BuildBoldContent(name, color)
-        };
+            return new FuncDataTemplate<CityViewModel>((vm, _) => CreatePage(vm, _useCardTemplate));
+        }
 
-        private static Control BuildCardContent(string name, string color, string description) =>
-            new StackPanel
+        private static ContentPage CreatePage(CityViewModel? vm, bool useCardTemplate)
+        {
+            if (vm is null)
+                return new ContentPage();
+
+            return new ContentPage
+            {
+                Header = vm.Name, Content = useCardTemplate ? CreateCardContent(vm) : CreateFeatureContent(vm)
+            };
+        }
+
+        private static Control CreateCardContent(CityViewModel vm)
+        {
+            return new StackPanel
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -138,15 +149,15 @@ namespace ControlCatalog.Pages
                 {
                     new TextBlock
                     {
-                        Text = name,
+                        Text = vm.Name,
                         FontSize = 28,
                         FontWeight = FontWeight.Bold,
-                        Foreground = new SolidColorBrush(Color.Parse(color)),
+                        Foreground = new SolidColorBrush(Color.Parse(vm.Color)),
                         HorizontalAlignment = HorizontalAlignment.Center
                     },
                     new TextBlock
                     {
-                        Text = description,
+                        Text = vm.Description,
                         FontSize = 13,
                         Opacity = 0.7,
                         TextWrapping = TextWrapping.Wrap,
@@ -155,22 +166,44 @@ namespace ControlCatalog.Pages
                     }
                 }
             };
+        }
 
-        private static Control BuildBoldContent(string name, string color) =>
-            new Border
+        private static Control CreateFeatureContent(CityViewModel vm)
+        {
+            var accent = Color.Parse(vm.Color);
+
+            return new Border
             {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Color.Parse(color)),
-                Child = new TextBlock
+                Background = new SolidColorBrush(accent),
+                Padding = new Thickness(32),
+                Child = new StackPanel
                 {
-                    Text = name,
-                    FontSize = 40,
-                    FontWeight = FontWeight.Bold,
-                    Foreground = Brushes.White,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Spacing = 12,
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Text = vm.Name.ToUpperInvariant(),
+                            FontSize = 34,
+                            FontWeight = FontWeight.Bold,
+                            Foreground = Brushes.White,
+                            HorizontalAlignment = HorizontalAlignment.Center
+                        },
+                        new TextBlock
+                        {
+                            Text = vm.Description,
+                            FontSize = 15,
+                            Foreground = Brushes.White,
+                            Opacity = 0.88,
+                            TextWrapping = TextWrapping.Wrap,
+                            TextAlignment = TextAlignment.Center,
+                            MaxWidth = 320
+                        }
+                    }
                 }
             };
+        }
     }
 }

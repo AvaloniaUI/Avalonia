@@ -799,7 +799,214 @@ public class CarouselPageTests
             for (var i = 0; i < count; i++)
                 ((AvaloniaList<Page>)cp.Pages!).Add(new ContentPage { Header = $"P{i}" });
             cp.SelectedIndex = selectedIndex;
+            _ = new TestRoot { Child = cp };
             return cp;
+        }
+    }
+
+    public class DataTemplateTests : ScopedTestBase
+    {
+        private record DataItem(string Name);
+
+        [Fact]
+        public void ItemsSource_SelectedPage_IsResolvedAfterLayout()
+        {
+            var cp = CreateTemplatedCarouselPage<CarouselPage>(
+                new[] { new DataItem("First"), new DataItem("Second") });
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = cp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.NotNull(cp.SelectedPage);
+            Assert.Equal("First", cp.SelectedPage!.Header?.ToString());
+            Assert.Equal("Page 1 of 2: First", Avalonia.Automation.AutomationProperties.GetName(cp));
+        }
+
+        [Fact]
+        public void KeyboardNavigation_UsesItemsSourceCount()
+        {
+            var cp = CreateTemplatedCarouselPage<TestableCarouselPage>(
+                new[] { new DataItem("First"), new DataItem("Second") });
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = cp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            cp.SimulateKeyDown(Key.Right);
+            root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(1, cp.SelectedIndex);
+            Assert.NotNull(cp.SelectedPage);
+            Assert.Equal("Second", cp.SelectedPage!.Header?.ToString());
+            Assert.Equal("Page 2 of 2: Second", Avalonia.Automation.AutomationProperties.GetName(cp));
+        }
+
+        [Fact]
+        public void WheelNavigation_UsesItemsSourceCount()
+        {
+            var cp = CreateTemplatedCarouselPage<TestableCarouselPage>(
+                new[] { new DataItem("First"), new DataItem("Second") });
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = cp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var handled = cp.SimulateWheelReturnsHandled(new Vector(0, -1));
+            root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.True(handled);
+            Assert.Equal(1, cp.SelectedIndex);
+            Assert.NotNull(cp.SelectedPage);
+            Assert.Equal("Second", cp.SelectedPage!.Header?.ToString());
+        }
+
+        [Fact]
+        public void ItemsSource_SelectionChanges_FireLifecycleOnGeneratedPages()
+        {
+            var cp = CreateTemplatedCarouselPage<TestableCarouselPage>(
+                new[] { new DataItem("First"), new DataItem("Second") },
+                item => new TrackingPage
+                {
+                    Header = item?.Name,
+                    Content = new Border { Width = 400, Height = 300 }
+                });
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = cp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var firstPage = Assert.IsType<TrackingPage>(cp.SelectedPage);
+            Assert.Equal(1, firstPage.NavigatedToCount);
+            Assert.Equal(0, firstPage.NavigatedFromCount);
+
+            cp.SimulateKeyDown(Key.Right);
+            root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var secondPage = Assert.IsType<TrackingPage>(cp.SelectedPage);
+            Assert.Equal(1, firstPage.NavigatedFromCount);
+            Assert.Equal(1, secondPage.NavigatedToCount);
+            Assert.Same(secondPage, cp.CurrentPage);
+        }
+
+        [Fact]
+        public void PageTemplate_ChangedAfterContainersRealized_UpdatesSelectedPage()
+        {
+            var cp = CreateTemplatedCarouselPage<CarouselPage>(
+                new[] { new DataItem("First"), new DataItem("Second") },
+                item => new ContentPage
+                {
+                    Header = $"Detail {item?.Name}",
+                    Content = new Border { Width = 400, Height = 300 }
+                });
+
+            var root = new TestRoot { ClientSize = new Size(400, 300), Child = cp };
+            root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var originalPage = Assert.IsType<ContentPage>(cp.SelectedPage);
+            Assert.Equal("Detail First", originalPage.Header);
+
+            cp.PageTemplate = new FuncDataTemplate<DataItem>(
+                (item, _) => new ContentPage
+                {
+                    Header = $"Showcase {item?.Name}",
+                    Content = new Border { Width = 400, Height = 300 }
+                },
+                supportsRecycling: false);
+
+            root.LayoutManager.ExecuteLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            var updatedPage = Assert.IsType<ContentPage>(cp.SelectedPage);
+            Assert.NotSame(originalPage, updatedPage);
+            Assert.Equal("Showcase First", updatedPage.Header);
+        }
+
+        private static T CreateTemplatedCarouselPage<T>(IEnumerable<DataItem> items)
+            where T : CarouselPage, new()
+        {
+            return CreateTemplatedCarouselPage<T>(
+                items,
+                item => new ContentPage
+                {
+                    Header = item?.Name,
+                    Content = new Border { Width = 400, Height = 300 }
+                });
+        }
+
+        private static T CreateTemplatedCarouselPage<T>(IEnumerable<DataItem> items, Func<DataItem?, Page> pageFactory)
+            where T : CarouselPage, new()
+        {
+            return new T
+            {
+                Width = 400,
+                Height = 300,
+                ItemsSource = items,
+                PageTemplate = new FuncDataTemplate<DataItem>(
+                    (item, _) => pageFactory(item),
+                    supportsRecycling: false),
+                Template = CreateCarouselPageTemplate(),
+            };
+        }
+
+        private static FuncControlTemplate<CarouselPage> CreateCarouselPageTemplate()
+        {
+            return new FuncControlTemplate<CarouselPage>((_, scope) =>
+                new Carousel
+                {
+                    Name = "PART_Carousel",
+                    Template = CarouselTemplate(),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                }.RegisterInNameScope(scope));
+        }
+
+        private static IControlTemplate CarouselTemplate()
+        {
+            return new FuncControlTemplate((c, ns) =>
+                new ScrollViewer
+                {
+                    Name = "PART_ScrollViewer",
+                    Template = ScrollViewerTemplate(),
+                    HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                    Content = new ItemsPresenter
+                    {
+                        Name = "PART_ItemsPresenter",
+                        [~ItemsPresenter.ItemsPanelProperty] = c[~ItemsControl.ItemsPanelProperty],
+                    }.RegisterInNameScope(ns)
+                }.RegisterInNameScope(ns));
+        }
+
+        private static FuncControlTemplate ScrollViewerTemplate()
+        {
+            return new FuncControlTemplate((_, ns) =>
+                new ScrollContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                }.RegisterInNameScope(ns));
+        }
+
+        private sealed class TrackingPage : ContentPage
+        {
+            public int NavigatedToCount { get; private set; }
+            public int NavigatedFromCount { get; private set; }
+
+            protected override void OnNavigatedTo(NavigatedToEventArgs args)
+            {
+                NavigatedToCount++;
+                base.OnNavigatedTo(args);
+            }
+
+            protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
+            {
+                NavigatedFromCount++;
+                base.OnNavigatedFrom(args);
+            }
         }
     }
 
@@ -860,7 +1067,7 @@ public class CarouselPageTests
 
             Assert.Equal(1, carousel.SelectedIndex);
             Assert.Equal(1, cp.SelectedIndex);
-            Assert.Same(cp.Pages!.ElementAt(1), cp.CurrentPage);
+            Assert.Same(((AvaloniaList<Page>)cp.Pages!)[1], cp.CurrentPage);
         }
 
         [Fact]
@@ -884,7 +1091,7 @@ public class CarouselPageTests
 
             Assert.Equal(1, carousel.SelectedIndex);
             Assert.Equal(1, cp.SelectedIndex);
-            Assert.Same(cp.Pages!.ElementAt(1), cp.CurrentPage);
+            Assert.Same(((AvaloniaList<Page>)cp.Pages!)[1], cp.CurrentPage);
         }
 
         private static (CarouselPage Page, Carousel Carousel, VirtualizingCarouselPanel Panel) CreateSwipeReadyCarouselPage()
