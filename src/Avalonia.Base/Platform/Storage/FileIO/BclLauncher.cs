@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Avalonia.Compatibility;
 
 namespace Avalonia.Platform.Storage.FileIO;
 
@@ -39,7 +38,7 @@ internal class BclLauncher : ILauncher
     
     private static bool Exec(string urlOrFile)
     {
-        if (OperatingSystemEx.IsLinux())
+        if (OperatingSystem.IsLinux())
         {
             // If no associated application/json MimeType is found xdg-open opens return error
             // but it tries to open it anyway using the console editor (nano, vim, other..)
@@ -47,17 +46,17 @@ internal class BclLauncher : ILauncher
             ShellExecRaw($"xdg-open \\\"{args}\\\"", waitForExit: false);
             return true;
         }
-        else if (OperatingSystemEx.IsWindows() || OperatingSystemEx.IsMacOS())
+        else if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
         {
             var info = new ProcessStartInfo
             {
-                FileName = OperatingSystemEx.IsWindows() ? urlOrFile : "open",
+                FileName = OperatingSystem.IsWindows() ? urlOrFile : "open",
                 CreateNoWindow = true,
-                UseShellExecute = OperatingSystemEx.IsWindows()
+                UseShellExecute = OperatingSystem.IsWindows()
             };
             // Using the argument list avoids having to escape spaces and other special 
             // characters that are part of valid macos file and folder paths.
-            if (OperatingSystemEx.IsMacOS())
+            if (OperatingSystem.IsMacOS())
                 info.ArgumentList.Add(urlOrFile);
             using var process = Process.Start(info);
             return true;

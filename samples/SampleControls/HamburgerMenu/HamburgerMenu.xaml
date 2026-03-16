@@ -73,7 +73,8 @@
                           CornerRadius="{TemplateBinding CornerRadius}"
                           TextElement.FontFamily="{TemplateBinding FontFamily}"
                           TextElement.FontSize="{TemplateBinding FontSize}"
-                          TextElement.FontWeight="{TemplateBinding FontWeight}" />
+                          TextElement.FontWeight="{TemplateBinding FontWeight}"
+                          AutomationProperties.LandmarkType="Main" />
       </ControlTemplate>
     </Setter>
 
@@ -182,7 +183,9 @@
                               HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                               VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
                   <ItemsPresenter Name="PART_ItemsPresenter"
-                                  HorizontalAlignment="Stretch">
+                                  HorizontalAlignment="Stretch"
+                                  AutomationProperties.ControlTypeOverride="List"
+                                  AutomationProperties.LandmarkType="Navigation">
                     <ItemsPresenter.ItemsPanel>
                       <ItemsPanelTemplate>
                         <StackPanel x:Name="HamburgerItemsPanel"
@@ -201,7 +204,9 @@
             </SplitView.Pane>
             <SplitView.Content>
               <DockPanel>
-                <Border Height="{StaticResource HeaderHeight}" DockPanel.Dock="Top">
+                <Border Height="{StaticResource HeaderHeight}"
+                        DockPanel.Dock="Top"
+                        AutomationProperties.LandmarkType="Banner">
                   <TextBlock x:Name="HeaderHolder"
                              VerticalAlignment="Center"
                              Classes="h1"
@@ -246,7 +251,8 @@
                         HorizontalContentAlignment="Center"
                         Theme="{StaticResource NavigationButton}"
                         CornerRadius="4"
-                        IsChecked="{Binding #PART_NavigationPane.IsPaneOpen, Mode=TwoWay}">
+                        IsChecked="{Binding #PART_NavigationPane.IsPaneOpen, Mode=TwoWay}"
+                        AutomationProperties.ControlTypeOverride="ListItem">
             <PathIcon Data="M3 17h18a1 1 0 0 1 .117 1.993L21 19H3a1 1 0 0 1-.117-1.993L3 17h18H3Zm0-6 18-.002a1 1 0 0 1 .117 1.993l-.117.007L3 13a1 1 0 0 1-.117-1.993L3 11l18-.002L3 11Zm0-6h18a1 1 0 0 1 .117 1.993L21 7H3a1 1 0 0 1-.117-1.993L3 5h18H3Z" Foreground="{TemplateBinding Foreground}" />
           </ToggleButton>
         </Panel>

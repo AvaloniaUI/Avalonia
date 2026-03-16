@@ -363,7 +363,10 @@ namespace Avalonia.Controls
 
         internal bool HasComplexContent => Inlines != null && Inlines.Count > 0;
 
-        private protected Size GetMaxSizeFromConstraint()
+        /// <summary>
+        /// Gets the maximum available size based on the constraint of the control
+        /// </summary>
+        protected Size GetMaxSizeFromConstraint()
         {
             var maxWidth = double.IsNaN(_constraint.Width) ? 0.0 : _constraint.Width;
             var maxHeight = double.IsNaN(_constraint.Height) ? 0.0 : _constraint.Height;
