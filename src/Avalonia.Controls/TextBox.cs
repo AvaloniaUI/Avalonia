@@ -1731,6 +1731,17 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnTapped(TappedEventArgs e)
+        {
+            base.OnTapped(e);
+
+            if(e.Pointer.Type != PointerType.Mouse)
+            {
+                _presenter?.EnsureTextSelectionLayer();
+                _presenter?.TextSelectionHandleCanvas?.Show();
+            }
+        }
+
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             if (_presenter == null)
@@ -1816,6 +1827,8 @@ namespace Avalonia.Controls
                         var selectionEnd = SelectionEnd;
 
                         SelectWord(text, caretIndex, caretIndex, caretIndex);
+                        _presenter?.EnsureTextSelectionLayer();
+                        _presenter?.TextSelectionHandleCanvas?.Show();
                     }
                 }
             }
@@ -2043,7 +2056,6 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionStartProperty, caretIndex);
                 }
             }
-            _isInTouchMode = false;
             _isInTouchSelectionMode = false;
             _isInTouchCaretMode = false;
             _hasTouchSelection = false;
