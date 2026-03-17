@@ -41,13 +41,13 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IntPtr _sourceWindow;
-        private readonly IAsyncDataTransfer _dataTransfer;
         private readonly DragDropEffects _allowedEffects;
         private readonly TaskCompletionSource<DragDropEffects> _completionSource = new();
+        private readonly DragDropDataProvider _dataProvider;
+        private readonly IntPtr[] _formatAtoms;
         private X11EventDispatcher.EventHandler? _originalEventHandler;
         private bool _pointerGrabbed;
         private XdndTargetInfo? _lastTarget;
-        private DragDropDataProvider? _dataProvider;
         private IntPtr _lastStatusAction;
 
         public Handler(
@@ -59,11 +59,12 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         {
             _platform = platform;
             _sourceWindow = sourceWindow;
-            _dataTransfer = dataTransfer;
             _allowedEffects = allowedEffects;
+            _dataProvider = new DragDropDataProvider(platform, dataTransfer);
 
             if (!platform.Windows.TryGetValue(sourceWindow, out _originalEventHandler))
             {
+                _formatAtoms = [];
                 _completionSource.TrySetResult(DragDropEffects.None);
                 return;
             }
@@ -91,6 +92,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             {
                 Console.WriteLine($"Could not grab: {grabResult}");
 
+                _formatAtoms = [];
                 _completionSource.TrySetResult(DragDropEffects.None);
                 return;
             }
@@ -99,69 +101,35 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             _pointerGrabbed = true;
             _platform.Windows[_sourceWindow] = OnEvent;
+
+            var atoms = _platform.Info.Atoms;
+            _formatAtoms = DataFormatHelper.ToAtoms(dataTransfer.Formats, atoms);
+
+            XChangeProperty(
+                _platform.Display,
+                _sourceWindow,
+                atoms.XdndTypeList,
+                atoms.ATOM,
+                32,
+                PropertyMode.Replace,
+                _formatAtoms,
+                _formatAtoms.Length);
         }
 
         public Task<DragDropEffects> Completion
             => _completionSource.Task;
 
-        private IntPtr[] DataFormatAtoms
+        private void OnEvent(ref XEvent evt)
         {
-            get
+            if (evt.type == XEventName.MotionNotify && _pointerGrabbed)
+                OnMotionNotify(in evt.MotionEvent);
+
+            else if (evt.type == XEventName.ButtonRelease && _pointerGrabbed)
+                OnButtonRelease(in evt.ButtonEvent);
+
+            else if (evt.type == XEventName.ClientMessage)
             {
-                return field ??= CalcDataFormatAtoms();
-
-                IntPtr[] CalcDataFormatAtoms()
-                {
-                    var atomValues = new List<IntPtr>(_dataTransfer.Formats.Count);
-
-                    foreach (var format in _dataTransfer.Formats)
-                    {
-                        foreach (var atom in DataFormatHelper.ToAtoms(format, _platform.Info.Atoms))
-                            atomValues.Add(atom);
-                    }
-
-                    return atomValues.ToArray();
-                }
-            }
-        }
-
-        private DragDropDataProvider DataProvider
-        {
-            get
-            {
-                return _dataProvider ??= CreateDataProvider();
-
-                DragDropDataProvider CreateDataProvider()
-                {
-                    var dataProvider = new DragDropDataProvider(_platform, _dataTransfer);
-                    var formats = DataFormatAtoms;
-
-                    XChangeProperty(
-                        _platform.Display,
-                        dataProvider.Window,
-                        _platform.Info.Atoms.XdndTypeList,
-                        _platform.Info.Atoms.ATOM,
-                        32,
-                        PropertyMode.Replace,
-                        formats,
-                        formats.Length);
-
-                    return dataProvider;
-                }
-            }
-        }
-
-        private void OnEvent(ref XEvent xev)
-        {
-            if (xev.type == XEventName.MotionNotify && _pointerGrabbed)
-                OnMotionNotify(in xev.MotionEvent);
-
-            else if (xev.type == XEventName.ButtonRelease && _pointerGrabbed)
-                OnButtonRelease(in xev.ButtonEvent);
-
-            else if (xev.type == XEventName.ClientMessage)
-            {
-                ref var message = ref xev.ClientMessageEvent;
+                ref var message = ref evt.ClientMessageEvent;
                 var atoms = _platform.Info.Atoms;
 
                 if (message.message_type == atoms.XdndStatus)
@@ -169,11 +137,14 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 else if (message.message_type == atoms.XdndFinished)
                     OnXdndFinished(in message);
                 else
-                    _originalEventHandler?.Invoke(ref xev);
+                    _originalEventHandler?.Invoke(ref evt);
             }
 
+            else if (evt.type == XEventName.SelectionRequest)
+                _dataProvider.OnSelectionRequest(in evt.SelectionRequestEvent);
+
             else
-                _originalEventHandler?.Invoke(ref xev);
+                _originalEventHandler?.Invoke(ref evt);
         }
 
         private void OnMotionNotify(in XMotionEvent motion)
@@ -204,19 +175,18 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         {
             UngrabPointer();
 
-            if (_lastTarget is { } lastTarget)
-                SendXdndDrop(lastTarget, button.time);
+            if (_lastTarget is not { } lastTarget)
+                return;
+
+            _dataProvider.SetOwner(_sourceWindow);
+            SendXdndDrop(lastTarget, button.time);
         }
 
         private void OnXdndStatus(in XClientMessageEvent message)
         {
             Console.WriteLine("Received XdndStatus");
 
-            if (_lastTarget is null)
-                return;
-
-            var targetWindow = message.ptr1;
-            if (targetWindow == 0 || targetWindow != _dataProvider?.Window)
+            if (_lastTarget is not { } lastTarget || message.ptr1 != lastTarget.TargetWindow)
                 return;
 
             var accepted = (message.ptr2 & 1) == 1;
@@ -229,11 +199,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         {
             Console.WriteLine("Received XdndFinished");
 
-            if (_lastTarget is not { } lastTarget)
-                return;
-
-            var targetWindow = message.ptr1;
-            if (targetWindow == 0 || targetWindow != _dataProvider?.Window)
+            if (_lastTarget is not { } lastTarget || message.ptr1 != lastTarget.TargetWindow)
                 return;
 
             _lastTarget = null;
@@ -314,17 +280,15 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             Console.WriteLine("Sending XdndEnter");
 
             var version = Math.Min(target.Version, XdndVersion);
-            var formats = DataFormatAtoms;
-            var hasMoreFormats = formats.Length > 3;
+            var hasMoreFormats = _formatAtoms.Length > 3;
 
             SendXdndMessage(
                 _platform.Info.Atoms.XdndEnter,
-                target,
-                DataProvider.Window,
+                target.MessageWindow,
                 (version << 24) | (hasMoreFormats ? 1 : 0),
-                formats.Length >= 1 ? formats[0] : 0,
-                formats.Length >= 2 ? formats[1] : 0,
-                formats.Length >= 3 ? formats[2] : 0);
+                _formatAtoms.Length >= 1 ? _formatAtoms[0] : 0,
+                _formatAtoms.Length >= 2 ? _formatAtoms[1] : 0,
+                _formatAtoms.Length >= 3 ? _formatAtoms[2] : 0);
         }
 
         private void SendXdndPosition(XdndTargetInfo target, int x, int y, IntPtr timestamp, IntPtr action)
@@ -333,8 +297,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             SendXdndMessage(
                 _platform.Info.Atoms.XdndPosition,
-                target,
-                DataProvider.Window,
+                target.MessageWindow,
                 0,
                 (x << 16) | y,
                 timestamp,
@@ -345,34 +308,19 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         {
             Console.WriteLine("Sending XdndLeave");
 
-            SendXdndMessage(
-                _platform.Info.Atoms.XdndLeave,
-                target,
-                DataProvider.Window,
-                0,
-                0,
-                0,
-                0);
+            SendXdndMessage(_platform.Info.Atoms.XdndLeave, target.MessageWindow, 0, 0, 0, 0);
         }
 
         private void SendXdndDrop(XdndTargetInfo target, IntPtr timestamp)
         {
             Console.WriteLine("Sending XdndDrop");
 
-            SendXdndMessage(
-                _platform.Info.Atoms.XdndDrop,
-                target,
-                DataProvider.Window,
-                0,
-                timestamp,
-                0,
-                0);
+            SendXdndMessage(_platform.Info.Atoms.XdndDrop, target.MessageWindow, 0, timestamp, 0, 0);
         }
 
         private void SendXdndMessage(
             IntPtr messageType,
-            XdndTargetInfo target,
-            IntPtr sourceWindow,
+            IntPtr messageWindow,
             IntPtr ptr2,
             IntPtr ptr3,
             IntPtr ptr4,
@@ -384,10 +332,10 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 {
                     type = XEventName.ClientMessage,
                     display = _platform.Display,
-                    window = target.MessageWindow,
+                    window = messageWindow,
                     message_type = messageType,
                     format = 32,
-                    ptr1 = sourceWindow,
+                    ptr1 = _sourceWindow,
                     ptr2 = ptr2,
                     ptr3 = ptr3,
                     ptr4 = ptr4,
@@ -395,7 +343,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 }
             };
 
-            XSendEvent(_platform.Display, target.MessageWindow, false, (IntPtr)EventMask.NoEventMask, ref evt);
+            XSendEvent(_platform.Display, messageWindow, false, (IntPtr)EventMask.NoEventMask, ref evt);
             XFlush(_platform.Display);
         }
 
@@ -421,8 +369,10 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             _lastTarget = null;
             _lastStatusAction = 0;
 
-            _dataProvider?.Dispose();
-            _dataProvider = null;
+            if (_dataProvider.GetOwner() == _sourceWindow)
+                _dataProvider.SetOwner(0);
+
+            _dataProvider.Dispose();
         }
 
         private readonly record struct XdndTargetInfo(

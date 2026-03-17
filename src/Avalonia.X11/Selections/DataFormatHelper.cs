@@ -132,6 +132,19 @@ internal static class DataFormatHelper
         return [atoms.GetAtom(systemName)];
     }
 
+    public static IntPtr[] ToAtoms(IReadOnlyList<DataFormat> formats, X11Atoms atoms)
+    {
+        var atomValues = new List<IntPtr>(formats.Count);
+
+        foreach (var format in formats)
+        {
+            foreach (var atom in ToAtoms(format, atoms))
+                atomValues.Add(atom);
+        }
+
+        return atomValues.ToArray();
+    }
+
     private static IntPtr GetPreferredStringFormatAtom(IntPtr[] textFormatAtoms, X11Atoms atoms)
     {
         ReadOnlySpan<IntPtr> preferredFormats = [atoms.UTF16_STRING, atoms.UTF8_STRING, atoms.STRING];

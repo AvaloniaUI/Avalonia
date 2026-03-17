@@ -7,35 +7,41 @@ using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11.Selections.Clipboard;
 
-internal sealed class X11ClipboardImpl(AvaloniaX11Platform platform)
-    : SelectionDataProvider(platform, platform.Info.Atoms.CLIPBOARD), IOwnedClipboardImpl
+internal sealed class X11ClipboardImpl : SelectionDataProvider, IOwnedClipboardImpl
 {
     private TaskCompletionSource? _storeAtomTcs;
+    private IntPtr _handle;
 
-    protected override void OnEvent(ref XEvent ev)
+    public X11ClipboardImpl(AvaloniaX11Platform platform)
+        : base(platform, platform.Info.Atoms.CLIPBOARD)
     {
-        if (ev.type == XEventName.SelectionClear)
+        _handle = CreateEventWindow(platform, OnEvent);
+    }
+
+    private void OnEvent(ref XEvent evt)
+    {
+        if (evt.type == XEventName.SelectionClear)
         {
-            // We night have already regained the clipboard ownership by the time a SelectionClear message arrives.
-            if (GetOwner() != Window)
+            // We might have already regained the clipboard ownership by the time a SelectionClear message arrives.
+            if (GetOwner() != _handle)
                 DataTransfer = null;
 
             _storeAtomTcs?.TrySetResult();
         }
 
-        else if (ev.type == XEventName.SelectionNotify)
+        else if (evt.type == XEventName.SelectionNotify)
         {
             var atoms = Platform.Info.Atoms;
 
-            if (ev.SelectionEvent.selection == atoms.CLIPBOARD_MANAGER &&
-                ev.SelectionEvent.target == atoms.SAVE_TARGETS)
+            if (evt.SelectionEvent.selection == atoms.CLIPBOARD_MANAGER &&
+                evt.SelectionEvent.target == atoms.SAVE_TARGETS)
             {
                 _storeAtomTcs?.TrySetResult();
             }
         }
 
-        else
-            base.OnEvent(ref ev);
+        else if (evt.type == XEventName.SelectionRequest)
+            OnSelectionRequest(in evt.SelectionRequestEvent);
     }
 
     private SelectionReadSession OpenReadSession()
@@ -67,11 +73,11 @@ internal sealed class X11ClipboardImpl(AvaloniaX11Platform platform)
 
             var atomValues = ConvertDataTransfer(dataTransfer);
 
-            XChangeProperty(Platform.Display, Window, atoms.AVALONIA_SAVE_TARGETS_PROPERTY_ATOM, atoms.ATOM, 32,
+            XChangeProperty(Platform.Display, _handle, atoms.AVALONIA_SAVE_TARGETS_PROPERTY_ATOM, atoms.ATOM, 32,
                 PropertyMode.Replace, atomValues, atomValues.Length);
 
             XConvertSelection(Platform.Display, atoms.CLIPBOARD_MANAGER, atoms.SAVE_TARGETS,
-                atoms.AVALONIA_SAVE_TARGETS_PROPERTY_ATOM, Window, 0);
+                atoms.AVALONIA_SAVE_TARGETS_PROPERTY_ATOM, _handle, 0);
 
             await _storeAtomTcs.Task;
         }
@@ -90,7 +96,7 @@ internal sealed class X11ClipboardImpl(AvaloniaX11Platform platform)
         if (owner == 0)
             return null;
 
-        if (owner == Window && DataTransfer is { } storedDataTransfer)
+        if (owner == _handle && DataTransfer is { } storedDataTransfer)
             return storedDataTransfer;
 
         // Get the formats while we're in an async method, since IAsyncDataTransfer.GetFormats() is synchronous.
@@ -115,10 +121,20 @@ internal sealed class X11ClipboardImpl(AvaloniaX11Platform platform)
     public Task SetDataAsync(IAsyncDataTransfer dataTransfer)
     {
         DataTransfer = dataTransfer;
-        SetOwner(Window);
+        SetOwner(_handle);
         return StoreAtomsInClipboardManager(dataTransfer);
     }
 
     public Task<bool> IsCurrentOwnerAsync()
-        => Task.FromResult(GetOwner() == Window);
+        => Task.FromResult(GetOwner() == _handle);
+
+    public override void Dispose()
+    {
+        if (_handle == 0)
+            return;
+
+        Platform.Windows.Remove(_handle);
+        XDestroyWindow(Platform.Display, _handle);
+        _handle = 0;
+    }
 }

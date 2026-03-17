@@ -1,6 +1,5 @@
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,63 +15,54 @@ namespace Avalonia.X11.Selections;
 /// </summary>
 internal abstract class SelectionDataProvider : IDisposable
 {
+    private readonly IntPtr _selection;
     private readonly int _maximumPropertySize;
 
-    public AvaloniaX11Platform Platform { get; }
-
-    public IntPtr Selection { get; }
-
-    public IntPtr Window { get; private set; }
+    protected AvaloniaX11Platform Platform { get; }
 
     public IAsyncDataTransfer? DataTransfer { get; protected set; }
 
     protected SelectionDataProvider(AvaloniaX11Platform platform, IntPtr selection)
     {
         Platform = platform;
-        Selection = selection;
+        _selection = selection;
 
         var maxRequestSize = XExtendedMaxRequestSize(Platform.Display);
         if (maxRequestSize == 0)
             maxRequestSize = XMaxRequestSize(Platform.Display);
 
         _maximumPropertySize = (int)Math.Min(0x100000, maxRequestSize - 0x100);
-
-        Window = CreateEventWindow(platform, OnEvent);
     }
 
     protected IntPtr GetOwner()
-        => XGetSelectionOwner(Platform.Display, Selection);
+        => XGetSelectionOwner(Platform.Display, _selection);
 
     protected void SetOwner(IntPtr owner)
-        => XSetSelectionOwner(Platform.Display, Selection, owner, 0);
+        => XSetSelectionOwner(Platform.Display, _selection, owner, 0);
 
-    protected virtual void OnEvent(ref XEvent ev)
+    public void OnSelectionRequest(in XSelectionRequestEvent request)
     {
-        if (ev.type == XEventName.SelectionRequest)
+        var response = new XEvent
         {
-            var sel = ev.SelectionRequestEvent;
-            var resp = new XEvent
+            SelectionEvent =
             {
-                SelectionEvent =
-                {
-                    type = XEventName.SelectionNotify,
-                    send_event = 1,
-                    display = Platform.Display,
-                    selection = sel.selection,
-                    target = sel.target,
-                    requestor = sel.requestor,
-                    time = sel.time,
-                    property = 0
-                }
-            };
-
-            if (sel.selection == Selection)
-            {
-                resp.SelectionEvent.property = WriteTargetToProperty(sel.target, sel.requestor, sel.property);
+                type = XEventName.SelectionNotify,
+                send_event = 1,
+                display = Platform.Display,
+                selection = request.selection,
+                target = request.target,
+                requestor = request.requestor,
+                time = request.time,
+                property = 0
             }
+        };
 
-            XSendEvent(Platform.Display, sel.requestor, false, new IntPtr((int)EventMask.NoEventMask), ref resp);
+        if (request.selection == _selection)
+        {
+            response.SelectionEvent.property = WriteTargetToProperty(request.target, request.requestor, request.property);
         }
+
+        XSendEvent(Platform.Display, request.requestor, false, new IntPtr((int)EventMask.NoEventMask), ref response);
 
         IntPtr WriteTargetToProperty(IntPtr target, IntPtr window, IntPtr property)
         {
@@ -247,32 +237,10 @@ internal abstract class SelectionDataProvider : IDisposable
     protected IntPtr[] ConvertDataTransfer(IAsyncDataTransfer? dataTransfer)
     {
         var atoms = Platform.Info.Atoms;
-        var atomValues = new List<IntPtr> { atoms.TARGETS, atoms.MULTIPLE };
 
-        if (dataTransfer is not null)
-        {
-            foreach (var format in dataTransfer.Formats)
-            {
-                foreach (var atom in DataFormatHelper.ToAtoms(format, atoms))
-                    atomValues.Add(atom);
-            }
-        }
-
-        return atomValues.ToArray();
+        var formatAtoms = DataFormatHelper.ToAtoms(dataTransfer?.Formats ?? [], atoms);
+        return [atoms.TARGETS, atoms.MULTIPLE, ..formatAtoms];
     }
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (Window == 0)
-            return;
-
-        XDestroyWindow(Platform.Display, Window);
-        Window = 0;
-    }
+    public abstract void Dispose();
 }

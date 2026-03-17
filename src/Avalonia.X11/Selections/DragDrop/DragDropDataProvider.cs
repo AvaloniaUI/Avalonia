@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Input;
 
 namespace Avalonia.X11.Selections.DragDrop;
@@ -10,6 +11,15 @@ internal sealed class DragDropDataProvider : SelectionDataProvider
         DataTransfer = dataTransfer;
     }
 
-    public void SetAsOwner()
-        => SetOwner(Window);
+    public new IntPtr GetOwner()
+        => base.GetOwner();
+
+    public new void SetOwner(IntPtr window)
+        => base.SetOwner(window);
+
+    public override void Dispose()
+    {
+        DataTransfer?.Dispose();
+        DataTransfer = null;
+    }
 }

@@ -700,13 +700,13 @@ namespace Avalonia.X11
                     }
                 }
                 else if (messageType == _x11.Atoms.XdndEnter)
-                    _dropTarget?.HandleXdndEnter(ev.ClientMessageEvent);
+                    _dropTarget?.OnXdndEnter(ev.ClientMessageEvent);
                 else if (messageType == _x11.Atoms.XdndPosition)
-                    _dropTarget?.HandleXdndPosition(ev.ClientMessageEvent);
+                    _dropTarget?.OnXdndPosition(ev.ClientMessageEvent);
                 else if (messageType == _x11.Atoms.XdndLeave)
-                    _dropTarget?.HandleXdndLeave(ev.ClientMessageEvent);
+                    _dropTarget?.OnXdndLeave(ev.ClientMessageEvent);
                 else if (messageType == _x11.Atoms.XdndDrop)
-                    _dropTarget?.HandleXdndDrop(ev.ClientMessageEvent);
+                    _dropTarget?.OnXdndDrop(ev.ClientMessageEvent);
             }
             else if (ev.type == XEventName.KeyPress || ev.type == XEventName.KeyRelease)
             {

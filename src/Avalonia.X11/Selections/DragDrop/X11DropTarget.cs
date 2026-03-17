@@ -31,7 +31,7 @@ internal sealed class X11DropTarget
         XChangeProperty(_display, _window.Handle, _atoms.XdndAware, _atoms.ATOM, 32, PropertyMode.Replace, ref version, 1);
     }
 
-    public void HandleXdndEnter(in XClientMessageEvent message)
+    public void OnXdndEnter(in XClientMessageEvent message)
     {
         if (_window.InputRoot is not { } inputRoot)
             return;
@@ -84,7 +84,7 @@ internal sealed class X11DropTarget
             inputRoot);
     }
 
-    public void HandleXdndPosition(in XClientMessageEvent message)
+    public void OnXdndPosition(in XClientMessageEvent message)
     {
         if (_currentDrag is null)
             return;
@@ -136,7 +136,7 @@ internal sealed class X11DropTarget
         XFlush(_display);
     }
 
-    public void HandleXdndLeave(in XClientMessageEvent message)
+    public void OnXdndLeave(in XClientMessageEvent message)
     {
         if (_currentDrag is null)
             return;
@@ -159,7 +159,7 @@ internal sealed class X11DropTarget
         DisposeCurrentDrag();
     }
 
-    public void HandleXdndDrop(in XClientMessageEvent message)
+    public void OnXdndDrop(in XClientMessageEvent message)
     {
         if (_currentDrag is null)
             return;
