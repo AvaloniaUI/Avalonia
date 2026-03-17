@@ -193,7 +193,7 @@ namespace Avalonia.X11
             _mode.OnHandleCreated(_handle);
             
             _realSize = new PixelSize(defaultWidth, defaultHeight);
-            platform.Windows[_handle] = OnEvent;
+            platform.Windows[_handle] = new X11WindowInfo(OnEvent, this);
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
                                      | XEventMask.ResizeRedirectMask
                                      | XEventMask.PointerMotionHintMask;

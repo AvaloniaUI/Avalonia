@@ -44,7 +44,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         private readonly TaskCompletionSource<DragDropEffects> _completionSource = new();
         private readonly DragDropDataProvider _dataProvider;
         private readonly IntPtr[] _formatAtoms;
-        private X11EventDispatcher.EventHandler? _originalEventHandler;
+        private X11WindowInfo? _originalSourceWindowInfo;
         private bool _pointerGrabbed;
         private XdndTargetInfo? _lastTarget;
         private IntPtr _lastStatusAction;
@@ -61,7 +61,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             _allowedEffects = allowedEffects;
             _dataProvider = new DragDropDataProvider(platform, dataTransfer);
 
-            if (!platform.Windows.TryGetValue(sourceWindow, out _originalEventHandler))
+            if (!platform.Windows.TryGetValue(sourceWindow, out var sourceWindowInfo))
             {
                 _formatAtoms = [];
                 _completionSource.TrySetResult(DragDropEffects.None);
@@ -93,7 +93,10 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             }
 
             _pointerGrabbed = true;
-            _platform.Windows[_sourceWindow] = OnEvent;
+
+            // Replace the window event handler with our own during the drag operation
+            _originalSourceWindowInfo = sourceWindowInfo;
+            _platform.Windows[_sourceWindow] = new X11WindowInfo(OnEvent, sourceWindowInfo.Window);
 
             var atoms = _platform.Info.Atoms;
             _formatAtoms = DataFormatHelper.ToAtoms(dataTransfer.Formats, atoms);
@@ -130,14 +133,14 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 else if (message.message_type == atoms.XdndFinished)
                     OnXdndFinished(in message);
                 else
-                    _originalEventHandler?.Invoke(ref evt);
+                    _originalSourceWindowInfo?.EventHandler(ref evt);
             }
 
             else if (evt.type == XEventName.SelectionRequest)
                 _dataProvider.OnSelectionRequest(in evt.SelectionRequestEvent);
 
             else
-                _originalEventHandler?.Invoke(ref evt);
+                _originalSourceWindowInfo?.EventHandler(ref evt);
         }
 
         private void OnMotionNotify(in XMotionEvent motion)
@@ -337,10 +340,11 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             if (_pointerGrabbed)
                 UngrabPointer();
 
-            if (_originalEventHandler is not null && _platform.Windows.ContainsKey(_sourceWindow))
+            if (_originalSourceWindowInfo is { } originalSourceWindowInfo &&
+                _platform.Windows.ContainsKey(_sourceWindow))
             {
-                _platform.Windows[_sourceWindow] = _originalEventHandler;
-                _originalEventHandler = null;
+                _platform.Windows[_sourceWindow] = originalSourceWindowInfo;
+                _originalSourceWindowInfo = null;
             }
 
             _lastTarget = null;

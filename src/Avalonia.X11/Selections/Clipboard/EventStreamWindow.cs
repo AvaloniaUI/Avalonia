@@ -27,7 +27,7 @@ internal sealed class EventStreamWindow : IXEventWaiter
         {
             _isForeign = true;
             _handle = foreignWindow.Value;
-            _platform.Windows[_handle] = OnEvent;
+            _platform.Windows[_handle] = new X11WindowInfo(OnEvent, null);
         }
         else
             _handle = XLib.CreateEventWindow(platform, OnEvent);

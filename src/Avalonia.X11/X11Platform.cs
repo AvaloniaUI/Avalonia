@@ -33,7 +33,7 @@ namespace Avalonia.X11
         private X11AtSpiAccessibility? _accessibility;
         internal AtSpiServer? AtSpiServer => _accessibility?.Server;
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
-        public Dictionary<IntPtr, X11EventDispatcher.EventHandler> Windows { get; } = new ();
+        public Dictionary<IntPtr, X11WindowInfo> Windows { get; } = new ();
         public XI2Manager? XI2 { get; private set; }
         public X11Info Info { get; private set; } = null!;
         public X11Screens X11Screens { get; private set; } = null!;

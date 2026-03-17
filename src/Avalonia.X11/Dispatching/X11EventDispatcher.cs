@@ -8,16 +8,16 @@ internal class X11EventDispatcher
 {
     private readonly AvaloniaX11Platform _platform;
     private readonly IntPtr _display;
+    private readonly Dictionary<IntPtr, X11WindowInfo> _windows;
 
     public delegate void EventHandler(ref XEvent xev);
     public int Fd { get; }
-    private readonly Dictionary<IntPtr, EventHandler> _eventHandlers;
 
     public X11EventDispatcher(AvaloniaX11Platform platform)
     {
         _platform = platform;
         _display = platform.Display;
-        _eventHandlers = platform.Windows;
+        _windows = platform.Windows;
         Fd = XLib.XConnectionNumber(_display);
     }
 
@@ -46,8 +46,8 @@ internal class X11EventDispatcher
                         _platform.XI2.OnEvent((XIEvent*)xev.GenericEventCookie.data);
                     }
                 }
-                else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
-                    handler(ref xev);
+                else if (_windows.TryGetValue(xev.AnyEvent.window, out var windowInfo))
+                    windowInfo.EventHandler(ref xev);
             }
             finally
             {

@@ -751,7 +751,7 @@ namespace Avalonia.X11
         {
             var win = XCreateSimpleWindow(plat.Display, plat.Info.DefaultRootWindow, 
                 0, 0, 1, 1, 0, IntPtr.Zero, IntPtr.Zero);
-            plat.Windows[win] = handler;
+            plat.Windows[win] = new X11WindowInfo(handler, null);
             return win;
         }
 
