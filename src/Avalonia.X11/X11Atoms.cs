@@ -44,75 +44,74 @@ namespace Avalonia.X11
         private readonly IntPtr _display;
 
         // Our atoms
-        public IntPtr AnyPropertyType = (IntPtr)0;
-        public IntPtr XA_PRIMARY = (IntPtr)1;
-        public IntPtr XA_SECONDARY = (IntPtr)2;
-        public IntPtr XA_ARC = (IntPtr)3;
-        public IntPtr XA_ATOM = (IntPtr)4;
-        public IntPtr XA_BITMAP = (IntPtr)5;
-        public IntPtr XA_CARDINAL = (IntPtr)6;
-        public IntPtr XA_COLORMAP = (IntPtr)7;
-        public IntPtr XA_CURSOR = (IntPtr)8;
-        public IntPtr XA_CUT_BUFFER0 = (IntPtr)9;
-        public IntPtr XA_CUT_BUFFER1 = (IntPtr)10;
-        public IntPtr XA_CUT_BUFFER2 = (IntPtr)11;
-        public IntPtr XA_CUT_BUFFER3 = (IntPtr)12;
-        public IntPtr XA_CUT_BUFFER4 = (IntPtr)13;
-        public IntPtr XA_CUT_BUFFER5 = (IntPtr)14;
-        public IntPtr XA_CUT_BUFFER6 = (IntPtr)15;
-        public IntPtr XA_CUT_BUFFER7 = (IntPtr)16;
-        public IntPtr XA_DRAWABLE = (IntPtr)17;
-        public IntPtr XA_FONT = (IntPtr)18;
-        public IntPtr XA_INTEGER = (IntPtr)19;
-        public IntPtr XA_PIXMAP = (IntPtr)20;
-        public IntPtr XA_POINT = (IntPtr)21;
-        public IntPtr XA_RECTANGLE = (IntPtr)22;
-        public IntPtr XA_RESOURCE_MANAGER = (IntPtr)23;
-        public IntPtr XA_RGB_COLOR_MAP = (IntPtr)24;
-        public IntPtr XA_RGB_BEST_MAP = (IntPtr)25;
-        public IntPtr XA_RGB_BLUE_MAP = (IntPtr)26;
-        public IntPtr XA_RGB_DEFAULT_MAP = (IntPtr)27;
-        public IntPtr XA_RGB_GRAY_MAP = (IntPtr)28;
-        public IntPtr XA_RGB_GREEN_MAP = (IntPtr)29;
-        public IntPtr XA_RGB_RED_MAP = (IntPtr)30;
-        public IntPtr XA_STRING = (IntPtr)31;
-        public IntPtr XA_VISUALID = (IntPtr)32;
-        public IntPtr XA_WINDOW = (IntPtr)33;
-        public IntPtr XA_WM_COMMAND = (IntPtr)34;
-        public IntPtr XA_WM_HINTS = (IntPtr)35;
-        public IntPtr XA_WM_CLIENT_MACHINE = (IntPtr)36;
-        public IntPtr XA_WM_ICON_NAME = (IntPtr)37;
-        public IntPtr XA_WM_ICON_SIZE = (IntPtr)38;
-        public IntPtr XA_WM_NAME = (IntPtr)39;
-        public IntPtr XA_WM_NORMAL_HINTS = (IntPtr)40;
-        public IntPtr XA_WM_SIZE_HINTS = (IntPtr)41;
-        public IntPtr XA_WM_ZOOM_HINTS = (IntPtr)42;
-        public IntPtr XA_MIN_SPACE = (IntPtr)43;
-        public IntPtr XA_NORM_SPACE = (IntPtr)44;
-        public IntPtr XA_MAX_SPACE = (IntPtr)45;
-        public IntPtr XA_END_SPACE = (IntPtr)46;
-        public IntPtr XA_SUPERSCRIPT_X = (IntPtr)47;
-        public IntPtr XA_SUPERSCRIPT_Y = (IntPtr)48;
-        public IntPtr XA_SUBSCRIPT_X = (IntPtr)49;
-        public IntPtr XA_SUBSCRIPT_Y = (IntPtr)50;
-        public IntPtr XA_UNDERLINE_POSITION = (IntPtr)51;
-        public IntPtr XA_UNDERLINE_THICKNESS = (IntPtr)52;
-        public IntPtr XA_STRIKEOUT_ASCENT = (IntPtr)53;
-        public IntPtr XA_STRIKEOUT_DESCENT = (IntPtr)54;
-        public IntPtr XA_ITALIC_ANGLE = (IntPtr)55;
-        public IntPtr XA_X_HEIGHT = (IntPtr)56;
-        public IntPtr XA_QUAD_WIDTH = (IntPtr)57;
-        public IntPtr XA_WEIGHT = (IntPtr)58;
-        public IntPtr XA_POINT_SIZE = (IntPtr)59;
-        public IntPtr XA_RESOLUTION = (IntPtr)60;
-        public IntPtr XA_COPYRIGHT = (IntPtr)61;
-        public IntPtr XA_NOTICE = (IntPtr)62;
-        public IntPtr XA_FONT_NAME = (IntPtr)63;
-        public IntPtr XA_FAMILY_NAME = (IntPtr)64;
-        public IntPtr XA_FULL_NAME = (IntPtr)65;
-        public IntPtr XA_CAP_HEIGHT = (IntPtr)66;
-        public IntPtr XA_WM_CLASS = (IntPtr)67;
-        public IntPtr XA_WM_TRANSIENT_FOR = (IntPtr)68;
+        public readonly IntPtr PRIMARY = 1;
+        public readonly IntPtr SECONDARY = 2;
+        public readonly IntPtr ARC = 3;
+        public readonly IntPtr ATOM = 4;
+        public readonly IntPtr BITMAP = 5;
+        public readonly IntPtr CARDINAL = 6;
+        public readonly IntPtr COLORMAP = 7;
+        public readonly IntPtr CURSOR = 8;
+        public readonly IntPtr CUT_BUFFER0 = 9;
+        public readonly IntPtr CUT_BUFFER1 = 10;
+        public readonly IntPtr CUT_BUFFER2 = 11;
+        public readonly IntPtr CUT_BUFFER3 = 12;
+        public readonly IntPtr CUT_BUFFER4 = 13;
+        public readonly IntPtr CUT_BUFFER5 = 14;
+        public readonly IntPtr CUT_BUFFER6 = 15;
+        public readonly IntPtr CUT_BUFFER7 = 16;
+        public readonly IntPtr DRAWABLE = 17;
+        public readonly IntPtr FONT = 18;
+        public readonly IntPtr INTEGER = 19;
+        public readonly IntPtr PIXMAP = 20;
+        public readonly IntPtr POINT = 21;
+        public readonly IntPtr RECTANGLE = 22;
+        public readonly IntPtr RESOURCE_MANAGER = 23;
+        public readonly IntPtr RGB_COLOR_MAP = 24;
+        public readonly IntPtr RGB_BEST_MAP = 25;
+        public readonly IntPtr RGB_BLUE_MAP = 26;
+        public readonly IntPtr RGB_DEFAULT_MAP = 27;
+        public readonly IntPtr RGB_GRAY_MAP = 28;
+        public readonly IntPtr RGB_GREEN_MAP = 29;
+        public readonly IntPtr RGB_RED_MAP = 30;
+        public readonly IntPtr STRING = 31;
+        public readonly IntPtr VISUALID = 32;
+        public readonly IntPtr WINDOW = 33;
+        public readonly IntPtr WM_COMMAND = 34;
+        public readonly IntPtr WM_HINTS = 35;
+        public readonly IntPtr WM_CLIENT_MACHINE = 36;
+        public readonly IntPtr WM_ICON_NAME = 37;
+        public readonly IntPtr WM_ICON_SIZE = 38;
+        public readonly IntPtr WM_NAME = 39;
+        public readonly IntPtr WM_NORMAL_HINTS = 40;
+        public readonly IntPtr WM_SIZE_HINTS = 41;
+        public readonly IntPtr WM_ZOOM_HINTS = 42;
+        public readonly IntPtr MIN_SPACE = 43;
+        public readonly IntPtr NORM_SPACE = 44;
+        public readonly IntPtr MAX_SPACE = 45;
+        public readonly IntPtr END_SPACE = 46;
+        public readonly IntPtr SUPERSCRIPT_X = 47;
+        public readonly IntPtr SUPERSCRIPT_Y = 48;
+        public readonly IntPtr SUBSCRIPT_X = 49;
+        public readonly IntPtr SUBSCRIPT_Y = 50;
+        public readonly IntPtr UNDERLINE_POSITION = 51;
+        public readonly IntPtr UNDERLINE_THICKNESS = 52;
+        public readonly IntPtr STRIKEOUT_ASCENT = 53;
+        public readonly IntPtr STRIKEOUT_DESCENT = 54;
+        public readonly IntPtr ITALIC_ANGLE = 55;
+        public readonly IntPtr X_HEIGHT = 56;
+        public readonly IntPtr QUAD_WIDTH = 57;
+        public readonly IntPtr WEIGHT = 58;
+        public readonly IntPtr POINT_SIZE = 59;
+        public readonly IntPtr RESOLUTION = 60;
+        public readonly IntPtr COPYRIGHT = 61;
+        public readonly IntPtr NOTICE = 62;
+        public readonly IntPtr FONT_NAME = 63;
+        public readonly IntPtr FAMILY_NAME = 64;
+        public readonly IntPtr FULL_NAME = 65;
+        public readonly IntPtr CAP_HEIGHT = 66;
+        public readonly IntPtr WM_CLASS = 67;
+        public readonly IntPtr WM_TRANSIENT_FOR = 68;
 
         public IntPtr EDID;
 
@@ -183,7 +182,6 @@ namespace Avalonia.X11
         public IntPtr CLIPBOARD_MANAGER;
         public IntPtr SAVE_TARGETS;
         public IntPtr MULTIPLE;
-        public IntPtr PRIMARY;
         public IntPtr OEMTEXT;
         public IntPtr UNICODETEXT;
         public IntPtr TARGETS;
@@ -208,9 +206,14 @@ namespace Avalonia.X11
             if (value != IntPtr.Zero)
             {
                 field = value;
-                _namesToAtoms[name] = value;
-                _atomsToNames[value] = name;
+                SetName(name, value);
             }
+        }
+
+        private void SetName(string name, IntPtr value)
+        {
+            _namesToAtoms[name] = value;
+            _atomsToNames[value] = name;
         }
 
         public IntPtr GetAtom(string name)
