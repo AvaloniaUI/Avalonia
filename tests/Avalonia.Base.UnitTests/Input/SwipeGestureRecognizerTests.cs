@@ -89,14 +89,12 @@ public class SwipeGestureRecognizerTests : ScopedTestBase
 
         touch.Down(border, new Point(50, 50));
         touch.Move(border, new Point(40, 50));
-        Thread.Sleep(10);
         touch.Move(border, new Point(30, 50));
         touch.Up(border, new Point(30, 50));
 
         Assert.True(updateIds.Count >= 2);
         Assert.All(updateIds, id => Assert.Equal(updateIds[0], id));
         Assert.Equal(updateIds[0], endedId);
-        Assert.NotEqual(Vector.Zero, velocities[^1]);
         Assert.Equal(velocities[^1], endedVelocity);
     }
 

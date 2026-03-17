@@ -134,11 +134,20 @@ namespace Avalonia.Controls
 
         internal PageSlide.SlideAxis? GetTransitionAxis()
         {
-            return PageTransition switch
+            var transition = PageTransition;
+
+            if (transition is CompositePageTransition composite)
             {
-                PageSlide ps => ps.Orientation,
-                _ => null
-            };
+                foreach (var t in composite.PageTransitions)
+                {
+                    if (t is PageSlide slide)
+                        return slide.Orientation;
+                }
+
+                return null;
+            }
+
+            return transition is PageSlide ps ? ps.Orientation : null;
         }
 
         internal PageSlide.SlideAxis GetLayoutAxis() => GetTransitionAxis() ?? PageSlide.SlideAxis.Horizontal;

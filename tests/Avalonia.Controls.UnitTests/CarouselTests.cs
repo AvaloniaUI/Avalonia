@@ -171,8 +171,7 @@ namespace Avalonia.Controls.UnitTests
             target.ItemsSource = null;
             Layout(target);
 
-            var numChildren = target.GetRealizedContainers().Count();
-
+            Assert.Empty(target.GetRealizedContainers());
             Assert.Equal(-1, target.SelectedIndex);
         }
 

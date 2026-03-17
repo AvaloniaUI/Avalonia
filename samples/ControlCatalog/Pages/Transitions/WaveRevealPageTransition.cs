@@ -87,8 +87,6 @@ public class WaveRevealPageTransition : PageSlide
             from.ZIndex = 0;
         }
 
-        var parent = GetVisualParent(from, to);
-        var size = parent.Bounds.Size;
         await AnimateProgress(0.0, 1.0, from, to, forward, cancellationToken);
 
         if (to != null && !cancellationToken.IsCancellationRequested)
