@@ -124,6 +124,9 @@ namespace ControlCatalog.Pages
                     e.DragEffects = e.DragEffects & (DragDropEffects.Copy);
                 }
 
+                if (e.DragEffects == DragDropEffects.None)
+                    return;
+
                 if (e.DataTransfer.Contains(DataFormat.Text))
                 {
                     DropState.Content = e.DataTransfer.TryGetText();
