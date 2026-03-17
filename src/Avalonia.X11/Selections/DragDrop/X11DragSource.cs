@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -75,8 +74,6 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             // TODO: make the render window invisible from input using XShape.
             XUngrabPointer(platform.Display, 0);
 
-            Console.WriteLine($"Grabbing for window 0x{sourceWindow:x}");
-
             var grabResult = XGrabPointer(
                 platform.Display,
                 _sourceWindow,
@@ -90,14 +87,10 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             if (grabResult != GrabResult.GrabSuccess)
             {
-                Console.WriteLine($"Could not grab: {grabResult}");
-
                 _formatAtoms = [];
                 _completionSource.TrySetResult(DragDropEffects.None);
                 return;
             }
-
-            Console.WriteLine("Grabbed!");
 
             _pointerGrabbed = true;
             _platform.Windows[_sourceWindow] = OnEvent;
@@ -167,8 +160,6 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 var action = XdndActionHelper.EffectsToAction(_allowedEffects, _platform.Info.Atoms);
                 SendXdndPosition(currentTarget, motion.x_root, motion.y_root, motion.time, action);
             }
-
-            Console.WriteLine($"Motion on 0x{motion.subwindow:x} at {motion.x},{motion.y} (root={motion.x_root},{motion.y_root}); XDND: win=0x{target?.MessageWindow:x}; version={target?.Version}");
         }
 
         private void OnButtonRelease(in XButtonEvent button)
@@ -184,21 +175,15 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         private void OnXdndStatus(in XClientMessageEvent message)
         {
-            Console.WriteLine("Received XdndStatus");
-
             if (_lastTarget is not { } lastTarget || message.ptr1 != lastTarget.TargetWindow)
                 return;
 
             var accepted = (message.ptr2 & 1) == 1;
             _lastStatusAction = accepted ? message.ptr5 : 0;
-
-            Console.WriteLine($"Status updated: {XdndActionHelper.ActionToEffects(_lastStatusAction, _platform.Info.Atoms)}");
         }
 
         private void OnXdndFinished(in XClientMessageEvent message)
         {
-            Console.WriteLine("Received XdndFinished");
-
             if (_lastTarget is not { } lastTarget || message.ptr1 != lastTarget.TargetWindow)
                 return;
 
@@ -277,8 +262,6 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         private void SendXdndEnter(XdndTargetInfo target)
         {
-            Console.WriteLine("Sending XdndEnter");
-
             var version = Math.Min(target.Version, XdndVersion);
             var hasMoreFormats = _formatAtoms.Length > 3;
 
@@ -293,8 +276,6 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         private void SendXdndPosition(XdndTargetInfo target, int x, int y, IntPtr timestamp, IntPtr action)
         {
-            Console.WriteLine("Sending XdndPosition");
-
             SendXdndMessage(
                 _platform.Info.Atoms.XdndPosition,
                 target.MessageWindow,
@@ -306,15 +287,11 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         private void SendXdndLeave(XdndTargetInfo target)
         {
-            Console.WriteLine("Sending XdndLeave");
-
             SendXdndMessage(_platform.Info.Atoms.XdndLeave, target.MessageWindow, 0, 0, 0, 0);
         }
 
         private void SendXdndDrop(XdndTargetInfo target, IntPtr timestamp)
         {
-            Console.WriteLine("Sending XdndDrop");
-
             SendXdndMessage(_platform.Info.Atoms.XdndDrop, target.MessageWindow, 0, timestamp, 0, 0);
         }
 
