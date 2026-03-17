@@ -1091,6 +1091,7 @@ public class DrawerPageTests
                 Width = 400,
                 Height = 300
             };
+            dp.GestureRecognizers.OfType<SwipeGestureRecognizer>().First().IsMouseEnabled = true;
 
             var root = new TestRoot
             {
