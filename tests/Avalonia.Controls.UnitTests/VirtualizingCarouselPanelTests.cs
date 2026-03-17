@@ -966,6 +966,72 @@ namespace Avalonia.Controls.UnitTests
                     visual.RenderTransform = null;
                 }
             }
+
+            [Fact]
+            public void Vertical_Swipe_Forward_Realizes_Next_Item()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar" };
+                var transition = new PageSlide(TimeSpan.FromSeconds(1), PageSlide.SlideAxis.Vertical);
+                var (panel, carousel) = CreateTarget(items, transition);
+                carousel.IsSwipeEnabled = true;
+
+                var e = new SwipeGestureEventArgs(1, new Vector(0, 10), default);
+                panel.RaiseEvent(e);
+
+                Assert.True(carousel.IsSwiping);
+                Assert.Equal(2, panel.Children.Count);
+                var target = panel.Children[1] as ContentPresenter;
+                Assert.NotNull(target);
+                Assert.Equal("bar", target.Content);
+            }
+
+            [Fact]
+            public void New_Swipe_Interrupts_Active_Completion_Animation()
+            {
+                var clock = new MockGlobalClock();
+
+                using var app = UnitTestApplication.Start(
+                    TestServices.MockPlatformRenderInterface.With(globalClock: clock));
+                using var sync = UnitTestSynchronizationContext.Begin();
+
+                var items = new[] { "foo", "bar", "baz" };
+                var transition = new TrackingInteractiveTransition();
+                var (panel, carousel) = CreateTarget(items, transition);
+                carousel.IsSwipeEnabled = true;
+
+                panel.RaiseEvent(new SwipeGestureEventArgs(1, new Vector(1000, 0), default));
+                panel.RaiseEvent(new SwipeGestureEndedEventArgs(1, new Vector(1000, 0)));
+
+                clock.Pulse(TimeSpan.Zero);
+                clock.Pulse(TimeSpan.FromMilliseconds(50));
+                sync.ExecutePostedCallbacks();
+
+                Assert.Equal(0, carousel.SelectedIndex);
+
+                panel.RaiseEvent(new SwipeGestureEventArgs(2, new Vector(10, 0), default));
+
+                Assert.True(carousel.IsSwiping);
+                Assert.Equal(1, carousel.SelectedIndex);
+            }
+
+            [Fact]
+            public void Swipe_With_NonInteractive_Transition_Does_Not_Crash()
+            {
+                using var app = Start();
+                var items = new[] { "foo", "bar" };
+                var transition = new Mock<IPageTransition>();
+                transition.Setup(x => x.Start(It.IsAny<Visual>(), It.IsAny<Visual>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                    .Returns(Task.CompletedTask);
+                var (panel, carousel) = CreateTarget(items, transition.Object);
+                carousel.IsSwipeEnabled = true;
+
+                var e = new SwipeGestureEventArgs(1, new Vector(10, 0), default);
+                panel.RaiseEvent(e);
+
+                Assert.True(carousel.IsSwiping);
+                Assert.Equal(2, panel.Children.Count);
+            }
         }
     }
 }
