@@ -10,7 +10,6 @@ namespace Avalonia.Rendering.Composition.Expressions
     {
         Invalid,
         Boolean,
-        Scalar,
         Double,
         Vector2,
         Vector3,
@@ -33,7 +32,6 @@ namespace Avalonia.Rendering.Composition.Expressions
         [FieldOffset(0)] public VariantType Type;
 
         [FieldOffset(4)] public bool Boolean;
-        [FieldOffset(4)] public float Scalar;
         [FieldOffset(4)] public double Double;
         [FieldOffset(4)] public Vector2 Vector2;
         [FieldOffset(4)] public Vector3 Vector3;
@@ -238,13 +236,6 @@ namespace Avalonia.Rendering.Composition.Expressions
                 Type = VariantType.Boolean,
                 Boolean = value
             };
-
-        public static implicit operator ExpressionVariant(float scalar) =>
-            new ExpressionVariant
-            {
-                Type = VariantType.Scalar,
-                Scalar = scalar
-            };
         
         public static implicit operator ExpressionVariant(double d) =>
             new ExpressionVariant
@@ -329,9 +320,6 @@ namespace Avalonia.Rendering.Composition.Expressions
         {
             if (left.Type != right.Type || left.Type == VariantType.Invalid)
                 return default;
-
-            if (left.Type == VariantType.Scalar)
-                return left.Scalar + right.Scalar;
             
             if (left.Type == VariantType.Double)
                 return left.Double + right.Double;
@@ -367,9 +355,6 @@ namespace Avalonia.Rendering.Composition.Expressions
         {
             if (left.Type != right.Type || left.Type == VariantType.Invalid)
                 return default;
-
-            if (left.Type == VariantType.Scalar)
-                return left.Scalar - right.Scalar;
             
             if (left.Type == VariantType.Double)
                 return left.Double - right.Double;
@@ -403,9 +388,6 @@ namespace Avalonia.Rendering.Composition.Expressions
 
         public static ExpressionVariant operator -(ExpressionVariant left)
         {
-
-            if (left.Type == VariantType.Scalar)
-                return -left.Scalar;
             
             if (left.Type == VariantType.Double)
                 return -left.Double;
@@ -444,9 +426,6 @@ namespace Avalonia.Rendering.Composition.Expressions
         {
             if (left.Type == VariantType.Invalid || right.Type == VariantType.Invalid)
                 return default;
-
-            if (left.Type == VariantType.Scalar && right.Type == VariantType.Scalar)
-                return left.Scalar * right.Scalar;
             
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double * right.Double;
@@ -456,12 +435,6 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector && right.Type == VariantType.Vector)
                 return Vector.Multiply(left.Vector, right.Vector);
-
-            if (left.Type == VariantType.Vector2 && right.Type == VariantType.Scalar)
-                return left.Vector2 * right.Scalar;
-            
-            if (left.Type == VariantType.Vector && right.Type == VariantType.Scalar)
-                return left.Vector * right.Scalar;
             
             if (left.Type == VariantType.Vector && right.Type == VariantType.Double)
                 return left.Vector * right.Double;
@@ -472,38 +445,20 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (left.Type == VariantType.Vector3D && right.Type == VariantType.Vector3D)
                 return Vector3D.Multiply(left.Vector3D, right.Vector3D);
 
-            if (left.Type == VariantType.Vector3 && right.Type == VariantType.Scalar)
-                return left.Vector3 * right.Scalar;
-            
-            if (left.Type == VariantType.Vector3D && right.Type == VariantType.Scalar)
-                return Vector3D.Multiply(left.Vector3D, right.Scalar);
-
             if (left.Type == VariantType.Vector4 && right.Type == VariantType.Vector4)
                 return left.Vector4 * right.Vector4;
-
-            if (left.Type == VariantType.Vector4 && right.Type == VariantType.Scalar)
-                return left.Vector4 * right.Scalar;
             
             if (left.Type == VariantType.Matrix3x2 && right.Type == VariantType.Matrix3x2)
                 return left.Matrix3x2 * right.Matrix3x2;
-
-            if (left.Type == VariantType.Matrix3x2 && right.Type == VariantType.Scalar)
-                return left.Matrix3x2 * right.Scalar;
             
             if (left.Type == VariantType.AvaloniaMatrix && right.Type == VariantType.AvaloniaMatrix)
                 return left.AvaloniaMatrix * right.AvaloniaMatrix;
             
             if (left.Type == VariantType.Matrix4x4 && right.Type == VariantType.Matrix4x4)
                 return left.Matrix4x4 * right.Matrix4x4;
-
-            if (left.Type == VariantType.Matrix4x4 && right.Type == VariantType.Scalar)
-                return left.Matrix4x4 * right.Scalar;
             
             if (left.Type == VariantType.Quaternion && right.Type == VariantType.Quaternion)
                 return left.Quaternion * right.Quaternion;
-
-            if (left.Type == VariantType.Quaternion && right.Type == VariantType.Scalar)
-                return left.Quaternion * right.Scalar;
 
             return default;
         }
@@ -512,9 +467,6 @@ namespace Avalonia.Rendering.Composition.Expressions
         {
             if (left.Type == VariantType.Invalid || right.Type == VariantType.Invalid)
                 return default;
-
-            if (left.Type == VariantType.Scalar && right.Type == VariantType.Scalar)
-                return left.Scalar / right.Scalar;
             
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double / right.Double;
@@ -524,27 +476,15 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector && right.Type == VariantType.Vector)
                 return Vector.Divide(left.Vector, right.Vector);
-
-            if (left.Type == VariantType.Vector2 && right.Type == VariantType.Scalar)
-                return left.Vector2 / right.Scalar;
-            
-            if (left.Type == VariantType.Vector && right.Type == VariantType.Scalar)
-                return left.Vector / right.Scalar;
             
             if (left.Type == VariantType.Vector && right.Type == VariantType.Double)
-                return left.Vector / right.Scalar;
+                return left.Vector / right.Double;
 
             if (left.Type == VariantType.Vector3 && right.Type == VariantType.Vector3)
                 return left.Vector3 / right.Vector3;
 
             if (left.Type == VariantType.Vector3D && right.Type == VariantType.Vector3D)
                 return Vector3D.Divide(left.Vector3D, right.Vector3D);
-
-            if (left.Type == VariantType.Vector3 && right.Type == VariantType.Scalar)
-                return left.Vector3 / right.Scalar;
-
-            if (left.Type == VariantType.Vector3D && right.Type == VariantType.Scalar)
-                return Avalonia.Vector3D.Divide(left.Vector3D, right.Scalar);
             
             if (left.Type == VariantType.Vector3D && right.Type == VariantType.Double)
                 return Avalonia.Vector3D.Divide(left.Vector3D, right.Double);
@@ -552,8 +492,8 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (left.Type == VariantType.Vector4 && right.Type == VariantType.Vector4)
                 return left.Vector4 / right.Vector4;
 
-            if (left.Type == VariantType.Vector4 && right.Type == VariantType.Scalar)
-                return left.Vector4 / right.Scalar;
+            if (left.Type == VariantType.Vector4 && right.Type == VariantType.Double)
+                return left.Vector4 / (float)right.Double;
             
             if (left.Type == VariantType.Quaternion && right.Type == VariantType.Quaternion)
                 return left.Quaternion / right.Quaternion;
@@ -564,11 +504,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         public ExpressionVariant EqualsTo(ExpressionVariant right)
         {
             if (Type != right.Type || Type == VariantType.Invalid)
-                return default;
-
-            if (Type == VariantType.Scalar)
-                return Scalar == right.Scalar;
-            
+                return default;       
             
             if (Type == VariantType.Double)
                 return Double == right.Double;
@@ -623,8 +559,6 @@ namespace Avalonia.Rendering.Composition.Expressions
 
         public static ExpressionVariant operator %(ExpressionVariant left, ExpressionVariant right)
         {
-            if (left.Type == VariantType.Scalar && right.Type == VariantType.Scalar)
-                return left.Scalar % right.Scalar;
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double % right.Double;
             return default;
@@ -632,18 +566,13 @@ namespace Avalonia.Rendering.Composition.Expressions
 
         public static ExpressionVariant operator <(ExpressionVariant left, ExpressionVariant right)
         {
-            if (left.Type == VariantType.Scalar && right.Type == VariantType.Scalar)
-                return left.Scalar < right.Scalar;
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double < right.Double;
             return default;
         }
 
         public static ExpressionVariant operator >(ExpressionVariant left, ExpressionVariant right)
-        {
-            if (left.Type == VariantType.Scalar && right.Type == VariantType.Scalar)
-                return left.Scalar > right.Scalar;
-            
+        {            
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double > right.Double;
             return default;
@@ -676,14 +605,9 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (typeof(T) == typeof(float))
             {
-                if (Type == VariantType.Scalar)
-                {
-                    res = (T) (object) Scalar;
-                    return true;
-                }
                 if (Type == VariantType.Double)
                 {
-                    res = (T)(object)Scalar;
+                    res = (T)(object)(float)(double)(object)Double;
                     return true;
                 }
             }
@@ -693,12 +617,6 @@ namespace Avalonia.Rendering.Composition.Expressions
                 if (Type == VariantType.Double)
                 {
                     res = (T) (object) Double;
-                    return true;
-                }
-
-                if (Type == VariantType.Scalar)
-                {
-                    res = (T)(object)(float)Double;
                     return true;
                 }
             }
@@ -871,8 +789,6 @@ namespace Avalonia.Rendering.Composition.Expressions
         {
             if (Type == VariantType.Boolean)
                 return Boolean.ToString();
-            if (Type == VariantType.Scalar)
-                return Scalar.ToString(CultureInfo.InvariantCulture);
             if (Type == VariantType.Double)
                 return Double.ToString(CultureInfo.InvariantCulture);
             if (Type == VariantType.Vector2)
