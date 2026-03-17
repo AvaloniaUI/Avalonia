@@ -3,6 +3,9 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Primitives
 {
+    /// <summary>
+    /// A control that manages multiple layers such as adorners, overlays, text selectors, and popups.
+    /// </summary>
     public sealed class VisualLayerManager : Decorator
     {
         private const int AdornerZIndex = int.MaxValue - 100;
@@ -15,12 +18,27 @@ namespace Avalonia.Controls.Primitives
         private readonly List<Control> _layers = new();
         private OverlayLayer? _overlayLayer;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether an <see cref="Avalonia.Controls.Primitives.AdornerLayer"/> is
+        /// created for this <see cref="VisualLayerManager"/>. When enabled, the adorner layer is added to the
+        /// visual tree, providing a dedicated layer for rendering adorners.
+        /// </summary>
         public bool EnableAdornerLayer { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether an <see cref="Avalonia.Controls.Primitives.OverlayLayer"/> is
+        /// created for this <see cref="VisualLayerManager"/>. When enabled, the overlay layer is added to the
+        /// visual tree, providing a dedicated layer for rendering overlay visuals.
+        /// </summary>
         public bool EnableOverlayLayer { get; set; }
 
         internal bool EnablePopupOverlayLayer { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether a <see cref="Avalonia.Controls.Primitives.TextSelectorLayer"/> is
+        /// created for this <see cref="VisualLayerManager"/>. When enabled, the overlay layer is added to the
+        /// visual tree, providing a dedicated layer for rendering text selection handles.
+        /// </summary>
         public bool EnableTextSelectorLayer { get; set; }
 
         internal AdornerLayer? AdornerLayer
