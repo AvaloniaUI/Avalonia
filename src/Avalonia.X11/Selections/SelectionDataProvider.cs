@@ -18,13 +18,13 @@ internal abstract class SelectionDataProvider : IDisposable
 {
     private readonly int _maximumPropertySize;
 
-    protected AvaloniaX11Platform Platform { get; }
+    public AvaloniaX11Platform Platform { get; }
 
-    protected IntPtr Selection { get; }
+    public IntPtr Selection { get; }
 
-    protected IntPtr Handle { get; private set; }
+    public IntPtr Window { get; private set; }
 
-    public IAsyncDataTransfer? DataTransfer { get; set; }
+    public IAsyncDataTransfer? DataTransfer { get; protected set; }
 
     protected SelectionDataProvider(AvaloniaX11Platform platform, IntPtr selection)
     {
@@ -37,7 +37,7 @@ internal abstract class SelectionDataProvider : IDisposable
 
         _maximumPropertySize = (int)Math.Min(0x100000, maxRequestSize - 0x100);
 
-        Handle = CreateEventWindow(platform, OnEvent);
+        Window = CreateEventWindow(platform, OnEvent);
     }
 
     protected IntPtr GetOwner()
@@ -269,10 +269,10 @@ internal abstract class SelectionDataProvider : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (Handle == 0)
+        if (Window == 0)
             return;
 
-        XDestroyWindow(Platform.Display, Handle);
-        Handle = 0;
+        XDestroyWindow(Platform.Display, Window);
+        Window = 0;
     }
 }

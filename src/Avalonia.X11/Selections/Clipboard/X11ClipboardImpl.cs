@@ -17,7 +17,7 @@ internal sealed class X11ClipboardImpl(AvaloniaX11Platform platform)
         if (ev.type == XEventName.SelectionClear)
         {
             // We night have already regained the clipboard ownership by the time a SelectionClear message arrives.
-            if (GetOwner() != Handle)
+            if (GetOwner() != Window)
                 DataTransfer = null;
 
             _storeAtomTcs?.TrySetResult();
@@ -67,11 +67,11 @@ internal sealed class X11ClipboardImpl(AvaloniaX11Platform platform)
 
             var atomValues = ConvertDataTransfer(dataTransfer);
 
-            XChangeProperty(Platform.Display, Handle, atoms.AVALONIA_SAVE_TARGETS_PROPERTY_ATOM, atoms.ATOM, 32,
+            XChangeProperty(Platform.Display, Window, atoms.AVALONIA_SAVE_TARGETS_PROPERTY_ATOM, atoms.ATOM, 32,
                 PropertyMode.Replace, atomValues, atomValues.Length);
 
             XConvertSelection(Platform.Display, atoms.CLIPBOARD_MANAGER, atoms.SAVE_TARGETS,
-                atoms.AVALONIA_SAVE_TARGETS_PROPERTY_ATOM, Handle, 0);
+                atoms.AVALONIA_SAVE_TARGETS_PROPERTY_ATOM, Window, 0);
 
             await _storeAtomTcs.Task;
         }
@@ -90,7 +90,7 @@ internal sealed class X11ClipboardImpl(AvaloniaX11Platform platform)
         if (owner == 0)
             return null;
 
-        if (owner == Handle && DataTransfer is { } storedDataTransfer)
+        if (owner == Window && DataTransfer is { } storedDataTransfer)
             return storedDataTransfer;
 
         // Get the formats while we're in an async method, since IAsyncDataTransfer.GetFormats() is synchronous.
@@ -115,10 +115,10 @@ internal sealed class X11ClipboardImpl(AvaloniaX11Platform platform)
     public Task SetDataAsync(IAsyncDataTransfer dataTransfer)
     {
         DataTransfer = dataTransfer;
-        SetOwner(Handle);
+        SetOwner(Window);
         return StoreAtomsInClipboardManager(dataTransfer);
     }
 
     public Task<bool> IsCurrentOwnerAsync()
-        => Task.FromResult(GetOwner() == Handle);
+        => Task.FromResult(GetOwner() == Window);
 }

@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using static Avalonia.X11.Selections.DragDrop.XdndConstants;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11.Selections.DragDrop;
@@ -29,7 +31,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         var cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
 
-        using var handler = new Handler(platform, window.Handle, cursorFactory);
+        using var handler = new Handler(platform, window.Handle, dataTransfer.ToAsynchronous(), allowedEffects, cursorFactory);
         await handler.Completion;
 
         return DragDropEffects.None;
@@ -39,21 +41,30 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IntPtr _sourceWindow;
-        private readonly TaskCompletionSource _completionSource = new();
-        private readonly X11EventDispatcher.EventHandler? _originalEventHandler;
+        private readonly IAsyncDataTransfer _dataTransfer;
+        private readonly DragDropEffects _allowedEffects;
+        private readonly TaskCompletionSource<DragDropEffects> _completionSource = new();
+        private X11EventDispatcher.EventHandler? _originalEventHandler;
+        private bool _pointerGrabbed;
         private XdndTargetInfo? _lastTarget;
+        private DragDropDataProvider? _dataProvider;
+        private IntPtr _lastStatusAction;
 
-        public Task Completion
-            => _completionSource.Task;
-
-        public Handler(AvaloniaX11Platform platform, IntPtr sourceWindow, ICursorFactory? cursorFactory)
+        public Handler(
+            AvaloniaX11Platform platform,
+            IntPtr sourceWindow,
+            IAsyncDataTransfer dataTransfer,
+            DragDropEffects allowedEffects,
+            ICursorFactory? cursorFactory)
         {
             _platform = platform;
             _sourceWindow = sourceWindow;
+            _dataTransfer = dataTransfer;
+            _allowedEffects = allowedEffects;
 
             if (!platform.Windows.TryGetValue(sourceWindow, out _originalEventHandler))
             {
-                _completionSource.TrySetResult();
+                _completionSource.TrySetResult(DragDropEffects.None);
                 return;
             }
 
@@ -80,37 +91,167 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             {
                 Console.WriteLine($"Could not grab: {grabResult}");
 
-                _completionSource.TrySetResult();
+                _completionSource.TrySetResult(DragDropEffects.None);
                 return;
             }
 
             Console.WriteLine("Grabbed!");
 
+            _pointerGrabbed = true;
             _platform.Windows[_sourceWindow] = OnEvent;
+        }
+
+        public Task<DragDropEffects> Completion
+            => _completionSource.Task;
+
+        private IntPtr[] DataFormatAtoms
+        {
+            get
+            {
+                return field ??= CalcDataFormatAtoms();
+
+                IntPtr[] CalcDataFormatAtoms()
+                {
+                    var atomValues = new List<IntPtr>(_dataTransfer.Formats.Count);
+
+                    foreach (var format in _dataTransfer.Formats)
+                    {
+                        foreach (var atom in DataFormatHelper.ToAtoms(format, _platform.Info.Atoms))
+                            atomValues.Add(atom);
+                    }
+
+                    return atomValues.ToArray();
+                }
+            }
+        }
+
+        private DragDropDataProvider DataProvider
+        {
+            get
+            {
+                return _dataProvider ??= CreateDataProvider();
+
+                DragDropDataProvider CreateDataProvider()
+                {
+                    var dataProvider = new DragDropDataProvider(_platform, _dataTransfer);
+                    var formats = DataFormatAtoms;
+
+                    XChangeProperty(
+                        _platform.Display,
+                        dataProvider.Window,
+                        _platform.Info.Atoms.XdndTypeList,
+                        _platform.Info.Atoms.ATOM,
+                        32,
+                        PropertyMode.Replace,
+                        formats,
+                        formats.Length);
+
+                    return dataProvider;
+                }
+            }
         }
 
         private void OnEvent(ref XEvent xev)
         {
-            Console.WriteLine($"Event on drag window: {xev.type}");
+            if (xev.type == XEventName.MotionNotify && _pointerGrabbed)
+                OnMotionNotify(in xev.MotionEvent);
 
-            if (xev.type == XEventName.MotionNotify)
+            else if (xev.type == XEventName.ButtonRelease && _pointerGrabbed)
+                OnButtonRelease(in xev.ButtonEvent);
+
+            else if (xev.type == XEventName.ClientMessage)
             {
-                var m = xev.MotionEvent;
-                var target = FindXdndTarget(m.x_root, m.y_root);
+                ref var message = ref xev.ClientMessageEvent;
+                var atoms = _platform.Info.Atoms;
 
-                Console.WriteLine($"Motion on 0x{m.subwindow:x} at {m.x},{m.y} (root={m.x_root},{m.y_root}); XDND: win=0x{target?.MessageWindow:x}; version={target?.Version}");
+                if (message.message_type == atoms.XdndStatus)
+                    OnXdndStatus(in message);
+                else if (message.message_type == atoms.XdndFinished)
+                    OnXdndFinished(in message);
+                else
+                    _originalEventHandler?.Invoke(ref xev);
             }
 
-            else if (xev.type == XEventName.ButtonRelease)
-            {
-                Console.WriteLine("Completing");
-                _completionSource.TrySetResult();
-            }
             else
-                _originalEventHandler!(ref xev);
+                _originalEventHandler?.Invoke(ref xev);
         }
 
-        private XdndTargetInfo? FindXdndTarget(int rootX, int rootY)
+        private void OnMotionNotify(in XMotionEvent motion)
+        {
+            var target = FindXdndTarget(motion.x_root, motion.y_root);
+
+            if (_lastTarget != target)
+            {
+                if (_lastTarget is { } lastTarget)
+                    SendXdndLeave(lastTarget);
+
+                _lastTarget = target;
+
+                if (target is { } newTarget)
+                    SendXdndEnter(newTarget);
+            }
+
+            if (target is { } currentTarget)
+            {
+                var action = XdndActionHelper.EffectsToAction(_allowedEffects, _platform.Info.Atoms);
+                SendXdndPosition(currentTarget, motion.x_root, motion.y_root, motion.time, action);
+            }
+
+            Console.WriteLine($"Motion on 0x{motion.subwindow:x} at {motion.x},{motion.y} (root={motion.x_root},{motion.y_root}); XDND: win=0x{target?.MessageWindow:x}; version={target?.Version}");
+        }
+
+        private void OnButtonRelease(in XButtonEvent button)
+        {
+            UngrabPointer();
+
+            if (_lastTarget is { } lastTarget)
+                SendXdndDrop(lastTarget, button.time);
+        }
+
+        private void OnXdndStatus(in XClientMessageEvent message)
+        {
+            Console.WriteLine("Received XdndStatus");
+
+            if (_lastTarget is null)
+                return;
+
+            var targetWindow = message.ptr1;
+            if (targetWindow == 0 || targetWindow != _dataProvider?.Window)
+                return;
+
+            var accepted = (message.ptr2 & 1) == 1;
+            _lastStatusAction = accepted ? message.ptr5 : 0;
+
+            Console.WriteLine($"Status updated: {XdndActionHelper.ActionToEffects(_lastStatusAction, _platform.Info.Atoms)}");
+        }
+
+        private void OnXdndFinished(in XClientMessageEvent message)
+        {
+            Console.WriteLine("Received XdndFinished");
+
+            if (_lastTarget is not { } lastTarget)
+                return;
+
+            var targetWindow = message.ptr1;
+            if (targetWindow == 0 || targetWindow != _dataProvider?.Window)
+                return;
+
+            _lastTarget = null;
+
+            IntPtr action;
+            if (lastTarget.Version >= 5)
+            {
+                var accepted = (message.ptr2 & 1) == 1;
+                action = accepted ? message.ptr3 : 0;
+            }
+            else
+                action = _lastStatusAction;
+
+            var effects = XdndActionHelper.ActionToEffects(action, _platform.Info.Atoms);
+            _completionSource.TrySetResult(effects);
+        }
+
+        private XdndTargetInfo? FindXdndTarget(int x, int y)
         {
             var display = _platform.Display;
             var rootWindow = _platform.Info.RootWindow;
@@ -121,7 +262,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 if (TryGetXdndTargetInfo(currentWindow) is { } info)
                     return info;
 
-                if (!XTranslateCoordinates(display, rootWindow, currentWindow, rootX, rootY, out _, out _, out var childWindow))
+                if (!XTranslateCoordinates(display, rootWindow, currentWindow, x, y, out _, out _, out var childWindow))
                     return null;
 
                 currentWindow = childWindow;
@@ -162,13 +303,80 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             var atoms = _platform.Info.Atoms;
 
             var version = XGetWindowPropertyAsIntPtr(_platform.Display, window, atoms.XdndAware, atoms.ATOM) ?? 0;
-            if (version is < XdndConstants.MinXdndVersion or > byte.MaxValue)
+            if (version is < MinXdndVersion or > byte.MaxValue)
                 version = 0;
 
             return (byte)version;
         }
 
         private void SendXdndEnter(XdndTargetInfo target)
+        {
+            Console.WriteLine("Sending XdndEnter");
+
+            var version = Math.Min(target.Version, XdndVersion);
+            var formats = DataFormatAtoms;
+            var hasMoreFormats = formats.Length > 3;
+
+            SendXdndMessage(
+                _platform.Info.Atoms.XdndEnter,
+                target,
+                DataProvider.Window,
+                (version << 24) | (hasMoreFormats ? 1 : 0),
+                formats.Length >= 1 ? formats[0] : 0,
+                formats.Length >= 2 ? formats[1] : 0,
+                formats.Length >= 3 ? formats[2] : 0);
+        }
+
+        private void SendXdndPosition(XdndTargetInfo target, int x, int y, IntPtr timestamp, IntPtr action)
+        {
+            Console.WriteLine("Sending XdndPosition");
+
+            SendXdndMessage(
+                _platform.Info.Atoms.XdndPosition,
+                target,
+                DataProvider.Window,
+                0,
+                (x << 16) | y,
+                timestamp,
+                action);
+        }
+
+        private void SendXdndLeave(XdndTargetInfo target)
+        {
+            Console.WriteLine("Sending XdndLeave");
+
+            SendXdndMessage(
+                _platform.Info.Atoms.XdndLeave,
+                target,
+                DataProvider.Window,
+                0,
+                0,
+                0,
+                0);
+        }
+
+        private void SendXdndDrop(XdndTargetInfo target, IntPtr timestamp)
+        {
+            Console.WriteLine("Sending XdndDrop");
+
+            SendXdndMessage(
+                _platform.Info.Atoms.XdndDrop,
+                target,
+                DataProvider.Window,
+                0,
+                timestamp,
+                0,
+                0);
+        }
+
+        private void SendXdndMessage(
+            IntPtr messageType,
+            XdndTargetInfo target,
+            IntPtr sourceWindow,
+            IntPtr ptr2,
+            IntPtr ptr3,
+            IntPtr ptr4,
+            IntPtr ptr5)
         {
             var evt = new XEvent
             {
@@ -177,13 +385,13 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                     type = XEventName.ClientMessage,
                     display = _platform.Display,
                     window = target.MessageWindow,
-                    message_type = _platform.Info.Atoms.XdndEnter,
+                    message_type = messageType,
                     format = 32,
-                    ptr1 = target.TargetWindow,
-                    ptr2 = 0,
-                    ptr3 = 0,
-                    ptr4 = 0,
-                    ptr5 = 0
+                    ptr1 = sourceWindow,
+                    ptr2 = ptr2,
+                    ptr3 = ptr3,
+                    ptr4 = ptr4,
+                    ptr5 = ptr5
                 }
             };
 
@@ -191,19 +399,35 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             XFlush(_platform.Display);
         }
 
+        private void UngrabPointer()
+        {
+            _pointerGrabbed = false;
+
+            XUngrabPointer(_platform.Display, 0);
+            XFlush(_platform.Display);
+        }
+
         public void Dispose()
         {
-            XUngrabPointer(_platform.Display, 0);
+            if (_pointerGrabbed)
+                UngrabPointer();
 
             if (_originalEventHandler is not null && _platform.Windows.ContainsKey(_sourceWindow))
+            {
                 _platform.Windows[_sourceWindow] = _originalEventHandler;
+                _originalEventHandler = null;
+            }
+
+            _lastTarget = null;
+            _lastStatusAction = 0;
+
+            _dataProvider?.Dispose();
+            _dataProvider = null;
         }
 
-        private readonly struct XdndTargetInfo(byte version, IntPtr targetWindow, IntPtr messageWindow)
-        {
-            public readonly byte Version = version;
-            public readonly IntPtr TargetWindow = targetWindow;
-            public readonly IntPtr MessageWindow = messageWindow;
-        }
+        private readonly record struct XdndTargetInfo(
+            byte Version,
+            IntPtr TargetWindow,
+            IntPtr MessageWindow);
     }
 }

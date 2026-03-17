@@ -96,7 +96,7 @@ internal sealed class X11DropTarget
         var screenX = (ushort)((message.ptr3 >> 16) & 0xFFFF);
         var screenY = (ushort)(message.ptr3 & 0xFFFF);
         var position = _window.PointToClient(new PixelPoint(screenX, screenY));
-        var requestedEffects = ActionToEffects(message.ptr5);
+        var requestedEffects = XdndActionHelper.ActionToEffects(message.ptr5, _atoms);
         var eventType = _currentDrag.LastPosition is null ? RawDragEventType.DragEnter : RawDragEventType.DragOver;
 
         _currentDrag.LastPosition = position;
@@ -113,7 +113,7 @@ internal sealed class X11DropTarget
 
         _dragDropDevice.ProcessRawEvent(dragEnter);
 
-        var resultAction = EffectsToAction(dragEnter.Effects);
+        var resultAction = XdndActionHelper.EffectsToAction(dragEnter.Effects, _atoms);
 
         var evt = new XEvent
         {
@@ -180,28 +180,6 @@ internal sealed class X11DropTarget
         _dragDropDevice.ProcessRawEvent(drop);
 
         DisposeCurrentDrag();
-    }
-
-    private DragDropEffects ActionToEffects(IntPtr action)
-    {
-        if (action == _atoms.XdndActionCopy)
-            return DragDropEffects.Copy;
-        if (action == _atoms.XdndActionMove)
-            return DragDropEffects.Move;
-        if (action == _atoms.XdndActionLink)
-            return DragDropEffects.Link;
-        return DragDropEffects.None;
-    }
-
-    private IntPtr EffectsToAction(DragDropEffects effects)
-    {
-        if ((effects & DragDropEffects.Copy) != 0)
-            return _atoms.XdndActionCopy;
-        if ((effects & DragDropEffects.Move) != 0)
-            return _atoms.XdndActionMove;
-        if ((effects & DragDropEffects.Link) != 0)
-            return _atoms.XdndActionLink;
-        return 0;
     }
 
     private void DisposeCurrentDrag()
