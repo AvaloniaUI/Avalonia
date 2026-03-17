@@ -594,190 +594,82 @@ namespace Avalonia.Rendering.Composition.Expressions
 
         public bool TryCast<T>(out T res) where T : struct
         {
-            if (typeof(T) == typeof(bool))
+            switch (default(T))
             {
-                if (Type == VariantType.Boolean)
-                {
-                    res = (T) (object) Boolean;
+                case bool when Type is VariantType.Boolean:
+                    res = (T)(object)Boolean;
                     return true;
-                }
-            }
-
-            if (typeof(T) == typeof(float))
-            {
-                if (Type == VariantType.Double)
-                {
-                    res = (T)(object)(float)(double)(object)Double;
+                case float when Type is VariantType.Double:
+                    res = (T)(object)(float)Double;
                     return true;
-                }
-            }
-            
-            if (typeof(T) == typeof(double))
-            {
-                if (Type == VariantType.Double)
-                {
-                    res = (T) (object) Double;
+                case double when Type is VariantType.Double:
+                    res = (T)(object)Double;
                     return true;
-                }
-            }
-
-            if (typeof(T) == typeof(Vector2))
-            {
-                if (Type == VariantType.Vector2)
-                {
-                    res = (T) (object) Vector2;
+                case System.Numerics.Vector2 when Type is VariantType.Vector2:
+                    res = (T)(object)Vector2;
                     return true;
-                }
-
-                if (Type == VariantType.Vector)
-                {
-                    res = (T) (object) Vector.ToVector2();
+                case System.Numerics.Vector2 when Type is VariantType.Vector:
+                    res = (T)(object)Vector.ToVector2();
                     return true;
-                }
-            }
-            
-            if (typeof(T) == typeof(Vector))
-            {
-                if (Type == VariantType.Vector)
-                {
-                    res = (T) (object) Vector;
+                case Avalonia.Vector when Type is VariantType.Vector:
+                    res = (T)(object)Vector;
                     return true;
-                }
-
-                if (Type == VariantType.Vector2)
-                {
+                case Avalonia.Vector when Type is VariantType.Vector2:
                     res = (T)(object)new Vector(Vector2);
                     return true;
-                }
-            }
-
-            if (typeof(T) == typeof(Vector3))
-            {
-                if (Type == VariantType.Vector3)
-                {
-                    res = (T) (object) Vector3;
+                case System.Numerics.Vector3 when Type is VariantType.Vector3:
+                    res = (T)(object)Vector3;
                     return true;
-                }
-                if (Type == VariantType.Vector3D)
-                {
-                    res = (T) (object) Vector3D.ToVector3();
+                case System.Numerics.Vector3 when Type is VariantType.Vector3D:
+                    res = (T)(object)Vector3D.ToVector3();
                     return true;
-                }
-            }
-            
-            if (typeof(T) == typeof(Vector3D))
-            {
-                if (Type == VariantType.Vector3D)
-                {
-                    res = (T) (object) Vector3D;
+                case Avalonia.Vector3D when Type is VariantType.Vector3D:
+                    res = (T)(object)Vector3D;
                     return true;
-                }
-                
-                if (Type == VariantType.Vector3)
-                {
+                case Avalonia.Vector3D when Type is VariantType.Vector3:
                     res = (T)(object)new Vector3D(Vector3);
                     return true;
-                }
-            }
-
-            if (typeof(T) == typeof(Vector4))
-            {
-                if (Type == VariantType.Vector4)
-                {
-                    res = (T) (object) Vector4;
+                case System.Numerics.Vector4 when Type is VariantType.Vector4:
+                    res = (T)(object)Vector4;
                     return true;
-                }
-            }
-
-            if (typeof(T) == typeof(Matrix3x2))
-            {
-                if (Type == VariantType.Matrix3x2)
-                {
-                    res = (T) (object) Matrix3x2;
+                case System.Numerics.Matrix3x2 when Type is VariantType.Matrix3x2:
+                    res = (T)(object)Matrix3x2;
                     return true;
-                }
-            }
-            
-            if (typeof(T) == typeof(Matrix))
-            {
-                if (Type == VariantType.AvaloniaMatrix)
-                {
-                    res = (T) (object) Matrix3x2;
+                case Avalonia.Matrix when Type is VariantType.AvaloniaMatrix:
+                    res = (T)(object)Matrix3x2;
                     return true;
-                }
-            }
-
-            if (typeof(T) == typeof(Matrix4x4))
-            {
-                if (Type == VariantType.Matrix4x4)
-                {
-                    res = (T) (object) Matrix4x4;
+                case System.Numerics.Matrix4x4 when Type is VariantType.Matrix4x4:
+                    res = (T)(object)Matrix4x4;
                     return true;
-                }
-            }
-
-            if (typeof(T) == typeof(Quaternion))
-            {
-                if (Type == VariantType.Quaternion)
-                {
-                    res = (T) (object) Quaternion;
+                case System.Numerics.Quaternion when Type is VariantType.Quaternion:
+                    res = (T)(object)Quaternion;
                     return true;
-                }
-            }
-            
-            if (typeof(T) == typeof(Avalonia.Media.Color))
-            {
-                if (Type == VariantType.Color)
-                {
-                    res = (T) (object) Color;
+                case Avalonia.Media.Color when Type is VariantType.Color:
+                    res = (T)(object)Color;
                     return true;
-                }
+                default:
+                    res = default;
+                    return false;
             }
-
-            res = default;
-            return false;
         }
 
         public static ExpressionVariant Create<T>(T v) where T : struct
-        {
-            if (typeof(T) == typeof(bool))
-                return (bool) (object) v;
-
-            if (typeof(T) == typeof(float))
-                return (float) (object) v;
-
-            if (typeof(T) == typeof(Vector2))
-                return (Vector2) (object) v;
-            
-            if (typeof(T) == typeof(Vector))
-                return (Vector) (object) v;
-
-            if (typeof(T) == typeof(Vector3))
-                return (Vector3) (object) v;
-            
-            if (typeof(T) == typeof(Vector3D))
-                return (Vector3D) (object) v;
-
-            if (typeof(T) == typeof(Vector4))
-                return (Vector4) (object) v;
-
-            if (typeof(T) == typeof(Matrix3x2))
-                return (Matrix3x2) (object) v;
-            
-            if (typeof(T) == typeof(Matrix))
-                return (Matrix) (object) v;
-
-            if (typeof(T) == typeof(Matrix4x4))
-                return (Matrix4x4) (object) v;
-
-            if (typeof(T) == typeof(Quaternion))
-                return (Quaternion) (object) v;
-            
-            if (typeof(T) == typeof(Avalonia.Media.Color))
-                return (Avalonia.Media.Color) (object) v;
-
-            throw new ArgumentException("Invalid variant type: " + typeof(T));
-        }
+            => default(T) switch
+            {
+                bool => (bool)(object)v,
+                float => (float)(object)v,
+                System.Numerics.Vector2 => (Vector2)(object)v,
+                Avalonia.Vector => (Vector)(object)v,
+                System.Numerics.Vector3 => (Vector3)(object)v,
+                Avalonia.Vector3D => (Vector3D)(object)v,
+                System.Numerics.Vector4 => (Vector4)(object)v,
+                System.Numerics.Matrix3x2 => (Matrix3x2)(object)v,
+                Avalonia.Matrix _ => (Matrix)(object)v,
+                System.Numerics.Matrix4x4 => (Matrix4x4)(object)v,
+                System.Numerics.Quaternion => (Quaternion)(object)v,
+                Avalonia.Media.Color => (Avalonia.Media.Color)(object)v,
+                _ => throw new ArgumentException("Invalid variant type: " + typeof(T))
+            };
 
         public T CastOrDefault<T>() where T : struct
         {
@@ -787,33 +679,23 @@ namespace Avalonia.Rendering.Composition.Expressions
 
         public override string ToString()
         {
-            if (Type == VariantType.Boolean)
-                return Boolean.ToString();
-            if (Type == VariantType.Double)
-                return Double.ToString(CultureInfo.InvariantCulture);
-            if (Type == VariantType.Vector2)
-                return Vector2.ToString();
-            if (Type == VariantType.Vector)
-                return Vector.ToString();
-            if (Type == VariantType.Vector3)
-                return Vector3.ToString();
-            if (Type == VariantType.Vector3D)
-                return Vector3D.ToString();
-            if (Type == VariantType.Vector4)
-                return Vector4.ToString();
-            if (Type == VariantType.Quaternion)
-                return Quaternion.ToString();
-            if (Type == VariantType.Matrix3x2)
-                return Matrix3x2.ToString();
-            if (Type == VariantType.AvaloniaMatrix)
-                return AvaloniaMatrix.ToString();
-            if (Type == VariantType.Matrix4x4)
-                return Matrix4x4.ToString();
-            if (Type == VariantType.Color)
-                return Color.ToString();
-            if (Type == VariantType.Invalid)
-                return "Invalid";
-            return "Unknown";
+            return Type switch
+            {
+                VariantType.Boolean => Boolean.ToString(),
+                VariantType.Double => Double.ToString(CultureInfo.InvariantCulture),
+                VariantType.Vector2 => Vector2.ToString(),
+                VariantType.Vector => Vector.ToString(),
+                VariantType.Vector3 => Vector3.ToString(),
+                VariantType.Vector3D => Vector3D.ToString(),
+                VariantType.Vector4 => Vector4.ToString(),
+                VariantType.Quaternion => Quaternion.ToString(),
+                VariantType.Matrix3x2 => Matrix3x2.ToString(),
+                VariantType.AvaloniaMatrix => AvaloniaMatrix.ToString(),
+                VariantType.Matrix4x4 => Matrix4x4.ToString(),
+                VariantType.Color => Color.ToString(),
+                VariantType.Invalid => "Invalid",
+                _ => "Unknown"
+            };
         }
     }
 
