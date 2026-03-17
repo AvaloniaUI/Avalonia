@@ -75,7 +75,7 @@ public class Rotate3DTransition: PageSlide
             {
                 Easing = SlideOutEasing,
                 Duration = Duration,
-                FillMode = FillMode.Forward,
+                FillMode = FillMode,
                 Children =
                 {
                     CreateKeyFrame(0d, 0d, 2),
@@ -94,7 +94,7 @@ public class Rotate3DTransition: PageSlide
             {
                 Easing = SlideInEasing,
                 Duration = Duration,
-                FillMode = FillMode.Forward,
+                FillMode = FillMode,
                 Children =
                 {
                     CreateKeyFrame(0d, 90d * (forward ? 1 : -1), 1),
