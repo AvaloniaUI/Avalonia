@@ -32,9 +32,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         var cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>() as X11CursorFactory;
 
         using var handler = new Handler(platform, window.Handle, dataTransfer, allowedEffects, cursorFactory);
-        await handler.Completion;
-
-        return DragDropEffects.None;
+        return await handler.Completion;
     }
 
     private sealed class Handler : IDisposable
@@ -199,6 +197,8 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             {
                 var rootPosition = new PixelPoint(button.x_root, button.y_root);
                 ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.Drop, rootPosition);
+                _lastTarget = null;
+                _completionSource.TrySetResult(_currentEffects);
             }
             else
             {
