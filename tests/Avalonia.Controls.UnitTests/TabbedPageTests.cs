@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -882,6 +884,7 @@ public class TabbedPageTests
                     return tabControl;
                 })
             };
+            tp.GestureRecognizers.OfType<SwipeGestureRecognizer>().First().IsMouseEnabled = true;
 
             var root = new TestRoot
             {

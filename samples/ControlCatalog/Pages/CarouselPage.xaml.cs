@@ -17,6 +17,7 @@ namespace ControlCatalog.Pages
             right.Click += (s, e) => carousel.Next();
             transition.SelectionChanged += TransitionChanged;
             orientation.SelectionChanged += TransitionChanged;
+            viewportFraction.ValueChanged += ViewportFractionChanged;
 
             wrapSelection.IsChecked = carousel.WrapSelection;
             wrapSelection.IsCheckedChanged += (s, e) =>
@@ -37,9 +38,15 @@ namespace ControlCatalog.Pages
                 {
                     UpdateButtonState();
                 }
+                else if (e.Property == Carousel.ViewportFractionProperty)
+                {
+                    UpdateViewportFractionDisplay();
+                }
             };
 
+            carousel.ViewportFraction = viewportFraction.Value;
             UpdateButtonState();
+            UpdateViewportFractionDisplay();
         }
 
         private void UpdateButtonState()
@@ -52,6 +59,22 @@ namespace ControlCatalog.Pages
             right.IsEnabled = wrap || carousel.SelectedIndex < carousel.ItemCount - 1;
         }
 
+        private void ViewportFractionChanged(object? sender, RangeBaseValueChangedEventArgs e)
+        {
+            carousel.ViewportFraction = Math.Round(e.NewValue, 2);
+            UpdateViewportFractionDisplay();
+        }
+
+        private void UpdateViewportFractionDisplay()
+        {
+            var value = carousel.ViewportFraction;
+            viewportFractionIndicator.Text = value.ToString("0.00");
+
+            var pagesInView = 1d / value;
+            viewportFractionHint.Text = value >= 1d
+                ? "1.00 shows a single full page."
+                : $"{pagesInView:0.##} pages fit in view. Try 0.80 for peeking or 0.33 for three full items.";
+        }
 
         private void TransitionChanged(object? sender, SelectionChangedEventArgs e)
         {
@@ -77,6 +100,16 @@ namespace ControlCatalog.Pages
                     break;
                 case 5:
                     carousel.PageTransition = new WaveRevealPageTransition(TimeSpan.FromSeconds(0.8), axis);
+                    break;
+                case 6:
+                    carousel.PageTransition = new CompositePageTransition
+                    {
+                        PageTransitions =
+                        {
+                            new PageSlide(TimeSpan.FromSeconds(0.25), axis),
+                            new CrossFade(TimeSpan.FromSeconds(0.25)),
+                        }
+                    };
                     break;
             }
             

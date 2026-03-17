@@ -12,7 +12,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Transitions between two pages by sliding them horizontally or vertically.
     /// </summary>
-    public class PageSlide : IPageTransition, IInteractivePageTransition
+    public class PageSlide : IPageTransition, IProgressPageTransition
     {
         /// <summary>
         /// The axis on which the PageSlide should occur
@@ -162,10 +162,24 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
-        public virtual void Update(double progress, Visual? from, Visual? to, bool forward)
+        public virtual void Update(
+            double progress,
+            Visual? from,
+            Visual? to,
+            bool forward,
+            double pageLength,
+            IReadOnlyList<PageTransitionItem> visibleItems)
         {
+            if (visibleItems.Count > 0)
+                return;
+
+            if (from is null && to is null)
+                return;
+
             var parent = GetVisualParent(from, to);
-            var distance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
+            var distance = pageLength > 0
+                ? pageLength
+                : (Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height);
             var offset = distance * progress;
 
             if (from != null)
@@ -188,6 +202,12 @@ namespace Avalonia.Animation
                 else
                     tt.Y = forward ? distance - offset : -(distance - offset);
             }
+        }
+
+        /// <inheritdoc/>
+        public virtual void Reset(Visual visual)
+        {
+            visual.RenderTransform = null;
         }
 
         /// <summary>

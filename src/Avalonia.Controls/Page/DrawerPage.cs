@@ -292,7 +292,6 @@ namespace Avalonia.Controls
 
         public DrawerPage()
         {
-            _swipeRecognizer.IsMouseEnabled = true;
             GestureRecognizers.Add(_swipeRecognizer);
             AddHandler(PointerPressedEvent, OnSwipePointerPressed, handledEventsToo: true);
             UpdateSwipeRecognizerAxes();

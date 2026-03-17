@@ -29,8 +29,7 @@ namespace Avalonia.Controls
         private int _lastSwipeGestureId;
         private readonly SwipeGestureRecognizer _swipeRecognizer = new SwipeGestureRecognizer
         {
-            IsEnabled = false,
-            IsMouseEnabled = true
+            IsEnabled = false
         };
 
         /// <summary>

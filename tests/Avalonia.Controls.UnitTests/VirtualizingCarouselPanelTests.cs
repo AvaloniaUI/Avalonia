@@ -138,6 +138,86 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
+        [Fact]
+        public void ViewportFraction_Centers_Selected_Item_And_Peeks_Neighbors()
+        {
+            using var app = Start();
+            var items = new[] { "foo", "bar", "baz" };
+            var (target, _) = CreateTarget(items, viewportFraction: 0.8, clientSize: new Size(400, 300));
+
+            var realized = target.GetRealizedContainers()!
+                .OfType<ContentPresenter>()
+                .ToDictionary(x => (string)x.Content!);
+
+            Assert.Equal(2, realized.Count);
+            Assert.Equal(40d, realized["foo"].Bounds.X, 6);
+            Assert.Equal(320d, realized["foo"].Bounds.Width, 6);
+            Assert.Equal(360d, realized["bar"].Bounds.X, 6);
+        }
+
+        [Fact]
+        public void ViewportFraction_OneThird_Shows_Three_Full_Items()
+        {
+            using var app = Start();
+            var items = new[] { "foo", "bar", "baz", "qux" };
+            var (target, carousel) = CreateTarget(items, viewportFraction: 1d / 3d, clientSize: new Size(300, 120));
+
+            carousel.SelectedIndex = 1;
+            Layout(target);
+
+            var realized = target.GetRealizedContainers()!
+                .OfType<ContentPresenter>()
+                .ToDictionary(x => (string)x.Content!);
+
+            Assert.Equal(3, realized.Count);
+            Assert.Equal(0d, realized["foo"].Bounds.X, 6);
+            Assert.Equal(100d, realized["bar"].Bounds.X, 6);
+            Assert.Equal(200d, realized["baz"].Bounds.X, 6);
+            Assert.Equal(100d, realized["bar"].Bounds.Width, 6);
+        }
+
+        [Fact]
+        public void Changing_SelectedIndex_Repositions_Fractional_Viewport()
+        {
+            using var app = Start();
+            var items = new[] { "foo", "bar", "baz" };
+            var (target, carousel) = CreateTarget(items, viewportFraction: 0.8, clientSize: new Size(400, 300));
+
+            carousel.SelectedIndex = 1;
+            Layout(target);
+
+            var realized = target.GetRealizedContainers()!
+                .OfType<ContentPresenter>()
+                .ToDictionary(x => (string)x.Content!);
+
+            Assert.Equal(40d, realized["bar"].Bounds.X, 6);
+            Assert.Equal(-280d, realized["foo"].Bounds.X, 6);
+        }
+
+        [Fact]
+        public void Changing_ViewportFraction_Does_Not_Change_Selected_Item()
+        {
+            using var app = Start();
+            var items = new[] { "foo", "bar", "baz" };
+            var (target, carousel) = CreateTarget(items, viewportFraction: 0.72, clientSize: new Size(400, 300));
+
+            carousel.WrapSelection = true;
+            carousel.SelectedIndex = 2;
+            Layout(target);
+
+            carousel.ViewportFraction = 1d;
+            Layout(target);
+
+            var visible = target.Children
+                .OfType<ContentPresenter>()
+                .Where(x => x.IsVisible)
+                .ToList();
+
+            Assert.Single(visible);
+            Assert.Equal("baz", visible[0].Content);
+            Assert.Equal(2, carousel.SelectedIndex);
+        }
+
         public class Transitions : ScopedTestBase
         {
             [Fact]
@@ -301,16 +381,25 @@ namespace Avalonia.Controls.UnitTests
 
         private static (VirtualizingCarouselPanel, Carousel) CreateTarget(
             IEnumerable items,
-            IPageTransition? transition = null)
+            IPageTransition? transition = null,
+            double viewportFraction = 1d,
+            Size? clientSize = null)
         {
+            var size = clientSize ?? new Size(400, 300);
             var carousel = new Carousel
             {
                 ItemsSource = items,
                 Template = CarouselTemplate(),
                 PageTransition = transition,
+                ViewportFraction = viewportFraction,
+                Width = size.Width,
+                Height = size.Height,
             };
 
-            var root = new TestRoot(carousel);
+            var root = new TestRoot(carousel)
+            {
+                ClientSize = size,
+            };
             root.LayoutManager.ExecuteInitialLayoutPass();
             return ((VirtualizingCarouselPanel)carousel.Presenter!.Panel!, carousel);
         }
@@ -520,6 +609,36 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
+            public void ViewportFraction_Swiping_Backward_At_Start_Wraps_When_WrapSelection_True()
+            {
+                var clock = new MockGlobalClock();
+
+                using var app = UnitTestApplication.Start(
+                    TestServices.MockPlatformRenderInterface.With(globalClock: clock));
+                using var sync = UnitTestSynchronizationContext.Begin();
+
+                var items = new[] { "foo", "bar", "baz" };
+                var (panel, carousel) = CreateTarget(items, viewportFraction: 0.8);
+                carousel.IsSwipeEnabled = true;
+                carousel.WrapSelection = true;
+                Layout(panel);
+
+                panel.RaiseEvent(new SwipeGestureEventArgs(1, new Vector(-120, 0), default));
+
+                Assert.True(carousel.IsSwiping);
+                Assert.Contains(panel.Children.OfType<ContentPresenter>(), x => Equals(x.Content, "baz"));
+
+                panel.RaiseEvent(new SwipeGestureEndedEventArgs(1, default));
+
+                clock.Pulse(TimeSpan.Zero);
+                clock.Pulse(TimeSpan.FromSeconds(1));
+                sync.ExecutePostedCallbacks();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(2, carousel.SelectedIndex);
+            }
+
+            [Fact]
             public void Swiping_Forward_At_End_RubberBands_When_WrapSelection_False()
             {
                 using var app = Start();
@@ -691,7 +810,34 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(0, carousel.SelectedIndex);
             }
 
-            private sealed class TrackingInteractiveTransition : IPageTransition, IInteractivePageTransition
+            [Fact]
+            public void ViewportFraction_SelectedIndex_Change_Drives_Progress_Updates()
+            {
+                var clock = new MockGlobalClock();
+
+                using var app = UnitTestApplication.Start(
+                    TestServices.MockPlatformRenderInterface.With(globalClock: clock));
+                using var sync = UnitTestSynchronizationContext.Begin();
+
+                var items = new[] { "foo", "bar", "baz" };
+                var transition = new ProgressTrackingInteractiveTransition();
+                var (panel, carousel) = CreateTarget(items, transition, viewportFraction: 0.8);
+
+                carousel.SelectedIndex = 1;
+
+                clock.Pulse(TimeSpan.Zero);
+                clock.Pulse(TimeSpan.FromSeconds(0.1));
+                clock.Pulse(TimeSpan.FromSeconds(1));
+                sync.ExecutePostedCallbacks();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.NotEmpty(transition.Progresses);
+                Assert.Contains(transition.Progresses, p => p > 0 && p < 1);
+                Assert.Equal(1d, transition.Progresses[^1]);
+                Assert.Equal(1, carousel.SelectedIndex);
+            }
+
+            private sealed class TrackingInteractiveTransition : IProgressPageTransition
             {
                 public int UpdateCallCount { get; private set; }
                 public bool SawAliasedUpdate { get; private set; }
@@ -700,7 +846,13 @@ namespace Avalonia.Controls.UnitTests
                 public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
                     => Task.CompletedTask;
 
-                public void Update(double progress, Visual? from, Visual? to, bool forward)
+                public void Update(
+                    double progress,
+                    Visual? from,
+                    Visual? to,
+                    bool forward,
+                    double pageLength,
+                    IReadOnlyList<PageTransitionItem> visibleItems)
                 {
                     UpdateCallCount++;
                     LastProgress = progress;
@@ -708,29 +860,57 @@ namespace Avalonia.Controls.UnitTests
                     if (from is not null && ReferenceEquals(from, to))
                         SawAliasedUpdate = true;
                 }
+
+                public void Reset(Visual visual)
+                {
+                    visual.RenderTransform = null;
+                    visual.Opacity = 1;
+                    visual.ZIndex = 0;
+                    visual.Clip = null;
+                }
             }
 
-            private sealed class ProgressTrackingInteractiveTransition : IPageTransition, IInteractivePageTransition
+            private sealed class ProgressTrackingInteractiveTransition : IProgressPageTransition
             {
                 public List<double> Progresses { get; } = new();
 
                 public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
                     => Task.CompletedTask;
 
-                public void Update(double progress, Visual? from, Visual? to, bool forward)
+                public void Update(
+                    double progress,
+                    Visual? from,
+                    Visual? to,
+                    bool forward,
+                    double pageLength,
+                    IReadOnlyList<PageTransitionItem> visibleItems)
                 {
                     Progresses.Add(progress);
                 }
+
+                public void Reset(Visual visual)
+                {
+                    visual.RenderTransform = null;
+                    visual.Opacity = 1;
+                    visual.ZIndex = 0;
+                    visual.Clip = null;
+                }
             }
 
-            private sealed class TransformTrackingInteractiveTransition : IPageTransition, IInteractivePageTransition
+            private sealed class TransformTrackingInteractiveTransition : IProgressPageTransition
             {
                 public TransformGroup? LastTargetTransform { get; private set; }
 
                 public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
                     => Task.CompletedTask;
 
-                public void Update(double progress, Visual? from, Visual? to, bool forward)
+                public void Update(
+                    double progress,
+                    Visual? from,
+                    Visual? to,
+                    bool forward,
+                    double pageLength,
+                    IReadOnlyList<PageTransitionItem> visibleItems)
                 {
                     if (to is not Control target)
                         return;
@@ -754,20 +934,36 @@ namespace Avalonia.Controls.UnitTests
                     translate.X = 100 * (1 - progress);
                     LastTargetTransform = group;
                 }
+
+                public void Reset(Visual visual)
+                {
+                    visual.RenderTransform = null;
+                }
             }
 
-            private sealed class OutgoingTransformTrackingInteractiveTransition : IPageTransition, IInteractivePageTransition
+            private sealed class OutgoingTransformTrackingInteractiveTransition : IProgressPageTransition
             {
                 public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
                     => Task.CompletedTask;
 
-                public void Update(double progress, Visual? from, Visual? to, bool forward)
+                public void Update(
+                    double progress,
+                    Visual? from,
+                    Visual? to,
+                    bool forward,
+                    double pageLength,
+                    IReadOnlyList<PageTransitionItem> visibleItems)
                 {
                     if (from is Control source)
                         source.RenderTransform = new TranslateTransform(100 * progress, 0);
 
                     if (to is Control target)
                         target.RenderTransform = new TranslateTransform(100 * (1 - progress), 0);
+                }
+
+                public void Reset(Visual visual)
+                {
+                    visual.RenderTransform = null;
                 }
             }
         }

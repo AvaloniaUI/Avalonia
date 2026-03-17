@@ -62,6 +62,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ViewportFraction_Defaults_To_One()
+        {
+            using var app = Start();
+            var target = new Carousel();
+
+            Assert.Equal(1d, target.ViewportFraction);
+        }
+
+        [Fact]
+        public void ViewportFraction_Coerces_Invalid_Values_To_One()
+        {
+            using var app = Start();
+            var target = new Carousel();
+
+            target.ViewportFraction = 0;
+            Assert.Equal(1d, target.ViewportFraction);
+
+            target.ViewportFraction = double.NaN;
+            Assert.Equal(1d, target.ViewportFraction);
+        }
+
+        [Fact]
         public void Selected_Item_Changes_To_First_Item_When_Items_Property_Changes()
         {
             using var app = Start();

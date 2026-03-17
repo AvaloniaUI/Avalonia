@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation;
@@ -7,6 +8,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
@@ -1615,6 +1617,7 @@ public class NavigationPageTests
                 Width = 400,
                 Height = 300
             };
+            nav.GestureRecognizers.OfType<SwipeGestureRecognizer>().First().IsMouseEnabled = true;
             var rootPage = new ContentPage { Header = "Root" };
             var topPage = new ContentPage { Header = "Top" };
 

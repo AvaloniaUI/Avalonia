@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -1061,6 +1063,7 @@ public class DrawerPageTests
                 Width = 400,
                 Height = 300
             };
+            dp.GestureRecognizers.OfType<SwipeGestureRecognizer>().First().IsMouseEnabled = true;
 
             var root = new TestRoot
             {

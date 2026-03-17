@@ -262,8 +262,7 @@ namespace Avalonia.Controls
             GestureRecognizers.Add(new SwipeGestureRecognizer
             {
                 CanHorizontallySwipe = true,
-                CanVerticallySwipe = false,
-                IsMouseEnabled = true
+                CanVerticallySwipe = false
             });
             AddHandler(PointerPressedEvent, OnSwipePointerPressed, handledEventsToo: true);
         }

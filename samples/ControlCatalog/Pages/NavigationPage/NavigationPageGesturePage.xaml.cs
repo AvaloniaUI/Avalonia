@@ -1,4 +1,6 @@
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
@@ -8,6 +10,7 @@ namespace ControlCatalog.Pages
         public NavigationPageGesturePage()
         {
             InitializeComponent();
+            EnableMouseSwipeGesture(DemoNav);
             Loaded += OnLoaded;
         }
 
@@ -42,6 +45,16 @@ namespace ControlCatalog.Pages
         private void UpdateStatus()
         {
             StatusText.Text = $"Depth: {DemoNav.StackDepth}";
+        }
+
+        private static void EnableMouseSwipeGesture(Control control)
+        {
+            var recognizer = control.GestureRecognizers
+                .OfType<SwipeGestureRecognizer>()
+                .FirstOrDefault();
+
+            if (recognizer is not null)
+                recognizer.IsMouseEnabled = true;
         }
     }
 }

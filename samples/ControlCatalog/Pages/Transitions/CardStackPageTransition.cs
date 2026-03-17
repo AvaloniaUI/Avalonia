@@ -16,6 +16,12 @@ namespace ControlCatalog.Pages.Transitions;
 /// </summary>
 public class CardStackPageTransition : PageSlide
 {
+    private const double ViewportLiftScale = 0.03;
+    private const double ViewportPromotionScale = 0.02;
+    private const double ViewportDepthOpacityFalloff = 0.08;
+    private const double SidePeekAngle = 4.0;
+    private const double FarPeekAngle = 7.0;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CardStackPageTransition"/> class.
     /// </summary>
@@ -164,12 +170,29 @@ public class CardStackPageTransition : PageSlide
     }
 
     /// <inheritdoc />
-    public override void Update(double progress, Visual? from, Visual? to, bool forward)
+    public override void Update(
+        double progress,
+        Visual? from,
+        Visual? to,
+        bool forward,
+        double pageLength,
+        IReadOnlyList<PageTransitionItem> visibleItems)
     {
+        if (visibleItems.Count > 0)
+        {
+            UpdateVisibleItems(progress, from, to, forward, pageLength, visibleItems);
+            return;
+        }
+
+        if (from is null && to is null)
+            return;
+
         var parent = GetVisualParent(from, to);
         var size = parent.Bounds.Size;
         var isHorizontal = Orientation == PageSlide.SlideAxis.Horizontal;
-        var distance = isHorizontal ? size.Width : size.Height;
+        var distance = pageLength > 0
+            ? pageLength
+            : (isHorizontal ? size.Width : size.Height);
         var rotationTarget = isHorizontal ? (forward ? -MaxSwipeAngle : MaxSwipeAngle) : 0.0;
         var startScale = 1.0 - BackCardScale;
 
@@ -201,12 +224,88 @@ public class CardStackPageTransition : PageSlide
 
             scale.ScaleX = currentScale;
             scale.ScaleY = currentScale;
-            translate.X = 0;
-            translate.Y = currentOffset;
+            if (isHorizontal)
+            {
+                translate.X = 0;
+                translate.Y = currentOffset;
+            }
+            else
+            {
+                translate.X = currentOffset;
+                translate.Y = 0;
+            }
 
             to.IsVisible = true;
             to.Opacity = 1;
             to.ZIndex = 0;
+        }
+    }
+
+    /// <inheritdoc />
+    public override void Reset(Visual visual)
+    {
+        visual.RenderTransform = null;
+        visual.RenderTransformOrigin = default;
+        visual.Opacity = 1;
+        visual.ZIndex = 0;
+    }
+
+    private void UpdateVisibleItems(
+        double progress,
+        Visual? from,
+        Visual? to,
+        bool forward,
+        double pageLength,
+        IReadOnlyList<PageTransitionItem> visibleItems)
+    {
+        var isHorizontal = Orientation == PageSlide.SlideAxis.Horizontal;
+        var rotationTarget = isHorizontal
+            ? (forward ? -MaxSwipeAngle : MaxSwipeAngle)
+            : 0.0;
+        var stackOffset = GetViewportStackOffset(pageLength);
+        var lift = Math.Sin(Math.Clamp(progress, 0.0, 1.0) * Math.PI);
+
+        foreach (var item in visibleItems)
+        {
+            var visual = item.Visual;
+            var (rotate, scale, translate) = EnsureViewportTransforms(visual);
+            var depth = GetViewportDepth(item.ViewportCenterOffset);
+            var scaleValue = Math.Max(0.84, 1.0 - (BackCardScale * depth));
+            var stackValue = stackOffset * depth;
+            var baseOpacity = Math.Max(0.8, 1.0 - (ViewportDepthOpacityFalloff * depth));
+            var restingAngle = isHorizontal ? GetViewportRestingAngle(item.ViewportCenterOffset) : 0.0;
+
+            rotate.Angle = restingAngle;
+            scale.ScaleX = scaleValue;
+            scale.ScaleY = scaleValue;
+            translate.X = 0;
+            translate.Y = 0;
+
+            if (ReferenceEquals(visual, from))
+            {
+                rotate.Angle = restingAngle + (rotationTarget * progress);
+                stackValue -= stackOffset * 0.2 * lift;
+                baseOpacity = Math.Min(1.0, baseOpacity + 0.08);
+            }
+
+            if (ReferenceEquals(visual, to))
+            {
+                var promotedScale = Math.Min(1.0, scaleValue + (ViewportLiftScale * lift) + (ViewportPromotionScale * progress));
+                scale.ScaleX = promotedScale;
+                scale.ScaleY = promotedScale;
+                rotate.Angle = restingAngle * (1.0 - progress);
+                stackValue = Math.Max(0.0, stackValue - (stackOffset * (0.45 + (0.2 * lift)) * progress));
+                baseOpacity = Math.Min(1.0, baseOpacity + (0.12 * lift));
+            }
+
+            if (isHorizontal)
+                translate.Y = stackValue;
+            else
+                translate.X = stackValue;
+
+            visual.IsVisible = true;
+            visual.Opacity = baseOpacity;
+            visual.ZIndex = GetViewportZIndex(item.ViewportCenterOffset, visual, from, to);
         }
     }
 
@@ -258,5 +357,91 @@ public class CardStackPageTransition : PageSlide
         };
         visual.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
         return (scale, translate);
+    }
+
+    private static (RotateTransform rotate, ScaleTransform scale, TranslateTransform translate) EnsureViewportTransforms(Visual visual)
+    {
+        if (visual.RenderTransform is TransformGroup group &&
+            group.Children.Count == 3 &&
+            group.Children[0] is RotateTransform rotateTransform &&
+            group.Children[1] is ScaleTransform scaleTransform &&
+            group.Children[2] is TranslateTransform translateTransform)
+        {
+            visual.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+            return (rotateTransform, scaleTransform, translateTransform);
+        }
+
+        var rotate = new RotateTransform();
+        var scale = new ScaleTransform(1, 1);
+        var translate = new TranslateTransform();
+        visual.RenderTransform = new TransformGroup
+        {
+            Children =
+            {
+                rotate,
+                scale,
+                translate
+            }
+        };
+        visual.RenderTransformOrigin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
+        return (rotate, scale, translate);
+    }
+
+    private double GetViewportStackOffset(double pageLength)
+    {
+        if (BackCardOffset > 0)
+            return BackCardOffset;
+
+        return Math.Clamp(pageLength * 0.045, 10.0, 18.0);
+    }
+
+    private static double GetViewportDepth(double offsetFromCenter)
+    {
+        var distance = Math.Abs(offsetFromCenter);
+
+        if (distance <= 1.0)
+            return distance;
+
+        if (distance <= 2.0)
+            return 1.0 + ((distance - 1.0) * 0.8);
+
+        return 1.8;
+    }
+
+    private static double GetViewportRestingAngle(double offsetFromCenter)
+    {
+        var sign = Math.Sign(offsetFromCenter);
+        if (sign == 0)
+            return 0;
+
+        var distance = Math.Abs(offsetFromCenter);
+        if (distance <= 1.0)
+            return sign * Lerp(0.0, SidePeekAngle, distance);
+
+        if (distance <= 2.0)
+            return sign * Lerp(SidePeekAngle, FarPeekAngle, distance - 1.0);
+
+        return sign * FarPeekAngle;
+    }
+
+    private static double Lerp(double from, double to, double t)
+    {
+        return from + ((to - from) * Math.Clamp(t, 0.0, 1.0));
+    }
+
+    private static int GetViewportZIndex(double offsetFromCenter, Visual visual, Visual? from, Visual? to)
+    {
+        if (ReferenceEquals(visual, from))
+            return 5;
+
+        if (ReferenceEquals(visual, to))
+            return 4;
+
+        var distance = Math.Abs(offsetFromCenter);
+        if (distance < 0.5)
+            return 4;
+        if (distance < 1.5)
+            return 3;
+        return 2;
     }
 }
