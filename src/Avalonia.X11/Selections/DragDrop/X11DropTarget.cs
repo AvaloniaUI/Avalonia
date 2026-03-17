@@ -19,6 +19,7 @@ internal sealed class X11DropTarget
     private readonly IntPtr _display;
     private readonly X11Atoms _atoms;
     private DragDropDataTransfer? _currentDrag;
+    private DragDropEffects _resultEffects;
 
     public X11DropTarget(IDragDropDevice dragDropDevice, IXdndWindow window, IntPtr _display, X11Atoms atoms)
     {
@@ -102,7 +103,7 @@ internal sealed class X11DropTarget
         _currentDrag.LastPosition = position;
         _currentDrag.LastTimestamp = message.ptr4;
 
-        var dragEnter = new RawDragEvent(
+        var dragEvent = new RawDragEvent(
             _dragDropDevice,
             eventType,
             _currentDrag.InputRoot,
@@ -111,9 +112,10 @@ internal sealed class X11DropTarget
             requestedEffects,
             RawInputModifiers.None);
 
-        _dragDropDevice.ProcessRawEvent(dragEnter);
+        _dragDropDevice.ProcessRawEvent(dragEvent);
 
-        var resultAction = XdndActionHelper.EffectsToAction(dragEnter.Effects, _atoms);
+        _resultEffects = dragEvent.Effects;
+        var resultAction = XdndActionHelper.EffectsToAction(_resultEffects, _atoms);
 
         var evt = new XEvent
         {
@@ -145,6 +147,8 @@ internal sealed class X11DropTarget
         if (sourceWindow != _currentDrag.SourceWindow)
             return;
 
+        _resultEffects = DragDropEffects.None;
+
         var dragLeave = new RawDragEvent(
             _dragDropDevice,
             RawDragEventType.DragLeave,
@@ -174,7 +178,7 @@ internal sealed class X11DropTarget
             _currentDrag.InputRoot,
             _currentDrag.LastPosition ?? default,
             _currentDrag,
-            DragDropEffects.None,
+            _resultEffects,
             RawInputModifiers.None);
 
         _dragDropDevice.ProcessRawEvent(drop);

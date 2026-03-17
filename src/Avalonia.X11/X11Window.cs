@@ -280,7 +280,10 @@ namespace Avalonia.X11
             });
 
             if (AvaloniaLocator.Current.GetService<IDragDropDevice>() is { } dragDropDevice)
+            {
+                DragDropDevice = dragDropDevice;
                 _dropTarget = new X11DropTarget(dragDropDevice, this, _x11.Display, _x11.Atoms);
+            }
 
             platform.X11Screens.Changed += OnScreensChanged;
         }
@@ -523,6 +526,8 @@ namespace Avalonia.X11
 
         public Compositor Compositor => _platform.Compositor;
 
+        public IDragDropDevice? DragDropDevice { get; }
+
         private PlatformAllowedWindowActions GetAllowedActions(IntPtr[]? netSupported)
         {
             if (netSupported == null)
@@ -545,7 +550,7 @@ namespace Avalonia.X11
 
         private void OnNetSupportedChanged() =>
             AllowedWindowActionsChanged?.Invoke(AllowedWindowActions);
-        
+
         private void OnEvent(ref XEvent ev)
         {
             if (_inputRoot is null)
@@ -1174,7 +1179,7 @@ namespace Avalonia.X11
 
             _platform.X11Screens.Changed -= OnScreensChanged;
             _platform.Globals.NetSupportedChanged -= OnNetSupportedChanged;
-            
+
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
             {                
                 _renderHandle = IntPtr.Zero;
