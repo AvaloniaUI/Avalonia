@@ -47,6 +47,7 @@ namespace Avalonia.Controls
         private Control? _transitionFrom;
         private int _transitionFromIndex = -1;
         private CancellationTokenSource? _transition;
+        private Task? _transitionTask;
         private EventHandler? _scrollInvalidated;
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
@@ -402,6 +403,7 @@ namespace Avalonia.Controls
         {
             _transition?.Cancel();
             _transition = null;
+            _transitionTask = null;
 
             if (_transitionFrom is not null)
                 RecycleElement(_transitionFrom);
@@ -454,32 +456,32 @@ namespace Avalonia.Controls
             var items = Items;
             var index = (int)_offset.X;
 
+            CompleteFinishedTransitionIfNeeded();
+
             if (index != _realizedIndex)
             {
                 if (_realized is not null)
                 {
-                    var cancelTransition = _transition is not null;
-
                     // Cancel any already running transition, and recycle the element we're transitioning from.
-                    if (cancelTransition)
+                    if (_transition is not null)
                     {
-                        _transition!.Cancel();
+                        _transition.Cancel();
                         _transition = null;
+                        _transitionTask = null;
                         if (_transitionFrom is not null)
                             RecycleElement(_transitionFrom);
                         _transitionFrom = null;
                         _transitionFromIndex = -1;
+                        ResetTransitionState(_realized);
                     }
 
-                    if (cancelTransition || GetTransition() is null)
+                    if (GetTransition() is null)
                     {
-                        // If don't have a transition or we've just canceled a transition then recycle the element
-                        // we're moving from.
                         RecycleElement(_realized);
                     }
                     else
                     {
-                        // We have a transition to do: record the current element as the element we're transitioning
+                        // Record the current element as the element we're transitioning
                         // from and we'll start the transition in the arrange pass.
                         _transitionFrom = _realized;
                         _transitionFromIndex = _realizedIndex;
@@ -538,8 +540,7 @@ namespace Avalonia.Controls
                     forward = forward && !(_transitionFromIndex == 0 && _realizedIndex == Items.Count - 1);
                 }
 
-                transition.Start(_transitionFrom, to, forward, _transition.Token)
-                    .ContinueWith(TransitionFinished, TaskScheduler.FromCurrentSynchronizationContext());
+                _transitionTask = RunTransitionAsync(_transition, _transitionFrom, to, forward, transition);
             }
 
             return result;
@@ -885,14 +886,47 @@ namespace Avalonia.Controls
 
         private IPageTransition? GetTransition() => (ItemsControl as Carousel)?.PageTransition;
 
-        private void TransitionFinished(Task task)
+        private void CompleteFinishedTransitionIfNeeded()
         {
-            if (task.IsFaulted)
-                _ = task.Exception;
-            
+            if (_transition is not null && _transitionTask?.IsCompleted == true)
+            {
+                if (_transitionFrom is not null)
+                    RecycleElement(_transitionFrom);
+
+                _transition = null;
+                _transitionTask = null;
+                _transitionFrom = null;
+                _transitionFromIndex = -1;
+            }
+        }
+
+        private async Task RunTransitionAsync(
+            CancellationTokenSource transitionCts,
+            Control transitionFrom,
+            Control transitionTo,
+            bool forward,
+            IPageTransition transition)
+        {
+            try
+            {
+                await transition.Start(transitionFrom, transitionTo, forward, transitionCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when a transition is interrupted by a newer navigation action.
+            }
+            catch (Exception e)
+            {
+                _ = e;
+            }
+
+            if (transitionCts.IsCancellationRequested || !ReferenceEquals(_transition, transitionCts))
+                return;
+
             if (_transitionFrom is not null)
                 RecycleElement(_transitionFrom);
             _transition = null;
+            _transitionTask = null;
             _transitionFrom = null;
             _transitionFromIndex = -1;
         }
@@ -1033,6 +1067,9 @@ namespace Avalonia.Controls
                 OnViewportFractionSwipeGesture(carousel, e);
                 return;
             }
+
+            if (_realizedIndex < 0 || Items.Count == 0)
+                return;
 
             if (_completionCts is { IsCancellationRequested: false })
             {

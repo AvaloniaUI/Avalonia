@@ -375,6 +375,64 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.True(cancelationToken!.Value.IsCancellationRequested);
             }
+
+            [Fact]
+            public void Completed_Transition_Is_Flushed_Before_Starting_Next_Transition()
+            {
+                using var app = Start();
+                using var sync = UnitTestSynchronizationContext.Begin();
+                var items = new Control[] { new Button(), new Canvas(), new Label() };
+                var transition = new Mock<IPageTransition>();
+
+                transition.Setup(x => x.Start(
+                        It.IsAny<Visual>(),
+                        It.IsAny<Visual>(),
+                        It.IsAny<bool>(),
+                        It.IsAny<CancellationToken>()))
+                    .Returns(Task.CompletedTask);
+
+                var (target, carousel) = CreateTarget(items, transition.Object);
+
+                carousel.SelectedIndex = 1;
+                Layout(target);
+
+                carousel.SelectedIndex = 2;
+                Layout(target);
+
+                transition.Verify(x => x.Start(
+                        items[0],
+                        items[1],
+                        true,
+                        It.IsAny<CancellationToken>()),
+                    Times.Once);
+                transition.Verify(x => x.Start(
+                        items[1],
+                        items[2],
+                        true,
+                        It.IsAny<CancellationToken>()),
+                    Times.Once);
+
+                sync.ExecutePostedCallbacks();
+            }
+
+            [Fact]
+            public void Interrupted_Transition_Resets_Current_Page_Before_Starting_Next_Transition()
+            {
+                using var app = Start();
+                var items = new Control[] { new Button(), new Canvas(), new Label() };
+                var transition = new DirtyStateTransition();
+                var (target, carousel) = CreateTarget(items, transition);
+
+                carousel.SelectedIndex = 1;
+                Layout(target);
+
+                carousel.SelectedIndex = 2;
+                Layout(target);
+
+                Assert.Equal(2, transition.Starts.Count);
+                Assert.Equal(1d, transition.Starts[1].FromOpacity);
+                Assert.Null(transition.Starts[1].FromTransform);
+            }
         }
 
         private static IDisposable Start() => UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
@@ -437,6 +495,24 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static void Layout(Control c) => c.GetLayoutManager()?.ExecuteLayoutPass();
+
+        private sealed class DirtyStateTransition : IPageTransition
+        {
+            public List<(double FromOpacity, ITransform? FromTransform)> Starts { get; } = new();
+
+            public Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
+            {
+                Starts.Add((from?.Opacity ?? 1d, from?.RenderTransform));
+
+                if (to is not null)
+                {
+                    to.Opacity = 0.25;
+                    to.RenderTransform = new TranslateTransform { X = 50 };
+                }
+
+                return Task.Delay(Timeout.Infinite, cancellationToken);
+            }
+        }
 
         public class WrapSelectionTests : ScopedTestBase
         {

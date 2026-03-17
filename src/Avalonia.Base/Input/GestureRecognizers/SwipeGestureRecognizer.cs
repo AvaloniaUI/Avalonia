@@ -200,10 +200,11 @@ namespace Avalonia.Input.GestureRecognizers
             if (_swiping)
             {
                 _swiping = false;
-                Target!.RaiseEvent(new SwipeGestureEndedEventArgs(_id, _velocity));
+                var endedArgs = new SwipeGestureEndedEventArgs(_id, _velocity);
                 _velocity = default;
                 _lastTimestamp = 0;
                 _id = 0;
+                Target!.RaiseEvent(endedArgs);
             }
         }
 

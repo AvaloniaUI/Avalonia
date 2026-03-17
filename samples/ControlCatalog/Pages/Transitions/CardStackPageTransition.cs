@@ -82,7 +82,7 @@ public class CardStackPageTransition : PageSlide
             {
                 Easing = SlideOutEasing,
                 Duration = Duration,
-                FillMode = FillMode.Forward,
+                FillMode = FillMode,
                 Children =
                 {
                     new KeyFrame
@@ -123,7 +123,7 @@ public class CardStackPageTransition : PageSlide
             {
                 Easing = SlideInEasing,
                 Duration = Duration,
-                FillMode = FillMode.Forward,
+                FillMode = FillMode,
                 Children =
                 {
                     new KeyFrame
