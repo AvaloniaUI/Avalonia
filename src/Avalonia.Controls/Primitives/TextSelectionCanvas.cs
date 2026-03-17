@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -371,26 +373,55 @@ namespace Avalonia.Controls.Primitives
             if (hasSelection)
             {
                 var start = Math.Min(selectionStart, selectionEnd);
-                var length = Math.Max(selectionStart, selectionEnd) - start;
+                var end = Math.Max(selectionStart, selectionEnd);
 
-                var rects = new List<Rect>(_presenter.TextLayout.HitTestTextRange(start, length));
+                var startPoint = GetPosition(start, true);
+                var endPoint = GetPosition(end - 1, false);
 
-                if (rects.Count > 0)
+                if (!_handle1.IsDragging)
                 {
-                    var first = rects[0];
-                    var last = rects[rects.Count - 1];
+                    var pos = _handle1.SelectionHandleType == SelectionHandleType.Start ? startPoint : endPoint;
+                    if(pos.isRtl != _handle1.IsRtl)
+                        _handle1.NeedsIndicatorUpdate = true;
+                    _handle1.IsRtl = pos.isRtl;
+                    _handle1.SetTopLeft(ToLayer(pos.position));
+                }
 
-                    if (!_handle1.IsDragging)
+                if (!_handle2.IsDragging)
+                {
+                    var pos = _handle2.SelectionHandleType == SelectionHandleType.Start ? startPoint : endPoint;
+                    if (pos.isRtl != _handle2.IsRtl)
+                        _handle2.NeedsIndicatorUpdate = true;
+                    _handle2.IsRtl = pos.isRtl;
+                    _handle2.SetTopLeft(ToLayer(pos.position));
+                }
+
+                (Point position, bool isRtl) GetPosition(int index, bool start)
+                {
+                    var rect = new List<Rect>(_presenter!.TextLayout.HitTestTextRange(index, 1)).FirstOrDefault();
+
+                    var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(index, false);
+                    var textLine = _presenter.TextLayout.TextLines[lineIndex];
+                    var lineStart = textLine.FirstTextSourceIndex;
+                    var characterLineIndex = Math.Max(0, index - lineStart);
+                    TextRun? run = null;
+                    int searchLength = 0;
+
+                    for (var i = 0; i < textLine.TextRuns.Count; i++)
                     {
-                        var position = _handle1.SelectionHandleType == SelectionHandleType.Start ? first.BottomLeft : last.BottomRight;
-                        _handle1.SetTopLeft(ToLayer(position));
+                        run = textLine.TextRuns[i];
+
+                        searchLength += run.Length;
+                        if (searchLength > characterLineIndex)
+                            break;
                     }
 
-                    if (!_handle2.IsDragging)
-                    {
-                        var position = _handle2.SelectionHandleType == SelectionHandleType.Start ? first.BottomLeft : last.BottomRight;
-                        _handle2.SetTopLeft(ToLayer(position));
-                    }
+                    bool isRtl;
+                    var reversed = isRtl = !((run as ShapedTextRun)?.ShapedBuffer.IsLeftToRight ?? true);
+                    if (!start)
+                        reversed = !reversed;
+
+                    return (reversed ? rect.BottomRight : rect.BottomLeft, isRtl);
                 }
             }
 

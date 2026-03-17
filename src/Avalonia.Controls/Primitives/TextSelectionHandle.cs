@@ -23,6 +23,16 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        internal bool IsRtl
+        {
+            get => field;
+            set
+            {
+                field = value;
+                UpdateHandleClasses();
+            }
+        }
+
         internal Point IndicatorPosition
         {
             get
@@ -234,8 +244,8 @@ namespace Avalonia.Controls.Primitives
             return _indicator?.Bounds.Center.X ?? SelectionHandleType switch
             {
                 SelectionHandleType.Caret => Bounds.Width / 2,
-                SelectionHandleType.Start => Bounds.Width,
-                SelectionHandleType.End => 0,
+                SelectionHandleType.Start => IsRtl ? 0 : Bounds.Width,
+                SelectionHandleType.End => IsRtl ? Bounds.Width : 0,
                 _ => throw new NotImplementedException(),
             };
         }
@@ -249,8 +259,8 @@ namespace Avalonia.Controls.Primitives
             Classes.Add(SelectionHandleType switch
             {
                 SelectionHandleType.Caret => "caret",
-                SelectionHandleType.Start => "start",
-                SelectionHandleType.End => "end",
+                SelectionHandleType.Start => IsRtl ? "end" : "start",
+                SelectionHandleType.End => IsRtl ? "start" : "end",
                 _ => throw new NotImplementedException(),
             });
             InvalidateVisual();
