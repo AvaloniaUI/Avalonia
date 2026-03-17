@@ -29,7 +29,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         triggerEvent.Pointer.Capture(null);
 
-        var cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
+        var cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>() as X11CursorFactory;
 
         using var handler = new Handler(platform, window.Handle, dataTransfer, allowedEffects, cursorFactory);
         await handler.Completion;
@@ -43,26 +43,28 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         private readonly IntPtr _sourceWindow;
         private readonly IDataTransfer _dataTransfer;
         private readonly DragDropEffects _allowedEffects;
-        private readonly TaskCompletionSource<DragDropEffects> _completionSource = new();
+        private readonly X11CursorFactory? _cursorFactory;
         private readonly DragDropDataProvider _dataProvider;
+        private readonly TaskCompletionSource<DragDropEffects> _completionSource = new();
         private readonly IntPtr[] _formatAtoms;
         private X11WindowInfo? _originalSourceWindowInfo;
         private bool _pointerGrabbed;
         private XdndTargetInfo? _lastTarget;
-        private DragDropEffects _lastEffects;
+        private DragDropEffects _currentEffects;
 
         public Handler(
             AvaloniaX11Platform platform,
             IntPtr sourceWindow,
             IDataTransfer dataTransfer,
             DragDropEffects allowedEffects,
-            ICursorFactory? cursorFactory)
+            X11CursorFactory? cursorFactory)
         {
             _platform = platform;
             _sourceWindow = sourceWindow;
             _dataTransfer = dataTransfer;
             _allowedEffects = allowedEffects;
-            _lastEffects = allowedEffects;
+            _cursorFactory = cursorFactory;
+            _currentEffects = allowedEffects;
             _dataProvider = new DragDropDataProvider(platform, dataTransfer.ToAsynchronous());
 
             if (!platform.Windows.TryGetValue(sourceWindow, out var sourceWindowInfo))
@@ -86,7 +88,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 GrabMode.GrabModeAsync,
                 GrabMode.GrabModeAsync,
                 0,
-                platform.Info.DefaultCursor,
+                GetCursor(allowedEffects),
                 0);
 
             if (grabResult != GrabResult.GrabSuccess)
@@ -163,7 +165,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 }
 
                 _lastTarget = target;
-                _lastEffects = _allowedEffects;
+                UpdateCurrentEffects(_allowedEffects);
 
                 if (target is { } newTarget)
                 {
@@ -212,7 +214,8 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             var accepted = (message.ptr2 & 1) == 1;
             var action = accepted ? message.ptr5 : 0;
-            _lastEffects = XdndActionHelper.ActionToEffects(action, _platform.Info.Atoms);
+            var effects = XdndActionHelper.ActionToEffects(action, _platform.Info.Atoms);
+            UpdateCurrentEffects(effects & _allowedEffects);
         }
 
         private void OnXdndFinished(in XClientMessageEvent message)
@@ -225,11 +228,12 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             if (lastTarget.Version >= 5)
             {
                 var accepted = (message.ptr2 & 1) == 1;
-                var action = accepted ? message.ptr5 : 0;
-                _lastEffects = XdndActionHelper.ActionToEffects(action, _platform.Info.Atoms);
+                var action = accepted ? message.ptr3 : 0;
+                var effects = XdndActionHelper.ActionToEffects(action, _platform.Info.Atoms);
+                UpdateCurrentEffects(effects & _allowedEffects);
             }
 
-            _completionSource.TrySetResult(_lastEffects);
+            _completionSource.TrySetResult(_currentEffects);
         }
 
         private XdndTargetInfo? FindXdndTarget(PixelPoint rootPosition)
@@ -368,7 +372,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         {
             if (targetWindow.DragDropDevice is not { } dragDropDevice)
             {
-                _lastEffects = DragDropEffects.None;
+                UpdateCurrentEffects(DragDropEffects.None);
                 return;
             }
 
@@ -385,7 +389,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             dragDropDevice.ProcessRawEvent(dragEvent);
 
-            _lastEffects = dragEvent.Effects;
+            UpdateCurrentEffects(dragEvent.Effects & _allowedEffects);
         }
 
         private void UngrabPointer()
@@ -394,6 +398,39 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             XUngrabPointer(_platform.Display, 0);
             XFlush(_platform.Display);
+        }
+
+        private void UpdateCurrentEffects(DragDropEffects effects)
+        {
+            if (_currentEffects == effects)
+                return;
+
+            _currentEffects = effects;
+
+            if (_pointerGrabbed)
+            {
+                XChangeActivePointerGrab(
+                    _platform.Display,
+                    EventMask.ButtonPressMask | EventMask.ButtonReleaseMask | EventMask.PointerMotionMask,
+                    GetCursor(effects),
+                    0);
+            }
+        }
+
+        private IntPtr GetCursor(DragDropEffects effects)
+        {
+            if (_cursorFactory is not null)
+            {
+                if ((effects & DragDropEffects.Copy) != 0)
+                    return _cursorFactory.GetCursorHandle(StandardCursorType.DragCopy);
+                if ((effects & DragDropEffects.Move) != 0)
+                    return _cursorFactory.GetCursorHandle(StandardCursorType.DragMove);
+                if ((effects & DragDropEffects.Link) != 0)
+                    return _cursorFactory.GetCursorHandle(StandardCursorType.DragLink);
+                return _cursorFactory.DragNoDropCursorHandle;
+            }
+
+            return _platform.Info.DefaultCursor;
         }
 
         public void Dispose()
@@ -409,7 +446,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             }
 
             _lastTarget = null;
-            _lastEffects = DragDropEffects.None;
+            _currentEffects = DragDropEffects.None;
 
             if (_dataProvider.GetOwner() == _sourceWindow)
                 _dataProvider.SetOwner(0);
