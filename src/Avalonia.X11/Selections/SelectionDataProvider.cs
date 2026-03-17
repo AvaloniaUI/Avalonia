@@ -11,7 +11,7 @@ using static Avalonia.X11.XLib;
 namespace Avalonia.X11.Selections;
 
 /// <summary>
-/// Provides an X11 selection (clipboard/drag-and-drop) via a dedicated window.
+/// Provides an X11 selection (clipboard/drag-and-drop).
 /// </summary>
 internal abstract class SelectionDataProvider : IDisposable
 {
