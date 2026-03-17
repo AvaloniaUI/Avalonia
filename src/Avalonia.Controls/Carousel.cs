@@ -88,7 +88,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets whether a swipe gesture is currently in progress.
+        /// Gets a value indicating whether a swipe gesture is currently in progress.
         /// </summary>
         public bool IsSwiping
         {
