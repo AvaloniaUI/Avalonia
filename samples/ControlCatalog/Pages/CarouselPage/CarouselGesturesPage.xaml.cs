@@ -11,7 +11,7 @@ namespace ControlCatalog.Pages
         public CarouselGesturesPage()
         {
             InitializeComponent();
-            DemoCarousel.KeyDown += OnKeyDown;
+            DemoCarousel.AddHandler(InputElement.KeyDownEvent, OnKeyDown, handledEventsToo: true);
             DemoCarousel.SelectionChanged += OnSelectionChanged;
             DemoCarousel.Loaded += (_, _) => DemoCarousel.Focus();
         }
@@ -25,15 +25,11 @@ namespace ControlCatalog.Pages
             {
                 case Key.Left:
                 case Key.Up:
-                    DemoCarousel.Previous();
                     LastActionText.Text = $"Action: Key {e.Key} (Previous)";
-                    e.Handled = true;
                     break;
                 case Key.Right:
                 case Key.Down:
-                    DemoCarousel.Next();
                     LastActionText.Text = $"Action: Key {e.Key} (Next)";
-                    e.Handled = true;
                     break;
             }
         }
@@ -41,6 +37,8 @@ namespace ControlCatalog.Pages
         private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             StatusText.Text = $"Item: {DemoCarousel.SelectedIndex + 1} / {DemoCarousel.ItemCount}";
+            if (DemoCarousel.IsSwiping)
+                LastActionText.Text = "Action: Swipe";
         }
 
         private void OnSwipeEnabledChanged(object? sender, RoutedEventArgs e)
