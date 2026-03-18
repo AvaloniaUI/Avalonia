@@ -100,7 +100,7 @@ public class CompositionAnimationTests : ScopedTestBase
         foreach (var check in data.Checks)
         {
             currentValue = instance.Evaluate(TimeSpan.FromSeconds(check.time), currentValue);
-            Assert.Equal(check.value, currentValue.Scalar);
+            Assert.Equal(check.value, currentValue.Double);
         }
         
     }
