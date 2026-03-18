@@ -218,8 +218,8 @@ namespace Avalonia.Media
         /// The format specifier. Uppercase includes alpha, lowercase excludes it:
         /// <list type="bullet">
         /// <item><c>null</c> or <c>""</c> — Default (full-precision <c>hsva(h, s, v, a)</c>)</item>
-        /// <item><c>"V"</c> — CSS hsv with alpha: <c>hsv(h, s%, v%, a)</c></item>
-        /// <item><c>"v"</c> — CSS hsv without alpha: <c>hsv(h, s%, v%)</c></item>
+        /// <item><c>"V"</c> or <c>"C"</c> — CSS hsv with alpha: <c>hsv(h, s%, v%, a)</c></item>
+        /// <item><c>"v"</c> or <c>"c"</c> — CSS hsv without alpha: <c>hsv(h, s%, v%)</c></item>
         /// </list>
         /// </param>
         /// <param name="formatProvider">Ignored. Color formatting is culture-invariant.</param>
@@ -238,8 +238,8 @@ namespace Avalonia.Media
 
             return format switch
             {
-                "V" => string.Format(CultureInfo.InvariantCulture, "hsv({0}, {1}%, {2}%, {3})", hDeg, sPct, vPct, A),
-                "v" => string.Format(CultureInfo.InvariantCulture, "hsv({0}, {1}%, {2}%)", hDeg, sPct, vPct),
+                "V" or "C" => string.Format(CultureInfo.InvariantCulture, "hsv({0}, {1}%, {2}%, {3})", hDeg, sPct, vPct, A),
+                "v" or "c" => string.Format(CultureInfo.InvariantCulture, "hsv({0}, {1}%, {2}%)", hDeg, sPct, vPct),
                 _ => throw new FormatException($"Format string '{format}' is not supported.")
             };
         }

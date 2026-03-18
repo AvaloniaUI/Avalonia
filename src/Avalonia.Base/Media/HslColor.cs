@@ -188,8 +188,8 @@ namespace Avalonia.Media
         /// The format specifier. Uppercase includes alpha, lowercase excludes it:
         /// <list type="bullet">
         /// <item><c>null</c> or <c>""</c> — Default (full-precision <c>hsla(h, s, l, a)</c>)</item>
-        /// <item><c>"L"</c> — CSS hsl with alpha: <c>hsl(h, s%, l%, a)</c></item>
-        /// <item><c>"l"</c> — CSS hsl without alpha: <c>hsl(h, s%, l%)</c></item>
+        /// <item><c>"L"</c> or <c>"C"</c> — CSS hsl with alpha: <c>hsl(h, s%, l%, a)</c></item>
+        /// <item><c>"l"</c> or <c>"c"</c> — CSS hsl without alpha: <c>hsl(h, s%, l%)</c></item>
         /// </list>
         /// </param>
         /// <param name="formatProvider">Ignored. Color formatting is culture-invariant.</param>
@@ -208,8 +208,8 @@ namespace Avalonia.Media
 
             return format switch
             {
-                "L" => string.Format(CultureInfo.InvariantCulture, "hsl({0}, {1}%, {2}%, {3})", hDeg, sPct, lPct, A),
-                "l" => string.Format(CultureInfo.InvariantCulture, "hsl({0}, {1}%, {2}%)", hDeg, sPct, lPct),
+                "L" or "C" => string.Format(CultureInfo.InvariantCulture, "hsl({0}, {1}%, {2}%, {3})", hDeg, sPct, lPct, A),
+                "l" or "c" => string.Format(CultureInfo.InvariantCulture, "hsl({0}, {1}%, {2}%)", hDeg, sPct, lPct),
                 _ => throw new FormatException($"Format string '{format}' is not supported.")
             };
         }

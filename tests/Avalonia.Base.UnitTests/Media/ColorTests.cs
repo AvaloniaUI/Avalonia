@@ -440,5 +440,23 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.Throws<FormatException>(() => color.ToString("Z", null));
         }
+
+        [Fact]
+        public void HslColor_ToString_C_Is_Alias_For_L()
+        {
+            var color = new HslColor(0.5, 240, 0.8, 0.2);
+
+            Assert.Equal(color.ToString("L", null), color.ToString("C", null));
+            Assert.Equal(color.ToString("l", null), color.ToString("c", null));
+        }
+
+        [Fact]
+        public void HsvColor_ToString_C_Is_Alias_For_V()
+        {
+            var color = new HsvColor(0.5, 240, 0.8, 0.2);
+
+            Assert.Equal(color.ToString("V", null), color.ToString("C", null));
+            Assert.Equal(color.ToString("v", null), color.ToString("c", null));
+        }
     }
 }
