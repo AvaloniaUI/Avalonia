@@ -210,6 +210,7 @@ namespace Avalonia.Animation
             visual.RenderTransform = null;
         }
 
+
         /// <summary>
         /// Gets the common visual parent of the two control.
         /// </summary>

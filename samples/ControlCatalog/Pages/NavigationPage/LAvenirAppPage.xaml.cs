@@ -59,6 +59,26 @@ public partial class LAvenirAppPage : UserControl
             _infoPanel.IsVisible = Bounds.Width >= 650;
     }
 
+    void ApplyRootNavigationBarAppearance()
+    {
+        if (_navPage == null)
+            return;
+
+        _navPage.Background = new SolidColorBrush(BgLight);
+        _navPage.Resources["NavigationBarBackground"] = new SolidColorBrush(BgLight);
+        _navPage.Resources["NavigationBarForeground"] = new SolidColorBrush(TextDark);
+    }
+
+    void ApplyDetailNavigationBarAppearance()
+    {
+        if (_navPage == null)
+            return;
+
+        _navPage.Background = new SolidColorBrush(BgDark);
+        _navPage.Resources["NavigationBarBackground"] = new SolidColorBrush(BgDark);
+        _navPage.Resources["NavigationBarForeground"] = Brushes.White;
+    }
+
     TabbedPage BuildMenuTabbedPage()
     {
         var tp = new TabbedPage
@@ -92,6 +112,7 @@ public partial class LAvenirAppPage : UserControl
             VerticalAlignment = VerticalAlignment.Center,
             TextAlignment     = TextAlignment.Center,
         };
+        ApplyRootNavigationBarAppearance();
 
         NavigationPage.SetTopCommandBar(tp, new Button
         {
@@ -119,7 +140,7 @@ public partial class LAvenirAppPage : UserControl
             Content    = menuView,
             Background = new SolidColorBrush(BgLight),
             Header     = "Menu",
-            Icon       = "M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z",
+            Icon       = Geometry.Parse("M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"),
         };
 
         var reservationsPage = new ContentPage
@@ -127,7 +148,7 @@ public partial class LAvenirAppPage : UserControl
             Content    = new LAvenirReservationsView(),
             Background = new SolidColorBrush(BgLight),
             Header     = "Reservations",
-            Icon       = "M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z",
+            Icon       = Geometry.Parse("M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"),
         };
 
         var profilePage = new ContentPage
@@ -135,7 +156,7 @@ public partial class LAvenirAppPage : UserControl
             Content    = new LAvenirProfileView(),
             Background = new SolidColorBrush(BgLight),
             Header     = "Profile",
-            Icon       = "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z",
+            Icon       = Geometry.Parse("M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"),
         };
 
         tp.Pages = new ObservableCollection<Page> { menuPage, reservationsPage, profilePage };
@@ -144,7 +165,8 @@ public partial class LAvenirAppPage : UserControl
 
     async void PushDishDetail(string name, string price, string description, string imageFile)
     {
-        if (_navPage == null) return;
+        if (_navPage == null)
+            return;
 
         var detail = new ContentPage
         {
@@ -153,22 +175,19 @@ public partial class LAvenirAppPage : UserControl
             Header     = name,
         };
         NavigationPage.SetBottomCommandBar(detail, BuildFloatingBar(price));
-
-        _navPage.Background = new SolidColorBrush(BgDark);
-        _navPage.Resources["NavigationBarBackground"] = new SolidColorBrush(BgDark);
-        _navPage.Resources["NavigationBarForeground"] = Brushes.White;
-
-        detail.NavigatedFrom += (_, _) =>
+        detail.Navigating += args =>
         {
-            if (_navPage != null)
-            {
-                _navPage.Background = new SolidColorBrush(BgLight);
-                _navPage.Resources["NavigationBarBackground"] = new SolidColorBrush(BgLight);
-                _navPage.Resources["NavigationBarForeground"] = new SolidColorBrush(TextDark);
-            }
+            if (args.NavigationType == NavigationType.Pop)
+                ApplyRootNavigationBarAppearance();
+
+            return Task.CompletedTask;
         };
 
+        ApplyDetailNavigationBarAppearance();
         await _navPage.PushAsync(detail);
+
+        if (!ReferenceEquals(_navPage.CurrentPage, detail))
+            ApplyRootNavigationBarAppearance();
     }
 
     Border BuildFloatingBar(string price)
