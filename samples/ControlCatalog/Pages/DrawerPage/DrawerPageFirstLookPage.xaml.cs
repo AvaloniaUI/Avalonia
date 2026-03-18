@@ -1,4 +1,6 @@
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
@@ -8,6 +10,7 @@ namespace ControlCatalog.Pages
         public DrawerPageFirstLookPage()
         {
             InitializeComponent();
+            EnableMouseSwipeGesture(DemoDrawer);
         }
 
         protected override void OnLoaded(RoutedEventArgs e)
@@ -60,6 +63,16 @@ namespace ControlCatalog.Pages
         private void UpdateStatus()
         {
             StatusText.Text = $"Drawer: {(DemoDrawer.IsOpen ? "Open" : "Closed")}";
+        }
+
+        private static void EnableMouseSwipeGesture(Control control)
+        {
+            var recognizer = control.GestureRecognizers
+                .OfType<SwipeGestureRecognizer>()
+                .FirstOrDefault();
+
+            if (recognizer is not null)
+                recognizer.IsMouseEnabled = true;
         }
     }
 }

@@ -1188,6 +1188,26 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Show_Should_Apply_Default_Icon_When_No_Custom_Icon_Is_Set()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform: windowingPlatform)))
+            {
+                var target = new Window();
+
+                // Clear any SetIcon calls from construction.
+                windowImpl.Invocations.Clear();
+
+                target.Show();
+
+                // ShowCore should apply the default icon when no custom icon was set.
+                windowImpl.Verify(x => x.SetIcon(It.IsAny<IWindowIconImpl?>()), Times.AtLeastOnce());
+            }
+        }
+
         private class TopmostWindow : Window
         {
             static TopmostWindow()
