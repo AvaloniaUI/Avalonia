@@ -1202,6 +1202,7 @@ public class CarouselPageTests
             var recognizer = Assert.Single(panel.GestureRecognizers.OfType<SwipeGestureRecognizer>());
             Assert.True(recognizer.IsEnabled);
             Assert.True(recognizer.CanHorizontallySwipe);
+            recognizer.IsMouseEnabled = true;
             return (cp, carousel, panel);
         }
 
