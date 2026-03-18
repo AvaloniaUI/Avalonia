@@ -806,7 +806,43 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
-        public void Can_Get_Next_Element_With_Options()
+        public void Can_Get_Next_Element_With_FocusedElement_Option()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        target3,
+                        target4
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+                Assert.Null(focusManager.GetFocusedElement());
+
+                var next = focusManager.FindNextElement(
+                    NavigationDirection.Next,
+                    new FindNextElementOptions { FocusedElement = target1 });
+
+                Assert.Equal(next, target2);
+            }
+        }
+
+        [Fact]
+        public void Can_Get_Directional_Next_Element_With_Options()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
@@ -865,6 +901,76 @@ namespace Avalonia.Base.UnitTests.Input
 
                 // Search root isn't to the right of the current focus, should return null
                 next = focusManager.FindNextElement(NavigationDirection.Right, options);
+
+                Assert.Null(next);
+            }
+        }
+
+        [Fact]
+        public void Can_Get_Directional_Next_Element_With_FocusedElement_Option()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var target5 = new Button { Focusable = true, Content = "5" };
+                var seachStack = new StackPanel()
+                {
+                    Children =
+                    {
+                        target3,
+                        target4
+                    }
+                };
+                var container = new StackPanel
+                {
+                    Orientation = Avalonia.Layout.Orientation.Horizontal,
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        seachStack,
+                        target5
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                root.InvalidateMeasure();
+                root.ExecuteInitialLayoutPass();
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+                Assert.Null(focusManager.GetFocusedElement());
+
+                // Search root is right of the specified focused element, should return the first focusable element in the search root
+                var next = focusManager.FindNextElement(NavigationDirection.Right, new FindNextElementOptions
+                {
+                    SearchRoot = seachStack,
+                    FocusedElement = target1
+                });
+
+                Assert.Equal(next, target3);
+
+                // Search root is left of the specified focused element, should return the first focusable element in the search root
+                next = focusManager.FindNextElement(NavigationDirection.Left, new FindNextElementOptions
+                {
+                    SearchRoot = seachStack,
+                    FocusedElement = target5
+                });
+
+                Assert.Equal(next, target3);
+
+                // Search root isn't to the right of the specified focused element, should return null
+                next = focusManager.FindNextElement(NavigationDirection.Right, new FindNextElementOptions
+                {
+                    SearchRoot = seachStack,
+                    FocusedElement = target5
+                });
 
                 Assert.Null(next);
             }
