@@ -15,6 +15,11 @@ namespace Avalonia.FreeDesktop.AtSpi
 {
     /// <summary>
     /// Manages the AT-SPI D-Bus connection, node registration, and event emission.
+    /// Can operate in two modes:
+    /// <list type="bullet">
+    ///   <item><see cref="StartAsync"/> — connects to the Linux accessibility bus (screen reader mode).</item>
+    ///   <item><see cref="InitializePeerAsync"/> — accepts an existing peer-to-peer D-Bus connection (automation mode).</item>
+    /// </list>
     /// </summary>
     internal sealed class AtSpiServer : IAsyncDisposable
     {
@@ -80,6 +85,46 @@ namespace Avalonia.FreeDesktop.AtSpi
 
             _registryTracker = new AtSpiRegistryEventTracker(_a11yConnection);
             _ = InitializeRegistryTrackerAsync(_registryTracker);
+        }
+
+        /// <summary>
+        /// Initializes the AT-SPI server on an existing peer-to-peer D-Bus connection.
+        /// Unlike <see cref="StartAsync"/>, this does not connect to the accessibility bus
+        /// or embed with the AT-SPI registry — the caller supplies the connection directly.
+        /// Suitable for automation scenarios where the transport is a named pipe or socket.
+        /// </summary>
+        /// <param name="connection">An already-connected peer-to-peer <see cref="DBusConnection"/>.</param>
+        /// <param name="uniqueName">
+        /// A unique name for this server instance (e.g. <c>":auto.1234"</c>).
+        /// Used in AT-SPI object references returned to the client.
+        /// </param>
+        /// <param name="syncContext">
+        /// Optional synchronization context for marshaling handler calls.
+        /// Pass the UI thread's context when <see cref="AutomationPeer"/> requires dispatcher access.
+        /// When <see langword="null"/>, an <see cref="AvaloniaSynchronizationContext"/> is created automatically.
+        /// </param>
+        internal async Task InitializePeerAsync(
+            DBusConnection connection,
+            string uniqueName,
+            SynchronizationContext? syncContext = null)
+        {
+            ArgumentNullException.ThrowIfNull(connection);
+            ArgumentException.ThrowIfNullOrEmpty(uniqueName);
+
+            _a11yConnection = connection;
+            _uniqueName = uniqueName;
+            _syncContext = syncContext ?? new AvaloniaSynchronizationContext(DispatcherPriority.Normal);
+
+            _appRoot = new ApplicationAtSpiNode(null);
+            _cacheHandler = new AtSpiCacheHandler();
+
+            await BuildAndRegisterAppRootAsync();
+            await RegisterCachePathAsync();
+
+            // No registry embedding or event tracker in peer-to-peer mode —
+            // the client is the only consumer and receives all signals directly.
+            lock (_embedSync)
+                _isEmbedded = true;
         }
 
         /// <summary>
