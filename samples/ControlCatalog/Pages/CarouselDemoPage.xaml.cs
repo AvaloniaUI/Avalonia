@@ -49,6 +49,32 @@ namespace ControlCatalog.Pages
             ("Showcases", "Care Companion",
                 "Healthcare onboarding with CarouselPage (3 pages), then a TabbedPage patient dashboard. Skip or complete onboarding to navigate to the dashboard via RemovePage.",
                 () => new CareCompanionAppPage()),
+
+            // Carousel (ItemsControl) demos
+            ("Carousel", "Getting Started",
+                "Basic Carousel with image items and previous/next navigation buttons.",
+                () => new CarouselGettingStartedPage()),
+            ("Carousel", "Transitions",
+                "Configure page transitions: PageSlide, CrossFade, 3D Rotation, or None.",
+                () => new CarouselTransitionsPage()),
+            ("Carousel", "Customization",
+                "Adjust orientation and transition type to tailor the carousel layout.",
+                () => new CarouselCustomizationPage()),
+            ("Carousel", "Gestures & Keyboard",
+                "Navigate items via swipe gesture and arrow keys. Toggle each input mode on and off.",
+                () => new CarouselGesturesPage()),
+            ("Carousel", "Vertical Orientation",
+                "Carousel with Orientation set to Vertical, navigated with Up/Down keys, swipe, or buttons.",
+                () => new CarouselVerticalPage()),
+            ("Carousel", "Multi-Item Peek",
+                "Adjust ViewportFraction to show multiple items simultaneously with adjacent cards peeking.",
+                () => new CarouselMultiItemPage()),
+            ("Carousel", "Data Binding",
+                "Bind Carousel to an ObservableCollection and add, remove, or shuffle items at runtime.",
+                () => new CarouselDataBindingPage()),
+            ("Carousel", "Curated Gallery",
+                "Editorial art gallery app with DrawerPage navigation, hero Carousel with PipsPager dots, and a horizontal peek carousel for collection highlights.",
+                () => new CarouselGalleryAppPage()),
         };
 
         public CarouselDemoPage()
