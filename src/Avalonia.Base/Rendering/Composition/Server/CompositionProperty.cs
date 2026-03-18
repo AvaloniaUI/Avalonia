@@ -11,14 +11,10 @@ internal class CompositionProperty
     private static int s_nextId = 1;
     private static readonly object _lock = new();
 
-    private static Dictionary<Type, List<CompositionProperty>> s_dynamicRegistry = new();
-
     class ReadOnlyRegistry : Dictionary<Type, IReadOnlyDictionary<string, CompositionProperty>>
     {
 
     }
-
-    private static volatile ReadOnlyRegistry? s_ReadOnlyRegistry;
 
     public CompositionProperty(int id, string name, Type owner, Func<SimpleServerObject, ExpressionVariant>? getVariant)
     {
@@ -41,64 +37,9 @@ internal class CompositionProperty
         {
             var id = s_nextId++;
             prop = new CompositionProperty<TField>(id, name, typeof(TOwner), getField, setField, getVariant);
-            if (!s_dynamicRegistry.TryGetValue(typeof(TOwner), out var list))
-                s_dynamicRegistry[typeof(TOwner)] = list = [];
-            list.Add(prop);
-            s_ReadOnlyRegistry = null;
         }
 
-        s_ReadOnlyRegistry = null;
         return prop;
-    }
-
-    static void PopulatePropertiesForType(Type type, List<CompositionProperty> l)
-    {
-        Type? t = type;
-        while (t != null && t != typeof(object))
-        {
-            if (s_dynamicRegistry.TryGetValue(t, out var lst))
-                l.AddRange(lst);
-            t = t.BaseType;
-        }
-    }
-
-    static ReadOnlyRegistry Build()
-    {
-        var reg = new ReadOnlyRegistry();
-        foreach (var type in s_dynamicRegistry.Keys)
-        {
-            var lst = new List<CompositionProperty>();
-            PopulatePropertiesForType(type, lst);
-            reg[type] = lst.ToDictionary(x => x.Name);
-        }
-
-        return reg;
-    }
-    
-    public static IReadOnlyDictionary<string, CompositionProperty>? TryGetPropertiesForType(Type t)
-    {
-        GetRegistry().TryGetValue(t, out var rv);
-        return rv;
-    }
-
-    public static CompositionProperty? Find(Type owner, string name)
-    {
-        if (TryGetPropertiesForType(owner)?.TryGetValue(name, out var prop) == true)
-            return prop;
-        return null;
-    }
-
-    static ReadOnlyRegistry GetRegistry()
-    {
-        var reg = s_ReadOnlyRegistry;
-        if (reg != null)
-            return reg;
-        lock (_lock)
-        {
-            // ReSharper disable once NonAtomicCompoundOperator
-            // This is the only line ever that would set the field to a not-null value, and we are inside of a lock
-            return s_ReadOnlyRegistry ??= Build();
-        }
     }
 }
 
