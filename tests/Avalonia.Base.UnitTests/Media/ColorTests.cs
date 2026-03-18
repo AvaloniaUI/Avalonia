@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Avalonia.Media;
 using Xunit;
 
@@ -363,6 +364,81 @@ namespace Avalonia.Base.UnitTests.Media
                 Assert.Equal(convertedHsv, dataPoint.Item1);
                 Assert.Equal(convertedHsl, dataPoint.Item2);
             }
+        }
+        [Theory]
+        [InlineData(1.0, 180, 0.5, 0.5, "hsl(180, 50%, 50%, 1)")]
+        [InlineData(0.5, 240, 0.8, 0.2, "hsl(240, 80%, 20%, 0.5)")]
+        [InlineData(0.0, 0, 0.0, 0.0, "hsl(0, 0%, 0%, 0)")]
+        public void HslColor_ToString_L_Returns_Hsl_With_Alpha(double a, double h, double s, double l, string expected)
+        {
+            var color = new HslColor(a, h, s, l);
+
+            Assert.Equal(expected, color.ToString("L", CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(1.0, 180, 0.5, 0.5, "hsl(180, 50%, 50%)")]
+        [InlineData(0.5, 240, 0.8, 0.2, "hsl(240, 80%, 20%)")]
+        [InlineData(0.0, 0, 0.0, 0.0, "hsl(0, 0%, 0%)")]
+        public void HslColor_ToString_l_Returns_Hsl_Without_Alpha(double a, double h, double s, double l, string expected)
+        {
+            var color = new HslColor(a, h, s, l);
+
+            Assert.Equal(expected, color.ToString("l", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void HslColor_ToString_Null_Format_Matches_Default()
+        {
+            var color = new HslColor(0.8, 200, 0.6, 0.4);
+
+            Assert.Equal(color.ToString(), color.ToString(null, null));
+        }
+
+        [Fact]
+        public void HslColor_ToString_Invalid_Format_Throws()
+        {
+            var color = new HslColor(1.0, 0, 0, 0);
+
+            Assert.Throws<FormatException>(() => color.ToString("Z", null));
+        }
+
+        [Theory]
+        [InlineData(1.0, 180, 0.5, 0.5, "hsv(180, 50%, 50%, 1)")]
+        [InlineData(0.5, 240, 0.8, 0.2, "hsv(240, 80%, 20%, 0.5)")]
+        [InlineData(0.0, 0, 0.0, 0.0, "hsv(0, 0%, 0%, 0)")]
+        public void HsvColor_ToString_V_Returns_Hsv_With_Alpha(double a, double h, double s, double v, string expected)
+        {
+            var color = new HsvColor(a, h, s, v);
+
+            Assert.Equal(expected, color.ToString("V", CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(1.0, 180, 0.5, 0.5, "hsv(180, 50%, 50%)")]
+        [InlineData(0.5, 240, 0.8, 0.2, "hsv(240, 80%, 20%)")]
+        [InlineData(0.0, 0, 0.0, 0.0, "hsv(0, 0%, 0%)")]
+        public void HsvColor_ToString_v_Returns_Hsv_Without_Alpha(double a, double h, double s, double v, string expected)
+        {
+            var color = new HsvColor(a, h, s, v);
+
+            Assert.Equal(expected, color.ToString("v", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void HsvColor_ToString_Null_Format_Matches_Default()
+        {
+            var color = new HsvColor(0.8, 200, 0.6, 0.4);
+
+            Assert.Equal(color.ToString(), color.ToString(null, null));
+        }
+
+        [Fact]
+        public void HsvColor_ToString_Invalid_Format_Throws()
+        {
+            var color = new HsvColor(1.0, 0, 0, 0);
+
+            Assert.Throws<FormatException>(() => color.ToString("Z", null));
         }
     }
 }

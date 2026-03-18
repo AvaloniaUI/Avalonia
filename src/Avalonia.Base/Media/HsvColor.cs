@@ -18,6 +18,9 @@ namespace Avalonia.Media
     public
 #endif
     readonly struct HsvColor : IEquatable<HsvColor>
+#if !BUILDTASK
+        , IFormattable
+#endif
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HsvColor"/> struct.
@@ -206,6 +209,41 @@ namespace Avalonia.Media
         {
             return HsvColor.ToHsl(H, S, V, A);
         }
+
+#if !BUILDTASK
+        /// <summary>
+        /// Returns a formatted string representation of the HSV color.
+        /// </summary>
+        /// <param name="format">
+        /// The format specifier. Uppercase includes alpha, lowercase excludes it:
+        /// <list type="bullet">
+        /// <item><c>null</c> or <c>""</c> — Default (full-precision <c>hsva(h, s, v, a)</c>)</item>
+        /// <item><c>"V"</c> — CSS hsv with alpha: <c>hsv(h, s%, v%, a)</c></item>
+        /// <item><c>"v"</c> — CSS hsv without alpha: <c>hsv(h, s%, v%)</c></item>
+        /// </list>
+        /// </param>
+        /// <param name="formatProvider">Ignored. Color formatting is culture-invariant.</param>
+        /// <returns>The formatted string representation.</returns>
+        /// <exception cref="FormatException">Thrown when <paramref name="format"/> is not recognized.</exception>
+        public string ToString(string? format, IFormatProvider? formatProvider)
+        {
+            if (string.IsNullOrEmpty(format))
+            {
+                return ToString();
+            }
+
+            int hDeg = (int)Math.Round(H);
+            int sPct = (int)Math.Round(S * 100.0);
+            int vPct = (int)Math.Round(V * 100.0);
+
+            return format switch
+            {
+                "V" => string.Format(CultureInfo.InvariantCulture, "hsv({0}, {1}%, {2}%, {3})", hDeg, sPct, vPct, A),
+                "v" => string.Format(CultureInfo.InvariantCulture, "hsv({0}, {1}%, {2}%)", hDeg, sPct, vPct),
+                _ => throw new FormatException($"Format string '{format}' is not supported.")
+            };
+        }
+#endif
 
         /// <inheritdoc/>
         public override string ToString()
