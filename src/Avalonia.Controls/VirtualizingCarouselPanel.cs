@@ -440,6 +440,13 @@ namespace Avalonia.Controls
             TeardownGestureRecognizer();
         }
 
+        protected override void OnItemsControlChanged(ItemsControl? oldValue)
+        {
+            base.OnItemsControlChanged(oldValue);
+
+            RefreshGestureRecognizer();
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             if (UsesViewportFractionLayout())
@@ -948,7 +955,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            if (_isDragging || _offsetAnimationCts is { IsCancellationRequested: false })
+            if (_isDragging)
                 return;
 
             var transition = GetTransition();
@@ -976,6 +983,11 @@ namespace Avalonia.Controls
                 {
                     ResetViewportTransitionState();
                     ClearFractionalProgressContext();
+
+                    // SyncScrollOffset is blocked during animation and the post-animation layout
+                    // still sees a live CTS, so re-sync explicitly in case SelectedIndex changed.
+                    if (ItemsControl is Carousel carousel)
+                        SyncSelectionOffset(carousel.SelectedIndex);
                 });
         }
 
