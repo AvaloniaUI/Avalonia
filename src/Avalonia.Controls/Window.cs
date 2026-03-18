@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -793,6 +794,12 @@ namespace Avalonia.Controls
         public override void Show()
         {
             ShowCore<object>(null, false);
+        }
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+            EnableVisualLayerManagerLayers();
         }
 
         protected override void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
