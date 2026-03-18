@@ -2471,6 +2471,7 @@ public class NavigationPageTests
                 Width = 400,
                 Height = 300
             };
+            nav.GestureRecognizers.OfType<SwipeGestureRecognizer>().First().IsMouseEnabled = true;
             var rootPage = new ContentPage { Header = "Root" };
             var topPage = new ContentPage { Header = "Top" };
 
