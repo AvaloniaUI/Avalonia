@@ -104,6 +104,17 @@ namespace Avalonia.Rendering.Composition.Expressions
         False
     }
 
+    internal class ExpressionKeywords
+    {
+        public const string StartingValue = "this.startingvalue";
+        public const string CurrentValue = "this.currentvalue";
+        public const string FinalValue = "this.finalvalue";
+        public const string Pi = "pi";
+        public const string True = "true";
+        public const string False = "false";
+        public const string Target = "this.target";
+    }
+
     internal class ConditionalExpression : Expression
     {
         public Expression Condition { get; }
@@ -202,6 +213,10 @@ namespace Avalonia.Rendering.Composition.Expressions
             Target.CollectReferences(references);
             if (Target is ParameterExpression pe)
                 references.Add((pe.Name, Member));
+            else if (Target is KeywordExpression { Keyword : ExpressionKeyword.Target })
+            {
+                references.Add((ExpressionKeywords.Target, Member));
+            }
         }
 
         public override ExpressionVariant Evaluate(ref ExpressionEvaluationContext context)
