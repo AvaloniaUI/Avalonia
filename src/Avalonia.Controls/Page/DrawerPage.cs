@@ -213,6 +213,7 @@ namespace Avalonia.Controls
         private Border? _topBar;
         private ToggleButton? _paneButton;
         private Border? _backdrop;
+        private Point _swipeStartPoint;
         private IDisposable? _navBarVisibleSub;
 
         private const double EdgeGestureWidth = 20;
@@ -716,6 +717,7 @@ namespace Avalonia.Controls
             if (_backdrop != null)
                 _backdrop.PointerPressed -= OnBackdropPressed;
         }
+
 
         private void UpdateSwipeRecognizerAxes()
         {

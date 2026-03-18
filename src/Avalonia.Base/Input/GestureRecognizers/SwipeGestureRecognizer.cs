@@ -135,22 +135,20 @@ namespace Avalonia.Input.GestureRecognizers
 
                 if (!_swiping)
                 {
-                    var horizontalTriggered =
-                        CanHorizontallySwipe && Math.Abs(_trackedRootPoint.X - rootPoint.X) > threshold;
-                    var verticalTriggered =
-                        CanVerticallySwipe && Math.Abs(_trackedRootPoint.Y - rootPoint.Y) > threshold;
+                    var horizontalTriggered = CanHorizontallySwipe && Math.Abs(_trackedRootPoint.X - rootPoint.X) > threshold;
+                    var verticalTriggered = CanVerticallySwipe && Math.Abs(_trackedRootPoint.Y - rootPoint.Y) > threshold;
 
                     if (horizontalTriggered || verticalTriggered)
                     {
                         _swiping = true;
 
                         _trackedRootPoint = new Point(
-                            horizontalTriggered ?
-                                _trackedRootPoint.X - (_trackedRootPoint.X >= rootPoint.X ? threshold : -threshold) :
-                                rootPoint.X,
-                            verticalTriggered ?
-                                _trackedRootPoint.Y - (_trackedRootPoint.Y >= rootPoint.Y ? threshold : -threshold) :
-                                rootPoint.Y);
+                            horizontalTriggered
+                                ? _trackedRootPoint.X - (_trackedRootPoint.X >= rootPoint.X ? threshold : -threshold)
+                                : rootPoint.X,
+                            verticalTriggered
+                                ? _trackedRootPoint.Y - (_trackedRootPoint.Y >= rootPoint.Y ? threshold : -threshold)
+                                : rootPoint.Y);
 
                         Capture(e.Pointer);
                     }
@@ -170,7 +168,6 @@ namespace Avalonia.Input.GestureRecognizers
                             _velocity = _velocity * 0.5 + instantVelocity * 0.5;
                         }
                     }
-
                     _lastTimestamp = now;
 
                     Target!.RaiseEvent(new SwipeGestureEventArgs(_id, delta, _velocity));
@@ -203,10 +200,11 @@ namespace Avalonia.Input.GestureRecognizers
             if (_swiping)
             {
                 _swiping = false;
-                Target!.RaiseEvent(new SwipeGestureEndedEventArgs(_id, _velocity));
+                var endedArgs = new SwipeGestureEndedEventArgs(_id, _velocity);
                 _velocity = default;
                 _lastTimestamp = 0;
                 _id = 0;
+                Target!.RaiseEvent(endedArgs);
             }
         }
 

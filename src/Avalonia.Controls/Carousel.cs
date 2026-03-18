@@ -6,7 +6,8 @@ using Avalonia.Input;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// An items control that displays its items as pages that fill the control.
+    /// An items control that displays its items as pages and can reveal adjacent pages
+    /// using <see cref="ViewportFraction"/>.
     /// </summary>
     public class Carousel : SelectingItemsControl
     {
@@ -21,6 +22,15 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> IsSwipeEnabledProperty =
             AvaloniaProperty.Register<Carousel, bool>(nameof(IsSwipeEnabled), defaultValue: false);
+
+        /// <summary>
+        /// Defines the <see cref="ViewportFraction"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> ViewportFractionProperty =
+            AvaloniaProperty.Register<Carousel, double>(
+                nameof(ViewportFraction),
+                defaultValue: 1d,
+                coerce: (_, value) => double.IsFinite(value) && value > 0 ? value : 1d);
 
         /// <summary>
         /// Defines the <see cref="IsSwiping"/> property.
@@ -68,7 +78,17 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets whether a swipe gesture is currently in progress.
+        /// Gets or sets the fraction of the viewport occupied by each page.
+        /// A value of 1 shows a single full page; values below 1 reveal adjacent pages.
+        /// </summary>
+        public double ViewportFraction
+        {
+            get => GetValue(ViewportFractionProperty);
+            set => SetValue(ViewportFractionProperty, value);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether a swipe gesture is currently in progress.
         /// </summary>
         public bool IsSwiping
         {
@@ -82,13 +102,15 @@ namespace Avalonia.Controls
         public void Next()
         {
             if (ItemCount == 0)
-            {
                 return;
-            }
 
             if (SelectedIndex < ItemCount - 1)
             {
                 ++SelectedIndex;
+            }
+            else if (WrapSelection)
+            {
+                SelectedIndex = 0;
             }
         }
 
@@ -98,24 +120,37 @@ namespace Avalonia.Controls
         public void Previous()
         {
             if (ItemCount == 0)
-            {
                 return;
-            }
 
             if (SelectedIndex > 0)
             {
                 --SelectedIndex;
             }
+            else if (WrapSelection)
+            {
+                SelectedIndex = ItemCount - 1;
+            }
         }
 
         internal PageSlide.SlideAxis? GetTransitionAxis()
         {
-            return PageTransition switch
+            var transition = PageTransition;
+
+            if (transition is CompositePageTransition composite)
             {
-                PageSlide ps => ps.Orientation,
-                _ => null
-            };
+                foreach (var t in composite.PageTransitions)
+                {
+                    if (t is PageSlide slide)
+                        return slide.Orientation;
+                }
+
+                return null;
+            }
+
+            return transition is PageSlide ps ? ps.Orientation : null;
         }
+
+        internal PageSlide.SlideAxis GetLayoutAxis() => GetTransitionAxis() ?? PageSlide.SlideAxis.Horizontal;
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -124,7 +159,7 @@ namespace Avalonia.Controls
             if (e.Handled || ItemCount == 0)
                 return;
 
-            var axis = GetTransitionAxis();
+            var axis = ViewportFraction != 1d ? GetLayoutAxis() : GetTransitionAxis();
             var isVertical = axis == PageSlide.SlideAxis.Vertical;
             var isHorizontal = axis == PageSlide.SlideAxis.Horizontal;
 
@@ -155,10 +190,7 @@ namespace Avalonia.Controls
         {
             var result = base.ArrangeOverride(finalSize);
 
-            if (_scroller is not null)
-            {
-                _scroller.Offset = new(SelectedIndex, 0);
-            }
+            SyncScrollOffset();
 
             return result;
         }
@@ -176,18 +208,54 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == SelectedIndexProperty && _scroller is not null)
+            if (change.Property == SelectedIndexProperty)
             {
-                var value = change.GetNewValue<int>();
-                _scroller.Offset = new(value, 0);
+                SyncScrollOffset();
             }
 
             if (change.Property == IsSwipeEnabledProperty ||
-                change.Property == PageTransitionProperty)
+                change.Property == PageTransitionProperty ||
+                change.Property == ViewportFractionProperty ||
+                change.Property == WrapSelectionProperty)
             {
                 if (ItemsPanelRoot is VirtualizingCarouselPanel panel)
+                {
+                    if (change.Property == ViewportFractionProperty && !panel.IsManagingInteractionOffset)
+                        panel.SyncSelectionOffset(SelectedIndex);
+
                     panel.RefreshGestureRecognizer();
+                    panel.InvalidateMeasure();
+                }
+
+                SyncScrollOffset();
             }
+        }
+
+        private void SyncScrollOffset()
+        {
+            if (ItemsPanelRoot is VirtualizingCarouselPanel panel)
+            {
+                if (panel.IsManagingInteractionOffset)
+                    return;
+
+                panel.SyncSelectionOffset(SelectedIndex);
+
+                if (ViewportFraction != 1d)
+                    return;
+            }
+
+            if (_scroller is null)
+                return;
+
+            _scroller.Offset = CreateScrollOffset(SelectedIndex);
+        }
+
+        private Vector CreateScrollOffset(int index)
+        {
+            if (ViewportFraction != 1d && GetLayoutAxis() == PageSlide.SlideAxis.Vertical)
+                return new(0, index);
+
+            return new(index, 0);
         }
     }
 }

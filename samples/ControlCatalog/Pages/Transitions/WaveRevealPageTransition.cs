@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,10 +15,18 @@ namespace ControlCatalog.Pages.Transitions;
 /// </summary>
 public class WaveRevealPageTransition : PageSlide
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WaveRevealPageTransition"/> class.
+    /// </summary>
     public WaveRevealPageTransition()
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WaveRevealPageTransition"/> class.
+    /// </summary>
+    /// <param name="duration">The duration of the animation.</param>
+    /// <param name="orientation">The axis on which the animation should occur.</param>
     public WaveRevealPageTransition(TimeSpan duration, PageSlide.SlideAxis orientation = PageSlide.SlideAxis.Horizontal)
         : base(duration, orientation)
     {
@@ -50,6 +59,7 @@ public class WaveRevealPageTransition : PageSlide
 
     /// <summary>
     /// Gets or sets the bulge exponent used to shape the wave (1.0 = linear).
+    /// Higher values tighten the bulge; lower values broaden it.
     /// </summary>
     public double BulgeExponent { get; set; } = 1.0;
 
@@ -58,6 +68,7 @@ public class WaveRevealPageTransition : PageSlide
     /// </summary>
     public Easing WaveEasing { get; set; } = new CubicEaseOut();
 
+    /// <inheritdoc />
     public override async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested)
@@ -89,8 +100,23 @@ public class WaveRevealPageTransition : PageSlide
         }
     }
 
-    public override void Update(double progress, Visual? from, Visual? to, bool forward)
+    /// <inheritdoc />
+    public override void Update(
+        double progress,
+        Visual? from,
+        Visual? to,
+        bool forward,
+        double pageLength,
+        IReadOnlyList<PageTransitionItem> visibleItems)
     {
+        if (visibleItems.Count > 0)
+        {
+            UpdateVisibleItems(from, to, forward, pageLength, visibleItems);
+            return;
+        }
+
+        if (from is null && to is null)
+            return;
         var parent = GetVisualParent(from, to);
         var size = parent.Bounds.Size;
         var centerOffset = WaveCenterOffset * CenterSensitivity;
@@ -131,6 +157,73 @@ public class WaveRevealPageTransition : PageSlide
         }
     }
 
+    private void UpdateVisibleItems(
+        Visual? from,
+        Visual? to,
+        bool forward,
+        double pageLength,
+        IReadOnlyList<PageTransitionItem> visibleItems)
+    {
+        if (from is null && to is null)
+            return;
+
+        var parent = GetVisualParent(from, to);
+        var size = parent.Bounds.Size;
+        var centerOffset = WaveCenterOffset * CenterSensitivity;
+        var isHorizontal = Orientation == PageSlide.SlideAxis.Horizontal;
+        var resolvedPageLength = pageLength > 0
+            ? pageLength
+            : (isHorizontal ? size.Width : size.Height);
+        foreach (var item in visibleItems)
+        {
+            var visual = item.Visual;
+            visual.IsVisible = true;
+            visual.Opacity = 1;
+            visual.Clip = null;
+            visual.ZIndex = ReferenceEquals(visual, to) ? 1 : 0;
+
+            if (!ReferenceEquals(visual, to))
+                continue;
+
+            var visibleFraction = GetVisibleFraction(item.ViewportCenterOffset, size, resolvedPageLength, isHorizontal);
+            if (visibleFraction >= 1.0)
+                continue;
+
+            visual.Clip = LiquidSwipeClipper.CreateWavePath(
+                visibleFraction,
+                size,
+                centerOffset,
+                forward,
+                isHorizontal,
+                MaxBulge,
+                BulgeFactor,
+                CrossBulgeFactor,
+                BulgeExponent);
+        }
+    }
+
+    private static double GetVisibleFraction(double offsetFromCenter, Size viewportSize, double pageLength, bool isHorizontal)
+    {
+        if (pageLength <= 0)
+            return 1.0;
+
+        var viewportLength = isHorizontal ? viewportSize.Width : viewportSize.Height;
+        if (viewportLength <= 0)
+            return 0.0;
+
+        var viewportUnits = viewportLength / pageLength;
+        var edgePeek = Math.Max(0.0, (viewportUnits - 1.0) / 2.0);
+        return Math.Clamp(1.0 + edgePeek - Math.Abs(offsetFromCenter), 0.0, 1.0);
+    }
+
+    /// <inheritdoc />
+    public override void Reset(Visual visual)
+    {
+        visual.Clip = null;
+        visual.ZIndex = 0;
+        visual.Opacity = 1;
+    }
+
     private async Task AnimateProgress(
         double from,
         double to,
@@ -139,6 +232,10 @@ public class WaveRevealPageTransition : PageSlide
         bool forward,
         CancellationToken cancellationToken)
     {
+        var parent = GetVisualParent(fromVisual, toVisual);
+        var pageLength = Orientation == PageSlide.SlideAxis.Horizontal
+            ? parent.Bounds.Width
+            : parent.Bounds.Height;
         var durationMs = Math.Max(Duration.TotalMilliseconds * Math.Abs(to - from), 50);
         var startTicks = Stopwatch.GetTimestamp();
         var tickFreq = Stopwatch.Frequency;
@@ -150,7 +247,7 @@ public class WaveRevealPageTransition : PageSlide
             var eased = SlideInEasing?.Ease(t) ?? t;
             var progress = from + (to - from) * eased;
 
-            Update(progress, fromVisual, toVisual, forward);
+            Update(progress, fromVisual, toVisual, forward, pageLength, Array.Empty<PageTransitionItem>());
 
             if (t >= 1.0)
                 break;
@@ -160,7 +257,7 @@ public class WaveRevealPageTransition : PageSlide
 
         if (!cancellationToken.IsCancellationRequested)
         {
-            Update(to, fromVisual, toVisual, forward);
+            Update(to, fromVisual, toVisual, forward, pageLength, Array.Empty<PageTransitionItem>());
         }
     }
 
@@ -194,7 +291,9 @@ public class WaveRevealPageTransition : PageSlide
 
             var wavePhase = Math.Sin(progress * Math.PI);
             var bulgeProgress = bulgeExponent == 1.0 ? wavePhase : Math.Pow(wavePhase, bulgeExponent);
+            var revealedLength = mainLength * progress;
             var bulgeMain = Math.Min(mainLength * bulgeFactor, maxBulge) * bulgeProgress;
+            bulgeMain = Math.Min(bulgeMain, revealedLength * 0.45);
             var bulgeCross = crossLength * crossBulgeFactor;
 
             var waveCenter = crossLength / 2 + waveCenterOffset;

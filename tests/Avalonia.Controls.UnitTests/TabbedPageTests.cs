@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -1444,6 +1446,91 @@ public class TabbedPageTests
                 Child = tp
             };
             root.ExecuteInitialLayoutPass();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            return tp;
+        }
+    }
+
+    public class SwipeGestureTests : ScopedTestBase
+    {
+        [Fact]
+        public void SameGestureId_OnlyAdvancesOneTab()
+        {
+            var tp = CreateSwipeReadyTabbedPage();
+
+            var firstSwipe = new SwipeGestureEventArgs(7, new Vector(20, 0), default);
+            var repeatedSwipe = new SwipeGestureEventArgs(7, new Vector(20, 0), default);
+
+            tp.RaiseEvent(firstSwipe);
+            tp.RaiseEvent(repeatedSwipe);
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.True(firstSwipe.Handled);
+            Assert.False(repeatedSwipe.Handled);
+            Assert.Equal(1, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void NewGestureId_CanAdvanceAgain()
+        {
+            var tp = CreateSwipeReadyTabbedPage();
+
+            tp.RaiseEvent(new SwipeGestureEventArgs(7, new Vector(20, 0), default));
+            tp.RaiseEvent(new SwipeGestureEventArgs(8, new Vector(20, 0), default));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(2, tp.SelectedIndex);
+        }
+
+        [Fact]
+        public void MouseSwipe_Advances_Tab()
+        {
+            var tp = CreateSwipeReadyTabbedPage();
+            var mouse = new MouseTestHelper();
+
+            mouse.Down(tp, position: new Point(200, 100));
+            mouse.Move(tp, new Point(160, 100));
+            mouse.Up(tp, position: new Point(160, 100));
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+            Assert.Equal(1, tp.SelectedIndex);
+        }
+
+        private static TabbedPage CreateSwipeReadyTabbedPage()
+        {
+            var tp = new TabbedPage
+            {
+                IsGestureEnabled = true,
+                Width = 400,
+                Height = 300,
+                TabPlacement = TabPlacement.Top,
+                SelectedIndex = 0,
+                Pages = new AvaloniaList<Page>
+                {
+                    new ContentPage { Header = "A" },
+                    new ContentPage { Header = "B" },
+                    new ContentPage { Header = "C" }
+                },
+                Template = new FuncControlTemplate<TabbedPage>((parent, scope) =>
+                {
+                    var tabControl = new TabControl
+                    {
+                        Name = "PART_TabControl",
+                        ItemsSource = parent.Pages
+                    };
+                    scope.Register("PART_TabControl", tabControl);
+                    return tabControl;
+                })
+            };
+            tp.GestureRecognizers.OfType<SwipeGestureRecognizer>().First().IsMouseEnabled = true;
+
+            var root = new TestRoot
+            {
+                ClientSize = new Size(400, 300),
+                Child = tp
+            };
+            tp.ApplyTemplate();
             Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             return tp;

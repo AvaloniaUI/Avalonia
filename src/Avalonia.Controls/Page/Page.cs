@@ -17,7 +17,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="SafeAreaPadding"/> property.
         /// </summary>
         public static readonly StyledProperty<Thickness> SafeAreaPaddingProperty =
-            AvaloniaProperty.Register<Page, Thickness>(nameof(SafeAreaPadding));
+            AvaloniaProperty.Register<Page, Thickness>(nameof(SafeAreaPadding), validate: PaddingProperty.ValidateValue);
 
         /// <summary>
         /// Defines the <see cref="Header"/> property.

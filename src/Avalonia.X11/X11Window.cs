@@ -253,14 +253,14 @@ namespace Avalonia.X11
 
             _mode.AppendWmProtocols(data);
 
-            XChangeProperty(_x11.Display, _handle, _x11.Atoms.WM_PROTOCOLS, _x11.Atoms.XA_ATOM, 32,
+            XChangeProperty(_x11.Display, _handle, _x11.Atoms.WM_PROTOCOLS, _x11.Atoms.ATOM, 32,
                     PropertyMode.Replace, data.ToArray(), data.Count);
 
             if (_x11.HasXSync)
             {
                 _xSyncCounter = XSyncCreateCounter(_x11.Display, _xSyncValue);
                 XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_SYNC_REQUEST_COUNTER,
-                    _x11.Atoms.XA_CARDINAL, 32, PropertyMode.Replace, ref _xSyncCounter, 1);
+                    _x11.Atoms.CARDINAL, 32, PropertyMode.Replace, ref _xSyncCounter, 1);
             }
 
             _storageProvider = new FallbackStorageProvider(new[]
@@ -366,7 +366,7 @@ namespace Avalonia.X11
             var pid = (uint)s_pid;
             // The type of `_NET_WM_PID` is `CARDINAL` which is 32-bit unsigned integer, see https://specifications.freedesktop.org/wm-spec/1.3/ar01s05.html
             XChangeProperty(_x11.Display, windowXId,
-                _x11.Atoms._NET_WM_PID, _x11.Atoms.XA_CARDINAL, 32,
+                _x11.Atoms._NET_WM_PID, _x11.Atoms.CARDINAL, 32,
                 PropertyMode.Replace, ref pid, 1);
 
             const int maxLength = 1024;
@@ -385,7 +385,7 @@ namespace Avalonia.X11
             }
 
             XChangeProperty(_x11.Display, windowXId,
-                _x11.Atoms.XA_WM_CLIENT_MACHINE, _x11.Atoms.XA_STRING, 8,
+                _x11.Atoms.WM_CLIENT_MACHINE, _x11.Atoms.STRING, 8,
                 PropertyMode.Replace, name, length);
         }
 
@@ -1150,7 +1150,7 @@ namespace Avalonia.X11
         public void SetParent(IWindowImpl? parent)
         {
             if (parent == null || parent.Handle == null || parent.Handle.Handle == IntPtr.Zero)
-                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_TRANSIENT_FOR);
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.WM_TRANSIENT_FOR);
             else
                 XSetTransientForHint(_x11.Display, _handle, parent.Handle.Handle);
         }
@@ -1394,7 +1394,7 @@ namespace Avalonia.X11
             if (string.IsNullOrEmpty(title))
             {
                 XDeleteProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_NAME);
-                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_NAME);
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms.WM_NAME);
             }
             else
             {
@@ -1648,7 +1648,7 @@ namespace Avalonia.X11
                 _ => _x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL
             };
 
-            XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
+            XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.ATOM,
                 32, PropertyMode.Replace, new[] { atom }, 1);
 
         }
