@@ -762,7 +762,8 @@ namespace Avalonia.Controls.UnitTests
                 var flyout = new TestFlyout();
                 flyout.Bind(FlyoutBase.IsOpenProperty, new Binding(nameof(FlyoutViewModel.IsOpen))
                 {
-                    Source = viewModel
+                    Source = viewModel,
+                    Mode = BindingMode.TwoWay
                 });
 
                 Assert.False(viewModel.IsOpen);

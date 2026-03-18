@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Data;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -9,8 +8,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="IsOpen"/> property
         /// </summary>
         public static readonly StyledProperty<bool> IsOpenProperty =
-            AvaloniaProperty.Register<FlyoutBase, bool>(nameof(IsOpen),
-                defaultBindingMode: BindingMode.TwoWay);
+            AvaloniaProperty.Register<FlyoutBase, bool>(nameof(IsOpen));
 
         /// <summary>
         /// Defines the <see cref="Target"/> property
