@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <Target Name="AddDesignerHostAppsToPackage" BeforeTargets="GenerateNuspec">
-    <MSBuild Projects="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/Avalonia.Designer.HostApp.csproj" Properties="Configuration=$(Configuration);&#xA;Platform=$(Platform)" />
+    <MSBuild Projects="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/Avalonia.Designer.HostApp.csproj" Properties="Configuration=$(Configuration);&#xA;Platform=$(Platform)" ContinueOnError="ErrorAndContinue" />
 
     <ItemGroup>
       <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/netstandard2.0/Avalonia.Designer.HostApp.dll">
