@@ -19,12 +19,9 @@ namespace ControlCatalog.Pages
     {
         private static readonly (string Title, string Color, string Accent)[] Palette =
         {
-            ("Neon Pulse",     "#3525CD", "#C3C0FF"),
-            ("Ephemeral Blue", "#0891B2", "#BAF0FA"),
-            ("Forest Forms",   "#059669", "#A7F3D0"),
-            ("Golden Hour",    "#D97706", "#FDE68A"),
-            ("Crimson Wave",   "#BE185D", "#FBCFE8"),
-            ("Stone Age",      "#57534E", "#D6D3D1"),
+            ("Neon Pulse", "#3525CD", "#C3C0FF"), ("Ephemeral Blue", "#0891B2", "#BAF0FA"),
+            ("Forest Forms", "#059669", "#A7F3D0"), ("Golden Hour", "#D97706", "#FDE68A"),
+            ("Crimson Wave", "#BE185D", "#FBCFE8"), ("Stone Age", "#57534E", "#D6D3D1"),
         };
 
         private readonly ObservableCollection<CarouselCardItem> _items = new();

@@ -18,9 +18,9 @@ namespace ControlCatalog.Pages
 
         private void ApplyTransition()
         {
-            var axis = OrientationCombo.SelectedIndex == 0
-                ? PageSlide.SlideAxis.Horizontal
-                : PageSlide.SlideAxis.Vertical;
+            var axis = OrientationCombo.SelectedIndex == 0 ?
+                PageSlide.SlideAxis.Horizontal :
+                PageSlide.SlideAxis.Vertical;
             var label = axis == PageSlide.SlideAxis.Horizontal ? "Horizontal" : "Vertical";
 
             switch (TransitionCombo.SelectedIndex)

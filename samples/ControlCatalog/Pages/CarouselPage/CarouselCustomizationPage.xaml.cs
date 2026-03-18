@@ -30,9 +30,9 @@ namespace ControlCatalog.Pages
             var value = Math.Round(e.NewValue, 2);
             DemoCarousel.ViewportFraction = value;
             ViewportLabel.Text = value.ToString("0.00");
-            ViewportHint.Text = value >= 1d
-                ? "1.00 shows a single full page."
-                : $"{1d / value:0.##} pages fit in view. Try 0.80 for peeking.";
+            ViewportHint.Text = value >= 1d ?
+                "1.00 shows a single full page." :
+                $"{1d / value:0.##} pages fit in view. Try 0.80 for peeking.";
         }
 
         private void OnWrapSelectionChanged(object? sender, RoutedEventArgs e)

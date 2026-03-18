@@ -22,9 +22,7 @@ namespace ControlCatalog.Pages
             var value = Math.Round(e.NewValue, 2);
             DemoCarousel.ViewportFraction = value;
             ViewportLabel.Text = value.ToString("0.00");
-            ViewportHint.Text = value >= 1d
-                ? "1.00 — single full item."
-                : $"~{1d / value:0.#} items visible.";
+            ViewportHint.Text = value >= 1d ? "1.00 — single full item." : $"~{1d / value:0.#} items visible.";
         }
 
         private void OnWrapChanged(object? sender, RoutedEventArgs e)
