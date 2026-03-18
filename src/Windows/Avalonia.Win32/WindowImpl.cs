@@ -1472,19 +1472,18 @@ namespace Avalonia.Win32
                 {
                     case WindowDecorations.Full:
                         style |= WindowStyles.WS_BORDER | WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
-
-                        if (newProperties.IsMinimizable)
-                            style |= WindowStyles.WS_MINIMIZEBOX;
-
-                        if (newProperties.IsMaximizable || (newProperties.WindowState == WindowState.Maximized && newProperties.IsResizable))
-                            style |= WindowStyles.WS_MAXIMIZEBOX;
-
                         break;
 
                     case WindowDecorations.BorderOnly:
                         style |= WindowStyles.WS_BORDER;
                         break;
                 }
+
+                if (newProperties.IsMinimizable)
+                    style |= WindowStyles.WS_MINIMIZEBOX;
+
+                if (newProperties.IsMaximizable || (newProperties.WindowState == WindowState.Maximized && newProperties.IsResizable))
+                    style |= WindowStyles.WS_MAXIMIZEBOX;
 
                 if (newProperties.Decorations != WindowDecorations.None && newProperties.IsResizable)
                     style |= WindowStyles.WS_THICKFRAME;
