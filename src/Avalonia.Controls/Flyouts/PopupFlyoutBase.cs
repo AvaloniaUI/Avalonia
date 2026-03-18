@@ -181,6 +181,16 @@ namespace Avalonia.Controls.Primitives
         public event EventHandler? Opening;
 
         /// <summary>
+        /// Pre-registers a control as the default placement target for this flyout.
+        /// Used by owning controls (e.g. <see cref="Button"/>) so that setting
+        /// <see cref="FlyoutBase.IsOpen"/> to <c>true</c> works on first use.
+        /// </summary>
+        internal void SetDefaultPlacementTarget(Control? target)
+        {
+            _lastPlacementTarget = target;
+        }
+
+        /// <summary>
         /// Shows the Flyout at the given Control
         /// </summary>
         /// <param name="placementTarget">The control to show the Flyout at</param>

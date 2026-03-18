@@ -711,6 +711,46 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void IsOpen_SetTrue_Opens_At_Button_Flyout_Owner()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var button = new Button();
+                var window = PreparedWindow(button);
+                window.Show();
+
+                var flyout = new TestFlyout();
+                button.Flyout = flyout;
+
+                flyout.IsOpen = true;
+
+                Assert.True(flyout.IsOpen);
+                Assert.True(flyout.Popup.IsOpen);
+                Assert.Equal(button, flyout.Popup.PlacementTarget);
+            }
+        }
+
+        [Fact]
+        public void IsOpen_Button_Flyout_Removed_Clears_Target()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var button = new Button();
+                var window = PreparedWindow(button);
+                window.Show();
+
+                var flyout = new TestFlyout();
+                button.Flyout = flyout;
+
+                button.Flyout = null;
+
+                flyout.IsOpen = true;
+
+                Assert.False(flyout.IsOpen);
+            }
+        }
+
+        [Fact]
         public void IsOpen_TwoWay_Binding_Syncs_With_Source()
         {
             using (CreateServicesWithFocus())
