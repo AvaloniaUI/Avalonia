@@ -193,7 +193,7 @@ namespace Avalonia.Media
             // hsla(230, 1.0, 0.5, 1.0)
             //
 
-            sb.Append("hsva(");
+            sb.Append("hsla(");
             sb.Append(H.ToString(CultureInfo.InvariantCulture));
             sb.Append(", ");
             sb.Append(S.ToString(CultureInfo.InvariantCulture));
