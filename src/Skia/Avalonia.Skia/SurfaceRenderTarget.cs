@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Avalonia.Reactive;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Skia.Helpers;
 using SkiaSharp;
 
@@ -164,12 +163,12 @@ namespace Avalonia.Skia
         public bool CanBlit => true;
 
         /// <inheritdoc />
-        public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
+        public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKSamplingOptions samplingOptions, SKPaint paint)
         {
             using var image = SnapshotImage();
-            context.Canvas.DrawImage(image, sourceRect, destRect, paint);
+            context.Canvas.DrawImage(image, sourceRect, destRect, samplingOptions, paint);
         }
-        
+
         /// <summary>
         /// Create Skia image snapshot from a surface.
         /// </summary>

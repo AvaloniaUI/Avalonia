@@ -2,7 +2,6 @@ using System;
 using System.Runtime.Versioning;
 using Avalonia.Platform;
 using Metal;
-using SkiaSharp;
 
 namespace Avalonia.iOS.Metal;
 

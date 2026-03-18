@@ -52,7 +52,7 @@ namespace Avalonia.Skia
         {
             SKImageInfo info = new SKImageInfo(destinationSize.Width, destinationSize.Height, SKColorType.Bgra8888);
             _bitmap = new SKBitmap(info);
-            src._image.ScalePixels(_bitmap.PeekPixels(), interpolationMode.ToSKFilterQuality());
+            src._image.ScalePixels(_bitmap.PeekPixels(), interpolationMode.ToSKSamplingOptions());
             _bitmap.SetImmutable();
             _image = SKImage.FromBitmap(_bitmap);
 
@@ -97,11 +97,11 @@ namespace Avalonia.Skia
 
                 if (_bitmap.Width != desired.Width || _bitmap.Height != desired.Height)
                 {
-                    var scaledBmp = _bitmap.Resize(desired, interpolationMode.ToSKFilterQuality());
+                    var scaledBmp = _bitmap.Resize(desired, interpolationMode.ToSKSamplingOptions());
                     _bitmap.Dispose();
                     _bitmap = scaledBmp;
                 }
-                
+
                 _bitmap.SetImmutable();
 
                 _image = SKImage.FromBitmap(_bitmap);
@@ -176,9 +176,9 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
+        public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKSamplingOptions samplingOptions, SKPaint paint)
         {
-            context.Canvas.DrawImage(_image, sourceRect, destRect, paint);
+            context.Canvas.DrawImage(_image, sourceRect, destRect, samplingOptions, paint);
         }
 
         public PixelFormat? Format => _bitmap?.ColorType.ToAvalonia();

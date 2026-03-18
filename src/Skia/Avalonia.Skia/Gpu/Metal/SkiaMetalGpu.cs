@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Avalonia.Metal;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -8,21 +9,16 @@ namespace Avalonia.Skia.Metal;
 
 internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
 {
-    private SkiaMetalApi _api = new();
     private GRContext? _context;
     private readonly IMetalDevice _device;
-    private readonly SkiaMetalExternalObjectsFeature? _externalObjects;
-
-    internal GRContext GrContext => _context ?? throw new ObjectDisposedException(nameof(SkiaMetalGpu));
-    internal SkiaMetalApi SkiaMetalApi => _api;
 
     public SkiaMetalGpu(IMetalDevice device, long? maxResourceBytes)
     {
-        _context = _api.CreateContext(device.Device, device.CommandQueue,
-            new GRContextOptions() { AvoidStencilBuffers = true });
+        _context = GRContext.CreateMetal(
+                       new GRMtlBackendContext { DeviceHandle = device.Device, QueueHandle = device.CommandQueue, },
+                       new GRContextOptions { AvoidStencilBuffers = true })
+                   ?? throw new InvalidOperationException("Unable to create GRContext from Metal device.");
         _device = device;
-        if (device.TryGetFeature<IMetalExternalObjectsFeature>() is { } externalObjects)
-            _externalObjects = new SkiaMetalExternalObjectsFeature(this, externalObjects);
         if (maxResourceBytes.HasValue)
             _context.SetResourceCacheLimit(maxResourceBytes.Value);
     }
@@ -33,21 +29,15 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
         _context = null;
     }
 
-    public object? TryGetFeature(Type featureType)
-    {
-        if (featureType == typeof(IExternalObjectsHandleWrapRenderInterfaceContextFeature))
-            return _device.TryGetFeature(featureType);
-        if (featureType == typeof(IExternalObjectsRenderInterfaceContextFeature))
-            return _externalObjects;
-        return null;
-    }
+    public object? TryGetFeature(Type featureType) => null;
 
     public bool IsLost => false;
     public IDisposable EnsureCurrent() => _device.EnsureCurrent();
     public IPlatformGraphicsContext? PlatformGraphicsContext => _device;
 
     public IScopedResource<GRContext> TryGetGrContext() =>
-        ScopedResource<GRContext>.Create(GrContext, EnsureCurrent().Dispose);
+        ScopedResource<GRContext>.Create(_context ?? throw new ObjectDisposedException(nameof(SkiaMetalGpu)),
+            EnsureCurrent().Dispose);
 
     public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
     {
@@ -83,8 +73,8 @@ internal class SkiaMetalGpu : ISkiaGpu, ISkiaGpuWithPlatformGraphicsContext
         public ISkiaGpuRenderSession BeginRenderingSession()
         {
             var session = (_target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget))).BeginRendering();
-            var backendTarget = _gpu._api.CreateBackendRenderTarget(session.Size.Width, session.Size.Height,
-                1, session.Texture);
+            var backendTarget = new GRBackendRenderTarget(session.Size.Width, session.Size.Height,
+                new GRMtlTextureInfo(session.Texture));
 
             var surface = SKSurface.Create(_gpu._context!, backendTarget,
                 session.IsYFlipped ? GRSurfaceOrigin.BottomLeft : GRSurfaceOrigin.TopLeft,
