@@ -1186,7 +1186,7 @@ public class CarouselPageTests
             parent.Arrange(new Rect(0, 0, 400, 300));
 
             var slide = new PageSlide(TimeSpan.FromMilliseconds(300));
-            slide.Update(0.5, from, to, true);
+            slide.Update(0.5, from, to, true, 400, Array.Empty<PageTransitionItem>());
 
             Assert.IsType<TranslateTransform>(from.RenderTransform);
             var ft = (TranslateTransform)from.RenderTransform!;
@@ -1205,7 +1205,7 @@ public class CarouselPageTests
             parent.Arrange(new Rect(0, 0, 400, 300));
 
             var slide = new PageSlide(TimeSpan.FromMilliseconds(300));
-            slide.Update(0.5, from, to, true);
+            slide.Update(0.5, from, to, true, 400, Array.Empty<PageTransitionItem>());
 
             Assert.IsType<TranslateTransform>(to.RenderTransform);
             var tt = (TranslateTransform)to.RenderTransform!;

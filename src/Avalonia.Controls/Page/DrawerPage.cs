@@ -219,7 +219,6 @@ namespace Avalonia.Controls
         private const double EdgeGestureWidth = 20;
         private bool _suppressDrawerEvents;
         private bool _hasHadFirstPage;
-        private Point _swipeStartPoint;
         private readonly SwipeGestureRecognizer _swipeRecognizer = new SwipeGestureRecognizer();
 
         private bool IsRtl => FlowDirection == FlowDirection.RightToLeft;
