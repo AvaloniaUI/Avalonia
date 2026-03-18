@@ -112,7 +112,9 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
         public static readonly StyledProperty<string?> PlaceholderTextProperty =
+#pragma warning disable AVP1013
             TextBox.PlaceholderTextProperty.AddOwner<NumericUpDown>();
+#pragma warning restore AVP1013
 
         /// <summary>
         /// Defines the <see cref="Watermark"/> property.
