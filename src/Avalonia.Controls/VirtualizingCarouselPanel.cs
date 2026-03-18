@@ -995,7 +995,6 @@ namespace Avalonia.Controls
             {
                 CanHorizontallySwipe = _swipeAxis != PageSlide.SlideAxis.Vertical,
                 CanVerticallySwipe = _swipeAxis != PageSlide.SlideAxis.Horizontal,
-                IsMouseEnabled = true,
             };
 
             GestureRecognizers.Add(_swipeGestureRecognizer);

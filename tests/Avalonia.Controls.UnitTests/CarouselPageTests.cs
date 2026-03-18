@@ -793,6 +793,72 @@ public class CarouselPageTests
             Assert.False(handled);
         }
 
+        [Fact]
+        public void Wheel_HandledByChild_DoesNotNavigate()
+        {
+            var cp = new CarouselPage
+            {
+                Width = 400,
+                Height = 300,
+                IsGestureEnabled = true,
+                Template = CreateCarouselPageTemplate(),
+            };
+
+            var child = new Border();
+            child.AddHandler(InputElement.PointerWheelChangedEvent, (_, e) => e.Handled = true);
+
+            var page0 = new ContentPage { Header = "P0", Content = child };
+            var page1 = new ContentPage { Header = "P1" };
+            var page2 = new ContentPage { Header = "P2" };
+            ((AvaloniaList<Page>)cp.Pages!).Add(page0);
+            ((AvaloniaList<Page>)cp.Pages!).Add(page1);
+            ((AvaloniaList<Page>)cp.Pages!).Add(page2);
+
+            var root = new TestRoot(cp) { ClientSize = new Size(400, 300) };
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            var wheelArgs = new PointerWheelEventArgs(
+                child,
+                pointer,
+                root,
+                default,
+                0,
+                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.Other),
+                KeyModifiers.None,
+                new Vector(0, -1))
+            {
+                RoutedEvent = InputElement.PointerWheelChangedEvent
+            };
+            child.RaiseEvent(wheelArgs);
+
+            Assert.True(wheelArgs.Handled);
+            Assert.Equal(0, cp.SelectedIndex);
+        }
+
+        private static FuncControlTemplate<CarouselPage> CreateCarouselPageTemplate()
+        {
+            return new FuncControlTemplate<CarouselPage>((_, scope) =>
+                new Carousel
+                {
+                    Name = "PART_Carousel",
+                    Template = new FuncControlTemplate((c, ns) =>
+                        new ScrollViewer
+                        {
+                            Name = "PART_ScrollViewer",
+                            HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                            VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                            Content = new ItemsPresenter
+                            {
+                                Name = "PART_ItemsPresenter",
+                                [~ItemsPresenter.ItemsPanelProperty] = c[~ItemsControl.ItemsPanelProperty],
+                            }.RegisterInNameScope(ns)
+                        }.RegisterInNameScope(ns)),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                }.RegisterInNameScope(scope));
+        }
+
         private static TestableCarouselPage MakeCarousel(int count, int selectedIndex)
         {
             var cp = new TestableCarouselPage();
@@ -1219,7 +1285,7 @@ public class CarouselPageTests
             var to = new Border();
 
             var crossFade = new CrossFade(TimeSpan.FromMilliseconds(300));
-            crossFade.Update(0.5, from, to, true);
+            crossFade.Update(0.5, from, to, true, 0, Array.Empty<PageTransitionItem>());
 
             Assert.Equal(0.5, from.Opacity, 2);
             Assert.Equal(0.5, to.Opacity, 2);

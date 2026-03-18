@@ -1226,6 +1226,30 @@ public class DrawerPageTests
         }
 
         [Fact]
+        public void Template_BuildsControl()
+        {
+            var template = new FuncTemplate<Control>(() => new Border());
+            var result = DrawerPage.CreateIconContent(template);
+            Assert.IsType<Border>(result);
+        }
+
+        [Fact]
+        public void Template_BuildsSeparateInstances()
+        {
+            var template = new FuncTemplate<Control>(() => new Border());
+            var first = DrawerPage.CreateIconContent(template);
+            var second = DrawerPage.CreateIconContent(template);
+            Assert.NotSame(first, second);
+        }
+
+        [Fact]
+        public void NonEmptyString_ReturnsNull()
+        {
+            var result = DrawerPage.CreateIconContent("M10 20v-6h4v6");
+            Assert.Null(result);
+        }
+
+        [Fact]
         public void UnsupportedType_ReturnsNull()
         {
             var result = DrawerPage.CreateIconContent(42);

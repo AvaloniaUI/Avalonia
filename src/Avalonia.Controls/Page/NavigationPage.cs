@@ -29,7 +29,7 @@ namespace Avalonia.Controls
     [TemplatePart("PART_ContentHost", typeof(Panel))]
     [TemplatePart("PART_PagePresenter", typeof(ContentPresenter))]
     [TemplatePart("PART_PageBackPresenter", typeof(ContentPresenter))]
-    [TemplatePart("PART_BackButtonDefaultIcon", typeof(Path))]
+    [TemplatePart("PART_BackButtonDefaultIcon", typeof(Control))]
     [TemplatePart("PART_BackButtonContentPresenter", typeof(ContentPresenter))]
     [TemplatePart("PART_TopCommandBar", typeof(ContentPresenter))]
     [TemplatePart("PART_BottomCommandBar", typeof(ContentPresenter))]
@@ -42,7 +42,7 @@ namespace Avalonia.Controls
         private const double EdgeGestureWidth = 20;
 
         private Button? _backButton;
-        private Path? _backButtonDefaultIcon;
+        private Control? _backButtonDefaultIcon;
         private ContentPresenter? _backButtonContentPresenter;
         private Panel? _contentHost;
         private ContentPresenter? _pagePresenter;
@@ -292,8 +292,7 @@ namespace Avalonia.Controls
             GestureRecognizers.Add(new SwipeGestureRecognizer
             {
                 CanHorizontallySwipe = true,
-                CanVerticallySwipe = false,
-                IsMouseEnabled = true
+                CanVerticallySwipe = false
             });
             AddHandler(PointerPressedEvent, OnSwipePointerPressed, handledEventsToo: true);
         }
@@ -647,7 +646,7 @@ namespace Avalonia.Controls
             base.OnApplyTemplate(e);
 
             BackButton = e.NameScope.Get<Button>("PART_BackButton");
-            _backButtonDefaultIcon = e.NameScope.Find<Path>("PART_BackButtonDefaultIcon");
+            _backButtonDefaultIcon = e.NameScope.Find<Control>("PART_BackButtonDefaultIcon");
             _backButtonContentPresenter = e.NameScope.Find<ContentPresenter>("PART_BackButtonContentPresenter");
 
             _contentHost = e.NameScope.Find<Panel>("PART_ContentHost");

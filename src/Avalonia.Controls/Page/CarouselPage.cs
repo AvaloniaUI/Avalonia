@@ -13,7 +13,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -67,13 +66,13 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            AddHandler(PointerWheelChangedEvent, OnPointerWheelTunnel, RoutingStrategies.Tunnel);
+            AddHandler(PointerWheelChangedEvent, OnPointerWheelChanged, RoutingStrategies.Bubble);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            RemoveHandler(PointerWheelChangedEvent, OnPointerWheelTunnel);
+            RemoveHandler(PointerWheelChangedEvent, OnPointerWheelChanged);
         }
 
         /// <summary>
@@ -302,7 +301,7 @@ namespace Avalonia.Controls
                 DispatcherPriority.Loaded);
         }
 
-        private void OnPointerWheelTunnel(object? sender, PointerWheelEventArgs e)
+        private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
         {
             if (!IsGestureEnabled)
                 return;
@@ -412,7 +411,7 @@ namespace Avalonia.Controls
             if (container is ContentControl contentControl)
                 return contentControl.Content as Page;
 
-            return container.GetVisualDescendants().OfType<Page>().FirstOrDefault();
+            return null;
         }
 
     }

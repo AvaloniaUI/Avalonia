@@ -167,18 +167,6 @@ namespace Avalonia.Animation
                 from.IsVisible = false;
         }
 
-        /// <inheritdoc />
-        public void Update(double progress, Visual? from, Visual? to, bool forward)
-        {
-            if (from != null)
-                from.Opacity = 1 - progress;
-            if (to != null)
-            {
-                to.IsVisible = true;
-                to.Opacity = progress;
-            }
-        }
-
         /// <summary>
         /// Starts the animation.
         /// </summary>

@@ -990,6 +990,30 @@ public class TabbedPageTests
         }
 
         [Fact]
+        public void Template_BuildsControl()
+        {
+            var template = new FuncTemplate<Control>(() => new Border());
+            var result = TabbedPage.CreateIconContent(template);
+            Assert.IsType<Border>(result);
+        }
+
+        [Fact]
+        public void Template_BuildsSeparateInstances()
+        {
+            var template = new FuncTemplate<Control>(() => new Border());
+            var first = TabbedPage.CreateIconContent(template);
+            var second = TabbedPage.CreateIconContent(template);
+            Assert.NotSame(first, second);
+        }
+
+        [Fact]
+        public void NonEmptyString_ReturnsNull()
+        {
+            var result = TabbedPage.CreateIconContent("M10 20v-6h4v6");
+            Assert.Null(result);
+        }
+
+        [Fact]
         public void UnsupportedType_ReturnsNull()
         {
             var result = TabbedPage.CreateIconContent(42);

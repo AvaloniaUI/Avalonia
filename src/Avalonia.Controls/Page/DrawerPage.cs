@@ -294,7 +294,6 @@ namespace Avalonia.Controls
 
         public DrawerPage()
         {
-            _swipeRecognizer.IsMouseEnabled = true;
             GestureRecognizers.Add(_swipeRecognizer);
             UpdateSwipeRecognizerAxes();
         }
@@ -1019,10 +1018,10 @@ namespace Avalonia.Controls
 
         internal static object? CreateIconContent(object? icon) => icon switch
         {
+            ITemplate<Control> template => template.Build(),
             Geometry g => new PathIcon { Data = g },
             PathIcon pi => new PathIcon { Data = pi.Data },
             DrawingImage { Drawing: GeometryDrawing { Geometry: { } gd } } => new PathIcon { Data = gd },
-            string s when !string.IsNullOrEmpty(s) => new PathIcon { Data = Geometry.Parse(s) },
             IImage image => new Image { Source = image },
             _ => null
         };

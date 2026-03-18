@@ -31,8 +31,7 @@ namespace Avalonia.Controls
         private int _lastSwipeGestureId;
         private readonly SwipeGestureRecognizer _swipeRecognizer = new SwipeGestureRecognizer
         {
-            IsEnabled = false,
-            IsMouseEnabled = true
+            IsEnabled = false
         };
 
         /// <summary>
@@ -384,12 +383,14 @@ namespace Avalonia.Controls
         /// </summary>
         internal static Control? CreateIconContent(object? icon)
         {
+            if (icon is ITemplate<Control> template)
+                return template.Build();
+
             Geometry? geometry = icon switch
             {
                 Geometry g => g,
                 PathIcon pi => pi.Data,
                 DrawingImage { Drawing: GeometryDrawing { Geometry: { } gd } } => gd,
-                string s when !string.IsNullOrEmpty(s) => Geometry.Parse(s),
                 _ => null
             };
 
