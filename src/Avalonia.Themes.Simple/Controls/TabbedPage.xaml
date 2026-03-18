@@ -133,6 +133,7 @@
                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
               <ContentPresenter Name="PART_IconPresenter"
                                 Content="{TemplateBinding Icon}"
+                                ContentTemplate="{TemplateBinding IconTemplate}"
                                 HorizontalAlignment="Center"
                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"
                                 Width="{DynamicResource TabbedPageTabItemHeaderIconSize}"
