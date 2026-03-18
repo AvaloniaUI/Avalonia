@@ -916,7 +916,7 @@ namespace Avalonia.Base.UnitTests.Input
                 var target3 = new Button { Focusable = true, Content = "3" };
                 var target4 = new Button { Focusable = true, Content = "4" };
                 var target5 = new Button { Focusable = true, Content = "5" };
-                var seachStack = new StackPanel()
+                var searchStack = new StackPanel()
                 {
                     Children =
                     {
@@ -931,7 +931,7 @@ namespace Avalonia.Base.UnitTests.Input
                     {
                         target1,
                         target2,
-                        seachStack,
+                        searchStack,
                         target5
                     }
                 };
@@ -950,7 +950,7 @@ namespace Avalonia.Base.UnitTests.Input
                 // Search root is right of the specified focused element, should return the first focusable element in the search root
                 var next = focusManager.FindNextElement(NavigationDirection.Right, new FindNextElementOptions
                 {
-                    SearchRoot = seachStack,
+                    SearchRoot = searchStack,
                     FocusedElement = target1
                 });
 
@@ -959,7 +959,7 @@ namespace Avalonia.Base.UnitTests.Input
                 // Search root is left of the specified focused element, should return the first focusable element in the search root
                 next = focusManager.FindNextElement(NavigationDirection.Left, new FindNextElementOptions
                 {
-                    SearchRoot = seachStack,
+                    SearchRoot = searchStack,
                     FocusedElement = target5
                 });
 
@@ -968,7 +968,7 @@ namespace Avalonia.Base.UnitTests.Input
                 // Search root isn't to the right of the specified focused element, should return null
                 next = focusManager.FindNextElement(NavigationDirection.Right, new FindNextElementOptions
                 {
-                    SearchRoot = seachStack,
+                    SearchRoot = searchStack,
                     FocusedElement = target5
                 });
 

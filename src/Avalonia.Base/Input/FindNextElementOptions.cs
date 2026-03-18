@@ -7,8 +7,9 @@
     public sealed class FindNextElementOptions
     {
         /// <summary>
-        /// Gets or sets the currently focused element, used as a starting point of the search.
-        /// If null, <see cref="FocusManager.GetFocusedElement()"/> is used.
+        /// Gets or sets the element that will be treated as the starting point of the search
+        /// for the next focusable element. This does not need to be the element that is
+        /// currently focused. If null, <see cref="FocusManager.GetFocusedElement()"/> is used.
         /// </summary>
         public IInputElement? FocusedElement { get; init; }
 
