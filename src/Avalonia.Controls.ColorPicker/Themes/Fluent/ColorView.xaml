@@ -366,7 +366,7 @@
                                         AutomationProperties.Name="Third Component"
                                         Grid.Column="0"
                                         IsAlphaVisible="False"
-                                        IsPerceptive="True"
+                                        IsPerceptive="False"
                                         Orientation="Vertical"
                                         ColorModel="Hsva"
                                         ColorComponent="{Binding ThirdComponent, ElementName=ColorSpectrum}"
