@@ -955,6 +955,30 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
+        private static IControlTemplate TabItemWithIconTemplate()
+        {
+            return new FuncControlTemplate<TabItem>((parent, scope) =>
+                new StackPanel
+                {
+                    Children =
+                    {
+                        new ContentPresenter
+                        {
+                            Name = "PART_IconPresenter",
+                            [~ContentPresenter.ContentProperty] = new TemplateBinding(TabItem.IconProperty),
+                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabItem.IconTemplateProperty),
+                        }.RegisterInNameScope(scope),
+                        new ContentPresenter
+                        {
+                            Name = "PART_ContentPresenter",
+                            [~ContentPresenter.ContentProperty] = new TemplateBinding(TabItem.HeaderProperty),
+                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabItem.HeaderTemplateProperty),
+                            RecognizesAccessKey = true,
+                        }.RegisterInNameScope(scope),
+                    }
+                });
+        }
+
         private static ControlTheme CreateTabControlControlTheme()
         {
             return new ControlTheme(typeof(TabControl))
@@ -1495,35 +1519,72 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void TabItem_Icon_DefaultIsNull()
+        public void TabItem_IconTemplate_Creates_Content_From_NonControl_Icon()
         {
-            var tabItem = new TabItem();
-            Assert.Null(tabItem.Icon);
+            var tabItem = new TabItem
+            {
+                Icon = "home",
+                IconTemplate = new FuncDataTemplate<object>((val, _) =>
+                    new TextBlock { Text = (string)val }),
+                Template = TabItemWithIconTemplate(),
+            };
+
+            var root = new TestRoot { Child = tabItem };
+            tabItem.ApplyTemplate();
+            tabItem.Presenter!.UpdateChild();
+
+            var iconPresenter = tabItem.GetTemplateChildren().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
+            Assert.NotNull(iconPresenter);
+            Assert.Equal("home", iconPresenter!.Content);
+            Assert.NotNull(iconPresenter.ContentTemplate);
+
+            iconPresenter.UpdateChild();
+            var textBlock = iconPresenter.Child as TextBlock;
+            Assert.NotNull(textBlock);
+            Assert.Equal("home", textBlock!.Text);
         }
 
         [Fact]
-        public void TabItem_Icon_RoundTrips()
+        public void TabItem_Icon_Without_Template_Renders_Control_Directly()
         {
-            var tabItem = new TabItem();
             var icon = new Avalonia.Controls.Shapes.Path
             {
                 Data = new Avalonia.Media.EllipseGeometry { Rect = new Rect(0, 0, 10, 10) }
             };
-            tabItem.Icon = icon;
-            Assert.Same(icon, tabItem.Icon);
+            var tabItem = new TabItem
+            {
+                Icon = icon,
+                Template = TabItemWithIconTemplate(),
+            };
+
+            var root = new TestRoot { Child = tabItem };
+            tabItem.ApplyTemplate();
+            tabItem.Presenter!.UpdateChild();
+
+            var iconPresenter = tabItem.GetTemplateChildren().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
+            Assert.NotNull(iconPresenter);
+            Assert.Same(icon, iconPresenter!.Content);
+            Assert.Null(iconPresenter.ContentTemplate);
         }
 
         [Fact]
-        public void TabItem_Icon_CanBeSetToNull()
+        public void TabItem_Icon_Change_Updates_Presenter_Content()
         {
-            var tabItem = new TabItem();
-            var icon = new Avalonia.Controls.Shapes.Path
+            var tabItem = new TabItem
             {
-                Data = new Avalonia.Media.EllipseGeometry { Rect = new Rect(0, 0, 10, 10) }
+                Icon = "first",
+                Template = TabItemWithIconTemplate(),
             };
-            tabItem.Icon = icon;
-            tabItem.Icon = null;
-            Assert.Null(tabItem.Icon);
+
+            var root = new TestRoot { Child = tabItem };
+            tabItem.ApplyTemplate();
+            tabItem.Presenter!.UpdateChild();
+
+            var iconPresenter = tabItem.GetTemplateChildren().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
+            Assert.Equal("first", iconPresenter!.Content);
+
+            tabItem.Icon = "second";
+            Assert.Equal("second", iconPresenter.Content);
         }
 
         [Fact]
