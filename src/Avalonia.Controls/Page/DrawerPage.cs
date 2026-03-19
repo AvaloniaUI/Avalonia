@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
@@ -85,10 +86,10 @@ namespace Avalonia.Controls
                 validate: ValidateLength);
 
         /// <summary>
-        /// Defines the <see cref="DrawerBreakpointWidth"/> property.
+        /// Defines the <see cref="DrawerBreakpointLength"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> DrawerBreakpointWidthProperty =
-            AvaloniaProperty.Register<DrawerPage, double>(nameof(DrawerBreakpointWidth), 0d);
+        public static readonly StyledProperty<double> DrawerBreakpointLengthProperty =
+            AvaloniaProperty.Register<DrawerPage, double>(nameof(DrawerBreakpointLength), 0d);
 
         /// <summary>
         /// Defines the <see cref="IsGestureEnabled"/> property.
@@ -200,6 +201,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<SplitViewDisplayMode> DisplayModeProperty =
             SplitView.DisplayModeProperty.AddOwner<DrawerPage>();
 
+
         private ContentPresenter? _contentPresenter;
         private ContentPresenter? _drawerPresenter;
         private ContentPresenter? _drawerHeaderPresenter;
@@ -211,6 +213,7 @@ namespace Avalonia.Controls
         private Border? _topBar;
         private ToggleButton? _paneButton;
         private Border? _backdrop;
+        private Point _swipeStartPoint;
         private IDisposable? _navBarVisibleSub;
 
         private const double EdgeGestureWidth = 20;
@@ -292,6 +295,7 @@ namespace Avalonia.Controls
         public DrawerPage()
         {
             GestureRecognizers.Add(_swipeRecognizer);
+            UpdateSwipeRecognizerAxes();
         }
 
         /// <summary>
@@ -318,6 +322,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets whether the drawer pane is currently open.
         /// </summary>
+        /// <remarks>
+        /// Setting this property to <see langword="true"/> while <see cref="DrawerBehavior"/> is
+        /// <see cref="DrawerBehavior.Disabled"/> is a no-op; the value is coerced back to
+        /// <see langword="false"/>. When closing programmatically, the <see cref="Closing"/> event
+        /// is raised and can be cancelled; if cancelled, the property reverts to
+        /// <see langword="true"/>. The <see cref="Closing"/> event is not raised when the drawer
+        /// is forced closed because <see cref="DrawerBehavior"/> is set to
+        /// <see cref="DrawerBehavior.Disabled"/>.
+        /// </remarks>
         public bool IsOpen
         {
             get => GetValue(IsOpenProperty);
@@ -343,12 +356,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the width threshold for switching to overlay mode.
+        /// Gets or sets the size threshold for switching to overlay mode. Set to 0 to disable.
         /// </summary>
-        public double DrawerBreakpointWidth
+        public double DrawerBreakpointLength
         {
-            get => GetValue(DrawerBreakpointWidthProperty);
-            set => SetValue(DrawerBreakpointWidthProperty, value);
+            get => GetValue(DrawerBreakpointLengthProperty);
+            set => SetValue(DrawerBreakpointLengthProperty, value);
         }
 
         /// <summary>
@@ -517,8 +530,7 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
 
-            if (_backdrop != null)
-                _backdrop.PointerPressed -= OnBackdropPressed;
+            DetachBackdropPointerPressed();
 
             _contentPresenter = e.NameScope.Find<ContentPresenter>("PART_ContentPresenter");
             _drawerPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerPresenter");
@@ -535,7 +547,12 @@ namespace Avalonia.Controls
             UpdateIconPresenters();
 
             if (_backdrop != null)
-                _backdrop.PointerPressed += OnBackdropPressed;
+            {
+                if (IsAttachedToVisualTree)
+                    AttachBackdropPointerPressed();
+
+                AutomationProperties.SetAccessibilityView(_backdrop, AccessibilityView.Raw);
+            }
 
             ApplyForeground(_drawerHeaderPresenter, DrawerHeaderForeground);
             ApplyForeground(_drawerFooterPresenter, DrawerFooterForeground);
@@ -565,6 +582,7 @@ namespace Avalonia.Controls
 
                 if (change.Property == ContentProperty)
                 {
+                    _hasHadFirstPage = false;
                     _navBarVisibleSub?.Dispose();
                     _navBarVisibleSub = null;
 
@@ -603,11 +621,14 @@ namespace Avalonia.Controls
             }
             else if (change.Property == DrawerBehaviorProperty ||
                      change.Property == DrawerLayoutBehaviorProperty ||
-                     change.Property == DrawerBreakpointWidthProperty)
+                     change.Property == DrawerBreakpointLengthProperty)
             {
                 UpdateSplitViewDisplayMode();
+
+                if (change.Property == DrawerBehaviorProperty && Content is NavigationPage nav)
+                    nav.SetDrawerPage(this);
             }
-            else if (change.Property == BoundsProperty && DrawerBreakpointWidth > 0)
+            else if (change.Property == BoundsProperty && DrawerBreakpointLength > 0)
             {
                 UpdateSplitViewDisplayMode();
             }
@@ -617,6 +638,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == DrawerPlacementProperty)
             {
+                UpdateSwipeRecognizerAxes();
                 UpdatePanePlacement();
                 UpdateContentSafeAreaPadding();
             }
@@ -643,9 +665,10 @@ namespace Avalonia.Controls
             base.OnAttachedToVisualTree(e);
 
             AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
+            AddHandler(PointerPressedEvent, OnSwipePointerPressed, handledEventsToo: true);
 
-            if (_backdrop != null)
-                _backdrop.PointerPressed += OnBackdropPressed;
+            AttachBackdropPointerPressed();
+            RestoreNavigationState();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -653,15 +676,51 @@ namespace Avalonia.Controls
             base.OnDetachedFromVisualTree(e);
 
             RemoveHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
+            RemoveHandler(PointerPressedEvent, OnSwipePointerPressed);
 
-            if (_backdrop != null)
-                _backdrop.PointerPressed -= OnBackdropPressed;
+            DetachBackdropPointerPressed();
 
+            ClearNavigationState();
+        }
+
+        private void RestoreNavigationState()
+        {
+            if (Content is not NavigationPage nav)
+                return;
+
+            _navBarVisibleSub?.Dispose();
+            nav.SetDrawerPage(this);
+            _navBarVisibleSub = nav.GetObservable(NavigationPage.IsNavBarEffectivelyVisibleProperty)
+                .Subscribe(new AnonymousObserver<bool>(_ => UpdateDetailNavBarVisiblePseudoClass()));
+            UpdateDetailNavBarVisiblePseudoClass();
+        }
+
+        private void ClearNavigationState()
+        {
             _navBarVisibleSub?.Dispose();
             _navBarVisibleSub = null;
 
             if (Content is NavigationPage nav)
                 nav.SetDrawerPage(null);
+        }
+
+        private void AttachBackdropPointerPressed()
+        {
+            if (_backdrop != null)
+                _backdrop.PointerPressed += OnBackdropPressed;
+        }
+
+        private void DetachBackdropPointerPressed()
+        {
+            if (_backdrop != null)
+                _backdrop.PointerPressed -= OnBackdropPressed;
+        }
+
+
+        private void UpdateSwipeRecognizerAxes()
+        {
+            _swipeRecognizer.CanVerticallySwipe = IsVerticalPlacement;
+            _swipeRecognizer.CanHorizontallySwipe = !IsVerticalPlacement;
         }
 
         protected override void OnLoaded(RoutedEventArgs e)
@@ -673,6 +732,11 @@ namespace Avalonia.Controls
                 _hasHadFirstPage = true;
                 CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Push));
             }
+        }
+
+        private void OnSwipePointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            _swipeStartPoint = e.GetPosition(this);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -714,8 +778,8 @@ namespace Avalonia.Controls
                         : EdgeGestureWidth;
 
                     bool inEdge = DrawerPlacement == DrawerPlacement.Bottom
-                        ? e.StartPoint.Y >= Bounds.Height - openGestureEdge
-                        : e.StartPoint.Y <= openGestureEdge;
+                        ? _swipeStartPoint.Y >= Bounds.Height - openGestureEdge
+                        : _swipeStartPoint.Y <= openGestureEdge;
 
                     if (towardPane && inEdge)
                     {
@@ -746,8 +810,8 @@ namespace Avalonia.Controls
                         : EdgeGestureWidth;
 
                     bool inEdge = IsPaneOnRight
-                        ? e.StartPoint.X >= Bounds.Width - openGestureEdge
-                        : e.StartPoint.X <= openGestureEdge;
+                        ? _swipeStartPoint.X >= Bounds.Width - openGestureEdge
+                        : _swipeStartPoint.X <= openGestureEdge;
 
                     if (towardPane && inEdge)
                     {
@@ -860,7 +924,7 @@ namespace Avalonia.Controls
             if (_splitView == null)
                 return;
 
-            if (DrawerBreakpointWidth > 0 && previousMode != mode)
+            if (DrawerBreakpointLength > 0 && previousMode != mode)
             {
                 if (mode == SplitViewDisplayMode.Inline)
                 {
@@ -888,9 +952,13 @@ namespace Avalonia.Controls
                     return SplitViewDisplayMode.Overlay;
             }
 
-            var breakpoint = DrawerBreakpointWidth;
-            if (!IsVerticalPlacement && breakpoint > 0 && Bounds.Width > 0 && Bounds.Width < breakpoint)
-                return SplitViewDisplayMode.Overlay;
+            var breakpoint = DrawerBreakpointLength;
+            if (breakpoint > 0)
+            {
+                var length = IsVerticalPlacement ? Bounds.Height : Bounds.Width;
+                if (length > 0 && length < breakpoint)
+                    return SplitViewDisplayMode.Overlay;
+            }
 
             switch (DrawerLayoutBehavior)
             {
@@ -948,40 +1016,15 @@ namespace Avalonia.Controls
                 _bottomPaneIconPresenter.Content = CreateIconContent(DrawerIcon);
         }
 
-        private static object? CreateIconContent(object? icon)
+        internal static object? CreateIconContent(object? icon) => icon switch
         {
-            // Non-visual data (Geometry, IImage, string, etc.) can be shared across presenters.
-            if (icon is not Control)
-                return icon;
-
-            // For Control-typed icons, create an independent copy per presenter to avoid
-            // the "already has a visual parent" exception when the same instance is used
-            // in multiple ContentPresenters simultaneously.
-            if (icon is PathIcon pathIcon)
-            {
-                var clone = new PathIcon
-                {
-                    Data = pathIcon.Data,
-                    Width = pathIcon.Width,
-                    Height = pathIcon.Height,
-                };
-
-                if (pathIcon.IsSet(PathIcon.ForegroundProperty))
-                    clone.Foreground = pathIcon.Foreground;
-                if (pathIcon.IsSet(PathIcon.OpacityProperty))
-                    clone.Opacity = pathIcon.Opacity;
-                if (pathIcon.IsSet(PathIcon.RenderTransformProperty))
-                    clone.RenderTransform = pathIcon.RenderTransform;
-                if (pathIcon.IsSet(PathIcon.RenderTransformOriginProperty))
-                    clone.RenderTransformOrigin = pathIcon.RenderTransformOrigin;
-
-                return clone;
-            }
-
-            // For other Control subtypes, return null to avoid a crash.
-            // Users should pass non-Control icon data instead.
-            return null;
-        }
+            ITemplate<Control> template => template.Build(),
+            Geometry g => new PathIcon { Data = g },
+            PathIcon pi => new PathIcon { Data = pi.Data },
+            DrawingImage { Drawing: GeometryDrawing { Geometry: { } gd } } => new PathIcon { Data = gd },
+            IImage image => new Image { Source = image },
+            _ => null
+        };
 
         private void ApplyDrawerBackground()
         {

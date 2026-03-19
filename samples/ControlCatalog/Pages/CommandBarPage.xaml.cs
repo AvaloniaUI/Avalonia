@@ -22,6 +22,7 @@ namespace ControlCatalog.Pages
             // Features
             ("Features", "Overflow Menu",    "Secondary commands appear in an overflow popup. Configure visibility and sticky behavior.", () => new CommandBarOverflowPage()),
             ("Features", "Dynamic Overflow", "IsDynamicOverflowEnabled moves primary commands to overflow as space shrinks.",             () => new CommandBarDynamicOverflowPage()),
+            ("Features", "Events & State",  "Observe Opening, Opened, Closing, and Closed while tracking IsOpen, HasSecondaryCommands, and IsOverflowButtonVisible.", () => new CommandBarEventsPage()),
         };
 
         public CommandBarPage()

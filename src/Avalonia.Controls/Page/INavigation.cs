@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Animation;
@@ -117,11 +118,15 @@ namespace Avalonia.Controls
         /// Inserts <paramref name="page"/> immediately before <paramref name="before"/> in the stack.
         /// Does not change the currently visible page.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="page"/> or <paramref name="before"/> is <see langword="null"/>.</exception>
+        /// <exception cref="InvalidOperationException"><paramref name="before"/> is not in the navigation stack, or <paramref name="page"/> is already hosted by this navigation page.</exception>
         void InsertPage(Page page, Page before);
 
         /// <summary>
         /// Removes <paramref name="page"/> from the navigation stack without animation.
+        /// If <paramref name="page"/> is not in the stack the call is a no-op.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="page"/> is <see langword="null"/>.</exception>
         void RemovePage(Page page);
     }
 }

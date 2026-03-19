@@ -5,6 +5,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Rendering;
 using SixLabors.ImageSharp;
 using Xunit;
+using Avalonia.Input;
 using Avalonia.Platform;
 using System.Threading.Tasks;
 using System;
@@ -33,6 +34,18 @@ static class TestRenderHelper
         SkiaPlatform.Initialize();
         AvaloniaLocator.CurrentMutable.Bind<IAssetLoader>().ToConstant(new StandardAssetLoader());
         AvaloniaLocator.CurrentMutable.Bind<ITextShaperImpl>().ToConstant(new HarfBuzzTextShaper());
+        AvaloniaLocator.CurrentMutable.Bind<ICursorFactory>().ToConstant(new NullCursorFactory());
+    }
+
+    private sealed class NullCursorFactory : ICursorFactory
+    {
+        public ICursorImpl GetCursor(StandardCursorType cursorType) => new NullCursor();
+        public ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot) => new NullCursor();
+
+        private sealed class NullCursor : ICursorImpl
+        {
+            public void Dispose() { }
+        }
     }
     
     

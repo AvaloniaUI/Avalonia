@@ -142,11 +142,9 @@ namespace Avalonia.Controls
             OverflowItems = new ReadOnlyObservableCollection<ICommandBarElement>(_overflowItems);
 
             var primaryCommands = new ObservableCollection<ICommandBarElement>();
-            primaryCommands.CollectionChanged += OnPrimaryCommandsChanged;
             SetCurrentValue(PrimaryCommandsProperty, (IList<ICommandBarElement>)primaryCommands);
 
             var secondaryCommands = new ObservableCollection<ICommandBarElement>();
-            secondaryCommands.CollectionChanged += OnSecondaryCommandsChanged;
             SetCurrentValue(SecondaryCommandsProperty, (IList<ICommandBarElement>)secondaryCommands);
 
             SizeChanged += CommandBar_SizeChanged;

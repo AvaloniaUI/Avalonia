@@ -13,7 +13,7 @@
       <ControlTemplate>
         <!--  Do not forget to update Templated_Control_With_Popup_In_Template_Should_Set_TemplatedParent test  -->
         <LayoutTransformControl LayoutTransform="{TemplateBinding Transform}">
-          <VisualLayerManager IsPopup="True">
+          <VisualLayerManager Name="PART_VisualLayerManager">
             <ContentPresenter Name="PART_ContentPresenter"
                               Padding="{TemplateBinding Padding}"
                               Background="{TemplateBinding Background}"
