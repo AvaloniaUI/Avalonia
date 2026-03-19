@@ -251,8 +251,7 @@
                       Theme="{StaticResource TabbedPageTabControlTheme}"
                       ItemContainerTheme="{StaticResource TabbedPageTabItemTheme}"
                       HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch"
-                      ItemsSource="{TemplateBinding Pages}" />
+                      VerticalAlignment="Stretch" />
         </Panel>
       </ControlTemplate>
     </Setter>

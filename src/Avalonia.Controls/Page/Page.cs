@@ -163,6 +163,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when the page is about to be navigated from.
         /// </summary>
+        /// <remarks>
+        /// Each subscriber is awaited in turn. Set <see cref="NavigatingFromEventArgs.Cancel"/> to
+        /// <see langword="true"/> to abort the navigation; remaining subscribers are not invoked once
+        /// cancellation is requested. If a subscriber throws an exception, the exception propagates
+        /// to the calling navigation method (such as <see cref="NavigationPage.PushAsync(Page)"/>)
+        /// and the navigation is aborted. Subscribers should use try/catch internally if they need
+        /// guaranteed cancellation semantics regardless of errors.
+        /// </remarks>
         public event Func<NavigatingFromEventArgs, Task>? Navigating;
 
         /// <summary>
@@ -178,6 +186,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Called when the page is about to be navigated from.
         /// </summary>
+        /// <remarks>
+        /// Setting <see cref="NavigatingFromEventArgs.Cancel"/> to <see langword="true"/> here
+        /// prevents the <see cref="Navigating"/> async handlers from running and aborts the
+        /// navigation. This method is called before the <see cref="Navigating"/> event.
+        /// </remarks>
         protected virtual void OnNavigatingFrom(NavigatingFromEventArgs args) { }
 
         /// <summary>
@@ -197,11 +210,18 @@ namespace Avalonia.Controls
         {
             OnNavigatingFrom(args);
 
+            if (args.Cancel)
+                return;
+
             var navigating = Navigating;
             if (navigating != null)
             {
                 foreach (Func<NavigatingFromEventArgs, Task> handler in navigating.GetInvocationList())
+                {
                     await handler(args);
+                    if (args.Cancel)
+                        return;
+                }
             }
         }
 
@@ -217,7 +237,7 @@ namespace Avalonia.Controls
                 UpdateContentSafeAreaPadding();
 
             if (change.Property == HeaderProperty)
-                AutomationProperties.SetName(this, change.NewValue as string ?? string.Empty);
+                AutomationProperties.SetName(this, change.GetNewValue<object?>() as string ?? string.Empty);
         }
 
         protected override void OnLoaded(RoutedEventArgs e)

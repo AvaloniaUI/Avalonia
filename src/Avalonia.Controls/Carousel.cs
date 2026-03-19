@@ -199,6 +199,9 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
             _scroller = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
+
+            if (ItemsPanelRoot is VirtualizingCarouselPanel panel)
+                panel.RefreshGestureRecognizer();
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
