@@ -260,9 +260,11 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
                 }
             }
         }
-        catch (UnsupportedOperationException)
+        catch (Exception ex)
         {
-            // Data may not be available for this item.
+            // Data may not be available for this item or the URI may not be in the expected shape.
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
+                .Log(this, "Directory basic properties metadata unavailable: '{Exception}'", ex);
         }
 
         return Task.FromResult(new StorageItemProperties(null, null, dateModified));
