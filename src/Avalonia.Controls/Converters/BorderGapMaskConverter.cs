@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Converters
     // Ported from https://github.com/dotnet/wpf/blob/main/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/BorderGapMaskConverter.cs
 
     /// <summary>
-    /// Convertor that generates the visual brush for <see cref="GroupBox"/>
+    /// Converter that generates the visual brush for <see cref="GroupBox"/>
     /// </summary>
     public class BorderGapMaskConverter : IMultiValueConverter
     {
