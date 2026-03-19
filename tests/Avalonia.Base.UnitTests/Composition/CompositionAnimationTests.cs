@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
+using Avalonia.Automation.Provider;
 using Avalonia.Base.UnitTests.Rendering;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
@@ -121,5 +122,103 @@ public class CompositionAnimationTests : ScopedTestBase
         {
             return Name;
         }
+    }
+
+    [Theory]
+    [InlineData("Color")]
+    [InlineData("Offset")]
+    
+    public void GetCompositionProperty_ReturnsRegisteredProperties(string propName)
+    {
+        using var scope = AvaloniaLocator.EnterScope();
+        var compositor = new Compositor(RenderLoop.FromTimer(new CompositorTestServices.ManualRenderTimer()), null);
+        var target = compositor.CreateSolidColorVisual();
+
+        var property = target.Server.GetCompositionProperty(propName);
+
+        Assert.NotNull(property);
+        Assert.Equal(propName, property.Name);
+        Assert.NotNull(property.GetVariant);
+    }
+
+    [Fact]
+    public void ExpressionAnimation_Operations_WorksCorrectly()
+    {
+        using var scope = AvaloniaLocator.EnterScope();
+        var compositor = new Compositor(RenderLoop.FromTimer(new CompositorTestServices.ManualRenderTimer()), null);
+        var target = compositor.CreateSolidColorVisual();
+        target.Server.Offset = new Vector3D(100, 200, 0);
+
+        var ani = compositor.CreateExpressionAnimation("this.Target.Offset.X * 0.5 + 10");
+        var instance = ani.CreateInstance(target.Server, null);
+        instance.Initialize(TimeSpan.Zero, ExpressionVariant.Create(0f), 
+            ServerCompositionVisual.s_IdOfRotationAngleProperty);
+
+        var result = instance.Evaluate(TimeSpan.Zero, ExpressionVariant.Create(0f));
+
+        Assert.Equal(VariantType.Double, result.Type);
+        Assert.Equal(60.0, result.Double);
+    }
+
+
+    [Fact]
+    public void ExpressionAnimation_TracksReferenceParameter()
+    {
+        using var scope = AvaloniaLocator.EnterScope();
+        var compositor = new Compositor(RenderLoop.FromTimer(new CompositorTestServices.ManualRenderTimer()), null);
+        var target = compositor.CreateSolidColorVisual();
+        var obj = compositor.CreateSolidColorVisual();
+        obj.Server.Offset = new Vector3D(100, 200, 0);
+
+        var ani = compositor.CreateExpressionAnimation("obj.Offset.X * 0.5 + 10");
+        ani.SetReferenceParameter("obj", obj);
+        var instance = ani.CreateInstance(target.Server, null);
+        instance.Initialize(TimeSpan.Zero, ExpressionVariant.Create(0f),
+            ServerCompositionVisual.s_IdOfRotationAngleProperty);
+
+        target.Server.Activate();
+        instance.Activate();
+
+        // Invoke OnSetAnimatedValue manually to create ServerObjectAnimationInstance.
+        target.Server.GetOrCreateAnimations();
+        var tmp = 0f;
+        target.Server.Animations!.OnSetAnimatedValue(ServerCompositionVisual.s_IdOfRotationAngleProperty, ref tmp, TimeSpan.Zero, instance);
+
+        var initialResult = instance.Evaluate(TimeSpan.Zero, ExpressionVariant.Create(0f));
+        Assert.Equal(60.0, initialResult.Double);
+
+        obj.Server.Offset = new Vector3D(200, 300, 0);
+        var updatedResult = instance.Evaluate(TimeSpan.Zero, ExpressionVariant.Create(0f));
+        Assert.Equal(110.0, updatedResult.Double);
+    }
+
+    [Fact]
+    public void ExpressionAnimation_TracksTarget()
+    {
+        using var scope = AvaloniaLocator.EnterScope();
+        var compositor = new Compositor(RenderLoop.FromTimer(new CompositorTestServices.ManualRenderTimer()), null);
+        var target = compositor.CreateSolidColorVisual();
+
+        target.Server.Offset = new Vector3D(100, 200, 0);
+
+        var ani = compositor.CreateExpressionAnimation("this.Target.Offset.X * 0.5 + 10");
+        var instance = ani.CreateInstance(target.Server, null);
+        instance.Initialize(TimeSpan.Zero, ExpressionVariant.Create(0f), 
+            ServerCompositionVisual.s_IdOfRotationAngleProperty);
+
+        target.Server.Activate();
+        instance.Activate();
+
+        // Invoke OnSetAnimatedValue manually to create ServerObjectAnimationInstance.
+        target.Server.GetOrCreateAnimations();
+        var tmp = 0f;
+        target.Server.Animations!.OnSetAnimatedValue(ServerCompositionVisual.s_IdOfRotationAngleProperty, ref tmp, TimeSpan.Zero, instance);
+
+        var initialResult = instance.Evaluate(TimeSpan.Zero, ExpressionVariant.Create(0f));
+        Assert.Equal(60, initialResult.Double);
+
+        target.Server.Offset = new Vector3D(200, 300, 0);
+        var updatedResult = instance.Evaluate(TimeSpan.Zero, ExpressionVariant.Create(0f));
+        Assert.Equal(110.0, updatedResult.Double);
     }
 }
