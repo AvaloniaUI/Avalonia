@@ -7,6 +7,7 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageToolbarPage : UserControl
     {
+        private bool _initialized;
         private int _pageCount;
         private int _itemCount;
         private ContentPage? _rootPage;
@@ -20,6 +21,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
             _rootPage = NavigationDemoHelper.MakePage("CommandBar Demo",
                 "Use the panel to add CommandBar items.\nTop items appear inside the navigation bar.\nBottom items appear as a separate bar.", 0);
             ApplyPosition();

@@ -12,8 +12,13 @@ namespace Avalonia.Animation
     /// <summary>
     /// Defines a cross-fade animation between two <see cref="Visual"/>s.
     /// </summary>
-    public class CrossFade : IPageTransition
+    public class CrossFade : IPageTransition, IProgressPageTransition
     {
+        private const double SidePeekOpacity = 0.72;
+        private const double FarPeekOpacity = 0.42;
+        private const double OutgoingDip = 0.22;
+        private const double IncomingBoost = 0.12;
+        private const double PassiveDip = 0.05;
         private readonly Animation _fadeOutAnimation;
         private readonly Animation _fadeInAnimation;
 
@@ -181,6 +186,83 @@ namespace Avalonia.Animation
         Task IPageTransition.Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
         {
             return Start(from, to, cancellationToken);
+        }
+
+        /// <inheritdoc/>
+        public void Update(
+            double progress,
+            Visual? from,
+            Visual? to,
+            bool forward,
+            double pageLength,
+            IReadOnlyList<PageTransitionItem> visibleItems)
+        {
+            if (visibleItems.Count > 0)
+            {
+                UpdateVisibleItems(progress, from, to, visibleItems);
+                return;
+            }
+
+            if (from != null)
+                from.Opacity = 1 - progress;
+            if (to != null)
+            {
+                to.IsVisible = true;
+                to.Opacity = progress;
+            }
+        }
+
+        /// <inheritdoc/>
+        public void Reset(Visual visual)
+        {
+            visual.Opacity = 1;
+        }
+
+        private static void UpdateVisibleItems(
+            double progress,
+            Visual? from,
+            Visual? to,
+            IReadOnlyList<PageTransitionItem> visibleItems)
+        {
+            var emphasis = Math.Sin(Math.Clamp(progress, 0.0, 1.0) * Math.PI);
+            foreach (var item in visibleItems)
+            {
+                item.Visual.IsVisible = true;
+                var opacity = GetOpacityForOffset(item.ViewportCenterOffset);
+
+                if (ReferenceEquals(item.Visual, from))
+                {
+                    opacity = Math.Max(FarPeekOpacity, opacity - (OutgoingDip * emphasis));
+                }
+                else if (ReferenceEquals(item.Visual, to))
+                {
+                    opacity = Math.Min(1.0, opacity + (IncomingBoost * emphasis));
+                }
+                else
+                {
+                    opacity = Math.Max(FarPeekOpacity, opacity - (PassiveDip * emphasis));
+                }
+
+                item.Visual.Opacity = opacity;
+            }
+        }
+
+        private static double GetOpacityForOffset(double offsetFromCenter)
+        {
+            var distance = Math.Abs(offsetFromCenter);
+
+            if (distance <= 1.0)
+                return Lerp(1.0, SidePeekOpacity, distance);
+
+            if (distance <= 2.0)
+                return Lerp(SidePeekOpacity, FarPeekOpacity, distance - 1.0);
+
+            return FarPeekOpacity;
+        }
+
+        private static double Lerp(double from, double to, double t)
+        {
+            return from + ((to - from) * Math.Clamp(t, 0.0, 1.0));
         }
     }
 }

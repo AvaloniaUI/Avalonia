@@ -52,6 +52,13 @@
         </Border>
 
         <Separator />
+
+        <!-- IsNavigating indicator -->
+        <TextBlock Text="Status" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding IsNavigating, ElementName=DemoNav, StringFormat='IsNavigating: {0}'}"
+                   FontSize="12" />
+
+        <Separator />
         <TextBlock Text="NavigationPage exposes events for push, pop, insert, remove, and modal operations. Pages also fire NavigatedTo and NavigatedFrom on each navigation."
                    TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
       </StackPanel>

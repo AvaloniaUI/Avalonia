@@ -15,6 +15,7 @@ namespace Avalonia.Headless
     public static class AvaloniaHeadlessPlatform
     {
         internal static Compositor? Compositor { get; private set; }
+        private static RenderTimer? s_renderTimer;
 
         private class RenderTimer : DefaultRenderTimer
         {
@@ -85,7 +86,7 @@ namespace Avalonia.Headless
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
-                .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
+                .Bind<IRenderLoop>().ToConstant(Rendering.RenderLoop.FromTimer(s_renderTimer = new RenderTimer(60)))
                 .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts.FrameBufferFormat))
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }));
@@ -99,9 +100,8 @@ namespace Avalonia.Headless
         /// <param name="count">Count of frames to be ticked on the timer.</param>
         public static void ForceRenderTimerTick(int count = 1)
         {
-            var timer = AvaloniaLocator.Current.GetService<IRenderTimer>() as RenderTimer;
             for (var c = 0; c < count; c++)
-                timer?.ForceTick();
+                s_renderTimer?.ForceTick();
 
         }
     }

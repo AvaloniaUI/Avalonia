@@ -62,13 +62,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
         public static readonly StyledProperty<string?> PlaceholderTextProperty =
-            AvaloniaProperty.Register<ComboBox, string?>(nameof(PlaceholderText));
+            TextBox.PlaceholderTextProperty.AddOwner<ComboBox>();
 
         /// <summary>
         /// Defines the <see cref="PlaceholderForeground"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> PlaceholderForegroundProperty =
-            AvaloniaProperty.Register<ComboBox, IBrush?>(nameof(PlaceholderForeground));
+            TextBox.PlaceholderForegroundProperty.AddOwner<ComboBox>();
 
         /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
@@ -453,7 +453,7 @@ namespace Avalonia.Controls
             return new ComboBoxAutomationPeer(this);
         }
 
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             if (IsEditable && _inputTextBox != null)
             {

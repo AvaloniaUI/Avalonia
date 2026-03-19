@@ -740,7 +740,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="e">A <see cref="T:Avalonia.RoutedEventArgs" />
         /// that contains the event data.</param>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
             FocusChanged(HasFocus());
@@ -752,7 +752,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="e">A <see cref="T:Avalonia.RoutedEventArgs" />
         /// that contains the event data.</param>
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             base.OnLostFocus(e);
             FocusChanged(HasFocus());

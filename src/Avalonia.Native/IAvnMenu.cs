@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using Avalonia.Compatibility;
-using Avalonia.Reactive;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 
@@ -51,7 +49,7 @@ namespace Avalonia.Native.Interop.Impl
 
         private void UpdateTitle(string? title)
         {
-            if (OperatingSystemEx.IsMacOS())
+            if (OperatingSystem.IsMacOS())
             {
                 // macOS does not process access key markers, so remove them.
                 title = AccessText.RemoveAccessKeyMarker(title);

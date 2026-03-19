@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -8,18 +10,32 @@ namespace ControlCatalog.Pages
 {
     public partial class TabbedPageDataTemplatePage : UserControl
     {
-        private static readonly (string Name, string Color)[] CategoryData =
+        private sealed class CategoryViewModel
         {
-            ("Electronics", "#1565C0"),
-            ("Books",       "#2E7D32"),
-            ("Clothing",    "#6A1B9A"),
+            public string Name { get; }
+            public string Color { get; }
+
+            public CategoryViewModel(string name, string color)
+            {
+                Name = name;
+                Color = color;
+            }
+        }
+
+        private static readonly CategoryViewModel[] InitialData =
+        {
+            new("Electronics", "#1565C0"), new("Books", "#2E7D32"), new("Clothing", "#6A1B9A"),
         };
 
-        private static readonly string[] AddNames   = { "Sports", "Music", "Garden", "Toys", "Food" };
-        private static readonly string[] AddColors  = { "#E53935", "#F57C00", "#00796B", "#E91E63", "#3F51B5" };
+        private static readonly CategoryViewModel[] AddData =
+        {
+            new("Sports", "#E53935"), new("Music", "#F57C00"), new("Garden", "#00796B"), new("Toys", "#E91E63"),
+            new("Food", "#3F51B5")
+        };
 
-        private readonly ObservableCollection<Page> _pages = new();
+        private readonly ObservableCollection<CategoryViewModel> _items = new();
         private int _addCounter;
+        private bool _useDetailTemplate = true;
         private TabbedPage? _tabbedPage;
 
         public TabbedPageDataTemplatePage()
@@ -30,48 +46,99 @@ namespace ControlCatalog.Pages
 
         private void OnLoaded(object? sender, RoutedEventArgs e)
         {
-            foreach (var (name, color) in CategoryData)
-                _pages.Add(CreatePage(name, color));
+            if (_tabbedPage != null)
+                return;
 
-            _addCounter = CategoryData.Length;
+            foreach (var vm in InitialData)
+                _items.Add(vm);
+            _addCounter = InitialData.Length;
+            _useDetailTemplate = true;
 
             _tabbedPage = new TabbedPage
             {
-                TabPlacement = TabPlacement.Top,
-                Pages = _pages
+                TabPlacement = TabPlacement.Top, ItemsSource = _items, PageTemplate = CreatePageTemplate()
             };
 
+            _tabbedPage.SelectionChanged += OnSelectionChanged;
             TabbedPageHost.Children.Add(_tabbedPage);
             UpdateStatus();
         }
 
         private void OnAddCategory(object? sender, RoutedEventArgs e)
         {
-            var idx = _addCounter % AddNames.Length;
-            var name = AddNames[idx] + (_addCounter >= AddNames.Length ? $" {_addCounter / AddNames.Length + 1}" : "");
-            _pages.Add(CreatePage(name, AddColors[idx]));
+            var idx = _addCounter % AddData.Length;
+            var vm = AddData[idx];
+            var suffix = _addCounter >= AddData.Length ? $" {_addCounter / AddData.Length + 1}" : "";
+            _items.Add(new CategoryViewModel(vm.Name + suffix, vm.Color));
             _addCounter++;
             UpdateStatus();
         }
 
         private void OnRemoveCategory(object? sender, RoutedEventArgs e)
         {
-            if (_pages.Count > 0)
+            if (_items.Count > 0)
             {
-                _pages.RemoveAt(_pages.Count - 1);
+                _items.RemoveAt(_items.Count - 1);
                 UpdateStatus();
             }
         }
 
-        private void UpdateStatus()
+        private void OnSelectionChanged(object? sender, PageSelectionChangedEventArgs e) => UpdateStatus();
+
+        private void OnSwitchTemplate(object? sender, RoutedEventArgs e)
         {
-            StatusText.Text = $"{_pages.Count} categor{(_pages.Count == 1 ? "y" : "ies")}";
+            if (_tabbedPage == null)
+                return;
+
+            _useDetailTemplate = !_useDetailTemplate;
+            _tabbedPage.PageTemplate = CreatePageTemplate();
+            UpdateStatus();
         }
 
-        private static ContentPage CreatePage(string name, string color) => new()
+        private void OnPrevious(object? sender, RoutedEventArgs e)
         {
-            Header = name,
-            Content = new StackPanel
+            if (_tabbedPage == null)
+                return;
+
+            if (_tabbedPage.SelectedIndex > 0)
+                _tabbedPage.SelectedIndex--;
+        }
+
+        private void OnNext(object? sender, RoutedEventArgs e)
+        {
+            if (_tabbedPage == null)
+                return;
+
+            if (_tabbedPage.SelectedIndex < _items.Count - 1)
+                _tabbedPage.SelectedIndex++;
+        }
+
+        private void UpdateStatus()
+        {
+            var count = _items.Count;
+            var index = _tabbedPage?.SelectedIndex ?? -1;
+            StatusText.Text = count == 0 ? "No tabs" : $"Tab {index + 1} of {count} (index {index})";
+        }
+
+        private IDataTemplate CreatePageTemplate()
+        {
+            return new FuncDataTemplate<CategoryViewModel>((vm, _) => CreatePage(vm, _useDetailTemplate));
+        }
+
+        private static ContentPage CreatePage(CategoryViewModel? vm, bool useDetailTemplate)
+        {
+            if (vm is null)
+                return new ContentPage();
+
+            return new ContentPage
+            {
+                Header = vm.Name, Content = useDetailTemplate ? CreateDetailContent(vm) : CreateShowcaseContent(vm)
+            };
+        }
+
+        private static Control CreateDetailContent(CategoryViewModel vm)
+        {
+            return new StackPanel
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
@@ -80,15 +147,15 @@ namespace ControlCatalog.Pages
                 {
                     new TextBlock
                     {
-                        Text = name,
+                        Text = vm.Name,
                         FontSize = 24,
                         FontWeight = FontWeight.SemiBold,
-                        Foreground = new SolidColorBrush(Color.Parse(color)),
+                        Foreground = new SolidColorBrush(Color.Parse(vm.Color)),
                         HorizontalAlignment = HorizontalAlignment.Center
                     },
                     new TextBlock
                     {
-                        Text = $"Tab for category: {name}",
+                        Text = $"Tab for category: {vm.Name}",
                         FontSize = 13,
                         Opacity = 0.7,
                         TextWrapping = TextWrapping.Wrap,
@@ -96,7 +163,45 @@ namespace ControlCatalog.Pages
                         MaxWidth = 280
                     }
                 }
-            }
-        };
+            };
+        }
+
+        private static Control CreateShowcaseContent(CategoryViewModel vm)
+        {
+            var accent = Color.Parse(vm.Color);
+
+            return new Border
+            {
+                Margin = new Thickness(24),
+                CornerRadius = new CornerRadius(18),
+                Background = new SolidColorBrush(accent),
+                Padding = new Thickness(28),
+                Child = new StackPanel
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Spacing = 10,
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Text = vm.Name,
+                            FontSize = 28,
+                            FontWeight = FontWeight.Bold,
+                            Foreground = Brushes.White,
+                            HorizontalAlignment = HorizontalAlignment.Center
+                        },
+                        new TextBlock
+                        {
+                            Text = "Template switched at runtime",
+                            FontSize = 14,
+                            Foreground = Brushes.White,
+                            Opacity = 0.9,
+                            HorizontalAlignment = HorizontalAlignment.Center
+                        }
+                    }
+                }
+            };
+        }
     }
 }
