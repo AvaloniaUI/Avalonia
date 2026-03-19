@@ -46,6 +46,8 @@
                     VerticalAlignment="Center"/>
                   <ContentPresenter
                     Name="PART_CompactPaneIconPresenter"
+                    Content="{TemplateBinding DrawerIcon}"
+                    ContentTemplate="{TemplateBinding DrawerIconTemplate}"
                     IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"/>
@@ -92,6 +94,8 @@
                         VerticalAlignment="Center"/>
                       <ContentPresenter
                         Name="PART_PaneIconPresenter"
+                        Content="{TemplateBinding DrawerIcon}"
+                        ContentTemplate="{TemplateBinding DrawerIconTemplate}"
                         IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
@@ -129,6 +133,8 @@
                         VerticalAlignment="Center"/>
                       <ContentPresenter
                         Name="PART_BottomPaneIconPresenter"
+                        Content="{TemplateBinding DrawerIcon}"
+                        ContentTemplate="{TemplateBinding DrawerIconTemplate}"
                         IsVisible="{Binding DrawerIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>

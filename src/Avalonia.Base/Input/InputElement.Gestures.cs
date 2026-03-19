@@ -55,6 +55,13 @@ namespace Avalonia.Input
                 nameof(SwipeGesture), RoutingStrategies.Bubble);
 
         /// <summary>
+        /// Defines the <see cref="SwipeGestureEnded"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<SwipeGestureEndedEventArgs> SwipeGestureEndedEvent =
+            RoutedEvent.Register<InputElement, SwipeGestureEndedEventArgs>(
+                nameof(SwipeGestureEnded), RoutingStrategies.Bubble);
+
+        /// <summary>
         /// Defines the <see cref="ScrollGesture"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEvent =
@@ -236,6 +243,15 @@ namespace Avalonia.Input
         {
             add { AddHandler(SwipeGestureEvent, value); }
             remove { RemoveHandler(SwipeGestureEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when a swipe gesture ends on the control.
+        /// </summary>
+        public event EventHandler<SwipeGestureEndedEventArgs>? SwipeGestureEnded
+        {
+            add { AddHandler(SwipeGestureEndedEvent, value); }
+            remove { RemoveHandler(SwipeGestureEndedEvent, value); }
         }
 
         /// <summary>

@@ -1,0 +1,86 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pages="using:ControlCatalog.Pages"
+             x:Class="ControlCatalog.Pages.NavigationPageMvvmPage"
+             x:DataType="pages:NavigationPageMvvmShellViewModel">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="300">
+      <StackPanel Margin="12" Spacing="12">
+        <TextBlock Text="MVVM Pattern"
+                   FontSize="16"
+                   FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock TextWrapping="Wrap"
+                   FontSize="12"
+                   Opacity="0.75"
+                   Text="This sample keeps NavigationPage in the view, sends commands from view models, routes push or pop operations through ISampleNavigationService, and resolves pages in a separate SamplePageFactory." />
+
+        <Separator />
+
+        <TextBlock Text="Selected Project"
+                   FontSize="13"
+                   FontWeight="SemiBold" />
+
+        <ListBox ItemsSource="{Binding Projects}"
+                 SelectedItem="{Binding SelectedProject, Mode=TwoWay}"
+                 MaxHeight="180">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="pages:ProjectCardViewModel">
+              <StackPanel Margin="0,2" Spacing="2">
+                <TextBlock Text="{Binding Name}"
+                           FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Owner}"
+                           FontSize="11"
+                           Opacity="0.65" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <Button Content="Open Selected Project"
+                Command="{Binding OpenSelectedProjectCommand}" />
+        <Button Content="Back"
+                Command="{Binding GoBackCommand}" />
+        <Button Content="Pop To Root"
+                Command="{Binding PopToRootCommand}" />
+
+        <Separator />
+
+        <TextBlock Text="Navigation State"
+                   FontSize="13"
+                   FontWeight="SemiBold" />
+        <TextBlock Text="{Binding CurrentPageHeader, StringFormat=Current page: {0}}"
+                   Opacity="0.75" />
+        <TextBlock Text="{Binding NavigationDepth, StringFormat=Stack depth: {0}}"
+                   Opacity="0.75" />
+        <TextBlock Text="{Binding LastAction, StringFormat=Last action: {0}}"
+                   Opacity="0.75"
+                   TextWrapping="Wrap" />
+
+        <Separator />
+
+        <TextBlock Text="Selected Details"
+                   FontSize="13"
+                   FontWeight="SemiBold" />
+        <TextBlock Text="{Binding SelectedProject.Status, StringFormat=Status: {0}}"
+                   Opacity="0.75" />
+        <TextBlock Text="{Binding SelectedProject.NextMilestone, StringFormat=Next milestone: {0}}"
+                   Opacity="0.75"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right"
+            Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <NavigationPage x:Name="DemoNav" />
+    </Border>
+  </DockPanel>
+</UserControl>
