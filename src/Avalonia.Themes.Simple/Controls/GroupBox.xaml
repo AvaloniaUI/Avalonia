@@ -35,7 +35,7 @@
                   BorderBrush="{TemplateBinding BorderBrush}">
             <Border.OpacityMask>
               <MultiBinding Converter="{StaticResource BorderGapMaskConverter}"
-                            ConverterParameter="6">
+                            ConverterParameter="{DynamicResource GroupBoxHeaderGap}">
                 <Binding ElementName="Header"
                          Path="Bounds.Width"/>
                 <Binding RelativeSource="{RelativeSource Self}"
