@@ -20,7 +20,7 @@ class ServerObjectAnimations
 
     private class ServerObjectSubscriptionStore
     {
-        public bool IsValid;
+        public bool IsValid = true;
         public RefTrackingDictionary<IAnimationInstance>? Subscribers;
 
         public void Invalidate()
