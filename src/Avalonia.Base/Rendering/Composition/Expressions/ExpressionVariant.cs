@@ -320,13 +320,13 @@ namespace Avalonia.Rendering.Composition.Expressions
         {
             if (left.Type != right.Type || left.Type == VariantType.Invalid)
                 return default;
-            
+
             if (left.Type == VariantType.Double)
                 return left.Double + right.Double;
 
             if (left.Type == VariantType.Vector2)
                 return left.Vector2 + right.Vector2;
-            
+
             if (left.Type == VariantType.Vector)
                 return left.Vector + right.Vector;
 
@@ -338,16 +338,16 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector4)
                 return left.Vector4 + right.Vector4;
-            
+
             if (left.Type == VariantType.Matrix3x2)
                 return left.Matrix3x2 + right.Matrix3x2;
-            
+
             if (left.Type == VariantType.Matrix4x4)
                 return left.Matrix4x4 + right.Matrix4x4;
-            
+
             if (left.Type == VariantType.Quaternion)
                 return left.Quaternion + right.Quaternion;
-            
+
             return default;
         }
 
@@ -355,13 +355,13 @@ namespace Avalonia.Rendering.Composition.Expressions
         {
             if (left.Type != right.Type || left.Type == VariantType.Invalid)
                 return default;
-            
+
             if (left.Type == VariantType.Double)
                 return left.Double - right.Double;
 
             if (left.Type == VariantType.Vector2)
                 return left.Vector2 - right.Vector2;
-            
+
             if (left.Type == VariantType.Vector)
                 return left.Vector - right.Vector;
 
@@ -373,13 +373,13 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector4)
                 return left.Vector4 - right.Vector4;
-            
+
             if (left.Type == VariantType.Matrix3x2)
                 return left.Matrix3x2 - right.Matrix3x2;
-            
+
             if (left.Type == VariantType.Matrix4x4)
                 return left.Matrix4x4 - right.Matrix4x4;
-            
+
             if (left.Type == VariantType.Quaternion)
                 return left.Quaternion - right.Quaternion;
 
@@ -394,25 +394,25 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector2)
                 return -left.Vector2;
-            
+
             if (left.Type == VariantType.Vector)
                 return -left.Vector;
 
             if (left.Type == VariantType.Vector3)
                 return -left.Vector3;
-            
+
             if (left.Type == VariantType.Vector3D)
                 return -left.Vector3D;
 
             if (left.Type == VariantType.Vector4)
                 return -left.Vector4;
-            
+
             if (left.Type == VariantType.Matrix3x2)
                 return -left.Matrix3x2;
-            
+
             if (left.Type == VariantType.AvaloniaMatrix)
                 return -left.AvaloniaMatrix;
-            
+
             if (left.Type == VariantType.Matrix4x4)
                 return -left.Matrix4x4;
 
@@ -426,7 +426,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         {
             if (left.Type == VariantType.Invalid || right.Type == VariantType.Invalid)
                 return default;
-            
+
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double * right.Double;
 
@@ -435,30 +435,51 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector && right.Type == VariantType.Vector)
                 return Vector.Multiply(left.Vector, right.Vector);
-            
+
+            if (left.Type == VariantType.Vector2 && right.Type == VariantType.Double)
+                return left.Vector2 * (float)right.Double;
+
             if (left.Type == VariantType.Vector && right.Type == VariantType.Double)
                 return left.Vector * right.Double;
 
             if (left.Type == VariantType.Vector3 && right.Type == VariantType.Vector3)
                 return left.Vector3 * right.Vector3;
-            
+
             if (left.Type == VariantType.Vector3D && right.Type == VariantType.Vector3D)
                 return Vector3D.Multiply(left.Vector3D, right.Vector3D);
 
+            if (left.Type == VariantType.Vector3 && right.Type == VariantType.Double)
+                return left.Vector3 * (float)right.Double;
+
+            if (left.Type == VariantType.Vector3D && right.Type == VariantType.Double)
+                return Vector3D.Multiply(left.Vector3D, right.Double);
+
             if (left.Type == VariantType.Vector4 && right.Type == VariantType.Vector4)
                 return left.Vector4 * right.Vector4;
-            
+
+            if (left.Type == VariantType.Vector4 && right.Type == VariantType.Double)
+                return left.Vector4 * (float)right.Double;
+
             if (left.Type == VariantType.Matrix3x2 && right.Type == VariantType.Matrix3x2)
                 return left.Matrix3x2 * right.Matrix3x2;
-            
+
+            if (left.Type == VariantType.Matrix3x2 && right.Type == VariantType.Double)
+                return left.Matrix3x2 * (float)right.Double;
+
             if (left.Type == VariantType.AvaloniaMatrix && right.Type == VariantType.AvaloniaMatrix)
                 return left.AvaloniaMatrix * right.AvaloniaMatrix;
-            
+
             if (left.Type == VariantType.Matrix4x4 && right.Type == VariantType.Matrix4x4)
                 return left.Matrix4x4 * right.Matrix4x4;
-            
+
+            if (left.Type == VariantType.Matrix4x4 && right.Type == VariantType.Double)
+                return left.Matrix4x4 * (float)right.Double;
+
             if (left.Type == VariantType.Quaternion && right.Type == VariantType.Quaternion)
                 return left.Quaternion * right.Quaternion;
+
+            if (left.Type == VariantType.Quaternion && right.Type == VariantType.Double)
+                return left.Quaternion * (float)right.Double;
 
             return default;
         }
@@ -467,7 +488,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         {
             if (left.Type == VariantType.Invalid || right.Type == VariantType.Invalid)
                 return default;
-            
+
             if (left.Type == VariantType.Double && right.Type == VariantType.Double)
                 return left.Double / right.Double;
 
@@ -476,7 +497,10 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector && right.Type == VariantType.Vector)
                 return Vector.Divide(left.Vector, right.Vector);
-            
+
+            if (left.Type == VariantType.Vector2 && right.Type == VariantType.Double)
+                return left.Vector2 / (float)right.Double;
+
             if (left.Type == VariantType.Vector && right.Type == VariantType.Double)
                 return left.Vector / right.Double;
 
@@ -485,7 +509,10 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector3D && right.Type == VariantType.Vector3D)
                 return Vector3D.Divide(left.Vector3D, right.Vector3D);
-            
+
+            if (left.Type == VariantType.Vector3 && right.Type == VariantType.Double)
+                return left.Vector3 / (float)right.Double;
+             
             if (left.Type == VariantType.Vector3D && right.Type == VariantType.Double)
                 return Avalonia.Vector3D.Divide(left.Vector3D, right.Double);
 
@@ -494,7 +521,7 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (left.Type == VariantType.Vector4 && right.Type == VariantType.Double)
                 return left.Vector4 / (float)right.Double;
-            
+
             if (left.Type == VariantType.Quaternion && right.Type == VariantType.Quaternion)
                 return left.Quaternion / right.Quaternion;
 
