@@ -6,13 +6,10 @@ using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
-using Avalonia.Layout;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -323,7 +320,8 @@ namespace Avalonia.Controls
 
             tabItem.IsEnabled = GetIsTabEnabled(page);
             tabItem.Header = page.Header;
-            tabItem.Icon = CreateIconContent(page.Icon);
+            tabItem.Icon = page.Icon;
+            tabItem.IconTemplate = page.IconTemplate;
 
             if (e.Index == (_tabControl?.SelectedIndex ?? -1))
                 UpdateActivePage();
@@ -351,7 +349,8 @@ namespace Avalonia.Controls
 
                 tabItem.IsEnabled = GetIsTabEnabled(page);
                 tabItem.Header = page.Header;
-                tabItem.Icon = CreateIconContent(page.Icon);
+                tabItem.Icon = page.Icon;
+                tabItem.IconTemplate = page.IconTemplate;
             }
 
             UpdateActivePage();
@@ -365,7 +364,12 @@ namespace Avalonia.Controls
             if (e.Property == Page.IconProperty)
             {
                 if (_pageContainerMap.TryGetValue(page, out var tabItem))
-                    tabItem.Icon = CreateIconContent(page.Icon);
+                    tabItem.Icon = page.Icon;
+            }
+            else if (e.Property == Page.IconTemplateProperty)
+            {
+                if (_pageContainerMap.TryGetValue(page, out var tabItem))
+                    tabItem.IconTemplate = page.IconTemplate;
             }
             else if (e.Property == Page.HeaderProperty)
             {
@@ -376,44 +380,6 @@ namespace Avalonia.Controls
             {
                 SyncTabEnabledState(page);
             }
-        }
-
-        /// <summary>
-        /// Creates a visual control from a page icon value.
-        /// </summary>
-        internal static Control? CreateIconContent(object? icon)
-        {
-            if (icon is ITemplate<Control> template)
-                return template.Build();
-
-            Geometry? geometry = icon switch
-            {
-                Geometry g => g,
-                PathIcon pi => pi.Data,
-                DrawingImage { Drawing: GeometryDrawing { Geometry: { } gd } } => gd,
-                _ => null
-            };
-
-            if (geometry != null)
-            {
-                var path = new Path
-                {
-                    Data = geometry,
-                    Stretch = Stretch.Uniform,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                };
-
-                path.Bind(
-                    Path.FillProperty,
-                    path.GetObservable(Documents.TextElement.ForegroundProperty));
-
-                return path;
-            }
-
-            if (icon is IImage image)
-                return new Image { Source = image };
-
-            return null;
         }
 
         private int FindNearestEnabledTab(int disabledIndex)
@@ -687,7 +653,7 @@ namespace Avalonia.Controls
 
             var placement = ResolveTabPlacement();
             bool isHorizontal = placement == TabPlacement.Top || placement == TabPlacement.Bottom;
-            bool isRtl = FlowDirection == FlowDirection.RightToLeft;
+            bool isRtl = FlowDirection == Media.FlowDirection.RightToLeft;
 
             int delta = (e.SwipeDirection, isHorizontal, isRtl) switch
             {
@@ -721,7 +687,7 @@ namespace Avalonia.Controls
 
             var resolved = ResolveTabPlacement();
             bool isHorizontal = resolved == TabPlacement.Top || resolved == TabPlacement.Bottom;
-            bool isRtl = FlowDirection == FlowDirection.RightToLeft;
+            bool isRtl = FlowDirection == Media.FlowDirection.RightToLeft;
 
             bool next = isHorizontal ? (isRtl ? e.Key == Key.Left : e.Key == Key.Right) : e.Key == Key.Down;
             bool prev = isHorizontal ? (isRtl ? e.Key == Key.Right : e.Key == Key.Left) : e.Key == Key.Up;
