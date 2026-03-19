@@ -1160,113 +1160,26 @@ public class DrawerPageTests
     public class IconTests : ScopedTestBase
     {
         [Fact]
-        public void Geometry_ReturnsPathIcon()
+        public void DrawerIconTemplate_RoundTrips()
+        {
+            var template = new FuncDataTemplate<object>((_, _) => new PathIcon());
+            var dp = new DrawerPage { DrawerIconTemplate = template };
+            Assert.Same(template, dp.DrawerIconTemplate);
+        }
+
+        [Fact]
+        public void DrawerIcon_With_Geometry_Does_Not_Throw()
         {
             var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-            var result = DrawerPage.CreateIconContent(geometry);
-            Assert.IsType<PathIcon>(result);
-            Assert.Same(geometry, ((PathIcon)result!).Data);
-        }
-
-        [Fact]
-        public void PathIcon_ReturnsPathIcon()
-        {
-            var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-            var pathIcon = new PathIcon { Data = geometry };
-            var result = DrawerPage.CreateIconContent(pathIcon);
-            Assert.IsType<PathIcon>(result);
-            Assert.Same(geometry, ((PathIcon)result!).Data);
-        }
-
-        [Fact]
-        public void DrawingImage_WithGeometryDrawing_ReturnsPathIcon()
-        {
-            var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-            var drawing = new GeometryDrawing { Geometry = geometry };
-            var drawingImage = new DrawingImage(drawing);
-            var result = DrawerPage.CreateIconContent(drawingImage);
-            Assert.IsType<PathIcon>(result);
-            Assert.Same(geometry, ((PathIcon)result!).Data);
-        }
-
-        [Fact]
-        public void Image_ReturnsImage()
-        {
-            var image = new TestImage();
-            var result = DrawerPage.CreateIconContent(image);
-            Assert.IsType<Image>(result);
-            Assert.Same(image, ((Image)result!).Source);
-        }
-
-        private sealed class TestImage : IImage
-        {
-            public Size Size => new Size(1, 1);
-            public void Draw(DrawingContext context, Rect sourceRect, Rect destRect) { }
-        }
-
-        [Fact]
-        public void EmptyString_ReturnsNull()
-        {
-            var result = DrawerPage.CreateIconContent("");
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void NullString_ReturnsNull()
-        {
-            var result = DrawerPage.CreateIconContent((string?)null);
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void Null_ReturnsNull()
-        {
-            var result = DrawerPage.CreateIconContent(null);
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void Template_BuildsControl()
-        {
-            var template = new FuncTemplate<Control>(() => new Border());
-            var result = DrawerPage.CreateIconContent(template);
-            Assert.IsType<Border>(result);
-        }
-
-        [Fact]
-        public void Template_BuildsSeparateInstances()
-        {
-            var template = new FuncTemplate<Control>(() => new Border());
-            var first = DrawerPage.CreateIconContent(template);
-            var second = DrawerPage.CreateIconContent(template);
-            Assert.NotSame(first, second);
-        }
-
-        [Fact]
-        public void NonEmptyString_ReturnsNull()
-        {
-            var result = DrawerPage.CreateIconContent("M10 20v-6h4v6");
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void UnsupportedType_ReturnsNull()
-        {
-            var result = DrawerPage.CreateIconContent(42);
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void ChangingDrawerIcon_AfterTemplateApplied_UpdatesPresenters()
-        {
-            var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-            var dp = new DrawerPage { DrawerIcon = new PathIcon { Data = geometry } };
+            var dp = new DrawerPage
+            {
+                DrawerIcon = geometry,
+                DrawerIconTemplate = new FuncDataTemplate<object>((_, _) => new PathIcon()),
+            };
             var root = new TestRoot { Child = dp };
 
-            var geometry2 = new EllipseGeometry { Rect = new Rect(0, 0, 20, 20) };
-            dp.DrawerIcon = new PathIcon { Data = geometry2 };
-
-            Assert.Same(geometry2, dp.DrawerIcon is PathIcon pi ? pi.Data : null);
+            dp.DrawerIcon = new EllipseGeometry { Rect = new Rect(0, 0, 20, 20) };
+            Assert.NotNull(dp.DrawerIcon);
         }
     }
 
