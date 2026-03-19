@@ -857,6 +857,101 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Resetting_Items_Collection_Should_Raise_SelectionChanged()
+        {
+            var items = new ObservableCollection<Item>
+            {
+                new Item(),
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                ItemsSource = items,
+                Template = Template(),
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 1;
+
+            var selectedItem = items[1];
+
+            SelectionChangedEventArgs? receivedArgs = null;
+            target.SelectionChanged += (_, args) => receivedArgs = args;
+
+            items.Clear();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.NotNull(receivedArgs);
+            Assert.Empty(receivedArgs.AddedItems);
+            Assert.Equal(new[] { selectedItem }, receivedArgs.RemovedItems);
+        }
+
+        [Fact]
+        public void Resetting_Items_To_Empty_With_Multiple_Selection_Should_Raise_SelectionChanged()
+        {
+            var items = new ObservableCollection<Item>
+            {
+                new Item(),
+                new Item(),
+                new Item(),
+            };
+
+            var target = new TestSelector
+            {
+                ItemsSource = items,
+                Template = Template(),
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 0;
+            target.Selection.Select(2);
+
+            var selected0 = items[0];
+            var selected2 = items[2];
+
+            SelectionChangedEventArgs? receivedArgs = null;
+            target.SelectionChanged += (_, args) => receivedArgs = args;
+
+            items.Clear();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.NotNull(receivedArgs);
+            Assert.Empty(receivedArgs.AddedItems);
+            Assert.Equal(2, receivedArgs.RemovedItems.Count);
+            Assert.Contains(selected0, receivedArgs.RemovedItems.Cast<object>());
+            Assert.Contains(selected2, receivedArgs.RemovedItems.Cast<object>());
+        }
+
+        [Fact]
+        public void Resetting_Items_With_Preserved_Selection_Should_Not_Report_Deselection()
+        {
+            var items = new ResettingCollection(3);
+
+            var target = new SelectingItemsControl
+            {
+                ItemsSource = items,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 1;
+
+            SelectionChangedEventArgs? receivedArgs = null;
+            target.SelectionChanged += (_, args) => receivedArgs = args;
+
+            items.Reset(new[] { "Item2", "Item0", "Item1" });
+
+            Assert.Equal("Item1", target.SelectedItem);
+            Assert.NotNull(receivedArgs);
+            Assert.Empty(receivedArgs.RemovedItems);
+        }
+
+        [Fact]
         public void Raising_IsSelectedChanged_On_Item_Should_Update_Selection()
         {
             var items = new[]

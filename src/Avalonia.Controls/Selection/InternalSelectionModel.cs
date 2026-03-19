@@ -264,7 +264,46 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        private void OnSourceReset(object? sender, EventArgs e) => SyncFromSelectedItems();
+        private void OnSourceReset(object? sender, EventArgs e)
+        {
+            // Snapshot before sync: base.OnSourceReset already cleared _selectedIndex,
+            // so the pending Operation has no record of what was lost.
+            List<object?>? previousItems = null;
+
+            if (_writableSelectedItems?.Count > 0)
+            {
+                previousItems = new List<object?>(_writableSelectedItems.Count);
+                foreach (var item in _writableSelectedItems)
+                    previousItems.Add(item);
+            }
+
+            SyncFromSelectedItems();
+
+            if (previousItems is null || previousItems.Count == 0)
+                return;
+
+            // Diff against post-sync state: a reorder Reset preserves items, only
+            // genuine losses should be reported as DeselectedItems.
+            var currentItems = new HashSet<object?>();
+            if (_writableSelectedItems != null)
+            {
+                foreach (var item in _writableSelectedItems)
+                    currentItems.Add(item);
+            }
+
+            var deselectedItems = new List<object?>();
+            foreach (var item in previousItems)
+            {
+                if (!currentItems.Contains(item))
+                    deselectedItems.Add(item);
+            }
+
+            if (deselectedItems.Count == 0)
+                return;
+
+            using var update = BatchUpdate();
+            update.Operation.DeselectedItems = deselectedItems;
+        }
 
         private void OnSelectedItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
