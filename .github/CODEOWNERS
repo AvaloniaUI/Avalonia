@@ -1,0 +1,6 @@
+# File auto-generated and managed by Devops
+/.github/workflows @devolutions/devops
+/.github/randy.yml @devolutions/devops
+/.github/CODEOWNERS @devolutions/devops
+/.github/scripts/ @devolutions/devops
+/.github/dependabot.yml @devolutions/security-managers
