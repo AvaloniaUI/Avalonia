@@ -23,6 +23,7 @@
 
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.DesignerSupport, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Controls.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
 
 </Project>
