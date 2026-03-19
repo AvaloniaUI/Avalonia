@@ -29,9 +29,6 @@ namespace Avalonia.Controls
     [TemplatePart("PART_PaneButton", typeof(ToggleButton))]
     [TemplatePart("PART_CompactPaneToggle", typeof(ToggleButton))]
     [TemplatePart("PART_Backdrop", typeof(Border))]
-    [TemplatePart("PART_CompactPaneIconPresenter", typeof(ContentPresenter))]
-    [TemplatePart("PART_PaneIconPresenter", typeof(ContentPresenter))]
-    [TemplatePart("PART_BottomPaneIconPresenter", typeof(ContentPresenter))]
     [PseudoClasses(":placement-right", ":placement-top", ":placement-bottom", ":detail-is-navpage")]
     public class DrawerPage : Page
     {
