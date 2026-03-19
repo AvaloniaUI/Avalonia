@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.Numerics;
-using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
 
 namespace Avalonia
