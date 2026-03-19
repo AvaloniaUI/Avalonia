@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
-using Avalonia.Automation.Provider;
-using Avalonia.Base.UnitTests.Rendering;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Expressions;
@@ -173,11 +170,8 @@ public class CompositionAnimationTests : ScopedTestBase
         var ani = compositor.CreateExpressionAnimation("obj.Offset.X * 0.5 + 10");
         ani.SetReferenceParameter("obj", obj);
         var instance = ani.CreateInstance(target.Server, null);
-        instance.Initialize(TimeSpan.Zero, ExpressionVariant.Create(0f),
-            ServerCompositionVisual.s_IdOfRotationAngleProperty);
 
         target.Server.Activate();
-        instance.Activate();
 
         // Invoke OnSetAnimatedValue manually to create ServerObjectAnimationInstance.
         target.Server.GetOrCreateAnimations();
@@ -203,11 +197,8 @@ public class CompositionAnimationTests : ScopedTestBase
 
         var ani = compositor.CreateExpressionAnimation("this.Target.Offset.X * 0.5 + 10");
         var instance = ani.CreateInstance(target.Server, null);
-        instance.Initialize(TimeSpan.Zero, ExpressionVariant.Create(0f), 
-            ServerCompositionVisual.s_IdOfRotationAngleProperty);
 
         target.Server.Activate();
-        instance.Activate();
 
         // Invoke OnSetAnimatedValue manually to create ServerObjectAnimationInstance.
         target.Server.GetOrCreateAnimations();

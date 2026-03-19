@@ -104,7 +104,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         False
     }
 
-    internal class ExpressionKeywords
+    internal static class ExpressionKeywords
     {
         public const string StartingValue = "this.startingvalue";
         public const string CurrentValue = "this.currentvalue";

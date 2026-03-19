@@ -663,7 +663,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                     res = (T)(object)Matrix3x2;
                     return true;
                 case Avalonia.Matrix when Type is VariantType.AvaloniaMatrix:
-                    res = (T)(object)Matrix3x2;
+                    res = (T)(object)AvaloniaMatrix;
                     return true;
                 case System.Numerics.Matrix4x4 when Type is VariantType.Matrix4x4:
                     res = (T)(object)Matrix4x4;
