@@ -1,3 +1,4 @@
+#if AVALONIA_SKIA
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -51,3 +52,4 @@ public class RenderTargetBitmapTests : TestBase
         CompareImages();
     }
 }
+#endif
