@@ -563,6 +563,10 @@ NSWindowStyleMask WindowImpl::CalculateStyleMask() {
 
         case SystemDecorationsBorderOnly:
             s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView;
+            
+            if (_canResize && _isEnabled) {
+                s = s | NSWindowStyleMaskResizable;
+            }
             break;
 
         case SystemDecorationsFull:
