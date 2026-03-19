@@ -132,6 +132,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<object?> DrawerIconProperty =
             AvaloniaProperty.Register<DrawerPage, object?>(nameof(DrawerIcon));
 
+        /// <summary>
+        /// Defines the <see cref="DrawerIconTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> DrawerIconTemplateProperty =
+            AvaloniaProperty.Register<DrawerPage, IDataTemplate?>(nameof(DrawerIconTemplate));
+
         private static readonly DefaultPageDataTemplate s_defaultPageDataTemplate = new DefaultPageDataTemplate();
 
         /// <summary>
@@ -204,9 +210,6 @@ namespace Avalonia.Controls
         private ContentPresenter? _drawerPresenter;
         private ContentPresenter? _drawerHeaderPresenter;
         private ContentPresenter? _drawerFooterPresenter;
-        private ContentPresenter? _compactPaneIconPresenter;
-        private ContentPresenter? _paneIconPresenter;
-        private ContentPresenter? _bottomPaneIconPresenter;
         private SplitView? _splitView;
         private Border? _topBar;
         private ToggleButton? _paneButton;
@@ -418,6 +421,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the data template used to display the drawer icon.
+        /// </summary>
+        public IDataTemplate? DrawerIconTemplate
+        {
+            get => GetValue(DrawerIconTemplateProperty);
+            set => SetValue(DrawerIconTemplateProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the data template used to display <see cref="Drawer"/> content.
         /// </summary>
         public IDataTemplate? DrawerTemplate
@@ -527,15 +539,10 @@ namespace Avalonia.Controls
             _drawerPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerPresenter");
             _drawerHeaderPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerHeader");
             _drawerFooterPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerFooter");
-            _compactPaneIconPresenter = e.NameScope.Find<ContentPresenter>("PART_CompactPaneIconPresenter");
-            _paneIconPresenter = e.NameScope.Find<ContentPresenter>("PART_PaneIconPresenter");
-            _bottomPaneIconPresenter = e.NameScope.Find<ContentPresenter>("PART_BottomPaneIconPresenter");
             _splitView = e.NameScope.Find<SplitView>("PART_SplitView");
             _topBar = e.NameScope.Find<Border>("PART_TopBar");
             _paneButton = e.NameScope.Find<ToggleButton>("PART_PaneButton");
             _backdrop = e.NameScope.Find<Border>("PART_Backdrop");
-
-            UpdateIconPresenters();
 
             if (_backdrop != null)
                 _backdrop.PointerPressed += OnBackdropPressed;
@@ -554,11 +561,7 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == DrawerIconProperty)
-            {
-                UpdateIconPresenters();
-            }
-            else if (change.Property == DrawerProperty || change.Property == ContentProperty)
+            if (change.Property == DrawerProperty || change.Property == ContentProperty)
             {
                 if (change.OldValue is ILogical oldLogical)
                     LogicalChildren.Remove(oldLogical);
@@ -951,51 +954,6 @@ namespace Avalonia.Controls
         {
             SetCurrentValue(IsOpenProperty, false);
             e.Handled = true;
-        }
-
-        private void UpdateIconPresenters()
-        {
-            if (_compactPaneIconPresenter != null)
-                _compactPaneIconPresenter.Content = CreateIconContent(DrawerIcon);
-            if (_paneIconPresenter != null)
-                _paneIconPresenter.Content = CreateIconContent(DrawerIcon);
-            if (_bottomPaneIconPresenter != null)
-                _bottomPaneIconPresenter.Content = CreateIconContent(DrawerIcon);
-        }
-
-        private static object? CreateIconContent(object? icon)
-        {
-            // Non-visual data (Geometry, IImage, string, etc.) can be shared across presenters.
-            if (icon is not Control)
-                return icon;
-
-            // For Control-typed icons, create an independent copy per presenter to avoid
-            // the "already has a visual parent" exception when the same instance is used
-            // in multiple ContentPresenters simultaneously.
-            if (icon is PathIcon pathIcon)
-            {
-                var clone = new PathIcon
-                {
-                    Data = pathIcon.Data,
-                    Width = pathIcon.Width,
-                    Height = pathIcon.Height,
-                };
-
-                if (pathIcon.IsSet(PathIcon.ForegroundProperty))
-                    clone.Foreground = pathIcon.Foreground;
-                if (pathIcon.IsSet(PathIcon.OpacityProperty))
-                    clone.Opacity = pathIcon.Opacity;
-                if (pathIcon.IsSet(PathIcon.RenderTransformProperty))
-                    clone.RenderTransform = pathIcon.RenderTransform;
-                if (pathIcon.IsSet(PathIcon.RenderTransformOriginProperty))
-                    clone.RenderTransformOrigin = pathIcon.RenderTransformOrigin;
-
-                return clone;
-            }
-
-            // For other Control subtypes, return null to avoid a crash.
-            // Users should pass non-Control icon data instead.
-            return null;
         }
 
         private void ApplyDrawerBackground()

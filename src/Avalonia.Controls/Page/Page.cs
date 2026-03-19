@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Avalonia.Automation;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
@@ -30,6 +31,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<object?> IconProperty =
             AvaloniaProperty.Register<Page, object?>(nameof(Icon));
+
+        /// <summary>
+        /// Defines the <see cref="IconTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> IconTemplateProperty =
+            AvaloniaProperty.Register<Page, IDataTemplate?>(nameof(IconTemplate));
 
         /// <summary>
         /// Defines the <see cref="CurrentPage"/> property.
@@ -92,6 +99,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(IconProperty);
             set => SetValue(IconProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to display the icon.
+        /// </summary>
+        public IDataTemplate? IconTemplate
+        {
+            get => GetValue(IconTemplateProperty);
+            set => SetValue(IconTemplateProperty, value);
         }
 
         /// <summary>

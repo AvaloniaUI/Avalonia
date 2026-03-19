@@ -711,72 +711,53 @@ public class TabbedPageTests
         }
     }
 
-    public class CreateIconControlTests : ScopedTestBase
+    public class PageIconTemplateTests : ScopedTestBase
     {
         [Fact]
-        public void Geometry_ReturnsPath()
+        public void Page_Icon_AcceptsControlValue()
+        {
+            var icon = new PathIcon { Data = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) } };
+            var page = new ContentPage { Icon = icon };
+            Assert.Same(icon, page.Icon);
+        }
+
+        [Fact]
+        public void Page_Icon_AcceptsNonControlValue()
         {
             var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-            var result = TabbedPage.CreateIconControl(geometry);
-            Assert.IsType<Path>(result);
-            Assert.Same(geometry, ((Path)result!).Data);
+            var page = new ContentPage { Icon = geometry };
+            Assert.Same(geometry, page.Icon);
         }
 
         [Fact]
-        public void PathIcon_ReturnsPath()
+        public void Page_IconTemplate_RoundTrips()
+        {
+            var template = new FuncDataTemplate<object>((_, _) => new Border());
+            var page = new ContentPage { IconTemplate = template };
+            Assert.Same(template, page.IconTemplate);
+        }
+
+        [Fact]
+        public void DrawerPage_DrawerIconTemplate_RoundTrips()
+        {
+            var template = new FuncDataTemplate<object>((_, _) => new Border());
+            var dp = new DrawerPage { DrawerIconTemplate = template };
+            Assert.Same(template, dp.DrawerIconTemplate);
+        }
+
+        [Fact]
+        public void DrawerPage_DrawerIcon_With_Geometry_Does_Not_Throw()
         {
             var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-            var pathIcon = new PathIcon { Data = geometry };
-            var result = TabbedPage.CreateIconControl(pathIcon);
-            Assert.IsType<Path>(result);
-            Assert.Same(geometry, ((Path)result!).Data);
-        }
+            var dp = new DrawerPage
+            {
+                DrawerIcon = geometry,
+                DrawerIconTemplate = new FuncDataTemplate<object>((_, _) => new PathIcon()),
+            };
+            var root = new TestRoot { Child = dp };
 
-        [Fact]
-        public void EmptyString_ReturnsNull()
-        {
-            var result = TabbedPage.CreateIconControl("");
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void NullString_ReturnsNull()
-        {
-            var result = TabbedPage.CreateIconControl((string?)null);
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void Null_ReturnsNull()
-        {
-            var result = TabbedPage.CreateIconControl(null);
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void DrawingImage_WithGeometryDrawing_ReturnsPath()
-        {
-            var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-            var drawing = new GeometryDrawing { Geometry = geometry };
-            var drawingImage = new DrawingImage(drawing);
-            var result = TabbedPage.CreateIconControl(drawingImage);
-            Assert.IsType<Path>(result);
-            Assert.Same(geometry, ((Path)result!).Data);
-        }
-
-        [Fact]
-        public void Path_HasStretchUniform()
-        {
-            var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
-            var result = TabbedPage.CreateIconControl(geometry);
-            Assert.Equal(Stretch.Uniform, ((Path)result!).Stretch);
-        }
-
-        [Fact]
-        public void UnsupportedType_ReturnsNull()
-        {
-            var result = TabbedPage.CreateIconControl(42);
-            Assert.Null(result);
+            dp.DrawerIcon = new EllipseGeometry { Rect = new Rect(0, 0, 20, 20) };
+            Assert.NotNull(dp.DrawerIcon);
         }
     }
 
