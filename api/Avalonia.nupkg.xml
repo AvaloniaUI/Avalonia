@@ -1869,6 +1869,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.Primitives.FlyoutBase.IsOpenProperty</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Controls.Primitives.Popup.PlacementModeProperty</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
@@ -1894,6 +1900,12 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Controls.Primitives.VisualLayerManager.ChromeOverlayLayerProperty</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.TabItem.IconProperty</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -2332,6 +2344,12 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.TabbedPage.FindNextEnabledTab(System.Int32,System.Int32)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.TabItem.get_Icon</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -3513,6 +3531,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.Primitives.FlyoutBase.IsOpenProperty</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Controls.Primitives.Popup.PlacementModeProperty</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
@@ -3538,6 +3562,12 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Controls.Primitives.VisualLayerManager.ChromeOverlayLayerProperty</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.TabItem.IconProperty</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -3976,6 +4006,12 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.TabbedPage.FindNextEnabledTab(System.Int32,System.Int32)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.TabItem.get_Icon</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -5604,17 +5640,5 @@
     <Target>P:Avalonia.Media.Fonts.FontCollectionBase.Item(System.Int32)</Target>
     <Left>baseline/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>F:Avalonia.Controls.Primitives.FlyoutBase.IsOpenProperty</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>F:Avalonia.Controls.Primitives.FlyoutBase.IsOpenProperty</Target>
-    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
 </Suppressions>
