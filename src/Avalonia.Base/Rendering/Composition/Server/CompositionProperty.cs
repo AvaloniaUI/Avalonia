@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using Avalonia.Rendering.Composition.Expressions;
 
 namespace Avalonia.Rendering.Composition.Server;
@@ -10,11 +7,6 @@ internal class CompositionProperty
 {
     private static int s_nextId = 1;
     private static readonly object _lock = new();
-
-    class ReadOnlyRegistry : Dictionary<Type, IReadOnlyDictionary<string, CompositionProperty>>
-    {
-
-    }
 
     public CompositionProperty(int id, string name, Type owner, Func<SimpleServerObject, ExpressionVariant>? getVariant)
     {
