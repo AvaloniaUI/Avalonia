@@ -149,12 +149,16 @@ namespace Avalonia.Rendering.Composition.Server
 
             try
             {
-                if (_renderTarget == null && !_compositor.IsReadyToCreateRenderTarget(_surfaces()))
+                if (_renderTarget == null)
                 {
-                    IsWaitingForReadyRenderTarget = IsEnabled;
-                    return;
+                    if (!_compositor.IsReadyToCreateRenderTarget(_surfaces()))
+                    {
+                        IsWaitingForReadyRenderTarget = IsEnabled;
+                        return;
+                    }
+
+                    _renderTarget = _compositor.CreateRenderTarget(_surfaces());
                 }
-                _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
             }
             catch (RenderTargetNotReadyException)
             {

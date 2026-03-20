@@ -15,7 +15,7 @@ namespace Avalonia.Input
         private readonly Lazy<IReadOnlyList<RawPointerPoint>?>? _previousPoints;
 
         [Unstable("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
-        public PointerEventArgs(RoutedEvent routedEvent,
+        public PointerEventArgs(RoutedEvent? routedEvent,
             object? source,
             IPointer pointer,
             Visual? rootVisual, Point rootVisualPosition,
@@ -33,7 +33,7 @@ namespace Avalonia.Input
             KeyModifiers = modifiers;
         }
         
-        internal PointerEventArgs(RoutedEvent routedEvent,
+        internal PointerEventArgs(RoutedEvent? routedEvent,
             object? source,
             IPointer pointer,
             Visual? rootVisual, Point rootVisualPosition,
