@@ -1,12 +1,11 @@
 using System;
-using System.Runtime.ConstrainedExecution;
 using System.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Threading
 {
     /// <summary>
-    /// SynchronizationContext to be used on main thread
+    /// A <see cref="SynchronizationContext"/> that uses a <see cref="Dispatcher"/> to post messages.
     /// </summary>
     public class AvaloniaSynchronizationContext : SynchronizationContext
     {
@@ -16,7 +15,7 @@ namespace Avalonia.Threading
         private readonly Dispatcher _dispatcher;
 
         // This constructor is here to enforce STA behavior for unit tests
-        internal AvaloniaSynchronizationContext(Dispatcher dispatcher, DispatcherPriority priority, bool isStaThread = false)
+        internal AvaloniaSynchronizationContext(Dispatcher dispatcher, DispatcherPriority priority, bool isStaThread)
         {
             _dispatcher = dispatcher;
             Priority = priority;
@@ -26,17 +25,17 @@ namespace Avalonia.Threading
         }
 
         public AvaloniaSynchronizationContext()
-            : this(Dispatcher.UIThread, DispatcherPriority.Default, Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
+            : this(Dispatcher.CurrentDispatcher, DispatcherPriority.Default)
         {
         }
 
         public AvaloniaSynchronizationContext(DispatcherPriority priority)
-            : this(Dispatcher.UIThread, priority, false)
+            : this(Dispatcher.CurrentDispatcher, priority)
         {
         }
 
         public AvaloniaSynchronizationContext(Dispatcher dispatcher, DispatcherPriority priority)
-            : this(dispatcher, priority, false)
+            : this(dispatcher, priority, Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
         {
         }
 
@@ -55,7 +54,7 @@ namespace Avalonia.Threading
                 return;
             }
 
-            SetSynchronizationContext(Dispatcher.UIThread.GetContextWithPriority(DispatcherPriority.Normal));
+            SetSynchronizationContext(Dispatcher.CurrentDispatcher.GetContextWithPriority(DispatcherPriority.Normal));
         }
 
         /// <inheritdoc/>
@@ -105,7 +104,7 @@ namespace Avalonia.Threading
             }
         }
 
-        public static RestoreContext Ensure(DispatcherPriority priority) => Ensure(Dispatcher.UIThread, priority);
+        public static RestoreContext Ensure(DispatcherPriority priority) => Ensure(Dispatcher.CurrentDispatcher, priority);
         public static RestoreContext Ensure(Dispatcher dispatcher, DispatcherPriority priority)
         {
             if (Current is AvaloniaSynchronizationContext avaloniaContext 
