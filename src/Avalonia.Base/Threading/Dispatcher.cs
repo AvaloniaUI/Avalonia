@@ -13,10 +13,6 @@ namespace Avalonia.Threading;
 /// <summary>
 /// Provides services for managing work items on a thread.
 /// </summary>
-/// <remarks>
-/// In Avalonia, there is usually only a single <see cref="Dispatcher"/> in the application -
-/// the one for the UI thread, retrieved via the <see cref="UIThread"/> property.
-/// </remarks>
 public partial class Dispatcher : IDispatcher
 {
     private IDispatcherImpl _impl;
