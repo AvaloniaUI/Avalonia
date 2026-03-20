@@ -13,6 +13,11 @@ namespace Avalonia.Controls.Primitives
 
         public Size AvailableSize { get; private set; }
 
+        /// <summary>
+        /// Gets the dedicated adorner layer for this overlay layer.
+        /// </summary>
+        internal AdornerLayer? AdornerLayer { get; set; }
+
         internal OverlayLayer()
         {
         }

@@ -8,8 +8,10 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Controls.Templates;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
@@ -53,10 +55,10 @@ public class DrawerPageTests
         [InlineData(600.0)]
         [InlineData(800.0)]
         [InlineData(1200.0)]
-        public void DrawerBreakpointWidth_RoundTrips(double width)
+        public void DrawerBreakpointLength_RoundTrips(double width)
         {
-            var dp = new DrawerPage { DrawerBreakpointWidth = width };
-            Assert.Equal(width, dp.DrawerBreakpointWidth);
+            var dp = new DrawerPage { DrawerBreakpointLength = width };
+            Assert.Equal(width, dp.DrawerBreakpointLength);
         }
 
         [Theory]
@@ -559,6 +561,57 @@ public class DrawerPageTests
 
             Assert.True(dp.IsOpen);
         }
+
+        [Fact]
+        public void IsOpen_RapidToggle_EventsFiredExactlyOncePerChange()
+        {
+            var dp = new DrawerPage();
+            int openedCount = 0;
+            int closedCount = 0;
+            dp.Opened += (_, _) => openedCount++;
+            dp.Closed += (_, _) => closedCount++;
+
+            for (int i = 0; i < 5; i++)
+            {
+                dp.IsOpen = true;
+                dp.IsOpen = false;
+            }
+
+            Assert.Equal(5, openedCount);
+            Assert.Equal(5, closedCount);
+            Assert.False(dp.IsOpen);
+        }
+
+        [Fact]
+        public void BackdropPress_WithCanceledClose_FiresClosingOnce_WhenTemplateWasAppliedBeforeAttach()
+        {
+            var dp = new DrawerPage
+            {
+                Template = BackdropOnlyTemplate(),
+                IsOpen = true,
+                BackdropBrush = Brushes.Black,
+                DisplayMode = SplitViewDisplayMode.Overlay
+            };
+
+            dp.ApplyTemplate();
+
+            int closingCount = 0;
+            dp.Closing += (_, e) =>
+            {
+                closingCount++;
+                e.Cancel = true;
+            };
+
+            var root = new TestRoot { Child = dp };
+            root.ExecuteInitialLayoutPass();
+
+            var backdrop = Assert.Single(dp.GetVisualDescendants().OfType<Border>(), x => x.Name == "PART_Backdrop");
+
+            RaisePointerPressed(backdrop);
+
+            Assert.Equal(1, closingCount);
+            Assert.True(dp.IsOpen);
+        }
     }
 
     public class LifecycleEventTests : ScopedTestBase
@@ -832,25 +885,95 @@ public class DrawerPageTests
         }
 
         [Fact]
-        public void DrawerBreakpointWidth_BeforeLayout_DoesNotOverrideLayoutBehavior()
+        public void DrawerBreakpointLength_BeforeLayout_DoesNotOverrideLayoutBehavior()
         {
             var dp = new DrawerPage
             {
                 DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
-                DrawerBreakpointWidth = 1200
+                DrawerBreakpointLength = 1200
             };
             Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
         }
 
         [Fact]
-        public void DrawerBreakpointWidth_Zero_DoesNotOverrideLayoutBehavior()
+        public void DrawerBreakpointLength_Zero_DoesNotOverrideLayoutBehavior()
         {
             // Breakpoint == 0 means the feature is disabled; DrawerLayoutBehavior drives DisplayMode.
             var dp = new DrawerPage
             {
                 DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
-                DrawerBreakpointWidth = 0
+                DrawerBreakpointLength = 0
             };
+            Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Left)]
+        [InlineData(DrawerPlacement.Right)]
+        public void DrawerBreakpointLength_Horizontal_BelowBreakpoint_ForcesOverlay(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointLength = 1200,
+                DrawerPlacement = placement
+            };
+            dp.Measure(new Size(800, 600));
+            dp.Arrange(new Rect(0, 0, 800, 600));
+
+            Assert.Equal(SplitViewDisplayMode.Overlay, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Left)]
+        [InlineData(DrawerPlacement.Right)]
+        public void DrawerBreakpointLength_Horizontal_AboveBreakpoint_UsesConfiguredLayout(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointLength = 600,
+                DrawerPlacement = placement
+            };
+            dp.Measure(new Size(800, 600));
+            dp.Arrange(new Rect(0, 0, 800, 600));
+
+            Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Top)]
+        [InlineData(DrawerPlacement.Bottom)]
+        public void DrawerBreakpointLength_Vertical_BelowBreakpoint_ForcesOverlay(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointLength = 800,
+                DrawerPlacement = placement
+            };
+            dp.Measure(new Size(800, 600));
+            dp.Arrange(new Rect(0, 0, 800, 600));
+
+            // Vertical: breakpoint compares against Bounds.Height (600 < 800 → Overlay)
+            Assert.Equal(SplitViewDisplayMode.Overlay, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Top)]
+        [InlineData(DrawerPlacement.Bottom)]
+        public void DrawerBreakpointLength_Vertical_AboveBreakpoint_UsesConfiguredLayout(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointLength = 400,
+                DrawerPlacement = placement
+            };
+            dp.Measure(new Size(800, 600));
+            dp.Arrange(new Rect(0, 0, 800, 600));
+
+            // Vertical: breakpoint compares against Bounds.Height (600 > 400 → Inline)
             Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
         }
     }
@@ -1034,20 +1157,29 @@ public class DrawerPageTests
         }
     }
 
-    public class DrawerIconTests : ScopedTestBase
+    public class IconTests : ScopedTestBase
     {
         [Fact]
-        public void DrawerIcon_PathIcon_DoesNotCrashWhenTemplateApplied()
+        public void DrawerIconTemplate_RoundTrips()
         {
-            var icon = new PathIcon();
-            var dp = new DrawerPage { DrawerIcon = icon };
+            var template = new FuncDataTemplate<object>((_, _) => new PathIcon());
+            var dp = new DrawerPage { DrawerIconTemplate = template };
+            Assert.Same(template, dp.DrawerIconTemplate);
+        }
+
+        [Fact]
+        public void DrawerIcon_With_Geometry_Does_Not_Throw()
+        {
+            var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
+            var dp = new DrawerPage
+            {
+                DrawerIcon = geometry,
+                DrawerIconTemplate = new FuncDataTemplate<object>((_, _) => new PathIcon()),
+            };
             var root = new TestRoot { Child = dp };
 
-            // Changing DrawerIcon after template is applied must not throw.
-            var icon2 = new PathIcon();
-            dp.DrawerIcon = icon2;
-
-            Assert.Same(icon2, dp.DrawerIcon);
+            dp.DrawerIcon = new EllipseGeometry { Rect = new Rect(0, 0, 20, 20) };
+            Assert.NotNull(dp.DrawerIcon);
         }
     }
 
@@ -1127,6 +1259,36 @@ public class DrawerPageTests
         }
     }
 
+    private static void RaisePointerPressed(Interactive target, Point? position = null)
+    {
+        var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Touch, true);
+        var args = new PointerPressedEventArgs(
+            target,
+            pointer,
+            (Visual)target,
+            position ?? default,
+            timestamp: 1,
+            new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
+            KeyModifiers.None);
+
+        target.RaiseEvent(args);
+    }
+
+    private static IControlTemplate BackdropOnlyTemplate()
+    {
+        return new FuncControlTemplate<DrawerPage>((_, scope) =>
+            new Canvas
+            {
+                Children =
+                {
+                    new Border
+                    {
+                        Name = "PART_Backdrop"
+                    }.RegisterInNameScope(scope)
+                }
+            });
+    }
+
     public class DetachmentTests : ScopedTestBase
     {
         [Fact]
@@ -1145,6 +1307,24 @@ public class DrawerPageTests
             var page = new ContentPage();
             await nav.PushAsync(page);
             Assert.Null(NavigationPage.GetBackButtonContent(page));
+        }
+
+        [Fact]
+        public async Task Detach_And_Reattach_RestoresDrawerPageReference()
+        {
+            var nav = new NavigationPage();
+            var dp = new DrawerPage { Content = nav };
+            var root = new TestRoot { Child = dp };
+            var page = new ContentPage();
+            await nav.PushAsync(page);
+
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
+
+            root.Child = null;
+            Assert.False(nav.IsBackButtonEffectivelyVisible ?? false);
+
+            root.Child = dp;
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
         }
     }
 }
