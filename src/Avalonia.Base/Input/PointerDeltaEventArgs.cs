@@ -10,7 +10,7 @@ namespace Avalonia.Input
         public Vector Delta { get; }
 
         [Unstable("This constructor might be removed in 12.0.")]
-        public PointerDeltaEventArgs(RoutedEvent routedEvent, object? source, 
+        public PointerDeltaEventArgs(RoutedEvent? routedEvent, object? source,
             IPointer pointer, Visual rootVisual, Point rootVisualPosition, ulong timestamp,
             PointerPointProperties properties, KeyModifiers modifiers, Vector delta) 
             : base(routedEvent, source, pointer, rootVisual, rootVisualPosition,
