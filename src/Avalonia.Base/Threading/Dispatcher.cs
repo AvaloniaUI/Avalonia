@@ -48,6 +48,8 @@ public partial class Dispatcher : IDispatcher
                 s_currentThreadDispatcher = new() { Reference = new WeakReference<Dispatcher>(this) });
         }
 
+        IsSta = _thread.GetApartmentState() == ApartmentState.STA;
+
         if (impl is null)
         {
             var st = Stopwatch.StartNew();
@@ -65,6 +67,8 @@ public partial class Dispatcher : IDispatcher
     }
 
     public bool SupportsRunLoops => _controlledImpl != null;
+
+    internal bool IsSta { get; }
 
     /// <summary>
     /// Checks that the current thread is the UI thread.

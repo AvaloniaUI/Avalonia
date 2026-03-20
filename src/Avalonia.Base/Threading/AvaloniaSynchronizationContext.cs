@@ -35,7 +35,7 @@ namespace Avalonia.Threading
         }
 
         public AvaloniaSynchronizationContext(Dispatcher dispatcher, DispatcherPriority priority)
-            : this(dispatcher, priority, Thread.CurrentThread.GetApartmentState() == ApartmentState.STA)
+            : this(dispatcher, priority, dispatcher.IsSta)
         {
         }
 
