@@ -9,6 +9,7 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageStackPage : UserControl
     {
+        private bool _initialized;
         private int _pageCount;
 
         public NavigationPageStackPage()
@@ -19,6 +20,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
             DemoNav.Pushed       += (s, ev) => RefreshStack();
             DemoNav.Popped       += (s, ev) => RefreshStack();
             DemoNav.PoppedToRoot += (s, ev) => RefreshStack();

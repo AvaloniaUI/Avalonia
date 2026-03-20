@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Input.TextInput;
 using Avalonia.Media;
 using Avalonia.Reactive;
@@ -71,7 +72,32 @@ namespace Avalonia.Controls.Primitives
 
         public static AdornerLayer? GetAdornerLayer(Visual visual)
         {
-            return visual.FindAncestorOfType<VisualLayerManager>()?.AdornerLayer;
+            // Check if the visual is inside an OverlayLayer with a dedicated AdornerLayer
+            foreach (var ancestor in visual.GetVisualAncestors())
+            {
+                if (GetDirectAdornerLayer(ancestor) is { } adornerLayer)
+                    return adornerLayer;
+            }
+
+            if (TopLevel.GetTopLevel(visual) is { } topLevel)
+            {
+                foreach (var descendant in topLevel.GetVisualDescendants())
+                {
+                    if (GetDirectAdornerLayer(descendant) is { } adornerLayer)
+                        return adornerLayer;
+                }
+            }
+
+            return null;
+
+            static AdornerLayer? GetDirectAdornerLayer(Visual visual)
+            {
+                if (visual is OverlayLayer { AdornerLayer: { } adornerLayer })
+                    return adornerLayer;
+                if (visual is VisualLayerManager vlm)
+                    return vlm.AdornerLayer;
+                return null;
+            }
         }
 
         public static bool GetIsClipEnabled(Visual adorner)

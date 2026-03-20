@@ -31,6 +31,13 @@ namespace ControlCatalog.Pages
             ("Appearance", "Custom Templates",
                 "Override pip item templates to create squares, pills, numbers, or any custom shape.",
                 () => new PipsPagerCustomTemplatesPage()),
+
+            ("Showcases", "Care Companion",
+                "A health care onboarding flow using PipsPager as the page indicator for a CarouselPage.",
+                () => new CareCompanionAppPage()),
+            ("Showcases", "Sanctuary",
+                "A travel discovery app using PipsPager as the page indicator for a CarouselPage.",
+                () => new SanctuaryShowcasePage()),
         };
 
         public PipsPagerPage()
