@@ -138,6 +138,7 @@ public class WindowDrawnDecorations : StyledElement
     private IDisposable? _windowSubscriptions;
     private Window? _hostWindow;
     private double _titleBarHeightOverride = -1;
+    private WindowState _stateBeforeFullScreen = WindowState.Normal;
 
     /// <summary>
     /// Raised when any property affecting the effective geometry changes
@@ -523,10 +524,18 @@ public class WindowDrawnDecorations : StyledElement
     private void OnFullScreenButtonClick(object? sender, Interactivity.RoutedEventArgs e)
     {
         if (_hostWindow != null)
-            _hostWindow.WindowState = _hostWindow.WindowState == WindowState.FullScreen
-                ? WindowState.Normal
-                : WindowState.FullScreen;
-        e.Handled = true;
+        {
+            if (_hostWindow.WindowState != WindowState.FullScreen)
+            {
+                _stateBeforeFullScreen = _hostWindow.WindowState;
+                _hostWindow.WindowState = WindowState.FullScreen;
+            }
+            else
+            {
+                _hostWindow.WindowState = _stateBeforeFullScreen;
+            }
+            e.Handled = true;
+        }
     }
 
     private void UpdateMaximizeButtonState()
