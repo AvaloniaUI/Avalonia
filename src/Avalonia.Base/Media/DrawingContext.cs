@@ -432,15 +432,8 @@ namespace Avalonia.Media
             _states.Push(new RestoreState(this, RestoreState.PushedStateType.TextOptions));
             return new PushedState(this);
         }
-        protected abstract void PushTextOptionsCore(TextOptions textOptions);
 
-        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
-        public PushedState PushPreTransform(Matrix matrix) => PushTransform(matrix);
-        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
-        public PushedState PushPostTransform(Matrix matrix) => PushTransform(matrix);
-        [Obsolete("Use PushTransform"), EditorBrowsable(EditorBrowsableState.Never)]
-        public PushedState PushTransformContainer() => PushTransform(Matrix.Identity);
-        
+        protected abstract void PushTextOptionsCore(TextOptions textOptions);
         
         protected abstract void PushTransformCore(Matrix matrix);
 

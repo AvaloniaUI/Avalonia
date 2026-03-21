@@ -77,12 +77,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the <see cref="TreeItemContainerGenerator"/> for the tree view.
-        /// </summary>
-        public new TreeItemContainerGenerator ItemContainerGenerator =>
-            (TreeItemContainerGenerator)base.ItemContainerGenerator;
-
-        /// <summary>
         /// Gets or sets a value indicating whether to automatically scroll to newly selected items.
         /// </summary>
         /// <remarks>
@@ -174,7 +168,7 @@ namespace Avalonia.Controls
             item.IsExpanded = true;
 
             if (item.Presenter?.Panel is null)
-                (this.GetVisualRoot() as ILayoutRoot)?.LayoutManager.ExecuteLayoutPass();
+                this.GetLayoutManager()?.ExecuteLayoutPass();
 
             if (item.Presenter?.Panel is { } panel)
             {
@@ -556,7 +550,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             if (e.NavigationMethod == NavigationMethod.Directional)
             {
@@ -771,12 +765,6 @@ namespace Avalonia.Controls
                     }
                 }
             }
-        }
-
-        [Obsolete, EditorBrowsable(EditorBrowsableState.Never)]
-        private protected override ItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new TreeItemContainerGenerator(this);
         }
 
         /// <summary>

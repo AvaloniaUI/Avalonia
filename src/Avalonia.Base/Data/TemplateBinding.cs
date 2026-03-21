@@ -48,6 +48,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the name of the source property on the templated parent.
         /// </summary>
+        [ConstructorArgument("property")]
         [InheritDataTypeFrom(InheritDataTypeFromScopeKind.ControlTemplate)]
         public AvaloniaProperty? Property { get; set; }
 

@@ -29,13 +29,13 @@ namespace Avalonia.Media.Fonts
             FontStretch stretch, [NotNullWhen(true)] out GlyphTypeface? glyphTypeface)
         {
             var typeface = new Typeface(familyName, style, weight, stretch).Normalize(out familyName);
+            var key = typeface.ToFontCollectionKey();
 
-            if (base.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface))
+            // Find an exact match first
+            if (TryGetGlyphTypeface(familyName, key, allowNearestMatch: false, out glyphTypeface))
             {
                 return true;
             }
-
-            var key = typeface.ToFontCollectionKey();
 
             //Check cache first to avoid unnecessary calls to the font manager
             if (_glyphTypefaceCache.TryGetValue(familyName, out var glyphTypefaces) && glyphTypefaces.TryGetValue(key, out glyphTypeface))
@@ -52,7 +52,18 @@ namespace Avalonia.Media.Fonts
                 return false;
             }
 
-            glyphTypeface = new GlyphTypeface(platformTypeface);
+            // The font manager didn't return a perfect match either. Find the nearest match ourselves.
+            if (key != platformTypeface.ToFontCollectionKey() &&
+                TryGetGlyphTypeface(familyName, key, allowNearestMatch: true, out glyphTypeface))
+            {
+                return true;
+            }
+
+            glyphTypeface = GlyphTypeface.TryCreate(platformTypeface);
+            if (glyphTypeface is null)
+            {
+                return false;
+            }
 
             //Add to cache with platform typeface family name first
             TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface);
@@ -73,7 +84,7 @@ namespace Avalonia.Media.Fonts
             }
 
             //Requested glyph typeface should be in cache now
-            return base.TryGetGlyphTypeface(familyName, style, weight, stretch, out glyphTypeface);
+            return TryGetGlyphTypeface(familyName, key, allowNearestMatch: false, out glyphTypeface);
         }
 
         public override bool TryGetFamilyTypefaces(string familyName, [NotNullWhen(true)] out IReadOnlyList<Typeface>? familyTypefaces)
@@ -112,7 +123,10 @@ namespace Avalonia.Media.Fonts
                 }
 
                 // Not in cache yet: create glyph typeface and try to add it.
-                var glyphTypeface = new GlyphTypeface(platformTypeface);
+                if (GlyphTypeface.TryCreate(platformTypeface) is not { } glyphTypeface)
+                {
+                    return false;
+                }
 
                 // Try adding with the platform typeface family name first.
                 TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface);

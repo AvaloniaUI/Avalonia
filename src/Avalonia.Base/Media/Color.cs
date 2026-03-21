@@ -472,13 +472,6 @@ namespace Avalonia.Media
             return ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
         }
 
-        /// <inheritdoc cref="Color.ToUInt32"/>
-        [Obsolete("Use Color.ToUInt32() instead."), EditorBrowsable(EditorBrowsableState.Never)]
-        public uint ToUint32()
-        {
-            return ToUInt32();
-        }
-
         /// <summary>
         /// Returns the HSL color model equivalent of this RGB color.
         /// </summary>

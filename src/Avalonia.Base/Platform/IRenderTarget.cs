@@ -1,6 +1,5 @@
 using System;
 using Avalonia.Metadata;
-using Avalonia.Rendering;
 
 namespace Avalonia.Platform
 {
@@ -14,50 +13,30 @@ namespace Avalonia.Platform
     public interface IRenderTarget : IDisposable
     {
         /// <summary>
-        /// Creates an <see cref="IDrawingContextImpl"/> for a rendering session.
-        /// </summary>
-        /// <param name="useScaledDrawing">Apply DPI reported by the render target as a hidden transform matrix</param>
-        IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing);
-        
-        /// <summary>
         /// Indicates if the render target is no longer usable and needs to be recreated
         /// </summary>
-        public bool IsCorrupted { get; }
-    }
+        bool IsCorrupted { get; }
 
-    [PrivateApi, Obsolete("Use IRenderTarget2", true)]
-    // TODO12: Remove
-    public interface IRenderTargetWithProperties : IRenderTarget
-    {
-        RenderTargetProperties Properties { get; }
-    }
-    
-    [PrivateApi]
-    // TODO12: Merge into IRenderTarget
-    public interface IRenderTarget2 : IRenderTarget
-    {
+        /// <summary>
+        /// Gets the properties of the render target.
+        /// </summary>
         RenderTargetProperties Properties { get; }
 
         /// <summary>
         /// Creates an <see cref="IDrawingContextImpl"/> for a rendering session.
         /// </summary>
-        /// <param name="expectedPixelSize">The pixel size of the surface</param>
+        /// <param name="sceneInfo">Information about the scene that's about to be rendered into this render target.
+        /// This is expected to be reported to the underlying platform and affect the framebuffer size, however
+        /// the implementation may choose to ignore that information.
+        /// </param>
         /// <param name="properties">Returns various properties about the returned drawing context</param>
-        IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
-            out RenderTargetDrawingContextProperties properties);
-    }
-    
-    internal static class RenderTargetExtensions
-    {
-        public static IDrawingContextImpl CreateDrawingContextWithProperties(
-            this IRenderTarget renderTarget,
-            PixelSize expectedPixelSize,
-            out RenderTargetDrawingContextProperties properties)
-        {
-            if (renderTarget is IRenderTarget2 target)
-                return target.CreateDrawingContext(expectedPixelSize, out properties);
-            properties = default;
-            return renderTarget.CreateDrawingContext(false);
-        }
+        IDrawingContextImpl CreateDrawingContext(RenderTargetSceneInfo sceneInfo, out RenderTargetDrawingContextProperties properties);
+
+        /// <summary>
+        /// Indicates if the render target is currently ready to be rendered to
+        /// </summary>
+        bool IsReady => true;
+        
+        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling);
     }
 }

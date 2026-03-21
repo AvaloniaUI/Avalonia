@@ -35,7 +35,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Prepare(target);
 
-                target.Presenter!.Panel!.Children[0].RaiseEvent(new GotFocusEventArgs
+                target.Presenter!.Panel!.Children[0].RaiseEvent(new FocusChangedEventArgs(InputElement.GotFocusEvent)
                 {
                     NavigationMethod = NavigationMethod.Tab,
                 });
@@ -57,7 +57,7 @@ namespace Avalonia.Controls.UnitTests
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration());
                 Prepare(target);
 
-                target.Presenter!.Panel!.Children[0].RaiseEvent(new GotFocusEventArgs
+                target.Presenter!.Panel!.Children[0].RaiseEvent(new FocusChangedEventArgs(InputElement.GotFocusEvent)
                 {
                     NavigationMethod = NavigationMethod.Directional,
                     KeyModifiers = KeyModifiers.Control
@@ -149,7 +149,7 @@ namespace Avalonia.Controls.UnitTests
                 Prepare(target);
 
                 var contextRaised = false;
-                target.AddHandler(Control.ContextRequestedEvent, (sender, args) =>
+                target.AddHandler(InputElement.ContextRequestedEvent, (sender, args) =>
                 {
                     contextRaised = true;
                     args.Handled = true;

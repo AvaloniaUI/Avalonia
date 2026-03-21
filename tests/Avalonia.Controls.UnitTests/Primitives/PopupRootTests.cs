@@ -100,7 +100,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
         
         [Fact]
-        public void PopupRoot_Should_Have_Null_VisualParent()
+        public void PopupRoot_Should_Have_TopLevelHost_VisualParent()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -108,7 +108,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 target.Open();
 
-                Assert.Null(((Visual)target.Host!).GetVisualParent());
+                Assert.IsType<TopLevelHost>(((Visual)target.Host!).GetVisualParent());
             }
         }
         

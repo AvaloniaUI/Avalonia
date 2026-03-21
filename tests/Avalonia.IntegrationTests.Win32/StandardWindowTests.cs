@@ -27,7 +27,7 @@ public abstract class StandardWindowTests : IDisposable
         }
     }
 
-    protected abstract SystemDecorations Decorations { get; }
+    protected abstract WindowDecorations Decorations { get; }
 
     protected abstract bool HasCaption { get; }
 
@@ -42,7 +42,7 @@ public abstract class StandardWindowTests : IDisposable
         {
             CanResize = canResize,
             WindowState = state,
-            SystemDecorations = Decorations,
+            WindowDecorations = Decorations,
             ExtendClientAreaToDecorationsHint = false,
             Width = ClientWidth,
             Height = ClientHeight,
@@ -108,8 +108,8 @@ public abstract class StandardWindowTests : IDisposable
 
     public sealed class DecorationsFull : StandardWindowTests
     {
-        protected override SystemDecorations Decorations
-            => SystemDecorations.Full;
+        protected override WindowDecorations Decorations
+            => WindowDecorations.Full;
 
         protected override bool HasCaption
             => true;
@@ -117,8 +117,8 @@ public abstract class StandardWindowTests : IDisposable
 
     public sealed class DecorationsBorderOnly : StandardWindowTests
     {
-        protected override SystemDecorations Decorations
-            => SystemDecorations.BorderOnly;
+        protected override WindowDecorations Decorations
+            => WindowDecorations.BorderOnly;
 
         protected override bool HasCaption
             => false;
@@ -126,8 +126,8 @@ public abstract class StandardWindowTests : IDisposable
 
     public sealed class DecorationsNone : StandardWindowTests
     {
-        protected override SystemDecorations Decorations
-            => SystemDecorations.None;
+        protected override WindowDecorations Decorations
+            => WindowDecorations.None;
 
         protected override bool HasCaption
             => false;

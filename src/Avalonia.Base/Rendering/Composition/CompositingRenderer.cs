@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
 using Avalonia.Diagnostics;
+using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Threading;
@@ -20,7 +22,7 @@ namespace Avalonia.Rendering.Composition;
 /// </summary>
 internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 {
-    private readonly IRenderRoot _root;
+    private readonly IPresentationSource _root;
     private readonly Compositor _compositor;
     private readonly RenderDataDrawingContext _recorder;
     private readonly HashSet<Visual> _dirty = new();
@@ -48,13 +50,12 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     /// <param name="surfaces">
     /// A function returning the list of native platform's surfaces that can be consumed by rendering subsystems.
     /// </param>
-    public CompositingRenderer(IRenderRoot root, Compositor compositor, Func<IEnumerable<object>> surfaces)
+    public CompositingRenderer(IPresentationSource root, Compositor compositor, Func<IEnumerable<IPlatformRenderSurface>> surfaces)
     {
         _root = root;
         _compositor = compositor;
         _recorder = new(compositor);
         CompositionTarget = compositor.CreateCompositionTarget(surfaces);
-        CompositionTarget.Root = ((Visual)root).AttachToCompositor(compositor);
         _update = Update;
         Diagnostics = new RendererDiagnostics();
         Diagnostics.PropertyChanged += OnDiagnosticsPropertyChanged;
@@ -180,20 +181,21 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
         CompositionTarget.PixelSize = PixelSize.FromSizeRounded(_root.ClientSize, _root.RenderScaling);
         CompositionTarget.Scaling = _root.RenderScaling;
         
-        var commit = _compositor.RequestCommitAsync();
+        var commit = _compositor.RequestCompositionBatchCommitAsync();
         if (!_queuedSceneInvalidation)
         {
             _queuedSceneInvalidation = true;
-            commit.ContinueWith(_ => Dispatcher.UIThread.Post(() =>
+            // Updated hit-test information is available after full render
+            commit.Rendered.ContinueWith(_ => Dispatcher.UIThread.Post(() =>
             {
                 _queuedSceneInvalidation = false;
-                SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
+                SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(new Rect(_root.ClientSize)));
             }, DispatcherPriority.Input), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
         }
     }
 
     public void TriggerSceneInvalidatedForUnitTests(Rect rect) =>
-        SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, rect));
+        SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(rect));
     
     private void Update()
     {

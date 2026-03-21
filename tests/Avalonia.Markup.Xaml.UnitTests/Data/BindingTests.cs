@@ -71,14 +71,14 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Data;assembly=Avalonia.Markup.Xaml.UnitTests'>
-    <TextBox Name='textBox' Text='Foo' Watermark='Bar'>
+    <TextBox Name='textBox' Text='Foo' PlaceholderText='Bar'>
         <TextBox.Template>
             <ControlTemplate>
                 <TextPresenter Name='PART_TextPresenter'>
                     <TextPresenter.Text>
                         <MultiBinding Converter='{x:Static local:ConcatConverter.Instance}'>
                             <Binding RelativeSource='{RelativeSource TemplatedParent}' Path='Text'/>
-                            <Binding RelativeSource='{RelativeSource TemplatedParent}' Path='Watermark'/>
+                            <Binding RelativeSource='{RelativeSource TemplatedParent}' Path='PlaceholderText'/>
                         </MultiBinding>
                     </TextPresenter.Text>
                 </TextPresenter>

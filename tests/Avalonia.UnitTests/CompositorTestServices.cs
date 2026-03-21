@@ -4,13 +4,13 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -42,9 +42,10 @@ public class CompositorTestServices : IDisposable
         _app = UnitTestApplication.Start(services);
         try
         {
-            AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(Timer);
+            var renderLoop = RenderLoop.FromTimer(Timer);
+            AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(renderLoop);
 
-            Compositor = new Compositor(new RenderLoop(Timer), null,
+            Compositor = new Compositor(renderLoop, null,
                 true, new DispatcherCompositorScheduler(), true, Dispatcher.UIThread);
             var impl = new TopLevelImpl(Compositor, size ?? new Size(1000, 1000));
             TopLevel = new EmbeddableControlRoot(impl)
@@ -88,10 +89,11 @@ public class CompositorTestServices : IDisposable
         Events.Rects.Clear();
     }
 
-    public void AssertRenderedVisuals(int renderVisuals)
+    public void AssertRenderedVisuals(int visitedVisuals, int renderVisuals)
     {
         RunJobs();
-        Assert.Equal(Events.RenderedVisuals, renderVisuals);
+        Assert.Equal(visitedVisuals, Events.VisitedVisuals);
+        Assert.Equal(renderVisuals, Events.RenderedVisuals);
         Events.Rects.Clear();
     }
 
@@ -116,28 +118,26 @@ public class CompositorTestServices : IDisposable
     {
         public List<Rect> Rects = new();
 
-        public int RenderedVisuals { get; private set; }
+        public int RenderedVisuals { get; set; }
+        public int VisitedVisuals { get; set; }
 
-        public void IncrementRenderedVisuals()
-        {
-            RenderedVisuals++;
-        }
 
-        public void RectInvalidated(Rect rc)
+        public void RectInvalidated(LtrbRect rc)
         {
-            Rects.Add(rc);
+            Rects.Add(rc.ToRect());
         }
 
         public void Reset()
         {
             Rects.Clear();
             RenderedVisuals = 0;
+            VisitedVisuals = 0;
         }
     }
 
     public class ManualRenderTimer : IRenderTimer
     {
-        public event Action<TimeSpan>? Tick;
+        public Action<TimeSpan>? Tick { get; set; }
         public bool RunsInBackground => false;
         public void TriggerTick() => Tick?.Invoke(TimeSpan.Zero);
     }
@@ -161,7 +161,7 @@ public class CompositorTestServices : IDisposable
         public IPlatformHandle? Handle => null;
         public Size ClientSize { get; }
         public double RenderScaling => 1;
-        public IEnumerable<object> Surfaces { get; } = new[] { new DummyFramebufferSurface() };
+        public IPlatformRenderSurface[] Surfaces { get; } = [new DummyFramebufferSurface()];
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
@@ -174,7 +174,7 @@ public class CompositorTestServices : IDisposable
             {
                 var ptr = Marshal.AllocHGlobal(128);
                 return new LockedFramebuffer(ptr, new PixelSize(1, 1), 4, new Vector(96, 96),
-                    PixelFormat.Rgba8888, () => Marshal.FreeHGlobal(ptr));
+                    PixelFormat.Rgba8888, AlphaFormat.Premul, () => Marshal.FreeHGlobal(ptr));
             }
             
             public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);

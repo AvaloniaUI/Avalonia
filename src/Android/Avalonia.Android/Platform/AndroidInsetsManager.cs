@@ -318,8 +318,6 @@ namespace Avalonia.Android.Platform
             }
         }
 
-        public bool DisplayEdgeToEdge { get => DisplaysEdgeToEdge; set => DisplayEdgeToEdgePreference = value; }
-
         public bool DisplaysEdgeToEdge => _displaysEdgeToEdge;
 
         internal void ApplyStatusBarState()

@@ -29,7 +29,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TextBox
                 {
                     DataContext = new ExceptionTest(),
-                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10)) { Mode = BindingMode.TwoWay },
                     Template = CreateTemplate(),
                 };
 
@@ -51,7 +51,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TextBox
                 {
                     DataContext = new ExceptionTest(),
-                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10)) { Mode = BindingMode.TwoWay },
                     Template = CreateTemplate(),
                 };
 
@@ -77,7 +77,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TextBox
                 {
                     DataContext = new ExceptionTest(),
-                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10)) { Mode = BindingMode.TwoWay },
                     Template = CreateTemplate()  
                 };
                 DataValidationErrors.SetErrorConverter(target, err => "Error: " + err);
@@ -101,7 +101,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new TextBox
                 {
                     DataContext = new ExceptionTest(),
-                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10)) { Mode = BindingMode.TwoWay },
                     Template = CreateTemplate(),
                 };
 

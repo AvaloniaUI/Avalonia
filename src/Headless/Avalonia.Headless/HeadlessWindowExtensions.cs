@@ -20,9 +20,9 @@ public static class HeadlessWindowExtensions
     /// <returns>Bitmap with last rendered frame. Null, if nothing was rendered.</returns>
     public static WriteableBitmap? CaptureRenderedFrame(this TopLevel topLevel)
     {
-        Dispatcher.UIThread.RunJobs();
-        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-        return topLevel.GetLastRenderedFrame();
+        WriteableBitmap? bitmap = null;
+        topLevel.RunJobsOnImpl(w => bitmap = w.GetLastRenderedFrame());
+        return bitmap;
     }
 
     /// <summary>
@@ -42,13 +42,6 @@ public static class HeadlessWindowExtensions
     }
 
     /// <summary>
-    /// Simulates a keyboard press on the headless window/toplevel.
-    /// </summary>
-    [Obsolete("Use the overload that takes a physical key and key symbol instead, or KeyPressQwerty alternatively.")]
-    public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
-        KeyPress(topLevel, key, modifiers, PhysicalKey.None, null);
-
-    /// <summary>
     /// Simulates keyboard press on the headless window/toplevel.
     /// </summary>
     public static void KeyPress(this TopLevel topLevel, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey,
@@ -60,13 +53,6 @@ public static class HeadlessWindowExtensions
     /// </summary>
     public static void KeyPressQwerty(this TopLevel topLevel, PhysicalKey physicalKey, RawInputModifiers modifiers) =>
         RunJobsOnImpl(topLevel, w => w.KeyPress(physicalKey.ToQwertyKey(), modifiers, physicalKey, physicalKey.ToQwertyKeySymbol()));
-
-    /// <summary>
-    /// Simulates a keyboard release on the headless window/toplevel.
-    /// </summary>
-    [Obsolete("Use the overload that takes a physical key and key symbol instead, or KeyReleaseQwerty alternatively.")]
-    public static void KeyRelease(this TopLevel topLevel, Key key, RawInputModifiers modifiers) =>
-        KeyRelease(topLevel, key, modifiers, PhysicalKey.None, null);
 
     /// <summary>
     /// Simulates keyboard release on the headless window/toplevel.
@@ -124,17 +110,18 @@ public static class HeadlessWindowExtensions
     /// <summary>
     /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
     /// </summary>
-    [Obsolete($"Use the overload accepting a {nameof(IDataTransfer)} instance instead.")]
-    public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataObject data,
+    public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataTransfer data,
         DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
 
     /// <summary>
-    /// Simulates a drag and drop target event on the headless window/toplevel. This event simulates a user moving files from another app to the current app.
+    /// Changes the render scaling (DPI) of the headless window/toplevel.
+    /// This simulates a DPI change, triggering scaling changed notifications and a layout pass.
     /// </summary>
-    public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataTransfer data,
-        DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
-        RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
+    /// <param name="topLevel">The target headless top level.</param>
+    /// <param name="scaling">The new render scaling factor. Must be greater than zero.</param>
+    public static void SetRenderScaling(this TopLevel topLevel, double scaling) =>
+        RunJobsOnImpl(topLevel, w => w.SetRenderScaling(scaling));
 
     private static void RunJobsOnImpl(this TopLevel topLevel, Action<IHeadlessWindow> action)
     {

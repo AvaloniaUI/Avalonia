@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
@@ -25,13 +26,12 @@ namespace Avalonia.Headless
         private WriteableBitmap? _lastRenderedFrame;
         private readonly object _sync = new object();
         private readonly PixelFormat _frameBufferFormat;
-        private int _zOrder;
         public bool IsPopup { get; }
 
         public HeadlessWindowImpl(bool isPopup, PixelFormat frameBufferFormat)
         {
             IsPopup = isPopup;
-            Surfaces = new object[] { this };
+            Surfaces = [this];
             _keyboard = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
             _screen = new HeadlessScreensStub();
             _mousePointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
@@ -49,15 +49,17 @@ namespace Avalonia.Headless
 
         public Size ClientSize { get; set; }
         public Size? FrameSize => null;
-        public double RenderScaling { get; } = 1;
+        public double RenderScaling { get; private set; } = 1;
         public double DesktopScaling => RenderScaling;
-        public IEnumerable<object> Surfaces { get; }
+        public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
         public Action<double>? ScalingChanged { get; set; }
 
         public Compositor Compositor => AvaloniaHeadlessPlatform.Compositor!;
+
+        public int ZOrder { get; private set; }
 
         public void SetInputRoot(IInputRoot inputRoot)
         {
@@ -82,7 +84,7 @@ namespace Avalonia.Headless
         {
             if (activate)
             {
-                _zOrder = _nextGlobalZOrder++;
+                ZOrder = _nextGlobalZOrder++;
                 Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);
             }
         }
@@ -96,7 +98,7 @@ namespace Avalonia.Headless
         public Action<PixelPoint>? PositionChanged { get; set; }
         public void Activate()
         {
-            _zOrder = _nextGlobalZOrder++;
+            ZOrder = _nextGlobalZOrder++;
             Dispatcher.UIThread.Post(() => Activated?.Invoke(), DispatcherPriority.Input);
         }
 
@@ -200,6 +202,7 @@ namespace Avalonia.Headless
             public int RowBytes => _fb.RowBytes;
             public Vector Dpi => _fb.Dpi;
             public PixelFormat Format => _fb.Format;
+            public AlphaFormat AlphaFormat => _fb.AlphaFormat;
         }
 
         public ILockedFramebuffer Lock()
@@ -251,6 +254,7 @@ namespace Avalonia.Headless
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
         public bool NeedsManagedDecorations => false;
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations { get; }
 
         public Thickness ExtendedMargins => new Thickness();
 
@@ -348,17 +352,24 @@ namespace Avalonia.Headless
                 point, delta, modifiers));
         }
 
-        [Obsolete($"Use the overload accepting a {nameof(IDataTransfer)} instance instead.")]
-        void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
-        {
-            var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
-            Input?.Invoke(new RawDragEvent(device, type, InputRoot!, point, new DataObjectToDataTransferWrapper(data), effects, modifiers));
-        }
-
         void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataTransfer data, DragDropEffects effects, RawInputModifiers modifiers)
         {
             var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
             Input?.Invoke(new RawDragEvent(device, type, InputRoot!, point, data, effects, modifiers));
+        }
+
+        void IHeadlessWindow.SetRenderScaling(double scaling)
+        {
+            if (scaling <= 0)
+                throw new ArgumentOutOfRangeException(nameof(scaling), "Scaling must be greater than zero.");
+
+            if (RenderScaling == scaling)
+                return;
+
+            var oldScaledSize = ClientSize;
+            RenderScaling = scaling;
+            ScalingChanged?.Invoke(scaling);
+            Resize(oldScaledSize, WindowResizeReason.DpiChange);
         }
 
         void IWindowImpl.Move(PixelPoint point)
@@ -401,7 +412,7 @@ namespace Avalonia.Headless
             
         }
 
-        public void SetSystemDecorations(SystemDecorations enabled)
+        public void SetWindowDecorations(WindowDecorations enabled)
         {
             
         }
@@ -421,11 +432,6 @@ namespace Avalonia.Headless
             
         }
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {
-            
-        }
-
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
             
@@ -434,15 +440,6 @@ namespace Avalonia.Headless
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             
-        }
-
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder)
-        {
-            for (int i = 0; i < windows.Length; ++i)
-            {
-                if (windows[i].PlatformImpl is HeadlessWindowImpl headlessWindowImpl)
-                    zOrder[i] = headlessWindowImpl._zOrder;
-            }
         }
 
         public void TakeFocus() 

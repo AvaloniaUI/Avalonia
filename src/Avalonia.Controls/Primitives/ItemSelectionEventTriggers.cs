@@ -1,6 +1,7 @@
 ﻿using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives;
 
@@ -30,7 +31,7 @@ public static class ItemSelectionEventTriggers
             } => false,
 
             // Select on mouse press, unless the mouse can generate gestures
-            { Pointer.Type: PointerType.Mouse } => eventArgs.RoutedEvent == (Gestures.GetIsHoldWithMouseEnabled(selectable) ?
+            { Pointer.Type: PointerType.Mouse } => eventArgs.RoutedEvent == (InputElement.GetIsHoldWithMouseEnabled(selectable) ?
                 InputElement.PointerReleasedEvent : (RoutedEvent)InputElement.PointerPressedEvent),
 
             // Pen "right clicks" are used for context menus, and gestures are only processed for primary input
@@ -75,7 +76,7 @@ public static class ItemSelectionEventTriggers
     public static bool HasToggleSelectionModifier(Visual selectable, RoutedEventArgs eventArgs) => HasModifiers(eventArgs, Hotkeys(selectable)?.CommandModifiers);
 
     private static PlatformHotkeyConfiguration? Hotkeys(Visual element) =>
-        (TopLevel.GetTopLevel(element)?.PlatformSettings ?? Application.Current?.PlatformSettings)?.HotkeyConfiguration;
+        (element.GetPlatformSettings() ?? Application.Current?.PlatformSettings)?.HotkeyConfiguration;
 
     private static bool HasModifiers(RoutedEventArgs eventArgs, KeyModifiers? modifiers) =>
         modifiers != null && eventArgs is IKeyModifiersEventArgs { KeyModifiers: { } eventModifiers } && eventModifiers.HasAllFlags(modifiers.Value);

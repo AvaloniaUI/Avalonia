@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Metadata;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Platform
@@ -48,7 +49,7 @@ namespace Avalonia.Platform
         /// If you have some rendering platform that's tied to your particular windowing platform,
         /// just expose some toolkit-specific object (e. g. Func&lt;Gdk.Drawable&gt; in case of GTK#+Cairo)
         /// </remarks>
-        IEnumerable<object> Surfaces { get; }
+        IPlatformRenderSurface[] Surfaces { get; }
 
         /// <summary>
         /// Gets or sets a method called when the toplevel receives input.

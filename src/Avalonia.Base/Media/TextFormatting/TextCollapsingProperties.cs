@@ -26,16 +26,14 @@
         /// <param name="textLine">Text line to collapse.</param>
         public abstract TextRun[]? Collapse(TextLine textLine);
 
-        // TODO12: Remove the flowDirection parameter
         /// <summary>
         /// Creates a list of runs for given collapsed length which includes specified symbol at the end.
         /// </summary>
         /// <param name="textLine">The text line.</param>
         /// <param name="collapsedLength">The collapsed length.</param>
-        /// <param name="flowDirection">The flow direction.</param>
         /// <param name="shapedSymbol">The symbol.</param>
         /// <returns>List of remaining runs.</returns>
-        public static TextRun[] CreateCollapsedRuns(TextLine textLine, int collapsedLength, FlowDirection flowDirection, TextRun shapedSymbol)
+        public static TextRun[] CreateCollapsedRuns(TextLine textLine, int collapsedLength, TextRun shapedSymbol)
         {
             if (collapsedLength <= 0)
             {

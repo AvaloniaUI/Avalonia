@@ -7,6 +7,16 @@ namespace Avalonia.Automation.Peers
         public TextBlockAutomationPeer(TextBlock owner)
             : base(owner)
         {
+            Owner.PropertyChanged += (a, e) =>
+            {
+                if (e.Property == TextBlock.TextProperty)
+                {
+                    RaisePropertyChangedEvent(
+                        AutomationElementIdentifiers.NameProperty,
+                        e.OldValue,
+                        e.NewValue);
+                }
+            };
         }
 
         public new TextBlock Owner => (TextBlock)base.Owner;

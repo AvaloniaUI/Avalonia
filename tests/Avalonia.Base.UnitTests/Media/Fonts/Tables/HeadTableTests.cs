@@ -191,66 +191,66 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.True(HeadTable.TryLoad(typeface, out var headTable));
             Assert.Equal(FontDirectionHint.LeftToRightWithNeutrals, headTable.FontDirectionHint);
         }
+    }
+    
+    internal class CustomPlatformTypeface : IPlatformTypeface
+    {
+        private readonly UnmanagedFontMemory _fontMemory;
 
-        private class CustomPlatformTypeface : IPlatformTypeface
+        public CustomPlatformTypeface(Stream stream, string fontFamily = "Custom")
         {
-            private readonly UnmanagedFontMemory _fontMemory;
-
-            public CustomPlatformTypeface(Stream stream, string fontFamily = "Custom")
-            {
-                _fontMemory = UnmanagedFontMemory.LoadFromStream(stream);
-                FamilyName = fontFamily;
-            }
-
-            public FontWeight Weight => FontWeight.Normal;
-
-            public FontStyle Style => FontStyle.Normal;
-
-            public FontStretch Stretch => FontStretch.Normal;
-
-            public string FamilyName { get; }
-
-            public FontSimulations FontSimulations => FontSimulations.None;
-
-            public void Dispose()
-            {
-                ((IDisposable)_fontMemory).Dispose();
-            }
-
-            public unsafe bool TryGetStream([NotNullWhen(true)] out Stream stream)
-            {
-                var memory = _fontMemory.Memory;
-
-                var handle = memory.Pin();
-                stream = new PinnedUnmanagedMemoryStream(handle, memory.Length);
-
-                return true;
-            }
-
-            private sealed class PinnedUnmanagedMemoryStream : UnmanagedMemoryStream
-            {
-                private MemoryHandle _handle;
-
-                public unsafe PinnedUnmanagedMemoryStream(MemoryHandle handle, long length)
-                    : base((byte*)handle.Pointer, length)
-                {
-                    _handle = handle;
-                }
-
-                protected override void Dispose(bool disposing)
-                {
-                    try
-                    {
-                        base.Dispose(disposing);
-                    }
-                    finally
-                    {
-                        _handle.Dispose();
-                    }
-                }
-            }
-
-            public bool TryGetTable(OpenTypeTag tag, out ReadOnlyMemory<byte> table) => _fontMemory.TryGetTable(tag, out table);
+            _fontMemory = UnmanagedFontMemory.LoadFromStream(stream);
+            FamilyName = fontFamily;
         }
+
+        public FontWeight Weight => FontWeight.Normal;
+
+        public FontStyle Style => FontStyle.Normal;
+
+        public FontStretch Stretch => FontStretch.Normal;
+
+        public string FamilyName { get; }
+
+        public FontSimulations FontSimulations => FontSimulations.None;
+
+        public void Dispose()
+        {
+            ((IDisposable)_fontMemory).Dispose();
+        }
+
+        public unsafe bool TryGetStream([NotNullWhen(true)] out Stream stream)
+        {
+            var memory = _fontMemory.Memory;
+
+            var handle = memory.Pin();
+            stream = new PinnedUnmanagedMemoryStream(handle, memory.Length);
+
+            return true;
+        }
+
+        private sealed class PinnedUnmanagedMemoryStream : UnmanagedMemoryStream
+        {
+            private MemoryHandle _handle;
+
+            public unsafe PinnedUnmanagedMemoryStream(MemoryHandle handle, long length)
+                : base((byte*)handle.Pointer, length)
+            {
+                _handle = handle;
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                try
+                {
+                    base.Dispose(disposing);
+                }
+                finally
+                {
+                    _handle.Dispose();
+                }
+            }
+        }
+
+        public bool TryGetTable(OpenTypeTag tag, out ReadOnlyMemory<byte> table) => _fontMemory.TryGetTable(tag, out table);
     }
 }

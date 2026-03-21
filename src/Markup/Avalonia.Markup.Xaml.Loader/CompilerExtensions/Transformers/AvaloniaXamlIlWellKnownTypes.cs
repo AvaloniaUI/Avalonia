@@ -22,6 +22,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlMethod AvaloniaObjectSetStyledPropertyValue { get; }
         public IXamlType AvaloniaAttachedPropertyT { get; }
         public IXamlType BindingBase { get; }
+        public IXamlType BindingExpressionBase { get; }
         public IXamlType MultiBinding { get; }
         public IXamlMethod AvaloniaObjectBindMethod { get; }
         public IXamlMethod AvaloniaObjectSetValueMethod { get; }
@@ -134,6 +135,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ControlTemplate { get; }
         public IXamlType EventHandlerT {  get; }
         public IXamlMethod GetClassProperty { get; }
+        public IXamlConstructor XamlSourceInfoConstructor { get; }
+        public IXamlMethod XamlSourceInfoSetter { get; }
+        public IXamlMethod XamlSourceInfoDictionarySetter { get; }
 
         sealed internal class InteractivityWellKnownTypes
         {
@@ -197,6 +201,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                  && m.Parameters[0].Name == "StyledProperty`1"
                                  && m.Parameters[2].Equals(BindingPriority));
             BindingBase = cfg.TypeSystem.GetType("Avalonia.Data.BindingBase");
+            BindingExpressionBase = cfg.TypeSystem.GetType("Avalonia.Data.BindingExpressionBase");
             MultiBinding = cfg.TypeSystem.GetType("Avalonia.Data.MultiBinding");
             IDisposable = cfg.TypeSystem.GetType("System.IDisposable");
             ICommand = cfg.TypeSystem.GetType("System.Windows.Input.ICommand");
@@ -212,9 +217,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             AvaloniaListAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.AvaloniaListAttribute");
             AvaloniaList = cfg.TypeSystem.GetType("Avalonia.Collections.AvaloniaList`1");
             OnExtensionType = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.On");
-            AvaloniaObjectBindMethod = AvaloniaObjectExtensions.GetMethod("Bind", IDisposable, false, AvaloniaObject,
-                AvaloniaProperty,
-                BindingBase, cfg.WellKnownTypes.Object);
+            AvaloniaObjectBindMethod = AvaloniaObject.GetMethod("Bind", BindingExpressionBase, false, AvaloniaProperty, BindingBase);
             UnsetValueType = cfg.TypeSystem.GetType("Avalonia.UnsetValueType");
             StyledElement = cfg.TypeSystem.GetType("Avalonia.StyledElement");
             INameScope = cfg.TypeSystem.GetType("Avalonia.Controls.INameScope");
@@ -343,6 +346,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 allowDowncast:false,
                 cfg.WellKnownTypes.String
                 );
+
+            var xamlSourceInfo = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Diagnostics.XamlSourceInfo");
+            XamlSourceInfoConstructor = xamlSourceInfo.GetConstructor([
+                XamlIlTypes.Int32, XamlIlTypes.Int32, XamlIlTypes.String
+            ]);
+            XamlSourceInfoSetter =
+                xamlSourceInfo.GetMethod("SetXamlSourceInfo", XamlIlTypes.Void, false, XamlIlTypes.Object, xamlSourceInfo);
+            XamlSourceInfoDictionarySetter =
+                xamlSourceInfo.GetMethod("SetXamlSourceInfo", XamlIlTypes.Void, false, IResourceDictionary, XamlIlTypes.Object, xamlSourceInfo);
         }
     }
 

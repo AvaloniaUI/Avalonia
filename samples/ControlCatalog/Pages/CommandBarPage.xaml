@@ -1,0 +1,8 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CommandBarPage">
+  <UserControl.Resources>
+    <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
+  </UserControl.Resources>
+  <NavigationPage x:Name="SampleNav" />
+</UserControl>

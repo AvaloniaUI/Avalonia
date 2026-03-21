@@ -2,6 +2,7 @@ using System;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Diagnostics;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -136,17 +137,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        [Unstable(ObsoletionMessages.MayBeRemovedInAvalonia12)]
-        public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
-            PopupAnchor anchor = PopupAnchor.None,
-            PopupGravity gravity = PopupGravity.None,
-            PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
-            Rect? rect = null)
-        {
-            ((IPopupHost)this).ConfigurePosition(new PopupPositionRequest(target, placement, offset, anchor, gravity,
-                constraintAdjustment, rect, null));
-        }
-
         void IPopupHost.ConfigurePosition(PopupPositionRequest request)
         {
             _popupPositionRequest = request;
@@ -200,7 +190,7 @@ namespace Avalonia.Controls.Primitives
             return new Size(width, height);
         }
 
-        protected sealed override Size ArrangeSetBounds(Size size)
+        private protected sealed override Size ArrangeSetBounds(Size size)
         {
             if (_popupSize != size)
             {

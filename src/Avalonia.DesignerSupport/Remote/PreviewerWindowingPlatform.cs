@@ -44,6 +44,9 @@ namespace Avalonia.DesignerSupport.Remote
             return s_lastWindow;
         }
 
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+            => zOrder.Clear();
+
         public static void Initialize(IAvaloniaRemoteTransportConnection transport)
         {
             s_transport = transport;
@@ -52,8 +55,7 @@ namespace Avalonia.DesignerSupport.Remote
                 .Bind<ICursorFactory>().ToSingleton<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
-                .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(null))
-                .Bind<IRenderTimer>().ToConstant(new UiThreadRenderTimer(60))
+                .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(new UiThreadRenderTimer(60)))
                 .Bind<IWindowingPlatform>().ToConstant(instance)
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();

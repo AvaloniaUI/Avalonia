@@ -63,7 +63,7 @@ namespace Avalonia.Themes.Fluent
 
             if (change.Property == DensityStyleProperty)
             {
-                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Create());
             }
         }
 

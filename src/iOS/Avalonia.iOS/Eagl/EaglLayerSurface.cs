@@ -3,6 +3,7 @@ using System.Runtime.Versioning;
 using System.Threading;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 using CoreAnimation;
 
 namespace Avalonia.iOS.Eagl
@@ -61,6 +62,8 @@ namespace Avalonia.iOS.Eagl
                 _fbo = fbo;
             }
 
+            public bool IsCorrupted => false;
+
             public void Dispose()
             {
                 CheckThread();
@@ -68,7 +71,7 @@ namespace Avalonia.iOS.Eagl
                     _fbo.Dispose();
             }
 
-            public IGlPlatformSurfaceRenderingSession BeginDraw()
+            public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
                 CheckThread();
                 var restoreContext = _ctx.MakeCurrent();

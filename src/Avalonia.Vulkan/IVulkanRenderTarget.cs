@@ -1,10 +1,11 @@
 using System;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Metadata;
 
 namespace Avalonia.Vulkan;
 
 [NotClientImplementable]
-public interface IVulkanRenderTarget : IDisposable
+public interface IVulkanRenderTarget : IDisposable, IPlatformRenderSurfaceRenderTarget
 {
     IVulkanRenderSession BeginDraw();
 }

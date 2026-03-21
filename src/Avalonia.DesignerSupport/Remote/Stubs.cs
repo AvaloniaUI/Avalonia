@@ -5,11 +5,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering;
@@ -27,7 +30,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Size? FrameSize => null;
         public double RenderScaling { get; } = 1.0;
         public double DesktopScaling => 1.0;
-        public IEnumerable<object> Surfaces => [];
+        public IPlatformRenderSurface[] Surfaces => [];
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }
         public Action<Size, WindowResizeReason>? Resized { get; set; }
@@ -47,6 +50,9 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations => IsClientAreaExtendedToDecorations
+            ? PlatformRequestedDrawnDecoration.TitleBar
+            : default;
         public Thickness ExtendedMargins { get; } = new Thickness();
 
         public Thickness OffScreenMargin { get; } = new Thickness();
@@ -63,16 +69,11 @@ namespace Avalonia.DesignerSupport.Remote
 
         private sealed class DummyRenderTimer : IRenderTimer
         {
-            public event Action<TimeSpan> Tick
-            {
-                add { }
-                remove { }
-            }
-
+            public Action<TimeSpan>? Tick { get; set; }
             public bool RunsInBackground => false;
         }
 
-        public Compositor Compositor { get; } = new(new RenderLoop(new DummyRenderTimer()), null);
+        public Compositor Compositor { get; } = new(RenderLoop.FromTimer(new DummyRenderTimer()), null);
 
         public void Dispose()
         {
@@ -134,7 +135,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetSystemDecorations(SystemDecorations enabled)
+        public void SetWindowDecorations(WindowDecorations enabled)
         {
         }
 
@@ -174,15 +175,9 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {
-        }
-
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
         }
-
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder) => throw new NotSupportedException();
 
         public IPopupPositioner? PopupPositioner { get; }
 
@@ -223,25 +218,11 @@ namespace Avalonia.DesignerSupport.Remote
 
     class ClipboardStub : IClipboard
     {
-        public Task<string?> GetTextAsync() => Task.FromResult<string?>(null);
-
-        public Task SetTextAsync(string? text) => Task.CompletedTask;
-
         public Task ClearAsync() => Task.CompletedTask;
-
-        [Obsolete($"Use {nameof(SetDataAsync)} instead.")]
-        public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
 
         public Task SetDataAsync(IAsyncDataTransfer? dataTransfer) => Task.CompletedTask;
 
-        public Task<string[]> GetFormatsAsync() => Task.FromResult<string[]>([]);
-
-        public Task<object?> GetDataAsync(string format) => Task.FromResult<object?>(null);
-
         public Task<IAsyncDataTransfer?> TryGetDataAsync() => Task.FromResult<IAsyncDataTransfer?>(null);
-
-        [Obsolete($"Use {nameof(TryGetInProcessDataAsync)} instead.")]
-        public Task<IDataObject?> TryGetInProcessDataObjectAsync() => Task.FromResult<IDataObject?>(null);
 
         public Task FlushAsync() => Task.CompletedTask;
 
@@ -251,7 +232,7 @@ namespace Avalonia.DesignerSupport.Remote
     class CursorFactoryStub : ICursorFactory
     {
         public ICursorImpl GetCursor(StandardCursorType cursorType) => new CursorStub();
-        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorStub();
+        public ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot) => new CursorStub();
 
         private class CursorStub : ICursorImpl
         {

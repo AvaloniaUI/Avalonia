@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
+using Avalonia.Metadata;
 using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
@@ -22,6 +23,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             ResourceKey = resourceKey;
         }
 
+        [ConstructorArgument("resourceKey")]
         public object? ResourceKey { get; set; }
 
         public BindingBase ProvideValue(IServiceProvider serviceProvider)

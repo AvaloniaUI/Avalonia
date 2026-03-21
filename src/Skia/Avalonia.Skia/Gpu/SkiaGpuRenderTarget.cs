@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Platform;
 
 namespace Avalonia.Skia
@@ -5,7 +6,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Adapts <see cref="ISkiaGpuRenderTarget"/> to be used within our rendering pipeline.
     /// </summary>
-    internal class SkiaGpuRenderTarget : IRenderTarget2
+    internal class SkiaGpuRenderTarget : IRenderTarget
     {
         private readonly ISkiaGpu _skiaGpu;
         private readonly ISkiaGpuRenderTarget _renderTarget;
@@ -21,30 +22,21 @@ namespace Avalonia.Skia
             _renderTarget.Dispose();
         }
 
-        public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
-            out RenderTargetDrawingContextProperties properties) =>
-            CreateDrawingContextCore(expectedPixelSize, false, out properties);
+        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing) => throw new InvalidOperationException(
+            "This legacy API is only supported by framebuffer render targets and should be removed from there as well, don't use");
 
-        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
-            => CreateDrawingContextCore(null, useScaledDrawing, out _);
-        
-        
-        IDrawingContextImpl CreateDrawingContextCore(PixelSize? expectedPixelSize,
-            bool useScaledDrawing,
+        public IDrawingContextImpl CreateDrawingContext(IRenderTarget.RenderTargetSceneInfo sceneInfo,
             out RenderTargetDrawingContextProperties properties)
         {
             properties = default;
-            var session =
-                expectedPixelSize.HasValue && _renderTarget is ISkiaGpuRenderTarget2 target2
-                    ? target2.BeginRenderingSession(expectedPixelSize.Value)
-                    : _renderTarget.BeginRenderingSession();
+            var session = _renderTarget.BeginRenderingSession(sceneInfo);
 
             var nfo = new DrawingContextImpl.CreateInfo
             {
                 GrContext = session.GrContext,
                 Surface = session.SkSurface,
                 Dpi = SkiaPlatform.DefaultDpi * session.ScaleFactor,
-                ScaleDrawingToDpi = useScaledDrawing,
+                ScaleDrawingToDpi = false,
                 Gpu = _skiaGpu,
                 CurrentSession =  session
             };
@@ -53,6 +45,7 @@ namespace Avalonia.Skia
         }
 
         public bool IsCorrupted => _renderTarget.IsCorrupted;
+        public bool IsReady => _renderTarget.IsReady;
         public RenderTargetProperties Properties { get; }
 
 

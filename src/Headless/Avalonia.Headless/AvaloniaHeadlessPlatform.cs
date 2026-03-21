@@ -15,6 +15,7 @@ namespace Avalonia.Headless
     public static class AvaloniaHeadlessPlatform
     {
         internal static Compositor? Compositor { get; private set; }
+        private static RenderTimer? s_renderTimer;
 
         private class RenderTimer : DefaultRenderTimer
         {
@@ -63,6 +64,14 @@ namespace Avalonia.Headless
             public IWindowImpl CreateEmbeddableWindow() => throw new PlatformNotSupportedException();
 
             public ITrayIconImpl? CreateTrayIcon() => null;
+
+            public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+            {
+                for (var i = 0; i < windows.Length; ++i)
+                {
+                    zOrder[i] = (windows[i] as HeadlessWindowImpl)?.ZOrder ?? 0;
+                }
+            }
         }
         
         internal static void Initialize(AvaloniaHeadlessPlatformOptions opts)
@@ -71,14 +80,13 @@ namespace Avalonia.Headless
             var clipboard = new Clipboard(clipboardImpl);
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>().ToConstant(new ManagedDispatcherImpl(null))
                 .Bind<IClipboardImpl>().ToConstant(clipboardImpl)
                 .Bind<IClipboard>().ToConstant(clipboard)
                 .Bind<ICursorFactory>().ToSingleton<HeadlessCursorFactoryStub>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
-                .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
+                .Bind<IRenderLoop>().ToConstant(Rendering.RenderLoop.FromTimer(s_renderTimer = new RenderTimer(60)))
                 .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform(opts.FrameBufferFormat))
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }));
@@ -92,9 +100,8 @@ namespace Avalonia.Headless
         /// <param name="count">Count of frames to be ticked on the timer.</param>
         public static void ForceRenderTimerTick(int count = 1)
         {
-            var timer = AvaloniaLocator.Current.GetService<IRenderTimer>() as RenderTimer;
             for (var c = 0; c < count; c++)
-                timer?.ForceTick();
+                s_renderTimer?.ForceTick();
 
         }
     }
@@ -113,7 +120,8 @@ namespace Avalonia.Headless
                 builder = builder.UseRenderingSubsystem(HeadlessPlatformRenderInterface.Initialize, "Headless");
             return builder
                 .UseStandardRuntimePlatformSubsystem()
-                .UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless");
+                .UseWindowingSubsystem(() => AvaloniaHeadlessPlatform.Initialize(opts), "Headless")
+                .UseHarfBuzz();
         }
     }
 }

@@ -92,6 +92,7 @@ namespace Avalonia.DesignerSupport.Remote
         
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations { get; }
         public Thickness ExtendedMargins { get; } = new Thickness();
 
         public bool IsClientAreaExtendedToDecorations { get; }
@@ -123,7 +124,7 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public void SetSystemDecorations(SystemDecorations enabled)
+        public void SetWindowDecorations(WindowDecorations enabled)
         {
         }
 
@@ -163,14 +164,8 @@ namespace Avalonia.DesignerSupport.Remote
         {            
         }
 
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {            
-        }
-
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {            
         }
-
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder) => throw new NotSupportedException();
     }
 }

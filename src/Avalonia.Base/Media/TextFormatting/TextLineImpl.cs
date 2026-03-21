@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -1423,7 +1423,7 @@ namespace Avalonia.Media.TextFormatting
             var overhangLeading = inkBounds.Left;
             //The width of overhanging pixels at the end of the natural bounds. Positive value means we are inside.
             var overhangTrailing = widthIncludingWhitespace - inkBounds.Right;
-            var hasOverflowed = width > _paragraphWidth;
+            var hasOverflowed = MathUtilities.GreaterThan(width, _paragraphWidth);
 
             var start = GetParagraphOffsetX(width, widthIncludingWhitespace);
 

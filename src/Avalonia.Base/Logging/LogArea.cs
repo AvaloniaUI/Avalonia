@@ -21,6 +21,11 @@ namespace Avalonia.Logging
         public const string Animations = nameof(Animations);
 
         /// <summary>
+        /// The log event comes from the fonts system.
+        /// </summary>
+        public const string Fonts = nameof(Fonts);
+
+        /// <summary>
         /// The log event comes from the visual system.
         /// </summary>
         public const string Visual = nameof(Visual);

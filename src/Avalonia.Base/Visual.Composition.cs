@@ -143,6 +143,10 @@ public partial class Visual
         if (!Equals(comp.OpacityMask, OpacityMask))
             comp.OpacityMask = OpacityMask;
 
+        var cacheMode = CacheMode?.GetForCompositor(comp.Compositor);
+        if (!ReferenceEquals(comp.CacheMode, cacheMode))
+            comp.CacheMode = cacheMode;
+        
         if (!comp.Effect.EffectEquals(Effect))
             comp.Effect = Effect?.ToImmutable();
 

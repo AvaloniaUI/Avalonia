@@ -239,6 +239,11 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
                     appBuilder = appBuilder.UseHeadless(new AvaloniaHeadlessPlatformOptions());
                 }
 
+                if (appBuilder.TextShapingSubsystemInitializer is null)
+                {
+                    appBuilder = appBuilder.UseHarfBuzz();
+                }
+
                 // ReSharper disable once AccessToModifiedClosure
                 tcs.SetResult(new HeadlessUnitTestSession(appBuilder, cancellationTokenSource, queue, task!, runIsolated));
             }

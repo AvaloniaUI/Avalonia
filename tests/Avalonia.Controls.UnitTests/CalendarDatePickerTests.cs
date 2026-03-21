@@ -117,7 +117,7 @@ namespace Avalonia.Controls.UnitTests
         {
             return new FuncControlTemplate<CalendarDatePicker>((control, scope) =>
             {
-                var textBox = 
+                var textBox =
                     new TextBox
                     {
                         Name = "PART_TextBox"
@@ -130,7 +130,7 @@ namespace Avalonia.Controls.UnitTests
                 var calendar =
                     new Calendar
                     {
-                        Name = "PART_Calendar", 
+                        Name = "PART_Calendar",
                         [!Calendar.SelectedDateProperty] = control[!CalendarDatePicker.SelectedDateProperty],
                         [!Calendar.DisplayDateProperty] = control[!CalendarDatePicker.DisplayDateProperty],
                         [!Calendar.DisplayDateStartProperty] = control[!CalendarDatePicker.DisplayDateStartProperty],
@@ -177,6 +177,19 @@ namespace Avalonia.Controls.UnitTests
                 RoutedEvent = InputElement.TextInputEvent,
                 Text = text
             });
+        }
+
+        [Fact]
+        public void PlaceholderForeground_Can_Be_Set()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var control = CreateControl();
+                control.PlaceholderText = "Select date";
+                control.PlaceholderForeground = Media.Brushes.Purple;
+
+                Assert.Equal(Media.Brushes.Purple, control.PlaceholderForeground);
+            }
         }
 
     }

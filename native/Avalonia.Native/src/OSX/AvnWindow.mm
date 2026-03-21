@@ -656,5 +656,9 @@
     NSAccessibilityPostNotification(focused, NSAccessibilityFocusedUIElementChangedNotification);
 }
 
+- (void)raisePropertyChanged:(AvnAutomationProperty)property
+{
+}
+
 @end
 

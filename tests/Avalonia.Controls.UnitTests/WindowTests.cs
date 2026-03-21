@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -518,11 +517,11 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Not_Be_Centered_When_WindowStartupLocation_Is_CenterScreen_And_Window_Is_Hidden_And_Shown()
         {
-            var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
+            var screen1 = new MockScreen(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
 
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
-            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1 });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1);
 
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
@@ -553,12 +552,12 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
-            var screen1 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
-            var screen2 = new Mock<Screen>(1.0, new PixelRect(new PixelSize(1366, 768)), new PixelRect(new PixelSize(1366, 728)), false);
+            var screen1 = new MockScreen(1.0, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);
+            var screen2 = new MockScreen(1.0, new PixelRect(new PixelSize(1366, 768)), new PixelRect(new PixelSize(1366, 728)), false);
 
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object, screen2.Object });
-            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1, screen2 });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1);
             
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
@@ -576,8 +575,8 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
 
                 var expectedPosition = new PixelPoint(
-                    (int)(screen1.Object.WorkingArea.Size.Width / 2 - window.ClientSize.Width / 2),
-                    (int)(screen1.Object.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2));
+                    (int)(screen1.WorkingArea.Size.Width / 2 - window.ClientSize.Width / 2),
+                    (int)(screen1.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2));
 
                 Assert.Equal(window.Position, expectedPosition);
             }
@@ -586,10 +585,10 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Be_Sized_To_MinSize_If_InitialSize_Less_Than_MinSize()
         {
-            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
-            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1 });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1);
             
             var windowImpl = MockWindowingPlatform.CreateWindowMock(400, 300);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1.75);
@@ -687,6 +686,26 @@ namespace Avalonia.Controls.UnitTests
             window.CanResize = false;
 
             Assert.False(window.CanMaximize);
+        }
+
+        [Fact]
+        public void FlowDirection_RTL_Should_Not_Result_In_Mirrored_Host()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object)));
+
+            var window = new Window
+            {
+                FlowDirection = FlowDirection.RightToLeft
+            };
+
+            var visualRoot = window.GetVisualRoot();
+            Assert.IsType<TopLevelHost>(visualRoot);
+
+            Assert.False(window.HasMirrorTransform);
+            Assert.False(visualRoot.HasMirrorTransform);
         }
 
         public class SizingTests : ScopedTestBase
@@ -1146,9 +1165,9 @@ namespace Avalonia.Controls.UnitTests
 
         private static Mock<IWindowImpl> CreateImpl()
         {
-            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screen1 = new MockScreen(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
             var screens = new Mock<IScreenImpl>();
-            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1.Object);
+            screens.Setup(x => x.ScreenFromWindow(It.IsAny<IWindowBaseImpl>())).Returns(screen1);
 
             var windowImpl = new Mock<IWindowImpl>();
             windowImpl.Setup(r => r.Compositor).Returns(RendererMocks.CreateDummyCompositor());
@@ -1166,6 +1185,26 @@ namespace Avalonia.Controls.UnitTests
             {
                 MeasureSizes.Add(availableSize);
                 return base.MeasureOverride(availableSize);
+            }
+        }
+
+        [Fact]
+        public void Show_Should_Apply_Default_Icon_When_No_Custom_Icon_Is_Set()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform: windowingPlatform)))
+            {
+                var target = new Window();
+
+                // Clear any SetIcon calls from construction.
+                windowImpl.Invocations.Clear();
+
+                target.Show();
+
+                // ShowCore should apply the default icon when no custom icon was set.
+                windowImpl.Verify(x => x.SetIcon(It.IsAny<IWindowIconImpl?>()), Times.AtLeastOnce());
             }
         }
 

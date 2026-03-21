@@ -2,8 +2,6 @@
 using Avalonia.UnitTests;
 using Xunit;
 
-#pragma warning disable CS0618 // Type or member is obsolete -- we're testing these members
-
 namespace Avalonia.Controls.Primitives.UnitTests
 {
     public class ToggleButtonTests : ScopedTestBase
@@ -64,51 +62,47 @@ namespace Avalonia.Controls.Primitives.UnitTests
         }
 
         [Fact]
-        public void ToggleButton_Events_Are_Raised_On_Is_Checked_Changes()
+        public void ToggleButton_IsCheckedChanged_Is_Raised_On_Is_Checked_Changes()
         {
             var threeStateButton = new ToggleButton();
+            Assert.False(threeStateButton.IsChecked);
 
-            bool checkedRaised = false;
-            threeStateButton.Checked += (_, __) => checkedRaised = true;
+            var changeCount = 0;
+            threeStateButton.IsCheckedChanged += (_, _) => ++changeCount;
 
             threeStateButton.IsChecked = true;
-            Assert.True(checkedRaised);
-
-            bool uncheckedRaised = false;
-            threeStateButton.Unchecked += (_, __) => uncheckedRaised = true;
+            Assert.Equal(1, changeCount);
+            Assert.True(threeStateButton.IsChecked);
 
             threeStateButton.IsChecked = false;
-            Assert.True(uncheckedRaised);
-
-            bool indeterminateRaised = false;
-            threeStateButton.Indeterminate += (_, __) => indeterminateRaised = true;
+            Assert.Equal(2, changeCount);
+            Assert.False(threeStateButton.IsChecked);
 
             threeStateButton.IsChecked = null;
-            Assert.True(indeterminateRaised);
+            Assert.Equal(3, changeCount);
+            Assert.Null(threeStateButton.IsChecked);
         }
 
         [Fact]
-        public void ToggleButton_Events_Are_Raised_When_Toggling()
+        public void ToggleButton_IsCheckedChanged_Is_Raised_When_Toggling()
         {
             var threeStateButton = new TestToggleButton { IsThreeState = true };
+            Assert.False(threeStateButton.IsChecked);
 
-            bool checkedRaised = false;
-            threeStateButton.Checked += (_, __) => checkedRaised = true;
-
-            threeStateButton.Toggle();
-            Assert.True(checkedRaised);
-
-            bool indeterminateRaised = false;
-            threeStateButton.Indeterminate += (_, __) => indeterminateRaised = true;
+            var changeCount = 0;
+            threeStateButton.IsCheckedChanged += (_, _) => ++changeCount;
 
             threeStateButton.Toggle();
-            Assert.True(indeterminateRaised);
-
-            bool uncheckedRaised = false;
-            threeStateButton.Unchecked += (_, __) => uncheckedRaised = true;
+            Assert.Equal(1, changeCount);
+            Assert.True(threeStateButton.IsChecked);
 
             threeStateButton.Toggle();
-            Assert.True(uncheckedRaised);
+            Assert.Equal(2, changeCount);
+            Assert.Null(threeStateButton.IsChecked);
+
+            threeStateButton.Toggle();
+            Assert.Equal(3, changeCount);
+            Assert.False(threeStateButton.IsChecked);
         }
 
         private class Class1 : NotifyingBase

@@ -8,6 +8,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
+using Avalonia.Metadata;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data
@@ -33,17 +34,6 @@ namespace Avalonia.Data
         public ReflectionBinding(string path)
         {
             Path = path;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ReflectionBinding"/> class.
-        /// </summary>
-        /// <param name="path">The binding path.</param>
-        /// <param name="mode">The binding mode.</param>
-        public ReflectionBinding(string path, BindingMode mode)
-        {
-            Path = path;
-            Mode = mode;
         }
         
         /// <summary>
@@ -95,6 +85,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets or sets the binding path.
         /// </summary>
+        [ConstructorArgument("path")]
         public string Path { get; set; } = "";
 
         /// <summary>

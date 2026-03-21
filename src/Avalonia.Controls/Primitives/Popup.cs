@@ -77,12 +77,6 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(Placement), defaultValue: PlacementMode.Bottom);
 
         /// <summary>
-        /// Defines the <see cref="PlacementMode"/> property.
-        /// </summary>
-        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
-        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
-
-        /// <summary>
         /// Defines the <see cref="PlacementRect"/> property.
         /// </summary>
         public static readonly StyledProperty<Rect?> PlacementRectProperty =
@@ -182,7 +176,7 @@ namespace Avalonia.Controls.Primitives
 
         internal event EventHandler<CancelEventArgs>? Closing;
 
-        public IPopupHost? Host => _openState?.PopupHost;
+        internal IPopupHost? Host => _openState?.PopupHost;
 
         /// <summary>
         /// Gets or sets a hint to the window manager that a shadow should be added to the popup.
@@ -275,14 +269,6 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(PlacementGravityProperty);
             set => SetValue(PlacementGravityProperty, value);
-        }
-
-        /// <inheritdoc cref="Placement"/>
-        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
-        public PlacementMode PlacementMode
-        {
-            get => GetValue(PlacementProperty);
-            set => SetValue(PlacementProperty, value);
         }
 
         /// <summary>
@@ -470,7 +456,7 @@ namespace Avalonia.Controls.Primitives
 
             if (InheritsTransform)
             {
-                TransformTrackingHelper.Track(placementTarget, PlacementTargetTransformChanged)
+                TransformTrackingHelper.Track(placementTarget, true, PlacementTargetTransformChanged)
                     .DisposeWith(handlerCleanup);
             }
             else
@@ -690,7 +676,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         var newTarget = change.GetNewValue<Control?>() ?? this.FindLogicalAncestorOfType<Control>();
 
-                        if (newTarget is null || newTarget.GetVisualRoot() != _openState.TopLevel)
+                        if (newTarget is null || TopLevel.GetTopLevel(newTarget) != _openState.TopLevel)
                         {
                             Close();
                             return;

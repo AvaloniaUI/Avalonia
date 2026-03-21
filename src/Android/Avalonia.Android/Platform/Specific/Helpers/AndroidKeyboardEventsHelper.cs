@@ -8,7 +8,7 @@ using Avalonia.Input.Raw;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
-    internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl, IAndroidView
+    internal class AndroidKeyboardEventsHelper<TView> : IDisposable where TView : TopLevelImpl
     {
         private readonly TView _view;
 
@@ -65,8 +65,8 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                           AndroidKeyboardDevice.ConvertKey(e.KeyCode),
                           GetModifierKeys(e),
                           physicalKey,
-                          keyDeviceType,
-                          keySymbol);
+                          keySymbol,
+                          keyDeviceType);
 
             _view.Input?.Invoke(rawKeyEvent);
 

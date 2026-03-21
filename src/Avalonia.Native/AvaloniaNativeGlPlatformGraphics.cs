@@ -173,8 +173,11 @@ namespace Avalonia.Native
             _context = context;
         }
 
-        public IGlPlatformSurfaceRenderingSession BeginDraw()
+        public bool IsCorrupted => false;
+
+        public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
+            // TODO: use expectedPixelSize
             ObjectDisposedException.ThrowIf(_target is null, this);
             return new GlPlatformSurfaceRenderingSession(_context, _target.BeginDrawing());
         }
