@@ -1,0 +1,335 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.SanctuaryShowcasePage">
+  <UserControl.Styles>
+    <!-- Orange primary button -->
+    <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#f47b25" />
+      <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#e0701f" />
+    </Style>
+    <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#c9611a" />
+    </Style>
+
+    <!-- Glass button (semi-transparent white) -->
+    <Style Selector="Button.glass /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#18FFFFFF" />
+      <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
+    </Style>
+    <Style Selector="Button.glass:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#2AFFFFFF" />
+    </Style>
+    <Style Selector="Button.glass:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#10FFFFFF" />
+    </Style>
+
+  </UserControl.Styles>
+
+  <DockPanel>
+
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Sanctuary" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="A travel discovery app with 3 full-screen immersive pages. Uses PipsPager with custom pill-shaped indicators. Swipe, use arrow keys, tap the CTA buttons, or click the pip indicators to navigate." />
+        <Separator />
+        <TextBlock Text="Design" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock FontSize="12" Text="Theme: Dark (#221710)" />
+        <TextBlock FontSize="12" Text="Primary: #f47b25 (warm orange)" />
+        <Separator />
+        <TextBlock Text="Pages" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="1. Explore the Unknown — mountain backdrop" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="2. Hidden Sanctuaries — forest scene" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="3. Urban Adventures — neon city" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="8" ClipToBounds="True" Margin="12">
+      <Grid>
+      <CarouselPage x:Name="DemoCarousel" IsGestureEnabled="True">
+
+        <!-- Page 1: Explore the Unknown -->
+        <ContentPage HorizontalContentAlignment="Stretch"
+                     VerticalContentAlignment="Stretch">
+          <ContentPage.Background>
+            <ImageBrush Source="avares://ControlCatalog/Assets/Sanctuary/mountain_bg.jpg"
+                        Stretch="UniformToFill" />
+          </ContentPage.Background>
+          <Grid>
+            <Border>
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                  <GradientStop Offset="0" Color="Transparent" />
+                  <GradientStop Offset="0.35" Color="#55221710" />
+                  <GradientStop Offset="1" Color="#EE221710" />
+                </LinearGradientBrush>
+              </Border.Background>
+            </Border>
+            <Grid RowDefinitions="*,Auto">
+              <StackPanel Grid.Row="1" Margin="28,0,28,44" Spacing="0"
+                          HorizontalAlignment="Center">
+
+                <TextBlock Text="Explore the Unknown"
+                           FontSize="36" FontWeight="Bold" Foreground="White"
+                           TextAlignment="Center" TextWrapping="Wrap"
+                           MaxWidth="300" Margin="0,0,0,14" />
+
+                <TextBlock Text="Embark on an unforgettable adventure through pristine wilderness and discover the hidden wonders of the world's most majestic peaks."
+                           FontSize="14" Foreground="#CAffffff"
+                           TextAlignment="Center" TextWrapping="Wrap"
+                           MaxWidth="300" Margin="0,0,0,24" />
+
+                <Button Classes="primary"
+                        Foreground="White" FontWeight="Bold" FontSize="16"
+                        CornerRadius="24" Padding="24,16"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Click="OnPage1CTA" Margin="0,0,0,48">
+                  <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                    <TextBlock Text="Start Journey" Foreground="White"
+                               FontWeight="Bold" VerticalAlignment="Center" />
+                    <TextBlock Text="→" Foreground="White" VerticalAlignment="Center" />
+                  </StackPanel>
+                </Button>
+
+              </StackPanel>
+            </Grid>
+          </Grid>
+        </ContentPage>
+
+        <!-- Page 2: Hidden Sanctuaries -->
+        <ContentPage HorizontalContentAlignment="Stretch"
+                     VerticalContentAlignment="Stretch">
+          <ContentPage.Background>
+            <ImageBrush Source="avares://ControlCatalog/Assets/Sanctuary/forest_bg.jpg"
+                        Stretch="UniformToFill" />
+          </ContentPage.Background>
+          <Grid>
+            <Border>
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                  <GradientStop Offset="0" Color="#88221710" />
+                  <GradientStop Offset="0.3" Color="Transparent" />
+                  <GradientStop Offset="0.75" Color="#55221710" />
+                  <GradientStop Offset="1" Color="#CC221710" />
+                </LinearGradientBrush>
+              </Border.Background>
+            </Border>
+
+            <Grid RowDefinitions="Auto,*,Auto">
+
+              <!-- Logo bar -->
+              <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8"
+                          Margin="20,22,20,0">
+                <Panel Width="28" Height="28">
+                  <Ellipse Fill="#f47b25" />
+                  <TextBlock Text="▲" Foreground="White" FontSize="12" FontWeight="Bold"
+                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Panel>
+                <TextBlock Text="SANCTUARY" Foreground="White" FontWeight="Bold"
+                           FontSize="15" VerticalAlignment="Center" />
+              </StackPanel>
+
+              <!-- Center content -->
+              <StackPanel Grid.Row="1" Margin="24,0,24,0" Spacing="18"
+                          HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                <Border CornerRadius="20" BorderBrush="#50f47b25" BorderThickness="1"
+                        Background="#1Af47b25" HorizontalAlignment="Center" Padding="14,6">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="◎" Foreground="#f47b25" FontSize="11" VerticalAlignment="Center" />
+                    <TextBlock Text="VOLUME II: SECLUSION" Foreground="#f47b25"
+                               FontSize="11" FontWeight="Bold" />
+                  </StackPanel>
+                </Border>
+
+                <StackPanel Spacing="0" HorizontalAlignment="Center">
+                  <TextBlock Text="Hidden" Foreground="White"
+                             FontSize="54" FontWeight="Bold" TextAlignment="Center" />
+                  <TextBlock Text="Sanctuaries" Foreground="White"
+                             FontSize="54" FontStyle="Italic" FontWeight="Light"
+                             TextAlignment="Center" />
+                </StackPanel>
+
+                <TextBlock Text="Find your peace in the world's most secluded natural wonders. From misty forest groves to still mountain lakes, discover the quiet beauty of nature's best-kept secrets."
+                           Foreground="#CCffffff" FontSize="14"
+                           TextAlignment="Center" TextWrapping="Wrap" MaxWidth="310" />
+
+                <StackPanel Spacing="10" HorizontalAlignment="Center">
+                  <Button Classes="primary"
+                          Foreground="#221710" FontWeight="Bold" FontSize="15"
+                          CornerRadius="24" Padding="32,16"
+                          HorizontalContentAlignment="Center" MinWidth="220"
+                          Click="OnPage2CTA">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="Discover More" Foreground="#221710"
+                                 FontWeight="Bold" VerticalAlignment="Center" />
+                      <TextBlock Text="→" Foreground="#221710" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+                  <Button Classes="glass"
+                          Foreground="White" FontWeight="Bold" FontSize="15"
+                          CornerRadius="24" Padding="32,16"
+                          HorizontalContentAlignment="Center" MinWidth="220"
+                          Click="OnPage2CTA">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="▷" Foreground="White" VerticalAlignment="Center" />
+                      <TextBlock Text="Experience" Foreground="White"
+                                 FontWeight="Bold" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+                </StackPanel>
+
+              </StackPanel>
+
+              <!-- Footer: location + social -->
+              <StackPanel Grid.Row="2" Spacing="14" Margin="0,0,0,44">
+
+                <Grid ColumnDefinitions="*,Auto" Margin="20,0,20,0">
+                  <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="5"
+                              VerticalAlignment="Center">
+                    <TextBlock Text="⊙" Foreground="#80FFFFFF" FontSize="11"
+                               VerticalAlignment="Center" />
+                    <TextBlock Text="NORDIC HIGHLANDS" Foreground="#80FFFFFF"
+                               FontSize="10" FontWeight="SemiBold" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14">
+                    <TextBlock Text="Instagram" Foreground="#80FFFFFF"
+                               FontSize="10" FontWeight="SemiBold" />
+                    <TextBlock Text="Pinterest" Foreground="#80FFFFFF"
+                               FontSize="10" FontWeight="SemiBold" />
+                  </StackPanel>
+                </Grid>
+
+              </StackPanel>
+            </Grid>
+          </Grid>
+        </ContentPage>
+
+        <!-- Page 3: Urban Adventures -->
+        <ContentPage HorizontalContentAlignment="Stretch"
+                     VerticalContentAlignment="Stretch">
+          <ContentPage.Background>
+            <ImageBrush Source="avares://ControlCatalog/Assets/Sanctuary/city_bg.jpg"
+                        Stretch="UniformToFill" />
+          </ContentPage.Background>
+          <Grid>
+            <Border>
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                  <GradientStop Offset="0" Color="Transparent" />
+                  <GradientStop Offset="0.35" Color="#55221710" />
+                  <GradientStop Offset="0.6" Color="#99221710" />
+                  <GradientStop Offset="1" Color="#EE221710" />
+                </LinearGradientBrush>
+              </Border.Background>
+            </Border>
+
+            <Grid RowDefinitions="*,Auto">
+              <StackPanel Grid.Row="1" Margin="28,0,28,44" Spacing="0"
+                          HorizontalAlignment="Center">
+
+                <TextBlock Text="Urban Adventures"
+                           FontSize="44" FontWeight="Bold" Foreground="White"
+                           TextAlignment="Center" TextWrapping="Wrap"
+                           MaxWidth="320" Margin="0,0,0,14" />
+
+                <Border Height="5" Width="88" CornerRadius="3"
+                        Background="#f47b25" HorizontalAlignment="Center"
+                        Margin="0,0,0,18" />
+
+                <TextBlock Text="Experience the electric pulse of the city that never sleeps. Explore hidden gems and neon-lit wonders around every corner."
+                           FontSize="14" Foreground="#CAffffff"
+                           TextAlignment="Center" TextWrapping="Wrap"
+                           MaxWidth="300" Margin="0,0,0,24" />
+
+                <Button Classes="primary"
+                        Foreground="White" FontWeight="Bold" FontSize="16"
+                        CornerRadius="24" Padding="24,16"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Click="OnPage3CTA" Margin="0,0,0,48">
+                  <TextBlock Text="Get Started" Foreground="White" FontWeight="Bold" />
+                </Button>
+
+              </StackPanel>
+            </Grid>
+          </Grid>
+        </ContentPage>
+
+      </CarouselPage>
+
+      <PipsPager HorizontalAlignment="Center"
+                 VerticalAlignment="Bottom" Margin="0,0,0,20"
+                 NumberOfPages="3"
+                 SelectedPageIndex="{Binding #DemoCarousel.SelectedIndex}"
+                 IsPreviousButtonVisible="False"
+                 IsNextButtonVisible="False">
+        <PipsPager.Styles>
+          <Style Selector="PipsPager /template/ ListBox ListBoxItem">
+            <Setter Property="Width" Value="38" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="ClipToBounds" Value="False" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Template">
+              <ControlTemplate>
+                <Grid Background="Transparent">
+                  <Border Name="Pip"
+                          Width="8" Height="8" CornerRadius="4"
+                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                          Background="#4DFFFFFF">
+                    <Border.Transitions>
+                      <Transitions>
+                        <DoubleTransition Property="Width" Duration="0:0:0.25" Easing="CubicEaseOut" />
+                        <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="CubicEaseOut" />
+                        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.25" Easing="CubicEaseOut" />
+                        <BrushTransition Property="Background" Duration="0:0:0.25" />
+                      </Transitions>
+                    </Border.Transitions>
+                  </Border>
+                </Grid>
+              </ControlTemplate>
+            </Setter>
+          </Style>
+          <Style Selector="PipsPager /template/ ListBox ListBoxItem:pointerover /template/ Border#Pip">
+            <Setter Property="Width" Value="10" />
+            <Setter Property="Height" Value="10" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Background" Value="#80FFFFFF" />
+          </Style>
+          <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected /template/ Border#Pip">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="8" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="#f47b25" />
+          </Style>
+          <Style Selector="PipsPager /template/ ListBox ListBoxItem:selected:pointerover /template/ Border#Pip">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="8" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="#e0701f" />
+          </Style>
+          <Style Selector="PipsPager /template/ ListBox ListBoxItem:pressed /template/ Border#Pip">
+            <Setter Property="Width" Value="8" />
+            <Setter Property="Height" Value="8" />
+            <Setter Property="Background" Value="#f47b25" />
+          </Style>
+        </PipsPager.Styles>
+      </PipsPager>
+
+      </Grid>
+    </Border>
+  </DockPanel>
+</UserControl>

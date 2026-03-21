@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Dialogs;
-using Avalonia.Platform;
 using System;
 using System.ComponentModel.DataAnnotations;
 using Avalonia;
@@ -13,10 +12,7 @@ namespace ControlCatalog.ViewModels
     {
         private WindowState _windowState;
         private WindowState[] _windowStates = Array.Empty<WindowState>();
-        private ExtendClientAreaChromeHints _chromeHints = ExtendClientAreaChromeHints.PreferSystemChrome;
         private bool _extendClientAreaEnabled;
-        private bool _systemTitleBarEnabled;
-        private bool _preferSystemChromeEnabled;
         private double _titleBarHeight;
         private bool _isSystemBarVisible;
         private bool _displayEdgeToEdge;
@@ -51,65 +47,16 @@ namespace ControlCatalog.ViewModels
                 WindowState.FullScreen,
             };
 
-            PropertyChanged += (s, e) =>
-                {
-                    if (e.PropertyName is nameof(SystemTitleBarEnabled) or nameof(PreferSystemChromeEnabled))
-                    {
-                        var hints = ExtendClientAreaChromeHints.NoChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
-
-                        if (SystemTitleBarEnabled)
-                        {
-                            hints |= ExtendClientAreaChromeHints.SystemChrome;
-                        }
-                        if (PreferSystemChromeEnabled)
-                        {
-                            hints |= ExtendClientAreaChromeHints.PreferSystemChrome;
-                        }
-                        ChromeHints = hints;
-                    }
-                };
-
-            SystemTitleBarEnabled = true;
             TitleBarHeight = -1;
             CanResize = true;
             CanMinimize = true;
             CanMaximize = true;
         }        
         
-        public ExtendClientAreaChromeHints ChromeHints
-        {
-            get { return _chromeHints; }
-            set { RaiseAndSetIfChanged(ref _chromeHints, value); }
-        }
-
         public bool ExtendClientAreaEnabled
         {
             get { return _extendClientAreaEnabled; }
-            set
-            {
-                if (RaiseAndSetIfChanged(ref _extendClientAreaEnabled, value) && !value)
-                {
-                    SystemTitleBarEnabled = true;
-                }
-            }
-        }
-
-        public bool SystemTitleBarEnabled
-        {
-            get { return _systemTitleBarEnabled; }
-            set
-            {
-                if (RaiseAndSetIfChanged(ref _systemTitleBarEnabled, value) && !value)
-                {
-                    TitleBarHeight = -1;
-                }
-            }
-        }
-
-        public bool PreferSystemChromeEnabled
-        {
-            get { return _preferSystemChromeEnabled; }
-            set { RaiseAndSetIfChanged(ref _preferSystemChromeEnabled, value); }
+            set { RaiseAndSetIfChanged(ref _extendClientAreaEnabled, value); }
         }
 
         public double TitleBarHeight

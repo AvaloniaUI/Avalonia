@@ -74,9 +74,6 @@ namespace Avalonia.Threading
                 _dispatcher.Send(d, state, Priority);
         }
 
-#if !NET6_0_OR_GREATER
-        [PrePrepareMethod]
-#endif
         public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
         {
             if (

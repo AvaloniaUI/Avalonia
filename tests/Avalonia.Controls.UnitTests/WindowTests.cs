@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Rendering;
-using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -689,6 +688,26 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(window.CanMaximize);
         }
 
+        [Fact]
+        public void FlowDirection_RTL_Should_Not_Result_In_Mirrored_Host()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object)));
+
+            var window = new Window
+            {
+                FlowDirection = FlowDirection.RightToLeft
+            };
+
+            var visualRoot = window.GetVisualRoot();
+            Assert.IsType<TopLevelHost>(visualRoot);
+
+            Assert.False(window.HasMirrorTransform);
+            Assert.False(visualRoot.HasMirrorTransform);
+        }
+
         public class SizingTests : ScopedTestBase
         {
             [Fact]
@@ -1166,6 +1185,26 @@ namespace Avalonia.Controls.UnitTests
             {
                 MeasureSizes.Add(availableSize);
                 return base.MeasureOverride(availableSize);
+            }
+        }
+
+        [Fact]
+        public void Show_Should_Apply_Default_Icon_When_No_Custom_Icon_Is_Set()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
+
+            using (UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform: windowingPlatform)))
+            {
+                var target = new Window();
+
+                // Clear any SetIcon calls from construction.
+                windowImpl.Invocations.Clear();
+
+                target.Show();
+
+                // ShowCore should apply the default icon when no custom icon was set.
+                windowImpl.Verify(x => x.SetIcon(It.IsAny<IWindowIconImpl?>()), Times.AtLeastOnce());
             }
         }
 

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Avalonia.Layout;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
 
@@ -331,9 +333,10 @@ namespace Avalonia.VisualTree
         {
             ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
-            var root = visual.GetVisualRoot();
+            var source = visual.GetPresentationSource();
+            var root = source?.RootVisual;
 
-            if (root is null)
+            if (source is null || root is null)
             {
                 return null;
             }
@@ -342,7 +345,7 @@ namespace Avalonia.VisualTree
 
             if (rootPoint.HasValue)
             {
-                return root.HitTester.HitTestFirst(rootPoint.Value, visual, filter);
+                return source.HitTester.HitTestFirst(rootPoint.Value, visual, filter);
             }
 
             return null;
@@ -380,14 +383,14 @@ namespace Avalonia.VisualTree
         {
             ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
-            var root = visual.GetVisualRoot();
+            var source = visual.GetPresentationSource();
 
-            if (root is null)
+            if (source is null)
             {
                 return Array.Empty<Visual>();
             }
 
-            return root.HitTester.HitTest(p, visual, filter);
+            return source.HitTester.HitTest(p, visual, filter);
         }
 
         /// <summary>
@@ -456,19 +459,26 @@ namespace Avalonia.VisualTree
             return visual.VisualParent as T;
         }
 
-        /// <summary>
-        /// Gets the root visual for an <see cref="Visual"/>.
-        /// </summary>
-        /// <param name="visual">The visual.</param>
-        /// <returns>
-        /// The root visual or null if the visual is not rooted.
-        /// </returns>
-        public static IRenderRoot? GetVisualRoot(this Visual visual)
-        {
-            ThrowHelper.ThrowIfNull(visual, nameof(visual));
 
-            return visual as IRenderRoot ?? visual.VisualRoot;
-        }
+        public static IPresentationSource? GetPresentationSource(this Visual visual) => visual.PresentationSource;
+
+        // TODO: Verify all usages, this is no longer necessary a TopLevel
+        internal static Visual? GetVisualRoot(this Visual visual) => visual.PresentationSource?.RootVisual;
+
+        internal static ILayoutRoot? GetLayoutRoot(this Visual visual) => visual.PresentationSource?.LayoutRoot;
+
+        /// <summary>
+        /// Gets the layout manager for the visual's presentation source, or null if the visual is not attached to a visual root.
+        /// </summary>
+        public static ILayoutManager? GetLayoutManager(this Visual visual) =>
+            visual.PresentationSource?.LayoutRoot.LayoutManager;
+
+        /// <summary>
+        /// Attempts to obtain platform settings from the visual's root.
+        /// This will return null if the visual is not attached to a visual root.
+        /// </summary>
+        public static IPlatformSettings? GetPlatformSettings(this Visual visual) =>
+            visual.GetPresentationSource()?.PlatformSettings;
 
         /// <summary>
         /// Returns a value indicating whether this control is attached to a visual root.

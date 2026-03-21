@@ -1,6 +1,7 @@
 using System;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 using SkiaSharp;
 using static Avalonia.OpenGL.GlConsts;
 
@@ -21,6 +22,8 @@ namespace Avalonia.Skia
         public void Dispose() => _surface.Dispose();
 
         public bool IsCorrupted => _surface.IsCorrupted;
+
+        public bool IsReady => _surface.IsReady;
 
         class GlGpuSession : ISkiaGpuRenderSession
         {
@@ -56,9 +59,9 @@ namespace Avalonia.Skia
             public double ScaleFactor => _glSession.Scaling;
         }
         
-        public ISkiaGpuRenderSession BeginRenderingSession(PixelSize? expectedPixelSize)
+        public ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
-            var glSession = _surface.BeginDraw(expectedPixelSize);
+            var glSession = _surface.BeginDraw(sceneInfo);
             
             bool success = false;
             try

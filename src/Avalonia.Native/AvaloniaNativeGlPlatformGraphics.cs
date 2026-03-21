@@ -175,7 +175,7 @@ namespace Avalonia.Native
 
         public bool IsCorrupted => false;
 
-        public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedPixelSize)
+        public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             // TODO: use expectedPixelSize
             ObjectDisposedException.ThrowIf(_target is null, this);

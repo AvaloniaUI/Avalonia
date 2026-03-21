@@ -1,5 +1,4 @@
 using System.Linq;
-using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -7,14 +6,16 @@ namespace Avalonia.Controls.Primitives
     public class TextSelectorLayer : Canvas
     {
         protected override bool BypassFlowDirectionPolicies => true;
+
         public Size AvailableSize { get; private set; }
+
         public static TextSelectorLayer? GetTextSelectorLayer(Visual visual)
         {
             foreach (var v in visual.GetVisualAncestors())
-                if (v is VisualLayerManager vlm)
-                    if (vlm.TextSelectorLayer != null)
-                        return vlm.TextSelectorLayer;
-            if (visual is TopLevel tl)
+                if (v is VisualLayerManager { TextSelectorLayer: { } textSelectorLayer })
+                    return textSelectorLayer;
+
+            if (TopLevel.GetTopLevel(visual) is { } tl)
             {
                 var layers = tl.GetVisualDescendants().OfType<VisualLayerManager>().FirstOrDefault();
                 return layers?.TextSelectorLayer;
@@ -25,7 +26,7 @@ namespace Avalonia.Controls.Primitives
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            foreach (Control child in Children)
+            foreach (var child in Children)
                 child.Measure(availableSize);
             return default;
         }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Metal;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Metal;
@@ -49,7 +50,7 @@ internal class SkiaMetalGpu : ISkiaGpu
     public IScopedResource<GRContext> TryGetGrContext() =>
         ScopedResource<GRContext>.Create(GrContext, EnsureCurrent().Dispose);
 
-    public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
+    public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
     {
         foreach (var surface in surfaces)
         {
@@ -61,6 +62,19 @@ internal class SkiaMetalGpu : ISkiaGpu
         }
 
         return null;
+    }
+
+    public bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
+    {
+        foreach (var surface in surfaces)
+        {
+            if (surface is IMetalPlatformSurface)
+            {
+                return surface.IsReady;
+            }
+        }
+
+        return false;
     }
 
     public class SkiaMetalRenderTarget : ISkiaGpuRenderTarget
@@ -80,7 +94,7 @@ internal class SkiaMetalGpu : ISkiaGpu
             _target = null;
         }
 
-        public ISkiaGpuRenderSession BeginRenderingSession(PixelSize? expectedPixelSize)
+        public ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             // TODO: use expectedPixelSize
             var session = (_target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget))).BeginRendering();
@@ -91,10 +105,12 @@ internal class SkiaMetalGpu : ISkiaGpu
                 session.IsYFlipped ? GRSurfaceOrigin.BottomLeft : GRSurfaceOrigin.TopLeft,
                 SKColorType.Bgra8888);
 
-            return new SkiaMetalRenderSession(_gpu, surface, session);
+            return new SkiaMetalRenderSession(_gpu, surface, session, backendTarget);
         }
 
         public bool IsCorrupted => false;
+
+        public bool IsReady => _target?.IsReady ?? false;
     }
     
     internal class SkiaMetalRenderSession : ISkiaGpuRenderSession
@@ -102,14 +118,17 @@ internal class SkiaMetalGpu : ISkiaGpu
         private readonly SkiaMetalGpu _gpu;
         private SKSurface? _surface;
         private IMetalPlatformSurfaceRenderingSession? _session;
+        private GRBackendRenderTarget? _backendTarget;
 
-        public SkiaMetalRenderSession(SkiaMetalGpu gpu, 
+        public SkiaMetalRenderSession(SkiaMetalGpu gpu,
             SKSurface surface,
-            IMetalPlatformSurfaceRenderingSession session)
+            IMetalPlatformSurfaceRenderingSession session,
+            GRBackendRenderTarget backendTarget)
         {
             _gpu = gpu;
             _surface = surface;
             _session = session;
+            _backendTarget = backendTarget;
         }
 
         public void Dispose()
@@ -117,11 +136,13 @@ internal class SkiaMetalGpu : ISkiaGpu
             _surface?.Canvas.Flush();
             _surface?.Flush();
             _gpu._context?.Flush();
-            
+
             _surface?.Dispose();
             _surface = null;
             _session?.Dispose();
             _session = null;
+            _backendTarget?.Dispose();
+            _backendTarget = null;
         }
 
         public GRContext GrContext => _gpu._context!;
