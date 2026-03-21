@@ -212,6 +212,11 @@ namespace Avalonia.Media
                 throw new NotImplementedException();
             }
 
+            internal override void DrawRecordingCore(Rendering.Composition.DrawingRecording recording)
+            {
+                throw new NotImplementedException();
+            }
+
             protected override void DrawLineCore(IPen pen, Point p1, Point p2)
             {
                 // Instantiate the geometry
