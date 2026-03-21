@@ -95,6 +95,8 @@ namespace Avalonia.Media
                 // Load COLR and CPAL tables for color glyph support
                 ColrTable.TryLoad(this, out _colrTable);
                 CpalTable.TryLoad(this, out _cpalTable);
+
+                IsLastResort = ((headTable.Flags & HeadFlags.LastResortFont) != 0) || _cmapTable.Format == CmapFormat.Format13;
             }
 
             var ascent = 0;
@@ -131,11 +133,6 @@ namespace Avalonia.Media
                     descent = _os2Table.WinDescent;
                 }
             }
-
-            HeadTable.TryLoad(this, out var headTable);
-
-            IsLastResort = (headTable is not null && (headTable.Flags & HeadFlags.LastResortFont) != 0) ||
-                           _cmapTable.Format == CmapFormat.Format13;
 
             var postTable = PostTable.Load(this);
 
