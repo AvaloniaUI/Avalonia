@@ -29,9 +29,6 @@ namespace Avalonia.Controls
     [TemplatePart("PART_PaneButton", typeof(ToggleButton))]
     [TemplatePart("PART_CompactPaneToggle", typeof(ToggleButton))]
     [TemplatePart("PART_Backdrop", typeof(Border))]
-    [TemplatePart("PART_CompactPaneIconPresenter", typeof(ContentPresenter))]
-    [TemplatePart("PART_PaneIconPresenter", typeof(ContentPresenter))]
-    [TemplatePart("PART_BottomPaneIconPresenter", typeof(ContentPresenter))]
     [PseudoClasses(":placement-right", ":placement-top", ":placement-bottom", ":detail-is-navpage")]
     public class DrawerPage : Page
     {
@@ -133,6 +130,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<object?> DrawerIconProperty =
             AvaloniaProperty.Register<DrawerPage, object?>(nameof(DrawerIcon));
 
+        /// <summary>
+        /// Defines the <see cref="DrawerIconTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> DrawerIconTemplateProperty =
+            AvaloniaProperty.Register<DrawerPage, IDataTemplate?>(nameof(DrawerIconTemplate));
+
         private static readonly DefaultPageDataTemplate s_defaultPageDataTemplate = new DefaultPageDataTemplate();
 
         /// <summary>
@@ -206,9 +209,6 @@ namespace Avalonia.Controls
         private ContentPresenter? _drawerPresenter;
         private ContentPresenter? _drawerHeaderPresenter;
         private ContentPresenter? _drawerFooterPresenter;
-        private ContentPresenter? _compactPaneIconPresenter;
-        private ContentPresenter? _paneIconPresenter;
-        private ContentPresenter? _bottomPaneIconPresenter;
         private SplitView? _splitView;
         private Border? _topBar;
         private ToggleButton? _paneButton;
@@ -428,6 +428,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets the data template used to display the drawer icon.
+        /// </summary>
+        public IDataTemplate? DrawerIconTemplate
+        {
+            get => GetValue(DrawerIconTemplateProperty);
+            set => SetValue(DrawerIconTemplateProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the data template used to display <see cref="Drawer"/> content.
         /// </summary>
         public IDataTemplate? DrawerTemplate
@@ -536,15 +545,10 @@ namespace Avalonia.Controls
             _drawerPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerPresenter");
             _drawerHeaderPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerHeader");
             _drawerFooterPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerFooter");
-            _compactPaneIconPresenter = e.NameScope.Find<ContentPresenter>("PART_CompactPaneIconPresenter");
-            _paneIconPresenter = e.NameScope.Find<ContentPresenter>("PART_PaneIconPresenter");
-            _bottomPaneIconPresenter = e.NameScope.Find<ContentPresenter>("PART_BottomPaneIconPresenter");
             _splitView = e.NameScope.Find<SplitView>("PART_SplitView");
             _topBar = e.NameScope.Find<Border>("PART_TopBar");
             _paneButton = e.NameScope.Find<ToggleButton>("PART_PaneButton");
             _backdrop = e.NameScope.Find<Border>("PART_Backdrop");
-
-            UpdateIconPresenters();
 
             if (_backdrop != null)
             {
@@ -568,11 +572,7 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == DrawerIconProperty)
-            {
-                UpdateIconPresenters();
-            }
-            else if (change.Property == DrawerProperty || change.Property == ContentProperty)
+            if (change.Property == DrawerProperty || change.Property == ContentProperty)
             {
                 if (change.OldValue is ILogical oldLogical)
                     LogicalChildren.Remove(oldLogical);
@@ -1005,26 +1005,6 @@ namespace Avalonia.Controls
             SetCurrentValue(IsOpenProperty, false);
             e.Handled = true;
         }
-
-        private void UpdateIconPresenters()
-        {
-            if (_compactPaneIconPresenter != null)
-                _compactPaneIconPresenter.Content = CreateIconContent(DrawerIcon);
-            if (_paneIconPresenter != null)
-                _paneIconPresenter.Content = CreateIconContent(DrawerIcon);
-            if (_bottomPaneIconPresenter != null)
-                _bottomPaneIconPresenter.Content = CreateIconContent(DrawerIcon);
-        }
-
-        internal static object? CreateIconContent(object? icon) => icon switch
-        {
-            ITemplate<Control> template => template.Build(),
-            Geometry g => new PathIcon { Data = g },
-            PathIcon pi => new PathIcon { Data = pi.Data },
-            DrawingImage { Drawing: GeometryDrawing { Geometry: { } gd } } => new PathIcon { Data = gd },
-            IImage image => new Image { Source = image },
-            _ => null
-        };
 
         private void ApplyDrawerBackground()
         {
