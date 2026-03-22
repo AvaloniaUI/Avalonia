@@ -205,7 +205,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
                 var error = dataValidationError is not null ?
                     new BindingError(dataValidationError, BindingErrorType.DataValidationError) :
                     null;
-                ConvertAndPublishValue(value, error);
+                ConvertAndPublishValue(value, error, true);
             }
         }
         else if (_mode == BindingMode.OneWayToSource && nodeIndex == _nodes.Count - 2 && value is not null)
@@ -402,7 +402,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
             error);
     }
 
-    private void ConvertAndPublishValue(object? value, BindingError? error)
+    private void ConvertAndPublishValue(object? value, BindingError? error, bool forceUpdate = false)
     {
         var isTargetNullValue = false;
 
@@ -450,7 +450,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
             value = ConvertFallback(FallbackValue, nameof(FallbackValue));
 
         // Publish the value.
-        PublishValue(value, error);
+        PublishValue(value, error, forceUpdate);
     }
 
     private void WriteTargetValueToSource()
