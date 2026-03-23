@@ -59,7 +59,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
             field?.SetPresentationSourceForRootVisual(this);
             Renderer.CompositionTarget.Root = field?.CompositionVisual;
 
-            FocusManager.SetContentRoot(value as IInputElement);
+            FocusManager.ContentRoot = value;
         }
     }
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -157,10 +158,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, WindowClosingBehavior>(nameof(ClosingBehavior));
 
         /// <summary>
-        /// Represents the current window state (normal, minimized, maximized)
+        /// Represents the currently effective window state (normal, minimized, maximized)
         /// </summary>
-        public static readonly StyledProperty<WindowState> WindowStateProperty =
-            AvaloniaProperty.Register<Window, WindowState>(nameof(WindowState));
+        public static readonly DirectProperty<Window, WindowState> WindowStateProperty =
+            AvaloniaProperty.RegisterDirect<Window, WindowState>(
+                nameof(WindowState), o => o.WindowState,
+                (o, v) => o.WindowState = v);
 
         /// <summary>
         /// Defines the <see cref="Title"/> property.
@@ -252,13 +255,12 @@ namespace Avalonia.Controls
             });
 
             CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
-            CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon((icon ?? s_defaultIcon.Value)?.PlatformImpl));
+            CreatePlatformImplBinding(IconProperty, SetEffectiveIcon);
             CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
             CreatePlatformImplBinding(CanMinimizeProperty, canMinimize => PlatformImpl!.SetCanMinimize(canMinimize));
             CreatePlatformImplBinding(CanMaximizeProperty, canMaximize => PlatformImpl!.SetCanMaximize(canMaximize));
             CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
-
-            CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
+            
             CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, hint => PlatformImpl!.SetExtendClientAreaToDecorationsHint(hint));
             CreatePlatformImplBinding(ExtendClientAreaTitleBarHeightHintProperty, height => PlatformImpl!.SetExtendClientAreaTitleBarHeightHint(height));
 
@@ -405,13 +407,25 @@ namespace Avalonia.Controls
             set => SetValue(ClosingBehaviorProperty, value);
         }
 
+        private WindowState _windowStateForPropertyNotifications;
         /// <summary>
-        /// Gets or sets the minimized/maximized state of the window.
+        /// Represents the currently effective window state (normal, minimized, maximized)
         /// </summary>
         public WindowState WindowState
         {
-            get => GetValue(WindowStateProperty);
-            set => SetValue(WindowStateProperty, value);
+            get => PlatformImpl?.WindowState ?? default;
+            set
+            {
+                if (PlatformImpl != null)
+                {
+                    PlatformImpl.WindowState = value;
+                    var oldValue = _windowStateForPropertyNotifications;
+                    _windowStateForPropertyNotifications = PlatformImpl.WindowState;
+                    // If the request was refused - trigger a synthetic property change
+                    if (PlatformImpl.WindowState != value)
+                        RaisePropertyChanged(WindowStateProperty, oldValue, _windowStateForPropertyNotifications);
+                }
+            }
         }
 
         /// <summary>
@@ -616,10 +630,10 @@ namespace Avalonia.Controls
 
             return false;
         }
-
+        
         private void HandleWindowStateChanged(WindowState state)
         {
-            WindowState = state;
+            SetAndRaise(WindowStateProperty, ref _windowStateForPropertyNotifications, state);
 
             if (state == WindowState.Minimized)
             {
@@ -819,6 +833,12 @@ namespace Avalonia.Controls
             ShowCore<object>(null, false);
         }
 
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+            EnableVisualLayerManagerLayers();
+        }
+
         protected override void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!IgnoreVisibilityChanges)
@@ -924,6 +944,8 @@ namespace Avalonia.Controls
                 
                 _shown = true;
                 IsVisible = true;
+
+                SetEffectiveIcon(Icon);
 
                 // If window position was not set before then platform may provide incorrect scaling at this time,
                 // but we need it for proper calculation of position and in some cases size (size to content)
@@ -1041,8 +1063,10 @@ namespace Avalonia.Controls
                 size = new Size(
                     size.Width + inset.Left + inset.Right,
                     size.Height + inset.Top + inset.Bottom);
+                if (PlatformImpl?.ClientSize != size)
+                    PlatformImpl?.Resize(size, reason);
             }
-            if (PlatformImpl?.ClientSize != size)
+            else
                 PlatformImpl?.Resize(size, reason);
         }
 
@@ -1344,9 +1368,6 @@ namespace Avalonia.Controls
 
             return result;
         }
-
-        // HACK: Needs to fix maximize->normal transition, otherwise the layout pass will break window size
-        internal bool ResizeWindowInTopLevelHost => _canHandleResized && _isForcedDecorationMode;
         
         private protected sealed override Size ArrangeSetBounds(Size size)
         {
@@ -1354,7 +1375,7 @@ namespace Avalonia.Controls
             // In forced decoration mode, TopLevelHost.ArrangeOverride handles the Resize call
             // because it knows the full frame size and can detect genuine content size changes
             // vs stale layout during window state transitions.
-            if (_canHandleResized && !_isForcedDecorationMode)
+            if (_canHandleResized)
             {
                 ResizePlatformImpl(size, WindowResizeReason.Layout);
             }
@@ -1388,7 +1409,10 @@ namespace Avalonia.Controls
             if (_canHandleResized && (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height)))
             {
                 var sizeToContent = SizeToContent;
-
+                
+                // If auto-sizing is enabled, and the resize came from a user resize (or the reason was
+                // unspecified) then turn off auto-resizing for any window dimension that is not equal
+                // to the requested size.
                 if (sizeToContent != SizeToContent.Manual &&
                     CanResize &&
                     reason == WindowResizeReason.Unspecified ||
@@ -1456,7 +1480,7 @@ namespace Avalonia.Controls
 
         private static WindowIcon? LoadDefaultIcon()
         {
-            // Use AvaloniaLocator instead of static AssetLoader, so it won't fail on Unit Tests without any asset loader. 
+            // Use AvaloniaLocator instead of static AssetLoader, so it won't fail on Unit Tests without any asset loader.
             if (AvaloniaLocator.Current.GetService<IAssetLoader>() is { } assetLoader
                 && Assembly.GetEntryAssembly()?.GetName()?.Name is { } assemblyName
                 && Uri.TryCreate($"avares://{assemblyName}/!__AvaloniaDefaultWindowIcon", UriKind.Absolute, out var path)
@@ -1466,6 +1490,12 @@ namespace Avalonia.Controls
                 return new WindowIcon(stream);
             }
             return null;
+        }
+
+        private void SetEffectiveIcon(WindowIcon? icon)
+        {
+            icon ??= _shown ? s_defaultIcon.Value : null;
+            PlatformImpl?.SetIcon(icon?.PlatformImpl);
         }
 
         private static bool CoerceCanMaximize(AvaloniaObject target, bool value)

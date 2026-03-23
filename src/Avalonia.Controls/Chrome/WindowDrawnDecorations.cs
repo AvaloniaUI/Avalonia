@@ -58,13 +58,13 @@ public class WindowDrawnDecorations : StyledElement
     /// Defines the <see cref="DefaultFrameThickness"/> property.
     /// </summary>
     public static readonly StyledProperty<Thickness> DefaultFrameThicknessProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultFrameThickness));
+        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultFrameThickness), validate: Border.BorderThicknessProperty.ValidateValue);
 
     /// <summary>
     /// Defines the <see cref="DefaultShadowThickness"/> property.
     /// </summary>
     public static readonly StyledProperty<Thickness> DefaultShadowThicknessProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultShadowThickness));
+        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultShadowThickness), validate: Border.BorderThicknessProperty.ValidateValue);
 
     /// <summary>
     /// Defines the <see cref="TitleBarHeight"/> property.
@@ -506,24 +506,21 @@ public class WindowDrawnDecorations : StyledElement
 
     private void OnMinimizeButtonClick(object? sender, Interactivity.RoutedEventArgs e)
     {
-        if (_hostWindow != null)
-            _hostWindow.WindowState = WindowState.Minimized;
+        _hostWindow?.WindowState = WindowState.Minimized;
         e.Handled = true;
     }
 
     private void OnMaximizeButtonClick(object? sender, Interactivity.RoutedEventArgs e)
     {
-        if (_hostWindow != null)
-            _hostWindow.WindowState = _hostWindow.WindowState == WindowState.Maximized
-                ? WindowState.Normal
-                : WindowState.Maximized;
+        _hostWindow?.WindowState = _hostWindow.WindowState == WindowState.Maximized
+            ? WindowState.Normal
+            : WindowState.Maximized;
         e.Handled = true;
     }
 
     private void OnFullScreenButtonClick(object? sender, Interactivity.RoutedEventArgs e)
     {
-        if (_hostWindow != null)
-            _hostWindow.WindowState = _hostWindow.WindowState == WindowState.FullScreen
+        _hostWindow?.WindowState = _hostWindow.WindowState == WindowState.FullScreen
                 ? WindowState.Normal
                 : WindowState.FullScreen;
         e.Handled = true;

@@ -1,9 +1,8 @@
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Generator;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DevGenerators;
@@ -40,24 +39,44 @@ public class X11AtomsGenerator : IIncrementalGenerator
                     .AppendLine(cl.Name)
                     .AppendLine("{");
 
-                var fields = cl.GetMembers().OfType<IFieldSymbol>()
+                var allFields = cl.GetMembers().OfType<IFieldSymbol>()
                     .Where(f => f.Type.Name == "IntPtr"
-                                && f.DeclaredAccessibility == Accessibility.Public).ToList();
-                
+                                && f.DeclaredAccessibility == Accessibility.Public);
+
+                var writeableFields = new List<IFieldSymbol>(128);
+                var readonlyFields = new List<IFieldSymbol>(128);
+
+                foreach (var field in allFields)
+                {
+                    var fields = field.IsReadOnly ? readonlyFields : writeableFields;
+                    fields.Add(field);
+                }
+
                 classBuilder.Pad(1).AppendLine("private void PopulateAtoms(IntPtr display)").Pad(1).AppendLine("{");
-                classBuilder.Pad(2).Append("var atoms = new IntPtr[").Append(fields.Count).AppendLine("];");
-                classBuilder.Pad(2).Append("var atomNames = new string[").Append(fields.Count).AppendLine("] {");
 
+                for (int c = 0; c < readonlyFields.Count; c++)
+                {
+                    var field = readonlyFields[c];
+                    var initializer =
+                        (field.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken) as VariableDeclaratorSyntax)
+                        ?.Initializer?.Value;
 
-                for (int c = 0; c < fields.Count; c++)
-                    classBuilder.Pad(3).Append("\"").Append(fields[c].Name).AppendLine("\",");
+                    classBuilder.Pad(2).Append("SetName(").Append('\"')
+                        .Append(field.Name).Append("\", ").Append(initializer).AppendLine(");");
+                }
+
+                classBuilder.Pad(2).Append("var atoms = new IntPtr[").Append(writeableFields.Count).AppendLine("];");
+                classBuilder.Pad(2).Append("var atomNames = new string[").Append(writeableFields.Count).AppendLine("] {");
+
+                for (int c = 0; c < writeableFields.Count; c++)
+                    classBuilder.Pad(3).Append("\"").Append(writeableFields[c].Name).AppendLine("\",");
                 classBuilder.Pad(2).AppendLine("};");
                 
                 classBuilder.Pad(2).AppendLine("XInternAtoms(display, atomNames, atomNames.Length, true, atoms);");
 
-                for (int c = 0; c < fields.Count; c++)
-                    classBuilder.Pad(2).Append("InitAtom(ref ").Append(fields[c].Name).Append(", \"")
-                        .Append(fields[c].Name).Append("\", atoms[").Append(c).AppendLine("]);");
+                for (int c = 0; c < writeableFields.Count; c++)
+                    classBuilder.Pad(2).Append("InitAtom(ref ").Append(writeableFields[c].Name).Append(", \"")
+                        .Append(writeableFields[c].Name).Append("\", atoms[").Append(c).AppendLine("]);");
 
 
                 classBuilder.Pad(1).AppendLine("}");
