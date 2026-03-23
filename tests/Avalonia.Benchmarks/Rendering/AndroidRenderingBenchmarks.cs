@@ -97,7 +97,7 @@ namespace Avalonia.Benchmarks.Rendering
             return signaled;
         }
 
-        // TextInput timestamp: DateTime.Now vs TickCount64 (TopLevelImpl.cs)
+        // TextInput timestamp: DateTime.Now vs monotonic clock (TopLevelImpl.cs)
 
         [Benchmark]
         public ulong Current_TextInput_DateTimeNowTicks()
@@ -111,12 +111,12 @@ namespace Avalonia.Benchmarks.Rendering
         }
 
         [Benchmark]
-        public long Optimized_TextInput_EnvironmentTickCount64()
+        public long Optimized_TextInput_StopwatchTimestamp()
         {
             long result = 0;
             for (int i = 0; i < FrameCount; i++)
             {
-                result = Environment.TickCount64;
+                result = System.Diagnostics.Stopwatch.GetTimestamp();
             }
             return result;
         }

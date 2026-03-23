@@ -4,6 +4,7 @@ using Android.App;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
@@ -387,7 +388,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             if(Input != null)
             {
-                var args = new RawTextInputEventArgs(AndroidKeyboardDevice.Instance!, (ulong)Environment.TickCount64, InputRoot!, text);
+                var args = new RawTextInputEventArgs(AndroidKeyboardDevice.Instance!, (ulong)SystemClock.UptimeMillis(), InputRoot!, text);
 
                 Input(args);
             }
