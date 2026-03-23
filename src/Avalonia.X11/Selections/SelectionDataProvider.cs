@@ -63,6 +63,7 @@ internal abstract class SelectionDataProvider : IDisposable
         }
 
         XSendEvent(Platform.Display, request.requestor, false, new IntPtr((int)EventMask.NoEventMask), ref response);
+        OnActivity();
 
         IntPtr WriteTargetToProperty(IntPtr target, IntPtr window, IntPtr property)
         {
@@ -196,6 +197,7 @@ internal abstract class SelectionDataProvider : IDisposable
             ref size, 1);
 
         var buffer = ArrayPool<byte>.Shared.Rent((int)Math.Min(_maximumPropertySize, data.Length));
+        var gotTimeout = false;
 
         while (true)
         {
@@ -204,22 +206,29 @@ internal abstract class SelectionDataProvider : IDisposable
                     x.type == XEventName.PropertyNotify &&
                     x.PropertyEvent.atom == property &&
                     x.PropertyEvent.state == 1,
-                TimeSpan.FromMinutes(1));
+                SelectionHelper.Timeout);
 
             if (evt is null)
+            {
+                gotTimeout = true;
                 break;
+            }
 
             var read = await data.ReadAsync(buffer, 0, buffer.Length);
             if (read == 0)
                 break;
 
             XChangeProperty(Platform.Display, window, property, target, 8, PropertyMode.Replace, buffer, read);
+            OnActivity();
         }
 
         ArrayPool<byte>.Shared.Return(buffer);
 
         // Finish the transfer
         XChangeProperty(Platform.Display, window, property, target, 8, PropertyMode.Replace, 0, 0);
+
+        if (!gotTimeout)
+            OnActivity();
     }
 
     private Task SendDataToClientAsync(IntPtr window, IntPtr property, IntPtr target, byte[] bytes)
@@ -228,6 +237,7 @@ internal abstract class SelectionDataProvider : IDisposable
         {
             XChangeProperty(Platform.Display, window, property, target, 8, PropertyMode.Replace,
                 bytes, bytes.Length);
+            OnActivity();
             return Task.CompletedTask;
         }
 
@@ -240,6 +250,10 @@ internal abstract class SelectionDataProvider : IDisposable
 
         var formatAtoms = DataFormatHelper.ToAtoms(dataTransfer?.Formats ?? [], atoms);
         return [atoms.TARGETS, atoms.MULTIPLE, ..formatAtoms];
+    }
+
+    protected virtual void OnActivity()
+    {
     }
 
     public abstract void Dispose();

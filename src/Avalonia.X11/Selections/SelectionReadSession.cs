@@ -42,7 +42,7 @@ internal sealed class SelectionReadSession(
                   ev.SelectionEvent.requestor == window &&
                   ev.SelectionEvent.selection == selection &&
                   ev.SelectionEvent.property == property,
-            TimeSpan.FromSeconds(5));
+            SelectionHelper.Timeout);
         
         if (ev == null)
             return null;
@@ -108,7 +108,7 @@ internal sealed class SelectionReadSession(
                 x => x is { type: XEventName.PropertyNotify, PropertyEvent.state: 0 } &&
                      x.PropertyEvent.window == window &&
                      x.PropertyEvent.atom == property,
-                TimeSpan.FromSeconds(5));
+                SelectionHelper.Timeout);
             
             if (ev == null)
                 return null;

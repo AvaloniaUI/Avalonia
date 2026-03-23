@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -49,6 +50,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         private bool _pointerGrabbed;
         private XdndTargetInfo? _lastTarget;
         private DragDropEffects _currentEffects;
+        private DragDropTimeoutManager? _timeoutManager;
 
         public Handler(
             AvaloniaX11Platform platform,
@@ -68,7 +70,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             if (!platform.Windows.TryGetValue(sourceWindow, out var sourceWindowInfo))
             {
                 _formatAtoms = [];
-                _completionSource.TrySetResult(DragDropEffects.None);
+                Complete(DragDropEffects.None);
                 return;
             }
 
@@ -92,7 +94,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             if (grabResult != GrabResult.GrabSuccess)
             {
                 _formatAtoms = [];
-                _completionSource.TrySetResult(DragDropEffects.None);
+                Complete(DragDropEffects.None);
                 return;
             }
 
@@ -198,11 +200,22 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 var rootPosition = new PixelPoint(button.x_root, button.y_root);
                 ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.Drop, rootPosition);
                 _lastTarget = null;
-                _completionSource.TrySetResult(_currentEffects);
+                Complete(_currentEffects);
             }
             else
             {
                 _dataProvider.SetOwner(_sourceWindow);
+
+                Debug.Assert(_timeoutManager is null);
+
+                _timeoutManager = new DragDropTimeoutManager(SelectionHelper.Timeout, () =>
+                {
+                    DisposeTimeoutManager();
+                    Complete(DragDropEffects.None);
+                });
+
+                _dataProvider.Activity = _timeoutManager.Restart;
+
                 SendXdndDrop(lastTarget, button.time);
             }
         }
@@ -224,6 +237,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 return;
 
             _lastTarget = null;
+            DisposeTimeoutManager();
 
             if (lastTarget.Version >= 5)
             {
@@ -233,7 +247,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 UpdateCurrentEffects(effects & _allowedEffects);
             }
 
-            _completionSource.TrySetResult(_currentEffects);
+            Complete(_currentEffects);
         }
 
         private XdndTargetInfo? FindXdndTarget(PixelPoint rootPosition)
@@ -433,6 +447,16 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             return _platform.Info.DefaultCursor;
         }
 
+        private void Complete(DragDropEffects resultEffects)
+            => _completionSource.TrySetResult(resultEffects);
+
+        private void DisposeTimeoutManager()
+        {
+            _dataProvider.Activity = null;
+            _timeoutManager?.Dispose();
+            _timeoutManager = null;
+        }
+
         public void Dispose()
         {
             if (_pointerGrabbed)
@@ -447,6 +471,8 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             _lastTarget = null;
             _currentEffects = DragDropEffects.None;
+
+            DisposeTimeoutManager();
 
             if (_dataProvider.GetOwner() == _sourceWindow)
                 _dataProvider.SetOwner(0);
