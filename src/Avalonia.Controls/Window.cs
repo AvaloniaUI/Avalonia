@@ -428,7 +428,6 @@ namespace Avalonia.Controls
         public WindowState WindowState
         {
             get => GetValue(WindowStateProperty);
-            [Obsolete("Use TrySetWindowState")]
             set => SetValue(WindowStateProperty, value);
         }
         
@@ -675,6 +674,10 @@ namespace Avalonia.Controls
 #pragma warning restore CS0618 // Type or member is obsolete
         }
         
+        /// <summary>
+        /// Attempt to transition the window state to the specified state. The request might be delayed or
+        /// ignored by the underlying platform
+        /// </summary>
         public void TrySetWindowState(WindowState state)
         {
             PlatformImpl?.WindowState = state;
@@ -1441,7 +1444,10 @@ namespace Avalonia.Controls
             if (_canHandleResized && (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height)))
             {
                 var sizeToContent = SizeToContent;
-
+                
+                // If auto-sizing is enabled, and the resize came from a user resize (or the reason was
+                // unspecified) then turn off auto-resizing for any window dimension that is not equal
+                // to the requested size.
                 if (sizeToContent != SizeToContent.Manual &&
                     CanResize &&
                     reason == WindowResizeReason.Unspecified ||
