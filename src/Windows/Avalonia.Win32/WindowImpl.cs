@@ -208,6 +208,7 @@ namespace Avalonia.Win32
 
         public Action<PixelPoint>? PositionChanged { get; set; }
 
+        private WindowState? _effectiveWindowState;
         public Action<WindowState>? WindowStateChanged { get; set; }
 
         public Action? LostFocus { get; set; }
@@ -281,6 +282,11 @@ namespace Avalonia.Win32
         {
             get
             {
+                // The code below does not match what we report in WindowStateChanged callback.
+                // This value is the reported value
+                if (_effectiveWindowState.HasValue)
+                    return _effectiveWindowState.Value;
+                
                 if (!IsWindowVisible(_hwnd))
                 {
                     return _showWindowState;
@@ -1298,7 +1304,7 @@ namespace Avalonia.Win32
             }
 
             newWindowProperties.WindowState = state;
-
+            
             UpdateWindowProperties(newWindowProperties, newWindowProperties.Decorations != WindowDecorations.Full);
 
             if (command.HasValue)

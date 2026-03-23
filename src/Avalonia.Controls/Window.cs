@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -633,7 +634,8 @@ namespace Avalonia.Controls
         
         private void HandleWindowStateChanged(WindowState state)
         {
-            SetAndRaise(WindowStateProperty, ref _windowStateForPropertyNotifications, state);
+            Debug.Assert(PlatformImpl == null || PlatformImpl.WindowState == state);
+            SetAndRaise(WindowStateProperty, ref _windowStateForPropertyNotifications, WindowState);
 
             if (state == WindowState.Minimized)
             {

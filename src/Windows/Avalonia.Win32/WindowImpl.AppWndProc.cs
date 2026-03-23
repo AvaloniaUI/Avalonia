@@ -761,6 +761,7 @@ namespace Avalonia.Win32
 
                             UpdateWindowProperties(newWindowProperties);
 
+                            _effectiveWindowState = windowState;
                             WindowStateChanged?.Invoke(windowState);
 
                             if (_isClientAreaExtended)
