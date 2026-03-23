@@ -1321,7 +1321,7 @@ public class DrawerPageTests
             Assert.True(nav.IsBackButtonEffectivelyVisible);
 
             root.Child = null;
-            Assert.False(nav.IsBackButtonEffectivelyVisible ?? false);
+            Assert.False(nav.IsBackButtonEffectivelyVisible);
 
             root.Child = dp;
             Assert.True(nav.IsBackButtonEffectivelyVisible);

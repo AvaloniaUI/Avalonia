@@ -5,6 +5,8 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Styling;
+using Avalonia.Themes.Simple;
 using System.Linq;
 using Xunit;
 
@@ -199,6 +201,44 @@ namespace Avalonia.Controls.UnitTests
             target.IsNextButtonVisible = true;
             Assert.True(target.IsPreviousButtonVisible);
             Assert.True(target.IsNextButtonVisible);
+        }
+
+        [Fact]
+        public void SimpleTheme_Should_Forward_Custom_Button_Themes()
+        {
+            using var unittestApplication = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var previousTheme = new ControlTheme(typeof(Button));
+            var nextTheme = new ControlTheme(typeof(Button));
+            var simpleTheme = new SimpleTheme();
+
+            var target = new PipsPager
+            {
+                NumberOfPages = 5,
+                PreviousButtonTheme = previousTheme,
+                NextButtonTheme = nextTheme
+            };
+
+            var root = new TestRoot
+            {
+                Child = target,
+                Styles =
+                {
+                    simpleTheme
+                }
+            };
+
+            Assert.True(simpleTheme.TryGetResource(typeof(PipsPager), ThemeVariant.Default, out var theme));
+            target.Theme = Assert.IsType<ControlTheme>(theme);
+
+            target.ApplyTemplate();
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            var previousButton = target.GetVisualDescendants().OfType<Button>().First(b => b.Name == "PART_PreviousButton");
+            var nextButton = target.GetVisualDescendants().OfType<Button>().First(b => b.Name == "PART_NextButton");
+
+            Assert.Same(previousTheme, previousButton.Theme);
+            Assert.Same(nextTheme, nextButton.Theme);
         }
 
         [Fact]
