@@ -33,10 +33,15 @@ NUGET_CACHE="$HOME/.nuget/packages"
 OFFICIAL_NUPKG="$NUGET_CACHE/avalonia/$BASE_VERSION/avalonia.$BASE_VERSION.nupkg"
 
 if [ ! -f "$OFFICIAL_NUPKG" ]; then
-    echo ">> Official Avalonia $BASE_VERSION not found in NuGet cache."
-    echo "   Run: dotnet restore on a project that references Avalonia $BASE_VERSION"
-    echo "   Expected at: $OFFICIAL_NUPKG"
-    exit 1
+    echo ">> Official Avalonia $BASE_VERSION not found in NuGet cache. Downloading..."
+    mkdir -p "$NUGET_CACHE/avalonia/$BASE_VERSION"
+    curl -sSL -o "$OFFICIAL_NUPKG" \
+        "https://api.nuget.org/v3-flatcontainer/avalonia/$BASE_VERSION/avalonia.$BASE_VERSION.nupkg"
+    if [ ! -f "$OFFICIAL_NUPKG" ]; then
+        echo "   ERROR: Failed to download Avalonia $BASE_VERSION from nuget.org"
+        exit 1
+    fi
+    echo "   Downloaded to $OFFICIAL_NUPKG"
 fi
 
 echo ">> Repackaging official Avalonia $BASE_VERSION with patched Avalonia.Base DLLs..."
