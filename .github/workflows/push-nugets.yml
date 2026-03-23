@@ -1,0 +1,47 @@
+name: '📦 push nuget - [forked_nugets/]'
+run-name: push nugets - Avalonia.Android, Avalonia.iOS, Avalonia.OpenGL & Avalonia.Skia
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: version (e.g. 2026.1.0.0)
+        required: true
+        type: string
+
+jobs:
+  build-and-push:
+    environment: publish
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Check out Devolutions/actions
+        uses: actions/checkout@v4
+        with:
+          repository: Devolutions/actions
+          ref: v1
+          token: ${{ secrets.DEVOLUTIONSBOT_TOKEN }}
+          path: ./.github/workflows
+
+      - name: Install .NET workloads
+        run: dotnet workload install android ios tvos
+
+      - name: Build fork nugets
+        run: ./build-fork-nugets.sh ${{ inputs.version }}
+
+      - name: Setup Artifactory
+        uses: ./.github/workflows/nuget-artifactory-setup
+        with:
+          artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          artifactory_username: ${{ secrets.ARTIFACTORY_USERNAME }}
+
+      - name: Push
+        uses: ./.github/workflows/dotnet-push
+        with:
+          version: ${{ inputs.version }}
+          working_directory: forked_nugets
