@@ -162,7 +162,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<Window, WindowState> WindowStateProperty =
             AvaloniaProperty.RegisterDirect<Window, WindowState>(
-                "EffectivePlatformWindowState", o => o.WindowState,
+                nameof(WindowState), o => o.WindowState,
                 (o, v) => o.WindowState = v);
 
         /// <summary>
