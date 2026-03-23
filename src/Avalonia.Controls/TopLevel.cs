@@ -38,6 +38,7 @@ namespace Avalonia.Controls
     /// tracking the widget's <see cref="ClientSize"/>.
     /// </remarks>
     [TemplatePart("PART_TransparencyFallback", typeof(Border))]
+    [TemplatePart("PART_VisualLayerManager", typeof(VisualLayerManager))]
     public abstract class TopLevel : ContentControl,
         ICloseable,
         IStyleHost,
@@ -125,6 +126,7 @@ namespace Avalonia.Controls
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
         private Border? _transparencyFallbackBorder;
+        private VisualLayerManager? _visualLayerManager;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
         private Screens? _screens;
@@ -133,6 +135,18 @@ namespace Avalonia.Controls
         internal TopLevelHost TopLevelHost => _topLevelHost;
         internal new PresentationSource PresentationSource => _source;
         internal IInputRoot InputRoot => _source;
+        
+        private protected VisualLayerManager? VisualLayerManager => _visualLayerManager;
+
+        private protected void EnableVisualLayerManagerLayers()
+        {
+            if (_visualLayerManager is { } vlm)
+            {
+                vlm.EnableOverlayLayer = true;
+                vlm.EnablePopupOverlayLayer = true;
+                vlm.EnableTextSelectorLayer = true;
+            }
+        }
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -722,6 +736,8 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
+
+            _visualLayerManager = e.NameScope.Find<VisualLayerManager>("PART_VisualLayerManager");
 
             if (PlatformImpl is null)
                 return;

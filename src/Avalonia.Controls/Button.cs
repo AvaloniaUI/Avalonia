@@ -543,10 +543,13 @@ namespace Avalonia.Controls
                     oldFlyout.Hide();
                 }
 
+                (oldFlyout as PopupFlyoutBase)?.SetDefaultPlacementTarget(null);
+
                 // Must unregister events here while a reference to the old flyout still exists
                 UnregisterFlyoutEvents(oldFlyout);
 
                 RegisterFlyoutEvents(newFlyout);
+                (newFlyout as PopupFlyoutBase)?.SetDefaultPlacementTarget(this);
                 UpdatePseudoClasses();
             }
         }

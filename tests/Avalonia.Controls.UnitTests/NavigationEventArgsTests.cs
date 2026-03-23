@@ -94,7 +94,7 @@ public class NavigationEventArgsTests
         {
             var prev = new ContentPage { Header = "Tab 1" };
             var current = new ContentPage { Header = "Tab 2" };
-            var args = new PageSelectionChangedEventArgs(prev, current);
+            var args = new PageSelectionChangedEventArgs(SelectingMultiPage.SelectionChangedEvent, prev, current);
             Assert.Same(prev, args.PreviousPage);
             Assert.Same(current, args.CurrentPage);
         }
