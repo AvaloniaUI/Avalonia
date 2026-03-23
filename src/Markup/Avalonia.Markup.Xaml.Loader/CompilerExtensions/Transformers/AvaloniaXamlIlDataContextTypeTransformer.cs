@@ -118,6 +118,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         // Notify the user that we were unable to infer the data context type if they use a compiled binding.
                         inferredDataContextTypeNode = new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
                     }
+
+                    if (inferredDataContextTypeNode is null
+                        && directiveDataContextTypeNode is null
+                        && !context.ParentNodes().OfType<XamlAstConstructableObjectNode>().Any())
+                    {
+                        // Root nodes without an explicit x:DataType still need a deterministic
+                        // starting type for compiled bindings. Falling back to the root CLR type
+                        // allows expressions to compile and avoids stale inference from unrelated
+                        // branches, while runtime DataContext semantics remain unchanged.
+                        inferredDataContextTypeNode = new AvaloniaXamlIlDataContextTypeMetadataNode(on, on.Type.GetClrType());
+                    }
                 }
 
                 return directiveDataContextTypeNode ?? inferredDataContextTypeNode ?? node;
