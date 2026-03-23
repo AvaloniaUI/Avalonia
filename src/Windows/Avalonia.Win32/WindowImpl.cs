@@ -95,7 +95,10 @@ namespace Avalonia.Win32
         private double _scaling = 1;
         private uint _dpi = 96;
         private WindowState _showWindowState;
+        // Window state, set from various places in code
         private WindowState _lastWindowState;
+        // Window state, set exclusively from WM_SIZE handler before triggering the state change event
+        private WindowState? _effectiveWindowState;
         private OleDropTarget? _dropTarget;
         private Size _minSize;
         private Size _maxSize;
@@ -207,8 +210,7 @@ namespace Avalonia.Win32
         public Action<double>? ScalingChanged { get; set; }
 
         public Action<PixelPoint>? PositionChanged { get; set; }
-
-        private WindowState? _effectiveWindowState;
+        
         public Action<WindowState>? WindowStateChanged { get; set; }
 
         public Action? LostFocus { get; set; }

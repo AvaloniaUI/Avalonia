@@ -739,7 +739,8 @@ namespace Avalonia.Win32
                             _ => WindowState.Normal,
                         };
 
-                        var stateChanged = windowState != _lastWindowState;
+                        var stateChanged = windowState != _lastWindowState
+                                           || windowState != _effectiveWindowState; 
                         _lastWindowState = windowState;
 
                         if (Resized != null &&

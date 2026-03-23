@@ -421,10 +421,12 @@ namespace Avalonia.Controls
                 {
                     PlatformImpl.WindowState = value;
                     var oldValue = _windowStateForPropertyNotifications;
-                    _windowStateForPropertyNotifications = PlatformImpl.WindowState;
                     // If the request was refused - trigger a synthetic property change
                     if (PlatformImpl.WindowState != value)
+                    {
+                        _windowStateForPropertyNotifications = PlatformImpl.WindowState;
                         RaisePropertyChanged(WindowStateProperty, oldValue, _windowStateForPropertyNotifications);
+                    }
                 }
             }
         }
