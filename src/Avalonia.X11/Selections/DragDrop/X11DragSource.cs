@@ -158,8 +158,8 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             {
                 if (_lastTarget is { } lastTarget)
                 {
-                    if (lastTarget.InProcessWindow is not null)
-                        ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.DragLeave, rootPosition);
+                    if (lastTarget.InProcessWindow is { } window)
+                        ProcessRawDragEvent(window, RawDragEventType.DragLeave, rootPosition, motion.state);
                     else
                         SendXdndLeave(lastTarget);
                 }
@@ -169,8 +169,8 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
                 if (target is { } newTarget)
                 {
-                    if (newTarget.InProcessWindow is not null)
-                        ProcessRawDragEvent(newTarget.InProcessWindow, RawDragEventType.DragEnter, rootPosition);
+                    if (newTarget.InProcessWindow is { } window)
+                        ProcessRawDragEvent(window, RawDragEventType.DragEnter, rootPosition, motion.state);
                     else
                         SendXdndEnter(newTarget);
                 }
@@ -178,8 +178,8 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             if (target is { } currentTarget)
             {
-                if (currentTarget.InProcessWindow is not null)
-                    ProcessRawDragEvent(currentTarget.InProcessWindow, RawDragEventType.DragOver, rootPosition);
+                if (currentTarget.InProcessWindow is { } window)
+                    ProcessRawDragEvent(window, RawDragEventType.DragOver, rootPosition, motion.state);
                 else
                 {
                     var action = XdndActionHelper.EffectsToAction(_allowedEffects, _platform.Info.Atoms);
@@ -198,7 +198,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             if (lastTarget.InProcessWindow is not null)
             {
                 var rootPosition = new PixelPoint(button.x_root, button.y_root);
-                ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.Drop, rootPosition);
+                ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.Drop, rootPosition, button.state);
                 _lastTarget = null;
                 Complete(_currentEffects);
             }
@@ -382,7 +382,11 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             XFlush(_platform.Display);
         }
 
-        private void ProcessRawDragEvent(X11Window targetWindow, RawDragEventType eventType, PixelPoint rootPosition)
+        private void ProcessRawDragEvent(
+            X11Window targetWindow,
+            RawDragEventType eventType,
+            PixelPoint rootPosition,
+            XModifierMask modifierMask)
         {
             if (targetWindow.DragDropDevice is not { } dragDropDevice)
             {
@@ -391,6 +395,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             }
 
             var localPosition = targetWindow.PointToClient(rootPosition);
+            var modifiers = modifierMask.ToRawInputModifiers();
 
             var dragEvent = new RawDragEvent(
                 dragDropDevice,
@@ -399,7 +404,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 localPosition,
                 _dataTransfer,
                 _allowedEffects,
-                RawInputModifiers.None);
+                modifiers);
 
             dragDropDevice.ProcessRawEvent(dragEvent);
 

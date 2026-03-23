@@ -175,7 +175,7 @@ namespace Avalonia.X11
 
         [DllImport(libX11)]
         public static extern bool XQueryPointer(IntPtr display, IntPtr window, out IntPtr root, out IntPtr child,
-            out int root_x, out int root_y, out int win_x, out int win_y, out int keys_buttons);
+            out int root_x, out int root_y, out int win_x, out int win_y, out XModifierMask mask);
 
         [DllImport(libX11)]
         public static extern bool XTranslateCoordinates(IntPtr display, IntPtr src_w, IntPtr dest_w, int src_x,
@@ -694,7 +694,7 @@ namespace Avalonia.X11
         
         public static void QueryPointer (IntPtr display, IntPtr w, out IntPtr root, out IntPtr child,
             out int root_x, out int root_y, out int child_x, out int child_y,
-            out int mask)
+            out XModifierMask mask)
         {
 
             IntPtr c;
@@ -729,7 +729,7 @@ namespace Avalonia.X11
             int root_y;
             int win_x;
             int win_y;
-            int keys_buttons;
+            XModifierMask keys_buttons;
 
 
 

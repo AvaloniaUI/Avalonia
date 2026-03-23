@@ -85,6 +85,7 @@ internal sealed class X11DropTarget
         var position = _window.PointToClient(new PixelPoint(screenX, screenY));
         var requestedEffects = XdndActionHelper.ActionToEffects(message.ptr5, _atoms);
         var eventType = drag.LastPosition is null ? RawDragEventType.DragEnter : RawDragEventType.DragOver;
+        var modifiers = GetModifiers();
 
         drag.LastPosition = position;
         drag.LastTimestamp = message.ptr4;
@@ -96,7 +97,7 @@ internal sealed class X11DropTarget
             position,
             drag,
             requestedEffects,
-            RawInputModifiers.None);
+            modifiers);
 
         _dragDropDevice.ProcessRawEvent(dragEvent);
 
@@ -111,6 +112,8 @@ internal sealed class X11DropTarget
         if (_currentDrag is not { } drag || message.ptr1 != drag.SourceWindow)
             return;
 
+        var modifiers = GetModifiers();
+
         var dragLeave = new RawDragEvent(
             _dragDropDevice,
             RawDragEventType.DragLeave,
@@ -118,7 +121,7 @@ internal sealed class X11DropTarget
             default,
             drag,
             DragDropEffects.None,
-            RawInputModifiers.None);
+            modifiers);
 
         _dragDropDevice.ProcessRawEvent(dragLeave);
 
@@ -130,6 +133,8 @@ internal sealed class X11DropTarget
         if (_currentDrag is not { } drag || message.ptr1 != drag.SourceWindow)
             return;
 
+        var modifiers = GetModifiers();
+
         var drop = new RawDragEvent(
             _dragDropDevice,
             RawDragEventType.Drop,
@@ -137,7 +142,7 @@ internal sealed class X11DropTarget
             drag.LastPosition ?? default,
             drag,
             drag.ResultEffects,
-            RawInputModifiers.None);
+            modifiers);
 
         _dragDropDevice.ProcessRawEvent(drop);
 
@@ -175,6 +180,11 @@ internal sealed class X11DropTarget
         XSendEvent(_display, drag.SourceWindow, false, (IntPtr)EventMask.NoEventMask, ref evt);
         XFlush(_display);
     }
+
+    private RawInputModifiers GetModifiers()
+        => XQueryPointer(_display, _window.Handle, out _, out _, out _, out _, out _, out _, out var mask) ?
+            mask.ToRawInputModifiers() :
+            RawInputModifiers.None;
 
     private void DisposeCurrentDrag()
     {
