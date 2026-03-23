@@ -506,24 +506,23 @@ public class WindowDrawnDecorations : StyledElement
 
     private void OnMinimizeButtonClick(object? sender, Interactivity.RoutedEventArgs e)
     {
-        _hostWindow?.TrySetWindowState(WindowState.Minimized);
+        _hostWindow?.WindowState = WindowState.Minimized;
         e.Handled = true;
     }
 
     private void OnMaximizeButtonClick(object? sender, Interactivity.RoutedEventArgs e)
     {
-        _hostWindow?.TrySetWindowState(_hostWindow.EffectivePlatformWindowState == WindowState.Maximized
+        _hostWindow?.WindowState = _hostWindow.WindowState == WindowState.Maximized
             ? WindowState.Normal
-            : WindowState.Maximized);
+            : WindowState.Maximized;
         e.Handled = true;
     }
 
     private void OnFullScreenButtonClick(object? sender, Interactivity.RoutedEventArgs e)
     {
-        if (_hostWindow != null)
-            _hostWindow?.TrySetWindowState(_hostWindow.EffectivePlatformWindowState == WindowState.FullScreen
+        _hostWindow?.WindowState = _hostWindow.WindowState == WindowState.FullScreen
                 ? WindowState.Normal
-                : WindowState.FullScreen);
+                : WindowState.FullScreen;
         e.Handled = true;
     }
 
@@ -531,7 +530,7 @@ public class WindowDrawnDecorations : StyledElement
     {
         if (_maximizeButton == null)
             return;
-        _maximizeButton.IsEnabled = _hostWindow?.EffectivePlatformWindowState switch
+        _maximizeButton.IsEnabled = _hostWindow?.WindowState switch
         {
             WindowState.Maximized or WindowState.FullScreen => _hostWindow.CanResize,
             WindowState.Normal => _hostWindow.CanMaximize,
@@ -550,7 +549,7 @@ public class WindowDrawnDecorations : StyledElement
     {
         if (_fullScreenButton == null)
             return;
-        _fullScreenButton.IsEnabled = _hostWindow?.EffectivePlatformWindowState == WindowState.FullScreen
+        _fullScreenButton.IsEnabled = _hostWindow?.WindowState == WindowState.FullScreen
             ? _hostWindow.CanResize
             : _hostWindow?.CanMaximize ?? true;
     }

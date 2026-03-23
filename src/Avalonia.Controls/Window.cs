@@ -158,23 +158,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, WindowClosingBehavior>(nameof(ClosingBehavior));
 
         /// <summary>
-        /// Represents the current window state (normal, minimized, maximized) or window state set by data binding.
-        /// Can temporally have a value that had no effect on the window state whatsoever if the value
-        /// was set by data binding and the platform refused to apply it or delayed applying it.
-        /// You have no means to detect if the value of this property currently has a temporary value,
-        /// this is done by design to keep this property bindable.
-        /// </summary>
-        public static readonly StyledProperty<WindowState> WindowStateProperty =
-            AvaloniaProperty.Register<Window, WindowState>(nameof(WindowState));
-
-
-        private WindowState _effectivePlatformWindowStatePropertyCache;
-        /// <summary>
         /// Represents the currently effective window state (normal, minimized, maximized)
         /// </summary>
-        public static readonly DirectProperty<Window, WindowState> EffectivePlatformWindowStateProperty = AvaloniaProperty.RegisterDirect<Window, WindowState>(
-            "EffectivePlatformWindowState", o => o.EffectivePlatformWindowState);
-
+        public static readonly DirectProperty<Window, WindowState> WindowStateProperty =
+            AvaloniaProperty.RegisterDirect<Window, WindowState>(
+                "EffectivePlatformWindowState", o => o.WindowState,
+                (o, v) => o.WindowState = v);
 
         /// <summary>
         /// Defines the <see cref="Title"/> property.
@@ -271,8 +260,7 @@ namespace Avalonia.Controls
             CreatePlatformImplBinding(CanMinimizeProperty, canMinimize => PlatformImpl!.SetCanMinimize(canMinimize));
             CreatePlatformImplBinding(CanMaximizeProperty, canMaximize => PlatformImpl!.SetCanMaximize(canMaximize));
             CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
-
-            CreatePlatformImplBinding(WindowStateProperty, TrySetWindowState);
+            
             CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, hint => PlatformImpl!.SetExtendClientAreaToDecorationsHint(hint));
             CreatePlatformImplBinding(ExtendClientAreaTitleBarHeightHintProperty, height => PlatformImpl!.SetExtendClientAreaTitleBarHeightHint(height));
 
@@ -419,22 +407,26 @@ namespace Avalonia.Controls
             set => SetValue(ClosingBehaviorProperty, value);
         }
 
-        /// <summary>
-        /// Represents the current window state (normal, minimized, maximized) or window state set by data binding.
-        /// Can temporally have a value that had no effect on the window state whatsoever if the value
-        /// was set by data binding and the platform refused to apply it or delayed applying it.
-        /// To get the effective window state use <see cref="EffectivePlatformWindowState"/>
-        /// </summary>
-        public WindowState WindowState
-        {
-            get => GetValue(WindowStateProperty);
-            set => SetValue(WindowStateProperty, value);
-        }
-        
+        private WindowState _windowStateForPropertyNotifications;
         /// <summary>
         /// Represents the currently effective window state (normal, minimized, maximized)
         /// </summary>
-        public WindowState EffectivePlatformWindowState => PlatformImpl?.WindowState ?? WindowState;
+        public WindowState WindowState
+        {
+            get => PlatformImpl?.WindowState ?? default;
+            set
+            {
+                if (PlatformImpl != null)
+                {
+                    PlatformImpl.WindowState = value;
+                    var oldValue = _windowStateForPropertyNotifications;
+                    _windowStateForPropertyNotifications = PlatformImpl.WindowState;
+                    // If the request was refused - trigger a synthetic property change
+                    if (PlatformImpl.WindowState != value)
+                        RaisePropertyChanged(WindowStateProperty, oldValue, _windowStateForPropertyNotifications);
+                }
+            }
+        }
 
         /// <summary>
         /// Enables or disables resizing of the window.
@@ -641,12 +633,7 @@ namespace Avalonia.Controls
         
         private void HandleWindowStateChanged(WindowState state)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            SetAndRaise(EffectivePlatformWindowStateProperty, ref _effectivePlatformWindowStatePropertyCache,
-                EffectivePlatformWindowState);
-            
-            WindowState = state;
-#pragma warning restore CS0618 // Type or member is obsolete
+            SetAndRaise(WindowStateProperty, ref _windowStateForPropertyNotifications, state);
 
             if (state == WindowState.Minimized)
             {
@@ -659,28 +646,6 @@ namespace Avalonia.Controls
 
             // Update decoration parts and fullscreen popover state for the new window state
             UpdateDrawnDecorationParts();
-        }
-        
-        private void HandleBindableWindowStateChanged(WindowState state)
-        {
-            if (PlatformImpl?.WindowState == state)
-                return;
-            PlatformImpl?.WindowState = state;
-            if(PlatformImpl == null || PlatformImpl.WindowState == state)
-                return;
-            // Request failed, reset WindowState to the effective value
-#pragma warning disable CS0618 // Type or member is obsolete
-            WindowState = PlatformImpl.WindowState;
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-        
-        /// <summary>
-        /// Attempt to transition the window state to the specified state. The request might be delayed or
-        /// ignored by the underlying platform
-        /// </summary>
-        public void TrySetWindowState(WindowState state)
-        {
-            PlatformImpl?.WindowState = state;
         }
 
         protected virtual void ExtendClientAreaToDecorationsChanged(bool isExtended)
@@ -698,7 +663,7 @@ namespace Avalonia.Controls
             // Detect forced mode: platform needs managed decorations but app hasn't opted in
             _isForcedDecorationMode = parts != null && !IsExtendedIntoWindowDecorations;
 
-            TopLevelHost.UpdateDrawnDecorations(parts, EffectivePlatformWindowState);
+            TopLevelHost.UpdateDrawnDecorations(parts, WindowState);
 
             if (parts != null)
             {
@@ -724,7 +689,7 @@ namespace Avalonia.Controls
             if (TopLevelHost.Decorations == null)
                 return;
 
-            TopLevelHost.UpdateDrawnDecorations(ComputeDecorationParts(), EffectivePlatformWindowState);
+            TopLevelHost.UpdateDrawnDecorations(ComputeDecorationParts(), WindowState);
         }
 
         private Chrome.DrawnWindowDecorationParts? ComputeDecorationParts()
@@ -748,7 +713,7 @@ namespace Avalonia.Controls
 
 
                 // In fullscreen: no shadow, border, resize grips, or titlebar (popover takes over)
-                if (EffectivePlatformWindowState == WindowState.FullScreen)
+                if (WindowState == WindowState.FullScreen)
                 {
                     parts &= ~(Chrome.DrawnWindowDecorationParts.Shadow
                                | Chrome.DrawnWindowDecorationParts.Border
@@ -756,7 +721,7 @@ namespace Avalonia.Controls
                                | Chrome.DrawnWindowDecorationParts.TitleBar);
                 }
                 // In maximized: no shadow, border, or resize grips (titlebar stays)
-                else if (EffectivePlatformWindowState == WindowState.Maximized)
+                else if (WindowState == WindowState.Maximized)
                 {
                     parts &= ~(Chrome.DrawnWindowDecorationParts.Shadow
                                | Chrome.DrawnWindowDecorationParts.Border
@@ -1245,7 +1210,7 @@ namespace Avalonia.Controls
 
             if (startupLocation == WindowStartupLocation.CenterOwner &&
                 (owner is null ||
-                 (owner is Window ownerWindow && ownerWindow.EffectivePlatformWindowState == WindowState.Minimized))
+                 (owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
                )
             {
                 // If startup location is CenterOwner, but owner is null or minimized then fall back
