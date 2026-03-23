@@ -51,6 +51,9 @@ namespace ControlCatalog.Pages
                 "Bitmap",
                 d => d.Add(DataTransferItem.Create(DataFormat.Bitmap, new Bitmap(AssetLoader.Open(new Uri("avares://ControlCatalog/Assets/image1.jpg"))))),
                 DragDropEffects.Copy);
+
+            AddHandlers(CopyTarget, DragDropEffects.Copy);
+            AddHandlers(MoveTarget, DragDropEffects.Move);
         }
 
         private void SetupDnd(string suffix, Action<DataTransfer> factory, DragDropEffects effects) =>
@@ -94,16 +97,18 @@ namespace ControlCatalog.Pages
                 }
             }
 
+            dragMe.PointerPressed += DoDrag;
+        }
+
+        private void AddHandlers(Control target, DragDropEffects allowedEffects)
+        {
+            DragDrop.AddDragEnterHandler(target, DragOver);
+            DragDrop.AddDragOverHandler(target, DragOver);
+            DragDrop.AddDropHandler(target, Drop);
+
             void DragOver(object? sender, DragEventArgs e)
             {
-                if (e.Source is Control c && c.Name == "MoveTarget")
-                {
-                    e.DragEffects = e.DragEffects & (DragDropEffects.Move);
-                }
-                else
-                {
-                    e.DragEffects = e.DragEffects & (DragDropEffects.Copy);
-                }
+                e.DragEffects &= allowedEffects;
 
                 // Only allow if the dragged data contains text or filenames.
                 if (!e.DataTransfer.Contains(DataFormat.Text)
@@ -115,14 +120,7 @@ namespace ControlCatalog.Pages
 
             async void Drop(object? sender, DragEventArgs e)
             {
-                if (e.Source is Control c && c.Name == "MoveTarget")
-                {
-                    e.DragEffects = e.DragEffects & (DragDropEffects.Move);
-                }
-                else
-                {
-                    e.DragEffects = e.DragEffects & (DragDropEffects.Copy);
-                }
+                e.DragEffects &= allowedEffects;
 
                 if (e.DragEffects == DragDropEffects.None)
                     return;
@@ -168,11 +166,6 @@ namespace ControlCatalog.Pages
                     DropState.Content = "Custom: " + e.DataTransfer.TryGetValue(_customFormat);
                 }
             }
-
-            dragMe.PointerPressed += DoDrag;
-
-            AddHandler(DragDrop.DropEvent, Drop);
-            AddHandler(DragDrop.DragOverEvent, DragOver);
         }
     }
 }
