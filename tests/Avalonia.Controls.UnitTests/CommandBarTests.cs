@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Avalonia.Controls;
 using Avalonia.UnitTests;
 using Xunit;
@@ -522,6 +523,19 @@ public class CommandBarCollectionTests : ScopedTestBase
     }
 
     [Fact]
+    public void PrimaryCommands_DefaultCollection_DoesNotDuplicateVisiblePrimaryNotifications()
+    {
+        var cb = new CommandBar();
+        var notifications = 0;
+
+        ((INotifyCollectionChanged)cb.VisiblePrimaryCommands).CollectionChanged += (_, _) => notifications++;
+
+        cb.PrimaryCommands!.Add(new AppBarButton { Label = "Save" });
+
+        Assert.Equal(2, notifications);
+    }
+
+    [Fact]
     public void PrimaryCommands_Removed_DisappearsFromVisiblePrimary()
     {
         var cb = new CommandBar();
@@ -538,6 +552,19 @@ public class CommandBarCollectionTests : ScopedTestBase
         var btn = new AppBarButton { Label = "Settings" };
         cb.SecondaryCommands!.Add(btn);
         Assert.Contains(btn, cb.OverflowItems);
+    }
+
+    [Fact]
+    public void SecondaryCommands_DefaultCollection_DoesNotDuplicateOverflowNotifications()
+    {
+        var cb = new CommandBar();
+        var notifications = 0;
+
+        ((INotifyCollectionChanged)cb.OverflowItems).CollectionChanged += (_, _) => notifications++;
+
+        cb.SecondaryCommands!.Add(new AppBarButton { Label = "Settings" });
+
+        Assert.Equal(2, notifications);
     }
 
     [Fact]
