@@ -296,7 +296,7 @@ namespace Avalonia.Animation
         }
 
         IDisposable IAnimation.Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
-            => Apply(control, clock, match, onComplete);
+            => Apply(control, clock, match, onComplete, isManuallyStarted: false);
 
         /// <inheritdoc cref="IAnimation.Apply"/>
         internal IDisposable Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete,

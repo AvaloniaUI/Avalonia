@@ -95,7 +95,7 @@ namespace Avalonia.Base.UnitTests.Animation
         }
         
         [Fact]
-        public void Pause_Animation_When_IsEffectivelyVisible_Is_False()
+        public void OnlyIfVisible_Pauses_Animation_When_IsEffectivelyVisible_Is_False()
         {
             var keyframe1 = new KeyFrame()
             {
@@ -161,7 +161,7 @@ namespace Avalonia.Base.UnitTests.Animation
         }
         
         [Fact]
-        public void Pause_Animation_When_IsEffectivelyVisible_Is_False_Nested()
+        public void OnlyIfVisible_Pauses_Animation_When_IsEffectivelyVisible_Is_False_Nested()
         {
             var keyframe1 = new KeyFrame()
             {
@@ -268,7 +268,7 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         [Fact]
-        public void Pause_Animation_When_Control_Starts_Invisible()
+        public void OnlyIfVisible_Pauses_Animation_When_Control_Starts_Invisible()
         {
             var keyframe1 = new KeyFrame()
             {
@@ -1170,6 +1170,98 @@ namespace Avalonia.Base.UnitTests.Animation
 
             Assert.True(collapseRun.IsCompleted);
             Assert.False(border.IsVisible);
+        }
+
+        [Fact]
+        public void Auto_Pauses_On_Invisible_When_Started_From_Style()
+        {
+            // When started via Apply (the style path), Auto resolves to OnlyIfVisible.
+            // The animation should pause when the control becomes invisible.
+            var keyframe1 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d) }, Cue = new Cue(0d)
+            };
+            var keyframe2 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 200d) }, Cue = new Cue(1d)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(3),
+                IterationCount = new IterationCount(1),
+                Children = { keyframe1, keyframe2 }
+            };
+
+            var border = new Border() { Height = 100d, Width = 50d };
+
+            var clock = new TestClock();
+            var completed = false;
+
+            // Apply (not RunAsync), this is the style-applied path.
+            var disposable = animation.Apply(border, clock, Observable.Return(true), () => completed = true);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(100d, border.Width);
+
+            // Hide the control, animation should pause under Auto.
+            border.IsVisible = false;
+
+            clock.Step(TimeSpan.FromSeconds(1.5));
+            // Width should not have advanced while invisible.
+            Assert.Equal(100d, border.Width);
+
+            // Show the control, animation resumes.
+            border.IsVisible = true;
+
+            clock.Step(TimeSpan.FromSeconds(4.5));
+            Assert.True(completed);
+
+            disposable.Dispose();
+        }
+
+        [Fact]
+        public void Auto_Does_Not_Pause_On_Invisible_When_Started_Manually()
+        {
+            // When started via RunAsync (manual), Auto resolves to Always.
+            // The animation should NOT pause when the control becomes invisible.
+            var keyframe1 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d) }, Cue = new Cue(0d)
+            };
+            var keyframe2 = new KeyFrame()
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 200d) }, Cue = new Cue(1d)
+            };
+
+            var animation = new Animation()
+            {
+                Duration = TimeSpan.FromSeconds(3),
+                IterationCount = new IterationCount(1),
+                Easing = new LinearEasing(),
+                FillMode = FillMode.Forward,
+                Children = { keyframe1, keyframe2 }
+            };
+
+            var border = new Border() { Height = 100d, Width = 50d };
+
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(100d, border.Width);
+
+            // Hide the control, animation should keep running under Auto + manual.
+            border.IsVisible = false;
+
+            // Width should advance while invisible (not paused).
+            clock.Step(TimeSpan.FromSeconds(1.5));
+            Assert.Equal(150d, border.Width);
+            Assert.False(animationRun.IsCompleted);
+
+            clock.Step(TimeSpan.FromSeconds(3));
+            Assert.True(animationRun.IsCompleted);
+            Assert.Equal(200d, border.Width);
         }
 
         private sealed class FakeAnimator : InterpolatingAnimator<double>
