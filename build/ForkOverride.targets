@@ -1,13 +1,14 @@
 <Project>
   <!--
     When ForkVersion is passed (e.g. dotnet pack -p:ForkVersion=11.9.1),
-    only the 4 forked projects get the custom version.
+    only the forked projects get the custom version.
     All other projects keep their original version from SharedVersion.props,
     so ProjectReference-based dependency entries point to the base version.
     A post-processing step then fixes deps on packages that don't exist on
     nuget.org (they're bundled in the Avalonia meta-package by Numerge).
   -->
   <PropertyGroup Condition="'$(ForkVersion)' != ''">
+    <_IsForkProject Condition="'$(MSBuildProjectName)' == 'Avalonia.Base'">true</_IsForkProject>
     <_IsForkProject Condition="'$(MSBuildProjectName)' == 'Avalonia.Skia'">true</_IsForkProject>
     <_IsForkProject Condition="'$(MSBuildProjectName)' == 'Avalonia.OpenGL'">true</_IsForkProject>
     <_IsForkProject Condition="'$(MSBuildProjectName)' == 'Avalonia.Android'">true</_IsForkProject>

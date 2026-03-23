@@ -16,6 +16,7 @@ If no version is specified, it defaults to `11.9.1`. You can also pass a build c
 
 The build produces the following NuGet packages in `forked_nugets/`:
 
+- `Avalonia.<version>.nupkg` (repackaged official meta-package with patched Avalonia.Base.dll)
 - `Avalonia.Android.<version>.nupkg`
 - `Avalonia.iOS.<version>.nupkg`
 - `Avalonia.OpenGL.<version>.nupkg`
