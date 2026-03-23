@@ -20,6 +20,7 @@ namespace Avalonia.Native
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
         private bool _canResize = true;
         private bool _canMaximize = true;
+        private WindowState _windowState;
         private Controls.WindowDecorations _decorations = Controls.WindowDecorations.Full;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(factory)
@@ -61,6 +62,7 @@ namespace Avalonia.Native
 
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
             {
+                _parent._windowState = (WindowState)state;
                 _parent.InvalidateExtendedMargins();
 
                 _parent.WindowStateChanged?.Invoke((WindowState)state);
@@ -110,7 +112,7 @@ namespace Avalonia.Native
 
         public WindowState WindowState
         {
-            get => (WindowState)_native.WindowState;
+            get => _windowState;
             set => _native.SetWindowState((AvnWindowState)value);
         }
 

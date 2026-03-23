@@ -798,7 +798,6 @@ interface IAvnWindow : IAvnWindowBase
      HRESULT SetTitle(char* utf8Title);
      HRESULT SetTitleBarColor(AvnColor color);
      HRESULT SetWindowState(AvnWindowState state);
-     HRESULT GetWindowState(AvnWindowState*ret);
      HRESULT TakeFocusFromChildren();
      HRESULT SetExtendClientArea(bool enable);
      HRESULT GetExtendTitleBarHeight(double*ret);

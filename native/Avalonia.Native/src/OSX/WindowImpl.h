@@ -56,7 +56,7 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT SetTitleBarColor(AvnColor color) override;
 
-    virtual HRESULT GetWindowState (AvnWindowState*ret) override;
+    virtual HRESULT GetWindowState (AvnWindowState*ret);
 
     virtual HRESULT TakeFocusFromChildren () override;
 
