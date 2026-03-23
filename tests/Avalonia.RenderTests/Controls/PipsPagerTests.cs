@@ -8,16 +8,20 @@ using Avalonia.Platform;
 using Avalonia.Themes.Simple;
 using Xunit;
 
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
+#else
+namespace Avalonia.Direct2D1.RenderTests.Controls
+#endif
 {
     public class PipsPagerTests : TestBase
     {
         public PipsPagerTests()
-            : base(@"Controls/PipsPager")
+            : base(@"Controls\PipsPager")
         {
         }
-        
-        private static Border CreateTarget(int selectedPageIndex)
+
+        private Decorator CreateTarget(int selectedPageIndex)
         {
             var pipsPager = new PipsPager
             {
@@ -27,27 +31,19 @@ namespace Avalonia.Skia.RenderTests
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            var target = new Border
+            var target = new Decorator
             {
-                Padding = new Thickness(20),
-                Background = Brushes.White,
-                Child = pipsPager,
                 Width = 400,
-                Height = 150
+                Height = 150,
+                Child = new Border
+                {
+                    Background = Brushes.White,
+                    Child = pipsPager
+                }
             };
 
             AvaloniaLocator.CurrentMutable.Bind<ICursorFactory>().ToConstant(new CursorFactoryStub());
             target.Styles.Add(new SimpleTheme());
-
-            target.Resources["ThemeForegroundBrush"] = Brushes.Black;
-            target.Resources["ThemeControlLowBrush"] = Brushes.Gray;
-            target.Resources["ThemeControlHighBrush"] = Brushes.Gray;
-            target.Resources["ThemeControlMidBrush"] = Brushes.LightGray;
-            target.Resources["ThemeBorderLowBrush"] = Brushes.Gray;
-            target.Resources["ThemeBorderMidBrush"] = Brushes.Gray;
-            target.Resources["ThemeAccentBrush"] = Brushes.Red;
-            target.Resources["ThemeAccentBrush2"] = Brushes.Red;
-            target.Resources["ThemeAccentBrush3"] = Brushes.Red;
 
             return target;
         }
@@ -56,10 +52,6 @@ namespace Avalonia.Skia.RenderTests
         public async Task PipsPager_Default()
         {
             var target = CreateTarget(1);
-
-            target.Measure(new Size(400, 150));
-            target.Arrange(new Rect(0, 0, 400, 150));
-
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
@@ -68,10 +60,6 @@ namespace Avalonia.Skia.RenderTests
         public async Task PipsPager_Preselected_Index()
         {
             var target = CreateTarget(3);
-
-            target.Measure(new Size(400, 150));
-            target.Arrange(new Rect(0, 0, 400, 150));
-
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
