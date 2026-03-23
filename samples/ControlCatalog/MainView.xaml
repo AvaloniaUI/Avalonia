@@ -54,8 +54,15 @@
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:CommandBarPage />
       </TabItem>
-      <TabItem Header="Carousel">
-        <pages:CarouselPage />
+      <TabItem Header="Carousel"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:CarouselDemoPage />
+      </TabItem>
+      <TabItem Header="CarouselPage"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:CarouselDemoPage />
       </TabItem>
 
       <TabItem Header="CheckBox">

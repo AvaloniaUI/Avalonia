@@ -28,10 +28,10 @@ namespace ControlCatalog.Pages
 
         private void SetupIcons()
         {
-            FeedPage.Icon = FeedGeometry;
-            DiscoverPage.Icon = DiscoverGeometry;
-            AlertsPage.Icon = AlertsGeometry;
-            ProfilePage.Icon = ProfileGeometry;
+            FeedPage.Icon = new PathIcon { Data = FeedGeometry };
+            DiscoverPage.Icon = new PathIcon { Data = DiscoverGeometry };
+            AlertsPage.Icon = new PathIcon { Data = AlertsGeometry };
+            ProfilePage.Icon = new PathIcon { Data = ProfileGeometry };
         }
 
         private void OnFabClicked(object? sender, RoutedEventArgs e)
