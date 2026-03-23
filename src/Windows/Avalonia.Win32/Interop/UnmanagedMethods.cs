@@ -1399,6 +1399,12 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool IsZoomed(IntPtr hWnd);
+        
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool IsIconic(IntPtr hWnd);
+        
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
 

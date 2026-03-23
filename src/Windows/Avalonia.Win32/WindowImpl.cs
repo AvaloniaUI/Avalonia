@@ -311,7 +311,7 @@ namespace Avalonia.Win32
 
             set
             {
-                if (IsWindowVisible(_hwnd) && _lastWindowState != value)
+                if (IsWindowVisible(_hwnd) && _effectiveWindowState != value)
                 {
                     ShowWindow(value, value != WindowState.Minimized); // If the window is minimized, it shouldn't be activated
                 }
@@ -1144,6 +1144,22 @@ namespace Avalonia.Win32
             TaskBarList.MarkFullscreen(_hwnd, fullscreen);
 
             ExtendClientArea();
+            UpdateEffectiveWindowState();
+        }
+
+        private void UpdateEffectiveWindowState()
+        {
+            var state =
+                !_shown ? _lastWindowState
+                : _isFullScreenActive ? WindowState.FullScreen
+                : IsZoomed(_hwnd) ? WindowState.Maximized
+                : IsIconic(_hwnd) ? WindowState.Minimized
+                : WindowState.Normal;
+            if (_effectiveWindowState != state)
+            {
+                _effectiveWindowState = state;
+                WindowStateChanged?.Invoke(state);
+            }
         }
 
         private MARGINS UpdateExtendMargins()
@@ -1319,6 +1335,8 @@ namespace Avalonia.Win32
                 SetFocus(_hwnd);
                 SetForegroundWindow(_hwnd);
             }
+
+            UpdateEffectiveWindowState();
         }
 
         private void BeforeCloseCleanup(bool isDisposing)
