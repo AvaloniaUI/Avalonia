@@ -144,6 +144,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             private readonly TopLevelImpl _tl;
             private Size _oldSize;
             private double _oldScaling;
+            private Paint? _clearPaint;
 
             public SurfaceViewImpl(Context context, TopLevelImpl tl, bool placeOnTop) : base(context)
             {
@@ -159,11 +160,13 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 // can be seen below, but it does not.
                 if (OperatingSystem.IsAndroidVersionAtLeast(29))
                 {
-                    // Android 10+ does this (BlendMode was new)
-                    var paint = new Paint();
-                    paint.SetColor(0);
-                    paint.BlendMode = BlendMode.Clear;
-                    canvas.DrawRect(0, 0, Width, Height, paint);
+                    if (_clearPaint == null)
+                    {
+                        _clearPaint = new Paint();
+                        _clearPaint.SetColor(0);
+                        _clearPaint.BlendMode = BlendMode.Clear;
+                    }
+                    canvas.DrawRect(0, 0, Width, Height, _clearPaint);
                 }
                 else
                 {
@@ -384,7 +387,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             if(Input != null)
             {
-                var args = new RawTextInputEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, InputRoot!, text);
+                var args = new RawTextInputEventArgs(AndroidKeyboardDevice.Instance!, (ulong)Environment.TickCount64, InputRoot!, text);
 
                 Input(args);
             }
