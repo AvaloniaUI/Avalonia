@@ -19,7 +19,6 @@ internal sealed class X11DropTarget
     private readonly IntPtr _display;
     private readonly X11Atoms _atoms;
     private DragDropDataTransfer? _currentDrag;
-    private DragDropEffects _resultEffects;
 
     public X11DropTarget(IDragDropDevice dragDropDevice, IXdndWindow window, IntPtr _display, X11Atoms atoms)
     {
@@ -72,89 +71,52 @@ internal sealed class X11DropTarget
         }
 
         var (dataFormats, textFormats) = DataFormatHelper.ToDataFormats(formats.ToArray(), _atoms);
-
         var reader = new DragDropDataReader(_atoms, textFormats, dataFormats, _display, _window.Handle);
-
-        _currentDrag = new DragDropDataTransfer(
-            reader,
-            _atoms,
-            dataFormats,
-            _display,
-            sourceWindow,
-            _window.Handle,
-            inputRoot);
+        _currentDrag = new DragDropDataTransfer(reader, dataFormats, sourceWindow, _window.Handle, inputRoot);
     }
 
     public void OnXdndPosition(in XClientMessageEvent message)
     {
-        if (_currentDrag is null)
-            return;
-
-        var sourceWindow = message.ptr1;
-        if (sourceWindow != _currentDrag.SourceWindow)
+        if (_currentDrag is not { } drag || message.ptr1 != drag.SourceWindow)
             return;
 
         var screenX = (ushort)((message.ptr3 >> 16) & 0xFFFF);
         var screenY = (ushort)(message.ptr3 & 0xFFFF);
         var position = _window.PointToClient(new PixelPoint(screenX, screenY));
         var requestedEffects = XdndActionHelper.ActionToEffects(message.ptr5, _atoms);
-        var eventType = _currentDrag.LastPosition is null ? RawDragEventType.DragEnter : RawDragEventType.DragOver;
+        var eventType = drag.LastPosition is null ? RawDragEventType.DragEnter : RawDragEventType.DragOver;
 
-        _currentDrag.LastPosition = position;
-        _currentDrag.LastTimestamp = message.ptr4;
+        drag.LastPosition = position;
+        drag.LastTimestamp = message.ptr4;
 
         var dragEvent = new RawDragEvent(
             _dragDropDevice,
             eventType,
-            _currentDrag.InputRoot,
+            drag.InputRoot,
             position,
-            _currentDrag,
+            drag,
             requestedEffects,
             RawInputModifiers.None);
 
         _dragDropDevice.ProcessRawEvent(dragEvent);
 
-        _resultEffects = dragEvent.Effects;
-        var resultAction = XdndActionHelper.EffectsToAction(_resultEffects, _atoms);
+        drag.ResultEffects = dragEvent.Effects;
 
-        var evt = new XEvent
-        {
-            ClientMessageEvent =
-            {
-                type = XEventName.ClientMessage,
-                send_event = 1,
-                window = sourceWindow,
-                message_type = _atoms.XdndStatus,
-                format = 32,
-                ptr1 = _window.Handle,
-                ptr2 = resultAction == 0 ? 0 : 1,
-                ptr3 = 0,
-                ptr4 = 0,
-                ptr5 = resultAction
-            }
-        };
-
-        XSendEvent(_display, sourceWindow, false, (IntPtr)EventMask.NoEventMask, ref evt);
-        XFlush(_display);
+        var resultAction = XdndActionHelper.EffectsToAction(dragEvent.Effects, _atoms);
+        SendXdndMessage(_atoms.XdndStatus, drag, resultAction == 0 ? 0 : 1, 0, 0, resultAction);
     }
 
     public void OnXdndLeave(in XClientMessageEvent message)
     {
-        if (_currentDrag is null)
+        if (_currentDrag is not { } drag || message.ptr1 != drag.SourceWindow)
             return;
-
-        var sourceWindow = message.ptr1;
-        if (sourceWindow != _currentDrag.SourceWindow)
-            return;
-
-        _resultEffects = DragDropEffects.None;
 
         var dragLeave = new RawDragEvent(
             _dragDropDevice,
             RawDragEventType.DragLeave,
-            _currentDrag.InputRoot,
+            drag.InputRoot,
             default,
-            _currentDrag,
+            drag,
             DragDropEffects.None,
             RawInputModifiers.None);
 
@@ -165,30 +127,68 @@ internal sealed class X11DropTarget
 
     public void OnXdndDrop(in XClientMessageEvent message)
     {
-        if (_currentDrag is null)
-            return;
-
-        var sourceWindow = message.ptr1;
-        if (sourceWindow != _currentDrag.SourceWindow)
+        if (_currentDrag is not { } drag || message.ptr1 != drag.SourceWindow)
             return;
 
         var drop = new RawDragEvent(
             _dragDropDevice,
             RawDragEventType.Drop,
-            _currentDrag.InputRoot,
-            _currentDrag.LastPosition ?? default,
-            _currentDrag,
-            _resultEffects,
+            drag.InputRoot,
+            drag.LastPosition ?? default,
+            drag,
+            drag.ResultEffects,
             RawInputModifiers.None);
 
         _dragDropDevice.ProcessRawEvent(drop);
 
+        drag.ResultEffects = drop.Effects;
+        drag.Dropped = true;
+
         DisposeCurrentDrag();
+    }
+
+    private void SendXdndMessage(
+        IntPtr messageType,
+        DragDropDataTransfer drag,
+        IntPtr ptr2,
+        IntPtr ptr3,
+        IntPtr ptr4,
+        IntPtr ptr5)
+    {
+        var evt = new XEvent
+        {
+            ClientMessageEvent = new XClientMessageEvent
+            {
+                type = XEventName.ClientMessage,
+                display = _display,
+                window = drag.SourceWindow,
+                message_type = messageType,
+                format = 32,
+                ptr1 = drag.TargetWindow,
+                ptr2 = ptr2,
+                ptr3 = ptr3,
+                ptr4 = ptr4,
+                ptr5 = ptr5
+            }
+        };
+
+        XSendEvent(_display, drag.SourceWindow, false, (IntPtr)EventMask.NoEventMask, ref evt);
+        XFlush(_display);
     }
 
     private void DisposeCurrentDrag()
     {
-        _currentDrag?.Dispose();
+        if (_currentDrag is not { } drag)
+            return;
+
         _currentDrag = null;
+
+        if (drag.Dropped)
+        {
+            var resultAction = XdndActionHelper.EffectsToAction(drag.ResultEffects, _atoms);
+            SendXdndMessage(_atoms.XdndFinished, drag, resultAction == 0 ? 0 : 1, resultAction, 0, 0);
+        }
+
+        drag.Dispose();
     }
 }
