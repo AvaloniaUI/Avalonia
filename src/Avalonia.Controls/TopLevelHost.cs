@@ -99,16 +99,7 @@ internal partial class TopLevelHost : Control
                     var contentSize = new Size(
                         Math.Max(0, finalSize.Width - inset.Left - inset.Right),
                         Math.Max(0, finalSize.Height - inset.Top - inset.Bottom));
-
-                    // Resize the platform window only when the content actually changed size.
-                    // During window state transitions (e.g. maximize→restore), the inset changes
-                    // but the platform hasn't sent the new size yet — the layout runs with stale
-                    // Width/Height. Comparing against ClientSize detects this: if only the inset
-                    // changed, content size matches ClientSize and we skip the bogus resize.
-                    if (contentSize != _topLevel.ClientSize
-                        && _topLevel is Window { ResizeWindowInTopLevelHost: true } window)
-                        window.PlatformImpl?.Resize(finalSize, WindowResizeReason.Layout);
-
+                    
                     l.Arrange(new Rect(inset.Left, inset.Top, contentSize.Width, contentSize.Height));
                 }
                 else
