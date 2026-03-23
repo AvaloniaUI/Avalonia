@@ -138,7 +138,8 @@ namespace Avalonia.Animation
         /// Gets or sets the playback behavior for this animation.
         /// When set to <see cref="PlaybackBehavior.Auto"/>, manually started animations and
         /// animations targeting <see cref="Visual.IsVisibleProperty"/> always play,
-        /// while style-applied animations pause when the control is not visible.
+        /// while style-applied animations pause when the control is not effectively visible
+        /// (see <see cref="Visual.IsEffectivelyVisible"/>).
         /// </summary>
         public PlaybackBehavior PlaybackBehavior
         {

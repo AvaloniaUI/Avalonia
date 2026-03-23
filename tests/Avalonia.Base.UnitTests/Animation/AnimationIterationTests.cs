@@ -1014,17 +1014,17 @@ namespace Avalonia.Base.UnitTests.Animation
         }
 
         [Fact]
-        public void Width_Animation_Progresses_After_IsVisible_Set_True_On_Invisible_Control()
+        public void Width_Animation_Resumes_After_IsVisible_Set_True_On_Invisible_Control()
         {
-            // Tests the expand scenario with a double property: the control starts invisible,
-            // and the animation drives Width from 0 to 100. With the pause-on-invisible
-            // behavior, the animation clock should still advance after the control becomes
-            // visible (even if made visible by the same logical expand action).
+            // Tests the expand scenario with OnlyIfVisible: the control starts invisible
+            // and the animation is paused. Once IsVisible is set to true externally,
+            // the animation resumes and completes.
             var animation = new Animation()
             {
                 Duration = TimeSpan.FromSeconds(0.3),
                 Easing = new LinearEasing(),
                 FillMode = FillMode.Forward,
+                PlaybackBehavior = PlaybackBehavior.OnlyIfVisible,
                 Children =
                 {
                     new KeyFrame()
@@ -1046,12 +1046,15 @@ namespace Avalonia.Base.UnitTests.Animation
             var clock = new TestClock();
             var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
 
+            // Animation is paused because control is invisible.
             clock.Step(TimeSpan.Zero);
+            Assert.Equal(0d, border.Width);
+            Assert.False(animationRun.IsCompleted);
 
             // Simulate what the expand handler does: set IsVisible = true externally.
             border.IsVisible = true;
 
-            // The animation should now be able to make progress.
+            // The animation should now resume and complete.
             clock.Step(TimeSpan.FromSeconds(0.3));
             Assert.True(animationRun.IsCompleted);
             Assert.Equal(100d, border.Width);
