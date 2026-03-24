@@ -38,7 +38,9 @@ namespace Avalonia.Animation
         private EventHandler? _visibilityChangedHandler;
         private EventHandler<VisualTreeAttachmentEventArgs>? _detachedHandler;
 
-        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action? OnComplete, Func<double, T, T> Interpolator)
+        private readonly bool _shouldPauseOnInvisible;
+
+        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action? OnComplete, Func<double, T, T> Interpolator, bool shouldPauseOnInvisible)
         {
             _animator = animator;
             _animation = animation;
@@ -49,6 +51,7 @@ namespace Avalonia.Animation
             _lastInterpValue = default!;
             _firstKFValue = default!;
             _neutralValue = default!;
+            _shouldPauseOnInvisible = shouldPauseOnInvisible;
             FetchProperties();
         }
 
@@ -120,26 +123,29 @@ namespace Avalonia.Animation
 
             if (_targetControl is Visual visual)
             {
-                _visibilityChangedHandler = (_, _) =>
+                if (_shouldPauseOnInvisible)
                 {
-                    if (_clock is null || _clock.PlayState == PlayState.Stop)
-                        return;
-                    if (visual.IsEffectivelyVisible)
+                    _visibilityChangedHandler = (_, _) =>
                     {
-                        if (_clock.PlayState == PlayState.Pause)
-                            _clock.PlayState = PlayState.Run;
-                    }
-                    else
-                    {
-                        if (_clock.PlayState == PlayState.Run)
-                            _clock.PlayState = PlayState.Pause;
-                    }
-                };
-                visual.IsEffectivelyVisibleChanged += _visibilityChangedHandler;
+                        if (_clock is null || _clock.PlayState == PlayState.Stop)
+                            return;
+                        if (visual.IsEffectivelyVisible)
+                        {
+                            if (_clock.PlayState == PlayState.Pause)
+                                _clock.PlayState = PlayState.Run;
+                        }
+                        else
+                        {
+                            if (_clock.PlayState == PlayState.Run)
+                                _clock.PlayState = PlayState.Pause;
+                        }
+                    };
+                    visual.IsEffectivelyVisibleChanged += _visibilityChangedHandler;
 
-                // If already invisible when animation starts, pause immediately.
-                if (!visual.IsEffectivelyVisible)
-                    _clock.PlayState = PlayState.Pause;
+                    // If already invisible when animation starts, pause immediately.
+                    if (!visual.IsEffectivelyVisible)
+                        _clock.PlayState = PlayState.Pause;
+                }
 
                 // Stop and dispose the animation when detached from the visual tree.
                 _detachedHandler = (_, _) => DoComplete();

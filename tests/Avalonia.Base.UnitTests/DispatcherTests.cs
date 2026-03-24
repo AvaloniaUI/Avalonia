@@ -512,76 +512,59 @@ public partial class DispatcherTests
 
 
     [Fact]
-    public async Task DispatcherResumeContinuesOnUIThread()
+    public async Task DispatcherResumeContinuesOnCurrentThread()
     {
         using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
 
         var tokenSource = new CancellationTokenSource();
-        var workload = Dispatcher.UIThread.InvokeAsync(
+        var dispatcher = Dispatcher.CurrentDispatcher;
+
+        var workload = dispatcher.InvokeAsync(
             async () =>
             {
-                Assert.True(Dispatcher.UIThread.CheckAccess());
+                Assert.True(dispatcher.CheckAccess());
 
                 await Task.Delay(1).ConfigureAwait(false);
-                Assert.False(Dispatcher.UIThread.CheckAccess());
+                Assert.False(dispatcher.CheckAccess());
 
-                await Dispatcher.UIThread.Resume();
-                Assert.True(Dispatcher.UIThread.CheckAccess());
+                await dispatcher.Resume();
+                Assert.True(dispatcher.CheckAccess());
 
                 tokenSource.Cancel();
             });
 
-        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+        dispatcher.MainLoop(tokenSource.Token);
     }
 
     [Fact]
-    public async Task DispatcherYieldContinuesOnUIThread()
+    public async Task DispatcherYieldContinuesOnCurrentThread()
     {
         using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
 
         var tokenSource = new CancellationTokenSource();
-        var workload = Dispatcher.UIThread.InvokeAsync(
+        var dispatcher = Dispatcher.CurrentDispatcher;
+
+        var workload = dispatcher.InvokeAsync(
             async () =>
             {
-                Assert.True(Dispatcher.UIThread.CheckAccess());
+                Assert.True(dispatcher.CheckAccess());
 
                 await Dispatcher.Yield();
-                Assert.True(Dispatcher.UIThread.CheckAccess());
+                Assert.True(dispatcher.CheckAccess());
 
                 tokenSource.Cancel();
             });
 
-        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+        dispatcher.MainLoop(tokenSource.Token);
     }
 
     [Fact]
-    public async Task DispatcherYieldThrowsOnNonUIThread()
+    public async Task AwaitWithPriorityRunsOnCurrentThread()
     {
-        using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
-
-        var tokenSource = new CancellationTokenSource();
-        var workload = Dispatcher.UIThread.InvokeAsync(
-            async () =>
-            {
-                Assert.True(Dispatcher.UIThread.CheckAccess());
-
-                await Task.Delay(1).ConfigureAwait(false);
-                Assert.False(Dispatcher.UIThread.CheckAccess());
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await Dispatcher.Yield());
-
-                tokenSource.Cancel();
-            });
-
-        Dispatcher.UIThread.MainLoop(tokenSource.Token);
-    }
-
-    [Fact]
-    public async Task AwaitWithPriorityRunsOnUIThread()
-    {
-        static async Task<int> Workload()
+        static async Task<int> Workload(Dispatcher dispatcher)
         {
             await Task.Delay(1).ConfigureAwait(false);
-            Assert.False(Dispatcher.UIThread.CheckAccess());
+            Assert.False(dispatcher.CheckAccess());
 
             return Thread.CurrentThread.ManagedThreadId;
         }
@@ -589,25 +572,27 @@ public partial class DispatcherTests
         using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
 
         var tokenSource = new CancellationTokenSource();
-        var workload = Dispatcher.UIThread.InvokeAsync(
+        var dispatcher = Dispatcher.CurrentDispatcher;
+
+        var workload = dispatcher.InvokeAsync(
             async () =>
             {
-                Assert.True(Dispatcher.UIThread.CheckAccess());
-                Task taskWithoutResult = Workload();
+                Assert.True(dispatcher.CheckAccess());
+                Task taskWithoutResult = Workload(dispatcher);
 
-                await Dispatcher.UIThread.AwaitWithPriority(taskWithoutResult, DispatcherPriority.Default);
+                await dispatcher.AwaitWithPriority(taskWithoutResult, DispatcherPriority.Default);
 
-                Assert.True(Dispatcher.UIThread.CheckAccess());
-                Task<int> taskWithResult = Workload();
+                Assert.True(dispatcher.CheckAccess());
+                Task<int> taskWithResult = Workload(dispatcher);
 
-                await Dispatcher.UIThread.AwaitWithPriority(taskWithResult, DispatcherPriority.Default);
+                await dispatcher.AwaitWithPriority(taskWithResult, DispatcherPriority.Default);
 
-                Assert.True(Dispatcher.UIThread.CheckAccess());
+                Assert.True(dispatcher.CheckAccess());
 
                 tokenSource.Cancel();
             });
 
-        Dispatcher.UIThread.MainLoop(tokenSource.Token);
+        dispatcher.MainLoop(tokenSource.Token);
     }
 
     private class AsyncLocalTestClass

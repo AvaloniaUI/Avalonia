@@ -14,7 +14,6 @@ namespace Avalonia.Input
         private readonly PointerPointProperties _properties;
         private readonly Lazy<IReadOnlyList<RawPointerPoint>?>? _previousPoints;
 
-        [Unstable("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
         public PointerEventArgs(RoutedEvent? routedEvent,
             object? source,
             IPointer pointer,
@@ -32,8 +31,9 @@ namespace Avalonia.Input
             Timestamp = timestamp;
             KeyModifiers = modifiers;
         }
-        
-        internal PointerEventArgs(RoutedEvent? routedEvent,
+
+        [PrivateApi]
+        public PointerEventArgs(RoutedEvent? routedEvent,
             object? source,
             IPointer pointer,
             Visual? rootVisual, Point rootVisualPosition,
@@ -41,9 +41,7 @@ namespace Avalonia.Input
             PointerPointProperties properties,
             KeyModifiers modifiers,
             Lazy<IReadOnlyList<RawPointerPoint>?>? previousPoints)
-#pragma warning disable CS0618
             : this(routedEvent, source, pointer, rootVisual, rootVisualPosition, timestamp, properties, modifiers)
-#pragma warning restore CS0618
         {
             _previousPoints = previousPoints;
         }
@@ -160,9 +158,8 @@ namespace Avalonia.Input
 
     public class PointerPressedEventArgs : PointerEventArgs
     {
-        [Unstable("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
         public PointerPressedEventArgs(
-            object source,
+            object? source,
             IPointer pointer,
             Visual rootVisual, Point rootVisualPosition,
             ulong timestamp,
@@ -180,9 +177,8 @@ namespace Avalonia.Input
 
     public class PointerReleasedEventArgs : PointerEventArgs
     {
-        [Unstable("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
         public PointerReleasedEventArgs(
-            object source, IPointer pointer,
+            object? source, IPointer pointer,
             Visual rootVisual, Point rootVisualPosition, ulong timestamp,
             PointerPointProperties properties, KeyModifiers modifiers,
             MouseButton initialPressMouseButton)
@@ -202,8 +198,7 @@ namespace Avalonia.Input
     {
         public IPointer Pointer { get; }
 
-        [Unstable("This constructor might be removed in 12.0. If you need to remove capture, use stable methods on the IPointer instance.")]
-        public PointerCaptureLostEventArgs(object source, IPointer pointer) : base(InputElement.PointerCaptureLostEvent)
+        public PointerCaptureLostEventArgs(object? source, IPointer pointer) : base(InputElement.PointerCaptureLostEvent)
         {
             Pointer = pointer;
             Source = source;
@@ -216,7 +211,7 @@ namespace Avalonia.Input
         public CaptureSource CaptureSource { get; }
         public IInputElement? NewValue { get; }
 
-        internal PointerCaptureChangingEventArgs(object source, IPointer pointer, IInputElement? newValue, CaptureSource captureSource) : base(InputElement.PointerCaptureChangingEvent)
+        internal PointerCaptureChangingEventArgs(object? source, IPointer pointer, IInputElement? newValue, CaptureSource captureSource) : base(InputElement.PointerCaptureChangingEvent)
         {
             Pointer = pointer;
             Source = source;
