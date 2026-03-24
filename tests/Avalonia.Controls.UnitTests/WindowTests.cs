@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -1205,6 +1206,127 @@ namespace Avalonia.Controls.UnitTests
 
                 // ShowCore should apply the default icon when no custom icon was set.
                 windowImpl.Verify(x => x.SetIcon(It.IsAny<IWindowIconImpl?>()), Times.AtLeastOnce());
+            }
+        }
+
+        [Fact]
+        public void WindowState_UsableGetter_Setter_Updates_Only_After_Platform_Callback()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            // Simulate a platform where the getter is usable and the setter is accepted
+            var platformState = WindowState.Normal;
+            windowImpl.Setup(x => x.WindowStateGetterIsUsable).Returns(true);
+            windowImpl.Setup(x => x.WindowState).Returns(() => platformState);
+            windowImpl.SetupSet(x => x.WindowState = It.IsAny<WindowState>())
+                .Callback<WindowState>(v =>
+                {
+                    platformState = v;
+                    // Platform accepts the state and fires the callback
+                    windowImpl.Object.WindowStateChanged?.Invoke(v);
+                });
+
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
+            using (UnitTestApplication.Start(new TestServices(windowingPlatform: windowingPlatform)))
+            {
+                var target = new Window();
+                target.Show();
+
+                var raised = new List<WindowState>();
+                target.GetObservable(Window.WindowStateProperty).Skip(1).Subscribe(s => raised.Add(s));
+
+                // Set to Maximized - platform accepts and fires callback
+                target.WindowState = WindowState.Maximized;
+                Assert.Equal(WindowState.Maximized, target.WindowState);
+                Assert.Contains(WindowState.Maximized, raised);
+
+                // Set to FullScreen - platform accepts and fires callback
+                raised.Clear();
+                target.WindowState = WindowState.FullScreen;
+                Assert.Equal(WindowState.FullScreen, target.WindowState);
+                Assert.Contains(WindowState.FullScreen, raised);
+            }
+        }
+
+        [Fact]
+        public void WindowState_UsableGetter_Setter_Raises_Synthetic_Notification_When_Platform_Refuses()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            // Simulate a platform where the getter is usable but refuses state change requests.
+            // Start in Maximized state, then refuse a request to go Normal.
+            var platformState = WindowState.Normal;
+            windowImpl.Setup(x => x.WindowStateGetterIsUsable).Returns(true);
+            windowImpl.Setup(x => x.WindowState).Returns(() => platformState);
+            windowImpl.SetupSet(x => x.WindowState = It.IsAny<WindowState>())
+                .Callback<WindowState>(v =>
+                {
+                    // Platform accepts Maximized but refuses everything else
+                    if (v == WindowState.Maximized)
+                    {
+                        platformState = v;
+                        windowImpl.Object.WindowStateChanged?.Invoke(v);
+                    }
+                    // else: platform refuses, does not change state
+                });
+
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
+            using (UnitTestApplication.Start(new TestServices(windowingPlatform: windowingPlatform)))
+            {
+                var target = new Window();
+                target.Show();
+
+                // First, go to Maximized (accepted by platform)
+                target.WindowState = WindowState.Maximized;
+                Assert.Equal(WindowState.Maximized, target.WindowState);
+
+                var raised = new List<AvaloniaPropertyChangedEventArgs>();
+                target.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == Window.WindowStateProperty)
+                        raised.Add(e);
+                };
+
+                // Now try to go to FullScreen - platform refuses, stays Maximized
+                target.WindowState = WindowState.FullScreen;
+
+                // The getter should still return Maximized because the platform refused
+                Assert.Equal(WindowState.Maximized, target.WindowState);
+
+                // A synthetic notification should have been raised so data bindings can recover
+                Assert.NotEmpty(raised);
+                Assert.Equal(WindowState.Maximized, raised[^1].GetNewValue<WindowState>());
+            }
+        }
+
+        [Fact]
+        public void WindowState_NonUsableGetter_Setter_Updates_Immediately()
+        {
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+            // Legacy behavior: WindowStateGetterIsUsable = false
+            windowImpl.Setup(x => x.WindowStateGetterIsUsable).Returns(false);
+
+            var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
+            using (UnitTestApplication.Start(new TestServices(windowingPlatform: windowingPlatform)))
+            {
+                var target = new Window();
+                target.Show();
+
+                var raised = new List<WindowState>();
+                target.GetObservable(Window.WindowStateProperty).Skip(1).Subscribe(s => raised.Add(s));
+
+                // Set to Maximized - should update immediately regardless of platform behavior
+                target.WindowState = WindowState.Maximized;
+
+                Assert.Equal(WindowState.Maximized, target.WindowState);
+                Assert.Contains(WindowState.Maximized, raised);
+
+                // Verify the setter was forwarded to the platform impl
+                windowImpl.VerifySet(x => x.WindowState = WindowState.Maximized);
+
+                // Platform getter should never be called in legacy mode
+                windowImpl.VerifyGet(x => x.WindowState, Times.Never());
             }
         }
 

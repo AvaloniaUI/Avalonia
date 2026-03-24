@@ -141,6 +141,7 @@ namespace Avalonia.Headless
         }
 
         public WindowState WindowState { get; set; }
+        public bool WindowStateGetterIsUsable => false;
         public Action<WindowState>? WindowStateChanged { get; set; }
         public void SetTitle(string? title)
         {
