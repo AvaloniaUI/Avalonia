@@ -653,7 +653,7 @@ namespace Avalonia.Controls
             // Check if platform impl doesn't lie about get_WindowState being usable
             Debug.Assert(PlatformImpl is not { WindowStateGetterIsUsable: true } || PlatformImpl.WindowState == state);
             
-            SetAndRaise(WindowStateProperty, ref _lastWindowState, WindowState);
+            SetAndRaise(WindowStateProperty, ref _lastWindowState, state);
 
             if (state == WindowState.Minimized)
             {
