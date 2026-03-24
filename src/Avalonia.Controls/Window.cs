@@ -404,13 +404,15 @@ namespace Avalonia.Controls
             set => SetValue(ClosingBehaviorProperty, value);
         }
 
-        private WindowState _windowStateForPropertyNotifications;
+        private WindowState _lastWindowState;
         /// <summary>
         /// Represents the currently effective window state (normal, minimized, maximized)
         /// </summary>
         public WindowState WindowState
         {
-            get => PlatformImpl?.WindowState ?? default;
+            get => PlatformImpl?.WindowStateGetterIsUsable == true ?
+                PlatformImpl.WindowState :
+                _lastWindowState;
             set
             {
                 if (PlatformImpl != null)
@@ -427,17 +429,17 @@ namespace Avalonia.Controls
                         {
                             // Since it's a force notify, we aren't checking for the old value and sometimes
                             // trigger notification with oldValue = newValue.
-                            var oldValue = _windowStateForPropertyNotifications;
-                            _windowStateForPropertyNotifications = PlatformImpl.WindowState;
-                            RaisePropertyChanged(WindowStateProperty, oldValue, _windowStateForPropertyNotifications);
+                            var oldValue = _lastWindowState;
+                            _lastWindowState = PlatformImpl.WindowState;
+                            RaisePropertyChanged(WindowStateProperty, oldValue, _lastWindowState);
                         }
                     }
                     else 
                     {
                         // Legacy behavior - update the property and hope for the best that the platform
                         // will update it back to match the actual window state
-                        SetAndRaise(WindowStateProperty, ref _windowStateForPropertyNotifications, value);
-                        PlatformImpl.WindowState = _windowStateForPropertyNotifications;
+                        SetAndRaise(WindowStateProperty, ref _lastWindowState, value);
+                        PlatformImpl.WindowState = _lastWindowState;
                     }
                 }
             }
@@ -651,7 +653,7 @@ namespace Avalonia.Controls
             // Check if platform impl doesn't lie about get_WindowState being usable
             Debug.Assert(PlatformImpl is not { WindowStateGetterIsUsable: true } || PlatformImpl.WindowState == state);
             
-            SetAndRaise(WindowStateProperty, ref _windowStateForPropertyNotifications, WindowState);
+            SetAndRaise(WindowStateProperty, ref _lastWindowState, WindowState);
 
             if (state == WindowState.Minimized)
             {
