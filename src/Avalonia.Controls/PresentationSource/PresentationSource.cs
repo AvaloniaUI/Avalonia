@@ -86,6 +86,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
         // We need to wait for the renderer to complete any in-flight operations
         Renderer.Dispose();
 
+        PlatformImpl?.ScalingChanged -= HandleScalingChanged;
         PlatformImpl = null;
         _pointerOverPreProcessor?.OnCompleted();
         _pointerOverPreProcessorSubscription?.Dispose();
