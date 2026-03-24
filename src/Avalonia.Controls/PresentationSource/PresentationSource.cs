@@ -29,12 +29,15 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
         PlatformImpl = platformImpl;
 
-    
+
         _inputManager = TryGetService<IInputManager>(dependencyResolver);
         _handleInputCore = HandleInputCore;
         
         PlatformImpl.SetInputRoot(this);
         PlatformImpl.Input = HandleInput;
+
+        RenderScaling = LayoutHelper.ValidateScaling(platformImpl.RenderScaling);
+        PlatformImpl.ScalingChanged += HandleScalingChanged;
         
         _pointerOverPreProcessor = new PointerOverPreProcessor(this);
         _pointerOverPreProcessorSubscription = _inputManager?.PreProcess.Subscribe(_pointerOverPreProcessor);

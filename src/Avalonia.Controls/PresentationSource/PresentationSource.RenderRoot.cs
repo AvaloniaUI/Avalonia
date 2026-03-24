@@ -1,5 +1,5 @@
 using System;
-using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 
@@ -15,7 +15,8 @@ internal partial class PresentationSource
     //TODO: Can we PLEASE get rid of this abomination in tests and use actual hit-testing engine instead?
     public IHitTester? HitTesterOverride { get; set; }
     
-    public double RenderScaling => PlatformImpl?.RenderScaling ?? 1;
+    public double RenderScaling { get; private set; } = 1.0;
+
     public Size ClientSize => _clientSizeProvider();
     
     public void SceneInvalidated(object? sender, SceneInvalidatedEventArgs sceneInvalidatedEventArgs)
@@ -26,4 +27,7 @@ internal partial class PresentationSource
     public PixelPoint PointToScreen(Point point) => PlatformImpl?.PointToScreen(point) ?? default;
 
     public Point PointToClient(PixelPoint point) => PlatformImpl?.PointToClient(point) ?? default;
+
+    private void HandleScalingChanged(double scaling)
+        => RenderScaling = LayoutHelper.ValidateScaling(scaling);
 }
