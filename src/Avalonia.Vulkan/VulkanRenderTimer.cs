@@ -12,6 +12,9 @@ namespace Avalonia.Vulkan;
 public class VulkanRenderTimer : IRenderTimer
 {
     private readonly object _syncLock = new();
+    private readonly AutoResetEvent _wakeEvent = new(false);
+    private volatile Action<TimeSpan>? _tick;
+    private bool _threadStarted;
     private Action? _waitForPresentFence;
 
     /// <summary>
@@ -21,28 +24,36 @@ public class VulkanRenderTimer : IRenderTimer
     /// This event can be raised on any thread; it is the responsibility of the subscriber to
     /// switch execution to the right thread.
     /// </remarks>
-    public Action<TimeSpan>? Tick { get; set; }
+    public Action<TimeSpan>? Tick
+    {
+        get => _tick;
+        set
+        {
+            _tick = value;
+            if (value != null)
+            {
+                if (!_threadStarted)
+                {
+                    _threadStarted = true;
+                    Logger.TryGet(LogEventLevel.Debug, "VulkanDynamic")?.Log(this, "VulkanRenderTimer starting VSync thread");
+                    new Thread(RenderLoop)
+                    {
+                        IsBackground = true,
+                        Name = "VulkanDynamicVSync"
+                    }.Start();
+                }
+                else
+                {
+                    _wakeEvent.Set();
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// Indicates if the timer ticks on a non-UI thread
     /// </summary>
     public bool RunsInBackground => true;
-
-    /// <summary>
-    /// Default Constructor.
-    /// </summary>
-    public VulkanRenderTimer()
-    {
-        Logger.TryGet(LogEventLevel.Debug, "VulkanDynamic")?.Log(this, "VulkanRenderTimer created with fence-based VSync");
-
-        // Create a render loop thread that waits for presentation fences
-        Thread thread = new(RenderLoop)
-        {
-            IsBackground = RunsInBackground,
-            Name = "VulkanDynamicVSync",
-        };
-        thread.Start();
-    }
 
     private void RenderLoop()
     {
@@ -53,25 +64,26 @@ public class VulkanRenderTimer : IRenderTimer
         AppDomain.CurrentDomain.ProcessExit += (_, _) =>
             cts.Cancel();
 
-        // Wait for Tick to be subscribed
-        while(Tick == null)
-            Thread.Sleep(1);
-
         // Bootstrap with initial tick to start rendering
         while (_waitForPresentFence == null)
         {
+            if (_tick == null) 
+            { 
+                _wakeEvent.WaitOne(); 
+                continue;
+            }
             Thread.Sleep(16);
-            Tick?.Invoke(sw.Elapsed);
+            _tick?.Invoke(sw.Elapsed);
         }
 
         while (!cts.IsCancellationRequested)
         {
+            if (_tick == null) { _wakeEvent.WaitOne(); continue; }
+
             if (_waitForPresentFence != null)
             {
                 try
                 {
-                    // Wait for the presentation fence to be signaled
-                    // This fence is signaled when GPU completes all presentation work
                     lock (_syncLock)
                     {
                         _waitForPresentFence();
@@ -90,12 +102,10 @@ public class VulkanRenderTimer : IRenderTimer
             }
             else
             {
-                //rest at 120hz support
                 Thread.Sleep(8);
             }
 
-            // Fire the render tick after presentation completes or reset
-            Tick?.Invoke(sw.Elapsed);
+            _tick?.Invoke(sw.Elapsed);
         }
     }
 
