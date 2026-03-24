@@ -828,8 +828,12 @@ namespace Avalonia.X11
 
                     XGetGeometry(_x11.Display, _handle, out var _, out var _, out var _, out var width, out var height,
                         out var _, out var _);
-                    _realSize = new(width, height);
-                    Resized?.Invoke(ClientSize, WindowResizeReason.User);
+                    var newSize = new PixelSize(width, height);
+                    if (newSize != _realSize)
+                    {
+                        _realSize = newSize;
+                        Resized?.Invoke(ClientSize, WindowResizeReason.Unspecified);
+                    }
                 }
 
                 _activationTracker?.OnNetWmStateChanged(atoms);
