@@ -21,7 +21,7 @@ public class VulkanRenderTimer : IRenderTimer
     /// This event can be raised on any thread; it is the responsibility of the subscriber to
     /// switch execution to the right thread.
     /// </remarks>
-    public event Action<TimeSpan>? Tick;
+    public Action<TimeSpan>? Tick { get; set; }
 
     /// <summary>
     /// Indicates if the timer ticks on a non-UI thread

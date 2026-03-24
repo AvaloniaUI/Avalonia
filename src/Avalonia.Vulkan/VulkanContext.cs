@@ -51,6 +51,8 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
     {
         if (featureType == typeof(IVulkanContextExternalObjectsFeature))
             return _externalObjectsFeature;
+        if (featureType == typeof(IVulkanKhrSurfacePlatformSurfaceFactory))
+            return _surfaceFactory;
         return null;
     }
 
