@@ -69,10 +69,9 @@ public class VulkanRenderTimer : IRenderTimer
         {
             if (_tick == null) 
             { 
-                _wakeEvent.WaitOne(); 
+                _wakeEvent.WaitOne(16); 
                 continue;
             }
-            Thread.Sleep(16);
             _tick?.Invoke(sw.Elapsed);
         }
 
