@@ -57,6 +57,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         private bool _pointerGrabbed;
         private XdndTargetInfo? _lastTarget;
         private DragDropEffects _currentEffects;
+        private bool _targetCanAcceptDrop;
         private DragDropTimeoutManager? _timeoutManager;
 
         public Handler(
@@ -114,6 +115,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             var atoms = _platform.Info.Atoms;
             _formatAtoms = DataFormatHelper.ToAtoms(dataTransfer.Formats, atoms);
+            _dataProvider.SetOwner(_sourceWindow);
 
             XChangeProperty(
                 _platform.Display,
@@ -175,6 +177,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 }
 
                 _lastTarget = target;
+                _targetCanAcceptDrop = false;
                 UpdateCurrentEffects(effectiveAllowedEffects);
 
                 if (target is { } newTarget)
@@ -217,7 +220,12 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             }
             else
             {
-                _dataProvider.SetOwner(_sourceWindow);
+                if (!_targetCanAcceptDrop)
+                {
+                    SendXdndLeave(lastTarget);
+                    Complete(DragDropEffects.None);
+                    return;
+                }
 
                 Debug.Assert(_timeoutManager is null);
 
@@ -241,6 +249,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             var accepted = (message.ptr2 & 1) == 1;
             var action = accepted ? message.ptr5 : 0;
             var effects = XdndActionHelper.ActionToEffects(action, _platform.Info.Atoms);
+            _targetCanAcceptDrop = accepted;
             UpdateCurrentEffects(effects & _allowedEffects);
         }
 
