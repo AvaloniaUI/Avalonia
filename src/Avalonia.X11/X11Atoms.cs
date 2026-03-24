@@ -23,7 +23,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using static Avalonia.X11.Selections.DataFormatHelper;
 using static Avalonia.X11.XLib;
 // ReSharper disable FieldCanBeMadeReadOnly.Global
 // ReSharper disable IdentifierTypo
@@ -186,8 +186,6 @@ namespace Avalonia.X11
         public IntPtr CLIPBOARD_MANAGER;
         public IntPtr SAVE_TARGETS;
         public IntPtr MULTIPLE;
-        public IntPtr OEMTEXT;
-        public IntPtr UNICODETEXT;
         public IntPtr TARGETS;
         public IntPtr UTF8_STRING;
         public IntPtr UTF16_STRING;
@@ -215,14 +213,24 @@ namespace Avalonia.X11
         private readonly Dictionary<string, IntPtr> _namesToAtoms  = new Dictionary<string, IntPtr>();
         private readonly Dictionary<IntPtr, string> _atomsToNames = new Dictionary<IntPtr, string>();
 
-        public IntPtr[] TextFormats { get; }
-
         public X11Atoms(IntPtr display)
         {
             _display = display;
             PopulateAtoms(display);
-            TextFormats = [STRING, OEMTEXT, UTF8_STRING, UTF16_STRING];
         }
+
+        /// <summary>
+        /// The atoms corresponding to text formats, by order of preference.
+        /// </summary>
+        public IntPtr[] TextFormats
+            => field ??=
+            [
+                UTF16_STRING,
+                UTF8_STRING,
+                GetAtom(MimeTypeTextPlain),
+                GetAtom(MimeTypeTextPlainUtf8),
+                STRING
+            ];
 
         private void InitAtom(ref IntPtr field, string name, IntPtr value)
         {

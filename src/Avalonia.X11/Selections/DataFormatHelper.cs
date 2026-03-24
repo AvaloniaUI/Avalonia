@@ -7,23 +7,21 @@ namespace Avalonia.X11.Selections;
 
 internal static class DataFormatHelper
 {
-    private const string MimeTypeTextUriList = "text/uri-list";
     private const string AppPrefix = "application/avn-fmt.";
-    public const string PngFormatMimeType = "image/png";
-    public const string JpegFormatMimeType = "image/jpeg";
+
+    public const string MimeTypeTextUriList = "text/uri-list";
+    public const string MimeTypePngFormat = "image/png";
+    public const string MimeTypeJpegFormat = "image/jpeg";
+    public const string MimeTypeTextPlain = "text/plain";
+    public const string MimeTypeTextPlainUtf8 = "text/plain;charset=utf-8";
 
     public static DataFormat? ToDataFormat(IntPtr formatAtom, X11Atoms atoms)
     {
         if (formatAtom == IntPtr.Zero)
             return null;
 
-        if (formatAtom == atoms.UTF16_STRING ||
-            formatAtom == atoms.UTF8_STRING ||
-            formatAtom == atoms.STRING ||
-            formatAtom == atoms.OEMTEXT)
-        {
+        if (atoms.TextFormats.Contains(formatAtom))
             return DataFormat.Text;
-        }
 
         if (formatAtom == atoms.MULTIPLE ||
             formatAtom == atoms.TARGETS ||
@@ -71,7 +69,7 @@ internal static class DataFormatHelper
 
                 if(!hasImage)
                 {
-                    if (format.Identifier is JpegFormatMimeType or PngFormatMimeType)
+                    if (format.Identifier is MimeTypeJpegFormat or MimeTypePngFormat)
                         hasImage = true;
                 }
             }
@@ -96,19 +94,19 @@ internal static class DataFormatHelper
             DataFormat? pngFormat = null, jpegFormat = null;
             foreach (var imageFormat in dataFormats)
             {
-                if (imageFormat.Identifier is PngFormatMimeType)
+                if (imageFormat.Identifier is MimeTypePngFormat)
                     pngFormat = imageFormat;
-                else if (imageFormat.Identifier is JpegFormatMimeType)
+                else if (imageFormat.Identifier is MimeTypeJpegFormat)
                     jpegFormat = imageFormat;
 
                 if (pngFormat != null && jpegFormat != null)
                     break;
             }
 
-            var preferredFormat = pngFormat ?? jpegFormat ?? null;
+            var preferredFormat = pngFormat ?? jpegFormat;
 
             if (preferredFormat != null)
-                return atoms.GetAtom(preferredFormat.ToSystemName(AppPrefix));
+                return atoms.GetAtom(preferredFormat.Identifier);
             else
                 return IntPtr.Zero;
         }
@@ -126,7 +124,7 @@ internal static class DataFormatHelper
             return [atoms.GetAtom(MimeTypeTextUriList)];
 
         if (DataFormat.Bitmap.Equals(format))
-            return [atoms.GetAtom(PngFormatMimeType)];
+            return [atoms.GetAtom(MimeTypePngFormat)];
 
         var systemName = format.ToSystemName(AppPrefix);
         return [atoms.GetAtom(systemName)];
@@ -147,9 +145,7 @@ internal static class DataFormatHelper
 
     private static IntPtr GetPreferredStringFormatAtom(IntPtr[] textFormatAtoms, X11Atoms atoms)
     {
-        ReadOnlySpan<IntPtr> preferredFormats = [atoms.UTF16_STRING, atoms.UTF8_STRING, atoms.STRING];
-
-        foreach (var preferredFormat in preferredFormats)
+        foreach (var preferredFormat in atoms.TextFormats)
         {
             if (Array.IndexOf(textFormatAtoms, preferredFormat) >= 0)
                 return preferredFormat;
@@ -163,10 +159,14 @@ internal static class DataFormatHelper
         if (formatAtom == atoms.UTF16_STRING)
            return Encoding.Unicode;
 
-        if (formatAtom == atoms.UTF8_STRING)
+        if (formatAtom == atoms.UTF8_STRING ||
+            formatAtom == atoms.GetAtom(MimeTypeTextPlain) ||
+            formatAtom == atoms.GetAtom(MimeTypeTextPlainUtf8))
+        {
             return Encoding.UTF8;
+        }
 
-        if (formatAtom == atoms.STRING || formatAtom == atoms.OEMTEXT)
+        if (formatAtom == atoms.STRING)
             return Encoding.ASCII;
 
         return null;
