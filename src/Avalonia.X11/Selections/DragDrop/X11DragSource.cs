@@ -183,7 +183,11 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 if (target is { } newTarget)
                 {
                     if (newTarget.InProcessWindow is { } window)
-                        ProcessRawDragEvent(window, RawDragEventType.DragEnter, rootPosition, modifiers);
+                    {
+                        var effects = ProcessRawDragEvent(window, RawDragEventType.DragEnter, rootPosition, modifiers);
+                        _targetCanAcceptDrop = effects != DragDropEffects.None;
+                        UpdateCurrentEffects(effects);
+                    }
                     else
                         SendXdndEnter(newTarget);
                 }
@@ -192,7 +196,11 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             if (target is { } currentTarget)
             {
                 if (currentTarget.InProcessWindow is { } window)
-                    ProcessRawDragEvent(window, RawDragEventType.DragOver, rootPosition, modifiers);
+                {
+                    var effects = ProcessRawDragEvent(window, RawDragEventType.DragOver, rootPosition, modifiers);
+                    _targetCanAcceptDrop = effects != DragDropEffects.None;
+                    UpdateCurrentEffects(effects);
+                }
                 else
                 {
                     var action = XdndActionHelper.EffectsToAction(effectiveAllowedEffects, _platform.Info.Atoms);
@@ -213,9 +221,19 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 var rootPosition = new PixelPoint(button.x_root, button.y_root);
                 var modifiers = button.state.ToRawInputModifiers();
 
-                ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.Drop, rootPosition, modifiers);
+                if (_targetCanAcceptDrop)
+                {
+                    var effects = ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.Drop, rootPosition, modifiers);
+                    UpdateCurrentEffects(effects);
+                }
+                else
+                {
+                    ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.DragLeave, rootPosition, modifiers);
+                    UpdateCurrentEffects(DragDropEffects.None);
+                }
 
                 _lastTarget = null;
+                _targetCanAcceptDrop = false;
                 Complete(_currentEffects);
             }
             else
@@ -259,6 +277,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 return;
 
             _lastTarget = null;
+            _targetCanAcceptDrop = false;
             DisposeTimeoutManager();
 
             if (lastTarget.Version >= 5)
@@ -404,17 +423,14 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             XFlush(_platform.Display);
         }
 
-        private void ProcessRawDragEvent(
+        private DragDropEffects ProcessRawDragEvent(
             X11Window targetWindow,
             RawDragEventType eventType,
             PixelPoint rootPosition,
             RawInputModifiers modifiers)
         {
             if (targetWindow.DragDropDevice is not { } dragDropDevice)
-            {
-                UpdateCurrentEffects(DragDropEffects.None);
-                return;
-            }
+                return DragDropEffects.None;
 
             var localPosition = targetWindow.PointToClient(rootPosition);
             var effectiveAllowedEffects = GetEffectiveAllowedEffects(modifiers.ToKeyModifiers());
@@ -430,7 +446,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             dragDropDevice.ProcessRawEvent(dragEvent);
 
-            UpdateCurrentEffects(dragEvent.Effects & _allowedEffects);
+            return dragEvent.Effects & _allowedEffects;
         }
 
         private void UngrabPointer()
@@ -511,6 +527,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             }
 
             _lastTarget = null;
+            _targetCanAcceptDrop = false;
             _currentEffects = DragDropEffects.None;
 
             DisposeTimeoutManager();
