@@ -32,7 +32,14 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         var cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>() as X11CursorFactory;
 
-        using var handler = new Handler(platform, window.Handle, dataTransfer, allowedEffects, cursorFactory);
+        using var handler = new Handler(
+            platform,
+            window.Handle,
+            dataTransfer,
+            allowedEffects,
+            triggerEvent.KeyModifiers,
+            cursorFactory);
+
         return await handler.Completion;
     }
 
@@ -57,6 +64,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             IntPtr sourceWindow,
             IDataTransfer dataTransfer,
             DragDropEffects allowedEffects,
+            KeyModifiers initialKeyModifiers,
             X11CursorFactory? cursorFactory)
         {
             _platform = platform;
@@ -88,7 +96,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 GrabMode.GrabModeAsync,
                 GrabMode.GrabModeAsync,
                 0,
-                GetCursor(allowedEffects),
+                GetCursor(GetEffectiveAllowedEffects(initialKeyModifiers)),
                 0);
 
             if (grabResult != GrabResult.GrabSuccess)
@@ -153,24 +161,26 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         {
             var rootPosition = new PixelPoint(motion.x_root, motion.y_root);
             var target = FindXdndTarget(rootPosition);
+            var modifiers = motion.state.ToRawInputModifiers();
+            var effectiveAllowedEffects = GetEffectiveAllowedEffects(modifiers.ToKeyModifiers());
 
             if (_lastTarget != target)
             {
                 if (_lastTarget is { } lastTarget)
                 {
                     if (lastTarget.InProcessWindow is { } window)
-                        ProcessRawDragEvent(window, RawDragEventType.DragLeave, rootPosition, motion.state);
+                        ProcessRawDragEvent(window, RawDragEventType.DragLeave, rootPosition, modifiers);
                     else
                         SendXdndLeave(lastTarget);
                 }
 
                 _lastTarget = target;
-                UpdateCurrentEffects(_allowedEffects);
+                UpdateCurrentEffects(effectiveAllowedEffects);
 
                 if (target is { } newTarget)
                 {
                     if (newTarget.InProcessWindow is { } window)
-                        ProcessRawDragEvent(window, RawDragEventType.DragEnter, rootPosition, motion.state);
+                        ProcessRawDragEvent(window, RawDragEventType.DragEnter, rootPosition, modifiers);
                     else
                         SendXdndEnter(newTarget);
                 }
@@ -179,10 +189,10 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             if (target is { } currentTarget)
             {
                 if (currentTarget.InProcessWindow is { } window)
-                    ProcessRawDragEvent(window, RawDragEventType.DragOver, rootPosition, motion.state);
+                    ProcessRawDragEvent(window, RawDragEventType.DragOver, rootPosition, modifiers);
                 else
                 {
-                    var action = XdndActionHelper.EffectsToAction(_allowedEffects, _platform.Info.Atoms);
+                    var action = XdndActionHelper.EffectsToAction(effectiveAllowedEffects, _platform.Info.Atoms);
                     SendXdndPosition(currentTarget, rootPosition, motion.time, action);
                 }
             }
@@ -198,7 +208,10 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             if (lastTarget.InProcessWindow is not null)
             {
                 var rootPosition = new PixelPoint(button.x_root, button.y_root);
-                ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.Drop, rootPosition, button.state);
+                var modifiers = button.state.ToRawInputModifiers();
+
+                ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.Drop, rootPosition, modifiers);
+
                 _lastTarget = null;
                 Complete(_currentEffects);
             }
@@ -386,7 +399,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             X11Window targetWindow,
             RawDragEventType eventType,
             PixelPoint rootPosition,
-            XModifierMask modifierMask)
+            RawInputModifiers modifiers)
         {
             if (targetWindow.DragDropDevice is not { } dragDropDevice)
             {
@@ -395,7 +408,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             }
 
             var localPosition = targetWindow.PointToClient(rootPosition);
-            var modifiers = modifierMask.ToRawInputModifiers();
+            var effectiveAllowedEffects = GetEffectiveAllowedEffects(modifiers.ToKeyModifiers());
 
             var dragEvent = new RawDragEvent(
                 dragDropDevice,
@@ -403,7 +416,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 targetWindow.InputRoot,
                 localPosition,
                 _dataTransfer,
-                _allowedEffects,
+                effectiveAllowedEffects,
                 modifiers);
 
             dragDropDevice.ProcessRawEvent(dragEvent);
@@ -450,6 +463,20 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             }
 
             return _platform.Info.DefaultCursor;
+        }
+
+        private DragDropEffects GetEffectiveAllowedEffects(KeyModifiers keyModifiers)
+            => _allowedEffects & GetAllowedEffectsFromKeyModifiers(keyModifiers);
+
+        private static DragDropEffects GetAllowedEffectsFromKeyModifiers(KeyModifiers keyModifiers)
+        {
+            if ((keyModifiers & KeyModifiers.Control) != 0)
+                return DragDropEffects.Copy;
+            if ((keyModifiers & KeyModifiers.Shift) != 0)
+                return DragDropEffects.Move;
+            if ((keyModifiers & KeyModifiers.Alt) != 0)
+                return DragDropEffects.Link;
+            return DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link;
         }
 
         private void Complete(DragDropEffects resultEffects)
