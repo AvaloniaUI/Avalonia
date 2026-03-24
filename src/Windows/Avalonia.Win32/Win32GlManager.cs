@@ -67,7 +67,14 @@ static class Win32GlManager
 
             if (renderingMode == Win32RenderingMode.Vulkan)
             {
-                var vulkan = VulkanSupport.TryInitialize(AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new());
+                var vulkan = VulkanSupport.TryInitialize(AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new VulkanOptions(), isDynamic: false);
+                if (vulkan != null)
+                    return vulkan;
+            }
+
+            if (renderingMode == Win32RenderingMode.VulkanDynamic)
+            {
+                var vulkan = VulkanSupport.TryInitialize(AvaloniaLocator.Current.GetService<VulkanOptions>() ?? new VulkanOptions(), isDynamic: true);
                 if (vulkan != null)
                     return vulkan;
             }

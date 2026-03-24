@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
+using Avalonia.Rendering;
 using Avalonia.Vulkan;
 
 namespace Avalonia.X11.Vulkan;
@@ -14,8 +15,18 @@ internal class VulkanSupport
     [DllImport("libvulkan.so.1")]
     private static extern IntPtr vkGetInstanceProcAddr(IntPtr instance, string name);
     
-    public static VulkanPlatformGraphics? TryInitialize(X11Info info, VulkanOptions? options)
+    public static VulkanPlatformGraphics? TryInitialize(X11Info info, VulkanOptions? options, bool isDynamic = false)
     {
+        Action<Action>? onPresentFenceCallback = null;
+
+        if (isDynamic)
+        {
+            // Create and register the Vulkan render timer for dynamic refresh rate support
+            VulkanRenderTimer renderTimer = new();
+            AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(renderTimer);
+            onPresentFenceCallback = (fenceWaitAction) => renderTimer.SetPresentFenceWaitAction(fenceWaitAction);
+        }
+        
         s_offscreenWindow = XLib.XCreateSimpleWindow(info.DeferredDisplay,
             XLib.XDefaultRootWindow(info.DeferredDisplay), 0, 0, 1,
             1, 1, IntPtr.Zero, IntPtr.Zero);
@@ -29,7 +40,9 @@ internal class VulkanSupport
             PlatformFeatures = new Dictionary<Type, object>
             {
                 [typeof(IVulkanKhrSurfacePlatformSurfaceFactory)] = new VulkanSurfaceFactory(info.DeferredDisplay)
-            }
+            },
+            OnPresentFence = onPresentFenceCallback,
+            IsDynamicMode = isDynamic
         });
     }
 

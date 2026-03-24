@@ -22,9 +22,10 @@ internal class VulkanDisplay : IDisposable
     private VkImageView[] _swapchainImageViews = Array.Empty<VkImageView>();
     public VulkanCommandBufferPool CommandBufferPool { get; private set; }
     public PixelSize Size { get; private set; }
-
+    private VulkanFence? _presentFence;
+    
     private VulkanDisplay(IVulkanPlatformGraphicsContext context, VulkanKhrSurface surface, VkSwapchainKHR swapchain,
-        VkExtent2D swapchainExtent, IVulkanKhrSurfacePlatformSurface platformSurface)
+        VkExtent2D swapchainExtent, IVulkanKhrSurfacePlatformSurface platformSurface, bool isDynamicMode)
     {
         _context = context;
         _surface = surface;
@@ -34,6 +35,12 @@ internal class VulkanDisplay : IDisposable
         _semaphorePair = new VulkanSemaphorePair(_context);
         CommandBufferPool = new VulkanCommandBufferPool(_context);
         CreateSwapchainImages();
+        
+        // Create presentation fence for VSync synchronization in dynamic mode
+        if (isDynamicMode)
+        {
+            _presentFence = new VulkanFence(_context, VkFenceCreateFlags.VK_FENCE_CREATE_SIGNALED_BIT);
+        }
     }
 
     internal VkSurfaceFormatKHR SurfaceFormat
@@ -96,13 +103,28 @@ internal class VulkanDisplay : IDisposable
                 height = height
             };
         }
+        // Present mode selection with priority for VSync modes
         VkPresentModeKHR presentMode;
         if (modes.Contains(VkPresentModeKHR.VK_PRESENT_MODE_MAILBOX_KHR))
+        { 
+            // Best: Triple buffering with VSync - low latency, no tearing
             presentMode = VkPresentModeKHR.VK_PRESENT_MODE_MAILBOX_KHR;
+        }
+        else if (modes.Contains(VkPresentModeKHR.VK_PRESENT_MODE_FIFO_RELAXED_KHR))
+        {
+            // Good: Adaptive VSync - tears only when frame rate drops
+            presentMode = VkPresentModeKHR.VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+        }
         else if (modes.Contains(VkPresentModeKHR.VK_PRESENT_MODE_FIFO_KHR))
+        {
+            // Standard: Traditional VSync - guaranteed to be available
             presentMode = VkPresentModeKHR.VK_PRESENT_MODE_FIFO_KHR;
+        }
         else
+        {
+            // Fallback: Immediate mode (allows tearing) - only if nothing else available
             presentMode = VkPresentModeKHR.VK_PRESENT_MODE_IMMEDIATE_KHR;
+        }
 
         var swapchainCreateInfo = new VkSwapchainCreateInfoKHR
         {
@@ -137,11 +159,11 @@ internal class VulkanDisplay : IDisposable
         _swapchain = default;
     }
 
-    internal static VulkanDisplay CreateDisplay(IVulkanPlatformGraphicsContext context, IVulkanKhrSurfacePlatformSurface surface)
+    internal static VulkanDisplay CreateDisplay(IVulkanPlatformGraphicsContext context, IVulkanKhrSurfacePlatformSurface surface, bool isDynamicMode = false)
     {
         var khrSurface = new VulkanKhrSurface(context, surface);
         var swapchain = CreateSwapchain(context, khrSurface, out var extent);
-        return new VulkanDisplay(context, khrSurface, swapchain, extent, surface);
+        return new VulkanDisplay(context, khrSurface, swapchain, extent, surface, isDynamicMode);
     }
 
     private void DestroyCurrentImageViews()
@@ -309,9 +331,20 @@ internal class VulkanDisplay : IDisposable
             VkImageLayout.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
             VkAccessFlags.VK_ACCESS_NONE,
             1);
+        
+        // Submit with presentation fence for VSync synchronization in dynamic mode
+        if (_presentFence.HasValue)
+        {
+            // Reset the fence before submitting (step 2 from reference)
+            VkFence fence = _presentFence.Value.Handle;
+            _context.DeviceApi.ResetFences(_context.DeviceHandle, 1, &fence)
+                .ThrowOnError("vkResetFences");
+        }
+        
         commandBuffer.Submit(new[] { _semaphorePair.ImageAvailableSemaphore },
             new[] { VkPipelineStageFlags.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT },
-            new[] { _semaphorePair.RenderFinishedSemaphore });
+            new[] { _semaphorePair.RenderFinishedSemaphore }, 
+            _presentFence);
         
         var semaphore = _semaphorePair.RenderFinishedSemaphore.Handle;
         var swapchain = _swapchain;
@@ -332,11 +365,25 @@ internal class VulkanDisplay : IDisposable
         _context.DeviceApi.vkQueuePresentKHR(_context.MainQueueHandle, ref presentInfo)
             .ThrowOnError("vkQueuePresentKHR");
         result.ThrowOnError("vkQueuePresentKHR");
+        
+        // For VulkanDynamic: pass the fence wait action to render timer
+        // The fence was already submitted with the main command buffer above
+        if (_presentFence.HasValue && _context is VulkanContext vulkanContext)
+        {
+            // Pass the fence wait action to render timer for VSync synchronization
+            vulkanContext.SetPresentFence(() => {
+                using (_context.Device.Lock())
+                {
+                    _presentFence.Value.Wait(100_000_000); // 100ms timeout
+                }
+            });
+        }
     }
     
     public void Dispose()
     {
         _context.DeviceApi.DeviceWaitIdle(_context.DeviceHandle);
+        _presentFence?.Dispose();
         _semaphorePair?.Dispose();
         DestroyCurrentImageViews();
         DestroySwapchain();

@@ -137,6 +137,14 @@ namespace Avalonia.X11
             else if (glfeature == null)
                 visualInfo = _x11.TransparentVisualInfo;
 
+            // NEW: Vulkan case – also ask for the transparent visual
+            var vulkan = glfeature is Avalonia.Vulkan.VulkanPlatformGraphics;
+            if (vulkan)
+            {
+                // If we didn't already pick a visual (GLX/EGL), force the ARGB visual
+                visualInfo ??= _x11.TransparentVisualInfo;
+            }
+            
             var egl = glfeature as EglPlatformGraphics;
             
             var visual = IntPtr.Zero;

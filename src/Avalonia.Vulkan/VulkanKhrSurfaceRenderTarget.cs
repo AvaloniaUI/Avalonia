@@ -14,10 +14,10 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
     public VkFormat Format { get; }
     public bool IsRgba { get; }
 
-    public VulkanKhrRenderTarget(IVulkanKhrSurfacePlatformSurface surface, IVulkanPlatformGraphicsContext context)
+    public VulkanKhrRenderTarget(IVulkanKhrSurfacePlatformSurface surface, IVulkanPlatformGraphicsContext context, bool isDynamicMode = false)
     {
         _platformSurface = surface;
-        _display = VulkanDisplay.CreateDisplay(context, surface);
+        _display = VulkanDisplay.CreateDisplay(context, surface, isDynamicMode);
         _context = context;
         IsRgba = _display.SurfaceFormat.format >= VkFormat.VK_FORMAT_R8G8B8A8_UNORM &&
                  _display.SurfaceFormat.format <= VkFormat.VK_FORMAT_R8G8B8A8_SRGB;
