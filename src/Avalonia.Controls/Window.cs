@@ -672,7 +672,7 @@ namespace Avalonia.Controls
             UpdateDrawnDecorationParts();
         }
 
-        protected virtual void ExtendClientAreaToDecorationsChanged(bool isExtended)
+        private void ExtendClientAreaToDecorationsChanged(bool isExtended)
         {
             IsExtendedIntoWindowDecorations = isExtended;
             OffScreenMargin = PlatformImpl?.OffScreenMargin ?? default;
