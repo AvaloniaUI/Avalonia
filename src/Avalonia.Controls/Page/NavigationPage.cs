@@ -63,13 +63,14 @@ namespace Avalonia.Controls
         private ContentPresenter? _modalPresenter;
         private ContentPresenter? _topCommandBarPresenter;
         private IDisposable? _hasNavigationBarSub;
+        private IDisposable? _hasBackButtonSub;
         private IDisposable? _isBackButtonEnabledSub;
         private IDisposable? _barLayoutBehaviorSub;
         private IDisposable? _barHeightSub;
         private IDisposable? _backButtonContentSub;
         private bool _isNavigating;
         private bool _canGoBack;
-        private bool? _isBackButtonEffectivelyVisible;
+        private bool _isBackButtonEffectivelyVisible;
         private bool _isNavBarEffectivelyVisible;
         private double _effectiveBarHeight;
         private bool _isBackButtonEffectivelyEnabled;
@@ -110,8 +111,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsBackButtonEffectivelyVisible"/> property.
         /// </summary>
-        public static readonly DirectProperty<NavigationPage, bool?> IsBackButtonEffectivelyVisibleProperty =
-            AvaloniaProperty.RegisterDirect<NavigationPage, bool?>(nameof(IsBackButtonEffectivelyVisible), o => o.IsBackButtonEffectivelyVisible);
+        public static readonly DirectProperty<NavigationPage, bool> IsBackButtonEffectivelyVisibleProperty =
+            AvaloniaProperty.RegisterDirect<NavigationPage, bool>(nameof(IsBackButtonEffectivelyVisible), o => o.IsBackButtonEffectivelyVisible);
 
         /// <summary>
         /// Defines the <see cref="IsNavBarEffectivelyVisible"/> property.
@@ -330,7 +331,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the effective back-button visibility.
         /// </summary>
-        public bool? IsBackButtonEffectivelyVisible
+        public bool IsBackButtonEffectivelyVisible
         {
             get => _isBackButtonEffectivelyVisible;
             private set => SetAndRaise(IsBackButtonEffectivelyVisibleProperty, ref _isBackButtonEffectivelyVisible, value);
@@ -730,6 +731,8 @@ namespace Avalonia.Controls
 
             _hasNavigationBarSub?.Dispose();
             _hasNavigationBarSub = null;
+            _hasBackButtonSub?.Dispose();
+            _hasBackButtonSub = null;
             _isBackButtonEnabledSub?.Dispose();
             _isBackButtonEnabledSub = null;
             _barLayoutBehaviorSub?.Dispose();
@@ -1840,6 +1843,9 @@ namespace Avalonia.Controls
             _hasNavigationBarSub?.Dispose();
             _hasNavigationBarSub = null;
 
+            _hasBackButtonSub?.Dispose();
+            _hasBackButtonSub = null;
+
             _isBackButtonEnabledSub?.Dispose();
             _isBackButtonEnabledSub = null;
 
@@ -1856,6 +1862,9 @@ namespace Avalonia.Controls
             {
                 _hasNavigationBarSub = page.GetObservable(HasNavigationBarProperty)
                     .Subscribe(new AnonymousObserver<bool>(_ => UpdateIsNavBarEffectivelyVisible()));
+
+                _hasBackButtonSub = page.GetObservable(HasBackButtonProperty)
+                    .Subscribe(new AnonymousObserver<bool>(_ => UpdateIsBackButtonEffectivelyVisible()));
 
                 _isBackButtonEnabledSub = page.GetObservable(IsBackButtonEnabledProperty)
                     .Subscribe(new AnonymousObserver<bool>(_ => UpdateIsBackButtonEffectivelyEnabled()));
