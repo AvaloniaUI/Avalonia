@@ -83,12 +83,21 @@ internal static class WinUiCompositionUtils
         using var backDropParameter =
             backDropParameterFactory.Create(backdropString.Handle);
         using var backDropParameterAsSource = backDropParameter.QueryInterface<IGraphicsEffectSource>();
-        var blurEffect = new WinUIGaussianBlurEffect(backDropParameterAsSource);
+        using var blurEffect = new WinUIGaussianBlurEffect(backDropParameterAsSource);
+        
+        // WinRT has broken reference counting for effects returned from GetSource. It will Release returned ref
+        // and attempt to use it afterward. This usually works because the wrapper effect DOES hold a reference
+        // to the COM object, so invalid memory access succeedes. 
+        // In our case MicroCOM will rightfully release native memory once the latest native reference is gone.
+        // Another problem is WinUIEffectBase destroing it's sources when it's no longer referenced by anything.
+        // So we need to force-keep a native pointer until we are done.
+        using var blurLease = MicroComRuntime.LeaseNativePointerForCall<IGraphicsEffectSource>(blurEffect);
+        
         using var blurEffectFactory = compositor.CreateEffectFactory(blurEffect);
         using var compositionEffectBrush = blurEffectFactory.CreateBrush();
         using var backdropBrush = CreateBackdropBrush(compositor);
 
-        var saturateEffect = new SaturationEffect(blurEffect);
+        using var saturateEffect = new SaturationEffect(blurEffect);
         using var satEffectFactory = compositor.CreateEffectFactory(saturateEffect);
         using var sat = satEffectFactory.CreateBrush();
         compositionEffectBrush.SetSourceParameter(backdropString.Handle, backdropBrush);
