@@ -1,4 +1,6 @@
-﻿using Avalonia;
+﻿using System;
+using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
@@ -8,6 +10,8 @@ namespace ControlSamples
     public class HamburgerMenu : TabControl
     {
         private SplitView? _splitView;
+        private TextBox? _searchBox;
+        private bool _initialized;
 
         public static readonly StyledProperty<IBrush?> PaneBackgroundProperty =
             SplitView.PaneBackgroundProperty.AddOwner<HamburgerMenu>();
@@ -36,11 +40,92 @@ namespace ControlSamples
             set => SetValue(ExpandedModeThresholdWidthProperty, value);
         }
 
+        public static readonly AttachedProperty<bool> IsDefaultPageProperty =
+            AvaloniaProperty.RegisterAttached<HamburgerMenu, TabItem, bool>("IsDefaultPage");
+
+        public static bool GetIsDefaultPage(TabItem element) => element.GetValue(IsDefaultPageProperty);
+        public static void SetIsDefaultPage(TabItem element, bool value) => element.SetValue(IsDefaultPageProperty, value);
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
 
             _splitView = e.NameScope.Find<SplitView>("PART_NavigationPane");
+            _searchBox = e.NameScope.Find<TextBox>("PART_SearchBox");
+
+            if (_searchBox is not null)
+            {
+                _searchBox.TextChanged += OnSearchTextChanged;
+            }
+        }
+
+        protected override void OnLoaded(Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            base.OnLoaded(e);
+
+            if (!_initialized)
+            {
+                _initialized = true;
+                SortItems();
+                SelectDefaultPage();
+            }
+        }
+
+        private void SortItems()
+        {
+            var items = Items.OfType<TabItem>().ToList();
+            var sorted = items.OrderBy(t => t.Header?.ToString() ?? "", StringComparer.OrdinalIgnoreCase).ToList();
+
+            // Only reorder if needed
+            bool needsSort = false;
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (!ReferenceEquals(items[i], sorted[i]))
+                {
+                    needsSort = true;
+                    break;
+                }
+            }
+
+            if (needsSort)
+            {
+                Items.Clear();
+                foreach (var item in sorted)
+                {
+                    Items.Add(item);
+                }
+            }
+        }
+
+        private void SelectDefaultPage()
+        {
+            foreach (var item in Items.OfType<TabItem>())
+            {
+                if (GetIsDefaultPage(item))
+                {
+                    SelectedItem = item;
+                    return;
+                }
+            }
+        }
+
+        private void OnSearchTextChanged(object? sender, TextChangedEventArgs e)
+        {
+            var searchText = _searchBox?.Text;
+            var hasFilter = !string.IsNullOrWhiteSpace(searchText);
+
+            foreach (var item in Items.OfType<TabItem>())
+            {
+                if (hasFilter)
+                {
+                    var header = item.Header?.ToString() ?? "";
+                    item.IsVisible = header.Contains(searchText!, StringComparison.OrdinalIgnoreCase);
+                }
+                else
+                {
+                    item.IsVisible = true;
+                }
+            }
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
