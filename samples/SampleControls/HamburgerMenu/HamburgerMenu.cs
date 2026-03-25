@@ -40,12 +40,6 @@ namespace ControlSamples
             set => SetValue(ExpandedModeThresholdWidthProperty, value);
         }
 
-        public static readonly AttachedProperty<bool> IsDefaultPageProperty =
-            AvaloniaProperty.RegisterAttached<HamburgerMenu, TabItem, bool>("IsDefaultPage");
-
-        public static bool GetIsDefaultPage(TabItem element) => element.GetValue(IsDefaultPageProperty);
-        public static void SetIsDefaultPage(TabItem element, bool value) => element.SetValue(IsDefaultPageProperty, value);
-
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
@@ -67,7 +61,6 @@ namespace ControlSamples
             {
                 _initialized = true;
                 SortItems();
-                SelectDefaultPage();
             }
         }
 
@@ -93,18 +86,6 @@ namespace ControlSamples
                 foreach (var item in sorted)
                 {
                     Items.Add(item);
-                }
-            }
-        }
-
-        private void SelectDefaultPage()
-        {
-            foreach (var item in Items.OfType<TabItem>())
-            {
-                if (GetIsDefaultPage(item))
-                {
-                    SelectedItem = item;
-                    return;
                 }
             }
         }
