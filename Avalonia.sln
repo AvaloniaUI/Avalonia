@@ -284,8 +284,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.FreeDesktop.AtSpi"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DBus.Generators", "src\tools\Avalonia.DBus.Generators\Avalonia.DBus.Generators.csproj", "{98A16FFD-0C99-4665-AC64-DC17E86879A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Benchmarks.Android", "tests\Avalonia.Benchmarks.Android\Avalonia.Benchmarks.Android.csproj", "{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1428,18 +1426,6 @@ Global
 		{98A16FFD-0C99-4665-AC64-DC17E86879A2}.Release|x64.Build.0 = Release|Any CPU
 		{98A16FFD-0C99-4665-AC64-DC17E86879A2}.Release|x86.ActiveCfg = Release|Any CPU
 		{98A16FFD-0C99-4665-AC64-DC17E86879A2}.Release|x86.Build.0 = Release|Any CPU
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}.Debug|x64.Build.0 = Debug|Any CPU
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}.Debug|x86.Build.0 = Debug|Any CPU
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}.Release|x64.ActiveCfg = Release|Any CPU
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}.Release|x64.Build.0 = Release|Any CPU
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}.Release|x86.ActiveCfg = Release|Any CPU
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1527,7 +1513,6 @@ Global
 		{A7644C3B-B843-44F1-9940-560D56CB0936} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
 		{742C3613-514C-4D6B-804A-2A7925F278F3} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
 		{98A16FFD-0C99-4665-AC64-DC17E86879A2} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
-		{0145DE60-2BB7-4E08-84DC-2F8C2A9B6641} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}
