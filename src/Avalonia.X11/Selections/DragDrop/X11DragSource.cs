@@ -134,8 +134,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             => _completionSource.Task;
 
         private DragDropTimeoutManager TimeoutManager
-            => _timeoutManager ??=
-                new DragDropTimeoutManager(SelectionHelper.Timeout, () => Complete(DragDropEffects.None));
+            => _timeoutManager ??= new DragDropTimeoutManager(SelectionHelper.Timeout, OnTimeout);
 
         private void OnEvent(ref XEvent evt)
         {
@@ -599,6 +598,15 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         private void Complete(DragDropEffects resultEffects)
             => _completionSource.TrySetResult(resultEffects);
+
+        private void OnTimeout()
+        {
+            _logger?.Log(
+                this,
+                _targetState.IsWaitingForStatus ? "Timeout waiting for XdndStatus." : "Timeout waiting for XdndFinished.");
+
+            Complete(DragDropEffects.None);
+        }
 
         public void Dispose()
         {
