@@ -1,0 +1,54 @@
+name: Build and Publish Avalonia NuGets
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    permissions:
+      contents: read
+      packages: write # required to push packages
+
+    steps:
+      # Checkout the branch
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: release/12.0.0-rc1_Rendering
+          submodules: recursive  # fetches submodules recursively
+          fetch-depth: 0     
+
+      - name: Update submodules
+        run: git submodule update --init --recursive
+
+      # Setup .NET SDK
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Run Build
+        run: ./build.sh CreateNugetPackages --configuration Release --force-nuget-version 12.0.0.${{ github.run_number }}-rc.1
+        shell: bash
+
+      - name: Upload package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./artifacts/nuget/*.nupkg
+
+  publish:
+    needs: build
+    runs-on: macos-latest
+
+    steps:
+      - name: Download package artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-packages
+          path: ./artifacts
+
+      - name: Publish to GitHub Packages
+        run: dotnet nuget push "./artifacts/*.nupkg" --source "https://nuget.pkg.github.com/Trendiot/index.json" --api-key ${{ secrets.PAT_TOKEN }} --skip-duplicate
