@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
@@ -25,7 +26,14 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Content"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> ContentProperty =
-            ContentControl.ContentProperty.AddOwner<ContentPage>();
+            ContentControl.ContentProperty.AddOwner<ContentPage>(new StyledPropertyMetadata<object?>(
+                coerce: (_, val) =>
+                {
+                    if (val is Page)
+                        throw new InvalidOperationException(
+                            "A Page cannot be used as the content of a ContentPage. Use a MultiPage subclass such as NavigationPage, TabbedPage, DrawerPage, or CarouselPage to host child pages.");
+                    return val;
+                }));
 
         /// <summary>
         /// Defines the <see cref="ContentTemplate"/> property.
@@ -89,6 +97,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the page content.
         /// </summary>
+        /// <remarks>
+        /// The content must not be another <see cref="Page"/>. Use a <see cref="MultiPage"/>
+        /// implementation such as <see cref="NavigationPage"/>, <see cref="TabbedPage"/>,
+        /// <see cref="DrawerPage"/>, or <see cref="CarouselPage"/> to host child pages.
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the assigned value is a <see cref="Page"/>.
+        /// </exception>
         [Content]
         [DependsOn(nameof(ContentTemplate))]
         public object? Content
@@ -172,8 +188,6 @@ namespace Avalonia.Controls
                     : Padding;
                 _contentPresenter.InvalidateMeasure();
 
-                if (Content is Page childPage)
-                    childPage.SafeAreaPadding = Padding.GetRemainingSafeAreaPadding(SafeAreaPadding);
             }
         }
 
@@ -181,9 +195,6 @@ namespace Avalonia.Controls
         {
             if (e.OldValue is ILogical oldChild)
                 LogicalChildren.Remove(oldChild);
-
-            if (e.OldValue is Page oldPage)
-                oldPage.SafeAreaPadding = default;
 
             if (e.NewValue is ILogical newChild)
                 LogicalChildren.Add(newChild);

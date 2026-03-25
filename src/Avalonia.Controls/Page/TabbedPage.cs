@@ -6,13 +6,10 @@ using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
-using Avalonia.Layout;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -24,8 +21,10 @@ namespace Avalonia.Controls
     public class TabbedPage : SelectingMultiPage
     {
         private TabControl? _tabControl;
+        private bool _ignoringDisabledSelection;
         private readonly Dictionary<TabItem, Page> _containerPageMap = new();
         private readonly Dictionary<Page, TabItem> _pageContainerMap = new();
+        private readonly HashSet<Page> _templateCreatedPages = new(ReferenceEqualityComparer.Instance);
         private int _lastSwipeGestureId;
         private readonly SwipeGestureRecognizer _swipeRecognizer = new SwipeGestureRecognizer
         {
@@ -84,15 +83,20 @@ namespace Avalonia.Controls
         public static void SetIsTabEnabled(Page page, bool value) =>
             page.SetValue(IsTabEnabledProperty, value);
 
+        private static readonly bool s_isMobilePlatform = OperatingSystem.IsAndroid() || OperatingSystem.IsIOS();
+
+        static TabbedPage()
+        {
+            FocusableProperty.OverrideDefaultValue<TabbedPage>(true);
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TabbedPage"/> class.
         /// </summary>
         public TabbedPage()
         {
             SetCurrentValue(PagesProperty, new AvaloniaList<Page>());
-            Focusable = true;
             GestureRecognizers.Add(_swipeRecognizer);
-            AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
             UpdateSwipeRecognizerAxes();
         }
 
@@ -117,6 +121,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets whether swipe gestures can be used to navigate between tabs.
         /// </summary>
+        /// <remarks>
+        /// Defaults to <see langword="false"/> because tab strips do not respond to swipe gestures
+        /// on most platforms (iOS, desktop). Enable this only when the host platform and the
+        /// content inside each tab page do not conflict with horizontal swipe input.
+        /// </remarks>
         public bool IsGestureEnabled
         {
             get => GetValue(IsGestureEnabledProperty);
@@ -141,6 +150,18 @@ namespace Avalonia.Controls
             set => SetValue(IndicatorTemplateProperty, value);
         }
 
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            AddHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            RemoveHandler(InputElement.SwipeGestureEvent, OnSwipeGesture);
+        }
+
         protected override void ApplySelectedIndex(int index)
         {
             if (_tabControl != null)
@@ -162,12 +183,9 @@ namespace Avalonia.Controls
                 _tabControl.SelectionChanged -= TabControl_SelectionChanged;
                 _tabControl.ContainerPrepared -= OnContainerPrepared;
                 _tabControl.ContainerClearing -= OnContainerClearing;
-
-                foreach (var page in _containerPageMap.Values)
-                    page.PropertyChanged -= OnPagePropertyChanged;
-                _containerPageMap.Clear();
-                _pageContainerMap.Clear();
             }
+
+            ClearContainerPages();
 
             _tabControl = e.NameScope.Find<TabControl>("PART_TabControl");
 
@@ -176,6 +194,7 @@ namespace Avalonia.Controls
                 _tabControl.SelectionChanged += TabControl_SelectionChanged;
                 _tabControl.ContainerPrepared += OnContainerPrepared;
                 _tabControl.ContainerClearing += OnContainerClearing;
+                _tabControl.ItemsSource = (IEnumerable?)ItemsSource ?? Pages;
 
                 if (SelectedIndex >= 0)
                     _tabControl.SelectedIndex = SelectedIndex;
@@ -187,7 +206,10 @@ namespace Avalonia.Controls
                 ApplyIndicatorTemplate();
                 UpdateActivePage();
 
-                Dispatcher.UIThread.Post(SyncAllTabEnabledStates, DispatcherPriority.Loaded);
+                var capturedTabControl = _tabControl;
+                Dispatcher.UIThread.Post(
+                    () => SyncAllTabEnabledStates(capturedTabControl),
+                    DispatcherPriority.Loaded);
             }
         }
 
@@ -206,6 +228,12 @@ namespace Avalonia.Controls
                 ApplyIndicatorTemplate();
             else if (change.Property == IsGestureEnabledProperty)
                 _swipeRecognizer.IsEnabled = change.GetNewValue<bool>();
+            else if (change.Property == ItemsSourceProperty && _tabControl != null)
+                _tabControl.ItemsSource = change.GetNewValue<IEnumerable?>() ?? Pages;
+            else if (change.Property == PagesProperty && ItemsSource == null && _tabControl != null)
+                _tabControl.ItemsSource = change.GetNewValue<IEnumerable<Page>?>();
+            else if (change.Property == PageTemplateProperty && ItemsSource != null && _tabControl != null)
+                RebuildTemplateCreatedPages();
         }
 
         private TabPlacement ResolveTabPlacement()
@@ -213,9 +241,7 @@ namespace Avalonia.Controls
             if (TabPlacement != TabPlacement.Auto)
                 return TabPlacement;
 
-            return OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()
-                ? TabPlacement.Bottom
-                : TabPlacement.Top;
+            return s_isMobilePlatform ? TabPlacement.Bottom : TabPlacement.Top;
         }
 
         private void ApplyTabPlacement()
@@ -248,15 +274,13 @@ namespace Avalonia.Controls
             _tabControl.IndicatorTemplate = IndicatorTemplate;
         }
 
-        private bool _ignoringDisabledSelection;
-
         private void TabControl_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             if (_ignoringDisabledSelection)
                 return;
 
             int newIndex = _tabControl!.SelectedIndex;
-            var newPage = _tabControl.SelectedItem as Page ?? ResolvePageAtIndex(newIndex);
+            var newPage = ResolvePageAtIndex(newIndex);
 
             if (newPage != null && !GetIsTabEnabled(newPage))
             {
@@ -276,51 +300,60 @@ namespace Avalonia.Controls
                 if (target == SelectedIndex)
                     return;
 
-                CommitSelection(target, ResolvePageAtIndex(target), NavigationType.Replace);
+                CommitSelectionIfResolved(target, NavigationType.Replace);
                 UpdateContentSafeAreaPadding();
                 return;
             }
 
-            CommitSelection(newIndex, newPage, NavigationType.Replace);
+            CommitSelectionIfResolved(newIndex, NavigationType.Replace);
             UpdateContentSafeAreaPadding();
         }
 
         private void OnContainerPrepared(object? sender, ContainerPreparedEventArgs e)
         {
-            if (e.Container is not TabItem tabItem) return;
-            if (Pages is not IList pages || e.Index >= pages.Count) return;
+            if (e.Container is not TabItem tabItem)
+                return;
 
-            var item = pages[e.Index];
-            Page? page;
-
-            if (item is Page directPage)
-            {
-                page = directPage;
-            }
-            else
-            {
-                // Data-template mode: build the page and use it directly as the tab's content.
-                page = PageTemplate?.Build(item) as Page;
-                if (page == null) return;
-                tabItem.Content = page;
-            }
+            var page = PreparePageForContainer(tabItem, e.Index);
+            if (page == null)
+                return;
 
             tabItem.IsEnabled = GetIsTabEnabled(page);
             tabItem.Header = page.Header;
-            tabItem.Icon = CreateIconControl(page.Icon);
+            tabItem.Icon = page.Icon;
+            tabItem.IconTemplate = page.IconTemplate;
 
-            _containerPageMap[tabItem] = page;
-            _pageContainerMap[page] = tabItem;
-            page.PropertyChanged += OnPagePropertyChanged;
+            if (e.Index == (_tabControl?.SelectedIndex ?? -1))
+                UpdateActivePage();
         }
 
         private void OnContainerClearing(object? sender, ContainerClearingEventArgs e)
         {
-            if (e.Container is TabItem tabItem && _containerPageMap.Remove(tabItem, out var page))
+            if (e.Container is TabItem tabItem)
+                ClearContainerPage(tabItem);
+        }
+
+        private void RebuildTemplateCreatedPages()
+        {
+            if (_tabControl == null || ItemsSource == null)
+                return;
+
+            for (int i = 0; i < _tabControl.ItemCount; i++)
             {
-                _pageContainerMap.Remove(page);
-                page.PropertyChanged -= OnPagePropertyChanged;
+                if (_tabControl.ContainerFromIndex(i) is not TabItem tabItem)
+                    continue;
+
+                var page = PreparePageForContainer(tabItem, i);
+                if (page == null)
+                    continue;
+
+                tabItem.IsEnabled = GetIsTabEnabled(page);
+                tabItem.Header = page.Header;
+                tabItem.Icon = page.Icon;
+                tabItem.IconTemplate = page.IconTemplate;
             }
+
+            UpdateActivePage();
         }
 
         private void OnPagePropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -331,7 +364,12 @@ namespace Avalonia.Controls
             if (e.Property == Page.IconProperty)
             {
                 if (_pageContainerMap.TryGetValue(page, out var tabItem))
-                    tabItem.Icon = CreateIconControl(page.Icon);
+                    tabItem.Icon = page.Icon;
+            }
+            else if (e.Property == Page.IconTemplateProperty)
+            {
+                if (_pageContainerMap.TryGetValue(page, out var tabItem))
+                    tabItem.IconTemplate = page.IconTemplate;
             }
             else if (e.Property == Page.HeaderProperty)
             {
@@ -344,118 +382,103 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Creates a visual control from a page icon value.
-        /// </summary>
-        internal static Control? CreateIconControl(object? icon)
-        {
-            Geometry? geometry = icon switch
-            {
-                Geometry g => g,
-                PathIcon pi => pi.Data,
-                DrawingImage { Drawing: GeometryDrawing { Geometry: { } gd } } => gd,
-                string s when !string.IsNullOrEmpty(s) => Geometry.Parse(s),
-                _ => null
-            };
-
-            if (geometry != null)
-            {
-                var path = new Path
-                {
-                    Data = geometry,
-                    Stretch = Stretch.Uniform,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                };
-
-                path.Bind(
-                    Path.FillProperty,
-                    path.GetObservable(Documents.TextElement.ForegroundProperty));
-
-                return path;
-            }
-
-            if (icon is IImage image)
-            {
-                return new Image
-                {
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Source = image,
-                };
-            }
-
-            return null;
-        }
-
         private int FindNearestEnabledTab(int disabledIndex)
         {
-            if (Pages is not IList pages) return -1;
-            int count = pages.Count;
+            int count = GetTabCount();
             for (int dist = 1; dist < count; dist++)
             {
                 int p = disabledIndex - dist;
-                if (p >= 0 && pages[p] is Page pp && GetIsTabEnabled(pp)) return p;
+                if (p >= 0 && IsTabEnabledAtIndex(p))
+                    return p;
                 int n = disabledIndex + dist;
-                if (n < count && pages[n] is Page np && GetIsTabEnabled(np)) return n;
+                if (n < count && IsTabEnabledAtIndex(n))
+                    return n;
             }
 
             return -1;
         }
 
-        protected internal int FindNextEnabledTab(int start, int direction)
+        private protected int FindNextEnabledTab(int start, int direction)
         {
-            if (Pages is not IList pages) return -1;
-            int count = pages.Count;
+            int count = GetTabCount();
             int i = start;
             while (i >= 0 && i < count)
             {
-                if (pages[i] is Page page && GetIsTabEnabled(page)) return i;
+                if (IsTabEnabledAtIndex(i))
+                    return i;
                 i += direction;
             }
 
             return -1;
         }
 
-        private Page? ResolvePageAtIndex(int index)
+        internal int GetTabCount()
+        {
+            if (_tabControl != null)
+                return _tabControl.ItemCount;
+
+            var source = (IEnumerable?)ItemsSource ?? Pages;
+            if (source is ICollection collection)
+                return collection.Count;
+
+            if (source == null)
+                return 0;
+
+            int count = 0;
+            foreach (var _ in source)
+                count++;
+
+            return count;
+        }
+
+        private bool IsTabEnabledAtIndex(int index)
+        {
+            if (_tabControl?.ContainerFromIndex(index) is TabItem ti && _containerPageMap.TryGetValue(ti, out var p))
+                return GetIsTabEnabled(p);
+            if (ResolvePageAtIndex(index) is Page page)
+                return GetIsTabEnabled(page);
+            return true;
+        }
+
+        private new Page? ResolvePageAtIndex(int index)
         {
             if (_tabControl?.ContainerFromIndex(index) is TabItem ti && _containerPageMap.TryGetValue(ti, out var p))
                 return p;
-            if (Pages is IList pages && (uint)index < (uint)pages.Count)
-                return pages[index] as Page;
-            return null;
+
+            if (_tabControl != null)
+            {
+                var itemsView = _tabControl.ItemsView;
+                if ((uint)index < (uint)itemsView.Count)
+                    return itemsView[index] as Page;
+            }
+
+            if (_tabControl?.ContainerFromIndex(index) is TabItem { Content: Page page })
+                return page;
+
+            return base.ResolvePageAtIndex(index);
         }
 
         private void SyncTabEnabledState(Page page)
         {
-            if (_tabControl == null || Pages is not IList pages)
+            if (_tabControl == null || !_pageContainerMap.TryGetValue(page, out var tabItem))
                 return;
 
-            for (int i = 0; i < pages.Count; i++)
+            tabItem.IsEnabled = GetIsTabEnabled(page);
+
+            if (!GetIsTabEnabled(page) && ReferenceEquals(tabItem, _tabControl.ContainerFromIndex(_tabControl.SelectedIndex)))
             {
-                if (!ReferenceEquals(pages[i], page))
-                    continue;
-
-                if (_tabControl.ContainerFromIndex(i) is TabItem tabItem)
-                    tabItem.IsEnabled = GetIsTabEnabled(page);
-
-                if (!GetIsTabEnabled(page) && i == _tabControl.SelectedIndex)
-                {
-                    int target = FindNearestEnabledTab(i);
-                    if (target >= 0 && target != i)
-                        _tabControl.SelectedIndex = target;
-                }
-
-                return;
+                int i = _tabControl.SelectedIndex;
+                int target = FindNearestEnabledTab(i);
+                if (target >= 0 && target != i)
+                    _tabControl.SelectedIndex = target;
             }
         }
 
-        private void SyncAllTabEnabledStates()
+        private void SyncAllTabEnabledStates(TabControl tabControl)
         {
-            if (_tabControl == null || Pages is not IList pages)
-                return;
-
-            for (int i = 0; i < pages.Count; i++)
+            for (int i = 0; i < tabControl.ItemCount; i++)
             {
-                if (_tabControl.ContainerFromIndex(i) is TabItem tabItem &&
+                if (tabControl.ContainerFromIndex(i) is TabItem tabItem &&
                     _containerPageMap.TryGetValue(tabItem, out var page))
                 {
                     tabItem.IsEnabled = GetIsTabEnabled(page);
@@ -468,9 +491,121 @@ namespace Avalonia.Controls
             if (_tabControl != null)
             {
                 int index = _tabControl.SelectedIndex;
-                CommitSelection(index, _tabControl.SelectedItem as Page ?? ResolvePageAtIndex(index), navigationType);
+                CommitSelectionIfResolved(index, navigationType);
                 UpdateContentSafeAreaPadding();
             }
+        }
+
+        private Page? PreparePageForContainer(TabItem tabItem, int index)
+        {
+            ClearContainerPage(tabItem);
+
+            Page? page;
+
+            if (ItemsSource != null)
+            {
+                if (!TryGetItemAtIndex(index, out var item))
+                    return null;
+
+                page = PageTemplate?.Build(item) as Page;
+                tabItem.Content = page;
+
+                if (page == null)
+                    return null;
+
+                _templateCreatedPages.Add(page);
+                LogicalChildren.Add(page);
+            }
+            else
+            {
+                if (!TryGetItemAtIndex(index, out var item))
+                    return null;
+
+                page = item as Page;
+                if (page == null)
+                    return null;
+
+                tabItem.Content = page;
+            }
+
+            _containerPageMap[tabItem] = page;
+            _pageContainerMap[page] = tabItem;
+            page.PropertyChanged += OnPagePropertyChanged;
+
+            return page;
+        }
+
+        private void ClearContainerPages()
+        {
+            foreach (var page in _containerPageMap.Values)
+                page.PropertyChanged -= OnPagePropertyChanged;
+
+            foreach (var page in _templateCreatedPages)
+                LogicalChildren.Remove(page);
+
+            _containerPageMap.Clear();
+            _pageContainerMap.Clear();
+            _templateCreatedPages.Clear();
+        }
+
+        private void ClearContainerPage(TabItem tabItem)
+        {
+            if (!_containerPageMap.Remove(tabItem, out var page))
+                return;
+
+            _pageContainerMap.Remove(page);
+            page.PropertyChanged -= OnPagePropertyChanged;
+
+            if (_templateCreatedPages.Remove(page))
+                LogicalChildren.Remove(page);
+        }
+
+        private bool TryGetItemAtIndex(int index, out object? item)
+        {
+            if (_tabControl != null)
+            {
+                var itemsView = _tabControl.ItemsView;
+                if ((uint)index < (uint)itemsView.Count)
+                {
+                    item = itemsView[index];
+                    return true;
+                }
+            }
+
+            var source = (IEnumerable?)ItemsSource ?? Pages;
+            if (source != null)
+            {
+                int currentIndex = 0;
+                foreach (var candidate in source)
+                {
+                    if (currentIndex == index)
+                    {
+                        item = candidate;
+                        return true;
+                    }
+
+                    currentIndex++;
+                }
+            }
+
+            item = null;
+            return false;
+        }
+
+        private void CommitSelectionIfResolved(int index, NavigationType navigationType)
+        {
+            var page = ResolvePageAtIndex(index);
+
+            if (page == null &&
+                ItemsSource != null &&
+                index >= 0 &&
+                _tabControl?.ContainerFromIndex(index) == null)
+            {
+                StoreSelectedIndex(index);
+                return;
+            }
+
+            CommitSelection(index, page, navigationType);
         }
 
         protected override void UpdateContentSafeAreaPadding()
@@ -518,7 +653,7 @@ namespace Avalonia.Controls
 
             var placement = ResolveTabPlacement();
             bool isHorizontal = placement == TabPlacement.Top || placement == TabPlacement.Bottom;
-            bool isRtl = FlowDirection == FlowDirection.RightToLeft;
+            bool isRtl = FlowDirection == Media.FlowDirection.RightToLeft;
 
             int delta = (e.SwipeDirection, isHorizontal, isRtl) switch
             {
@@ -531,7 +666,8 @@ namespace Avalonia.Controls
                 _ => 0
             };
 
-            if (delta == 0) return;
+            if (delta == 0)
+                return;
 
             int next = FindNextEnabledTab(_tabControl.SelectedIndex + delta, delta);
             if (next >= 0)
@@ -551,7 +687,7 @@ namespace Avalonia.Controls
 
             var resolved = ResolveTabPlacement();
             bool isHorizontal = resolved == TabPlacement.Top || resolved == TabPlacement.Bottom;
-            bool isRtl = FlowDirection == FlowDirection.RightToLeft;
+            bool isRtl = FlowDirection == Media.FlowDirection.RightToLeft;
 
             bool next = isHorizontal ? (isRtl ? e.Key == Key.Left : e.Key == Key.Right) : e.Key == Key.Down;
             bool prev = isHorizontal ? (isRtl ? e.Key == Key.Right : e.Key == Key.Left) : e.Key == Key.Up;

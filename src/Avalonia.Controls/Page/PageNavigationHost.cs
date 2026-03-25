@@ -129,12 +129,14 @@ namespace Avalonia.Controls
 
         private void ContentPresenter_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Property == ContentPresenter.ChildProperty
-                && e.NewValue is Page page
-                && _insetManager != null)
-            {
-                page.SafeAreaPadding = _insetManager.SafeAreaPadding;
-            }
+            if (e.Property != ContentPresenter.ChildProperty)
+                return;
+
+            if (e.GetOldValue<object?>() is Page oldPage)
+                oldPage.SafeAreaPadding = default;
+
+            if (e.GetNewValue<object?>() is Page newPage && _insetManager != null)
+                newPage.SafeAreaPadding = _insetManager.SafeAreaPadding;
         }
 
         private void TopLevel_BackRequested(object? sender, RoutedEventArgs e)

@@ -7,7 +7,7 @@ using Avalonia.Styling;
 
 namespace Avalonia.Animation;
 
-public class Rotate3DTransition: PageSlide
+public class Rotate3DTransition : PageSlide
 {
     private const double SidePeekAngle = 24.0;
     private const double FarPeekAngle = 38.0;

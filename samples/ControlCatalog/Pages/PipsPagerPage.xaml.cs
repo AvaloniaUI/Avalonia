@@ -25,12 +25,19 @@ namespace ControlCatalog.Pages
             ("Appearance", "Custom Colors",
                 "Override pip indicator colors using resource keys for normal, selected, and hover states.",
                 () => new PipsPagerCustomColorsPage()),
-            ("Appearance", "Custom Buttons",
-                "Replace the default chevron navigation buttons with custom styled buttons.",
-                () => new PipsPagerCustomButtonsPage()),
+            ("Appearance", "Custom Button Themes",
+                "Replace the default chevron navigation buttons with custom button themes.",
+                () => new PipsPagerCustomButtonThemesPage()),
             ("Appearance", "Custom Templates",
                 "Override pip item templates to create squares, pills, numbers, or any custom shape.",
                 () => new PipsPagerCustomTemplatesPage()),
+
+            ("Showcases", "Care Companion",
+                "A health care onboarding flow using PipsPager as the page indicator for a CarouselPage.",
+                () => new CareCompanionAppPage()),
+            ("Showcases", "Sanctuary",
+                "A travel discovery app using PipsPager as the page indicator for a CarouselPage.",
+                () => new SanctuaryShowcasePage()),
         };
 
         public PipsPagerPage()

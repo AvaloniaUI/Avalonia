@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -111,7 +111,7 @@ namespace Avalonia.Controls
         Size IScrollable.Extent => Extent;
         Size IScrollable.Viewport => Viewport;
 
-        Vector IScrollable.Offset 
+        Vector IScrollable.Offset
         {
             get => _offset;
             set => SetOffset(value);
@@ -428,6 +428,14 @@ namespace Avalonia.Controls
             _offsetAnimationCts = null;
         }
 
+        protected override void OnItemsControlChanged(ItemsControl? oldValue)
+        {
+            base.OnItemsControlChanged(oldValue);
+            // ItemsPresenter attaches the panel to the visual tree before calling Attach(ItemsControl),
+            // so OnAttachedToVisualTree fires with a null ItemsControl; re-run setup here.
+            RefreshGestureRecognizer();
+        }
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -438,13 +446,6 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTree(e);
             TeardownGestureRecognizer();
-        }
-
-        protected override void OnItemsControlChanged(ItemsControl? oldValue)
-        {
-            base.OnItemsControlChanged(oldValue);
-
-            RefreshGestureRecognizer();
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -461,7 +462,7 @@ namespace Avalonia.Controls
         private Size MeasureSinglePageOverride(Size availableSize)
         {
             var items = Items;
-            var index = (int)_offset.X;
+            var index = (ItemsControl as Carousel)?.SelectedIndex ?? (int)_offset.X;
 
             CompleteFinishedTransitionIfNeeded();
 
@@ -497,8 +498,7 @@ namespace Avalonia.Controls
                     _realized = null;
                     _realizedIndex = -1;
                 }
-                
-                // Get or create an element for the new item.
+
                 if (index >= 0 && index < items.Count)
                 {
                     _realized = GetOrCreateElement(items, index);
@@ -538,14 +538,10 @@ namespace Avalonia.Controls
                 _realized is { } to &&
                 GetTransition() is { } transition)
             {
-                _transition = new CancellationTokenSource();
+                var transitionCts = new CancellationTokenSource();
+                _transition = transitionCts;
 
-                var forward = (_realizedIndex > _transitionFromIndex);
-                if (Items.Count > 2)
-                {
-                    forward = forward || (_transitionFromIndex == Items.Count - 1 && _realizedIndex == 0);
-                    forward = forward && !(_transitionFromIndex == 0 && _realizedIndex == Items.Count - 1);
-                }
+                var forward = _realizedIndex > _transitionFromIndex;
 
                 _transitionTask = RunTransitionAsync(_transition, _transitionFrom, to, forward, transition);
             }
@@ -736,26 +732,20 @@ namespace Avalonia.Controls
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     if (e.OldStartingIndex < 0)
-                    {
                         goto case NotifyCollectionChangedAction.Reset;
-                    }
 
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     Add(e.NewStartingIndex, e.NewItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Move:
                     if (e.OldStartingIndex < 0)
-                    {
                         goto case NotifyCollectionChangedAction.Reset;
-                    }
 
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     var insertIndex = e.NewStartingIndex;
 
                     if (e.NewStartingIndex > e.OldStartingIndex)
-                    {
                         insertIndex -= e.OldItems.Count - 1;
-                    }
 
                     Add(insertIndex, e.NewItems!.Count);
                     break;
@@ -766,6 +756,7 @@ namespace Avalonia.Controls
                         _realized = null;
                         _realizedIndex = -1;
                     }
+
                     break;
             }
 
@@ -776,25 +767,25 @@ namespace Avalonia.Controls
         {
             Debug.Assert(ItemContainerGenerator is not null);
 
-            var e = GetRealizedElement(index);
+            var element = GetRealizedElement(index);
 
-            if (e is null)
+            if (element is null)
             {
                 var item = items[index];
                 var generator = ItemContainerGenerator!;
 
                 if (generator.NeedsContainer(item, index, out var recycleKey))
                 {
-                    e = GetRecycledElement(item, index, recycleKey) ??
+                    element = GetRecycledElement(item, index, recycleKey) ??
                         CreateElement(item, index, recycleKey);
                 }
                 else
                 {
-                    e = GetItemAsOwnContainer(item, index);
+                    element = GetItemAsOwnContainer(item, index);
                 }
             }
 
-            return e;
+            return element;
         }
 
         private Control? GetRealizedElement(int index)
@@ -876,19 +867,17 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            else
+
+            ItemContainerGenerator.ClearItemContainer(element);
+            _recyclePool ??= new();
+
+            if (!_recyclePool.TryGetValue(recycleKey, out var pool))
             {
-                ItemContainerGenerator.ClearItemContainer(element);
-                _recyclePool ??= new();
-
-                if (!_recyclePool.TryGetValue(recycleKey, out var pool))
-                {
-                    pool = new();
-                    _recyclePool.Add(recycleKey, pool);
-                }
-
-                pool.Push(element);
+                pool = new();
+                _recyclePool.Add(recycleKey, pool);
             }
+
+            pool.Push(element);
         }
 
         private IPageTransition? GetTransition() => (ItemsControl as Carousel)?.PageTransition;
@@ -983,7 +972,6 @@ namespace Avalonia.Controls
                 {
                     ResetViewportTransitionState();
                     ClearFractionalProgressContext();
-
                     // SyncScrollOffset is blocked during animation and the post-animation layout
                     // still sees a live CTS, so re-sync explicitly in case SelectedIndex changed.
                     if (ItemsControl is Carousel carousel)
@@ -1007,7 +995,6 @@ namespace Avalonia.Controls
             {
                 CanHorizontallySwipe = _swipeAxis != PageSlide.SlideAxis.Vertical,
                 CanVerticallySwipe = _swipeAxis != PageSlide.SlideAxis.Horizontal,
-                IsMouseEnabled = true,
             };
 
             GestureRecognizers.Add(_swipeGestureRecognizer);
