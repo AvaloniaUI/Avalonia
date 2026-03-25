@@ -48,7 +48,7 @@
                      Width="5"
                      Height="35"/>
         </Panel>
-        <TextBlock Text="{Binding #AngleSlider.Value, StringFormat=0}"
+        <TextBlock Text="{Binding #AngleSlider.Value, StringFormat={}{0:F0}\°}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    FontWeight="DemiBold"
