@@ -85,7 +85,8 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Text"/> property
         /// </summary>
         public static readonly StyledProperty<string?> TextProperty =
-            TextBlock.TextProperty.AddOwner<ComboBox>(new(string.Empty, BindingMode.TwoWay));
+            TextBlock.TextProperty.AddOwner<ComboBox>(new(string.Empty, BindingMode.TwoWay,
+                enableDataValidation: true));
 
         /// <summary>
         /// Defines the <see cref="SelectionBoxItemTemplate"/> property.
@@ -234,6 +235,14 @@ namespace Avalonia.Controls
         {
             base.InvalidateMirrorTransform();
             UpdateFlowDirection();
+        }
+
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
+        {
+            base.UpdateDataValidation(property, state, error);
+
+            if (property == TextProperty)
+                DataValidationErrors.SetError(this, error);
         }
 
         protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
