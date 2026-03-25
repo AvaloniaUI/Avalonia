@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
+using Avalonia.Controls;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Expressions;
@@ -79,7 +80,7 @@ public class CompositionAnimationTests : ScopedTestBase
 
         public void Post(Action action, DispatcherPriority priority = default) => throw new NotSupportedException();
     }
-    
+
     [AnimationDataProvider]
     [Theory]
     public void GenericCheck(AnimationData data)
@@ -100,9 +101,9 @@ public class CompositionAnimationTests : ScopedTestBase
             currentValue = instance.Evaluate(TimeSpan.FromSeconds(check.time), currentValue);
             Assert.Equal(check.value, currentValue.Double);
         }
-        
+
     }
-    
+
     public class AnimationData
     {
         public AnimationData(string name)
@@ -110,7 +111,7 @@ public class CompositionAnimationTests : ScopedTestBase
             Name = name;
         }
 
-        public string Name { get;  }
+        public string Name { get; }
         public List<(float key, float value)> Frames { get; set; } = new();
         public List<(float time, float value)> Checks { get; set; } = new();
         public float StartingValue { get; set; }
@@ -124,7 +125,7 @@ public class CompositionAnimationTests : ScopedTestBase
     [Theory]
     [InlineData("Color")]
     [InlineData("Offset")]
-    
+
     public void GetCompositionProperty_ReturnsRegisteredProperties(string propName)
     {
         using var scope = AvaloniaLocator.EnterScope();
@@ -148,7 +149,7 @@ public class CompositionAnimationTests : ScopedTestBase
 
         var ani = compositor.CreateExpressionAnimation("this.Target.Offset.X * 0.5 + 10");
         var instance = ani.CreateInstance(target.Server, null);
-        instance.Initialize(TimeSpan.Zero, ExpressionVariant.Create(0f), 
+        instance.Initialize(TimeSpan.Zero, ExpressionVariant.Create(0f),
             ServerCompositionVisual.s_IdOfRotationAngleProperty);
 
         var result = instance.Evaluate(TimeSpan.Zero, ExpressionVariant.Create(0f));
@@ -159,7 +160,7 @@ public class CompositionAnimationTests : ScopedTestBase
 
 
     [Fact]
-    public void ExpressionAnimation_TracksReferenceParameter()
+    public void ExpressionAnimation_Tracks_ReferenceParameter()
     {
         using var scope = AvaloniaLocator.EnterScope();
         var compositor = new Compositor(RenderLoop.FromTimer(new CompositorTestServices.ManualRenderTimer()), null);
@@ -187,7 +188,7 @@ public class CompositionAnimationTests : ScopedTestBase
     }
 
     [Fact]
-    public void ExpressionAnimation_TracksTarget()
+    public void ExpressionAnimation_Tracks_Target()
     {
         using var scope = AvaloniaLocator.EnterScope();
         var compositor = new Compositor(RenderLoop.FromTimer(new CompositorTestServices.ManualRenderTimer()), null);
@@ -211,5 +212,33 @@ public class CompositionAnimationTests : ScopedTestBase
         target.Server.Offset = new Vector3D(200, 300, 0);
         var updatedResult = instance.Evaluate(TimeSpan.Zero, ExpressionVariant.Create(0f));
         Assert.Equal(110.0, updatedResult.Double);
+    }
+
+    [Fact]
+    public void ExpressionAnimation_Requeues_Target_When_Another_Animation_Is_Invalidated_During_Evaluation()
+    {
+        using var services = new CompositorTestServices();
+        var border = new Border
+        {
+            Width = 10,
+            Height = 10
+        };
+
+        services.TopLevel.Content = border;
+        services.RunJobs();
+
+        var visual = ElementComposition.GetElementVisual(border)!;
+        var opacityAnimation = visual.Compositor.CreateExpressionAnimation("this.Target.RotationAngle * 0.1");
+        var rotationAnimation = visual.Compositor.CreateExpressionAnimation("this.Target.Offset.X * 0.5");
+
+        visual.StartAnimation("Opacity", opacityAnimation);
+        visual.StartAnimation("RotationAngle", rotationAnimation);
+
+        services.RunJobs();
+        visual.Offset = new Vector3D(100, 0, 0);
+        services.RunJobs();
+
+        Assert.Equal(50, visual.Server.RotationAngle);
+        Assert.Equal(5, visual.Server.Opacity);
     }
 }
