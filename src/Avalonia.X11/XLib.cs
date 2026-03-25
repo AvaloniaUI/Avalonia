@@ -471,6 +471,9 @@ namespace Avalonia.X11
             XLookupKeySym = 3,
             XLookupBoth = 4
         }
+
+        [LibraryImport(libX11)]
+        public static partial XKeySym XLookupKeysym(in XKeyEvent key_event, int index);
         
         [DllImport (libX11)]
         public static extern int XLookupString(ref XKeyEvent xevent, byte* buffer, int num_bytes, out nint keysym, IntPtr composeStatus);

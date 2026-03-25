@@ -138,30 +138,40 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         private void OnEvent(ref XEvent evt)
         {
-            if (evt.type == XEventName.MotionNotify && _pointerGrabbed)
-                OnMotionNotify(in evt.MotionEvent);
-
-            else if (evt.type == XEventName.ButtonRelease && _pointerGrabbed)
-                OnButtonRelease(in evt.ButtonEvent);
-
-            else if (evt.type == XEventName.ClientMessage)
+            switch (evt.type)
             {
-                ref var message = ref evt.ClientMessageEvent;
-                var atoms = _platform.Info.Atoms;
+                case XEventName.MotionNotify when _pointerGrabbed:
+                    OnMotionNotify(in evt.MotionEvent);
+                    break;
 
-                if (message.message_type == atoms.XdndStatus)
-                    OnXdndStatus(in message);
-                else if (message.message_type == atoms.XdndFinished)
-                    OnXdndFinished(in message);
-                else
+                case XEventName.ButtonRelease when _pointerGrabbed:
+                    OnButtonRelease(in evt.ButtonEvent);
+                    break;
+
+                case XEventName.KeyPress or XEventName.KeyRelease when _pointerGrabbed:
+                    OnKey(in evt.KeyEvent);
+                    break;
+
+                case XEventName.ClientMessage:
+                    ref var message = ref evt.ClientMessageEvent;
+                    var atoms = _platform.Info.Atoms;
+
+                    if (message.message_type == atoms.XdndStatus)
+                        OnXdndStatus(in message);
+                    else if (message.message_type == atoms.XdndFinished)
+                        OnXdndFinished(in message);
+                    else
+                        _originalSourceWindowInfo?.EventHandler(ref evt);
+                    break;
+
+                case XEventName.SelectionRequest:
+                    _dataProvider.OnSelectionRequest(in evt.SelectionRequestEvent);
+                    break;
+
+                default:
                     _originalSourceWindowInfo?.EventHandler(ref evt);
+                    break;
             }
-
-            else if (evt.type == XEventName.SelectionRequest)
-                _dataProvider.OnSelectionRequest(in evt.SelectionRequestEvent);
-
-            else
-                _originalSourceWindowInfo?.EventHandler(ref evt);
         }
 
         private void OnMotionNotify(in XMotionEvent motion)
@@ -173,7 +183,6 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             var rootPosition = new PixelPoint(motion.x_root, motion.y_root);
             var target = FindXdndTarget(rootPosition);
             var modifiers = motion.state.ToRawInputModifiers();
-            var effectiveAllowedEffects = GetEffectiveAllowedEffects(modifiers.ToKeyModifiers());
 
             // Handle new target.
             if (_targetState.Target != target)
@@ -193,6 +202,8 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 }
 
                 _targetState = new TargetState(target);
+
+                var effectiveAllowedEffects = GetEffectiveAllowedEffects(modifiers.ToKeyModifiers());
                 UpdateCurrentEffects(effectiveAllowedEffects);
 
                 if (target is { } newTarget)
@@ -210,35 +221,73 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             // Update current target.
             if (target is { } currentTarget)
+                UpdateTargetPosition(currentTarget, rootPosition, modifiers, motion.time);
+        }
+
+        private void UpdateTargetPosition(
+            XdndTargetInfo target,
+            PixelPoint rootPosition,
+            RawInputModifiers modifiers,
+            IntPtr timestamp)
+        {
+            if (target.InProcessWindow is { } window)
             {
-                if (currentTarget.InProcessWindow is { } window)
+                var effects = ProcessRawDragEvent(window, RawDragEventType.DragOver, rootPosition, modifiers);
+                _targetState.AllowsDrop = effects != DragDropEffects.None;
+                UpdateCurrentEffects(effects);
+            }
+            else
+            {
+                var effectiveAllowedEffects = GetEffectiveAllowedEffects(modifiers.ToKeyModifiers());
+                var action = XdndActionHelper.EffectsToAction(effectiveAllowedEffects, _platform.Info.Atoms);
+                var positionRequest = new PositionRequest(rootPosition, timestamp, action);
+
+                if (_targetState.IsWaitingForStatus)
                 {
-                    var effects = ProcessRawDragEvent(window, RawDragEventType.DragOver, rootPosition, modifiers);
-                    _targetState.AllowsDrop = effects != DragDropEffects.None;
-                    UpdateCurrentEffects(effects);
+                    // We already sent a position previously and are waiting for a response. Don't flood.
+                    _targetState.PendingPosition = positionRequest;
+
+                    _logger?.Log(
+                        this,
+                        "Pointer moved to point {Position} on window {Window} while waiting for XdndStatus. XdndPosition will be sent later.",
+                        rootPosition,
+                        target.TargetWindow);
                 }
                 else
                 {
-                    var action = XdndActionHelper.EffectsToAction(effectiveAllowedEffects, _platform.Info.Atoms);
-                    var positionRequest = new PositionRequest(rootPosition, motion.time, action);
-
-                    if (_targetState.IsWaitingForStatus)
-                    {
-                        // We already sent a position previously and are waiting for a response. Don't flood.
-                        _targetState.PendingPosition = positionRequest;
-
-                        _logger?.Log(
-                            this,
-                            "Pointer moved to point {Position} on window {Window} while waiting for XdndStatus. XdndPosition will be sent later.",
-                            rootPosition,
-                            currentTarget.TargetWindow);
-                    }
-                    else
-                    {
-                        SendPositionRequest(positionRequest, currentTarget);
-                    }
+                    SendPositionRequest(positionRequest, target);
                 }
             }
+        }
+
+        private void OnKey(in XKeyEvent key)
+        {
+            if (_targetState.Target is not { } target || _targetState.PendingDrop is not null)
+                return;
+
+            var keySym = XLookupKeysym(in key, 0);
+
+            // If Shift/Ctrl/Alt are pressed/released, effective effects might change: update the target.
+            var interestingModifiers = keySym switch
+            {
+                XKeySym.XK_Shift_L or XKeySym.XK_Shift_R => XModifierMask.ShiftMask,
+                XKeySym.XK_Control_L or XKeySym.XK_Control_R => XModifierMask.ControlMask,
+                XKeySym.XK_Alt_L or XKeySym.XK_Alt_R => XModifierMask.Mod1Mask,
+                _ => default
+            };
+
+            if (interestingModifiers == 0)
+                return;
+
+            var modifiers = key.state;
+            if (key.type == XEventName.KeyPress)
+                modifiers |= interestingModifiers;
+            else if (key.type == XEventName.KeyRelease)
+                modifiers &= ~interestingModifiers;
+
+            var position = new PixelPoint(key.x_root, key.y_root);
+
+            UpdateTargetPosition(target, position, modifiers.ToRawInputModifiers(), key.time);
         }
 
         private void OnButtonRelease(in XButtonEvent button)
@@ -313,8 +362,8 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             _logger?.Log(
                 this,
-                "Received XdndStatus with effects {Effects} for window {Window}.",
-                effects,
+                "Received XdndStatus with action {Action} for window {Window}.",
+                _platform.Info.Atoms.GetAtomName(action),
                 target.TargetWindow);
 
             // If we have any pending XdndPosition or XdndDrop to send, now is the time.
@@ -443,7 +492,8 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         {
             _logger?.Log(
                 this,
-                "Sending XdndPosition at point {Position} to window {Window}.",
+                "Sending XdndPosition with action {Action} at point {Position} to window {Window}.",
+                _platform.Info.Atoms.GetAtomName(action),
                 rootPosition,
                 target.TargetWindow);
 

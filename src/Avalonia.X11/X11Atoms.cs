@@ -259,6 +259,9 @@ namespace Avalonia.X11
 
         public string? GetAtomName(IntPtr atom)
         {
+            if (atom == 0)
+                return null;
+
             if (_atomsToNames.TryGetValue(atom, out var rv))
                 return rv;
             var name = XLib.GetAtomName(_display, atom);
