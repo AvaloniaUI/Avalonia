@@ -27,6 +27,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Page, object?>(nameof(Header));
 
         /// <summary>
+        /// Defines the <see cref="HeaderTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
+            AvaloniaProperty.Register<Page, IDataTemplate?>(nameof(HeaderTemplate));
+
+        /// <summary>
         /// Defines the <see cref="Icon"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> IconProperty =
@@ -90,6 +96,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(HeaderProperty);
             set => SetValue(HeaderProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to display the header.
+        /// </summary>
+        public IDataTemplate? HeaderTemplate
+        {
+            get => GetValue(HeaderTemplateProperty);
+            set => SetValue(HeaderTemplateProperty, value);
         }
 
         /// <summary>
