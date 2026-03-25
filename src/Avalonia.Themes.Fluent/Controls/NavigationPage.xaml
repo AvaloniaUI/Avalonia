@@ -140,6 +140,7 @@
                                 FontSize="20"
                                 Foreground="{DynamicResource NavigationBarForeground}"
                                 Content="{Binding CurrentPage?.Header, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
+                                ContentTemplate="{Binding CurrentPage?.HeaderTemplate, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
