@@ -114,6 +114,7 @@ namespace Avalonia.Native
             set => _native.SetWindowState((AvnWindowState)value);
         }
 
+        public bool WindowStateGetterIsUsable => false;
         public Action<WindowState>? WindowStateChanged { get; set; }
 
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
