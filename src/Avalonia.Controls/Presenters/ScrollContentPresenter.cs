@@ -621,7 +621,7 @@ namespace Avalonia.Controls.Presenters
 
                 e.Handled = !IsScrollChainingEnabled || offsetChanged;
 
-                if(!e.Handled)
+                if(!e.Handled && !IsScrollChainingEnabled)
                 {
                     // Gesture may cause an overscroll so we mark the event as handled if it did.
                     e.Handled = canXScroll || canYScroll;

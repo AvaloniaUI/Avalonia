@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using Avalonia.Utilities;
 
 namespace Avalonia.Input.GestureRecognizers
 {
@@ -59,7 +58,7 @@ namespace Avalonia.Input.GestureRecognizers
     ///
     /// The quality of the velocity estimation will be better if more data points
     /// have been received.
-    internal class VelocityTracker : IDisposable
+    internal class VelocityTracker
     {
         private const int AssumePointerMoveStoppedMilliseconds = 40;
         private const int HistorySize = 20;
@@ -201,11 +200,6 @@ namespace Avalonia.Input.GestureRecognizers
         internal virtual Velocity GetFlingVelocity()
         {
             return GetVelocity().ClampMagnitude(MinFlingVelocity, MaxFlingVelocity);
-        }
-
-        public void Dispose()
-        {
-            _sinceLastSample.Stop();
         }
     }
 

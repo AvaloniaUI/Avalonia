@@ -178,7 +178,6 @@ namespace Avalonia.Input.GestureRecognizers
                 _inertia = default;
                 _delta = default;
                 _scrolling = false;
-                _velocityTracker?.Dispose();
                 _velocityTracker = null;
                 Target!.RaiseEvent(new ScrollGestureEndedEventArgs(_gestureId));
                 _gestureId = 0;

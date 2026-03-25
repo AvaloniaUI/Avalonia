@@ -5,7 +5,6 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -386,7 +385,7 @@ namespace Avalonia.Controls.Primitives
                 if (!_handle1.IsDragging)
                 {
                     var pos = _handle1.SelectionHandleType == SelectionHandleType.Start ? startPoint : endPoint;
-                    if(pos.isRtl != _handle1.IsRtl)
+                    if (pos.isRtl != _handle1.IsRtl)
                         _handle1.NeedsIndicatorUpdate = true;
                     _handle1.IsRtl = pos.isRtl;
                     _handle1.SetTopLeft(ToLayer(pos.position));
@@ -580,7 +579,7 @@ namespace Avalonia.Controls.Primitives
                 ShowHandles = false;
                 CloseFlyout();
             }
-            else if(e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty
+            else if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty
                 || e.Property == TextBox.CaretIndexProperty)
             {
                 MoveHandlesToSelection();
@@ -596,42 +595,18 @@ namespace Avalonia.Controls.Primitives
         // Listener to layout changes for presenter.
         private class PresenterVisualListener
         {
-            private List<Visual> _attachedVisuals = new List<Visual>();
             private TextPresenter? _presenter;
-            private object _lock = new object();
 
             public event EventHandler? Invalidated;
 
             public void Attach(TextPresenter presenter)
             {
-                lock (_lock)
-                {
-                    if (_presenter != null)
-                        throw new InvalidOperationException("Listener is already attached to a TextPresenter");
+                if (_presenter != null)
+                    throw new InvalidOperationException("Listener is already attached to a TextPresenter");
 
-                    _presenter = presenter;
-                    presenter.SizeChanged += Presenter_SizeChanged;
-                    presenter.EffectiveViewportChanged += Visual_EffectiveViewportChanged;
-
-
-                    void AttachViewportHandler(Visual visual)
-                    {
-                        if (visual is Layoutable layoutable)
-                        {
-                            layoutable.EffectiveViewportChanged += Visual_EffectiveViewportChanged;
-                        }
-
-                        _attachedVisuals.Add(visual);
-                    }
-
-                    var visualParent = presenter.VisualParent;
-                    while (visualParent != null)
-                    {
-                        AttachViewportHandler(visualParent);
-
-                        visualParent = visualParent.VisualParent;
-                    }
-                }
+                _presenter = presenter;
+                presenter.SizeChanged += Presenter_SizeChanged;
+                presenter.EffectiveViewportChanged += Visual_EffectiveViewportChanged;
             }
 
             private void Visual_EffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)
@@ -646,25 +621,13 @@ namespace Avalonia.Controls.Primitives
 
             public void Detach()
             {
-                lock (_lock)
+                if (_presenter is { } presenter)
                 {
-                    if (_presenter is { } presenter)
-                    {
-                        presenter.SizeChanged -= Presenter_SizeChanged;
-                        presenter.EffectiveViewportChanged -= Visual_EffectiveViewportChanged;
-                    }
-
-                    foreach (var visual in _attachedVisuals)
-                    {
-                        if (visual is Layoutable layoutable)
-                        {
-                            layoutable.EffectiveViewportChanged -= Visual_EffectiveViewportChanged;
-                        }
-                    }
-
-                    _presenter = null;
-                    _attachedVisuals.Clear();
+                    presenter.SizeChanged -= Presenter_SizeChanged;
+                    presenter.EffectiveViewportChanged -= Visual_EffectiveViewportChanged;
                 }
+
+                _presenter = null;
             }
 
             private void OnInvalidated()

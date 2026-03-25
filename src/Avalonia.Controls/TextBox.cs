@@ -35,7 +35,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// The radius for touch input. Used to determine if selection should change from moving a touch pointer.
         /// </summary>
-        private readonly static int s_touchRadius = (int)((AvaloniaLocator.Current?.GetService<IPlatformSettings>()?.GetTapSize(PointerType.Touch).Height ?? 10) / 2) + 5;
+        private readonly Lazy<int> _touchRadius = new(() => (int)((AvaloniaLocator.Current?.GetService<IPlatformSettings>()?.GetTapSize(PointerType.Touch).Height ?? 10) / 2) + 5);
 
         /// <summary>
         /// Gets a platform-specific <see cref="KeyGesture"/> for the Cut action
@@ -1735,7 +1735,7 @@ namespace Avalonia.Controls
         {
             base.OnTapped(e);
 
-            if(e.Pointer.Type != PointerType.Mouse)
+            if (e.Pointer.Type != PointerType.Mouse)
             {
                 _presenter?.EnsureTextSelectionLayer();
                 _presenter?.TextSelectionHandleCanvas?.Show();
@@ -1815,18 +1815,13 @@ namespace Avalonia.Controls
 
                     if (_isDoubleTapped)
                     {
-                        var oldCaret = _presenter.CaretIndex;
                         _presenter.MoveCaretToPoint(_lastPoint);
                         var caretIndex = _presenter.CaretIndex;
 
-                        if(Math.Abs(oldCaret - caretIndex) > 3)
-                        {
-                            return;
-                        }
                         var selectionStart = SelectionStart;
                         var selectionEnd = SelectionEnd;
 
-                        SelectWord(text, caretIndex, caretIndex, caretIndex);
+                        SelectWord(text, caretIndex, selectionStart, selectionEnd);
                         _presenter?.EnsureTextSelectionLayer();
                         _presenter?.TextSelectionHandleCanvas?.Show();
                     }
@@ -1957,7 +1952,7 @@ namespace Avalonia.Controls
                     if (!_isInTouchCaretMode)
                     {
 
-                        var touchRect = new Rect(_lastPoint.X, _lastPoint.Y, 0, 0).Inflate(s_touchRadius);
+                        var touchRect = new Rect(_lastPoint.X, _lastPoint.Y, 0, 0).Inflate(_touchRadius.Value);
                         var isInRect = touchRect.X < point.X &&
                            touchRect.Y < point.Y &&
                            touchRect.Right > point.X &&

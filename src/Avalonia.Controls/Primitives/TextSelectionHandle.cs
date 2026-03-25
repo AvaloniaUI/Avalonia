@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Drawing;
 using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -252,17 +250,17 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateHandleClasses()
         {
-            Classes.Remove("caret");
-            Classes.Remove("start");
-            Classes.Remove("end");
+            PseudoClasses.Remove(":caret");
+            PseudoClasses.Remove(":start");
+            PseudoClasses.Remove(":end");
 
-            Classes.Add(SelectionHandleType switch
+            PseudoClasses.Add(":" + (SelectionHandleType switch
             {
                 SelectionHandleType.Caret => "caret",
                 SelectionHandleType.Start => IsRtl ? "end" : "start",
                 SelectionHandleType.End => IsRtl ? "start" : "end",
                 _ => throw new NotImplementedException(),
-            });
+            }));
             InvalidateVisual();
         }
     }

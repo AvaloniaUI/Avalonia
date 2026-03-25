@@ -85,21 +85,21 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-    <Style Selector="^.caret /template/ Image#PART_HandlePathIcon">
+    <Style Selector="^:caret /template/ Image#PART_HandlePathIcon">
       <Setter Property="Source" Value="{DynamicResource TextCaretHandleDrawing}" />
     </Style>
-    <Style Selector="^.start /template/ Image#PART_HandlePathIcon">
+    <Style Selector="^:start /template/ Image#PART_HandlePathIcon">
       <Setter Property="RenderTransform">
         <ScaleTransform ScaleX="-1" ScaleY="1"/>
       </Setter>
     </Style>
-    <Style Selector="^.caret /template/ Border#PART_Indicator">
+    <Style Selector="^:caret /template/ Border#PART_Indicator">
       <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
-    <Style Selector="^.end /template/ Border#PART_Indicator">
+    <Style Selector="^:end /template/ Border#PART_Indicator">
       <Setter Property="HorizontalAlignment" Value="Left" />
     </Style>
-    <Style Selector="^.start /template/ Border#PART_Indicator">
+    <Style Selector="^:start /template/ Border#PART_Indicator">
       <Setter Property="HorizontalAlignment" Value="Right" />
     </Style>
   </ControlTheme>
