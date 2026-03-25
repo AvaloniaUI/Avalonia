@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -156,10 +158,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, WindowClosingBehavior>(nameof(ClosingBehavior));
 
         /// <summary>
-        /// Represents the current window state (normal, minimized, maximized)
+        /// Represents the currently effective window state (normal, minimized, maximized)
         /// </summary>
-        public static readonly StyledProperty<WindowState> WindowStateProperty =
-            AvaloniaProperty.Register<Window, WindowState>(nameof(WindowState));
+        public static readonly DirectProperty<Window, WindowState> WindowStateProperty =
+            AvaloniaProperty.RegisterDirect<Window, WindowState>(
+                nameof(WindowState), o => o.WindowState,
+                (o, v) => o.WindowState = v);
 
         /// <summary>
         /// Defines the <see cref="Title"/> property.
@@ -253,8 +257,7 @@ namespace Avalonia.Controls
             CreatePlatformImplBinding(CanMinimizeProperty, canMinimize => PlatformImpl!.SetCanMinimize(canMinimize));
             CreatePlatformImplBinding(CanMaximizeProperty, canMaximize => PlatformImpl!.SetCanMaximize(canMaximize));
             CreatePlatformImplBinding(ShowInTaskbarProperty, show => PlatformImpl!.ShowTaskbarIcon(show));
-
-            CreatePlatformImplBinding(WindowStateProperty, state => PlatformImpl!.WindowState = state);
+            
             CreatePlatformImplBinding(ExtendClientAreaToDecorationsHintProperty, hint => PlatformImpl!.SetExtendClientAreaToDecorationsHint(hint));
             CreatePlatformImplBinding(ExtendClientAreaTitleBarHeightHintProperty, height => PlatformImpl!.SetExtendClientAreaTitleBarHeightHint(height));
 
@@ -401,13 +404,45 @@ namespace Avalonia.Controls
             set => SetValue(ClosingBehaviorProperty, value);
         }
 
+        private WindowState _lastWindowState;
         /// <summary>
-        /// Gets or sets the minimized/maximized state of the window.
+        /// Represents the currently effective window state (normal, minimized, maximized)
         /// </summary>
         public WindowState WindowState
         {
-            get => GetValue(WindowStateProperty);
-            set => SetValue(WindowStateProperty, value);
+            get => PlatformImpl?.WindowStateGetterIsUsable == true ?
+                PlatformImpl.WindowState :
+                _lastWindowState;
+            set
+            {
+                if (PlatformImpl != null)
+                {
+                    if (PlatformImpl.WindowStateGetterIsUsable)
+                    {
+                        // Attempt to set the window state to desired value, if it succeeds the platform will
+                        // trigger WindowStateChanged callback which will trigger SetAndRaise for the WindowState property
+                        PlatformImpl.WindowState = value;
+                        
+                        // If the request was refused - trigger a synthetic property change notification
+                        // for data bindings and user state to fix itself.
+                        if (PlatformImpl.WindowState != value)
+                        {
+                            // Since it's a force notify, we aren't checking for the old value and sometimes
+                            // trigger notification with oldValue = newValue.
+                            var oldValue = _lastWindowState;
+                            _lastWindowState = PlatformImpl.WindowState;
+                            RaisePropertyChanged(WindowStateProperty, oldValue, _lastWindowState);
+                        }
+                    }
+                    else 
+                    {
+                        // Legacy behavior - update the property and hope for the best that the platform
+                        // will update it back to match the actual window state
+                        SetAndRaise(WindowStateProperty, ref _lastWindowState, value);
+                        PlatformImpl.WindowState = _lastWindowState;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -615,7 +650,10 @@ namespace Avalonia.Controls
 
         private void HandleWindowStateChanged(WindowState state)
         {
-            WindowState = state;
+            // Check if platform impl doesn't lie about get_WindowState being usable
+            Debug.Assert(PlatformImpl is not { WindowStateGetterIsUsable: true } || PlatformImpl.WindowState == state);
+            
+            SetAndRaise(WindowStateProperty, ref _lastWindowState, state);
 
             if (state == WindowState.Minimized)
             {
@@ -793,6 +831,12 @@ namespace Avalonia.Controls
         public override void Show()
         {
             ShowCore<object>(null, false);
+        }
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+            EnableVisualLayerManagerLayers();
         }
 
         protected override void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)

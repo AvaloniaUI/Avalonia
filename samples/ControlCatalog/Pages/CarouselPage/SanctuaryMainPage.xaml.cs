@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace ControlCatalog.Pages;
 
-public partial class PipsPagerCustomButtonsPage : UserControl
+public partial class SanctuaryMainPage : UserControl
 {
-    public PipsPagerCustomButtonsPage()
+    public SanctuaryMainPage()
     {
         InitializeComponent();
     }

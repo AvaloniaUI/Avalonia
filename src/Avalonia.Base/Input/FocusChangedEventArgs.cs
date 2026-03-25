@@ -11,7 +11,7 @@ namespace Avalonia.Input
         /// Initializes a new instance of <see cref="FocusChangedEventArgs"/>.
         /// </summary>
         /// <param name="routedEvent">The routed event associated with these event args.</param>
-        public FocusChangedEventArgs(RoutedEvent routedEvent)
+        public FocusChangedEventArgs(RoutedEvent? routedEvent)
             : base(routedEvent)
         {
         }

@@ -44,7 +44,14 @@ public partial class Dispatcher
             return null;
         }
     }
-    
+
+    /// <summary>
+    /// Gets the dispatcher for the UI thread.
+    /// </summary>
+    /// <remarks>
+    /// Control and libraries author are encouraged to use <see cref="CurrentDispatcher"/> and
+    /// <see cref="AvaloniaObject.Dispatcher"/> instead.
+    /// </remarks>
     public static Dispatcher UIThread
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

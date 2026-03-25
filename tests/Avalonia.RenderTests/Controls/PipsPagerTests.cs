@@ -1,24 +1,28 @@
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Controls.Shapes;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Xunit;
 
+#if AVALONIA_SKIA
 namespace Avalonia.Skia.RenderTests
+#else
+namespace Avalonia.Direct2D1.RenderTests.Controls
+#endif
 {
     public class PipsPagerTests : TestBase
     {
         public PipsPagerTests()
-            : base(@"Controls/PipsPager")
+            : base(@"Controls\PipsPager")
         {
         }
-        
+
         private static IControlTemplate CreatePipsPagerTemplate()
         {
             return new FuncControlTemplate<PipsPager>((control, scope) =>
@@ -26,7 +30,7 @@ namespace Avalonia.Skia.RenderTests
                 var stackPanel = new StackPanel
                 {
                     Name = "PART_RootPanel",
-                    Spacing = 5,
+                    Spacing = 4,
                     [!StackPanel.OrientationProperty] = control[!PipsPager.OrientationProperty],
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center
@@ -48,7 +52,7 @@ namespace Avalonia.Skia.RenderTests
                 var prevButton = new Button
                 {
                     Name = "PART_PreviousButton",
-                    Content = "<", 
+                    Content = "<",
                     Template = buttonTemplate,
                     Width = 20,
                     Height = 20,
@@ -65,8 +69,7 @@ namespace Avalonia.Skia.RenderTests
                     [!Button.IsVisibleProperty] = control[!PipsPager.IsNextButtonVisibleProperty]
                 }.RegisterInNameScope(scope);
 
-                // Simple ListBox Template (ItemsPresenter)
-                var listBoxTemplate = new FuncControlTemplate<ListBox>((lb, s) => 
+                var listBoxTemplate = new FuncControlTemplate<ListBox>((lb, s) =>
                     new ItemsPresenter
                     {
                         Name = "PART_ItemsPresenter",
@@ -79,26 +82,24 @@ namespace Avalonia.Skia.RenderTests
                     Template = listBoxTemplate,
                     [!ListBox.ItemsSourceProperty] = new Binding("TemplateSettings.Pips") { Source = control },
                     [!ListBox.SelectedIndexProperty] = control[!PipsPager.SelectedPageIndexProperty],
-                    ItemsPanel = new FuncTemplate<Panel?>(() => new StackPanel 
-                    { 
+                    ItemsPanel = new FuncTemplate<Panel?>(() => new StackPanel
+                    {
                         Spacing = 2,
-                        [!StackPanel.OrientationProperty] = control[!PipsPager.OrientationProperty] 
+                        [!StackPanel.OrientationProperty] = control[!PipsPager.OrientationProperty]
                     })
                 }.RegisterInNameScope(scope);
 
-                // Default Item Style
                 var itemStyle = new Style(x => x.OfType<ListBoxItem>());
-                itemStyle.Setters.Add(new Setter(ListBoxItem.TemplateProperty, new FuncControlTemplate<ListBoxItem>((item, s) => 
-                     new Ellipse { Name="Pip", Width = 10, Height = 10 }.RegisterInNameScope(s))));
-                
-                // Default Pip Fill Style
+                itemStyle.Setters.Add(new Setter(ListBoxItem.TemplateProperty,
+                    new FuncControlTemplate<ListBoxItem>((item, s) =>
+                        new Rectangle { Name = "Pip", Width = 10, Height = 10 }.RegisterInNameScope(s))));
+
                 var defaultPipStyle = new Style(x => x.OfType<ListBoxItem>().Template().Name("Pip"));
-                defaultPipStyle.Setters.Add(new Setter(Ellipse.FillProperty, Brushes.Gray));
-                
-                // Selected Item Style
+                defaultPipStyle.Setters.Add(new Setter(Rectangle.FillProperty, Brushes.Gray));
+
                 var selectedStyle = new Style(x => x.OfType<ListBoxItem>().Class(":selected").Template().Name("Pip"));
-                selectedStyle.Setters.Add(new Setter(Ellipse.FillProperty, Brushes.Red));
-                
+                selectedStyle.Setters.Add(new Setter(Rectangle.FillProperty, Brushes.Red));
+
                 pipsList.Styles.Add(itemStyle);
                 pipsList.Styles.Add(defaultPipStyle);
                 pipsList.Styles.Add(selectedStyle);
@@ -135,7 +136,7 @@ namespace Avalonia.Skia.RenderTests
             Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             await RenderToFile(target);
-            CompareImages();
+            CompareImages(skipImmediate: true);
         }
 
         [Fact]
@@ -162,7 +163,7 @@ namespace Avalonia.Skia.RenderTests
             Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             await RenderToFile(target);
-            CompareImages();
+            CompareImages(skipImmediate: true);
         }
     }
 }

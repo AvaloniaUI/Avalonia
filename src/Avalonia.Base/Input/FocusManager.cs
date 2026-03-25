@@ -172,7 +172,7 @@ namespace Avalonia.Input
             ValidateDirection(direction);
 
             var focusOptions = ToFocusOptions(options, true);
-            var result = FindAndSetNextFocus(direction, focusOptions);
+            var result = FindAndSetNextFocus(options?.FocusedElement ?? Current, direction, focusOptions);
             _reusableFocusOptions = focusOptions;
             return result;
         }
@@ -319,7 +319,7 @@ namespace Avalonia.Input
             ValidateDirection(direction);
 
             var focusOptions = ToFocusOptions(options, false);
-            var result = FindNextFocus(direction, focusOptions);
+            var result = FindNextFocus(options?.FocusedElement ?? Current, direction, focusOptions);
             _reusableFocusOptions = focusOptions;
             return result;
         }
@@ -368,27 +368,29 @@ namespace Avalonia.Input
             return focusOptions;
         }
 
-        internal IInputElement? FindNextFocus(NavigationDirection direction, XYFocusOptions focusOptions, bool updateManifolds = true)
+        private IInputElement? FindNextFocus(
+            IInputElement? focusedElement,
+            NavigationDirection direction,
+            XYFocusOptions focusOptions,
+            bool updateManifolds = true)
         {
-            IInputElement? nextFocusedElement = null;
+            IInputElement? nextFocusedElement;
 
-            var currentlyFocusedElement = Current;
-
-            if (direction is NavigationDirection.Previous or NavigationDirection.Next || currentlyFocusedElement == null)
+            if (direction is NavigationDirection.Previous or NavigationDirection.Next || focusedElement == null)
             {
                 var isReverse = direction == NavigationDirection.Previous;
-                nextFocusedElement = ProcessTabStopInternal(isReverse, true);
+                nextFocusedElement = ProcessTabStopInternal(focusedElement, isReverse, true);
             }
             else
             {
-                if (currentlyFocusedElement is InputElement inputElement &&
+                if (focusedElement is InputElement inputElement &&
                     XYFocus.GetBoundsForRanking(inputElement, focusOptions.IgnoreClipping) is { } bounds)
                 {
                     focusOptions.FocusedElementBounds = bounds;
                 }
 
                 nextFocusedElement = _xyFocus.GetNextFocusableElement(direction,
-                    currentlyFocusedElement as InputElement,
+                    focusedElement as InputElement,
                     null,
                     updateManifolds,
                     focusOptions);
@@ -509,14 +511,14 @@ namespace Avalonia.Input
             return lastFocus;
         }
 
-        private IInputElement? ProcessTabStopInternal(bool isReverse, bool queryOnly)
+        private IInputElement? ProcessTabStopInternal(IInputElement? focusedElement, bool isReverse, bool queryOnly)
         {
             IInputElement? newTabStop = null;
 
-            var defaultCandidateTabStop = GetTabStopCandidateElement(isReverse, queryOnly, out var didCycleFocusAtRootVisualScope);
+            var defaultCandidateTabStop = GetTabStopCandidateElement(focusedElement, isReverse, queryOnly, out var didCycleFocusAtRootVisualScope);
 
             var isTabStopOverriden = InputElement.ProcessTabStop(_contentRoot,
-                Current,
+                focusedElement,
                 defaultCandidateTabStop,
                 isReverse,
                 didCycleFocusAtRootVisualScope,
@@ -535,24 +537,27 @@ namespace Avalonia.Input
             return newTabStop;
         }
 
-        private IInputElement? GetTabStopCandidateElement(bool isReverse, bool queryOnly, out bool didCycleFocusAtRootVisualScope)
+        private IInputElement? GetTabStopCandidateElement(
+            IInputElement? focusedElement,
+            bool isReverse,
+            bool queryOnly,
+            out bool didCycleFocusAtRootVisualScope)
         {
             didCycleFocusAtRootVisualScope = false;
-            var currentFocus = Current;
-            IInputElement? newTabStop = null;
-            var root = this._contentRoot as IInputElement;
+            IInputElement? newTabStop;
+            var root = _contentRoot;
 
             if (root == null)
                 return null;
 
             bool internalCycleWorkaround = false;
 
-            if (Current != null)
+            if (focusedElement != null)
             {
-                internalCycleWorkaround = CanProcessTabStop(isReverse);
+                internalCycleWorkaround = CanProcessTabStop(focusedElement, isReverse);
             }
 
-            if (currentFocus == null)
+            if (focusedElement == null)
             {
                 if (!isReverse)
                 {
@@ -567,7 +572,7 @@ namespace Avalonia.Input
             }
             else if (!isReverse)
             {
-                newTabStop = GetNextTabStop();
+                newTabStop = GetNextTabStop(focusedElement);
 
                 if (newTabStop == null && (internalCycleWorkaround || queryOnly))
                 {
@@ -578,7 +583,7 @@ namespace Avalonia.Input
             }
             else
             {
-                newTabStop = GetPreviousTabStop();
+                newTabStop = GetPreviousTabStop(focusedElement);
 
                 if (newTabStop == null && (internalCycleWorkaround || queryOnly))
                 {
@@ -590,9 +595,9 @@ namespace Avalonia.Input
             return newTabStop;
         }
 
-        private IInputElement? GetNextTabStop(IInputElement? currentTabStop = null, bool ignoreCurrentTabStop = false)
+        private IInputElement? GetNextTabStop(IInputElement? currentTabStop, bool ignoreCurrentTabStop = false)
         {
-            var focused = currentTabStop ?? Current;
+            var focused = currentTabStop;
             if (focused == null || _contentRoot == null)
             {
                 return null;
@@ -698,9 +703,9 @@ namespace Avalonia.Input
             return newTabStop;
         }
 
-        private IInputElement? GetPreviousTabStop(IInputElement? currentTabStop = null, bool ignoreCurrentTabStop = false)
+        private IInputElement? GetPreviousTabStop(IInputElement? currentTabStop, bool ignoreCurrentTabStop = false)
         {
-            var focused = currentTabStop ?? Current;
+            var focused = currentTabStop;
             if (focused == null || _contentRoot == null)
             {
                 return null;
@@ -930,23 +935,23 @@ namespace Avalonia.Input
             return int.MaxValue;
         }
 
-        private bool CanProcessTabStop(bool isReverse)
+        private bool CanProcessTabStop(IInputElement? focusedElement, bool isReverse)
         {
             bool isFocusOnFirst = false;
             bool isFocusOnLast = false;
             bool canProcessTab = true;
-            if (IsFocusedElementInPopup())
+            if (IsFocusedElementInPopup(focusedElement))
             {
                 return true;
             }
 
             if (isReverse)
             {
-                isFocusOnFirst = IsFocusOnFirstTabStop();
+                isFocusOnFirst = IsFocusOnFirstTabStop(focusedElement);
             }
             else
             {
-                isFocusOnLast = IsFocusOnLastTabStop();
+                isFocusOnLast = IsFocusOnLastTabStop(focusedElement);
             }
 
             if (isFocusOnFirst || isFocusOnLast)
@@ -961,7 +966,7 @@ namespace Avalonia.Input
                 if (edge != null)
                 {
                     var edgeParent = GetParentTabStopElement(edge);
-                    if (edgeParent is InputElement inputElement && KeyboardNavigation.GetTabNavigation(inputElement) == KeyboardNavigationMode.Once && edgeParent == GetParentTabStopElement(Current))
+                    if (edgeParent is InputElement inputElement && KeyboardNavigation.GetTabNavigation(inputElement) == KeyboardNavigationMode.Once && edgeParent == GetParentTabStopElement(focusedElement))
                     {
                         canProcessTab = false;
                     }
@@ -975,13 +980,13 @@ namespace Avalonia.Input
             {
                 if (isFocusOnLast || isFocusOnFirst)
                 {
-                    if (Current is InputElement inputElement && KeyboardNavigation.GetTabNavigation(inputElement) == KeyboardNavigationMode.Cycle)
+                    if (focusedElement is InputElement inputElement && KeyboardNavigation.GetTabNavigation(inputElement) == KeyboardNavigationMode.Cycle)
                     {
                         canProcessTab = true;
                     }
                     else
                     {
-                        var focusedParent = GetParentTabStopElement(Current);
+                        var focusedParent = GetParentTabStopElement(focusedElement);
                         while (focusedParent != null)
                         {
                             if (focusedParent is InputElement iE && KeyboardNavigation.GetTabNavigation(iE) == KeyboardNavigationMode.Cycle)
@@ -1041,9 +1046,9 @@ namespace Avalonia.Input
             return null;
         }
 
-        private bool IsFocusOnLastTabStop()
+        private bool IsFocusOnLastTabStop(IInputElement? focusedElement)
         {
-            if (Current == null || _contentRoot is not Visual visual)
+            if (focusedElement == null || _contentRoot is not Visual visual)
                 return false;
             var root = visual.VisualRoot as IInputElement;
 
@@ -1051,12 +1056,12 @@ namespace Avalonia.Input
 
             var lastFocus = GetLastFocusableElement(root, null);
 
-            return lastFocus == Current;
+            return lastFocus == focusedElement;
         }
 
-        private bool IsFocusOnFirstTabStop()
+        private bool IsFocusOnFirstTabStop(IInputElement? focusedElement)
         {
-            if (Current == null || _contentRoot is not Visual visual)
+            if (focusedElement == null || _contentRoot is not Visual visual)
                 return false;
             var root = visual.VisualRoot as IInputElement;
 
@@ -1064,7 +1069,7 @@ namespace Avalonia.Input
 
             var firstFocus = GetFirstFocusableElement(root, null);
 
-            return firstFocus == Current;
+            return firstFocus == focusedElement;
         }
 
         private static IInputElement? GetFirstFocusableElement(IInputElement searchStart, IInputElement? firstFocus = null)
@@ -1091,7 +1096,7 @@ namespace Avalonia.Input
             return lastFocus;
         }
 
-        private bool IsFocusedElementInPopup() => Current != null && GetRootOfPopupSubTree(Current) != null;
+        private bool IsFocusedElementInPopup(IInputElement? focusedElement) => focusedElement != null && GetRootOfPopupSubTree(focusedElement) != null;
 
         private Visual? GetRootOfPopupSubTree(IInputElement? current)
         {
@@ -1099,7 +1104,7 @@ namespace Avalonia.Input
             return null;
         }
 
-        private bool FindAndSetNextFocus(NavigationDirection direction, XYFocusOptions xYFocusOptions)
+        private bool FindAndSetNextFocus(IInputElement? focusedElement, NavigationDirection direction, XYFocusOptions xYFocusOptions)
         {
             var focusChanged = false;
             if (xYFocusOptions.UpdateManifoldsFromFocusHintRect && xYFocusOptions.FocusHintRectangle != null)
@@ -1107,7 +1112,7 @@ namespace Avalonia.Input
                 _xyFocus.SetManifoldsFromBounds(xYFocusOptions.FocusHintRectangle ?? default);
             }
 
-            if (FindNextFocus(direction, xYFocusOptions, false) is { } nextFocusedElement)
+            if (FindNextFocus(focusedElement, direction, xYFocusOptions, false) is { } nextFocusedElement)
             {
                 focusChanged = nextFocusedElement.Focus();
 

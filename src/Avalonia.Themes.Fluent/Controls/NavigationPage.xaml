@@ -18,12 +18,26 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="PageTransition">
       <Setter.Value>
-        <PageSlide Duration="0:0:0.3" Orientation="Horizontal" FillMode="Forward" />
+        <PageSlide Duration="0:0:0.3" Orientation="Horizontal" FillMode="Forward">
+          <PageSlide.SlideInEasing>
+            <SplineEasing X1="0.16" Y1="1" X2="0.3" Y2="1" />
+          </PageSlide.SlideInEasing>
+          <PageSlide.SlideOutEasing>
+            <SplineEasing X1="0.2" Y1="0.85" X2="0.3" Y2="1" />
+          </PageSlide.SlideOutEasing>
+        </PageSlide>
       </Setter.Value>
     </Setter>
     <Setter Property="ModalTransition">
       <Setter.Value>
-        <PageSlide Duration="0:0:0.25" Orientation="Vertical" FillMode="Forward" />
+        <PageSlide Duration="0:0:0.25" Orientation="Vertical" FillMode="Forward">
+          <PageSlide.SlideInEasing>
+            <SplineEasing X1="0.16" Y1="1" X2="0.3" Y2="1" />
+          </PageSlide.SlideInEasing>
+          <PageSlide.SlideOutEasing>
+            <SplineEasing X1="0.2" Y1="0.85" X2="0.3" Y2="1" />
+          </PageSlide.SlideOutEasing>
+        </PageSlide>
       </Setter.Value>
     </Setter>
     <Setter Property="Template">
@@ -107,16 +121,15 @@
                       ToolTip.Tip="{x:Null}">
                 <Panel Background="Transparent">
                   <Path Data="{DynamicResource NavigationPageBackIcon}"
+                        x:Name="PART_BackButtonDefaultIcon"
                         Fill="{DynamicResource NavigationBarForeground}"
                         Width="24"
                         Height="24"
                         Stretch="Uniform"
                         HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        IsVisible="{Binding CurrentPage?.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}, FallbackValue=False}" />
+                        VerticalAlignment="Center" />
                   <ContentPresenter
-                    Content="{Binding CurrentPage?.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
-                    IsVisible="{Binding CurrentPage?.(NavigationPage.BackButtonContent), RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}"
+                    x:Name="PART_BackButtonContentPresenter"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"/>
                 </Panel>
@@ -127,6 +140,7 @@
                                 FontSize="20"
                                 Foreground="{DynamicResource NavigationBarForeground}"
                                 Content="{Binding CurrentPage?.Header, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
+                                ContentTemplate="{Binding CurrentPage?.HeaderTemplate, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
