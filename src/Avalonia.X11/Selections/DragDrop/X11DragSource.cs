@@ -1,10 +1,10 @@
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
+using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using static Avalonia.X11.Selections.DragDrop.XdndConstants;
@@ -51,6 +51,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         private readonly DragDropEffects _allowedEffects;
         private readonly X11CursorFactory? _cursorFactory;
         private readonly DragDropDataProvider _dataProvider;
+        private readonly ParametrizedLogger? _logger;
         private readonly TaskCompletionSource<DragDropEffects> _completionSource = new();
         private readonly IntPtr[] _formatAtoms;
         private X11WindowInfo? _originalSourceWindowInfo;
@@ -73,6 +74,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             _allowedEffects = allowedEffects;
             _cursorFactory = cursorFactory;
             _currentEffects = allowedEffects;
+            _logger = Logger.TryGet(LogEventLevel.Verbose, LogArea.X11Platform);
             _dataProvider = new DragDropDataProvider(platform, dataTransfer.ToAsynchronous());
 
             if (!platform.Windows.TryGetValue(sourceWindow, out var sourceWindowInfo))
@@ -177,6 +179,12 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             // Handle new target.
             if (_targetState.Target != target)
             {
+                _logger?.Log(
+                    this,
+                    "Pointer moved from window {OldTarget} to window {NewTarget}.",
+                    _targetState.Target?.TargetWindow,
+                    target?.TargetWindow);
+
                 if (_targetState.Target is { } lastTarget)
                 {
                     if (lastTarget.InProcessWindow is { } window)
@@ -219,6 +227,12 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                     {
                         // We already sent a position previously and are waiting for a response. Don't flood.
                         _targetState.PendingPosition = positionRequest;
+
+                        _logger?.Log(
+                            this,
+                            "Pointer moved to point {Position} on window {Window} while waiting for XdndStatus. XdndPosition will be sent later.",
+                            rootPosition,
+                            currentTarget.TargetWindow);
                     }
                     else
                     {
@@ -232,22 +246,22 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         {
             UngrabPointer();
 
-            if (_targetState.Target is not { } lastTarget || _targetState.PendingDrop is not null)
+            if (_targetState.Target is not { } target || _targetState.PendingDrop is not null)
                 return;
 
-            if (lastTarget.InProcessWindow is not null)
+            if (target.InProcessWindow is not null)
             {
                 var rootPosition = new PixelPoint(button.x_root, button.y_root);
                 var modifiers = button.state.ToRawInputModifiers();
 
                 if (_targetState.AllowsDrop)
                 {
-                    var effects = ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.Drop, rootPosition, modifiers);
+                    var effects = ProcessRawDragEvent(target.InProcessWindow, RawDragEventType.Drop, rootPosition, modifiers);
                     UpdateCurrentEffects(effects);
                 }
                 else
                 {
-                    ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.DragLeave, rootPosition, modifiers);
+                    ProcessRawDragEvent(target.InProcessWindow, RawDragEventType.DragLeave, rootPosition, modifiers);
                     UpdateCurrentEffects(DragDropEffects.None);
                 }
 
@@ -258,20 +272,25 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             {
                 var dropRequest = new DropRequest(button.time);
 
-                if (_targetState.IsWaitingForStatus || _targetState.PendingPosition is not null)
+                if (_targetState.IsWaitingForStatus)
                 {
                     // We're still waiting for a XdndStatus response for the last position, defer the drop.
                     _targetState.PendingDrop = dropRequest;
+
+                    _logger?.Log(
+                        this,
+                        "Pointer released on window {Window} while waiting for XdndStatus. XdndDrop will be sent later.",
+                        target.TargetWindow);
                 }
                 else if (_targetState.AllowsDrop)
                 {
-                    SendDropRequest(dropRequest, lastTarget);
+                    SendDropRequest(dropRequest, target);
                 }
                 else
                 {
                     _targetState = default;
                     UpdateCurrentEffects(DragDropEffects.None);
-                    SendXdndLeave(lastTarget);
+                    SendXdndLeave(target);
                     Complete(DragDropEffects.None);
                 }
             }
@@ -279,7 +298,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         private void OnXdndStatus(in XClientMessageEvent message)
         {
-            if (_targetState.Target is not { } lastTarget || message.ptr1 != lastTarget.TargetWindow)
+            if (_targetState.Target is not { } target || message.ptr1 != target.TargetWindow)
                 return;
 
             TimeoutManager.Stop();
@@ -293,28 +312,36 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             UpdateCurrentEffects(effects & _allowedEffects);
 
+            _logger?.Log(
+                this,
+                "Received XdndStatus with effects {Effects} for window {Window}.",
+                effects,
+                target.TargetWindow);
+
             // If we have any pending XdndPosition or XdndDrop to send, now is the time.
             if (_targetState.PendingPosition is { } position)
             {
                 _targetState.PendingPosition = null;
-                SendPositionRequest(position, lastTarget);
+                SendPositionRequest(position, target);
             }
             else if (_targetState.PendingDrop is { } drop)
             {
-                SendDropRequest(drop, lastTarget);
+                SendDropRequest(drop, target);
             }
         }
 
         private void OnXdndFinished(in XClientMessageEvent message)
         {
-            if (_targetState.Target is not { } lastTarget || message.ptr1 != lastTarget.TargetWindow)
+            if (_targetState.Target is not { } target || message.ptr1 != target.TargetWindow)
                 return;
+
+            _logger?.Log(this, "Received XdndFinished for window {Window}.", target.TargetWindow);
 
             _targetState = default;
             _dataProvider.Activity = null;
             _timeoutManager?.Stop();
 
-            if (lastTarget.Version >= 5)
+            if (target.Version >= 5)
             {
                 var accepted = (message.ptr2 & 1) == 1;
                 var action = accepted ? message.ptr3 : 0;
@@ -398,6 +425,12 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             var version = Math.Min(target.Version, XdndVersion);
             var hasMoreFormats = _formatAtoms.Length > 3;
 
+            _logger?.Log(
+                this,
+                "Sending XdndEnter with version {Version} to window {Window}.",
+                version,
+                target.TargetWindow);
+
             SendXdndMessage(
                 _platform.Info.Atoms.XdndEnter,
                 target.MessageWindow,
@@ -409,6 +442,12 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         private void SendXdndPosition(XdndTargetInfo target, PixelPoint rootPosition, IntPtr timestamp, IntPtr action)
         {
+            _logger?.Log(
+                this,
+                "Sending XdndPosition at point {Position} to window {Window}.",
+                rootPosition,
+                target.TargetWindow);
+
             SendXdndMessage(
                 _platform.Info.Atoms.XdndPosition,
                 target.MessageWindow,
@@ -419,10 +458,18 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         }
 
         private void SendXdndLeave(XdndTargetInfo target)
-            => SendXdndMessage(_platform.Info.Atoms.XdndLeave, target.MessageWindow, 0, 0, 0, 0);
+        {
+            _logger?.Log(this, "Sending XdndLeave to window {Window}.", target.TargetWindow);
+
+            SendXdndMessage(_platform.Info.Atoms.XdndLeave, target.MessageWindow, 0, 0, 0, 0);
+        }
 
         private void SendXdndDrop(XdndTargetInfo target, IntPtr timestamp)
-            => SendXdndMessage(_platform.Info.Atoms.XdndDrop, target.MessageWindow, 0, timestamp, 0, 0);
+        {
+            _logger?.Log(this, "Sending XdndDrop to window {Window}.", target.TargetWindow);
+
+            SendXdndMessage(_platform.Info.Atoms.XdndDrop, target.MessageWindow, 0, timestamp, 0, 0);
+        }
 
         private void SendXdndMessage(
             IntPtr messageType,
@@ -465,6 +512,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         {
             TimeoutManager.Restart();
             _dataProvider.Activity = TimeoutManager.Restart;
+
             SendXdndDrop(target, dropRequest.Timestamp);
         }
 
