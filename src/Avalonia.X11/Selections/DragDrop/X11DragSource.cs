@@ -55,9 +55,8 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         private readonly IntPtr[] _formatAtoms;
         private X11WindowInfo? _originalSourceWindowInfo;
         private bool _pointerGrabbed;
-        private XdndTargetInfo? _lastTarget;
         private DragDropEffects _currentEffects;
-        private bool _targetCanAcceptDrop;
+        private TargetState _targetState;
         private DragDropTimeoutManager? _timeoutManager;
 
         public Handler(
@@ -109,7 +108,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             _pointerGrabbed = true;
 
-            // Replace the window event handler with our own during the drag operation
+            // Replace the window event handler with our own during the drag operation.
             _originalSourceWindowInfo = sourceWindowInfo;
             _platform.Windows[_sourceWindow] = new X11WindowInfo(OnEvent, sourceWindowInfo.Window);
 
@@ -117,6 +116,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             _formatAtoms = DataFormatHelper.ToAtoms(dataTransfer.Formats, atoms);
             _dataProvider.SetOwner(_sourceWindow);
 
+            // Publish our formats.
             XChangeProperty(
                 _platform.Display,
                 _sourceWindow,
@@ -130,6 +130,10 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         public Task<DragDropEffects> Completion
             => _completionSource.Task;
+
+        private DragDropTimeoutManager TimeoutManager
+            => _timeoutManager ??=
+                new DragDropTimeoutManager(SelectionHelper.Timeout, () => Complete(DragDropEffects.None));
 
         private void OnEvent(ref XEvent evt)
         {
@@ -161,14 +165,19 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
         private void OnMotionNotify(in XMotionEvent motion)
         {
+            // Drop pending, ignore any queued position change.
+            if (_targetState.PendingDrop is not null)
+                return;
+
             var rootPosition = new PixelPoint(motion.x_root, motion.y_root);
             var target = FindXdndTarget(rootPosition);
             var modifiers = motion.state.ToRawInputModifiers();
             var effectiveAllowedEffects = GetEffectiveAllowedEffects(modifiers.ToKeyModifiers());
 
-            if (_lastTarget != target)
+            // Handle new target.
+            if (_targetState.Target != target)
             {
-                if (_lastTarget is { } lastTarget)
+                if (_targetState.Target is { } lastTarget)
                 {
                     if (lastTarget.InProcessWindow is { } window)
                         ProcessRawDragEvent(window, RawDragEventType.DragLeave, rootPosition, modifiers);
@@ -176,8 +185,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                         SendXdndLeave(lastTarget);
                 }
 
-                _lastTarget = target;
-                _targetCanAcceptDrop = false;
+                _targetState = new TargetState(target);
                 UpdateCurrentEffects(effectiveAllowedEffects);
 
                 if (target is { } newTarget)
@@ -185,7 +193,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                     if (newTarget.InProcessWindow is { } window)
                     {
                         var effects = ProcessRawDragEvent(window, RawDragEventType.DragEnter, rootPosition, modifiers);
-                        _targetCanAcceptDrop = effects != DragDropEffects.None;
+                        _targetState.AllowsDrop = effects != DragDropEffects.None;
                         UpdateCurrentEffects(effects);
                     }
                     else
@@ -193,18 +201,29 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 }
             }
 
+            // Update current target.
             if (target is { } currentTarget)
             {
                 if (currentTarget.InProcessWindow is { } window)
                 {
                     var effects = ProcessRawDragEvent(window, RawDragEventType.DragOver, rootPosition, modifiers);
-                    _targetCanAcceptDrop = effects != DragDropEffects.None;
+                    _targetState.AllowsDrop = effects != DragDropEffects.None;
                     UpdateCurrentEffects(effects);
                 }
                 else
                 {
                     var action = XdndActionHelper.EffectsToAction(effectiveAllowedEffects, _platform.Info.Atoms);
-                    SendXdndPosition(currentTarget, rootPosition, motion.time, action);
+                    var positionRequest = new PositionRequest(rootPosition, motion.time, action);
+
+                    if (_targetState.IsWaitingForStatus)
+                    {
+                        // We already sent a position previously and are waiting for a response. Don't flood.
+                        _targetState.PendingPosition = positionRequest;
+                    }
+                    else
+                    {
+                        SendPositionRequest(positionRequest, currentTarget);
+                    }
                 }
             }
         }
@@ -213,7 +232,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         {
             UngrabPointer();
 
-            if (_lastTarget is not { } lastTarget)
+            if (_targetState.Target is not { } lastTarget || _targetState.PendingDrop is not null)
                 return;
 
             if (lastTarget.InProcessWindow is not null)
@@ -221,7 +240,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 var rootPosition = new PixelPoint(button.x_root, button.y_root);
                 var modifiers = button.state.ToRawInputModifiers();
 
-                if (_targetCanAcceptDrop)
+                if (_targetState.AllowsDrop)
                 {
                     var effects = ProcessRawDragEvent(lastTarget.InProcessWindow, RawDragEventType.Drop, rootPosition, modifiers);
                     UpdateCurrentEffects(effects);
@@ -232,53 +251,68 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                     UpdateCurrentEffects(DragDropEffects.None);
                 }
 
-                _lastTarget = null;
-                _targetCanAcceptDrop = false;
+                _targetState = default;
                 Complete(_currentEffects);
             }
             else
             {
-                if (!_targetCanAcceptDrop)
+                var dropRequest = new DropRequest(button.time);
+
+                if (_targetState.IsWaitingForStatus || _targetState.PendingPosition is not null)
                 {
+                    // We're still waiting for a XdndStatus response for the last position, defer the drop.
+                    _targetState.PendingDrop = dropRequest;
+                }
+                else if (_targetState.AllowsDrop)
+                {
+                    SendDropRequest(dropRequest, lastTarget);
+                }
+                else
+                {
+                    _targetState = default;
+                    UpdateCurrentEffects(DragDropEffects.None);
                     SendXdndLeave(lastTarget);
                     Complete(DragDropEffects.None);
-                    return;
                 }
-
-                Debug.Assert(_timeoutManager is null);
-
-                _timeoutManager = new DragDropTimeoutManager(SelectionHelper.Timeout, () =>
-                {
-                    DisposeTimeoutManager();
-                    Complete(DragDropEffects.None);
-                });
-
-                _dataProvider.Activity = _timeoutManager.Restart;
-
-                SendXdndDrop(lastTarget, button.time);
             }
         }
 
         private void OnXdndStatus(in XClientMessageEvent message)
         {
-            if (_lastTarget is not { } lastTarget || message.ptr1 != lastTarget.TargetWindow)
+            if (_targetState.Target is not { } lastTarget || message.ptr1 != lastTarget.TargetWindow)
                 return;
+
+            TimeoutManager.Stop();
 
             var accepted = (message.ptr2 & 1) == 1;
             var action = accepted ? message.ptr5 : 0;
             var effects = XdndActionHelper.ActionToEffects(action, _platform.Info.Atoms);
-            _targetCanAcceptDrop = accepted;
+
+            _targetState.IsWaitingForStatus = false;
+            _targetState.AllowsDrop = action != 0;
+
             UpdateCurrentEffects(effects & _allowedEffects);
+
+            // If we have any pending XdndPosition or XdndDrop to send, now is the time.
+            if (_targetState.PendingPosition is { } position)
+            {
+                _targetState.PendingPosition = null;
+                SendPositionRequest(position, lastTarget);
+            }
+            else if (_targetState.PendingDrop is { } drop)
+            {
+                SendDropRequest(drop, lastTarget);
+            }
         }
 
         private void OnXdndFinished(in XClientMessageEvent message)
         {
-            if (_lastTarget is not { } lastTarget || message.ptr1 != lastTarget.TargetWindow)
+            if (_targetState.Target is not { } lastTarget || message.ptr1 != lastTarget.TargetWindow)
                 return;
 
-            _lastTarget = null;
-            _targetCanAcceptDrop = false;
-            DisposeTimeoutManager();
+            _targetState = default;
+            _dataProvider.Activity = null;
+            _timeoutManager?.Stop();
 
             if (lastTarget.Version >= 5)
             {
@@ -385,14 +419,10 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         }
 
         private void SendXdndLeave(XdndTargetInfo target)
-        {
-            SendXdndMessage(_platform.Info.Atoms.XdndLeave, target.MessageWindow, 0, 0, 0, 0);
-        }
+            => SendXdndMessage(_platform.Info.Atoms.XdndLeave, target.MessageWindow, 0, 0, 0, 0);
 
         private void SendXdndDrop(XdndTargetInfo target, IntPtr timestamp)
-        {
-            SendXdndMessage(_platform.Info.Atoms.XdndDrop, target.MessageWindow, 0, timestamp, 0, 0);
-        }
+            => SendXdndMessage(_platform.Info.Atoms.XdndDrop, target.MessageWindow, 0, timestamp, 0, 0);
 
         private void SendXdndMessage(
             IntPtr messageType,
@@ -421,6 +451,21 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             XSendEvent(_platform.Display, messageWindow, false, (IntPtr)EventMask.NoEventMask, ref evt);
             XFlush(_platform.Display);
+        }
+
+        private void SendPositionRequest(PositionRequest request, XdndTargetInfo target)
+        {
+            _targetState.IsWaitingForStatus = true;
+            TimeoutManager.Restart();
+
+            SendXdndPosition(target, request.Position, request.Timestamp, request.Action);
+        }
+
+        private void SendDropRequest(DropRequest dropRequest, XdndTargetInfo target)
+        {
+            TimeoutManager.Restart();
+            _dataProvider.Activity = TimeoutManager.Restart;
+            SendXdndDrop(target, dropRequest.Timestamp);
         }
 
         private DragDropEffects ProcessRawDragEvent(
@@ -507,13 +552,6 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         private void Complete(DragDropEffects resultEffects)
             => _completionSource.TrySetResult(resultEffects);
 
-        private void DisposeTimeoutManager()
-        {
-            _dataProvider.Activity = null;
-            _timeoutManager?.Dispose();
-            _timeoutManager = null;
-        }
-
         public void Dispose()
         {
             if (_pointerGrabbed)
@@ -526,11 +564,10 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 _originalSourceWindowInfo = null;
             }
 
-            _lastTarget = null;
-            _targetCanAcceptDrop = false;
+            _targetState = default;
             _currentEffects = DragDropEffects.None;
 
-            DisposeTimeoutManager();
+            _timeoutManager?.Dispose();
 
             if (_dataProvider.GetOwner() == _sourceWindow)
                 _dataProvider.SetOwner(0);
@@ -543,5 +580,26 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             IntPtr TargetWindow,
             IntPtr MessageWindow,
             X11Window? InProcessWindow);
+
+        private readonly struct PositionRequest(PixelPoint position, IntPtr timestamp, IntPtr action)
+        {
+            public readonly PixelPoint Position = position;
+            public readonly IntPtr Timestamp = timestamp;
+            public readonly IntPtr Action = action;
+        }
+
+        private readonly struct DropRequest(IntPtr timestamp)
+        {
+            public readonly IntPtr Timestamp = timestamp;
+        }
+
+        private struct TargetState(XdndTargetInfo? target)
+        {
+            public readonly XdndTargetInfo? Target = target;
+            public bool AllowsDrop;
+            public bool IsWaitingForStatus; // XdndPosition sent, but no XdndStatus received yet
+            public PositionRequest? PendingPosition; // Position not sent via XdndPosition yet
+            public DropRequest? PendingDrop; // Drop not sent via XdndDrop yet
+        }
     }
 }

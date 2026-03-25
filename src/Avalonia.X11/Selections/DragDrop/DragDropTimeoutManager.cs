@@ -19,11 +19,17 @@ internal sealed class DragDropTimeoutManager : IDisposable
             Timeout.InfiniteTimeSpan);
     }
 
+    public void Stop()
+        => ChangeTimer(Timeout.InfiniteTimeSpan);
+
     public void Restart()
+        => ChangeTimer(_timeout);
+
+    private void ChangeTimer(TimeSpan dueTime)
     {
         try
         {
-            _timer.Change(_timeout, Timeout.InfiniteTimeSpan);
+            _timer.Change(dueTime, Timeout.InfiniteTimeSpan);
         }
         catch (ObjectDisposedException)
         {
