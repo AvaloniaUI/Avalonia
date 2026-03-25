@@ -1509,21 +1509,18 @@ namespace Avalonia.X11
             }
         }
 
-        private bool UseManagedDecorations
-        {
-            get => field || _platform.Options.ForceDrawnDecorationsInternal;
-            set;
-        }
+        private bool _extendingClientAreaToDecorations;
+        private bool UseManagedDecorations => _extendingClientAreaToDecorations || _platform.Options.ForceDrawnDecorationsInternal;
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
         {
-            if (_platform.Options.EnableDrawnDecorationsInternal != true)
+            if (!_platform.Options.EnableDrawnDecorationsInternal)
                 return;
 
-            if (UseManagedDecorations == extendIntoClientAreaHint)
+            if (_extendingClientAreaToDecorations == extendIntoClientAreaHint)
                 return;
 
-            UseManagedDecorations = extendIntoClientAreaHint;
+            _extendingClientAreaToDecorations = extendIntoClientAreaHint;
             UpdateEffectiveSystemDecorations();
 
             IsClientAreaExtendedToDecorations = extendIntoClientAreaHint;

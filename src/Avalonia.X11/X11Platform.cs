@@ -482,13 +482,13 @@ namespace Avalonia
             , Message = "Experimental, used mostly for testing"
             #endif
             )]
-        public bool? EnableDrawnDecorations
-        {
-            get => EnableDrawnDecorationsInternal;
-            set => EnableDrawnDecorationsInternal = value;
-        }
+        public bool? EnableDrawnDecorations { get; set; }
+        
+        internal bool EnableDrawnDecorationsInternal =>
+#pragma warning disable AVALONIA_X11_CSD
+            EnableDrawnDecorations == true || ForceDrawnDecorationsInternal;
+#pragma warning restore AVALONIA_X11_CSD
 
-        internal bool? EnableDrawnDecorationsInternal { get; set; }
 
         /// <summary>
         /// Forces client-side drawn window decorations on X11 for all windows,
@@ -503,13 +503,11 @@ namespace Avalonia
             , Message = "Experimental, used mostly for testing"
             #endif
             )]
-        public bool ForceDrawnDecorations
-        {
-            get => ForceDrawnDecorationsInternal;
-            set => ForceDrawnDecorationsInternal = value;
-        }
+        public bool ForceDrawnDecorations { get; set; }
 
-        internal bool ForceDrawnDecorationsInternal { get; set; }
+#pragma warning disable AVALONIA_X11_FORCE_CSD
+        internal bool ForceDrawnDecorationsInternal => ForceDrawnDecorations;
+#pragma warning restore AVALONIA_X11_FORCE_CSD
 
         /// <summary>
         /// If Avalonia is in control of a run loop, we propagate exceptions by stopping the run loop frame
