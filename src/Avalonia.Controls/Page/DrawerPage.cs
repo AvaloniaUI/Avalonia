@@ -535,6 +535,8 @@ namespace Avalonia.Controls
             set => SetValue(DisplayModeProperty, value);
         }
 
+        protected override Type StyleKeyOverride => typeof(DrawerPage);
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);

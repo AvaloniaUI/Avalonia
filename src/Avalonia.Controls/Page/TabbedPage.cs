@@ -9,7 +9,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
-using Avalonia.LogicalTree;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -149,6 +148,8 @@ namespace Avalonia.Controls
             get => GetValue(IndicatorTemplateProperty);
             set => SetValue(IndicatorTemplateProperty, value);
         }
+
+        protected override Type StyleKeyOverride => typeof(TabbedPage);
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
