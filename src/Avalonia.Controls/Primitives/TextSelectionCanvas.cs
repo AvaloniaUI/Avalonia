@@ -16,7 +16,6 @@ namespace Avalonia.Controls.Primitives
         private static readonly bool s_shouldWrapAroundSelection;
 
         private const int ContextMenuPadding = 16;
-        private static bool s_isInTouchMode;
 
         private readonly TextSelectionHandle _caretHandle;
         private readonly TextSelectionHandle _handle1;
@@ -29,6 +28,7 @@ namespace Avalonia.Controls.Primitives
         private int? _savedSelectionStart;
         private int? _saveSelectionEnd;
         private SelectionHandleType? _initialHandleType;
+        private bool _isInTouchMode;
 
         internal bool ShowHandles
         {
@@ -156,13 +156,13 @@ namespace Avalonia.Controls.Primitives
         public void Hide()
         {
             ShowHandles = false;
-            s_isInTouchMode = false;
+            _isInTouchMode = false;
         }
 
         internal void Show(bool forceTouchMode = false)
         {
-            s_isInTouchMode = s_isInTouchMode || forceTouchMode;
-            if (s_isInTouchMode)
+            _isInTouchMode = _isInTouchMode || forceTouchMode;
+            if (_isInTouchMode)
             {
                 ShowHandles = true;
                 MoveHandlesToSelection();
@@ -481,7 +481,7 @@ namespace Avalonia.Controls.Primitives
 
         private void PresenterPressed(object? sender, PointerPressedEventArgs e)
         {
-            s_isInTouchMode = e.Pointer.Type != PointerType.Mouse;
+            _isInTouchMode = e.Pointer.Type != PointerType.Mouse;
         }
 
         private void PresenterFocused(object? sender, FocusChangedEventArgs e)
@@ -495,9 +495,9 @@ namespace Avalonia.Controls.Primitives
 
         private void PresenterTapped(object? sender, TappedEventArgs e)
         {
-            s_isInTouchMode = e.Pointer.Type != PointerType.Mouse;
+            _isInTouchMode = e.Pointer.Type != PointerType.Mouse;
 
-            if (s_isInTouchMode)
+            if (_isInTouchMode)
                 MoveHandlesToSelection();
             else
             {
@@ -589,7 +589,7 @@ namespace Avalonia.Controls.Primitives
         private void PresenterKeyDown(object? sender, KeyEventArgs e)
         {
             ShowHandles = false;
-            s_isInTouchMode = false;
+            _isInTouchMode = false;
         }
 
         // Listener to layout changes for presenter.

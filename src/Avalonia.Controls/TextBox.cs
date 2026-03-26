@@ -1688,10 +1688,10 @@ namespace Avalonia.Controls
             if (text != null)
             {
                 var position = e.PointerEventArgs.GetPosition(_presenter);
-                _presenter.MoveCaretToPoint(position);
-                var caretIndex = _presenter.CaretIndex;
                 var selectionStart = SelectionStart;
                 var selectionEnd = SelectionEnd;
+                _presenter.MoveCaretToPoint(position);
+                var caretIndex = _presenter.CaretIndex;
                 var isInSelection = selectionStart != selectionEnd &&
                     caretIndex >= selectionStart && caretIndex <= selectionEnd;
 
@@ -2054,8 +2054,6 @@ namespace Avalonia.Controls
             _isInTouchSelectionMode = false;
             _isInTouchCaretMode = false;
             _hasTouchSelection = false;
-
-            e.Pointer.Capture(null);
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
