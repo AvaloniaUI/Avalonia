@@ -21,6 +21,7 @@ internal class VulkanSupport
 
         if (isDynamic)
         {
+            // Create and register the Vulkan render timer for dynamic refresh rate support
             // Replace the render loop with one backed by VulkanRenderTimer.
             // This must happen before Compositor is created (which reads IRenderLoop from the locator).
             VulkanRenderTimer renderTimer = new();
