@@ -1,8 +1,7 @@
 {
   "name": "previewer",
   "devDependencies": {
-    "@chialab/esbuild-plugin-html": "^0.17.0",
-    "esbuild": "^0.14.54",
+    "esbuild": "^0.25.0",
     "esbuild-plugin-compress": "^0.4.0",
     "typescript": "^4.7.4"
   },

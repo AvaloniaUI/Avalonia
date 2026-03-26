@@ -21,14 +21,26 @@
   </ItemGroup>
 
 
-  <Target Name="BunInstall" Inputs="$(WebAppDir)\package.json" Outputs="$(WebAppDir)\node_modules\.install-stamp">
+  <Target Name="DetectBun" BeforeTargets="BunInstall">
+    <!-- Try to use Bun.Unofficial.Tool via dnx, but fall back to system-installed bun if unsupported (e.g. win-arm64) -->
+    <Exec Command="dnx Bun.Unofficial.Tool --yes -- --version" IgnoreExitCode="true" ConsoleToMsBuild="true" StandardOutputImportance="Low">
+      <Output TaskParameter="ExitCode" PropertyName="_BunToolExitCode" />
+    </Exec>
+    <PropertyGroup>
+      <_UseDnxBun Condition="'$(_BunToolExitCode)' == '0'">true</_UseDnxBun>
+      <_UseDnxBun Condition="'$(_BunToolExitCode)' != '0'">false</_UseDnxBun>
+      <_BunCommand Condition="'$(_UseDnxBun)' == 'true'">dnx Bun.Unofficial.Tool --yes --</_BunCommand>
+      <_BunCommand Condition="'$(_UseDnxBun)' == 'false'">bun</_BunCommand>
+    </PropertyGroup>
+  </Target>
+  <Target Name="BunInstall" DependsOnTargets="DetectBun" Inputs="$(WebAppDir)\package.json" Outputs="$(WebAppDir)\node_modules\.install-stamp">
     <!-- We use bun packages as .NET tool, to avoid preinstalled node.js dependency -->
-    <Exec Command="dnx Bun.Unofficial.Tool --yes -- install --silent" WorkingDirectory="$(WebAppDir)" />
+    <Exec Command="$(_BunCommand) install --silent" WorkingDirectory="$(WebAppDir)" />
     <!-- Write the stamp file, so incremental builds work -->
     <Touch Files="$(WebAppDir)/node_modules/.install-stamp" AlwaysCreate="true" />
   </Target>
   <Target Name="BunRunTests" DependsOnTargets="BunInstall">
-    <Exec Command="dnx Bun.Unofficial.Tool run test" WorkingDirectory="$(WebAppDir)" />
+    <Exec Command="$(_BunCommand) run test" WorkingDirectory="$(WebAppDir)" />
   </Target>
 
 </Project>
