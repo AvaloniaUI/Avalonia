@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls.Platform;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -1161,6 +1162,236 @@ namespace Avalonia.Controls.UnitTests
                 var owner = new Window();
                 owner.Show();
                 window.ShowDialog(owner);
+            }
+        }
+
+        public class ForcedDecorationSizingTests : ScopedTestBase
+        {
+            /// <summary>
+            /// Creates a mock IWindowImpl that simulates forced CSD mode:
+            /// NeedsManagedDecorations = true, RequestedDrawnDecorations includes TitleBar + Border,
+            /// but IsClientAreaExtendedToDecorations = false.
+            /// </summary>
+            private static Mock<IWindowImpl> CreateForcedCsdWindowMock(
+                double initialWidth = 800, double initialHeight = 600)
+            {
+                var windowImpl = MockWindowingPlatform.CreateWindowMock(initialWidth, initialHeight);
+
+                windowImpl.Setup(x => x.NeedsManagedDecorations).Returns(true);
+                windowImpl.Setup(x => x.RequestedDrawnDecorations).Returns(
+                    PlatformRequestedDrawnDecoration.TitleBar | PlatformRequestedDrawnDecoration.Border);
+
+                return windowImpl;
+            }
+
+            [Fact]
+            public void ClientSize_Should_Exclude_Decoration_Inset()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.Manual,
+                    };
+
+                    // Verify mock setup
+                    Assert.True(windowImpl.Object.NeedsManagedDecorations);
+                    
+                    target.Show();
+
+                    var host = target.TopLevelHost;
+                    var decorations = host.Decorations;
+
+                    // Debug: verify decorations were created
+                    Assert.NotNull(decorations);
+                    Assert.True(decorations!.TitleBarHeight > 0, 
+                        $"TitleBarHeight was {decorations.TitleBarHeight}");
+                    
+                    var inset = host.DecorationInset;
+                    Assert.NotEqual(default, inset);
+
+                    var expectedClientSize = new Size(
+                        800 - inset.Left - inset.Right,
+                        600 - inset.Top - inset.Bottom);
+                    Assert.Equal(expectedClientSize, target.ClientSize);
+                }
+            }
+
+            [Fact]
+            public void WindowDecorationMargin_Should_Be_Zero_In_Forced_Mode()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.Manual,
+                    };
+
+                    target.Show();
+
+                    Assert.Equal(default(Thickness), target.WindowDecorationMargin);
+                }
+            }
+
+            [Fact]
+            public void HandleResized_Should_Subtract_Inset_From_Platform_Size()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.Manual,
+                    };
+
+                    target.Show();
+
+                    var inset = target.TopLevelHost.DecorationInset;
+
+                    // Simulate a platform resize (e.g. user resize)
+                    target.PlatformImpl!.Resized!.Invoke(new Size(1000, 700), WindowResizeReason.User);
+
+                    var expectedClientSize = new Size(
+                        1000 - inset.Left - inset.Right,
+                        700 - inset.Top - inset.Bottom);
+                    Assert.Equal(expectedClientSize, target.ClientSize);
+                }
+            }
+
+            [Fact]
+            public void Setting_Width_Should_Resize_WindowImpl_With_Inset_Added()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        Width = 400,
+                        Height = 300,
+                        SizeToContent = SizeToContent.Manual,
+                    };
+
+                    target.Show();
+
+                    var inset = target.TopLevelHost.DecorationInset;
+
+                    target.Width = 500;
+                    target.LayoutManager.ExecuteLayoutPass();
+
+                    // Platform should receive full frame size (content + inset)
+                    var expectedPlatformSize = new Size(
+                        500 + inset.Left + inset.Right,
+                        300 + inset.Top + inset.Bottom);
+                    windowImpl.Verify(x => x.Resize(expectedPlatformSize, WindowResizeReason.Layout));
+                }
+            }
+
+            [Fact]
+            public void Child_Should_Be_Measured_With_Content_Size()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var child = new ChildControl();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        Width = 400,
+                        Height = 300,
+                        SizeToContent = SizeToContent.Manual,
+                        Content = child,
+                    };
+
+                    target.Show();
+
+                    Assert.Equal(1, child.MeasureSizes.Count);
+                    Assert.Equal(new Size(400, 300), child.MeasureSizes[0]);
+                }
+            }
+
+            [Fact]
+            public void Width_Height_Should_Not_Be_NaN_After_Show()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.Manual,
+                    };
+
+                    target.Show();
+
+                    Assert.False(double.IsNaN(target.Width));
+                    Assert.False(double.IsNaN(target.Height));
+
+                    var inset = target.TopLevelHost.DecorationInset;
+                    Assert.Equal(800 - inset.Left - inset.Right, target.Width);
+                    Assert.Equal(600 - inset.Top - inset.Bottom, target.Height);
+                }
+            }
+
+            [Fact]
+            public void SizeToContent_Should_Work_In_Forced_Mode()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var child = new Canvas
+                    {
+                        Width = 400,
+                        Height = 300,
+                    };
+
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        Content = child,
+                    };
+
+                    target.Show();
+
+                    Assert.Equal(400, target.Width);
+                    Assert.Equal(300, target.Height);
+                    Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
+                }
+            }
+
+            [Fact]
+            public void User_Resize_Should_Reset_SizeToContent()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateForcedCsdWindowMock();
+                    var child = new Canvas
+                    {
+                        Width = 400,
+                        Height = 300,
+                    };
+
+                    var target = new Window(windowImpl.Object)
+                    {
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        Content = child,
+                    };
+
+                    target.Show();
+                    Assert.Equal(400, target.Width);
+                    Assert.Equal(300, target.Height);
+
+                    var inset = target.TopLevelHost.DecorationInset;
+                    // Platform fires resize with full frame size
+                    var newPlatformWidth = 500 + inset.Left + inset.Right;
+                    var newPlatformHeight = 300 + inset.Top + inset.Bottom;
+                    windowImpl.Object.Resized?.Invoke(
+                        new Size(newPlatformWidth, newPlatformHeight),
+                        WindowResizeReason.User);
+
+                    Assert.Equal(500, target.Width);
+                    Assert.Equal(300, target.Height);
+                    Assert.Equal(SizeToContent.Height, target.SizeToContent);
+                }
             }
         }
 

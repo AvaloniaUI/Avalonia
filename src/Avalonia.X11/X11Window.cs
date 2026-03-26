@@ -926,7 +926,7 @@ namespace Avalonia.X11
                 mouse.Position = mouse.Position / RenderScaling;
                 
                 // Chrome hit-test for drawn decorations
-                if (_extendClientAreaToDecorations 
+                if (UseManagedDecorations
                     && mouse.Type == RawPointerEventType.LeftButtonDown
                     && _inputRoot is { } inputRoot)
                 {
@@ -1187,8 +1187,8 @@ namespace Avalonia.X11
 
         private void UpdateEffectiveSystemDecorations()
         {
-            // When extending client area, always hide WM decorations (we draw our own)
-            var effective = _extendClientAreaToDecorations
+            // When extending client area or forcing drawn decorations, always hide WM decorations (we draw our own)
+            var effective = UseManagedDecorations
                 ? WindowDecorations.None
                 : (_requestedWindowDecorations == WindowDecorations.Full
                     ? WindowDecorations.Full
@@ -1509,17 +1509,18 @@ namespace Avalonia.X11
             }
         }
 
-        private bool _extendClientAreaToDecorations;
+        private bool _extendingClientAreaToDecorations;
+        private bool UseManagedDecorations => _extendingClientAreaToDecorations || _platform.Options.ForceDrawnDecorationsInternal;
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
         {
-            if (_platform.Options.EnableDrawnDecorationsInternal != true)
+            if (!_platform.Options.EnableDrawnDecorationsInternal)
                 return;
 
-            if (_extendClientAreaToDecorations == extendIntoClientAreaHint)
+            if (_extendingClientAreaToDecorations == extendIntoClientAreaHint)
                 return;
 
-            _extendClientAreaToDecorations = extendIntoClientAreaHint;
+            _extendingClientAreaToDecorations = extendIntoClientAreaHint;
             UpdateEffectiveSystemDecorations();
 
             IsClientAreaExtendedToDecorations = extendIntoClientAreaHint;
@@ -1606,10 +1607,10 @@ namespace Avalonia.X11
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
-        public bool NeedsManagedDecorations => _extendClientAreaToDecorations;
+        public bool NeedsManagedDecorations => UseManagedDecorations;
 
         public PlatformRequestedDrawnDecoration RequestedDrawnDecorations =>
-            _extendClientAreaToDecorations
+            UseManagedDecorations
                 ? PlatformRequestedDrawnDecoration.Border
                   | PlatformRequestedDrawnDecoration.ResizeGrips
                   | PlatformRequestedDrawnDecoration.TitleBar
