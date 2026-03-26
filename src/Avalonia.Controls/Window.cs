@@ -254,6 +254,7 @@ namespace Avalonia.Controls
             {
                 ResizePlatformImpl(x, WindowResizeReason.Application);
             });
+            ScalingChanged += OnScalingChangedUpdateDecorations;
 
             CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
             CreatePlatformImplBinding(IconProperty, SetEffectiveIcon);
@@ -695,6 +696,8 @@ namespace Avalonia.Controls
                 var decorations = TopLevelHost.Decorations;
                 if (decorations != null)
                 {
+                    decorations.RenderScaling = RenderScaling;
+
                     var hint = ExtendClientAreaTitleBarHeightHint;
                     if (hint >= 0)
                         decorations.TitleBarHeightOverride = hint;
@@ -702,6 +705,13 @@ namespace Avalonia.Controls
             }
             
             UpdateDrawnDecorationMargins();
+        }
+
+        private void OnScalingChangedUpdateDecorations(object? sender, EventArgs e)
+        {
+            var decorations = TopLevelHost.Decorations;
+            if (decorations != null)
+                decorations.RenderScaling = RenderScaling;
         }
 
         /// <summary>
