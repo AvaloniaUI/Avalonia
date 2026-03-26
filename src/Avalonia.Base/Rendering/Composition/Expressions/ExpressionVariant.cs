@@ -294,7 +294,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         public static implicit operator ExpressionVariant(Matrix value) =>
             new ExpressionVariant
             {
-                Type = VariantType.Matrix3x2,
+                Type = VariantType.AvaloniaMatrix,
                 AvaloniaMatrix = value
             };
 
@@ -618,7 +618,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         public ExpressionVariant Or(ExpressionVariant right)
         {
             if (Type == VariantType.Boolean && right.Type == VariantType.Boolean)
-                return Boolean && right.Boolean;
+                return Boolean || right.Boolean;
             return default;
         }
 
@@ -688,13 +688,14 @@ namespace Avalonia.Rendering.Composition.Expressions
             {
                 bool => (bool)(object)v,
                 float => (float)(object)v,
+                double => (double)(object)v,
                 System.Numerics.Vector2 => (Vector2)(object)v,
                 Avalonia.Vector => (Vector)(object)v,
                 System.Numerics.Vector3 => (Vector3)(object)v,
                 Avalonia.Vector3D => (Vector3D)(object)v,
                 System.Numerics.Vector4 => (Vector4)(object)v,
                 System.Numerics.Matrix3x2 => (Matrix3x2)(object)v,
-                Avalonia.Matrix _ => (Matrix)(object)v,
+                Avalonia.Matrix => (Matrix)(object)v,
                 System.Numerics.Matrix4x4 => (Matrix4x4)(object)v,
                 System.Numerics.Quaternion => (Quaternion)(object)v,
                 Avalonia.Media.Color => (Avalonia.Media.Color)(object)v,
