@@ -87,7 +87,7 @@ namespace Avalonia.X11
                 : new X11PlatformThreading(this);
             Dispatcher.InitializeUIThreadDispatcher(DispatcherImpl);
             AvaloniaLocator.CurrentMutable
-                .Bind<IRenderTimer>().ToConstant(timer)
+                .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(timer))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -24,6 +26,14 @@ namespace Avalonia.Controls
                 nameof(SelectedPage),
                 o => o._selectedPage);
 
+        /// <summary>
+        /// Defines the <see cref="SelectionChanged"/> routed event.
+        /// </summary>
+        public static readonly RoutedEvent<PageSelectionChangedEventArgs> SelectionChangedEvent =
+            RoutedEvent.Register<SelectingMultiPage, PageSelectionChangedEventArgs>(
+                nameof(SelectionChanged),
+                RoutingStrategies.Bubble);
+
         private int _selectedIndex = -1;
         private Page? _selectedPage;
 
@@ -44,11 +54,21 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the selected page changes.
         /// </summary>
-        public event EventHandler<PageSelectionChangedEventArgs>? SelectionChanged;
+        public event EventHandler<PageSelectionChangedEventArgs>? SelectionChanged
+        {
+            add => AddHandler(SelectionChangedEvent, value);
+            remove => RemoveHandler(SelectionChangedEvent, value);
+        }
 
         /// <summary>
         /// Commits a selection change and fires lifecycle events on the outgoing and incoming pages.
         /// </summary>
+        /// <remarks>
+        /// Raises <see cref="SelectionChanged"/>, then <see cref="Page.NavigatedFrom"/> on the outgoing
+        /// page and <see cref="Page.NavigatedTo"/> on the incoming page. If the incoming and outgoing
+        /// pages are the same object no events are fired. Subclasses should call this method rather
+        /// than modifying selection state directly.
+        /// </remarks>
         protected void CommitSelection(int newIndex, Page? newPage, NavigationType navigationType = NavigationType.Replace)
         {
             var previousPage = _selectedPage;
@@ -57,7 +77,7 @@ namespace Avalonia.Controls
             SetCurrentValue(CurrentPageProperty, newPage);
             if (!ReferenceEquals(previousPage, newPage))
             {
-                SelectionChanged?.Invoke(this, new PageSelectionChangedEventArgs(previousPage, newPage));
+                RaiseEvent(new PageSelectionChangedEventArgs(SelectionChangedEvent, previousPage, newPage));
 
                 if (previousPage != null)
                 {
@@ -82,6 +102,29 @@ namespace Avalonia.Controls
         protected void StoreSelectedIndex(int index)
         {
             SetAndRaise(SelectedIndexProperty, ref _selectedIndex, index);
+        }
+
+        /// <summary>
+        /// Returns the page at <paramref name="index"/> from <see cref="MultiPage.Pages"/>,
+        /// or <see langword="null"/> if the index is out of range.
+        /// </summary>
+        protected Page? ResolvePageAtIndex(int index)
+        {
+            if (Pages is IList<Page> list)
+                return (uint)index < (uint)list.Count ? list[index] : null;
+
+            if (Pages != null)
+            {
+                int i = 0;
+                foreach (var page in Pages)
+                {
+                    if (i == index)
+                        return page;
+                    i++;
+                }
+            }
+
+            return null;
         }
     }
 }

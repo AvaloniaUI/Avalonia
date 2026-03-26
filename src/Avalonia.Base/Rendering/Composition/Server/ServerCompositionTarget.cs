@@ -39,6 +39,11 @@ namespace Avalonia.Rendering.Composition.Server
         public ICompositionTargetDebugEvents? DebugEvents { get; set; }
         public int RenderedVisuals { get; set; }
         public int VisitedVisuals { get; set; }
+        
+        /// <summary>
+        /// Returns true if the target is enabled and has pending work but its render target was not ready.
+        /// </summary>
+        internal bool IsWaitingForReadyRenderTarget { get; private set; }
 
         public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<IPlatformRenderSurface>> surfaces)
             : base(compositor)
@@ -125,6 +130,8 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void Render()
         {
+            IsWaitingForReadyRenderTarget = false;
+            
             if (_disposed)
                 return;
 
@@ -142,12 +149,20 @@ namespace Avalonia.Rendering.Composition.Server
 
             try
             {
-                if (_renderTarget == null && !_compositor.IsReadyToCreateRenderTarget(_surfaces()))
-                    return;
-                _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
+                if (_renderTarget == null)
+                {
+                    if (!_compositor.IsReadyToCreateRenderTarget(_surfaces()))
+                    {
+                        IsWaitingForReadyRenderTarget = IsEnabled;
+                        return;
+                    }
+
+                    _renderTarget = _compositor.CreateRenderTarget(_surfaces());
+                }
             }
             catch (RenderTargetNotReadyException)
             {
+                IsWaitingForReadyRenderTarget = IsEnabled;
                 return;
             }
             catch (RenderTargetCorruptedException)
@@ -164,7 +179,10 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
             
             if (!_renderTarget.IsReady)
+            {
+                IsWaitingForReadyRenderTarget = IsEnabled;
                 return;
+            }
 
             var needLayer = _overlays.RequireLayer // Check if we don't need overlays
                             // Check if render target can be rendered to directly and preserves the previous frame

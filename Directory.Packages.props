@@ -7,7 +7,7 @@
     <PackageVersion Include="Appium.WebDriver" Version="5.2.0" />
     <PackageVersion Include="Avalonia.Angle.Windows.Natives" Version="2.1.25547.20250602" />
     <PackageVersion Include="Avalonia.BuildServices" Version="11.3.2" />
-    <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.0-beta2" />
+    <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.0-beta3" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.6" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageVersion Include="Dotnet.Bundle" Version="0.9.13" />
@@ -38,8 +38,9 @@
     <PackageVersion Include="Nito.AsyncEx.Context" Version="5.1.2" />
     <PackageVersion Include="NuGet.Protocol" Version="7.0.1" />
     <PackageVersion Include="Nuke.Common" Version="10.1.0" />
-    <PackageVersion Include="NUnit" Version="4.4.0" />
-    <PackageVersion Include="NUnit3TestAdapter" Version="6.1.0" />
+    <PackageVersion Include="Numerge" Version="1.0.0" />
+    <PackageVersion Include="NUnit" Version="4.5.1" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="6.2.0" />
     <PackageVersion Include="Quamotion.RemoteViewing" Version="1.1.211" />
     <PackageVersion Include="SharpCompress" Version="0.41.0" />
     <PackageVersion Include="Silk.NET.Direct3D.Compilers" Version="2.22.0" />
@@ -63,13 +64,13 @@
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageVersion Include="Tmds.DBus.Protocol" Version="0.90.3" />
     <PackageVersion Include="Tmds.DBus.SourceGenerator" Version="0.0.22" />
-    <PackageVersion Include="Xamarin.AndroidX.AppCompat" Version="1.7.1.1" />
-    <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0" />
-    <PackageVersion Include="Xamarin.AndroidX.Window" Version="1.5.1" />
+    <PackageVersion Include="Xamarin.AndroidX.AppCompat" Version="1.7.1.3" />
+    <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.2" />
+    <PackageVersion Include="Xamarin.AndroidX.Window" Version="1.5.1.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="Xunit.StaFact" Version="3.0.13" />
-    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.1" />
-    <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.1" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.2" />
   </ItemGroup>
 
   <ItemGroup>

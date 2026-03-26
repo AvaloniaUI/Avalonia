@@ -72,7 +72,8 @@ namespace Avalonia.Styling
                 _animationTrigger ??= new LightweightSubject<bool>();
                 _animationApplyDisposables ??= new List<IDisposable>();
                 foreach (var animation in _animations)
-                    _animationApplyDisposables.Add(animation.Apply(animatable, null, _animationTrigger));
+                    _animationApplyDisposables.Add(animation.Apply(animatable, null, _animationTrigger,
+                        onComplete: null, isManuallyStarted: false));
 
                 if (_activator is null)
                     _animationTrigger.OnNext(true);

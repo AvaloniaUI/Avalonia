@@ -118,6 +118,11 @@
                   Header="Customization"
                   DrawerLength="260"
                   DrawerHeaderBackground="{DynamicResource SystemControlHighlightAccentBrush}">
+        <DrawerPage.DrawerIconTemplate>
+          <DataTemplate DataType="Geometry">
+            <PathIcon Data="{Binding}" />
+          </DataTemplate>
+        </DrawerPage.DrawerIconTemplate>
         <DrawerPage.DrawerHeader>
           <Border x:Name="DrawerHeaderBorder" Padding="16">
             <StackPanel Spacing="4">

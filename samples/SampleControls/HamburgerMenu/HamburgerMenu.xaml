@@ -73,7 +73,8 @@
                           CornerRadius="{TemplateBinding CornerRadius}"
                           TextElement.FontFamily="{TemplateBinding FontFamily}"
                           TextElement.FontSize="{TemplateBinding FontSize}"
-                          TextElement.FontWeight="{TemplateBinding FontWeight}" />
+                          TextElement.FontWeight="{TemplateBinding FontWeight}"
+                          AutomationProperties.LandmarkType="Main" />
       </ControlTemplate>
     </Setter>
 
@@ -174,15 +175,28 @@
                      OpenPaneLength="{StaticResource PaneExpandWidth}"
                      PaneBackground="Transparent">
             <SplitView.Pane>
-              <Grid Margin="0,0,1,5" RowDefinitions="Auto, *, Auto">
+              <Grid Margin="0,0,1,5" RowDefinitions="Auto, Auto, *, Auto">
                 <Panel Height="{StaticResource HeaderHeight}" />
+                <TextBox x:Name="PART_SearchBox"
+                         Grid.Row="1"
+                         PlaceholderText="Search…"
+                         Margin="4,0,8,4"
+                         VerticalContentAlignment="Center">
+                  <TextBox.InnerLeftContent>
+                    <PathIcon Width="14" Height="14" Margin="6,0,0,0"
+                              VerticalAlignment="Center"
+                              Data="M10 2.5a7.5 7.5 0 0 1 5.964 12.048l4.743 4.745a1 1 0 0 1-1.32 1.497l-.094-.083-4.745-4.743A7.5 7.5 0 1 1 10 2.5Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z" />
+                  </TextBox.InnerLeftContent>
+                </TextBox>
                 <ScrollViewer x:Name="PART_ScrollViewer"
-                              Grid.Row="1"
+                              Grid.Row="2"
                               HorizontalAlignment="Stretch"
                               HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                               VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
                   <ItemsPresenter Name="PART_ItemsPresenter"
-                                  HorizontalAlignment="Stretch">
+                                  HorizontalAlignment="Stretch"
+                                  AutomationProperties.ControlTypeOverride="List"
+                                  AutomationProperties.LandmarkType="Navigation">
                     <ItemsPresenter.ItemsPanel>
                       <ItemsPanelTemplate>
                         <StackPanel x:Name="HamburgerItemsPanel"
@@ -192,7 +206,7 @@
                   </ItemsPresenter>
                 </ScrollViewer>
                 <Button x:Name="SettingsButton"
-                        Grid.Row="2"
+                        Grid.Row="3"
                         Theme="{StaticResource NavigationButton}"
                         Content="Settings"
                         Flyout="{TemplateBinding (FlyoutBase.AttachedFlyout)}"
@@ -201,7 +215,9 @@
             </SplitView.Pane>
             <SplitView.Content>
               <DockPanel>
-                <Border Height="{StaticResource HeaderHeight}" DockPanel.Dock="Top">
+                <Border Height="{StaticResource HeaderHeight}"
+                        DockPanel.Dock="Top"
+                        AutomationProperties.LandmarkType="Banner">
                   <TextBlock x:Name="HeaderHolder"
                              VerticalAlignment="Center"
                              Classes="h1"
@@ -246,7 +262,8 @@
                         HorizontalContentAlignment="Center"
                         Theme="{StaticResource NavigationButton}"
                         CornerRadius="4"
-                        IsChecked="{Binding #PART_NavigationPane.IsPaneOpen, Mode=TwoWay}">
+                        IsChecked="{Binding #PART_NavigationPane.IsPaneOpen, Mode=TwoWay}"
+                        AutomationProperties.ControlTypeOverride="ListItem">
             <PathIcon Data="M3 17h18a1 1 0 0 1 .117 1.993L21 19H3a1 1 0 0 1-.117-1.993L3 17h18H3Zm0-6 18-.002a1 1 0 0 1 .117 1.993l-.117.007L3 13a1 1 0 0 1-.117-1.993L3 11l18-.002L3 11Zm0-6h18a1 1 0 0 1 .117 1.993L21 7H3a1 1 0 0 1-.117-1.993L3 5h18H3Z" Foreground="{TemplateBinding Foreground}" />
           </ToggleButton>
         </Panel>

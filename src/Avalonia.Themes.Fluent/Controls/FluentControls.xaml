@@ -9,6 +9,7 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/AdornerLayer.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Button.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CommandBar.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CarouselPage.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ContentPage.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/DrawerPage.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/NavigationPage.xaml" />
@@ -42,6 +43,7 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/OverlayPopupHost.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PopupRoot.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PathIcon.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PipsPager.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/RepeatButton.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollBar.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ScrollViewer.xaml" />
