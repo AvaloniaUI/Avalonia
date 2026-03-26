@@ -43,191 +43,194 @@ namespace Avalonia.Rendering.Composition.Expressions
         [FieldOffset(4)] public Matrix4x4 Matrix4x4;
         [FieldOffset(4)] public Quaternion Quaternion;
         [FieldOffset(4)] public Color Color;
-        
+
 
         public ExpressionVariant GetProperty(string property)
         {
             if (Type == VariantType.Vector2)
             {
-                if (ReferenceEquals(property, "X"))
+                if (IsMatch(property, "X"))
                     return Vector2.X;
-                if (ReferenceEquals(property, "Y"))
+                if (IsMatch(property, "Y"))
                     return Vector2.Y;
                 return default;
             }
-            
+
             if (Type == VariantType.Vector)
             {
-                if (ReferenceEquals(property, "X"))
+                if (IsMatch(property, "X"))
                     return Vector.X;
-                if (ReferenceEquals(property, "Y"))
+                if (IsMatch(property, "Y"))
                     return Vector.Y;
                 return default;
             }
 
             if (Type == VariantType.Vector3)
             {
-                if (ReferenceEquals(property, "X"))
+                if (IsMatch(property, "X"))
                     return Vector3.X;
-                if (ReferenceEquals(property, "Y"))
+                if (IsMatch(property, "Y"))
                     return Vector3.Y;
-                if (ReferenceEquals(property, "Z"))
+                if (IsMatch(property, "Z"))
                     return Vector3.Z;
-                if(ReferenceEquals(property, "XY"))
+                if (IsMatch(property, "XY"))
                     return new Vector2(Vector3.X, Vector3.Y);
-                if(ReferenceEquals(property, "YX"))
+                if (IsMatch(property, "YX"))
                     return new Vector2(Vector3.Y, Vector3.X);
-                if(ReferenceEquals(property, "XZ"))
+                if (IsMatch(property, "XZ"))
                     return new Vector2(Vector3.X, Vector3.Z);
-                if(ReferenceEquals(property, "ZX"))
+                if (IsMatch(property, "ZX"))
                     return new Vector2(Vector3.Z, Vector3.X);
-                if(ReferenceEquals(property, "YZ"))
+                if (IsMatch(property, "YZ"))
                     return new Vector2(Vector3.Y, Vector3.Z);
-                if(ReferenceEquals(property, "ZY"))
+                if (IsMatch(property, "ZY"))
                     return new Vector2(Vector3.Z, Vector3.Y);
                 return default;
             }
-            
+
             if (Type == VariantType.Vector3D)
             {
-                if (ReferenceEquals(property, "X"))
+                if (IsMatch(property, "X"))
                     return Vector3D.X;
-                if (ReferenceEquals(property, "Y"))
+                if (IsMatch(property, "Y"))
                     return Vector3D.Y;
-                if (ReferenceEquals(property, "Z"))
+                if (IsMatch(property, "Z"))
                     return Vector3D.Z;
-                if(ReferenceEquals(property, "XY"))
+                if (IsMatch(property, "XY"))
                     return new Vector(Vector3D.X, Vector3D.Y);
-                if(ReferenceEquals(property, "YX"))
+                if (IsMatch(property, "YX"))
                     return new Vector(Vector3D.Y, Vector3D.X);
-                if(ReferenceEquals(property, "XZ"))
+                if (IsMatch(property, "XZ"))
                     return new Vector(Vector3D.X, Vector3D.Z);
-                if(ReferenceEquals(property, "ZX"))
+                if (IsMatch(property, "ZX"))
                     return new Vector(Vector3D.Z, Vector3D.X);
-                if(ReferenceEquals(property, "YZ"))
+                if (IsMatch(property, "YZ"))
                     return new Vector(Vector3D.Y, Vector3D.Z);
-                if(ReferenceEquals(property, "ZY"))
+                if (IsMatch(property, "ZY"))
                     return new Vector(Vector3D.Z, Vector3D.Y);
                 return default;
             }
 
             if (Type == VariantType.Vector4)
             {
-                if (ReferenceEquals(property, "X"))
+                if (IsMatch(property, "X"))
                     return Vector4.X;
-                if (ReferenceEquals(property, "Y"))
+                if (IsMatch(property, "Y"))
                     return Vector4.Y;
-                if (ReferenceEquals(property, "Z"))
+                if (IsMatch(property, "Z"))
                     return Vector4.Z;
-                if (ReferenceEquals(property, "W"))
+                if (IsMatch(property, "W"))
                     return Vector4.W;
                 return default;
             }
 
             if (Type == VariantType.Matrix3x2)
             {
-                if (ReferenceEquals(property, "M11"))
+                if (IsMatch(property, "M11"))
                     return Matrix3x2.M11;
-                if (ReferenceEquals(property, "M12"))
+                if (IsMatch(property, "M12"))
                     return Matrix3x2.M12;
-                if (ReferenceEquals(property, "M21"))
+                if (IsMatch(property, "M21"))
                     return Matrix3x2.M21;
-                if (ReferenceEquals(property, "M22"))
+                if (IsMatch(property, "M22"))
                     return Matrix3x2.M22;
-                if (ReferenceEquals(property, "M31"))
+                if (IsMatch(property, "M31"))
                     return Matrix3x2.M31;
-                if (ReferenceEquals(property, "M32"))
+                if (IsMatch(property, "M32"))
                     return Matrix3x2.M32;
                 return default;
             }
-            
+
             if (Type == VariantType.AvaloniaMatrix)
             {
-                if (ReferenceEquals(property, "M11"))
+                if (IsMatch(property, "M11"))
                     return AvaloniaMatrix.M11;
-                if (ReferenceEquals(property, "M12"))
+                if (IsMatch(property, "M12"))
                     return AvaloniaMatrix.M12;
-                if (ReferenceEquals(property, "M13"))
+                if (IsMatch(property, "M13"))
                     return AvaloniaMatrix.M13;
-                if (ReferenceEquals(property, "M21"))
+                if (IsMatch(property, "M21"))
                     return AvaloniaMatrix.M21;
-                if (ReferenceEquals(property, "M22"))
+                if (IsMatch(property, "M22"))
                     return AvaloniaMatrix.M22;
-                if (ReferenceEquals(property, "M23"))
+                if (IsMatch(property, "M23"))
                     return AvaloniaMatrix.M23;
-                if (ReferenceEquals(property, "M31"))
+                if (IsMatch(property, "M31"))
                     return AvaloniaMatrix.M31;
-                if (ReferenceEquals(property, "M32"))
+                if (IsMatch(property, "M32"))
                     return AvaloniaMatrix.M32;
-                if (ReferenceEquals(property, "M33"))
+                if (IsMatch(property, "M33"))
                     return AvaloniaMatrix.M33;
                 return default;
             }
 
             if (Type == VariantType.Matrix4x4)
             {
-                if (ReferenceEquals(property, "M11"))
+                if (IsMatch(property, "M11"))
                     return Matrix4x4.M11;
-                if (ReferenceEquals(property, "M12"))
+                if (IsMatch(property, "M12"))
                     return Matrix4x4.M12;
-                if (ReferenceEquals(property, "M13"))
+                if (IsMatch(property, "M13"))
                     return Matrix4x4.M13;
-                if (ReferenceEquals(property, "M14"))
+                if (IsMatch(property, "M14"))
                     return Matrix4x4.M14;
-                if (ReferenceEquals(property, "M21"))
+                if (IsMatch(property, "M21"))
                     return Matrix4x4.M21;
-                if (ReferenceEquals(property, "M22"))
+                if (IsMatch(property, "M22"))
                     return Matrix4x4.M22;
-                if (ReferenceEquals(property, "M23"))
+                if (IsMatch(property, "M23"))
                     return Matrix4x4.M23;
-                if (ReferenceEquals(property, "M24"))
+                if (IsMatch(property, "M24"))
                     return Matrix4x4.M24;
-                if (ReferenceEquals(property, "M31"))
+                if (IsMatch(property, "M31"))
                     return Matrix4x4.M31;
-                if (ReferenceEquals(property, "M32"))
+                if (IsMatch(property, "M32"))
                     return Matrix4x4.M32;
-                if (ReferenceEquals(property, "M33"))
+                if (IsMatch(property, "M33"))
                     return Matrix4x4.M33;
-                if (ReferenceEquals(property, "M34"))
+                if (IsMatch(property, "M34"))
                     return Matrix4x4.M34;
-                if (ReferenceEquals(property, "M41"))
+                if (IsMatch(property, "M41"))
                     return Matrix4x4.M41;
-                if (ReferenceEquals(property, "M42"))
+                if (IsMatch(property, "M42"))
                     return Matrix4x4.M42;
-                if (ReferenceEquals(property, "M43"))
+                if (IsMatch(property, "M43"))
                     return Matrix4x4.M43;
-                if (ReferenceEquals(property, "M44"))
+                if (IsMatch(property, "M44"))
                     return Matrix4x4.M44;
                 return default;
             }
 
             if (Type == VariantType.Quaternion)
             {
-                if (ReferenceEquals(property, "X"))
+                if (IsMatch(property, "X"))
                     return Quaternion.X;
-                if (ReferenceEquals(property, "Y"))
+                if (IsMatch(property, "Y"))
                     return Quaternion.Y;
-                if (ReferenceEquals(property, "Z"))
+                if (IsMatch(property, "Z"))
                     return Quaternion.Z;
-                if (ReferenceEquals(property, "W"))
+                if (IsMatch(property, "W"))
                     return Quaternion.W;
                 return default;
             }
-            
+
             if (Type == VariantType.Color)
             {
-                if (ReferenceEquals(property, "A"))
+                if (IsMatch(property, "A"))
                     return Color.A;
-                if (ReferenceEquals(property, "R"))
+                if (IsMatch(property, "R"))
                     return Color.R;
-                if (ReferenceEquals(property, "G"))
+                if (IsMatch(property, "G"))
                     return Color.G;
-                if (ReferenceEquals(property, "B"))
+                if (IsMatch(property, "B"))
                     return Color.B;
                 return default;
             }
 
             return default;
+
+            static bool IsMatch(string propertyName, string memberName) =>
+                string.Equals(propertyName, memberName, StringComparison.Ordinal);
         }
 
         public static implicit operator ExpressionVariant(bool value) =>
