@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -20,8 +22,10 @@ namespace Avalonia.Controls.Primitives
         private readonly TextSelectionHandle _caretHandle;
         private readonly TextSelectionHandle _handle1;
         private readonly TextSelectionHandle _handle2;
+        private readonly TextMagnifier _magnifier;
         private TextPresenter? _presenter;
         private TextBox? _textBox;
+        private Visual? _magnifierSource;
         private bool _showHandle;
         private IDisposable? _showDisposable;
         private PresenterVisualListener _layoutListener;
@@ -42,6 +46,7 @@ namespace Avalonia.Controls.Primitives
                     _handle1.IsVisible = false;
                     _handle2.IsVisible = false;
                     _caretHandle.IsVisible = false;
+                    _magnifier.IsVisible = false;
                 }
 
                 IsVisible = !string.IsNullOrEmpty(_presenter?.Text) && value;
@@ -58,6 +63,13 @@ namespace Avalonia.Controls.Primitives
             _caretHandle = new TextSelectionHandle() { SelectionHandleType = SelectionHandleType.Caret };
             _handle1 = new TextSelectionHandle();
             _handle2 = new TextSelectionHandle();
+            _magnifier = new TextMagnifier()
+            {
+                Width = 100,
+                Height = 50,
+                IsVisible = false,
+                CornerRadius = new CornerRadius(25)
+            };
 
             _caretHandle.SelectionHandleType = SelectionHandleType.Caret;
             _handle1.SelectionHandleType = SelectionHandleType.Start;
@@ -66,6 +78,7 @@ namespace Avalonia.Controls.Primitives
             Children.Add(_caretHandle);
             Children.Add(_handle1);
             Children.Add(_handle2);
+            Children.Add(_magnifier);
 
             _caretHandle.DragStarted += Handle_DragStarted;
             _caretHandle.DragDelta += CaretHandle_DragDelta;
@@ -150,6 +163,8 @@ namespace Avalonia.Controls.Primitives
 
                 var caretBound = _presenter.GetCursorRectangle();
                 _caretHandle.SetTopLeft(ToLayer(caretBound.BottomLeft));
+
+                MoveMagnifierToHandle(_caretHandle);
             }
         }
 
@@ -194,6 +209,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             MoveHandlesToSelection();
+            _magnifier.IsVisible = false;
             CheckStateAndShowFlyout();
         }
 
@@ -329,6 +345,7 @@ namespace Avalonia.Controls.Primitives
                 handle.SetTopLeft(ToLayer(handle.SelectionHandleType == SelectionHandleType.Start ? caretBound.BottomLeft : caretBound.BottomLeft));
 
                 MoveHandlesToSelection();
+                MoveMagnifierToHandle(handle);
             }
 
             int GetTextPosition(TextSelectionHandle handle)
@@ -453,6 +470,7 @@ namespace Avalonia.Controls.Primitives
                 _textBox = null;
 
                 _presenter = null;
+                _magnifier.Source = null;
             }
 
             _presenter = textPresenter;
@@ -470,8 +488,37 @@ namespace Avalonia.Controls.Primitives
                 {
                     _textBox.PropertyChanged += TextBox_PropertyChanged;
                     _textBox.AddHandler(ScrollGestureEvent, TextBoxScrolling, handledEventsToo: true);
+
+
+                    // Search for the layer this textbox is on
+                    {
+                        if (!CheckAndSet(AdornerLayer.GetAdornerLayer(_textBox)))
+                        {
+                            if (!CheckAndSet(OverlayLayer.GetOverlayLayer(_textBox)))
+                            {
+                                var vlm = _textBox.FindAncestorOfType<VisualLayerManager>();
+                                if(vlm == null || !CheckAndSet(vlm.Child))
+                                    _magnifier.Source = _textBox;
+                            }
+                        }
+
+                        bool CheckAndSet(Visual? visual)
+                        {
+                            if (visual?.IsVisualAncestorOf(_textBox) == true)
+                            {
+                                _magnifier.Source = visual;
+
+                                return true;
+                            }
+
+                            return false;
+                        }
+                    }
+                    
                 }
             }
+
+            _magnifierSource = _magnifier.Source;
         }
 
         private void TextBoxScrolling(object? sender, ScrollGestureEventArgs e)
@@ -579,6 +626,29 @@ namespace Avalonia.Controls.Primitives
             }
 
             return false;
+        }
+
+        private void MoveMagnifierToHandle(TextSelectionHandle handle)
+        {
+            if (_magnifierSource != null && handle.IsEffectivelyVisible && _presenter != null)
+            {
+                var position = handle.IndicatorPosition;
+                var sourcePosition = this.TranslatePoint(position, _magnifierSource) ?? default;
+                var caret = _presenter.GetCaretPoints();
+                var zoomHeight = (caret.Item2.Y - caret.Item1.Y) * 0.9;
+                var zoomWidth = _magnifier.Bounds.Size.AspectRatio * zoomHeight;
+                sourcePosition = sourcePosition.WithY(sourcePosition.Y -
+                                                      zoomHeight * 1.5);
+                sourcePosition = sourcePosition.WithX(sourcePosition.X - zoomWidth);
+                _magnifier.SourceRect = new RelativeRect(sourcePosition,
+                    new Size(zoomWidth * 2, zoomHeight), RelativeUnit.Absolute);
+
+                var viewerPosition = position.WithX(position.X - _magnifier.Bounds.Width / 2)
+                    .WithY(position.Y - _magnifier.Bounds.Height - zoomHeight);
+                SetLeft(_magnifier, viewerPosition.X);
+                SetTop(_magnifier, viewerPosition.Y);
+                _magnifier.IsVisible = true;
+            }
         }
 
         private void TextBox_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
