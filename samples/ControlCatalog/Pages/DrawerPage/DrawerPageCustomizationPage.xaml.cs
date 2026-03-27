@@ -143,7 +143,7 @@ namespace ControlCatalog.Pages
         {
             if (!_isLoaded)
                 return;
-            DemoDrawer.DrawerIcon = Geometry.Parse(_iconPaths[IconCombo.SelectedIndex]);
+            DemoDrawer.DrawerIcon = new PathIcon { Data = Geometry.Parse(_iconPaths[IconCombo.SelectedIndex]) };
         }
 
         private void OnBackdropChanged(object? sender, SelectionChangedEventArgs e)
