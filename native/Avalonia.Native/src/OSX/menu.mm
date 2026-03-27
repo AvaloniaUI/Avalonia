@@ -35,7 +35,7 @@
 
 @implementation AvnMenuItem
 {
-    AvnAppMenuItem* _item;
+    ComObjectWeakPtr<AvnAppMenuItem> _item;
 }
 
 - (id) initWithAvnAppMenuItem: (AvnAppMenuItem*)menuItem
@@ -61,13 +61,19 @@
     {
         return YES;
     }
+    auto item = _item.tryGet();
+    if(item == nullptr)
+        return NO;
     
-    return _item->EvaluateItemEnabled();
+    return item->EvaluateItemEnabled();
 }
 
 - (void)didSelectItem:(nullable id)sender
 {
-    _item->RaiseOnClicked();
+    auto item = _item.tryGet();
+    if(item == nullptr)
+        return;
+    item->RaiseOnClicked();
 }
 @end
 
