@@ -1,7 +1,13 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
@@ -966,6 +972,134 @@ public class CommandBarItemWidthTests : ScopedTestBase
         Assert.Equal(3, visibleBottom);
         Assert.Equal(2, visibleRight);
         Assert.Equal(4, visibleCollapsed);
+    }
+}
+
+public class CommandBarOverflowKeyboardTests : ScopedTestBase
+{
+    private readonly IDisposable _app;
+
+    public CommandBarOverflowKeyboardTests()
+    {
+        _app = UnitTestApplication.Start(TestServices.StyledWindow);
+    }
+
+    public override void Dispose()
+    {
+        _app.Dispose();
+        base.Dispose();
+    }
+
+    [Fact]
+    public void Escape_WhenOverflowOpen_ClosesOverflow()
+    {
+        var cb = new CommandBar();
+        cb.SecondaryCommands.Add(new AppBarButton { Label = "Action" });
+        var root = new TestRoot(useGlobalStyles: true, child: cb);
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        cb.IsOpen = true;
+
+        RaiseKeyOnOverflowPresenter(cb, Key.Escape);
+
+        Assert.False(cb.IsOpen);
+    }
+
+    [Fact]
+    public void Escape_WhenOverflowClosed_DoesNothing()
+    {
+        var cb = new CommandBar();
+        cb.SecondaryCommands.Add(new AppBarButton { Label = "Action" });
+        var root = new TestRoot(useGlobalStyles: true, child: cb);
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        RaiseKeyOnOverflowPresenter(cb, Key.Escape);
+
+        Assert.False(cb.IsOpen);
+    }
+
+    [Theory]
+    [InlineData(Key.Down)]
+    [InlineData(Key.Up)]
+    [InlineData(Key.Home)]
+    [InlineData(Key.End)]
+    public void NavigationKeys_AreHandled_WhenOverflowHasItems(Key key)
+    {
+        var cb = new CommandBar();
+        cb.SecondaryCommands.Add(new AppBarButton { Label = "A" });
+        cb.SecondaryCommands.Add(new AppBarButton { Label = "B" });
+        var root = new TestRoot(useGlobalStyles: true, child: cb);
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        cb.IsOpen = true;
+
+        var e = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key };
+        GetOverflowPresenter(cb).RaiseEvent(e);
+
+        Assert.True(e.Handled);
+    }
+
+    [Fact]
+    public void NavigationKeys_AreHandled_WhenAllItemsAreSeparators()
+    {
+        var cb = new CommandBar();
+        cb.SecondaryCommands.Add(new AppBarSeparator());
+        var root = new TestRoot(useGlobalStyles: true, child: cb);
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        cb.IsOpen = true;
+
+        var e = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Down };
+        GetOverflowPresenter(cb).RaiseEvent(e);
+
+        Assert.True(e.Handled);
+    }
+
+    [Fact]
+    public void NavigationKeys_AreHandled_WhenAllItemsAreDisabled()
+    {
+        var cb = new CommandBar();
+        cb.SecondaryCommands.Add(new AppBarButton { Label = "A", IsEnabled = false });
+        var root = new TestRoot(useGlobalStyles: true, child: cb);
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        cb.IsOpen = true;
+
+        var e = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Down };
+        GetOverflowPresenter(cb).RaiseEvent(e);
+
+        Assert.True(e.Handled);
+    }
+
+    [Fact]
+    public void NavigationKeys_AreHandled_WhenAllItemsAreNonFocusable()
+    {
+        var cb = new CommandBar();
+        cb.SecondaryCommands.Add(new AppBarButton { Label = "A", Focusable = false });
+        var root = new TestRoot(useGlobalStyles: true, child: cb);
+        root.LayoutManager.ExecuteInitialLayoutPass();
+        cb.IsOpen = true;
+
+        var e = new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Down };
+        GetOverflowPresenter(cb).RaiseEvent(e);
+
+        Assert.True(e.Handled);
+    }
+
+    private static ItemsControl GetOverflowPresenter(CommandBar cb)
+    {
+        var popup = cb.GetVisualDescendants()
+            .OfType<Popup>()
+            .First(p => p.Name == "PART_OverflowPopup");
+
+        return popup.GetLogicalDescendants()
+            .OfType<ItemsControl>()
+            .First(x => x.Name == "PART_OverflowPresenter");
+    }
+
+    private static void RaiseKeyOnOverflowPresenter(CommandBar cb, Key key)
+    {
+        GetOverflowPresenter(cb).RaiseEvent(new KeyEventArgs
+        {
+            RoutedEvent = InputElement.KeyDownEvent,
+            Key = key,
+        });
     }
 }
 

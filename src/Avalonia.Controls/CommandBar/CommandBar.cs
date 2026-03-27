@@ -7,6 +7,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -14,9 +15,10 @@ namespace Avalonia.Controls
     /// A command bar that provides primary commands displayed inline and secondary commands
     /// accessible via an overflow menu.
     /// </summary>
-    [TemplatePart("PART_OverflowButton",   typeof(Button))]
+    [TemplatePart("PART_OverflowButton",    typeof(Button))]
     [TemplatePart("PART_OverflowPopup",    typeof(Popup))]
-    [TemplatePart("PART_ContentPresenter", typeof(Control))]
+    [TemplatePart("PART_OverflowPresenter", typeof(ItemsControl))]
+    [TemplatePart("PART_ContentPresenter",  typeof(Control))]
     public class CommandBar : TemplatedControl
     {
         /// <summary>
@@ -129,6 +131,7 @@ namespace Avalonia.Controls
 
         private Button? _overflowButton;
         private Popup? _overflowPopup;
+        private ItemsControl? _overflowPresenter;
         private Control? _contentPresenter;
 
         private readonly ObservableCollection<ICommandBarElement> _visiblePrimaryCommands = new();
@@ -349,13 +352,22 @@ namespace Avalonia.Controls
 
             if (_overflowButton != null)
                 _overflowButton.Click -= OnOverflowButtonClick;
+            if (_overflowPresenter != null)
+                _overflowPresenter.KeyDown -= OnOverflowPresenterKeyDown;
+            if (_overflowPopup != null)
+                _overflowPopup.Opened -= OnOverflowPopupOpened;
 
             _overflowButton = e.NameScope.Find<Button>("PART_OverflowButton");
             _overflowPopup = e.NameScope.Find<Popup>("PART_OverflowPopup");
+            _overflowPresenter = e.NameScope.Find<ItemsControl>("PART_OverflowPresenter");
             _contentPresenter = e.NameScope.Find<Control>("PART_ContentPresenter");
 
             if (_overflowButton != null)
                 _overflowButton.Click += OnOverflowButtonClick;
+            if (_overflowPresenter != null)
+                _overflowPresenter.KeyDown += OnOverflowPresenterKeyDown;
+            if (_overflowPopup != null)
+                _overflowPopup.Opened += OnOverflowPopupOpened;
 
             ApplyLabelPositionToChildren();
             UpdateOverflowButtonVisibility();
@@ -369,7 +381,7 @@ namespace Avalonia.Controls
 
             if (change.Property == IsOpenProperty)
             {
-                var isOpen = (bool)change.NewValue!;
+                var isOpen = change.GetNewValue<bool>();
                 if (isOpen)
                 {
                     RaiseEvent(new RoutedEventArgs(OpeningEvent));
@@ -444,6 +456,84 @@ namespace Avalonia.Controls
         private void OnOverflowButtonClick(object? sender, Interactivity.RoutedEventArgs e)
         {
             SetCurrentValue(IsOpenProperty, !IsOpen);
+        }
+
+        private void OnOverflowPresenterKeyDown(object? sender, Input.KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Input.Key.Up:
+                    NavigateOverflow(forward: false);
+                    e.Handled = true;
+                    break;
+                case Input.Key.Down:
+                    NavigateOverflow(forward: true);
+                    e.Handled = true;
+                    break;
+                case Input.Key.Home:
+                    FocusOverflowItem(first: true);
+                    e.Handled = true;
+                    break;
+                case Input.Key.End:
+                    FocusOverflowItem(first: false);
+                    e.Handled = true;
+                    break;
+                case Input.Key.Escape:
+                    SetCurrentValue(IsOpenProperty, false);
+                    _overflowButton?.Focus(Input.NavigationMethod.Unspecified);
+                    e.Handled = true;
+                    break;
+            }
+        }
+
+        private void OnOverflowPopupOpened(object? sender, EventArgs e)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (IsOpen)
+                    FocusOverflowItem(first: true);
+            }, DispatcherPriority.Loaded);
+        }
+
+        private void NavigateOverflow(bool forward)
+        {
+            var items = GetFocusableOverflowItems();
+            if (items.Count == 0)
+                return;
+
+            int current = -1;
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i].IsFocused || items[i].IsKeyboardFocusWithin)
+                {
+                    current = i;
+                    break;
+                }
+            }
+
+            int next = current < 0
+                ? (forward ? 0 : items.Count - 1)
+                : (forward ? (current + 1) % items.Count : (current - 1 + items.Count) % items.Count);
+
+            items[next].Focus(Input.NavigationMethod.Directional);
+        }
+
+        private void FocusOverflowItem(bool first)
+        {
+            var items = GetFocusableOverflowItems();
+            if (items.Count > 0)
+                items[first ? 0 : items.Count - 1].Focus(Input.NavigationMethod.Directional);
+        }
+
+        private List<Control> GetFocusableOverflowItems()
+        {
+            var result = new List<Control>();
+            foreach (var item in _overflowItems)
+            {
+                if (item is Control { IsEnabled: true, IsVisible: true, Focusable: true } control && item is not AppBarSeparator)
+                    result.Add(control);
+            }
+            return result;
         }
 
         private void OnPrimaryCommandsChanged(object? sender, NotifyCollectionChangedEventArgs e)
