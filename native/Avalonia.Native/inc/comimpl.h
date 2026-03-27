@@ -8,6 +8,7 @@
 
 #include <cstring>
 #include <memory>
+#include <utility>
 
 /**
  START_COM_CALL causes AddRef to be called at the beginning of a function.
@@ -138,6 +139,64 @@ public:
     }
 };
 
+template<class T, class... Args>
+ComPtr<T> comnew(Args&&... args)
+{
+    return ComPtr<T>(new T(std::forward<Args>(args)...), true);
+}
+
+/**
+ * ComStaticPtr is a COM smart pointer for process-lifetime static singletons.
+ * It AddRef/Release on set/reset, but intentionally does NOT Release in its destructor
+ * to avoid crashes during app teardown when destruction order is undefined.
+ */
+template<class TInterface>
+class ComStaticPtr
+{
+private:
+    TInterface* _obj = nullptr;
+public:
+    ComStaticPtr() = default;
+    ~ComStaticPtr() = default;
+
+    ComStaticPtr(const ComStaticPtr&) = delete;
+    ComStaticPtr(ComStaticPtr&&) = delete;
+    ComStaticPtr& operator=(const ComStaticPtr&) = delete;
+    ComStaticPtr& operator=(ComStaticPtr&&) = delete;
+
+    void set(TInterface* obj)
+    {
+        if (_obj == obj)
+            return;
+        if (_obj)
+            _obj->Release();
+        _obj = obj;
+        if (_obj)
+            _obj->AddRef();
+    }
+
+    void setNoAddRef(TInterface* obj)
+    {
+        if (_obj)
+            _obj->Release();
+        _obj = obj;
+    }
+
+    void reset()
+    {
+        if (_obj)
+        {
+            _obj->Release();
+            _obj = nullptr;
+        }
+    }
+
+    TInterface* getRaw() const { return _obj; }
+
+    operator TInterface*() const { return _obj; }
+    TInterface* operator->() const { return _obj; }
+};
+
 class ComObjectWeakRefToken
 {
 public:
@@ -249,6 +308,9 @@ public:
         _rawPtr = nullptr;
         _token = nullptr;
     }
+    
+    bool operator==(const ComObjectWeakPtr& other) const { return _rawPtr == other._rawPtr; }
+    bool operator!=(const ComObjectWeakPtr& other) const { return _rawPtr != other._rawPtr; }
 };
 
 #define FORWARD_IUNKNOWN() \

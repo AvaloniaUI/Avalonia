@@ -8,7 +8,7 @@
 
 @implementation AvnAccessibilityElement
 {
-    IAvnAutomationPeer* _peer;
+    ComPtr<IAvnAutomationPeer> _peer;
     AvnAutomationNode* _node;
     NSMutableArray* _children;
     NSArray<NSString*>* _attributeNames;

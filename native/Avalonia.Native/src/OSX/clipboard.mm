@@ -219,8 +219,8 @@ extern IAvnClipboard* CreateClipboard(NSPasteboard* pb)
 
 @implementation WriteableClipboardItem
 {
-    IAvnClipboardDataItem* _item;
-    IAvnClipboardDataSource* _source;
+    ComPtr<IAvnClipboardDataItem> _item;
+    ComPtr<IAvnClipboardDataSource> _source;
 }
     
 - (nonnull WriteableClipboardItem*) initWithItem:(nonnull IAvnClipboardDataItem*)item source:(nonnull IAvnClipboardDataSource*)source
@@ -228,9 +228,6 @@ extern IAvnClipboard* CreateClipboard(NSPasteboard* pb)
     self = [super init];
     _item = item;
     _source = source;
-    
-    // Each item references its source so it doesn't get disposed too early.
-    source->AddRef();
     
     return self;
 }
@@ -334,21 +331,6 @@ NSString* TryConvertFormatToUti(NSString* format)
     auto buffer = malloc(length);
     value->CopyBytesTo(buffer);
     return [NSData dataWithBytesNoCopy:buffer length:length];
-}
-
-- (void) dealloc
-{
-    if (_item != nullptr)
-    {
-        _item->Release();
-        _item = nullptr;
-    }
-    
-    if (_source != nullptr)
-    {
-        _source->Release();
-        _source = nullptr;
-    }
 }
 
 @end

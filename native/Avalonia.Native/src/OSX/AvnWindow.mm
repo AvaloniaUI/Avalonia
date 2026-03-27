@@ -37,7 +37,7 @@
     bool _isTransitioningToFullScreen;
     bool _isTitlebarSession;
     AvnMenu* _menu;
-    IAvnAutomationPeer* _automationPeer;
+    ComPtr<IAvnAutomationPeer> _automationPeer;
     AvnAutomationNode* _automationNode;
 }
 

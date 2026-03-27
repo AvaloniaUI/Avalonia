@@ -219,11 +219,13 @@ public:
     }
 };
 
-static IAvnGlDisplay* GlDisplay = new AvnGlDisplay();
+static ComStaticPtr<IAvnGlDisplay> GlDisplay;
 
 
 extern IAvnGlDisplay* GetGlDisplay()
 {
+    if (GlDisplay.getRaw() == nullptr)
+        GlDisplay.set(comnew<AvnGlDisplay>());
     return GlDisplay;
 };
 

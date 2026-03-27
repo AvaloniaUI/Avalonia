@@ -478,12 +478,12 @@ extern IAvnMenuItem* CreateAppMenuItemSeparator()
     }
 }
 
-static IAvnMenu* s_appMenu = nullptr;
+static ComStaticPtr<IAvnMenu> s_appMenu;
 static NSMenuItem* s_appMenuItem = nullptr;
 
 extern void SetAppMenu(IAvnMenu *menu)
 {
-    s_appMenu = menu;
+    s_appMenu.set(menu);
     
     if(s_appMenu != nullptr)
     {
