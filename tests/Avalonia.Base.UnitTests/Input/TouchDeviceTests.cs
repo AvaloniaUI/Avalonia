@@ -1,14 +1,16 @@
 ﻿using System;
+using Avalonia.Base.UnitTests.Input;
+using Avalonia.Controls;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.Threading;
+using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Input.UnitTests
 {
-    public class TouchDeviceTests
+    public class TouchDeviceTests : PointerTestsBase
     {
         [Fact]
         public void Tapped_Event_Is_Fired_With_Touch()
@@ -142,6 +144,36 @@ namespace Avalonia.Input.UnitTests
         }
 
         [Fact]
+        public void Touch_Pointer_Should_Set_Focus_On_Pointer_Released()
+        {
+            using var scope = AvaloniaLocator.EnterScope();
+            using var app = UnitTestApplication.Start(
+               TestServices.RealFocus);
+
+            var impl = CreateTopLevelImplMock();
+
+            var renderer = new Mock<IHitTester>();
+            var root = new TestTopLevel(impl.Object)
+            {
+                HitTesterOverride = renderer.Object,
+            };
+            var host = root.TopLevelHost;
+
+            host.Focusable = true;
+            var touchDevice = new TouchDevice();
+            var inputManager = InputManager.Instance!;
+
+            Assert.False(host.IsFocused);
+
+            Press(InputManager.Instance!, touchDevice, root.InputRoot);
+
+            Assert.False(host.IsFocused);
+            Release(InputManager.Instance!, touchDevice, root.InputRoot);
+
+            Assert.True(host.IsFocused);
+        }
+
+        [Fact]
         public void Click_Counting_Should_Work_Correctly_With_Few_Touch_Contacts()
         {
             using var app = UnitTestApp(new TimeSpan(200));
@@ -241,19 +273,29 @@ namespace Avalonia.Input.UnitTests
 
         private static void TapOnce(IInputManager inputManager, TouchDevice device, IInputRoot root, ulong timestamp = 0, long touchPointId = 0)
         {
-            inputManager.ProcessInput(new RawPointerEventArgs(device, timestamp,
-                                               root,
-                                               RawPointerEventType.TouchBegin,
-                                               new Point(0, 0),
-                                               RawInputModifiers.None)
-            {
-                RawPointerId = touchPointId
-            });
+            Press(inputManager, device, root, timestamp, touchPointId);
+            Release(inputManager, device, root, timestamp, touchPointId);
+        }
+
+        private static void Release(IInputManager inputManager, TouchDevice device, IInputRoot root, ulong timestamp = 0, long touchPointId = 0)
+        {
             inputManager.ProcessInput(new RawPointerEventArgs(device, timestamp,
                                                 root,
                                                 RawPointerEventType.TouchEnd,
                                                 new Point(0, 0),
                                                 RawInputModifiers.None)
+            {
+                RawPointerId = touchPointId
+            });
+        }
+
+        private static void Press(IInputManager inputManager, TouchDevice device, IInputRoot root, ulong timestamp = 0, long touchPointId = 0)
+        {
+            inputManager.ProcessInput(new RawPointerEventArgs(device, timestamp,
+                                               root,
+                                               RawPointerEventType.TouchBegin,
+                                               new Point(0, 0),
+                                               RawInputModifiers.None)
             {
                 RawPointerId = touchPointId
             });
