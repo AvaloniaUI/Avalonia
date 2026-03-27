@@ -57,11 +57,13 @@
               <ContentPresenter Name="PART_DrawerHeader"
                                 DockPanel.Dock="Top"
                                 Content="{TemplateBinding DrawerHeader}"
+                                ContentTemplate="{TemplateBinding DrawerHeaderTemplate}"
                                 Background="{TemplateBinding DrawerHeaderBackground}"
                                 IsVisible="{TemplateBinding DrawerHeader, Converter={x:Static ObjectConverters.IsNotNull}}" />
               <ContentPresenter Name="PART_DrawerFooter"
                                 DockPanel.Dock="Bottom"
                                 Content="{TemplateBinding DrawerFooter}"
+                                ContentTemplate="{TemplateBinding DrawerFooterTemplate}"
                                 Background="{TemplateBinding DrawerFooterBackground}"
                                 IsVisible="{TemplateBinding DrawerFooter, Converter={x:Static ObjectConverters.IsNotNull}}" />
               <ContentPresenter Name="PART_DrawerPresenter"

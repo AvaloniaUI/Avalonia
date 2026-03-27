@@ -303,29 +303,14 @@ internal class BindingExpressionVisitor<TIn>(LambdaExpression expression) : Expr
         }
     }
 
-    private static Func<object, object>? CreateGetter(PropertyInfo info)
+    private static Func<object, object?>? CreateGetter(PropertyInfo info)
     {
-        if (info.GetMethod == null)
-            return null;
-        var target = Expression.Parameter(typeof(object), "target");
-        return Expression.Lambda<Func<object, object>>(
-                Expression.Convert(Expression.Call(Expression.Convert(target, info.DeclaringType!), info.GetMethod),
-                    typeof(object)),
-                target)
-            .Compile();
+        return info.CanRead ? info.GetValue : null;
     }
 
     private static Action<object, object?>? CreateSetter(PropertyInfo info)
     {
-        if (info.SetMethod == null)
-            return null;
-        var target = Expression.Parameter(typeof(object), "target");
-        var value = Expression.Parameter(typeof(object), "value");
-        return Expression.Lambda<Action<object, object?>>(
-                Expression.Call(Expression.Convert(target, info.DeclaringType!), info.SetMethod,
-                    Expression.Convert(value, info.SetMethod.GetParameters()[0].ParameterType)),
-                target, value)
-            .Compile();
+        return info.CanWrite ? info.SetValue : null;
     }
 
     private static T GetValue<T>(Expression expr)
