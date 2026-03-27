@@ -225,11 +225,11 @@ namespace Avalonia.Controls.Primitives
                 var hasSelection = _presenter.SelectionStart != _presenter.SelectionEnd || isSelectionDragging;
 
                 _handle1.IsVisible = ShowHandles && hasSelection &&
-                    !IsOccluded(_handle1.IndicatorPosition);
+                    (_handle1.IsDragging || !IsOccluded(_handle1.IndicatorPosition));
                 _handle2.IsVisible = ShowHandles && hasSelection &&
-                    !IsOccluded(_handle2.IndicatorPosition);
-                _caretHandle.IsVisible = ShowHandles && !hasSelection &&
-                    !IsOccluded(_caretHandle.IndicatorPosition);
+                    (_handle2.IsDragging || !IsOccluded(_handle2.IndicatorPosition));
+                _caretHandle.IsVisible = ShowHandles && (!hasSelection) &&
+                    (_caretHandle.IsDragging || !IsOccluded(_caretHandle.IndicatorPosition));
 
                 bool IsOccluded(Point point)
                 {
@@ -525,10 +525,19 @@ namespace Avalonia.Controls.Primitives
 
                     if (_textBox.SelectionStart != _textBox.SelectionEnd)
                     {
-                        var p1 = _handle1.IndicatorPosition;
-                        var p2 = _handle2.IndicatorPosition;
+                        if (_handle1.IsEffectivelyVisible && _handle2.IsEffectivelyVisible)
+                        {
+                            var p1 = _handle1.IndicatorPosition;
+                            var p2 = _handle2.IndicatorPosition;
 
-                        topleft = new Point((p1.X + p2.X) / 2, Math.Min(p1.Y, p2.Y));
+                            topleft = new Point((p1.X + p2.X) / 2, Math.Min(p1.Y, p2.Y));
+                        }
+                        else
+                        {
+                            var visibleHandle = _handle1.IsEffectivelyVisible ? _handle1: _handle2.IsEffectivelyVisible ? _handle2 : null;
+
+                            topleft = visibleHandle?.IndicatorPosition;
+                        }
                     }
                     else
                     {
