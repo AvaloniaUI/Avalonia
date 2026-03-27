@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using Avalonia.Input.Navigation;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
@@ -31,9 +32,9 @@ namespace Avalonia.Input
         static FocusManager()
         {
             InputElement.PointerPressedEvent.AddClassHandler(
-                typeof(IInputElement),
-                new EventHandler<RoutedEventArgs>(OnPreviewPointerEventHandler),
-                RoutingStrategies.Tunnel);
+                 typeof(IInputElement),
+                 new EventHandler<RoutedEventArgs>(OnPreviewPointerEventHandler),
+                 RoutingStrategies.Tunnel);
             InputElement.PointerReleasedEvent.AddClassHandler(
                 typeof(IInputElement),
                 new EventHandler<RoutedEventArgs>(OnPreviewPointerEventHandler),
@@ -111,7 +112,7 @@ namespace Avalonia.Input
                 scope.ClearValue(FocusedElementProperty);
             }
 
-            if (Current == removedElement) 
+            if (Current == removedElement)
                 Focus(null);
         }
 
@@ -158,7 +159,7 @@ namespace Avalonia.Input
         /// </summary>
         internal static FocusManager? GetFocusManager(IInputElement? element)
         {
-            
+
             // Element might not be a visual, and not attached to the root.
             // But IFocusManager is always expected to be a FocusManager. 
             return (FocusManager?)(element as Visual)?.GetInputRoot()?.FocusManager
@@ -188,8 +189,12 @@ namespace Avalonia.Input
         {
             if (CanFocus(e))
             {
-                if (ev.Pointer.Type == PointerType.Mouse || ev is PointerReleasedEventArgs)
-                    return true;
+                return ev switch
+                {
+                    PointerReleasedEventArgs releasedEventArgs when releasedEventArgs.Pointer.Type != PointerType.Mouse => true,
+                    PointerPressedEventArgs pressedEventArgs when pressedEventArgs.Pointer.Type == PointerType.Mouse => true,
+                    _ => false,
+                };
             }
 
             return false;
@@ -229,7 +234,7 @@ namespace Avalonia.Input
             var root = v.PresentationSource?.InputRoot.FocusRoot as Visual;
 
             while (root is IHostedVisualTreeRoot hosted &&
-                hosted.Host?.PresentationSource?.InputRoot.FocusRoot is {} parentRoot)
+                hosted.Host?.PresentationSource?.InputRoot.FocusRoot is { } parentRoot)
             {
                 root = parentRoot;
             }
