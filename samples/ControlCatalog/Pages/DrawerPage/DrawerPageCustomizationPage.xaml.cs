@@ -179,7 +179,7 @@ namespace ControlCatalog.Pages
             {
                 DemoDrawer.DrawerFooter = FooterTemplateCombo.SelectedIndex switch
                 {
-                    1 => (object)"v11.0",
+                    1 => (object)"v12.0",
                     2 => (object)"Avalonia",
                     _ => DrawerFooterBorder
                 };
@@ -259,7 +259,7 @@ namespace ControlCatalog.Pages
             switch (FooterTemplateCombo.SelectedIndex)
             {
                 case 1:
-                    DemoDrawer.DrawerFooter = "v11.0";
+                    DemoDrawer.DrawerFooter = "v12.0";
                     DemoDrawer.DrawerFooterTemplate = new FuncDataTemplate<string>((data, _) =>
                         new Border
                         {
