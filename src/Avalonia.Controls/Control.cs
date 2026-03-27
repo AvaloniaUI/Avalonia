@@ -334,20 +334,16 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Raises the <see cref="Loaded"/> event.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void OnLoaded(RoutedEventArgs e)
+        // OnLoaded/OnUnloaded are intentionally private and non-virtual, so we could later
+        // optimize out enqueueing 99% of controls for Loaded/Unloaded callback like WPF does
+        // Controls that need to react to loaded/unloaded should subscribe to the
+        // Loaded/Unloaded events instead.
+        private void OnLoaded(RoutedEventArgs e)
         {
             RaiseEvent(e);
         }
 
-        /// <summary>
-        /// Raises the <see cref="Unloaded"/> event.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void OnUnloaded(RoutedEventArgs e)
+        private void OnUnloaded(RoutedEventArgs e)
         {
             RaiseEvent(e);
         }

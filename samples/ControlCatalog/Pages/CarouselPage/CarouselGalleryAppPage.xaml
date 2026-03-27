@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.CarouselGalleryAppPage"
+             Loaded="OnControlLoaded"
              Background="#F8F9FB">
   <UserControl.Resources>
     <!-- White pip colors for the hero dark background -->

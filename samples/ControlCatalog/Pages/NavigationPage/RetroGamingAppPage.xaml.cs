@@ -30,10 +30,8 @@ public partial class RetroGamingAppPage : UserControl
             _ = _nav.PushAsync(BuildHomePage());
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
+    private void OnControlLoaded(object? sender, RoutedEventArgs e)
     {
-        base.OnLoaded(e);
-
         _infoPanel = this.FindControl<ScrollViewer>("InfoPanel");
         UpdateInfoPanelVisibility();
     }

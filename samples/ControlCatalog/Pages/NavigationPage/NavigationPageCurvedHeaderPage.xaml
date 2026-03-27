@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.NavigationPageCurvedHeaderPage">
+             x:Class="ControlCatalog.Pages.NavigationPageCurvedHeaderPage"
+             Loaded="OnControlLoaded">
 
   <DockPanel>
     <ScrollViewer x:Name="InfoPanel" DockPanel.Dock="Right" Width="300">

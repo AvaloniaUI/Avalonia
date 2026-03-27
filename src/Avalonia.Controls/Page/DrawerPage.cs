@@ -296,6 +296,14 @@ namespace Avalonia.Controls
         {
             GestureRecognizers.Add(_swipeRecognizer);
             UpdateSwipeRecognizerAxes();
+            Loaded += (_, _) =>
+            {
+                if (!_hasHadFirstPage && CurrentPage != null)
+                {
+                    _hasHadFirstPage = true;
+                    CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Push));
+                }
+            };
         }
 
         /// <summary>
@@ -725,16 +733,6 @@ namespace Avalonia.Controls
             _swipeRecognizer.CanHorizontallySwipe = !IsVerticalPlacement;
         }
 
-        protected override void OnLoaded(RoutedEventArgs e)
-        {
-            base.OnLoaded(e);
-
-            if (!_hasHadFirstPage && CurrentPage != null)
-            {
-                _hasHadFirstPage = true;
-                CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(null, NavigationType.Push));
-            }
-        }
 
         private void OnSwipePointerPressed(object? sender, PointerPressedEventArgs e)
         {

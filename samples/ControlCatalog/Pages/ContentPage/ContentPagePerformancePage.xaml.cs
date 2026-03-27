@@ -20,10 +20,8 @@ namespace ControlCatalog.Pages
             InitializeComponent();
         }
 
-        protected override async void OnLoaded(RoutedEventArgs e)
+        private async void OnControlLoaded(object? sender, RoutedEventArgs e)
         {
-            base.OnLoaded(e);
-
             NavPage.Pushed       += OnStackChanged;
             NavPage.Popped       += OnStackChanged;
             NavPage.PoppedToRoot += OnStackChanged;
@@ -34,9 +32,8 @@ namespace ControlCatalog.Pages
             Log("Init", "Pushed root page");
         }
 
-        protected override void OnUnloaded(RoutedEventArgs e)
+        private void OnControlUnloaded(object? sender, RoutedEventArgs e)
         {
-            base.OnUnloaded(e);
             _perf.StopAutoRefresh();
         }
 

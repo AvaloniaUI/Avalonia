@@ -13,6 +13,11 @@ namespace ControlSamples
         private TextBox? _searchBox;
         private bool _initialized;
 
+        public HamburgerMenu()
+        {
+            Loaded += OnControlLoaded;
+        }
+
         public static readonly StyledProperty<IBrush?> PaneBackgroundProperty =
             SplitView.PaneBackgroundProperty.AddOwner<HamburgerMenu>();
 
@@ -53,10 +58,8 @@ namespace ControlSamples
             }
         }
 
-        protected override void OnLoaded(Avalonia.Interactivity.RoutedEventArgs e)
+        private void OnControlLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            base.OnLoaded(e);
-
             if (!_initialized)
             {
                 _initialized = true;

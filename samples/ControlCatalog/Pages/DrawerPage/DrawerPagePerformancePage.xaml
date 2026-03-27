@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.DrawerPagePerformancePage">
+             x:Class="ControlCatalog.Pages.DrawerPagePerformancePage"
+             Loaded="OnControlLoaded"
+             Unloaded="OnControlUnloaded">
   <Grid ColumnDefinitions="*,300">
 
     <DockPanel Grid.Column="0" Margin="16">

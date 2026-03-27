@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.NavigationPagePerformancePage">
+             x:Class="ControlCatalog.Pages.NavigationPagePerformancePage"
+             Unloaded="OnControlUnloaded">
   <Grid ColumnDefinitions="*,240">
 
     <!-- Left: NavigationPage + Operation log -->

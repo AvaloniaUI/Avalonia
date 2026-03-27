@@ -29,9 +29,8 @@ namespace ControlCatalog.Pages
             }
         }
 
-        protected override void OnLoaded(RoutedEventArgs e)
+        private void OnControlLoaded(object? sender, RoutedEventArgs e)
         {
-            base.OnLoaded(e);
             DemoDrawer.Opened  += OnDrawerOpened;
             DemoDrawer.Closing += OnClosing;
             DemoDrawer.Closed  += OnDrawerClosed;
@@ -40,9 +39,8 @@ namespace ControlCatalog.Pages
             DemoDrawer.Content = _sectionPages["Home"];
         }
 
-        protected override void OnUnloaded(RoutedEventArgs e)
+        private void OnControlUnloaded(object? sender, RoutedEventArgs e)
         {
-            base.OnUnloaded(e);
             DemoDrawer.Opened  -= OnDrawerOpened;
             DemoDrawer.Closing -= OnClosing;
             DemoDrawer.Closed  -= OnDrawerClosed;

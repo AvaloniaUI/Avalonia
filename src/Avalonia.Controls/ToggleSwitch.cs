@@ -48,6 +48,7 @@ namespace Avalonia.Controls
             {
                 x.UpdateKnobTransitions();
             });
+            LoadedEvent.AddClassHandler<ToggleSwitch>((x, _) => x.UpdateKnobTransitions());
         }
 
         /// <summary>
@@ -201,12 +202,6 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <inheritdoc/>
-        protected override void OnLoaded(RoutedEventArgs e)
-        {
-            base.OnLoaded(e);
-            UpdateKnobTransitions();
-        }
 
         private void UpdateKnobTransitions()
         {

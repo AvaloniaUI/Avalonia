@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.DrawerPageEventsPage">
+             x:Class="ControlCatalog.Pages.DrawerPageEventsPage"
+             Loaded="OnControlLoaded"
+             Unloaded="OnControlUnloaded">
   <DockPanel>
     <ScrollViewer DockPanel.Dock="Right" Width="260">
       <StackPanel Margin="12" Spacing="8">

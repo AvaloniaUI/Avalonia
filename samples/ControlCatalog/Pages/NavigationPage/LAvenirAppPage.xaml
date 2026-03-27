@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.LAvenirAppPage">
+             x:Class="ControlCatalog.Pages.LAvenirAppPage"
+             Loaded="OnControlLoaded">
 
   <UserControl.Resources>
     <SolidColorBrush x:Key="LAvenirBg" Color="#f6f6f8"/>

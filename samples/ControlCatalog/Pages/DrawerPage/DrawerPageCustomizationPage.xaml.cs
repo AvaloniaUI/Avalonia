@@ -27,9 +27,8 @@ namespace ControlCatalog.Pages
             EnableMouseSwipeGesture(DemoDrawer);
         }
 
-        protected override void OnLoaded(RoutedEventArgs e)
+        private void OnControlLoaded(object? sender, RoutedEventArgs e)
         {
-            base.OnLoaded(e);
             _isLoaded = true;
         }
 

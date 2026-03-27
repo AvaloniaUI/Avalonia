@@ -34,9 +34,8 @@ namespace ControlCatalog.Pages
             Log("Init", "Pushed root page");
         }
 
-        protected override void OnUnloaded(RoutedEventArgs e)
+        private void OnControlUnloaded(object? sender, RoutedEventArgs e)
         {
-            base.OnUnloaded(e);
             _perf.StopAutoRefresh();
         }
 

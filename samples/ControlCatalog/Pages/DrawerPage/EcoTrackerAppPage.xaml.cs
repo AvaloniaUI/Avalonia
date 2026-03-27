@@ -39,9 +39,8 @@ public partial class EcoTrackerAppPage : UserControl
             _ = _navPage.PushAsync(BuildHomePage());
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
+    private void OnControlLoaded(object? sender, RoutedEventArgs e)
     {
-        base.OnLoaded(e);
         UpdateInfoPanelVisibility();
     }
 

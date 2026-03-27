@@ -33,9 +33,8 @@ public partial class ModernAppPage : UserControl
             NavigateToDiscover();
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
+    private void OnControlLoaded(object? sender, RoutedEventArgs e)
     {
-        base.OnLoaded(e);
         UpdateInfoPanelVisibility();
     }
 

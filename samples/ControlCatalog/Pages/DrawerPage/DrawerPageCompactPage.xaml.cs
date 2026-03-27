@@ -13,17 +13,15 @@ namespace ControlCatalog.Pages
             InitializeComponent();
         }
 
-        protected override void OnLoaded(RoutedEventArgs e)
+        private void OnControlLoaded(object? sender, RoutedEventArgs e)
         {
-            base.OnLoaded(e);
             _isLoaded = true;
             DemoDrawer.Opened += OnDrawerStatusChanged;
             DemoDrawer.Closed += OnDrawerStatusChanged;
         }
 
-        protected override void OnUnloaded(RoutedEventArgs e)
+        private void OnControlUnloaded(object? sender, RoutedEventArgs e)
         {
-            base.OnUnloaded(e);
             DemoDrawer.Opened -= OnDrawerStatusChanged;
             DemoDrawer.Closed -= OnDrawerStatusChanged;
         }

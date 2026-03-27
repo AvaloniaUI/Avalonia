@@ -87,6 +87,7 @@ namespace Avalonia.Controls
             });
 
             AffectsMeasure<Page>(SafeAreaPaddingProperty);
+            LoadedEvent.AddClassHandler<Page>((x, _) => x.UpdateContentSafeAreaPadding());
         }
 
         /// <summary>
@@ -255,11 +256,6 @@ namespace Avalonia.Controls
                 AutomationProperties.SetName(this, change.GetNewValue<object?>() as string ?? string.Empty);
         }
 
-        protected override void OnLoaded(RoutedEventArgs e)
-        {
-            base.OnLoaded(e);
-            UpdateContentSafeAreaPadding();
-        }
 
         /// <summary>
         /// Called when the safe-area padding changes.

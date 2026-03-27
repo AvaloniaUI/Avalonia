@@ -14,9 +14,8 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
+    private void OnControlLoaded(object? sender, RoutedEventArgs e)
     {
-        base.OnLoaded(e);
         var x = add(1, 2);
     }
 }

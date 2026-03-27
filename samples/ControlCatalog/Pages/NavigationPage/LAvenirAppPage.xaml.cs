@@ -38,10 +38,8 @@ public partial class LAvenirAppPage : UserControl
             _ = _navPage.PushAsync(BuildMenuTabbedPage());
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
+    private void OnControlLoaded(object? sender, RoutedEventArgs e)
     {
-        base.OnLoaded(e);
-
         _infoPanel = this.FindControl<ScrollViewer>("InfoPanel");
         UpdateInfoPanelVisibility();
     }

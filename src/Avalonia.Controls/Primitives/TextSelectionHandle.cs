@@ -27,6 +27,7 @@ namespace Avalonia.Controls.Primitives
             DragStartedEvent.AddClassHandler<TextSelectionHandle>((x, e) => x.OnDragStarted(e), RoutingStrategies.Bubble);
             DragDeltaEvent.AddClassHandler<TextSelectionHandle>((x, e) => x.OnDragDelta(e), RoutingStrategies.Bubble);
             DragCompletedEvent.AddClassHandler<TextSelectionHandle>((x, e) => x.OnDragCompleted(e), RoutingStrategies.Bubble);
+            LoadedEvent.AddClassHandler<TextSelectionHandle>((x, _) => x.InvalidateMeasure());
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -41,12 +42,6 @@ namespace Avalonia.Controls.Primitives
             RenderTransform = _transform;
         }
 
-        protected override void OnLoaded(RoutedEventArgs args)
-        {
-            base.OnLoaded(args);
-
-            InvalidateMeasure();
-        }
         protected override void OnDragStarted(VectorEventArgs e)
         {
             base.OnDragStarted(e);

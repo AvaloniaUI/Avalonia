@@ -12,11 +12,8 @@ namespace SafeAreaDemo.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        /// <inheritdoc/>
-        protected override void OnLoaded(RoutedEventArgs e)
+        private void OnControlLoaded(object? sender, RoutedEventArgs e)
         {
-            base.OnLoaded(e);
-
             var insetsManager = TopLevel.GetTopLevel(this)?.InsetsManager;
             var inputPane = TopLevel.GetTopLevel(this)?.InputPane;
             var viewModel = new MainViewModel();

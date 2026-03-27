@@ -8,6 +8,7 @@
              d:DesignHeight="450"
              x:Class="SafeAreaDemo.Views.MainView"
              x:DataType="vm:MainViewModel"
+             Loaded="OnControlLoaded"
              Background="#ccc"
              TopLevel.AutoSafeAreaPadding="{Binding AutoSafeAreaPadding, Mode=TwoWay}">
     <Grid HorizontalAlignment="Stretch"

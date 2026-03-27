@@ -35,9 +35,8 @@ public partial class CareCompanionAppPage : UserControl
         InitializeComponent();
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
+    private void OnControlLoaded(object? sender, RoutedEventArgs e)
     {
-        base.OnLoaded(e);
         _infoPanel = this.FindControl<ScrollViewer>("InfoPanel");
         UpdateInfoVisibility();
 

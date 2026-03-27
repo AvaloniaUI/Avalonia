@@ -20,10 +20,8 @@ namespace ControlCatalog.Pages
             InitializeComponent();
         }
 
-        protected override void OnLoaded(RoutedEventArgs e)
+        private void OnControlLoaded(object? sender, RoutedEventArgs e)
         {
-            base.OnLoaded(e);
-
             _perf.InitHeap();
             _perf.OpStopwatch.Restart();
             _perf.TrackPage(DetailPage);
@@ -34,9 +32,8 @@ namespace ControlCatalog.Pages
             RefreshAll();
         }
 
-        protected override void OnUnloaded(RoutedEventArgs e)
+        private void OnControlUnloaded(object? sender, RoutedEventArgs e)
         {
-            base.OnUnloaded(e);
             _perf.StopAutoRefresh();
         }
 
