@@ -144,8 +144,6 @@
     {
         auto appMenu = ::GetAppMenu();
 
-        auto nativeAppMenu = dynamic_cast<AvnAppMenu*>(appMenu);
-
         [[appMenuItem menu] removeItem:appMenuItem];
 
         if(_menu != nullptr)
@@ -153,9 +151,9 @@
             [_menu setHasGlobalMenuItem:false];
         }
 
-        [nativeAppMenu->GetNative() addItem:appMenuItem];
+        [appMenu->GetNative() addItem:appMenuItem];
 
-        [NSApp setMenu:nativeAppMenu->GetNative()];
+        [NSApp setMenu:appMenu->GetNative()];
     }
 }
 

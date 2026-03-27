@@ -192,6 +192,13 @@ public:
     }
 
     TInterface* getRaw() const { return _obj; }
+    
+    template<class TCast> ComPtr<TCast> getComPtr()
+    {
+        if (_obj == nullptr)
+            return nullptr;
+        return dynamic_cast<TCast*>(_obj);
+    }
 
     operator TInterface*() const { return _obj; }
     TInterface* operator->() const { return _obj; }

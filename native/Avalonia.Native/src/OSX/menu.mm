@@ -478,17 +478,15 @@ extern IAvnMenuItem* CreateAppMenuItemSeparator()
     }
 }
 
-static ComStaticPtr<IAvnMenu> s_appMenu;
+static ComStaticPtr<AvnAppMenu> s_appMenu;
 static NSMenuItem* s_appMenuItem = nullptr;
 
 extern void SetAppMenu(IAvnMenu *menu)
 {
-    s_appMenu.set(menu);
+    s_appMenu.set(dynamic_cast<AvnAppMenu*>(menu));
     
     if(s_appMenu != nullptr)
     {
-        auto nativeMenu = dynamic_cast<AvnAppMenu*>(s_appMenu);
-        
         auto currentMenu = [s_appMenuItem menu];
         
         if (currentMenu != nullptr)
@@ -496,7 +494,7 @@ extern void SetAppMenu(IAvnMenu *menu)
             [currentMenu removeItem:s_appMenuItem];
         }
         
-        s_appMenuItem = [nativeMenu->GetNative() itemAtIndex:0];
+        s_appMenuItem = [s_appMenu->GetNative() itemAtIndex:0];
         
         if (currentMenu == nullptr)
         {
@@ -524,9 +522,9 @@ extern void SetServicesMenu (IAvnMenu* menu)
     [NSApplication sharedApplication].servicesMenu = nativeMenu->GetNative();
 }
 
-extern IAvnMenu* GetAppMenu ()
+extern AvnAppMenu* GetAppMenu ()
 {
-    return s_appMenu;
+    return s_appMenu.getRaw();
 }
 
 extern NSMenuItem* GetAppMenuItem ()

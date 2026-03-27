@@ -70,7 +70,7 @@
     return [NSString stringWithFormat:@"%@ '%@' (%p)",
         GetNSStringAndRelease(_peer->GetClassName()),
         GetNSStringAndRelease(_peer->GetName()),
-        _peer];
+        _peer.getRaw()];
 }
 
 - (IAvnAutomationPeer *)peer
