@@ -130,7 +130,7 @@
         case AutomationExpander: return NSAccessibilityDisclosureTriangleRole;
         // Treat unknown roles as generic group container items. Returning
         // NSAccessibilityUnknownRole is also possible but makes the screen
-       // reader focus on the item instead of passing focus to child items.
+        // reader focus on the item instead of passing focus to child items.
         default: return NSAccessibilityGroupRole;
     }
 }
@@ -468,6 +468,31 @@
 - (void)raiseLiveRegionChanged
 {
     NSAccessibilityPostNotification(self, @"AXLiveRegionChanged" /* kAXLiveRegionChangedNotification */);
+
+    // Announce the new string
+    if (_peer->GetName() != nullptr) {
+        NSAccessibilityPriorityLevel priority = NSAccessibilityPriorityLow;
+        switch (_peer->GetLiveSetting()) {
+        case LiveSettingOff:
+            return;
+        case LiveSettingPolite:
+            priority = NSAccessibilityPriorityMedium;
+            break;
+        case LiveSettingAssertive:
+            priority = NSAccessibilityPriorityHigh;
+            break;
+        }
+
+        NSDictionary <NSString *, id> *userInfo = @{
+            NSAccessibilityAnnouncementKey: GetNSStringAndRelease(_peer->GetName()),
+            NSAccessibilityPriorityKey: @(priority)
+        };
+
+        id topLevel = [self accessibilityTopLevelUIElement];
+        if ([topLevel isKindOfClass:[AvnWindow class]]) {
+            NSAccessibilityPostNotificationWithUserInfo(topLevel, NSAccessibilityAnnouncementRequestedNotification, userInfo);
+        }
+    }
 }
 
 - (void)setAccessibilityFocused:(BOOL)accessibilityFocused
