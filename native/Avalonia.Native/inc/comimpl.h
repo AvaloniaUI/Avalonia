@@ -111,6 +111,11 @@ public:
     
     TInterface** getPPV()
     {
+        if(_obj)
+        {
+            _obj->Release();
+            _obj = nullptr;
+        }
         return &_obj;
     }
 

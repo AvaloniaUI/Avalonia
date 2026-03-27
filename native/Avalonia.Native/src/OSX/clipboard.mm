@@ -183,7 +183,9 @@ public:
         
         for (auto i = 0; i < count; ++i)
         {
-            auto item = source->GetItem(i);
+            ComPtr<IAvnClipboardDataItem> item;
+            if(S_OK != source->GetItem(i, item.getPPV()))
+                continue;
             auto writeableItem = [[WriteableClipboardItem alloc] initWithItem:item source:source];
             [writeableItems addObject:writeableItem];
         }
@@ -280,7 +282,8 @@ NSString* TryConvertFormatToUti(NSString* format)
 
 - (nonnull NSArray<NSPasteboardType>*) writableTypesForPasteboard:(nonnull NSPasteboard*)pasteboard
 {
-    auto formats = _item->ProvideFormats();
+    ComPtr<IAvnStringArray> formats;
+    _item->ProvideFormats(formats.getPPV());
     if (formats == nullptr)
         return [NSArray array];
     
@@ -301,7 +304,6 @@ NSString* TryConvertFormatToUti(NSString* format)
         if (uti != nil)
             [utis addObject:uti];
     }
-    formats->Release();
     
     [utis addObject:GetAvnCustomDataType()];
     
@@ -320,7 +322,8 @@ NSString* TryConvertFormatToUti(NSString* format)
     if ([type isEqualToString:GetAvnCustomDataType()])
         return @"";
     
-    ComPtr<IAvnClipboardDataValue> value(_item->GetValue([type UTF8String]), true);
+    ComPtr<IAvnClipboardDataValue> value;
+    _item->GetValue([type UTF8String], value.getPPV());
     if (value.getRaw() == nullptr)
         return nil;
     
