@@ -9,7 +9,18 @@ This codebase uses COM for cross-boundary object lifetime management. COM types 
 
 **No raw COM pointer should ever be stored in class fields, instance variables, closures, or containers.** Raw COM pointers are only acceptable as function parameters and local variables with the lifetime of the current function call.
 
-### Smart Pointer Types
+### COM Return Value Convention
+
+By convention, any COM interface reference returned from a COM call has its reference counter incremented — it is the caller's responsibility to release it. With the `IFoo* GetFoo()` pattern it is hard to track this correctly, so all methods in `avn.idl` should use the out-parameter pattern instead:
+
+```cpp
+// WRONG — easy to leak or forget Release:
+IFoo* GetFoo();
+
+// CORRECT — use HRESULT + out-parameter:
+HRESULT GetFoo(IFoo** ppv);
+```
+# Smart pointer types
 
 ### Objective-C Objects
 
