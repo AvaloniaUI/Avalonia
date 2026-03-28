@@ -304,7 +304,7 @@ public:
     }
 };
 
-static ComStaticPtr<AvnMetalDisplay> _display{comnew<AvnMetalDisplay>()};
+static ComStaticPtr<AvnMetalDisplay> _display(comnew<AvnMetalDisplay>());
 
 extern IAvnMetalDisplay* GetMetalDisplay()
 {

@@ -219,7 +219,7 @@ public:
     }
 };
 
-static ComStaticPtr<AvnGlDisplay> GlDisplay{comnew<AvnGlDisplay>()};
+static ComStaticPtr<AvnGlDisplay> GlDisplay(comnew<AvnGlDisplay>());
 
 
 extern IAvnGlDisplay* GetGlDisplay()
