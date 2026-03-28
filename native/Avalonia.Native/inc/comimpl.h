@@ -164,6 +164,13 @@ public:
     ComStaticPtr() = default;
     ~ComStaticPtr() = default;
 
+    ComStaticPtr(const ComPtr<TInterface>& ptr)
+    {
+        _obj = ptr;
+        if (_obj)
+            _obj->AddRef();
+    }
+
     ComStaticPtr(const ComStaticPtr&) = delete;
     ComStaticPtr(ComStaticPtr&&) = delete;
     ComStaticPtr& operator=(const ComStaticPtr&) = delete;
