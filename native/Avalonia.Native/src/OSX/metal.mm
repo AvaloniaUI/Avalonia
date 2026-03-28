@@ -304,12 +304,10 @@ public:
     }
 };
 
-static ComStaticPtr<AvnMetalDisplay> _display;
+static ComStaticPtr<AvnMetalDisplay> _display{comnew<AvnMetalDisplay>()};
 
 extern IAvnMetalDisplay* GetMetalDisplay()
 {
-    if (_display.getRaw() == nullptr)
-        _display.set(comnew<AvnMetalDisplay>());
     return _display;
 }
 

@@ -283,8 +283,8 @@ NSString* TryConvertFormatToUti(NSString* format)
 - (nonnull NSArray<NSPasteboardType>*) writableTypesForPasteboard:(nonnull NSPasteboard*)pasteboard
 {
     ComPtr<IAvnStringArray> formats;
-    _item->ProvideFormats(formats.getPPV());
-    if (formats == nullptr)
+    auto hr = _item->ProvideFormats(formats.getPPV());
+    if (hr != S_OK || formats == nullptr)
         return [NSArray array];
     
     auto count = formats->GetCount();
@@ -323,8 +323,8 @@ NSString* TryConvertFormatToUti(NSString* format)
         return @"";
     
     ComPtr<IAvnClipboardDataValue> value;
-    _item->GetValue([type UTF8String], value.getPPV());
-    if (value.getRaw() == nullptr)
+    HRESULT hr = _item->GetValue([type UTF8String], value.getPPV());
+    if (hr != S_OK || value.getRaw() == nullptr)
         return nil;
     
     if (value->IsString())

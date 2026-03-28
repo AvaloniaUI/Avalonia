@@ -87,9 +87,9 @@ internal static class WinUiCompositionUtils
         
         // WinRT has broken reference counting for effects returned from GetSource. It will Release returned ref
         // and attempt to use it afterward. This usually works because the wrapper effect DOES hold a reference
-        // to the COM object, so invalid memory access succeedes. 
+        // to the COM object, so invalid memory access succeeds.
         // In our case MicroCOM will rightfully release native memory once the latest native reference is gone.
-        // Another problem is WinUIEffectBase destroing it's sources when it's no longer referenced by anything.
+        // Another problem is WinUIEffectBase destroying its sources when it's no longer referenced by anything.
         // So we need to force-keep a native pointer until we are done.
         using var blurLease = MicroComRuntime.LeaseNativePointerForCall<IGraphicsEffectSource>(blurEffect);
         

@@ -28,5 +28,4 @@ public:
     }
 };
 
-extern std::map<AvnStandardCursorType, ComPtr<Cursor>> s_cursorMap;
 #endif /* cursor_h */
