@@ -125,6 +125,18 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DrawerPage, object?>(nameof(DrawerFooter));
 
         /// <summary>
+        /// Defines the <see cref="DrawerHeaderTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> DrawerHeaderTemplateProperty =
+            AvaloniaProperty.Register<DrawerPage, IDataTemplate?>(nameof(DrawerHeaderTemplate));
+
+        /// <summary>
+        /// Defines the <see cref="DrawerFooterTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> DrawerFooterTemplateProperty =
+            AvaloniaProperty.Register<DrawerPage, IDataTemplate?>(nameof(DrawerFooterTemplate));
+
+        /// <summary>
         /// Defines the <see cref="DrawerIcon"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> DrawerIconProperty =
@@ -403,6 +415,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the header content displayed at the top of the drawer pane.
         /// </summary>
+        [DependsOn(nameof(DrawerHeaderTemplate))]
         public object? DrawerHeader
         {
             get => GetValue(DrawerHeaderProperty);
@@ -412,10 +425,29 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the footer content displayed at the bottom of the drawer pane.
         /// </summary>
+        [DependsOn(nameof(DrawerFooterTemplate))]
         public object? DrawerFooter
         {
             get => GetValue(DrawerFooterProperty);
             set => SetValue(DrawerFooterProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to display <see cref="DrawerHeader"/>.
+        /// </summary>
+        public IDataTemplate? DrawerHeaderTemplate
+        {
+            get => GetValue(DrawerHeaderTemplateProperty);
+            set => SetValue(DrawerHeaderTemplateProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to display <see cref="DrawerFooter"/>.
+        /// </summary>
+        public IDataTemplate? DrawerFooterTemplate
+        {
+            get => GetValue(DrawerFooterTemplateProperty);
+            set => SetValue(DrawerFooterTemplateProperty, value);
         }
 
         /// <summary>
@@ -534,6 +566,8 @@ namespace Avalonia.Controls
             get => GetValue(DisplayModeProperty);
             set => SetValue(DisplayModeProperty, value);
         }
+
+        protected override Type StyleKeyOverride => typeof(DrawerPage);
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {

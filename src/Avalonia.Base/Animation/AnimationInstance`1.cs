@@ -148,7 +148,11 @@ namespace Avalonia.Animation
                 }
 
                 // Stop and dispose the animation when detached from the visual tree.
-                _detachedHandler = (_, _) => DoComplete();
+                _detachedHandler = (_, _) =>
+                {
+                    SetFinalValue();
+                    DoComplete();
+                };
                 visual.DetachedFromVisualTree += _detachedHandler;
             }
 
@@ -170,6 +174,12 @@ namespace Avalonia.Animation
             {
                 PublishError(e);
             }
+        }
+
+        private void SetFinalValue()
+        {
+            var easedTime = _easeFunc!.Ease(_playbackReversed ? 0.0 : 1.0);
+            _lastInterpValue = _interpolator(easedTime, _neutralValue);
         }
 
         private void ApplyFinalFill()
@@ -237,8 +247,7 @@ namespace Avalonia.Animation
             // when the duration is set to zero while animating and snap to the last iterated value.
             if (_currentIteration + 1 > _iterationCount || _duration == TimeSpan.Zero)
             {
-                var easedTime = _easeFunc!.Ease(_playbackReversed ? 0.0 : 1.0);
-                _lastInterpValue = _interpolator(easedTime, _neutralValue);
+                SetFinalValue();
                 DoComplete();
                 return;
             }
