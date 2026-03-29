@@ -74,7 +74,7 @@ namespace Avalonia.UnitTests
         IRenderer IPresentationSource.Renderer => Renderer;
         IHitTester IPresentationSource.HitTester => HitTester;
 
-        public IFocusManager FocusManager => _focusManager ??= new FocusManager(this);
+        public IFocusManager FocusManager => _focusManager ??= new FocusManager { ContentRoot = this };
         public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         public IInputElement? PointerOverElement { get; set; }

@@ -16,6 +16,14 @@ namespace Avalonia.Platform
         /// Gets or sets the minimized/maximized state of the window.
         /// </summary>
         WindowState WindowState { get; set; }
+        
+        /// <summary>
+        /// Indicates if platform implementation has a working getter for <see cref="WindowState"/> that produces
+        /// consistent results with WindowStateChanged callback.
+        /// If false, Window will not call the getter and will only use the setter and
+        /// <see cref="WindowStateChanged"/> callback to track window state.
+        /// </summary>
+        bool WindowStateGetterIsUsable { get; }
 
         /// <summary>
         /// Gets or sets a method called when the minimized/maximized state of the window changes.

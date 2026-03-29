@@ -532,7 +532,7 @@ namespace Avalonia.Controls
             _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
         }
 
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
 

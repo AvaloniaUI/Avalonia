@@ -2,6 +2,7 @@ using System;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Reactive;
 using Avalonia.Styling;
@@ -58,13 +59,13 @@ public class WindowDrawnDecorations : StyledElement
     /// Defines the <see cref="DefaultFrameThickness"/> property.
     /// </summary>
     public static readonly StyledProperty<Thickness> DefaultFrameThicknessProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultFrameThickness));
+        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultFrameThickness), validate: Border.BorderThicknessProperty.ValidateValue);
 
     /// <summary>
     /// Defines the <see cref="DefaultShadowThickness"/> property.
     /// </summary>
     public static readonly StyledProperty<Thickness> DefaultShadowThicknessProperty =
-        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultShadowThickness));
+        AvaloniaProperty.Register<WindowDrawnDecorations, Thickness>(nameof(DefaultShadowThickness), validate: Border.BorderThicknessProperty.ValidateValue);
 
     /// <summary>
     /// Defines the <see cref="TitleBarHeight"/> property.
@@ -138,12 +139,29 @@ public class WindowDrawnDecorations : StyledElement
     private IDisposable? _windowSubscriptions;
     private Window? _hostWindow;
     private double _titleBarHeightOverride = -1;
+    private double _renderScaling = 1.0;
 
     /// <summary>
     /// Raised when any property affecting the effective geometry changes
     /// (effective titlebar height, frame thickness, or shadow thickness).
     /// </summary>
     internal event Action? EffectiveGeometryChanged;
+
+    /// <summary>
+    /// Gets or sets the current render scaling factor used for pixel-aligning
+    /// decoration geometry (title bar height, frame/shadow thickness).
+    /// </summary>
+    internal double RenderScaling
+    {
+        get => _renderScaling;
+        set
+        {
+            if (_renderScaling == value)
+                return;
+            _renderScaling = value;
+            UpdateEffectiveGeometry();
+        }
+    }
 
     /// <summary>
     /// Gets or sets the decorations template.
@@ -559,16 +577,19 @@ public class WindowDrawnDecorations : StyledElement
 
     private void UpdateEffectiveGeometry()
     {
+        var scale = _renderScaling;
+
         TitleBarHeight = EnabledParts.HasFlag(DrawnWindowDecorationParts.TitleBar)
-            ? (TitleBarHeightOverride == -1 ? DefaultTitleBarHeight : TitleBarHeightOverride)
+            ? LayoutHelper.RoundLayoutValue(
+                TitleBarHeightOverride == -1 ? DefaultTitleBarHeight : TitleBarHeightOverride, scale)
             : 0;
 
         FrameThickness = EnabledParts.HasFlag(DrawnWindowDecorationParts.Border)
-            ? (FrameThicknessOverride ?? DefaultFrameThickness)
+            ? LayoutHelper.RoundLayoutThickness(FrameThicknessOverride ?? DefaultFrameThickness, scale)
             : default;
 
         ShadowThickness = EnabledParts.HasFlag(DrawnWindowDecorationParts.Shadow)
-            ? (ShadowThicknessOverride ?? DefaultShadowThickness)
+            ? LayoutHelper.RoundLayoutThickness(ShadowThicknessOverride ?? DefaultShadowThickness, scale)
             : default;
 
         EffectiveGeometryChanged?.Invoke();

@@ -8,10 +8,10 @@ namespace Avalonia.Rendering
     [PrivateApi]
     public class SleepLoopRenderTimer : IRenderTimer
     {
-        private Action<TimeSpan>? _tick;
-        private int _count;
-        private readonly object _lock = new object();
-        private bool _running;
+        private volatile Action<TimeSpan>? _tick;
+        private volatile bool _stopped = true;
+        private bool _threadStarted;
+        private readonly AutoResetEvent _wakeEvent = new(false);
         private readonly Stopwatch _st = Stopwatch.StartNew();
         private readonly TimeSpan _timeBetweenTicks;
 
@@ -19,28 +19,30 @@ namespace Avalonia.Rendering
         {
             _timeBetweenTicks = TimeSpan.FromSeconds(1d / fps);
         }
-        
-        public event Action<TimeSpan> Tick
-        {
-            add
-            {
-                lock (_lock)
-                {
-                    _tick += value;
-                    _count++;
-                    if (_running)
-                        return;
-                    _running = true;
-                    new Thread(LoopProc) { IsBackground = true }.Start();
-                }
 
-            }
-            remove
+        public Action<TimeSpan>? Tick
+        {
+            get => _tick;
+            set
             {
-                lock (_lock)
+                if (value != null)
                 {
-                    _tick -= value;
-                    _count--;
+                    _tick = value;
+                    _stopped = false;
+                    if (!_threadStarted)
+                    {
+                        _threadStarted = true;
+                        new Thread(LoopProc) { IsBackground = true }.Start();
+                    }
+                    else
+                    {
+                        _wakeEvent.Set();
+                    }
+                }
+                else
+                {
+                    _stopped = true;
+                    _tick = null;
                 }
             }
         }
@@ -52,24 +54,17 @@ namespace Avalonia.Rendering
             var lastTick = _st.Elapsed;
             while (true)
             {
+                if (_stopped)
+                    _wakeEvent.WaitOne();
+
                 var now = _st.Elapsed;
                 var timeTillNextTick = lastTick + _timeBetweenTicks - now;
-                if (timeTillNextTick.TotalMilliseconds > 1) Thread.Sleep(timeTillNextTick);
+                if (timeTillNextTick.TotalMilliseconds > 1)
+                    _wakeEvent.WaitOne(timeTillNextTick);
                 lastTick = now = _st.Elapsed;
-                lock (_lock)
-                {
-                    if (_count == 0)
-                    {
-                        _running = false;
-                        return;
-                    }
-                }
 
                 _tick?.Invoke(now);
-                
             }
         }
-
-
     }
 }

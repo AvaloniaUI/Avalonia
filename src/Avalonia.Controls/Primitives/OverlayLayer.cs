@@ -13,6 +13,11 @@ namespace Avalonia.Controls.Primitives
 
         public Size AvailableSize { get; private set; }
 
+        /// <summary>
+        /// Gets the dedicated adorner layer for this overlay layer.
+        /// </summary>
+        internal AdornerLayer? AdornerLayer { get; set; }
+
         internal OverlayLayer()
         {
         }
@@ -24,7 +29,7 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The <see cref="OverlayLayer"/> associated with the visual, or null if no overlay layer exists.</returns>
         public static OverlayLayer? GetOverlayLayer(Visual visual)
         {
-            foreach (var v in visual.GetVisualAncestors())
+            foreach (var v in visual.GetSelfAndVisualAncestors())
                 if (v is VisualLayerManager { OverlayLayer: { } layer })
                     return layer;
 

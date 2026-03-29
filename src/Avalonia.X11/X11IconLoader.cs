@@ -40,10 +40,17 @@ namespace Avalonia.X11
             _width = Math.Min(bitmap.PixelSize.Width, 128);
             _height = Math.Min(bitmap.PixelSize.Height, 128);
             var pixels = new uint[_width * _height];
+            var size = new PixelSize(_width, _height);
 
-            fixed (void* pPixels = pixels)
-                bitmap.CopyPixels(new LockedFramebuffer((IntPtr)pPixels, new PixelSize(_width, _height), _width * 4,
-                    new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul, null));
+            using (var rtb = new RenderTargetBitmap(size))
+            {
+                using (var ctx = rtb.CreateDrawingContext(true)) 
+                    ctx.DrawImage(bitmap, new Rect(rtb.Size));
+                
+                fixed (void* pPixels = pixels)
+                    rtb.CopyPixels(new LockedFramebuffer((IntPtr)pPixels, size, _width * 4,
+                        new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul, null));
+            }
             
             Data = new UIntPtr[_width * _height + 2];
             Data[0] = new UIntPtr((uint)_width);

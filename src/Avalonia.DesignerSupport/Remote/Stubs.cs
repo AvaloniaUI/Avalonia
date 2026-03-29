@@ -44,6 +44,7 @@ namespace Avalonia.DesignerSupport.Remote
         public PixelPoint Position { get; set; }
         public Action<PixelPoint>? PositionChanged { get; set; }
         public WindowState WindowState { get; set; }
+        public bool WindowStateGetterIsUsable => false;
         public Action<WindowState>? WindowStateChanged { get; set; }
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
@@ -69,16 +70,11 @@ namespace Avalonia.DesignerSupport.Remote
 
         private sealed class DummyRenderTimer : IRenderTimer
         {
-            public event Action<TimeSpan> Tick
-            {
-                add { }
-                remove { }
-            }
-
+            public Action<TimeSpan>? Tick { get; set; }
             public bool RunsInBackground => false;
         }
 
-        public Compositor Compositor { get; } = new(new RenderLoop(new DummyRenderTimer()), null);
+        public Compositor Compositor { get; } = new(RenderLoop.FromTimer(new DummyRenderTimer()), null);
 
         public void Dispose()
         {

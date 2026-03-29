@@ -1,5 +1,4 @@
-﻿using Avalonia.Compatibility;
-using Avalonia.Platform;
+﻿using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Helpers

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
@@ -155,10 +153,7 @@ namespace Avalonia.Win32
                         // The first and foremost thing to do - notify the TopLevel
                         Closed?.Invoke();
 
-                        if (UiaCoreTypesApi.IsNetComInteropAvailable)
-                        {
-                            UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
-                        }
+                        UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
 
                         // We need to release IMM context and state to avoid leaks.
                         if (Imm32InputMethod.Current.Hwnd == _hwnd)
@@ -224,7 +219,7 @@ namespace Avalonia.Win32
                     }
 
                     var requestIcon = (Icons)wParam;
-                    var requestDpi = (uint) lParam;
+                    var requestDpi = (uint)lParam;
 
                     if (requestDpi == 0)
                     {
@@ -937,7 +932,7 @@ namespace Avalonia.Win32
                         return IntPtr.Zero;
                     }
                 case WindowsMessage.WM_GETOBJECT:
-                    if ((long)lParam == uiaRootObjectId && UiaCoreTypesApi.IsNetComInteropAvailable && _owner?.FocusRoot is Control control)
+                    if ((long)lParam == uiaRootObjectId && _owner?.FocusRoot is Control control)
                     {
                         var peer = ControlAutomationPeer.CreatePeerForElement(control);
                         var node = AutomationNode.GetOrCreate(peer);
@@ -946,7 +941,7 @@ namespace Avalonia.Win32
                     break;
                 case WindowsMessage.WM_WINDOWPOSCHANGED:
                     var winPos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
-                    if((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
+                    if ((winPos.flags & (uint)SetWindowPosFlags.SWP_SHOWWINDOW) != 0)
                     {
                         OnShowHideMessage(true);
                     }
@@ -973,7 +968,7 @@ namespace Avalonia.Win32
 
                 if (message == WindowsMessage.WM_KEYDOWN)
                 {
-                    if(e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
+                    if (e is RawKeyEventArgs args && args.Key == Key.ImeProcessed)
                     {
                         _ignoreWmChar = true;
                     }
@@ -1008,6 +1003,14 @@ namespace Avalonia.Win32
 
             if (hwnd == _hwnd)
                 return true;
+
+            return IsOurWindowGlobal(hwnd);
+        }
+
+        internal static bool IsOurWindowGlobal(IntPtr hwnd)
+        {
+            if (hwnd == IntPtr.Zero)
+                return false;
 
             lock (s_instances)
                 for (int i = 0; i < s_instances.Count; i++)
@@ -1118,7 +1121,7 @@ namespace Avalonia.Win32
                     var x = mp.x > 32767 ? mp.x - 65536 : mp.x;
                     var y = mp.y > 32767 ? mp.y - 65536 : mp.y;
 
-                    if(mp.time <= prevMovePoint.time || mp.time >= movePoint.time)
+                    if (mp.time <= prevMovePoint.time || mp.time >= movePoint.time)
                         continue;
 
                     s_sortedPoints.Add(new InternalPoint
