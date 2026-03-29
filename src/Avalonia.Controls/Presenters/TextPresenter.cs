@@ -98,6 +98,7 @@ namespace Avalonia.Controls.Presenters
         private DispatcherTimer? _caretTimer;
         private bool _caretBlink;
         private TextLayout? _textLayout;
+        private TextRunCache? _textRunCache;
         private Size _constraint;
 
         private CharacterHit _lastCharacterHit;
@@ -365,7 +366,8 @@ namespace Avalonia.Controls.Presenters
                 LetterSpacing,
                 0,
                 FontFeatures,
-                textStyleOverrides);
+                textStyleOverrides,
+                _textRunCache ??= new TextRunCache());
 
             return textLayout;
         }
@@ -629,6 +631,16 @@ namespace Avalonia.Controls.Presenters
         }
 
         protected virtual void InvalidateTextLayout()
+        {
+            _textRunCache?.Invalidate();
+            _textLayout?.Dispose();
+            _textLayout = null;
+
+            InvalidateVisual();
+            InvalidateMeasure();
+        }
+
+        private void InvalidateTextLayoutKeepCache()
         {
             _textLayout?.Dispose();
             _textLayout = null;
@@ -1049,6 +1061,7 @@ namespace Avalonia.Controls.Presenters
 
             switch (change.Property.Name)
             {
+                // Properties that affect shaping: invalidate the run cache + layout.
                 case nameof(PreeditText):
                 case nameof(Foreground):
                 case nameof(FontSize):
@@ -1056,24 +1069,25 @@ namespace Avalonia.Controls.Presenters
                 case nameof(FontWeight):
                 case nameof(FontFamily):
                 case nameof(FontStretch):
-
                 case nameof(Text):
-                case nameof(TextAlignment):
-                case nameof(TextWrapping):
-
-                case nameof(LineHeight):
                 case nameof(LetterSpacing):
-
-                case nameof(SelectionStart):
-                case nameof(SelectionEnd):
-                case nameof(SelectionForegroundBrush):
-                case nameof(ShowSelectionHighlightProperty):
-
                 case nameof(PasswordChar):
                 case nameof(RevealPassword):
                 case nameof(FlowDirection):
                     {
                         InvalidateTextLayout();
+                        break;
+                    }
+                // Properties that do not affect shaping: preserve the run cache.
+                case nameof(TextAlignment):
+                case nameof(TextWrapping):
+                case nameof(LineHeight):
+                case nameof(SelectionStart):
+                case nameof(SelectionEnd):
+                case nameof(SelectionForegroundBrush):
+                case nameof(ShowSelectionHighlightProperty):
+                    {
+                        InvalidateTextLayoutKeepCache();
                         break;
                     }
             }
