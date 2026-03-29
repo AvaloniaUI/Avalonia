@@ -72,7 +72,6 @@ namespace Avalonia.X11
         private bool _usePositioningFlags = false;
         private X11WindowMode _mode;
         private IWindowIconImpl? _iconImpl;
-        private Action<PlatformAllowedWindowActions>? _allowedWindowActionsChanged;
 
         private enum XSyncState
         {
@@ -240,6 +239,8 @@ namespace Avalonia.X11
 
             _activationTracker = new(_platform, this);
             _activationTracker.ActivationChanged += HandleActivation;
+
+            _platform.Globals.AllowedActionsChanged += OnAllowedActionsChanged;
 
             CreateIC();
 
@@ -515,23 +516,12 @@ namespace Avalonia.X11
 
         public PlatformAllowedWindowActions AllowedWindowActions => _platform.Globals.AllowedActions;
 
-        public Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged
-        {
-            get => _allowedWindowActionsChanged;
-            set
-            {
-                if (_allowedWindowActionsChanged != null)
-                    _platform.Globals.AllowedActionsChanged -= OnAllowedActionsChanged;
-                _allowedWindowActionsChanged = value;
-                if (_allowedWindowActionsChanged != null)
-                    _platform.Globals.AllowedActionsChanged += OnAllowedActionsChanged;
-            }
-        }
+        public Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged { get; set; }
 
         public Compositor Compositor => _platform.Compositor;
 
         private void OnAllowedActionsChanged() =>
-            _allowedWindowActionsChanged?.Invoke(_platform.Globals.AllowedActions);
+            AllowedWindowActionsChanged?.Invoke(_platform.Globals.AllowedActions);
         
         private void OnEvent(ref XEvent ev)
         {
@@ -1151,7 +1141,7 @@ namespace Avalonia.X11
             }
 
             _platform.X11Screens.Changed -= OnScreensChanged;
-            AllowedWindowActionsChanged = null;
+            _platform.Globals.AllowedActionsChanged -= OnAllowedActionsChanged;
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
             {                
