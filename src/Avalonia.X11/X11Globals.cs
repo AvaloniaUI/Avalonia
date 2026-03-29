@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Avalonia.Controls.Platform;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -17,6 +18,7 @@ namespace Avalonia.X11
         private IntPtr _compositionAtomOwner;
         private bool _isCompositionEnabled;
         private WindowActivationTrackingMode _activationTrackingMode;
+        private PlatformAllowedWindowActions _allowedActions = PlatformAllowedWindowActions.All;
 
         public event Action? WindowManagerChanged;
         public event Action? CompositionChanged;
@@ -24,6 +26,7 @@ namespace Avalonia.X11
         public event Action? NetActiveWindowPropertyChanged;
         public event Action? RootGeometryChangedChanged;
         public event Action? WindowActivationTrackingModeChanged;
+        public event Action? AllowedActionsChanged;
         
         public enum WindowActivationTrackingMode
         {
@@ -101,6 +104,19 @@ namespace Avalonia.X11
                 {
                     _activationTrackingMode = value;
                     WindowActivationTrackingModeChanged?.Invoke();
+                }
+            }
+        }
+
+        public PlatformAllowedWindowActions AllowedActions
+        {
+            get => _allowedActions;
+            private set
+            {
+                if (_allowedActions != value)
+                {
+                    _allowedActions = value;
+                    AllowedActionsChanged?.Invoke();
                 }
             }
         }
@@ -187,17 +203,15 @@ namespace Avalonia.X11
             }
         }
 
-        private WindowActivationTrackingMode GetWindowActivityTrackingMode(IntPtr wm)
+        private WindowActivationTrackingMode GetWindowActivityTrackingMode(IntPtr wm, IntPtr[]? supportedFeatures)
         {
             if (Environment.GetEnvironmentVariable("AVALONIA_DEBUG_FORCE_X11_ACTIVATION_TRACKING_MODE") is
                     { } forcedModeString
                 && Enum.TryParse<WindowActivationTrackingMode>(forcedModeString, true, out var forcedMode))
                 return forcedMode;
             
-            if (wm == IntPtr.Zero)
+            if (wm == IntPtr.Zero || supportedFeatures == null)
                 return WindowActivationTrackingMode.FocusEvents;
-            var supportedFeatures = XGetWindowPropertyAsIntPtrArray(_x11.Display, _x11.RootWindow,
-                _x11.Atoms._NET_SUPPORTED, _x11.Atoms.ATOM) ?? [];
 
             if (supportedFeatures.Contains(_x11.Atoms._NET_WM_STATE_FOCUSED))
                 return WindowActivationTrackingMode._NET_WM_STATE_FOCUSED;
@@ -208,11 +222,36 @@ namespace Avalonia.X11
             return WindowActivationTrackingMode.FocusEvents;
         }
 
+        private static PlatformAllowedWindowActions GetAllowedActions(IntPtr wm, IntPtr[]? supportedFeatures, X11Atoms atoms)
+        {
+            if (wm == IntPtr.Zero || supportedFeatures == null)
+                return PlatformAllowedWindowActions.All;
+
+            var actions = PlatformAllowedWindowActions.None;
+
+            if (supportedFeatures.Contains(atoms._NET_WM_ACTION_MAXIMIZE_VERT)
+                && supportedFeatures.Contains(atoms._NET_WM_ACTION_MAXIMIZE_HORZ))
+                actions |= PlatformAllowedWindowActions.Maximize;
+
+            if (supportedFeatures.Contains(atoms._NET_WM_ACTION_FULLSCREEN))
+                actions |= PlatformAllowedWindowActions.Fullscreen;
+
+            if (supportedFeatures.Contains(atoms._NET_WM_ACTION_MINIMIZE))
+                actions |= PlatformAllowedWindowActions.Minimize;
+
+            return actions;
+        }
+
         private void OnNewWindowManager()
         {
             var wm = GetActiveWm();
+            var supportedFeatures = wm != IntPtr.Zero
+                ? XGetWindowPropertyAsIntPtrArray(_x11.Display, _x11.RootWindow,
+                    _x11.Atoms._NET_SUPPORTED, _x11.Atoms.ATOM)
+                : null;
             WmName = GetWmName(wm);
-            ActivationTrackingMode = GetWindowActivityTrackingMode(wm);
+            ActivationTrackingMode = GetWindowActivityTrackingMode(wm, supportedFeatures);
+            AllowedActions = GetAllowedActions(wm, supportedFeatures, _x11.Atoms);
         }
         
         private void OnRootWindowEvent(ref XEvent ev)

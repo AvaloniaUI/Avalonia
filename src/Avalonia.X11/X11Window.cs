@@ -72,6 +72,7 @@ namespace Avalonia.X11
         private bool _usePositioningFlags = false;
         private X11WindowMode _mode;
         private IWindowIconImpl? _iconImpl;
+        private Action<PlatformAllowedWindowActions>? _allowedWindowActionsChanged;
 
         private enum XSyncState
         {
@@ -512,7 +513,25 @@ namespace Avalonia.X11
         public Action<PixelPoint>? PositionChanged { get; set; }
         public Action? LostFocus { get; set; }
 
+        public PlatformAllowedWindowActions AllowedWindowActions => _platform.Globals.AllowedActions;
+
+        public Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged
+        {
+            get => _allowedWindowActionsChanged;
+            set
+            {
+                if (_allowedWindowActionsChanged != null)
+                    _platform.Globals.AllowedActionsChanged -= OnAllowedActionsChanged;
+                _allowedWindowActionsChanged = value;
+                if (_allowedWindowActionsChanged != null)
+                    _platform.Globals.AllowedActionsChanged += OnAllowedActionsChanged;
+            }
+        }
+
         public Compositor Compositor => _platform.Compositor;
+
+        private void OnAllowedActionsChanged() =>
+            _allowedWindowActionsChanged?.Invoke(_platform.Globals.AllowedActions);
         
         private void OnEvent(ref XEvent ev)
         {
@@ -1132,6 +1151,7 @@ namespace Avalonia.X11
             }
 
             _platform.X11Screens.Changed -= OnScreensChanged;
+            AllowedWindowActionsChanged = null;
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
             {                
