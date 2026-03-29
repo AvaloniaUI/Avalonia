@@ -764,4 +764,15 @@ public partial class DispatcherTests
         }
     }
 
+    [Fact]
+    public async Task Dispatcher_Can_Act_As_TaskScheduler()
+    {
+        var impl = new SimpleDispatcherImpl();
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+        Thread? continuationThread = null;
+        _ = Task.CompletedTask.ContinueWith(t => continuationThread = Thread.CurrentThread, Dispatcher.UIThread);
+        Assert.True(impl.AskedForSignal);
+        impl.ExecuteSignal();
+        Assert.Equal(Dispatcher.UIThread.Thread, continuationThread);
+    }
 }
