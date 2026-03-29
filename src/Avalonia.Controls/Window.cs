@@ -774,6 +774,7 @@ namespace Avalonia.Controls
                 // Only use platform margins if drawn decorations are not active
                 WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
                 TopLevelHost.DecorationInset = default;
+                Renderer.CompositionTarget.ShadowExtents = default;
                 return;
             }
 
@@ -784,6 +785,8 @@ namespace Avalonia.Controls
                 ? decorations.FrameThickness : default;
             var shadow = parts.HasFlag(Chrome.DrawnWindowDecorationParts.Shadow)
                 ? decorations.ShadowThickness : default;
+            
+            Renderer.CompositionTarget.ShadowExtents = shadow;
             var margin = new Thickness(
                 frame.Left + shadow.Left,
                 titleBarHeight + frame.Top + shadow.Top,

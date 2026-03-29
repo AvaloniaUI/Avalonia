@@ -37,6 +37,6 @@ namespace Avalonia.Platform
         /// </summary>
         bool IsReady => true;
         
-        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling);
+        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, Thickness ShadowExtents = default);
     }
 }

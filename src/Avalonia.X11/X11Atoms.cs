@@ -152,6 +152,7 @@ namespace Avalonia.X11
         public IntPtr _NET_WM_HANDLED_ICONS;
         public IntPtr _NET_WM_USER_TIME;
         public IntPtr _NET_FRAME_EXTENTS;
+        public IntPtr _GTK_FRAME_EXTENTS;
         public IntPtr _NET_WM_PING;
         public IntPtr _NET_WM_SYNC_REQUEST;
         public IntPtr _NET_WM_SYNC_REQUEST_COUNTER;

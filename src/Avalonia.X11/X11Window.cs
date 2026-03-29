@@ -213,17 +213,18 @@ namespace Avalonia.X11
                 SetWmClass(_handle, _platform.Options.WmClass);
             }
 
+            var surfaceInfo = new SurfaceInfo(this, _x11, _handle, _renderHandle);
             var surfaces = new List<IPlatformRenderSurface>
             {
-                new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
+                new X11FramebufferSurface(_x11.DeferredDisplay, surfaceInfo,
                    depth, _platform.Options.UseRetainedFramebuffer ?? false)
             };
             
             if (egl != null)
                 surfaces.Insert(0,
-                    new EglGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
+                    new EglGlPlatformSurface(surfaceInfo));
             if (glx != null)
-                surfaces.Insert(0, new GlxGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
+                surfaces.Insert(0, new GlxGlPlatformSurface(surfaceInfo));
 
             surfaces.Add(new SurfacePlatformHandle(this));
 
@@ -280,34 +281,58 @@ namespace Avalonia.X11
             platform.X11Screens.Changed += OnScreensChanged;
         }
 
-        private class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
+        internal class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
         {
             private readonly X11Window _window;
-            private readonly IntPtr _display;
+            private readonly X11Info _x11;
             private readonly IntPtr _parent;
 
-            public SurfaceInfo(X11Window window, IntPtr display, IntPtr parent, IntPtr xid)
+            public SurfaceInfo(X11Window window, X11Info x11, IntPtr parent, IntPtr xid)
             {
                 _window = window;
-                _display = display;
+                _x11 = x11;
                 _parent = parent;
                 Handle = xid;
             }
             public IntPtr Handle { get; }
+            public IntPtr WindowHandle => _parent;
+            public X11Info X11 => _x11;
 
             public PixelSize Size
             {
                 get
                 {
-                    XLockDisplay(_display);
-                    XGetGeometry(_display, _parent, out var geo);
-                    XResizeWindow(_display, Handle, geo.width, geo.height);
-                    XUnlockDisplay(_display);
+                    var display = _x11.DeferredDisplay;
+                    XLockDisplay(display);
+                    XGetGeometry(display, _parent, out var geo);
+                    XResizeWindow(display, Handle, geo.width, geo.height);
+                    XUnlockDisplay(display);
                     return new PixelSize(geo.width, geo.height);
                 }
             }
 
             public double Scaling => _window.RenderScaling;
+
+            private Thickness _lastShadowExtents;
+
+            internal void UpdateGtkFrameExtents(IntPtr display, Thickness shadowExtents)
+            {
+                var atoms = _x11.Atoms;
+                if (atoms._GTK_FRAME_EXTENTS == IntPtr.Zero || _lastShadowExtents == shadowExtents)
+                    return;
+
+                _lastShadowExtents = shadowExtents;
+                var extents = new IntPtr[]
+                {
+                    (IntPtr)(int)shadowExtents.Left, (IntPtr)(int)shadowExtents.Right,
+                    (IntPtr)(int)shadowExtents.Top, (IntPtr)(int)shadowExtents.Bottom
+                };
+
+                XLockDisplay(display);
+                XChangeProperty(display, _parent, atoms._GTK_FRAME_EXTENTS, atoms.CARDINAL, 32,
+                    PropertyMode.Replace, extents, 4);
+                XUnlockDisplay(display);
+            }
         }
 
         private void UpdateMotifHints()

@@ -1,6 +1,5 @@
 using System;
 using Avalonia.OpenGL;
-using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using static Avalonia.OpenGL.GlConsts;
@@ -10,9 +9,9 @@ namespace Avalonia.X11.Glx
     internal class GlxGlPlatformSurface: IGlPlatformSurface
     {
 
-        private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
+        private readonly X11Window.SurfaceInfo _info;
         
-        public GlxGlPlatformSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info)
+        public GlxGlPlatformSurface(X11Window.SurfaceInfo info)
         {
             _info = info;
         }
@@ -25,10 +24,10 @@ namespace Avalonia.X11.Glx
         private class RenderTarget : IGlPlatformSurfaceRenderTarget
         {
             private readonly GlxContext _context;
-            private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
+            private readonly X11Window.SurfaceInfo _info;
             private PixelSize? _lastSize;
 
-            public RenderTarget(GlxContext context,  EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info)
+            public RenderTarget(GlxContext context, X11Window.SurfaceInfo info)
             {
                 _context = context;
                 _info = info;
@@ -42,6 +41,9 @@ namespace Avalonia.X11.Glx
             public bool IsCorrupted => false;
             public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
             {
+                _info.UpdateGtkFrameExtents(
+                    _context.Display.X11Info.DeferredDisplay, sceneInfo.ShadowExtents);
+                
                 var size = sceneInfo.Size;
                 //if (expectedSize.HasValue)
                 {
@@ -69,12 +71,12 @@ namespace Avalonia.X11.Glx
             private class Session : IGlPlatformSurfaceRenderingSession
             {
                 private readonly GlxContext _context;
-                private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
+                private readonly X11Window.SurfaceInfo _info;
                 private readonly PixelSize? _size;
                 private readonly IDisposable _clearContext;
                 public IGlContext Context => _context;
 
-                public Session(GlxContext context, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info,
+                public Session(GlxContext context, X11Window.SurfaceInfo info,
                     PixelSize? size,
                     IDisposable clearContext)
                 {

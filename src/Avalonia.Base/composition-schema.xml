@@ -59,6 +59,7 @@
         <Property Name="LastLayoutPassTiming" Type="LayoutPassTiming" Internal="true"/>
         <Property Name="Scaling" Type="double"/>
         <Property Name="PixelSize" Type="PixelSize" />
+        <Property Name="ShadowExtents" Type="Thickness" Internal="true"/>
     </Object>
     <KeyFrameAnimation Name="Scalar" Type="float"/>
     <KeyFrameAnimation Name="Double" Type="double"/>

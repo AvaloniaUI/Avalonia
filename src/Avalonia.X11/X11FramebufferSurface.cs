@@ -7,15 +7,15 @@ namespace Avalonia.X11
     internal class X11FramebufferSurface : IFramebufferPlatformSurface
     {
         private readonly IntPtr _display;
-        private readonly IntPtr _xid;
+        private readonly X11Window.SurfaceInfo _info;
         private readonly int _depth;
         private readonly bool _retain;
         private RetainedFramebuffer? _fb;
 
-        public X11FramebufferSurface(IntPtr display, IntPtr xid, int depth, bool retain)
+        public X11FramebufferSurface(IntPtr display, X11Window.SurfaceInfo info, int depth, bool retain)
         {
             _display = display;
-            _xid = xid;
+            _info = info;
             _depth = depth;
             _retain = retain;
         }
@@ -37,8 +37,8 @@ namespace Avalonia.X11
             image.bits_per_pixel = bitsPerPixel;
             XLockDisplay(_display);
             XInitImage(ref image);
-            var gc = XCreateGC(_display, _xid, 0, IntPtr.Zero);
-            XPutImage(_display, _xid, gc, ref image, 0, 0, 0, 0, (uint)fb.Size.Width, (uint)fb.Size.Height);
+            var gc = XCreateGC(_display, _info.Handle, 0, IntPtr.Zero);
+            XPutImage(_display, _info.Handle, gc, ref image, 0, 0, 0, 0, (uint)fb.Size.Width, (uint)fb.Size.Height);
             XFreeGC(_display, gc);
             XSync(_display, true);
             XUnlockDisplay(_display);
@@ -49,10 +49,12 @@ namespace Avalonia.X11
             }
         }
         
-        public ILockedFramebuffer Lock(IRenderTarget.RenderTargetSceneInfo _, out FramebufferLockProperties properties)
+        public ILockedFramebuffer Lock(IRenderTarget.RenderTargetSceneInfo sceneInfo, out FramebufferLockProperties properties)
         {
+            _info.UpdateGtkFrameExtents(_display, sceneInfo.ShadowExtents);
+            
             XLockDisplay(_display);
-            XGetGeometry(_display, _xid, out var root, out var x, out var y, out var width, out var height,
+            XGetGeometry(_display, _info.Handle, out var root, out var x, out var y, out var width, out var height,
                 out var bw, out var d);
             XUnlockDisplay(_display);
 
