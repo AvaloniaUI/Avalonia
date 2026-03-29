@@ -151,6 +151,8 @@ namespace Avalonia.Controls
 
         protected override AutomationPeer OnCreateAutomationPeer() => new ContentPageAutomationPeer(this);
 
+        protected override Type StyleKeyOverride => typeof(ContentPage);
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);

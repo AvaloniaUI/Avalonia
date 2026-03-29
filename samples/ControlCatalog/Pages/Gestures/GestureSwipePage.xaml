@@ -1,0 +1,123 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.GestureSwipePage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="How It Works" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Attach a SwipeGestureRecognizer to any control. Drag horizontally or vertically to fire SwipeGesture events with a delta vector and velocity." />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="When the pointer is released, SwipeGestureEnded fires with the final velocity so you can apply fling logic." />
+
+        <Separator />
+
+        <TextBlock Text="Options" FontWeight="SemiBold" FontSize="14" />
+
+        <CheckBox x:Name="HorizontalCheck"
+                  Content="CanHorizontallySwipe"
+                  IsChecked="True"
+                  IsCheckedChanged="OnDirectionChanged" />
+        <CheckBox x:Name="VerticalCheck"
+                  Content="CanVerticallySwipe"
+                  IsChecked="True"
+                  IsCheckedChanged="OnDirectionChanged" />
+        <CheckBox x:Name="MouseCheck"
+                  Content="IsMouseEnabled"
+                  IsChecked="True"
+                  IsCheckedChanged="OnMouseEnabledChanged" />
+
+        <Separator />
+
+        <TextBlock Text="Threshold" FontWeight="SemiBold" FontSize="13" />
+        <DockPanel>
+          <TextBlock x:Name="ThresholdText"
+                     DockPanel.Dock="Right"
+                     Text="0"
+                     Width="30"
+                     VerticalAlignment="Center" />
+          <Slider x:Name="ThresholdSlider"
+                  Minimum="0"
+                  Maximum="50"
+                  Value="0"
+                  ValueChanged="OnThresholdChanged" />
+        </DockPanel>
+        <TextBlock FontSize="11" TextWrapping="Wrap" Opacity="0.5"
+                   Text="0 = platform default. Higher values require more movement before a swipe starts." />
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="14" />
+        <TextBlock x:Name="DirectionText"
+                   Text="Direction: (none)"
+                   Opacity="0.7" />
+        <TextBlock x:Name="DeltaText"
+                   Text="Delta: 0, 0"
+                   Opacity="0.7" />
+        <TextBlock x:Name="VelocityText"
+                   Text="Velocity: 0, 0"
+                   Opacity="0.7" />
+
+        <Separator />
+
+        <TextBlock Text="API" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="13" FontFamily="Cascadia Code, Consolas, Monospace"
+                     Text="CanHorizontallySwipe" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Opacity="0.7"
+                     Text="Enable horizontal swipe tracking." />
+        </StackPanel>
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="13" FontFamily="Cascadia Code, Consolas, Monospace"
+                     Text="CanVerticallySwipe" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Opacity="0.7"
+                     Text="Enable vertical swipe tracking." />
+        </StackPanel>
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="13" FontFamily="Cascadia Code, Consolas, Monospace"
+                     Text="Threshold" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Opacity="0.7"
+                     Text="Minimum pixel distance before a swipe is recognized. 0 uses platform default." />
+        </StackPanel>
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="13" FontFamily="Cascadia Code, Consolas, Monospace"
+                     Text="IsMouseEnabled" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Opacity="0.7"
+                     Text="Allow mouse pointer to trigger swipes (touch/pen always enabled)." />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6"
+            ClipToBounds="True">
+      <Panel x:Name="SwipePanel" Background="Transparent">
+        <Panel.GestureRecognizers>
+          <SwipeGestureRecognizer x:Name="SwipeRecognizer"
+                                  CanHorizontallySwipe="True"
+                                  CanVerticallySwipe="True"
+                                  IsMouseEnabled="True" />
+        </Panel.GestureRecognizers>
+        <Border x:Name="SwipeIndicator"
+                Width="80" Height="80"
+                CornerRadius="40"
+                Background="{DynamicResource SystemControlHighlightAccentBrush}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+          <TextBlock x:Name="SwipeDirectionLabel"
+                     Text="Swipe here"
+                     FontSize="11"
+                     FontWeight="SemiBold"
+                     Foreground="White"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center" />
+        </Border>
+      </Panel>
+    </Border>
+  </DockPanel>
+</UserControl>

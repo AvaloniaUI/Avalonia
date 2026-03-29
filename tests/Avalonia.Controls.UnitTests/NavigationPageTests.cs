@@ -429,7 +429,7 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             await nav.PushAsync(new ContentPage());
-            Assert.Equal(false, nav.IsBackButtonEffectivelyVisible);
+            Assert.False(nav.IsBackButtonEffectivelyVisible);
         }
 
         [Fact]
@@ -438,7 +438,7 @@ public class NavigationPageTests
             var nav = new NavigationPage();
             await nav.PushAsync(new ContentPage());
             await nav.PushAsync(new ContentPage());
-            Assert.Equal(true, nav.IsBackButtonEffectivelyVisible);
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
         }
 
         [Fact]
@@ -447,7 +447,7 @@ public class NavigationPageTests
             var nav = new NavigationPage { IsBackButtonVisible = false };
             await nav.PushAsync(new ContentPage());
             await nav.PushAsync(new ContentPage());
-            Assert.Equal(false, nav.IsBackButtonEffectivelyVisible);
+            Assert.False(nav.IsBackButtonEffectivelyVisible);
         }
 
         [Fact]
@@ -458,7 +458,7 @@ public class NavigationPageTests
             var top = new ContentPage();
             NavigationPage.SetHasBackButton(top, false);
             await nav.PushAsync(top);
-            Assert.Equal(false, nav.IsBackButtonEffectivelyVisible);
+            Assert.False(nav.IsBackButtonEffectivelyVisible);
         }
 
         [Fact]
@@ -468,7 +468,25 @@ public class NavigationPageTests
             await nav.PushAsync(new ContentPage());
             await nav.PushAsync(new ContentPage());
             nav.IsBackButtonVisible = true;
-            Assert.Equal(true, nav.IsBackButtonEffectivelyVisible);
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
+        }
+
+        [Fact]
+        public async Task BackButtonVisible_UpdatesWhenCurrentPageHasBackButtonChanges()
+        {
+            var nav = new NavigationPage();
+            await nav.PushAsync(new ContentPage());
+
+            var top = new ContentPage();
+            await nav.PushAsync(top);
+
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
+
+            NavigationPage.SetHasBackButton(top, false);
+            Assert.False(nav.IsBackButtonEffectivelyVisible);
+
+            NavigationPage.SetHasBackButton(top, true);
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
         }
     }
 

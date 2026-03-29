@@ -52,13 +52,9 @@
         </DrawerPage.Resources>
 
         <DrawerPage.DrawerIcon>
-          <StreamGeometry>M12 3C9 6 6 9 6 13C6 17.4 8.7 21 12 22C15.3 21 18 17.4 18 13C18 9 15 6 12 3Z</StreamGeometry>
+          <PathIcon Width="22" Height="22"
+                    Data="M12 3C9 6 6 9 6 13C6 17.4 8.7 21 12 22C15.3 21 18 17.4 18 13C18 9 15 6 12 3Z" />
         </DrawerPage.DrawerIcon>
-        <DrawerPage.DrawerIconTemplate>
-          <DataTemplate DataType="Geometry">
-            <PathIcon Width="22" Height="22" Data="{Binding}" />
-          </DataTemplate>
-        </DrawerPage.DrawerIconTemplate>
 
         <DrawerPage.DrawerHeader>
           <StackPanel Background="{StaticResource EcoDrawerBg}" Margin="0,0,0,8">

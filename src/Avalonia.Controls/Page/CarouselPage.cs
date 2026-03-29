@@ -1,6 +1,6 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
@@ -11,7 +11,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -110,6 +109,8 @@ namespace Avalonia.Controls
             get => GetValue(IsKeyboardNavigationEnabledProperty);
             set => SetValue(IsKeyboardNavigationEnabledProperty, value);
         }
+
+        protected override Type StyleKeyOverride => typeof(CarouselPage);
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {

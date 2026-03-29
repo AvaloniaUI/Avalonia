@@ -56,11 +56,13 @@
               <ContentPresenter Name="PART_DrawerHeader"
                                 DockPanel.Dock="Top"
                                 Content="{TemplateBinding DrawerHeader}"
+                                ContentTemplate="{TemplateBinding DrawerHeaderTemplate}"
                                 Background="{TemplateBinding DrawerHeaderBackground}"
                                 IsVisible="{TemplateBinding DrawerHeader, Converter={x:Static ObjectConverters.IsNotNull}}" />
               <ContentPresenter Name="PART_DrawerFooter"
                                 DockPanel.Dock="Bottom"
                                 Content="{TemplateBinding DrawerFooter}"
+                                ContentTemplate="{TemplateBinding DrawerFooterTemplate}"
                                 Background="{TemplateBinding DrawerFooterBackground}"
                                 IsVisible="{TemplateBinding DrawerFooter, Converter={x:Static ObjectConverters.IsNotNull}}" />
               <ContentPresenter Name="PART_DrawerPresenter"
@@ -179,6 +181,22 @@
     </Style>
     <Style Selector="^:placement-bottom /template/ Border#PART_BottomBar">
       <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <!-- Bottom placement + compact modes: pane compact strip provides toggle, hide bottom bar -->
+    <Style Selector="^:placement-bottom[DisplayMode=CompactOverlay] /template/ Border#PART_BottomBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:placement-bottom[DisplayMode=CompactInline] /template/ Border#PART_BottomBar">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <!-- Horizontal pane (Bottom/Top): compact toggle must dock Left so drawer content can fill the rest -->
+    <Style Selector="^:placement-bottom /template/ ToggleButton#PART_CompactPaneToggle">
+      <Setter Property="DockPanel.Dock" Value="Left" />
+    </Style>
+    <Style Selector="^:placement-top /template/ ToggleButton#PART_CompactPaneToggle">
+      <Setter Property="DockPanel.Dock" Value="Left" />
     </Style>
 
     <Style Selector="^[DrawerBehavior=Locked] /template/ Border#PART_TopBar">
