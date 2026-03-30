@@ -947,7 +947,7 @@ namespace Avalonia.Controls.UnitTests
         /// This test ensures that the selected tab is the first visible and enabled tab.
         /// </summary>
         [Fact]
-        public void Only_Fist_Visible_And_Enabled_Tab_Should_Be_Selected_By_Default()
+        public void Only_First_Visible_And_Enabled_Tab_Should_Be_Selected_By_Default()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
