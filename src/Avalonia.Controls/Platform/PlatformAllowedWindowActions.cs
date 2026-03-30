@@ -14,17 +14,17 @@ public enum PlatformAllowedWindowActions
     /// <summary>
     /// The underlying platform supports maximizing/unmaximizing windows.
     /// </summary>
-    Maximize = 1 << 1,
+    Maximize = 1 << 0,
 
     /// <summary>
     /// The underlying platform supports fullscreen mode.
     /// </summary>
-    Fullscreen = 1 << 2,
+    Fullscreen = 1 << 1,
 
     /// <summary>
     /// The underlying platform supports minimizing windows.
     /// </summary>
-    Minimize = 1 << 3,
+    Minimize = 1 << 2
 
     /// <summary>
     /// All actions are supported (default when the underlying platform does not report capabilities).
