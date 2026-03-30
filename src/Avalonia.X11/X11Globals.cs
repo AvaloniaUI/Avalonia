@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Avalonia.Controls.Platform;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -18,7 +17,7 @@ namespace Avalonia.X11
         private IntPtr _compositionAtomOwner;
         private bool _isCompositionEnabled;
         private WindowActivationTrackingMode _activationTrackingMode;
-        private PlatformAllowedWindowActions _allowedActions = PlatformAllowedWindowActions.All;
+        private IntPtr[]? _netSupported;
 
         public event Action? WindowManagerChanged;
         public event Action? CompositionChanged;
@@ -26,7 +25,7 @@ namespace Avalonia.X11
         public event Action? NetActiveWindowPropertyChanged;
         public event Action? RootGeometryChangedChanged;
         public event Action? WindowActivationTrackingModeChanged;
-        public event Action? AllowedActionsChanged;
+        public event Action? NetSupportedChanged;
         
         public enum WindowActivationTrackingMode
         {
@@ -108,16 +107,13 @@ namespace Avalonia.X11
             }
         }
 
-        public PlatformAllowedWindowActions AllowedActions
+        public IntPtr[]? NetSupported
         {
-            get => _allowedActions;
+            get => _netSupported;
             private set
             {
-                if (_allowedActions != value)
-                {
-                    _allowedActions = value;
-                    AllowedActionsChanged?.Invoke();
-                }
+                _netSupported = value;
+                NetSupportedChanged?.Invoke();
             }
         }
 
@@ -222,26 +218,6 @@ namespace Avalonia.X11
             return WindowActivationTrackingMode.FocusEvents;
         }
 
-        private static PlatformAllowedWindowActions GetAllowedActions(IntPtr wm, IntPtr[]? supportedFeatures, X11Atoms atoms)
-        {
-            if (wm == IntPtr.Zero || supportedFeatures == null)
-                return PlatformAllowedWindowActions.All;
-
-            var actions = PlatformAllowedWindowActions.None;
-
-            if (supportedFeatures.Contains(atoms._NET_WM_ACTION_MAXIMIZE_VERT)
-                && supportedFeatures.Contains(atoms._NET_WM_ACTION_MAXIMIZE_HORZ))
-                actions |= PlatformAllowedWindowActions.Maximize;
-
-            if (supportedFeatures.Contains(atoms._NET_WM_ACTION_FULLSCREEN))
-                actions |= PlatformAllowedWindowActions.Fullscreen;
-
-            if (supportedFeatures.Contains(atoms._NET_WM_ACTION_MINIMIZE))
-                actions |= PlatformAllowedWindowActions.Minimize;
-
-            return actions;
-        }
-
         private void OnNewWindowManager()
         {
             var wm = GetActiveWm();
@@ -251,7 +227,7 @@ namespace Avalonia.X11
                 : null;
             WmName = GetWmName(wm);
             ActivationTrackingMode = GetWindowActivityTrackingMode(wm, supportedFeatures);
-            AllowedActions = GetAllowedActions(wm, supportedFeatures, _x11.Atoms);
+            NetSupported = supportedFeatures;
         }
         
         private void OnRootWindowEvent(ref XEvent ev)

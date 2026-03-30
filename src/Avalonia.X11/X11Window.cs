@@ -240,7 +240,7 @@ namespace Avalonia.X11
             _activationTracker = new(_platform, this);
             _activationTracker.ActivationChanged += HandleActivation;
 
-            _platform.Globals.AllowedActionsChanged += OnAllowedActionsChanged;
+            _platform.Globals.NetSupportedChanged += OnNetSupportedChanged;
 
             CreateIC();
 
@@ -514,14 +514,34 @@ namespace Avalonia.X11
         public Action<PixelPoint>? PositionChanged { get; set; }
         public Action? LostFocus { get; set; }
 
-        public PlatformAllowedWindowActions AllowedWindowActions => _platform.Globals.AllowedActions;
+        public PlatformAllowedWindowActions AllowedWindowActions => GetAllowedActions(_platform.Globals.NetSupported);
 
         public Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged { get; set; }
 
         public Compositor Compositor => _platform.Compositor;
 
-        private void OnAllowedActionsChanged() =>
-            AllowedWindowActionsChanged?.Invoke(_platform.Globals.AllowedActions);
+        private PlatformAllowedWindowActions GetAllowedActions(IntPtr[]? netSupported)
+        {
+            if (netSupported == null)
+                return PlatformAllowedWindowActions.All;
+
+            var actions = PlatformAllowedWindowActions.None;
+
+            if (netSupported.Contains(_x11.Atoms._NET_WM_ACTION_MAXIMIZE_VERT)
+                && netSupported.Contains(_x11.Atoms._NET_WM_ACTION_MAXIMIZE_HORZ))
+                actions |= PlatformAllowedWindowActions.Maximize;
+
+            if (netSupported.Contains(_x11.Atoms._NET_WM_ACTION_FULLSCREEN))
+                actions |= PlatformAllowedWindowActions.Fullscreen;
+
+            if (netSupported.Contains(_x11.Atoms._NET_WM_ACTION_MINIMIZE))
+                actions |= PlatformAllowedWindowActions.Minimize;
+
+            return actions;
+        }
+
+        private void OnNetSupportedChanged() =>
+            AllowedWindowActionsChanged?.Invoke(AllowedWindowActions);
         
         private void OnEvent(ref XEvent ev)
         {
@@ -1141,7 +1161,7 @@ namespace Avalonia.X11
             }
 
             _platform.X11Screens.Changed -= OnScreensChanged;
-            _platform.Globals.AllowedActionsChanged -= OnAllowedActionsChanged;
+            _platform.Globals.NetSupportedChanged -= OnNetSupportedChanged;
             
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
             {                
