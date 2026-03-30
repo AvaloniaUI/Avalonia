@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using Avalonia.Input.Navigation;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
@@ -32,9 +31,9 @@ namespace Avalonia.Input
         static FocusManager()
         {
             InputElement.PointerPressedEvent.AddClassHandler(
-                 typeof(IInputElement),
-                 new EventHandler<RoutedEventArgs>(OnPreviewPointerEventHandler),
-                 RoutingStrategies.Tunnel);
+                typeof(IInputElement),
+                new EventHandler<RoutedEventArgs>(OnPreviewPointerEventHandler),
+                RoutingStrategies.Tunnel);
             InputElement.PointerReleasedEvent.AddClassHandler(
                 typeof(IInputElement),
                 new EventHandler<RoutedEventArgs>(OnPreviewPointerEventHandler),

@@ -165,5 +165,55 @@ namespace Avalonia.Base.UnitTests.Input
 
             Assert.True(control.IsFocused);
         }
+
+        [Fact]
+        public void Control_Should_Not_Gain_Focus_On_Mouse_Release()
+        {
+            using var scope = AvaloniaLocator.EnterScope();
+            var settingsMock = new Mock<IPlatformSettings>();
+
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+                .Bind<IPlatformSettings>().ToConstant(settingsMock.Object);
+
+            using var app = UnitTestApplication.Start(
+               TestServices.RealFocus);
+
+            var renderer = new Mock<IHitTester>();
+            var impl = CreateTopLevelImplMock();
+
+            var control1 = new Button()
+            {
+                Focusable = true
+            };
+
+            var control2 = new Button()
+            {
+                Focusable = true
+            };
+            var stack = new StackPanel()
+            {
+                Children = { control1, control2 }
+            };
+            var root = CreateInputRoot(impl.Object, stack, renderer.Object);
+
+            var device = new MouseDevice();
+
+            var down = CreateRawPointerArgs(device, root, RawPointerEventType.LeftButtonDown);
+            var up = CreateRawPointerArgs(device, root, RawPointerEventType.LeftButtonUp);
+
+            SetHit(renderer, control1);
+
+            Assert.False(control1.IsFocused);
+
+            impl.Object.Input!(down);
+
+            Assert.True(control1.IsFocused);
+
+            control2.Focus();
+
+            impl.Object.Input!(up);
+
+            Assert.False(control1.IsFocused);
+        }
     }
 }

@@ -300,5 +300,10 @@ namespace Avalonia.Input.UnitTests
                 RawPointerId = touchPointId
             });
         }
+
+        private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl)
+        {
+
+        }
     }
 }
