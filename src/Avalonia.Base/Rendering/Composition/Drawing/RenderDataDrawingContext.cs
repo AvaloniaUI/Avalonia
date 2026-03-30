@@ -300,6 +300,10 @@ internal class RenderDataDrawingContext : DrawingContext
     {
         if (recording.IsCompositorBound)
         {
+            if (_compositor != null && recording.Compositor != _compositor)
+                throw new InvalidOperationException(
+                    "Cannot draw a compositor-bound DrawingRecording into a context belonging to a different compositor.");
+
             recording.EnsureRegisteredForSerialization();
             var renderData = recording.RenderData!;
             renderData.AddRef();
