@@ -12,7 +12,6 @@ using Avalonia.Media.Fonts.Tables.Glyf;
 using Avalonia.Media.Fonts.Tables.Metrics;
 using Avalonia.Media.Fonts.Tables.Name;
 using Avalonia.Platform;
-using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Media
 {

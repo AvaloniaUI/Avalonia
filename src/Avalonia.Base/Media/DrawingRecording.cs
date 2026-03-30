@@ -1,9 +1,9 @@
 using System;
-using Avalonia.Media;
+using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Server;
 
-namespace Avalonia.Rendering.Composition;
+namespace Avalonia.Media;
 
 /// <summary>
 /// An immutable recorded draw list that can be replayed with minimal overhead.

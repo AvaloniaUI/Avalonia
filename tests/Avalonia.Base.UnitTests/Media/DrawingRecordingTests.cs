@@ -1,7 +1,6 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
-using Avalonia.Rendering.Composition;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Media;

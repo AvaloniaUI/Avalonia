@@ -212,7 +212,7 @@ namespace Avalonia.Media
                 throw new NotImplementedException();
             }
 
-            internal override void DrawRecordingCore(Rendering.Composition.DrawingRecording recording)
+            internal override void DrawRecordingCore(DrawingRecording recording)
             {
                 throw new NotImplementedException();
             }
