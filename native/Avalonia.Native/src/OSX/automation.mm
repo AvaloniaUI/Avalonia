@@ -461,37 +461,37 @@
 
 - (void)raisePropertyChanged:(AvnAutomationProperty)property
 {
-    if (property == AutomationPeer_Name && _peer->GetLiveSetting() != LiveSettingOff)
-        [self raiseLiveRegionChanged];
-}
+    switch (property) {
+    case AutomationPeer_Name:
+        if (_peer->GetLiveSetting() != LiveSettingOff) {
+            NSAccessibilityPostNotification(self, @"AXLiveRegionChanged" /* kAXLiveRegionChangedNotification */);
 
-- (void)raiseLiveRegionChanged
-{
-    NSAccessibilityPostNotification(self, @"AXLiveRegionChanged" /* kAXLiveRegionChangedNotification */);
+            // Announce the new string
+            if (_peer->GetName() != nullptr) {
+                NSAccessibilityPriorityLevel priority = NSAccessibilityPriorityLow;
+                switch (_peer->GetLiveSetting()) {
+                case LiveSettingOff:
+                    return;
+                case LiveSettingPolite:
+                    priority = NSAccessibilityPriorityMedium;
+                    break;
+                case LiveSettingAssertive:
+                    priority = NSAccessibilityPriorityHigh;
+                    break;
+                }
 
-    // Announce the new string
-    if (_peer->GetName() != nullptr) {
-        NSAccessibilityPriorityLevel priority = NSAccessibilityPriorityLow;
-        switch (_peer->GetLiveSetting()) {
-        case LiveSettingOff:
-            return;
-        case LiveSettingPolite:
-            priority = NSAccessibilityPriorityMedium;
-            break;
-        case LiveSettingAssertive:
-            priority = NSAccessibilityPriorityHigh;
-            break;
+                NSDictionary <NSString *, id> *userInfo = @{
+                    NSAccessibilityAnnouncementKey: GetNSStringAndRelease(_peer->GetName()),
+                    NSAccessibilityPriorityKey: @(priority)
+                };
+
+                id topLevel = [self accessibilityTopLevelUIElement];
+                if ([topLevel isKindOfClass:[AvnWindow class]]) {
+                    NSAccessibilityPostNotificationWithUserInfo(topLevel, NSAccessibilityAnnouncementRequestedNotification, userInfo);
+                }
+            }
         }
-
-        NSDictionary <NSString *, id> *userInfo = @{
-            NSAccessibilityAnnouncementKey: GetNSStringAndRelease(_peer->GetName()),
-            NSAccessibilityPriorityKey: @(priority)
-        };
-
-        id topLevel = [self accessibilityTopLevelUIElement];
-        if ([topLevel isKindOfClass:[AvnWindow class]]) {
-            NSAccessibilityPostNotificationWithUserInfo(topLevel, NSAccessibilityAnnouncementRequestedNotification, userInfo);
-        }
+        break;
     }
 }
 
