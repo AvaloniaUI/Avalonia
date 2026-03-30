@@ -979,7 +979,7 @@ namespace Avalonia.Controls.UnitTests
         /// This test ensures that also an invisible TabControl can receive a selection
         /// </summary>
         [Fact]
-        public void SelectedIndexShouldRestoreAfterControlGetsVisible()
+        public void SelectedIndex_Should_Restore_After_Control_Gets_Visible()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
