@@ -159,11 +159,11 @@
                     <Setter Property="Padding" Value="0" />
                     <Setter Property="VerticalAlignment" Value="Stretch" />
                   </Style>
-                  <Style Selector="AppBarButton">
+                  <Style Selector="CommandBarButton">
                     <Setter Property="MinHeight" Value="0" />
                     <Setter Property="Padding" Value="8,0" />
                   </Style>
-                  <Style Selector="AppBarToggleButton">
+                  <Style Selector="CommandBarToggleButton">
                     <Setter Property="MinHeight" Value="0" />
                     <Setter Property="Padding" Value="8,0" />
                   </Style>

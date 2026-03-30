@@ -37,7 +37,7 @@ namespace Avalonia.Win32.OpenGl
                 _hdc = context.CreateConfiguredDeviceContext(info.Handle);
             }
 
-            public bool IsCorrupted => false;
+            public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
 
             public void Dispose()
             {

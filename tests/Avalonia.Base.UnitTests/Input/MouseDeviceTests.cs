@@ -4,7 +4,6 @@ using Avalonia.Input.Raw;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -18,7 +17,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var scope = AvaloniaLocator.EnterScope();
             var settingsMock = new Mock<IPlatformSettings>();
-            
+
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IPlatformSettings>().ToConstant(settingsMock.Object);
 
@@ -32,7 +31,7 @@ namespace Avalonia.Base.UnitTests.Input
 
             var control = new Control();
             var root = CreateInputRoot(impl.Object, control, renderer.Object);
-           
+
             MouseButton button = default;
 
             root.PointerReleased += (s, e) => button = e.InitialPressMouseButton;
@@ -50,10 +49,10 @@ namespace Avalonia.Base.UnitTests.Input
             impl.Object.Input!(up);
 
             Assert.Equal(MouseButton.Left, button);
-           
+
             impl.Object.Input!(up);
 
-            Assert.Equal(MouseButton.None, button);        
+            Assert.Equal(MouseButton.None, button);
         }
 
         [Fact]
@@ -85,7 +84,7 @@ namespace Avalonia.Base.UnitTests.Input
             impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
 
             Assert.NotNull(result);
-           
+
             result.Capture(control);
             Assert.Same(control, result.Captured);
 
@@ -115,8 +114,8 @@ namespace Avalonia.Base.UnitTests.Input
                     })
                 }
             }, renderer.Object);
-           
-           
+
+
             Point? result = null;
             root.PointerMoved += (_, a) =>
             {
@@ -127,6 +126,94 @@ namespace Avalonia.Base.UnitTests.Input
             impl.Object.Input!(CreateRawPointerMovedArgs(device, root, new Point(11, 11)));
 
             Assert.Equal(new Point(1, 11), result);
+        }
+
+        [Fact]
+        public void Mouse_Pointer_Should_Set_Focus_On_Pointer_Pressed()
+        {
+            using var scope = AvaloniaLocator.EnterScope();
+            var settingsMock = new Mock<IPlatformSettings>();
+
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+                .Bind<IPlatformSettings>().ToConstant(settingsMock.Object);
+
+            using var app = UnitTestApplication.Start(
+               TestServices.RealFocus);
+
+            var renderer = new Mock<IHitTester>();
+            var impl = CreateTopLevelImplMock();
+
+            var control = new Button()
+            {
+                Focusable = true
+            };
+            var root = CreateInputRoot(impl.Object, control, renderer.Object);
+
+            var device = new MouseDevice();
+
+            var down = CreateRawPointerArgs(device, root, RawPointerEventType.LeftButtonDown);
+            var up = CreateRawPointerArgs(device, root, RawPointerEventType.LeftButtonUp);
+
+            SetHit(renderer, control);
+
+            Assert.False(control.IsFocused);
+
+            impl.Object.Input!(down);
+
+            Assert.True(control.IsFocused);
+            impl.Object.Input!(up);
+
+            Assert.True(control.IsFocused);
+        }
+
+        [Fact]
+        public void Control_Should_Not_Gain_Focus_On_Mouse_Release()
+        {
+            using var scope = AvaloniaLocator.EnterScope();
+            var settingsMock = new Mock<IPlatformSettings>();
+
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+                .Bind<IPlatformSettings>().ToConstant(settingsMock.Object);
+
+            using var app = UnitTestApplication.Start(
+               TestServices.RealFocus);
+
+            var renderer = new Mock<IHitTester>();
+            var impl = CreateTopLevelImplMock();
+
+            var control1 = new Button()
+            {
+                Focusable = true
+            };
+
+            var control2 = new Button()
+            {
+                Focusable = true
+            };
+            var stack = new StackPanel()
+            {
+                Children = { control1, control2 }
+            };
+            var root = CreateInputRoot(impl.Object, stack, renderer.Object);
+
+            var device = new MouseDevice();
+
+            var down = CreateRawPointerArgs(device, root, RawPointerEventType.LeftButtonDown);
+            var up = CreateRawPointerArgs(device, root, RawPointerEventType.LeftButtonUp);
+
+            SetHit(renderer, control1);
+
+            Assert.False(control1.IsFocused);
+
+            impl.Object.Input!(down);
+
+            Assert.True(control1.IsFocused);
+
+            control2.Focus();
+
+            impl.Object.Input!(up);
+
+            Assert.False(control1.IsFocused);
         }
     }
 }
