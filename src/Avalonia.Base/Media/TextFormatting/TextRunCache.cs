@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 
 namespace Avalonia.Media.TextFormatting
@@ -35,25 +36,39 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textSourceIndex">The text source index from which to invalidate.</param>
         public void InvalidateFrom(int textSourceIndex)
         {
-            if (_entries == null)
+            if (_entries == null || _entries.Count == 0)
             {
                 return;
             }
 
-            var keysToRemove = new List<int>();
+            var count = _entries.Count;
+            int[]? rented = null;
+
+            Span<int> keysToRemove = count <= 16
+                ? stackalloc int[16]
+                : (rented = ArrayPool<int>.Shared.Rent(count));
+
+            var removeCount = 0;
 
             foreach (var key in _entries.Keys)
             {
                 if (key >= textSourceIndex)
                 {
-                    keysToRemove.Add(key);
+                    keysToRemove[removeCount++] = key;
                 }
             }
 
-            for (var i = 0; i < keysToRemove.Count; i++)
+            for (var i = 0; i < removeCount; i++)
             {
-                DisposeCachedRuns(_entries[keysToRemove[i]]);
-                _entries.Remove(keysToRemove[i]);
+                if (_entries.Remove(keysToRemove[i], out var result))
+                {
+                    DisposeCachedRuns(result);
+                }
+            }
+
+            if (rented != null)
+            {
+                ArrayPool<int>.Shared.Return(rented);
             }
         }
 
