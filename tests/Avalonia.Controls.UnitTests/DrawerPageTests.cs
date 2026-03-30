@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -1180,6 +1181,192 @@ public class DrawerPageTests
 
             dp.DrawerIcon = new EllipseGeometry { Rect = new Rect(0, 0, 20, 20) };
             Assert.NotNull(dp.DrawerIcon);
+        }
+    }
+
+    public class HeaderFooterTemplateTests : ScopedTestBase
+    {
+        // Wires PART_DrawerHeader and PART_DrawerFooter to the drawer's properties.
+        // Other parts omitted; OnApplyTemplate uses Find (nullable) so they are safe to skip.
+        private static IControlTemplate MinimalPaneTemplate() =>
+            new FuncControlTemplate<DrawerPage>((dp, scope) =>
+            {
+                var header = new ContentPresenter { Name = "PART_DrawerHeader" }.RegisterInNameScope(scope);
+                header.Bind(ContentPresenter.ContentProperty, dp.GetObservable(DrawerPage.DrawerHeaderProperty));
+                header.Bind(ContentPresenter.ContentTemplateProperty, dp.GetObservable(DrawerPage.DrawerHeaderTemplateProperty));
+
+                var footer = new ContentPresenter { Name = "PART_DrawerFooter" }.RegisterInNameScope(scope);
+                footer.Bind(ContentPresenter.ContentProperty, dp.GetObservable(DrawerPage.DrawerFooterProperty));
+                footer.Bind(ContentPresenter.ContentTemplateProperty, dp.GetObservable(DrawerPage.DrawerFooterTemplateProperty));
+
+                return new StackPanel { Children = { header, footer } };
+            });
+
+        private static (DrawerPage dp, ContentPresenter header, ContentPresenter footer, TestRoot root) Create(
+            object? drawerHeader = null,
+            IDataTemplate? headerTemplate = null,
+            object? drawerFooter = null,
+            IDataTemplate? footerTemplate = null)
+        {
+            var dp = new DrawerPage
+            {
+                Template = MinimalPaneTemplate(),
+                DrawerHeader = drawerHeader,
+                DrawerHeaderTemplate = headerTemplate,
+                DrawerFooter = drawerFooter,
+                DrawerFooterTemplate = footerTemplate,
+            };
+            var root = new TestRoot { Child = dp };
+            dp.ApplyTemplate();
+
+            var header = dp.GetVisualDescendants().OfType<ContentPresenter>().First(x => x.Name == "PART_DrawerHeader");
+            var footer = dp.GetVisualDescendants().OfType<ContentPresenter>().First(x => x.Name == "PART_DrawerFooter");
+
+            return (dp, header, footer, root);
+        }
+
+        [Fact]
+        public void DrawerHeaderTemplate_IsForwardedToContentPresenter()
+        {
+            var template = new FuncDataTemplate<string>((_, _) => new TextBlock());
+            var (_, header, _, _) = Create(drawerHeader: "App", headerTemplate: template);
+
+            Assert.Same(template, header.ContentTemplate);
+        }
+
+        [Fact]
+        public void DrawerFooterTemplate_IsForwardedToContentPresenter()
+        {
+            var template = new FuncDataTemplate<string>((_, _) => new TextBlock());
+            var (_, _, footer, _) = Create(drawerFooter: "v1.0", footerTemplate: template);
+
+            Assert.Same(template, footer.ContentTemplate);
+        }
+
+        [Fact]
+        public void DrawerHeaderTemplate_RendersControlProducedByFactory()
+        {
+            var (_, header, _, _) = Create(
+                drawerHeader: "App",
+                headerTemplate: new FuncDataTemplate<string>((_, _) => new Canvas()));
+
+            header.UpdateChild();
+
+            Assert.IsType<Canvas>(header.Child);
+        }
+
+        [Fact]
+        public void DrawerFooterTemplate_RendersControlProducedByFactory()
+        {
+            var (_, _, footer, _) = Create(
+                drawerFooter: "v1.0",
+                footerTemplate: new FuncDataTemplate<string>((_, _) => new Canvas()));
+
+            footer.UpdateChild();
+
+            Assert.IsType<Canvas>(footer.Child);
+        }
+
+        [Fact]
+        public void DrawerHeaderTemplate_ReceivesDrawerHeaderAsData()
+        {
+            object? receivedData = null;
+            var (_, header, _, _) = Create(
+                drawerHeader: "MyTitle",
+                headerTemplate: new FuncDataTemplate<string>((data, _) =>
+                {
+                    receivedData = data;
+                    return new TextBlock { Text = data };
+                }));
+
+            header.UpdateChild();
+
+            Assert.Equal("MyTitle", receivedData);
+        }
+
+        [Fact]
+        public void DrawerFooterTemplate_ReceivesDrawerFooterAsData()
+        {
+            object? receivedData = null;
+            var (_, _, footer, _) = Create(
+                drawerFooter: "v2.0",
+                footerTemplate: new FuncDataTemplate<string>((data, _) =>
+                {
+                    receivedData = data;
+                    return new TextBlock { Text = data };
+                }));
+
+            footer.UpdateChild();
+
+            Assert.Equal("v2.0", receivedData);
+        }
+
+        [Fact]
+        public void DrawerHeaderTemplate_SwapTemplate_UpdatesContentPresenter()
+        {
+            var second = new FuncDataTemplate<string>((_, _) => new Border());
+            var (dp, header, _, _) = Create(
+                drawerHeader: "App",
+                headerTemplate: new FuncDataTemplate<string>((_, _) => new Canvas()));
+
+            header.UpdateChild();
+            Assert.IsType<Canvas>(header.Child);
+
+            dp.DrawerHeaderTemplate = second;
+            header.UpdateChild();
+
+            Assert.IsType<Border>(header.Child);
+        }
+
+        [Fact]
+        public void DrawerFooterTemplate_SwapTemplate_UpdatesContentPresenter()
+        {
+            var second = new FuncDataTemplate<string>((_, _) => new Border());
+            var (dp, _, footer, _) = Create(
+                drawerFooter: "v1.0",
+                footerTemplate: new FuncDataTemplate<string>((_, _) => new Canvas()));
+
+            footer.UpdateChild();
+            Assert.IsType<Canvas>(footer.Child);
+
+            dp.DrawerFooterTemplate = second;
+            footer.UpdateChild();
+
+            Assert.IsType<Border>(footer.Child);
+        }
+
+        [Fact]
+        public void DrawerHeaderTemplate_ClearingTemplate_FallsBackToDirectContent()
+        {
+            var directControl = new TextBlock { Text = "Direct" };
+            var (dp, header, _, _) = Create(
+                drawerHeader: directControl,
+                headerTemplate: new FuncDataTemplate<object>((_, _) => new Canvas()));
+
+            header.UpdateChild();
+            Assert.IsType<Canvas>(header.Child);
+
+            dp.DrawerHeaderTemplate = null;
+            header.UpdateChild();
+
+            Assert.Same(directControl, header.Child);
+        }
+
+        [Fact]
+        public void DrawerFooterTemplate_ClearingTemplate_FallsBackToDirectContent()
+        {
+            var directControl = new TextBlock { Text = "Direct" };
+            var (dp, _, footer, _) = Create(
+                drawerFooter: directControl,
+                footerTemplate: new FuncDataTemplate<object>((_, _) => new Canvas()));
+
+            footer.UpdateChild();
+            Assert.IsType<Canvas>(footer.Child);
+
+            dp.DrawerFooterTemplate = null;
+            footer.UpdateChild();
+
+            Assert.Same(directControl, footer.Child);
         }
     }
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,14 +6,13 @@ using Avalonia.Animation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
-using Avalonia.Logging;
-using Avalonia.LogicalTree;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
+using Avalonia.Logging;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
@@ -618,6 +616,8 @@ namespace Avalonia.Controls
                     _backButton.Click += BackButton_Clicked;
             }
         }
+
+        protected override Type StyleKeyOverride => typeof(NavigationPage);
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {

@@ -1264,6 +1264,44 @@ namespace Avalonia.Base.UnitTests.Animation
             Assert.Equal(200d, border.Width);
         }
 
+        [Fact]
+        public void FillMode_Applies_Final_Value_When_Visual_Detached_During_Animation()
+        {
+            var keyframe1 = new KeyFrame
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 100d) },
+                Cue = new Cue(0d)
+            };
+            var keyframe2 = new KeyFrame
+            {
+                Setters = { new Setter(Layoutable.WidthProperty, 300d) },
+                Cue = new Cue(1d)
+            };
+
+            var animation = new Animation
+            {
+                Duration = TimeSpan.FromSeconds(5),
+                IterationCount = new IterationCount(1),
+                FillMode = FillMode.Forward,
+                Children = { keyframe1, keyframe2 }
+            };
+
+            var border = new Border { Height = 100d, Width = 50d };
+            var root = new TestRoot(border);
+            var clock = new TestClock();
+            var animationRun = animation.RunAsync(border, clock, TestContext.Current.CancellationToken);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(100d, border.Width);
+
+            // Detach from visual tree immediately
+            root.Child = null;
+
+            // The final value should be applied
+            Assert.True(animationRun.IsCompleted);
+            Assert.Equal(300d, border.Width);
+        }
+
         private sealed class FakeAnimator : InterpolatingAnimator<double>
         {
             public double LastProgress { get; set; } = double.NaN;

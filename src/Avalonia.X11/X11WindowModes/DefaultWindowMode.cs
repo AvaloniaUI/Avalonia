@@ -31,6 +31,14 @@ partial class X11Window
         public override void Show(bool activate, bool isDialog)
         {            
             Window._wasMappedAtLeastOnce = true;
+
+            if (!activate)
+            {
+                var time = IntPtr.Zero;
+                XChangeProperty(X11.Display, Handle, X11.Atoms._NET_WM_USER_TIME, X11.Atoms.CARDINAL, 32,
+                    PropertyMode.Replace, ref time, 1);
+            }
+
             XMapWindow(X11.Display, Handle);
             XFlush(X11.Display);
             base.Show(activate, isDialog);
