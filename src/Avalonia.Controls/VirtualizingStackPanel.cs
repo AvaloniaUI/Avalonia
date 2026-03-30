@@ -113,6 +113,7 @@ namespace Avalonia.Controls
 
         private bool _hasReachedStart = false;
         private bool _hasReachedEnd = false;
+
         private Rect _lastMeasuredViewport;
         private bool _suppressScrollIntoView = false;  // Suppress ScrollIntoView after Reset
         private Rect _lastMeasuredExtendedViewport;
@@ -1618,7 +1619,37 @@ namespace Avalonia.Controls
                 _realizingIndex = -1;
                 _realizingElement = null;
             } while (u < viewport.viewportUEnd && index < items.Count);
-            
+
+            // When the forward loop stopped because u >= viewportUEnd but only a few items
+            // remain, realize them too. This ensures the extent is based on actual measured
+            // sizes rather than estimates, preventing the last item(s) from being clipped
+            // because the ScrollViewer couldn't scroll far enough.
+            var remainingItems = items.Count - index;
+            if (remainingItems > 0 && remainingItems <= 3)
+            {
+                while (index < items.Count)
+                {
+                    _realizingIndex = index;
+                    var e = GetOrCreateElement(items, index);
+                    _realizingElement = e;
+
+                    if (!e.IsMeasureValid)
+                        e.Measure(availableSize);
+
+                    var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
+                    sizeU = AdjustElementSize(index, sizeU);
+                    var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
+
+                    _measureElements!.Add(index, e, u, sizeU);
+                    viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
+
+                    u += sizeU;
+                    ++index;
+                    _realizingIndex = -1;
+                    _realizingElement = null;
+                }
+            }
+
             // Check if we reached the end of the collection
             _hasReachedEnd = index >= items.Count;
             

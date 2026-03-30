@@ -4691,6 +4691,40 @@ namespace Avalonia.Controls.UnitTests
                 $"Initial={initialExtent}, After={frozenAfter}");
         }
 
+        [Fact]
+        public void Last_Item_Not_Clipped_When_Few_Remaining_Items_Are_Larger_Than_Estimate()
+        {
+            // Regression test: when the forward realization loop fills the viewport and stops
+            // with only 1-3 items remaining, those items' sizes are estimated (not measured).
+            // If their actual size is much larger than the estimate, the extent is too small,
+            // preventing the ScrollViewer from scrolling far enough to show them in full.
+            //
+            // Setup: 12 items total. First 10 are 10px tall, last 2 are 200px tall.
+            // Viewport is 100px. The forward loop realizes items 0-9 (fills 100px), leaving
+            // 2 items remaining. Without fix: estimated extent = 100 + 2*10 = 120.
+            // With fix: those 2 items are realized, giving extent = 100 + 200 + 200 = 500.
+            using var app = App();
+
+            var items = Enumerable.Range(0, 12)
+                .Select(i => new ItemWithHeight(i, i >= 10 ? 200 : 10))
+                .ToList();
+
+            var (target, scroll, itemsControl) = CreateTarget(
+                items: items,
+                itemTemplate: CanvasWithHeightTemplate,
+                bufferFactor: 0);
+
+            // Check right after initial layout — before any scrolling.
+            // The extent must already reflect the actual sizes of the last 2 items.
+            Assert.True(
+                scroll.Extent.Height >= 500,
+                $"Extent ({scroll.Extent.Height}) should be >= 500 (actual content height). " +
+                $"The last 2 items (<=3 remaining after forward loop) should be realized, not estimated.");
+
+            // All 12 items should be realized since the last 2 were within the <=3 threshold.
+            Assert.Equal(11, target.LastRealizedIndex);
+        }
+
         private class TestLogSink : ILogSink
         {
             private readonly List<string> _messages;
