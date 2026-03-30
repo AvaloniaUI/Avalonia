@@ -1064,6 +1064,84 @@ namespace Avalonia.Base.UnitTests.Input
             }
         }
 
+        [Fact]
+        public void Focus_In_Scope_Should_Not_Change_When_Focus_Canceled()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var first = new Button { Name = "First" };
+            var second = new Button { Name = "Second" };
+
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        first,
+                        second
+                    }
+                }
+            };
+
+            var focusManager = (FocusManager)root.FocusManager;
+
+            // Focus the first element
+            first.Focus();
+            Assert.Same(first, focusManager.GetFocusedElement(root));
+
+            // Cancel focus change
+            second.GettingFocus += (_, e) => e.TryCancel();
+
+            // Move the focus to the second element: it should fail
+            var focusResult = focusManager.Focus(second);
+            Assert.False(focusResult);
+            Assert.Same(first, KeyboardDevice.Instance?.FocusedElement);
+
+            // FocusedElement for the scope should remain the same
+            var newFocusedElementInScope = focusManager.GetFocusedElement(root);
+            Assert.Same(first, newFocusedElementInScope);
+        }
+
+        [Fact]
+        public void Focus_In_Scope_Should_Match_Redirected_Element_When_Focus_Redirected()
+        {
+            using var app = UnitTestApplication.Start(TestServices.RealFocus);
+            var first = new Button { Name = "First" };
+            var second = new Button { Name = "Second" };
+            var third = new Button { Name = "Third" };
+
+            var root = new TestRoot
+            {
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        first,
+                        second,
+                        third
+                    }
+                }
+            };
+
+            var focusManager = (FocusManager)root.FocusManager;
+
+            // Focus the first element
+            first.Focus();
+            Assert.Same(first, focusManager.GetFocusedElement(root));
+
+            // Redirect focus change
+            second.GettingFocus += (_, e) => e.TrySetNewFocusedElement(third);
+
+            // Move the focus to the second element: it should fail
+            var focusResult = focusManager.Focus(second);
+            Assert.False(focusResult);
+            Assert.Same(third, KeyboardDevice.Instance?.FocusedElement);
+
+            // FocusedElement for the scope should have moved to the redirected element
+            var newFocusedElementInScope = focusManager.GetFocusedElement(root);
+            Assert.Same(third, newFocusedElementInScope);
+        }
+
         private class TestFocusScope : Panel, IFocusScope
         {
         }
