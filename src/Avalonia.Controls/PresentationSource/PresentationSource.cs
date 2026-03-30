@@ -23,10 +23,8 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
     public PresentationSource(InputElement rootVisual, InputElement defaultFocusVisual,
         ITopLevelImpl platformImpl,
-        IAvaloniaDependencyResolver dependencyResolver, Func<Size> clientSizeProvider)
+        IAvaloniaDependencyResolver dependencyResolver)
     {
-        _clientSizeProvider = clientSizeProvider;
-
         PlatformImpl = platformImpl;
 
 
