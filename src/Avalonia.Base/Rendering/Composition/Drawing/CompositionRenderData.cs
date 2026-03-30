@@ -13,6 +13,7 @@ namespace Avalonia.Rendering.Composition.Drawing;
 internal class CompositionRenderData : ICompositorSerializable, IDisposable
 {
     private readonly Compositor _compositor;
+    private int _refCount = 1;
 
     public CompositionRenderData(Compositor compositor)
     {
@@ -27,22 +28,27 @@ internal class CompositionRenderData : ICompositorSerializable, IDisposable
     public void AddResource(ICompositionRenderResource resource) => _resources.Add(resource);
 
     public void Add(IRenderDataItem item) => _items.Add(item);
-    
+
+    public void AddRef() => _refCount++;
+
     public void Dispose()
     {
+        if (--_refCount > 0)
+            return;
+
         if (!_itemsSent)
         {
             foreach(var i in _items)
                 if (i is IDisposable disp)
                     disp.Dispose();
         }
-        
+
         _items.Dispose();
         _itemsSent = false;
         foreach(var r in _resources)
             r.ReleaseOnCompositor(_compositor);
         _resources.Dispose();
-        
+
         _compositor.DisposeOnNextBatch(Server);
     }
 

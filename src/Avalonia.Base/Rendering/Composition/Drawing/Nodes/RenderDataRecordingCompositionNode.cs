@@ -1,17 +1,18 @@
+using System;
 using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Drawing.Nodes;
 
-internal class RenderDataRecordingCompositionNode : IRenderDataItemWithServerResources
+internal class RenderDataRecordingCompositionNode : IRenderDataItemWithServerResources, IDisposable
 {
-    public required ServerCompositionRenderData ServerRenderData { get; init; }
+    public required CompositionRenderData RenderData { get; init; }
 
     public void Invoke(ref RenderDataNodeRenderContext context)
     {
-        ServerRenderData.Render(context.Context);
+        RenderData.Server.Render(context.Context);
     }
 
-    public Rect? Bounds => ServerRenderData.Bounds?.ToRect();
+    public Rect? Bounds => RenderData.Server.Bounds?.ToRect();
 
     public bool HitTest(Point p)
     {
@@ -21,6 +22,11 @@ internal class RenderDataRecordingCompositionNode : IRenderDataItemWithServerRes
 
     public void Collect(IRenderDataServerResourcesCollector collector)
     {
-        collector.AddRenderDataServerResource(ServerRenderData);
+        collector.AddRenderDataServerResource(RenderData.Server);
+    }
+
+    public void Dispose()
+    {
+        RenderData.Dispose();
     }
 }

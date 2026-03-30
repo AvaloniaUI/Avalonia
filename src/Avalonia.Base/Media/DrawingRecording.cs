@@ -15,6 +15,7 @@ public sealed class DrawingRecording : IDisposable
 {
     private readonly RenderItemList? _items;
     private readonly CompositionRenderData? _renderData;
+    private bool _registeredForSerialization;
     private bool _disposed;
 
     internal DrawingRecording(RenderItemList items)
@@ -55,7 +56,7 @@ public sealed class DrawingRecording : IDisposable
         using var context = new RenderDataDrawingContext(compositor);
         record(context);
 
-        var renderData = context.GetRenderResults()
+        var renderData = context.GetRenderResultsWithoutRegistration()
             ?? new CompositionRenderData(compositor);
 
         return new DrawingRecording(compositor, renderData);
@@ -110,6 +111,19 @@ public sealed class DrawingRecording : IDisposable
         {
             ThrowIfDisposed();
             return _renderData?.Server;
+        }
+    }
+
+    /// <summary>
+    /// Ensures the compositor-bound render data is registered for serialization.
+    /// Called lazily on first use to avoid leaking server resources for unused recordings.
+    /// </summary>
+    internal void EnsureRegisteredForSerialization()
+    {
+        if (!_registeredForSerialization && _renderData != null && Compositor != null)
+        {
+            Compositor.RegisterForSerialization(_renderData);
+            _registeredForSerialization = true;
         }
     }
 
