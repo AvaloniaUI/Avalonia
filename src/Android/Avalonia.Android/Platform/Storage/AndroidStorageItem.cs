@@ -159,12 +159,20 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     public async Task<IStorageFile?> CreateFileAsync(string name)
     {
         // Try to return an existing file to avoid creating file (1).
-        var existingFile = await GetItemAsync(name, false) as IStorageFile;
-        if (existingFile != null)
+        var existingItem = await GetItemAsync(name, false);
+        if (existingItem != null)
         {
-            // Uncommenting the following code will cause the file to be truncated when it is created:
-            // using var _ = await existingFile.OpenWriteAsync();
-            return existingFile;
+            if (existingItem is IStorageFile existingFile)
+            {
+                // Uncommenting the following code will cause the file to be truncated when it is created:
+                // using (var _ = await existingFile.OpenWriteAsync()) { }
+                return existingFile;
+            }
+            else if (existingItem is IStorageFolder)
+            {
+                // There is an item with the same name but it's not a file. We can't create a file in this case.
+                throw new IOException($"Can not create '{name}' because a directory with the same name already exists.");
+            }
         }
         // Create new one and return it.
         var treeUri = GetTreeUri().treeUri;
@@ -181,10 +189,18 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     public async Task<IStorageFolder?> CreateFolderAsync(string name)
     {
         // Try to return an existing folder to avoid creating folder (1).
-        var existingFolder = await GetItemAsync(name, true) as IStorageFolder;
-        if (existingFolder != null)
+        var existingItem = await GetItemAsync(name, true);
+        if (existingItem != null)
         {
-            return existingFolder;
+            if (existingItem is IStorageFolder existingFolder)
+            {
+                return existingFolder;
+            }
+            else if (existingItem is IStorageFile)
+            {
+                // There is an item with the same name but it's not a folder. We can't create a folder in this case.
+                throw new IOException($"Can not create '{name}' because a file with the same name already exists.");
+            }
         }
         // Create new one and return it.
         var treeUri = GetTreeUri().treeUri;
