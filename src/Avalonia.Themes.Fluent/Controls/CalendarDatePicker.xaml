@@ -63,6 +63,7 @@
   <ControlTheme x:Key="{x:Type CalendarDatePicker}" TargetType="CalendarDatePicker">
     <Setter Property="Background" Value="{DynamicResource CalendarDatePickerBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource CalendarDatePickerForeground}" />
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource TextControlPlaceholderForeground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CalendarDatePickerBorderBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource CalendarDatePickerBorderThemeThickness}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />

@@ -16,7 +16,7 @@
       </Style>
     </Grid.Styles>
     <controls:HamburgerMenu Name="Sidebar">
-      <TabItem Header="Composition">
+      <TabItem Header="Composition" IsSelected="True">
         <pages:CompositionPage />
       </TabItem>
       <TabItem Header="Accelerator">
