@@ -17,6 +17,7 @@ namespace Avalonia.Media.Fonts
 
         // Make this internal for testing purposes
         internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> _glyphTypefaceCache = new();
+        internal readonly ConcurrentQueue<string> _fontInsertionSequence = new();
 
         private readonly object _fontFamiliesLock = new();
         private volatile FontFamily[] _fontFamilies = Array.Empty<FontFamily>();
@@ -34,6 +35,15 @@ namespace Avalonia.Media.Fonts
         public int Count => _fontFamilies.Length;
 
         public FontFamily this[int index] => _fontFamilies[index];
+
+        private IEnumerable<KeyValuePair<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>>> GetGlyphTypefaceCacheInOrder()
+        {
+            foreach (var key in _fontInsertionSequence)
+            {
+                if (_glyphTypefaceCache.TryGetValue(key, out var value))
+                    yield return new KeyValuePair<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>>(key, value);
+            }
+        }
 
         public virtual bool TryMatchCharacter(int codepoint, FontStyle style, FontWeight weight, FontStretch stretch,
             string? familyName, CultureInfo? culture, out Typeface match)
@@ -62,7 +72,7 @@ namespace Avalonia.Media.Fonts
             bool TryMatchInAnyFamily(bool isLastResort, out Typeface match)
             {
                 //Try to find a match in any font family
-                foreach (var pair in _glyphTypefaceCache)
+                foreach (var pair in GetGlyphTypefaceCacheInOrder())
                 {
                     if (pair.Key == familyName)
                     {
@@ -702,7 +712,7 @@ namespace Avalonia.Media.Fonts
 
             // GetOrAdd will return the instance that ended up in the dictionary. If it's our
             // newDict instance then we won the race to add the family and should publish it.
-            var dict = _glyphTypefaceCache.GetOrAdd(familyName, newDict);
+            var dict = GetOrAdd(familyName, newDict);
 
             if (ReferenceEquals(dict, newDict))
             {
@@ -725,6 +735,17 @@ namespace Avalonia.Media.Fonts
             }
 
             return dict.TryAdd(key, glyphTypeface);
+
+            ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> GetOrAdd(string familyName, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> dict)
+            {
+                if (_glyphTypefaceCache.TryAdd(familyName, dict))
+                {
+                    _fontInsertionSequence.Enqueue(familyName);
+                    return dict;
+                }
+
+                return _glyphTypefaceCache[familyName];
+            }
         }
 
         /// <summary>
