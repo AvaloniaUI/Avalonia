@@ -23,6 +23,7 @@ internal class VulkanDisplay : IDisposable
     public VulkanCommandBufferPool CommandBufferPool { get; private set; }
     public PixelSize Size { get; private set; }
     private VulkanFence? _presentFence;
+    private bool _swapchainOutOfDate;
     
     private VulkanDisplay(IVulkanPlatformGraphicsContext context, VulkanKhrSurface surface, VkSwapchainKHR swapchain,
         VkExtent2D swapchainExtent, IVulkanKhrSurfacePlatformSurface platformSurface, bool isDynamicMode)
@@ -237,6 +238,15 @@ internal class VulkanDisplay : IDisposable
     
     public bool EnsureSwapchainAvailable()
     {
+        // Check if swapchain was marked as out of date from a previous presentation
+        if (_swapchainOutOfDate)
+        {
+            RecreateSwapchain();
+            _swapchainOutOfDate = false;
+            return true;
+        }
+        
+        // Check if surface size has changed
         if (Size != _surface?.Size)
         {
             RecreateSwapchain();
@@ -362,9 +372,33 @@ internal class VulkanDisplay : IDisposable
             pResults = &result
         };
         
-        _context.DeviceApi.vkQueuePresentKHR(_context.MainQueueHandle, ref presentInfo)
-            .ThrowOnError("vkQueuePresentKHR");
-        result.ThrowOnError("vkQueuePresentKHR");
+        var presentResult = _context.DeviceApi.vkQueuePresentKHR(_context.MainQueueHandle, ref presentInfo);
+        
+        // Handle VK_ERROR_OUT_OF_DATE_KHR by recreating the swapchain
+        // This can happen if the window is resized between acquire and present
+        if (presentResult == VkResult.VK_ERROR_OUT_OF_DATE_KHR)
+        {
+            // The swapchain is no longer valid. We need to recreate it.
+            // The current frame cannot be presented, so we just recreate and return.
+            // The next BeginDraw/EndPresentation cycle will use the new swapchain.
+            _context.DeviceApi.DeviceWaitIdle(_context.DeviceHandle);
+            RecreateSwapchain();
+            // Mark that the swapchain was recreated so the next BeginDraw knows to recreate the image
+            _swapchainOutOfDate = true;
+            return;
+        }
+        
+        // Handle VK_SUBOPTIMAL_KHR - presentation succeeded but surface is suboptimal
+        if (presentResult != VkResult.VK_SUCCESS && presentResult != VkResult.VK_SUBOPTIMAL_KHR)
+        {
+            presentResult.ThrowOnError("vkQueuePresentKHR");
+        }
+        
+        // Also check the result array for errors
+        if (result != VkResult.VK_SUCCESS && result != VkResult.VK_SUBOPTIMAL_KHR)
+        {
+            result.ThrowOnError("vkQueuePresentKHR");
+        }
         
         // For VulkanDynamic: pass the fence wait action to render timer
         // The fence was already submitted with the main command buffer above
