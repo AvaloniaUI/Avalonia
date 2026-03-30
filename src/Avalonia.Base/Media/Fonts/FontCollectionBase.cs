@@ -19,6 +19,7 @@ namespace Avalonia.Media.Fonts
         internal readonly ConcurrentDictionary<string, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?>> _glyphTypefaceCache = new();
         internal readonly ConcurrentQueue<string> _fontInsertionSequence = new();
 
+        private readonly object _glyphCacheInsertLock = new();
         private readonly object _fontFamiliesLock = new();
         private volatile FontFamily[] _fontFamilies = Array.Empty<FontFamily>();
         private readonly IFontManagerImpl _fontManagerImpl;
@@ -738,13 +739,15 @@ namespace Avalonia.Media.Fonts
 
             ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> GetOrAdd(string familyName, ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> dict)
             {
-                if (_glyphTypefaceCache.TryAdd(familyName, dict))
+                lock (_glyphCacheInsertLock)
                 {
+                    if (_glyphTypefaceCache.TryGetValue(familyName, out var existing))
+                        return existing;
+
+                    _glyphTypefaceCache[familyName] = dict;
                     _fontInsertionSequence.Enqueue(familyName);
                     return dict;
                 }
-
-                return _glyphTypefaceCache[familyName];
             }
         }
 
