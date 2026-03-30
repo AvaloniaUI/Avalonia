@@ -50,7 +50,7 @@ partial class ServerCompositionVisual
     private LtrbRect? _ownClipRect;
 
     
-    private bool _hasExtraDirtyRect;
+    private bool _needsToAddExtraDirtyRectToDirtyRegion;
     private LtrbRect _extraDirtyRect;
 
     public virtual LtrbRect? ComputeOwnContentBounds() => null;
@@ -107,7 +107,7 @@ partial class ServerCompositionVisual
         _isDirtyForRender |= dirtyForRender;
         
         // If node itself is dirty for render, we don't need to keep track of extra dirty rects
-        _hasExtraDirtyRect = !dirtyForRender && (_hasExtraDirtyRect || additionalDirtyRegion);
+        _needsToAddExtraDirtyRectToDirtyRegion = !dirtyForRender && (_needsToAddExtraDirtyRectToDirtyRegion || additionalDirtyRegion);
     }
     
     public void RecomputeOwnProperties()
@@ -148,7 +148,7 @@ partial class ServerCompositionVisual
         if (_combinedTransformDirty)
         {
             _ownTransform = MatrixUtils.ComputeTransform(Size, AnchorPoint, CenterPoint, TransformMatrix, Scale,
-                RotationAngle, Orientation, Offset);
+                RotationAngle, Orientation, Offset + Translation);
             
             setDirtyForRender = setDirtyBounds = true;
             

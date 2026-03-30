@@ -113,7 +113,7 @@ namespace Avalonia.Layout
         /// Defines the <see cref="Margin"/> property.
         /// </summary>
         public static readonly StyledProperty<Thickness> MarginProperty =
-            AvaloniaProperty.Register<Layoutable, Thickness>(nameof(Margin));
+            AvaloniaProperty.Register<Layoutable, Thickness>(nameof(Margin), validate: ValidateThickness);
 
         /// <summary>
         /// Defines the <see cref="HorizontalAlignment"/> property.
@@ -160,6 +160,8 @@ namespace Avalonia.Layout
         private static bool ValidateDimension(double value) => double.IsNaN(value) || ValidateMinimumDimension(value);
         private static bool ValidateMinimumDimension(double value) => !double.IsPositiveInfinity(value) && ValidateMaximumDimension(value);
         private static bool ValidateMaximumDimension(double value) => value >= 0;
+
+        private static bool ValidateThickness(Thickness value) => double.IsFinite(value.Left) && double.IsFinite(value.Top) && double.IsFinite(value.Right) && double.IsFinite(value.Bottom);
 
         /// <summary>
         /// Occurs when the element's effective viewport changes.

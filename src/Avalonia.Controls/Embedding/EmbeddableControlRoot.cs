@@ -4,6 +4,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls.Automation;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Platform;
 
@@ -53,6 +54,12 @@ namespace Avalonia.Controls.Embedding
         }
 
         protected override Type StyleKeyOverride => typeof(EmbeddableControlRoot);
+
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+            EnableVisualLayerManagerLayers();
+        }
 
         protected override AutomationPeer OnCreateAutomationPeer()
         {

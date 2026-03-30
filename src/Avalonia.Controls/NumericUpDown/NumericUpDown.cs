@@ -112,7 +112,9 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
         public static readonly StyledProperty<string?> PlaceholderTextProperty =
-            AvaloniaProperty.Register<NumericUpDown, string?>(nameof(PlaceholderText));
+#pragma warning disable AVP1013
+            TextBox.PlaceholderTextProperty.AddOwner<NumericUpDown>();
+#pragma warning restore AVP1013
 
         /// <summary>
         /// Defines the <see cref="Watermark"/> property.
@@ -440,14 +442,14 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc />
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
             FocusChanged(IsKeyboardFocusWithin);
         }
 
         /// <inheritdoc />
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             CommitInput(true);
             base.OnLostFocus(e);

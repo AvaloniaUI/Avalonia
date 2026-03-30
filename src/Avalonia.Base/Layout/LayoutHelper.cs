@@ -263,12 +263,22 @@ namespace Avalonia.Layout
             // point precision error (e.g. 79.333333333333343) then when it's multiplied by
             // `dpiScale` and rounded up, it will be rounded up to a value one greater than it
             // should be.
-#if NET6_0_OR_GREATER
             return Math.Round(value, 8, MidpointRounding.ToZero);
-#else
-            // MidpointRounding.ToZero isn't available in netstandard2.0.
-            return Math.Truncate(value * 1e8) / 1e8;
-#endif
+        }
+
+        internal static double ValidateScaling(double scaling)
+        {
+            if (MathUtilities.IsNegativeOrNonFinite(scaling) || MathUtilities.IsZero(scaling))
+                throw new InvalidOperationException($"Invalid render scaling value {scaling}");
+
+            if (MathUtilities.IsOne(scaling))
+            {
+                // Ensure we've got exactly 1.0 and not an approximation,
+                // so we don't have to use MathUtilities.IsOne in various layout hot paths.
+                return 1.0;
+            }
+
+            return scaling;
         }
     }
 }

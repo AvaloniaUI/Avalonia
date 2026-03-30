@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CarouselPageFirstLookPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Configuration" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock Text="Navigation" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="6">
+          <Button Content="Previous" Click="OnPrevious" HorizontalAlignment="Stretch" />
+          <Button Content="Next" Click="OnNext" HorizontalAlignment="Stretch" />
+        </StackPanel>
+
+        <Separator />
+
+        <TextBlock Text="Status" FontWeight="SemiBold" FontSize="13" />
+        <TextBlock x:Name="StatusText" Text="Page 1 of 3" Opacity="0.7" TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+            BorderThickness="1" CornerRadius="6" ClipToBounds="True">
+      <CarouselPage x:Name="DemoCarousel"
+                    SelectionChanged="OnSelectionChanged">
+        <ContentPage Header="Welcome">
+          <StackPanel Margin="24" Spacing="12"
+                      HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Welcome" FontSize="28" FontWeight="Bold"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Swipe left or use the buttons to navigate."
+                       TextWrapping="Wrap" Opacity="0.7" TextAlignment="Center" MaxWidth="280" />
+          </StackPanel>
+        </ContentPage>
+        <ContentPage Header="Explore">
+          <StackPanel Margin="24" Spacing="12"
+                      HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Explore" FontSize="28" FontWeight="Bold"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="CarouselPage supports scroll-based and transition-based navigation modes."
+                       TextWrapping="Wrap" Opacity="0.7" TextAlignment="Center" MaxWidth="280" />
+          </StackPanel>
+        </ContentPage>
+        <ContentPage Header="Get Started">
+          <StackPanel Margin="24" Spacing="12"
+                      HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Get Started" FontSize="28" FontWeight="Bold"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Use SelectedIndex to jump to any page, or assign a PageTransition for animated switching."
+                       TextWrapping="Wrap" Opacity="0.7" TextAlignment="Center" MaxWidth="280" />
+          </StackPanel>
+        </ContentPage>
+      </CarouselPage>
+    </Border>
+  </DockPanel>
+</UserControl>
