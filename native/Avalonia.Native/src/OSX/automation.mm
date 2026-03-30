@@ -461,13 +461,19 @@
 
 - (void)raisePropertyChanged:(AvnAutomationProperty)property
 {
-    if (property == AutomationPeer_Name && _peer->GetLiveSetting() != LiveSettingOff)
-        [self raiseLiveRegionChanged];
-}
+    switch (property) {
+    case AutomationPeer_Name:
+        if (_peer->GetLiveSetting() != LiveSettingOff)
+            NSAccessibilityPostNotification(self, @"AXLiveRegionChanged" /* kAXLiveRegionChangedNotification */);
+        break;
 
-- (void)raiseLiveRegionChanged
-{
-    NSAccessibilityPostNotification(self, @"AXLiveRegionChanged" /* kAXLiveRegionChangedNotification */);
+    case ExpandCollapse_State:
+        if (_peer->ExpandCollapseProvider_GetIsExpanded())
+            NSAccessibilityPostNotification(self, kAXRowExpandedNotification);
+        else
+            NSAccessibilityPostNotification(self, kAXRowCollapsedNotification);
+        break;
+    }
 }
 
 - (void)setAccessibilityFocused:(BOOL)accessibilityFocused

@@ -403,6 +403,7 @@ enum AvnAutomationProperty
     AutomationPeer_ClassName,
     AutomationPeer_Name,
     RangeValueProvider_Value,
+    ExpandCollapse_State,
 }
 
 struct AvnSize
