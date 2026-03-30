@@ -516,7 +516,7 @@ namespace Avalonia.Controls
 
                         int primaryNonSepCount = 0;
                         foreach (var item in PrimaryCommands)
-                            if (item is not AppBarSeparator)
+                            if (item is not CommandBarSeparator)
                                 primaryNonSepCount++;
 
                         const double overflowButtonWidth = 48;
@@ -554,7 +554,7 @@ namespace Avalonia.Controls
                         for (var i = 0; i < prioritized.Count; i++)
                         {
                             var idx = prioritized[i].Index;
-                            if (PrimaryCommands[idx] is AppBarSeparator)
+                            if (PrimaryCommands[idx] is CommandBarSeparator)
                                 visibleIndices.Add(idx);
                             else if (nonSeparatorCount < maxItems)
                             {
@@ -596,8 +596,8 @@ namespace Avalonia.Controls
 
         private static int GetDynamicOverflowOrder(ICommandBarElement element) => element switch
         {
-            AppBarButton b => b.DynamicOverflowOrder,
-            AppBarToggleButton t => t.DynamicOverflowOrder,
+            CommandBarButton b => b.DynamicOverflowOrder,
+            CommandBarToggleButton t => t.DynamicOverflowOrder,
             _ => 0
         };
 
@@ -615,9 +615,9 @@ namespace Avalonia.Controls
         {
             element.IsCompact = DefaultLabelPosition == CommandBarDefaultLabelPosition.Collapsed;
 
-            if (element is AppBarButton abb)
+            if (element is CommandBarButton abb)
                 abb.LabelPosition = DefaultLabelPosition;
-            else if (element is AppBarToggleButton atb)
+            else if (element is CommandBarToggleButton atb)
                 atb.LabelPosition = DefaultLabelPosition;
         }
 
