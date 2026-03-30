@@ -8,6 +8,7 @@
     <StreamGeometry x:Key="BoldIcon">M15.6,10.79C17.04,10.07 18,8.64 18,7C18,4.79 16.21,3 14,3H7V21H14.73C16.78,21 18.5,19.37 18.5,17.32C18.5,15.82 17.72,14.53 16.5,13.77C16.2,13.59 15.9,13.44 15.6,13.32V10.79M10,6.5H13C13.83,6.5 14.5,7.17 14.5,8C14.5,8.83 13.83,9.5 13,9.5H10V6.5M13.5,17.5H10V14H13.5C14.33,14 15,14.67 15,15.5C15,16.33 14.33,17.5 13.5,17.5Z</StreamGeometry>
     <StreamGeometry x:Key="ItalicIcon">M10,4V7H12.21L8.79,15H6V18H14V15H11.79L15.21,7H18V4H10Z</StreamGeometry>
     <StreamGeometry x:Key="DeleteIcon">M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z</StreamGeometry>
+    <StreamGeometry x:Key="ExportIcon">M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M16,11V18.1L13.9,16L11.1,18.8L8.3,16L11.1,13.2L9,11.1L16,11Z</StreamGeometry>
   </UserControl.Resources>
 
   <DockPanel>
@@ -33,6 +34,18 @@
                   IsChecked="True"
                   IsCheckedChanged="OnDynamicOverflowChanged" />
 
+        <CheckBox x:Name="SecondaryVisibleCheck"
+                  Content="Show secondary command"
+                  IsChecked="True"
+                  IsCheckedChanged="OnSecondaryVisibilityChanged" />
+
+        <Separator />
+
+        <TextBlock Text="Resize to force grouped commands into overflow and verify that primary separators never become leading, trailing, or overflow items."
+                   FontSize="12"
+                   Opacity="0.7"
+                   TextWrapping="Wrap" />
+
         <Separator />
 
         <TextBlock Text="Overflow Priority" FontWeight="SemiBold" />
@@ -47,11 +60,11 @@
 
     <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
 
-    <StackPanel Margin="12" Spacing="8">
-      <TextBlock x:Name="StatusText"
-                 Text="Showing 6 of 6 commands, 0 in overflow"
-                 FontSize="12"
-                 Opacity="0.7" />
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock x:Name="StatusText"
+                   Text="Visible primary: 6 commands, 2 separators&#x0a;Overflow items: 2 commands, 1 separator&#x0a;Synthetic overflow divider: present"
+                   FontSize="12"
+                   Opacity="0.7" />
       <Border x:Name="BarContainer"
               Width="400"
               HorizontalAlignment="Left"
@@ -63,11 +76,16 @@
           <CommandBar.PrimaryCommands>
             <AppBarButton Label="New" DynamicOverflowOrder="0"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
             <AppBarButton Label="Save" DynamicOverflowOrder="0"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+            <AppBarSeparator />
             <AppBarButton Label="Share" DynamicOverflowOrder="1"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
             <AppBarButton Label="Bold" DynamicOverflowOrder="2"><AppBarButton.Icon><PathIcon Data="{StaticResource BoldIcon}" /></AppBarButton.Icon></AppBarButton>
+            <AppBarSeparator />
             <AppBarButton Label="Italic" DynamicOverflowOrder="2"><AppBarButton.Icon><PathIcon Data="{StaticResource ItalicIcon}" /></AppBarButton.Icon></AppBarButton>
             <AppBarButton Label="Delete" DynamicOverflowOrder="3"><AppBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></AppBarButton.Icon></AppBarButton>
           </CommandBar.PrimaryCommands>
+          <CommandBar.SecondaryCommands>
+            <AppBarButton x:Name="DemoSecondaryCommand" Label="Export"><AppBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></AppBarButton.Icon></AppBarButton>
+          </CommandBar.SecondaryCommands>
         </CommandBar>
       </Border>
     </StackPanel>
