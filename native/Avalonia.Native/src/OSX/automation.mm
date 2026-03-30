@@ -469,9 +469,9 @@
 
     case ExpandCollapse_State:
         if (_peer->ExpandCollapseProvider_GetIsExpanded())
-            NSAccessibilityPostNotification(self, kAXRowExpandedNotification);
+            NSAccessibilityPostNotification(self, (__bridge NSString *)kAXRowExpandedNotification);
         else
-            NSAccessibilityPostNotification(self, kAXRowCollapsedNotification);
+            NSAccessibilityPostNotification(self, (__bridge NSString *)kAXRowCollapsedNotification);
         break;
     }
 }
