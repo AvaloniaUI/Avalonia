@@ -14,7 +14,6 @@
     <ProjectReference Remove="samples/*.Android/*.csproj" />
     <ProjectReference Remove="samples/*.Browser/*.csproj" />
     <ProjectReference Remove="samples/SingleProjectSandbox/*.csproj" />
-    <ProjectReference Remove="tests/Avalonia.Benchmarks.Android/*.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
