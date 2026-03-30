@@ -42,8 +42,13 @@ internal sealed class PlatformDrawingContext : DrawingContext
     internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect) =>
         _impl.DrawBitmap(source.Item, opacity, sourceRect, destRect);
 
-    internal override void DrawRecordingCore(DrawingRecording recording) =>
-        recording.Items.Render(_impl);
+    internal override void DrawRecordingCore(DrawingRecording recording)
+    {
+        if (recording.IsCompositorBound)
+            recording.RenderData!.Render(_impl);
+        else
+            recording.ItemList!.Render(_impl);
+    }
 
     public override void Custom(ICustomDrawOperation custom)
     {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Drawing.Nodes;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
@@ -53,6 +54,31 @@ internal class CompositionRenderData : ICompositorSerializable, IDisposable
         foreach (var item in _items) 
             writer.WriteObject(item);
         _itemsSent = true;
+    }
+
+    public Rect? Bounds
+    {
+        get
+        {
+            LtrbRect? totalBounds = null;
+            foreach (var item in _items)
+                totalBounds = LtrbRect.FullUnion(totalBounds, item.Bounds);
+            return ServerCompositionRenderData.ApplyRenderBoundsRounding(totalBounds)?.ToRect();
+        }
+    }
+
+    public void Render(IDrawingContextImpl context)
+    {
+        var ctx = new RenderDataNodeRenderContext(context);
+        try
+        {
+            foreach (var item in _items)
+                item.Invoke(ref ctx);
+        }
+        finally
+        {
+            ctx.Dispose();
+        }
     }
 
     public bool HitTest(Point pt)

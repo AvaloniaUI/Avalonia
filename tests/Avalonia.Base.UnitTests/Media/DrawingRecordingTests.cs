@@ -2,10 +2,9 @@ using System;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Rendering.Composition;
-using Avalonia.Rendering.Composition.Drawing;
 using Xunit;
 
-namespace Avalonia.Base.UnitTests.Composition;
+namespace Avalonia.Base.UnitTests.Media;
 
 public class DrawingRecordingTests
 {
@@ -19,6 +18,7 @@ public class DrawingRecordingTests
 
         Assert.NotNull(recording);
         Assert.False(recording.IsDisposed);
+        Assert.Null(recording.Compositor);
         recording.Dispose();
     }
 
@@ -179,8 +179,6 @@ public class DrawingRecordingTests
         });
 
         var bounds = recording.Bounds;
-        // Bounds should be inflated by pen thickness (1px each side for thickness=2)
-        // and then snapped to pixels
         Assert.True(bounds.Width >= 100);
         Assert.True(bounds.Height >= 50);
         recording.Dispose();

@@ -298,7 +298,14 @@ internal class RenderDataDrawingContext : DrawingContext
 
     internal override void DrawRecordingCore(DrawingRecording recording)
     {
-        Add(new RenderDataRecordingItemListNode { Items = recording.Items });
+        if (recording.IsCompositorBound)
+        {
+            Add(new RenderDataRecordingCompositionNode { ServerRenderData = recording.ServerRenderData! });
+        }
+        else
+        {
+            Add(new RenderDataRecordingItemListNode { Items = recording.ItemList! });
+        }
     }
 
 

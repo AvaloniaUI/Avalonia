@@ -575,20 +575,78 @@ namespace Avalonia.Media
             {
                 if (_colrTable.TryGetBaseGlyphV1Record(glyphId, out var record))
                 {
-                    var drawing = new ColorGlyphV1Drawing(this, _colrTable, _cpalTable, glyphId, record);
-                    return DrawingRecording.Create(ctx => drawing.Draw(ctx, default));
+                    return CreateColrV1Recording(glyphId, record);
                 }
             }
 
             // Fallback to COLR v0
             if (_colrTable != null && _cpalTable != null && _colrTable.HasColorLayers(glyphId))
             {
-                var drawing = new ColorGlyphDrawing(this, _colrTable, _cpalTable, glyphId);
-                return DrawingRecording.Create(ctx => drawing.Draw(ctx, default));
+                return CreateColrV0Recording(glyphId);
             }
 
             // For outline-only glyphs, return null - caller should use GetGlyphOutline() instead
             return null;
+        }
+
+        private DrawingRecording CreateColrV0Recording(ushort glyphId, int paletteIndex = 0)
+        {
+            return DrawingRecording.Create(ctx =>
+            {
+                var layerRecords = _colrTable!.GetLayers(glyphId);
+
+                foreach (var layerRecord in layerRecords)
+                {
+                    if (!_cpalTable!.TryGetColor(paletteIndex, layerRecord.PaletteIndex, out var color))
+                    {
+                        color = Colors.Black;
+                    }
+
+                    var geometry = GetGlyphOutline(layerRecord.GlyphId, Matrix.CreateScale(1, -1));
+
+                    if (geometry != null)
+                    {
+                        ctx.DrawGeometry(new ImmutableSolidColorBrush(color), null, geometry);
+                    }
+                }
+            });
+        }
+
+        private DrawingRecording CreateColrV1Recording(ushort glyphId, BaseGlyphV1Record record, int paletteIndex = 0)
+        {
+            var colrContext = new ColrContext(this, _colrTable!, _cpalTable!, paletteIndex);
+
+            Paint? paint = null;
+            var decycler = PaintDecycler.Rent();
+            try
+            {
+                TryGetBaseGlyphV1Paint(colrContext, record, out paint);
+            }
+            finally
+            {
+                PaintDecycler.Return(decycler);
+            }
+
+            if (paint == null)
+            {
+                return DrawingRecording.Create(_ => { });
+            }
+
+            return DrawingRecording.Create(ctx =>
+            {
+                var traverseDecycler = PaintDecycler.Rent();
+                try
+                {
+                    using (ctx.PushTransform(Matrix.CreateScale(1, -1)))
+                    {
+                        PaintTraverser.Traverse(paint, new ColorGlyphV1Painter(ctx, colrContext), Matrix.Identity);
+                    }
+                }
+                finally
+                {
+                    PaintDecycler.Return(traverseDecycler);
+                }
+            });
         }
 
         /// <summary>
@@ -827,149 +885,4 @@ namespace Avalonia.Media
         }
     }
 
-    /// <summary>
-    /// Represents a color glyph drawing with multiple colored layers (COLR v0).
-    /// </summary>
-    internal sealed class ColorGlyphDrawing : IGlyphDrawing
-    {
-        private readonly GlyphTypeface _glyphTypeface;
-        private readonly ColrTable _colrTable;
-        private readonly CpalTable _cpalTable;
-        private readonly ushort _glyphId;
-        private readonly int _paletteIndex;
-
-        public ColorGlyphDrawing(GlyphTypeface glyphTypeface, ColrTable colrTable, CpalTable cpalTable, ushort glyphId, int paletteIndex = 0)
-        {
-            _glyphTypeface = glyphTypeface;
-            _colrTable = colrTable;
-            _cpalTable = cpalTable;
-            _glyphId = glyphId;
-            _paletteIndex = paletteIndex;
-        }
-
-        public GlyphDrawingType Type => GlyphDrawingType.ColorLayers;
-
-        public Rect Bounds
-        {
-            get
-            {
-                Rect? combinedBounds = null;
-                var layerRecords = _colrTable.GetLayers(_glyphId);
-
-                foreach (var layerRecord in layerRecords)
-                {
-                    var geometry = _glyphTypeface.GetGlyphOutline(layerRecord.GlyphId, Matrix.CreateScale(1, -1));
-                    if (geometry != null)
-                    {
-                        var layerBounds = geometry.Bounds;
-                        combinedBounds = combinedBounds.HasValue
-                            ? combinedBounds.Value.Union(layerBounds)
-                            : layerBounds;
-                    }
-                }
-
-                return combinedBounds ?? default;
-            }
-        }
-
-        /// <summary>
-        /// Draws the color glyph at the specified origin using the provided drawing context.
-        /// </summary>
-        /// <remarks>This method renders a multi-layered color glyph by drawing each layer with its
-        /// associated color. The colors are determined by the current palette and may fall back to black if a color is
-        /// not found. The method does not apply any transformations; the glyph is drawn at the specified origin in the
-        /// current context.</remarks>
-        /// <param name="context">The drawing context to use for rendering the glyph. Must not be null.</param>
-        /// <param name="origin">The point, in device-independent pixels, that specifies the origin at which to draw the glyph.</param>
-        public void Draw(DrawingContext context, Point origin)
-        {
-            var layerRecords = _colrTable.GetLayers(_glyphId);
-
-            foreach (var layerRecord in layerRecords)
-            {
-                // Get the color for this layer from the CPAL table
-                if (!_cpalTable.TryGetColor(_paletteIndex, layerRecord.PaletteIndex, out var color))
-                {
-                    color = Colors.Black; // Fallback
-                }
-
-                // Get the outline geometry for the layer glyph
-                var geometry = _glyphTypeface.GetGlyphOutline(layerRecord.GlyphId, Matrix.CreateScale(1, -1));
-
-                if (geometry != null)
-                {
-                    using (context.PushTransform(Matrix.CreateTranslation(origin.X, origin.Y)))
-                    {
-                        context.DrawGeometry(new ImmutableSolidColorBrush(color), null, geometry);
-                    }
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Represents a COLR v1 color glyph drawing with paint-based rendering.
-    /// </summary>
-    internal sealed class ColorGlyphV1Drawing : IGlyphDrawing
-    {
-        private readonly ColrContext _context;
-        private readonly ushort _glyphId;
-        private readonly int _paletteIndex;
-
-        private readonly Rect _bounds;
-        private readonly Paint? _paint;
-
-        public ColorGlyphV1Drawing(GlyphTypeface glyphTypeface, ColrTable colrTable, CpalTable cpalTable,
-            ushort glyphId, BaseGlyphV1Record record, int paletteIndex = 0)
-        {
-            _context = new ColrContext(glyphTypeface, colrTable, cpalTable, paletteIndex);
-            _glyphId = glyphId;
-            _paletteIndex = paletteIndex;
-
-            var decycler = PaintDecycler.Rent();
-
-            try
-            {
-                if (glyphTypeface.TryGetBaseGlyphV1Paint(_context, record, out _paint))
-                {
-                    if (_context.ColrTable.TryGetClipBox(_glyphId, out var clipRect))
-                    {
-                        // COLR v1 paint graphs operate in font-space coordinates (Y-up).
-                        _bounds = clipRect.TransformToAABB(Matrix.CreateScale(1, -1));
-                    }
-                }
-            }
-            finally
-            {
-                PaintDecycler.Return(decycler);
-
-            }
-        }
-
-        public GlyphDrawingType Type => GlyphDrawingType.ColorLayers;
-
-        public Rect Bounds => _bounds;
-
-        public void Draw(DrawingContext context, Point origin)
-        {
-            if (_paint == null)
-            {
-                return;
-            }
-
-            var decycler = PaintDecycler.Rent();
-
-            try
-            {
-                using (context.PushTransform(Matrix.CreateScale(1, -1) * Matrix.CreateTranslation(origin)))
-                {
-                    PaintTraverser.Traverse(_paint, new ColorGlyphV1Painter(context, _context), Matrix.Identity);
-                }
-            }
-            finally
-            {
-                PaintDecycler.Return(decycler);
-            }
-        }
-    }
 }
