@@ -1605,7 +1605,19 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextLayout.#ctor(Avalonia.Media.TextFormatting.ITextSource,Avalonia.Media.TextFormatting.TextParagraphProperties,Avalonia.Media.TextTrimming,System.Double,System.Double,System.Int32)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Media.TextFormatting.TextLayout.#ctor(System.String,Avalonia.Media.Typeface,Avalonia.Media.FontFeatureCollection,System.Double,Avalonia.Media.IBrush,Avalonia.Media.TextAlignment,Avalonia.Media.TextWrapping,Avalonia.Media.TextTrimming,Avalonia.Media.TextDecorationCollection,Avalonia.Media.FlowDirection,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Collections.Generic.IReadOnlyList{Avalonia.Utilities.ValueSpan{Avalonia.Media.TextFormatting.TextRunProperties}})</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextLayout.#ctor(System.String,Avalonia.Media.Typeface,System.Double,Avalonia.Media.IBrush,Avalonia.Media.TextAlignment,Avalonia.Media.TextWrapping,Avalonia.Media.TextTrimming,Avalonia.Media.TextDecorationCollection,Avalonia.Media.FlowDirection,System.Double,System.Double,System.Double,System.Double,System.Int32,Avalonia.Media.FontFeatureCollection,System.Collections.Generic.IReadOnlyList{Avalonia.Utilities.ValueSpan{Avalonia.Media.TextFormatting.TextRunProperties}})</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -1869,6 +1881,24 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.NavigationPage.IsBackButtonEffectivelyVisibleProperty</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.PipsPager.NextButtonStyleProperty</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.PipsPager.PreviousButtonStyleProperty</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Controls.Primitives.FlyoutBase.IsOpenProperty</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
@@ -2103,7 +2133,37 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.NavigationPage.get_IsBackButtonEffectivelyVisible</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.PageSelectionChangedEventArgs.#ctor(Avalonia.Controls.Page,Avalonia.Controls.Page)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.PipsPager.get_NextButtonStyle</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.PipsPager.get_PreviousButtonStyle</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.PipsPager.set_NextButtonStyle(Avalonia.Styling.ControlTheme)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.PipsPager.set_PreviousButtonStyle(Avalonia.Styling.ControlTheme)</Target>
     <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -3279,7 +3339,19 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextLayout.#ctor(Avalonia.Media.TextFormatting.ITextSource,Avalonia.Media.TextFormatting.TextParagraphProperties,Avalonia.Media.TextTrimming,System.Double,System.Double,System.Int32)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Media.TextFormatting.TextLayout.#ctor(System.String,Avalonia.Media.Typeface,Avalonia.Media.FontFeatureCollection,System.Double,Avalonia.Media.IBrush,Avalonia.Media.TextAlignment,Avalonia.Media.TextWrapping,Avalonia.Media.TextTrimming,Avalonia.Media.TextDecorationCollection,Avalonia.Media.FlowDirection,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Collections.Generic.IReadOnlyList{Avalonia.Utilities.ValueSpan{Avalonia.Media.TextFormatting.TextRunProperties}})</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Media.TextFormatting.TextLayout.#ctor(System.String,Avalonia.Media.Typeface,System.Double,Avalonia.Media.IBrush,Avalonia.Media.TextAlignment,Avalonia.Media.TextWrapping,Avalonia.Media.TextTrimming,Avalonia.Media.TextDecorationCollection,Avalonia.Media.FlowDirection,System.Double,System.Double,System.Double,System.Double,System.Int32,Avalonia.Media.FontFeatureCollection,System.Collections.Generic.IReadOnlyList{Avalonia.Utilities.ValueSpan{Avalonia.Media.TextFormatting.TextRunProperties}})</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
@@ -3543,6 +3615,24 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.NavigationPage.IsBackButtonEffectivelyVisibleProperty</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.PipsPager.NextButtonStyleProperty</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:Avalonia.Controls.PipsPager.PreviousButtonStyleProperty</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:Avalonia.Controls.Primitives.FlyoutBase.IsOpenProperty</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
@@ -3777,7 +3867,37 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.NavigationPage.get_IsBackButtonEffectivelyVisible</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Controls.PageSelectionChangedEventArgs.#ctor(Avalonia.Controls.Page,Avalonia.Controls.Page)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.PipsPager.get_NextButtonStyle</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.PipsPager.get_PreviousButtonStyle</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.PipsPager.set_NextButtonStyle(Avalonia.Styling.ControlTheme)</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Controls.PipsPager.set_PreviousButtonStyle(Avalonia.Styling.ControlTheme)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
@@ -5676,101 +5796,5 @@
     <Target>P:Avalonia.Media.Fonts.FontCollectionBase.Item(System.Int32)</Target>
     <Left>baseline/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/netstandard2.0/Avalonia.Base.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>F:Avalonia.Controls.NavigationPage.IsBackButtonEffectivelyVisibleProperty</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.NavigationPage.get_IsBackButtonEffectivelyVisible</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>F:Avalonia.Controls.PipsPager.PreviousButtonStyleProperty</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>F:Avalonia.Controls.PipsPager.NextButtonStyleProperty</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.PipsPager.get_PreviousButtonStyle</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.PipsPager.set_PreviousButtonStyle(Avalonia.Styling.ControlTheme)</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.PipsPager.get_NextButtonStyle</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.PipsPager.set_NextButtonStyle(Avalonia.Styling.ControlTheme)</Target>
-    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net10.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>F:Avalonia.Controls.NavigationPage.IsBackButtonEffectivelyVisibleProperty</Target>
-    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.NavigationPage.get_IsBackButtonEffectivelyVisible</Target>
-    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>F:Avalonia.Controls.PipsPager.PreviousButtonStyleProperty</Target>
-    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>F:Avalonia.Controls.PipsPager.NextButtonStyleProperty</Target>
-    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.PipsPager.get_PreviousButtonStyle</Target>
-    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.PipsPager.set_PreviousButtonStyle(Avalonia.Styling.ControlTheme)</Target>
-    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.PipsPager.get_NextButtonStyle</Target>
-    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Avalonia.Controls.PipsPager.set_NextButtonStyle(Avalonia.Styling.ControlTheme)</Target>
-    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Controls.dll</Left>
-    <Right>current/Avalonia/lib/net8.0/Avalonia.Controls.dll</Right>
   </Suppression>
 </Suppressions>
