@@ -229,6 +229,10 @@ public class CommandBarSeparatorTests : ScopedTestBase
         => Assert.IsAssignableFrom<ICommandBarElement>(new CommandBarSeparator());
 
     [Fact]
+    public void DerivesFromSeparator()
+        => Assert.IsAssignableFrom<Separator>(new CommandBarSeparator());
+
+    [Fact]
     public void ICommandBarElement_IsCompact_ReadWrite()
     {
         ICommandBarElement elem = new CommandBarSeparator();

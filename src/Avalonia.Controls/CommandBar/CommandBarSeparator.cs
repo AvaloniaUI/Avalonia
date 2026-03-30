@@ -1,11 +1,9 @@
-using Avalonia.Controls.Primitives;
-
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A visual separator for use in a <see cref="CommandBar"/>.
     /// </summary>
-    public class CommandBarSeparator : TemplatedControl, ICommandBarElement
+    public class CommandBarSeparator : Separator, ICommandBarElement
     {
         /// <summary>
         /// Defines the <see cref="IsCompact"/> property.
