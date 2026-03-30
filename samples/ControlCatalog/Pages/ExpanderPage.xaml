@@ -1,7 +1,8 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
              x:Class="ControlCatalog.Pages.ExpanderPage"
+             Header="Expander"
              x:DataType="viewModels:ExpanderPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">Expands to show nested content</TextBlock>
@@ -72,4 +73,4 @@
       </Expander>
     </StackPanel>
   </StackPanel>
-</UserControl>
+</ContentPage>

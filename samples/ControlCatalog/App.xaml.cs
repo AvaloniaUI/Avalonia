@@ -18,7 +18,7 @@ namespace ControlCatalog
         private FluentTheme? _fluentTheme;
         private SimpleTheme? _simpleTheme;
         private IStyle? _colorPickerFluent, _colorPickerSimple;
-        
+
         public App()
         {
             DataContext = new ApplicationViewModel();
@@ -34,7 +34,7 @@ namespace ControlCatalog
             _simpleTheme = (SimpleTheme)Resources["SimpleTheme"]!;
             _colorPickerFluent = (IStyle)Resources["ColorPickerFluent"]!;
             _colorPickerSimple = (IStyle)Resources["ColorPickerSimple"]!;
-            
+
             SetCatalogThemes(CatalogTheme.Fluent);
         }
 
@@ -44,7 +44,7 @@ namespace ControlCatalog
             {
                 desktopLifetime.MainWindow = new MainWindow { DataContext = new MainWindowViewModel() };
             }
-            else if(ApplicationLifetime is IActivityApplicationLifetime singleViewFactoryApplicationLifetime)
+            else if (ApplicationLifetime is IActivityApplicationLifetime singleViewFactoryApplicationLifetime)
             {
                 singleViewFactoryApplicationLifetime.MainViewFactory = () => new MainView { DataContext = new MainWindowViewModel() };
             }
@@ -53,7 +53,7 @@ namespace ControlCatalog
                 singleViewLifetime.MainView = new MainView { DataContext = new MainWindowViewModel() };
             }
 
-            if (this.TryGetFeature<IActivatableLifetime>() is {} activatableApplicationLifetime)
+            if (this.TryGetFeature<IActivatableLifetime>() is { } activatableApplicationLifetime)
             {
                 activatableApplicationLifetime.Activated += (sender, args) =>
                     Console.WriteLine($"App activated: {args.Kind}");
@@ -99,14 +99,14 @@ namespace ControlCatalog
         }
 
         private CatalogTheme _prevTheme;
-        public static CatalogTheme CurrentTheme => ((App)Current!)._prevTheme; 
+        public static CatalogTheme CurrentTheme => ((App)Current!)._prevTheme;
         public static void SetCatalogThemes(CatalogTheme theme)
         {
             var app = (App)Current!;
             var prevTheme = app._prevTheme;
             app._prevTheme = theme;
             var shouldReopenWindow = prevTheme != theme;
-            
+
             if (app._themeStylesContainer.Count == 0)
             {
                 app._themeStylesContainer.Add(new Style());
@@ -130,7 +130,10 @@ namespace ControlCatalog
                 if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
                 {
                     var oldWindow = desktopLifetime.MainWindow;
-                    var newWindow = new MainWindow();
+                    var newWindow = new MainWindow()
+                    {
+                        DataContext = new MainWindowViewModel()
+                    };
                     desktopLifetime.MainWindow = newWindow;
                     newWindow.Show();
                     oldWindow?.Close();
@@ -141,7 +144,7 @@ namespace ControlCatalog
                 }
                 else if (app.ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
                 {
-                    singleViewLifetime.MainView = new MainView();
+                    singleViewLifetime.MainView = new MainView() { DataContext = new MainWindowViewModel() };
                 }
             }
         }

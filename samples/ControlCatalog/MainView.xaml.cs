@@ -17,6 +17,19 @@ namespace ControlCatalog
         public MainView()
         {
             InitializeComponent();
+
+            Loaded += MainView_Loaded;
+        }
+
+        private void MainView_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (DataContext == null)
+                return;
+
+            if (MainDrawer.Bounds.Width > 0 && MainDrawer.DrawerBreakpointLength > 0 && MainDrawer.Bounds.Width < MainDrawer.DrawerBreakpointLength)
+            {
+                ViewModel.IsDrawerOpened = false;
+            }
         }
 
         private void Themes_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -66,9 +79,19 @@ namespace ControlCatalog
                     var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
                     _disposeTransparencySetters =
                         (Action)topLevel.SetValue(BackgroundProperty, transparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose +
-                        Sidebar.SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose +
-                        Sidebar.SetValue(SplitView.PaneBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose;
+                        MainDrawer.SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose +
+                        MainDrawer.SetValue(DrawerPage.DrawerBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose;
                 }
+            }
+        }
+
+        protected override void OnDataContextChanged(EventArgs e)
+        {
+            base.OnDataContextChanged(e);
+
+            if (ViewModel != null)
+            {
+                ViewModel.Navigator = NavPage;
             }
         }
 
@@ -78,8 +101,16 @@ namespace ControlCatalog
         {
             base.OnAttachedToVisualTree(e);
 
+            if (DataContext == null)
+                return;
+
+            if(MainDrawer.Bounds.Width > 0 && MainDrawer.DrawerBreakpointLength > 0 && MainDrawer.Bounds.Width < MainDrawer.DrawerBreakpointLength)
+            {
+                ViewModel.IsDrawerOpened = false;
+            }
+
             if (TopLevel.GetTopLevel(this) is Window window)
-                Decorations.SelectedIndex = (int)window.WindowDecorations;
+                ViewModel.SelectedDecorationIndex = (int)window.WindowDecorations;
 
             var insets = TopLevel.GetTopLevel(this)!.InsetsManager;
             if (insets != null)
@@ -111,6 +142,8 @@ namespace ControlCatalog
                     ViewModel.IsSystemBarVisible = insets.IsSystemBarVisible ?? true;
                 };
             }
+
+            ViewModel.SelectedPageIndex = 0;
         }
     }
 }

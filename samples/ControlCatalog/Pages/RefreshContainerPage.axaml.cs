@@ -3,7 +3,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class RefreshContainerPage : UserControl
+    public partial class RefreshContainerPage : ContentPage
     {
         private RefreshContainerViewModel _viewModel;
 

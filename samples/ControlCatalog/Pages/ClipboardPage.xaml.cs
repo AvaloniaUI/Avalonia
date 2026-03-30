@@ -15,7 +15,7 @@ using Avalonia.Threading;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ClipboardPage : UserControl
+    public partial class ClipboardPage : ContentPage
     {
         private readonly DataFormat<byte[]> _customBinaryDataFormat =
             DataFormat.CreateBytesApplicationFormat("controlcatalog-binary-data");

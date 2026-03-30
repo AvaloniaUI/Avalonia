@@ -1,0 +1,101 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:ControlCatalog">
+  
+
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Dark">
+      <Color x:Key="HamburgerBaseHighColor">#99FFFFFF</Color>
+      <Color x:Key="HamburgerChromeMediumColor">#FF1F1F1F</Color>
+      <Color x:Key="HamburgerAltHighColor">#FF000000</Color>
+      <Color x:Key="HamburgerChromeLowColor">#FF171717</Color>
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Default">
+      <Color x:Key="HamburgerBaseHighColor">#99000000</Color>
+      <Color x:Key="HamburgerChromeMediumColor">#FFE6E6E6</Color>
+      <Color x:Key="HamburgerAltHighColor">#FFFFFFFF</Color>
+      <Color x:Key="HamburgerChromeLowColor">#FFF2F2F2</Color>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries> 
+  <x:Double x:Key="NavigationItemHeight">36</x:Double>
+  <BoxShadows x:Key="NavigationItemShadow">1 1 1 1 #2000, 0 0 1 1 #2fff</BoxShadows>
+  <Design.PreviewWith>
+    <Border Padding="0">
+      <ListBox ItemContainerTheme="{StaticResource NavHeaderItem}">
+        <ListBoxItem IsEnabled="False">Disabled</ListBoxItem>
+        <ListBoxItem>
+          Test
+        </ListBoxItem>
+        <ListBoxItem>Test</ListBoxItem>
+      </ListBox>
+    </Border>
+  </Design.PreviewWith>
+  <ControlTheme x:Key="NavHeaderItem" TargetType="ListBoxItem">
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Height" Value="{StaticResource NavigationItemHeight}" />
+    <Setter Property="Padding" Value="12,0,4,0" />
+    <Setter Property="Margin" Value="4,0,8,0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="ClipToBounds" Value="False" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="PART_LayoutRoot"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <Panel>
+            <Border Name="PART_SelectedPipe"
+                    Width="{DynamicResource TabItemPipeThickness}"
+                    Height="{DynamicResource TabItemVerticalPipeHeight}"
+                    Margin="6,0,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
+                    IsVisible="False"
+                    CornerRadius="4"/>
+            <ContentPresenter Name="PART_ContentPresenter"
+                              Padding="{TemplateBinding Padding}"
+                              Margin="0"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                              TextElement.FontFamily="{TemplateBinding FontFamily}"
+                              TextElement.FontSize="{TemplateBinding FontSize}"
+                              TextElement.FontWeight="{TemplateBinding FontWeight}" />
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>    
+
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
+
+      <Style Selector="^ /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+        <Setter Property="BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource HamburgerBaseHighColor}" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:selected">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
+
+      <Style Selector="^ /template/ Border#PART_SelectedPipe">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+    </Style>
+
+    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Border.Background" Value="{DynamicResource HamburgerChromeLowColor}" />
+      <Setter Property="Border.BoxShadow" Value="{StaticResource NavigationItemShadow}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource HamburgerBaseHighColor}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>
