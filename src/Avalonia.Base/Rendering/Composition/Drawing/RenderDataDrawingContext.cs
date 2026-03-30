@@ -298,10 +298,7 @@ internal class RenderDataDrawingContext : DrawingContext
 
     internal override void DrawRecordingCore(DrawingRecording recording)
     {
-        Add(new RenderDataRecordingNode
-        {
-            ServerRenderData = recording.ServerRenderData,
-        });
+        Add(new RenderDataRecordingItemListNode { Items = recording.Items });
     }
 
 
@@ -339,6 +336,25 @@ internal class RenderDataDrawingContext : DrawingContext
         if (rv != null)
             _compositor.RegisterForSerialization(rv);
         return rv;
+    }
+
+    public RenderItemList GetRenderItemList()
+    {
+        Debug.Assert(_compositor == null);
+        Debug.Assert(_resourcesHashSet == null);
+        Debug.Assert(_renderData == null);
+
+        FlushStack();
+
+        var list = new RenderItemList();
+        if (_currentItemList is { Count: > 0 })
+        {
+            foreach (var i in _currentItemList)
+                list.Add(i);
+            _currentItemList.Clear();
+        }
+
+        return list;
     }
 
     public ImmediateRenderDataSceneBrushContent? GetImmediateSceneBrushContent(ITileBrush brush, Rect? rect, bool useScalableRasterization)

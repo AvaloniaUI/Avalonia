@@ -155,15 +155,18 @@ namespace Sandbox
 
                 if (glyphDrawing != null)
                 {
-                    var bounds = glyphDrawing.Bounds;
-
-                    var offsetX = (Width / scale - bounds.Width) / 2 - bounds.Left;
-                    var offsetY = (Height / scale - bounds.Height) / 2 - bounds.Top;
-
-                    using (context.PushTransform(Matrix.CreateTranslation(offsetX, offsetY) *
-                                                 Matrix.CreateScale(scale, scale)))
+                    using (glyphDrawing)
                     {
-                        glyphDrawing.Draw(context, new Point());
+                        var bounds = glyphDrawing.Bounds;
+
+                        var offsetX = (Width / scale - bounds.Width) / 2 - bounds.Left;
+                        var offsetY = (Height / scale - bounds.Height) / 2 - bounds.Top;
+
+                        using (context.PushTransform(Matrix.CreateTranslation(offsetX, offsetY) *
+                                                     Matrix.CreateScale(scale, scale)))
+                        {
+                            context.DrawRecording(glyphDrawing);
+                        }
                     }
                 }
                 else

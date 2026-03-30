@@ -42,26 +42,4 @@ public partial class Compositor
     public CompositionSurfaceVisual CreateSurfaceVisual() => new(this, new ServerCompositionSurfaceVisual(_server));
 
     public CompositionDrawingSurface CreateDrawingSurface() => new(this);
-
-    /// <summary>
-    /// Creates a new immutable <see cref="DrawingRecording"/> by recording drawing commands
-    /// via the provided callback. The recording can be efficiently replayed later via
-    /// <see cref="DrawingContext.DrawRecording"/>.
-    /// </summary>
-    /// <param name="record">A callback that receives a <see cref="DrawingContext"/>
-    /// to record drawing commands into.</param>
-    /// <returns>An immutable <see cref="DrawingRecording"/> that can be replayed.</returns>
-    public DrawingRecording CreateDrawingRecording(Action<DrawingContext> record)
-    {
-        _ = record ?? throw new ArgumentNullException(nameof(record));
-        Dispatcher.VerifyAccess();
-
-        using var context = new RenderDataDrawingContext(this);
-        record(context);
-
-        var renderData = context.GetRenderResults()
-            ?? new CompositionRenderData(this);
-
-        return new DrawingRecording(this, renderData);
-    }
 }

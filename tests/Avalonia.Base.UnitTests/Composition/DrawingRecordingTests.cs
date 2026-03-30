@@ -3,31 +3,16 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Drawing;
-using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Composition;
 
-public class DrawingRecordingTests : ScopedTestBase
+public class DrawingRecordingTests
 {
-    private readonly CompositorTestServices _services = new();
-
-    public override void Dispose()
-    {
-        _services.Dispose();
-        base.Dispose();
-    }
-
-    private void ForceCommitAndRender()
-    {
-        _services.Compositor.Commit();
-        _services.Compositor.Server.Render(false);
-    }
-
     [Fact]
-    public void CreateDrawingRecording_Returns_NonNull()
+    public void Create_Returns_NonNull()
     {
-        var recording = _services.Compositor.CreateDrawingRecording(ctx =>
+        var recording = DrawingRecording.Create(ctx =>
         {
             ctx.DrawRectangle(Brushes.Red, null, new Rect(10, 10, 100, 50));
         });
@@ -40,7 +25,7 @@ public class DrawingRecordingTests : ScopedTestBase
     [Fact]
     public void Empty_Recording_Returns_NonNull()
     {
-        var recording = _services.Compositor.CreateDrawingRecording(_ => { });
+        var recording = DrawingRecording.Create(_ => { });
 
         Assert.NotNull(recording);
         Assert.False(recording.IsDisposed);
@@ -50,23 +35,19 @@ public class DrawingRecordingTests : ScopedTestBase
     [Fact]
     public void Empty_Recording_Has_Default_Bounds()
     {
-        var recording = _services.Compositor.CreateDrawingRecording(_ => { });
-
-        ForceCommitAndRender();
+        var recording = DrawingRecording.Create(_ => { });
 
         Assert.Equal(default, recording.Bounds);
         recording.Dispose();
     }
 
     [Fact]
-    public void Bounds_Available_After_Commit()
+    public void Bounds_Available_Immediately()
     {
-        var recording = _services.Compositor.CreateDrawingRecording(ctx =>
+        var recording = DrawingRecording.Create(ctx =>
         {
             ctx.DrawRectangle(Brushes.Red, null, new Rect(10, 10, 100, 50));
         });
-
-        ForceCommitAndRender();
 
         var bounds = recording.Bounds;
         Assert.Equal(new Rect(10, 10, 100, 50), bounds);
@@ -76,13 +57,11 @@ public class DrawingRecordingTests : ScopedTestBase
     [Fact]
     public void Multiple_Primitives_Union_Bounds()
     {
-        var recording = _services.Compositor.CreateDrawingRecording(ctx =>
+        var recording = DrawingRecording.Create(ctx =>
         {
             ctx.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 50, 50));
             ctx.DrawRectangle(Brushes.Blue, null, new Rect(100, 100, 50, 50));
         });
-
-        ForceCommitAndRender();
 
         var bounds = recording.Bounds;
         Assert.Equal(new Rect(0, 0, 150, 150), bounds);
@@ -90,30 +69,14 @@ public class DrawingRecordingTests : ScopedTestBase
     }
 
     [Fact]
-    public void DrawRecording_Into_RenderDataContext_Creates_Node()
-    {
-        var recording = _services.Compositor.CreateDrawingRecording(ctx =>
-        {
-            ctx.DrawRectangle(Brushes.Blue, null, new Rect(0, 0, 50, 50));
-        });
-
-        using var outerCtx = new RenderDataDrawingContext(_services.Compositor);
-        outerCtx.DrawRecording(recording);
-        var result = outerCtx.GetRenderResults();
-
-        Assert.NotNull(result);
-        recording.Dispose();
-    }
-
-    [Fact]
     public void Nested_Recordings_Work()
     {
-        var inner = _services.Compositor.CreateDrawingRecording(ctx =>
+        var inner = DrawingRecording.Create(ctx =>
         {
             ctx.DrawRectangle(Brushes.Green, null, new Rect(0, 0, 20, 20));
         });
 
-        var outer = _services.Compositor.CreateDrawingRecording(ctx =>
+        var outer = DrawingRecording.Create(ctx =>
         {
             ctx.DrawRecording(inner);
             ctx.DrawRectangle(Brushes.Red, null, new Rect(30, 30, 20, 20));
@@ -127,7 +90,7 @@ public class DrawingRecordingTests : ScopedTestBase
     [Fact]
     public void HitTest_Inside_Returns_True()
     {
-        var recording = _services.Compositor.CreateDrawingRecording(ctx =>
+        var recording = DrawingRecording.Create(ctx =>
         {
             ctx.DrawRectangle(Brushes.Red, null, new Rect(10, 10, 100, 50));
         });
@@ -139,7 +102,7 @@ public class DrawingRecordingTests : ScopedTestBase
     [Fact]
     public void HitTest_Outside_Returns_False()
     {
-        var recording = _services.Compositor.CreateDrawingRecording(ctx =>
+        var recording = DrawingRecording.Create(ctx =>
         {
             ctx.DrawRectangle(Brushes.Red, null, new Rect(10, 10, 100, 50));
         });
@@ -151,7 +114,7 @@ public class DrawingRecordingTests : ScopedTestBase
     [Fact]
     public void Disposed_Recording_Throws_On_Bounds()
     {
-        var recording = _services.Compositor.CreateDrawingRecording(ctx =>
+        var recording = DrawingRecording.Create(ctx =>
         {
             ctx.DrawRectangle(Brushes.Red, null, new Rect(10, 10, 100, 50));
         });
@@ -164,7 +127,7 @@ public class DrawingRecordingTests : ScopedTestBase
     [Fact]
     public void Disposed_Recording_Throws_On_HitTest()
     {
-        var recording = _services.Compositor.CreateDrawingRecording(ctx =>
+        var recording = DrawingRecording.Create(ctx =>
         {
             ctx.DrawRectangle(Brushes.Red, null, new Rect(10, 10, 100, 50));
         });
@@ -176,15 +139,13 @@ public class DrawingRecordingTests : ScopedTestBase
     [Fact]
     public void Recording_With_Transform_Has_Correct_Bounds()
     {
-        var recording = _services.Compositor.CreateDrawingRecording(ctx =>
+        var recording = DrawingRecording.Create(ctx =>
         {
             using (ctx.PushTransform(Matrix.CreateTranslation(10, 10)))
             {
                 ctx.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 50, 50));
             }
         });
-
-        ForceCommitAndRender();
 
         var bounds = recording.Bounds;
         Assert.Equal(new Rect(10, 10, 50, 50), bounds);
@@ -194,7 +155,7 @@ public class DrawingRecordingTests : ScopedTestBase
     [Fact]
     public void Recording_With_Clip_And_Opacity()
     {
-        var recording = _services.Compositor.CreateDrawingRecording(ctx =>
+        var recording = DrawingRecording.Create(ctx =>
         {
             using (ctx.PushOpacity(0.5))
             using (ctx.PushClip(new Rect(0, 0, 200, 200)))
@@ -202,8 +163,6 @@ public class DrawingRecordingTests : ScopedTestBase
                 ctx.DrawRectangle(Brushes.Red, null, new Rect(10, 10, 100, 100));
             }
         });
-
-        ForceCommitAndRender();
 
         var bounds = recording.Bounds;
         Assert.Equal(new Rect(10, 10, 100, 100), bounds);
@@ -214,12 +173,10 @@ public class DrawingRecordingTests : ScopedTestBase
     public void Recording_With_Pen_Has_Inflated_Bounds()
     {
         var pen = new ImmutablePen(Brushes.Black, 2);
-        var recording = _services.Compositor.CreateDrawingRecording(ctx =>
+        var recording = DrawingRecording.Create(ctx =>
         {
             ctx.DrawRectangle(null, pen, new Rect(10, 10, 100, 50));
         });
-
-        ForceCommitAndRender();
 
         var bounds = recording.Bounds;
         // Bounds should be inflated by pen thickness (1px each side for thickness=2)

@@ -43,7 +43,7 @@ internal sealed class PlatformDrawingContext : DrawingContext
         _impl.DrawBitmap(source.Item, opacity, sourceRect, destRect);
 
     internal override void DrawRecordingCore(DrawingRecording recording) =>
-        recording.ServerRenderData.Render(_impl);
+        recording.Items.Render(_impl);
 
     public override void Custom(ICustomDrawOperation custom)
     {

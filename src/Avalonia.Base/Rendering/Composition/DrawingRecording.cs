@@ -1,40 +1,50 @@
 using System;
+using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
-using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition;
 
 /// <summary>
-/// An immutable, compositor-integrated recorded draw list that can be replayed
-/// with minimal overhead. Created via <see cref="Compositor.CreateDrawingRecording"/>.
+/// An immutable recorded draw list that can be replayed with minimal overhead.
+/// Created via <see cref="DrawingRecording.Create"/>.
 /// </summary>
 public sealed class DrawingRecording : IDisposable
 {
-    private readonly CompositionRenderData _renderData;
+    private readonly RenderItemList _items;
     private bool _disposed;
 
-    internal DrawingRecording(Compositor compositor, CompositionRenderData renderData)
+    internal DrawingRecording(RenderItemList items)
     {
-        Compositor = compositor;
-        _renderData = renderData;
+        _items = items;
     }
 
     /// <summary>
-    /// The compositor this recording belongs to.
+    /// Creates a new immutable <see cref="DrawingRecording"/> by recording drawing commands
+    /// via the provided callback.
     /// </summary>
-    public Compositor Compositor { get; }
+    /// <param name="record">A callback that receives a <see cref="DrawingContext"/>
+    /// to record drawing commands into.</param>
+    /// <returns>An immutable <see cref="DrawingRecording"/> that can be replayed.</returns>
+    public static DrawingRecording Create(Action<DrawingContext> record)
+    {
+        _ = record ?? throw new ArgumentNullException(nameof(record));
+
+        using var context = new RenderDataDrawingContext(null);
+        record(context);
+
+        var items = context.GetRenderItemList();
+        return new DrawingRecording(items);
+    }
 
     /// <summary>
     /// Gets the bounds of the recorded content.
-    /// Bounds are computed lazily on the server thread after the next compositor commit.
-    /// Returns <c>default</c> if no content was recorded or if the commit has not yet occurred.
     /// </summary>
     public Rect Bounds
     {
         get
         {
             ThrowIfDisposed();
-            return _renderData.Server.Bounds?.ToRect() ?? default;
+            return _items.Bounds ?? default;
         }
     }
 
@@ -44,14 +54,14 @@ public sealed class DrawingRecording : IDisposable
     public bool IsDisposed => _disposed;
 
     /// <summary>
-    /// The server-side render data for this recording.
+    /// The render item list backing this recording.
     /// </summary>
-    internal ServerCompositionRenderData ServerRenderData
+    internal RenderItemList Items
     {
         get
         {
             ThrowIfDisposed();
-            return _renderData.Server;
+            return _items;
         }
     }
 
@@ -63,16 +73,12 @@ public sealed class DrawingRecording : IDisposable
     public bool HitTest(Point point)
     {
         ThrowIfDisposed();
-        return _renderData.HitTest(point);
+        return _items.HitTest(point);
     }
 
     public void Dispose()
     {
-        if (!_disposed)
-        {
-            _disposed = true;
-            _renderData.Dispose();
-        }
+        _disposed = true;
     }
 
     private void ThrowIfDisposed()

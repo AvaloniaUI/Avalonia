@@ -5,12 +5,14 @@ using System.Globalization;
 using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
+using Avalonia.Media.Immutable;
 using Avalonia.Media.Fonts.Tables.Cmap;
 using Avalonia.Media.Fonts.Tables.Colr;
 using Avalonia.Media.Fonts.Tables.Glyf;
 using Avalonia.Media.Fonts.Tables.Metrics;
 using Avalonia.Media.Fonts.Tables.Name;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Media
 {
@@ -551,17 +553,17 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets a color glyph drawing for the specified glyph ID, if color data is available.
+        /// Gets a color glyph drawing recording for the specified glyph ID, if color data is available.
         /// </summary>
         /// <remarks>If the glyph does not have color data (such as COLR v1 or COLR v0 layers), this
         /// method returns null. For outline-only glyphs, use GetGlyphOutline instead to obtain the vector
-        /// outline.</remarks>
+        /// outline. The caller is responsible for disposing the returned recording.</remarks>
         /// <param name="glyphId">The identifier of the glyph to retrieve. Must be less than or equal to the total number of glyphs in the
         /// font.</param>
         /// <param name="variation">The font variation settings to use when selecting the glyph drawing, or null to use the default variation.</param>
-        /// <returns>An object representing the color glyph drawing for the specified glyph ID, or null if no color drawing is
+        /// <returns>A <see cref="DrawingRecording"/> representing the color glyph for the specified glyph ID, or null if no color drawing is
         /// available for the glyph.</returns>
-        public IGlyphDrawing? GetGlyphDrawing(ushort glyphId, FontVariationSettings? variation = null)
+        public DrawingRecording? GetGlyphDrawing(ushort glyphId, FontVariationSettings? variation = null)
         {
             if (glyphId > GlyphCount)
             {
@@ -573,14 +575,16 @@ namespace Avalonia.Media
             {
                 if (_colrTable.TryGetBaseGlyphV1Record(glyphId, out var record))
                 {
-                    return new ColorGlyphV1Drawing(this, _colrTable, _cpalTable, glyphId, record);
+                    var drawing = new ColorGlyphV1Drawing(this, _colrTable, _cpalTable, glyphId, record);
+                    return DrawingRecording.Create(ctx => drawing.Draw(ctx, default));
                 }
             }
 
             // Fallback to COLR v0
             if (_colrTable != null && _cpalTable != null && _colrTable.HasColorLayers(glyphId))
             {
-                return new ColorGlyphDrawing(this, _colrTable, _cpalTable, glyphId);
+                var drawing = new ColorGlyphDrawing(this, _colrTable, _cpalTable, glyphId);
+                return DrawingRecording.Create(ctx => drawing.Draw(ctx, default));
             }
 
             // For outline-only glyphs, return null - caller should use GetGlyphOutline() instead
@@ -896,7 +900,7 @@ namespace Avalonia.Media
                 {
                     using (context.PushTransform(Matrix.CreateTranslation(origin.X, origin.Y)))
                     {
-                        context.DrawGeometry(new SolidColorBrush(color), null, geometry);
+                        context.DrawGeometry(new ImmutableSolidColorBrush(color), null, geometry);
                     }
                 }
             }
