@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -67,6 +68,21 @@ namespace Avalonia.Media
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         internal abstract void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect);
+
+        /// <summary>
+        /// Draws a previously recorded drawing.
+        /// </summary>
+        /// <param name="recording">The drawing recording to replay.</param>
+        public void DrawRecording(DrawingRecording recording)
+        {
+            _ = recording ?? throw new ArgumentNullException(nameof(recording));
+            DrawRecordingCore(recording);
+        }
+
+        /// <summary>
+        /// When overridden in a derived class, draws a previously recorded drawing.
+        /// </summary>
+        internal abstract void DrawRecordingCore(DrawingRecording recording);
 
         /// <summary>
         /// Draws a line.

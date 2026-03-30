@@ -4,6 +4,7 @@ using Avalonia.Logging;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -40,6 +41,9 @@ internal sealed class PlatformDrawingContext : DrawingContext
 
     internal override void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect) =>
         _impl.DrawBitmap(source.Item, opacity, sourceRect, destRect);
+
+    internal override void DrawRecordingCore(DrawingRecording recording) =>
+        recording.ServerRenderData.Render(_impl);
 
     public override void Custom(ICustomDrawOperation custom)
     {

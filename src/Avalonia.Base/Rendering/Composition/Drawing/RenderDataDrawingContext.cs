@@ -296,6 +296,14 @@ internal class RenderDataDrawingContext : DrawingContext
         });
     }
 
+    internal override void DrawRecordingCore(DrawingRecording recording)
+    {
+        Add(new RenderDataRecordingNode
+        {
+            ServerRenderData = recording.ServerRenderData,
+        });
+    }
+
 
     void FlushStack()
     {
