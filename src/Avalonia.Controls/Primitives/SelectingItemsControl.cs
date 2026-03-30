@@ -1157,19 +1157,36 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        private int? _pendingAutoScrollAnchorIndex;
         private void AutoScrollToSelectedItemIfNecessary(int anchorIndex)
         {
-            if (AutoScrollToSelectedItem &&
-                !_hasScrolledToSelectedItem &&
-                Presenter is object &&
-                anchorIndex >= 0 &&
-                IsAttachedToVisualTree)
-            {
-                if (!IsEffectivelyVisible)
-                {
-                    return;
-                }
+            if (!(AutoScrollToSelectedItem && !_hasScrolledToSelectedItem && Presenter != null && anchorIndex >= 0 && IsAttachedToVisualTree))
+                return;
 
+            if (!IsEffectivelyVisible)
+            {
+                // Defer scroll until visible
+                _pendingAutoScrollAnchorIndex = anchorIndex;
+                LayoutUpdated -= OnLayoutUpdatedForAutoScroll; // Avoid duplicate handlers
+                LayoutUpdated += OnLayoutUpdatedForAutoScroll;
+                return;
+            }
+
+            // If already visible, scroll immediately
+            Dispatcher.UIThread.Post(state =>
+            {
+                ScrollIntoView((int)state!);
+                _hasScrolledToSelectedItem = true;
+            }, anchorIndex);
+        }
+
+        private void OnLayoutUpdatedForAutoScroll(object? sender, EventArgs e)
+        {
+            if (_pendingAutoScrollAnchorIndex != null && IsEffectivelyVisible)
+            {
+                int anchorIndex = _pendingAutoScrollAnchorIndex.Value;
+                LayoutUpdated -= OnLayoutUpdatedForAutoScroll;
+                _pendingAutoScrollAnchorIndex = null;
                 Dispatcher.UIThread.Post(state =>
                 {
                     ScrollIntoView((int)state!);

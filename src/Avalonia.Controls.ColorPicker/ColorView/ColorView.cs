@@ -67,18 +67,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Validates the tab/panel/page selection taking into account the visibility of each item
-        /// as well as the current selection.
+        /// <b>Obsolete. No-op.</b> This method is no longer used and will be removed in a future release.
         /// </summary>
         /// <remarks>
-        /// Derived controls may re-implement this based on their default style / control template
-        /// and any specialized selection needs.
+        /// This method does nothing and should not be overridden or relied upon. Validation is now handled by TabControl.
         /// </remarks>
         // TODO-13: Remove this unused method 
         [Obsolete("The necessary validation is now handled by the TabControl. This method will be removed in the next major release.")]
         protected virtual void ValidateSelection()
         {
-            // Method is now obsolete and is no longer implemented
+            // Obsolete: no-op. Will be removed in a future release.
         }
 
         /// <inheritdoc/>
@@ -155,6 +153,8 @@ namespace Avalonia.Controls
                         for (int colorIndex = 0; colorIndex < palette.ColorCount; colorIndex++)
                         {
                             newPaletteColors.Add(palette.GetColor(colorIndex, shadeIndex));
+                        }
+                        }
                         }
                     }
 

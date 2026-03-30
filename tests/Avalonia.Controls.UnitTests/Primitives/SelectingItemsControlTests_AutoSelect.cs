@@ -158,7 +158,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 // Item 50 is at 50 * 50 = 2500. 
                 // ListBox height is 100, so it should be visible if offset is between 2400 and 2500.
-                Assert.True(offset > 0, $"Expected AutoScrollToSelectedItem to scroll to item 50, but offset was {offset}");
+                Assert.InRange(offset, 2400, 2500);
             }
         }
         
