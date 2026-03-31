@@ -162,5 +162,15 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="titleBarHeight">-1 for platform default, otherwise the height in DIPs.</param>
         void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight);
+
+        /// <summary>
+        /// Gets the window actions that the underlying platform currently allows.
+        /// </summary>
+        PlatformAllowedWindowActions AllowedWindowActions => PlatformAllowedWindowActions.All;
+
+        /// <summary>
+        /// Gets or sets a callback invoked when <see cref="AllowedWindowActions"/> changes.
+        /// </summary>
+        Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged { get => null; set { } }
     }
 }

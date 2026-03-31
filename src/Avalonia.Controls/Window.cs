@@ -220,6 +220,7 @@ namespace Avalonia.Controls
         private bool _positionWasSet;
         private bool _wasShownBefore;
         private IDisposable? _modalSubscription;
+        private PlatformAllowedWindowActions _allowedWindowActions = PlatformAllowedWindowActions.All;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -250,6 +251,8 @@ namespace Avalonia.Controls
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
+            impl.AllowedWindowActionsChanged = OnAllowedWindowActionsChanged;
+            _allowedWindowActions = impl.AllowedWindowActions;
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x =>
             {
                 ResizePlatformImpl(x, WindowResizeReason.Application);
@@ -486,6 +489,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets the window actions currently allowed by the underlying platform.
+        /// </summary>
+        internal PlatformAllowedWindowActions AllowedWindowActions => _allowedWindowActions;
+
+        /// <summary>
         /// Gets or sets the icon of the window.
         /// </summary>
         public WindowIcon? Icon
@@ -671,6 +679,14 @@ namespace Avalonia.Controls
 
             // Update decoration parts and fullscreen popover state for the new window state
             UpdateDrawnDecorationParts();
+        }
+
+        internal event Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged;
+
+        private void OnAllowedWindowActionsChanged(PlatformAllowedWindowActions actions)
+        {
+            _allowedWindowActions = actions;
+            AllowedWindowActionsChanged?.Invoke(actions);
         }
 
         private void ExtendClientAreaToDecorationsChanged(bool isExtended)
