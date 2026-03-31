@@ -41,6 +41,9 @@ internal class CompositionProperty
         {
             var id = s_nextId++;
             prop = new CompositionProperty<TField>(id, name, typeof(TOwner), getField, setField, getVariant);
+            if (!s_dynamicRegistry.TryGetValue(typeof(TOwner), out var list))
+                s_dynamicRegistry[typeof(TOwner)] = list = [];
+            list.Add(prop);
         }
 
         s_ReadOnlyRegistry = null;

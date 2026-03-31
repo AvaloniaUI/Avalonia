@@ -84,6 +84,8 @@ class ServerObjectAnimations
                 NeedsUpdate = false;
                 _property.SetField(Owner._owner, GetVariant().CastOrDefault<T>());
                 Owner._owner.NotifyAnimatedValueChanged(_property);
+                // Notify other expression animations
+                Owner.OnSetDirectValue(_property);
             }
         }
     }

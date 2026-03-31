@@ -202,6 +202,10 @@ namespace Avalonia.Rendering.Composition.Expressions
             Target.CollectReferences(references);
             if (Target is ParameterExpression pe)
                 references.Add((pe.Name, Member));
+            else if(Target is KeywordExpression ke && ke.Keyword == ExpressionKeyword.Target)
+            {
+                references.Add(("this.Target",Member));
+            }
         }
 
         public override ExpressionVariant Evaluate(ref ExpressionEvaluationContext context)
