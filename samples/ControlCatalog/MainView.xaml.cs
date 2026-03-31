@@ -10,7 +10,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
-    public partial class MainView : UserControl
+    public partial class MainView : DrawerPage
     {
         private Action? _disposeTransparencySetters;
 
@@ -30,13 +30,13 @@ namespace ControlCatalog
             if (DataContext == null)
                 return;
 
-            MainDrawer.SizeChanged += OnDrawerSizeChanged;
+            SizeChanged += OnDrawerSizeChanged;
             UpdateAdaptiveLayout();
         }
 
         private void MainView_Unloaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            MainDrawer.SizeChanged -= OnDrawerSizeChanged;
+            SizeChanged -= OnDrawerSizeChanged;
             _lastAppliedMode = null;
         }
 
@@ -54,7 +54,7 @@ namespace ControlCatalog
             if (_updatingLayout || DataContext == null)
                 return;
 
-            var width = MainDrawer.Bounds.Width;
+            var width = Bounds.Width;
             if (width <= 0)
                 return;
 
@@ -133,8 +133,8 @@ namespace ControlCatalog
                     var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
                     _disposeTransparencySetters =
                         (Action)topLevel.SetValue(BackgroundProperty, transparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose +
-                        MainDrawer.SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose +
-                        MainDrawer.SetValue(DrawerPage.DrawerBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose;
+                        SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose +
+                        SetValue(DrawerPage.DrawerBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style)!.Dispose;
                 }
             }
         }
@@ -160,10 +160,11 @@ namespace ControlCatalog
 
             UpdateAdaptiveLayout();
 
-            if (TopLevel.GetTopLevel(this) is Window window)
+            var topLevel = TopLevel.GetTopLevel(this)!;
+            if (topLevel is Window window)
                 ViewModel.SelectedDecorationIndex = (int)window.WindowDecorations;
 
-            var insets = TopLevel.GetTopLevel(this)!.InsetsManager;
+            var insets = topLevel.InsetsManager;
             if (insets != null)
             {
                 // In real life application these events should be unsubscribed to avoid memory leaks.
