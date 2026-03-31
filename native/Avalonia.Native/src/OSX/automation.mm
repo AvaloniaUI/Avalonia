@@ -8,7 +8,7 @@
 
 @implementation AvnAccessibilityElement
 {
-    IAvnAutomationPeer* _peer;
+    ComPtr<IAvnAutomationPeer> _peer;
     AvnAutomationNode* _node;
     NSMutableArray* _children;
     NSArray<NSString*>* _attributeNames;
@@ -70,7 +70,7 @@
     return [NSString stringWithFormat:@"%@ '%@' (%p)",
         GetNSStringAndRelease(_peer->GetClassName()),
         GetNSStringAndRelease(_peer->GetName()),
-        _peer];
+        _peer.getRaw()];
 }
 
 - (IAvnAutomationPeer *)peer
