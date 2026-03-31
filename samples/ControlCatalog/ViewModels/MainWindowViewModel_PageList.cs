@@ -36,7 +36,7 @@ namespace ControlCatalog.ViewModels
             new PageItem("Calendar",() => new CalendarPage(), Icons.Calendar),
             new PageItem("Canvas",() => new CanvasPage(), Icons.Canvas),
             new PageItem("CommandBar",() => new CommandBarPage(), Icons.Terminal),
-            new PageItem("Carousel",() => new CarouselDemoPage(), Icons.Slides),
+            new PageItem("Carousel",() => new Pages.CarouselPage(), Icons.Slides),
             new PageItem("CarouselPage",() => new CarouselDemoPage(), Icons.Slides),
             new PageItem("CheckBox",() => new CheckBoxPage(), Icons.Checkbox),
             new PageItem("Clipboard",() => new ClipboardPage(), Icons.Clipboard),
