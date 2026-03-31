@@ -710,6 +710,35 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(visualRoot.HasMirrorTransform);
         }
 
+        [Fact]
+        public void Extending_Client_Area_To_Decorations_When_Attached_To_Visual_Tree_Works()
+        {
+            var extended = false;
+
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            windowImpl.Setup(w => w.NeedsManagedDecorations).Returns(() => extended);
+            windowImpl.Setup(w => w.RequestedDrawnDecorations).Returns(PlatformRequestedDrawnDecoration.TitleBar);
+
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow.With(
+                windowingPlatform: new MockWindowingPlatform(() => windowImpl.Object)));
+
+            var border = new Border();
+
+            var window = new Window
+            {
+                Content = border
+            };
+
+            border.AttachedToVisualTree +=
+                (_, _) =>
+                {
+                    extended = true;
+                    windowImpl.Object.ExtendClientAreaToDecorationsChanged?.Invoke(true);
+                };
+
+            window.Show();
+        }
+
         public class SizingTests : ScopedTestBase
         {
             [Fact]
