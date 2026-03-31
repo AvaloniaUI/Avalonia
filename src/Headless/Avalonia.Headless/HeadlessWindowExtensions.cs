@@ -20,9 +20,9 @@ public static class HeadlessWindowExtensions
     /// <returns>Bitmap with last rendered frame. Null, if nothing was rendered.</returns>
     public static WriteableBitmap? CaptureRenderedFrame(this TopLevel topLevel)
     {
-        Dispatcher.UIThread.RunJobs();
-        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-        return topLevel.GetLastRenderedFrame();
+        WriteableBitmap? bitmap = null;
+        topLevel.RunJobsOnImpl(w => bitmap = w.GetLastRenderedFrame());
+        return bitmap;
     }
 
     /// <summary>
@@ -113,6 +113,15 @@ public static class HeadlessWindowExtensions
     public static void DragDrop(this TopLevel topLevel, Point point, RawDragEventType type, IDataTransfer data,
         DragDropEffects effects, RawInputModifiers modifiers = RawInputModifiers.None) =>
         RunJobsOnImpl(topLevel, w => w.DragDrop(point, type, data, effects, modifiers));
+
+    /// <summary>
+    /// Changes the render scaling (DPI) of the headless window/toplevel.
+    /// This simulates a DPI change, triggering scaling changed notifications and a layout pass.
+    /// </summary>
+    /// <param name="topLevel">The target headless top level.</param>
+    /// <param name="scaling">The new render scaling factor. Must be greater than zero.</param>
+    public static void SetRenderScaling(this TopLevel topLevel, double scaling) =>
+        RunJobsOnImpl(topLevel, w => w.SetRenderScaling(scaling));
 
     private static void RunJobsOnImpl(this TopLevel topLevel, Action<IHeadlessWindow> action)
     {

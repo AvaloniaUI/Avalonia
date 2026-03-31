@@ -40,6 +40,7 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabStripItem.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabControl.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabItem.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/PipsPager.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/PopupRoot.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/OverlayPopupHost.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/WindowNotificationManager.xaml" />
@@ -74,6 +75,7 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TextSelectionHandle.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CommandBar.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ContentPage.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CarouselPage.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/DrawerPage.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/NavigationPage.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabbedPage.xaml" />

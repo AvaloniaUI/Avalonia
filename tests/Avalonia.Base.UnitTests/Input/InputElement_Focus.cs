@@ -24,7 +24,7 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.Same(target, root.FocusManager.GetFocusedElement());
             }
         }
-        
+
         [Fact]
         public void Invisible_Controls_Should_Not_Receive_Focus()
         {
@@ -34,20 +34,20 @@ namespace Avalonia.Base.UnitTests.Input
             {
                 var root = new TestRoot
                 {
-                    Child = target = new Button() { IsVisible = false}
+                    Child = target = new Button() { IsVisible = false }
                 };
-                
+
                 Assert.Null(root.FocusManager.GetFocusedElement());
 
                 target.Focus();
-                
+
                 Assert.False(target.IsFocused);
                 Assert.False(target.IsKeyboardFocusWithin);
 
                 Assert.Null(root.FocusManager.GetFocusedElement());
             }
         }
-        
+
         [Fact]
         public void Effectively_Invisible_Controls_Should_Not_Receive_Focus()
         {
@@ -64,11 +64,11 @@ namespace Avalonia.Base.UnitTests.Input
                         Children = { target }
                     }
                 };
-                
+
                 Assert.Null(root.FocusManager.GetFocusedElement());
 
                 target.Focus();
-                
+
                 Assert.False(target.IsFocused);
                 Assert.False(target.IsKeyboardFocusWithin);
 
@@ -87,7 +87,7 @@ namespace Avalonia.Base.UnitTests.Input
                 var root = new TestRoot
                 {
                     Child = new StackPanel
-                    { 
+                    {
                         Children =
                         {
                             (first = new Button()),
@@ -365,7 +365,7 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.False(target2.Classes.Contains(":focus-visible"));
             }
         }
-        
+
         [Fact]
         public void Control_FocusWithin_PseudoClass_Should_Be_Applied()
         {
@@ -398,7 +398,7 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.True(root.IsKeyboardFocusWithin);
             }
         }
-        
+
         [Fact]
         public void Control_FocusWithin_PseudoClass_Should_Be_Applied_and_Removed()
         {
@@ -419,7 +419,7 @@ namespace Avalonia.Base.UnitTests.Input
                         }
                     }
                 };
-                
+
                 target1.ApplyTemplate();
                 target2.ApplyTemplate();
 
@@ -433,9 +433,9 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.True(root.Child.IsKeyboardFocusWithin);
                 Assert.True(root.Classes.Contains(":focus-within"));
                 Assert.True(root.IsKeyboardFocusWithin);
-                
+
                 target2.Focus();
-                
+
                 Assert.False(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus-within"));
                 Assert.False(target1.IsKeyboardFocusWithin);
@@ -445,7 +445,7 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.True(root.Child.IsKeyboardFocusWithin);
                 Assert.True(root.Classes.Contains(":focus-within"));
                 Assert.True(root.IsKeyboardFocusWithin);
-                
+
                 Assert.True(target2.IsFocused);
                 Assert.True(target2.Classes.Contains(":focus-within"));
                 Assert.True(target2.IsKeyboardFocusWithin);
@@ -453,7 +453,7 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.True(panel2.IsKeyboardFocusWithin);
             }
         }
-        
+
         [Fact]
         public void Control_FocusWithin_Pseudoclass_Should_Be_Removed_When_Removed_From_Tree()
         {
@@ -487,11 +487,11 @@ namespace Avalonia.Base.UnitTests.Input
 
                 var keyboardDevice = KeyboardDevice.Instance!;
                 Assert.Equal(keyboardDevice.FocusedElement, target1);
-                
+
                 root.Child = null;
-                
+
                 Assert.Null(keyboardDevice.FocusedElement);
-                
+
                 Assert.False(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus-within"));
                 Assert.False(target1.IsKeyboardFocusWithin);
@@ -499,7 +499,7 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.False(root.IsKeyboardFocusWithin);
             }
         }
-        
+
         [Fact]
         public void Control_FocusWithin_Pseudoclass_Should_Be_Removed_Focus_Moves_To_Different_Root()
         {
@@ -507,7 +507,7 @@ namespace Avalonia.Base.UnitTests.Input
             {
                 var target1 = new Decorator { Focusable = true };
                 var target2 = new Decorator { Focusable = true };
-                
+
                 var root1 = new TestRoot
                 {
                     Child = new StackPanel
@@ -518,7 +518,7 @@ namespace Avalonia.Base.UnitTests.Input
                         }
                     }
                 };
-                
+
                 var root2 = new TestRoot
                 {
                     Child = new StackPanel
@@ -543,9 +543,9 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.True(root1.IsKeyboardFocusWithin);
 
                 Assert.Equal(KeyboardDevice.Instance!.FocusedElement, target1);
-                
+
                 target2.Focus();
-                
+
                 Assert.False(target1.IsFocused);
                 Assert.False(target1.Classes.Contains(":focus-within"));
                 Assert.False(target1.IsKeyboardFocusWithin);
@@ -553,7 +553,7 @@ namespace Avalonia.Base.UnitTests.Input
                 Assert.False(root1.Child.IsKeyboardFocusWithin);
                 Assert.False(root1.Classes.Contains(":focus-within"));
                 Assert.False(root1.IsKeyboardFocusWithin);
-                
+
                 Assert.True(target2.IsFocused);
                 Assert.True(target2.Classes.Contains(":focus-within"));
                 Assert.True(target2.IsKeyboardFocusWithin);
@@ -577,7 +577,7 @@ namespace Avalonia.Base.UnitTests.Input
                 };
 
                 target.Focus();
-                root.FocusManager.ClearFocus();
+                root.FocusManager.Focus(null);
 
                 Assert.Null(root.FocusManager.GetFocusedElement());
             }
@@ -806,7 +806,43 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
-        public void Can_Get_Next_Element_With_Options()
+        public void Can_Get_Next_Element_With_FocusedElement_Option()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var container = new StackPanel
+                {
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        target3,
+                        target4
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+                Assert.Null(focusManager.GetFocusedElement());
+
+                var next = focusManager.FindNextElement(
+                    NavigationDirection.Next,
+                    new FindNextElementOptions { FocusedElement = target1 });
+
+                Assert.Equal(next, target2);
+            }
+        }
+
+        [Fact]
+        public void Can_Get_Directional_Next_Element_With_Options()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
             {
@@ -871,6 +907,76 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Can_Get_Directional_Next_Element_With_FocusedElement_Option()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var target1 = new Button { Focusable = true, Content = "1" };
+                var target2 = new Button { Focusable = true, Content = "2" };
+                var target3 = new Button { Focusable = true, Content = "3" };
+                var target4 = new Button { Focusable = true, Content = "4" };
+                var target5 = new Button { Focusable = true, Content = "5" };
+                var searchStack = new StackPanel()
+                {
+                    Children =
+                    {
+                        target3,
+                        target4
+                    }
+                };
+                var container = new StackPanel
+                {
+                    Orientation = Avalonia.Layout.Orientation.Horizontal,
+                    Children =
+                    {
+                        target1,
+                        target2,
+                        searchStack,
+                        target5
+                    }
+                };
+                var root = new TestRoot
+                {
+                    Child = container
+                };
+
+                root.InvalidateMeasure();
+                root.ExecuteInitialLayoutPass();
+
+                var focusManager = FocusManager.GetFocusManager(container);
+                Assert.NotNull(focusManager);
+                Assert.Null(focusManager.GetFocusedElement());
+
+                // Search root is right of the specified focused element, should return the first focusable element in the search root
+                var next = focusManager.FindNextElement(NavigationDirection.Right, new FindNextElementOptions
+                {
+                    SearchRoot = searchStack,
+                    FocusedElement = target1
+                });
+
+                Assert.Equal(next, target3);
+
+                // Search root is left of the specified focused element, should return the first focusable element in the search root
+                next = focusManager.FindNextElement(NavigationDirection.Left, new FindNextElementOptions
+                {
+                    SearchRoot = searchStack,
+                    FocusedElement = target5
+                });
+
+                Assert.Equal(next, target3);
+
+                // Search root isn't to the right of the specified focused element, should return null
+                next = focusManager.FindNextElement(NavigationDirection.Right, new FindNextElementOptions
+                {
+                    SearchRoot = searchStack,
+                    FocusedElement = target5
+                });
+
+                Assert.Null(next);
+            }
+        }
+
+        [Fact]
         public void Focus_Should_Move_According_To_Direction()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))
@@ -925,7 +1031,7 @@ namespace Avalonia.Base.UnitTests.Input
                     [XYFocus.UpProperty] = target3,
                     [XYFocus.DownProperty] = target4,
                 };
-                var container =  new Canvas
+                var container = new Canvas
                 {
                     Children =
                     {

@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.PipsPagerEventsPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Events" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Monitor SelectedPageIndex changes to react to user navigation." />
+        <Separator />
+        <TextBlock Text="Event Log" FontSize="13" FontWeight="SemiBold" />
+        <ItemsControl Name="EventLog">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding}" FontSize="11" TextWrapping="Wrap" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <StackPanel Spacing="16" Margin="24">
+      <TextBlock Text="Tap a pip and watch the event log" FontSize="14" Opacity="0.6" />
+      <PipsPager Name="EventPager"
+                 NumberOfPages="8"
+                 MaxVisiblePips="8" />
+      <TextBlock Name="StatusText" FontSize="13" Opacity="0.7"
+                 Text="Selected: 0" />
+    </StackPanel>
+  </DockPanel>
+</UserControl>

@@ -209,6 +209,11 @@ namespace Avalonia
         public bool IsEffectivelyVisible { get; private set; } = true;
 
         /// <summary>
+        /// Raised when <see cref="IsEffectivelyVisible"/> changes.
+        /// </summary>
+        internal event EventHandler? IsEffectivelyVisibleChanged;
+
+        /// <summary>
         /// Updates the <see cref="IsEffectivelyVisible"/> property based on the parent's
         /// <see cref="IsEffectivelyVisible"/>.
         /// </summary>
@@ -221,6 +226,7 @@ namespace Avalonia
                 return;
 
             IsEffectivelyVisible = isEffectivelyVisible;
+            IsEffectivelyVisibleChanged?.Invoke(this, EventArgs.Empty);
 
             // PERF-SENSITIVE: This is called on entire hierarchy and using foreach or LINQ
             // will cause extra allocations and overhead.

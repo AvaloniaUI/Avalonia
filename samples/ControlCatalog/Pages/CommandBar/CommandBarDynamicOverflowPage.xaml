@@ -61,12 +61,12 @@
               ClipToBounds="True">
         <CommandBar x:Name="DemoBar" IsDynamicOverflowEnabled="True">
           <CommandBar.PrimaryCommands>
-            <AppBarButton Label="New" DynamicOverflowOrder="0"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-            <AppBarButton Label="Save" DynamicOverflowOrder="0"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
-            <AppBarButton Label="Share" DynamicOverflowOrder="1"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
-            <AppBarButton Label="Bold" DynamicOverflowOrder="2"><AppBarButton.Icon><PathIcon Data="{StaticResource BoldIcon}" /></AppBarButton.Icon></AppBarButton>
-            <AppBarButton Label="Italic" DynamicOverflowOrder="2"><AppBarButton.Icon><PathIcon Data="{StaticResource ItalicIcon}" /></AppBarButton.Icon></AppBarButton>
-            <AppBarButton Label="Delete" DynamicOverflowOrder="3"><AppBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></AppBarButton.Icon></AppBarButton>
+            <CommandBarButton Label="New" DynamicOverflowOrder="0"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+            <CommandBarButton Label="Save" DynamicOverflowOrder="0"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
+            <CommandBarButton Label="Share" DynamicOverflowOrder="1"><CommandBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></CommandBarButton.Icon></CommandBarButton>
+            <CommandBarButton Label="Bold" DynamicOverflowOrder="2"><CommandBarButton.Icon><PathIcon Data="{StaticResource BoldIcon}" /></CommandBarButton.Icon></CommandBarButton>
+            <CommandBarButton Label="Italic" DynamicOverflowOrder="2"><CommandBarButton.Icon><PathIcon Data="{StaticResource ItalicIcon}" /></CommandBarButton.Icon></CommandBarButton>
+            <CommandBarButton Label="Delete" DynamicOverflowOrder="3"><CommandBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></CommandBarButton.Icon></CommandBarButton>
           </CommandBar.PrimaryCommands>
         </CommandBar>
       </Border>

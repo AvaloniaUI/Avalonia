@@ -15,7 +15,7 @@ namespace Avalonia.Controls
         /// <param name="routedEvent">The event being raised.</param>
         /// <param name="removedItems">The items removed from the selection.</param>
         /// <param name="addedItems">The items added to the selection.</param>
-        public SelectionChangedEventArgs(RoutedEvent routedEvent, IList removedItems, IList addedItems)
+        public SelectionChangedEventArgs(RoutedEvent? routedEvent, IList removedItems, IList addedItems)
             : base(routedEvent)
         {
             RemovedItems = removedItems;

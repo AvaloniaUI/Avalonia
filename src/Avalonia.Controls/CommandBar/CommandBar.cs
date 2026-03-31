@@ -7,6 +7,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -14,9 +15,10 @@ namespace Avalonia.Controls
     /// A command bar that provides primary commands displayed inline and secondary commands
     /// accessible via an overflow menu.
     /// </summary>
-    [TemplatePart("PART_OverflowButton",   typeof(Button))]
+    [TemplatePart("PART_OverflowButton",    typeof(Button))]
     [TemplatePart("PART_OverflowPopup",    typeof(Popup))]
-    [TemplatePart("PART_ContentPresenter", typeof(Control))]
+    [TemplatePart("PART_OverflowPresenter", typeof(ItemsControl))]
+    [TemplatePart("PART_ContentPresenter",  typeof(Control))]
     public class CommandBar : TemplatedControl
     {
         /// <summary>
@@ -129,12 +131,14 @@ namespace Avalonia.Controls
 
         private Button? _overflowButton;
         private Popup? _overflowPopup;
+        private ItemsControl? _overflowPresenter;
         private Control? _contentPresenter;
 
         private readonly ObservableCollection<ICommandBarElement> _visiblePrimaryCommands = new();
         private readonly ObservableCollection<ICommandBarElement> _overflowItems = new();
         private bool _isDynamicUpdateInProgress;
         private double _constraintWidth = double.PositiveInfinity;
+        private bool _openedViaKeyboard;
 
         public CommandBar()
         {
@@ -142,11 +146,9 @@ namespace Avalonia.Controls
             OverflowItems = new ReadOnlyObservableCollection<ICommandBarElement>(_overflowItems);
 
             var primaryCommands = new ObservableCollection<ICommandBarElement>();
-            primaryCommands.CollectionChanged += OnPrimaryCommandsChanged;
             SetCurrentValue(PrimaryCommandsProperty, (IList<ICommandBarElement>)primaryCommands);
 
             var secondaryCommands = new ObservableCollection<ICommandBarElement>();
-            secondaryCommands.CollectionChanged += OnSecondaryCommandsChanged;
             SetCurrentValue(SecondaryCommandsProperty, (IList<ICommandBarElement>)secondaryCommands);
 
             SizeChanged += CommandBar_SizeChanged;
@@ -350,14 +352,33 @@ namespace Avalonia.Controls
             base.OnApplyTemplate(e);
 
             if (_overflowButton != null)
+            {
                 _overflowButton.Click -= OnOverflowButtonClick;
+                _overflowButton.GotFocus -= OnOverflowButtonGotFocus;
+                _overflowButton.RemoveHandler(Input.InputElement.KeyDownEvent, OnOverflowButtonKeyDown);
+                _overflowButton.RemoveHandler(Input.InputElement.PointerPressedEvent, OnOverflowButtonPointerPressed);
+            }
+            if (_overflowPresenter != null)
+                _overflowPresenter.KeyDown -= OnOverflowPresenterKeyDown;
+            if (_overflowPopup != null)
+                _overflowPopup.Opened -= OnOverflowPopupOpened;
 
             _overflowButton = e.NameScope.Find<Button>("PART_OverflowButton");
             _overflowPopup = e.NameScope.Find<Popup>("PART_OverflowPopup");
+            _overflowPresenter = e.NameScope.Find<ItemsControl>("PART_OverflowPresenter");
             _contentPresenter = e.NameScope.Find<Control>("PART_ContentPresenter");
 
             if (_overflowButton != null)
+            {
                 _overflowButton.Click += OnOverflowButtonClick;
+                _overflowButton.GotFocus += OnOverflowButtonGotFocus;
+                _overflowButton.AddHandler(Input.InputElement.KeyDownEvent, OnOverflowButtonKeyDown, handledEventsToo: true);
+                _overflowButton.AddHandler(Input.InputElement.PointerPressedEvent, OnOverflowButtonPointerPressed, handledEventsToo: true);
+            }
+            if (_overflowPresenter != null)
+                _overflowPresenter.KeyDown += OnOverflowPresenterKeyDown;
+            if (_overflowPopup != null)
+                _overflowPopup.Opened += OnOverflowPopupOpened;
 
             ApplyLabelPositionToChildren();
             UpdateOverflowButtonVisibility();
@@ -371,7 +392,7 @@ namespace Avalonia.Controls
 
             if (change.Property == IsOpenProperty)
             {
-                var isOpen = (bool)change.NewValue!;
+                var isOpen = change.GetNewValue<bool>();
                 if (isOpen)
                 {
                     RaiseEvent(new RoutedEventArgs(OpeningEvent));
@@ -448,6 +469,105 @@ namespace Avalonia.Controls
             SetCurrentValue(IsOpenProperty, !IsOpen);
         }
 
+        private void OnOverflowButtonGotFocus(object? sender, Input.FocusChangedEventArgs e)
+        {
+            _openedViaKeyboard = e.NavigationMethod is Input.NavigationMethod.Directional
+                or Input.NavigationMethod.Tab;
+        }
+
+        private void OnOverflowButtonKeyDown(object? sender, Input.KeyEventArgs e)
+        {
+            if (e.Key is Input.Key.Enter or Input.Key.Space)
+                _openedViaKeyboard = true;
+        }
+
+        private void OnOverflowButtonPointerPressed(object? sender, Input.PointerPressedEventArgs e)
+        {
+            _openedViaKeyboard = false;
+        }
+
+        private void OnOverflowPresenterKeyDown(object? sender, Input.KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Input.Key.Up:
+                    NavigateOverflow(forward: false);
+                    e.Handled = true;
+                    break;
+                case Input.Key.Down:
+                    NavigateOverflow(forward: true);
+                    e.Handled = true;
+                    break;
+                case Input.Key.Home:
+                    FocusOverflowItem(first: true);
+                    e.Handled = true;
+                    break;
+                case Input.Key.End:
+                    FocusOverflowItem(first: false);
+                    e.Handled = true;
+                    break;
+                case Input.Key.Escape:
+                    SetCurrentValue(IsOpenProperty, false);
+                    _overflowButton?.Focus(Input.NavigationMethod.Unspecified);
+                    e.Handled = true;
+                    break;
+            }
+        }
+
+        private void OnOverflowPopupOpened(object? sender, EventArgs e)
+        {
+            var method = _openedViaKeyboard
+                ? Input.NavigationMethod.Directional
+                : Input.NavigationMethod.Pointer;
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (IsOpen)
+                    FocusOverflowItem(first: true, method);
+            }, DispatcherPriority.Loaded);
+        }
+
+        private void NavigateOverflow(bool forward)
+        {
+            var items = GetFocusableOverflowItems();
+            if (items.Count == 0)
+                return;
+
+            int current = -1;
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i].IsFocused || items[i].IsKeyboardFocusWithin)
+                {
+                    current = i;
+                    break;
+                }
+            }
+
+            int next = current < 0
+                ? (forward ? 0 : items.Count - 1)
+                : (forward ? (current + 1) % items.Count : (current - 1 + items.Count) % items.Count);
+
+            items[next].Focus(Input.NavigationMethod.Directional);
+        }
+
+        private void FocusOverflowItem(bool first, Input.NavigationMethod method = Input.NavigationMethod.Directional)
+        {
+            var items = GetFocusableOverflowItems();
+            if (items.Count > 0)
+                items[first ? 0 : items.Count - 1].Focus(method);
+        }
+
+        private List<Control> GetFocusableOverflowItems()
+        {
+            var result = new List<Control>();
+            foreach (var item in _overflowItems)
+            {
+                if (item is Control { IsEnabled: true, IsVisible: true, Focusable: true } control && item is not CommandBarSeparator)
+                    result.Add(control);
+            }
+            return result;
+        }
+
         private void OnPrimaryCommandsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.NewItems != null)
@@ -518,7 +638,7 @@ namespace Avalonia.Controls
 
                         int primaryNonSepCount = 0;
                         foreach (var item in PrimaryCommands)
-                            if (item is not AppBarSeparator)
+                            if (item is not CommandBarSeparator)
                                 primaryNonSepCount++;
 
                         const double overflowButtonWidth = 48;
@@ -556,7 +676,7 @@ namespace Avalonia.Controls
                         for (var i = 0; i < prioritized.Count; i++)
                         {
                             var idx = prioritized[i].Index;
-                            if (PrimaryCommands[idx] is AppBarSeparator)
+                            if (PrimaryCommands[idx] is CommandBarSeparator)
                                 visibleIndices.Add(idx);
                             else if (nonSeparatorCount < maxItems)
                             {
@@ -598,8 +718,8 @@ namespace Avalonia.Controls
 
         private static int GetDynamicOverflowOrder(ICommandBarElement element) => element switch
         {
-            AppBarButton b => b.DynamicOverflowOrder,
-            AppBarToggleButton t => t.DynamicOverflowOrder,
+            CommandBarButton b => b.DynamicOverflowOrder,
+            CommandBarToggleButton t => t.DynamicOverflowOrder,
             _ => 0
         };
 
@@ -617,9 +737,9 @@ namespace Avalonia.Controls
         {
             element.IsCompact = DefaultLabelPosition == CommandBarDefaultLabelPosition.Collapsed;
 
-            if (element is AppBarButton abb)
+            if (element is CommandBarButton abb)
                 abb.LabelPosition = DefaultLabelPosition;
-            else if (element is AppBarToggleButton atb)
+            else if (element is CommandBarToggleButton atb)
                 atb.LabelPosition = DefaultLabelPosition;
         }
 

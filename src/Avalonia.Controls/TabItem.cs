@@ -33,8 +33,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Icon"/> property.
         /// </summary>
-        public static readonly StyledProperty<Control?> IconProperty =
-            AvaloniaProperty.Register<TabItem, Control?>(nameof(Icon));
+        public static readonly StyledProperty<object?> IconProperty =
+            AvaloniaProperty.Register<TabItem, object?>(nameof(Icon));
+
+        /// <summary>
+        /// Defines the <see cref="IconTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> IconTemplateProperty =
+            AvaloniaProperty.Register<TabItem, IDataTemplate?>(nameof(IconTemplate));
 
         /// <summary>
         /// Defines the <see cref="IndicatorTemplate"/> property.
@@ -77,10 +83,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the icon displayed alongside the tab header.
         /// </summary>
-        public Control? Icon
+        public object? Icon
         {
             get => GetValue(IconProperty);
             set => SetValue(IconProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to display the icon of the control.
+        /// </summary>
+        public IDataTemplate? IconTemplate
+        {
+            get => GetValue(IconTemplateProperty);
+            set => SetValue(IconTemplateProperty, value);
         }
 
         /// <summary>
@@ -111,7 +126,7 @@ namespace Avalonia.Controls
             e.Handled = true;
         }
 
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
             UpdateSelectionFromEvent(e);
@@ -130,6 +145,25 @@ namespace Avalonia.Controls
         }
 
         protected bool UpdateSelectionFromEvent(RoutedEventArgs e) => SelectingItemsControl.ItemsControlFromItemContainer(this)?.UpdateSelectionFromEvent(this, e) ?? false;
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == ForegroundProperty || change.Property == IconProperty)
+                UpdateIconForeground();
+        }
+
+        private void UpdateIconForeground()
+        {
+            if (Icon is IconElement icon)
+            {
+                var fg = Foreground;
+                if (fg != null)
+                    icon.SetValue(ForegroundProperty, fg);
+                else
+                    icon.ClearValue(ForegroundProperty);
+            }
+        }
 
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
         {

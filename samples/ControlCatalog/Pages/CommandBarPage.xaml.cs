@@ -13,7 +13,7 @@ namespace ControlCatalog.Pages
         {
             // Overview
             ("Overview", "First Look",     "A CommandBar with primary commands, secondary overflow menu, and custom content area.", () => new CommandBarFirstLookPage()),
-            ("Overview", "Toggle Buttons", "AppBarToggleButton for stateful actions like Bold, Italic, and Favorite.",              () => new CommandBarTogglePage()),
+            ("Overview", "Toggle Buttons", "CommandBarToggleButton for stateful actions like Bold, Italic, and Favorite.",              () => new CommandBarTogglePage()),
 
             // Appearance
             ("Appearance", "Label Positions", "Configure label position: Bottom (default), Right, or Collapsed (icon only).",       () => new CommandBarLabelPositionPage()),
@@ -22,6 +22,8 @@ namespace ControlCatalog.Pages
             // Features
             ("Features", "Overflow Menu",    "Secondary commands appear in an overflow popup. Configure visibility and sticky behavior.", () => new CommandBarOverflowPage()),
             ("Features", "Dynamic Overflow", "IsDynamicOverflowEnabled moves primary commands to overflow as space shrinks.",             () => new CommandBarDynamicOverflowPage()),
+            ("Features", "Events & State",  "Observe Opening, Opened, Closing, and Closed while tracking IsOpen, HasSecondaryCommands, and IsOverflowButtonVisible.", () => new CommandBarEventsPage()),
+            ("Features", "Keyboard Navigation", "Up/Down to move between overflow items, Home/End to jump to first/last, Escape to close and return focus.", () => new CommandBarKeyboardPage()),
         };
 
         public CommandBarPage()

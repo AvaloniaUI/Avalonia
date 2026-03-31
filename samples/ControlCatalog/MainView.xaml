@@ -16,7 +16,7 @@
       </Style>
     </Grid.Styles>
     <controls:HamburgerMenu Name="Sidebar">
-      <TabItem Header="Composition">
+      <TabItem Header="Composition" IsSelected="True">
         <pages:CompositionPage />
       </TabItem>
       <TabItem Header="Accelerator">
@@ -54,8 +54,15 @@
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:CommandBarPage />
       </TabItem>
-      <TabItem Header="Carousel">
-        <pages:CarouselPage />
+      <TabItem Header="Carousel"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:CarouselDemoPage />
+      </TabItem>
+      <TabItem Header="CarouselPage"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:CarouselDemoPage />
       </TabItem>
 
       <TabItem Header="CheckBox">
@@ -160,6 +167,9 @@
       </TabItem>
       <TabItem Header="OpenGL Lease">
         <pages:OpenGlLeasePage />
+      </TabItem>
+      <TabItem Header="PipsPager">
+        <pages:PipsPagerPage />
       </TabItem>
       <TabItem Header="Platform Information">
         <pages:PlatformInfoPage />

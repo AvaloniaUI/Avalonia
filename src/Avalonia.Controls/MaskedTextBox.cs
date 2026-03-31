@@ -186,7 +186,7 @@ namespace Avalonia.Controls
         protected override Type StyleKeyOverride => typeof(TextBox);
 
         /// <inheritdoc />
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
             {
@@ -283,7 +283,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc />
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             if (HidePromptOnLeave && MaskProvider != null)
             {

@@ -5,6 +5,7 @@
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseMicroCom>true</UseMicroCom>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,4 +38,5 @@
 
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
+  <Import Project="..\..\build\MicroCOM.props" />
 </Project>
