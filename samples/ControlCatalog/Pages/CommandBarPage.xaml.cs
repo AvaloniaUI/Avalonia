@@ -13,7 +13,7 @@ namespace ControlCatalog.Pages
         {
             // Overview
             ("Overview", "First Look",     "A CommandBar with primary commands, secondary overflow menu, and custom content area.", () => new CommandBarFirstLookPage()),
-            ("Overview", "Toggle Buttons", "AppBarToggleButton for stateful actions like Bold, Italic, and Favorite.",              () => new CommandBarTogglePage()),
+            ("Overview", "Toggle Buttons", "CommandBarToggleButton for stateful actions like Bold, Italic, and Favorite.",              () => new CommandBarTogglePage()),
 
             // Appearance
             ("Appearance", "Label Positions", "Configure label position: Bottom (default), Right, or Collapsed (icon only).",       () => new CommandBarLabelPositionPage()),

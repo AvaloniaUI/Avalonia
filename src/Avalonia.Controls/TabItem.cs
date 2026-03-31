@@ -146,6 +146,25 @@ namespace Avalonia.Controls
 
         protected bool UpdateSelectionFromEvent(RoutedEventArgs e) => SelectingItemsControl.ItemsControlFromItemContainer(this)?.UpdateSelectionFromEvent(this, e) ?? false;
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == ForegroundProperty || change.Property == IconProperty)
+                UpdateIconForeground();
+        }
+
+        private void UpdateIconForeground()
+        {
+            if (Icon is IconElement icon)
+            {
+                var fg = Foreground;
+                if (fg != null)
+                    icon.SetValue(ForegroundProperty, fg);
+                else
+                    icon.ClearValue(ForegroundProperty);
+            }
+        }
+
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
         {
             if (Header == null)

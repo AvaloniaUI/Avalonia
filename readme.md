@@ -54,11 +54,6 @@ Avalonia development is supported by the generous sponsorship of [Devolutions](h
 
 <a href="https://devolutions.net/?utm_source=pr&utm_medium=partnership&utm_campaign=avalonia&utm_id=C086&member_status=responded"><img width="200" alt="devolutions-color-hr" src="https://github.com/user-attachments/assets/597e3650-0b80-496e-84b2-db51fbe7e06e"/></a>
 
-
-## Community 
-Join our community hub to get early access to upcoming features, share your thoughts, and connect directly with the Avalonia team. 
-[![communityannouncement-banner 1](https://github.com/user-attachments/assets/21950b56-cd28-4574-9a0a-73bb17b89d31)](https://avaloniaui.community) 
-
 ## Bleeding Edge Builds
 
 We also have a [nightly build](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed) which tracks the current state of master. Although these packages are less stable than the release on NuGet.org, you'll get all the latest features and bugfixes right away and many of our users actually prefer this feed!
@@ -84,6 +79,16 @@ This project exists thanks to all the people who contribute.
 <a href="https://github.com/AvaloniaUI/Avalonia/graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
 
 Please read the [contribution guidelines](CONTRIBUTING.md) before submitting a pull request.
+
+## Security
+
+If you discover a security vulnerability in any of our SDKs, tools, services, or repositories, please help us keep the community safe by reporting it responsibly.
+
+You can report security vulnerabilities by emailing **[security@avaloniaui.net](mailto:security@avaloniaui.net)**.
+
+Please avoid disclosing the issue publicly until we have had a reasonable amount of time to investigate and release a patch or mitigation. We review all legitimate reports and will work with you to quickly resolve the issue.
+
+Please note that Avalonia does not operate a bug bounty programme.
 
 ## Code of Conduct
 
