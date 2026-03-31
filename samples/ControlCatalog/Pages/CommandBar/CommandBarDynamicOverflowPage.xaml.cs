@@ -50,7 +50,7 @@ namespace ControlCatalog.Pages
             int visiblePrimarySeparatorCount = 0;
             foreach (var item in DemoBar.VisiblePrimaryCommands)
             {
-                if (item is AppBarSeparator)
+                if (item is CommandBarSeparator)
                     visiblePrimarySeparatorCount++;
                 else
                     visiblePrimaryCommandCount++;
@@ -61,7 +61,7 @@ namespace ControlCatalog.Pages
             bool hasSyntheticOverflowDivider = false;
             foreach (var item in DemoBar.OverflowItems)
             {
-                if (item is AppBarSeparator separator)
+                if (item is CommandBarSeparator separator)
                 {
                     overflowSeparatorCount++;
                     if (!DemoBar.PrimaryCommands.Contains(separator) &&

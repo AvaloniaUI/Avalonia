@@ -134,7 +134,7 @@ namespace Avalonia.Controls
 
         private readonly ObservableCollection<ICommandBarElement> _visiblePrimaryCommands = new();
         private readonly ObservableCollection<ICommandBarElement> _overflowItems = new();
-        private readonly AppBarSeparator _overflowPrimarySecondarySeparator = new();
+        private readonly CommandBarSeparator _overflowPrimarySecondarySeparator = new();
         private readonly CompositeDisposable _secondaryCommandVisibilitySubscriptions = new();
         private bool _isDynamicUpdateInProgress;
         private double _constraintWidth = double.PositiveInfinity;
@@ -588,7 +588,7 @@ namespace Avalonia.Controls
                                 SetOverflowMode(PrimaryCommands[i], false);
                                 _visiblePrimaryCommands.Add(PrimaryCommands[i]);
                             }
-                            else if (PrimaryCommands[i] is AppBarSeparator)
+                            else if (PrimaryCommands[i] is CommandBarSeparator)
                             {
                                 SetOverflowMode(PrimaryCommands[i], false);
                             }
@@ -722,7 +722,7 @@ namespace Avalonia.Controls
             var toRemove = new List<int>();
             for (var i = 0; i < commands.Count; i++)
             {
-                if (!visibleIndices.Contains(i) || commands[i] is not AppBarSeparator)
+                if (!visibleIndices.Contains(i) || commands[i] is not CommandBarSeparator)
                     continue;
 
                 bool hasNonSeparatorBefore = FindNonSeparatorInVisibleCommands(
@@ -743,7 +743,7 @@ namespace Avalonia.Controls
                 if (!visibleIndices.Contains(i))
                     continue;
 
-                if (commands[i] is AppBarSeparator)
+                if (commands[i] is CommandBarSeparator)
                 {
                     if (previousWasSeparator)
                         visibleIndices.Remove(i);
@@ -765,7 +765,7 @@ namespace Avalonia.Controls
             var i = startIndex;
             while (forward ? i < commands.Count : i >= 0)
             {
-                if (visibleIndices.Contains(i) && commands[i] is not AppBarSeparator)
+                if (visibleIndices.Contains(i) && commands[i] is not CommandBarSeparator)
                 {
                     foundIndex = i;
                     return true;
