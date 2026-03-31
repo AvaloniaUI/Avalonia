@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace Avalonia.X11;
 
@@ -9,7 +10,7 @@ partial class X11Window
     {
         public override void Activate()
         {
-            if (X11.Atoms._NET_ACTIVE_WINDOW != IntPtr.Zero)
+            if (Platform.Globals.NetSupported?.Contains(X11.Atoms._NET_ACTIVE_WINDOW) == true)
             {
                 Window.SendNetWMMessage(X11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, X11.LastActivityTimestamp,
                     IntPtr.Zero);
