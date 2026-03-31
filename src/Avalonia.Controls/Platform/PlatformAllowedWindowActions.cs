@@ -24,7 +24,7 @@ public enum PlatformAllowedWindowActions
     /// <summary>
     /// The underlying platform supports minimizing windows.
     /// </summary>
-    Minimize = 1 << 2
+    Minimize = 1 << 2,
 
     /// <summary>
     /// All actions are supported (default when the underlying platform does not report capabilities).
