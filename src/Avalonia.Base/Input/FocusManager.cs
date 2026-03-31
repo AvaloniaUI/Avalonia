@@ -75,30 +75,44 @@ namespace Avalonia.Input
 
             if (element is not null)
             {
-                if (!CanFocus(element))
-                    return false;
+                return FocusCore(keyboardDevice, element, method, keyModifiers);
+            }
 
-                if (GetFocusScope(element) is StyledElement scope)
+            if (_focusRoot?.GetValue(FocusedElementProperty) is { } restore && restore != Current)
+            {
+                return FocusCore(keyboardDevice, restore, method, keyModifiers);
+            }
+
+            _focusRoot = null;
+            keyboardDevice.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None, false);
+            return false;
+        }
+
+        private bool FocusCore(
+            KeyboardDevice keyboardDevice,
+            IInputElement element,
+            NavigationMethod method,
+            KeyModifiers keyModifiers)
+        {
+            if (!CanFocus(element))
+                return false;
+
+            keyboardDevice.SetFocusedElement(element, method, keyModifiers);
+
+            if (keyboardDevice.FocusedElement is { } effectivelyFocusedElement)
+            {
+                if (GetFocusScope(effectivelyFocusedElement) is { } scope)
                 {
-                    scope.SetValue(FocusedElementProperty, element);
+                    scope.SetValue(FocusedElementProperty, effectivelyFocusedElement);
                     _focusRoot = GetFocusRoot(scope);
                 }
 
-                keyboardDevice.SetFocusedElement(element, method, keyModifiers);
-                return true;
+                return effectivelyFocusedElement == element;
             }
-            else if (_focusRoot?.GetValue(FocusedElementProperty) is { } restore &&
-                restore != Current &&
-                Focus(restore))
-            {
-                return true;
-            }
-            else
-            {
-                _focusRoot = null;
-                keyboardDevice.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None, false);
-                return false;
-            }
+
+            _focusRoot = null;
+            keyboardDevice.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None, false);
+            return false;
         }
 
         internal void ClearFocusOnElementRemoved(IInputElement removedElement, Visual oldParent)
