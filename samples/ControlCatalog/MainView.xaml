@@ -29,9 +29,9 @@
     </Grid.Styles>
     <DrawerPage DrawerLayoutBehavior="Split"
                 IsOpen="{Binding IsDrawerOpened , Mode=TwoWay}"
-                DrawerBreakpointLength="1008"
                 DisplayMode="{Binding DisplayMode, Mode=TwoWay}"
-                DrawerLength="240"
+                DrawerLength="260"
+                CompactDrawerLength="52"
                 DrawerFooter="{Binding}"
                 Drawer="{Binding}"
                 DrawerHeader="{Binding}"
@@ -45,7 +45,16 @@
                    SelectedIndex="{Binding SelectedPageIndex}">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="viewModels:PageItem">
-                <Label Content="{Binding Header}"/>
+                <Grid ColumnDefinitions="20,*">
+                  <PathIcon Grid.Column="0" Width="16" Height="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Data="{Binding IconData}"/>
+                  <TextBlock Grid.Column="1" Text="{Binding Header}"
+                             VerticalAlignment="Center"
+                             Margin="12,0,0,0"
+                             TextTrimming="CharacterEllipsis"/>
+                </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
@@ -53,22 +62,24 @@
       </DrawerPage.DrawerTemplate>
       <DrawerPage.DrawerHeaderTemplate>
         <DataTemplate x:DataType="viewModels:MainWindowViewModel">
-          <DockPanel LastChildFill="True" Margin="10">
+          <DockPanel LastChildFill="True" Margin="6">
             <TextBox Name="SearchBox"
                      DockPanel.Dock="Bottom"
                      PlaceholderText="Search..."
                      Text="{Binding Query, Mode=TwoWay}"
                      Margin="4,0,8,4"
-                     VerticalContentAlignment="Center">
+                     VerticalContentAlignment="Center"
+                     IsVisible="{Binding IsDrawerOpened}">
               <TextBox.InnerLeftContent>
                 <PathIcon Width="14" Height="14" Margin="6,0,0,0"
                           VerticalAlignment="Center"
                           Data="M10 2.5a7.5 7.5 0 0 1 5.964 12.048l4.743 4.745a1 1 0 0 1-1.32 1.497l-.094-.083-4.745-4.743A7.5 7.5 0 1 1 10 2.5Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z" />
               </TextBox.InnerLeftContent>
             </TextBox>
-            <Border HorizontalAlignment="Stretch" Height="200" Padding="20">
+            <Border HorizontalAlignment="Stretch" Padding="10">
               <Image Source="/Assets/Icon.png" VerticalAlignment="Center"
                      HorizontalAlignment="Center"
+                     MaxHeight="120"
                      Stretch="Uniform"/>
             </Border>
           </DockPanel>

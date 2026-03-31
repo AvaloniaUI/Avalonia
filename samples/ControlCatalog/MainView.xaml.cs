@@ -19,16 +19,70 @@ namespace ControlCatalog
             InitializeComponent();
 
             Loaded += MainView_Loaded;
+            Unloaded += MainView_Unloaded;
         }
+
+        private const double WideBreakpoint = 1008;
+        private const double NarrowBreakpoint = 640;
 
         private void MainView_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             if (DataContext == null)
                 return;
 
-            if (MainDrawer.Bounds.Width > 0 && MainDrawer.DrawerBreakpointLength > 0 && MainDrawer.Bounds.Width < MainDrawer.DrawerBreakpointLength)
+            MainDrawer.SizeChanged += OnDrawerSizeChanged;
+            UpdateAdaptiveLayout();
+        }
+
+        private void MainView_Unloaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            MainDrawer.SizeChanged -= OnDrawerSizeChanged;
+            _lastAppliedMode = null;
+        }
+
+        private SplitViewDisplayMode? _lastAppliedMode;
+        private bool _updatingLayout;
+
+        private void OnDrawerSizeChanged(object? sender, SizeChangedEventArgs e)
+        {
+            if (e.WidthChanged)
+                UpdateAdaptiveLayout();
+        }
+
+        private void UpdateAdaptiveLayout()
+        {
+            if (_updatingLayout || DataContext == null)
+                return;
+
+            var width = MainDrawer.Bounds.Width;
+            if (width <= 0)
+                return;
+
+            SplitViewDisplayMode targetMode;
+            if (width >= WideBreakpoint)
+                targetMode = SplitViewDisplayMode.Inline;
+            else if (width >= NarrowBreakpoint)
+                targetMode = SplitViewDisplayMode.CompactInline;
+            else
+                targetMode = SplitViewDisplayMode.Overlay;
+
+            if (_lastAppliedMode == targetMode)
+                return;
+
+            _updatingLayout = true;
+            try
             {
-                ViewModel.IsDrawerOpened = false;
+                _lastAppliedMode = targetMode;
+                ViewModel.DisplayMode = targetMode;
+
+                if (targetMode == SplitViewDisplayMode.Inline)
+                    ViewModel.IsDrawerOpened = true;
+                else if (targetMode == SplitViewDisplayMode.Overlay)
+                    ViewModel.IsDrawerOpened = false;
+            }
+            finally
+            {
+                _updatingLayout = false;
             }
         }
 
@@ -104,10 +158,7 @@ namespace ControlCatalog
             if (DataContext == null)
                 return;
 
-            if(MainDrawer.Bounds.Width > 0 && MainDrawer.DrawerBreakpointLength > 0 && MainDrawer.Bounds.Width < MainDrawer.DrawerBreakpointLength)
-            {
-                ViewModel.IsDrawerOpened = false;
-            }
+            UpdateAdaptiveLayout();
 
             if (TopLevel.GetTopLevel(this) is Window window)
                 ViewModel.SelectedDecorationIndex = (int)window.WindowDecorations;

@@ -37,8 +37,8 @@
     <Setter Property="VerticalAlignment" Value="Stretch" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Height" Value="{StaticResource NavigationItemHeight}" />
-    <Setter Property="Padding" Value="12,0,4,0" />
-    <Setter Property="Margin" Value="4,0,8,0" />
+    <Setter Property="Padding" Value="14,0,4,0" />
+    <Setter Property="Margin" Value="4,2,8,0" />
     <Setter Property="CornerRadius" Value="8" />
     <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Template">
