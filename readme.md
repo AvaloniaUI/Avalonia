@@ -1,9 +1,8 @@
 [![Star_Banner@3x](https://github.com/user-attachments/assets/d55eb468-fa5c-499f-858e-54618beb6f92)](https://github.com/sponsors/AvaloniaUI)
 [![Hero](https://github.com/user-attachments/assets/404db53f-f515-4a3a-bb18-f145dc34cedb)](https://avaloniaui.net?utm_source=github&utm_medium=referral&utm_content=readme_link)
 
- [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) [![Backers on Open Collective](https://img.shields.io/opencollective/backers/Avalonia?logo=opencollective)](#backers) [![Sponsors on Open Collective](https://img.shields.io/opencollective/sponsors/Avalonia?logo=opencollective)](#sponsors) [![GitHub Sponsors](https://img.shields.io/github/sponsors/AvaloniaUI?logo=github)](https://github.com/sponsors/AvaloniaUI) ![License](https://img.shields.io/github/license/avaloniaui/avalonia.svg)
-<br />
-[![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia)  ![Size](https://img.shields.io/github/repo-size/avaloniaui/avalonia.svg) 
+ [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) ![License](https://img.shields.io/github/license/avaloniaui/avalonia.svg)
+[![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia)
 
 ## 📖 About 
 
@@ -19,8 +18,11 @@ To see the latest announcements and read about the state of Avalonia, check out 
 ### Sponsorship
 Avalonia development is supported by the generous sponsorship of [Devolutions](https://devolutions.net/?utm_source=pr&utm_medium=partnership&utm_campaign=avalonia&utm_id=C086&member_status=responded). 
 
-<a href="https://devolutions.net/?utm_source=pr&utm_medium=partnership&utm_campaign=avalonia&utm_id=C086&member_status=responded"><img width="200" alt="devolutions-color-hr" src="https://github.com/user-attachments/assets/597e3650-0b80-496e-84b2-db51fbe7e06e"/></a>
-
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/218a7077-6978-4c37-adc7-4a24bb0edcb9">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/597e3650-0b80-496e-84b2-db51fbe7e06e">
+<img alt="Devolutions Logo" src="https://github.com/user-attachments/assets/597e3650-0b80-496e-84b2-db51fbe7e06e" width="200" >
+</picture>
 
 --- 
 ## 🚀 Getting Started
