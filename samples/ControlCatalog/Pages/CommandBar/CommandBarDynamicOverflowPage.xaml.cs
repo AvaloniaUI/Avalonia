@@ -9,6 +9,11 @@ namespace ControlCatalog.Pages
         public CommandBarDynamicOverflowPage()
         {
             InitializeComponent();
+            if (SecondaryVisibleCheck.IsChecked != true)
+            {
+                DemoBar.SecondaryCommands?.Remove(DemoSecondaryCommand);
+            }
+
             ((INotifyCollectionChanged)DemoBar.OverflowItems).CollectionChanged += OnOverflowChanged;
             ((INotifyCollectionChanged)DemoBar.VisiblePrimaryCommands).CollectionChanged += OnOverflowChanged;
             UpdateStatus();
@@ -32,10 +37,21 @@ namespace ControlCatalog.Pages
 
         private void OnSecondaryVisibilityChanged(object? sender, RoutedEventArgs e)
         {
-            if (DemoSecondaryCommand == null)
+            if (DemoBar?.SecondaryCommands == null || DemoSecondaryCommand == null)
                 return;
 
-            DemoSecondaryCommand.IsVisible = SecondaryVisibleCheck.IsChecked == true;
+            bool shouldInclude = SecondaryVisibleCheck.IsChecked == true;
+            bool isIncluded = DemoBar.SecondaryCommands.Contains(DemoSecondaryCommand);
+
+            if (shouldInclude && !isIncluded)
+            {
+                DemoBar.SecondaryCommands.Add(DemoSecondaryCommand);
+            }
+            else if (!shouldInclude && isIncluded)
+            {
+                DemoBar.SecondaryCommands.Remove(DemoSecondaryCommand);
+            }
+
             UpdateStatus();
         }
 

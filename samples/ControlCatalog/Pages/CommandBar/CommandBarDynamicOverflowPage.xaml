@@ -35,8 +35,8 @@
                   IsCheckedChanged="OnDynamicOverflowChanged" />
 
         <CheckBox x:Name="SecondaryVisibleCheck"
-                  Content="Show secondary command"
-                  IsChecked="True"
+                  Content="Include secondary command"
+                  IsChecked="False"
                   IsCheckedChanged="OnSecondaryVisibilityChanged" />
 
         <Separator />
