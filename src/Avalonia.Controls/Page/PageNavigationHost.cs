@@ -44,17 +44,6 @@ namespace Avalonia.Controls
 
             CleanUpSubscriptions();
 
-            if (_topLevel != null)
-            {
-                _topLevel.BackRequested -= TopLevel_BackRequested;
-                _topLevel.ScalingChanged -= TopLevel_ScalingChanged;
-            }
-
-            if (_insetManager != null)
-            {
-                _insetManager.SafeAreaChanged -= InsetManager_SafeAreaChanged;
-            }
-
             _topLevel = TopLevel.GetTopLevel(this);
             _insetManager = _topLevel?.InsetsManager;
 
@@ -100,6 +89,7 @@ namespace Avalonia.Controls
             if (_topLevel != null)
             {
                 _topLevel.BackRequested -= TopLevel_BackRequested;
+                _topLevel.ScalingChanged -= TopLevel_ScalingChanged;
                 _topLevel = null;
             }
         }
