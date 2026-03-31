@@ -874,13 +874,17 @@ public class CommandBarItemWidthTests : ScopedTestBase
     public void ItemWidthBottom_Controls_HowManyButtonsFit()
     {
         var cb = CreateWithWidth(300);
-        cb.SecondaryCommands!.Add(new CommandBarButton()); // forces overflow button
+        var secondary = new CommandBarButton();
+        cb.SecondaryCommands!.Add(secondary); // forces overflow button
         for (int i = 0; i < 4; i++)
             cb.PrimaryCommands!.Add(new CommandBarButton());
         cb.IsDynamicOverflowEnabled = true;
 
         Assert.Equal(3, cb.VisiblePrimaryCommands.Count);
-        Assert.Equal(1, cb.OverflowItems.Count - 1); // -1 for the secondary command
+        Assert.Equal(3, cb.OverflowItems.Count);
+        Assert.IsType<CommandBarButton>(cb.OverflowItems[0]);
+        Assert.IsType<CommandBarSeparator>(cb.OverflowItems[1]);
+        Assert.Same(secondary, cb.OverflowItems[2]);
     }
 
     [Fact]
@@ -1193,6 +1197,309 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
             timestamp: 1,
             new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
             KeyModifiers.None));
+    }
+}
+
+public class CommandBarSeparatorOverflowTests : ScopedTestBase
+{
+    private static CommandBar CreateWithWidth(double width)
+    {
+        var cb = new CommandBar();
+        cb.Measure(new Size(width, double.PositiveInfinity));
+        return cb;
+    }
+
+    [Fact]
+    public void TrailingSeparator_IsNotLastVisibleItem()
+    {
+        // [Btn, Btn, Sep, Btn] with room for 2 buttons: Sep should NOT trail.
+        var cb = CreateWithWidth(300);
+        cb.SecondaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.IsNotType<CommandBarSeparator>(cb.VisiblePrimaryCommands[^1]);
+    }
+
+    [Fact]
+    public void TrailingSeparator_MovedToOverflow()
+    {
+        // [Btn, Sep, Btn, Btn] with room for 1 button: Sep after the single visible button should overflow.
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 260;
+        cb.SecondaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(1, cb.VisiblePrimaryCommands.Count);
+        Assert.IsType<CommandBarButton>(cb.VisiblePrimaryCommands[0]);
+    }
+
+    [Fact]
+    public void MultipleSeparators_AllTrailingOnesStripped()
+    {
+        // [Btn, Sep, Sep, Btn] with room for 1: both trailing separators should be stripped.
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 260;
+        cb.SecondaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(1, cb.VisiblePrimaryCommands.Count);
+        Assert.IsType<CommandBarButton>(cb.VisiblePrimaryCommands[0]);
+    }
+
+    [Fact]
+    public void MidSeparator_StaysVisible_WhenButtonsOnBothSides()
+    {
+        // [Btn, Sep, Btn] with room for all: separator stays.
+        var cb = CreateWithWidth(300);
+        cb.PrimaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(3, cb.VisiblePrimaryCommands.Count);
+        Assert.IsType<CommandBarSeparator>(cb.VisiblePrimaryCommands[1]);
+    }
+
+    [Fact]
+    public void AllButtonsOverflow_SeparatorsAlsoOverflow()
+    {
+        // [Sep, Btn, Btn] with room for 0: everything overflows.
+        var cb = CreateWithWidth(50);
+        cb.SecondaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands!.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Empty(cb.VisiblePrimaryCommands);
+    }
+
+    [Fact]
+    public void LeadingSeparator_IsStrippedFromVisible()
+    {
+        // [Sep, Btn, Btn, Btn] with room for 2: leading Sep should be stripped.
+        var cb = CreateWithWidth(300);
+        cb.SecondaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands!.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.IsNotType<CommandBarSeparator>(cb.VisiblePrimaryCommands[0]);
+    }
+
+    [Fact]
+    public void ConsecutiveSeparators_CollapsedToOne()
+    {
+        // [Btn, Sep, Sep, Btn] all fit: only one separator should remain.
+        var cb = CreateWithWidth(300);
+        cb.PrimaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        int sepCount = CountSeparators(cb.VisiblePrimaryCommands);
+        Assert.Equal(1, sepCount);
+    }
+
+    [Fact]
+    public void OrphanedMidSeparator_RemovedWhenNeighborOverflows()
+    {
+        // [Btn1, Sep, Btn2, Sep, Btn3] with room for 2: Btn3 overflows,
+        // second Sep becomes trailing and is removed. First Sep stays.
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 100;
+        cb.SecondaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.IsNotType<CommandBarSeparator>(cb.VisiblePrimaryCommands[^1]);
+        Assert.Equal(1, CountSeparators(cb.VisiblePrimaryCommands));
+    }
+
+    [Fact]
+    public void SeparatorBetweenOverflowedButtons_IsRemoved()
+    {
+        // [Btn1, Btn2, Sep, Btn3, Btn4] with room for 2: Btn3 and Btn4 overflow,
+        // Sep has no non-separator after it in visible set, so it is removed.
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 100;
+        cb.SecondaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(0, CountSeparators(cb.VisiblePrimaryCommands));
+    }
+
+    [Fact]
+    public void MultipleSeparatorGroups_OnlyValidOnesRemain()
+    {
+        // [Btn, Sep, Btn, Sep, Btn, Sep, Btn] with room for 3:
+        // last Btn overflows, last Sep becomes trailing, the rest stay.
+        var cb = CreateWithWidth(300);
+        cb.SecondaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarButton());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.IsNotType<CommandBarSeparator>(cb.VisiblePrimaryCommands[^1]);
+        Assert.IsNotType<CommandBarSeparator>(cb.VisiblePrimaryCommands[0]);
+    }
+
+    [Fact]
+    public void OnlySeparators_AllOverflow()
+    {
+        // [Sep, Sep, Sep] with no buttons: all should overflow.
+        var cb = CreateWithWidth(300);
+        cb.SecondaryCommands!.Add(new CommandBarButton());
+        cb.PrimaryCommands!.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.PrimaryCommands.Add(new CommandBarSeparator());
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Empty(cb.VisiblePrimaryCommands);
+    }
+
+    [Fact]
+    public void PrimarySeparator_IsRemovedInsteadOfBecomingFirstOverflowItem()
+    {
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 260;
+
+        var leadingSeparator = new CommandBarSeparator();
+        var firstButton = new CommandBarButton();
+        var overflowedButton = new CommandBarButton();
+
+        cb.PrimaryCommands!.Add(leadingSeparator);
+        cb.PrimaryCommands.Add(firstButton);
+        cb.PrimaryCommands.Add(overflowedButton);
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Single(cb.OverflowItems);
+        Assert.Same(overflowedButton, cb.OverflowItems[0]);
+        Assert.DoesNotContain(leadingSeparator, cb.OverflowItems);
+    }
+
+    [Fact]
+    public void OverflowedPrimaryCommands_PrecedeSecondaryCommands_WithSyntheticSeparator()
+    {
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 260;
+
+        var visiblePrimary = new CommandBarButton();
+        var originalPrimarySeparator = new CommandBarSeparator();
+        var overflowedPrimaryOne = new CommandBarButton();
+        var overflowedPrimaryTwo = new CommandBarButton();
+        var secondary = new CommandBarButton();
+
+        cb.PrimaryCommands!.Add(visiblePrimary);
+        cb.PrimaryCommands.Add(originalPrimarySeparator);
+        cb.PrimaryCommands.Add(overflowedPrimaryOne);
+        cb.PrimaryCommands.Add(overflowedPrimaryTwo);
+        cb.SecondaryCommands!.Add(secondary);
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(4, cb.OverflowItems.Count);
+        Assert.Same(overflowedPrimaryOne, cb.OverflowItems[0]);
+        Assert.Same(overflowedPrimaryTwo, cb.OverflowItems[1]);
+        Assert.IsType<CommandBarSeparator>(cb.OverflowItems[2]);
+        Assert.NotSame(originalPrimarySeparator, cb.OverflowItems[2]);
+        Assert.Same(secondary, cb.OverflowItems[3]);
+        Assert.DoesNotContain(originalPrimarySeparator, cb.OverflowItems);
+    }
+
+    [Fact]
+    public void HiddenSecondaryCommands_DoNotGetSyntheticOverflowSeparator()
+    {
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 260;
+
+        var visiblePrimary = new CommandBarButton();
+        var overflowedPrimary = new CommandBarButton();
+        var hiddenSecondary = new CommandBarButton { IsVisible = false };
+
+        cb.PrimaryCommands!.Add(visiblePrimary);
+        cb.PrimaryCommands.Add(overflowedPrimary);
+        cb.SecondaryCommands!.Add(hiddenSecondary);
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(2, cb.OverflowItems.Count);
+        Assert.Same(overflowedPrimary, cb.OverflowItems[0]);
+        Assert.Same(hiddenSecondary, cb.OverflowItems[1]);
+        Assert.DoesNotContain(cb.OverflowItems, x => x is CommandBarSeparator);
+    }
+
+    [Fact]
+    public void TogglingSecondaryVisibility_RebuildsSyntheticOverflowSeparator()
+    {
+        var cb = CreateWithWidth(300);
+        cb.ItemWidthBottom = 260;
+
+        var visiblePrimary = new CommandBarButton();
+        var overflowedPrimary = new CommandBarButton();
+        var secondary = new CommandBarButton();
+
+        cb.PrimaryCommands!.Add(visiblePrimary);
+        cb.PrimaryCommands.Add(overflowedPrimary);
+        cb.SecondaryCommands!.Add(secondary);
+        cb.IsDynamicOverflowEnabled = true;
+
+        Assert.Equal(3, cb.OverflowItems.Count);
+        Assert.Same(overflowedPrimary, cb.OverflowItems[0]);
+        Assert.IsType<CommandBarSeparator>(cb.OverflowItems[1]);
+        Assert.Same(secondary, cb.OverflowItems[2]);
+
+        secondary.IsVisible = false;
+
+        Assert.Equal(2, cb.OverflowItems.Count);
+        Assert.Same(overflowedPrimary, cb.OverflowItems[0]);
+        Assert.Same(secondary, cb.OverflowItems[1]);
+        Assert.DoesNotContain(cb.OverflowItems, x => x is CommandBarSeparator);
+
+        secondary.IsVisible = true;
+
+        Assert.Equal(3, cb.OverflowItems.Count);
+        Assert.Same(overflowedPrimary, cb.OverflowItems[0]);
+        Assert.IsType<CommandBarSeparator>(cb.OverflowItems[1]);
+        Assert.Same(secondary, cb.OverflowItems[2]);
+    }
+
+    private static int CountSeparators(IReadOnlyList<ICommandBarElement> items)
+    {
+        int count = 0;
+        for (var i = 0; i < items.Count; i++)
+        {
+            if (items[i] is CommandBarSeparator)
+                count++;
+        }
+        return count;
     }
 }
 
