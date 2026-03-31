@@ -355,6 +355,8 @@ namespace Avalonia.Controls
             {
                 _overflowButton.Click -= OnOverflowButtonClick;
                 _overflowButton.GotFocus -= OnOverflowButtonGotFocus;
+                _overflowButton.RemoveHandler(Input.InputElement.KeyDownEvent, OnOverflowButtonKeyDown);
+                _overflowButton.RemoveHandler(Input.InputElement.PointerPressedEvent, OnOverflowButtonPointerPressed);
             }
             if (_overflowPresenter != null)
                 _overflowPresenter.KeyDown -= OnOverflowPresenterKeyDown;
@@ -370,6 +372,8 @@ namespace Avalonia.Controls
             {
                 _overflowButton.Click += OnOverflowButtonClick;
                 _overflowButton.GotFocus += OnOverflowButtonGotFocus;
+                _overflowButton.AddHandler(Input.InputElement.KeyDownEvent, OnOverflowButtonKeyDown, handledEventsToo: true);
+                _overflowButton.AddHandler(Input.InputElement.PointerPressedEvent, OnOverflowButtonPointerPressed, handledEventsToo: true);
             }
             if (_overflowPresenter != null)
                 _overflowPresenter.KeyDown += OnOverflowPresenterKeyDown;
@@ -471,6 +475,17 @@ namespace Avalonia.Controls
                 or Input.NavigationMethod.Tab;
         }
 
+        private void OnOverflowButtonKeyDown(object? sender, Input.KeyEventArgs e)
+        {
+            if (e.Key is Input.Key.Enter or Input.Key.Space)
+                _openedViaKeyboard = true;
+        }
+
+        private void OnOverflowButtonPointerPressed(object? sender, Input.PointerPressedEventArgs e)
+        {
+            _openedViaKeyboard = false;
+        }
+
         private void OnOverflowPresenterKeyDown(object? sender, Input.KeyEventArgs e)
         {
             switch (e.Key)
@@ -501,13 +516,14 @@ namespace Avalonia.Controls
 
         private void OnOverflowPopupOpened(object? sender, EventArgs e)
         {
-            if (!_openedViaKeyboard)
-                return;
+            var method = _openedViaKeyboard
+                ? Input.NavigationMethod.Directional
+                : Input.NavigationMethod.Pointer;
 
             Dispatcher.UIThread.Post(() =>
             {
                 if (IsOpen)
-                    FocusOverflowItem(first: true);
+                    FocusOverflowItem(first: true, method);
             }, DispatcherPriority.Loaded);
         }
 
@@ -534,11 +550,11 @@ namespace Avalonia.Controls
             items[next].Focus(Input.NavigationMethod.Directional);
         }
 
-        private void FocusOverflowItem(bool first)
+        private void FocusOverflowItem(bool first, Input.NavigationMethod method = Input.NavigationMethod.Directional)
         {
             var items = GetFocusableOverflowItems();
             if (items.Count > 0)
-                items[first ? 0 : items.Count - 1].Focus(Input.NavigationMethod.Directional);
+                items[first ? 0 : items.Count - 1].Focus(method);
         }
 
         private List<Control> GetFocusableOverflowItems()

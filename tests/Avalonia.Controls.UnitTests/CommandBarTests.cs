@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -985,7 +986,7 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
 
     public CommandBarOverflowKeyboardTests()
     {
-        _app = UnitTestApplication.Start(TestServices.StyledWindow);
+        _app = UnitTestApplication.Start(TestServices.FocusableWindow);
     }
 
     public override void Dispose()
@@ -1086,6 +1087,65 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
         Assert.True(e.Handled);
     }
 
+    [Fact]
+    public void KeyboardOpen_FocusesFirstOverflowItem_AsFocusVisible()
+    {
+        var first = new CommandBarButton { Label = "A" };
+        var cb = new CommandBar();
+        cb.SecondaryCommands.Add(first);
+        var window = CreateWindow(cb);
+
+        Assert.True(GetOverflowButton(cb).Focus(NavigationMethod.Tab));
+
+        cb.IsOpen = true;
+        Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
+
+        Assert.True(first.IsFocused);
+        Assert.True(first.Classes.Contains(":focus-visible"));
+    }
+
+    [Fact]
+    public void PointerOpen_AfterKeyboardFocus_DoesNotMakeFirstOverflowItemFocusVisible()
+    {
+        var first = new CommandBarButton { Label = "A" };
+        var cb = new CommandBar();
+        cb.SecondaryCommands.Add(first);
+        var window = CreateWindow(cb);
+
+        var overflowButton = GetOverflowButton(cb);
+        Assert.True(overflowButton.Focus(NavigationMethod.Tab));
+        RaisePointerPressed(overflowButton);
+
+        cb.IsOpen = true;
+        Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
+
+        Assert.True(first.IsFocused);
+        Assert.False(first.Classes.Contains(":focus-visible"));
+    }
+
+    [Fact]
+    public void KeyboardOpen_AfterPointerFocus_MakesFirstOverflowItemFocusVisible()
+    {
+        var first = new CommandBarButton { Label = "A" };
+        var cb = new CommandBar();
+        cb.SecondaryCommands.Add(first);
+        var window = CreateWindow(cb);
+
+        var overflowButton = GetOverflowButton(cb);
+        Assert.True(overflowButton.Focus(NavigationMethod.Pointer));
+        overflowButton.RaiseEvent(new KeyEventArgs
+        {
+            RoutedEvent = InputElement.KeyDownEvent,
+            Key = Key.Space,
+        });
+
+        cb.IsOpen = true;
+        Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
+
+        Assert.True(first.IsFocused);
+        Assert.True(first.Classes.Contains(":focus-visible"));
+    }
+
     private static ItemsControl GetOverflowPresenter(CommandBar cb)
     {
         var popup = cb.GetVisualDescendants()
@@ -1104,6 +1164,35 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
             RoutedEvent = InputElement.KeyDownEvent,
             Key = key,
         });
+    }
+
+    private static Button GetOverflowButton(CommandBar cb)
+    {
+        return cb.GetVisualDescendants()
+            .OfType<Button>()
+            .First(x => x.Name == "PART_OverflowButton");
+    }
+
+    private static Window CreateWindow(Control content)
+    {
+        var window = new Window { Content = content };
+        window.Show();
+        window.ApplyStyling();
+        window.ApplyTemplate();
+        return window;
+    }
+
+    private static void RaisePointerPressed(Button target)
+    {
+        var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+        target.RaiseEvent(new PointerPressedEventArgs(
+            target,
+            pointer,
+            target,
+            default,
+            timestamp: 1,
+            new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
+            KeyModifiers.None));
     }
 }
 
