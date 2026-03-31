@@ -183,18 +183,20 @@ namespace Avalonia.Controls
         protected override TextLayout CreateTextLayout(string? text)
         {
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
+            var effectiveFontSize = TextScaling.GetScaledFontSize(this, FontSize);
+            var fontScaleFactor = effectiveFontSize / FontSize;
 
             var defaultProperties = new GenericTextRunProperties(
                 typeface,
-                FontSize,
+                effectiveFontSize,
                 TextDecorations,
                 Foreground,
                 fontFeatures: FontFeatures);
 
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
-                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing)
+                defaultProperties, TextWrapping, LineHeight * fontScaleFactor, 0, LetterSpacing * fontScaleFactor)
             {
-                LineSpacing = LineSpacing
+                LineSpacing = LineSpacing * fontScaleFactor,
             };
 
             List<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
@@ -235,7 +237,7 @@ namespace Avalonia.Controls
                                 overlapLength,
                                 new GenericTextRunProperties(
                                     textRun.Properties?.Typeface ?? typeface,
-                                    FontSize,
+                                    effectiveFontSize,
                                     foregroundBrush: SelectionForegroundBrush,
                                     fontFeatures: textRun.Properties?.FontFeatures ?? FontFeatures)));
 
@@ -249,7 +251,7 @@ namespace Avalonia.Controls
                         new ValueSpan<TextRunProperties>(start, length,
                             new GenericTextRunProperties(
                                 typeface,
-                                FontSize,
+                                effectiveFontSize,
                                 foregroundBrush: SelectionForegroundBrush,
                                 fontFeatures: FontFeatures))
                     ];
