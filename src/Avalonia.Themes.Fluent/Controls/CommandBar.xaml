@@ -237,7 +237,7 @@
                 Padding="{TemplateBinding Padding}"
                 MinHeight="{TemplateBinding MinHeight}">
           <Panel>
-            <DockPanel KeyboardNavigation.TabNavigation="Local">
+            <DockPanel KeyboardNavigation.TabNavigation="Cycle">
               <!-- Overflow button (docked right) -->
               <Button x:Name="PART_OverflowButton"
                       DockPanel.Dock="Right"

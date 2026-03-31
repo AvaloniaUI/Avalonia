@@ -138,6 +138,7 @@ namespace Avalonia.Controls
         private readonly ObservableCollection<ICommandBarElement> _overflowItems = new();
         private bool _isDynamicUpdateInProgress;
         private double _constraintWidth = double.PositiveInfinity;
+        private bool _openedViaKeyboard;
 
         public CommandBar()
         {
@@ -351,7 +352,10 @@ namespace Avalonia.Controls
             base.OnApplyTemplate(e);
 
             if (_overflowButton != null)
+            {
                 _overflowButton.Click -= OnOverflowButtonClick;
+                _overflowButton.GotFocus -= OnOverflowButtonGotFocus;
+            }
             if (_overflowPresenter != null)
                 _overflowPresenter.KeyDown -= OnOverflowPresenterKeyDown;
             if (_overflowPopup != null)
@@ -363,7 +367,10 @@ namespace Avalonia.Controls
             _contentPresenter = e.NameScope.Find<Control>("PART_ContentPresenter");
 
             if (_overflowButton != null)
+            {
                 _overflowButton.Click += OnOverflowButtonClick;
+                _overflowButton.GotFocus += OnOverflowButtonGotFocus;
+            }
             if (_overflowPresenter != null)
                 _overflowPresenter.KeyDown += OnOverflowPresenterKeyDown;
             if (_overflowPopup != null)
@@ -458,6 +465,12 @@ namespace Avalonia.Controls
             SetCurrentValue(IsOpenProperty, !IsOpen);
         }
 
+        private void OnOverflowButtonGotFocus(object? sender, Input.FocusChangedEventArgs e)
+        {
+            _openedViaKeyboard = e.NavigationMethod is Input.NavigationMethod.Directional
+                or Input.NavigationMethod.Tab;
+        }
+
         private void OnOverflowPresenterKeyDown(object? sender, Input.KeyEventArgs e)
         {
             switch (e.Key)
@@ -488,6 +501,9 @@ namespace Avalonia.Controls
 
         private void OnOverflowPopupOpened(object? sender, EventArgs e)
         {
+            if (!_openedViaKeyboard)
+                return;
+
             Dispatcher.UIThread.Post(() =>
             {
                 if (IsOpen)
