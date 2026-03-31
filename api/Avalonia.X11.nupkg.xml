@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
+<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.X11PlatformOptions.get_ExterinalGLibMainLoopExceptionLogger</Target>
+    <Left>baseline/Avalonia.X11/lib/net8.0/Avalonia.X11.dll</Left>
+    <Right>current/Avalonia.X11/lib/net8.0/Avalonia.X11.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.X11PlatformOptions.set_ExterinalGLibMainLoopExceptionLogger(System.Action{System.Exception})</Target>
+    <Left>baseline/Avalonia.X11/lib/net8.0/Avalonia.X11.dll</Left>
+    <Right>current/Avalonia.X11/lib/net8.0/Avalonia.X11.dll</Right>
+  </Suppression>
+</Suppressions>
