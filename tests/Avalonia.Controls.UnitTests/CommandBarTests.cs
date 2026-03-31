@@ -998,7 +998,7 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     public void Escape_WhenOverflowOpen_ClosesOverflow()
     {
         var cb = new CommandBar();
-        cb.SecondaryCommands.Add(new AppBarButton { Label = "Action" });
+        cb.SecondaryCommands.Add(new CommandBarButton { Label = "Action" });
         var root = new TestRoot(useGlobalStyles: true, child: cb);
         root.LayoutManager.ExecuteInitialLayoutPass();
         cb.IsOpen = true;
@@ -1012,7 +1012,7 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     public void Escape_WhenOverflowClosed_DoesNothing()
     {
         var cb = new CommandBar();
-        cb.SecondaryCommands.Add(new AppBarButton { Label = "Action" });
+        cb.SecondaryCommands.Add(new CommandBarButton { Label = "Action" });
         var root = new TestRoot(useGlobalStyles: true, child: cb);
         root.LayoutManager.ExecuteInitialLayoutPass();
 
@@ -1029,8 +1029,8 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     public void NavigationKeys_AreHandled_WhenOverflowHasItems(Key key)
     {
         var cb = new CommandBar();
-        cb.SecondaryCommands.Add(new AppBarButton { Label = "A" });
-        cb.SecondaryCommands.Add(new AppBarButton { Label = "B" });
+        cb.SecondaryCommands.Add(new CommandBarButton { Label = "A" });
+        cb.SecondaryCommands.Add(new CommandBarButton { Label = "B" });
         var root = new TestRoot(useGlobalStyles: true, child: cb);
         root.LayoutManager.ExecuteInitialLayoutPass();
         cb.IsOpen = true;
@@ -1045,7 +1045,7 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     public void NavigationKeys_AreHandled_WhenAllItemsAreSeparators()
     {
         var cb = new CommandBar();
-        cb.SecondaryCommands.Add(new AppBarSeparator());
+        cb.SecondaryCommands.Add(new CommandBarSeparator());
         var root = new TestRoot(useGlobalStyles: true, child: cb);
         root.LayoutManager.ExecuteInitialLayoutPass();
         cb.IsOpen = true;
@@ -1060,7 +1060,7 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     public void NavigationKeys_AreHandled_WhenAllItemsAreDisabled()
     {
         var cb = new CommandBar();
-        cb.SecondaryCommands.Add(new AppBarButton { Label = "A", IsEnabled = false });
+        cb.SecondaryCommands.Add(new CommandBarButton { Label = "A", IsEnabled = false });
         var root = new TestRoot(useGlobalStyles: true, child: cb);
         root.LayoutManager.ExecuteInitialLayoutPass();
         cb.IsOpen = true;
@@ -1075,7 +1075,7 @@ public class CommandBarOverflowKeyboardTests : ScopedTestBase
     public void NavigationKeys_AreHandled_WhenAllItemsAreNonFocusable()
     {
         var cb = new CommandBar();
-        cb.SecondaryCommands.Add(new AppBarButton { Label = "A", Focusable = false });
+        cb.SecondaryCommands.Add(new CommandBarButton { Label = "A", Focusable = false });
         var root = new TestRoot(useGlobalStyles: true, child: cb);
         root.LayoutManager.ExecuteInitialLayoutPass();
         cb.IsOpen = true;

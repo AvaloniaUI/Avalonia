@@ -53,8 +53,8 @@ namespace ControlCatalog.Pages
         {
             var label = sender switch
             {
-                AppBarButton btn => btn.Label ?? "(unnamed)",
-                AppBarToggleButton t => t.Label ?? "(unnamed)",
+                CommandBarButton btn => btn.Label ?? "(unnamed)",
+                CommandBarToggleButton t => t.Label ?? "(unnamed)",
                 _ => sender?.GetType().Name ?? "?"
             };
 

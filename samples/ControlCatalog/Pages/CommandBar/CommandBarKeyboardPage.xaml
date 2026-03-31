@@ -53,27 +53,27 @@
 
         <CommandBar x:Name="DemoBar">
           <CommandBar.PrimaryCommands>
-            <AppBarButton Label="New">
-              <AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon>
-            </AppBarButton>
-            <AppBarButton Label="Save">
-              <AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon>
-            </AppBarButton>
+            <CommandBarButton Label="New">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
+            <CommandBarButton Label="Save">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
           </CommandBar.PrimaryCommands>
           <CommandBar.SecondaryCommands>
-            <AppBarButton x:Name="BtnCopy"     Label="Copy" />
-            <AppBarButton x:Name="BtnPaste"    Label="Paste" />
-            <AppBarToggleButton x:Name="BtnBold" Label="Bold">
-              <AppBarToggleButton.Icon><PathIcon Data="{StaticResource BoldIcon}" /></AppBarToggleButton.Icon>
-            </AppBarToggleButton>
-            <AppBarSeparator />
-            <AppBarButton x:Name="BtnShare"    Label="Share">
-              <AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon>
-            </AppBarButton>
-            <AppBarButton x:Name="BtnDelete"   Label="Delete" IsEnabled="False">
-              <AppBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></AppBarButton.Icon>
-            </AppBarButton>
-            <AppBarButton x:Name="BtnExport"   Label="Export" />
+            <CommandBarButton x:Name="BtnCopy"     Label="Copy" />
+            <CommandBarButton x:Name="BtnPaste"    Label="Paste" />
+            <CommandBarToggleButton x:Name="BtnBold" Label="Bold">
+              <CommandBarToggleButton.Icon><PathIcon Data="{StaticResource BoldIcon}" /></CommandBarToggleButton.Icon>
+            </CommandBarToggleButton>
+            <CommandBarSeparator />
+            <CommandBarButton x:Name="BtnShare"    Label="Share">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
+            <CommandBarButton x:Name="BtnDelete"   Label="Delete" IsEnabled="False">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
+            <CommandBarButton x:Name="BtnExport"   Label="Export" />
           </CommandBar.SecondaryCommands>
         </CommandBar>
 

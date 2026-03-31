@@ -546,7 +546,7 @@ namespace Avalonia.Controls
             var result = new List<Control>();
             foreach (var item in _overflowItems)
             {
-                if (item is Control { IsEnabled: true, IsVisible: true, Focusable: true } control && item is not AppBarSeparator)
+                if (item is Control { IsEnabled: true, IsVisible: true, Focusable: true } control && item is not CommandBarSeparator)
                     result.Add(control);
             }
             return result;
