@@ -46,11 +46,17 @@ namespace ControlCatalog
             }
             else if (ApplicationLifetime is IActivityApplicationLifetime singleViewFactoryApplicationLifetime)
             {
-                singleViewFactoryApplicationLifetime.MainViewFactory = () => new MainView { DataContext = new MainWindowViewModel() };
+                singleViewFactoryApplicationLifetime.MainViewFactory = () => new PageNavigationHost()
+                {
+                    Page = new MainView { DataContext = new MainWindowViewModel() }
+                };
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
             {
-                singleViewLifetime.MainView = new MainView { DataContext = new MainWindowViewModel() };
+                singleViewLifetime.MainView = new PageNavigationHost()
+                {
+                    Page = new MainView { DataContext = new MainWindowViewModel() }
+                };
             }
 
             if (this.TryGetFeature<IActivatableLifetime>() is { } activatableApplicationLifetime)
@@ -140,11 +146,17 @@ namespace ControlCatalog
                 }
                 else if (app.ApplicationLifetime is IActivityApplicationLifetime singleViewFactoryApplicationLifetime)
                 {
-                    singleViewFactoryApplicationLifetime.MainViewFactory = () => new MainView { DataContext = new MainWindowViewModel() };
+                    singleViewFactoryApplicationLifetime.MainViewFactory = () => new PageNavigationHost()
+                    {
+                        Page = new MainView { DataContext = new MainWindowViewModel() }
+                    };
                 }
                 else if (app.ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
                 {
-                    singleViewLifetime.MainView = new MainView() { DataContext = new MainWindowViewModel() };
+                    singleViewLifetime.MainView = new PageNavigationHost()
+                    {
+                        Page = new MainView { DataContext = new MainWindowViewModel() }
+                    };
                 }
             }
         }
