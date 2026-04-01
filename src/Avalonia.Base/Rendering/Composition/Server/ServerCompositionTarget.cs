@@ -171,7 +171,7 @@ namespace Avalonia.Rendering.Composition.Server
                             || !(_renderTarget.Properties.RetainsPreviousFrameContents
                                  && _renderTarget.Properties.IsSuitableForDirectRendering);
             
-            using (var renderTargetContext = _renderTarget.CreateDrawingContext(new(PixelSize, Scaling), out var properties))
+            using (var renderTargetContext = _renderTarget.CreateDrawingContext(new(PixelSize, Scaling, TransparencyLevel), out var properties))
             using (var renderTiming = Diagnostic.BeginCompositorRenderPass())
             {
                 var fullRedraw = false;
