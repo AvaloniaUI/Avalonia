@@ -113,13 +113,4 @@ internal class WinUiCompositedWindow : IDisposable
             }
         }
     }
-
-    public bool IsTransparency => _transparencyLevel != WindowTransparencyLevel.None;
-
-    public void SetTransparencyLevel(WindowTransparencyLevel transparencyLevel)
-    {
-        _transparencyLevel = transparencyLevel;
-    }
-
-    private WindowTransparencyLevel _transparencyLevel;
 }
