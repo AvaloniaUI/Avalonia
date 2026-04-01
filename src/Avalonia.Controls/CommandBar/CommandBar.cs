@@ -7,6 +7,8 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
+using Avalonia.Reactive;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -14,9 +16,10 @@ namespace Avalonia.Controls
     /// A command bar that provides primary commands displayed inline and secondary commands
     /// accessible via an overflow menu.
     /// </summary>
-    [TemplatePart("PART_OverflowButton",   typeof(Button))]
+    [TemplatePart("PART_OverflowButton",    typeof(Button))]
     [TemplatePart("PART_OverflowPopup",    typeof(Popup))]
-    [TemplatePart("PART_ContentPresenter", typeof(Control))]
+    [TemplatePart("PART_OverflowPresenter", typeof(ItemsControl))]
+    [TemplatePart("PART_ContentPresenter",  typeof(Control))]
     public class CommandBar : TemplatedControl
     {
         /// <summary>
@@ -129,12 +132,16 @@ namespace Avalonia.Controls
 
         private Button? _overflowButton;
         private Popup? _overflowPopup;
+        private ItemsControl? _overflowPresenter;
         private Control? _contentPresenter;
 
         private readonly ObservableCollection<ICommandBarElement> _visiblePrimaryCommands = new();
         private readonly ObservableCollection<ICommandBarElement> _overflowItems = new();
+        private readonly CommandBarSeparator _overflowPrimarySecondarySeparator = new();
+        private readonly CompositeDisposable _secondaryCommandVisibilitySubscriptions = new();
         private bool _isDynamicUpdateInProgress;
         private double _constraintWidth = double.PositiveInfinity;
+        private bool _openedViaKeyboard;
 
         public CommandBar()
         {
@@ -147,6 +154,7 @@ namespace Avalonia.Controls
             var secondaryCommands = new ObservableCollection<ICommandBarElement>();
             SetCurrentValue(SecondaryCommandsProperty, (IList<ICommandBarElement>)secondaryCommands);
 
+            RebuildSecondaryCommandVisibilitySubscriptions();
             SizeChanged += CommandBar_SizeChanged;
         }
 
@@ -348,19 +356,50 @@ namespace Avalonia.Controls
             base.OnApplyTemplate(e);
 
             if (_overflowButton != null)
+            {
                 _overflowButton.Click -= OnOverflowButtonClick;
+                _overflowButton.GotFocus -= OnOverflowButtonGotFocus;
+                _overflowButton.RemoveHandler(Input.InputElement.KeyDownEvent, OnOverflowButtonKeyDown);
+                _overflowButton.RemoveHandler(Input.InputElement.PointerPressedEvent, OnOverflowButtonPointerPressed);
+            }
+            if (_overflowPresenter != null)
+                _overflowPresenter.KeyDown -= OnOverflowPresenterKeyDown;
+            if (_overflowPopup != null)
+                _overflowPopup.Opened -= OnOverflowPopupOpened;
 
             _overflowButton = e.NameScope.Find<Button>("PART_OverflowButton");
             _overflowPopup = e.NameScope.Find<Popup>("PART_OverflowPopup");
+            _overflowPresenter = e.NameScope.Find<ItemsControl>("PART_OverflowPresenter");
             _contentPresenter = e.NameScope.Find<Control>("PART_ContentPresenter");
 
             if (_overflowButton != null)
+            {
                 _overflowButton.Click += OnOverflowButtonClick;
+                _overflowButton.GotFocus += OnOverflowButtonGotFocus;
+                _overflowButton.AddHandler(Input.InputElement.KeyDownEvent, OnOverflowButtonKeyDown, handledEventsToo: true);
+                _overflowButton.AddHandler(Input.InputElement.PointerPressedEvent, OnOverflowButtonPointerPressed, handledEventsToo: true);
+            }
+            if (_overflowPresenter != null)
+                _overflowPresenter.KeyDown += OnOverflowPresenterKeyDown;
+            if (_overflowPopup != null)
+                _overflowPopup.Opened += OnOverflowPopupOpened;
 
             ApplyLabelPositionToChildren();
             UpdateOverflowButtonVisibility();
             UpdateStickyBehavior();
             UpdateDynamicOverflow();
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            RebuildSecondaryCommandVisibilitySubscriptions();
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            _secondaryCommandVisibilitySubscriptions.Clear();
+            base.OnDetachedFromVisualTree(e);
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -369,7 +408,7 @@ namespace Avalonia.Controls
 
             if (change.Property == IsOpenProperty)
             {
-                var isOpen = (bool)change.NewValue!;
+                var isOpen = change.GetNewValue<bool>();
                 if (isOpen)
                 {
                     RaiseEvent(new RoutedEventArgs(OpeningEvent));
@@ -416,6 +455,7 @@ namespace Avalonia.Controls
                     oldSecondary.CollectionChanged -= OnSecondaryCommandsChanged;
                 if (change.NewValue is INotifyCollectionChanged newSecondary)
                     newSecondary.CollectionChanged += OnSecondaryCommandsChanged;
+                RebuildSecondaryCommandVisibilitySubscriptions();
                 UpdateDynamicOverflow();
             }
         }
@@ -446,6 +486,105 @@ namespace Avalonia.Controls
             SetCurrentValue(IsOpenProperty, !IsOpen);
         }
 
+        private void OnOverflowButtonGotFocus(object? sender, Input.FocusChangedEventArgs e)
+        {
+            _openedViaKeyboard = e.NavigationMethod is Input.NavigationMethod.Directional
+                or Input.NavigationMethod.Tab;
+        }
+
+        private void OnOverflowButtonKeyDown(object? sender, Input.KeyEventArgs e)
+        {
+            if (e.Key is Input.Key.Enter or Input.Key.Space)
+                _openedViaKeyboard = true;
+        }
+
+        private void OnOverflowButtonPointerPressed(object? sender, Input.PointerPressedEventArgs e)
+        {
+            _openedViaKeyboard = false;
+        }
+
+        private void OnOverflowPresenterKeyDown(object? sender, Input.KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Input.Key.Up:
+                    NavigateOverflow(forward: false);
+                    e.Handled = true;
+                    break;
+                case Input.Key.Down:
+                    NavigateOverflow(forward: true);
+                    e.Handled = true;
+                    break;
+                case Input.Key.Home:
+                    FocusOverflowItem(first: true);
+                    e.Handled = true;
+                    break;
+                case Input.Key.End:
+                    FocusOverflowItem(first: false);
+                    e.Handled = true;
+                    break;
+                case Input.Key.Escape:
+                    SetCurrentValue(IsOpenProperty, false);
+                    _overflowButton?.Focus(Input.NavigationMethod.Unspecified);
+                    e.Handled = true;
+                    break;
+            }
+        }
+
+        private void OnOverflowPopupOpened(object? sender, EventArgs e)
+        {
+            var method = _openedViaKeyboard
+                ? Input.NavigationMethod.Directional
+                : Input.NavigationMethod.Pointer;
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (IsOpen)
+                    FocusOverflowItem(first: true, method);
+            }, DispatcherPriority.Loaded);
+        }
+
+        private void NavigateOverflow(bool forward)
+        {
+            var items = GetFocusableOverflowItems();
+            if (items.Count == 0)
+                return;
+
+            int current = -1;
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i].IsFocused || items[i].IsKeyboardFocusWithin)
+                {
+                    current = i;
+                    break;
+                }
+            }
+
+            int next = current < 0
+                ? (forward ? 0 : items.Count - 1)
+                : (forward ? (current + 1) % items.Count : (current - 1 + items.Count) % items.Count);
+
+            items[next].Focus(Input.NavigationMethod.Directional);
+        }
+
+        private void FocusOverflowItem(bool first, Input.NavigationMethod method = Input.NavigationMethod.Directional)
+        {
+            var items = GetFocusableOverflowItems();
+            if (items.Count > 0)
+                items[first ? 0 : items.Count - 1].Focus(method);
+        }
+
+        private List<Control> GetFocusableOverflowItems()
+        {
+            var result = new List<Control>();
+            foreach (var item in _overflowItems)
+            {
+                if (item is Control { IsEnabled: true, IsVisible: true, Focusable: true } control && item is not CommandBarSeparator)
+                    result.Add(control);
+            }
+            return result;
+        }
+
         private void OnPrimaryCommandsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.NewItems != null)
@@ -461,6 +600,7 @@ namespace Avalonia.Controls
 
         private void OnSecondaryCommandsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
+            RebuildSecondaryCommandVisibilitySubscriptions();
             UpdateDynamicOverflow();
         }
 
@@ -476,12 +616,9 @@ namespace Avalonia.Controls
             {
                 _visiblePrimaryCommands.Clear();
                 _overflowItems.Clear();
+                SetOverflowMode(_overflowPrimarySecondarySeparator, false);
 
-                foreach (var item in SecondaryCommands)
-                {
-                    SetOverflowMode(item, true);
-                    _overflowItems.Add(item);
-                }
+                var overflowedPrimaryCommands = new List<ICommandBarElement>();
 
                 var availableWidth = double.IsFinite(_constraintWidth) ? _constraintWidth : Bounds.Width;
 
@@ -516,7 +653,7 @@ namespace Avalonia.Controls
 
                         int primaryNonSepCount = 0;
                         foreach (var item in PrimaryCommands)
-                            if (item is not AppBarSeparator)
+                            if (item is not CommandBarSeparator)
                                 primaryNonSepCount++;
 
                         const double overflowButtonWidth = 48;
@@ -547,14 +684,12 @@ namespace Avalonia.Controls
                             ? a.Order.CompareTo(b.Order)
                             : a.Index.CompareTo(b.Index));
 
-                        // Separators stay in the primary bar but are not counted toward maxItems.
-                        // If no non-separator buttons fit, separators are moved to overflow too.
                         var visibleIndices = new HashSet<int>();
                         int nonSeparatorCount = 0;
                         for (var i = 0; i < prioritized.Count; i++)
                         {
                             var idx = prioritized[i].Index;
-                            if (PrimaryCommands[idx] is AppBarSeparator)
+                            if (PrimaryCommands[idx] is CommandBarSeparator)
                                 visibleIndices.Add(idx);
                             else if (nonSeparatorCount < maxItems)
                             {
@@ -566,6 +701,8 @@ namespace Avalonia.Controls
                         if (nonSeparatorCount == 0)
                             visibleIndices.Clear();
 
+                        TrimOrphanedSeparatorsFromVisibleCommands(PrimaryCommands, visibleIndices);
+
                         for (var i = 0; i < PrimaryCommands.Count; i++)
                         {
                             if (visibleIndices.Contains(i))
@@ -573,15 +710,20 @@ namespace Avalonia.Controls
                                 SetOverflowMode(PrimaryCommands[i], false);
                                 _visiblePrimaryCommands.Add(PrimaryCommands[i]);
                             }
+                            else if (PrimaryCommands[i] is CommandBarSeparator)
+                            {
+                                SetOverflowMode(PrimaryCommands[i], false);
+                            }
                             else
                             {
                                 SetOverflowMode(PrimaryCommands[i], true);
-                                _overflowItems.Add(PrimaryCommands[i]);
+                                overflowedPrimaryCommands.Add(PrimaryCommands[i]);
                             }
                         }
                     }
                 }
 
+                AddOverflowItems(overflowedPrimaryCommands);
                 HasSecondaryCommands = _overflowItems.Count > 0;
                 UpdateOverflowButtonVisibility();
             }
@@ -596,8 +738,8 @@ namespace Avalonia.Controls
 
         private static int GetDynamicOverflowOrder(ICommandBarElement element) => element switch
         {
-            AppBarButton b => b.DynamicOverflowOrder,
-            AppBarToggleButton t => t.DynamicOverflowOrder,
+            CommandBarButton b => b.DynamicOverflowOrder,
+            CommandBarToggleButton t => t.DynamicOverflowOrder,
             _ => 0
         };
 
@@ -609,15 +751,17 @@ namespace Avalonia.Controls
             if (SecondaryCommands != null)
                 foreach (var cmd in SecondaryCommands)
                     ApplyLabelPositionToElement(cmd);
+
+            ApplyLabelPositionToElement(_overflowPrimarySecondarySeparator);
         }
 
         private void ApplyLabelPositionToElement(ICommandBarElement element)
         {
             element.IsCompact = DefaultLabelPosition == CommandBarDefaultLabelPosition.Collapsed;
 
-            if (element is AppBarButton abb)
+            if (element is CommandBarButton abb)
                 abb.LabelPosition = DefaultLabelPosition;
-            else if (element is AppBarToggleButton atb)
+            else if (element is CommandBarToggleButton atb)
                 atb.LabelPosition = DefaultLabelPosition;
         }
 
@@ -635,6 +779,122 @@ namespace Avalonia.Controls
                 CommandBarOverflowButtonVisibility.Collapsed => false,
                 _ => HasSecondaryCommands // Auto
             };
+        }
+
+        private void AddOverflowItems(IReadOnlyList<ICommandBarElement> overflowedPrimaryCommands)
+        {
+            for (var i = 0; i < overflowedPrimaryCommands.Count; i++)
+                _overflowItems.Add(overflowedPrimaryCommands[i]);
+
+            if (overflowedPrimaryCommands.Count > 0 && HasVisibleElements(SecondaryCommands))
+            {
+                SetOverflowMode(_overflowPrimarySecondarySeparator, true);
+                _overflowItems.Add(_overflowPrimarySecondarySeparator);
+            }
+
+            foreach (var item in SecondaryCommands)
+            {
+                SetOverflowMode(item, true);
+                _overflowItems.Add(item);
+            }
+        }
+
+        private void RebuildSecondaryCommandVisibilitySubscriptions()
+        {
+            _secondaryCommandVisibilitySubscriptions.Clear();
+
+            if (SecondaryCommands is null)
+                return;
+
+            for (var i = 0; i < SecondaryCommands.Count; i++)
+            {
+                if (SecondaryCommands[i] is Avalonia.Visual visual)
+                {
+                    bool isInitialValue = true;
+                    visual.GetObservable(Avalonia.Visual.IsVisibleProperty)
+                        .Subscribe(_ =>
+                        {
+                            if (isInitialValue)
+                            {
+                                isInitialValue = false;
+                                return;
+                            }
+
+                            UpdateDynamicOverflow();
+                        })
+                        .DisposeWith(_secondaryCommandVisibilitySubscriptions);
+                }
+            }
+        }
+
+        private static bool HasVisibleElements(IList<ICommandBarElement> commands)
+        {
+            for (var i = 0; i < commands.Count; i++)
+            {
+                if (commands[i] is Avalonia.Visual visual && visual.IsVisible)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static void TrimOrphanedSeparatorsFromVisibleCommands(
+            IList<ICommandBarElement> commands, HashSet<int> visibleIndices)
+        {
+            var toRemove = new List<int>();
+            for (var i = 0; i < commands.Count; i++)
+            {
+                if (!visibleIndices.Contains(i) || commands[i] is not CommandBarSeparator)
+                    continue;
+
+                bool hasNonSeparatorBefore = FindNonSeparatorInVisibleCommands(
+                    commands, visibleIndices, forward: false, startIndex: i - 1, out _);
+                bool hasNonSeparatorAfter = FindNonSeparatorInVisibleCommands(
+                    commands, visibleIndices, forward: true, startIndex: i + 1, out _);
+
+                if (!hasNonSeparatorBefore || !hasNonSeparatorAfter)
+                    toRemove.Add(i);
+            }
+
+            foreach (var idx in toRemove)
+                visibleIndices.Remove(idx);
+
+            bool previousWasSeparator = false;
+            for (var i = 0; i < commands.Count; i++)
+            {
+                if (!visibleIndices.Contains(i))
+                    continue;
+
+                if (commands[i] is CommandBarSeparator)
+                {
+                    if (previousWasSeparator)
+                        visibleIndices.Remove(i);
+                    else
+                        previousWasSeparator = true;
+                }
+                else
+                {
+                    previousWasSeparator = false;
+                }
+            }
+        }
+
+        private static bool FindNonSeparatorInVisibleCommands(
+            IList<ICommandBarElement> commands, HashSet<int> visibleIndices,
+            bool forward, int startIndex, out int foundIndex)
+        {
+            foundIndex = -1;
+            var i = startIndex;
+            while (forward ? i < commands.Count : i >= 0)
+            {
+                if (visibleIndices.Contains(i) && commands[i] is not CommandBarSeparator)
+                {
+                    foundIndex = i;
+                    return true;
+                }
+                i += forward ? 1 : -1;
+            }
+            return false;
         }
     }
 }

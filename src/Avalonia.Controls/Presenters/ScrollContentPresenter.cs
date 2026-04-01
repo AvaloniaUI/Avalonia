@@ -541,6 +541,8 @@ namespace Avalonia.Controls.Presenters
                 var scrollable = Child as ILogicalScrollable;
                 var isLogical = scrollable?.IsLogicalScrollEnabled == true;
                 var logicalScrollItemSize = new Vector(1, 1);
+                var canXScroll = false;
+                var canYScroll = false;
 
                 double x = Offset.X;
                 double y = Offset.Y;
@@ -571,6 +573,8 @@ namespace Avalonia.Controls.Presenters
                     y += dy;
                     y = Math.Max(y, 0);
                     y = Math.Min(y, Extent.Height - Viewport.Height);
+
+                    canYScroll = dy != 0;
                 }
 
                 if (Extent.Width > Viewport.Width)
@@ -587,6 +591,8 @@ namespace Avalonia.Controls.Presenters
                     x += dx;
                     x = Math.Max(x, 0);
                     x = Math.Min(x, Extent.Width - Viewport.Width);
+
+                    canXScroll = dx != 0;
                 }
 
                 if (isLogical)
@@ -620,6 +626,12 @@ namespace Avalonia.Controls.Presenters
                 SetCurrentValue(OffsetProperty, newOffset);
 
                 e.Handled = !IsScrollChainingEnabled || offsetChanged;
+
+                if(!e.Handled && !IsScrollChainingEnabled)
+                {
+                    // Gesture may cause an overscroll so we mark the event as handled if it did.
+                    e.Handled = canXScroll || canYScroll;
+                }
 
                 e.ShouldEndScrollGesture = !IsScrollChainingEnabled && !offsetChanged;
             }

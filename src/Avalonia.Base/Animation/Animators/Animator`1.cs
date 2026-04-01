@@ -17,9 +17,9 @@ namespace Avalonia.Animation.Animators
         public AvaloniaProperty? Property { get; set; }
 
         /// <inheritdoc/>
-        public virtual IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
+        public virtual IDisposable? Apply(Animation animation, Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete, bool shouldPauseOnInvisible)
         {
-            var subject = new DisposeAnimationInstanceSubject<T>(this, animation, control, clock, onComplete);
+            var subject = new DisposeAnimationInstanceSubject<T>(this, animation, control, clock, onComplete, shouldPauseOnInvisible);
             return new CompositeDisposable(match.Subscribe(subject), subject);
         }
 
@@ -103,7 +103,7 @@ namespace Avalonia.Animation.Animators
         /// <summary>
         /// Runs the KeyFrames Animation.
         /// </summary>
-        internal IDisposable Run(Animation animation, Animatable control, IClock? clock, Action? onComplete)
+        internal IDisposable Run(Animation animation, Animatable control, IClock? clock, Action? onComplete, bool shouldPauseOnInvisible)
         {
             var instance = new AnimationInstance<T>(
                 animation,
@@ -111,7 +111,8 @@ namespace Avalonia.Animation.Animators
                 this,
                 clock ?? control.Clock ?? Clock.GlobalClock,
                 onComplete,
-                InterpolationHandler);
+                InterpolationHandler,
+                shouldPauseOnInvisible);
 
             return BindAnimation(control, instance);
         }

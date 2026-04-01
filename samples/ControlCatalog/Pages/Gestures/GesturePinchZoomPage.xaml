@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.GesturePinchZoomPage">
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="260">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="How It Works" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Attach a PinchGestureRecognizer and a ScrollGestureRecognizer to an image. Pinch to zoom in and out, then scroll to pan when zoomed." />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="The composition visual's Scale and Offset are updated directly for smooth performance." />
+
+        <Separator />
+
+        <TextBlock Text="API" FontWeight="SemiBold" FontSize="13" />
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="13" FontFamily="Cascadia Code, Consolas, Monospace"
+                     Text="PinchGestureRecognizer" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Opacity="0.7"
+                     Text="Raises Pinch (with Scale) and PinchEnded events." />
+        </StackPanel>
+        <StackPanel Spacing="4">
+          <TextBlock FontSize="13" FontFamily="Cascadia Code, Consolas, Monospace"
+                     Text="ScrollGestureRecognizer" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" Opacity="0.7"
+                     Text="CanHorizontallyScroll / CanVerticallyScroll enable panning." />
+        </StackPanel>
+
+        <Separator />
+
+        <Button x:Name="ResetButton"
+                Content="Reset"
+                HorizontalAlignment="Stretch" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Border Margin="12" ClipToBounds="True">
+      <Image Stretch="UniformToFill"
+             Name="PinchImage"
+             Source="/Assets/delicate-arch-896885_640.jpg">
+        <Image.GestureRecognizers>
+          <PinchGestureRecognizer/>
+          <ScrollGestureRecognizer CanHorizontallyScroll="True" CanVerticallyScroll="True"/>
+        </Image.GestureRecognizers>
+      </Image>
+    </Border>
+  </DockPanel>
+</UserControl>

@@ -140,6 +140,7 @@
                                 FontSize="20"
                                 Foreground="{DynamicResource NavigationBarForeground}"
                                 Content="{Binding CurrentPage?.Header, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
+                                ContentTemplate="{Binding CurrentPage?.HeaderTemplate, RelativeSource={RelativeSource TemplatedParent}, FallbackValue={x:Null}}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
@@ -158,11 +159,11 @@
                     <Setter Property="Padding" Value="0" />
                     <Setter Property="VerticalAlignment" Value="Stretch" />
                   </Style>
-                  <Style Selector="AppBarButton">
+                  <Style Selector="CommandBarButton">
                     <Setter Property="MinHeight" Value="0" />
                     <Setter Property="Padding" Value="8,0" />
                   </Style>
-                  <Style Selector="AppBarToggleButton">
+                  <Style Selector="CommandBarToggleButton">
                     <Setter Property="MinHeight" Value="0" />
                     <Setter Property="Padding" Value="8,0" />
                   </Style>
