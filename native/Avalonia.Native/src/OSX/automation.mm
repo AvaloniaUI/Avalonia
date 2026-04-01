@@ -317,7 +317,30 @@
 - (id)accessibilityParent
 {
     auto parentPeer = _peer->GetParent();
-    return parentPeer ? [AvnAccessibilityElement acquire:parentPeer] : [NSApplication sharedApplication];
+
+    if (parentPeer == nullptr)
+        return [NSApplication sharedApplication];
+
+    // When the parent is a root provider, return the AvnView (content view)
+    // rather than the AvnWindow. macOS accessibility requires that the parent
+    // chain is consistent with the children chain: AvnView exposes these
+    // elements as its accessibilityChildren, so the elements must report
+    // AvnView as their accessibilityParent.  A mismatch causes macOS to be
+    // unable to resolve AXUIElementRefs back to the correct object, which
+    // makes setter calls like AXUIElementSetAttributeValue silently land on
+    // AvnView instead of the target AvnAccessibilityElement.
+    if (parentPeer->IsRootProvider())
+    {
+        auto window = parentPeer->RootProvider_GetWindow();
+        if (window != nullptr)
+        {
+            auto holder = dynamic_cast<INSViewHolder*>(window);
+            if (holder != nullptr)
+                return holder->GetNSView();
+        }
+    }
+
+    return [AvnAccessibilityElement acquire:parentPeer];
 }
 
 - (id)accessibilityTopLevelUIElement
@@ -403,7 +426,11 @@
 
 - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector
 {
-    if (selector == @selector(accessibilityPerformShowMenu))
+    if (selector == @selector(setAccessibilityValue:))
+    {
+        return _peer->IsValueProvider() || _peer->IsRangeValueProvider();
+    }
+    else if (selector == @selector(accessibilityPerformShowMenu))
     {
         return _peer->IsExpandCollapseProvider() && _peer->ExpandCollapseProvider_GetShowsMenu();
     }
@@ -422,7 +449,7 @@
     {
         return _peer->IsRangeValueProvider();
     }
-    
+
     return [super isAccessibilitySelectorAllowed:selector];
 }
 
