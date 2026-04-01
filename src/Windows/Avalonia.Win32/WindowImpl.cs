@@ -184,7 +184,6 @@ namespace Avalonia.Win32
             _nativeControlHost = new Win32NativeControlHost(this, !UseRedirectionBitmap);
             _defaultTransparencyLevel = UseRedirectionBitmap ? WindowTransparencyLevel.None : WindowTransparencyLevel.Transparent;
             _transparencyLevel = _defaultTransparencyLevel;
-            SetTransparencyLevel(_transparencyLevel);
 
             lock (s_instances)
                 s_instances.Add(this);
@@ -326,7 +325,6 @@ namespace Avalonia.Win32
                 if (_transparencyLevel != value)
                 {
                     _transparencyLevel = value;
-                    SetTransparencyLevel(value);
                     TransparencyLevelChanged?.Invoke(value);
                 }
             }
@@ -517,11 +515,6 @@ namespace Avalonia.Win32
             var pvUseBackdropBrush = useHostBackdropBrush ? 1 : 0;
             var result = DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_USE_HOSTBACKDROPBRUSH, &pvUseBackdropBrush, sizeof(int));
             return result == 0;
-        }
-
-        private void SetTransparencyLevel(WindowTransparencyLevel transparencyLevel)
-        {
-            CompositionEffectsSurface?.SetTransparencyLevel(transparencyLevel);
         }
 
         public IPlatformRenderSurface[] Surfaces

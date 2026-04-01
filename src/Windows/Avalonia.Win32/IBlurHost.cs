@@ -16,5 +16,4 @@ internal interface ICompositionEffectsSurface
     bool IsBlurSupported(BlurEffect effect);
 
     void SetBlur(BlurEffect enable);
-    void SetTransparencyLevel(WindowTransparencyLevel transparencyLevel);
 }

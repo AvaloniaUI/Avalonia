@@ -208,7 +208,6 @@ namespace Avalonia.Controls
                 ToCompositionTransparencyLevel(_actualTransparencyLevel);
 
 
-
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _tooltipService = TryGetService<IToolTipService>(dependencyResolver);

@@ -31,7 +31,6 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
     {
         _window ??= new DirectCompositedWindow(_info, _shared);
         SetBlur(_blurEffect);
-        _window.SetTransparencyLevel(_windowTransparencyLevel);
 
         return new DirectCompositedWindowRenderTarget(context, d3dDevice, _shared, _window);
     }
@@ -50,14 +49,6 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
         _blurEffect = enable;
         // _window?.SetBlur(enable);
     }
-
-    public void SetTransparencyLevel(WindowTransparencyLevel transparencyLevel)
-    {
-        _windowTransparencyLevel = transparencyLevel;
-        _window?.SetTransparencyLevel(transparencyLevel);
-    }
-
-    private WindowTransparencyLevel _windowTransparencyLevel;
 }
 
 internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarget

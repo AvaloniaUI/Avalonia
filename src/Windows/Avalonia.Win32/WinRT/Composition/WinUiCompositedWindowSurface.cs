@@ -53,14 +53,6 @@ namespace Avalonia.Win32.WinRT.Composition
             _blurEffect = enable;
             _window?.SetBlur(enable);
         }
-
-        public void SetTransparencyLevel(WindowTransparencyLevel transparencyLevel)
-        {
-            _windowTransparencyLevel = transparencyLevel;
-            _window?.SetTransparencyLevel(transparencyLevel);
-        }
-
-        private WindowTransparencyLevel _windowTransparencyLevel;
     }
 
     internal class WinUiCompositedWindowRenderTarget : IDirect3D11TextureRenderTarget
