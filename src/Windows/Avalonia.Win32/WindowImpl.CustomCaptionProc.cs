@@ -237,7 +237,9 @@ namespace Avalonia.Win32
                         // — signal to redirect NC input to client input.
                         WindowDecorationsElementRole.DecorationsElement => HitTestValues.HTCLIENT,
                         WindowDecorationsElementRole.User => HitTestValues.HTCLIENT,
-                        WindowDecorationsElementRole.TitleBar => HitTestValues.HTCAPTION,
+                        WindowDecorationsElementRole.TitleBar => WindowState == WindowState.FullScreen
+                            ? HitTestValues.HTNOWHERE
+                            : HitTestValues.HTCAPTION,
                         WindowDecorationsElementRole.ResizeN => HitTestValues.HTTOP,
                         WindowDecorationsElementRole.ResizeS => HitTestValues.HTBOTTOM,
                         WindowDecorationsElementRole.ResizeE => HitTestValues.HTRIGHT,
