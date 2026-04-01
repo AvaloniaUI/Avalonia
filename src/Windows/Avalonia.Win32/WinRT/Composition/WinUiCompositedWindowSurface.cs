@@ -99,13 +99,25 @@ namespace Avalonia.Win32.WinRT.Composition
             }
         }
 
+        public void Dispose()
+        {
+            _surface?.Dispose();
+            _surfaceInterop?.Dispose();
+            _drawingSurface?.Dispose();
+            _compositionDevice2.Dispose();
+            _compositionDevice.Dispose();
+            _interop.Dispose();
+            _compositor.Dispose();
+            _d3dDevice.Dispose();
+        }
+
         [MemberNotNull(nameof(_drawingSurface), nameof(_surface), nameof(_surfaceInterop))]
         private void CreateSurface(in IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
-            // Do not use Premultiplied when the window is not Transparency. Because the Premultiplied AlphaMode will increase the performance loss of DWM. See https://github.com/AvaloniaUI/Avalonia/issues/20643
             bool isTransparency = sceneInfo.TransparencyLevel != CompositionTransparencyLevel.None;
             var surfaceSize = sceneInfo.Size;
 
+            // Do not use Premultiplied when the window is not Transparency. Because the Premultiplied AlphaMode will increase the performance loss of DWM. See https://github.com/AvaloniaUI/Avalonia/issues/20643
             var alphaMode = isTransparency ? DirectXAlphaMode.Premultiplied : DirectXAlphaMode.Ignore;
             _drawingSurface = _compositionDevice2.CreateDrawingSurface2(new UnmanagedMethods.SIZE()
                 {
@@ -118,18 +130,6 @@ namespace Avalonia.Win32.WinRT.Composition
 
             _isSurfaceSupportTransparency = isTransparency;
             _size = surfaceSize;
-        }
-
-        public void Dispose()
-        {
-            _surface?.Dispose();
-            _surfaceInterop?.Dispose();
-            _drawingSurface?.Dispose();
-            _compositionDevice2.Dispose();
-            _compositionDevice.Dispose();
-            _interop.Dispose();
-            _compositor.Dispose();
-            _d3dDevice.Dispose();
         }
 
         public bool IsCorrupted => _context.IsLost || _lost;

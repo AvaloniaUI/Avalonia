@@ -28,10 +28,9 @@ using Avalonia.Win32.Interop;
 using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.OpenGl.Angle;
 using Avalonia.Win32.WinRT.Composition;
+using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 using static Avalonia.Controls.Win32Properties;
-using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
-using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
