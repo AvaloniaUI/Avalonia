@@ -16,7 +16,7 @@ namespace Avalonia.Controls
         }
 
         public ScrollChangedEventArgs(
-            RoutedEvent routedEvent,
+            RoutedEvent? routedEvent,
             Vector extentDelta,
             Vector offsetDelta,
             Vector viewportDelta)

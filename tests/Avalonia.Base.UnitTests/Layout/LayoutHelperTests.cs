@@ -24,5 +24,31 @@ namespace Avalonia.Base.UnitTests.Layout
             var actualValue = LayoutHelper.RoundLayoutValue(value, dpiScale);
             Assert.Equal(expectedValue, actualValue);
         }
+
+        [Fact]
+        public void ValidateScaling_Returns_Exact_One_For_Approximate_One()
+        {
+            var result = LayoutHelper.ValidateScaling(1.000000000000001);
+            Assert.Equal(1.0, result);
+        }
+
+        [Fact]
+        public void ValidateScaling_Returns_Valid_Scaling_Value()
+        {
+            const double scaling = 1.5;
+            var result = LayoutHelper.ValidateScaling(scaling);
+            Assert.Equal(scaling, result);
+        }
+
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(-1.5)]
+        [InlineData(double.NaN)]
+        [InlineData(double.PositiveInfinity)]
+        [InlineData(double.NegativeInfinity)]
+        public void ValidateScaling_Throws_For_Invalid_Values(double scaling)
+        {
+            Assert.Throws<InvalidOperationException>(() => LayoutHelper.ValidateScaling(scaling));
+        }
     }
 }

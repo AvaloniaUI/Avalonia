@@ -15,9 +15,9 @@
         <TextBlock Text="Live Preview" FontWeight="SemiBold" FontSize="13" />
         <CommandBar x:Name="LiveBar">
           <CommandBar.PrimaryCommands>
-            <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-            <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
-            <AppBarButton Label="Share"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
+            <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+            <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
+            <CommandBarButton Label="Share"><CommandBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></CommandBarButton.Icon></CommandBarButton>
           </CommandBar.PrimaryCommands>
         </CommandBar>
 
@@ -74,7 +74,7 @@
         <TextBlock Text="About" FontWeight="SemiBold" />
         <TextBlock Text="CommandBar inherits from TemplatedControl, so Background, Foreground, BorderBrush, BorderThickness, and CornerRadius are available out of the box."
                    FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
-        <TextBlock Text="Foreground is an inherited property: setting it on the CommandBar cascades to all PathIcons inside AppBarButton/AppBarToggleButton."
+        <TextBlock Text="Foreground is an inherited property: setting it on the CommandBar cascades to all PathIcons inside CommandBarButton/CommandBarToggleButton."
                    FontSize="12" Opacity="0.7" TextWrapping="Wrap" Margin="0,4,0,0" />
       </StackPanel>
     </ScrollViewer>
@@ -89,20 +89,20 @@
 
         <TextBlock Text="Default theme" FontSize="12" Opacity="0.7" />
         <CommandBar OverflowButtonVisibility="Collapsed">
-          <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-          <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+          <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+          <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
         </CommandBar>
 
         <TextBlock Text="Solid color" FontSize="12" Opacity="0.7" />
         <CommandBar Background="#0078D4" Foreground="White" OverflowButtonVisibility="Collapsed">
-          <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-          <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+          <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+          <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
         </CommandBar>
 
         <TextBlock Text="Dark" FontSize="12" Opacity="0.7" />
         <CommandBar Background="#1C1C1E" Foreground="White" OverflowButtonVisibility="Collapsed">
-          <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-          <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+          <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+          <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
         </CommandBar>
 
         <TextBlock Text="Pill shape (CornerRadius=20)" FontSize="12" Opacity="0.7" />
@@ -111,8 +111,8 @@
                     BorderBrush="#CCCCCC"
                     BorderThickness="1"
                     OverflowButtonVisibility="Collapsed">
-          <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-          <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
+          <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+          <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
         </CommandBar>
       </StackPanel>
     </ScrollViewer>

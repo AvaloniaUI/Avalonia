@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Viewport;
-using Avalonia.Utilities;
 using InputProtocol = Avalonia.Remote.Protocol.Input;
 
 namespace Avalonia.DesignerSupport.Remote.HtmlTransport
@@ -354,13 +353,13 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
             ? null
             : modifiersText
                 .Split(',')
-                .Select(x => EnumHelper.Parse<InputProtocol.InputModifiers>(x, true))
+                .Select(x => Enum.Parse<InputProtocol.InputModifiers>(x, true))
                 .ToArray();
 
         private static InputProtocol.MouseButton ParseMouseButton(string buttonText) =>
             string.IsNullOrWhiteSpace(buttonText)
             ? InputProtocol.MouseButton.None
-            : EnumHelper.Parse<InputProtocol.MouseButton>(buttonText, true);
+            : Enum.Parse<InputProtocol.MouseButton>(buttonText, true);
 
         private static double ParseDouble(string text) =>
             double.Parse(text, NumberStyles.Float, CultureInfo.InvariantCulture);

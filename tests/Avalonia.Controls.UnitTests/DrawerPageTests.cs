@@ -1,13 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
@@ -51,10 +56,10 @@ public class DrawerPageTests
         [InlineData(600.0)]
         [InlineData(800.0)]
         [InlineData(1200.0)]
-        public void DrawerBreakpointWidth_RoundTrips(double width)
+        public void DrawerBreakpointLength_RoundTrips(double width)
         {
-            var dp = new DrawerPage { DrawerBreakpointWidth = width };
-            Assert.Equal(width, dp.DrawerBreakpointWidth);
+            var dp = new DrawerPage { DrawerBreakpointLength = width };
+            Assert.Equal(width, dp.DrawerBreakpointLength);
         }
 
         [Theory]
@@ -557,6 +562,57 @@ public class DrawerPageTests
 
             Assert.True(dp.IsOpen);
         }
+
+        [Fact]
+        public void IsOpen_RapidToggle_EventsFiredExactlyOncePerChange()
+        {
+            var dp = new DrawerPage();
+            int openedCount = 0;
+            int closedCount = 0;
+            dp.Opened += (_, _) => openedCount++;
+            dp.Closed += (_, _) => closedCount++;
+
+            for (int i = 0; i < 5; i++)
+            {
+                dp.IsOpen = true;
+                dp.IsOpen = false;
+            }
+
+            Assert.Equal(5, openedCount);
+            Assert.Equal(5, closedCount);
+            Assert.False(dp.IsOpen);
+        }
+
+        [Fact]
+        public void BackdropPress_WithCanceledClose_FiresClosingOnce_WhenTemplateWasAppliedBeforeAttach()
+        {
+            var dp = new DrawerPage
+            {
+                Template = BackdropOnlyTemplate(),
+                IsOpen = true,
+                BackdropBrush = Brushes.Black,
+                DisplayMode = SplitViewDisplayMode.Overlay
+            };
+
+            dp.ApplyTemplate();
+
+            int closingCount = 0;
+            dp.Closing += (_, e) =>
+            {
+                closingCount++;
+                e.Cancel = true;
+            };
+
+            var root = new TestRoot { Child = dp };
+            root.ExecuteInitialLayoutPass();
+
+            var backdrop = Assert.Single(dp.GetVisualDescendants().OfType<Border>(), x => x.Name == "PART_Backdrop");
+
+            RaisePointerPressed(backdrop);
+
+            Assert.Equal(1, closingCount);
+            Assert.True(dp.IsOpen);
+        }
     }
 
     public class LifecycleEventTests : ScopedTestBase
@@ -830,25 +886,95 @@ public class DrawerPageTests
         }
 
         [Fact]
-        public void DrawerBreakpointWidth_BeforeLayout_DoesNotOverrideLayoutBehavior()
+        public void DrawerBreakpointLength_BeforeLayout_DoesNotOverrideLayoutBehavior()
         {
             var dp = new DrawerPage
             {
                 DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
-                DrawerBreakpointWidth = 1200
+                DrawerBreakpointLength = 1200
             };
             Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
         }
 
         [Fact]
-        public void DrawerBreakpointWidth_Zero_DoesNotOverrideLayoutBehavior()
+        public void DrawerBreakpointLength_Zero_DoesNotOverrideLayoutBehavior()
         {
             // Breakpoint == 0 means the feature is disabled; DrawerLayoutBehavior drives DisplayMode.
             var dp = new DrawerPage
             {
                 DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
-                DrawerBreakpointWidth = 0
+                DrawerBreakpointLength = 0
             };
+            Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Left)]
+        [InlineData(DrawerPlacement.Right)]
+        public void DrawerBreakpointLength_Horizontal_BelowBreakpoint_ForcesOverlay(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointLength = 1200,
+                DrawerPlacement = placement
+            };
+            dp.Measure(new Size(800, 600));
+            dp.Arrange(new Rect(0, 0, 800, 600));
+
+            Assert.Equal(SplitViewDisplayMode.Overlay, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Left)]
+        [InlineData(DrawerPlacement.Right)]
+        public void DrawerBreakpointLength_Horizontal_AboveBreakpoint_UsesConfiguredLayout(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointLength = 600,
+                DrawerPlacement = placement
+            };
+            dp.Measure(new Size(800, 600));
+            dp.Arrange(new Rect(0, 0, 800, 600));
+
+            Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Top)]
+        [InlineData(DrawerPlacement.Bottom)]
+        public void DrawerBreakpointLength_Vertical_BelowBreakpoint_ForcesOverlay(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointLength = 800,
+                DrawerPlacement = placement
+            };
+            dp.Measure(new Size(800, 600));
+            dp.Arrange(new Rect(0, 0, 800, 600));
+
+            // Vertical: breakpoint compares against Bounds.Height (600 < 800 → Overlay)
+            Assert.Equal(SplitViewDisplayMode.Overlay, dp.DisplayMode);
+        }
+
+        [Theory]
+        [InlineData(DrawerPlacement.Top)]
+        [InlineData(DrawerPlacement.Bottom)]
+        public void DrawerBreakpointLength_Vertical_AboveBreakpoint_UsesConfiguredLayout(DrawerPlacement placement)
+        {
+            var dp = new DrawerPage
+            {
+                DrawerLayoutBehavior = DrawerLayoutBehavior.Split,
+                DrawerBreakpointLength = 400,
+                DrawerPlacement = placement
+            };
+            dp.Measure(new Size(800, 600));
+            dp.Arrange(new Rect(0, 0, 800, 600));
+
+            // Vertical: breakpoint compares against Bounds.Height (600 > 400 → Inline)
             Assert.Equal(SplitViewDisplayMode.Inline, dp.DisplayMode);
         }
     }
@@ -1032,21 +1158,322 @@ public class DrawerPageTests
         }
     }
 
-    public class DrawerIconTests : ScopedTestBase
+    public class IconTests : ScopedTestBase
     {
         [Fact]
-        public void DrawerIcon_PathIcon_DoesNotCrashWhenTemplateApplied()
+        public void DrawerIconTemplate_RoundTrips()
         {
-            var icon = new PathIcon();
-            var dp = new DrawerPage { DrawerIcon = icon };
+            var template = new FuncDataTemplate<object>((_, _) => new PathIcon());
+            var dp = new DrawerPage { DrawerIconTemplate = template };
+            Assert.Same(template, dp.DrawerIconTemplate);
+        }
+
+        [Fact]
+        public void DrawerIcon_With_Geometry_Does_Not_Throw()
+        {
+            var geometry = new EllipseGeometry { Rect = new Rect(0, 0, 10, 10) };
+            var dp = new DrawerPage
+            {
+                DrawerIcon = geometry,
+                DrawerIconTemplate = new FuncDataTemplate<object>((_, _) => new PathIcon()),
+            };
             var root = new TestRoot { Child = dp };
 
-            // Changing DrawerIcon after template is applied must not throw.
-            var icon2 = new PathIcon();
-            dp.DrawerIcon = icon2;
-
-            Assert.Same(icon2, dp.DrawerIcon);
+            dp.DrawerIcon = new EllipseGeometry { Rect = new Rect(0, 0, 20, 20) };
+            Assert.NotNull(dp.DrawerIcon);
         }
+    }
+
+    public class HeaderFooterTemplateTests : ScopedTestBase
+    {
+        // Wires PART_DrawerHeader and PART_DrawerFooter to the drawer's properties.
+        // Other parts omitted; OnApplyTemplate uses Find (nullable) so they are safe to skip.
+        private static IControlTemplate MinimalPaneTemplate() =>
+            new FuncControlTemplate<DrawerPage>((dp, scope) =>
+            {
+                var header = new ContentPresenter { Name = "PART_DrawerHeader" }.RegisterInNameScope(scope);
+                header.Bind(ContentPresenter.ContentProperty, dp.GetObservable(DrawerPage.DrawerHeaderProperty));
+                header.Bind(ContentPresenter.ContentTemplateProperty, dp.GetObservable(DrawerPage.DrawerHeaderTemplateProperty));
+
+                var footer = new ContentPresenter { Name = "PART_DrawerFooter" }.RegisterInNameScope(scope);
+                footer.Bind(ContentPresenter.ContentProperty, dp.GetObservable(DrawerPage.DrawerFooterProperty));
+                footer.Bind(ContentPresenter.ContentTemplateProperty, dp.GetObservable(DrawerPage.DrawerFooterTemplateProperty));
+
+                return new StackPanel { Children = { header, footer } };
+            });
+
+        private static (DrawerPage dp, ContentPresenter header, ContentPresenter footer, TestRoot root) Create(
+            object? drawerHeader = null,
+            IDataTemplate? headerTemplate = null,
+            object? drawerFooter = null,
+            IDataTemplate? footerTemplate = null)
+        {
+            var dp = new DrawerPage
+            {
+                Template = MinimalPaneTemplate(),
+                DrawerHeader = drawerHeader,
+                DrawerHeaderTemplate = headerTemplate,
+                DrawerFooter = drawerFooter,
+                DrawerFooterTemplate = footerTemplate,
+            };
+            var root = new TestRoot { Child = dp };
+            dp.ApplyTemplate();
+
+            var header = dp.GetVisualDescendants().OfType<ContentPresenter>().First(x => x.Name == "PART_DrawerHeader");
+            var footer = dp.GetVisualDescendants().OfType<ContentPresenter>().First(x => x.Name == "PART_DrawerFooter");
+
+            return (dp, header, footer, root);
+        }
+
+        [Fact]
+        public void DrawerHeaderTemplate_IsForwardedToContentPresenter()
+        {
+            var template = new FuncDataTemplate<string>((_, _) => new TextBlock());
+            var (_, header, _, _) = Create(drawerHeader: "App", headerTemplate: template);
+
+            Assert.Same(template, header.ContentTemplate);
+        }
+
+        [Fact]
+        public void DrawerFooterTemplate_IsForwardedToContentPresenter()
+        {
+            var template = new FuncDataTemplate<string>((_, _) => new TextBlock());
+            var (_, _, footer, _) = Create(drawerFooter: "v1.0", footerTemplate: template);
+
+            Assert.Same(template, footer.ContentTemplate);
+        }
+
+        [Fact]
+        public void DrawerHeaderTemplate_RendersControlProducedByFactory()
+        {
+            var (_, header, _, _) = Create(
+                drawerHeader: "App",
+                headerTemplate: new FuncDataTemplate<string>((_, _) => new Canvas()));
+
+            header.UpdateChild();
+
+            Assert.IsType<Canvas>(header.Child);
+        }
+
+        [Fact]
+        public void DrawerFooterTemplate_RendersControlProducedByFactory()
+        {
+            var (_, _, footer, _) = Create(
+                drawerFooter: "v1.0",
+                footerTemplate: new FuncDataTemplate<string>((_, _) => new Canvas()));
+
+            footer.UpdateChild();
+
+            Assert.IsType<Canvas>(footer.Child);
+        }
+
+        [Fact]
+        public void DrawerHeaderTemplate_ReceivesDrawerHeaderAsData()
+        {
+            object? receivedData = null;
+            var (_, header, _, _) = Create(
+                drawerHeader: "MyTitle",
+                headerTemplate: new FuncDataTemplate<string>((data, _) =>
+                {
+                    receivedData = data;
+                    return new TextBlock { Text = data };
+                }));
+
+            header.UpdateChild();
+
+            Assert.Equal("MyTitle", receivedData);
+        }
+
+        [Fact]
+        public void DrawerFooterTemplate_ReceivesDrawerFooterAsData()
+        {
+            object? receivedData = null;
+            var (_, _, footer, _) = Create(
+                drawerFooter: "v2.0",
+                footerTemplate: new FuncDataTemplate<string>((data, _) =>
+                {
+                    receivedData = data;
+                    return new TextBlock { Text = data };
+                }));
+
+            footer.UpdateChild();
+
+            Assert.Equal("v2.0", receivedData);
+        }
+
+        [Fact]
+        public void DrawerHeaderTemplate_SwapTemplate_UpdatesContentPresenter()
+        {
+            var second = new FuncDataTemplate<string>((_, _) => new Border());
+            var (dp, header, _, _) = Create(
+                drawerHeader: "App",
+                headerTemplate: new FuncDataTemplate<string>((_, _) => new Canvas()));
+
+            header.UpdateChild();
+            Assert.IsType<Canvas>(header.Child);
+
+            dp.DrawerHeaderTemplate = second;
+            header.UpdateChild();
+
+            Assert.IsType<Border>(header.Child);
+        }
+
+        [Fact]
+        public void DrawerFooterTemplate_SwapTemplate_UpdatesContentPresenter()
+        {
+            var second = new FuncDataTemplate<string>((_, _) => new Border());
+            var (dp, _, footer, _) = Create(
+                drawerFooter: "v1.0",
+                footerTemplate: new FuncDataTemplate<string>((_, _) => new Canvas()));
+
+            footer.UpdateChild();
+            Assert.IsType<Canvas>(footer.Child);
+
+            dp.DrawerFooterTemplate = second;
+            footer.UpdateChild();
+
+            Assert.IsType<Border>(footer.Child);
+        }
+
+        [Fact]
+        public void DrawerHeaderTemplate_ClearingTemplate_FallsBackToDirectContent()
+        {
+            var directControl = new TextBlock { Text = "Direct" };
+            var (dp, header, _, _) = Create(
+                drawerHeader: directControl,
+                headerTemplate: new FuncDataTemplate<object>((_, _) => new Canvas()));
+
+            header.UpdateChild();
+            Assert.IsType<Canvas>(header.Child);
+
+            dp.DrawerHeaderTemplate = null;
+            header.UpdateChild();
+
+            Assert.Same(directControl, header.Child);
+        }
+
+        [Fact]
+        public void DrawerFooterTemplate_ClearingTemplate_FallsBackToDirectContent()
+        {
+            var directControl = new TextBlock { Text = "Direct" };
+            var (dp, _, footer, _) = Create(
+                drawerFooter: directControl,
+                footerTemplate: new FuncDataTemplate<object>((_, _) => new Canvas()));
+
+            footer.UpdateChild();
+            Assert.IsType<Canvas>(footer.Child);
+
+            dp.DrawerFooterTemplate = null;
+            footer.UpdateChild();
+
+            Assert.Same(directControl, footer.Child);
+        }
+    }
+
+    public class SwipeGestureTests : ScopedTestBase
+    {
+        [Fact]
+        public void HandledPointerPressedAtEdge_AllowsSwipeOpen()
+        {
+            var dp = new DrawerPage
+            {
+                DrawerPlacement = DrawerPlacement.Left,
+                DisplayMode = SplitViewDisplayMode.Overlay,
+                Width = 400,
+                Height = 300
+            };
+            dp.GestureRecognizers.OfType<SwipeGestureRecognizer>().First().IsMouseEnabled = true;
+
+            var root = new TestRoot
+            {
+                ClientSize = new Size(400, 300),
+                Child = dp
+            };
+            root.ExecuteInitialLayoutPass();
+
+            RaiseHandledPointerPressed(dp, new Point(5, 5));
+
+            var swipe = new SwipeGestureEventArgs(1, new Vector(-20, 0), default);
+            dp.RaiseEvent(swipe);
+
+            Assert.True(swipe.Handled);
+            Assert.True(dp.IsOpen);
+        }
+
+        [Fact]
+        public void MouseEdgeDrag_AllowsSwipeOpen()
+        {
+            var dp = new DrawerPage
+            {
+                DrawerPlacement = DrawerPlacement.Left,
+                DisplayMode = SplitViewDisplayMode.Overlay,
+                Width = 400,
+                Height = 300
+            };
+            dp.GestureRecognizers.OfType<SwipeGestureRecognizer>().First().IsMouseEnabled = true;
+
+            var root = new TestRoot
+            {
+                ClientSize = new Size(400, 300),
+                Child = dp
+            };
+            root.ExecuteInitialLayoutPass();
+
+            var mouse = new MouseTestHelper();
+            mouse.Down(dp, position: new Point(5, 5));
+            mouse.Move(dp, new Point(40, 5));
+            mouse.Up(dp, position: new Point(40, 5));
+
+            Assert.True(dp.IsOpen);
+        }
+
+        private static void RaiseHandledPointerPressed(Interactive target, Point position)
+        {
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Touch, true);
+            var args = new PointerPressedEventArgs(
+                target,
+                pointer,
+                (Visual)target,
+                position,
+                timestamp: 1,
+                new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
+                KeyModifiers.None)
+            {
+                Handled = true
+            };
+
+            target.RaiseEvent(args);
+        }
+    }
+
+    private static void RaisePointerPressed(Interactive target, Point? position = null)
+    {
+        var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Touch, true);
+        var args = new PointerPressedEventArgs(
+            target,
+            pointer,
+            (Visual)target,
+            position ?? default,
+            timestamp: 1,
+            new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
+            KeyModifiers.None);
+
+        target.RaiseEvent(args);
+    }
+
+    private static IControlTemplate BackdropOnlyTemplate()
+    {
+        return new FuncControlTemplate<DrawerPage>((_, scope) =>
+            new Canvas
+            {
+                Children =
+                {
+                    new Border
+                    {
+                        Name = "PART_Backdrop"
+                    }.RegisterInNameScope(scope)
+                }
+            });
     }
 
     public class DetachmentTests : ScopedTestBase
@@ -1067,6 +1494,24 @@ public class DrawerPageTests
             var page = new ContentPage();
             await nav.PushAsync(page);
             Assert.Null(NavigationPage.GetBackButtonContent(page));
+        }
+
+        [Fact]
+        public async Task Detach_And_Reattach_RestoresDrawerPageReference()
+        {
+            var nav = new NavigationPage();
+            var dp = new DrawerPage { Content = nav };
+            var root = new TestRoot { Child = dp };
+            var page = new ContentPage();
+            await nav.PushAsync(page);
+
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
+
+            root.Child = null;
+            Assert.False(nav.IsBackButtonEffectivelyVisible);
+
+            root.Child = dp;
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
         }
     }
 }

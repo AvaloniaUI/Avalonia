@@ -33,11 +33,8 @@ static unsafe class UnalignedMemoryHelper
 {
     public static T ReadUnaligned<T>(byte* src) where T : unmanaged
     {
-#if NET6_0_OR_GREATER
         Unsafe.SkipInit<T>(out var rv);
-#else
-        T rv;
-#endif
+
         UnalignedMemcpy((byte*)&rv, src, Unsafe.SizeOf<T>());
         return rv;
     }

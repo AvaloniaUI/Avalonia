@@ -129,22 +129,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     return false;
                 }
 
-#if NET6_0_OR_GREATER
                 if (!CollectionsMarshal.AsSpan(resourceNodes).SequenceEqual(lastResourceNodes))
                 {
                     cachedResourceNodes = null;
                     return false;
                 }
-#else
-                for (var i = 0; i < lastResourceNodes.Length; ++i)
-                {
-                    if (lastResourceNodes[i] != resourceNodes[i])
-                    {
-                        cachedResourceNodes = null;
-                        return false;
-                    }
-                }
-#endif
 
                 cachedResourceNodes = lastResourceNodes;
                 return true;

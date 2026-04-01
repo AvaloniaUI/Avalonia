@@ -1,5 +1,6 @@
 using System;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 
@@ -12,9 +13,8 @@ public interface IDirect3D11TexturePlatformSurface : IPlatformRenderSurface
 
 
 
-public interface IDirect3D11TextureRenderTarget : IDisposable
+public interface IDirect3D11TextureRenderTarget : IPlatformRenderSurfaceRenderTarget, IDisposable
 {
-    bool IsCorrupted { get; }
     IDirect3D11TextureRenderTargetRenderSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo);
 }
 

@@ -38,6 +38,7 @@ namespace Avalonia.Controls
     /// tracking the widget's <see cref="ClientSize"/>.
     /// </remarks>
     [TemplatePart("PART_TransparencyFallback", typeof(Border))]
+    [TemplatePart("PART_VisualLayerManager", typeof(VisualLayerManager))]
     public abstract class TopLevel : ContentControl,
         ICloseable,
         IStyleHost,
@@ -125,6 +126,7 @@ namespace Avalonia.Controls
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
         private Border? _transparencyFallbackBorder;
+        private VisualLayerManager? _visualLayerManager;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
         private Screens? _screens;
@@ -133,6 +135,18 @@ namespace Avalonia.Controls
         internal TopLevelHost TopLevelHost => _topLevelHost;
         internal new PresentationSource PresentationSource => _source;
         internal IInputRoot InputRoot => _source;
+        
+        private protected VisualLayerManager? VisualLayerManager => _visualLayerManager;
+
+        private protected void EnableVisualLayerManagerLayers()
+        {
+            if (_visualLayerManager is { } vlm)
+            {
+                vlm.EnableOverlayLayer = true;
+                vlm.EnablePopupOverlayLayer = true;
+                vlm.EnableTextSelectorLayer = true;
+            }
+        }
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -198,10 +212,10 @@ namespace Avalonia.Controls
             LogicalChildren.Add(hostVisual);
 
             _source = new PresentationSource(hostVisual, this,
-                impl, dependencyResolver, () => ClientSize);
+                impl, dependencyResolver);
             _source.Renderer.SceneInvalidated += SceneInvalidated;
 
-            _scaling = ValidateScaling(impl.RenderScaling);
+            _scaling = LayoutHelper.ValidateScaling(impl.RenderScaling);
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;
 
             _source.Renderer.CompositionTarget.TransparencyLevel =
@@ -221,7 +235,7 @@ namespace Avalonia.Controls
             impl.Closed = HandleClosed;
             impl.Paint = HandlePaint;
             impl.Resized = HandleResized;
-            impl.ScalingChanged = HandleScalingChanged;
+            impl.ScalingChanged += HandleScalingChanged;
             impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
 
             CreatePlatformImplBinding(TransparencyLevelHintProperty, hint => PlatformImpl.SetTransparencyLevelHint(hint ?? Array.Empty<WindowTransparencyLevel>()));
@@ -696,7 +710,7 @@ namespace Avalonia.Controls
         /// <param name="scaling">The window scaling.</param>
         private void HandleScalingChanged(double scaling)
         {
-            _scaling = ValidateScaling(scaling);
+            _scaling = LayoutHelper.ValidateScaling(scaling);
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
             Dispatcher.UIThread.Send(_ => ScalingChanged?.Invoke(this, EventArgs.Empty));
 
@@ -725,6 +739,8 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
+
+            _visualLayerManager = e.NameScope.Find<VisualLayerManager>("PART_VisualLayerManager");
 
             if (PlatformImpl is null)
                 return;
@@ -819,24 +835,6 @@ namespace Avalonia.Controls
         protected internal override void InvalidateMirrorTransform()
         {
             // Do nothing becuase TopLevel should't apply MirrorTransform on himself.
-        }
-
-        private double ValidateScaling(double scaling)
-        {
-            if (MathUtilities.IsNegativeOrNonFinite(scaling) || MathUtilities.IsZero(scaling))
-            {
-                throw new InvalidOperationException(
-                    $"Invalid {nameof(ITopLevelImpl.RenderScaling)} value {scaling} returned from {PlatformImpl?.GetType()}");
-            }
-
-            if (MathUtilities.IsOne(scaling))
-            {
-                // Ensure we've got exactly 1.0 and not an approximation,
-                // so we don't have to use MathUtilities.IsOne in various layout hot paths.
-                return 1.0;
-            }
-
-            return scaling;
         }
 
         private static CompositionTransparencyLevel ToCompositionTransparencyLevel(WindowTransparencyLevel level)

@@ -49,7 +49,7 @@ namespace Avalonia.Headless
 
         public Size ClientSize { get; set; }
         public Size? FrameSize => null;
-        public double RenderScaling { get; } = 1;
+        public double RenderScaling { get; private set; } = 1;
         public double DesktopScaling => RenderScaling;
         public IPlatformRenderSurface[] Surfaces { get; }
         public Action<RawInputEventArgs>? Input { get; set; }
@@ -141,6 +141,7 @@ namespace Avalonia.Headless
         }
 
         public WindowState WindowState { get; set; }
+        public bool WindowStateGetterIsUsable => false;
         public Action<WindowState>? WindowStateChanged { get; set; }
         public void SetTitle(string? title)
         {
@@ -356,6 +357,20 @@ namespace Avalonia.Headless
         {
             var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
             Input?.Invoke(new RawDragEvent(device, type, InputRoot!, point, data, effects, modifiers));
+        }
+
+        void IHeadlessWindow.SetRenderScaling(double scaling)
+        {
+            if (scaling <= 0)
+                throw new ArgumentOutOfRangeException(nameof(scaling), "Scaling must be greater than zero.");
+
+            if (RenderScaling == scaling)
+                return;
+
+            var oldScaledSize = ClientSize;
+            RenderScaling = scaling;
+            ScalingChanged?.Invoke(scaling);
+            Resize(oldScaledSize, WindowResizeReason.DpiChange);
         }
 
         void IWindowImpl.Move(PixelPoint point)

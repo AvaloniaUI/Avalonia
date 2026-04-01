@@ -619,5 +619,29 @@ namespace Avalonia.Skia.UnitTests.Media
             Assert.Equal("Inter", typeface.GlyphTypeface.FamilyName);
             Assert.Equal(requestedStretch, typeface.Stretch);
         }
+
+        [Fact]
+        public void TryGetGlyphTypeface_Should_Use_Perfect_Match_In_Collection_Before_Nearest_Match()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(fontManagerImpl: new CustomFontManagerImpl()));
+            using var scope = AvaloniaLocator.EnterScope();
+
+            // Load bold font (Inter-Bold.ttf) first
+            Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Inter", FontStyle.Normal, FontWeight.Bold), out var boldGlyphTypeface));
+            Assert.NotNull(boldGlyphTypeface);
+            Assert.Equal("Inter", boldGlyphTypeface.FamilyName);
+            Assert.Equal(FontWeight.Bold, boldGlyphTypeface.Weight);
+
+            // Normal font (Inter-Regular.ttf) should be loaded since it's a perfect match, instead of falling back
+            Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Inter", FontStyle.Normal, FontWeight.Normal), out var regularGlyphTypeface));
+            Assert.NotNull(regularGlyphTypeface);
+            Assert.NotSame(regularGlyphTypeface, boldGlyphTypeface);
+            Assert.Equal("Inter", regularGlyphTypeface.FamilyName);
+            Assert.Equal(FontWeight.Normal, regularGlyphTypeface.Weight);
+
+            // Nearest match should still work (650 falls back to 700 Bold)
+            Assert.True(FontManager.Current.TryGetGlyphTypeface(new Typeface("Inter", FontStyle.Normal, (FontWeight)650), out var nearestMatchTypeface));
+            Assert.Same(boldGlyphTypeface, nearestMatchTypeface);
+        }
     }
 }

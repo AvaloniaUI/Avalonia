@@ -100,11 +100,12 @@ internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarg
         _d3dDevice.Dispose();
     }
 
-    public bool IsCorrupted => _context.IsLost || _lost;
+    public PlatformRenderTargetState State => _context.IsLost || _lost ? PlatformRenderTargetState.Corrupted : PlatformRenderTargetState.Ready;
+    
 
     public unsafe IDirect3D11TextureRenderTargetRenderSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
     {
-        if (IsCorrupted)
+        if (State.IsCorrupted)
             throw new RenderTargetCorruptedException();
         var transaction = _window.BeginTransaction();
         bool needsEndDraw = false;

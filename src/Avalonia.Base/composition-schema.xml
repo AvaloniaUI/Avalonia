@@ -22,6 +22,7 @@
         <Property Name="Clip" Type="Avalonia.Platform.IGeometryImpl?" Internal="true" />
         <Property Name="ClipToBounds" Type="bool" Animated="true" DefaultValue="true"/>
         <Property Name="Offset" Type="Vector3D" Animated="true"/>
+        <Property Name="Translation" Type="Vector3D" Animated="true"/>
         <Property Name="Size" Type="Vector" Animated="true"/>
         <Property Name="AnchorPoint" Type="Vector" Animated="true"/>
         <Property Name="CenterPoint" Type="Vector3D" Animated="true"/>
