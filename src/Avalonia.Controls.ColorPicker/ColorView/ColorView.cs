@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Converters;
 using Avalonia.Controls.Metadata;
@@ -153,8 +153,6 @@ namespace Avalonia.Controls
                         for (int colorIndex = 0; colorIndex < palette.ColorCount; colorIndex++)
                         {
                             newPaletteColors.Add(palette.GetColor(colorIndex, shadeIndex));
-                        }
-                        }
                         }
                     }
 
