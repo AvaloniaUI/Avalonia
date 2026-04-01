@@ -1,6 +1,4 @@
-﻿using Avalonia.Controls;
-
-namespace Avalonia.Win32;
+﻿namespace Avalonia.Win32;
 
 internal enum BlurEffect
 {
