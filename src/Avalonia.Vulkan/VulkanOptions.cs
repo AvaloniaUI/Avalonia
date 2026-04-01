@@ -68,6 +68,8 @@ public class VulkanPlatformSpecificOptions
     public VkGetInstanceProcAddressDelegate? GetProcAddressDelegate { get; set; }
     public Func<IVulkanInstance, ulong>? DeviceCheckSurfaceFactory { get; set; }
     public Dictionary<Type, object> PlatformFeatures { get; set; } = new();
+    public Action<Action>? OnPresentFence { get; set; }
+    public bool IsDynamicMode { get; set; }
 }
 
 public delegate IntPtr VkGetInstanceProcAddressDelegate(IntPtr instance, string name);

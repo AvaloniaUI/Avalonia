@@ -147,8 +147,8 @@ namespace ControlCatalog.Desktop
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
                     EnableIme = true,
+                    RenderingMode = [X11RenderingMode.Vulkan]
                 })
-
                 .With(new VulkanOptions
                 {
                     VulkanInstanceCreationOptions = new ()

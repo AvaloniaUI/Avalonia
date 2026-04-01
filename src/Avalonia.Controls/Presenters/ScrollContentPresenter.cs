@@ -431,10 +431,16 @@ namespace Avalonia.Controls.Presenters
 
         private Size ArrangeWithAnchoring(Size finalSize)
         {
-            var size = new Size(
-                CanHorizontallyScroll ? Math.Max(Child!.DesiredSize.Width, finalSize.Width) : finalSize.Width,
-                CanVerticallyScroll ? Math.Max(Child!.DesiredSize.Height, finalSize.Height) : finalSize.Height);
+            // var size = new Size(
+            //     CanHorizontallyScroll ? Math.Max(Child!.DesiredSize.Width, finalSize.Width) : finalSize.Width,
+            //     CanVerticallyScroll ? Math.Max(Child!.DesiredSize.Height, finalSize.Height) : finalSize.Height);
 
+            // Scrollviewer doesn't handle padding correctly. It messes up the viewport and extents. This compensates
+            // to ensure proper scrolling and scrollbar updates.
+            var size = new Size(
+                CanHorizontallyScroll ? Math.Max(Child!.DesiredSize.Width + this.Padding.Left * 2.0 + this.Padding.Right * 2.0, finalSize.Width) : finalSize.Width,
+                CanVerticallyScroll ? Math.Max(Child!.DesiredSize.Height + this.Padding.Top * 2.0 + this.Padding.Bottom * 2.0, finalSize.Height) : finalSize.Height);
+            
             Vector TrackAnchor()
             {
                 // If we have an anchor and its position relative to Child has changed during the

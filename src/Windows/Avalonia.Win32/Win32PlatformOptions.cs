@@ -28,7 +28,13 @@ public enum Win32RenderingMode
     /// <summary>
     /// Avalonia would try to use native Widows Vulkan with GPU rendering.
     /// </summary>
-    Vulkan = 4
+    Vulkan = 4,
+    
+    /// <summary>
+    /// Avalonia rendered with Vulkan GPU rendering and dynamic refresh rate matching.
+    /// Uses VSync synchronization.
+    /// </summary>
+    VulkanDynamic = 5
 }
 
 /// <summary>

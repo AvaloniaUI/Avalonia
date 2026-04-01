@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
+using Avalonia.Rendering;
 using Avalonia.Vulkan;
 using Avalonia.Win32.Interop;
 
@@ -12,18 +13,37 @@ internal class VulkanSupport
 {
     [DllImport("vulkan-1.dll")]
     private static extern IntPtr vkGetInstanceProcAddr(IntPtr instance, string name);
-    
-    public static VulkanPlatformGraphics? TryInitialize(VulkanOptions options) =>
-        VulkanPlatformGraphics.TryCreate(options ?? new(), new VulkanPlatformSpecificOptions
+
+    public static VulkanPlatformGraphics? TryInitialize(VulkanOptions options, bool isDynamic = false)
+    {
+        Action<Action>? onPresentFenceCallback = null;
+
+        if (isDynamic)
         {
-            RequiredInstanceExtensions = { "VK_KHR_win32_surface" },
-            GetProcAddressDelegate = vkGetInstanceProcAddr,
-            DeviceCheckSurfaceFactory = instance => CreateHwndSurface(OffscreenParentWindow.Handle, instance),
-            PlatformFeatures = new Dictionary<Type, object>
+            // Create and register the Vulkan render timer for dynamic refresh rate support
+            // Replace the render loop with one backed by VulkanRenderTimer.
+            // This must happen before Compositor is created (which reads IRenderLoop from the locator).
+            VulkanRenderTimer renderTimer = new();
+            AvaloniaLocator.CurrentMutable
+                .Bind<IRenderTimer>().ToConstant(renderTimer)
+                .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(renderTimer));
+            onPresentFenceCallback = (fenceWaitAction) => renderTimer.SetPresentFenceWaitAction(fenceWaitAction);
+        }
+        
+        return VulkanPlatformGraphics.TryCreate(options ?? new(),
+            new VulkanPlatformSpecificOptions
             {
-                [typeof(IVulkanKhrSurfacePlatformSurfaceFactory)] = new VulkanSurfaceFactory()
-            }
-        });
+                RequiredInstanceExtensions = { "VK_KHR_win32_surface" },
+                GetProcAddressDelegate = vkGetInstanceProcAddr,
+                DeviceCheckSurfaceFactory = instance => CreateHwndSurface(OffscreenParentWindow.Handle, instance),
+                PlatformFeatures = new Dictionary<Type, object>
+                {
+                    [typeof(IVulkanKhrSurfacePlatformSurfaceFactory)] = new VulkanSurfaceFactory()
+                },
+                OnPresentFence = onPresentFenceCallback,
+                IsDynamicMode = isDynamic
+            });
+    }
 
     internal class VulkanSurfaceFactory : IVulkanKhrSurfacePlatformSurfaceFactory
     {
