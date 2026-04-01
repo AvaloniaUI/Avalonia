@@ -33,7 +33,6 @@
     <Project Path="src/Avalonia.Desktop/Avalonia.Desktop.csproj" />
   </Folder>
   <Folder Name="/Props/">
-    <File Path="build/AnalyzerProject.targets" />
     <File Path="build/AvaloniaPublicKey.props" />
     <File Path="build/Base.props" />
     <File Path="build/CoreLibraries.props" />
@@ -123,6 +122,7 @@
     <File Path="readme.md" />
   </Folder>
   <Folder Name="/Targets/">
+    <File Path="build/AnalyzerProject.targets" />
     <File Path="build/BuildTargets.targets" />
     <File Path="build/DevSingleProject.targets" />
     <File Path="build/UnitTests.NetCore.targets" />
@@ -152,6 +152,10 @@
   <Folder Name="/Tests/TestFiles/" />
   <Folder Name="/Tests/TestFiles/BuildTasks/">
     <Project Path="tests/TestFiles/BuildTasks/PInvoke/PInvoke.csproj" />
+  </Folder>
+  <Folder Name="/Themes/">
+    <Project Path="src/Avalonia.Themes.Fluent/Avalonia.Themes.Fluent.csproj" />
+    <Project Path="src/Avalonia.Themes.Simple/Avalonia.Themes.Simple.csproj" />
   </Folder>
   <Folder Name="/Tools/">
     <Project Path="src/tools/Avalonia.Analyzers.CodeFixes.CSharp/Avalonia.Analyzers.CodeFixes.CSharp.csproj">
@@ -189,7 +193,5 @@
   <Project Path="src/Avalonia.Native/Avalonia.Native.csproj" />
   <Project Path="src/Avalonia.OpenGL/Avalonia.OpenGL.csproj" />
   <Project Path="src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
-  <Project Path="src/Avalonia.Themes.Fluent/Avalonia.Themes.Fluent.csproj" />
-  <Project Path="src/Avalonia.Themes.Simple/Avalonia.Themes.Simple.csproj" />
   <Project Path="src/Avalonia.Vulkan/Avalonia.Vulkan.csproj" />
 </Solution>
