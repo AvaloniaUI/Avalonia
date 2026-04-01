@@ -38,6 +38,6 @@ namespace Avalonia.Platform
         /// </summary>
         bool IsReady => true;
         
-        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, CompositionTransparencyLevel TransparencyLevel);
+        public readonly record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, CompositionTransparencyLevel TransparencyLevel);
     }
 }

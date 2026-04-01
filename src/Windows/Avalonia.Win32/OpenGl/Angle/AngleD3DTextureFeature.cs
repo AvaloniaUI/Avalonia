@@ -40,7 +40,7 @@ internal class AngleD3DTextureFeature  : IGlPlatformSurfaceRenderTargetFactory
             {
                 try
                 {
-                    session = _target.BeginDraw();
+                    session = _target.BeginDraw(sceneInfo);
                 }
                 catch (RenderTargetCorruptedException e)
                 {

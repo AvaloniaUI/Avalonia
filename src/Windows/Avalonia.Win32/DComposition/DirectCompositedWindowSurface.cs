@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.WinRT;
@@ -58,7 +59,7 @@ internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarg
     private readonly IPlatformGraphicsContext _context;
     private readonly DirectCompositionShared _shared;
     private readonly DirectCompositedWindow _window;
-    private IDCompositionVirtualSurface _surface;
+    private IDCompositionVirtualSurface? _surface;
     private bool _lost;
     private PixelSize _size;
     private readonly IUnknown _d3dDevice;
@@ -73,34 +74,35 @@ internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarg
         _context = context;
         _shared = shared;
         _window = window;
-
-        CreateSurface(window);
     }
 
     [MemberNotNull(nameof(_surface))]
-    private void CreateSurface(DirectCompositedWindow window)
+    private void CreateSurface(DirectCompositedWindow window, in IRenderTarget.RenderTargetSceneInfo sceneInfo)
     {
         using var surfaceFactory = _shared.Device.CreateSurfaceFactory(_d3dDevice);
 
-        const uint initialSize = 1;
-        var alphaMode = window.IsTransparency ?
+        bool isTransparency = sceneInfo.TransparencyLevel != CompositionTransparencyLevel.None;
+        var surfaceSize = sceneInfo.Size;
+
+        var alphaMode = isTransparency ?
             DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_PREMULTIPLIED :
             DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_IGNORE;
-        _isSurfaceSupportTransparency = window.IsTransparency;
 
-        _surface = surfaceFactory.CreateVirtualSurface(initialSize, initialSize, DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
-            alphaMode);
+        _surface = surfaceFactory.CreateVirtualSurface((uint)surfaceSize.Width, (uint)surfaceSize.Height, DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM, alphaMode);
+
+        _isSurfaceSupportTransparency = isTransparency;
+        _size = surfaceSize;
     }
 
     public void Dispose()
     {
-        _surface.Dispose();
+        _surface?.Dispose();
         _d3dDevice.Dispose();
     }
 
     public bool IsCorrupted => _context.IsLost || _lost;
 
-    public unsafe IDirect3D11TextureRenderTargetRenderSession BeginDraw()
+    public unsafe IDirect3D11TextureRenderTargetRenderSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
     {
         if (IsCorrupted)
             throw new RenderTargetCorruptedException();
@@ -108,21 +110,19 @@ internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarg
         bool needsEndDraw = false;
         try
         {
-            bool forceResize = false;
-            if (_window.IsTransparency != _isSurfaceSupportTransparency)
+            bool isTransparency = sceneInfo.TransparencyLevel != CompositionTransparencyLevel.None;
+            if (_surface is null || isTransparency != _isSurfaceSupportTransparency)
             {
-                _surface.Dispose();
+                _surface?.Dispose();
 
-                CreateSurface(_window);
-
-                forceResize = true;
+                CreateSurface(_window, in sceneInfo);
             }
 
-            var size = _window.WindowInfo.Size;
-            var scale = _window.WindowInfo.Scaling;
-            if (forceResize || _size != size)
+            var size = sceneInfo.Size;
+            var scale = sceneInfo.Scaling;
+            if (_size != size)
             {
-                _surface.Resize((ushort)size.Width, (ushort)size.Height);
+                _surface.Resize((uint)size.Width, (uint)size.Height);
                 _size = size;
             }
 
@@ -155,7 +155,7 @@ internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarg
             if (transaction != null)
             {
                 if (needsEndDraw)
-                    _surface.EndDraw();
+                    _surface?.EndDraw();
                 transaction.Dispose();
             }
         }

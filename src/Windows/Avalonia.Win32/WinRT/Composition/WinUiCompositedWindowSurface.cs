@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
@@ -28,7 +29,6 @@ namespace Avalonia.Win32.WinRT.Composition
                 ?.WinUICompositionBackdropCornerRadius;
             _window ??= new WinUiCompositedWindow(_info, _shared, cornerRadius);
             _window.SetBlur(_blurEffect);
-            _window.SetTransparencyLevel(_windowTransparencyLevel);
 
             return new WinUiCompositedWindowRenderTarget(context, _window, d3dDevice, _shared.Compositor);
         }
@@ -66,11 +66,12 @@ namespace Avalonia.Win32.WinRT.Composition
         private readonly ICompositorInterop _interop;
         private readonly ICompositionGraphicsDevice _compositionDevice;
         private readonly ICompositionGraphicsDevice2 _compositionDevice2;
-        private ICompositionSurface _surface;
+        private ICompositionSurface? _surface;
         private PixelSize _size;
         private bool _lost;
-        private ICompositionDrawingSurfaceInterop _surfaceInterop;
-        private ICompositionDrawingSurface _drawingSurface;
+        private bool _isSurfaceSupportTransparency;
+        private ICompositionDrawingSurfaceInterop? _surfaceInterop;
+        private ICompositionDrawingSurface? _drawingSurface;
 
         public WinUiCompositedWindowRenderTarget(IPlatformGraphicsContext context,
             WinUiCompositedWindow window, IntPtr device,
@@ -86,14 +87,9 @@ namespace Avalonia.Win32.WinRT.Composition
                 _interop = compositor.QueryInterface<ICompositorInterop>();
                 _compositionDevice = _interop.CreateGraphicsDevice(_d3dDevice);
                 _compositionDevice2 = _compositionDevice.QueryInterface<ICompositionGraphicsDevice2>();
-
-                CreateSurface(window);
             }
             catch
             {
-                _surface?.Dispose();
-                _surfaceInterop?.Dispose();
-                _drawingSurface?.Dispose();
                 _compositionDevice2?.Dispose();
                 _compositionDevice?.Dispose();
                 _interop?.Dispose();
@@ -104,21 +100,31 @@ namespace Avalonia.Win32.WinRT.Composition
         }
 
         [MemberNotNull(nameof(_drawingSurface), nameof(_surface), nameof(_surfaceInterop))]
-        private void CreateSurface(WinUiCompositedWindow window)
+        private void CreateSurface(in IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             // Do not use Premultiplied when the window is not Transparency. Because the Premultiplied AlphaMode will increase the performance loss of DWM. See https://github.com/AvaloniaUI/Avalonia/issues/20643
-            var alphaMode = window.IsTransparency ? DirectXAlphaMode.Premultiplied : DirectXAlphaMode.Ignore;
-            _drawingSurface = _compositionDevice2.CreateDrawingSurface2(new UnmanagedMethods.SIZE(),
+            bool isTransparency = sceneInfo.TransparencyLevel != CompositionTransparencyLevel.None;
+            var surfaceSize = sceneInfo.Size;
+
+            var alphaMode = isTransparency ? DirectXAlphaMode.Premultiplied : DirectXAlphaMode.Ignore;
+            _drawingSurface = _compositionDevice2.CreateDrawingSurface2(new UnmanagedMethods.SIZE()
+                {
+                    X = surfaceSize.Width, 
+                    Y = surfaceSize.Height,
+                },
                 DirectXPixelFormat.B8G8R8A8UIntNormalized, alphaMode);
             _surface = _drawingSurface.QueryInterface<ICompositionSurface>();
             _surfaceInterop = _drawingSurface.QueryInterface<ICompositionDrawingSurfaceInterop>();
+
+            _isSurfaceSupportTransparency = isTransparency;
+            _size = surfaceSize;
         }
 
         public void Dispose()
         {
-            _surface.Dispose();
-            _surfaceInterop.Dispose();
-            _drawingSurface.Dispose();
+            _surface?.Dispose();
+            _surfaceInterop?.Dispose();
+            _drawingSurface?.Dispose();
             _compositionDevice2.Dispose();
             _compositionDevice.Dispose();
             _interop.Dispose();
@@ -128,7 +134,8 @@ namespace Avalonia.Win32.WinRT.Composition
 
         public bool IsCorrupted => _context.IsLost || _lost;
 
-        public unsafe IDirect3D11TextureRenderTargetRenderSession BeginDraw()
+        public unsafe IDirect3D11TextureRenderTargetRenderSession BeginDraw(
+            IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             if (IsCorrupted)
                 throw new RenderTargetCorruptedException();
@@ -137,23 +144,20 @@ namespace Avalonia.Win32.WinRT.Composition
             bool needsEndDraw = false;
             try
             {
-                bool forceResize = false;
-                var supportTransparency = _drawingSurface.AlphaMode == DirectXAlphaMode.Premultiplied;
-                if (_window.IsTransparency != supportTransparency)
+                bool isTransparency = sceneInfo.TransparencyLevel != CompositionTransparencyLevel.None;
+               
+                if (_surface is null || _surfaceInterop is null || _drawingSurface is null || _isSurfaceSupportTransparency != isTransparency)
                 {
                     // Re-create the surface with correct alpha mode if the transparency support is not correct. This can happen when the transparency level is changed.
-                    _surface.Dispose();
-                    _surfaceInterop.Dispose();
-                    _drawingSurface.Dispose();
+                    _surface?.Dispose();
+                    _surfaceInterop?.Dispose();
+                    _drawingSurface?.Dispose();
 
-                    CreateSurface(_window);
-
-                    // The _drawingSurface.Size != _size, so that require force resize to update the size of surface.
-                    forceResize = true;
+                    CreateSurface(in sceneInfo);
                 }
 
-                var size = _window.WindowInfo.Size;
-                var scale = _window.WindowInfo.Scaling;
+                var size = sceneInfo.Size;
+                var scale = sceneInfo.Scaling;
                 _window.ResizeIfNeeded(size);
                 _window.SetSurface(_surface);
                 
@@ -161,7 +165,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 UnmanagedMethods.POINT off;
                 try
                 {
-                    if (forceResize || _size != size)
+                    if (_size != size)
                     {
                         _surfaceInterop.Resize(new UnmanagedMethods.POINT
                         {

@@ -15,7 +15,7 @@ public interface IDirect3D11TexturePlatformSurface : IPlatformRenderSurface
 public interface IDirect3D11TextureRenderTarget : IDisposable
 {
     bool IsCorrupted { get; }
-    IDirect3D11TextureRenderTargetRenderSession BeginDraw();
+    IDirect3D11TextureRenderTargetRenderSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo);
 }
 
 public interface IDirect3D11TextureRenderTargetRenderSession : IDisposable
