@@ -196,6 +196,8 @@ namespace Avalonia.X11
         public IntPtr _KDE_NET_WM_BLUR_BEHIND_REGION;
         public IntPtr INCR;
         public IntPtr _NET_WM_STATE_FOCUSED;
+        public IntPtr _GTK_FRAME_EXTENTS;
+        public IntPtr _GTK_EDGE_CONSTRAINTS;
 
         private readonly Dictionary<string, IntPtr> _namesToAtoms  = new Dictionary<string, IntPtr>();
         private readonly Dictionary<IntPtr, string> _atomsToNames = new Dictionary<IntPtr, string>();

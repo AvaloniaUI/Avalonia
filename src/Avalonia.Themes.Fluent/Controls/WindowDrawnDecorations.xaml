@@ -33,7 +33,7 @@
   <ControlTheme x:Key="{x:Type WindowDrawnDecorations}" TargetType="WindowDrawnDecorations">
     <Setter Property="DefaultTitleBarHeight" Value="30"/>
     <Setter Property="DefaultFrameThickness" Value="1"/>
-    <Setter Property="DefaultShadowThickness" Value="8"/>
+    <Setter Property="DefaultShadowThickness" Value="16"/>
     <Setter Property="Template">
       <WindowDrawnDecorationsTemplate>
         <WindowDrawnDecorationsContent>
@@ -168,11 +168,16 @@
     <Style Selector="^:has-shadow /template/ Panel#PART_UnderlayWrapper">
       <Setter Property="Margin" Value="{TemplateBinding ShadowThickness}"/>
     </Style>
-    <Style Selector="^:has-shadow /template/ Border#PART_WindowBorder">
-      <Setter Property="BoxShadow" Value="0 2 10 2 #80000000"/>
-    </Style>
     <Style Selector="^:has-shadow /template/ Panel#PART_OverlayWrapper">
       <Setter Property="Margin" Value="{TemplateBinding ShadowThickness}"/>
+    </Style>
+    <!-- Inactive shadow: subtle -->
+    <Style Selector="^:has-shadow:inactive /template/ Border#PART_WindowBorder">
+      <Setter Property="BoxShadow" Value="0 1 8 0 #38000000"/>
+    </Style>
+    <!-- Active shadow: more pronounced -->
+    <Style Selector="^:has-shadow:active /template/ Border#PART_WindowBorder">
+      <Setter Property="BoxShadow" Value="0 4 14 2 #60000000"/>
     </Style>
 
     <!-- Border: inset titlebar and buttons inside frame -->

@@ -3,6 +3,7 @@ using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
+using Avalonia.Platform;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Reactive;
@@ -17,7 +18,7 @@ namespace Avalonia.Controls.Chrome;
 /// and inserts them into its own visual tree.
 /// </summary>
 [PseudoClasses(pcNormal, pcMaximized, pcFullscreen, pcHasShadow, pcHasBorder, pcHasTitlebar,
-    pcHasMaximize, pcHasFullscreen, pcHasMinimize)]
+    pcHasMaximize, pcHasFullscreen, pcHasMinimize, pcActive, pcInactive)]
 [TemplatePart(PART_CloseButton, typeof(Button))]
 [TemplatePart(PART_MinimizeButton, typeof(Button))]
 [TemplatePart(PART_MaximizeButton, typeof(Button))]
@@ -36,6 +37,8 @@ public class WindowDrawnDecorations : StyledElement
     internal const string pcHasMaximize = ":has-maximize";
     internal const string pcHasFullscreen = ":has-fullscreen";
     internal const string pcHasMinimize = ":has-minimize";
+    internal const string pcActive = ":active";
+    internal const string pcInactive = ":inactive";
 
     // Template part names for caption buttons
     internal const string PART_CloseButton = "PART_CloseButton";
@@ -262,6 +265,22 @@ public class WindowDrawnDecorations : StyledElement
     }
 
     /// <summary>
+    /// Gets or sets which edges are constrained to screen boundaries (tiled/snapped).
+    /// When set, frame thickness is zeroed on constrained edges.
+    /// </summary>
+    internal WindowEdgeConstraints TiledEdges
+    {
+        get => field;
+        set
+        {
+            if (field == value)
+                return;
+            field = value;
+            UpdateEffectiveGeometry();
+        }
+    }
+
+    /// <summary>
     /// Gets the built template content.
     /// </summary>
     public WindowDrawnDecorationsContent? Content { get; private set; }
@@ -412,6 +431,12 @@ public class WindowDrawnDecorations : StyledElement
                     UpdateMaximizeButtonState();
                     UpdateMinimizeButtonState();
                     UpdateFullScreenButtonState();
+                }),
+            window.GetObservable(WindowBase.IsActiveProperty)
+                .Subscribe(active =>
+                {
+                    PseudoClasses.Set(pcActive, active);
+                    PseudoClasses.Set(pcInactive, !active);
                 }),
         };
 
@@ -615,9 +640,19 @@ public class WindowDrawnDecorations : StyledElement
                 TitleBarHeightOverride == -1 ? DefaultTitleBarHeight : TitleBarHeightOverride, scale)
             : 0;
 
-        FrameThickness = EnabledParts.HasFlag(DrawnWindowDecorationParts.Border)
+        var baseFrame = EnabledParts.HasFlag(DrawnWindowDecorationParts.Border)
             ? LayoutHelper.RoundLayoutThickness(FrameThicknessOverride ?? DefaultFrameThickness, scale)
             : default;
+
+        // Zero out frame thickness on edges constrained to screen boundaries (tiled/snapped)
+        var edges = TiledEdges;
+        FrameThickness = edges != WindowEdgeConstraints.None
+            ? new Thickness(
+                edges.HasFlag(WindowEdgeConstraints.Left) ? 0 : baseFrame.Left,
+                edges.HasFlag(WindowEdgeConstraints.Top) ? 0 : baseFrame.Top,
+                edges.HasFlag(WindowEdgeConstraints.Right) ? 0 : baseFrame.Right,
+                edges.HasFlag(WindowEdgeConstraints.Bottom) ? 0 : baseFrame.Bottom)
+            : baseFrame;
 
         ShadowThickness = EnabledParts.HasFlag(DrawnWindowDecorationParts.Shadow)
             ? LayoutHelper.RoundLayoutThickness(ShadowThicknessOverride ?? DefaultShadowThickness, scale)

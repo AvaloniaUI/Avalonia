@@ -181,12 +181,16 @@ internal partial class TopLevelHost
 
         var frame = _decorations.FrameThickness;
         var shadow = _decorations.ShadowThickness;
-        // Grips strictly cover frame + shadow area, never client area
+
+        // When tiled, shadow is stripped so grips would only be frame thickness (1px).
+        // Ensure a minimum grip size on edges that still have a frame (unconstrained edges).
+        const double minGrip = 4;
+
         _resizeGrips.GripThickness = new Thickness(
-            frame.Left + shadow.Left,
-            frame.Top + shadow.Top,
-            frame.Right + shadow.Right,
-            frame.Bottom + shadow.Bottom);
+            frame.Left > 0 ? Math.Max(minGrip, frame.Left + shadow.Left) : 0,
+            frame.Top > 0 ? Math.Max(minGrip, frame.Top + shadow.Top) : 0,
+            frame.Right > 0 ? Math.Max(minGrip, frame.Right + shadow.Right) : 0,
+            frame.Bottom > 0 ? Math.Max(minGrip, frame.Bottom + shadow.Bottom) : 0);
     }
 
     internal void UpdateResizeGrips()

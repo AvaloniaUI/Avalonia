@@ -172,5 +172,36 @@ namespace Avalonia.Platform
         /// Gets or sets a callback invoked when <see cref="AllowedWindowActions"/> changes.
         /// </summary>
         Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged { get => null; set { } }
+
+        /// <summary>
+        /// Notifies the platform of the shadow extents drawn by the application's CSD decorations.
+        /// On X11, this sets the _GTK_FRAME_EXTENTS property so the compositor can correctly handle
+        /// shadows, snap positioning, and window capture bounds.
+        /// </summary>
+        /// <param name="extents">The shadow thickness around the visual frame (left, top, right, bottom).</param>
+        void SetShadowExtents(Thickness extents) { }
+
+        /// <summary>
+        /// Gets or sets a callback invoked when the window's tiled/snapped edge constraints change.
+        /// The parameter indicates which edges are constrained (touching a screen edge).
+        /// When all edges are unconstrained (None), the window is floating freely.
+        /// Used to strip shadows and per-edge borders when the window is tiled.
+        /// </summary>
+        Action<WindowEdgeConstraints>? WindowTiledChanged { get => null; set { } }
+    }
+
+    /// <summary>
+    /// Describes which edges of a window are constrained to screen boundaries
+    /// during a tiled/snapped window layout.
+    /// </summary>
+    [Flags]
+    public enum WindowEdgeConstraints
+    {
+        None = 0,
+        Left = 1,
+        Right = 2,
+        Top = 4,
+        Bottom = 8,
+        All = Left | Right | Top | Bottom,
     }
 }

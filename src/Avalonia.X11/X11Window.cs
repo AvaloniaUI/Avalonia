@@ -70,6 +70,10 @@ namespace Avalonia.X11
         private bool _useRenderWindow = false;
         private bool _useCompositorDrivenRenderWindowResize = false;
         private bool _usePositioningFlags = false;
+        private WindowEdgeConstraints _tiledEdges;
+        private bool _hasAlphaChannel;
+        private ulong _lastTitleBarClickTime;
+        private Point _lastTitleBarClickPos;
         private X11WindowMode _mode;
         private IWindowIconImpl? _iconImpl;
 
@@ -156,6 +160,8 @@ namespace Avalonia.X11
                 attr.colormap = XCreateColormap(_x11.Display, _x11.RootWindow, visualInfo.Value.visual, 0);
                 valueMask |= SetWindowValuemask.ColorMap;   
             }
+
+            _hasAlphaChannel = depth == 32;
 
             int defaultWidth = 0, defaultHeight = 0;
 
@@ -499,6 +505,7 @@ namespace Avalonia.X11
         public Action? Activated { get; set; }
         public Func<WindowCloseReason, bool>? Closing { get; set; }
         public Action<WindowState>? WindowStateChanged { get; set; }
+        public Action<WindowEdgeConstraints>? WindowTiledChanged { get; set; }
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged
         {
@@ -840,16 +847,24 @@ namespace Avalonia.X11
                     : [];
                 int maximized = 0;
                 bool hasMinimized = false, hasFullscreen = false;
+                bool hasMaxHorz = false, hasMaxVert = false;
                 foreach (var atom in atoms)
                 {
-                    if (atom == _x11.Atoms._NET_WM_STATE_HIDDEN) 
+                    if (atom == _x11.Atoms._NET_WM_STATE_HIDDEN)
                         hasMinimized = true;
 
-                    if (atom == _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ ||
-                        atom == _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT) 
+                    if (atom == _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ)
+                    {
+                        hasMaxHorz = true;
                         maximized++;
-                    
-                    if(atom == _x11.Atoms._NET_WM_STATE_FULLSCREEN) 
+                    }
+                    if (atom == _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT)
+                    {
+                        hasMaxVert = true;
+                        maximized++;
+                    }
+
+                    if(atom == _x11.Atoms._NET_WM_STATE_FULLSCREEN)
                         hasFullscreen = true;
                 }
 
@@ -873,7 +888,51 @@ namespace Avalonia.X11
                     }
                 }
 
+                // Tiled = any maximize atom is set (half-screen snap sets one,
+                // full maximize sets both). Fullscreen is not tiled.
+                // Derive per-edge constraints from maximize atoms.
+                // MAXIMIZED_HORZ constrains left+right, MAXIMIZED_VERT constrains top+bottom.
+                // Fullscreen is not tiled.
+                var edges = WindowEdgeConstraints.None;
+                if (!hasFullscreen)
+                {
+                    if (hasMaxHorz)
+                        edges |= WindowEdgeConstraints.Left | WindowEdgeConstraints.Right;
+                    if (hasMaxVert)
+                        edges |= WindowEdgeConstraints.Top | WindowEdgeConstraints.Bottom;
+                }
+                if (_tiledEdges != edges)
+                {
+                    _tiledEdges = edges;
+                    WindowTiledChanged?.Invoke(edges);
+                }
+
                 _activationTracker?.OnNetWmStateChanged(atoms);
+            }
+
+            // GNOME/Mutter uses _GTK_EDGE_CONSTRAINTS for tiling detection.
+            // Bitmask layout: odd bits (1,3,5,7) = per-edge resizability.
+            // Bit set = edge is free/resizable, bit clear = edge is constrained/tiled.
+            // Floating state = 0xAA (all edges resizable).
+            if (property == _x11.Atoms._GTK_EDGE_CONSTRAINTS)
+            {
+                var data = hasValue
+                    ? XGetWindowPropertyAsIntPtrArray(_x11.Display, _handle,
+                          _x11.Atoms._GTK_EDGE_CONSTRAINTS, (IntPtr)Atom.XA_CARDINAL)
+                    : null;
+                var constraints = data is { Length: > 0 } ? (int)data[0].ToInt64() : 0xAA;
+
+                var edges = WindowEdgeConstraints.None;
+                if ((constraints & (1 << 1)) == 0) edges |= WindowEdgeConstraints.Top;
+                if ((constraints & (1 << 3)) == 0) edges |= WindowEdgeConstraints.Right;
+                if ((constraints & (1 << 5)) == 0) edges |= WindowEdgeConstraints.Bottom;
+                if ((constraints & (1 << 7)) == 0) edges |= WindowEdgeConstraints.Left;
+
+                if (_tiledEdges != edges)
+                {
+                    _tiledEdges = edges;
+                    WindowTiledChanged?.Invoke(edges);
+                }
             }
 
         }
@@ -970,6 +1029,25 @@ namespace Avalonia.X11
                     var chromeRole = inputRoot.HitTestChromeElement(mouse.Position);
                     if (chromeRole is { } role)
                     {
+                        // Double-click on titlebar toggles maximize/restore
+                        if (role == WindowDecorationsElementRole.TitleBar)
+                        {
+                            var now = mouse.Timestamp;
+                            if (now - _lastTitleBarClickTime < 500
+                                && Math.Abs(mouse.Position.X - _lastTitleBarClickPos.X) < 4
+                                && Math.Abs(mouse.Position.Y - _lastTitleBarClickPos.Y) < 4)
+                            {
+                                _lastTitleBarClickTime = 0;
+                                if (_canResize)
+                                    WindowState = WindowState == WindowState.Maximized
+                                        ? WindowState.Normal
+                                        : WindowState.Maximized;
+                                return;
+                            }
+                            _lastTitleBarClickTime = now;
+                            _lastTitleBarClickPos = mouse.Position;
+                        }
+
                         var moveResizeSide = role switch
                         {
                             WindowDecorationsElementRole.TitleBar => NetWmMoveResize._NET_WM_MOVERESIZE_MOVE,
@@ -1638,6 +1716,29 @@ namespace Avalonia.X11
         {
         }
 
+        public void SetShadowExtents(Thickness extents)
+        {
+            var scaling = RenderScaling;
+            var left = (int)Math.Round(extents.Left * scaling);
+            var right = (int)Math.Round(extents.Right * scaling);
+            var top = (int)Math.Round(extents.Top * scaling);
+            var bottom = (int)Math.Round(extents.Bottom * scaling);
+
+            if (left == 0 && right == 0 && top == 0 && bottom == 0)
+            {
+                XDeleteProperty(_x11.Display, _handle, _x11.Atoms._GTK_FRAME_EXTENTS);
+            }
+            else
+            {
+                // _GTK_FRAME_EXTENTS format: left, right, top, bottom
+                var data = new IntPtr[] { left, right, top, bottom };
+                fixed (void* pdata = data)
+                    XChangeProperty(_x11.Display, _handle, _x11.Atoms._GTK_FRAME_EXTENTS,
+                        (IntPtr)Atom.XA_CARDINAL, 32, PropertyMode.Replace,
+                        pdata, 4);
+            }
+        }
+
         public WindowTransparencyLevel TransparencyLevel =>
             _transparencyHelper?.CurrentLevel ?? WindowTransparencyLevel.None;
 
@@ -1647,13 +1748,25 @@ namespace Avalonia.X11
 
         public bool NeedsManagedDecorations => UseManagedDecorations;
 
-        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations =>
-            UseManagedDecorations
-                ? PlatformRequestedDrawnDecoration.Border
-                  | PlatformRequestedDrawnDecoration.ResizeGrips
-                  | PlatformRequestedDrawnDecoration.TitleBar
-                  | PlatformRequestedDrawnDecoration.Shadow
-                : PlatformRequestedDrawnDecoration.None;
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations
+        {
+            get
+            {
+                if (!UseManagedDecorations)
+                    return PlatformRequestedDrawnDecoration.None;
+
+                var parts = PlatformRequestedDrawnDecoration.Border
+                            | PlatformRequestedDrawnDecoration.ResizeGrips
+                            | PlatformRequestedDrawnDecoration.TitleBar;
+
+                // Only request drawn shadow when the visual supports alpha compositing.
+                // EGL windows use depth 24 (no alpha), so shadow would render as opaque black.
+                if (_hasAlphaChannel)
+                    parts |= PlatformRequestedDrawnDecoration.Shadow;
+
+                return parts;
+            }
+        }
 
         public bool IsEnabled => !_disabled && !_mode.BlockInput;
 
