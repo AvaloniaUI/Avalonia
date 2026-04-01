@@ -77,7 +77,7 @@ internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarg
     }
 
     [MemberNotNull(nameof(_surface))]
-    private void CreateSurface(DirectCompositedWindow window, in IRenderTarget.RenderTargetSceneInfo sceneInfo)
+    private void CreateSurface(in IRenderTarget.RenderTargetSceneInfo sceneInfo)
     {
         using var surfaceFactory = _shared.Device.CreateSurfaceFactory(_d3dDevice);
 
@@ -115,7 +115,7 @@ internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarg
             {
                 _surface?.Dispose();
 
-                CreateSurface(_window, in sceneInfo);
+                CreateSurface(in sceneInfo);
             }
 
             var size = sceneInfo.Size;
