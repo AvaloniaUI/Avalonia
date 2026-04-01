@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
 using Avalonia.Collections.Pooled;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -14,14 +12,11 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
-using Avalonia.Logging;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
-using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering.Composition;
-using Avalonia.Threading;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
@@ -29,8 +24,10 @@ using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.OpenGl.Angle;
 using Avalonia.Win32.WinRT.Composition;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
-
+using Avalonia.Platform.Storage.FileIO;
+using Avalonia.Threading;
 using static Avalonia.Controls.Win32Properties;
+using Avalonia.Logging;
 
 namespace Avalonia.Win32
 {
