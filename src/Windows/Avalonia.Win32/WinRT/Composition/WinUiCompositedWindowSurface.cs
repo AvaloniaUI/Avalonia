@@ -198,7 +198,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 if (transaction != null)
                 {
                     if (needsEndDraw)
-                        _surfaceInterop.EndDraw();
+                        _surfaceInterop?.EndDraw();
                     transaction.Dispose();
                 }
             }
