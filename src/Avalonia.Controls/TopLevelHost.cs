@@ -51,11 +51,14 @@ internal partial class TopLevelHost : Control
         var hasInset = inset != default;
         var desiredSize = default(Size);
 
-        foreach (var child in VisualChildren)
+        var children = VisualChildren;
+        var childrenCount = children.Count;
+
+        for (var i = 0; i < childrenCount; i++)
         {
-            if (child is Layoutable l)
+            if (children[i] is Layoutable l)
             {
-                if (hasInset && ReferenceEquals(child, _topLevel))
+                if (hasInset && ReferenceEquals(l, _topLevel))
                 {
                     // In forced mode, measure the TopLevel with reduced size
                     var contentSize = new Size(
@@ -89,11 +92,14 @@ internal partial class TopLevelHost : Control
         var inset = _decorationInset;
         var hasInset = inset != default;
 
-        foreach (var child in VisualChildren)
+        var children = VisualChildren;
+        var childrenCount = children.Count;
+
+        for (var i = 0; i < childrenCount; i++)
         {
-            if (child is Layoutable l)
+            if (children[i] is Layoutable l)
             {
-                if (hasInset && ReferenceEquals(child, _topLevel))
+                if (hasInset && ReferenceEquals(l, _topLevel))
                 {
                     // In forced mode, arrange the TopLevel within the inset area
                     var contentSize = new Size(

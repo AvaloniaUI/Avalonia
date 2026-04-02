@@ -1537,11 +1537,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(2,4)]
-        [InlineData(0,4)]
-        [InlineData(2,6)]
-        [InlineData(0,6)]
-        [InlineData(3,4)]
+        [InlineData(2, 4)]
+        [InlineData(0, 4)]
+        [InlineData(2, 6)]
+        [InlineData(0, 6)]
+        [InlineData(3, 4)]
         public void When_Selection_From_Left_To_Right_Pressing_Right_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1566,11 +1566,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(2,4)]
-        [InlineData(0,4)]
-        [InlineData(2,6)]
-        [InlineData(0,6)]
-        [InlineData(3,4)]
+        [InlineData(2, 4)]
+        [InlineData(0, 4)]
+        [InlineData(2, 6)]
+        [InlineData(0, 6)]
+        [InlineData(3, 4)]
         public void When_Selection_From_Left_To_Right_Pressing_Left_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1595,11 +1595,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(4,2)]
-        [InlineData(4,0)]
-        [InlineData(6,2)]
-        [InlineData(6,0)]
-        [InlineData(4,3)]
+        [InlineData(4, 2)]
+        [InlineData(4, 0)]
+        [InlineData(6, 2)]
+        [InlineData(6, 0)]
+        [InlineData(4, 3)]
         public void When_Selection_From_Right_To_Left_Pressing_Right_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1624,11 +1624,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(4,2)]
-        [InlineData(4,0)]
-        [InlineData(6,2)]
-        [InlineData(6,0)]
-        [InlineData(4,3)]
+        [InlineData(4, 2)]
+        [InlineData(4, 0)]
+        [InlineData(6, 2)]
+        [InlineData(6, 0)]
+        [InlineData(4, 3)]
         public void When_Selection_From_Right_To_Left_Pressing_Left_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1707,11 +1707,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(2,4)]
-        [InlineData(0,4)]
-        [InlineData(2,6)]
-        [InlineData(0,6)]
-        [InlineData(3,4)]
+        [InlineData(2, 4)]
+        [InlineData(0, 4)]
+        [InlineData(2, 6)]
+        [InlineData(0, 6)]
+        [InlineData(3, 4)]
         public void When_Selection_From_Left_To_Right_Pressing_Up_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1736,11 +1736,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(4,2)]
-        [InlineData(4,0)]
-        [InlineData(6,2)]
-        [InlineData(6,0)]
-        [InlineData(4,3)]
+        [InlineData(4, 2)]
+        [InlineData(4, 0)]
+        [InlineData(6, 2)]
+        [InlineData(6, 0)]
+        [InlineData(4, 3)]
         public void When_Selection_From_Right_To_Left_Pressing_Up_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1792,11 +1792,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(2,4)]
-        [InlineData(0,4)]
-        [InlineData(2,6)]
-        [InlineData(0,6)]
-        [InlineData(3,4)]
+        [InlineData(2, 4)]
+        [InlineData(0, 4)]
+        [InlineData(2, 6)]
+        [InlineData(0, 6)]
+        [InlineData(3, 4)]
         public void When_Selection_From_Left_To_Right_Pressing_Down_Should_Remove_Selection_Moving_Caret_To_End_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
@@ -1821,11 +1821,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(4,2)]
-        [InlineData(4,0)]
-        [InlineData(6,2)]
-        [InlineData(6,0)]
-        [InlineData(4,3)]
+        [InlineData(4, 2)]
+        [InlineData(4, 0)]
+        [InlineData(6, 2)]
+        [InlineData(6, 0)]
+        [InlineData(4, 3)]
         public void When_Selection_From_Right_To_Left_Pressing_Down_Should_Remove_Selection_Moving_Caret_To_Start_Of_Previous_Selection(int selectionStart, int selectionEnd)
         {
             using (UnitTestApplication.Start(Services))
