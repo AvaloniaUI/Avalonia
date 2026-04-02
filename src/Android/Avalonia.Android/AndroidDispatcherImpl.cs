@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Threading;
 using Android.OS;
 using Avalonia.Controls.Documents;
 using Avalonia.Threading;
@@ -19,8 +20,7 @@ namespace Avalonia.Android
         private readonly Runnable _timerSignaler;
         private readonly Runnable _wakeupSignaler;
         private readonly MessageQueue _queue;
-        private readonly object _lock = new();
-        private bool _signaled;
+        private int _signaled;
         private bool _backgroundProcessingRequested;
         
 
@@ -46,8 +46,7 @@ namespace Avalonia.Android
         public event Action? Signaled;
         private void OnSignaled()
         {
-            lock (_lock)
-                _signaled = false;
+            Interlocked.Exchange(ref _signaled, 0);
             Signaled?.Invoke();
         }
 
@@ -68,13 +67,11 @@ namespace Avalonia.Android
 
         public void Signal()
         {
-            lock (_lock)
+            if (Interlocked.CompareExchange(ref _signaled, 1, 0) != 0)
             {
-                if(_signaled)
-                    return;
-                _signaled = true;
-                _handler.Post(_signaler);
+                return;
             }
+            _handler.Post(_signaler);
         }
 
         readonly Stopwatch _clock = Stopwatch.StartNew();
@@ -133,11 +130,9 @@ namespace Avalonia.Android
                 // "background" jobs not being processed
                 // So we need to examine the queue state to prevent that scenario
                 
-                lock (_lock)
+                if (Volatile.Read(ref _signaled) != 0)
                 {
-                    // There are higher priority jobs enqueued, we'll be called again
-                    if (_signaled)
-                        return;
+                    return;
                 }
                 
                 if (CanQueryPendingInput)

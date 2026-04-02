@@ -1004,14 +1004,14 @@ interface IAvnClipboard : IUnknown
 interface IAvnClipboardDataSource : IUnknown
 {
     int GetItemCount();
-    IAvnClipboardDataItem* GetItem(int index);
+    HRESULT GetItem(int index, IAvnClipboardDataItem**ppv);
 }
 
 [uuid(e40f36d9-69f4-45fd-9ca2-6e64e80feb6d)]
 interface IAvnClipboardDataItem : IUnknown
 {
-    IAvnStringArray* ProvideFormats();
-    IAvnClipboardDataValue* GetValue([const] char* format);
+    HRESULT ProvideFormats(IAvnStringArray** ppv);
+    HRESULT GetValue([const] char* format, IAvnClipboardDataValue** ppv);
 }
 
 [uuid(e97f24f6-1c84-4d95-8ffe-5b2c72e016ed)]

@@ -30,7 +30,9 @@ internal abstract class AnimationInstanceBase : IAnimationInstance
             _trackedObjects = new ();
             foreach (var t in trackedObjects)
             {
-                var obj = Parameters.GetObjectParameter(t.name);
+                var obj = (t.name == ExpressionKeywords.Target) 
+                    ? TargetObject 
+                    : Parameters.GetObjectParameter(t.name);
                 if (obj is ServerObject tracked)
                 {
                     var off = tracked.GetCompositionProperty(t.member);

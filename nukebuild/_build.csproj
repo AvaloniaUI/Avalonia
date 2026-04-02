@@ -7,11 +7,12 @@
     <NoWarn>$(NoWarn);CS0649;CA1847</NoWarn>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <UseMicroComGenerator>true</UseMicroComGenerator>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Nuke.Common" />
-    <PackageReference Include="MicroCom.CodeGenerator" />
+    <PackageReference Include="Numerge" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
     <PackageReference Include="Mono.Cecil" />
     <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
@@ -21,14 +22,11 @@
     <PackageDownload Include="dotnet-ilrepack" Version="[2.0.44]" />
   </ItemGroup>
 
+  <Import Project="..\build\MicroCOM.props" />
+
   <ItemGroup>
     <NukeMetadata Include="**\*.json" Exclude="bin\**;obj\**" />
     <NukeExternalFiles Include="**\*.*.ext" Exclude="bin\**;obj\**" />
-
-    <!-- Common build related files -->
-    <Compile Include="../external/Numerge/Numerge/**/*.cs"
-             Exclude="../external/Numerge/Numerge/obj/**/*.cs"
-             LinkBase="Numerge" />
     <EmbeddedResource Include="../build/avalonia.snk" />
   </ItemGroup>
 

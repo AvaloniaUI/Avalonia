@@ -674,11 +674,7 @@ internal static class OleDataObjectHelper
         {
             var data = StringBuilderCache.GetStringAndRelease(buffer);
             var destSpan = new Span<byte>((void*)ptr, requiredSize);
-#if NET8_0_OR_GREATER
             MemoryMarshal.Write(destSpan, in dropFiles);
-#else
-                MemoryMarshal.Write(destSpan, ref dropFiles);
-#endif
 
             fixed (char* sourcePtr = data)
             {

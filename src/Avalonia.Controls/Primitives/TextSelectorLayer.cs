@@ -11,7 +11,7 @@ namespace Avalonia.Controls.Primitives
 
         public static TextSelectorLayer? GetTextSelectorLayer(Visual visual)
         {
-            foreach (var v in visual.GetVisualAncestors())
+            foreach (var v in visual.GetSelfAndVisualAncestors())
                 if (v is VisualLayerManager { TextSelectorLayer: { } textSelectorLayer })
                     return textSelectorLayer;
 

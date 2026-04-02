@@ -1,4 +1,6 @@
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
+using Avalonia.Automation.Provider;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -219,6 +221,103 @@ public class PageAutomationPeerTests
         {
             var page = new DrawerPage();
             var peer = (DrawerPageAutomationPeer)ControlAutomationPeer.CreatePeerForElement(page);
+
+            Assert.True(string.IsNullOrEmpty(peer.GetName()));
+        }
+
+        [Fact]
+        public void Implements_IExpandCollapseProvider()
+        {
+            var page = new DrawerPage();
+            var peer = (DrawerPageAutomationPeer)ControlAutomationPeer.CreatePeerForElement(page);
+
+            Assert.IsAssignableFrom<IExpandCollapseProvider>(peer);
+        }
+
+        [Fact]
+        public void ExpandCollapseState_Collapsed_When_Closed()
+        {
+            var page = new DrawerPage { IsOpen = false };
+            var peer = (DrawerPageAutomationPeer)ControlAutomationPeer.CreatePeerForElement(page);
+
+            Assert.Equal(ExpandCollapseState.Collapsed, peer.ExpandCollapseState);
+        }
+
+        [Fact]
+        public void ExpandCollapseState_Expanded_When_Open()
+        {
+            var page = new DrawerPage { IsOpen = true };
+            var peer = (DrawerPageAutomationPeer)ControlAutomationPeer.CreatePeerForElement(page);
+
+            Assert.Equal(ExpandCollapseState.Expanded, peer.ExpandCollapseState);
+        }
+
+        [Fact]
+        public void Expand_Sets_IsOpen_True()
+        {
+            var page = new DrawerPage { IsOpen = false };
+            var peer = (DrawerPageAutomationPeer)ControlAutomationPeer.CreatePeerForElement(page);
+
+            peer.Expand();
+
+            Assert.True(page.IsOpen);
+        }
+
+        [Fact]
+        public void Collapse_Sets_IsOpen_False()
+        {
+            var page = new DrawerPage { IsOpen = true };
+            var peer = (DrawerPageAutomationPeer)ControlAutomationPeer.CreatePeerForElement(page);
+
+            peer.Collapse();
+
+            Assert.False(page.IsOpen);
+        }
+    }
+
+    public class CarouselPagePeer : ScopedTestBase
+    {
+        [Fact]
+        public void Creates_CarouselPageAutomationPeer()
+        {
+            var page = new CarouselPage();
+            var peer = ControlAutomationPeer.CreatePeerForElement(page);
+
+            Assert.IsType<CarouselPageAutomationPeer>(peer);
+        }
+
+        [Fact]
+        public void ControlType_Is_Pane()
+        {
+            var page = new CarouselPage();
+            var peer = (CarouselPageAutomationPeer)ControlAutomationPeer.CreatePeerForElement(page);
+
+            Assert.Equal(AutomationControlType.Pane, peer.GetAutomationControlType());
+        }
+
+        [Fact]
+        public void Name_Returns_String_Header()
+        {
+            var page = new CarouselPage { Header = "Photos" };
+            var peer = (CarouselPageAutomationPeer)ControlAutomationPeer.CreatePeerForElement(page);
+
+            Assert.Equal("Photos", peer.GetName());
+        }
+
+        [Fact]
+        public void Name_Returns_ToString_For_Non_String_Header()
+        {
+            var page = new CarouselPage { Header = 7 };
+            var peer = (CarouselPageAutomationPeer)ControlAutomationPeer.CreatePeerForElement(page);
+
+            Assert.Equal("7", peer.GetName());
+        }
+
+        [Fact]
+        public void Name_Is_Empty_When_No_Header()
+        {
+            var page = new CarouselPage();
+            var peer = (CarouselPageAutomationPeer)ControlAutomationPeer.CreatePeerForElement(page);
 
             Assert.True(string.IsNullOrEmpty(peer.GetName()));
         }
