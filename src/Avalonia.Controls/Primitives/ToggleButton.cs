@@ -72,7 +72,15 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnClick()
         {
-            Toggle();
+            if (IsEffectivelyEnabled)
+            {
+                var command = Command;
+                if (command is null || command.CanExecute(CommandParameter))
+                {
+                    Toggle();
+                }
+            }
+
             base.OnClick();
         }
 
