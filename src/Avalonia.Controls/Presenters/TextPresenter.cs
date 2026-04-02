@@ -477,9 +477,12 @@ namespace Avalonia.Controls.Presenters
             var y = Math.Floor(_caretBounds.Y) + 0.5;
             var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
 
+            // When the caret is at the trailing edge of the last character on a line,
+            // snap to the next pixel boundary so it doesn't visually overlap the glyph.
+            // MeasureOverride reserves 2 extra pixels of width to prevent clipping.
             if (_caretBounds.X > 0 && _caretBounds.X >= textLine.WidthIncludingTrailingWhitespace)
             {
-                x -= 1;
+                x = Math.Ceiling(_caretBounds.X) + 0.5;
             }
 
             return (new Point(x, y), new Point(x, b));
@@ -647,8 +650,11 @@ namespace Avalonia.Controls.Presenters
             InvalidateArrange();
 
             // The textWidth used here is matching that TextBlock uses to measure the text.
+            // +2: reserve space for the caret at end-of-line so it is not clipped by
+            // the control boundary.  GetCaretPoints() uses Math.Ceiling(X) + 0.5 at the
+            // trailing edge, which can extend up to ~1.5px past the text width.
             var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
-            return new Size(textWidth, TextLayout.Height);
+            return new Size(textWidth + 2, TextLayout.Height);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
