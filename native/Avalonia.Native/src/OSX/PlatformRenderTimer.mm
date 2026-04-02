@@ -5,28 +5,48 @@ class PlatformRenderTimer : public ComSingleObject<IAvnPlatformRenderTimer, &IID
 private:
     ComPtr<IAvnActionCallback> _callback;
     CVDisplayLinkRef _displayLink;
-    dispatch_source_t _fallbackTimer;
-    bool _useFallbackTimer;
     bool _registered;
+    bool _started;
+    bool _waitingForDisplay;
 
 public:
     FORWARD_IUNKNOWN()
 
-    PlatformRenderTimer() : _displayLink(nil), _fallbackTimer(nil), _useFallbackTimer(false), _registered(false) {}
+    PlatformRenderTimer() : _displayLink(nil), _registered(false), _started(false), _waitingForDisplay(false) {}
 
     virtual ~PlatformRenderTimer()
     {
-        if (_fallbackTimer != nil)
-        {
-            dispatch_source_cancel(_fallbackTimer);
-            _fallbackTimer = nil;
-        }
+        CGDisplayRemoveReconfigurationCallback(DisplayReconfigurationCallback, this);
+
         if (_displayLink != nil)
         {
             CVDisplayLinkStop(_displayLink);
             CVDisplayLinkRelease(_displayLink);
             _displayLink = nil;
         }
+    }
+
+    bool TryCreateDisplayLink()
+    {
+        if (_displayLink != nil)
+            return true;
+
+        auto result = CVDisplayLinkCreateWithActiveCGDisplays(&_displayLink);
+        if (result != 0)
+        {
+            _displayLink = nil;
+            return false;
+        }
+
+        result = CVDisplayLinkSetOutputCallback(_displayLink, OnTick, this);
+        if (result != 0)
+        {
+            CVDisplayLinkRelease(_displayLink);
+            _displayLink = nil;
+            return false;
+        }
+
+        return true;
     }
 
     virtual int RegisterTick (
@@ -43,23 +63,14 @@ public:
 
             _registered = true;
             _callback = callback;
-            auto result = CVDisplayLinkCreateWithActiveCGDisplays(&_displayLink);
-            if (result != 0)
-            {
-                // CVDisplayLink unavailable (headless environment, no active display).
-                // Fall back to a dispatch timer at ~60fps so the app can still start.
-                _displayLink = nil;
-                _useFallbackTimer = true;
-                return S_OK;
-            }
 
-            result = CVDisplayLinkSetOutputCallback(_displayLink, OnTick, this);
-            if (result != 0)
+            if (!TryCreateDisplayLink())
             {
-                CVDisplayLinkRelease(_displayLink);
-                _displayLink = nil;
-                _useFallbackTimer = true;
-                return S_OK;
+                // No active display yet. Register for display reconfiguration
+                // notifications so we can create the CVDisplayLink when a display
+                // becomes available.
+                _waitingForDisplay = true;
+                CGDisplayRegisterReconfigurationCallback(DisplayReconfigurationCallback, this);
             }
         }
         return S_OK;
@@ -71,29 +82,14 @@ public:
 
         @autoreleasepool
         {
-            if (_useFallbackTimer)
-            {
-                if (_fallbackTimer == nil)
-                {
-                    _fallbackTimer = dispatch_source_create(
-                        DISPATCH_SOURCE_TYPE_TIMER, 0, 0,
-                        dispatch_get_main_queue());
-                    auto callback = _callback;
-                    dispatch_source_set_event_handler(_fallbackTimer, ^{
-                        callback->Run();
-                    });
-                    // ~60fps: 16.67ms interval, 1ms leeway
-                    dispatch_source_set_timer(_fallbackTimer,
-                        dispatch_time(DISPATCH_TIME_NOW, 0),
-                        NSEC_PER_SEC / 60,
-                        NSEC_PER_MSEC);
-                    dispatch_resume(_fallbackTimer);
-                }
-            }
-            else if (_displayLink != nil && CVDisplayLinkIsRunning(_displayLink) == false)
+            _started = true;
+
+            if (_displayLink != nil && CVDisplayLinkIsRunning(_displayLink) == false)
             {
                 CVDisplayLinkStart(_displayLink);
             }
+            // If no display link yet, _started flag ensures we start it
+            // when a display becomes available via the reconfiguration callback.
         }
     }
 
@@ -103,15 +99,9 @@ public:
 
         @autoreleasepool
         {
-            if (_useFallbackTimer)
-            {
-                if (_fallbackTimer != nil)
-                {
-                    dispatch_source_cancel(_fallbackTimer);
-                    _fallbackTimer = nil;
-                }
-            }
-            else if (_displayLink != nil && CVDisplayLinkIsRunning(_displayLink) == true)
+            _started = false;
+
+            if (_displayLink != nil && CVDisplayLinkIsRunning(_displayLink) == true)
             {
                 CVDisplayLinkStop(_displayLink);
             }
@@ -124,8 +114,34 @@ public:
 
         @autoreleasepool
         {
-            // Fallback timer runs on main queue, not a background thread
-            return !_useFallbackTimer;
+            return true;
+        }
+    }
+
+    void OnDisplayAdded()
+    {
+        if (!_waitingForDisplay)
+            return;
+
+        if (TryCreateDisplayLink())
+        {
+            _waitingForDisplay = false;
+            CGDisplayRemoveReconfigurationCallback(DisplayReconfigurationCallback, this);
+
+            if (_started)
+            {
+                CVDisplayLinkStart(_displayLink);
+            }
+        }
+    }
+
+    static void DisplayReconfigurationCallback(CGDirectDisplayID display,
+        CGDisplayChangeSummaryFlags flags, void *userInfo)
+    {
+        if (flags & kCGDisplayAddFlag)
+        {
+            auto *timer = (PlatformRenderTimer *)userInfo;
+            timer->OnDisplayAdded();
         }
     }
 
