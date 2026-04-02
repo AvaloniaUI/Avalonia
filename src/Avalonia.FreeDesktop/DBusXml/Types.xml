@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Types xmlns="http://avaloniaui.net/dbus/1.0">
+  <Struct Name="MenuLayout">
+    <Property Name="Id"/>
+    <Property Name="Properties"/>
+    <Property Name="Children"/>
+  </Struct>
+
+  <Struct Name="MenuItemProperties">
+    <Property Name="Id"/>
+    <Property Name="Properties"/>
+  </Struct>
+
+  <Struct Name="MenuEvent">
+    <Property Name="Id"/>
+    <Property Name="EventId"/>
+    <Property Name="Data"/>
+    <Property Name="Timestamp"/>
+  </Struct>
+
+  <Struct Name="IconPixmap">
+    <Property Name="Width"/>
+    <Property Name="Height"/>
+    <Property Name="Data"/>
+  </Struct>
+
+  <Struct Name="ToolTip">
+    <Property Name="IconName"/>
+    <Property Name="Pixmaps">
+      <List>
+        <Struct Type="IconPixmap"/>
+      </List>
+    </Property>
+    <Property Name="Title"/>
+    <Property Name="Description"/>
+  </Struct>
+
+  <Struct Name="InputContextArg">
+    <Property Name="Key"/>
+    <Property Name="Value"/>
+  </Struct>
+
+  <Struct Name="FormattedPreeditSegment">
+    <Property Name="Text"/>
+    <Property Name="FormatType"/>
+  </Struct>
+</Types>

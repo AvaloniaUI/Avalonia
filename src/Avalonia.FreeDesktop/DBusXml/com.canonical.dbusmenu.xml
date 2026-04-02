@@ -28,7 +28,8 @@ You should have received a copy of both the GNU Lesser General Public
 License version 3 and version 2.1 along with this program.  If not, see 
 <http://www.gnu.org/licenses/>
 -->
-<node name="/" xmlns:dox="http://www.canonical.com/dbus/dox.dtd">
+<node name="/" xmlns:dox="http://www.canonical.com/dbus/dox.dtd" xmlns:av="http://avaloniaui.net/dbus/1.0">
+    <av:ImportTypes>Types.xml</av:ImportTypes>
     <dox:d><![CDATA[
     @mainpage
 
@@ -250,6 +251,9 @@ License version 3 and version 2.1 along with this program.  If not, see
 			</arg>
 			<arg type="(ia{sv}av)" name="layout" direction="out">
 				<dox:d>The layout, as a recursive structure.</dox:d>
+				<av:TypeDefinition>
+					<av:Struct Type="MenuLayout"/>
+				</av:TypeDefinition>
 			</arg>
 		</method>
 
@@ -278,6 +282,11 @@ License version 3 and version 2.1 along with this program.  If not, see
 					@li id unsigned the item id
 					@li properties map(string => variant) the requested item properties
 				</dox:d>
+				<av:TypeDefinition>
+					<av:List>
+						<av:Struct Type="MenuItemProperties"/>
+					</av:List>
+				</av:TypeDefinition>
 			</arg>
 		</method>
 
@@ -337,6 +346,11 @@ License version 3 and version 2.1 along with this program.  If not, see
 					match the parameters of the 'Event' signal.  Which is roughly:
 					id, eventID, data and timestamp.
 				</dox:d>
+				<av:TypeDefinition>
+					<av:List>
+						<av:Struct Type="MenuEvent"/>
+					</av:List>
+				</av:TypeDefinition>
 			</arg>
 			<arg type="ai" name="idErrors" direction="out">
 				<dox:d>
@@ -397,7 +411,13 @@ License version 3 and version 2.1 along with this program.  If not, see
 			the ID of the item with a hashtable of names and values for those
 			properties.
 			</dox:d>
-			<arg type="a(ia{sv})" name="updatedProps" direction="out" />
+			<arg type="a(ia{sv})" name="updatedProps" direction="out">
+				<av:TypeDefinition>
+					<av:List>
+						<av:Struct Type="MenuItemProperties"/>
+					</av:List>
+				</av:TypeDefinition>
+			</arg>
 			<arg type="a(ias)" name="removedProps" direction="out" />
 		</signal>
 		<signal name="LayoutUpdated">

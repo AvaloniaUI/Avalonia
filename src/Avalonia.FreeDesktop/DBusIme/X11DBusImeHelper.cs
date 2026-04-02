@@ -1,15 +1,15 @@
 #pragma warning disable CS0618 // TODO: Temporary workaround until Tmds is replaced.
 using System;
 using System.Collections.Generic;
+using Avalonia.DBus;
 using Avalonia.FreeDesktop.DBusIme.Fcitx;
 using Avalonia.FreeDesktop.DBusIme.IBus;
-using Tmds.DBus.Protocol;
 
 namespace Avalonia.FreeDesktop.DBusIme
 {
     internal class X11DBusImeHelper
     {
-        private static readonly Dictionary<string, Func<Connection, IX11InputMethodFactory>> KnownMethods = new()
+        private static readonly Dictionary<string, Func<DBusConnection, IX11InputMethodFactory>> KnownMethods = new()
             {
                 ["fcitx"] = static conn =>
                     new DBusInputMethodFactory<FcitxX11TextInputMethod>(_ => new FcitxX11TextInputMethod(conn)),
@@ -19,7 +19,7 @@ namespace Avalonia.FreeDesktop.DBusIme
                     new DBusInputMethodFactory<IBusX11TextInputMethod>(_ => new IBusX11TextInputMethod(conn))
             };
 
-        private static Func<Connection, IX11InputMethodFactory>? DetectInputMethod()
+        private static Func<DBusConnection, IX11InputMethodFactory>? DetectInputMethod()
         {
             foreach (var name in new[] { "AVALONIA_IM_MODULE", "GTK_IM_MODULE", "QT_IM_MODULE" })
             {

@@ -1,5 +1,6 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
-<node>
+<node xmlns:av="http://avaloniaui.net/dbus/1.0">
+  <av:ImportTypes>Types.xml</av:ImportTypes>
   <interface name="org.kde.StatusNotifierItem">
 
     <property name="Category" type="s" access="read"/>
@@ -21,12 +22,22 @@
     <!--struct containing width, height and image data-->
     <property name="IconPixmap" type="a(iiay)" access="read">
       <annotation name="org.qtproject.QtDBus.QtTypeName" value="KDbusImageVector"/>
+      <av:TypeDefinition>
+        <av:List>
+          <av:Struct Type="IconPixmap"/>
+        </av:List>
+      </av:TypeDefinition>
     </property>
 
     <property name="OverlayIconName" type="s" access="read"/>
 
     <property name="OverlayIconPixmap" type="a(iiay)" access="read">
       <annotation name="org.qtproject.QtDBus.QtTypeName" value="KDbusImageVector"/>
+      <av:TypeDefinition>
+        <av:List>
+          <av:Struct Type="IconPixmap"/>
+        </av:List>
+      </av:TypeDefinition>
     </property>
 
 
@@ -36,6 +47,11 @@
     <!--same definition as image-->
     <property name="AttentionIconPixmap" type="a(iiay)" access="read">
       <annotation name="org.qtproject.QtDBus.QtTypeName" value="KDbusImageVector"/>
+      <av:TypeDefinition>
+        <av:List>
+          <av:Struct Type="IconPixmap"/>
+        </av:List>
+      </av:TypeDefinition>
     </property>
 
     <property name="AttentionMovieName" type="s" access="read"/>
@@ -47,6 +63,9 @@
     <!--(iiay) is an image-->
     <property name="ToolTip" type="(sa(iiay)ss)" access="read">
       <annotation name="org.qtproject.QtDBus.QtTypeName" value="KDbusToolTipStruct"/>
+      <av:TypeDefinition>
+        <av:Struct Type="ToolTip"/>
+      </av:TypeDefinition>
     </property>
 
 

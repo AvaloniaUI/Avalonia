@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Avalonia.DBus;
+using Avalonia.FreeDesktop.DBusXml;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
-using Tmds.DBus.Protocol;
-using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop.DBusIme
 {
@@ -32,7 +32,7 @@ namespace Avalonia.FreeDesktop.DBusIme
     {
         private List<IDisposable> _disposables = new List<IDisposable>();
         private Queue<string> _onlineNamesQueue = new Queue<string>();
-        protected Connection Connection { get; }
+        protected DBusConnection Connection { get; }
         private readonly string[] _knownNames;
         private bool _connecting;
         private string? _currentName;
@@ -47,7 +47,7 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         protected bool IsConnected => _currentName != null;
 
-        public DBusTextInputMethodBase(Connection connection, params string[] knownNames)
+        public DBusTextInputMethodBase(DBusConnection connection, params string[] knownNames)
         {
             _queue = new DBusCallQueue(QueueOnErrorAsync);
             Connection = connection;
@@ -61,7 +61,7 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         private async Task WatchAsync()
         {
-            var dbus = new OrgFreedesktopDBusProxy(Connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
+            var dbus = new OrgFreedesktopDBusProxy(Connection, "org.freedesktop.DBus", new DBusObjectPath("/org/freedesktop/DBus"));
             try
             {
                 _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
@@ -75,7 +75,7 @@ namespace Avalonia.FreeDesktop.DBusIme
                 try
                 {
                     var nameOwner = await dbus.GetNameOwnerAsync(name);
-                    OnNameChange(null, (name, null, nameOwner));
+                    OnNameChange(name, "", nameOwner);
                 }
                 catch (DBusException e)
                 {
@@ -89,22 +89,18 @@ namespace Avalonia.FreeDesktop.DBusIme
         protected string GetAppName() =>
             Application.Current?.Name ?? Assembly.GetEntryAssembly()?.GetName()?.Name ?? "Avalonia";
 
-        private async void OnNameChange(Exception? e, (string ServiceName, string? OldOwner, string? NewOwner) args)
+        private async void OnNameChange(string serviceName, string oldOwner, string newOwner)
         {
-            if (e is not null)
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.FreeDesktopPlatform)?.Log(this, $"OnNameChange failed: {e}");
-                return;
-            }
-
-            if (!_knownNames.Contains(args.ServiceName))
+            if (!_knownNames.Contains(serviceName))
             {
                 return;
             }
 
-            if (args.NewOwner is not null && _currentName is null)
+            var newOwnerOrNull = string.IsNullOrEmpty(newOwner) ? null : newOwner;
+
+            if (newOwnerOrNull is not null && _currentName is null)
             {
-                _onlineNamesQueue.Enqueue(args.ServiceName);
+                _onlineNamesQueue.Enqueue(serviceName);
                 if (!_connecting)
                 {
                     _connecting = true;
@@ -138,7 +134,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             }
 
             // IME has crashed
-            if (args.NewOwner is null && args.ServiceName == _currentName)
+            if (newOwnerOrNull is null && serviceName == _currentName)
             {
                 _currentName = null;
                 foreach (var s in _disposables)
