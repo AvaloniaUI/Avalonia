@@ -26,7 +26,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<BackgroundSizing> BackgroundSizingProperty =
             AvaloniaProperty.Register<Border, BackgroundSizing>(
                 nameof(BackgroundSizing),
-                BackgroundSizing.CenterBorder);
+                BackgroundSizing.InnerBorderEdge);
 
         /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
