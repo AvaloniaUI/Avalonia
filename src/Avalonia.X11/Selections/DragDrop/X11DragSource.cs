@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -43,7 +44,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         return await handler.Completion;
     }
 
-    private sealed class Handler : IDisposable
+    private sealed class Handler : X11EventDispatcher.IEventHook, IDisposable
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly IntPtr _sourceWindow;
@@ -73,7 +74,6 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             _dataTransfer = dataTransfer;
             _allowedEffects = allowedEffects;
             _cursorFactory = cursorFactory;
-            _currentEffects = allowedEffects;
             _logger = Logger.TryGet(LogEventLevel.Verbose, LogArea.X11Platform);
             _dataProvider = new DragDropDataProvider(platform, dataTransfer.ToAsynchronous());
 
@@ -84,31 +84,14 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 return;
             }
 
-            // Note: in the standard case (starting a drop-drop operation on pointer pressed), X11 already has an
-            // implicit capture. However, the capture is from our child render window when GL is used, instead of
-            // the parent window. For now, release any existing capture and start our own.
-            // TODO: make the render window invisible from input using XShape.
-            XUngrabPointer(platform.Display, 0);
-
-            var grabResult = XGrabPointer(
-                platform.Display,
-                _sourceWindow,
-                false,
-                EventMask.ButtonPressMask | EventMask.ButtonReleaseMask | EventMask.PointerMotionMask,
-                GrabMode.GrabModeAsync,
-                GrabMode.GrabModeAsync,
-                0,
-                GetCursor(GetEffectiveAllowedEffects(initialKeyModifiers)),
-                0);
-
-            if (grabResult != GrabResult.GrabSuccess)
-            {
-                _formatAtoms = [];
-                Complete(DragDropEffects.None);
-                return;
-            }
-
+            // We're assuming we have an implicit grab here.
             _pointerGrabbed = true;
+            UpdateCurrentEffects(GetEffectiveAllowedEffects(initialKeyModifiers));
+
+            // Install our global event hook.
+            var eventDispatcher = platform.DispatcherImpl.EventDispatcher;
+            Debug.Assert(eventDispatcher.EventHook is null);
+            eventDispatcher.EventHook = this;
 
             // Replace the window event handler with our own during the drag operation.
             _originalSourceWindowInfo = sourceWindowInfo;
@@ -136,22 +119,86 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
         private DragDropTimeoutManager TimeoutManager
             => _timeoutManager ??= new DragDropTimeoutManager(SelectionHelper.Timeout, OnTimeout);
 
+        public bool TryHandleEvent(in XEvent evt)
+        {
+            if (!_pointerGrabbed)
+                return false;
+
+            switch (evt.type)
+            {
+                case XEventName.MotionNotify:
+                    OnPointerMoved(
+                        new PixelPoint(evt.MotionEvent.x_root, evt.MotionEvent.y_root),
+                        evt.MotionEvent.time,
+                        evt.MotionEvent.state.ToRawInputModifiers());
+                    return true;
+
+                case XEventName.ButtonPress:
+                    return true;
+
+                case XEventName.ButtonRelease:
+                    OnPointerReleased(
+                        new PixelPoint(evt.ButtonEvent.x_root, evt.ButtonEvent.y_root),
+                        evt.ButtonEvent.time,
+                        evt.ButtonEvent.state.ToRawInputModifiers());
+                    return true;
+
+                case XEventName.KeyPress or XEventName.KeyRelease:
+                    OnKey(in evt.KeyEvent);
+                    return true;
+
+                case XEventName.GenericEvent:
+                    if (_platform.XI2 is null || _platform.Info.XInputOpcode != evt.GenericEventCookie.extension)
+                        return false;
+
+                    unsafe
+                    {
+                        var xiEvent = (XIEvent*)evt.GenericEventCookie.data;
+
+                        switch (xiEvent->evtype)
+                        {
+                            case XiEventType.XI_Motion:
+                            case XiEventType.XI_TouchUpdate:
+                            {
+                                var deviceEvent = (XIDeviceEvent*)xiEvent;
+                                var modifiers = ((XModifierMask)deviceEvent->mods.Effective).ToRawInputModifiers();
+                                OnPointerMoved(
+                                    new PixelPoint((int)deviceEvent->root_x, (int)deviceEvent->root_y),
+                                    deviceEvent->time,
+                                    modifiers);
+                                return true;
+                            }
+
+                            case XiEventType.XI_ButtonPress:
+                            case XiEventType.XI_TouchBegin:
+                                return true;
+
+                            case XiEventType.XI_ButtonRelease:
+                            case XiEventType.XI_TouchEnd:
+                            {
+                                var deviceEvent = (XIDeviceEvent*)xiEvent;
+                                var modifiers = ((XModifierMask)deviceEvent->mods.Effective).ToRawInputModifiers();
+                                OnPointerReleased(
+                                    new PixelPoint((int)deviceEvent->root_x, (int)deviceEvent->root_y),
+                                    deviceEvent->time,
+                                    modifiers);
+                                return true;
+                            }
+
+                            default:
+                                return false;
+                        }
+                    }
+
+                default:
+                    return false;
+            }
+        }
+
         private void OnEvent(ref XEvent evt)
         {
             switch (evt.type)
             {
-                case XEventName.MotionNotify when _pointerGrabbed:
-                    OnMotionNotify(in evt.MotionEvent);
-                    break;
-
-                case XEventName.ButtonRelease when _pointerGrabbed:
-                    OnButtonRelease(in evt.ButtonEvent);
-                    break;
-
-                case XEventName.KeyPress or XEventName.KeyRelease when _pointerGrabbed:
-                    OnKey(in evt.KeyEvent);
-                    break;
-
                 case XEventName.ClientMessage:
                     ref var message = ref evt.ClientMessageEvent;
                     var atoms = _platform.Info.Atoms;
@@ -174,15 +221,13 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             }
         }
 
-        private void OnMotionNotify(in XMotionEvent motion)
+        private void OnPointerMoved(PixelPoint rootPosition, IntPtr timestamp, RawInputModifiers modifiers)
         {
             // Drop pending, ignore any queued position change.
             if (_targetState.PendingDrop is not null)
                 return;
 
-            var rootPosition = new PixelPoint(motion.x_root, motion.y_root);
             var target = FindXdndTarget(rootPosition);
-            var modifiers = motion.state.ToRawInputModifiers();
 
             // Handle new target.
             if (_targetState.Target != target)
@@ -221,7 +266,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             // Update current target.
             if (target is { } currentTarget)
-                UpdateTargetPosition(currentTarget, rootPosition, modifiers, motion.time);
+                UpdateTargetPosition(currentTarget, rootPosition, modifiers, timestamp);
         }
 
         private void UpdateTargetPosition(
@@ -290,7 +335,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             UpdateTargetPosition(target, position, modifiers.ToRawInputModifiers(), key.time);
         }
 
-        private void OnButtonRelease(in XButtonEvent button)
+        private void OnPointerReleased(PixelPoint rootPosition, IntPtr timestamp, RawInputModifiers modifiers)
         {
             UngrabPointer();
 
@@ -299,9 +344,6 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
 
             if (target.InProcessWindow is not null)
             {
-                var rootPosition = new PixelPoint(button.x_root, button.y_root);
-                var modifiers = button.state.ToRawInputModifiers();
-
                 if (_targetState.AllowsDrop)
                 {
                     var effects = ProcessRawDragEvent(target.InProcessWindow, RawDragEventType.Drop, rootPosition, modifiers);
@@ -318,7 +360,7 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
             }
             else
             {
-                var dropRequest = new DropRequest(button.time);
+                var dropRequest = new DropRequest(timestamp);
 
                 if (_targetState.IsWaitingForStatus)
                 {
@@ -669,6 +711,10 @@ internal sealed class X11DragSource(AvaloniaX11Platform platform) : IPlatformDra
                 _platform.Windows[_sourceWindow] = originalSourceWindowInfo;
                 _originalSourceWindowInfo = null;
             }
+
+            var eventDispatcher = _platform.DispatcherImpl.EventDispatcher;
+            if (eventDispatcher.EventHook == this)
+                eventDispatcher.EventHook = null;
 
             _targetState = default;
             _currentEffects = DragDropEffects.None;

@@ -22,6 +22,8 @@ internal class X11EventDispatcher
     }
 
     public bool IsPending => XPending(_display) != 0;
+
+    public IEventHook? EventHook { get; set; }
     
     public unsafe void DispatchX11Events(CancellationToken cancellationToken)
     {
@@ -38,6 +40,9 @@ internal class X11EventDispatcher
                 XGetEventData(_display, &xev.GenericEventCookie);
             try
             {
+                if (EventHook?.TryHandleEvent(in xev) == true)
+                    continue;
+
                 if (xev.type == XEventName.GenericEvent)
                 {
                     if (_platform.XI2 != null && _platform.Info.XInputOpcode ==
@@ -59,4 +64,9 @@ internal class X11EventDispatcher
     }
 
     public void Flush() => XFlush(_display);
+
+    public interface IEventHook
+    {
+        bool TryHandleEvent(in XEvent evt);
+    }
 }
