@@ -144,6 +144,7 @@
 
     auto landmarkType = _peer->GetLandmarkType();
     switch (landmarkType) {
+        case LandmarkNone: break;
         case LandmarkBanner: return @"AXLandmarkBanner";
         case LandmarkComplementary: return @"AXLandmarkComplementary";
         case LandmarkContentInfo: return @"AXLandmarkContentInfo";
@@ -161,6 +162,7 @@
 {
     auto landmarkType = _peer->GetLandmarkType();
     switch (landmarkType) {
+        case LandmarkNone: break;
         case LandmarkBanner: return @"banner";
         case LandmarkComplementary: return @"complementary";
         case LandmarkContentInfo: return @"content";
@@ -191,6 +193,7 @@
     {
         switch (_peer->GetLiveSetting())
         {
+            case LiveSettingOff: break;
             case LiveSettingPolite: return @"polite";
             case LiveSettingAssertive: return @"assertive";
         }
@@ -401,6 +404,49 @@
     return NO;
 }
 
+- (void)setAccessibilitySelected:(BOOL)accessibilitySelected
+{
+    if (!_peer->IsSelectionItemProvider())
+        return;
+    if (accessibilitySelected)
+        _peer->SelectionItemProvider_AddToSelection();
+    else
+        _peer->SelectionItemProvider_RemoveFromSelection();
+}
+
+- (BOOL)accessibilityPerformPick
+{
+    if (!_peer->IsSelectionItemProvider())
+        return NO;
+    _peer->SelectionItemProvider_Select();
+    return YES;
+}
+
+- (NSArray *)accessibilitySelectedChildren
+{
+    if (!_peer->IsSelectionProvider())
+        return nil;
+
+    auto selection = _peer->SelectionProvider_GetSelection();
+    if (selection == nullptr)
+        return nil;
+    auto count = selection->GetCount();
+    NSMutableArray* selectedElements = [[NSMutableArray alloc] initWithCapacity:count];
+
+    for (int i = 0; i < count; ++i)
+    {
+        IAvnAutomationPeer* selectedPeer;
+
+        if (selection->Get(i, &selectedPeer) == S_OK)
+        {
+            id element = [AvnAccessibilityElement acquire:selectedPeer];
+            [selectedElements addObject:element];
+        }
+    }
+
+    return selectedElements;
+}
+
 - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector
 {
     if (selector == @selector(accessibilityPerformShowMenu))
@@ -422,7 +468,11 @@
     {
         return _peer->IsRangeValueProvider();
     }
-    
+    else if (selector == @selector(accessibilityPerformPick))
+    {
+        return _peer->IsSelectionItemProvider();
+    }
+
     return [super isAccessibilitySelectorAllowed:selector];
 }
 

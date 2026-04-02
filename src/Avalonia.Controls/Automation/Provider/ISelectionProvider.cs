@@ -56,9 +56,7 @@ namespace Avalonia.Automation.Provider
         ///   </item>
         ///   <item>
         ///     <term>macOS</term>
-        ///     <description>
-        ///       <c>NSAccessibilityProtocol.accessibilitySelectedChildren</c> (not implemented).
-        ///     </description>
+        ///     <description><c>NSAccessibilityProtocol.accessibilitySelectedChildren</c></description>
         ///   </item>
         /// </list>
         /// </remarks>
