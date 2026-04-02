@@ -61,7 +61,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 _isEmbedded = false;
             }
 
-            _syncContext = new AvaloniaSynchronizationContext(DispatcherPriority.Normal);
+            _syncContext = Dispatcher.UIThread.GetContextWithPriority(DispatcherPriority.Normal);
 
             var address = await GetAccessibilityBusAddressAsync();
 
