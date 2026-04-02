@@ -108,9 +108,7 @@ internal class SkiaMetalGpu : ISkiaGpu
             return new SkiaMetalRenderSession(_gpu, surface, session, backendTarget);
         }
 
-        public bool IsCorrupted => false;
-
-        public bool IsReady => _target?.IsReady ?? false;
+        public PlatformRenderTargetState State => _target?.State ?? PlatformRenderTargetState.Disposed;
     }
     
     internal class SkiaMetalRenderSession : ISkiaGpuRenderSession

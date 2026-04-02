@@ -15,8 +15,6 @@ namespace Avalonia.Skia
         /// <returns>A render session instance.</returns>
         ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo);
         
-        bool IsCorrupted { get; }
-        
-        bool IsReady => true;
+        PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
     }
 }
