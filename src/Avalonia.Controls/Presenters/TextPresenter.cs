@@ -647,7 +647,7 @@ namespace Avalonia.Controls.Presenters
             InvalidateArrange();
 
             // The textWidth used here is matching that TextBlock uses to measure the text.
-            var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+            var textWidth = TextLayout.WidthIncludingTrailingWhitespace;
             return new Size(textWidth, TextLayout.Height);
         }
 
@@ -655,7 +655,7 @@ namespace Avalonia.Controls.Presenters
         {
             var finalWidth = finalSize.Width;
 
-            var textWidth = TextLayout.OverhangLeading + TextLayout.WidthIncludingTrailingWhitespace + TextLayout.OverhangTrailing;
+            var textWidth = TextLayout.WidthIncludingTrailingWhitespace;
             textWidth = Math.Ceiling(textWidth);
 
             if (finalSize.Width < textWidth)
