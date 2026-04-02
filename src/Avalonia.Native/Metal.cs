@@ -198,8 +198,15 @@ internal class MetalRenderTarget : IMetalPlatformSurfaceRenderTarget
 
     public IMetalPlatformSurfaceRenderingSession BeginRendering()
     {
-        var session = Native.BeginDrawing();
-        return new MetalDrawingSession(session);
+        try
+        {
+            var session = Native.BeginDrawing();
+            return new MetalDrawingSession(session);
+        }
+        catch (System.Runtime.InteropServices.COMException ex)
+        {
+            throw new RenderTargetCorruptedException(ex);
+        }
     }
 }
 
