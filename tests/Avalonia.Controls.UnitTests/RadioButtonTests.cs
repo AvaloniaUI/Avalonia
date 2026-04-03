@@ -1,4 +1,6 @@
-﻿using Avalonia.Markup.Data;
+﻿using Avalonia.Controls.UnitTests.Utils;
+using Avalonia.Input;
+using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 
 using Xunit;
@@ -69,6 +71,39 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(radioButton1.IsChecked);
             Assert.False(radioButton2.IsChecked);
             Assert.True(radioButton3.IsChecked);
+        }
+
+        [Fact]
+        public void RadioButton_Group_Not_Desynced_When_Command_CanExecute_False()
+        {
+            var parent = new Panel();
+
+            var command1 = new TestCommand(true);
+            var command2 = new TestCommand(false);
+
+            var radioButton1 = new RadioButton
+            {
+                IsChecked = true,
+                Command = command1,
+            };
+            var radioButton2 = new RadioButton
+            {
+                IsChecked = false,
+                Command = command2,
+            };
+
+            parent.Children.Add(radioButton1);
+            parent.Children.Add(radioButton2);
+            var root = new TestRoot { Child = parent };
+
+            Assert.True(radioButton1.IsChecked);
+            Assert.False(radioButton2.IsChecked);
+
+            // Click radioButton2 whose command can't execute - nothing should change
+            (radioButton2 as IClickableControl).RaiseClick();
+
+            Assert.True(radioButton1.IsChecked);
+            Assert.False(radioButton2.IsChecked);
         }
 
         [Fact]

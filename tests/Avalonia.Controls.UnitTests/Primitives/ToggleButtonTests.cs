@@ -1,4 +1,6 @@
-﻿using Avalonia.Data;
+﻿using Avalonia.Controls.UnitTests.Utils;
+using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -103,6 +105,70 @@ namespace Avalonia.Controls.Primitives.UnitTests
             threeStateButton.Toggle();
             Assert.Equal(3, changeCount);
             Assert.False(threeStateButton.IsChecked);
+        }
+
+        [Fact]
+        public void Toggle_Not_Changed_When_Command_CanExecute_Is_False()
+        {
+            var command = new TestCommand(false);
+            var target = new ToggleButton
+            {
+                IsChecked = false,
+                Command = command,
+            };
+            var root = new TestRoot { Child = target };
+
+            (target as IClickableControl).RaiseClick();
+
+            Assert.False(target.IsChecked);
+        }
+
+        [Fact]
+        public void Toggle_Changed_When_Command_CanExecute_Is_True()
+        {
+            bool executed = false;
+            var command = new TestCommand(_ => true, _ => executed = true);
+            var target = new ToggleButton
+            {
+                IsChecked = false,
+                Command = command,
+            };
+            var root = new TestRoot { Child = target };
+
+            (target as IClickableControl).RaiseClick();
+
+            Assert.True(target.IsChecked);
+            Assert.True(executed);
+        }
+
+        [Fact]
+        public void Toggle_Changed_When_No_Command()
+        {
+            var target = new ToggleButton { IsChecked = false };
+            var root = new TestRoot { Child = target };
+
+            (target as IClickableControl).RaiseClick();
+
+            Assert.True(target.IsChecked);
+        }
+
+        [Fact]
+        public void Toggle_With_OneWay_Binding_Stays_In_Sync_When_Command_Cannot_Execute()
+        {
+            var source = new Class1 { Foo = false };
+            var command = new TestCommand(false);
+            var target = new ToggleButton { Command = command };
+            var root = new TestRoot { Child = target };
+
+            target.DataContext = source;
+            target.Bind(ToggleButton.IsCheckedProperty, new Binding("Foo", BindingMode.OneWay));
+
+            Assert.False(target.IsChecked);
+
+            (target as IClickableControl).RaiseClick();
+
+            Assert.False(target.IsChecked);
+            Assert.False(source.Foo);
         }
 
         private class Class1 : NotifyingBase
