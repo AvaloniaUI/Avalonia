@@ -2,9 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Templates;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -1587,6 +1591,54 @@ namespace Avalonia.Controls.UnitTests
 
                 // Platform getter should never be called in legacy mode
                 windowImpl.VerifyGet(x => x.WindowState, Times.Never());
+            }
+        }
+
+        [Fact]
+        public void WindowDecorationsTheme_Should_Apply_To_Decorations()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
+            windowImpl.Setup(x => x.NeedsManagedDecorations).Returns(true);
+            windowImpl.Setup(x => x.RequestedDrawnDecorations).Returns(
+                PlatformRequestedDrawnDecoration.TitleBar | PlatformRequestedDrawnDecoration.Border);
+
+            var window = new Window(windowImpl.Object);
+
+            var (theme1, content1) = CreateTheme();
+            window.WindowDecorationsTheme = theme1;
+            window.Show();
+
+            var decorations = window.TopLevelHost.Decorations;
+            Assert.NotNull(decorations);
+            Assert.Same(theme1, decorations.Theme);
+            Assert.Same(content1, decorations.Content);
+
+            var (theme2, content2) = CreateTheme();
+            window.WindowDecorationsTheme = theme2;
+
+            Assert.Same(theme2, decorations.Theme);
+            Assert.Same(content2, decorations.Content);
+
+            static (ControlTheme theme, WindowDrawnDecorationsContent content) CreateTheme()
+            {
+                var content = new WindowDrawnDecorationsContent();
+
+                var template = new WindowDrawnDecorationsTemplate
+                {
+                    Content = (IServiceProvider? _) => new TemplateResult<WindowDrawnDecorationsContent>(content, new NameScope())
+                };
+
+                var theme = new ControlTheme(typeof(WindowDrawnDecorations))
+                {
+                    Setters =
+                    {
+                        new Setter(WindowDrawnDecorations.TemplateProperty, template)
+                    }
+                };
+
+                return (theme, content);
             }
         }
 
