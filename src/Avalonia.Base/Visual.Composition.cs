@@ -3,7 +3,6 @@ using Avalonia.Collections.Pooled;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Server;
-using Avalonia.VisualTree;
 
 namespace Avalonia;
 
@@ -45,7 +44,7 @@ public partial class Visual
         if(CompositionVisual == null)
             return;
         var compositionChildren = CompositionVisual.Children;
-        var visualChildren = (AvaloniaList<Visual>)VisualChildren;
+        var visualChildren = VisualChildren;
         
         PooledList<(Visual visual, int index)>? sortedChildren = null;
         if (HasNonUniformZIndexChildren && visualChildren.Count > 1)
