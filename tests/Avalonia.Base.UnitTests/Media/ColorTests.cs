@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Avalonia.Media;
 using Xunit;
 
@@ -364,5 +365,455 @@ namespace Avalonia.Base.UnitTests.Media
                 Assert.Equal(convertedHsl, dataPoint.Item2);
             }
         }
+        // =====================================================================
+        // IFormattable unified format specifier tests
+        //
+        // All three color types (Color, HslColor, HsvColor) support ALL
+        // format specifiers. Cross-model formats auto-convert.
+        //
+        // Convention:
+        //   Uppercase = include alpha, a-suffixed prefix (rgba, hsla, hsva)
+        //   Lowercase = exclude alpha, plain prefix (rgb, hsl, hsv)
+        //   "%" suffix = percent mode
+        // =====================================================================
+
+        #region Default format (null / "")
+
+        [Fact]
+        public void Color_ToString_Default_Returns_KnownName()
+        {
+            var red = new Color(0xFF, 0xFF, 0x00, 0x00);
+
+            Assert.Equal("Red", red.ToString());
+        }
+
+        [Fact]
+        public void Color_ToString_Default_Returns_Hex_For_Unknown()
+        {
+            var color = new Color(0x40, 0xFF, 0x88, 0x44);
+
+            Assert.Equal("#40ff8844", color.ToString());
+        }
+
+        [Fact]
+        public void Color_ToString_Null_Format_Matches_Default()
+        {
+            var color = new Color(0x40, 0xFF, 0x88, 0x44);
+
+            Assert.Equal(color.ToString(), color.ToString(null, null));
+        }
+
+        [Fact]
+        public void Color_ToString_Empty_Format_Matches_Default()
+        {
+            var color = new Color(0x40, 0xFF, 0x88, 0x44);
+
+            Assert.Equal(color.ToString(), color.ToString("", null));
+        }
+
+        [Fact]
+        public void HslColor_ToString_Null_Format_Matches_Default()
+        {
+            var color = new HslColor(0.8, 200, 0.6, 0.4);
+
+            Assert.Equal(color.ToString(), color.ToString(null, null));
+        }
+
+        [Fact]
+        public void HsvColor_ToString_Null_Format_Matches_Default()
+        {
+            var color = new HsvColor(0.8, 200, 0.6, 0.4);
+
+            Assert.Equal(color.ToString(), color.ToString(null, null));
+        }
+
+        #endregion
+
+        #region Hex formats: X, x, H
+
+        [Theory]
+        [InlineData(0xFF, 0xFF, 0x88, 0x44, "#FFFF8844")]
+        [InlineData(0x40, 0xFF, 0x88, 0x44, "#40FF8844")]
+        [InlineData(0xFF, 0x00, 0x00, 0x00, "#FF000000")]
+        [InlineData(0x00, 0x00, 0x00, 0x00, "#00000000")]
+        public void Color_ToString_X_Returns_Xaml_Hex_With_Alpha(byte a, byte r, byte g, byte b, string expected)
+        {
+            var color = new Color(a, r, g, b);
+
+            Assert.Equal(expected, color.ToString("X", CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(0xFF, 0xFF, 0x88, 0x44, "#FF8844")]
+        [InlineData(0x40, 0xFF, 0x88, 0x44, "#FF8844")]
+        [InlineData(0x00, 0x00, 0x00, 0x00, "#000000")]
+        public void Color_ToString_x_Returns_Hex_Without_Alpha(byte a, byte r, byte g, byte b, string expected)
+        {
+            var color = new Color(a, r, g, b);
+
+            Assert.Equal(expected, color.ToString("x", CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(0xFF, 0xFF, 0x88, 0x44, "#FF8844FF")]
+        [InlineData(0x40, 0xFF, 0x88, 0x44, "#FF884440")]
+        [InlineData(0x00, 0x00, 0x00, 0x00, "#00000000")]
+        public void Color_ToString_H_Returns_Html_Hex_With_Alpha(byte a, byte r, byte g, byte b, string expected)
+        {
+            var color = new Color(a, r, g, b);
+
+            Assert.Equal(expected, color.ToString("H", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void HslColor_ToString_X_Converts_To_Rgb_Hex()
+        {
+            // Pure red: HSL(0, 1, 0.5) = RGB(255, 0, 0)
+            var hsl = new HslColor(1.0, 0, 1.0, 0.5);
+
+            Assert.Equal("#FFFF0000", hsl.ToString("X", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void HslColor_ToString_x_Converts_To_Rgb_Hex()
+        {
+            var hsl = new HslColor(1.0, 0, 1.0, 0.5);
+
+            Assert.Equal("#FF0000", hsl.ToString("x", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void HsvColor_ToString_X_Converts_To_Rgb_Hex()
+        {
+            // Pure red: HSV(0, 1, 1) = RGB(255, 0, 0)
+            var hsv = new HsvColor(1.0, 0, 1.0, 1.0);
+
+            Assert.Equal("#FFFF0000", hsv.ToString("X", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void HsvColor_ToString_x_Converts_To_Rgb_Hex()
+        {
+            var hsv = new HsvColor(1.0, 0, 1.0, 1.0);
+
+            Assert.Equal("#FF0000", hsv.ToString("x", CultureInfo.InvariantCulture));
+        }
+
+        #endregion
+
+        #region RGB functional: R, r
+
+        [Theory]
+        [InlineData(0xFF, 0xFF, 0x88, 0x44, "rgba(255, 136, 68, 1.00)")]
+        [InlineData(0x80, 0xFF, 0x88, 0x44, "rgba(255, 136, 68, 0.50)")]
+        [InlineData(0x00, 0x00, 0x00, 0x00, "rgba(0, 0, 0, 0.00)")]
+        public void Color_ToString_R_Returns_Rgba_With_Alpha(byte a, byte r, byte g, byte b, string expected)
+        {
+            var color = new Color(a, r, g, b);
+
+            Assert.Equal(expected, color.ToString("R", CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(0xFF, 0xFF, 0x88, 0x44, "rgb(255, 136, 68)")]
+        [InlineData(0x80, 0xFF, 0x88, 0x44, "rgb(255, 136, 68)")]
+        [InlineData(0xFF, 0x00, 0x00, 0x00, "rgb(0, 0, 0)")]
+        public void Color_ToString_r_Returns_Rgb_Without_Alpha(byte a, byte r, byte g, byte b, string expected)
+        {
+            var color = new Color(a, r, g, b);
+
+            Assert.Equal(expected, color.ToString("r", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void HslColor_ToString_R_Converts_To_Rgba()
+        {
+            // Pure blue: HSL(240, 1, 0.5) = RGB(0, 0, 255)
+            var hsl = new HslColor(1.0, 240, 1.0, 0.5);
+
+            Assert.Equal("rgba(0, 0, 255, 1.00)", hsl.ToString("R", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void HsvColor_ToString_r_Converts_To_Rgb()
+        {
+            // Pure red: HSV(0, 1, 1) = RGB(255, 0, 0)
+            var hsv = new HsvColor(1.0, 0, 1.0, 1.0);
+
+            Assert.Equal("rgb(255, 0, 0)", hsv.ToString("r", CultureInfo.InvariantCulture));
+        }
+
+        #endregion
+
+        #region RGB percent: R%, r%
+
+        [Theory]
+        [InlineData(0xFF, 0xFF, 0x80, 0x00, "rgba(100%, 50%, 0%, 100%)")]
+        [InlineData(0x80, 0xFF, 0x80, 0x00, "rgba(100%, 50%, 0%, 50%)")]
+        [InlineData(0x00, 0x00, 0x00, 0x00, "rgba(0%, 0%, 0%, 0%)")]
+        public void Color_ToString_RPct_Returns_Rgba_Percent(byte a, byte r, byte g, byte b, string expected)
+        {
+            var color = new Color(a, r, g, b);
+
+            Assert.Equal(expected, color.ToString("R%", CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(0xFF, 0xFF, 0x80, 0x00, "rgb(100%, 50%, 0%)")]
+        [InlineData(0x80, 0xFF, 0x80, 0x00, "rgb(100%, 50%, 0%)")]
+        [InlineData(0xFF, 0x00, 0x00, 0x00, "rgb(0%, 0%, 0%)")]
+        public void Color_ToString_rPct_Returns_Rgb_Percent(byte a, byte r, byte g, byte b, string expected)
+        {
+            var color = new Color(a, r, g, b);
+
+            Assert.Equal(expected, color.ToString("r%", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void HslColor_ToString_RPct_Converts_To_Rgba_Percent()
+        {
+            // Pure red: HSL(0, 1, 0.5) = RGB(255, 0, 0)
+            var hsl = new HslColor(1.0, 0, 1.0, 0.5);
+
+            Assert.Equal("rgba(100%, 0%, 0%, 100%)", hsl.ToString("R%", CultureInfo.InvariantCulture));
+        }
+
+        #endregion
+
+        #region HSL functional: L, l
+
+        [Theory]
+        [InlineData(1.0, 180, 0.5, 0.5, "hsla(180, 50%, 50%, 1.00)")]
+        [InlineData(0.5, 240, 0.8, 0.2, "hsla(240, 80%, 20%, 0.50)")]
+        [InlineData(0.0, 0, 0.0, 0.0, "hsla(0, 0%, 0%, 0.00)")]
+        public void HslColor_ToString_L_Returns_Hsla_With_Alpha(double a, double h, double s, double l, string expected)
+        {
+            var color = new HslColor(a, h, s, l);
+
+            Assert.Equal(expected, color.ToString("L", CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(1.0, 180, 0.5, 0.5, "hsl(180, 50%, 50%)")]
+        [InlineData(0.5, 240, 0.8, 0.2, "hsl(240, 80%, 20%)")]
+        [InlineData(0.0, 0, 0.0, 0.0, "hsl(0, 0%, 0%)")]
+        public void HslColor_ToString_l_Returns_Hsl_Without_Alpha(double a, double h, double s, double l, string expected)
+        {
+            var color = new HslColor(a, h, s, l);
+
+            Assert.Equal(expected, color.ToString("l", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void Color_ToString_L_Converts_To_Hsla()
+        {
+            // Pure red: RGB(255, 0, 0) = HSL(0, 100%, 50%)
+            var color = new Color(0xFF, 0xFF, 0x00, 0x00);
+
+            Assert.Equal("hsla(0, 100%, 50%, 1.00)", color.ToString("L", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void Color_ToString_l_Converts_To_Hsl()
+        {
+            var color = new Color(0xFF, 0xFF, 0x00, 0x00);
+
+            Assert.Equal("hsl(0, 100%, 50%)", color.ToString("l", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void HsvColor_ToString_L_Converts_To_Hsla()
+        {
+            // Pure red: HSV(0, 1, 1) = HSL(0, 100%, 50%)
+            var hsv = new HsvColor(1.0, 0, 1.0, 1.0);
+
+            Assert.Equal("hsla(0, 100%, 50%, 1.00)", hsv.ToString("L", CultureInfo.InvariantCulture));
+        }
+
+        #endregion
+
+        #region HSL percent: L%, l%
+
+        [Theory]
+        [InlineData(1.0, 180, 0.5, 0.5, "hsla(50%, 50%, 50%, 100%)")]
+        [InlineData(0.5, 90, 1.0, 1.0, "hsla(25%, 100%, 100%, 50%)")]
+        [InlineData(1.0, 0, 0.0, 0.0, "hsla(0%, 0%, 0%, 100%)")]
+        public void HslColor_ToString_LPct_Returns_Hsla_All_Percent(double a, double h, double s, double l, string expected)
+        {
+            var color = new HslColor(a, h, s, l);
+
+            Assert.Equal(expected, color.ToString("L%", CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(1.0, 180, 0.5, 0.5, "hsl(50%, 50%, 50%)")]
+        [InlineData(0.5, 90, 1.0, 1.0, "hsl(25%, 100%, 100%)")]
+        [InlineData(1.0, 0, 0.0, 0.0, "hsl(0%, 0%, 0%)")]
+        public void HslColor_ToString_lPct_Returns_Hsl_All_Percent(double a, double h, double s, double l, string expected)
+        {
+            var color = new HslColor(a, h, s, l);
+
+            Assert.Equal(expected, color.ToString("l%", CultureInfo.InvariantCulture));
+        }
+
+        #endregion
+
+        #region HSV functional: V, v
+
+        [Theory]
+        [InlineData(1.0, 180, 0.5, 0.5, "hsva(180, 50%, 50%, 1.00)")]
+        [InlineData(0.5, 240, 0.8, 0.2, "hsva(240, 80%, 20%, 0.50)")]
+        [InlineData(0.0, 0, 0.0, 0.0, "hsva(0, 0%, 0%, 0.00)")]
+        public void HsvColor_ToString_V_Returns_Hsva_With_Alpha(double a, double h, double s, double v, string expected)
+        {
+            var color = new HsvColor(a, h, s, v);
+
+            Assert.Equal(expected, color.ToString("V", CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(1.0, 180, 0.5, 0.5, "hsv(180, 50%, 50%)")]
+        [InlineData(0.5, 240, 0.8, 0.2, "hsv(240, 80%, 20%)")]
+        [InlineData(0.0, 0, 0.0, 0.0, "hsv(0, 0%, 0%)")]
+        public void HsvColor_ToString_v_Returns_Hsv_Without_Alpha(double a, double h, double s, double v, string expected)
+        {
+            var color = new HsvColor(a, h, s, v);
+
+            Assert.Equal(expected, color.ToString("v", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void Color_ToString_V_Converts_To_Hsva()
+        {
+            // Pure red: RGB(255, 0, 0) = HSV(0, 100%, 100%)
+            var color = new Color(0xFF, 0xFF, 0x00, 0x00);
+
+            Assert.Equal("hsva(0, 100%, 100%, 1.00)", color.ToString("V", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public void HslColor_ToString_V_Converts_To_Hsva()
+        {
+            // Pure red: HSL(0, 1, 0.5) = HSV(0, 100%, 100%)
+            var hsl = new HslColor(1.0, 0, 1.0, 0.5);
+
+            Assert.Equal("hsva(0, 100%, 100%, 1.00)", hsl.ToString("V", CultureInfo.InvariantCulture));
+        }
+
+        #endregion
+
+        #region HSV percent: V%, v%
+
+        [Theory]
+        [InlineData(1.0, 180, 0.5, 0.5, "hsva(50%, 50%, 50%, 100%)")]
+        [InlineData(0.5, 90, 1.0, 1.0, "hsva(25%, 100%, 100%, 50%)")]
+        [InlineData(1.0, 0, 0.0, 0.0, "hsva(0%, 0%, 0%, 100%)")]
+        public void HsvColor_ToString_VPct_Returns_Hsva_All_Percent(double a, double h, double s, double v, string expected)
+        {
+            var color = new HsvColor(a, h, s, v);
+
+            Assert.Equal(expected, color.ToString("V%", CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(1.0, 180, 0.5, 0.5, "hsv(50%, 50%, 50%)")]
+        [InlineData(0.5, 90, 1.0, 1.0, "hsv(25%, 100%, 100%)")]
+        [InlineData(1.0, 0, 0.0, 0.0, "hsv(0%, 0%, 0%)")]
+        public void HsvColor_ToString_vPct_Returns_Hsv_All_Percent(double a, double h, double s, double v, string expected)
+        {
+            var color = new HsvColor(a, h, s, v);
+
+            Assert.Equal(expected, color.ToString("v%", CultureInfo.InvariantCulture));
+        }
+
+        #endregion
+
+        #region Invalid format + reserved specifiers
+
+        [Fact]
+        public void Color_ToString_Invalid_Format_Throws()
+        {
+            var color = new Color(0xFF, 0xFF, 0x00, 0x00);
+
+            Assert.Throws<FormatException>(() => color.ToString("Z", null));
+        }
+
+        [Fact]
+        public void HslColor_ToString_Invalid_Format_Throws()
+        {
+            var color = new HslColor(1.0, 0, 0, 0);
+
+            Assert.Throws<FormatException>(() => color.ToString("Z", null));
+        }
+
+        [Fact]
+        public void HsvColor_ToString_Invalid_Format_Throws()
+        {
+            var color = new HsvColor(1.0, 0, 0, 0);
+
+            Assert.Throws<FormatException>(() => color.ToString("Z", null));
+        }
+
+        [Theory]
+        [InlineData("C")]
+        [InlineData("c")]
+        [InlineData("A")]
+        [InlineData("a")]
+        [InlineData("P")]
+        [InlineData("h")]
+        public void Color_ToString_Reserved_And_Removed_Specifiers_Throw(string format)
+        {
+            var color = new Color(0xFF, 0xFF, 0x00, 0x00);
+
+            Assert.Throws<FormatException>(() => color.ToString(format, null));
+        }
+
+        [Theory]
+        [InlineData("C")]
+        [InlineData("c")]
+        public void HslColor_ToString_Reserved_C_Throws(string format)
+        {
+            var color = new HslColor(1.0, 0, 1.0, 0.5);
+
+            Assert.Throws<FormatException>(() => color.ToString(format, null));
+        }
+
+        [Theory]
+        [InlineData("C")]
+        [InlineData("c")]
+        public void HsvColor_ToString_Reserved_C_Throws(string format)
+        {
+            var color = new HsvColor(1.0, 0, 1.0, 1.0);
+
+            Assert.Throws<FormatException>(() => color.ToString(format, null));
+        }
+
+        #endregion
+
+        #region IFormatProvider is always ignored (culture-invariant)
+
+        [Fact]
+        public void Color_ToString_IFormatProvider_Is_Ignored()
+        {
+            var color = new Color(0x80, 0xFF, 0x88, 0x44);
+            var french = CultureInfo.GetCultureInfo("fr-FR");
+
+            Assert.Equal(
+                color.ToString("R", CultureInfo.InvariantCulture),
+                color.ToString("R", french));
+        }
+
+        [Fact]
+        public void HslColor_ToString_IFormatProvider_Is_Ignored()
+        {
+            var color = new HslColor(0.5, 180, 0.5, 0.5);
+            var french = CultureInfo.GetCultureInfo("fr-FR");
+
+            Assert.Equal(
+                color.ToString("L", CultureInfo.InvariantCulture),
+                color.ToString("L", french));
+        }
+
+        #endregion
     }
 }
