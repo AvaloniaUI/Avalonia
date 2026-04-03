@@ -19,6 +19,7 @@ namespace Avalonia.Native
             { AutomationElementIdentifiers.ClassNameProperty, AvnAutomationProperty.AutomationPeer_ClassName },
             { AutomationElementIdentifiers.NameProperty, AvnAutomationProperty.AutomationPeer_Name },
             { RangeValuePatternIdentifiers.ValueProperty, AvnAutomationProperty.RangeValueProvider_Value },
+            { ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty, AvnAutomationProperty.ExpandCollapse_State },
         };
 
         private static readonly ConditionalWeakTable<AutomationPeer, AvnAutomationPeer> s_wrappers = new();
