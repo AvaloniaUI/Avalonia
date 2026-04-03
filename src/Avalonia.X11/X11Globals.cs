@@ -40,7 +40,7 @@ namespace Avalonia.X11
             _x11 = plat.Info;
             _screenNumber = XDefaultScreen(_x11.Display);
             _rootWindow = XRootWindow(_x11.Display, _screenNumber);
-            plat.Windows[_rootWindow] = OnRootWindowEvent;
+            plat.Windows[_rootWindow] = new X11WindowInfo(OnRootWindowEvent, null);
             XSelectInput(_x11.Display, _rootWindow,
                 new IntPtr((int)(EventMask.StructureNotifyMask | EventMask.PropertyChangeMask)));
             
@@ -156,7 +156,7 @@ namespace Avalonia.X11
                 CompositionAtomOwner = newOwner;
                 if (CompositionAtomOwner != IntPtr.Zero)
                 {
-                    _plat.Windows[newOwner] = HandleCompositionAtomOwnerEvents;
+                    _plat.Windows[newOwner] = new X11WindowInfo(HandleCompositionAtomOwnerEvents, null);
                     XSelectInput(_x11.Display, CompositionAtomOwner, new IntPtr((int)(EventMask.StructureNotifyMask)));
                 }
                 

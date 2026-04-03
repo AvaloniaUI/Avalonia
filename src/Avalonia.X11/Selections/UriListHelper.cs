@@ -5,9 +5,9 @@ using System.Text;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 
-namespace Avalonia.X11.Clipboard;
+namespace Avalonia.X11.Selections;
 
-internal static class ClipboardUriListHelper
+internal static class UriListHelper
 {
     private static readonly Encoding s_utf8NoBomEncoding = new UTF8Encoding(false);
 
@@ -46,6 +46,8 @@ internal static class ClipboardUriListHelper
 
         foreach (var item in items)
             writer.WriteLine(item.Path.AbsoluteUri);
+
+        writer.Flush();
 
         return stream.ToArray();
     }

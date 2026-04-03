@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 
-namespace Avalonia.X11.Clipboard;
+namespace Avalonia.X11.Selections.Clipboard;
 
-internal class EventStreamWindow : IDisposable
+internal sealed class EventStreamWindow : IXEventWaiter
 {
     private readonly AvaloniaX11Platform _platform;
     private IntPtr _handle;
@@ -27,7 +27,7 @@ internal class EventStreamWindow : IDisposable
         {
             _isForeign = true;
             _handle = foreignWindow.Value;
-            _platform.Windows[_handle] = OnEvent;
+            _platform.Windows[_handle] = new X11WindowInfo(OnEvent, null);
         }
         else
             _handle = XLib.CreateEventWindow(platform, OnEvent);
@@ -73,22 +73,15 @@ internal class EventStreamWindow : IDisposable
         }
     }
 
-    public Task<XEvent?> WaitForEventAsync(Func<XEvent, bool> predicate, TimeSpan? timeout = null)
+    public Task<XEvent?> WaitForEventAsync(Func<XEvent, bool> predicate, TimeSpan timeout)
     {
-        timeout ??= TimeSpan.FromSeconds(5);
-        
-        if (timeout < TimeSpan.Zero)
-            throw new TimeoutException();
-        if(timeout > TimeSpan.FromDays(1))
-            throw new ArgumentOutOfRangeException(nameof(timeout));
-        
         var tcs = new TaskCompletionSource<XEvent?>();
-        _addedListeners.Add((predicate, tcs, _time.Elapsed + timeout.Value));
+        _addedListeners.Add((predicate, tcs, _time.Elapsed + timeout));
 
         _timeoutTimer.Start();
         return tcs.Task;
     }
-    
+
     public void Dispose()
     {
         _timeoutTimer.Stop();

@@ -43,14 +43,14 @@
                 MaxWidth="260"
                 Background="{DynamicResource SystemAccentColorDark1}"
                 DragDrop.AllowDrop="True">
-          <TextBlock TextWrapping="Wrap">Drop some text or files here (Copy)</TextBlock>
+          <TextBlock TextWrapping="Wrap">Drop some text, files, bitmap or custom format here (Copy)</TextBlock>
         </Border>
         <Border Name="MoveTarget"
                 Padding="16"
                 MaxWidth="260"
                 Background="{DynamicResource SystemAccentColorDark1}"
                 DragDrop.AllowDrop="True">
-          <TextBlock TextWrapping="Wrap">Drop some text or files here (Move)</TextBlock>
+          <TextBlock TextWrapping="Wrap">Drop some text or custom format here (Move)</TextBlock>
         </Border>
       </StackPanel>
     </WrapPanel>
