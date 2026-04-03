@@ -656,6 +656,18 @@
 
 - (void)raisePropertyChanged:(AvnAutomationProperty)property
 {
+    switch (property)
+    {
+        case AutomationPeer_Name:
+            NSAccessibilityPostNotification(self, NSAccessibilityTitleChangedNotification);
+            break;
+        case AutomationPeer_BoundingRectangle:
+            NSAccessibilityPostNotification(self, NSAccessibilityMovedNotification);
+            NSAccessibilityPostNotification(self, NSAccessibilityResizedNotification);
+            break;
+        default:
+            break;
+    }
 }
 
 @end

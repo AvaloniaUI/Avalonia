@@ -488,8 +488,32 @@
 
 - (void)raisePropertyChanged:(AvnAutomationProperty)property
 {
-    if (property == AutomationPeer_Name && _peer->GetLiveSetting() != LiveSettingOff)
-        [self raiseLiveRegionChanged];
+    switch (property)
+    {
+        case AutomationPeer_Name:
+            NSAccessibilityPostNotification(self, NSAccessibilityTitleChangedNotification);
+            if (_peer->GetLiveSetting() != LiveSettingOff)
+                [self raiseLiveRegionChanged];
+            break;
+        case ValueProvider_Value:
+        case RangeValueProvider_Value:
+            NSAccessibilityPostNotification(self, NSAccessibilityValueChangedNotification);
+            break;
+        case AutomationPeer_BoundingRectangle:
+            NSAccessibilityPostNotification(self, NSAccessibilityMovedNotification);
+            NSAccessibilityPostNotification(self, NSAccessibilityResizedNotification);
+            break;
+        case SelectionItemProvider_IsSelected:
+        case SelectionProvider_Selection:
+            NSAccessibilityPostNotification(self, NSAccessibilitySelectedChildrenChangedNotification);
+            break;
+        case ToggleProvider_ToggleState:
+        case ExpandCollapseProvider_ExpandCollapseState:
+            NSAccessibilityPostNotification(self, NSAccessibilityValueChangedNotification);
+            break;
+        default:
+            break;
+    }
 }
 
 - (void)raiseLiveRegionChanged
