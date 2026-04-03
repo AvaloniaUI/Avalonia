@@ -135,15 +135,25 @@ partial class Build : NukeBuild
         }
     });
 
-    // Ensure that Bun.Official.Tool is downloaded at least once on CI to work around https://github.com/dotnet/sdk/issues/51831
+    // Ensure that Bun is available and dependencies are installed.
+    // Uses Bun.Unofficial.Tool via dnx when supported, falls back to system-installed bun (e.g. on win-arm64).
+    // See https://github.com/dotnet/sdk/issues/51831
     Target InitDnx => _ => _
         .Executes(() =>
         {
-            var process = ProcessTasks.StartProcess(
-                "dnx",
-                "Bun.Unofficial.Tool --yes -- install",
-                $"{RootDirectory}/src/Browser/Avalonia.Browser/webapp");
-            process.AssertZeroExitCode();
+            var webappDir = $"{RootDirectory}/src/Browser/Avalonia.Browser/webapp";
+            try
+            {
+                ProcessTasks.StartProcess(
+                    "dnx",
+                    "Bun.Unofficial.Tool --yes -- install",
+                    webappDir).AssertZeroExitCode();
+            }
+            catch
+            {
+                Information("Bun.Unofficial.Tool not supported on this platform, using system-installed bun");
+                ProcessTasks.StartProcess("bun", "install", webappDir).AssertZeroExitCode();
+            }
         });
 
     Target CompileNative => _ => _
