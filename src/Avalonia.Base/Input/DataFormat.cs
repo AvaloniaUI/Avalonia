@@ -28,6 +28,15 @@ public abstract class DataFormat : IEquatable<DataFormat>
     public string Identifier { get; }
 
     /// <summary>
+    /// Gets a value indicating whether this format has a system name that can be used by platform backends.
+    /// </summary>
+    /// <remarks>
+    /// Returns <see langword="true"/> for <see cref="DataFormatKind.Application"/> and <see cref="DataFormatKind.Platform"/> formats.
+    /// Returns <see langword="false"/> for <see cref="DataFormatKind.Universal"/> and <see cref="DataFormatKind.InProcess"/> formats.
+    /// </remarks>
+    public bool HasSystemName => Kind is DataFormatKind.Application or DataFormatKind.Platform;
+
+    /// <summary>
     /// Gets a data format representing plain text.
     /// Its data type is <see cref="string"/>.
     /// </summary>
@@ -62,7 +71,7 @@ public abstract class DataFormat : IEquatable<DataFormat>
         {
             DataFormatKind.Application => applicationPrefix + Identifier,
             DataFormatKind.Platform => Identifier,
-            _ => throw new InvalidOperationException($"Cannot get system name for universal format {Identifier}")
+            _ => throw new InvalidOperationException($"Cannot get system name for {Kind} format {Identifier}")
         };
     }
 
@@ -136,6 +145,23 @@ public abstract class DataFormat : IEquatable<DataFormat>
     /// <returns>A new <see cref="DataFormat"/>.</returns>
     public static DataFormat<string> CreateStringApplicationFormat(string identifier)
         => CreateApplicationFormat<string>(identifier);
+
+    /// <summary>
+    /// Creates a new format that stays within the current process and is never serialized to a platform clipboard or drag-and-drop operation.
+    /// </summary>
+    /// <typeparam name="T">The data type. Can be any reference type.</typeparam>
+    /// <param name="identifier">
+    /// The format identifier. This value is only used for equality comparisons within the process
+    /// and is never passed to the underlying platform.
+    /// </param>
+    /// <returns>A new <see cref="DataFormat{T}"/>.</returns>
+    public static DataFormat<T> CreateInProcessFormat<T>(string identifier)
+        where T : class
+    {
+        ThrowHelper.ThrowIfNullOrEmpty(identifier);
+
+        return new(DataFormatKind.InProcess, identifier);
+    }
 
     private static DataFormat<T> CreateApplicationFormat<T>(string identifier)
         where T : class
