@@ -21,8 +21,6 @@ namespace ControlCatalog.Pages
             DataFormat.CreateBytesApplicationFormat("controlcatalog-binary-data");
 
         private INotificationManager? _notificationManager;
-        private INotificationManager NotificationManager => _notificationManager
-            ??= new WindowNotificationManager(TopLevel.GetTopLevel(this)!);
 
         private readonly DispatcherTimer _clipboardLastDataObjectChecker;
         private DataTransfer? _storedDataTransfer;
@@ -107,7 +105,7 @@ namespace ControlCatalog.Pages
 
                 if (invalidFile.Count > 0)
                 {
-                    NotificationManager.Show(new Notification("Warning", "There is one o more invalid path.", NotificationType.Warning));
+                    _notificationManager?.Show(new Notification("Warning", "There is one o more invalid path.", NotificationType.Warning));
                 }
 
                 if (files.Count > 0)
@@ -116,11 +114,11 @@ namespace ControlCatalog.Pages
                     foreach (var file in files)
                         dataTransfer.Add(DataTransferItem.Create(DataFormat.File, file));
                     await clipboard.SetDataAsync(dataTransfer);
-                    NotificationManager.Show(new Notification("Success", "Copy completed.", NotificationType.Success));
+                    _notificationManager?.Show(new Notification("Success", "Copy completed.", NotificationType.Success));
                 }
                 else
                 {
-                    NotificationManager.Show(new Notification("Warning", "Any files to copy in Clipboard.", NotificationType.Warning));
+                    _notificationManager?.Show(new Notification("Warning", "Any files to copy in Clipboard.", NotificationType.Warning));
                 }
             }
         }
@@ -179,6 +177,7 @@ namespace ControlCatalog.Pages
         {
             _clipboardLastDataObjectChecker.Start();
             base.OnAttachedToVisualTree(e);
+            _notificationManager = new WindowNotificationManager(TopLevel.GetTopLevel(this)!);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
