@@ -1,17 +1,17 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.PipsPagerCustomButtonsPage">
+             x:Class="ControlCatalog.Pages.PipsPagerCustomButtonThemesPage">
   <DockPanel>
     <ScrollViewer DockPanel.Dock="Right" Width="220">
       <StackPanel Margin="12" Spacing="8">
-        <TextBlock Text="Custom Buttons" FontSize="16" FontWeight="SemiBold"
+        <TextBlock Text="Custom Button Themes" FontSize="16" FontWeight="SemiBold"
                    Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
         <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
-                   Text="Replace the default chevron navigation buttons with custom styled buttons using PreviousButtonStyle and NextButtonStyle." />
+                   Text="Replace the default chevron navigation buttons with custom button themes using PreviousButtonTheme and NextButtonTheme." />
         <Separator />
         <TextBlock Text="Properties" FontSize="13" FontWeight="SemiBold" />
-        <TextBlock FontSize="12" TextWrapping="Wrap" Text="PreviousButtonStyle" />
-        <TextBlock FontSize="12" TextWrapping="Wrap" Text="NextButtonStyle" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="PreviousButtonTheme" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="NextButtonTheme" />
         <TextBlock FontSize="12" TextWrapping="Wrap" Text="IsPreviousButtonVisible" />
         <TextBlock FontSize="12" TextWrapping="Wrap" Text="IsNextButtonVisible" />
       </StackPanel>
@@ -27,7 +27,7 @@
         <PipsPager NumberOfPages="5" MaxVisiblePips="5"
                    IsPreviousButtonVisible="True" IsNextButtonVisible="True">
           <PipsPager.Resources>
-            <ControlTheme x:Key="CustomPreviousButtonStyle" TargetType="Button">
+            <ControlTheme x:Key="CustomPreviousButtonTheme" TargetType="Button">
               <Setter Property="Content" Value="Prev" />
               <Setter Property="Background" Value="LightGray" />
               <Setter Property="Foreground" Value="Black" />
@@ -41,7 +41,7 @@
                 </ControlTemplate>
               </Setter>
             </ControlTheme>
-            <ControlTheme x:Key="CustomNextButtonStyle" TargetType="Button">
+            <ControlTheme x:Key="CustomNextButtonTheme" TargetType="Button">
               <Setter Property="Content" Value="Next" />
               <Setter Property="Background" Value="LightGray" />
               <Setter Property="Foreground" Value="Black" />
@@ -56,12 +56,12 @@
               </Setter>
             </ControlTheme>
           </PipsPager.Resources>
-          <PipsPager.PreviousButtonStyle>
-            <StaticResource ResourceKey="CustomPreviousButtonStyle" />
-          </PipsPager.PreviousButtonStyle>
-          <PipsPager.NextButtonStyle>
-            <StaticResource ResourceKey="CustomNextButtonStyle" />
-          </PipsPager.NextButtonStyle>
+          <PipsPager.PreviousButtonTheme>
+            <StaticResource ResourceKey="CustomPreviousButtonTheme" />
+          </PipsPager.PreviousButtonTheme>
+          <PipsPager.NextButtonTheme>
+            <StaticResource ResourceKey="CustomNextButtonTheme" />
+          </PipsPager.NextButtonTheme>
         </PipsPager>
       </StackPanel>
 

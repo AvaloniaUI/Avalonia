@@ -303,11 +303,11 @@ namespace Avalonia.Controls
         public static void ApplyDesignModeProperties(Control target, Control source)
         {
             if (source.IsSet(WidthProperty))
-                target.Bind(Layoutable.WidthProperty, target.GetBindingObservable(WidthProperty));
+                target.Bind(Layoutable.WidthProperty, source[!WidthProperty]);
             if (source.IsSet(HeightProperty))
-                target.Bind(Layoutable.HeightProperty, target.GetBindingObservable(HeightProperty));
+                target.Bind(Layoutable.HeightProperty, source[!HeightProperty]);
             if (source.IsSet(DataContextProperty))
-                target.Bind(StyledElement.DataContextProperty, target.GetBindingObservable(DataContextProperty));
+                target.Bind(StyledElement.DataContextProperty, source[!DataContextProperty]);
             if (source.IsSet(DesignStyleProperty))
                 target.Styles.Add(GetDesignStyle(source));
         }
