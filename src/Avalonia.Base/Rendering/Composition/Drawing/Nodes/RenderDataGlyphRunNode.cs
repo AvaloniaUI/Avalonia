@@ -6,8 +6,12 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Drawing.Nodes;
 
-class RenderDataGlyphRunNode : IRenderDataItemWithServerResources, IDisposable
+class RenderDataGlyphRunNode : IRenderDataItemWithServerResources, IDisposable, IPoolableRenderDataItem
 {
+    private static readonly RenderDataNodePool<RenderDataGlyphRunNode> s_pool = new();
+
+    public static RenderDataGlyphRunNode Get() => s_pool.Get();
+
     public IBrush? ServerBrush { get; set; }
     // Dispose only happens once, so it's safe to have one reference
     public IRef<IGlyphRunImpl>? GlyphRun { get; set; }
@@ -31,5 +35,12 @@ class RenderDataGlyphRunNode : IRenderDataItemWithServerResources, IDisposable
     {
         GlyphRun?.Dispose();
         GlyphRun = null;
+    }
+
+    public void ReturnToPool()
+    {
+        Dispose();
+        ServerBrush = null;
+        s_pool.Return(this);
     }
 }

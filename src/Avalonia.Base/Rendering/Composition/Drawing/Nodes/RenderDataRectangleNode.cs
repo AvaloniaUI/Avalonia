@@ -2,8 +2,12 @@ using Avalonia.Media;
 
 namespace Avalonia.Rendering.Composition.Drawing.Nodes;
 
-class RenderDataRectangleNode : RenderDataBrushAndPenNode
+class RenderDataRectangleNode : RenderDataBrushAndPenNode, IPoolableRenderDataItem
 {
+    private static readonly RenderDataNodePool<RenderDataRectangleNode> s_pool = new();
+
+    public static RenderDataRectangleNode Get() => s_pool.Get();
+
     public RoundedRect Rect { get; set; }
     public BoxShadows BoxShadows { get; set; }
 
@@ -21,7 +25,7 @@ class RenderDataRectangleNode : RenderDataBrushAndPenNode
 
                 var innerRoundedRect = Rect.Deflate(strokeThicknessAdjustment, strokeThicknessAdjustment);
                 return !innerRoundedRect.ContainsExclusive(p);
-            } 
+            }
         }
         else
         {
@@ -43,4 +47,14 @@ class RenderDataRectangleNode : RenderDataBrushAndPenNode
         context.Context.DrawRectangle(ServerBrush, ServerPen, Rect, BoxShadows);
 
     public override Rect? Bounds => BoxShadows.TransformBounds(Rect.Rect).Inflate((ServerPen?.Thickness ?? 0) / 2);
+
+    public void ReturnToPool()
+    {
+        ServerBrush = null;
+        ServerPen = null;
+        ClientPen = null;
+        Rect = default;
+        BoxShadows = default;
+        s_pool.Return(this);
+    }
 }

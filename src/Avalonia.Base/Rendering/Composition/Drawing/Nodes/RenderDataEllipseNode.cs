@@ -4,10 +4,14 @@ using Avalonia.Platform;
 
 namespace Avalonia.Rendering.Composition.Drawing.Nodes;
 
-class RenderDataEllipseNode :RenderDataBrushAndPenNode
+class RenderDataEllipseNode : RenderDataBrushAndPenNode, IPoolableRenderDataItem
 {
+    private static readonly RenderDataNodePool<RenderDataEllipseNode> s_pool = new();
+
+    public static RenderDataEllipseNode Get() => s_pool.Get();
+
     public Rect Rect { get; set; }
-    
+
     bool Contains(double dx, double dy, double radiusX, double radiusY)
     {
         var rx2 = radiusX * radiusX;
@@ -17,7 +21,7 @@ class RenderDataEllipseNode :RenderDataBrushAndPenNode
 
         return distance <= rx2 * ry2;
     }
-    
+
     public override bool HitTest(Point p)
     {
         var center = Rect.Center;
@@ -50,7 +54,7 @@ class RenderDataEllipseNode :RenderDataBrushAndPenNode
 
             return inStroke && !inInner;
         }
-        
+
         return false;
     }
 
@@ -58,4 +62,13 @@ class RenderDataEllipseNode :RenderDataBrushAndPenNode
         context.Context.DrawEllipse(ServerBrush, ServerPen, Rect);
 
     public override Rect? Bounds => Rect.Inflate(ServerPen?.Thickness ?? 0);
+
+    public void ReturnToPool()
+    {
+        ServerBrush = null;
+        ServerPen = null;
+        ClientPen = null;
+        Rect = default;
+        s_pool.Return(this);
+    }
 }

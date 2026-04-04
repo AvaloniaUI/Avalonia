@@ -124,13 +124,12 @@ internal class RenderDataDrawingContext : DrawingContext
         if(pen == null)
             return;
         AddResource(pen);
-        Add(new RenderDataLineNode
-        {
-            ClientPen = pen,
-            ServerPen = pen.GetServer(_compositor),
-            P1 = p1,
-            P2 = p2
-        });
+        var lineNode = RenderDataLineNode.Get();
+        lineNode.ClientPen = pen;
+        lineNode.ServerPen = pen.GetServer(_compositor);
+        lineNode.P1 = p1;
+        lineNode.P2 = p2;
+        Add(lineNode);
     }
 
     protected override void DrawGeometryCore(IBrush? brush, IPen? pen, IGeometryImpl geometry)
@@ -139,13 +138,12 @@ internal class RenderDataDrawingContext : DrawingContext
             return;
         AddResource(brush);
         AddResource(pen);
-        Add(new RenderDataGeometryNode
-        {
-            ServerBrush = brush.GetServer(_compositor),
-            ServerPen = pen.GetServer(_compositor),
-            ClientPen = pen,
-            Geometry = geometry
-        });
+        var geoNode = RenderDataGeometryNode.Get();
+        geoNode.ServerBrush = brush.GetServer(_compositor);
+        geoNode.ServerPen = pen.GetServer(_compositor);
+        geoNode.ClientPen = pen;
+        geoNode.Geometry = geometry;
+        Add(geoNode);
     }
 
     protected override void DrawRectangleCore(IBrush? brush, IPen? pen, RoundedRect rrect, BoxShadows boxShadows = default)
@@ -156,14 +154,13 @@ internal class RenderDataDrawingContext : DrawingContext
             return;
         AddResource(brush);
         AddResource(pen);
-        Add(new RenderDataRectangleNode
-        {
-            ServerBrush = brush.GetServer(_compositor),
-            ServerPen = pen.GetServer(_compositor),
-            ClientPen = pen,
-            Rect = rrect,
-            BoxShadows = boxShadows
-        });
+        var rectNode = RenderDataRectangleNode.Get();
+        rectNode.ServerBrush = brush.GetServer(_compositor);
+        rectNode.ServerPen = pen.GetServer(_compositor);
+        rectNode.ClientPen = pen;
+        rectNode.Rect = rrect;
+        rectNode.BoxShadows = boxShadows;
+        Add(rectNode);
     }
 
     protected override void DrawEllipseCore(IBrush? brush, IPen? pen, Rect rect)
@@ -175,51 +172,56 @@ internal class RenderDataDrawingContext : DrawingContext
             return;
         AddResource(brush);
         AddResource(pen);
-        Add(new RenderDataEllipseNode
-        {
-            ServerBrush = brush.GetServer(_compositor),
-            ServerPen = pen.GetServer(_compositor),
-            ClientPen = pen,
-            Rect = rect,
-        });
+        var ellipseNode = RenderDataEllipseNode.Get();
+        ellipseNode.ServerBrush = brush.GetServer(_compositor);
+        ellipseNode.ServerPen = pen.GetServer(_compositor);
+        ellipseNode.ClientPen = pen;
+        ellipseNode.Rect = rect;
+        Add(ellipseNode);
     }
 
-    public override void Custom(ICustomDrawOperation custom) => Add(new RenderDataCustomNode
+    public override void Custom(ICustomDrawOperation custom)
     {
-        Operation = custom
-    });
+        var node = RenderDataCustomNode.Get();
+        node.Operation = custom;
+        Add(node);
+    }
 
     public override void DrawGlyphRun(IBrush? foreground, GlyphRun? glyphRun)
     {
         if (foreground == null || glyphRun == null)
             return;
         AddResource(foreground);
-        Add(new RenderDataGlyphRunNode
-        {
-            ServerBrush = foreground.GetServer(_compositor),
-            GlyphRun = glyphRun.PlatformImpl.Clone()
-        });
+        var glyphNode = RenderDataGlyphRunNode.Get();
+        glyphNode.ServerBrush = foreground.GetServer(_compositor);
+        glyphNode.GlyphRun = glyphRun.PlatformImpl.Clone();
+        Add(glyphNode);
     }
 
-    protected override void PushClipCore(RoundedRect rect) => Push(new RenderDataClipNode
+    protected override void PushClipCore(RoundedRect rect)
     {
-        Rect = rect
-    });
+        var node = RenderDataClipNode.Get();
+        node.Rect = rect;
+        Push(node);
+    }
 
-    protected override void PushClipCore(Rect rect) => Push(new RenderDataClipNode
+    protected override void PushClipCore(Rect rect)
     {
-        Rect = rect
-    });
+        var node = RenderDataClipNode.Get();
+        node.Rect = rect;
+        Push(node);
+    }
 
     protected override void PushGeometryClipCore(Geometry? clip)
     {
         if (clip == null)
             Push();
         else
-            Push(new RenderDataGeometryClipNode
-            {
-                Geometry = clip?.PlatformImpl
-            });
+        {
+            var node = RenderDataGeometryClipNode.Get();
+            node.Geometry = clip?.PlatformImpl;
+            Push(node);
+        }
     }
 
     protected override void PushOpacityCore(double opacity)
@@ -227,10 +229,11 @@ internal class RenderDataDrawingContext : DrawingContext
         if (opacity == 1)
             Push();
         else
-            Push(new RenderDataOpacityNode
-            {
-                Opacity = opacity
-            });
+        {
+            var node = RenderDataOpacityNode.Get();
+            node.Opacity = opacity;
+            Push(node);
+        }
     }
 
     protected override void PushOpacityMaskCore(IBrush? mask, Rect bounds)
@@ -240,11 +243,10 @@ internal class RenderDataDrawingContext : DrawingContext
         else
         {
             AddResource(mask);
-            Push(new RenderDataOpacityMaskNode
-            {
-                ServerBrush = mask.GetServer(_compositor),
-                BoundsRect = bounds
-            });
+            var node = RenderDataOpacityMaskNode.Get();
+            node.ServerBrush = mask.GetServer(_compositor);
+            node.BoundsRect = bounds;
+            Push(node);
         }
     }
 
@@ -253,21 +255,26 @@ internal class RenderDataDrawingContext : DrawingContext
         if (matrix.IsIdentity)
             Push();
         else
-            Push(new RenderDataPushMatrixNode()
-            {
-                Matrix = matrix
-            });
+        {
+            var node = RenderDataPushMatrixNode.Get();
+            node.Matrix = matrix;
+            Push(node);
+        }
     }
 
-    protected override void PushRenderOptionsCore(RenderOptions renderOptions) => Push(new RenderDataRenderOptionsNode()
+    protected override void PushRenderOptionsCore(RenderOptions renderOptions)
     {
-        RenderOptions = renderOptions
-    });
+        var node = RenderDataRenderOptionsNode.Get();
+        node.RenderOptions = renderOptions;
+        Push(node);
+    }
 
-    protected override void PushTextOptionsCore(TextOptions textOptions) => Push(new RenderDataTextOptionsNode()
+    protected override void PushTextOptionsCore(TextOptions textOptions)
     {
-        TextOptions = textOptions
-    });
+        var node = RenderDataTextOptionsNode.Get();
+        node.TextOptions = textOptions;
+        Push(node);
+    }
 
     protected override void PopClipCore() => Pop<RenderDataClipNode>();
 
@@ -287,13 +294,12 @@ internal class RenderDataDrawingContext : DrawingContext
     {
         if (source == null || sourceRect.IsEmpty() || destRect.IsEmpty())
             return;
-        Add(new RenderDataBitmapNode
-        {
-            Bitmap = source.Clone(),
-            Opacity = opacity,
-            SourceRect = sourceRect,
-            DestRect = destRect
-        });
+        var bitmapNode = RenderDataBitmapNode.Get();
+        bitmapNode.Bitmap = source.Clone();
+        bitmapNode.Opacity = opacity;
+        bitmapNode.SourceRect = sourceRect;
+        bitmapNode.DestRect = destRect;
+        Add(bitmapNode);
     }
 
 
