@@ -14,6 +14,7 @@ namespace Avalonia.Media.TextFormatting
         private readonly TextTrimming _textTrimming;
         private readonly TextLine[] _textLines;
         private readonly CachedMetrics _metrics = new();
+        private readonly TextRunCache? _textRunCache;
 
         private int _textSourceLength;
 
@@ -36,6 +37,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="maxLines">The maximum number of text lines.</param>
         /// <param name="fontFeatures">Optional list of turned on/off features.</param>
         /// <param name="textStyleOverrides">The text style overrides.</param>
+        /// <param name="textRunCache">An optional cache for shaped text runs to avoid redundant shaping.</param>
         public TextLayout(
             string? text,
             Typeface typeface,
@@ -52,7 +54,8 @@ namespace Avalonia.Media.TextFormatting
             double letterSpacing = 0,
             int maxLines = 0,
             FontFeatureCollection? fontFeatures = null,
-            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null)
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null,
+            TextRunCache? textRunCache = null)
         {
             _paragraphProperties =
                 CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping,
@@ -68,6 +71,8 @@ namespace Avalonia.Media.TextFormatting
 
             MaxLines = maxLines;
 
+            _textRunCache = textRunCache;
+
             _textLines = CreateTextLines();
         }
 
@@ -80,13 +85,15 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <param name="maxLines">The maximum number of text lines.</param>
+        /// <param name="textRunCache">An optional cache for shaped text runs to avoid redundant shaping.</param>
         public TextLayout(
             ITextSource textSource,
             TextParagraphProperties paragraphProperties,
             TextTrimming? textTrimming = null,
             double maxWidth = double.PositiveInfinity,
             double maxHeight = double.PositiveInfinity,
-            int maxLines = 0)
+            int maxLines = 0,
+            TextRunCache? textRunCache = null)
         {
             _textSource = textSource;
 
@@ -99,6 +106,8 @@ namespace Avalonia.Media.TextFormatting
             MaxHeight = maxHeight;
 
             MaxLines = maxLines;
+
+            _textRunCache = textRunCache;
 
             _textLines = CreateTextLines();
         }
@@ -527,7 +536,7 @@ namespace Avalonia.Media.TextFormatting
                 while (true)
                 {
                     var textLine = textFormatter.FormatLine(_textSource, _textSourceLength, MaxWidth,
-                        _paragraphProperties, previousLine?.TextLineBreak) as TextLineImpl;
+                        _paragraphProperties, previousLine?.TextLineBreak, _textRunCache) as TextLineImpl;
 
                     if (textLine is null)
                     {
