@@ -148,6 +148,9 @@
       <TabItem Header="ListBox" ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:ListBoxPage />
       </TabItem>
+      <TabItem Header="ListBox - Complex Virtualization" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:ComplexVirtualizationPage />
+      </TabItem>
       <TabItem Header="Menu">
         <pages:MenuPage />
       </TabItem>
