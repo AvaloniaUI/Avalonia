@@ -943,6 +943,74 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
+        /// <summary>
+        /// This test ensures that the selected tab is the first visible and enabled tab.
+        /// </summary>
+        [Fact]
+        public void Only_First_Visible_And_Enabled_Tab_Should_Be_Selected_By_Default()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                TabItem expectedSelectionItem;
+
+                var target = new TabControl
+                {
+                    Template = TabControlTemplate(),
+                    Items =
+                    {
+                        new TabItem { Name = "first", Content = "foo", IsVisible = false},
+                        new TabItem { Name = "second", Content = "bar", IsEnabled = false},
+                        (expectedSelectionItem = new TabItem { Name = "third", Content = "baz" }),
+                    }
+                };
+
+                target.ApplyTemplate();
+                
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                // the 3rd item should be selected
+                Assert.Equal(2, target.SelectedIndex);
+                Assert.Equal(expectedSelectionItem, target.SelectedItem);
+            }
+        }
+        
+        /// <summary>
+        /// This test ensures that also an invisible TabControl can receive a selection
+        /// </summary>
+        [Fact]
+        public void SelectedIndex_Should_Restore_After_Control_Gets_Visible()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                TabItem expectedSelectionItem;
+
+                var target = new TabControl
+                {
+                    IsVisible = false,
+                    Template = TabControlTemplate(),
+                    Items =
+                    {
+                        new TabItem { Name = "first", Content = "foo"},
+                        (expectedSelectionItem = new TabItem { Name = "second", Content = "bar"}),
+                        new TabItem { Name = "third", Content = "baz" },
+                    },
+                    SelectedIndex = 1
+                };
+
+                target.ApplyTemplate();
+                
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                target.IsVisible = true;
+                
+                // the 2nd item should be selected
+                Assert.Equal(1, target.SelectedIndex);
+                Assert.Equal(expectedSelectionItem, target.SelectedItem);
+            }
+        }
+
         private static IControlTemplate TabItemTemplate()
         {
             return new FuncControlTemplate<TabItem>((parent, scope) =>
