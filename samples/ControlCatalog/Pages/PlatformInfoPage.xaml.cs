@@ -3,7 +3,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class PlatformInfoPage : UserControl
+    public partial class PlatformInfoPage : ContentPage
     {
         public PlatformInfoPage()
         {

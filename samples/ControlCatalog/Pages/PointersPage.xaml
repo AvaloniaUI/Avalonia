@@ -1,12 +1,12 @@
-<UserControl x:Class="ControlCatalog.Pages.PointersPage"
+<TabbedPage x:Class="ControlCatalog.Pages.PointersPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Header="Pointers"
              xmlns:local="using:ControlCatalog.Pages">
-  <TabControl>
-    <TabItem Header="Contacts">
+    <ContentPage Theme="{StaticResource ScrollPage}" Header="Contacts">
       <local:PointerContactsTab />
-    </TabItem>
-    <TabItem Header="IntermediatePoints">
+    </ContentPage>
+    <ContentPage Theme="{StaticResource ScrollPage}" Header="IntermediatePoints">
       <Panel TextElement.Foreground="Black">
         <local:PointerCanvas x:Name="IntermediatePointsCanvas"
                              DrawOnlyPoints="True"
@@ -28,8 +28,8 @@
                    HorizontalAlignment="Left"
                    VerticalAlignment="Top" />
       </Panel>
-    </TabItem>
-    <TabItem Header="Pressure">
+    </ContentPage>
+    <ContentPage Theme="{StaticResource ScrollPage}" Header="Pressure">
       <Panel TextElement.Foreground="Black">
         <local:PointerCanvas x:Name="PressureCanvas"
                              DrawOnlyPoints="False"
@@ -39,8 +39,8 @@
                    HorizontalAlignment="Left"
                    VerticalAlignment="Top" />
       </Panel>
-    </TabItem>
-    <TabItem Header="Capture">
+    </ContentPage>
+    <ContentPage Theme="{StaticResource ScrollPage}" Header="Capture">
       <WrapPanel>
         <Border Name="BorderCapture1"
                 MinWidth="250"
@@ -65,6 +65,5 @@
           <TextBlock>Capture 2</TextBlock>
         </Border>
       </WrapPanel>
-    </TabItem>
-  </TabControl>
-</UserControl>
+    </ContentPage>
+</TabbedPage>
