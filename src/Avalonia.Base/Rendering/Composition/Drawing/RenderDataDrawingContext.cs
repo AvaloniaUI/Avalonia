@@ -269,6 +269,13 @@ internal class RenderDataDrawingContext : DrawingContext
         TextOptions = textOptions
     });
 
+    /// <inheritdoc />
+    protected override void PushEffectCore(IEffect effect, Rect bounds) => Push(new RenderDataEffectNode()
+    {
+        Effect = effect.ToImmutable(),
+        BoundsRect = bounds
+    });
+
     protected override void PopClipCore() => Pop<RenderDataClipNode>();
 
     protected override void PopGeometryClipCore() => Pop<RenderDataGeometryClipNode>();
@@ -282,6 +289,9 @@ internal class RenderDataDrawingContext : DrawingContext
     protected override void PopRenderOptionsCore() => Pop<RenderDataRenderOptionsNode>();
 
     protected override void PopTextOptionsCore() => Pop<RenderDataTextOptionsNode>();
+
+    /// <inheritdoc />
+    protected override void PopEffectCore() => Pop<RenderDataEffectNode>();
 
     internal override void DrawBitmap(IRef<IBitmapImpl>? source, double opacity, Rect sourceRect, Rect destRect)
     {
