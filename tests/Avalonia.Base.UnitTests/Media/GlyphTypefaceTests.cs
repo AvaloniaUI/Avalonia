@@ -73,7 +73,7 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphId, out var advance));
 
             // Advance returned by GetGlyphAdvance should match the metrics width
-            Assert.Equal(metrics.Width, advance);
+            Assert.Equal(metrics.AdvanceWidth, advance);
         }
 
         [Theory]
@@ -273,7 +273,7 @@ namespace Avalonia.Base.UnitTests.Media
             var result = typeface.TryGetGlyphMetrics(glyphId, out var metrics);
 
             Assert.True(result);
-            Assert.True(metrics.Width > 0);
+            Assert.True(metrics.AdvanceWidth > 0);
         }
 
         [Fact]

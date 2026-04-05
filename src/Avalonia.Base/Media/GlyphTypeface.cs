@@ -460,8 +460,8 @@ namespace Avalonia.Media
             {
                 XBearing = hMetric.LeftSideBearing,
                 YBearing = vMetric.TopSideBearing,
-                Width = hMetric.AdvanceWidth,
-                Height = vMetric.AdvanceHeight
+                AdvanceWidth = hMetric.AdvanceWidth,
+                AdvanceHeight = vMetric.AdvanceHeight
             };
 
             return true;
@@ -525,8 +525,8 @@ namespace Avalonia.Media
                 {
                     XBearing = hasHorizontal ? hMetrics[i].LeftSideBearing : (short)0,
                     YBearing = hasVertical ? vMetrics[i].TopSideBearing : (short)0,
-                    Width = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
-                    Height = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0
+                    AdvanceWidth = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
+                    AdvanceHeight = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0
                 };
             }
 
