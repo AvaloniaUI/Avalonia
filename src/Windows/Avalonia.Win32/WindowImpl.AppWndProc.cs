@@ -1446,8 +1446,11 @@ namespace Avalonia.Win32
             var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
 
             // Avoid calling GetKeySymbol() for WM_SYSKEYDOWN/UP:
-            // it ultimately calls User32!ToUnicodeEx, which messes up the keyboard state in this case.
-            var keySymbol = useKeySymbol ? KeyInterop.GetKeySymbol(virtualKey, keyData) : null;
+            // it ultimately calls ToUnicodeEx, which corrupts keyboard state for system key events.
+            // Use MapVirtualKey-based fallback instead — it's layout-aware without touching keyboard state.
+            var keySymbol = useKeySymbol
+                ? KeyInterop.GetKeySymbol(virtualKey, keyData)
+                : KeyInterop.GetKeySymbolFromVirtualKey(virtualKey);
 
             if (key == Key.None && physicalKey == PhysicalKey.None && string.IsNullOrWhiteSpace(keySymbol))
                 return null;
