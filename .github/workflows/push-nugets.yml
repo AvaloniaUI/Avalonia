@@ -16,12 +16,12 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
 
       - name: Check out Devolutions/actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: Devolutions/actions
           ref: v1
