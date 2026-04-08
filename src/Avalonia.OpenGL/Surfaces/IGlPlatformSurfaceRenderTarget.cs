@@ -8,7 +8,6 @@ namespace Avalonia.OpenGL.Surfaces
     [PrivateApi]
     public interface IGlPlatformSurfaceRenderTarget : IDisposable, IPlatformRenderSurfaceRenderTarget
     {
-        bool IsCorrupted { get; }
         IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo);
     }
 }

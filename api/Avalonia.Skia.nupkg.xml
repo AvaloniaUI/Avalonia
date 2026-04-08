@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
@@ -63,6 +63,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Skia.ISkiaGpuRenderTarget.get_IsCorrupted</Target>
+    <Left>baseline/Avalonia.Skia/lib/net10.0/Avalonia.Skia.dll</Left>
+    <Right>current/Avalonia.Skia/lib/net10.0/Avalonia.Skia.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Skia.ISkiaGpuRenderTarget.get_IsReady</Target>
+    <Left>baseline/Avalonia.Skia/lib/net10.0/Avalonia.Skia.dll</Left>
+    <Right>current/Avalonia.Skia/lib/net10.0/Avalonia.Skia.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Skia.Helpers.DrawingContextHelper.WrapSkiaCanvas(SkiaSharp.SKCanvas,Avalonia.Vector)</Target>
     <Left>baseline/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Left>
     <Right>current/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Right>
@@ -82,6 +94,18 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Skia.ISkiaGpuRenderTarget.BeginRenderingSession(System.Nullable{Avalonia.PixelSize})</Target>
+    <Left>baseline/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Left>
+    <Right>current/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Skia.ISkiaGpuRenderTarget.get_IsCorrupted</Target>
+    <Left>baseline/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Left>
+    <Right>current/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Skia.ISkiaGpuRenderTarget.get_IsReady</Target>
     <Left>baseline/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Left>
     <Right>current/Avalonia.Skia/lib/net8.0/Avalonia.Skia.dll</Right>
   </Suppression>
