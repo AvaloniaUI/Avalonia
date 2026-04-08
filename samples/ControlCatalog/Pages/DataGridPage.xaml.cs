@@ -4,7 +4,7 @@ using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages;
 
-public partial class DataGridPage : UserControl
+public partial class DataGridPage : ContentPage
 {
     public DataGridPage()
     {

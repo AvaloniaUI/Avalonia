@@ -2,18 +2,16 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.LogicalTree;
 using Avalonia.Rendering.Composition;
-using Avalonia.Utilities;
 
 namespace ControlCatalog.Pages
 {
-    public partial class GesturePage : UserControl
+    public partial class GesturePinchZoomPage : UserControl
     {
         private bool _isInit;
         private double _currentScale;
 
-        public GesturePage()
+        public GesturePinchZoomPage()
         {
             InitializeComponent();
         }
@@ -29,17 +27,10 @@ namespace ControlCatalog.Pages
 
             _isInit = true;
 
-            SetPullHandlers(TopPullZone, false);
-            SetPullHandlers(BottomPullZone, true);
-            SetPullHandlers(RightPullZone, true);
-            SetPullHandlers(LeftPullZone, false);
-
             var image = PinchImage;
             SetPinchHandlers(image);
 
-            var reset = ResetButton;
-
-            reset.Click += (_, _) =>
+            ResetButton.Click += (_, _) =>
             {
                 var compositionVisual = ElementComposition.GetElementVisual(image);
 
@@ -51,11 +42,6 @@ namespace ControlCatalog.Pages
                     image.InvalidateMeasure();
                 }
             };
-
-            RotationGesture.AddHandler(InputElement.PinchEvent, (s, e) =>
-            {
-                AngleSlider.Value = e.Angle;
-            });
         }
 
         private void SetPinchHandlers(Control? control)
@@ -143,72 +129,6 @@ namespace ControlCatalog.Pages
                     e.Handled = true;
                 }
             });
-        }
-
-        private void SetPullHandlers(Control control, bool inverse)
-        {
-            var ball = control.FindLogicalDescendantOfType<Border>();
-
-            Vector3D defaultOffset = default;
-
-            CompositionVisual? ballCompositionVisual = null;
-
-            if (ball != null)
-            {
-                InitComposition(ball);
-            }
-            else
-            {
-                return;
-            }
-
-            control.LayoutUpdated += (s, e) =>
-            {
-                InitComposition(ball!);
-                if (ballCompositionVisual != null)
-                {
-                    defaultOffset = ballCompositionVisual.Offset;
-                }
-            };
-
-            control.AddHandler(InputElement.PullGestureEvent, (s, e) =>
-            {
-                Vector3D center = new((float)control.Bounds.Center.X, (float)control.Bounds.Center.Y, 0);
-                InitComposition(ball!);
-                if (ballCompositionVisual != null)
-                {
-                    ballCompositionVisual.Offset = defaultOffset + new Vector3D(e.Delta.X * 0.4f, e.Delta.Y * 0.4f, 0) * (inverse ? -1 : 1);
-
-                    e.Handled = true;
-                }
-            });
-
-            control.AddHandler(InputElement.PullGestureEndedEvent, (s, e) =>
-            {
-                InitComposition(ball!);
-                if (ballCompositionVisual != null)
-                {
-                    ballCompositionVisual.Offset = defaultOffset;
-                }
-            });
-
-            void InitComposition(Control control)
-            {
-                ballCompositionVisual = ElementComposition.GetElementVisual(ball);
-
-                if (ballCompositionVisual != null)
-                {
-                    var offsetAnimation = ballCompositionVisual.Compositor.CreateVector3KeyFrameAnimation();
-                    offsetAnimation.Target = "Offset";
-                    offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
-                    offsetAnimation.Duration = TimeSpan.FromMilliseconds(100);
-
-                    var implicitAnimations = ballCompositionVisual.Compositor.CreateImplicitAnimationCollection();
-                    implicitAnimations["Offset"] = offsetAnimation;
-
-                    ballCompositionVisual.ImplicitAnimations = implicitAnimations;
-                }
-            }
         }
     }
 }

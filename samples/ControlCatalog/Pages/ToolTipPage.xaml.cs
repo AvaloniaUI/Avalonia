@@ -6,7 +6,7 @@ using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ToolTipPage : UserControl
+    public partial class ToolTipPage : ContentPage
     {
         public ToolTipPage()
         {

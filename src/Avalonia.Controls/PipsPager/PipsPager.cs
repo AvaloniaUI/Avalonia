@@ -87,16 +87,16 @@ namespace Avalonia.Controls
                 x => x.TemplateSettings);
 
         /// <summary>
-        /// Defines the <see cref="PreviousButtonStyle"/> property.
+        /// Defines the <see cref="PreviousButtonTheme"/> property.
         /// </summary>
-        public static readonly StyledProperty<ControlTheme?> PreviousButtonStyleProperty =
-            AvaloniaProperty.Register<PipsPager, ControlTheme?>(nameof(PreviousButtonStyle));
+        public static readonly StyledProperty<ControlTheme?> PreviousButtonThemeProperty =
+            AvaloniaProperty.Register<PipsPager, ControlTheme?>(nameof(PreviousButtonTheme));
 
         /// <summary>
-        /// Defines the <see cref="NextButtonStyle"/> property.
+        /// Defines the <see cref="NextButtonTheme"/> property.
         /// </summary>
-        public static readonly StyledProperty<ControlTheme?> NextButtonStyleProperty =
-            AvaloniaProperty.Register<PipsPager, ControlTheme?>(nameof(NextButtonStyle));
+        public static readonly StyledProperty<ControlTheme?> NextButtonThemeProperty =
+            AvaloniaProperty.Register<PipsPager, ControlTheme?>(nameof(NextButtonTheme));
 
         /// <summary>
         /// Defines the <see cref="SelectedIndexChanged"/> event.
@@ -195,21 +195,21 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the style for the previous button.
+        /// Gets or sets the theme for the previous button.
         /// </summary>
-        public ControlTheme? PreviousButtonStyle
+        public ControlTheme? PreviousButtonTheme
         {
-            get => GetValue(PreviousButtonStyleProperty);
-            set => SetValue(PreviousButtonStyleProperty, value);
+            get => GetValue(PreviousButtonThemeProperty);
+            set => SetValue(PreviousButtonThemeProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets the style for the next button.
+        /// Gets or sets the theme for the next button.
         /// </summary>
-        public ControlTheme? NextButtonStyle
+        public ControlTheme? NextButtonTheme
         {
-            get => GetValue(NextButtonStyleProperty);
-            set => SetValue(NextButtonStyleProperty, value);
+            get => GetValue(NextButtonThemeProperty);
+            set => SetValue(NextButtonThemeProperty, value);
         }
 
         /// <inheritdoc/>

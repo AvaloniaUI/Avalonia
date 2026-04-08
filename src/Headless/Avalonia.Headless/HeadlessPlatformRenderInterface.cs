@@ -608,8 +608,6 @@ namespace Avalonia.Headless
                 properties = default;
                 return new HeadlessDrawingContextStub();
             }
-
-            public bool IsCorrupted => false;
         }
 
         public void Dispose()

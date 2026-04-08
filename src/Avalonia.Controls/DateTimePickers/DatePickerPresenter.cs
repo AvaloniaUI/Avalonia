@@ -457,18 +457,17 @@ namespace Avalonia.Controls
                 }
             }
 
-            ConfigureSpacer(items._firstSpacer, columnIndex > 1);
-            ConfigureSpacer(items._secondSpacer, columnIndex > 2);
+            ConfigureSpacer(items._firstSpacer, columnIndex > 1, 1);
+            ConfigureSpacer(items._secondSpacer, columnIndex > 2, 3);
+            return;
 
-            static void ConfigureSpacer(Control? spacer, bool visible)
+            static void ConfigureSpacer(Control? spacer, bool visible, int column)
             {
                 if (spacer == null)
                     return;
-
                 // ternary conditional operator is used to make sure grid cells will be validated
-                Grid.SetColumn(spacer, visible ? 1 : 0);
+                Grid.SetColumn(spacer, visible ? column : 0);
                 spacer.IsVisible = visible;
-
             }
         }
 

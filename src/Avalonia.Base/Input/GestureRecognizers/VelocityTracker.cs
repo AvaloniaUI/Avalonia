@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using Avalonia.Utilities;
 
 namespace Avalonia.Input.GestureRecognizers
 {
@@ -71,6 +70,8 @@ namespace Avalonia.Input.GestureRecognizers
         private readonly PointAtTime[] _samples = new PointAtTime[HistorySize];
         private int _index = 0;
 
+        private Stopwatch _sinceLastSample = new Stopwatch();
+
         /// <summary>
         /// Adds a position as the given time to the tracker.
         /// </summary>
@@ -78,6 +79,7 @@ namespace Avalonia.Input.GestureRecognizers
         /// <param name="position"></param>
         public void AddPosition(TimeSpan time, Vector position)
         {
+            _sinceLastSample.Restart();
             _index++;
             if (_index == HistorySize)
             {
@@ -94,6 +96,11 @@ namespace Avalonia.Input.GestureRecognizers
         /// Returns null if there is no data on which to base an estimate.
         protected virtual VelocityEstimate? GetVelocityEstimate()
         {
+            if (_sinceLastSample.ElapsedMilliseconds > AssumePointerMoveStoppedMilliseconds)
+            {
+                return new VelocityEstimate(default, 1.0, default, default);
+            }
+
             Span<double> x = stackalloc double[HistorySize];
             Span<double> y = stackalloc double[HistorySize];
             Span<double> w = stackalloc double[HistorySize];
@@ -158,17 +165,6 @@ namespace Avalonia.Input.GestureRecognizers
                         );
                     }
                 }
-            }
-            else if(sampleCount > 1)
-            {
-                // Return linear velocity if we don't have enough samples
-                var distance = newestSample.Point - oldestSample.Point;
-                return new VelocityEstimate(
-                  PixelsPerSecond: new Vector(distance.X / duration.Milliseconds * 1000, distance.Y / duration.Milliseconds * 1000),
-                  Confidence: 1,
-                  Duration: duration,
-                  Offset: offset
-                );
             }
 
             // We're unable to make a velocity estimate but we did have at least one
@@ -302,7 +298,7 @@ namespace Avalonia.Input.GestureRecognizers
             // Solve R B = Qt W Y to find B. This is easy because R is upper triangular.
             // We just work from bottom-right to top-left calculating B's coefficients.
             // "m" isn't expected to be bigger than HistorySize=20, so allocation on stack is safe.
-            Span<double> wy = stackalloc double[m];  
+            Span<double> wy = stackalloc double[m];
             for (int h = 0; h < m; h += 1)
             {
                 wy[h] = y[h] * w[h];
@@ -360,7 +356,7 @@ namespace Avalonia.Input.GestureRecognizers
             }
             return result;
         }
-        
+
         private static double Norm(Span<double> v)
         {
             return Math.Sqrt(Multiply(v, v));
