@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
@@ -41,6 +42,9 @@ namespace Avalonia.Platform
         public PlatformHotkeyConfiguration HotkeyConfiguration =>
             AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
 
+        public virtual string PreferredApplicationLanguage =>
+            CultureInfo.CurrentUICulture.Name;
+
         public virtual PlatformColorValues GetColorValues()
         {
             return new PlatformColorValues
@@ -50,11 +54,18 @@ namespace Avalonia.Platform
         }
 
         public virtual event EventHandler<PlatformColorValues>? ColorValuesChanged;
+        public virtual event EventHandler? PreferredApplicationLanguageChanged;
 
         protected void OnColorValuesChanged(PlatformColorValues colorValues)
         {
             Dispatcher.UIThread.Send(
                 _ => ColorValuesChanged?.Invoke(this, colorValues));
+        }
+
+        protected void OnPreferredApplicationLanguageChanged()
+        {
+            Dispatcher.UIThread.Send(
+                _ => PreferredApplicationLanguageChanged?.Invoke(this, EventArgs.Empty));
         }
     }
 }
