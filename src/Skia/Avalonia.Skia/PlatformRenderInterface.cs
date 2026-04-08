@@ -205,10 +205,10 @@ namespace Avalonia.Skia
             return new WriteableBitmapImpl(size, dpi, format, alphaFormat);
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphTypeface glyphTypeface, double fontRenderingEmSize, 
-            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
+        public IGlyphRunImpl CreateGlyphRun(GlyphTypeface glyphTypeface, double fontRenderingEmSize,
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin, Rect bounds)
         {
-            return new GlyphRunImpl(glyphTypeface, fontRenderingEmSize, glyphInfos, baselineOrigin);
+            return new GlyphRunImpl(glyphTypeface, fontRenderingEmSize, glyphInfos, baselineOrigin, bounds);
         }
     }
 }

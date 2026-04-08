@@ -23,7 +23,7 @@ namespace Avalonia.Platform
         Point BaselineOrigin { get; }
 
         /// <summary>
-        ///     Gets the conservative bounding box of the glyph run./>.
+        ///     Gets the ink bounds of the glyph run.
         /// </summary>
         Rect Bounds { get; }
 

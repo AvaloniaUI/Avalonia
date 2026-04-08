@@ -110,6 +110,37 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         }
 
         /// <summary>
+        /// Attempts to retrieve the bounding box for the specified glyph from the glyph header.
+        /// </summary>
+        /// <remarks>This reads only the first 10 bytes of the glyph data (the header) to extract
+        /// xMin, yMin, xMax, yMax without parsing contour data. Returns false for empty or missing glyphs.</remarks>
+        /// <param name="glyphIndex">The zero-based index of the glyph.</param>
+        /// <param name="xMin">The minimum x coordinate of the bounding box.</param>
+        /// <param name="yMin">The minimum y coordinate of the bounding box.</param>
+        /// <param name="xMax">The maximum x coordinate of the bounding box.</param>
+        /// <param name="yMax">The maximum y coordinate of the bounding box.</param>
+        /// <returns>true if the bounding box was successfully retrieved; otherwise, false.</returns>
+        public bool TryGetGlyphBounds(int glyphIndex, out short xMin, out short yMin, out short xMax, out short yMax)
+        {
+            xMin = yMin = xMax = yMax = 0;
+
+            if (!TryGetGlyphData(glyphIndex, out var glyphData) || glyphData.Length < 10)
+            {
+                return false;
+            }
+
+            var span = glyphData.Span;
+
+            // Skip numberOfContours (2 bytes), read xMin, yMin, xMax, yMax
+            xMin = BinaryPrimitives.ReadInt16BigEndian(span.Slice(2, 2));
+            yMin = BinaryPrimitives.ReadInt16BigEndian(span.Slice(4, 2));
+            xMax = BinaryPrimitives.ReadInt16BigEndian(span.Slice(6, 2));
+            yMax = BinaryPrimitives.ReadInt16BigEndian(span.Slice(8, 2));
+
+            return true;
+        }
+
+        /// <summary>
         /// Builds the glyph outline into the provided geometry context. Returns false for empty glyphs.
         /// Coordinates are in font design units. Composite glyphs are supported.
         /// </summary>

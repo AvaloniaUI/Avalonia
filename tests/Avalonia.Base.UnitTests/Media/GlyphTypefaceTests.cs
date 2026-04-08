@@ -72,8 +72,8 @@ namespace Avalonia.Base.UnitTests.Media
             // Ensure advance can be retrieved
             Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphId, out var advance));
 
-            // Advance returned by GetGlyphAdvance should match the metrics width
-            Assert.Equal(metrics.Width, advance);
+            // Advance returned by GetGlyphAdvance should match the metrics AdvanceWidth
+            Assert.Equal(metrics.AdvanceWidth, advance);
         }
 
         [Theory]
@@ -274,6 +274,132 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.True(result);
             Assert.True(metrics.Width > 0);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_BoundsWidth_Should_Not_Exceed_AdvanceWidth()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+            var glyphId = map['A'];
+
+            Assert.True(typeface.TryGetGlyphMetrics(glyphId, out var metrics));
+
+            // Bounding box width should typically be less than or equal to the advance width
+            Assert.True(metrics.Width <= metrics.AdvanceWidth,
+                $"Bounds width {metrics.Width} should not exceed advance width {metrics.AdvanceWidth}");
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Should_Have_Positive_BoundsAndAdvance()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+            var glyphId = map['H'];
+
+            Assert.True(typeface.TryGetGlyphMetrics(glyphId, out var metrics));
+
+            Assert.True(metrics.Width > 0);
+            Assert.True(metrics.Height > 0);
+            Assert.True(metrics.AdvanceWidth > 0);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_VerticalOriginX_Should_Be_Half_AdvanceWidth()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+            var glyphId = map['A'];
+
+            Assert.True(typeface.TryGetGlyphMetrics(glyphId, out var metrics));
+
+            Assert.Equal((ushort)(metrics.AdvanceWidth / 2), metrics.VerticalOriginX);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Space_Should_Have_Zero_Bounds()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+            var glyphId = map[' '];
+
+            Assert.True(typeface.TryGetGlyphMetrics(glyphId, out var metrics));
+
+            // Space has no outline, so bounds should be zero
+            Assert.Equal(0, metrics.Width);
+            Assert.Equal(0, metrics.Height);
+
+            // But advance width should still be positive
+            Assert.True(metrics.AdvanceWidth > 0);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Batch_Should_Match_Single()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+            var glyphIds = new[] { map['A'], map['B'], map['C'] };
+
+            var batchMetrics = new GlyphMetrics[3];
+            Assert.True(typeface.TryGetGlyphMetrics(glyphIds, batchMetrics));
+
+            for (int i = 0; i < glyphIds.Length; i++)
+            {
+                Assert.True(typeface.TryGetGlyphMetrics(glyphIds[i], out var singleMetrics));
+
+                Assert.Equal(singleMetrics.Width, batchMetrics[i].Width);
+                Assert.Equal(singleMetrics.Height, batchMetrics[i].Height);
+                Assert.Equal(singleMetrics.XBearing, batchMetrics[i].XBearing);
+                Assert.Equal(singleMetrics.YBearing, batchMetrics[i].YBearing);
+                Assert.Equal(singleMetrics.AdvanceWidth, batchMetrics[i].AdvanceWidth);
+                Assert.Equal(singleMetrics.AdvanceHeight, batchMetrics[i].AdvanceHeight);
+                Assert.Equal(singleMetrics.VerticalOriginX, batchMetrics[i].VerticalOriginX);
+                Assert.Equal(singleMetrics.VerticalOriginY, batchMetrics[i].VerticalOriginY);
+            }
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Different_Glyphs_Should_Have_Different_Bounds()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+
+            // 'I' is narrow, 'W' is wide - they should have different bounding box widths
+            Assert.True(typeface.TryGetGlyphMetrics(map['I'], out var metricsI));
+            Assert.True(typeface.TryGetGlyphMetrics(map['W'], out var metricsW));
+
+            Assert.True(metricsW.Width > metricsI.Width,
+                $"'W' bounds width {metricsW.Width} should be greater than 'I' bounds width {metricsI.Width}");
         }
 
         [Fact]

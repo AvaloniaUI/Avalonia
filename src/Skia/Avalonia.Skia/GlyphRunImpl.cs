@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Threading;
 using Avalonia.Media;
@@ -20,7 +19,7 @@ namespace Avalonia.Skia
             new TwoLevelCache<TextOptions, SKTextBlob>(secondarySize: 3, evictionAction: b => b?.Dispose());
 
         public GlyphRunImpl(GlyphTypeface glyphTypeface, double fontRenderingEmSize,
-            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin, Rect bounds)
         {
             if (glyphTypeface == null)
             {
@@ -53,40 +52,8 @@ namespace Avalonia.Skia
                 currentX += glyphInfos[i].GlyphAdvance;
             }
 
-            // Ideally the requested edging should be passed to the glyph run.
-            // Currently the edging is computed dynamically inside the drawing context, so we can't know it in advance.
-            // But the bounds depends on the edging: for now, always use SubpixelAntialias so we have consistent values.
-            // The resulting bounds may be shifted by 1px on some fonts:
-            // "F" text with Inter size 14 has a 0px left bound with SubpixelAntialias but 1px with Antialias.
-            var defaultTextOptions = default(TextOptions) with
-            {
-                TextRenderingMode = TextRenderingMode.SubpixelAntialias,
-                TextHintingMode = TextHintingMode.Strong,
-                BaselinePixelAlignment = BaselinePixelAlignment.Unaligned
-            };
-
-            using var font = CreateFont(defaultTextOptions);
-
-            var runBounds = new Rect();
-            var glyphBounds = ArrayPool<SKRect>.Shared.Rent(count);
-
-            font.GetGlyphWidths(_glyphIndices, null, glyphBounds.AsSpan(0, count));
-
-            currentX = 0;
-
-            for (var i = 0; i < count; i++)
-            {
-                var gBounds = glyphBounds[i];
-                var advance = glyphInfos[i].GlyphAdvance;
-
-                runBounds = runBounds.Union(new Rect(currentX + gBounds.Left, gBounds.Top, gBounds.Width, gBounds.Height));
-
-                currentX += advance;
-            }
-            ArrayPool<SKRect>.Shared.Return(glyphBounds);
-
             BaselineOrigin = baselineOrigin;
-            Bounds = runBounds.Translate(new Vector(baselineOrigin.X, baselineOrigin.Y));
+            Bounds = bounds;
         }
 
         public double FontRenderingEmSize { get; }

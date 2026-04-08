@@ -13,7 +13,7 @@ class RenderDataGlyphRunNode : IRenderDataItemWithServerResources, IDisposable
     public IRef<IGlyphRunImpl>? GlyphRun { get; set; }
 
     public bool HitTest(Point p) => GlyphRun?.Item.Bounds.ContainsExclusive(p) ?? false;
-    
+
     public void Invoke(ref RenderDataNodeRenderContext context)
     {
         Debug.Assert(GlyphRun!.Item != null);

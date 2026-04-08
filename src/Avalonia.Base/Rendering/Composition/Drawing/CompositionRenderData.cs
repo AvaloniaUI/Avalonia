@@ -10,6 +10,22 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Drawing;
 
+/// <summary>
+/// Adapts a <see cref="CompositionRenderData"/> to <see cref="ICompositionRenderResource"/>
+/// so a parent CompositionRenderData can manage the nested one's lifecycle via its _resources list.
+/// AddRef/Release always happen on the UI thread, avoiding cross-thread disposal issues.
+/// </summary>
+internal class CompositionRenderDataResourceRef : ICompositionRenderResource
+{
+    private readonly CompositionRenderData _renderData;
+
+    public CompositionRenderDataResourceRef(CompositionRenderData renderData) => _renderData = renderData;
+
+    public void AddRefOnCompositor(Compositor c) => _renderData.AddRef();
+
+    public void ReleaseOnCompositor(Compositor c) => _renderData.Dispose();
+}
+
 internal class CompositionRenderData : ICompositorSerializable, IDisposable
 {
     private readonly Compositor _compositor;

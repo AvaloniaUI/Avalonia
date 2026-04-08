@@ -474,12 +474,29 @@ namespace Avalonia.Media
                 return false;
             }
 
+            ushort boundsWidth = 0;
+            ushort boundsHeight = 0;
+            short xMin = 0;
+            short yMax = 0;
+
+            if (_glyfTable != null && _glyfTable.TryGetGlyphBounds(glyph, out xMin, out var yMin, out var xMax, out yMax))
+            {
+                boundsWidth = (ushort)Math.Max(0, xMax - xMin);
+                boundsHeight = (ushort)Math.Max(0, yMax - yMin);
+            }
+
             metrics = new GlyphMetrics
             {
-                XBearing = hMetric.LeftSideBearing,
-                YBearing = vMetric.TopSideBearing,
-                Width = hMetric.AdvanceWidth,
-                Height = vMetric.AdvanceHeight
+                XBearing = xMin,
+                YBearing = yMax,
+                Width = boundsWidth,
+                Height = boundsHeight,
+                AdvanceWidth = hMetric.AdvanceWidth,
+                AdvanceHeight = vMetric.AdvanceHeight,
+                XOffset = 0,
+                YOffset = 0,
+                VerticalOriginX = (ushort)(hMetric.AdvanceWidth / 2),
+                VerticalOriginY = (ushort)(vMetric.TopSideBearing + boundsHeight)
             };
 
             return true;
@@ -536,15 +553,36 @@ namespace Avalonia.Media
                 return false;
             }
 
-            // Combine horizontal and vertical metrics
+            // Combine horizontal and vertical metrics with glyph bounds
             for (int i = 0; i < glyphIds.Length; i++)
             {
+                ushort boundsWidth = 0;
+                ushort boundsHeight = 0;
+                short xMin = 0;
+                short yMax = 0;
+
+                if (_glyfTable != null && _glyfTable.TryGetGlyphBounds(glyphIds[i], out xMin, out var yMin, out var xMax, out yMax))
+                {
+                    boundsWidth = (ushort)Math.Max(0, xMax - xMin);
+                    boundsHeight = (ushort)Math.Max(0, yMax - yMin);
+                }
+
+                var advanceWidth = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0;
+                var advanceHeight = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0;
+                var topSideBearing = hasVertical ? vMetrics[i].TopSideBearing : (short)0;
+
                 metrics[i] = new GlyphMetrics
                 {
-                    XBearing = hasHorizontal ? hMetrics[i].LeftSideBearing : (short)0,
-                    YBearing = hasVertical ? vMetrics[i].TopSideBearing : (short)0,
-                    Width = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
-                    Height = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0
+                    XBearing = xMin,
+                    YBearing = yMax,
+                    Width = boundsWidth,
+                    Height = boundsHeight,
+                    AdvanceWidth = advanceWidth,
+                    AdvanceHeight = advanceHeight,
+                    XOffset = 0,
+                    YOffset = 0,
+                    VerticalOriginX = (ushort)(advanceWidth / 2),
+                    VerticalOriginY = (ushort)(topSideBearing + boundsHeight)
                 };
             }
 

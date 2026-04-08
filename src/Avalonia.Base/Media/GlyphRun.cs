@@ -19,6 +19,7 @@ namespace Avalonia.Media
         private double _fontRenderingEmSize;
         private int _biDiLevel;
         private GlyphRunMetrics? _glyphRunMetrics;
+        private Rect? _inkBounds;
         private ReadOnlyMemory<char> _characters;
         private IReadOnlyList<GlyphInfo> _glyphInfos;
         private Point? _baselineOrigin;
@@ -160,7 +161,7 @@ namespace Avalonia.Media
         public Rect Bounds => new Rect(new Point(BaselineOrigin.X, 0),
             new Size(Metrics.WidthIncludingTrailingWhitespace, Metrics.Height));
 
-        public Rect InkBounds => PlatformImpl.Item.Bounds;
+        public Rect InkBounds => _inkBounds ??= ComputeInkBounds();
 
         /// <summary>
         /// 
@@ -857,8 +858,65 @@ namespace Avalonia.Media
             _platformImpl = null;
 
             _glyphRunMetrics = null;
+            _inkBounds = null;
 
             field = value;
+        }
+
+        private Rect ComputeInkBounds()
+        {
+            var glyphInfos = _glyphInfos;
+            var count = glyphInfos.Count;
+
+            if (count == 0)
+            {
+                return default;
+            }
+
+            var scale = Scale;
+            var typeface = GlyphTypeface;
+
+            Span<ushort> glyphIndices = count <= 256
+                ? stackalloc ushort[count]
+                : new ushort[count];
+
+            for (var i = 0; i < count; i++)
+            {
+                glyphIndices[i] = glyphInfos[i].GlyphIndex;
+            }
+
+            Span<GlyphMetrics> metrics = count <= 256
+                ? stackalloc GlyphMetrics[count]
+                : new GlyphMetrics[count];
+
+            var hasMetrics = typeface.TryGetGlyphMetrics(glyphIndices, metrics);
+
+            var inkBounds = new Rect();
+            var currentX = 0.0;
+
+            for (var i = 0; i < count; i++)
+            {
+                if (hasMetrics && metrics[i].Width > 0 && metrics[i].Height > 0)
+                {
+                    var m = metrics[i];
+                    var offset = glyphInfos[i].GlyphOffset;
+
+                    // XBearing (xMin) positions the left edge relative to the glyph origin
+                    // YBearing (yMax) is the top of the bounding box in font coordinates (Y-up)
+                    // In screen coordinates (Y-down), top = -yMax
+                    var left = m.XBearing * scale;
+                    var top = -m.YBearing * scale;
+                    var width = m.Width * scale;
+                    var height = m.Height * scale;
+
+                    var glyphRect = new Rect(currentX + offset.X + left, offset.Y + top, width, height);
+                    inkBounds = inkBounds.Union(glyphRect);
+                }
+
+                currentX += glyphInfos[i].GlyphAdvance;
+            }
+
+            return inkBounds.Translate(new Vector(BaselineOrigin.X, BaselineOrigin.Y));
         }
 
         private IRef<IGlyphRunImpl> CreateGlyphRunImpl()
@@ -867,7 +925,8 @@ namespace Avalonia.Media
                 GlyphTypeface,
                 FontRenderingEmSize,
                 GlyphInfos,
-                BaselineOrigin);
+                BaselineOrigin,
+                InkBounds);
 
             _platformImpl = RefCountable.Create(platformImpl);
 
