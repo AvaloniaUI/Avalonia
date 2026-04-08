@@ -2,31 +2,30 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Avalonia.Reactive;
+using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Dialogs;
 using Avalonia.FreeDesktop;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
-using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
-using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.X11.Glx;
 using Avalonia.X11.NativeDialogs;
+using Avalonia.X11.Selections.DragDrop;
 using static Avalonia.X11.XLib;
-using Avalonia.Input.Platform;
-using System.Runtime.InteropServices;
-using Avalonia.Dialogs;
-using Avalonia.Platform.Storage.FileIO;
 
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -34,7 +33,7 @@ using Avalonia.Platform.Storage.FileIO;
 namespace Avalonia.X11
 {
     internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
-        IX11OptionsToplevelImplFeature
+        IX11OptionsToplevelImplFeature, IXdndWindow
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
@@ -72,6 +71,7 @@ namespace Avalonia.X11
         private bool _usePositioningFlags = false;
         private X11WindowMode _mode;
         private IWindowIconImpl? _iconImpl;
+        private readonly X11DropTarget? _dropTarget;
 
         private enum XSyncState
         {
@@ -193,7 +193,7 @@ namespace Avalonia.X11
             _mode.OnHandleCreated(_handle);
             
             _realSize = new PixelSize(defaultWidth, defaultHeight);
-            platform.Windows[_handle] = OnEvent;
+            platform.Windows[_handle] = new X11WindowInfo(OnEvent, this);
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
                                      | XEventMask.ResizeRedirectMask
                                      | XEventMask.PointerMotionHintMask;
@@ -278,6 +278,12 @@ namespace Avalonia.X11
                     ? (IStorageProvider?)new ManagedStorageProvider(tl)
                     : null)
             });
+
+            if (AvaloniaLocator.Current.GetService<IDragDropDevice>() is { } dragDropDevice)
+            {
+                DragDropDevice = dragDropDevice;
+                _dropTarget = new X11DropTarget(dragDropDevice, this, _x11.Display, _x11.Atoms);
+            }
 
             platform.X11Screens.Changed += OnScreensChanged;
         }
@@ -520,6 +526,8 @@ namespace Avalonia.X11
 
         public Compositor Compositor => _platform.Compositor;
 
+        public IDragDropDevice? DragDropDevice { get; }
+
         private PlatformAllowedWindowActions GetAllowedActions(IntPtr[]? netSupported)
         {
             if (netSupported == null)
@@ -542,7 +550,7 @@ namespace Avalonia.X11
 
         private void OnNetSupportedChanged() =>
             AllowedWindowActionsChanged?.Invoke(AllowedWindowActions);
-        
+
         private void OnEvent(ref XEvent ev)
         {
             if (_inputRoot is null)
@@ -602,7 +610,7 @@ namespace Avalonia.X11
                                 : new Vector(-1, 0);
                     ScheduleInput(new RawMouseWheelEventArgs(_mouse, (ulong)ev.ButtonEvent.time.ToInt64(),
                         _inputRoot, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), delta,
-                        TranslateModifiers(ev.ButtonEvent.state)), ref ev);
+                        ev.ButtonEvent.state.ToRawInputModifiers()), ref ev);
                 }
                 
             }
@@ -681,7 +689,8 @@ namespace Avalonia.X11
             }
             else if (ev.type == XEventName.ClientMessage)
             {
-                if (ev.ClientMessageEvent.message_type == _x11.Atoms.WM_PROTOCOLS)
+                var messageType = ev.ClientMessageEvent.message_type;
+                if (messageType == _x11.Atoms.WM_PROTOCOLS)
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
@@ -695,6 +704,14 @@ namespace Avalonia.X11
                         _xSyncState = XSyncState.WaitConfigure;
                     }
                 }
+                else if (messageType == _x11.Atoms.XdndEnter)
+                    _dropTarget?.OnXdndEnter(ev.ClientMessageEvent);
+                else if (messageType == _x11.Atoms.XdndPosition)
+                    _dropTarget?.OnXdndPosition(ev.ClientMessageEvent);
+                else if (messageType == _x11.Atoms.XdndLeave)
+                    _dropTarget?.OnXdndLeave(ev.ClientMessageEvent);
+                else if (messageType == _x11.Atoms.XdndDrop)
+                    _dropTarget?.OnXdndDrop(ev.ClientMessageEvent);
             }
             else if (ev.type == XEventName.KeyPress || ev.type == XEventName.KeyRelease)
             {
@@ -870,30 +887,6 @@ namespace Avalonia.X11
 
         }
 
-        private static RawInputModifiers TranslateModifiers(XModifierMask state)
-        {
-            var rv = default(RawInputModifiers);
-            if (state.HasAllFlags(XModifierMask.Button1Mask))
-                rv |= RawInputModifiers.LeftMouseButton;
-            if (state.HasAllFlags(XModifierMask.Button2Mask))
-                rv |= RawInputModifiers.RightMouseButton;
-            if (state.HasAllFlags(XModifierMask.Button3Mask))
-                rv |= RawInputModifiers.MiddleMouseButton;
-            if (state.HasAllFlags(XModifierMask.Button4Mask))
-                rv |= RawInputModifiers.XButton1MouseButton;
-            if (state.HasAllFlags(XModifierMask.Button5Mask))
-                rv |= RawInputModifiers.XButton2MouseButton;
-            if (state.HasAllFlags(XModifierMask.ShiftMask))
-                rv |= RawInputModifiers.Shift;
-            if (state.HasAllFlags(XModifierMask.ControlMask))
-                rv |= RawInputModifiers.Control;
-            if (state.HasAllFlags(XModifierMask.Mod1Mask))
-                rv |= RawInputModifiers.Alt;
-            if (state.HasAllFlags(XModifierMask.Mod4Mask))
-                rv |= RawInputModifiers.Meta;
-            return rv;
-        }
-        
         private WindowDecorations _requestedWindowDecorations = WindowDecorations.Full;
         private WindowDecorations _windowDecorations = WindowDecorations.Full;
         private bool _canResize = true;
@@ -1001,7 +994,7 @@ namespace Avalonia.X11
                 return;
             var mev = new RawPointerEventArgs(
                 _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
-                type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), TranslateModifiers(mods));
+                type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), mods.ToRawInputModifiers());
             ScheduleInput(mev, ref ev);
         }
 
@@ -1162,7 +1155,7 @@ namespace Avalonia.X11
 
             _platform.X11Screens.Changed -= OnScreensChanged;
             _platform.Globals.NetSupportedChanged -= OnNetSupportedChanged;
-            
+
             if (_useRenderWindow && _renderHandle != IntPtr.Zero)
             {                
                 _renderHandle = IntPtr.Zero;
@@ -1302,7 +1295,9 @@ namespace Avalonia.X11
         }
 
         public IPlatformHandle Handle { get; }
-        
+
+        IntPtr IXdndWindow.Handle => _handle;
+
         public PixelPoint Position
         {
             get

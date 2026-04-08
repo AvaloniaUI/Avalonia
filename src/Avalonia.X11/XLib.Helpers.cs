@@ -23,7 +23,34 @@ internal static partial class XLib
         }
         finally
         {
-            XFree(prop);
+            if (prop != 0)
+                XFree(prop);
+        }
+    }
+
+    public static IntPtr? XGetWindowPropertyAsIntPtr(IntPtr display, IntPtr window, IntPtr atom, IntPtr reqType)
+    {
+        if ((Status)XGetWindowProperty(
+            display, window, atom, 0, 1, false, reqType,
+            out var actualType, out var actualFormat, out var itemCount, out _, out var prop) != Status.Success)
+        {
+            return null;
+        }
+
+        try
+        {
+            if (actualType != reqType || actualFormat != 32 || itemCount != 1)
+                return null;
+
+            unsafe
+            {
+                return *(IntPtr*)prop;
+            }
+        }
+        finally
+        {
+            if (prop != 0)
+                XFree(prop);
         }
     }
 }
