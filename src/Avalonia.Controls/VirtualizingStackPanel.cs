@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
@@ -56,8 +57,29 @@ namespace Avalonia.Controls
         /// Defines the <see cref="CacheLength"/> property.
         /// </summary>
         public static readonly StyledProperty<double> CacheLengthProperty =
-            AvaloniaProperty.Register<VirtualizingStackPanel, double>(nameof(CacheLength), 0.0, 
+            AvaloniaProperty.Register<VirtualizingStackPanel, double>(nameof(CacheLength), 0.0,
                 validate: v => v is >= 0 and <= 2);
+
+        /// <summary>
+        /// Gets or sets whether container warmup is enabled.
+        /// When enabled, containers are pre-created during initialization to improve first-scroll performance.
+        /// Default: false (opt-in).
+        /// </summary>
+        public static readonly StyledProperty<bool> EnableWarmupProperty =
+            AvaloniaProperty.Register<VirtualizingStackPanel, bool>(
+                nameof(EnableWarmup),
+                defaultValue: false);
+
+        /// <summary>
+        /// Gets or sets the number of items to sample for template discovery during warmup.
+        /// Higher values discover more template types but take longer to analyze.
+        /// Default: 50 items.
+        /// </summary>
+        public static readonly StyledProperty<int> WarmupSampleSizeProperty =
+            AvaloniaProperty.Register<VirtualizingStackPanel, int>(
+                nameof(WarmupSampleSize),
+                defaultValue: 50,
+                validate: v => v > 0 && v <= 1000);
 
         private static readonly AttachedProperty<object?> RecycleKeyProperty =
             AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, object?>("RecycleKey");
@@ -75,17 +97,66 @@ namespace Avalonia.Controls
         private RealizedStackElements? _realizedElements;
         private IScrollAnchorProvider? _scrollAnchorProvider;
         private Rect _viewport;
-        private Dictionary<object, Stack<Control>>? _recyclePool;
+        private Dictionary<object, List<Control>>? _recyclePool;
+
+        /// <summary>
+        /// Exposes the recycle pool for unit testing.
+        /// </summary>
+        internal IReadOnlyDictionary<object, List<Control>>? RecyclePoolForTesting => _recyclePool;
+
         private Control? _focusedElement;
         private int _focusedIndex = -1;
         private Control? _realizingElement;
         private int _realizingIndex = -1;
-        private double _bufferFactor; 
-        
+        private double _bufferFactor;
+        private bool _isWarmupComplete = false;
+
         private bool _hasReachedStart = false;
         private bool _hasReachedEnd = false;
+
+        private Rect _lastMeasuredViewport;
+        private bool _suppressScrollIntoView = false;  // Suppress ScrollIntoView after Reset
         private Rect _lastMeasuredExtendedViewport;
         private Rect _lastKnownExtendedViewport;
+
+        // Viewport anchor tracking for scroll jump prevention
+        private int _viewportAnchorIndex = -1;        // Index of first visible item
+        private double _viewportAnchorU = double.NaN;  // Absolute position of anchor item
+        private double _lastMeasuredExtentU = 0;       // Previous extent for delta calculation
+
+        // Track realized range used for last estimate to avoid redundant re-estimation
+        private int _lastEstimateFirstIndex = -1;
+        private int _lastEstimateLastIndex = -1;
+
+        // Cache for CaptureViewportAnchor to avoid redundant O(n) scans
+        private double _lastCapturedViewportStart = double.NaN;
+
+        // Retained containers for smart reuse during disjunct recycle
+        private Dictionary<object, (Control element, int oldIndex, double sizeU)>? _retainedForReuse;
+
+        // Suppress ValidateStartU after it fires once, until Arrange completes.
+        // Complex controls can produce non-deterministic Measure results (>1px variation),
+        // causing ValidateStartU to fire every pass and create an infinite layout cycle.
+        private bool _suppressValidateStartU;
+
+        // Layout cycle prevention: counts consecutive MeasureOverride calls without an
+        // intervening ArrangeOverride. Reset in ArrangeOverride, OnEffectiveViewportChanged
+        // (when needsMeasure=true), and OnItemsChanged. Used by the cycle breaker to
+        // short-circuit MeasureOverride after the first pass.
+        private int _consecutiveMeasureCount;
+        private bool _measurePostponed;
+
+        // Extent oscillation detection: tracks alternating extent changes (up/down/up)
+        // that indicate a non-deterministic measurement loop. When detected, freeze the
+        // reported extent to stop the ScrollViewer's scroll anchor from drifting the
+        // viewport. The freeze is permanent (only cleared on OnItemsChanged) because
+        // unfreezing restarts the oscillation. A convergence mechanism updates the frozen
+        // value toward reality when the actual extent stabilizes.
+        private int _extentOscillationSign;   // +1 or -1: direction of last extent delta
+        private int _extentOscillationCount;  // consecutive direction reversals
+        private double _frozenExtentU = double.NaN; // locked extent when oscillation detected (NaN = not frozen)
+        private double _frozenLastActualExtentU; // last actual extent seen while frozen (for convergence)
+        private int _frozenStableCount;         // consecutive passes where actual extent is stable while frozen
 
         static VirtualizingStackPanel()
         {
@@ -166,6 +237,26 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets whether container warmup is enabled.
+        /// When enabled, containers are pre-created during initialization to improve first-scroll performance.
+        /// </summary>
+        public bool EnableWarmup
+        {
+            get => GetValue(EnableWarmupProperty);
+            set => SetValue(EnableWarmupProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the number of items to sample for template discovery during warmup.
+        /// Higher values discover more template types but take longer to analyze.
+        /// </summary>
+        public int WarmupSampleSize
+        {
+            get => GetValue(WarmupSampleSizeProperty);
+            set => SetValue(WarmupSampleSizeProperty, value);
+        }
+
+        /// <summary>
         /// Gets the index of the first realized element, or -1 if no elements are realized.
         /// </summary>
         public int FirstRealizedIndex => _realizedElements?.FirstIndex ?? -1;
@@ -194,48 +285,158 @@ namespace Avalonia.Controls
 
             var orientation = Orientation;
 
+            _consecutiveMeasureCount++;
+
             // If we're bringing an item into view, ignore any layout passes until we receive a new
             // effective viewport.
             if (_isWaitingForViewportUpdate)
+            {
                 return EstimateDesiredSize(orientation, items.Count);
+            }
+
+            // Break layout cycles: after 1 full measure pass, return the previous DesiredSize
+            // without doing any work. Complex controls (async image loading, text wrapping,
+            // deferred bindings) can produce non-deterministic Measure results, causing:
+            //   extent oscillation → parent re-measures VSP → different sizes → repeat forever.
+            // One pass suffices for legitimate layout work. The counter is reset in
+            // ArrangeOverride, OnEffectiveViewportChanged, and OnItemsChanged.
+            if (_consecutiveMeasureCount > 1 && DesiredSize != default)
+            {
+                if (!_measurePostponed)
+                {
+                    _measurePostponed = true;
+                    // Use Loaded priority (higher than Background) so the deferred measure
+                    // runs before the next input/scroll event. Background priority risked
+                    // the measure firing after the user scrolled further, causing the size
+                    // change to be applied at the wrong scroll position (scroll jump).
+                    Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        _measurePostponed = false;
+                        _consecutiveMeasureCount = 0;
+                        InvalidateMeasure();
+                    }, Threading.DispatcherPriority.Loaded);
+
+                }
+                return DesiredSize;
+            }
 
             _isInLayout = true;
 
             try
             {
-                _realizedElements?.ValidateStartU(Orientation);
                 _realizedElements ??= new();
                 _measureElements ??= new();
 
-                // We need to set the lastEstimatedElementSizeU before calling CalculateDesiredSize()
-                _ = EstimateElementSizeU();
+                // Capture viewport anchor BEFORE ValidateStartU so we know which items
+                // are before/after the visible area for scroll position compensation.
+                CaptureViewportAnchor(orientation);
+
+                // ValidateStartU checks whether realized elements' DesiredSize still matches
+                // stored sizes. If a genuine resize occurred (>= 1px), it updates stored sizes
+                // in-place and compensates StartU for items before the viewport anchor.
+                // This prevents scroll jumping when async content (e.g. images) loads and
+                // changes item heights.
+                // After firing once, suppress until Arrange to prevent repeated instability.
+                double sizeChangeDelta = 0;
+                var lockSizes = !double.IsNaN(_frozenExtentU);
+                var validateFired = !_suppressValidateStartU &&
+                    _realizedElements.ValidateStartU(orientation, _viewportAnchorIndex, out sizeChangeDelta, lockSizes);
+                var startUAfterValidate = _realizedElements.StartU;
+                if (validateFired)
+                {
+                    // Only reset estimate cache when startU became unstable (NaN) —
+                    // i.e., a genuine uniform resize that requires full re-estimation.
+                    // When items change but startU stays stable (async loading, single
+                    // item oscillation), preserving the estimate prevents wild extent
+                    // swings that cause the ScrollViewer to drift.
+                    if (double.IsNaN(startUAfterValidate))
+                    {
+                        _lastEstimateFirstIndex = -1;
+                        _lastEstimateLastIndex = -1;
+                    }
+                    _suppressValidateStartU = true;
+                }
 
                 // We handle horizontal and vertical layouts here so X and Y are abstracted to:
                 // - Horizontal layouts: U = horizontal, V = vertical
                 // - Vertical layouts: U = vertical, V = horizontal
+                // Note: capture _scrollToIndex before CalculateMeasureViewport/RealizeElements
+                // clears it via GetRealizedElement.
+                var isScrollingToElement = _scrollToIndex >= 0;
                 var viewport = CalculateMeasureViewport(orientation, items);
 
+                // Track the extended viewport we're measuring with to prevent redundant invalidations
+                _lastMeasuredViewport = _lastMeasuredExtendedViewport;
+
                 // If the viewport is disjunct then we can recycle everything.
+                // First, retain containers whose DataContext matches items in the new viewport
+                // so they can be reused without full PrepareItemContainer + Measure overhead.
                 if (viewport.viewportIsDisjunct)
-                    _realizedElements.RecycleAllElements(_recycleElement);
+                {
+                    var estimatedSize = EstimateElementSizeU();
+                    var viewportSize = viewport.viewportUEnd - viewport.viewportUStart;
+                    var estimatedCount = estimatedSize > 0
+                        ? (int)Math.Ceiling(viewportSize / estimatedSize) + 1
+                        : 10;
+                    RetainMatchingContainers(items, viewport.anchorIndex,
+                        viewport.anchorIndex + estimatedCount);
+                    _realizedElements!.RecycleAllElements(_recycleElement);
+                }
 
                 // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
                 // write to _realizedElements yet, only _measureElements.
                 RealizeElements(items, availableSize, ref viewport);
 
+                // Recycle any retained containers that weren't reused during realization
+                RecycleUnusedRetainedContainers();
+
                 // Now swap the measureElements and realizedElements collection.
                 (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
-                _measureElements.ResetForReuse();
+                _measureElements!.ResetForReuse();
+
+                // Calculate estimate from NEWLY measured elements for contextually-accurate extent calculation.
+                // This eliminates temporal mismatch where old viewport data was used to estimate new viewport.
+                _ = EstimateElementSizeU();
 
                 // If there is a focused element is outside the visible viewport (i.e.
                 // _focusedElement is non-null), ensure it's measured.
                 _focusedElement?.Measure(availableSize);
 
-                return CalculateDesiredSize(orientation, items.Count, viewport);
+                var desiredSize = CalculateDesiredSize(orientation, items.Count, viewport);
+
+                // Compensate for extent changes to prevent scroll jumping.
+                // Skip during ScrollIntoView - the anchor position is intentionally estimated
+                // and compensation would incorrectly shift it.
+                // Also skip when ValidateStartU marked startU as unstable (NaN) — positions
+                // were re-estimated from scratch and compensation would undo the correction.
+                // The scroll anchor mechanism will adjust the viewport in a subsequent pass.
+                var startUWasUnstable = validateFired && double.IsNaN(_realizedElements!.StartU) == false
+                    && double.IsNaN(startUAfterValidate);
+                if (!isScrollingToElement && !startUWasUnstable)
+                    CompensateForExtentChange(orientation, desiredSize);
+                else if (startUWasUnstable)
+                {
+                    // Update extent tracking so next pass has correct baseline
+                    _lastMeasuredExtentU = orientation == Orientation.Horizontal
+                        ? desiredSize.Width : desiredSize.Height;
+                }
+
+                // When extent is frozen due to oscillation, report the frozen extent
+                // to the ScrollViewer. This prevents the scroll anchor mechanism from
+                // adjusting the offset in response to oscillating extent values.
+                if (!double.IsNaN(_frozenExtentU))
+                {
+                    desiredSize = orientation == Orientation.Horizontal
+                        ? new Size(_frozenExtentU, desiredSize.Height)
+                        : new Size(desiredSize.Width, _frozenExtentU);
+                }
+
+                return desiredSize;
             }
             finally
             {
                 _isInLayout = false;
+                _suppressScrollIntoView = false;
             }
         }
 
@@ -245,6 +446,9 @@ namespace Avalonia.Controls
                 return default;
 
             _isInLayout = true;
+            _consecutiveMeasureCount = 0;  // Reset: arrange means we're not in a tight measure loop
+            _measurePostponed = false;
+            _suppressValidateStartU = false;  // Allow ValidateStartU to check again after arrange
 
             try
             {
@@ -299,7 +503,6 @@ namespace Avalonia.Controls
             finally
             {
                 _isInLayout = false;
-
                 RaiseEvent(new RoutedEventArgs(Orientation == Orientation.Horizontal ? HorizontalSnapPointsChangedEvent : VerticalSnapPointsChangedEvent));
             }
         }
@@ -308,6 +511,12 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
             _scrollAnchorProvider = this.FindAncestorOfType<IScrollAnchorProvider>();
+
+            // Schedule warmup after initial render if enabled
+            if (EnableWarmup && !_isWarmupComplete)
+            {
+                Threading.Dispatcher.UIThread.Post(PerformWarmup, Threading.DispatcherPriority.Background);
+            }
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -318,9 +527,26 @@ namespace Avalonia.Controls
 
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
         {
+            _lastCapturedViewportStart = double.NaN;
+            _consecutiveMeasureCount = 0;  // Allow fresh passes for the new items
+            _measurePostponed = false;
+            _frozenExtentU = double.NaN;
+            _extentOscillationSign = 0;
+            _extentOscillationCount = 0;
+            _frozenStableCount = 0;
             InvalidateMeasure();
 
-            // Always update special elements
+            // Handle async collection loading - trigger warmup when first items become available
+            if (EnableWarmup && !_isWarmupComplete && items.Count > 0 && e.Action == NotifyCollectionChangedAction.Add)
+            {
+                if (_recyclePool == null || _recyclePool.Count == 0)
+                {
+
+                    Threading.Dispatcher.UIThread.Post(PerformWarmup, Threading.DispatcherPriority.Background);
+                }
+            }
+
+            // Always update special elements (focused, scroll-to) on collection changes
             UpdateSpecialElementsOnItemsChanged(e);
 
             if (_realizedElements is null)
@@ -354,7 +580,110 @@ namespace Avalonia.Controls
                     _realizedElements.ItemsInserted(insertIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
+                    // Try to preserve scroll position during Reset
+                    // Strategy: Validate that realized items still exist in the new collection
+                    // If they do, keep them realized to maintain scroll stability
+                    // If they don't, recycle everything (collection replacement scenario)
+
+                    var shouldPreserveRealizedElements = false;
+
+                    if (_realizedElements.Count > 0)
+                    {
+                        // Check if any realized items still exist in the new collection
+                        var preservedCount = 0;
+                        for (var i = 0; i < _realizedElements.Count; i++)
+                        {
+                            if (_realizedElements.Elements[i] == null)
+                                continue;
+
+                            var oldIndex = _realizedElements.FirstIndex + i;
+                            if (oldIndex >= 0 && oldIndex < items.Count)
+                            {
+                                // Check if the item at this index is the same object
+                                var element = _realizedElements.Elements[i];
+                                var dataContext = (element as IDataContextProvider)?.DataContext;
+
+                                if (dataContext != null && ReferenceEquals(items[oldIndex], dataContext))
+                                {
+                                    preservedCount++;
+                                }
+                            }
+                        }
+
+                        // If most realized items still exist at same indices, this is likely
+                        // an append operation (infinite scroll), not a replacement
+                        shouldPreserveRealizedElements = preservedCount > _realizedElements.Count / 2;
+
+                    }
+
+                    if (shouldPreserveRealizedElements)
+                    {
+                        // Keep realized elements - they're still valid
+                        // The normal virtualization logic will handle any adjustments
+                        // Suppress ScrollIntoView to prevent ListBox from interfering with scroll position
+                        _suppressScrollIntoView = true;
+
+                        // DON'T reset estimate tracking - realized elements unchanged, estimate still valid
+                        // This prevents extent oscillation during infinite scroll
+                    }
+                    else
+                    {
+                        // Collection was replaced or reordered - recycle everything.
+                        // First, retain containers whose DataContext matches items in the
+                        // estimated viewport so they can be reused without full re-prepare.
+
+                        if (items.Count > 0 && _realizedElements.Count > 0)
+                        {
+                            var orientation = Orientation;
+                            var vpStart = orientation == Orientation.Horizontal ? _viewport.X : _viewport.Y;
+                            var vpEnd = orientation == Orientation.Horizontal ? _viewport.Right : _viewport.Bottom;
+                            var estSize = _lastEstimatedElementSizeU;
+                            var startIdx = estSize > 0 ? Math.Max(0, (int)(vpStart / estSize)) : 0;
+                            var endIdx = estSize > 0
+                                ? Math.Min(items.Count, (int)Math.Ceiling(vpEnd / estSize) + 1)
+                                : Math.Min(items.Count, 20);
+                            RetainMatchingContainers(items, startIdx, endIdx);
+                        }
+
+                        _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
+
+                        // Reset estimate tracking since all elements were recycled
+                        _lastEstimateFirstIndex = -1;
+                        _lastEstimateLastIndex = -1;
+                    }
+
+                    // WARMUP OPTIMIZATION: After reset, clear only obsolete keys and top-up if needed
+                    if (EnableWarmup && _isWarmupComplete && !shouldPreserveRealizedElements && items.Count > 0)
+                    {
+                        // Clear only containers whose keys are no longer in the new collection
+                        ClearObsoleteWarmupContainers();
+
+                        // Discover what keys we need now
+                        var currentKeys = DiscoverTemplateKeys();
+
+                        // Check if we need to warm up any new keys or top-up existing ones
+                        bool needsWarmup = false;
+                        foreach (var kvp in currentKeys)
+                        {
+                            var existingCount = _recyclePool?.TryGetValue(kvp.Key, out var pool) == true
+                                ? pool.Count
+                                : 0;
+
+                            if (existingCount < kvp.Value)
+                            {
+                                needsWarmup = true;
+                                break;
+                            }
+                        }
+
+                        if (needsWarmup)
+                        {
+
+                            _isWarmupComplete = false;
+                            Threading.Dispatcher.UIThread.Post(PerformWarmup, Threading.DispatcherPriority.Background);
+                        }
+                    }
+
                     break;
             }
         }
@@ -612,7 +941,15 @@ namespace Avalonia.Controls
             var items = Items;
 
             if (_isInLayout || index < 0 || index >= items.Count || _realizedElements is null || !IsEffectivelyVisible)
+            {
                 return null;
+            }
+
+            // Suppress ScrollIntoView temporarily after Reset to prevent viewport jumps
+            if (_suppressScrollIntoView)
+            {
+                return GetRealizedElement(index);
+            }
 
             if (GetRealizedElement(index) is Control element)
             {
@@ -657,7 +994,8 @@ namespace Avalonia.Controls
                 // - Measure is first done with the old viewport (which will be a no-op, see MeasureOverride)
                 // - The viewport is then updated by the layout system which invalidates our measure
                 // - Measure is then done with the new viewport.
-                _isWaitingForViewportUpdate = !_viewport.Contains(rect);
+                var viewportContainsItem = _viewport.Contains(rect);
+                _isWaitingForViewportUpdate = !viewportContainsItem;
                 root.LayoutManager.ExecuteLayoutPass();
 
                 // If for some reason the layout system didn't give us a new viewport during the layout, we
@@ -705,10 +1043,22 @@ namespace Avalonia.Controls
             int anchorIndex;
             double anchorU;
 
-            if (_scrollToIndex >= 0 && _scrollToElement is not null)
+            if (_scrollToIndex >= 0)
             {
+                // Scroll to specific index (e.g., after Reset to preserve position)
                 anchorIndex = _scrollToIndex;
-                anchorU = orientation == Orientation.Horizontal ? _scrollToElement.Bounds.Left : _scrollToElement.Bounds.Top;
+
+                if (_scrollToElement is not null)
+                {
+                    // Use element's actual position if available
+                    anchorU = orientation == Orientation.Horizontal ? _scrollToElement.Bounds.Left : _scrollToElement.Bounds.Top;
+                }
+                else
+                {
+                    // Estimate position based on index (e.g., after Reset when no elements realized)
+                    anchorU = _scrollToIndex * EstimateElementSizeU();
+
+                }
             }
             else
             {
@@ -721,7 +1071,7 @@ namespace Avalonia.Controls
             }
 
             // Check if the anchor element is not within the currently realized elements.
-            var disjunct = anchorIndex < _realizedElements.FirstIndex || 
+            var disjunct = anchorIndex < _realizedElements.FirstIndex ||
                 anchorIndex > _realizedElements.LastIndex;
 
             return new MeasureViewport
@@ -772,6 +1122,15 @@ namespace Avalonia.Controls
             if (_realizedElements is null)
                 return _lastEstimatedElementSizeU;
 
+            // Skip re-estimation if realized range hasn't changed.
+            // This prevents smoothing convergence over multiple passes when measuring the same elements.
+            var firstIndex = _realizedElements.FirstIndex;
+            var lastIndex = _realizedElements.LastIndex;
+            if (firstIndex == _lastEstimateFirstIndex && lastIndex == _lastEstimateLastIndex)
+            {
+                return _lastEstimatedElementSizeU;
+            }
+
             var orientation = Orientation;
             var total = 0.0;
             var divisor = 0.0;
@@ -792,8 +1151,36 @@ namespace Avalonia.Controls
             if (divisor == 0 || total == 0)
                 return _lastEstimatedElementSizeU;
 
-            // Store and return the estimate.
-            return _lastEstimatedElementSizeU = total / divisor;
+            var newAverage = total / divisor;
+
+            // Apply smoothing when the realized range overlaps significantly with the
+            // previous one. This prevents estimate oscillation when an outlier item
+            // (e.g., async-loaded image at 292px vs placeholder at 84px) enters/leaves
+            // the realized range on alternating passes, which would swing the estimate
+            // by ~50% and cause ~2000px extent oscillation.
+            // Skip smoothing when the range is mostly new (scrolled to a different region)
+            // to allow fast adaptation to genuinely different item sizes.
+            var overlapCount = _lastEstimateFirstIndex >= 0
+                ? Math.Max(0, Math.Min(lastIndex, _lastEstimateLastIndex) -
+                    Math.Max(firstIndex, _lastEstimateFirstIndex) + 1)
+                : 0;
+            var hasSignificantOverlap = overlapCount > (lastIndex - firstIndex + 1) / 2;
+            if (hasSignificantOverlap && _lastEstimatedElementSizeU > 0)
+            {
+                var smoothingFactor = 0.3;
+                var smoothedEstimate = (_lastEstimatedElementSizeU * (1 - smoothingFactor)) +
+                                      (newAverage * smoothingFactor);
+
+                _lastEstimateFirstIndex = firstIndex;
+                _lastEstimateLastIndex = lastIndex;
+
+                return _lastEstimatedElementSizeU = smoothedEstimate;
+            }
+
+            _lastEstimateFirstIndex = firstIndex;
+            _lastEstimateLastIndex = lastIndex;
+
+            return _lastEstimatedElementSizeU = newAverage;
         }
 
         private void GetOrEstimateAnchorElementForViewport(
@@ -822,9 +1209,11 @@ namespace Avalonia.Controls
                     if (_realizedElements.Elements[i] is not { } element)
                         continue;
 
-                    var sizeU = orientation == Orientation.Horizontal ?
-                        element.DesiredSize.Width :
-                        element.DesiredSize.Height;
+                    // Use stored sizes (not DesiredSize) for positioning. When sizes are
+                    // locked during extent oscillation, DesiredSize may reflect a
+                    // re-measurement (e.g., 84px placeholder) while the stored size
+                    // preserves the correct layout size (e.g., 306px loaded).
+                    var sizeU = _realizedElements.SizeU[i];
                     var endU = u + sizeU;
 
                     if (endU > viewportStartU && u < viewportEndU)
@@ -836,16 +1225,292 @@ namespace Avalonia.Controls
 
                     u = endU;
                 }
+
             }
 
             // We don't have any realized elements in the requested viewport, or can't rely on
-            // StartU being valid. Estimate the index using only the estimated element size.
+            // StartU being valid. Estimate the index using realized element positions if available.
             var estimatedSize = EstimateElementSizeU();
 
-            // Estimate the element at the start of the viewport.
+            // If we have realized elements, use their actual positions to improve estimation accuracy.
+            // This prevents anchor jumps when scrolling with variable-sized items.
+            if (_realizedElements != null && _realizedElements.Count > 0 && _realizedElements.StartU is { } startU && !double.IsNaN(startU))
+            {
+                var firstIndex = _realizedElements.FirstIndex;
+                var lastIndex = _realizedElements.LastIndex;
+            
+                // If viewport is before realized elements, extrapolate backward from first element
+                if (viewportStartU < startU)
+                {
+                    var distanceBack = startU - viewportStartU;
+                    var itemsBack = (int)(distanceBack / estimatedSize);
+                    index = Math.Max(0, firstIndex - itemsBack);
+                    position = startU - (itemsBack * estimatedSize);
+                    return;
+                }
+            
+                // If viewport is after realized elements, extrapolate forward from last element
+                var lastElementU = _realizedElements.GetElementU(lastIndex);
+                if (!double.IsNaN(lastElementU))
+                {
+                    var lastElementSize = _realizedElements.SizeU[_realizedElements.Count - 1];
+                    var lastElementEndU = lastElementU + lastElementSize;
+            
+                    if (viewportStartU >= lastElementEndU)
+                    {
+                        var distanceForward = viewportStartU - lastElementEndU;
+                        var itemsForward = (int)(distanceForward / estimatedSize);
+                        index = Math.Min(lastIndex + 1 + itemsForward, itemCount - 1);
+                        position = lastElementEndU + (itemsForward * estimatedSize);
+                        return;
+                    }
+                }
+            }
+
+            // Fallback: No realized elements or unable to extrapolate, use simple estimation
             var startIndex = Math.Min((int)(viewportStartU / estimatedSize), itemCount - 1);
             index = startIndex;
             position = startIndex * estimatedSize;
+        }
+
+        /// <summary>
+        /// Captures the current viewport anchor to enable scroll jump compensation.
+        /// The anchor is the first element that intersects the viewport start.
+        /// </summary>
+        private void CaptureViewportAnchor(Orientation orientation)
+        {
+            if (_realizedElements == null || _realizedElements.Count == 0)
+            {
+                _viewportAnchorIndex = -1;
+                _viewportAnchorU = double.NaN;
+                return;
+            }
+
+            var viewportStartU = orientation == Orientation.Horizontal ? _viewport.X : _viewport.Y;
+
+            var startU = _realizedElements.StartU;
+
+            // Skip re-capture if viewport hasn't moved significantly AND StartU is stable
+            // AND the cached anchor is still within the realized range.
+            // All three conditions must hold — a stale anchor outside the realized range
+            // would cause ValidateStartU to misclassify all realized items as "before anchor",
+            // producing a massive incorrect preDelta and a visible scroll jump.
+            if (!double.IsNaN(_lastCapturedViewportStart) &&
+                Math.Abs(viewportStartU - _lastCapturedViewportStart) < 1.0 &&
+                _viewportAnchorIndex >= 0 &&
+                !double.IsNaN(startU) &&
+                _viewportAnchorIndex >= _realizedElements.FirstIndex &&
+                _viewportAnchorIndex <= _realizedElements.LastIndex)
+            {
+                return;
+            }
+            _lastCapturedViewportStart = viewportStartU;
+
+            _viewportAnchorIndex = -1;
+            _viewportAnchorU = double.NaN;
+            var viewportEndU = orientation == Orientation.Horizontal ? _viewport.Right : _viewport.Bottom;
+
+            if (double.IsNaN(startU))
+            {
+                return;
+            }
+
+            var u = startU;
+
+            // Find first element that intersects viewport start
+            for (var i = 0; i < _realizedElements.Count; i++)
+            {
+                if (_realizedElements.Elements[i] == null)
+                    continue;
+
+                var sizeU = _realizedElements.SizeU[i];
+                var elementEndU = u + sizeU;
+                var itemIndex = _realizedElements.FirstIndex + i;
+
+                if (elementEndU > viewportStartU && u <= viewportStartU)
+                {
+                    _viewportAnchorIndex = itemIndex;
+                    _viewportAnchorU = u;
+                    return;
+                }
+
+                u = elementEndU;
+            }
+
+        }
+
+        /// <summary>
+        /// Compensates for extent changes by checking anchor stability.
+        /// Relies on Avalonia's built-in scroll anchoring (IScrollAnchorProvider).
+        /// </summary>
+        private void CompensateForExtentChange(Orientation orientation, Size desiredSize)
+        {
+            var currentExtentU = orientation == Orientation.Horizontal ?
+                desiredSize.Width : desiredSize.Height;
+
+            // When extent is frozen due to oscillation, skip compensation but track
+            // convergence. The frozen extent is reported to the ScrollViewer to prevent
+            // drift, but we monitor the actual extent to update the frozen value when
+            // measurements stabilize.
+            if (!double.IsNaN(_frozenExtentU))
+            {
+                // Growing the frozen extent is always safe — it just reveals more
+                // scrollable space and never causes viewport jumps. Apply immediately
+                // so the user can always scroll to content that exists below.
+                // Only shrinking requires the stabilization check below, because
+                // shrinking can cause the ScrollViewer to clamp the offset and jump.
+                if (currentExtentU > _frozenExtentU + 5.0)
+                {
+                    _frozenExtentU = currentExtentU;
+                    _lastMeasuredExtentU = currentExtentU;
+                    _frozenLastActualExtentU = currentExtentU;
+                    return;
+                }
+
+                // Track whether the actual extent has stabilized while frozen.
+                // If it stays within ±5px for 2+ consecutive passes, update the
+                // frozen value to match reality (shrink toward actual). This prevents
+                // the frozen value from diverging too far, which would cause scroll
+                // position inaccuracy.
+                if (Math.Abs(currentExtentU - _frozenLastActualExtentU) < 5.0)
+                {
+                    _frozenStableCount++;
+                    if (_frozenStableCount >= 2 && Math.Abs(currentExtentU - _frozenExtentU) > 5.0)
+                    {
+                        _frozenExtentU = currentExtentU;
+                        _lastMeasuredExtentU = currentExtentU;
+                    }
+                }
+                else
+                {
+                    _frozenStableCount = 0;
+                }
+                _frozenLastActualExtentU = currentExtentU;
+                return;
+            }
+
+            var isFirstMeasure = MathUtilities.AreClose(_lastMeasuredExtentU, 0);
+
+            if (MathUtilities.AreClose(_lastMeasuredExtentU, currentExtentU))
+            {
+                _lastMeasuredExtentU = currentExtentU;
+
+                return;
+            }
+
+            var extentDelta = currentExtentU - _lastMeasuredExtentU;
+            var previousExtent = _lastMeasuredExtentU;
+
+            // Skip compensation for small extent changes — normal estimation noise
+            // with mixed heights. Only compensate for significant shifts.
+            if (Math.Abs(extentDelta) < 2.0)
+            {
+                _lastMeasuredExtentU = currentExtentU;
+                return;
+            }
+
+            if (isFirstMeasure)
+            {
+                _lastMeasuredExtentU = currentExtentU;
+                return;
+            }
+
+            // Detect extent oscillation: extent alternating up/down across
+            // Measure→Arrange cycles. This happens when a non-deterministic item
+            // template produces different sizes each time it's measured (e.g.,
+            // FileFieldViewModel measuring as 292px then 84px then 292px...).
+            // Each extent swing causes CompensateForExtentChange to shift the
+            // viewport, which triggers another layout cycle with different items
+            // realized, perpetuating the oscillation and drifting the scroll.
+            var currentSign = Math.Sign(extentDelta);
+            if (_extentOscillationSign != 0 && currentSign != _extentOscillationSign)
+            {
+                _extentOscillationCount++;
+                // Suppress immediately on first reversal if the swing is large (>100px).
+                // Large swings cause proportionally large viewport drift via the
+                // ScrollViewer, so we can't afford to wait for a second reversal.
+                // For small swings, wait for 2 reversals to confirm the pattern.
+                var freezeThreshold = Math.Abs(extentDelta) > 100 ? 1 : 2;
+                if (_extentOscillationCount >= freezeThreshold)
+                {
+                    // Oscillation confirmed: freeze extent at the previous value
+                    // to stop the ScrollViewer from seeing oscillating extents.
+                    // The frozen value will converge toward reality once measurements
+                    // stabilize.
+                    _frozenExtentU = previousExtent;
+                    _lastMeasuredExtentU = _frozenExtentU;
+                    _frozenLastActualExtentU = currentExtentU;
+                    _frozenStableCount = 0;
+
+                    return;
+                }
+            }
+            else if (currentSign == _extentOscillationSign)
+            {
+                // Same direction — not oscillating, reset
+                _extentOscillationCount = 0;
+            }
+            _extentOscillationSign = currentSign;
+
+            // Detect extreme extent oscillations that can confuse ScrollViewer
+            // This happens when we have very few realized items and many unrealized items
+            var extentChangeRatio = Math.Abs(extentDelta / previousExtent);
+            if (extentChangeRatio > 0.5 && _realizedElements != null)
+            {
+                var items = Items;
+                var realizedCount = _realizedElements.Count;
+                var totalCount = items?.Count ?? 0;
+                var unrealizedCount = totalCount - realizedCount;
+
+                // If we have less than 10% of items realized and extent changed >50%
+                // This indicates estimation instability
+                if (realizedCount < totalCount * 0.1 && unrealizedCount > 10)
+                {
+
+                    // Dampen the extent change to prevent ScrollViewer from overshooting
+                    // Use a weighted average instead of accepting the full change
+                    var dampenedExtent = previousExtent + (extentDelta * 0.3);
+                    _lastMeasuredExtentU = dampenedExtent;
+                    return;
+                }
+            }
+
+            _lastMeasuredExtentU = currentExtentU;
+
+            if (_viewportAnchorIndex < 0 || double.IsNaN(_viewportAnchorU))
+            {
+                return;
+            }
+
+            // Check if anchor is still realized
+            var currentAnchorU = _realizedElements?.GetElementU(_viewportAnchorIndex);
+
+            if (currentAnchorU == null || double.IsNaN(currentAnchorU.Value))
+            {
+                return;
+            }
+
+            var anchorDrift = currentAnchorU.Value - _viewportAnchorU;
+
+            // CRITICAL: If item 0 is realized at position 0, NEVER apply compensation.
+            // Any anchor drift is due to estimation errors in other items, and compensating
+            // would incorrectly move item 0 away from its correct position (0).
+            if (_realizedElements != null &&
+                _realizedElements.FirstIndex == 0 &&
+                _realizedElements.StartU is { } startU &&
+                !double.IsNaN(startU) &&
+                MathUtilities.AreClose(startU, 0))
+            {
+                return;
+            }
+
+            if (!MathUtilities.AreClose(anchorDrift, 0))
+            {
+                // Anchor drifted - this means items BEFORE the anchor changed size
+                // Compensate by shifting StartU to restore the anchor's position
+                _realizedElements?.CompensateStartU(-anchorDrift);
+            }
+
         }
 
         private double GetOrEstimateElementU(int index)
@@ -888,6 +1553,18 @@ namespace Avalonia.Controls
             return index * estimatedSize;
         }
 
+        /// <summary>
+        /// Called after each element is measured during realization. Override in tests
+        /// to simulate non-deterministic measurement (async image loading, text wrapping)
+        /// by returning a modified size. The default implementation returns the measured
+        /// size unchanged.
+        /// </summary>
+        /// <param name="index">The item index.</param>
+        /// <param name="measuredSizeU">The element's measured size in the layout orientation.</param>
+        /// <returns>The size to use for layout. Defaults to <paramref name="measuredSizeU"/>.</returns>
+        protected internal virtual double AdjustElementSize(int index, double measuredSizeU)
+            => measuredSizeU;
+
         private void RealizeElements(
             IReadOnlyList<object?> items,
             Size availableSize,
@@ -900,7 +1577,7 @@ namespace Avalonia.Controls
             var index = viewport.anchorIndex;
             var horizontal = Orientation == Orientation.Horizontal;
             var u = viewport.anchorU;
-                    
+
             // Reset boundary flags
             _hasReachedStart = false;
             _hasReachedEnd = false;
@@ -916,11 +1593,23 @@ namespace Avalonia.Controls
                 _realizingIndex = index;
                 var e = GetOrCreateElement(items, index);
                 _realizingElement = e;
-                
-                e.Measure(availableSize);
-                
+
+                if (!e.IsMeasureValid)
+                    e.Measure(availableSize);
+
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
+                sizeU = AdjustElementSize(index, sizeU);
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
+
+                // Pre-emptive fix: Force item 0 to position U=0 to prevent clipping
+                // This handles the case when item 0 is the anchor element with wrong estimated position.
+                // Skip when extent is frozen: the scroll offset is based on the frozen extent,
+                // and forcing item 0 to 0 creates a gap between items 0 and 1 that makes the
+                // next pass think the viewport is disjunct from realized items.
+                if (index == 0 && !MathUtilities.AreClose(u, 0) && double.IsNaN(_frozenExtentU))
+                {
+                   u = 0;
+                }
 
                 _measureElements!.Add(index, e, u, sizeU);
                 viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
@@ -930,7 +1619,37 @@ namespace Avalonia.Controls
                 _realizingIndex = -1;
                 _realizingElement = null;
             } while (u < viewport.viewportUEnd && index < items.Count);
-            
+
+            // When the forward loop stopped because u >= viewportUEnd but only a few items
+            // remain, realize them too. This ensures the extent is based on actual measured
+            // sizes rather than estimates, preventing the last item(s) from being clipped
+            // because the ScrollViewer couldn't scroll far enough.
+            var remainingItems = items.Count - index;
+            if (remainingItems > 0 && remainingItems <= 3)
+            {
+                while (index < items.Count)
+                {
+                    _realizingIndex = index;
+                    var e = GetOrCreateElement(items, index);
+                    _realizingElement = e;
+
+                    if (!e.IsMeasureValid)
+                        e.Measure(availableSize);
+
+                    var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
+                    sizeU = AdjustElementSize(index, sizeU);
+                    var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
+
+                    _measureElements!.Add(index, e, u, sizeU);
+                    viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
+
+                    u += sizeU;
+                    ++index;
+                    _realizingIndex = -1;
+                    _realizingElement = null;
+                }
+            }
+
             // Check if we reached the end of the collection
             _hasReachedEnd = index >= items.Count;
             
@@ -948,11 +1667,21 @@ namespace Avalonia.Controls
             while (u > viewport.viewportUStart && index >= 0)
             {
                 var e = GetOrCreateElement(items, index);
-                
-                e.Measure(availableSize);
+
+                if (!e.IsMeasureValid)
+                    e.Measure(availableSize);
                 var sizeU = horizontal ? e.DesiredSize.Width : e.DesiredSize.Height;
+                sizeU = AdjustElementSize(index, sizeU);
                 var sizeV = horizontal ? e.DesiredSize.Height : e.DesiredSize.Width;
+
                 u -= sizeU;
+
+                // Force item 0 to position U=0 to prevent clipping from estimation errors.
+                // Skip when extent is frozen (see forward-loop comment for rationale).
+                if (index == 0 && !MathUtilities.AreClose(u, 0) && double.IsNaN(_frozenExtentU))
+                {
+                   u = 0;
+                }
 
                 _measureElements!.Add(index, e, u, sizeU);
                 viewport.measuredV = Math.Max(viewport.measuredV, sizeV);
@@ -961,6 +1690,51 @@ namespace Avalonia.Controls
             
             // Check if we reached the start of the collection
             _hasReachedStart = index < 0;
+
+            // If we've reached the start (realized item 0), ensure item 0 is positioned correctly.
+            if (_hasReachedStart && _measureElements.Count > 0 && _measureElements.FirstIndex == 0)
+            {
+                var firstItemU = _measureElements.StartU;
+
+                if (double.IsNaN(_frozenExtentU))
+                {
+                    // Normal mode: force item 0 to position 0 to prevent clipping.
+                    if (!MathUtilities.AreClose(firstItemU, 0))
+                    {
+                        var adjustment = -firstItemU;
+                        _measureElements.CompensateStartU(adjustment);
+                        viewport.realizedEndU += adjustment;
+                    }
+                }
+                else if (firstItemU > viewport.viewportUStart)
+                {
+                    // Frozen extent mode: the viewport is above item 0 — there's empty space
+                    // above the content. We can't force item 0 to 0 (that would create a gap
+                    // between positions and the scroll offset). Instead, shift items to follow
+                    // the viewport and reduce the frozen extent by the same amount. This
+                    // gradually converges item 0 toward position 0 as the user scrolls up.
+                    var shift = viewport.viewportUStart - firstItemU; // negative
+                    _measureElements.CompensateStartU(shift);
+                    viewport.realizedEndU += shift;
+                    _frozenExtentU += shift; // shrink extent to remove top empty space
+                }
+            }
+
+            // If we've reached the end of the collection during frozen extent, cap the frozen
+            // extent at the actual content end to prevent scrolling past the last item.
+            // When _hasReachedEnd is true, contentEndU is the definitive content boundary —
+            // no guard on viewport position is needed. The previous guard
+            // (contentEndU >= viewportUEnd) prevented capping when fast scrolling pushed
+            // the viewport past all content, leaving the frozen extent inflated and the
+            // ScrollViewer showing empty space.
+            if (_hasReachedEnd && !double.IsNaN(_frozenExtentU) && _measureElements.Count > 0)
+            {
+                var contentEndU = viewport.realizedEndU;
+                if (_frozenExtentU > contentEndU)
+                {
+                    _frozenExtentU = contentEndU;
+                }
+            }
 
             // We can now recycle elements before the first element.
             _realizedElements.RecycleElementsBefore(index + 1, _recycleElement);
@@ -976,6 +1750,20 @@ namespace Avalonia.Controls
                 return realized;
 
             var item = items[index];
+
+            // Check retained containers first — these already have the correct DataContext
+            // and only need a lightweight index update instead of full PrepareItemContainer.
+            if (_retainedForReuse != null && item != null &&
+                _retainedForReuse.TryGetValue(item, out var retained))
+            {
+                _retainedForReuse.Remove(item);
+                var element = retained.element;
+                var oldIndex = retained.oldIndex;
+                if (oldIndex != index)
+                    ItemContainerGenerator!.ItemContainerIndexChanged(element, oldIndex, index);
+                return element;
+            }
+
             var generator = ItemContainerGenerator!;
 
             if (generator.NeedsContainer(item, index, out var recycleKey))
@@ -1042,7 +1830,19 @@ namespace Avalonia.Controls
 
             if (_recyclePool?.TryGetValue(recycleKey, out var recyclePool) == true && recyclePool.Count > 0)
             {
-                var recycled = recyclePool.Pop();
+                // edge case: The item is already datacontext of a recyclable item
+                var recycleIndex = recyclePool.Count - 1;
+                for (int i = 0; i < recyclePool.Count; i++)
+                {
+                    if (recyclePool[i].DataContext == item)
+                    {
+                        recycleIndex = i;
+                        break;
+                    }
+                }
+
+                var recycled = recyclePool[recycleIndex];
+                recyclePool.RemoveAt(recycleIndex);
                 recycled.SetCurrentValue(Visual.IsVisibleProperty, true);
                 generator.PrepareItemContainer(recycled, item, index);
                 AddInternalChild(recycled);
@@ -1100,6 +1900,102 @@ namespace Avalonia.Controls
             }
         }
 
+        private void RecycleFocusedElement()
+        {
+            if (_focusedElement != null)
+            {
+                RecycleElementOnItemRemoved(_focusedElement);
+            }
+            _focusedElement = null;
+            _focusedIndex = -1;
+        }
+
+        private void RecycleScrollToElement()
+        {
+            if (_scrollToElement != null)
+            {
+                RecycleElementOnItemRemoved(_scrollToElement);
+            }
+            _scrollToElement = null;
+            _scrollToIndex = -1;
+        }
+
+        /// <summary>
+        /// Retains containers whose DataContext matches items in the given index range,
+        /// so they can be reused without full PrepareItemContainer + Measure overhead.
+        /// Nullifies matching elements in <see cref="_realizedElements"/> so that the
+        /// subsequent RecycleAll/ItemsReset skips them.
+        /// </summary>
+        private void RetainMatchingContainers(IReadOnlyList<object?> items, int startIndex, int endIndex)
+        {
+            if (_realizedElements is null || _realizedElements.Count == 0)
+                return;
+
+            startIndex = Math.Max(0, startIndex);
+            endIndex = Math.Min(endIndex, items.Count);
+
+            if (endIndex <= startIndex)
+                return;
+
+            // Build a set of DataContexts we need in the estimated viewport range
+            var needed = new Dictionary<object, int>(endIndex - startIndex);
+            for (var i = startIndex; i < endIndex; i++)
+            {
+                var item = items[i];
+                if (item != null && !needed.ContainsKey(item))
+                    needed[item] = i;
+            }
+
+            if (needed.Count == 0)
+                return;
+
+            _retainedForReuse ??= new Dictionary<object, (Control, int, double)>();
+            _retainedForReuse.Clear();
+
+            // Walk realized elements, nullify those whose DataContext matches a needed item
+            var firstRealized = _realizedElements.FirstIndex;
+            var lastRealized = _realizedElements.LastIndex;
+
+            for (var i = firstRealized; i <= lastRealized; i++)
+            {
+                var element = _realizedElements.GetElement(i);
+                if (element?.DataContext is not { } dc)
+                    continue;
+
+                if (needed.ContainsKey(dc))
+                {
+                    var nullified = _realizedElements.NullifyElement(i);
+                    if (nullified.HasValue)
+                    {
+                        // Unregister as anchor candidate so the ScrollViewer doesn't
+                        // track stale positions when the element moves to a new index.
+                        _scrollAnchorProvider?.UnregisterAnchorCandidate(nullified.Value.element);
+                        _retainedForReuse[dc] = (nullified.Value.element, i, nullified.Value.sizeU);
+                    }
+                }
+            }
+
+            if (_retainedForReuse.Count == 0)
+                _retainedForReuse = null;
+        }
+
+        /// <summary>
+        /// Recycles any retained containers that were not reused during realization.
+        /// Must be called after RealizeElements to avoid orphaned children.
+        /// </summary>
+        private void RecycleUnusedRetainedContainers()
+        {
+            if (_retainedForReuse == null)
+                return;
+
+            foreach (var entry in _retainedForReuse)
+            {
+                RecycleElementOnItemRemoved(entry.Value.element);
+            }
+
+            _retainedForReuse = null;
+        }
+
         private void RecycleElementOnItemRemoved(Control element)
         {
             Debug.Assert(ItemContainerGenerator is not null);
@@ -1125,26 +2021,6 @@ namespace Avalonia.Controls
                 RemoveInternalChild(element);
             }
         }
-
-        private void RecycleFocusedElement()
-        {
-            if (_focusedElement != null)
-            {
-                RecycleElementOnItemRemoved(_focusedElement);
-            }
-            _focusedElement = null;
-            _focusedIndex = -1;
-        }
-        
-        private void RecycleScrollToElement()
-        {
-            if (_scrollToElement != null)
-            {
-                RecycleElementOnItemRemoved(_scrollToElement);
-            }
-            _scrollToElement = null;
-            _scrollToIndex = -1;
-        }
         
         private void PushToRecyclePool(object recycleKey, Control element)
         {
@@ -1156,7 +2032,12 @@ namespace Avalonia.Controls
                 _recyclePool.Add(recycleKey, pool);
             }
 
-            pool.Push(element);
+            // respect max poolsize per key of IVirtualizingDataTemplate
+            if (ItemsControl?.ItemTemplate is Templates.IVirtualizingDataTemplate vdt &&
+                pool.Count >= vdt.MaxPoolSizePerKey)
+                return;
+            
+            pool.Add(element);
         }
 
         private void UpdateElementIndex(Control element, int oldIndex, int newIndex)
@@ -1259,53 +2140,64 @@ namespace Avalonia.Controls
                 else if (!MathUtilities.AreClose(oldExtendedViewportStart, newExtendedViewportStart) ||
                          !MathUtilities.AreClose(oldExtendedViewportEnd, newExtendedViewportEnd))
                 {
-                    // Check if we're about to scroll into an area where we don't have realized elements
-                    // This would be the case if we're near the edge of our current extended viewport
-                    var nearingEdge = false;
+                    // For small extended viewport shifts, skip the expensive nearingEdge check
+                    var extShiftU = Math.Abs(newExtendedViewportEnd - oldExtendedViewportEnd) +
+                                    Math.Abs(newExtendedViewportStart - oldExtendedViewportStart);
 
-                    if (_realizedElements != null)
+                    if (extShiftU < 2.0)
                     {
-                        var firstRealizedElementU = _realizedElements.StartU;
-                        var lastRealizedElementU = _realizedElements.StartU;
-
-                        for (var i = 0; i < _realizedElements.Count; i++)
-                        {
-                            lastRealizedElementU += _realizedElements.SizeU[i];
-                        }
-
-                        // If scrolling up/left and nearing the top/left edge of realized elements
-                        if (newViewportStart < oldViewportStart &&
-                            newViewportStart - newExtendedViewportStart < bufferSize)
-                        {
-                            // Edge case: We're at item 0 with excess measurement space.
-                            // Skip re-measuring since we're at the list start and it won't change the result.
-                            // This prevents redundant Measure-Arrange cycles when at list beginning.
-                            nearingEdge = !_hasReachedStart;
-                        }
-
-                        // If scrolling down/right and nearing the bottom/right edge of realized elements
-                        if (newViewportEnd > oldViewportEnd &&
-                            newExtendedViewportEnd - newViewportEnd < bufferSize)
-                        {
-                            // Edge case: We're at the last item with excess measurement space.
-                            // Skip re-measuring since we're at the list end and it won't change the result.
-                            // This prevents redundant Measure-Arrange cycles when at list beginning.
-                            nearingEdge = !_hasReachedEnd;
-                        }
+                        // Tiny shift, not worth measuring
                     }
                     else
                     {
-                        nearingEdge = true;
-                    }
+                        // Check if we're about to scroll into an area where we don't have realized elements
+                        // This would be the case if we're near the edge of our current extended viewport
+                        var nearingEdge = false;
 
-                    needsMeasure = nearingEdge;
+                        if (_realizedElements != null)
+                        {
+                            var firstRealizedElementU = _realizedElements.StartU;
+                            var lastRealizedElementU = _realizedElements.StartU;
+
+                            for (var i = 0; i < _realizedElements.Count; i++)
+                            {
+                                lastRealizedElementU += _realizedElements.SizeU[i];
+                            }
+
+                            // If scrolling up/left and nearing the top/left edge of realized elements
+                            if (newViewportStart < oldViewportStart &&
+                                newViewportStart - newExtendedViewportStart < bufferSize)
+                            {
+                                // Edge case: We're at item 0 with excess measurement space.
+                                // Skip re-measuring since we're at the list start and it won't change the result.
+                                // This prevents redundant Measure-Arrange cycles when at list beginning.
+                                nearingEdge = !_hasReachedStart;
+                            }
+
+                            // If scrolling down/right and nearing the bottom/right edge of realized elements
+                            if (newViewportEnd > oldViewportEnd &&
+                                newExtendedViewportEnd - newViewportEnd < bufferSize)
+                            {
+                                // Edge case: We're at the last item with excess measurement space.
+                                // Skip re-measuring since we're at the list end and it won't change the result.
+                                // This prevents redundant Measure-Arrange cycles when at list beginning.
+                                nearingEdge = !_hasReachedEnd;
+                            }
+                        }
+                        else
+                        {
+                            nearingEdge = true;
+                        }
+
+                        needsMeasure = nearingEdge;
+                    }
                 }
             }
 
             // Supplementary check: detect viewport growth after a previous shrink.
-            // The main comparison (Cases 1a/1b) uses _extendedViewport which only updates
+            // The main comparison (Cases 1a/1b) uses _lastMeasuredExtendedViewport which only updates
             // on measure. When the viewport shrinks (e.g. ComboBox popup during filtering),
-            // _extendedViewport stays stale-large, masking subsequent growth. Compare against
+            // _lastMeasuredExtendedViewport stays stale-large, masking subsequent growth. Compare against
             // _lastKnownExtendedViewport (always updated) to catch this case.
             if (!needsMeasure)
             {
@@ -1321,18 +2213,48 @@ namespace Avalonia.Controls
 
             if (needsMeasure)
             {
+                // Check if we're already measuring with this viewport (or very close to it)
+                // This prevents layout cycles during fast scrolling where viewport shifts slightly
+                // as heterogeneous items are measured
+                if (_isInLayout &&
+                    MathUtilities.AreClose(_lastMeasuredViewport.X, extendedViewPort.X) &&
+                    MathUtilities.AreClose(_lastMeasuredViewport.Y, extendedViewPort.Y) &&
+                    MathUtilities.AreClose(_lastMeasuredViewport.Width, extendedViewPort.Width) &&
+                    MathUtilities.AreClose(_lastMeasuredViewport.Height, extendedViewPort.Height))
+                {
+                    // We're already measuring with this viewport - don't invalidate again
+                    _lastMeasuredExtendedViewport = extendedViewPort;
+                    return;
+                }
+
+                // Reset consecutive measure count so the cycle breaker allows fresh passes
+                // for the new viewport position.
+                _consecutiveMeasureCount = 0;
+                _measurePostponed = false;
+
+                // Extent oscillation handling:
+                // - During detection phase (not frozen): do NOT reset oscillation
+                //   tracking. Self-induced viewport changes from extent swings would
+                //   otherwise prevent the counter from ever reaching the threshold.
+                // - When frozen: do NOT lift the freeze. The freeze is permanent until
+                //   OnItemsChanged. Lifting on viewport changes would restart the
+                //   oscillation, causing the viewport to drift toward 0.
+                //   The convergence mechanism in CompensateForExtentChange updates the
+                //   frozen value toward reality when measurements stabilize.
+
                 // Only update the measure viewport when triggering a measure. This keeps the
                 // wider realization range available for externally-triggered measures (e.g. from
                 // OnItemsChanged), ensuring enough items are realized.
                 _lastMeasuredExtendedViewport = extendedViewPort;
                 InvalidateMeasure();
             }
+
         }
 
         private void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (_focusedElement is not null &&
-                e.Property == KeyboardNavigation.TabOnceActiveElementProperty && 
+                e.Property == KeyboardNavigation.TabOnceActiveElementProperty &&
                 e.GetOldValue<IInputElement?>() == _focusedElement)
             {
                 // TabOnceActiveElement has moved away from _focusedElement so we can recycle it.
@@ -1340,17 +2262,262 @@ namespace Avalonia.Controls
                 _focusedElement = null;
                 _focusedIndex = -1;
             }
+
+            // Handle ItemTemplate changes - invalidate warmup and re-trigger if enabled
+            if (e.Property == ItemsControl.ItemTemplateProperty)
+            {
+                if (EnableWarmup && _isWarmupComplete)
+                {
+
+                    ClearWarmupContainers();
+                    _isWarmupComplete = false;
+
+                    Threading.Dispatcher.UIThread.Post(PerformWarmup, Threading.DispatcherPriority.Background);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clears unused warmup containers from the recycle pool.
+        /// Only removes containers that haven't been used yet (null DataContext and invisible).
+        /// </summary>
+        private void ClearWarmupContainers()
+        {
+            if (_recyclePool == null)
+                return;
+
+            int clearedCount = 0;
+
+            foreach (var pool in _recyclePool.Values)
+            {
+                for (int i = pool.Count - 1; i >= 0; i--)
+                {
+                    var container = pool[i];
+                    if (container.DataContext == null && !container.IsVisible)
+                    {
+                        RemoveInternalChild(container);
+                        pool.RemoveAt(i);
+                        clearedCount++;
+                    }
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Clears only obsolete warmup containers from the recycle pool.
+        /// Preserves containers whose recycleKey is still active in the current collection.
+        /// </summary>
+        private void ClearObsoleteWarmupContainers()
+        {
+            if (_recyclePool == null)
+                return;
+
+            // Get currently needed keys from the new collection
+            var activeKeys = new HashSet<object>(DiscoverTemplateKeys().Keys);
+
+            var keysToRemove = new List<object>();
+            int clearedCount = 0;
+
+            foreach (var kvp in _recyclePool)
+            {
+                var recycleKey = kvp.Key;
+                var pool = kvp.Value;
+
+                // Only clear pools for obsolete keys (not in new collection)
+                if (!activeKeys.Contains(recycleKey))
+                {
+                    for (int i = pool.Count - 1; i >= 0; i--)
+                    {
+                        var container = pool[i];
+                        if (container.DataContext == null && !container.IsVisible)
+                        {
+                            RemoveInternalChild(container);
+                            pool.RemoveAt(i);
+                            clearedCount++;
+                        }
+                    }
+
+                    if (pool.Count == 0)
+                        keysToRemove.Add(recycleKey);
+                }
+            }
+
+            // Remove empty pools
+            foreach (var key in keysToRemove)
+                _recyclePool.Remove(key);
+
         }
 
         private void OnCacheLengthChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var newValue = e.GetNewValue<double>();
             _bufferFactor = newValue;
-    
+
             // Force a recalculation of the extended viewport on the next layout pass
             InvalidateMeasure();
         }
-        
+
+        /// <summary>
+        /// Discovers unique template types/keys by sampling items from the collection.
+        /// Returns a dictionary mapping recycle keys to target warmup counts.
+        /// </summary>
+        internal Dictionary<object, int> DiscoverTemplateKeys()
+        {
+            var templateKeys = new Dictionary<object, int>();
+            var items = Items;
+
+            if (items == null || items.Count == 0 || ItemContainerGenerator == null)
+                return templateKeys;
+
+            // Sample first N items to discover template types
+            int sampleSize = Math.Min(WarmupSampleSize, items.Count);
+
+            for (int i = 0; i < sampleSize; i++)
+            {
+                var item = items[i];
+
+                // Use ItemContainerGenerator to determine recycle key without creating container
+                if (ItemContainerGenerator.NeedsContainer(item, i, out var recycleKey) && recycleKey != null)
+                    CollectionsMarshal.GetValueRefOrAddDefault(templateKeys, recycleKey, out _)++;
+            }
+
+            // Query MaxPoolSizePerKey from IVirtualizingDataTemplate if available
+            if (ItemsControl?.ItemTemplate is Templates.IVirtualizingDataTemplate vdt)
+            {
+                foreach (var key in templateKeys.Keys.ToList())
+                {
+                    templateKeys[key] = vdt.MinPoolSizePerKey;
+                }
+
+            }
+            else
+            {
+                // Default to 3 containers per type if no MaxPoolSizePerKey available
+                foreach (var key in templateKeys.Keys.ToList())
+                {
+                    templateKeys[key] = 3;
+                }
+            }
+
+            return templateKeys;
+        }
+
+        /// <summary>
+        /// Pre-creates containers with their content for each discovered template type.
+        /// Containers are stored in the recycle pool with their Child controls already attached,
+        /// ready to be reused during scrolling. This eliminates the expensive template instantiation
+        /// cost during the first scroll.
+        /// </summary>
+        internal void PerformWarmup()
+        {
+            if (_isWarmupComplete || Items == null || Items.Count == 0)
+                return;
+
+            var startTime = System.Diagnostics.Stopwatch.StartNew();
+            var templateKeys = DiscoverTemplateKeys();
+
+            if (templateKeys.Count == 0)
+            {
+                _isWarmupComplete = true;
+                return;
+            }
+
+            _recyclePool ??= new Dictionary<object, List<Control>>();
+            
+            var orientation = Orientation;
+            var availableSize = orientation == Orientation.Horizontal
+                ? new Size(double.PositiveInfinity, Bounds.Height > 0 ? Bounds.Height : _lastEstimatedElementSizeU)
+                : new Size(Bounds.Width > 0 ? Bounds.Width : double.PositiveInfinity, double.PositiveInfinity);
+            
+            int totalCreated = 0;
+
+            int alreadyRealized = _realizedElements?.Elements?.Count ?? 0;
+            Dictionary<object, List<Control?>> realizedElementsLookup = new();
+            if(_realizedElements is { Elements: not null } realizedElements)
+            {
+                realizedElementsLookup = realizedElements.Elements.Where(re => re != null)
+                    .GroupBy(re => re!.GetValue(RecycleKeyProperty))
+                    .ToDictionary(g => g.Key??new object(), g => g.ToList());
+                
+            }
+
+            foreach (var kvp in templateKeys)
+            {
+                var recycleKey = kvp.Key;
+                var targetCount = kvp.Value;
+
+                // OPTIMIZATION: Check existing pool size
+                var existingCount = _recyclePool.TryGetValue(recycleKey, out var existingPool)
+                    ? existingPool.Count
+                    : 0;
+                // OPTIMIZATION 2: Check realized elements
+                if (realizedElementsLookup.TryGetValue(recycleKey, out var realized))
+                    existingCount += realized.Count;
+
+                var neededCount = Math.Max(0, targetCount - existingCount);
+
+                if (neededCount == 0)
+                {
+                    continue;
+                }
+
+                // Collect actual items from the ItemsSource that match this recycle key
+                // CHANGED: Only collect neededCount items, not targetCount
+                var matchingItems = new List<(object item, int index)>();
+                var startIndex = Math.Max(alreadyRealized - 1, 0);
+                for (int i = startIndex; i < Math.Min(WarmupSampleSize+alreadyRealized, Items.Count); i++)
+                {
+                    var item = Items[i];
+                    if (ItemContainerGenerator!.NeedsContainer(item, i, out var key) &&
+                        Equals(key, recycleKey) && item is not null)
+                    {
+                        matchingItems.Add((item, i));
+                        if (matchingItems.Count >= neededCount)  // CHANGED: from targetCount
+                            break;
+                    }
+                }
+
+                if (matchingItems.Count == 0)
+                    continue;
+
+                // Create containers for real items (but only those not yet realized)
+                for (int i = 0; i < matchingItems.Count; i++)
+                {
+                    var (item, index) = matchingItems[i];
+
+                    try
+                    {
+                        // Create container with real item - this creates the Container + Child together
+                        // PrepareContainerForItemOverride is called, which creates the Child control
+                        var container = CreateElement(item, index, recycleKey);
+                        
+                        // Pre-measure with typical available size to cache layout
+                        container.Measure(availableSize);
+                        
+                        // IMPORTANT: Do NOT clear the container!
+                        // The Child control should stay attached with its template instantiated.
+                        // When reused, only the data binding will update (cheap operation).
+
+                        // Push to recycle pool - container + child are pooled together
+                        PushToRecyclePool(recycleKey, container);
+                        container.SetCurrentValue(Visual.IsVisibleProperty, false);
+                        RemoveInternalChild(container);
+
+                        totalCreated++;
+                    }
+                    catch
+                    {
+                        break;
+                    }
+                }
+            }
+
+            _isWarmupComplete = true;
+            startTime.Stop();
+
+        }
+
         /// <inheritdoc/>
         public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
         {
