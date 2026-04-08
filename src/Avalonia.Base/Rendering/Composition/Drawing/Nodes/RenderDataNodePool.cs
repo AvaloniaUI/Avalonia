@@ -118,6 +118,7 @@ internal sealed class RenderDataNodePool<T> : IRenderDataNodePool where T : clas
             if (_count == 0)
                 return false;
 
+            // Release a third of the pool per cycle, at least 1.
             var release = Math.Max(1, _count / 3);
             var newCount = _count - release;
             Array.Clear(_items, newCount, release);
