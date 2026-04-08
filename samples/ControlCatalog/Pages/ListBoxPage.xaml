@@ -1,6 +1,7 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
+             Header="ListBox"
              x:Class="ControlCatalog.Pages.ListBoxPage"
              x:DataType="viewModels:ListBoxPageViewModel">
   <DockPanel>
@@ -47,4 +48,4 @@
              SelectionMode="{Binding SelectionMode^}"
              WrapSelection="{Binding WrapSelection}"/>
   </DockPanel>
-</UserControl>
+</ContentPage>

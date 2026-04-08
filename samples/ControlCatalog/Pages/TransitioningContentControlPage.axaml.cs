@@ -2,7 +2,7 @@ using Avalonia.Controls;
 
 namespace ControlCatalog.Pages
 {
-    public partial class TransitioningContentControlPage : UserControl
+    public partial class TransitioningContentControlPage : ContentPage
     {
         public TransitioningContentControlPage()
         {
