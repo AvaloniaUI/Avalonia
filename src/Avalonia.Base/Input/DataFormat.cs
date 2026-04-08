@@ -28,15 +28,6 @@ public abstract class DataFormat : IEquatable<DataFormat>
     public string Identifier { get; }
 
     /// <summary>
-    /// Gets a value indicating whether this format has a system name that can be used by platform backends.
-    /// </summary>
-    /// <remarks>
-    /// Returns <see langword="true"/> for <see cref="DataFormatKind.Application"/> and <see cref="DataFormatKind.Platform"/> formats.
-    /// Returns <see langword="false"/> for <see cref="DataFormatKind.Universal"/> and <see cref="DataFormatKind.InProcess"/> formats.
-    /// </remarks>
-    public bool HasSystemName => Kind is DataFormatKind.Application or DataFormatKind.Platform;
-
-    /// <summary>
     /// Gets a data format representing plain text.
     /// Its data type is <see cref="string"/>.
     /// </summary>

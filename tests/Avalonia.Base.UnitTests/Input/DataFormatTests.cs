@@ -43,36 +43,6 @@ public sealed class DataFormatTests
     }
 
     [Fact]
-    public void HasSystemName_Returns_False_For_InProcess()
-    {
-        var format = DataFormat.CreateInProcessFormat<string>("test");
-
-        Assert.False(format.HasSystemName);
-    }
-
-    [Fact]
-    public void HasSystemName_Returns_False_For_Universal()
-    {
-        Assert.False(DataFormat.Text.HasSystemName);
-    }
-
-    [Fact]
-    public void HasSystemName_Returns_True_For_Application()
-    {
-        var format = DataFormat.CreateBytesApplicationFormat("test-format");
-
-        Assert.True(format.HasSystemName);
-    }
-
-    [Fact]
-    public void HasSystemName_Returns_True_For_Platform()
-    {
-        var format = DataFormat.CreateBytesPlatformFormat("text/plain");
-
-        Assert.True(format.HasSystemName);
-    }
-
-    [Fact]
     public void ToSystemName_Throws_For_InProcess()
     {
         var format = DataFormat.CreateInProcessFormat<string>("test");
