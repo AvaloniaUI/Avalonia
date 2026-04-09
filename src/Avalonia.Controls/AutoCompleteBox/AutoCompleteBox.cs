@@ -107,15 +107,24 @@ namespace Avalonia.Controls
         private AvaloniaList<object>? _view;
 
         /// <summary>
-        /// Gets or sets a value to ignore a number of pending change handlers.
-        /// The value is decremented after each use. This is used to reset the
-        /// value of properties without performing any of the actions in their
-        /// change handlers.
+        /// Gets or sets a counter that tracks how many pending Text property change
+        /// notifications should be ignored. This is used when the Text property is set
+        /// programmatically and we want to suppress the corresponding change handlers.
+        /// The counter is decremented after each ignored notification.
         /// </summary>
-        /// <remarks>The int is important as a value because the TextBox
-        /// TextChanged event does not immediately fire, and this will allow for
-        /// nested property changes to be ignored.</remarks>
+        /// <remarks>
+        /// The counter is important because the TextBox TextChanged event does not fire
+        /// immediately; using a counter allows nested property changes to be ignored safely.
+        /// </remarks>
         private int _ignoreTextPropertyChange;
+
+        /// <summary>
+        /// Gets or sets a counter that tracks how many pending TextBox TextChanged
+        /// events should be ignored. This is distinct from <see cref="_ignoreTextPropertyChange"/>
+        /// and is used when the TextBox's TextChanged event needs to be suppressed
+        /// (e.g., during programmatic updates to the text box content).
+        /// The counter is decremented after each ignored event.
+        /// </summary>
         private int _ignoreTextBoxTextChange;
 
         /// <summary>

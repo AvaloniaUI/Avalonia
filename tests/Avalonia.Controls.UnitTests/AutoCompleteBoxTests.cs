@@ -1319,6 +1319,7 @@ namespace Avalonia.Controls.UnitTests
                 for (var i = 0; i < 10; i++)
                 {
                     viewModel.UpdateTextValueTwice();
+                    Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                     Assert.Equal("bar", control.Text);
                 }
             }
@@ -1346,8 +1347,13 @@ namespace Avalonia.Controls.UnitTests
 
                 // Change the view model value "bar" -> "foo" -> "bar"
                 viewModel.UpdateTextValueTwice();
-                
+
                 // OnTextBoxTextChanged is posted, but we should have seen synchronous TextChanged events for TextProperty updates
+                Assert.Equal("bar", control.Text);
+                Assert.Equal(2, textChangedCount);
+
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
                 Assert.Equal("bar", control.Text);
                 Assert.Equal(2, textChangedCount);
             }
