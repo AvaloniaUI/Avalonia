@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Metal;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
+using Avalonia.Reactive;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Metal;
@@ -104,24 +105,15 @@ internal partial class SkiaMetalGpu : ISkiaGpu
         public ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             // TODO: use expectedPixelSize
-            var poolHandle = objc_autoreleasePoolPush();
-            try
-            {
-                var session = (_target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget))).BeginRendering();
-                var backendTarget = new GRBackendRenderTarget(session.Size.Width, session.Size.Height,
-                    new GRMtlTextureInfo(session.Texture));
+            var session = (_target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget))).BeginRendering();
+            var backendTarget = new GRBackendRenderTarget(session.Size.Width, session.Size.Height,
+                new GRMtlTextureInfo(session.Texture));
 
-                var surface = SKSurface.Create(_gpu._context!, backendTarget,
-                    session.IsYFlipped ? GRSurfaceOrigin.BottomLeft : GRSurfaceOrigin.TopLeft,
-                    SKColorType.Bgra8888);
+            var surface = SKSurface.Create(_gpu._context!, backendTarget,
+                session.IsYFlipped ? GRSurfaceOrigin.BottomLeft : GRSurfaceOrigin.TopLeft,
+                SKColorType.Bgra8888);
 
-                return new SkiaMetalRenderSession(_gpu, surface, session, backendTarget, poolHandle);
-            }
-            catch
-            {
-                objc_autoreleasePoolPop(poolHandle);
-                throw;
-            }
+            return new SkiaMetalRenderSession(_gpu, surface, session, backendTarget);
         }
 
         public PlatformRenderTargetState State => _target?.State ?? PlatformRenderTargetState.Disposed;
@@ -133,19 +125,19 @@ internal partial class SkiaMetalGpu : ISkiaGpu
         private SKSurface? _surface;
         private IMetalPlatformSurfaceRenderingSession? _session;
         private GRBackendRenderTarget? _backendTarget;
-        private readonly IntPtr _autoreleasePool;
+        private readonly IDisposable _autoreleasePool;
 
         public SkiaMetalRenderSession(SkiaMetalGpu gpu,
             SKSurface surface,
             IMetalPlatformSurfaceRenderingSession session,
-            GRBackendRenderTarget backendTarget,
-            IntPtr autoreleasePool)
+            GRBackendRenderTarget backendTarget)
         {
+            var poolHandle = objc_autoreleasePoolPush();
+            _autoreleasePool = Disposable.Create(poolHandle, static h => objc_autoreleasePoolPop(h));
             _gpu = gpu;
             _surface = surface;
             _session = session;
             _backendTarget = backendTarget;
-            _autoreleasePool = autoreleasePool;
         }
 
         public void Dispose()
@@ -161,7 +153,7 @@ internal partial class SkiaMetalGpu : ISkiaGpu
             _backendTarget?.Dispose();
             _backendTarget = null;
 
-            objc_autoreleasePoolPop(_autoreleasePool);
+            _autoreleasePool.Dispose();
         }
 
         public GRContext GrContext => _gpu._context!;
