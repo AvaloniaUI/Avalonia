@@ -7,7 +7,7 @@ using Avalonia.Media;
 
 namespace ControlCatalog.Pages
 {
-    public partial class CommandBarPage : UserControl
+    public partial class CommandBarPage : ContentPage
     {
         private static readonly (string Group, string Title, string Description, Func<UserControl> Factory)[] Demos =
         {
