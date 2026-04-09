@@ -80,6 +80,16 @@ public sealed class DataFormatTests
     }
 
     [Fact]
+    public void TryGetRaw_With_Mismatched_Format_Returns_Null_For_Single_Format_Item()
+    {
+        var item = DataTransferItem.CreateText("hello");
+
+        var result = item.TryGetRaw(DataFormat.Bitmap);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
     public void InProcess_Format_Works_With_DataTransferItem_Set_And_Get()
     {
         var format = DataFormat.CreateInProcessFormat<string>("my-inprocess");
