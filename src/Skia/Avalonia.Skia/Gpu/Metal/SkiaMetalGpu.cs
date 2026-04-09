@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Avalonia.Metal;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
-using Avalonia.Reactive;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Metal;
 
-internal partial class SkiaMetalGpu : ISkiaGpu
+internal class SkiaMetalGpu : ISkiaGpu
 {
     private GRContext? _context;
     private readonly IMetalDevice _device;
@@ -79,12 +77,6 @@ internal partial class SkiaMetalGpu : ISkiaGpu
         return false;
     }
 
-    [LibraryImport("libobjc")]
-    private static partial IntPtr objc_autoreleasePoolPush();
-
-    [LibraryImport("libobjc")]
-    private static partial void objc_autoreleasePoolPop(IntPtr pool);
-
     public class SkiaMetalRenderTarget : ISkiaGpuRenderTarget
     {
         private readonly SkiaMetalGpu _gpu;
@@ -143,15 +135,14 @@ internal partial class SkiaMetalGpu : ISkiaGpu
         private SKSurface? _surface;
         private IMetalPlatformSurfaceRenderingSession? _session;
         private GRBackendRenderTarget? _backendTarget;
-        private readonly IDisposable _autoReleasePool;
+        private readonly AutoReleasePool _autoReleasePool;
 
         public SkiaMetalRenderSession(SkiaMetalGpu gpu,
             SKSurface surface,
             IMetalPlatformSurfaceRenderingSession session,
             GRBackendRenderTarget backendTarget)
         {
-            var poolHandle = objc_autoreleasePoolPush();
-            _autoReleasePool = Disposable.Create(poolHandle, static h => objc_autoreleasePoolPop(h));
+            _autoReleasePool = new AutoReleasePool();
             _gpu = gpu;
             _surface = surface;
             _session = session;
