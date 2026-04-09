@@ -1,8 +1,5 @@
-using System.Net.Http.Headers;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
 using Avalonia.Data;
 using Xunit;
 
@@ -218,7 +215,7 @@ public partial class BindingExpressionTests
 
         Assert.Equal("foo", target.String);
 
-        target.String = "bar";
+        target.SetCurrentValue(TargetClass.StringProperty, "bar");
         Assert.Equal("bar", target.String);
 
         data.RaisePropertyChanged(nameof(data.StringValue));

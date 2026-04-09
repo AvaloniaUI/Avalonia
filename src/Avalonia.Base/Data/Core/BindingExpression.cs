@@ -205,7 +205,9 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
                 var error = dataValidationError is not null ?
                     new BindingError(dataValidationError, BindingErrorType.DataValidationError) :
                     null;
-                ConvertAndPublishValue(value, error, true);
+
+                var forceUpdate = _mode == BindingMode.OneWay;
+                ConvertAndPublishValue(value, error, forceUpdate);
             }
         }
         else if (_mode == BindingMode.OneWayToSource && nodeIndex == _nodes.Count - 2 && value is not null)
