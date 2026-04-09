@@ -1,8 +1,15 @@
-﻿using Avalonia.Controls.UnitTests.Utils;
+﻿using System;
+using Avalonia.Controls.UnitTests.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
+using Moq;
 using Xunit;
+using MouseButton = Avalonia.Input.MouseButton;
 
 namespace Avalonia.Controls.Primitives.UnitTests
 {
@@ -11,6 +18,7 @@ namespace Avalonia.Controls.Primitives.UnitTests
         private const string uncheckedClass = ":unchecked";
         private const string checkedClass = ":checked";
         private const string indeterminateClass = ":indeterminate";
+        private readonly MouseTestHelper _mouse = new();
 
         [Theory]
         [InlineData(false, uncheckedClass, false)]
@@ -108,43 +116,96 @@ namespace Avalonia.Controls.Primitives.UnitTests
         }
 
         [Fact]
-        public void ToggleButton_With_NonExecutable_Command_Does_Not_Toggle_On_Click()
+        public void ToggleButton_Does_Not_Toggle_When_Command_Becomes_Disabled_Between_Press_And_Release()
         {
-            var target = new ToggleButton
-            {
-                Command = new TestCommand(false),
-            };
-            var root = new TestRoot
-            {
-                Child = target,
-            };
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
 
+            var command = new TestCommand(true);
+            var target = CreateToggleButton(command);
+            var root = CreateRoot(target);
+            var point = new Point(50, 50);
+
+            RaisePointerEntered(target);
+            RaisePointerMove(target, point);
+            RaisePointerPressed(target, 1, MouseButton.Left, point);
+
+            Assert.True(target.IsPressed);
             Assert.False(target.IsChecked);
+
+            command.IsEnabled = false;
+
             Assert.False(target.IsEffectivelyEnabled);
 
-            (target as IClickableControl).RaiseClick();
+            RaisePointerReleased(target, MouseButton.Left, point);
 
             Assert.False(target.IsChecked);
         }
 
         [Fact]
-        public void ToggleButton_With_Executable_Command_Toggles_On_Click()
+        public void ToggleButton_Toggles_When_Command_Remains_Executable_Through_Release()
         {
-            var target = new ToggleButton
-            {
-                Command = new TestCommand(true),
-            };
-            var root = new TestRoot
-            {
-                Child = target,
-            };
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
 
-            Assert.False(target.IsChecked);
+            var target = CreateToggleButton(new TestCommand(true));
+            var root = CreateRoot(target);
+            var point = new Point(50, 50);
+
+            RaisePointerEntered(target);
+            RaisePointerMove(target, point);
+            RaisePointerPressed(target, 1, MouseButton.Left, point);
+
+            Assert.True(target.IsPressed);
             Assert.True(target.IsEffectivelyEnabled);
 
-            (target as IClickableControl).RaiseClick();
+            RaisePointerReleased(target, MouseButton.Left, point);
 
             Assert.True(target.IsChecked);
+        }
+
+        private Window CreateRoot(ToggleButton target)
+        {
+            var renderer = new Mock<IHitTester>();
+
+            renderer
+                .Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
+                .Returns<Point, Visual, Func<Visual, bool>>((point, root, filter) =>
+                    root.Bounds.Contains(point) ? new Visual[] { root } : Array.Empty<Visual>());
+
+            var root = new Window { HitTesterOverride = renderer.Object, Content = target };
+            root.Show();
+            return root;
+        }
+
+        private ToggleButton CreateToggleButton(TestCommand command)
+        {
+            return new ToggleButton
+            {
+                Width = 100,
+                Height = 100,
+                VerticalAlignment = VerticalAlignment.Top,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Command = command,
+            };
+        }
+
+        private void RaisePointerPressed(ToggleButton button, int clickCount, MouseButton mouseButton, Point position)
+        {
+            _mouse.Down(button, mouseButton, position, clickCount: clickCount);
+        }
+
+        private void RaisePointerReleased(ToggleButton button, MouseButton mouseButton, Point position)
+        {
+            _mouse.Up(button, mouseButton, position);
+        }
+
+        private void RaisePointerEntered(ToggleButton button)
+        {
+            _mouse.Enter(button);
+        }
+
+        private void RaisePointerMove(ToggleButton button, Point position)
+        {
+            _mouse.Move(button, position);
         }
 
         private class Class1 : NotifyingBase

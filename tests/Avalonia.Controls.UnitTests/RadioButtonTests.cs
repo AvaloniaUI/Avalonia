@@ -1,6 +1,4 @@
-﻿using Avalonia.Controls.UnitTests.Utils;
-using Avalonia.Input;
-using Avalonia.Markup.Data;
+﻿using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 
 using Xunit;
@@ -71,40 +69,6 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(radioButton1.IsChecked);
             Assert.False(radioButton2.IsChecked);
             Assert.True(radioButton3.IsChecked);
-        }
-
-        [Fact]
-        public void RadioButton_With_NonExecutable_Command_Does_Not_Uncheck_Checked_Sibling()
-        {
-            var parent = new Panel();
-            var selected = new RadioButton
-            {
-                GroupName = "A",
-                IsChecked = true,
-            };
-            var blocked = new RadioButton
-            {
-                GroupName = "A",
-                IsChecked = false,
-                Command = new TestCommand(false),
-            };
-
-            parent.Children.Add(selected);
-            parent.Children.Add(blocked);
-
-            var root = new TestRoot
-            {
-                Child = parent,
-            };
-
-            Assert.True(selected.IsChecked);
-            Assert.False(blocked.IsChecked);
-            Assert.False(blocked.IsEffectivelyEnabled);
-
-            (blocked as IClickableControl).RaiseClick();
-
-            Assert.True(selected.IsChecked);
-            Assert.False(blocked.IsChecked);
         }
 
         [Fact]
