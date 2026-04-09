@@ -191,6 +191,7 @@
     {
         switch (_peer->GetLiveSetting())
         {
+            case LiveSettingOff: return nil;
             case LiveSettingPolite: return @"polite";
             case LiveSettingAssertive: return @"assertive";
         }
