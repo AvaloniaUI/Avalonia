@@ -1348,7 +1348,8 @@ namespace Avalonia.Controls.UnitTests
                 // Change the view model value "bar" -> "foo" -> "bar"
                 viewModel.UpdateTextValueTwice();
 
-                // OnTextBoxTextChanged is posted, but we should have seen synchronous TextChanged events for TextProperty updates
+                // Programmatic TextProperty updates should synchronously raise TextChanged, and
+                // OnTextBoxTextChanged is suppressed for the corresponding TextBox.Text updates.
                 Assert.Equal("bar", control.Text);
                 Assert.Equal(2, textChangedCount);
 
