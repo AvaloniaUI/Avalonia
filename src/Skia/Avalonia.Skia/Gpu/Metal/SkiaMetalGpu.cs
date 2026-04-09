@@ -104,7 +104,6 @@ internal partial class SkiaMetalGpu : ISkiaGpu
         public ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             // TODO: use expectedPixelSize
-            _gpu.GrContext.ResetContext();
             var poolHandle = objc_autoreleasePoolPush();
             try
             {
