@@ -116,6 +116,7 @@ namespace Avalonia.Controls
         /// TextChanged event does not immediately fire, and this will allow for
         /// nested property changes to be ignored.</remarks>
         private int _ignoreTextPropertyChange;
+        private int _ignoreTextBoxTextChange;
 
         /// <summary>
         /// Gets or sets a value indicating whether to ignore calling a pending
@@ -371,6 +372,12 @@ namespace Avalonia.Controls
         /// <param name="e">Event arguments.</param>
         private void OnTextPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
+            if (_ignoreTextPropertyChange > 0)
+            {
+                _ignoreTextPropertyChange--;
+                return;
+            }
+
             TextUpdated((string?)e.NewValue, false);
         }
 
@@ -1226,6 +1233,12 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnTextBoxTextChanged()
         {
+            if (_ignoreTextBoxTextChange > 0)
+            {
+                _ignoreTextBoxTextChange--;
+                return;
+            }
+
             //Uses Dispatcher.Post to allow the TextBox selection to update before processing
             Dispatcher.UIThread.Post(() =>
             {
@@ -1270,7 +1283,7 @@ namespace Avalonia.Controls
             // Update the TextBox's Text dependency property
             if ((userInitiated == null || userInitiated == false) && TextBox != null && TextBox.Text != value)
             {
-                _ignoreTextPropertyChange++;
+                _ignoreTextBoxTextChange++; 
                 TextBox.Text = value ?? string.Empty;
 
                 // Text dependency property value was set, fire event
@@ -1296,14 +1309,6 @@ namespace Avalonia.Controls
         /// TextUpdated method is called from a TextBox event handler.</param>
         private void TextUpdated(string? newText, bool userInitiated)
         {
-            // Only process this event if it is coming from someone outside
-            // setting the Text dependency property directly.
-            if (_ignoreTextPropertyChange > 0)
-            {
-                _ignoreTextPropertyChange--;
-                return;
-            }
-
             if (newText == null)
             {
                 newText = string.Empty;
