@@ -798,8 +798,11 @@ namespace Avalonia.Win32
 
                         // A window without a caption (i.e. None and BorderOnly decorations) maximizes to the whole screen
                         // by default. Adjust that to the screen's working area instead.
-                        if (TryGetCaptionlessMaximizedRect() is { } maximizedRect)
+                        var style = GetStyle();
+                        if (!style.HasAllFlags(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME) &&
+                            Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST) is { } screen)
                         {
+                            var maximizedRect = GetCaptionlessMaximizedRect(style, screen.WorkingArea);
                             // We aren't changing ptMaxPosition because its coordinates must always target the primary screen.
                             // We can't do that, since the work area might not be the same for all screens.
                             // Instead, only set the desired max size here.
@@ -838,24 +841,25 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_WINDOWPOSCHANGING:
                     {
-                        var windowPos = (WINDOWPOS*)lParam;
+                        var pos = (WINDOWPOS*)lParam;
                         var style = GetStyle();
-                        var flags = (SetWindowPosFlags)windowPos->flags;
+                        var flags = (SetWindowPosFlags)pos->flags;
 
                         // A window without a caption (i.e. None and BorderOnly decorations) maximizes to the whole screen
                         // by default. Adjust that to the screen's working area instead.
-                        if (style.HasAllFlags(WindowStyles.WS_MAXIMIZE) &&
+                        if (!style.HasAllFlags(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME) &&
+                            style.HasAllFlags(WindowStyles.WS_MAXIMIZE) &&
                             !_isFullScreenActive &&
                             !flags.HasAllFlags(SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE) &&
-                            TryGetCaptionlessMaximizedRect() is { } maximizedRect)
+                            Screen.ScreenFromRect(new PixelRect(pos->x, pos->y, pos->cx, pos->cy)) is { } screen)
                         {
-                            windowPos->x = maximizedRect.X;
-                            windowPos->y = maximizedRect.Y;
-                            windowPos->cx = maximizedRect.Width;
-                            windowPos->cy = maximizedRect.Height;
+                            var maximizedRect = GetCaptionlessMaximizedRect(style, screen.WorkingArea);
+                            pos->x = maximizedRect.X;
+                            pos->y = maximizedRect.Y;
+                            pos->cx = maximizedRect.Width;
+                            pos->cy = maximizedRect.Height;
                             return IntPtr.Zero;
                         }
-
                         break;
                     }
 
@@ -997,16 +1001,8 @@ namespace Avalonia.Win32
         /// <summary>
         /// Gets the expected maximized rect for a window without a caption.
         /// </summary>
-        private PixelRect? TryGetCaptionlessMaximizedRect()
+        private PixelRect GetCaptionlessMaximizedRect(WindowStyles style, PixelRect workingArea)
         {
-            var style = GetStyle();
-            if (style.HasAllFlags(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME))
-                return null;
-
-            var screen = Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
-            if (screen?.WorkingArea is not { } workingArea)
-                return null;
-
             var x = workingArea.X;
             var y = workingArea.Y;
             var cx = workingArea.Width;
