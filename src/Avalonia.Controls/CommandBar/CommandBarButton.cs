@@ -3,49 +3,49 @@ namespace Avalonia.Controls
     /// <summary>
     /// A button for use in a <see cref="CommandBar"/>.
     /// </summary>
-    public class AppBarButton : Button, ICommandBarElement
+    public class CommandBarButton : Button, ICommandBarElement
     {
-        static AppBarButton()
+        static CommandBarButton()
         {
-            ForegroundProperty.Changed.AddClassHandler<AppBarButton>((x, _) => x.UpdateIconForeground());
-            IconProperty.Changed.AddClassHandler<AppBarButton>((x, _) => x.UpdateIconForeground());
+            ForegroundProperty.Changed.AddClassHandler<CommandBarButton>((x, _) => x.UpdateIconForeground());
+            IconProperty.Changed.AddClassHandler<CommandBarButton>((x, _) => x.UpdateIconForeground());
         }
 
         /// <summary>
         /// Defines the <see cref="Label"/> property.
         /// </summary>
         public static readonly StyledProperty<string?> LabelProperty =
-            AvaloniaProperty.Register<AppBarButton, string?>(nameof(Label));
+            AvaloniaProperty.Register<CommandBarButton, string?>(nameof(Label));
 
         /// <summary>
         /// Defines the <see cref="Icon"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> IconProperty =
-            AvaloniaProperty.Register<AppBarButton, object?>(nameof(Icon));
+            AvaloniaProperty.Register<CommandBarButton, object?>(nameof(Icon));
 
         /// <summary>
         /// Defines the <see cref="IsCompact"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsCompactProperty =
-            AvaloniaProperty.Register<AppBarButton, bool>(nameof(IsCompact));
+            AvaloniaProperty.Register<CommandBarButton, bool>(nameof(IsCompact));
 
         /// <summary>
         /// Defines the <see cref="DynamicOverflowOrder"/> property.
         /// </summary>
         public static readonly StyledProperty<int> DynamicOverflowOrderProperty =
-            AvaloniaProperty.Register<AppBarButton, int>(nameof(DynamicOverflowOrder));
+            AvaloniaProperty.Register<CommandBarButton, int>(nameof(DynamicOverflowOrder));
 
         /// <summary>
         /// Defines the <see cref="LabelPosition"/> property.
         /// </summary>
         public static readonly StyledProperty<CommandBarDefaultLabelPosition> LabelPositionProperty =
-            AvaloniaProperty.Register<AppBarButton, CommandBarDefaultLabelPosition>(nameof(LabelPosition), CommandBarDefaultLabelPosition.Bottom);
+            AvaloniaProperty.Register<CommandBarButton, CommandBarDefaultLabelPosition>(nameof(LabelPosition), CommandBarDefaultLabelPosition.Bottom);
 
         /// <summary>
         /// Defines the <see cref="IsInOverflow"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsInOverflowProperty =
-            AvaloniaProperty.Register<AppBarButton, bool>(nameof(IsInOverflow));
+            AvaloniaProperty.Register<CommandBarButton, bool>(nameof(IsInOverflow));
 
         /// <summary>
         /// Gets or sets the text label for the button.

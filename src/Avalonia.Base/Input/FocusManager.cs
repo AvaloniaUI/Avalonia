@@ -75,30 +75,44 @@ namespace Avalonia.Input
 
             if (element is not null)
             {
-                if (!CanFocus(element))
-                    return false;
+                return FocusCore(keyboardDevice, element, method, keyModifiers);
+            }
 
-                if (GetFocusScope(element) is StyledElement scope)
+            if (_focusRoot?.GetValue(FocusedElementProperty) is { } restore && restore != Current)
+            {
+                return FocusCore(keyboardDevice, restore, method, keyModifiers);
+            }
+
+            _focusRoot = null;
+            keyboardDevice.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None, false);
+            return false;
+        }
+
+        private bool FocusCore(
+            KeyboardDevice keyboardDevice,
+            IInputElement element,
+            NavigationMethod method,
+            KeyModifiers keyModifiers)
+        {
+            if (!CanFocus(element))
+                return false;
+
+            keyboardDevice.SetFocusedElement(element, method, keyModifiers);
+
+            if (keyboardDevice.FocusedElement is { } effectivelyFocusedElement)
+            {
+                if (GetFocusScope(effectivelyFocusedElement) is { } scope)
                 {
-                    scope.SetValue(FocusedElementProperty, element);
+                    scope.SetValue(FocusedElementProperty, effectivelyFocusedElement);
                     _focusRoot = GetFocusRoot(scope);
                 }
 
-                keyboardDevice.SetFocusedElement(element, method, keyModifiers);
-                return true;
+                return effectivelyFocusedElement == element;
             }
-            else if (_focusRoot?.GetValue(FocusedElementProperty) is { } restore &&
-                restore != Current &&
-                Focus(restore))
-            {
-                return true;
-            }
-            else
-            {
-                _focusRoot = null;
-                keyboardDevice.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None, false);
-                return false;
-            }
+
+            _focusRoot = null;
+            keyboardDevice.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None, false);
+            return false;
         }
 
         internal void ClearFocusOnElementRemoved(IInputElement removedElement, Visual oldParent)
@@ -111,7 +125,7 @@ namespace Avalonia.Input
                 scope.ClearValue(FocusedElementProperty);
             }
 
-            if (Current == removedElement) 
+            if (Current == removedElement)
                 Focus(null);
         }
 
@@ -158,7 +172,7 @@ namespace Avalonia.Input
         /// </summary>
         internal static FocusManager? GetFocusManager(IInputElement? element)
         {
-            
+
             // Element might not be a visual, and not attached to the root.
             // But IFocusManager is always expected to be a FocusManager. 
             return (FocusManager?)(element as Visual)?.GetInputRoot()?.FocusManager
@@ -188,8 +202,12 @@ namespace Avalonia.Input
         {
             if (CanFocus(e))
             {
-                if (ev.Pointer.Type == PointerType.Mouse || ev is PointerReleasedEventArgs)
-                    return true;
+                return ev switch
+                {
+                    PointerReleasedEventArgs releasedEventArgs when releasedEventArgs.Pointer.Type != PointerType.Mouse => true,
+                    PointerPressedEventArgs pressedEventArgs when pressedEventArgs.Pointer.Type == PointerType.Mouse => true,
+                    _ => false,
+                };
             }
 
             return false;
@@ -229,7 +247,7 @@ namespace Avalonia.Input
             var root = v.PresentationSource?.InputRoot.FocusRoot as Visual;
 
             while (root is IHostedVisualTreeRoot hosted &&
-                hosted.Host?.PresentationSource?.InputRoot.FocusRoot is {} parentRoot)
+                hosted.Host?.PresentationSource?.InputRoot.FocusRoot is { } parentRoot)
             {
                 root = parentRoot;
             }

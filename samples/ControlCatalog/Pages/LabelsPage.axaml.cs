@@ -3,7 +3,7 @@ using ControlCatalog.Models;
 
 namespace ControlCatalog.Pages
 {
-    public partial class LabelsPage : UserControl
+    public partial class LabelsPage : ContentPage
     {
         private Person? _person;
 
