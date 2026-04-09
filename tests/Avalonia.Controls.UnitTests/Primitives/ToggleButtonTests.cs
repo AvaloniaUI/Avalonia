@@ -1,4 +1,6 @@
-﻿using Avalonia.Data;
+﻿using Avalonia.Controls.UnitTests.Utils;
+using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -103,6 +105,46 @@ namespace Avalonia.Controls.Primitives.UnitTests
             threeStateButton.Toggle();
             Assert.Equal(3, changeCount);
             Assert.False(threeStateButton.IsChecked);
+        }
+
+        [Fact]
+        public void ToggleButton_With_NonExecutable_Command_Does_Not_Toggle_On_Click()
+        {
+            var target = new ToggleButton
+            {
+                Command = new TestCommand(false),
+            };
+            var root = new TestRoot
+            {
+                Child = target,
+            };
+
+            Assert.False(target.IsChecked);
+            Assert.False(target.IsEffectivelyEnabled);
+
+            (target as IClickableControl).RaiseClick();
+
+            Assert.False(target.IsChecked);
+        }
+
+        [Fact]
+        public void ToggleButton_With_Executable_Command_Toggles_On_Click()
+        {
+            var target = new ToggleButton
+            {
+                Command = new TestCommand(true),
+            };
+            var root = new TestRoot
+            {
+                Child = target,
+            };
+
+            Assert.False(target.IsChecked);
+            Assert.True(target.IsEffectivelyEnabled);
+
+            (target as IClickableControl).RaiseClick();
+
+            Assert.True(target.IsChecked);
         }
 
         private class Class1 : NotifyingBase
