@@ -143,7 +143,7 @@ internal partial class SkiaMetalGpu : ISkiaGpu
         private SKSurface? _surface;
         private IMetalPlatformSurfaceRenderingSession? _session;
         private GRBackendRenderTarget? _backendTarget;
-        private readonly IDisposable _autoreleasePool;
+        private readonly IDisposable _autoReleasePool;
 
         public SkiaMetalRenderSession(SkiaMetalGpu gpu,
             SKSurface surface,
@@ -151,7 +151,7 @@ internal partial class SkiaMetalGpu : ISkiaGpu
             GRBackendRenderTarget backendTarget)
         {
             var poolHandle = objc_autoreleasePoolPush();
-            _autoreleasePool = Disposable.Create(poolHandle, static h => objc_autoreleasePoolPop(h));
+            _autoReleasePool = Disposable.Create(poolHandle, static h => objc_autoreleasePoolPop(h));
             _gpu = gpu;
             _surface = surface;
             _session = session;
@@ -171,7 +171,7 @@ internal partial class SkiaMetalGpu : ISkiaGpu
             _backendTarget?.Dispose();
             _backendTarget = null;
 
-            _autoreleasePool.Dispose();
+            _autoReleasePool.Dispose();
         }
 
         public GRContext GrContext => _gpu._context!;
