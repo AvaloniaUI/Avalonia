@@ -82,14 +82,14 @@ public:
             if(ppv == nullptr)
                 return E_POINTER;
 
-            NSError* error;
+            NSError* error = nil;
             auto fileUri = [NSURL URLWithString: GetNSStringAndRelease(fileUriStr)];
             auto bookmarkData = [fileUri bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
             if (bookmarkData)
             {
                 *ppv = CreateByteArray((void*)bookmarkData.bytes, (int)bookmarkData.length);
             }
-            if (error != nil)
+            else if (error != nil)
             {
                 *err = CreateAvnString([error localizedDescription]);
             }
