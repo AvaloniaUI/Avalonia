@@ -105,15 +105,33 @@ internal partial class SkiaMetalGpu : ISkiaGpu
         public ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             // TODO: use expectedPixelSize
-            var session = (_target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget))).BeginRendering();
-            var backendTarget = new GRBackendRenderTarget(session.Size.Width, session.Size.Height,
-                new GRMtlTextureInfo(session.Texture));
+            IMetalPlatformSurfaceRenderingSession? session = null;
+            GRBackendRenderTarget? backendTarget = null;
+            SKSurface? surface = null;
+            var success = false;
+            try
+            {
+                session = (_target ?? throw new ObjectDisposedException(nameof(SkiaMetalRenderTarget))).BeginRendering();
+                backendTarget = new GRBackendRenderTarget(session.Size.Width, session.Size.Height,
+                    new GRMtlTextureInfo(session.Texture));
 
-            var surface = SKSurface.Create(_gpu._context!, backendTarget,
-                session.IsYFlipped ? GRSurfaceOrigin.BottomLeft : GRSurfaceOrigin.TopLeft,
-                SKColorType.Bgra8888);
+                surface = SKSurface.Create(_gpu._context!, backendTarget,
+                    session.IsYFlipped ? GRSurfaceOrigin.BottomLeft : GRSurfaceOrigin.TopLeft,
+                    SKColorType.Bgra8888);
 
-            return new SkiaMetalRenderSession(_gpu, surface, session, backendTarget);
+                var result = new SkiaMetalRenderSession(_gpu, surface, session, backendTarget);
+                success = true;
+                return result;
+            }
+            finally
+            {
+                if (!success)
+                {
+                    surface?.Dispose();
+                    backendTarget?.Dispose();
+                    session?.Dispose();
+                }
+            }
         }
 
         public PlatformRenderTargetState State => _target?.State ?? PlatformRenderTargetState.Disposed;
