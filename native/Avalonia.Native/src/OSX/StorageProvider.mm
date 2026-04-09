@@ -398,7 +398,7 @@ public:
         }
         
         auto filePathUri = [fileUri filePathURL];
-        if (fileUri == nil)
+        if (filePathUri == nil)
         {
             *ret = nullptr;
             return S_OK;
