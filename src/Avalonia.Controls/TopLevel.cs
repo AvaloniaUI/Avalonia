@@ -233,7 +233,7 @@ namespace Avalonia.Controls
 
             impl.Closed = HandleClosed;
             impl.Paint = HandlePaint;
-            impl.Resized = HandleResized;
+            impl.Resized += HandleResized;
             impl.ScalingChanged += HandleScalingChanged;
             impl.TransparencyLevelChanged = HandleTransparencyLevelChanged;
 

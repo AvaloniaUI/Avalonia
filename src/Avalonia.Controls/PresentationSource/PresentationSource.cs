@@ -36,6 +36,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
         RenderScaling = LayoutHelper.ValidateScaling(platformImpl.RenderScaling);
         PlatformImpl.ScalingChanged += HandleScalingChanged;
+        PlatformImpl.Resized += HandleResized;
         
         _pointerOverPreProcessor = new PointerOverPreProcessor(this);
         _pointerOverPreProcessorSubscription = _inputManager?.PreProcess.Subscribe(_pointerOverPreProcessor);
@@ -85,6 +86,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
         Renderer.Dispose();
 
         PlatformImpl?.ScalingChanged -= HandleScalingChanged;
+        PlatformImpl?.Resized -= HandleResized;
         PlatformImpl = null;
         _pointerOverPreProcessor?.OnCompleted();
         _pointerOverPreProcessorSubscription?.Dispose();
