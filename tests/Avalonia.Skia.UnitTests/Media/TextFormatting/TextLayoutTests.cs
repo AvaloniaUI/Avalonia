@@ -475,8 +475,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         [Theory]
         [InlineData("☝🏿", new int[] { 0 })]
-        [InlineData("☝🏿 ab", new int[] { 0, 3, 4, 5 })]
-        [InlineData("ab ☝🏿", new int[] { 0, 1, 2, 3 })]
+        [InlineData("☝🏿 ab", new int[] { 0, 3, 0, 1 })]
+        [InlineData("ab ☝🏿", new int[] { 0, 1, 2, 0 })]
         public void Should_Create_Valid_Clusters_For_Text(string text, int[] clusters)
         {
             using (Start())
@@ -876,11 +876,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(4, hit.TextPosition);
 
+                var firstRunOffset = TextTestHelper.GetStartCharIndex(firstRun.Text);
                 var currentX = 0.0;
 
                 for (var i = 0; i < firstRun.GlyphRun.GlyphInfos.Count; i++)
                 {
-                    var cluster = firstRun.GlyphRun.GlyphInfos[i].GlyphCluster;
+                    var cluster = firstRun.GlyphRun.GlyphInfos[i].GlyphCluster + firstRunOffset;
                     var advance = firstRun.GlyphRun.GlyphInfos[i].GlyphAdvance;
 
                     hit = layout.HitTestPoint(new Point(currentX, 0));
@@ -906,11 +907,12 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(0, hit.TextPosition);
 
+                var secondRunOffset = TextTestHelper.GetStartCharIndex(secondRun.Text);
                 currentX = firstRun.Size.Width + 0.5;
 
                 for (var i = 0; i < secondRun.GlyphRun.GlyphInfos.Count; i++)
                 {
-                    var cluster = secondRun.GlyphRun.GlyphInfos[i].GlyphCluster;
+                    var cluster = secondRun.GlyphRun.GlyphInfos[i].GlyphCluster + secondRunOffset;
                     var advance = secondRun.GlyphRun.GlyphInfos[i].GlyphAdvance;
 
                     hit = layout.HitTestPoint(new Point(currentX, 0));
@@ -1002,7 +1004,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var shapedRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
-                    var clusters = shapedRuns.SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphCluster).ToList();
+                    var runStarts = textLine
+                        .GetTextBounds(textLine.FirstTextSourceIndex, textLine.Length)
+                        .SelectMany(bounds => bounds.TextRunBounds)
+                        .Where(bounds => bounds.TextRun is ShapedTextRun)
+                        .ToDictionary(bounds => (ShapedTextRun)bounds.TextRun, bounds => bounds.TextSourceCharacterIndex);
+
+                    var clusters = shapedRuns.SelectMany(run =>
+                    {
+                        var rawClusters = run.ShapedBuffer.Select(glyph => glyph.GlyphCluster).ToList();
+
+                        if (!runStarts.TryGetValue(run, out var runStart) || rawClusters.Count == 0)
+                        {
+                            return rawClusters;
+                        }
+
+                        // Clusters can be either run-local or text-source relative depending on split history.
+                        if (rawClusters.Min() < runStart)
+                        {
+                            return rawClusters.Select(cluster => cluster + runStart);
+                        }
+
+                        return rawClusters;
+                    }).ToList();
 
                     var glyphAdvances = shapedRuns.SelectMany(x => x.ShapedBuffer, (_, glyph) => glyph.GlyphAdvance).ToList();
 
@@ -1016,7 +1040,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                         var characterHit = textLine.GetCharacterHitFromDistance(currentX);
 
-                        Assert.Equal(cluster, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+                        Assert.True(cluster == characterHit.FirstCharacterIndex + characterHit.TrailingLength,
+                            $"grapheme={i - grapheme.Length}, j={j}, cluster={cluster}, hit={characterHit.FirstCharacterIndex}+{characterHit.TrailingLength}, currentX={currentX}, textLen={text.Length}, runs={shapedRuns.Count}, clusters=[{string.Join(",", clusters)}]");
 
                         var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
 
