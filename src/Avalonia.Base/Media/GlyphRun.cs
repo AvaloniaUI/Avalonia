@@ -126,12 +126,10 @@ namespace Avalonia.Media
                 return array.AsSpan();
             }
 
-#if NET6_0_OR_GREATER
             if (list is List<ushort> concreteList)
             {
                 return CollectionsMarshal.AsSpan(concreteList);
             }
-#endif
 
             array = new ushort[count];
             for (var i = 0; i < count; ++i)

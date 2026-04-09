@@ -59,7 +59,9 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number,
             });
-            if (pr.head.repo.full_name !== `${context.repo.owner}/${context.repo.repo}`) {
+            const isFork = pr.head.repo.full_name !== `${context.repo.owner}/${context.repo.repo}`;
+            const isTrustedOverride = context.payload.comment.body.includes('/trusted');
+            if (isFork && !isTrustedOverride) {
               core.setFailed('Cannot run /update-api on fork PRs — would execute untrusted code with write permissions.');
               return;
             }
@@ -71,6 +73,7 @@ jobs:
         with:
           ref: ${{ steps.pr.outputs.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          submodules: recursive
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4

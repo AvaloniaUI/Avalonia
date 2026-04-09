@@ -172,6 +172,7 @@ public:
     {
         @autoreleasepool
         {
+            ComPtr<IAvnSystemDialogEvents> ownedEvents(events); // for use in the callback
             auto panel = [NSOpenPanel openPanel];
             
             panel.allowsMultipleSelection = allowMultiple;
@@ -201,7 +202,7 @@ public:
                     if(urls.count > 0)
                     {
                         auto uriStrings = CreateAvnStringArray(urls);
-                        events->OnCompleted(uriStrings);
+                        ownedEvents->OnCompleted(uriStrings);
     
                         [panel orderOut:panel];
                         
@@ -214,7 +215,7 @@ public:
                     }
                 }
                 
-                events->OnCompleted(nullptr);
+                ownedEvents->OnCompleted(nullptr);
                 
             };
             
@@ -239,6 +240,7 @@ public:
     {
         @autoreleasepool
         {
+            ComPtr<IAvnSystemDialogEvents> ownedEvents(events); // for use in the callback
             auto panel = [NSOpenPanel openPanel];
             
             panel.allowsMultipleSelection = allowMultiple;
@@ -273,7 +275,7 @@ public:
                     if(urls.count > 0)
                     {
                         auto uriStrings = CreateAvnStringArray(urls);
-                        events->OnCompleted(uriStrings);
+                        ownedEvents->OnCompleted(uriStrings);
 
                         [panel orderOut:panel];
                         
@@ -286,7 +288,7 @@ public:
                     }
                 }
                 
-                events->OnCompleted(nullptr);
+                ownedEvents->OnCompleted(nullptr);
                 
             };
             
@@ -310,6 +312,7 @@ public:
     {
         @autoreleasepool
         {
+            ComPtr<IAvnSystemDialogEvents> ownedEvents(events); // for use in the callback
             auto panel = [NSSavePanel savePanel];
             
             if(title != nullptr)
@@ -350,7 +353,7 @@ public:
                     auto url = [panel URL];
                     auto urls = [NSArray<NSURL*> arrayWithObject:url];
                     auto uriStrings = CreateAvnStringArray(urls);
-                    events->OnCompletedWithFilter(uriStrings, selectedIndex);
+                    ownedEvents->OnCompletedWithFilter(uriStrings, selectedIndex);
 
                     [panel orderOut:panel];
                     
@@ -362,7 +365,7 @@ public:
                     return;
                 }
                 
-                events->OnCompletedWithFilter(nullptr, selectedIndex);
+                ownedEvents->OnCompletedWithFilter(nullptr, selectedIndex);
                 
             };
             

@@ -11,7 +11,7 @@ using ControlCatalog.Models;
 
 namespace ControlCatalog.Pages
 {
-    public partial class AutoCompleteBoxPage : UserControl
+    public partial class AutoCompleteBoxPage : ContentPage
     {
         private static StateData[] BuildAllStates()
         {

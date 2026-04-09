@@ -7,6 +7,7 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageModalPage : UserControl
     {
+        private bool _initialized;
         private int _modalCount;
 
         public NavigationPageModalPage()
@@ -17,6 +18,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
             await DemoNav.PushAsync(NavigationDemoHelper.MakePage("Home", "Use Push Modal to show a modal on top.", 0), null);
         }
 

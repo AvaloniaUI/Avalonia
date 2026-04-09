@@ -7,6 +7,7 @@ namespace ControlCatalog.Pages
 {
     public partial class NavigationPageToolbarPage : UserControl
     {
+        private bool _initialized;
         private int _pageCount;
         private int _itemCount;
         private ContentPage? _rootPage;
@@ -20,6 +21,10 @@ namespace ControlCatalog.Pages
 
         private async void OnLoaded(object? sender, RoutedEventArgs e)
         {
+            if (_initialized)
+                return;
+
+            _initialized = true;
             _rootPage = NavigationDemoHelper.MakePage("CommandBar Demo",
                 "Use the panel to add CommandBar items.\nTop items appear inside the navigation bar.\nBottom items appear as a separate bar.", 0);
             ApplyPosition();
@@ -44,7 +49,7 @@ namespace ControlCatalog.Pages
         private void OnAddPrimary(object? sender, RoutedEventArgs e)
         {
             _itemCount++;
-            _rootCommandBar.PrimaryCommands.Add(new AppBarButton
+            _rootCommandBar.PrimaryCommands.Add(new CommandBarButton
             {
                 Label = $"Item {_itemCount}",
                 Icon = new PathIcon { Data = (Geometry)this.FindResource("AddIcon")! }
@@ -55,7 +60,7 @@ namespace ControlCatalog.Pages
         private void OnAddSecondary(object? sender, RoutedEventArgs e)
         {
             _itemCount++;
-            _rootCommandBar.SecondaryCommands.Add(new AppBarButton
+            _rootCommandBar.SecondaryCommands.Add(new CommandBarButton
             {
                 Label = $"Secondary {_itemCount}"
             });
@@ -64,13 +69,13 @@ namespace ControlCatalog.Pages
 
         private void OnAddPrimarySeparator(object? sender, RoutedEventArgs e)
         {
-            _rootCommandBar.PrimaryCommands.Add(new AppBarSeparator());
+            _rootCommandBar.PrimaryCommands.Add(new CommandBarSeparator());
             UpdateStatus();
         }
 
         private void OnAddSecondarySeparator(object? sender, RoutedEventArgs e)
         {
-            _rootCommandBar.SecondaryCommands.Add(new AppBarSeparator());
+            _rootCommandBar.SecondaryCommands.Add(new CommandBarSeparator());
             UpdateStatus();
         }
 
@@ -120,13 +125,13 @@ namespace ControlCatalog.Pages
             {
                 PrimaryCommands =
                 {
-                    new AppBarButton { Label = "Search", Icon = new PathIcon { Data = (Geometry)this.FindResource("SearchIcon")! } },
-                    new AppBarButton { Label = "Share",  Icon = new PathIcon { Data = (Geometry)this.FindResource("ShareIcon")! } },
-                    new AppBarButton { Label = "Edit",   Icon = new PathIcon { Data = (Geometry)this.FindResource("EditIcon")! } },
+                    new CommandBarButton { Label = "Search", Icon = new PathIcon { Data = (Geometry)this.FindResource("SearchIcon")! } },
+                    new CommandBarButton { Label = "Share",  Icon = new PathIcon { Data = (Geometry)this.FindResource("ShareIcon")! } },
+                    new CommandBarButton { Label = "Edit",   Icon = new PathIcon { Data = (Geometry)this.FindResource("EditIcon")! } },
                 },
                 SecondaryCommands =
                 {
-                    new AppBarButton { Label = "Delete", Icon = new PathIcon { Data = (Geometry)this.FindResource("DeleteIcon")! } }
+                    new CommandBarButton { Label = "Delete", Icon = new PathIcon { Data = (Geometry)this.FindResource("DeleteIcon")! } }
                 }
             };
     }

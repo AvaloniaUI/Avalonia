@@ -13,10 +13,6 @@ namespace Avalonia.Threading;
 /// <summary>
 /// Provides services for managing work items on a thread.
 /// </summary>
-/// <remarks>
-/// In Avalonia, there is usually only a single <see cref="Dispatcher"/> in the application -
-/// the one for the UI thread, retrieved via the <see cref="UIThread"/> property.
-/// </remarks>
 public partial class Dispatcher : IDispatcher
 {
     private IDispatcherImpl _impl;
@@ -52,6 +48,8 @@ public partial class Dispatcher : IDispatcher
                 s_currentThreadDispatcher = new() { Reference = new WeakReference<Dispatcher>(this) });
         }
 
+        IsSta = _thread.GetApartmentState() == ApartmentState.STA;
+
         if (impl is null)
         {
             var st = Stopwatch.StartNew();
@@ -69,6 +67,8 @@ public partial class Dispatcher : IDispatcher
     }
 
     public bool SupportsRunLoops => _controlledImpl != null;
+
+    internal bool IsSta { get; }
 
     /// <summary>
     /// Checks that the current thread is the UI thread.
