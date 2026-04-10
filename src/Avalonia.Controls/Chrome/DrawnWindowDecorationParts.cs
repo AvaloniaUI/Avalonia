@@ -35,7 +35,9 @@ internal enum DrawnWindowDecorationParts
     ResizeGrips = 8,
 
     /// <summary>
-    /// All decoration parts are active.
+    /// Fullscreen popover (hover-to-reveal titlebar) is supported.
+    /// Set when the window has a titlebar that should be accessible via
+    /// a popover overlay in fullscreen mode.
     /// </summary>
-    All = Shadow | Border | TitleBar | ResizeGrips
+    FullscreenPopover = 16
 }

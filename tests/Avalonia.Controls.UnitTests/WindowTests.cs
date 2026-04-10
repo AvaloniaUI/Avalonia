@@ -1590,6 +1590,85 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        public class FullscreenPopoverTests : ScopedTestBase
+        {
+            private static Mock<IWindowImpl> CreateManagedDecorationsWindowMock(
+                PlatformRequestedDrawnDecoration requestedParts =
+                    PlatformRequestedDrawnDecoration.TitleBar | PlatformRequestedDrawnDecoration.Border)
+            {
+                var windowImpl = MockWindowingPlatform.CreateWindowMock();
+
+                windowImpl.Setup(x => x.NeedsManagedDecorations).Returns(true);
+                windowImpl.Setup(x => x.RequestedDrawnDecorations).Returns(requestedParts);
+
+                var platformState = WindowState.Normal;
+                windowImpl.Setup(x => x.WindowStateGetterIsUsable).Returns(true);
+                windowImpl.Setup(x => x.WindowState).Returns(() => platformState);
+                windowImpl.SetupSet(x => x.WindowState = It.IsAny<WindowState>())
+                    .Callback<WindowState>(v =>
+                    {
+                        platformState = v;
+                        windowImpl.Object.WindowStateChanged?.Invoke(v);
+                    });
+
+                return windowImpl;
+            }
+
+            [Fact]
+            public void FullscreenPopover_Should_Not_Be_Enabled_For_BorderOnly_Decorations()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateManagedDecorationsWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        WindowDecorations = WindowDecorations.BorderOnly,
+                    };
+
+                    target.Show();
+                    target.WindowState = WindowState.FullScreen;
+
+                    Assert.False(target.TopLevelHost.IsFullscreenPopoverEnabled);
+                }
+            }
+
+            [Fact]
+            public void FullscreenPopover_Should_Be_Enabled_For_Full_Decorations()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateManagedDecorationsWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        WindowDecorations = WindowDecorations.Full,
+                    };
+
+                    target.Show();
+                    target.WindowState = WindowState.FullScreen;
+
+                    Assert.True(target.TopLevelHost.IsFullscreenPopoverEnabled);
+                }
+            }
+
+            [Fact]
+            public void FullscreenPopover_Should_Not_Be_Enabled_For_None_Decorations()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var windowImpl = CreateManagedDecorationsWindowMock();
+                    var target = new Window(windowImpl.Object)
+                    {
+                        WindowDecorations = WindowDecorations.None,
+                    };
+
+                    target.Show();
+                    target.WindowState = WindowState.FullScreen;
+
+                    Assert.False(target.TopLevelHost.IsFullscreenPopoverEnabled);
+                }
+            }
+        }
+
         private class TopmostWindow : Window
         {
             static TopmostWindow()

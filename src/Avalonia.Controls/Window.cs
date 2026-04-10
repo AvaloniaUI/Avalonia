@@ -753,7 +753,10 @@ namespace Avalonia.Controls
             {
                 if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.TitleBar) &&
                     WindowDecorations == WindowDecorations.Full)
+                {
                     parts |= Chrome.DrawnWindowDecorationParts.TitleBar;
+                    parts |= Chrome.DrawnWindowDecorationParts.FullscreenPopover;
+                }
                 if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Shadow))
                     parts |= Chrome.DrawnWindowDecorationParts.Shadow;
                 if (platformNeeds.HasFlag(PlatformRequestedDrawnDecoration.Border))

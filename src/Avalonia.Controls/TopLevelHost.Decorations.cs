@@ -111,7 +111,8 @@ internal partial class TopLevelHost
             InvalidateMeasure();
         }
 
-        ApplyFullscreenState(windowState == WindowState.FullScreen);
+        ApplyFullscreenState(windowState == WindowState.FullScreen,
+            enabledParts.HasFlag(DrawnWindowDecorationParts.FullscreenPopover));
     }
 
     /// <summary>
@@ -207,7 +208,7 @@ internal partial class TopLevelHost
     /// Applies fullscreen-specific layer visibility: hides overlay/underlay and enables
     /// popover hover detection, or restores normal state.
     /// </summary>
-    private void ApplyFullscreenState(bool isFullscreen)
+    private void ApplyFullscreenState(bool isFullscreen, bool enablePopover)
     {
         if (_fullscreenPopover == null)
             return;
@@ -221,7 +222,7 @@ internal partial class TopLevelHost
                 _underlay.IsVisible = false;
             // Popover starts hidden, will show on hover at top edge
             _fullscreenPopover.IsVisible = false;
-            _fullscreenPopoverEnabled = true;
+            _fullscreenPopoverEnabled = enablePopover;
         }
         else
         {
@@ -237,6 +238,11 @@ internal partial class TopLevelHost
     }
 
     private bool _fullscreenPopoverEnabled;
+
+    /// <summary>
+    /// Gets whether the fullscreen popover hover mechanism is currently active.
+    /// </summary>
+    internal bool IsFullscreenPopoverEnabled => _fullscreenPopoverEnabled;
     private const double PopoverTriggerZoneHeight = 1;
 
     protected override void OnPointerMoved(PointerEventArgs e)
