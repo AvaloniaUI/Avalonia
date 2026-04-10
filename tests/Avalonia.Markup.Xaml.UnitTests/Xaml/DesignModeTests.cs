@@ -190,4 +190,23 @@ public class DesignModeTests : XamlTestBase
                 designMode: true);
         Assert.Equal(Design.GetDataContext(loaded), SomeStaticProperty);
     }
+
+    // https://github.com/AvaloniaUI/Avalonia/issues/21146
+    [Fact]
+    public void Can_Use_Controls_Directly_Within_DesignMode_Preview()
+    {
+        using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+        {
+            var obj = (UserControl)AvaloniaRuntimeXamlLoader.Load(@"
+<UserControl xmlns='https://github.com/avaloniaui'>
+    <Design.PreviewWith>
+	<StackPanel>
+        <TextBlock>testing</TextBlock>
+	</StackPanel>
+    </Design.PreviewWith>
+</UserControl>", designMode: true);
+            var preview = Design.CreatePreviewWithControl(obj);
+            Assert.IsType<StackPanel>(preview);
+        }
+    }
 }
