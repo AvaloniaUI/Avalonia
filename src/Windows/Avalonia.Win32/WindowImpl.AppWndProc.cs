@@ -850,15 +850,22 @@ namespace Avalonia.Win32
                         if (!style.HasAllFlags(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME) &&
                             style.HasAllFlags(WindowStyles.WS_MAXIMIZE) &&
                             !_isFullScreenActive &&
-                            !flags.HasAllFlags(SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE) &&
-                            Screen.ScreenFromRect(new PixelRect(pos->x, pos->y, pos->cx, pos->cy)) is { } screen)
+                            !flags.HasAllFlags(SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE))
                         {
-                            var maximizedRect = GetCaptionlessMaximizedRect(style, screen.WorkingArea);
-                            pos->x = maximizedRect.X;
-                            pos->y = maximizedRect.Y;
-                            pos->cx = maximizedRect.Width;
-                            pos->cy = maximizedRect.Height;
-                            return IntPtr.Zero;
+                            // Prefer ScreenFromRect as it contains the new position.
+                            // If the window was minimized, ScreenFromHwnd won't return the correct monitor at this point.
+                            var screen = Screen.ScreenFromRect(new PixelRect(pos->x, pos->y, pos->cx, pos->cy))
+                                ?? Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
+
+                            if (screen is not null)
+                            {
+                                var maximizedRect = GetCaptionlessMaximizedRect(style, screen.WorkingArea);
+                                pos->x = maximizedRect.X;
+                                pos->y = maximizedRect.Y;
+                                pos->cx = maximizedRect.Width;
+                                pos->cy = maximizedRect.Height;
+                                return IntPtr.Zero;
+                            }
                         }
                         break;
                     }
