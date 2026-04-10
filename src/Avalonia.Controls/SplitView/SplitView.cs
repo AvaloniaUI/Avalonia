@@ -1,14 +1,19 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -33,6 +38,17 @@ namespace Avalonia.Controls
         private const string pcTop = ":top";
         private const string pcBottom = ":bottom";
         private const string pcLightDismiss = ":lightDismiss";
+        #region Swipe gesture constants
+
+        private const double SwipeEdgeZoneFraction = 1.0 / 3.0;
+        private const double SwipeDirectionLockThreshold = 10;
+        private const double SwipeVelocityThreshold = 800;
+        private const double SwipeOpenPositionThreshold = 0.4;
+        private const double SwipeClosePositionThreshold = 0.6;
+        private const int SwipeSnapDurationMs = 200;
+        private const int SwipeVelocitySampleCount = 5;
+
+        #endregion
 
         /// <summary>
         /// Defines the <see cref="CompactPaneLength"/> property
@@ -98,6 +114,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<SplitView, bool>(nameof(UseLightDismissOverlayMode));
 
         /// <summary>
+        /// Defines the <see cref="IsSwipeToOpenEnabled"/> property
+        /// </summary>
+        public static readonly StyledProperty<bool> IsSwipeToOpenEnabledProperty =
+            AvaloniaProperty.Register<SplitView, bool>(nameof(IsSwipeToOpenEnabled), defaultValue: false);
+
+        /// <summary>
         /// Defines the <see cref="TemplateSettings"/> property
         /// </summary>
         public static readonly DirectProperty<SplitView, SplitViewTemplateSettings> TemplateSettingsProperty =
@@ -142,8 +164,21 @@ namespace Avalonia.Controls
         private string? _lastDisplayModePseudoclass;
         private string? _lastPlacementPseudoclass;
 
+        #region Swipe gesture state
+
+        private bool _isSwipeDragging;
+        private bool _isSwipeDirectionLocked;
+        private bool _isSwipeAnimating;
+        private bool _isSwipeToClose;
+        private Point _swipeStartPoint;
+        private double _swipeCurrentPaneSize;
+        private bool _swipeHandlersAttached;
+        private readonly List<(DateTime time, double position)> _swipeVelocitySamples = new();
+
+        #endregion
+
         /// <summary>
-        /// Gets or sets the length of the pane when in <see cref="SplitViewDisplayMode.CompactOverlay"/> 
+        /// Gets or sets the length of the pane when in <see cref="SplitViewDisplayMode.CompactOverlay"/>
         /// or <see cref="SplitViewDisplayMode.CompactInline"/> mode
         /// </summary>
         public double CompactPaneLength
@@ -229,6 +264,17 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets whether swipe-from-edge gesture is enabled for opening/closing the pane.
+        /// <para>When enabled, the user can swipe from the pane edge to open the pane,
+        /// and swipe the open pane back to close it. Supports both touch and mouse input.</para>
+        /// </summary>
+        public bool IsSwipeToOpenEnabled
+        {
+            get => GetValue(IsSwipeToOpenEnabledProperty);
+            set => SetValue(IsSwipeToOpenEnabledProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the TemplateSettings for the <see cref="SplitView"/>.
         /// </summary>
         public SplitViewTemplateSettings TemplateSettings
@@ -236,6 +282,11 @@ namespace Avalonia.Controls
             get => _templateSettings;
             private set => SetAndRaise(TemplateSettingsProperty, ref _templateSettings, value);
         }
+
+        /// <summary>
+        /// Gets whether a swipe gesture is currently in progress (dragging or snap-animating).
+        /// </summary>
+        public bool IsSwipeGestureActive => _isSwipeDirectionLocked || _isSwipeAnimating;
 
         /// <summary>
         /// Fired when the pane is closed.
@@ -310,6 +361,8 @@ namespace Avalonia.Controls
             // soon as we're attached so the template applies. The other visual states can
             // be updated after the template applies
             UpdateVisualStateForPanePlacementProperty(PanePlacement);
+
+            AttachSwipeHandlers();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -317,6 +370,8 @@ namespace Avalonia.Controls
             base.OnDetachedFromVisualTree(e);
             _pointerDisposable?.Dispose();
             _pointerDisposable = null;
+
+            DetachSwipeHandlers();
         }
 
         /// <inheritdoc/>
@@ -384,6 +439,9 @@ namespace Avalonia.Controls
 
         private void PointerReleasedOutside(object? sender, PointerReleasedEventArgs e)
         {
+            if (IsSwipeGestureActive)
+                return;
+
             if (!IsPaneOpen || _pane == null)
             {
                 return;
@@ -396,7 +454,7 @@ namespace Avalonia.Controls
                 // Make assumption that if Popup is in visual tree,
                 // owning control is within pane
                 // This works because if pane is triggered to close
-                // when clicked anywhere else in Window, the pane 
+                // when clicked anywhere else in Window, the pane
                 // would close before the popup is opened
                 if (src == _pane || src is PopupRoot)
                 {
@@ -547,7 +605,7 @@ namespace Avalonia.Controls
             };
             TemplateSettings.ClosedPaneHeight = closedPaneHeight;
             TemplateSettings.PaneRowGridLength = paneRowGridLength;
-            
+
             InvalidateLightDismissSubscription();
         }
 
@@ -631,5 +689,416 @@ namespace Avalonia.Controls
 
             return value;
         }
+
+        #region Swipe gesture handling
+
+        private bool IsHorizontalPlacement =>
+            PanePlacement == SplitViewPanePlacement.Left ||
+            PanePlacement == SplitViewPanePlacement.Right;
+
+        /// <summary>
+        /// Returns true when the "open" direction is positive in the drag axis.
+        /// For Left placement (LTR): rightward = positive X = true.
+        /// For Right placement (LTR): leftward = negative X = false.
+        /// RTL inverts horizontal placements.
+        /// For Top: downward = positive Y = true.
+        /// For Bottom: upward = negative Y = false.
+        /// </summary>
+        private bool IsOpenDirectionPositive
+        {
+            get
+            {
+                var placement = PanePlacement;
+                bool isRtl = FlowDirection == FlowDirection.RightToLeft;
+                return placement switch
+                {
+                    SplitViewPanePlacement.Left => !isRtl,
+                    SplitViewPanePlacement.Right => isRtl,
+                    SplitViewPanePlacement.Top => true,
+                    SplitViewPanePlacement.Bottom => false,
+                    _ => true
+                };
+            }
+        }
+
+        private void AttachSwipeHandlers()
+        {
+            if (_swipeHandlersAttached)
+                return;
+            _swipeHandlersAttached = true;
+
+            AddHandler(InputElement.PointerPressedEvent, OnSwipePointerPressed, RoutingStrategies.Tunnel);
+            AddHandler(InputElement.PointerMovedEvent, OnSwipePointerMoved, RoutingStrategies.Tunnel);
+            AddHandler(InputElement.PointerReleasedEvent, OnSwipePointerReleased, RoutingStrategies.Tunnel);
+            AddHandler(InputElement.PointerCaptureLostEvent, OnSwipePointerCaptureLost, RoutingStrategies.Tunnel);
+            SizeChanged += OnSwipeSizeChanged;
+        }
+
+        private void DetachSwipeHandlers()
+        {
+            if (!_swipeHandlersAttached)
+                return;
+            _swipeHandlersAttached = false;
+
+            RemoveHandler(InputElement.PointerPressedEvent, OnSwipePointerPressed);
+            RemoveHandler(InputElement.PointerMovedEvent, OnSwipePointerMoved);
+            RemoveHandler(InputElement.PointerReleasedEvent, OnSwipePointerReleased);
+            RemoveHandler(InputElement.PointerCaptureLostEvent, OnSwipePointerCaptureLost);
+            SizeChanged -= OnSwipeSizeChanged;
+        }
+
+        private bool IsInSwipeEdgeZone(Point point)
+        {
+            var placement = PanePlacement;
+            bool isRtl = FlowDirection == FlowDirection.RightToLeft;
+
+            if (IsHorizontalPlacement)
+            {
+                var width = Bounds.Width;
+                var edgeZone = width * SwipeEdgeZoneFraction;
+
+                bool paneOnLeft = (placement == SplitViewPanePlacement.Left && !isRtl) ||
+                                  (placement == SplitViewPanePlacement.Right && isRtl);
+                return paneOnLeft ? point.X <= edgeZone : point.X >= width - edgeZone;
+            }
+            else
+            {
+                var height = Bounds.Height;
+                var edgeZone = height * SwipeEdgeZoneFraction;
+
+                return placement == SplitViewPanePlacement.Top
+                    ? point.Y <= edgeZone
+                    : point.Y >= height - edgeZone;
+            }
+        }
+
+        /// <summary>
+        /// Gets the drag delta along the relevant axis, signed so that
+        /// positive = toward-open direction.
+        /// </summary>
+        private double GetSwipeDelta(Point current)
+        {
+            double raw;
+            if (IsHorizontalPlacement)
+                raw = current.X - _swipeStartPoint.X;
+            else
+                raw = current.Y - _swipeStartPoint.Y;
+
+            return IsOpenDirectionPositive ? raw : -raw;
+        }
+
+        /// <summary>
+        /// Gets the position along the drag axis for velocity tracking.
+        /// </summary>
+        private double GetSwipeAxisPosition(Point point) =>
+            IsHorizontalPlacement ? point.X : point.Y;
+
+        private void SetSwipePaneSize(double size)
+        {
+            if (_pane == null) return;
+            _swipeCurrentPaneSize = size;
+
+            if (IsHorizontalPlacement)
+                _pane.Width = size;
+            else
+                _pane.Height = size;
+        }
+
+        private void ClearSwipePaneSizeOverride()
+        {
+            if (_pane == null) return;
+
+            if (IsHorizontalPlacement)
+                _pane.ClearValue(Layoutable.WidthProperty);
+            else
+                _pane.ClearValue(Layoutable.HeightProperty);
+        }
+
+        private void SuppressPaneTransitions()
+        {
+            if (_pane == null) return;
+            _pane.SetValue(Animatable.TransitionsProperty, new Transitions());
+        }
+
+        private void RestorePaneTransitions()
+        {
+            _pane?.ClearValue(Animatable.TransitionsProperty);
+        }
+
+        private void OnSwipePointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (!IsSwipeToOpenEnabled || _isSwipeDragging || _isSwipeAnimating || _pane == null)
+                return;
+
+            var pointerType = e.Pointer.Type;
+            if (pointerType != PointerType.Touch && pointerType != PointerType.Mouse)
+                return;
+
+            var point = e.GetPosition(this);
+
+            if (IsPaneOpen)
+            {
+                _isSwipeToClose = true;
+            }
+            else
+            {
+                if (!IsInSwipeEdgeZone(point))
+                    return;
+                _isSwipeToClose = false;
+            }
+
+            _swipeStartPoint = point;
+            _isSwipeDragging = true;
+            _isSwipeDirectionLocked = false;
+            _swipeVelocitySamples.Clear();
+            SwipeRecordVelocitySample(GetSwipeAxisPosition(point));
+        }
+
+        private void OnSwipePointerMoved(object? sender, PointerEventArgs e)
+        {
+            if (!_isSwipeDragging || _pane == null)
+                return;
+
+            var point = e.GetPosition(this);
+            var delta = GetSwipeDelta(point);
+
+            if (!_isSwipeDirectionLocked)
+            {
+                double absPrimary, absSecondary;
+                if (IsHorizontalPlacement)
+                {
+                    absPrimary = Math.Abs(point.X - _swipeStartPoint.X);
+                    absSecondary = Math.Abs(point.Y - _swipeStartPoint.Y);
+                }
+                else
+                {
+                    absPrimary = Math.Abs(point.Y - _swipeStartPoint.Y);
+                    absSecondary = Math.Abs(point.X - _swipeStartPoint.X);
+                }
+
+                if (absPrimary < SwipeDirectionLockThreshold &&
+                    absSecondary < SwipeDirectionLockThreshold)
+                    return;
+
+                // Must be more along the primary axis than the secondary
+                if (absSecondary > absPrimary)
+                {
+                    SwipeCancelDrag(e.Pointer);
+                    return;
+                }
+
+                // For open: delta must be positive (toward open)
+                if (!_isSwipeToClose && delta <= 0)
+                {
+                    SwipeCancelDrag(e.Pointer);
+                    return;
+                }
+
+                // For close: delta must be negative (toward close)
+                if (_isSwipeToClose && delta >= 0)
+                {
+                    SwipeCancelDrag(e.Pointer);
+                    return;
+                }
+
+                _isSwipeDirectionLocked = true;
+                e.Pointer.Capture(this);
+
+                // Suppress XAML theme transitions during drag
+                SuppressPaneTransitions();
+
+
+                // For swipe-to-open: start with pane at 0 size
+                if (!_isSwipeToClose)
+                {
+                    SetSwipePaneSize(0);
+                }
+            }
+
+            SwipeRecordVelocitySample(GetSwipeAxisPosition(point));
+
+            var target = OpenPaneLength;
+            if (target <= 0) return;
+
+            if (_isSwipeToClose)
+            {
+                var absDelta = Math.Abs(delta);
+                _swipeCurrentPaneSize = Math.Max(0, Math.Min(target, target - absDelta));
+            }
+            else
+            {
+                _swipeCurrentPaneSize = Math.Max(0, Math.Min(target, delta));
+            }
+
+            SetSwipePaneSize(_swipeCurrentPaneSize);
+            e.Handled = true;
+        }
+
+        private void OnSwipePointerReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            if (!_isSwipeDragging)
+                return;
+
+            var point = e.GetPosition(this);
+            SwipeRecordVelocitySample(GetSwipeAxisPosition(point));
+
+            if (!_isSwipeDirectionLocked)
+            {
+                // No gesture occurred — don't release capture (would steal button's capture)
+                _isSwipeDragging = false;
+                return;
+            }
+
+            // Clear _isSwipeDragging BEFORE releasing capture so that the synchronous
+            // OnSwipePointerCaptureLost handler is a no-op (it also checks _isSwipeDragging).
+            _isSwipeDragging = false;
+            e.Pointer.Capture(null);
+
+            var target = OpenPaneLength;
+            var velocity = SwipeCalculateVelocity();
+
+            bool shouldOpen;
+            if (_isSwipeToClose)
+            {
+                // Velocity is in raw axis units; convert to open-direction sign
+                double openDirVelocity = IsOpenDirectionPositive ? -velocity : velocity;
+                shouldOpen = !(openDirVelocity > SwipeVelocityThreshold ||
+                               _swipeCurrentPaneSize < target * SwipeClosePositionThreshold);
+            }
+            else
+            {
+                double openDirVelocity = IsOpenDirectionPositive ? velocity : -velocity;
+                shouldOpen = openDirVelocity > SwipeVelocityThreshold ||
+                             _swipeCurrentPaneSize > target * SwipeOpenPositionThreshold;
+            }
+
+            SwipeAnimateToState(shouldOpen, target);
+        }
+
+        private void OnSwipePointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
+        {
+            if (!_isSwipeDragging)
+                return;
+
+            if (_isSwipeDirectionLocked)
+            {
+                var wasOpen = _isSwipeToClose;
+                _isSwipeDragging = false;
+                SwipeAnimateToState(wasOpen, OpenPaneLength);
+            }
+            else
+            {
+                _isSwipeDragging = false;
+            }
+        }
+
+        private void OnSwipeSizeChanged(object? sender, SizeChangedEventArgs e)
+        {
+            if (!_isSwipeDragging && !_isSwipeDirectionLocked)
+                return;
+
+            // Cancel gesture on resize
+            var wasOpen = _isSwipeToClose;
+            _isSwipeDragging = false;
+            _isSwipeDirectionLocked = false;
+            _isSwipeAnimating = false;
+
+            ClearSwipePaneSizeOverride();
+            RestorePaneTransitions();
+            SetCurrentValue(IsPaneOpenProperty, wasOpen);
+        }
+
+        private void SwipeCancelDrag(IPointer pointer)
+        {
+            _isSwipeDragging = false;
+            _isSwipeDirectionLocked = false;
+            pointer.Capture(null);
+        }
+
+        private void SwipeRecordVelocitySample(double position)
+        {
+            _swipeVelocitySamples.Add((DateTime.UtcNow, position));
+            while (_swipeVelocitySamples.Count > SwipeVelocitySampleCount)
+                _swipeVelocitySamples.RemoveAt(0);
+        }
+
+        private double SwipeCalculateVelocity()
+        {
+            if (_swipeVelocitySamples.Count < 2) return 0;
+
+            var first = _swipeVelocitySamples[0];
+            var last = _swipeVelocitySamples[_swipeVelocitySamples.Count - 1];
+            var dt = (last.time - first.time).TotalSeconds;
+            if (dt <= 0) return 0;
+
+            return (last.position - first.position) / dt;
+        }
+
+        private void SwipeAnimateToState(bool open, double targetWidth)
+        {
+            var from = _swipeCurrentPaneSize;
+            var to = open ? targetWidth : 0;
+
+            if (Math.Abs(from - to) < 1)
+            {
+                SwipeFinalizeState(open, targetWidth);
+                return;
+            }
+
+            _isSwipeAnimating = true;
+            var easing = new CubicEaseOut();
+            var startTime = DateTime.UtcNow;
+            var duration = TimeSpan.FromMilliseconds(SwipeSnapDurationMs);
+
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+            timer.Tick += (_, _) =>
+            {
+                var elapsed = DateTime.UtcNow - startTime;
+                var progress = Math.Min(1.0, elapsed.TotalMilliseconds / duration.TotalMilliseconds);
+                var easedProgress = easing.Ease(progress);
+                var current = from + (to - from) * easedProgress;
+
+                SetSwipePaneSize(Math.Max(0, current));
+
+                if (progress >= 1.0)
+                {
+                    timer.Stop();
+                    SwipeFinalizeState(open, targetWidth);
+                    _isSwipeAnimating = false;
+                    _isSwipeDirectionLocked = false;
+                }
+            };
+            timer.Start();
+        }
+
+        private void SwipeFinalizeState(bool open, double targetWidth)
+        {
+            // Set the pane to the exact final size before committing state
+            SetSwipePaneSize(open ? targetWidth : 0);
+
+            // Commit the IsPaneOpen state — events fire, pseudo-classes update
+            SetCurrentValue(IsPaneOpenProperty, open);
+
+            // Clear the local Width/Height override so style takes over
+            ClearSwipePaneSizeOverride();
+
+            // Restore theme transitions and remove swiping pseudo-class
+            // Done on next dispatcher tick so IsSwipeGestureActive stays true
+            // through any PaneClosing events fired on this event cycle
+            if (!_isSwipeAnimating)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    RestorePaneTransitions();
+                    _isSwipeDirectionLocked = false;
+                }, DispatcherPriority.Input);
+            }
+            else
+            {
+                RestorePaneTransitions();
+            }
+        }
+
+        #endregion
     }
 }
