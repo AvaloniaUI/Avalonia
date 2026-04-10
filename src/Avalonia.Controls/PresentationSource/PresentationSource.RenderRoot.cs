@@ -14,9 +14,9 @@ internal partial class PresentationSource
     public IHitTester HitTester => HitTesterOverride ?? Renderer;
     //TODO: Can we PLEASE get rid of this abomination in tests and use actual hit-testing engine instead?
     public IHitTester? HitTesterOverride { get; set; }
-    
+
     public double RenderScaling { get; private set; } = 1.0;
-    public Size ClientSize => PlatformImpl?.ClientSize ?? default;
+    public Size ClientSize { get; private set; }
     
     public void SceneInvalidated(object? sender, SceneInvalidatedEventArgs sceneInvalidatedEventArgs)
     {
@@ -29,4 +29,6 @@ internal partial class PresentationSource
 
     private void HandleScalingChanged(double scaling)
         => RenderScaling = LayoutHelper.ValidateScaling(scaling);
+
+    private void HandleResized(Size size, WindowResizeReason reason) => ClientSize = size;
 }
