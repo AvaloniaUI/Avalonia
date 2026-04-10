@@ -8,8 +8,10 @@ namespace Avalonia.Media
     /// </summary>
     public class DrawingImage : AvaloniaObject, IImage, IAffectsRender
     {
-        public DrawingImage() 
-        { 
+        private Utilities.TargetWeakEventSubscriber<DrawingImage, EventArgs>? _drawingInvalidatedSubscriber;
+
+        public DrawingImage()
+        {
         }
 
         public DrawingImage(Drawing drawing)
@@ -98,7 +100,23 @@ namespace Avalonia.Media
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == DrawingProperty || change.Property == ViewboxProperty)
+            if (change.Property == DrawingProperty)
+            {
+                var (oldDrawing, newDrawing) = change.GetOldAndNewValue<Drawing?>();
+
+                if (oldDrawing is not null && _drawingInvalidatedSubscriber is not null)
+                    Drawing.InvalidatedWeakEvent.Unsubscribe((IAffectsRender)oldDrawing, _drawingInvalidatedSubscriber);
+
+                if (newDrawing is not null)
+                {
+                    _drawingInvalidatedSubscriber ??= new Utilities.TargetWeakEventSubscriber<DrawingImage, EventArgs>(
+                        this, static (target, _, _, _) => target.RaiseInvalidated(EventArgs.Empty));
+                    Drawing.InvalidatedWeakEvent.Subscribe((IAffectsRender)newDrawing, _drawingInvalidatedSubscriber);
+                }
+
+                RaiseInvalidated(EventArgs.Empty);
+            }
+            else if (change.Property == ViewboxProperty)
             {
                 RaiseInvalidated(EventArgs.Empty);
             }

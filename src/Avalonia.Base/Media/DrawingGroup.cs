@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -9,6 +10,15 @@ namespace Avalonia.Media
 {
     public sealed class DrawingGroup : Drawing
     {
+        private static readonly WeakEvent<DrawingCollection, NotifyCollectionChangedEventArgs>
+            s_collectionChangedWeakEvent = WeakEvent.Register<DrawingCollection, NotifyCollectionChangedEventArgs>(
+                (collection, handler) =>
+                {
+                    NotifyCollectionChangedEventHandler wrapped = (s, e) => handler(s, e);
+                    collection.CollectionChanged += wrapped;
+                    return () => collection.CollectionChanged -= wrapped;
+                });
+
         public static readonly StyledProperty<double> OpacityProperty =
             AvaloniaProperty.Register<DrawingGroup, double>(nameof(Opacity), 1);
 
@@ -28,6 +38,23 @@ namespace Avalonia.Media
                 (o, v) => o.Children = v);
 
         private DrawingCollection _children = new DrawingCollection();
+        private TargetWeakEventSubscriber<DrawingGroup, EventArgs>? _childInvalidatedSubscriber;
+        private TargetWeakEventSubscriber<DrawingGroup, NotifyCollectionChangedEventArgs>? _collectionChangedSubscriber;
+
+        static DrawingGroup()
+        {
+            AffectsRender<DrawingGroup>(
+                OpacityProperty,
+                TransformProperty,
+                ClipGeometryProperty,
+                OpacityMaskProperty,
+                ChildrenProperty);
+        }
+
+        public DrawingGroup()
+        {
+            SubscribeToChildren(_children);
+        }
 
         public double Opacity
         {
@@ -69,7 +96,54 @@ namespace Avalonia.Media
             }
         }
 
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ChildrenProperty)
+            {
+                var (oldCol, newCol) = change.GetOldAndNewValue<DrawingCollection>();
+                if (oldCol is not null)
+                    UnsubscribeFromChildren(oldCol);
+                if (newCol is not null)
+                    SubscribeToChildren(newCol);
+            }
+        }
+
         public DrawingContext Open() => new DrawingGroupDrawingContext(this);
+
+        private void SubscribeToChildren(DrawingCollection children)
+        {
+            _childInvalidatedSubscriber ??= new TargetWeakEventSubscriber<DrawingGroup, EventArgs>(
+                this, static (target, _, _, _) => target.RaiseInvalidated());
+            _collectionChangedSubscriber ??= new TargetWeakEventSubscriber<DrawingGroup, NotifyCollectionChangedEventArgs>(
+                this, static (target, sender, _, e) => target.OnChildrenCollectionChanged(sender, e));
+
+            foreach (var child in children)
+                InvalidatedWeakEvent.Subscribe((IAffectsRender)child, _childInvalidatedSubscriber);
+
+            s_collectionChangedWeakEvent.Subscribe(children, _collectionChangedSubscriber);
+        }
+
+        private void UnsubscribeFromChildren(DrawingCollection children)
+        {
+            foreach (var child in children)
+                InvalidatedWeakEvent.Unsubscribe((IAffectsRender)child, _childInvalidatedSubscriber!);
+
+            s_collectionChangedWeakEvent.Unsubscribe(children, _collectionChangedSubscriber!);
+        }
+
+        private void OnChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.OldItems is not null)
+                foreach (Drawing child in e.OldItems)
+                    InvalidatedWeakEvent.Unsubscribe((IAffectsRender)child, _childInvalidatedSubscriber!);
+            if (e.NewItems is not null)
+                foreach (Drawing child in e.NewItems)
+                    InvalidatedWeakEvent.Subscribe((IAffectsRender)child, _childInvalidatedSubscriber!);
+            RaiseInvalidated();
+        }
 
         internal override void DrawCore(DrawingContext context)
         {
