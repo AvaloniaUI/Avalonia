@@ -8,7 +8,9 @@ using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Reactive.Subjects;
+using System.Runtime.CompilerServices;
 using Avalonia.Headless;
 using Avalonia.Harfbuzz;
 using Avalonia.Input;
@@ -1295,6 +1297,102 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(Media.Brushes.Green, control.PlaceholderForeground);
             }
+        }
+
+        [Fact]
+        public void Bound_Text_Will_Update_Always()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var viewModel = new AutoCompleteBoxViewModel();
+
+                var control = CreateControl();
+
+                // Setup the binding
+                control[!AutoCompleteBox.TextProperty] = CompiledBinding.Create<AutoCompleteBoxViewModel, string?>
+                    (vm => vm.TextValue, viewModel, mode: BindingMode.TwoWay);
+
+                // Ensure the bound text matches "foo"
+                Assert.Equal("foo", control.Text);
+
+                // Change the view model value several times and ensure the bound text is updated
+                for (var i = 0; i < 10; i++)
+                {
+                    viewModel.UpdateTextValueTwice();
+                    Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                    Assert.Equal("bar", control.Text);
+                }
+            }
+        }
+
+        [Fact]
+        public void Bound_Text_Will_Update_From_Bar_To_Bar_Via_Foo()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var viewModel = new AutoCompleteBoxViewModel();
+                viewModel.TextValue = "bar";
+
+                var control = CreateControl();
+                control.ApplyTemplate(); 
+
+                // Setup the binding
+                control[!AutoCompleteBox.TextProperty] = CompiledBinding.Create<AutoCompleteBoxViewModel, string?>
+                    (vm => vm.TextValue, viewModel, mode: BindingMode.TwoWay);
+
+                Assert.Equal("bar", control.Text);
+
+                int textChangedCount = 0;
+                control.TextChanged += (s, e) => textChangedCount++;
+
+                // Change the view model value "bar" -> "foo" -> "bar"
+                viewModel.UpdateTextValueTwice();
+
+                // Programmatic TextProperty updates should synchronously raise TextChanged, and
+                // OnTextBoxTextChanged is suppressed for the corresponding TextBox.Text updates.
+                Assert.Equal("bar", control.Text);
+                Assert.Equal(2, textChangedCount);
+
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal("bar", control.Text);
+                Assert.Equal(2, textChangedCount);
+            }
+        }
+    }
+
+    public class AutoCompleteBoxViewModel : INotifyPropertyChanged
+    {
+        public AutoCompleteBoxViewModel()
+        {
+            TextValue = "foo";
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public string? TextValue
+        {
+            get;
+            set => SetField(ref field, value);
+        }
+
+        public void UpdateTextValueTwice()
+        {
+            TextValue = "foo";
+            TextValue = "bar";
+        }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
         }
     }
 }
