@@ -29,13 +29,13 @@ internal static class EglDisplayUtils
         return display;
     }
 
-    public static EglConfigInfo InitializeAndGetConfig(EglInterface egl, IntPtr display, IEnumerable<GlVersion>? versions)
+    public static EglConfigInfo InitializeAndGetConfig(EglInterface egl, IntPtr display, EglDisplayOptions options)
     {
         if (!egl.Initialize(display, out _, out _))
             throw OpenGlException.GetFormattedException("eglInitialize", egl);
 
         // TODO: AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
-        versions ??= new[]
+        var versions = options.GlVersions ?? new[]
         {
             new GlVersion(GlProfileType.OpenGLES, 3, 0),
             new GlVersion(GlProfileType.OpenGLES, 2, 0)
@@ -77,38 +77,58 @@ internal static class EglDisplayUtils
             if (!egl.BindApi(cfg.Api))
                 continue;
             foreach (var surfaceType in new[] { EGL_PBUFFER_BIT | EGL_WINDOW_BIT, EGL_WINDOW_BIT })
-            foreach (var stencilSize in new[] { 8, 1, 0 })
-            foreach (var depthSize in new[] { 8, 1, 0 })
             {
-                var attribs = new[]
+                foreach (var stencilSize in new[] { 8, 1, 0 })
                 {
-                    EGL_SURFACE_TYPE, surfaceType,
-                    EGL_RENDERABLE_TYPE, cfg.RenderableTypeBit,
-                    EGL_RED_SIZE, 8,
-                    EGL_GREEN_SIZE, 8,
-                    EGL_BLUE_SIZE, 8,
-                    EGL_ALPHA_SIZE, 8,
-                    EGL_STENCIL_SIZE, stencilSize,
-                    EGL_DEPTH_SIZE, depthSize,
-                    EGL_NONE
-                };
-                if (!egl.ChooseConfig(display, attribs, out var config, 1, out int numConfigs))
-                    continue;
-                if (numConfigs == 0)
-                    continue;
+                    foreach (var depthSize in new[] { 8, 1, 0 })
+                    {
+                        var attribs = new[]
+                        {
+                            EGL_SURFACE_TYPE, surfaceType,
+                            EGL_RENDERABLE_TYPE, cfg.RenderableTypeBit,
+                            EGL_RED_SIZE, 8,
+                            EGL_GREEN_SIZE, 8,
+                            EGL_BLUE_SIZE, 8,
+                            EGL_ALPHA_SIZE, 8,
+                            EGL_STENCIL_SIZE, stencilSize,
+                            EGL_DEPTH_SIZE, depthSize,
+                            EGL_NONE
+                        };
+                        if (!egl.ChooseConfig(display, attribs, null, 0, out int numConfigs))
+                            continue;
+                        if (numConfigs == 0)
+                            continue;
 
+                        IntPtr config;
+                        var configs = new IntPtr[numConfigs];
+                        if (!egl.ChooseConfig(display, attribs, configs, numConfigs, out numConfigs))
+                            continue;
 
-                egl.GetConfigAttrib(display, config, EGL_SAMPLES, out var sampleCount);
-                egl.GetConfigAttrib(display, config, EGL_STENCIL_SIZE, out var returnedStencilSize);
-                return new EglConfigInfo(config, cfg.Version, surfaceType, cfg.Attributes, sampleCount,
-                    returnedStencilSize);
+                        if (options.ChooseConfigCallback != null)
+                        {
+                            config = options.ChooseConfigCallback(egl, display, configs);
+                        }
+                        else
+                        {
+                            config = configs[0];
+                        }
+
+                        if (config == IntPtr.Zero)
+                            continue;
+
+                        egl.GetConfigAttrib(display, config, EGL_SAMPLES, out var sampleCount);
+                        egl.GetConfigAttrib(display, config, EGL_STENCIL_SIZE, out var returnedStencilSize);
+                        return new EglConfigInfo(config, cfg.Version, surfaceType, cfg.Attributes, sampleCount,
+                            returnedStencilSize);
+                    }
+                }
             }
         }
 
         throw new OpenGlException("No suitable EGL config was found");
     }
 
-    
+
 }
 
 internal class EglConfigInfo
