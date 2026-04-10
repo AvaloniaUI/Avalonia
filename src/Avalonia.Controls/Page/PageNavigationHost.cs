@@ -114,8 +114,8 @@ namespace Avalonia.Controls
 
             if (change.Property == PageProperty)
             {
-                var oldPage = change.GetOldValue<Page?>();
-                var newPage = change.GetNewValue<Page?>();
+                var oldPage = change.OldValue as Page;
+                var newPage = change.NewValue as Page;
 
                 SetCurrentValue(ContentProperty, newPage);
 
@@ -132,10 +132,10 @@ namespace Avalonia.Controls
             if (e.Property != ContentPresenter.ChildProperty)
                 return;
 
-            if (e.GetOldValue<object?>() is Page oldPage)
+            if (e.OldValue is Page oldPage)
                 oldPage.SafeAreaPadding = default;
 
-            if (e.GetNewValue<object?>() is Page newPage && _insetManager != null)
+            if (e.NewValue is Page newPage && _insetManager != null)
                 newPage.SafeAreaPadding = _insetManager.SafeAreaPadding;
         }
 
