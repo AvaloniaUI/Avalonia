@@ -143,6 +143,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Sets a preview control for the specified <see cref="AvaloniaObject"/> at design-time.
+        /// </summary>
+        /// <param name="target">The target object.</param>
+        /// <param name="control">The preview control.</param>
+        public static void SetPreviewWith(AvaloniaObject target, Control? control)
+        {
+            target.SetValue(PreviewWithProperty, control);
+        }
+
+        /// <summary>
         /// Sets a preview template for the specified <see cref="ResourceDictionary"/> at design-time.
         /// </summary>
         /// <remarks>
@@ -236,7 +246,12 @@ namespace Avalonia.Controls
         /// <returns>The preview control, or null.</returns>
         public static Control? GetPreviewWith(AvaloniaObject target)
         {
-            return s_previewWith.TryGetValue(target, out var template) ? template?.Build() : null;
+            //return s_previewWith.TryGetValue(target, out var template) ? template?.Build() : null;
+
+            if (s_previewWith.TryGetValue(target, out var template))
+                return template?.Build();
+
+            return target.GetValue(PreviewWithProperty);
         }
 
         /// <summary>
