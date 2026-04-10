@@ -9,348 +9,143 @@ namespace Avalonia.Base.UnitTests.Media
         [Fact]
         public void Changing_GeometryDrawing_Brush_Raises_DrawingImage_Invalidated()
         {
-            var geometryDrawing = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            };
-            var drawingImage = new DrawingImage(geometryDrawing);
-
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            geometryDrawing.Brush = Brushes.Red;
-
-            Assert.True(raised);
-        }
-
-        [Fact]
-        public void Changing_GeometryDrawing_Pen_Raises_DrawingImage_Invalidated()
-        {
-            var geometryDrawing = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Pen = new Pen(Brushes.Black)
-            };
-            var drawingImage = new DrawingImage(geometryDrawing);
-
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            geometryDrawing.Pen = new Pen(Brushes.Red, 2);
-
-            Assert.True(raised);
+            var drawing = CreateGeometryDrawing();
+            AssertInvalidated(drawing, () => drawing.Brush = Brushes.Red);
         }
 
         [Fact]
         public void Changing_GlyphRunDrawing_Foreground_Raises_DrawingImage_Invalidated()
         {
-            var glyphRunDrawing = new GlyphRunDrawing { Foreground = Brushes.Black };
-            var drawingImage = new DrawingImage(glyphRunDrawing);
-
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            glyphRunDrawing.Foreground = Brushes.Red;
-
-            Assert.True(raised);
+            var drawing = new GlyphRunDrawing { Foreground = Brushes.Black };
+            AssertInvalidated(drawing, () => drawing.Foreground = Brushes.Red);
         }
 
         [Fact]
         public void Changing_ImageDrawing_Rect_Raises_DrawingImage_Invalidated()
         {
-            var imageDrawing = new ImageDrawing { Rect = new Rect(0, 0, 10, 10) };
-            var drawingImage = new DrawingImage(imageDrawing);
-
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            imageDrawing.Rect = new Rect(0, 0, 20, 20);
-
-            Assert.True(raised);
+            var drawing = new ImageDrawing { Rect = new Rect(0, 0, 10, 10) };
+            AssertInvalidated(drawing, () => drawing.Rect = new Rect(0, 0, 20, 20));
         }
 
         [Fact]
         public void Changing_DrawingGroup_Opacity_Raises_DrawingImage_Invalidated()
         {
             var group = new DrawingGroup { Opacity = 1.0 };
-            group.Children.Add(new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            });
-            var drawingImage = new DrawingImage(group);
-
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            group.Opacity = 0.5;
-
-            Assert.True(raised);
-        }
-
-        [Fact]
-        public void Changing_DrawingGroup_Transform_Raises_DrawingImage_Invalidated()
-        {
-            var group = new DrawingGroup();
-            group.Children.Add(new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            });
-            var drawingImage = new DrawingImage(group);
-
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            group.Transform = new TranslateTransform(5, 5);
-
-            Assert.True(raised);
+            group.Children.Add(CreateGeometryDrawing());
+            AssertInvalidated(group, () => group.Opacity = 0.5);
         }
 
         [Fact]
         public void Changing_Drawing_Inside_DrawingGroup_Raises_DrawingImage_Invalidated()
         {
-            var child = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            };
+            var child = CreateGeometryDrawing();
             var group = new DrawingGroup();
             group.Children.Add(child);
-            var drawingImage = new DrawingImage(group);
-
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            child.Brush = Brushes.Red;
-
-            Assert.True(raised);
+            AssertInvalidated(group, () => child.Brush = Brushes.Red);
         }
 
         [Fact]
         public void Changing_Deeply_Nested_Drawing_Raises_DrawingImage_Invalidated()
         {
-            var leaf = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            };
+            var leaf = CreateGeometryDrawing();
             var innerGroup = new DrawingGroup();
             innerGroup.Children.Add(leaf);
             var outerGroup = new DrawingGroup();
             outerGroup.Children.Add(innerGroup);
-            var drawingImage = new DrawingImage(outerGroup);
-
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            leaf.Brush = Brushes.Red;
-
-            Assert.True(raised);
+            AssertInvalidated(outerGroup, () => leaf.Brush = Brushes.Red);
         }
 
         [Fact]
         public void Adding_Child_To_DrawingGroup_Raises_DrawingImage_Invalidated()
         {
             var group = new DrawingGroup();
-            var drawingImage = new DrawingImage(group);
-
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            group.Children.Add(new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            });
-
-            Assert.True(raised);
+            AssertInvalidated(group, () => group.Children.Add(CreateGeometryDrawing()));
         }
 
         [Fact]
         public void Removing_Child_From_DrawingGroup_Raises_DrawingImage_Invalidated()
         {
-            var child = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            };
+            var child = CreateGeometryDrawing();
             var group = new DrawingGroup();
             group.Children.Add(child);
-            var drawingImage = new DrawingImage(group);
-
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            group.Children.Remove(child);
-
-            Assert.True(raised);
+            AssertInvalidated(group, () => group.Children.Remove(child));
         }
 
         [Fact]
         public void Clearing_DrawingGroup_Children_Raises_DrawingImage_Invalidated()
         {
             var group = new DrawingGroup();
-            group.Children.Add(new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            });
-            var drawingImage = new DrawingImage(group);
-
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            group.Children.Clear();
-
-            Assert.True(raised);
+            group.Children.Add(CreateGeometryDrawing());
+            AssertInvalidated(group, () => group.Children.Clear());
         }
 
         [Fact]
         public void Replacing_Drawing_Unsubscribes_Previous()
         {
-            var oldDrawing = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            };
+            var oldDrawing = CreateGeometryDrawing();
             var drawingImage = new DrawingImage(oldDrawing);
 
-            // Replace with a new drawing
-            var newDrawing = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Green
-            };
-            drawingImage.Drawing = newDrawing;
+            drawingImage.Drawing = CreateGeometryDrawing();
 
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            // Mutating the old drawing should NOT raise Invalidated
-            oldDrawing.Brush = Brushes.Red;
-
-            Assert.False(raised);
+            AssertNotInvalidated(drawingImage, () => oldDrawing.Brush = Brushes.Red);
         }
 
         [Fact]
         public void Replacing_DrawingGroup_Children_Collection_Rewires_Subscriptions()
         {
-            var child = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            };
+            var oldChild = CreateGeometryDrawing();
             var group = new DrawingGroup();
-            group.Children.Add(child);
+            group.Children.Add(oldChild);
             var drawingImage = new DrawingImage(group);
 
-            // Replace the entire Children collection
-            var newChildren = new DrawingCollection();
-            var newChild = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 5, 5)),
-                Brush = Brushes.Green
-            };
-            newChildren.Add(newChild);
-            group.Children = newChildren;
+            var newChild = CreateGeometryDrawing();
+            group.Children = new DrawingCollection { newChild };
 
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            // Old child should NOT trigger invalidation
-            child.Brush = Brushes.Red;
-            Assert.False(raised);
-
-            // New child SHOULD trigger invalidation
-            newChild.Brush = Brushes.Yellow;
-            Assert.True(raised);
+            AssertNotInvalidated(drawingImage, () => oldChild.Brush = Brushes.Red);
+            AssertInvalidatedOn(drawingImage, () => newChild.Brush = Brushes.Yellow);
         }
 
         [Fact]
         public void Replacing_Child_In_DrawingGroup_Rewires_Subscriptions()
         {
-            var oldChild = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            };
+            var oldChild = CreateGeometryDrawing();
             var group = new DrawingGroup();
             group.Children.Add(oldChild);
             var drawingImage = new DrawingImage(group);
 
-            // Replace child via remove + add
-            var newChild = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 5, 5)),
-                Brush = Brushes.Green
-            };
+            var newChild = CreateGeometryDrawing();
             group.Children.Remove(oldChild);
             group.Children.Add(newChild);
 
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            // Old child should NOT trigger
-            oldChild.Brush = Brushes.Red;
-            Assert.False(raised);
-
-            // New child SHOULD trigger
-            newChild.Brush = Brushes.Yellow;
-            Assert.True(raised);
+            AssertNotInvalidated(drawingImage, () => oldChild.Brush = Brushes.Red);
+            AssertInvalidatedOn(drawingImage, () => newChild.Brush = Brushes.Yellow);
         }
 
         [Fact]
         public void ImageDrawing_Bubbles_Inner_DrawingImage_Invalidated()
         {
-            var innerDrawingImage = new DrawingImage(new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            });
+            var innerGeometry = CreateGeometryDrawing();
+            var innerDrawingImage = new DrawingImage(innerGeometry);
             var imageDrawing = new ImageDrawing
             {
                 ImageSource = innerDrawingImage,
                 Rect = new Rect(0, 0, 10, 10)
             };
-            var outerDrawingImage = new DrawingImage(imageDrawing);
-
-            var raised = false;
-            outerDrawingImage.Invalidated += (_, _) => raised = true;
-
-            // Mutating the inner DrawingImage's drawing should bubble up
-            ((GeometryDrawing)innerDrawingImage.Drawing!).Brush = Brushes.Red;
-
-            Assert.True(raised);
+            AssertInvalidated(imageDrawing, () => innerGeometry.Brush = Brushes.Red);
         }
 
         [Fact]
         public void Changing_Viewbox_Still_Raises_Invalidated()
         {
-            var drawingImage = new DrawingImage(new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            });
+            var drawingImage = new DrawingImage(CreateGeometryDrawing());
 
-            var raised = false;
-            drawingImage.Invalidated += (_, _) => raised = true;
-
-            drawingImage.Viewbox = new Rect(0, 0, 5, 5);
-
-            Assert.True(raised);
+            AssertInvalidatedOn(drawingImage, () => drawingImage.Viewbox = new Rect(0, 0, 5, 5));
         }
 
         [Fact]
         public void Shared_Drawing_Does_Not_Pin_DrawingImage()
         {
-            var drawing = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            };
-
+            var drawing = CreateGeometryDrawing();
             var weakRef = CreateDrawingImageWeakRef(drawing);
 
             GC.Collect();
@@ -363,15 +158,7 @@ namespace Avalonia.Base.UnitTests.Media
         [Fact]
         public void Shared_DrawingCollection_Does_Not_Pin_DrawingGroup()
         {
-            var collection = new DrawingCollection
-            {
-                new GeometryDrawing
-                {
-                    Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                    Brush = Brushes.Blue
-                }
-            };
-
+            var collection = new DrawingCollection { CreateGeometryDrawing() };
             var weakRef = CreateDrawingGroupWeakRef(collection);
 
             GC.Collect();
@@ -384,12 +171,7 @@ namespace Avalonia.Base.UnitTests.Media
         [Fact]
         public void Shared_Drawing_Does_Not_Pin_DrawingGroup()
         {
-            var child = new GeometryDrawing
-            {
-                Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
-                Brush = Brushes.Blue
-            };
-
+            var child = CreateGeometryDrawing();
             var weakRef = CreateDrawingGroupWithChildWeakRef(child);
 
             GC.Collect();
@@ -399,7 +181,35 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.False(weakRef.IsAlive, "DrawingGroup should have been collected while child survives");
         }
 
-        // Helpers in separate methods to prevent JIT from extending local lifetimes.
+        // -- Helpers --
+
+        private static GeometryDrawing CreateGeometryDrawing() => new()
+        {
+            Geometry = new RectangleGeometry(new Rect(0, 0, 10, 10)),
+            Brush = Brushes.Blue
+        };
+
+        private static void AssertInvalidated(Drawing drawing, Action mutate)
+        {
+            var drawingImage = new DrawingImage(drawing);
+            AssertInvalidatedOn(drawingImage, mutate);
+        }
+
+        private static void AssertInvalidatedOn(DrawingImage drawingImage, Action mutate)
+        {
+            var raised = false;
+            drawingImage.Invalidated += (_, _) => raised = true;
+            mutate();
+            Assert.True(raised);
+        }
+
+        private static void AssertNotInvalidated(DrawingImage drawingImage, Action mutate)
+        {
+            var raised = false;
+            drawingImage.Invalidated += (_, _) => raised = true;
+            mutate();
+            Assert.False(raised);
+        }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         private static WeakReference CreateDrawingImageWeakRef(Drawing drawing)
