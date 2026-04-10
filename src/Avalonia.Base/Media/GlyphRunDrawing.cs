@@ -2,6 +2,11 @@
 {
     public sealed class GlyphRunDrawing : Drawing
     {
+        static GlyphRunDrawing()
+        {
+            AffectsDrawingContent<GlyphRunDrawing>(ForegroundProperty, GlyphRunProperty);
+        }
+
         public static readonly StyledProperty<IBrush?> ForegroundProperty =
             AvaloniaProperty.Register<GlyphRunDrawing, IBrush?>(nameof(Foreground));
 
