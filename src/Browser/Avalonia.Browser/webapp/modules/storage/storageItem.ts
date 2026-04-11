@@ -65,7 +65,7 @@ export class StorageItem {
 
         await item.verityPermissions("readwrite");
 
-        return await (item.handle as FileSystemFileHandle).createWritable({ keepExistingData: true });
+        return await (item.handle as FileSystemFileHandle).createWritable({ keepExistingData: false });
     }
 
     public static async getProperties(item: StorageItem): Promise<{ Size: number; LastModified: number; Type: string } | null> {
@@ -103,7 +103,11 @@ export class StorageItem {
         }
 
         await item.verityPermissions("readwrite");
-
+        // Uncommenting the following code will cause the file to be truncated when it is created:
+        // const fileHandle = ((item.handle as any).getFileHandle(name, { create: true });
+        // const writable = await fileHandle.createWritable({ keepExistingData: false });
+        // await writable.close();
+        // return fileHandle;
         return await ((item.handle as any).getFileHandle(name, { create: true }) as Promise<any>);
     }
 
