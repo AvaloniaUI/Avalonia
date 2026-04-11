@@ -13,6 +13,7 @@
       "samples\\SampleControls\\ControlSamples.csproj",
       "samples\\Sandbox\\Sandbox.csproj",
       "samples\\TextTestApp\\TextTestApp.csproj",
+      "samples\\WindowDecorationsDemo\\WindowDecorationsDemo.csproj",
       "samples\\UnloadableAssemblyLoadContext\\UnloadableAssemblyLoadContextPlug\\UnloadableAssemblyLoadContextPlug.csproj",
       "samples\\UnloadableAssemblyLoadContext\\UnloadableAssemblyLoadContext\\UnloadableAssemblyLoadContext.csproj",
       "samples\\XEmbedSample\\XEmbedSample.csproj",

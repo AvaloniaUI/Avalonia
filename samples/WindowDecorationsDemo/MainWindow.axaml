@@ -1,0 +1,277 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:chrome="clr-namespace:Avalonia.Controls.Chrome;assembly=Avalonia.Controls"
+        xmlns:xamlTemplates="clr-namespace:Avalonia.Markup.Xaml.Templates;assembly=Avalonia.Markup.Xaml"
+        x:Class="WindowDecorationsDemo.MainWindow"
+        Title="WindowDrawnDecorations Demo"
+        Width="900"
+        Height="600"
+        ExtendClientAreaToDecorationsHint="True">
+
+    <!--
+        Demonstrates Avalonia's WindowDrawnDecorations API — client-side (app-drawn)
+        window chrome. Setting ExtendClientAreaToDecorationsHint="True" opts the
+        window into app-drawn decorations; the theme below supplies a custom
+        ControlTheme for WindowDrawnDecorations so the title bar, caption buttons,
+        border, shadow, and fullscreen popover are all rendered by Avalonia XAML.
+
+        Key concepts:
+          * Underlay  — drawn behind the window content (title bar background, frame).
+          * Overlay   — drawn above the window content (title text, caption buttons).
+          * FullscreenPopover — sliding title bar shown on hover when in fullscreen.
+          * Template bindings (Title, TitleBarHeight, FrameThickness, HasTitleBar, …)
+            come from WindowDrawnDecorations itself.
+          * PART_CloseButton / PART_MinimizeButton / PART_MaximizeButton /
+            PART_FullScreenButton (+ popover variants) are wired up automatically
+            by WindowDrawnDecorations — you just have to name them.
+          * WindowDecorationProperties.ElementRole marks regions for non-client
+            hit-testing (TitleBar dragging, caption button hover effects, resize edges).
+          * Pseudo-classes :normal, :maximized, :fullscreen, :has-shadow,
+            :has-border, :has-titlebar, :has-maximize, :has-minimize, :has-fullscreen
+            let the theme react to state without code-behind.
+    -->
+    <Window.Resources>
+        <ControlTheme x:Key="{x:Type chrome:WindowDrawnDecorations}"
+                      TargetType="chrome:WindowDrawnDecorations">
+            <Setter Property="DefaultTitleBarHeight" Value="40"/>
+            <Setter Property="DefaultFrameThickness" Value="1"/>
+            <Setter Property="DefaultShadowThickness" Value="12"/>
+
+            <Setter Property="Template">
+                <xamlTemplates:WindowDrawnDecorationsTemplate>
+                    <chrome:WindowDrawnDecorationsContent>
+
+                        <!-- Underlay: non-interactive visuals drawn under the client area. -->
+                        <chrome:WindowDrawnDecorationsContent.Underlay>
+                            <Panel Name="PART_UnderlayWrapper">
+                                <Border Name="PART_WindowBorder"
+                                        Background="#1B1B2A"
+                                        BorderBrush="#7C4DFF"
+                                        BorderThickness="{TemplateBinding FrameThickness}"
+                                        IsHitTestVisible="False"/>
+
+                                <!-- Title bar background and drag area. ElementRole=TitleBar
+                                     is what makes this region draggable and double-click-to-maximize. -->
+                                <Border Name="PART_TitleBar"
+                                        VerticalAlignment="Top"
+                                        Height="{TemplateBinding TitleBarHeight}"
+                                        IsVisible="{TemplateBinding HasTitleBar}"
+                                        chrome:WindowDecorationProperties.ElementRole="TitleBar">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                            <GradientStop Offset="0" Color="#7C4DFF"/>
+                                            <GradientStop Offset="1" Color="#00BCD4"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                            </Panel>
+                        </chrome:WindowDrawnDecorationsContent.Underlay>
+
+                        <!-- Overlay: interactive visuals drawn on top of the client area. -->
+                        <chrome:WindowDrawnDecorationsContent.Overlay>
+                            <Panel Name="PART_OverlayWrapper">
+                                <!-- Title text — non hit-test so drag still works where text sits. -->
+                                <StackPanel Name="PART_TitleTextPanel"
+                                            VerticalAlignment="Top"
+                                            Orientation="Horizontal"
+                                            Height="{TemplateBinding TitleBarHeight}"
+                                            IsHitTestVisible="False"
+                                            IsVisible="{TemplateBinding HasTitleBar}"
+                                            Spacing="10"
+                                            Margin="14,0,0,0">
+                                    <TextBlock Text="&#x25B2;"
+                                               VerticalAlignment="Center"
+                                               Foreground="White"
+                                               FontSize="16"/>
+                                    <TextBlock Text="{TemplateBinding Title}"
+                                               VerticalAlignment="Center"
+                                               Foreground="White"
+                                               FontWeight="SemiBold"
+                                               FontSize="13"/>
+                                </StackPanel>
+
+                                <!-- Caption buttons. The PART_* names are the magic —
+                                     WindowDrawnDecorations finds them by name and wires
+                                     Click -> Close/Minimize/Maximize/Fullscreen. -->
+                                <StackPanel Name="PART_OverlayPanel"
+                                            VerticalAlignment="Top"
+                                            HorizontalAlignment="Right"
+                                            Orientation="Horizontal"
+                                            Height="{TemplateBinding TitleBarHeight}"
+                                            IsVisible="{TemplateBinding HasTitleBar}">
+                                    <Button Name="PART_FullScreenButton"
+                                            Theme="{StaticResource DemoCaptionButton}"
+                                            chrome:WindowDecorationProperties.ElementRole="FullScreenButton"
+                                            Content="&#x2922;"/>
+                                    <Button Name="PART_MinimizeButton"
+                                            Theme="{StaticResource DemoCaptionButton}"
+                                            chrome:WindowDecorationProperties.ElementRole="MinimizeButton"
+                                            Content="&#x2013;"/>
+                                    <Button Name="PART_MaximizeButton"
+                                            Theme="{StaticResource DemoCaptionButton}"
+                                            chrome:WindowDecorationProperties.ElementRole="MaximizeButton"
+                                            Content="&#x25A1;"/>
+                                    <Button Name="PART_CloseButton"
+                                            Theme="{StaticResource DemoCloseCaptionButton}"
+                                            chrome:WindowDecorationProperties.ElementRole="CloseButton"
+                                            Content="&#x2715;"/>
+                                </StackPanel>
+                            </Panel>
+                        </chrome:WindowDrawnDecorationsContent.Overlay>
+
+                        <!-- Fullscreen popover: shown when the pointer hits the top edge
+                             in fullscreen mode; lets users exit fullscreen without chrome. -->
+                        <chrome:WindowDrawnDecorationsContent.FullscreenPopover>
+                            <Border Height="{TemplateBinding DefaultTitleBarHeight}"
+                                    VerticalAlignment="Top"
+                                    Background="#CC1B1B2A"
+                                    chrome:WindowDecorationProperties.ElementRole="TitleBar">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Text="{TemplateBinding Title}"
+                                               VerticalAlignment="Center"
+                                               Margin="14,0,0,0"
+                                               Foreground="White"
+                                               FontWeight="SemiBold"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Button Name="PART_PopoverFullScreenButton"
+                                                Theme="{StaticResource DemoCaptionButton}"
+                                                chrome:WindowDecorationProperties.ElementRole="FullScreenButton"
+                                                Content="&#x2923;"/>
+                                        <Button Name="PART_PopoverCloseButton"
+                                                Theme="{StaticResource DemoCloseCaptionButton}"
+                                                chrome:WindowDecorationProperties.ElementRole="CloseButton"
+                                                Content="&#x2715;"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </chrome:WindowDrawnDecorationsContent.FullscreenPopover>
+
+                    </chrome:WindowDrawnDecorationsContent>
+                </xamlTemplates:WindowDrawnDecorationsTemplate>
+            </Setter>
+
+            <!-- Shadow: inset content by ShadowThickness and drop a real box shadow on the border. -->
+            <Style Selector="^:has-shadow /template/ Panel#PART_UnderlayWrapper">
+                <Setter Property="Margin" Value="{TemplateBinding ShadowThickness}"/>
+            </Style>
+            <Style Selector="^:has-shadow /template/ Panel#PART_OverlayWrapper">
+                <Setter Property="Margin" Value="{TemplateBinding ShadowThickness}"/>
+            </Style>
+            <Style Selector="^:has-shadow /template/ Border#PART_WindowBorder">
+                <Setter Property="BoxShadow" Value="0 4 18 2 #80000000"/>
+            </Style>
+
+            <!-- Hide caption buttons for actions the platform doesn't allow. -->
+            <Style Selector="^:not(:has-minimize) /template/ Button#PART_MinimizeButton">
+                <Setter Property="IsVisible" Value="False"/>
+            </Style>
+            <Style Selector="^:not(:has-maximize) /template/ Button#PART_MaximizeButton">
+                <Setter Property="IsVisible" Value="False"/>
+            </Style>
+            <Style Selector="^:not(:has-fullscreen) /template/ Button#PART_FullScreenButton">
+                <Setter Property="IsVisible" Value="False"/>
+            </Style>
+            <Style Selector="^:not(:has-fullscreen) /template/ Button#PART_PopoverFullScreenButton">
+                <Setter Property="IsVisible" Value="False"/>
+            </Style>
+
+            <!-- Fullscreen: hide normal title bar pieces (popover handles it instead). -->
+            <Style Selector="^:fullscreen /template/ StackPanel#PART_TitleTextPanel">
+                <Setter Property="IsVisible" Value="False"/>
+            </Style>
+            <Style Selector="^:fullscreen /template/ StackPanel#PART_OverlayPanel">
+                <Setter Property="IsVisible" Value="False"/>
+            </Style>
+            <Style Selector="^:fullscreen /template/ Border#PART_TitleBar">
+                <Setter Property="IsVisible" Value="False"/>
+            </Style>
+
+            <!-- Maximized state: swap the maximize glyph to a 'restore' glyph. -->
+            <Style Selector="^:maximized /template/ Button#PART_MaximizeButton">
+                <Setter Property="Content" Value="&#x2750;"/>
+            </Style>
+        </ControlTheme>
+
+        <!-- Standard caption button look. ElementRole=DecorationsElement tells the
+             platform "this is a UI control, not the draggable title bar background". -->
+        <ControlTheme x:Key="DemoCaptionButton" TargetType="Button">
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="NaN"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="(chrome:WindowDecorationProperties.ElementRole)" Value="DecorationsElement"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="PART_Border" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Content="{TemplateBinding Content}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          FontSize="{TemplateBinding FontSize}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+            <Style Selector="^:pointerover /template/ Border#PART_Border">
+                <Setter Property="Background" Value="#33FFFFFF"/>
+            </Style>
+            <Style Selector="^:pressed /template/ Border#PART_Border">
+                <Setter Property="Background" Value="#55FFFFFF"/>
+            </Style>
+            <Style Selector="^:disabled">
+                <Setter Property="Opacity" Value="0.3"/>
+            </Style>
+        </ControlTheme>
+
+        <!-- Close button: red hover highlight, same role tagging. -->
+        <ControlTheme x:Key="DemoCloseCaptionButton"
+                      TargetType="Button"
+                      BasedOn="{StaticResource DemoCaptionButton}">
+            <Style Selector="^:pointerover /template/ Border#PART_Border">
+                <Setter Property="Background" Value="#E81123"/>
+            </Style>
+            <Style Selector="^:pressed /template/ Border#PART_Border">
+                <Setter Property="Background" Value="#F1707A"/>
+            </Style>
+        </ControlTheme>
+    </Window.Resources>
+
+    <!-- Client area. Because the client was extended into the decorations, the
+         drawn title bar overlaps the top of the window — reserve space for it. -->
+    <ScrollViewer Padding="24,52,24,24">
+        <StackPanel Spacing="14" MaxWidth="640" HorizontalAlignment="Stretch">
+            <TextBlock Text="Custom drawn window chrome"
+                       FontSize="22"
+                       FontWeight="SemiBold"/>
+            <TextBlock TextWrapping="Wrap"
+                       Text="This window renders its own title bar, border, shadow, and caption buttons through Avalonia's WindowDrawnDecorations API. The template lives in this window's Resources as a ControlTheme keyed on WindowDrawnDecorations — no code-behind, no platform-specific interop."/>
+
+            <Border BorderBrush="#7C4DFF" BorderThickness="1" CornerRadius="4" Padding="14">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Try these:" FontWeight="SemiBold"/>
+                    <TextBlock Text="• Drag the gradient title bar."/>
+                    <TextBlock Text="• Double-click the title bar to maximize / restore."/>
+                    <TextBlock Text="• Resize from any window edge — :has-shadow + :has-border pseudo-classes drive the visuals."/>
+                    <TextBlock Text="• Click the fullscreen (↔) caption button, then move the pointer to the very top of the screen to reveal the FullscreenPopover."/>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <CheckBox Name="CanResizeCheck"
+                          Content="CanResize"
+                          IsChecked="{Binding CanResize, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                <CheckBox Name="CanMinimizeCheck"
+                          Content="CanMinimize"
+                          IsChecked="{Binding CanMinimize, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                <CheckBox Name="CanMaximizeCheck"
+                          Content="CanMaximize"
+                          IsChecked="{Binding CanMaximize, RelativeSource={RelativeSource AncestorType=Window}}"/>
+            </StackPanel>
+
+            <TextBlock TextWrapping="Wrap" Foreground="#888"
+                       Text="Uncheck the boxes above — the matching caption button grays out or disappears via the :has-minimize / :has-maximize / :has-fullscreen pseudo-classes, which Avalonia toggles automatically based on the window's allowed actions."/>
+        </StackPanel>
+    </ScrollViewer>
+</Window>
