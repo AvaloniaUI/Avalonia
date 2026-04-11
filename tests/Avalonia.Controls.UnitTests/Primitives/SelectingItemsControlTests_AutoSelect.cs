@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -118,6 +120,48 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal("bar", target.SelectedItem);
         }
 
+        [Fact]
+        public void AutoScrollToSelectedItem_Should_Work_When_Becoming_Visible()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var items = Enumerable.Range(0, 100).Select(i => $"Item {i}").ToList();
+
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    ItemsSource = items,
+                    ItemTemplate = new FuncDataTemplate<string>((_, _) => new TextBlock { Height = 50 }),
+                    Height = 100,
+                    ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel { CacheLength = 0 }),
+                    AutoScrollToSelectedItem = true,
+                    IsVisible = false
+                };
+
+                target.Width = target.Height = 100;
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                // Select item 50
+                target.SelectedIndex = 50;
+
+                // Make visible
+                target.IsVisible = true;
+                target.UpdateLayout();
+            
+                // Wait for dispatcher
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                target.UpdateLayout();
+
+                var scrollViewer = (ScrollViewer)target.VisualChildren[0];
+                var offset = scrollViewer.Offset.Y;
+
+                // Item 50 is at 50 * 50 = 2500. 
+                // ListBox height is 100, so it should be visible if offset is between 2400 and 2500.
+                Assert.InRange(offset, 2400, 2500);
+            }
+        }
+        
         private static FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
@@ -148,5 +192,31 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
         }
+        
+        private Control CreateListBoxTemplate(TemplatedControl parent, INameScope scope)
+        {
+            return new ScrollViewer
+            {
+                Name = "PART_ScrollViewer",
+                Template = new FuncControlTemplate(CreateScrollViewerTemplate),
+                Content = new ItemsPresenter
+                {
+                    Name = "PART_ItemsPresenter",
+                    [~ItemsPresenter.ItemsPanelProperty] =
+                        ((ListBox)parent).GetObservable(ItemsControl.ItemsPanelProperty).ToBinding(),
+                }.RegisterInNameScope(scope)
+            }.RegisterInNameScope(scope);
+        }
+        private Control CreateScrollViewerTemplate(TemplatedControl parent, INameScope scope)
+        {
+            return new ScrollContentPresenter
+            {
+                Name = "PART_ContentPresenter",
+                [~ContentPresenter.ContentProperty] =
+                    parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
+            }.RegisterInNameScope(scope);
+        }
+
+        
     }
 }
