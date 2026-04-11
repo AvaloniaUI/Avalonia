@@ -231,6 +231,7 @@ namespace Avalonia.Controls
         private const double EdgeGestureWidth = 20;
         private bool _suppressDrawerEvents;
         private bool _hasHadFirstPage;
+        private bool _hideTopBar;
         private readonly SwipeGestureRecognizer _swipeRecognizer = new SwipeGestureRecognizer();
 
         private bool IsRtl => FlowDirection == FlowDirection.RightToLeft;
@@ -865,17 +866,39 @@ namespace Avalonia.Controls
         {
             if (_contentPresenter != null && _drawerPresenter != null)
             {
+                var hasDrawerHeader = DrawerHeader != null;
+                var hasDrawerFooter = DrawerFooter != null;
                 if (IsVerticalPlacement)
                 {
-                    _drawerPresenter.Padding = DrawerPlacement == DrawerPlacement.Bottom
-                        ? new Thickness(SafeAreaPadding.Left, SafeAreaPadding.Top, SafeAreaPadding.Right, 0)
-                        : new Thickness(SafeAreaPadding.Left, 0, SafeAreaPadding.Right, SafeAreaPadding.Bottom);
+                    _drawerPresenter.Padding = DrawerPlacement == DrawerPlacement.Top
+                        ? new Thickness(SafeAreaPadding.Left, hasDrawerHeader ? 0 : SafeAreaPadding.Top, SafeAreaPadding.Right, 0)
+                        : new Thickness(SafeAreaPadding.Left, 0, SafeAreaPadding.Right, hasDrawerFooter ? 0 : SafeAreaPadding.Bottom);
+
+                    if (_drawerHeaderPresenter != null && hasDrawerHeader)
+                        _drawerHeaderPresenter.Padding = DrawerPlacement == DrawerPlacement.Bottom
+                            ? new Thickness(SafeAreaPadding.Left, 0, SafeAreaPadding.Right, 0)
+                            : new Thickness(SafeAreaPadding.Left, SafeAreaPadding.Top, SafeAreaPadding.Right, 0);
+
+                    if (_drawerFooterPresenter != null && hasDrawerFooter)
+                        _drawerFooterPresenter.Padding = DrawerPlacement == DrawerPlacement.Bottom
+                            ? new Thickness(SafeAreaPadding.Left, 0, SafeAreaPadding.Right, SafeAreaPadding.Bottom)
+                            : new Thickness(SafeAreaPadding.Left, 0, SafeAreaPadding.Right, 0);
                 }
                 else
                 {
                     _drawerPresenter.Padding = IsPaneOnRight
-                        ? new Thickness(0, SafeAreaPadding.Top, SafeAreaPadding.Right, SafeAreaPadding.Bottom)
-                        : new Thickness(SafeAreaPadding.Left, SafeAreaPadding.Top, 0, SafeAreaPadding.Bottom);
+                        ? new Thickness(0, hasDrawerHeader ? 0 : SafeAreaPadding.Top, SafeAreaPadding.Right, hasDrawerFooter ? 0 : SafeAreaPadding.Bottom)
+                        : new Thickness(SafeAreaPadding.Left, hasDrawerHeader ? 0 : SafeAreaPadding.Top, 0, hasDrawerFooter ? 0 : SafeAreaPadding.Bottom);
+
+                    if (_drawerHeaderPresenter != null && hasDrawerHeader)
+                        _drawerHeaderPresenter.Padding = IsPaneOnRight
+                            ? new Thickness(0, SafeAreaPadding.Top, SafeAreaPadding.Right, 0)
+                            : new Thickness(SafeAreaPadding.Left, SafeAreaPadding.Top, 0, 0);
+
+                    if (_drawerFooterPresenter != null && hasDrawerFooter)
+                        _drawerFooterPresenter.Padding = IsPaneOnRight ?
+                            new Thickness(0, 0, SafeAreaPadding.Right, SafeAreaPadding.Bottom)
+                            : new Thickness(SafeAreaPadding.Left, 0, 0, SafeAreaPadding.Bottom);
                 }
 
                 if (_topBar != null)
@@ -888,7 +911,7 @@ namespace Avalonia.Controls
                 if (Content is Page detail)
                 {
                     var remainingSafeArea = Padding.GetRemainingSafeAreaPadding(SafeAreaPadding);
-                    detail.SafeAreaPadding = new Thickness(remainingSafeArea.Left, 0, remainingSafeArea.Right, remainingSafeArea.Bottom);
+                    detail.SafeAreaPadding = new Thickness(remainingSafeArea.Left, _hideTopBar ? remainingSafeArea.Top : 0, remainingSafeArea.Right, remainingSafeArea.Bottom);
                 }
             }
         }
@@ -925,14 +948,14 @@ namespace Avalonia.Controls
 
             _splitView.PanePlacement = DrawerPlacement switch
             {
-                DrawerPlacement.Right  => SplitViewPanePlacement.Right,
-                DrawerPlacement.Top    => SplitViewPanePlacement.Top,
+                DrawerPlacement.Right => SplitViewPanePlacement.Right,
+                DrawerPlacement.Top => SplitViewPanePlacement.Top,
                 DrawerPlacement.Bottom => SplitViewPanePlacement.Bottom,
-                _                      => SplitViewPanePlacement.Left
+                _ => SplitViewPanePlacement.Left
             };
 
-            PseudoClasses.Set(":placement-right",  DrawerPlacement == DrawerPlacement.Right);
-            PseudoClasses.Set(":placement-top",    DrawerPlacement == DrawerPlacement.Top);
+            PseudoClasses.Set(":placement-right", DrawerPlacement == DrawerPlacement.Right);
+            PseudoClasses.Set(":placement-top", DrawerPlacement == DrawerPlacement.Top);
             PseudoClasses.Set(":placement-bottom", DrawerPlacement == DrawerPlacement.Bottom);
         }
 
@@ -963,13 +986,19 @@ namespace Avalonia.Controls
                 if (mode == SplitViewDisplayMode.Inline)
                 {
                     _suppressDrawerEvents = true;
-                    try { SetCurrentValue(IsOpenProperty, true); }
+                    try
+                    {
+                        SetCurrentValue(IsOpenProperty, true);
+                    }
                     finally { _suppressDrawerEvents = false; }
                 }
                 else if (mode == SplitViewDisplayMode.Overlay)
                 {
                     _suppressDrawerEvents = true;
-                    try { SetCurrentValue(IsOpenProperty, false); }
+                    try
+                    {
+                        SetCurrentValue(IsOpenProperty, false);
+                    }
                     finally { _suppressDrawerEvents = false; }
                 }
             }
@@ -1064,8 +1093,8 @@ namespace Avalonia.Controls
 
         private void UpdateDetailNavBarVisiblePseudoClass()
         {
-            bool hideTopBar = Content is NavigationPage navPage && navPage.IsNavBarEffectivelyVisible;
-            PseudoClasses.Set(":detail-is-navpage", hideTopBar);
+            _hideTopBar = Content is NavigationPage navPage && navPage.IsNavBarEffectivelyVisible;
+            PseudoClasses.Set(":detail-is-navpage", _hideTopBar);
         }
 
         protected override AutomationPeer OnCreateAutomationPeer() => new DrawerPageAutomationPeer(this);
