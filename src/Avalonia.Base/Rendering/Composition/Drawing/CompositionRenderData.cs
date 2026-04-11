@@ -31,11 +31,9 @@ internal class CompositionRenderData : ICompositorSerializable, IDisposable
     {
         if (!_itemsSent)
         {
-            foreach(var i in _items)
-                if (i is IDisposable disp)
-                    disp.Dispose();
+            RenderDataItemPoolHelper.DisposeAndReturnToPool(_items);
         }
-        
+
         _items.Dispose();
         _itemsSent = false;
         foreach(var r in _resources)
