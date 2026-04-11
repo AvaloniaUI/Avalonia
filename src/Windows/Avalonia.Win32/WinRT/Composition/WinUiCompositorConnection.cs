@@ -127,7 +127,12 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
             // Always schedule a commit so the current frame's work reaches DWM.
             ScheduleNextCommit();
             if (_parent._stopped)
+            {
                 _parent._wakeEvent.WaitOne();
+                // Reset the expected commit callback time since we've paused
+                // the render loop due to app being idle
+                _commitDueAt = _st.Elapsed + TimeSpan.FromSeconds(1);
+            }
         }
 
         private void ScheduleNextCommit()
