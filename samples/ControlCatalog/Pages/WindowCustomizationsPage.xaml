@@ -6,7 +6,8 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ControlCatalog.Pages.WindowCustomizationsPage"
              x:DataType="viewModels:MainWindowViewModel"
-             x:CompileBindings="True">
+             x:CompileBindings="True"
+             DataContext="{Binding $parent[Window].DataContext}">
   <StackPanel>
 
     <StackPanel
