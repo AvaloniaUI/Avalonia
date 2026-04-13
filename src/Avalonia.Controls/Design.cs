@@ -15,6 +15,20 @@ namespace Avalonia.Controls
         private static Dictionary<object, ITemplate<Control>?> s_previewWith = [];
         private static Dictionary<object, object?> s_templateDataContext = [];
 
+        private static ITemplate<Control> InvalidVisualTemplate
+            => field ??= new FuncTemplate<Control>(() => new StackPanel
+            {
+                Children =
+                {
+                    new TextBlock { Text = "A Template must be specified to use Design.PreviewWith on a Visual. Example:" },
+                    new TextBlock { Text = "<Design.PreviewWith>" },
+                    new TextBlock { Text = "    <Template>" },
+                    new TextBlock { Text = "        <Border Padding=\"20\"><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>" },
+                    new TextBlock { Text = "    </Template>" },
+                    new TextBlock { Text = "</Design.PreviewWith>" }
+                }
+            });
+
         /// <summary>
         /// Gets a value indicating whether the application is running in design mode.
         /// </summary>
@@ -140,6 +154,41 @@ namespace Avalonia.Controls
         public static void SetPreviewWith(AvaloniaObject target, ITemplate<Control>? template)
         {
             s_previewWith[target] = template;
+        }
+
+        /// <summary>
+        /// Sets a preview control for the specified <see cref="AvaloniaObject"/> at design-time.
+        /// </summary>
+        /// <param name="target">The target object.</param>
+        /// <param name="control">The preview control.</param>
+        public static void SetPreviewWith(AvaloniaObject target, Control? control)
+        {
+            if (control is null)
+            {
+                s_previewWith[target] = null;
+                return;
+            }
+
+            switch (target)
+            {
+                case ResourceDictionary resourceDictionary:
+                    SetPreviewWith(resourceDictionary, control);
+                    break;
+                case IDataTemplate dataTemplate:
+                    SetPreviewWith(dataTemplate, control);
+                    break;
+                case IStyle style:
+                    SetPreviewWith(style, control);
+                    break;
+                case Visual visual:
+                    s_previewWith[target] = null;
+                    // TODO: restore once ITemplate overloads are correctly handled in the XAML compiler.
+                    //SetPreviewWith(visual, InvalidVisualTemplate);
+                    break;
+                default:
+                    SetPreviewWith(target, new FuncTemplate<Control>(() => control));
+                    break;
+            }
         }
 
         /// <summary>
