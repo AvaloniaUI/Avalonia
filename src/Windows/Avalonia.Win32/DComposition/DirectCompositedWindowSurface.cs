@@ -1,15 +1,11 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
-using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.Interop;
-using Avalonia.Win32.WinRT;
 
 using MicroCom.Runtime;
 

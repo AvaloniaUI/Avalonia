@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using Avalonia.Controls;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Reactive;
 using MicroCom.Runtime;
