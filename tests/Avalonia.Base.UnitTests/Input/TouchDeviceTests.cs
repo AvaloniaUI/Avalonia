@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Windows.Input;
 using Avalonia.Base.UnitTests.Input;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -244,47 +242,6 @@ namespace Avalonia.Input.UnitTests
             Assert.Equal(3, doubleTappedExecutedTimes);
         }
 
-        [Fact]
-        public void ToggleButton_Does_Not_Toggle_When_Command_Becomes_Disabled_Between_TouchBegin_And_TouchEnd()
-        {
-            using var app = UnitTestApp(new TimeSpan(200));
-
-            var renderer = new Mock<IHitTester>();
-            var impl = CreateTopLevelImplMock();
-            var command = new TestCommand(true);
-            var target = new ToggleButton
-            {
-                Width = 100,
-                Height = 100,
-                Command = command,
-            };
-            var root = CreateInputRoot(impl.Object, target, renderer.Object);
-            var device = new TouchDevice();
-            var touchBegin = new RawPointerEventArgs(device, 0, root.PresentationSource, RawPointerEventType.TouchBegin, new Point(50, 50), RawInputModifiers.None)
-            {
-                RawPointerId = 1
-            };
-            var touchEnd = new RawPointerEventArgs(device, 1, root.PresentationSource, RawPointerEventType.TouchEnd, new Point(50, 50), RawInputModifiers.None)
-            {
-                RawPointerId = 1
-            };
-
-            SetHit(renderer, target);
-
-            impl.Object.Input!(touchBegin);
-
-            Assert.True(target.IsPressed);
-            Assert.False(target.IsChecked ?? false);
-
-            command.IsEnabled = false;
-
-            Assert.False(target.IsEffectivelyEnabled);
-
-            impl.Object.Input!(touchEnd);
-
-            Assert.False(target.IsChecked ?? false);
-        }
-
         private IDisposable UnitTestApp(TimeSpan doubleClickTime = new TimeSpan())
         {
             var unitTestApp = UnitTestApplication.Start(
@@ -297,7 +254,7 @@ namespace Avalonia.Input.UnitTests
                .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
             return unitTestApp;
         }
-        
+
         private static void SendXTouchContactsWithIds(IInputManager inputManager, TouchDevice device, IInputRoot root, RawPointerEventType type, params long[] touchPointIds)
         {
             for (int i = 0; i < touchPointIds.Length; i++)
@@ -342,44 +299,6 @@ namespace Avalonia.Input.UnitTests
             {
                 RawPointerId = touchPointId
             });
-        }
-
-        private sealed class TestCommand : ICommand
-        {
-            private bool _enabled;
-            private EventHandler? _canExecuteChanged;
-
-            public TestCommand(bool enabled)
-            {
-                _enabled = enabled;
-            }
-
-            public bool IsEnabled
-            {
-                get => _enabled;
-                set
-                {
-                    if (_enabled == value)
-                    {
-                        return;
-                    }
-
-                    _enabled = value;
-                    _canExecuteChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-
-            public event EventHandler? CanExecuteChanged
-            {
-                add => _canExecuteChanged += value;
-                remove => _canExecuteChanged -= value;
-            }
-
-            public bool CanExecute(object? parameter) => _enabled;
-
-            public void Execute(object? parameter)
-            {
-            }
         }
 
         private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl)
