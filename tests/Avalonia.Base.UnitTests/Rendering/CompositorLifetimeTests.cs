@@ -27,8 +27,7 @@ public class CompositorLifetimeTests : CompositorTestsBase
 
         Assert.Equal(new PixelSize(200, 200), compositionTarget.PixelSize);
 
-        // Check that restarting the rendering still works.
-        services.TopLevel.InvalidateVisual();
+        // Check that restarting rendering re-queues the pending invalidation
         services.TopLevel.StartRendering();
         services.RunJobs();
 
