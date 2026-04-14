@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -15,7 +16,8 @@ namespace Avalonia.Controls.Chrome;
 /// TopLevelHost extracts overlay/underlay/popover visuals from the template content
 /// and inserts them into its own visual tree.
 /// </summary>
-[PseudoClasses(pcNormal, pcMaximized, pcFullscreen, pcHasShadow, pcHasBorder, pcHasTitlebar)]
+[PseudoClasses(pcNormal, pcMaximized, pcFullscreen, pcHasShadow, pcHasBorder, pcHasTitlebar,
+    pcHasMaximize, pcHasFullscreen, pcHasMinimize)]
 [TemplatePart(PART_CloseButton, typeof(Button))]
 [TemplatePart(PART_MinimizeButton, typeof(Button))]
 [TemplatePart(PART_MaximizeButton, typeof(Button))]
@@ -31,6 +33,9 @@ public class WindowDrawnDecorations : StyledElement
     internal const string pcHasShadow = ":has-shadow";
     internal const string pcHasBorder = ":has-border";
     internal const string pcHasTitlebar = ":has-titlebar";
+    internal const string pcHasMaximize = ":has-maximize";
+    internal const string pcHasFullscreen = ":has-fullscreen";
+    internal const string pcHasMinimize = ":has-minimize";
 
     // Template part names for caption buttons
     internal const string PART_CloseButton = "PART_CloseButton";
@@ -383,8 +388,11 @@ public class WindowDrawnDecorations : StyledElement
         Detach();
         _hostWindow = window;
 
+        window.AllowedWindowActionsChanged += OnAllowedWindowActionsChanged;
+
         _windowSubscriptions = new CompositeDisposable
         {
+            Disposable.Create(() => window.AllowedWindowActionsChanged -= OnAllowedWindowActionsChanged),
             window.GetObservable(Window.TitleProperty)
                 .Subscribe(title => SetCurrentValue(TitleProperty, title)),
             window.GetObservable(Window.CanMaximizeProperty)
@@ -407,6 +415,7 @@ public class WindowDrawnDecorations : StyledElement
                 }),
         };
 
+        UpdateAllowedActionsPseudoClasses();
         UpdateMaximizeButtonState();
         UpdateMinimizeButtonState();
         UpdateFullScreenButtonState();
@@ -547,32 +556,54 @@ public class WindowDrawnDecorations : StyledElement
         e.Handled = true;
     }
 
+    private PlatformAllowedWindowActions EffectiveAllowedActions =>
+        _hostWindow?.AllowedWindowActions ?? PlatformAllowedWindowActions.All;
+
     private void UpdateMaximizeButtonState()
     {
         if (_maximizeButton == null)
             return;
-        _maximizeButton.IsEnabled = _hostWindow?.WindowState switch
-        {
-            WindowState.Maximized or WindowState.FullScreen => _hostWindow.CanResize,
-            WindowState.Normal => _hostWindow.CanMaximize,
-            _ => true
-        };
+        _maximizeButton.IsEnabled = EffectiveAllowedActions.HasFlag(PlatformAllowedWindowActions.Maximize)
+            && (_hostWindow?.WindowState switch
+            {
+                WindowState.Maximized or WindowState.FullScreen => _hostWindow.CanResize,
+                WindowState.Normal => _hostWindow.CanMaximize,
+                _ => true
+            });
     }
 
     private void UpdateMinimizeButtonState()
     {
         if (_minimizeButton == null)
             return;
-        _minimizeButton.IsEnabled = _hostWindow?.CanMinimize ?? true;
+        _minimizeButton.IsEnabled = EffectiveAllowedActions.HasFlag(PlatformAllowedWindowActions.Minimize)
+            && (_hostWindow?.CanMinimize ?? true);
     }
 
     private void UpdateFullScreenButtonState()
     {
         if (_fullScreenButton == null)
             return;
-        _fullScreenButton.IsEnabled = _hostWindow?.WindowState == WindowState.FullScreen
-            ? _hostWindow.CanResize
-            : _hostWindow?.CanMaximize ?? true;
+        _fullScreenButton.IsEnabled = EffectiveAllowedActions.HasFlag(PlatformAllowedWindowActions.Fullscreen)
+            && (_hostWindow?.WindowState == WindowState.FullScreen
+                ? _hostWindow.CanResize
+                : _hostWindow?.CanMaximize ?? true);
+    }
+
+    private void OnAllowedWindowActionsChanged(PlatformAllowedWindowActions actions)
+    {
+        UpdateAllowedActionsPseudoClasses();
+        UpdateMaximizeButtonState();
+        UpdateMinimizeButtonState();
+        UpdateFullScreenButtonState();
+    }
+
+    private void UpdateAllowedActionsPseudoClasses()
+    {
+        var actions = EffectiveAllowedActions;
+        PseudoClasses.Set(pcHasMaximize, actions.HasFlag(PlatformAllowedWindowActions.Maximize));
+        PseudoClasses.Set(pcHasFullscreen, actions.HasFlag(PlatformAllowedWindowActions.Fullscreen));
+        PseudoClasses.Set(pcHasMinimize, actions.HasFlag(PlatformAllowedWindowActions.Minimize));
     }
 
     private void UpdateEffectiveGeometry()

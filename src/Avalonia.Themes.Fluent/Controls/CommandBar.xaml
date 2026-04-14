@@ -237,7 +237,7 @@
                 Padding="{TemplateBinding Padding}"
                 MinHeight="{TemplateBinding MinHeight}">
           <Panel>
-            <DockPanel>
+            <DockPanel KeyboardNavigation.TabNavigation="Cycle">
               <!-- Overflow button (docked right) -->
               <Button x:Name="PART_OverflowButton"
                       DockPanel.Dock="Right"
@@ -286,7 +286,8 @@
                       CornerRadius="{DynamicResource OverlayCornerRadius}"
                       Padding="4"
                       MinWidth="160">
-                <ItemsControl ItemsSource="{Binding OverflowItems, RelativeSource={RelativeSource TemplatedParent}}">
+                <ItemsControl x:Name="PART_OverflowPresenter"
+                              ItemsSource="{Binding OverflowItems, RelativeSource={RelativeSource TemplatedParent}}">
                   <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                       <StackPanel Spacing="2" />

@@ -799,39 +799,16 @@ namespace Avalonia.Win32
                         // A window without a caption (i.e. None and BorderOnly decorations) maximizes to the whole screen
                         // by default. Adjust that to the screen's working area instead.
                         var style = GetStyle();
-                        if (!style.HasAllFlags(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME))
+                        if (!style.HasAllFlags(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME) &&
+                            Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST) is { } screen)
                         {
-                            var screen = Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
-                            if (screen?.WorkingArea is { } workingArea)
-                            {
-                                var x = workingArea.X;
-                                var y = workingArea.Y;
-                                var cx = workingArea.Width;
-                                var cy = workingArea.Height;
-
-                                var adjuster = CreateWindowRectAdjuster();
-                                var borderThickness = new RECT();
-
-                                var adjustedStyle = style & ~WindowStyles.WS_CAPTION;
-
-                                if (style.HasAllFlags(WindowStyles.WS_BORDER))
-                                    adjustedStyle |= WindowStyles.WS_BORDER;
-
-                                if (style.HasAllFlags(WindowStyles.WS_CAPTION))
-                                    adjustedStyle |= WindowStyles.WS_THICKFRAME;
-
-                                adjuster.Adjust(ref borderThickness, adjustedStyle, 0);
-
-                                x += borderThickness.left;
-                                y += borderThickness.top;
-                                cx += -borderThickness.left + borderThickness.right;
-                                cy += -borderThickness.top + borderThickness.bottom;
-
-                                mmi.ptMaxPosition.X = x;
-                                mmi.ptMaxPosition.Y = y;
-                                mmi.ptMaxSize.X = cx;
-                                mmi.ptMaxSize.Y = cy;
-                            }
+                            var maximizedRect = GetCaptionlessMaximizedRect(style, screen.WorkingArea);
+                            // We aren't changing ptMaxPosition because its coordinates must always target the primary screen.
+                            // We can't do that, since the work area might not be the same for all screens.
+                            // Instead, only set the desired max size here.
+                            // WM_WINDOWPOSCHANGING moves the window to the correct position.
+                            mmi.ptMaxSize.X = maximizedRect.Width;
+                            mmi.ptMaxSize.Y = maximizedRect.Height;
                         }
 
                         if (_minSize.Width > 0)
@@ -860,6 +837,37 @@ namespace Avalonia.Win32
 
                         Marshal.StructureToPtr(mmi, lParam, true);
                         return IntPtr.Zero;
+                    }
+
+                case WindowsMessage.WM_WINDOWPOSCHANGING:
+                    {
+                        var pos = (WINDOWPOS*)lParam;
+                        var style = GetStyle();
+                        var flags = (SetWindowPosFlags)pos->flags;
+
+                        // A window without a caption (i.e. None and BorderOnly decorations) maximizes to the whole screen
+                        // by default. Adjust that to the screen's working area instead.
+                        if (!style.HasAllFlags(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME) &&
+                            style.HasAllFlags(WindowStyles.WS_MAXIMIZE) &&
+                            !_isFullScreenActive &&
+                            !flags.HasAllFlags(SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE))
+                        {
+                            // Prefer ScreenFromRect as it contains the new position.
+                            // If the window was minimized, ScreenFromHwnd won't return the correct monitor at this point.
+                            var screen = Screen.ScreenFromRect(new PixelRect(pos->x, pos->y, pos->cx, pos->cy))
+                                ?? Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
+
+                            if (screen is not null)
+                            {
+                                var maximizedRect = GetCaptionlessMaximizedRect(style, screen.WorkingArea);
+                                pos->x = maximizedRect.X;
+                                pos->y = maximizedRect.Y;
+                                pos->cx = maximizedRect.Width;
+                                pos->cy = maximizedRect.Height;
+                                return IntPtr.Zero;
+                            }
+                        }
+                        break;
                     }
 
                 case WindowsMessage.WM_DISPLAYCHANGE:
@@ -994,6 +1002,38 @@ namespace Avalonia.Win32
             }
 
             return DefWindowProc(hWnd, msg, wParam, lParam);
+        }
+
+
+        /// <summary>
+        /// Gets the expected maximized rect for a window without a caption.
+        /// </summary>
+        private PixelRect GetCaptionlessMaximizedRect(WindowStyles style, PixelRect workingArea)
+        {
+            var x = workingArea.X;
+            var y = workingArea.Y;
+            var cx = workingArea.Width;
+            var cy = workingArea.Height;
+
+            var adjuster = CreateWindowRectAdjuster();
+            var borderThickness = new RECT();
+
+            var adjustedStyle = style & ~WindowStyles.WS_CAPTION;
+
+            if (style.HasAllFlags(WindowStyles.WS_BORDER))
+                adjustedStyle |= WindowStyles.WS_BORDER;
+
+            if (style.HasAllFlags(WindowStyles.WS_CAPTION))
+                adjustedStyle |= WindowStyles.WS_THICKFRAME;
+
+            adjuster.Adjust(ref borderThickness, adjustedStyle, 0);
+
+            x += borderThickness.left;
+            y += borderThickness.top;
+            cx += -borderThickness.left + borderThickness.right;
+            cy += -borderThickness.top + borderThickness.bottom;
+
+            return new PixelRect(x, y, cx, cy);
         }
 
         internal bool IsOurWindow(IntPtr hwnd)
@@ -1446,8 +1486,11 @@ namespace Avalonia.Win32
             var physicalKey = KeyInterop.PhysicalKeyFromVirtualKey(virtualKey, keyData);
 
             // Avoid calling GetKeySymbol() for WM_SYSKEYDOWN/UP:
-            // it ultimately calls User32!ToUnicodeEx, which messes up the keyboard state in this case.
-            var keySymbol = useKeySymbol ? KeyInterop.GetKeySymbol(virtualKey, keyData) : null;
+            // it ultimately calls ToUnicodeEx, which corrupts keyboard state for system key events.
+            // Use MapVirtualKey-based fallback instead — it's layout-aware without touching keyboard state.
+            var keySymbol = useKeySymbol
+                ? KeyInterop.GetKeySymbol(virtualKey, keyData)
+                : KeyInterop.GetKeySymbolFromVirtualKey(virtualKey);
 
             if (key == Key.None && physicalKey == PhysicalKey.None && string.IsNullOrWhiteSpace(keySymbol))
                 return null;

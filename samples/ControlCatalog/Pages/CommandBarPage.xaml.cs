@@ -7,7 +7,7 @@ using Avalonia.Media;
 
 namespace ControlCatalog.Pages
 {
-    public partial class CommandBarPage : UserControl
+    public partial class CommandBarPage : ContentPage
     {
         private static readonly (string Group, string Title, string Description, Func<UserControl> Factory)[] Demos =
         {
@@ -23,6 +23,7 @@ namespace ControlCatalog.Pages
             ("Features", "Overflow Menu",    "Secondary commands appear in an overflow popup. Configure visibility and sticky behavior.", () => new CommandBarOverflowPage()),
             ("Features", "Dynamic Overflow", "IsDynamicOverflowEnabled moves primary commands to overflow as space shrinks.",             () => new CommandBarDynamicOverflowPage()),
             ("Features", "Events & State",  "Observe Opening, Opened, Closing, and Closed while tracking IsOpen, HasSecondaryCommands, and IsOverflowButtonVisible.", () => new CommandBarEventsPage()),
+            ("Features", "Keyboard Navigation", "Up/Down to move between overflow items, Home/End to jump to first/last, Escape to close and return focus.", () => new CommandBarKeyboardPage()),
         };
 
         public CommandBarPage()

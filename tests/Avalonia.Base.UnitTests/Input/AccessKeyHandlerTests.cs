@@ -234,6 +234,33 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
+        public void Should_Raise_AccessKey_For_System_Key_Event_With_KeySymbol()
+        {
+            // Regression test for #20961: on Windows, WM_SYSKEYDOWN (Alt+key) previously
+            // left KeySymbol null, breaking access keys. MapVirtualKey now provides KeySymbol.
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var button = new Button();
+                var root = new TestRoot(button);
+                var target = new AccessKeyHandler();
+                var raised = 0;
+
+                KeyboardDevice.Instance?.SetFocusedElement(button, NavigationMethod.Unspecified, KeyModifiers.None);
+
+                target.SetOwner(root);
+                target.Register("F", button);
+                button.AddHandler(AccessKeyHandler.AccessKeyEvent, (s, e) => ++raised);
+
+                KeyDown(root, Key.LeftAlt);
+                Assert.Equal(0, raised);
+
+                // MapVirtualKey provides lowercase KeySymbol for system key events
+                KeyDown(root, Key.F, "f", KeyModifiers.Alt);
+                Assert.Equal(1, raised);
+            }
+        }
+
+        [Fact]
         public void Should_Open_MainMenu_On_Alt_KeyUp()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))

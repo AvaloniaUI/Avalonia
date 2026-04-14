@@ -124,8 +124,8 @@ namespace Avalonia.Controls
 
             if (change.Property == PageProperty)
             {
-                var oldPage = change.GetOldValue<Page?>();
-                var newPage = change.GetNewValue<Page?>();
+                var oldPage = change.OldValue as Page;
+                var newPage = change.NewValue as Page;
 
                 SetCurrentValue(ContentProperty, newPage);
 
