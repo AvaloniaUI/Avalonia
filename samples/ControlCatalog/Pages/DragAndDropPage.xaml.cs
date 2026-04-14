@@ -13,7 +13,7 @@ using Avalonia.Platform.Storage;
 
 namespace ControlCatalog.Pages
 {
-    public partial class DragAndDropPage : UserControl
+    public partial class DragAndDropPage : ContentPage
     {
         private readonly DataFormat<string> _customFormat =
             DataFormat.CreateStringApplicationFormat("xxx-avalonia-controlcatalog-custom");

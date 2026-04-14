@@ -136,6 +136,9 @@ internal static class DataFormatHelper
 
         foreach (var format in formats)
         {
+            if (format.Kind == DataFormatKind.InProcess)
+                continue;
+
             foreach (var atom in ToAtoms(format, atoms))
                 atomValues.Add(atom);
         }

@@ -86,13 +86,14 @@ namespace Avalonia.Harfbuzz
 
                 var glyphIndex = (ushort)sourceInfo.Codepoint;
 
-                var glyphCluster = (int)sourceInfo.Cluster;
+                var originalCluster = (int)sourceInfo.Cluster;
+                var glyphCluster = originalCluster - start;
 
                 var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale) + options.LetterSpacing;
 
                 var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                if (glyphCluster < containingText.Length && containingText[glyphCluster] == '\t')
+                if (originalCluster < containingText.Length && containingText[originalCluster] == '\t')
                 {
                     glyphIndex = glyphTypeface.CharacterToGlyphMap[' '];
 

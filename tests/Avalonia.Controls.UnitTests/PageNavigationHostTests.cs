@@ -129,5 +129,38 @@ public class PageNavigationHostTests
             Assert.Equal("NavigatedFrom", order[0]);
             Assert.Equal("NavigatedTo",   order[1]);
         }
+
+        [Fact]
+        public void InitialLayout_WithExistingPage_DoesNotThrow_WhenContentPresenterChildIsAssigned()
+        {
+            var page = new ContentPage { Header = "Home" };
+            var host = new PageNavigationHost { Page = page };
+            var root = new TestRoot { Child = host };
+
+            var exception = Record.Exception(() => root.LayoutManager.ExecuteInitialLayoutPass());
+
+            Assert.Null(exception);
+            Assert.NotNull(host.Presenter);
+            Assert.Same(page, host.Presenter!.Child);
+        }
+
+        [Fact]
+        public void ReplacingPage_ResetsOldPresenterChildSafeAreaPadding()
+        {
+            var first = new ContentPage { Header = "First" };
+            var second = new ContentPage { Header = "Second" };
+            var host = new PageNavigationHost { Page = first };
+            var root = new TestRoot { Child = host };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+            first.SafeAreaPadding = new Thickness(1, 2, 3, 4);
+
+            var exception = Record.Exception(() => host.Page = second);
+
+            Assert.Null(exception);
+            Assert.Equal(default, first.SafeAreaPadding);
+            Assert.NotNull(host.Presenter);
+            Assert.Same(second, host.Presenter!.Child);
+        }
     }
 }
