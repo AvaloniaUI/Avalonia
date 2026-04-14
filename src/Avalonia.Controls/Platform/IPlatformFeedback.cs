@@ -2,8 +2,7 @@
 
 namespace Avalonia.Controls.Platform
 {
-    [NotClientImplementable]
-    public interface IPlatformFeedback
+    internal interface IPlatformFeedback
     {
         /// <summary>
         /// Performs the specified <see cref="FeedbackType"/> on the platform.

@@ -26,6 +26,8 @@
     <InternalsVisibleTo Include="Avalonia.Win32, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Win32.Automation, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.X11, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Android, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.iOS, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.LinuxFramebuffer, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.DesignerSupport.Remote, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Browser, PublicKey=$(AvaloniaPublicKey)" />
