@@ -4,14 +4,27 @@ namespace Avalonia.Controls.Platform
 {
     public class PlatformFeedback
     {
+        /// <summary>
+        /// Defines the FeedbackType attached property.
+        /// </summary>
         public static readonly AttachedProperty<FeedbackType> FeedbackTypeProperty =
             AvaloniaProperty.RegisterAttached<PlatformFeedback, InputElement, FeedbackType>("FeedbackType", defaultValue: FeedbackType.None);
 
+        /// <summary>
+        /// Sets the value of the attached FeedbackType property.
+        /// </summary>
+        /// <param name="control">The attached control</param>
+        /// <param name="feedbackType">The feedback type</param>
         public static void SetFeedbackType(InputElement control, FeedbackType feedbackType)
         {
             control.SetValue(FeedbackTypeProperty, feedbackType);
         }
 
+        /// <summary>
+        /// Gets the value of the attached FeedbackType property.
+        /// </summary>
+        /// <param name="control">The feedback type</param>
+        /// <returns></returns>
         public static FeedbackType GetFeedbackType(InputElement control)
         {
             return control.GetValue(FeedbackTypeProperty);
@@ -20,13 +33,18 @@ namespace Avalonia.Controls.Platform
 
     internal static class PlatformFeedbackExtensions
     {
-        internal static void PerformFeedback(this InputElement inputElement, FeedbackEffect feedbackEffect)
+        /// <summary>
+        /// Performs the specified <see cref="FeedbackEffect"/> on this <see cref="InputElement"/>. The type of feedback to perform is defined in the <see cref="PlatformFeedback.FeedbackTypeProperty"/>
+        /// </summary>
+        /// <param name="inputElement">The element to trigger the feedback effect on</param>
+        /// <param name="feedbackEffect">The feedback effect relating to the action that triggered it</param>
+        public static void PerformFeedback(this InputElement inputElement, FeedbackEffect feedbackEffect)
         {
             var feedback = PlatformFeedback.GetFeedbackType(inputElement);
             if (feedback != FeedbackType.None &&
                 TopLevel.GetTopLevel(inputElement)?.PlatformImpl?.TryGetFeature<IPlatformFeedback>() is { } platformFeedBack)
             {
-                platformFeedBack.Play(feedbackEffect, feedback);
+                platformFeedBack.Perform(feedbackEffect, feedback);
             }
         }
     }

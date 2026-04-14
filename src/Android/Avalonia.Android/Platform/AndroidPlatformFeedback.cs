@@ -7,7 +7,7 @@ namespace Avalonia.Android.Platform
 {
     internal class AndroidPlatformFeedback(View view) : IPlatformFeedback
     {
-        public bool Play(FeedbackEffect feedback, FeedbackType type)
+        public bool Perform(FeedbackEffect feedback, FeedbackType type)
         {
             var playSound = type != FeedbackType.Haptic;
             var vibrate = type != FeedbackType.Sound;

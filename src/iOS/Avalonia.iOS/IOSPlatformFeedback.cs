@@ -11,7 +11,7 @@ namespace Avalonia.iOS
         private readonly AvaloniaView _avaloniaView = avaloniaView;
 #pragma warning restore CA1823
 
-        public bool Play(FeedbackEffect feedback, FeedbackType type)
+        public bool Perform(FeedbackEffect feedback, FeedbackType type)
         {
             var performedFeedback = false;
             var playSound = type != FeedbackType.Haptic;
