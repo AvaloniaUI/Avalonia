@@ -144,6 +144,7 @@ namespace Avalonia.Controls
             SubmenuOpenedEvent.AddClassHandler<MenuItem>((x, e) => x.OnSubmenuOpened(e));
             AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<MenuItem>(IsOffscreenBehavior.FromClip);
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<MenuItem>(OnAccessKeyPressed);
+            PlatformFeedback.FeedbackTypeProperty.OverrideDefaultValue<MenuItem>(FeedbackType.Auto);
         }
 
         public MenuItem()

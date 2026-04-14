@@ -9,6 +9,7 @@ using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -681,6 +682,11 @@ namespace Avalonia.Controls
                         ItemSelectionEventTriggers.HasRangeSelectionModifier(container, eventArgs),
                         ItemSelectionEventTriggers.HasToggleSelectionModifier(container, eventArgs),
                         eventArgs is PointerEventArgs { Properties.IsRightButtonPressed: true });
+
+                    if (eventArgs is PointerEventArgs)
+                    {
+                        container.PerformFeedback(FeedbackEffect.Click);
+                    }
 
                     eventArgs.Handled = true;
                     return true;

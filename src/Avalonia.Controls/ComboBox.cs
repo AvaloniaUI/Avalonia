@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
@@ -122,6 +123,7 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<ComboBox>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
+            PlatformFeedback.FeedbackTypeProperty.OverrideDefaultValue<ComboBox>(FeedbackType.Auto);
         }
 
         /// <summary>
@@ -365,6 +367,7 @@ namespace Avalonia.Controls
                 if (_popup?.IsInsidePopup(source) != true && PseudoClasses.Contains(pcPressed))
                 {
                     SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
+                    this.PerformFeedback(FeedbackEffect.Click);
                     e.Handled = true;
                 }
             }

@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Avalonia.Automation.Peers;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Rendering;
@@ -37,7 +37,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<object?> TagProperty =
             AvaloniaProperty.Register<Control, object?>(nameof(Tag));
-        
+
         /// <summary>
         /// Defines the <see cref="ContextMenu"/> property.
         /// </summary>
@@ -57,7 +57,7 @@ namespace Avalonia.Controls
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>(
                 "RequestBringIntoView",
                 RoutingStrategies.Bubble);
-        
+
         /// <summary>
         /// Defines the <see cref="Loaded"/> event.
         /// </summary>
@@ -99,6 +99,11 @@ namespace Avalonia.Controls
         private DataTemplates? _dataTemplates;
         private Control? _focusAdorner;
         private AutomationPeer? _automationPeer;
+
+        static Control()
+        {
+            InputElement.HoldingEvent.AddClassHandler<Control>(OnFeedbackHoldEventHandler, handledEventsToo: true);
+        }
 
         /// <summary>
         /// Gets or sets the control's focus adorner.
@@ -205,6 +210,12 @@ namespace Avalonia.Controls
 
             throw new InvalidOperationException(
                 "Cannot use a control as a Setter value. Wrap the control in a <Template>.");
+        }
+
+        private static void OnFeedbackHoldEventHandler(Control control, HoldingRoutedEventArgs args)
+        {
+            if (args.Handled && args.HoldingState == HoldingState.Started)
+                control.PerformFeedback(FeedbackEffect.LongPress);
         }
 
         /// <inheritdoc/>
@@ -532,7 +543,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         /// <inheritdoc />
         protected override void UpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
         {
