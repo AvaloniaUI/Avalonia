@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Platform
         /// </summary>
         /// <param name="feedback">The feedback type to perform.</param>
         /// <param name="type">The feedback effect relating to the action that triggered it</param>
-        /// <returns></returns>
+        /// <returns>true if the platform performed the requested feedback; false otherwise.</returns>
         bool Perform(FeedbackEffect feedback, FeedbackType type);
     }
 

@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Platform
         }
     }
 
-    internal static class PlatformFeedbackExtensions
+    public static class PlatformFeedbackExtensions
     {
         /// <summary>
         /// Performs the specified <see cref="FeedbackEffect"/> on this <see cref="InputElement"/>. The type of feedback to perform is defined in the <see cref="PlatformFeedback.FeedbackTypeProperty"/>
