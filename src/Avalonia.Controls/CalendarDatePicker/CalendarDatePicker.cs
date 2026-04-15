@@ -713,7 +713,7 @@ namespace Avalonia.Controls
         /// </returns>
         private DateTime? ParseText(string text)
         {
-            DateTime newSelectedDate;
+            DateTime? newSelectedDate;
 
             // TryParse is not used in order to be able to pass the exception to
             // the TextParseError event
@@ -860,7 +860,9 @@ namespace Avalonia.Controls
                 DateTime? d = ParseText(s);
                 if (d != null)
                 {
-                    SetValue(TextProperty, s);
+                    // make sure displayed text is reformatted to correct date format
+                    string? newtext = DateTimeToString((DateTime)d);
+                    SetValue(TextProperty, newtext);
                     return d;
                 }
                 else
