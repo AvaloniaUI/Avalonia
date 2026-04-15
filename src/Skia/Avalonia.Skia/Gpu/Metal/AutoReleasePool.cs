@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Avalonia.Skia.Metal;
 
@@ -14,10 +15,9 @@ internal sealed partial class AutoReleasePool : IDisposable
 
     public void Dispose()
     {
-        var pool = _pool;
+        var pool = Interlocked.Exchange(ref _pool, IntPtr.Zero);
         if (pool != IntPtr.Zero)
         {
-            _pool = IntPtr.Zero;
             Pop(pool);
         }
     }
