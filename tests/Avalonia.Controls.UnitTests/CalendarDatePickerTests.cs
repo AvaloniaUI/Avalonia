@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -95,6 +96,73 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal("12.10.2024", datePicker.Text);
                 Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2024, 10, 12)));
+            }
+        }
+
+        private class CalendarDatePickerParser : IValueConverter
+        {
+            public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+            {
+                var str = value?.ToString();
+                if (str == null)
+                    return AvaloniaProperty.UnsetValue;
+                // allow for a few different date formats
+                string[] formats = ["yyyy-MM-dd", "MM dd yyyy", "dd.MM.yyyy"];
+                if (DateTime.TryParseExact(str, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateValue))
+                {
+                    return dateValue;
+                }
+                return AvaloniaProperty.UnsetValue;
+            }
+
+            public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            {
+                try
+                {
+                    if (value is DateTime d)
+                        return d.ToString("yyyy-MM-dd");
+                    return AvaloniaProperty.UnsetValue;
+                }
+                catch
+                {
+                    return AvaloniaProperty.UnsetValue;
+                }
+            }
+        }
+
+        [Fact]
+        public void Setting_Date_Manually_Can_Accept_Multiple_Formats()
+        {
+            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+            using (UnitTestApplication.Start(Services))
+            {
+                CalendarDatePicker datePicker = CreateControl();
+                datePicker.SelectedDateFormat = CalendarDatePickerFormat.Custom;
+                datePicker.CustomDateFormatString = "dd.MM.yyyy";
+                datePicker.TextConverter = new CalendarDatePickerParser();
+                var tb = GetTextBox(datePicker);
+
+                // parser can work with same format as CustomDateFormatString (but TextConverter must handle it)
+                tb.Clear();
+                RaiseTextEvent(tb, "17.10.2024");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+                Assert.Equal("17.10.2024", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate!.Value, new DateTime(2024, 10, 17)));
+
+                // can also handle parsing other formats that the user enters, too
+                tb.Clear();
+                RaiseTextEvent(tb, "2024-02-13");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+
+                Assert.Equal("13.02.2024", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2024, 2, 13)));
+
+                tb.Clear();
+                RaiseTextEvent(tb, "04 22 2026");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+
+                Assert.Equal("22.04.2026", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2026, 4, 22)));
             }
         }
 
