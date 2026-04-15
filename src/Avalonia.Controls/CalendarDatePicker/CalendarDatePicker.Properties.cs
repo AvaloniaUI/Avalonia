@@ -74,6 +74,14 @@ namespace Avalonia.Controls
                 defaultValue: "d",
                 validate: IsValidDateFormatString);
 
+        /// <summary> 
+        /// Defines the <see cref="TextConverter"/> property. 
+        /// </summary> 
+        public static readonly StyledProperty<IValueConverter?> TextConverterProperty = 
+            AvaloniaProperty.Register<CalendarDatePicker, IValueConverter?>(
+                nameof(TextConverter),
+                defaultBindingMode: BindingMode.OneWay);
+
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
@@ -270,6 +278,15 @@ namespace Avalonia.Controls
             get => GetValue(CustomDateFormatStringProperty);
             set => SetValue(CustomDateFormatStringProperty, value);
         }
+        
+        /// <summary> 
+        /// Gets or sets the custom bidirectional Text-Value converter. 
+        /// </summary> 
+        public IValueConverter? TextConverter 
+        { 
+            get => GetValue(TextConverterProperty); 
+            set => SetValue(TextConverterProperty, value); 
+        } 
 
         /// <summary>
         /// Gets or sets the text that is displayed by the <see cref="CalendarDatePicker" />.
