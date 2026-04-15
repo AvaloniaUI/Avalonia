@@ -273,6 +273,14 @@ namespace Avalonia.Controls
             set => SetValue(SelectedDateFormatProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the custom date format used for display (and/or parsing)
+        /// the date displayed to the user. Not used unless
+        /// <see cref="SelectedDateFormat"/> is <see cref="CalendarDatePickerFormat.Custom" />.
+        /// </summary>
+        /// <value>
+        /// The default is "d".
+        /// </value>
         public string CustomDateFormatString
         {
             get => GetValue(CustomDateFormatStringProperty);
