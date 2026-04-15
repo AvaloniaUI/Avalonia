@@ -17,9 +17,18 @@ namespace Avalonia.Media.TextFormatting
         [ThreadStatic] private static BidiData? t_bidiData;
         [ThreadStatic] private static BidiAlgorithm? t_bidiAlgorithm;
 
-        /// <inheritdoc cref="TextFormatter.FormatLine"/>
+        /// <inheritdoc/>
         public override TextLine? FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
             TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak = null)
+        {
+            return FormatLine(textSource, firstTextSourceIndex, paragraphWidth,
+                paragraphProperties, previousLineBreak, null);
+        }
+
+        /// <inheritdoc/>
+        public override TextLine? FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
+            TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak,
+            TextRunCache? textRunCache)
         {
             TextLineBreak? nextLineBreak = null;
             var objectPool = FormattingObjectPool.Instance;
@@ -32,6 +41,14 @@ namespace Avalonia.Media.TextFormatting
             {
                 return PerformTextWrapping(remainingRuns, true, firstTextSourceIndex, paragraphWidth,
                     paragraphProperties, previousLineBreak.FlowDirection, previousLineBreak, objectPool);
+            }
+
+            // Try to use cached shaped runs to avoid redundant shaping/bidi processing.
+            if (textRunCache != null
+                && textRunCache.TryGetShapedRuns(firstTextSourceIndex, out var cached))
+            {
+                return FormatLineFromCache(cached, firstTextSourceIndex, paragraphWidth,
+                    paragraphProperties, objectPool);
             }
 
             RentedList<TextRun>? fetchedRuns = null;
@@ -54,11 +71,32 @@ namespace Avalonia.Media.TextFormatting
                     nextLineBreak = new TextLineBreak(textEndOfLine, resolvedFlowDirection);
                 }
 
+                // Store shaped runs in cache for reuse.
+                if (textRunCache != null)
+                {
+                    textRunCache.Add(firstTextSourceIndex,
+                        new CachedShapingResult(shapedTextRuns.ToArray(), resolvedFlowDirection,
+                            textEndOfLine, textSourceLength));
+                }
+
                 switch (paragraphProperties.TextWrapping)
                 {
                     case TextWrapping.NoWrap:
                         {
-                            var textLine = new TextLineImpl(shapedTextRuns.ToArray(), firstTextSourceIndex,
+                            TextRun[] lineRuns;
+
+                            if (textRunCache != null)
+                            {
+                                // When caching, the cache owns the shaped runs.
+                                // Create non-owning copies for the line.
+                                lineRuns = CreateNonOwningRuns(shapedTextRuns);
+                            }
+                            else
+                            {
+                                lineRuns = shapedTextRuns.ToArray();
+                            }
+
+                            var textLine = new TextLineImpl(lineRuns, firstTextSourceIndex,
                                 textSourceLength,
                                 paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
 
@@ -69,6 +107,16 @@ namespace Avalonia.Media.TextFormatting
                     case TextWrapping.WrapWithOverflow:
                     case TextWrapping.Wrap:
                         {
+                            if (textRunCache != null)
+                            {
+                                // When caching, create non-owning copies for wrapping.
+                                var nonOwningRuns = CreateNonOwningRunsList(shapedTextRuns);
+
+                                return PerformTextWrapping(nonOwningRuns, false, firstTextSourceIndex,
+                                    paragraphWidth, paragraphProperties, resolvedFlowDirection,
+                                    nextLineBreak, objectPool);
+                            }
+
                             return PerformTextWrapping(shapedTextRuns, false, firstTextSourceIndex, paragraphWidth,
                                 paragraphProperties, resolvedFlowDirection, nextLineBreak, objectPool);
                         }
@@ -81,6 +129,98 @@ namespace Avalonia.Media.TextFormatting
                 objectPool.TextRunLists.Return(ref shapedTextRuns);
                 objectPool.TextRunLists.Return(ref fetchedRuns);
             }
+        }
+
+        /// <summary>
+        /// Formats a line from cached shaped runs, skipping shaping and bidi processing.
+        /// </summary>
+        private static TextLine FormatLineFromCache(CachedShapingResult cached, int firstTextSourceIndex,
+            double paragraphWidth, TextParagraphProperties paragraphProperties, FormattingObjectPool objectPool)
+        {
+            var resolvedFlowDirection = cached.ResolvedFlowDirection;
+
+            TextLineBreak? nextLineBreak = null;
+
+            if (cached.TextEndOfLine != null)
+            {
+                nextLineBreak = new TextLineBreak(cached.TextEndOfLine, resolvedFlowDirection);
+            }
+
+            switch (paragraphProperties.TextWrapping)
+            {
+                case TextWrapping.NoWrap:
+                    {
+                        var lineRuns = CreateNonOwningRuns(cached.ShapedRuns);
+
+                        var textLine = new TextLineImpl(lineRuns, firstTextSourceIndex,
+                            cached.TextSourceLength,
+                            paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
+
+                        textLine.FinalizeLine();
+
+                        return textLine;
+                    }
+                case TextWrapping.WrapWithOverflow:
+                case TextWrapping.Wrap:
+                    {
+                        var nonOwningRuns = CreateNonOwningRunsList(cached.ShapedRuns);
+
+                        return PerformTextWrapping(nonOwningRuns, false, firstTextSourceIndex,
+                            paragraphWidth, paragraphProperties, resolvedFlowDirection,
+                            nextLineBreak, objectPool);
+                    }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(paragraphProperties.TextWrapping));
+            }
+        }
+
+        /// <summary>
+        /// Creates a non-owning copy of a text run. For shaped text runs, this creates
+        /// a new instance with a separate shaped buffer so that disposing the copy does
+        /// not dispose the original cached shaped buffer.
+        /// </summary>
+        private static TextRun CreateNonOwningRun(TextRun run)
+        {
+            if (run is ShapedTextRun shaped)
+            {
+                var buf = shaped.ShapedBuffer;
+                return new ShapedTextRun(
+                    new ShapedBuffer(buf.Text, buf.GlyphInfos, buf.GlyphTypeface, buf.FontRenderingEmSize, buf.BidiLevel),
+                    shaped.Properties);
+            }
+
+            return run;
+        }
+
+        /// <summary>
+        /// Creates non-owning copies of shaped text runs for use in text lines,
+        /// so that disposing the line does not dispose the cached shaped buffers.
+        /// </summary>
+        private static TextRun[] CreateNonOwningRuns(IReadOnlyList<TextRun> runs)
+        {
+            var result = new TextRun[runs.Count];
+
+            for (var i = 0; i < runs.Count; i++)
+            {
+                result[i] = CreateNonOwningRun(runs[i]);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Creates a non-owning list of shaped text runs for use with text wrapping.
+        /// </summary>
+        private static List<TextRun> CreateNonOwningRunsList(IReadOnlyList<TextRun> runs)
+        {
+            var result = new List<TextRun>(runs.Count);
+
+            for (var i = 0; i < runs.Count; i++)
+            {
+                result.Add(CreateNonOwningRun(runs[i]));
+            }
+
+            return result;
         }
 
         /// <summary>
