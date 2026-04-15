@@ -719,9 +719,16 @@ namespace Avalonia.Controls
             // the TextParseError event
             try
             {
-                newSelectedDate = SelectedDateFormat == CalendarDatePickerFormat.Custom && !string.IsNullOrEmpty(CustomDateFormatString) ?
-                    DateTime.ParseExact(text, CustomDateFormatString, DateTimeHelper.GetCurrentDateFormat()) :
-                    DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
+                if (TextConverter != null)
+                {
+                    newSelectedDate = (DateTime?)TextConverter.Convert(text, typeof(DateTime?), null, CultureInfo.CurrentCulture);
+                }
+                else
+                {
+                    newSelectedDate = SelectedDateFormat == CalendarDatePickerFormat.Custom && !string.IsNullOrEmpty(CustomDateFormatString) ?
+                        DateTime.ParseExact(text, CustomDateFormatString, DateTimeHelper.GetCurrentDateFormat()) :
+                        DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
+                }
 
                 if (Calendar.IsValidDateSelection(this._calendar!, newSelectedDate))
                 {
