@@ -24,6 +24,9 @@ namespace Avalonia.Harfbuzz
         {
             var textSpan = text.Span;
 
+            if (text.Length == 0)
+                return new ShapedBuffer(text, 0, options.GlyphTypeface, options.FontRenderingEmSize, options.BidiLevel);
+
             var glyphTypeface = options.GlyphTypeface;
 
             if (glyphTypeface.TextShaperTypeface is not HarfBuzzTypeface harfBuzzTypeface)
@@ -83,13 +86,14 @@ namespace Avalonia.Harfbuzz
 
                 var glyphIndex = (ushort)sourceInfo.Codepoint;
 
-                var glyphCluster = (int)sourceInfo.Cluster;
+                var originalCluster = (int)sourceInfo.Cluster;
+                var glyphCluster = originalCluster - start;
 
                 var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale) + options.LetterSpacing;
 
                 var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                if (glyphCluster < containingText.Length && containingText[glyphCluster] == '\t')
+                if (originalCluster < containingText.Length && containingText[originalCluster] == '\t')
                 {
                     glyphIndex = glyphTypeface.CharacterToGlyphMap[' '];
 
@@ -120,6 +124,8 @@ namespace Avalonia.Harfbuzz
         private static void MergeBreakPair(Buffer buffer)
         {
             var length = buffer.Length;
+
+            if (length == 0) return;
 
             var glyphInfos = buffer.GetGlyphInfoSpan();
 

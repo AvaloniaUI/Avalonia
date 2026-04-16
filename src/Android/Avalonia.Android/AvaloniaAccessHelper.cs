@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using Android.OS;
 using AndroidX.Core.View.Accessibility;
 using AndroidX.CustomView.Widget;
@@ -134,9 +134,38 @@ namespace Avalonia.Android
 
         protected override bool OnPerformActionForVirtualView(int virtualViewId, int action, Bundle? arguments)
         {
-            return (GetNodeInfoProvidersFromVirtualViewId(virtualViewId) ?? [])
-                .Select(x => x.PerformNodeAction(action, arguments))
-                .Aggregate(false, (a, b) => a | b);
+            var providers = GetNodeInfoProvidersFromVirtualViewId(virtualViewId);
+            if (providers == null)
+            {
+                return false;
+            }
+
+            var result = false;
+            foreach (var provider in providers)
+            {
+                result |= TryPerformNodeAction(provider, action, arguments);
+            }
+            return result;
+        }
+
+        private static bool TryPerformNodeAction(INodeInfoProvider nodeInfoProvider, int action, Bundle? arguments)
+        {
+            try
+            {
+                return nodeInfoProvider.PerformNodeAction(action, arguments);
+            }
+            catch (ElementNotEnabledException)
+            {
+                return false;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+            catch (NotSupportedException)
+            {
+                return false;
+            }
         }
 
         protected override void OnPopulateNodeForVirtualView(int virtualViewId, AccessibilityNodeInfoCompat? nodeInfo)

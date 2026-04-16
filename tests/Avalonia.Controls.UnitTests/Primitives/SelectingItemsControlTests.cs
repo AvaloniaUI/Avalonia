@@ -2555,7 +2555,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private static void Layout(Control c)
         {
-            ((ILayoutRoot)c.GetVisualRoot()!).LayoutManager.ExecuteLayoutPass();
+            c.GetLayoutManager()?.ExecuteLayoutPass();
         }
 
         private static FuncControlTemplate Template()

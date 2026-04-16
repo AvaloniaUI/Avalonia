@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using Avalonia.Logging;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Transport;
@@ -43,6 +44,9 @@ namespace Avalonia.Rendering.Composition.Server
         public CompositionOptions Options { get; }
         public ServerCompositorAnimations Animations { get; }
         public ReadbackIndices Readback { get; } = new();
+        
+        private int _ticksSinceLastCommit;
+        private const int CommitGraceTicks = 10;
 
         public ServerCompositor(IRenderLoop renderLoop, IPlatformGraphics? platformGraphics,
             CompositionOptions options,
@@ -63,6 +67,7 @@ namespace Avalonia.Rendering.Composition.Server
         {
             lock (_batches) 
                 _batches.Enqueue(batch);
+            _renderLoop.Wakeup();
         }
 
         internal void UpdateServerTime() => ServerNow = Clock.Elapsed;
@@ -71,6 +76,7 @@ namespace Avalonia.Rendering.Composition.Server
         readonly List<CompositionBatch> _reusableToNotifyRenderedList = new();
         void ApplyPendingBatches()
         {
+            bool hadBatches = false;
             while (true)
             {
                 CompositionBatch batch;
@@ -118,7 +124,13 @@ namespace Avalonia.Rendering.Composition.Server
 
                 _reusableToNotifyProcessedList.Add(batch);
                 LastBatchId = batch.SequenceId;
+                hadBatches = true;
             }
+            
+            if (hadBatches)
+                _ticksSinceLastCommit = 0;
+            else if (_ticksSinceLastCommit < int.MaxValue)
+                _ticksSinceLastCommit++;
         }
 
         void ReadServerJobs(BatchStreamReader reader, Queue<Action> queue, object endMarker)
@@ -170,8 +182,10 @@ namespace Avalonia.Rendering.Composition.Server
             _reusableToNotifyRenderedList.Clear();
         }
 
-        public void Render() => Render(true);
-        public void Render(bool catchExceptions)
+        bool IRenderLoopTask.Render() => ExecuteRender(true);
+        public void Render(bool catchExceptions) => ExecuteRender(catchExceptions);
+        
+        private bool ExecuteRender(bool catchExceptions)
         {
             if (Dispatcher.UIThread.CheckAccess())
             {
@@ -181,7 +195,7 @@ namespace Avalonia.Rendering.Composition.Server
                 try
                 {
                     using (Dispatcher.UIThread.DisableProcessing()) 
-                        RenderReentrancySafe(catchExceptions);
+                        return RenderReentrancySafe(catchExceptions);
                 }
                 finally
                 {
@@ -189,10 +203,10 @@ namespace Avalonia.Rendering.Composition.Server
                 }
             }
             else
-                RenderReentrancySafe(catchExceptions);
+                return RenderReentrancySafe(catchExceptions);
         }
         
-        private void RenderReentrancySafe(bool catchExceptions)
+        private bool RenderReentrancySafe(bool catchExceptions)
         {
             lock (_lock)
             {
@@ -201,7 +215,7 @@ namespace Avalonia.Rendering.Composition.Server
                     try
                     {
                         _safeThread = Thread.CurrentThread;
-                        RenderCore(catchExceptions);
+                        return RenderCore(catchExceptions);
                     }
                     finally
                     {
@@ -234,17 +248,16 @@ namespace Avalonia.Rendering.Composition.Server
             return Stopwatch.GetElapsedTime(compositorGlobalPassesStarted);
         }
         
-        private void RenderCore(bool catchExceptions)
+        private bool RenderCore(bool catchExceptions)
         {
-            
             UpdateServerTime();
             
             var compositorGlobalPassesElapsed = ExecuteGlobalPasses();
             
             try
             {
-                if(!RenderInterface.IsReady)
-                    return;
+                if (!RenderInterface.IsReady)
+                    return true;
                 RenderInterface.EnsureValidBackendContext();
                 ExecuteServerJobs(_receivedJobQueue);
 
@@ -262,6 +275,18 @@ namespace Avalonia.Rendering.Composition.Server
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this, "Exception when rendering: {Error}", e);
             }
+            
+            // Request a tick if we have active animations or if there are recent batches
+            if (Animations.NeedNextTick || _ticksSinceLastCommit < CommitGraceTicks)
+                return true;
+            
+            // Request a tick if we had unready targets in the last tick, to check if they are ready next time
+            foreach (var target in _activeTargets)
+                if (target.IsWaitingForReadyRenderTarget)
+                    return true;
+            
+            // Otherwise there is no need to waste CPU cycles, tell the timer to pause
+            return false;
         }
 
         public void AddCompositionTarget(ServerCompositionTarget target)
@@ -274,10 +299,15 @@ namespace Avalonia.Rendering.Composition.Server
             _activeTargets.Remove(target);
         }
         
-        public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+        public IRenderTarget CreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
         {
             using (RenderInterface.EnsureCurrent())
                 return RenderInterface.CreateRenderTarget(surfaces);
+        }
+
+        public bool IsReadyToCreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
+        {
+            return RenderInterface.IsReadyToCreateRenderTarget(surfaces);
         }
 
         public bool CheckAccess() => _safeThread == Thread.CurrentThread;

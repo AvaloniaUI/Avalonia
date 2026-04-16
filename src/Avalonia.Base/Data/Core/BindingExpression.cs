@@ -205,7 +205,9 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
                 var error = dataValidationError is not null ?
                     new BindingError(dataValidationError, BindingErrorType.DataValidationError) :
                     null;
-                ConvertAndPublishValue(value, error);
+
+                var forceUpdate = _mode == BindingMode.OneWay;
+                ConvertAndPublishValue(value, error, forceUpdate);
             }
         }
         else if (_mode == BindingMode.OneWayToSource && nodeIndex == _nodes.Count - 2 && value is not null)
@@ -402,7 +404,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
             error);
     }
 
-    private void ConvertAndPublishValue(object? value, BindingError? error)
+    private void ConvertAndPublishValue(object? value, BindingError? error, bool forceUpdate = false)
     {
         var isTargetNullValue = false;
 
@@ -450,7 +452,7 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
             value = ConvertFallback(FallbackValue, nameof(FallbackValue));
 
         // Publish the value.
-        PublishValue(value, error);
+        PublishValue(value, error, forceUpdate);
     }
 
     private void WriteTargetValueToSource()
@@ -460,12 +462,9 @@ internal class BindingExpression : UntypedBindingExpressionBase, IDescription, I
         StopDelayTimer();
 
         if (TryGetTarget(out var target) &&
-            TargetProperty is not null &&
-            target.GetValue(TargetProperty) is var value &&
-            LeafNode is { } leafNode &&
-            !TypeUtilities.IdentityEquals(value, leafNode.Value, TargetType))
+            TargetProperty is not null)
         {
-            WriteValueToSource(value);
+            WriteValueToSource(target.GetValue(TargetProperty));
         }
     }
 

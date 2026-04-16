@@ -6,6 +6,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using MicroCom.Runtime;
 
 namespace Avalonia.Native
@@ -19,6 +20,7 @@ namespace Avalonia.Native
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
         private bool _canResize = true;
         private bool _canMaximize = true;
+        private Controls.WindowDecorations _decorations = Controls.WindowDecorations.Full;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(factory)
         {
@@ -89,9 +91,11 @@ namespace Avalonia.Native
             _native.SetCanMaximize(value.AsComBool());
         }
 
-        public void SetSystemDecorations(Controls.SystemDecorations enabled)
+        public void SetWindowDecorations(Controls.WindowDecorations enabled)
         {
+            _decorations = enabled;
             _native.SetDecorations((Interop.SystemDecorations)enabled);
+            InvalidateExtendedMargins();
         }
 
         public void SetTitleBarColor(Avalonia.Media.Color color)
@@ -110,10 +114,13 @@ namespace Avalonia.Native
             set => _native.SetWindowState((AvnWindowState)value);
         }
 
+        public bool WindowStateGetterIsUsable => false;
         public Action<WindowState>? WindowStateChanged { get; set; }
 
         public Action<bool>? ExtendClientAreaToDecorationsChanged { get; set; }
 
+        // Extension is handled by native backend
+        public PlatformRequestedDrawnDecoration RequestedDrawnDecorations => default;
         public Thickness ExtendedMargins { get; private set; }
 
         public Thickness OffScreenMargin { get; } = new Thickness();
@@ -136,8 +143,9 @@ namespace Avalonia.Native
             {
                 if(e.Type == RawPointerEventType.LeftButtonDown)
                 {
-                    var window = _inputRoot as Window;
-                    var visual = window?.Renderer.HitTestFirst(e.Position, window, x =>
+                    // TODO: Casts like this are evil
+                    var source = (PresentationSource?)_inputRoot;
+                    var visual = source?.Renderer.HitTestFirst(e.Position, source.RootElement, x =>
                             {
                                 if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
                                 {
@@ -179,13 +187,13 @@ namespace Avalonia.Native
             if(_native is MicroComProxyBase pb && pb.IsDisposed) 
                 return;
 
-            if (WindowState ==  WindowState.FullScreen)
+            if (WindowState ==  WindowState.FullScreen || !_isExtended || _decorations != Controls.WindowDecorations.Full)
             {
                 ExtendedMargins = new Thickness();
             }
             else
             {
-                ExtendedMargins = _isExtended ? new Thickness(0, _extendTitleBarHeight == -1 ? _native.ExtendTitleBarHeight : _extendTitleBarHeight, 0, 0) : new Thickness();
+                ExtendedMargins = new Thickness(0, _extendTitleBarHeight == -1 ? _native.ExtendTitleBarHeight : _extendTitleBarHeight, 0, 0);
             }
 
             ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
@@ -202,20 +210,12 @@ namespace Avalonia.Native
         }
 
         /// <inheritdoc/>
-        public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
-        {   
-            _native.SetExtendClientAreaHints ((AvnExtendClientAreaChromeHints)hints);
-        }
-
-        /// <inheritdoc/>
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
         {
             _extendTitleBarHeight = titleBarHeight;
             _native.SetExtendTitleBarHeight(titleBarHeight);
 
-            ExtendedMargins = _isExtended ? new Thickness(0, titleBarHeight == -1 ? _native.ExtendTitleBarHeight : titleBarHeight, 0, 0) : new Thickness();
-
-            ExtendClientAreaToDecorationsChanged?.Invoke(_isExtended);
+            InvalidateExtendedMargins();
         }
 
         /// <inheritdoc/>

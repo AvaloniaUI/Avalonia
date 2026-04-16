@@ -76,19 +76,21 @@ namespace Avalonia.Android
         public static AndroidPlatformOptions? Options { get; private set; }
 
         internal static Compositor? Compositor { get; private set; }
+        internal static ChoreographerTimer? Timer { get; private set; }
 
         public static void Initialize()
         {
             Options = AvaloniaLocator.Current.GetService<AndroidPlatformOptions>() ?? new AndroidPlatformOptions();
 
+            Dispatcher.InitializeUIThreadDispatcher(new AndroidDispatcherImpl());
+            Timer = new ChoreographerTimer();
             AvaloniaLocator.CurrentMutable
                 .Bind<ICursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
                 .Bind<IPlatformSettings>().ToSingleton<AndroidPlatformSettings>()
-                .Bind<IDispatcherImpl>().ToConstant(new AndroidDispatcherImpl())
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
-                .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
+                .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(Timer))
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }))
                 .Bind<IActivatableLifetime>().ToConstant(new AndroidActivatableLifetime());

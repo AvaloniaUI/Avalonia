@@ -12,6 +12,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using CoreAnimation;
@@ -104,14 +105,14 @@ namespace Avalonia.iOS
                     OpenGLES.EAGLDrawableProperty.RetainedBacking, false,
                     OpenGLES.EAGLDrawableProperty.ColorFormat, OpenGLES.EAGLColorFormat.RGBA8
                 );
-                _topLevelImpl.Surfaces = new[] { new Eagl.EaglLayerSurface(eaglLayer) };
+                _topLevelImpl.Surfaces = [new Eagl.EaglLayerSurface(eaglLayer)];
             }
             else
 #endif
             if (l is CAMetalLayer metalLayer)
             {
                 metalLayer.Opaque = false;
-                _topLevelImpl.Surfaces = new[] { new Metal.MetalPlatformSurface(metalLayer, this) };
+                _topLevelImpl.Surfaces = [new Metal.MetalPlatformSurface(metalLayer, this)];
             }
         }
 
@@ -239,7 +240,7 @@ namespace Avalonia.iOS
             public Size ClientSize => new Size(_view.Bounds.Width, _view.Bounds.Height);
             public Size? FrameSize => null;
             public double RenderScaling => _view.ContentScaleFactor;
-            public IEnumerable<object> Surfaces { get; set; } = Array.Empty<object>();
+            public IPlatformRenderSurface[] Surfaces { get; set; } = [];
             public Action<RawInputEventArgs>? Input { get; set; }
             public Action<Rect>? Paint { get; set; }
             public Action<Size, WindowResizeReason>? Resized { get; set; }

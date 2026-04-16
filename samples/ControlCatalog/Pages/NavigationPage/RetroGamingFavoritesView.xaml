@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.RetroGamingFavoritesView">
+  <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+              Spacing="12" Margin="32">
+
+    <Border Width="60" Height="60"
+            Background="#2d1b4e"
+            BorderBrush="#ad2bee" BorderThickness="2"
+            HorizontalAlignment="Center">
+      <PathIcon Width="28" Height="28" Foreground="#ad2bee"
+                Data="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
+    </Border>
+
+    <TextBlock Text="NO FAVORITES YET"
+               FontFamily="Courier New, monospace" FontSize="10" FontWeight="Bold"
+               Foreground="#7856a8" HorizontalAlignment="Center"/>
+
+    <TextBlock Text="Add games to your favorites&#10;to find them here."
+               FontFamily="Courier New, monospace" FontSize="9"
+               Foreground="#7856a8"
+               HorizontalAlignment="Center" TextAlignment="Center"
+               TextWrapping="Wrap"/>
+
+  </StackPanel>
+</UserControl>

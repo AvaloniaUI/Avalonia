@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Platform;
 
 namespace Avalonia.Skia
@@ -21,35 +22,29 @@ namespace Avalonia.Skia
             _renderTarget.Dispose();
         }
 
-        public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
-            out RenderTargetDrawingContextProperties properties) =>
-            CreateDrawingContextCore(expectedPixelSize, false, out properties);
+        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing) => throw new InvalidOperationException(
+            "This legacy API is only supported by framebuffer render targets and should be removed from there as well, don't use");
 
-        public IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing)
-            => CreateDrawingContextCore(null, useScaledDrawing, out _);
-        
-        
-        IDrawingContextImpl CreateDrawingContextCore(PixelSize? expectedPixelSize,
-            bool useScaledDrawing,
+        public IDrawingContextImpl CreateDrawingContext(IRenderTarget.RenderTargetSceneInfo sceneInfo,
             out RenderTargetDrawingContextProperties properties)
         {
             properties = default;
-            var session = _renderTarget.BeginRenderingSession(expectedPixelSize);
+            var session = _renderTarget.BeginRenderingSession(sceneInfo);
 
             var nfo = new DrawingContextImpl.CreateInfo
             {
                 GrContext = session.GrContext,
                 Surface = session.SkSurface,
                 Dpi = SkiaPlatform.DefaultDpi * session.ScaleFactor,
-                ScaleDrawingToDpi = useScaledDrawing,
+                ScaleDrawingToDpi = false,
                 Gpu = _skiaGpu,
                 CurrentSession =  session
             };
 
             return new DrawingContextImpl(nfo, session);
         }
-
-        public bool IsCorrupted => _renderTarget.IsCorrupted;
+        
+        public PlatformRenderTargetState PlatformRenderTargetState => _renderTarget.State;
         public RenderTargetProperties Properties { get; }
 
 

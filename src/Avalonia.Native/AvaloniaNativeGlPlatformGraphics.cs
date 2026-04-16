@@ -173,9 +173,9 @@ namespace Avalonia.Native
             _context = context;
         }
 
-        public bool IsCorrupted => false;
+        public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
 
-        public IGlPlatformSurfaceRenderingSession BeginDraw(PixelSize? expectedPixelSize)
+        public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             // TODO: use expectedPixelSize
             ObjectDisposedException.ThrowIf(_target is null, this);

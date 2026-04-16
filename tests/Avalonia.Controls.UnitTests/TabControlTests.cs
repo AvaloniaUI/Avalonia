@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia.Animation;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
@@ -718,16 +721,15 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
-        [InlineData(Key.A, 1)]
-        [InlineData(Key.L, 2)]
-        [InlineData(Key.D, 0)]
-        public void Should_TabControl_Recognizes_AccessKey(Key accessKey, int selectedTabIndex)
+        [InlineData(Key.A, "a", 1)]
+        [InlineData(Key.L, "l", 2)]
+        [InlineData(Key.D, "d", 0)]
+        public void Should_TabControl_Recognizes_AccessKey(Key accessKey, string accessKeySymbol, int selectedTabIndex)
         {
-            var ah = new AccessKeyHandler();
             var kd = new KeyboardDevice();
             using (UnitTestApplication.Start(TestServices.StyledWindow
                        .With(
-                           accessKeyHandler: ah,
+                           accessKeyHandler: () => new AccessKeyHandler(),
                            keyboardDevice: () => kd)
                    ))
             {
@@ -760,8 +762,8 @@ namespace Avalonia.Controls.UnitTests
                 ApplyTemplate(tabControl);
 
                 KeyDown(root, Key.LeftAlt);
-                KeyDown(root, accessKey, KeyModifiers.Alt);
-                KeyUp(root, accessKey, KeyModifiers.Alt);
+                KeyDown(root, accessKey, accessKeySymbol, KeyModifiers.Alt);
+                KeyUp(root, accessKey, accessKeySymbol, KeyModifiers.Alt);
                 KeyUp(root, Key.LeftAlt);
 
                 Assert.Equal(selectedTabIndex, tabControl.SelectedIndex);
@@ -788,25 +790,127 @@ namespace Avalonia.Controls.UnitTests
                 return topLevel;
             }
 
-            static void KeyDown(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            static void KeyDown(IInputElement target, Key key, string? keySymbol = null, KeyModifiers modifiers = KeyModifiers.None)
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
                     RoutedEvent = InputElement.KeyDownEvent,
                     Key = key,
+                    KeySymbol = keySymbol,
                     KeyModifiers = modifiers,
                 });
             }
 
-            static void KeyUp(IInputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
+            static void KeyUp(IInputElement target, Key key, string? keySymbol = null, KeyModifiers modifiers = KeyModifiers.None)
             {
                 target.RaiseEvent(new KeyEventArgs
                 {
                     RoutedEvent = InputElement.KeyUpEvent,
                     Key = key,
+                    KeySymbol = keySymbol,
                     KeyModifiers = modifiers,
                 });
             }
+        }
+
+        [Fact]
+        public void PageTransition_Is_Null_By_Default()
+        {
+            var target = new TabControl { Template = TabControlTemplate() };
+            Assert.Null(target.PageTransition);
+        }
+
+        [Fact]
+        public void PageTransition_Round_Trips()
+        {
+            var transition = new CrossFade(TimeSpan.FromMilliseconds(100));
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                PageTransition = transition,
+            };
+            Assert.Same(transition, target.PageTransition);
+        }
+
+        [Fact]
+        public void PageTransition_Start_Is_Called_When_Tab_Switches()
+        {
+            using var app = Start();
+
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var target = new TabControl
+            {
+                PageTransition = transition.Object,
+                Items =
+                {
+                    new TabItem { Name = "first", Content = "Alpha" },
+                    new TabItem { Name = "second", Content = "Beta" },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // Switch tab — triggers shouldTransition = true and InvalidateArrange
+            target.SelectedIndex = 1;
+
+            // Execute layout pass to invoke ArrangeOverride, which fires the transition
+            root.LayoutManager.ExecuteLayoutPass();
+
+            transition.Verify(
+                t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.Is<bool>(f => f),   // forward = true (index 1 > 0)
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public void PageTransition_Forward_Is_False_When_Switching_To_Earlier_Tab()
+        {
+            using var app = Start();
+
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var target = new TabControl
+            {
+                PageTransition = transition.Object,
+                Items =
+                {
+                    new TabItem { Name = "first", Content = "Alpha" },
+                    new TabItem { Name = "second", Content = "Beta" },
+                    new TabItem { Name = "third", Content = "Gamma" },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            // Go forward to tab 2
+            target.SelectedIndex = 2;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // Now go backward to tab 0
+            target.SelectedIndex = 0;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            transition.Verify(
+                t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.Is<bool>(f => !f),  // forward = false (index 0 < 2)
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
         }
 
         private static IControlTemplate TabControlTemplate()
@@ -820,12 +924,21 @@ namespace Avalonia.Controls.UnitTests
                         {
                             Name = "PART_ItemsPresenter",
                         }.RegisterInNameScope(scope),
-                        new ContentPresenter
+                        new Panel
                         {
-                            Name = "PART_SelectedContentHost",
-                            [~ContentPresenter.ContentProperty] = new TemplateBinding(TabControl.SelectedContentProperty),
-                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabControl.SelectedContentTemplateProperty),
-                        }.RegisterInNameScope(scope)
+                            Children =
+                            {
+                                new ContentPresenter
+                                {
+                                    Name = "PART_SelectedContentHost2",
+                                    IsVisible = false,
+                                }.RegisterInNameScope(scope),
+                                new ContentPresenter
+                                {
+                                    Name = "PART_SelectedContentHost",
+                                }.RegisterInNameScope(scope),
+                            }
+                        }
                     }
                 });
         }
@@ -840,6 +953,30 @@ namespace Avalonia.Controls.UnitTests
                     [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabItem.HeaderTemplateProperty),
                     RecognizesAccessKey = true,
                 }.RegisterInNameScope(scope));
+        }
+
+        private static IControlTemplate TabItemWithIconTemplate()
+        {
+            return new FuncControlTemplate<TabItem>((parent, scope) =>
+                new StackPanel
+                {
+                    Children =
+                    {
+                        new ContentPresenter
+                        {
+                            Name = "PART_IconPresenter",
+                            [~ContentPresenter.ContentProperty] = new TemplateBinding(TabItem.IconProperty),
+                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabItem.IconTemplateProperty),
+                        }.RegisterInNameScope(scope),
+                        new ContentPresenter
+                        {
+                            Name = "PART_ContentPresenter",
+                            [~ContentPresenter.ContentProperty] = new TemplateBinding(TabItem.HeaderProperty),
+                            [~ContentPresenter.ContentTemplateProperty] = new TemplateBinding(TabItem.HeaderTemplateProperty),
+                            RecognizesAccessKey = true,
+                        }.RegisterInNameScope(scope),
+                    }
+                });
         }
 
         private static ControlTheme CreateTabControlControlTheme()
@@ -881,18 +1018,8 @@ namespace Avalonia.Controls.UnitTests
             };
         }
 
-        private class TestTopLevel : TopLevel
+        private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl)
         {
-            private readonly ILayoutManager _layoutManager;
-            public bool IsClosed { get; private set; }
-
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
-                : base(impl)
-            {
-                _layoutManager = layoutManager ?? new LayoutManager(this);
-            }
-
-            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
 
         private static void Prepare(TabControl target)
@@ -943,6 +1070,438 @@ namespace Avalonia.Controls.UnitTests
                     assetLoader: new StandardAssetLoader()));
         }
 
+        [Fact]
+        public void Switching_Tab_Should_Preserve_DataContext_Binding_On_UserControl_Content()
+        {
+            // Issue #18280: When switching tabs, a UserControl inside a TabItem has its
+            // DataContext set to null, causing two-way bindings on child controls (like
+            // DataGrid.SelectedItem) to propagate null back to the view model.
+            // Verify that after switching away and back, the DataContext binding still
+            // resolves correctly.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new TabDataContextViewModel { SelectedItem = "Item1" };
+
+            // Create a UserControl with an explicit DataContext binding,
+            // matching the issue scenario.
+            var userControl = new UserControl
+            {
+                [~UserControl.DataContextProperty] = new Binding("SelectedItem"),
+            };
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        Content = userControl,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        Content = "Other content",
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            // Verify initial state
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal("Item1", userControl.DataContext);
+
+            // Switch to second tab and back
+            target.SelectedIndex = 1;
+            target.SelectedIndex = 0;
+
+            // The UserControl's DataContext binding should still resolve correctly.
+            Assert.Equal("Item1", userControl.DataContext);
+
+            // Verify the binding is still live by changing the source property.
+            viewModel.SelectedItem = "Item2";
+            Assert.Equal("Item2", userControl.DataContext);
+        }
+
+        [Fact]
+        public void TabItem_Child_DataContext_Binding_Should_Work()
+        {
+            // Issue #20845: When a DataContext binding is placed on the child of a TabItem,
+            // the DataContext is null. The binding hasn't resolved when the content's
+            // DataContext is captured in UpdateSelectedContent, so the captured value is null.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+
+            var tab1View = new UserControl();
+            tab1View.Bind(UserControl.DataContextProperty, new Binding("Tab1"));
+
+            // Add a child TextBlock that binds to a property on Tab1ViewModel.
+            var textBlock = new TextBlock();
+            textBlock.Bind(TextBlock.TextProperty, new Binding("Name"));
+            tab1View.Content = textBlock;
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        Content = tab1View,
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            // The UserControl's DataContext should be the Tab1ViewModel.
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+
+            // The TextBlock should display the Name from Tab1ViewModel.
+            Assert.Equal("Tab 1 message here", textBlock.Text);
+        }
+
+        [Fact]
+        public void TabItem_Child_With_DataContext_Binding_Should_Propagate_To_Children()
+        {
+            // Issue #20845 (comment): Putting the DataContext binding on the TabItem itself
+            // is also broken. The child should inherit the TabItem's DataContext.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+
+            var textBlock = new TextBlock();
+            textBlock.Bind(TextBlock.TextProperty, new Binding("Name"));
+            var tab1View = new UserControl { Content = textBlock };
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        Content = tab1View,
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            // The TabItem's DataContext should be the Tab1ViewModel.
+            var tabItem = (TabItem)target.Items[0]!;
+            Assert.Same(viewModel.Tab1, tabItem.DataContext);
+
+            // The UserControl should inherit the TabItem's DataContext.
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+
+            // The TextBlock should display the Name from Tab1ViewModel.
+            Assert.Equal("Tab 1 message here", textBlock.Text);
+        }
+
+        [Fact]
+        public void Switching_Tabs_Should_Not_Null_Out_DataContext_Bound_Properties()
+        {
+            // Issue #20845: DataContext binding should survive tab switches.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+
+            var tab1View = new UserControl();
+            tab1View.Bind(UserControl.DataContextProperty, new Binding("Tab1"));
+            var textBlock = new TextBlock();
+            textBlock.Bind(TextBlock.TextProperty, new Binding("Name"));
+            tab1View.Content = textBlock;
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        Content = tab1View,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        Content = "Other content",
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+            Assert.Equal("Tab 1 message here", textBlock.Text);
+
+            // Switch to tab 2 and back
+            target.SelectedIndex = 1;
+            target.SelectedIndex = 0;
+
+            // DataContext binding should still be resolved correctly.
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+            Assert.Equal("Tab 1 message here", textBlock.Text);
+        }
+
+        [Fact]
+        public void Content_Should_Not_Temporarily_Get_Wrong_DataContext_When_Switching_Tabs()
+        {
+            // When ContentPart.Content is set, ContentPresenter.UpdateChild clears its
+            // DataContext before we can set it to the container's DataContext. This causes
+            // the content to briefly inherit TabControl's DataContext instead of TabItem's.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+
+            var tab1View = new UserControl();
+            var tab2View = new UserControl();
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        Content = tab1View,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        [~TabItem.DataContextProperty] = new Binding("Tab2"),
+                        Content = tab2View,
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+
+            // Track all DataContext values the new content receives during the switch.
+            var dataContexts = new List<object?>();
+            tab2View.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == StyledElement.DataContextProperty)
+                    dataContexts.Add(e.NewValue);
+            };
+
+            target.SelectedIndex = 1;
+
+            // tab2View should only have received the correct DataContext (Tab2ViewModel).
+            // It should NOT have temporarily received the TabControl's DataContext (MainViewModel).
+            Assert.All(dataContexts, dc => Assert.Same(viewModel.Tab2, dc));
+            Assert.Same(viewModel.Tab2, tab2View.DataContext);
+        }
+
+        [Fact]
+        public void Transition_Should_Not_Apply_New_DataContext_To_Old_Content()
+        {
+            // When a PageTransition is set, the old content stays in ContentPart while the
+            // new content goes into _contentPresenter2. The DataContext subscription for the
+            // new container should not update ContentPart's DataContext (which still holds
+            // the old content).
+            using var app = Start();
+
+            var viewModel = new MainViewModel();
+
+            var tab1View = new UserControl();
+            var tab2View = new UserControl();
+
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var target = new TabControl
+            {
+                PageTransition = transition.Object,
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        Content = tab1View,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        [~TabItem.DataContextProperty] = new Binding("Tab2"),
+                        Content = tab2View,
+                    },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Same(viewModel.Tab1, tab1View.DataContext);
+
+            // Track all DataContext values the OLD content receives during the transition.
+            var oldContentDataContexts = new List<object?>();
+            tab1View.PropertyChanged += (s, e) =>
+            {
+                if (e.Property == StyledElement.DataContextProperty)
+                    oldContentDataContexts.Add(e.NewValue);
+            };
+
+            // Switch tab — triggers transition
+            target.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            // The old content (tab1View) should NOT have received Tab2's DataContext.
+            Assert.DoesNotContain(viewModel.Tab2, oldContentDataContexts);
+        }
+
+        [Fact]
+        public void ContentTemplate_With_Control_Content_Should_Set_DataContext_To_Content()
+        {
+            // When a TabItem has a ContentTemplate and its Content is a Control, the
+            // ContentPresenter should set DataContext = content (so the template can bind
+            // to the control's properties), not the TabItem's DataContext.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+            var userControl = new UserControl { Tag = "my-content" };
+
+            TextBlock? templateChild = null;
+            var contentTemplate = new FuncDataTemplate<UserControl>((x, _) =>
+            {
+                templateChild = new TextBlock();
+                templateChild.Bind(TextBlock.TextProperty, new Binding("Tag"));
+                return templateChild;
+            });
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        ContentTemplate = contentTemplate,
+                        Content = userControl,
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            // The ContentPresenter's DataContext should be the content (UserControl),
+            // not the TabItem's DataContext (Tab1ViewModel), because ContentTemplate is set.
+            Assert.Same(userControl, target.ContentPart!.DataContext);
+            Assert.NotNull(templateChild);
+            Assert.Equal("my-content", templateChild!.Text);
+        }
+
+        [Fact]
+        public void ContentTemplate_With_Control_Content_Should_Set_DataContext_To_Content_After_Tab_Switch()
+        {
+            // Same as above but verifies the behavior after switching tabs.
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+            var viewModel = new MainViewModel();
+            var userControl = new UserControl { Tag = "my-content" };
+
+            TextBlock? templateChild = null;
+            var contentTemplate = new FuncDataTemplate<UserControl>((x, _) =>
+            {
+                templateChild = new TextBlock();
+                templateChild.Bind(TextBlock.TextProperty, new Binding("Tag"));
+                return templateChild;
+            });
+
+            var target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                DataContext = viewModel,
+                Items =
+                {
+                    new TabItem
+                    {
+                        Header = "Tab1",
+                        [~TabItem.DataContextProperty] = new Binding("Tab1"),
+                        ContentTemplate = contentTemplate,
+                        Content = userControl,
+                    },
+                    new TabItem
+                    {
+                        Header = "Tab2",
+                        Content = "Other content",
+                    },
+                },
+            };
+
+            var root = new TestRoot(target);
+            Prepare(target);
+
+            Assert.Same(userControl, target.ContentPart!.DataContext);
+
+            // Switch away and back.
+            target.SelectedIndex = 1;
+            target.SelectedIndex = 0;
+
+            // DataContext should still be the content, not the TabItem's DataContext.
+            Assert.Same(userControl, target.ContentPart!.DataContext);
+            Assert.NotNull(templateChild);
+            Assert.Equal("my-content", templateChild!.Text);
+        }
+
+        private class TabDataContextViewModel : NotifyingBase
+        {
+            private string? _selectedItem;
+
+            public string? SelectedItem
+            {
+                get => _selectedItem;
+                set => SetField(ref _selectedItem, value);
+            }
+        }
+
+        private class MainViewModel
+        {
+            public Tab1ViewModel Tab1 { get; set; } = new();
+            public Tab2ViewModel Tab2 { get; set; } = new();
+        }
+
+        private class Tab1ViewModel
+        {
+            public string Name { get; set; } = "Tab 1 message here";
+        }
+
+        private class Tab2ViewModel
+        {
+            public string Name { get; set; } = "Tab 2 message here";
+        }
+
         private class Item
         {
             public Item(string value)
@@ -957,6 +1516,159 @@ namespace Avalonia.Controls.UnitTests
         {
             protected override Type StyleKeyOverride => typeof(TabControl);
             public new ISelectionModel Selection => base.Selection;
+        }
+
+        [Fact]
+        public void TabItem_IconTemplate_Creates_Content_From_NonControl_Icon()
+        {
+            var tabItem = new TabItem
+            {
+                Icon = "home",
+                IconTemplate = new FuncDataTemplate<object>((val, _) =>
+                    new TextBlock { Text = (string)val }),
+                Template = TabItemWithIconTemplate(),
+            };
+
+            var root = new TestRoot { Child = tabItem };
+            tabItem.ApplyTemplate();
+            tabItem.Presenter!.UpdateChild();
+
+            var iconPresenter = tabItem.GetTemplateChildren().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
+            Assert.NotNull(iconPresenter);
+            Assert.Equal("home", iconPresenter!.Content);
+            Assert.NotNull(iconPresenter.ContentTemplate);
+
+            iconPresenter.UpdateChild();
+            var textBlock = iconPresenter.Child as TextBlock;
+            Assert.NotNull(textBlock);
+            Assert.Equal("home", textBlock!.Text);
+        }
+
+        [Fact]
+        public void TabItem_Icon_Without_Template_Renders_Control_Directly()
+        {
+            var icon = new Avalonia.Controls.Shapes.Path
+            {
+                Data = new Avalonia.Media.EllipseGeometry { Rect = new Rect(0, 0, 10, 10) }
+            };
+            var tabItem = new TabItem
+            {
+                Icon = icon,
+                Template = TabItemWithIconTemplate(),
+            };
+
+            var root = new TestRoot { Child = tabItem };
+            tabItem.ApplyTemplate();
+            tabItem.Presenter!.UpdateChild();
+
+            var iconPresenter = tabItem.GetTemplateChildren().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
+            Assert.NotNull(iconPresenter);
+            Assert.Same(icon, iconPresenter!.Content);
+            Assert.Null(iconPresenter.ContentTemplate);
+        }
+
+        [Fact]
+        public void TabItem_Icon_Change_Updates_Presenter_Content()
+        {
+            var tabItem = new TabItem
+            {
+                Icon = "first",
+                Template = TabItemWithIconTemplate(),
+            };
+
+            var root = new TestRoot { Child = tabItem };
+            tabItem.ApplyTemplate();
+            tabItem.Presenter!.UpdateChild();
+
+            var iconPresenter = tabItem.GetTemplateChildren().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
+            Assert.Equal("first", iconPresenter!.Content);
+
+            tabItem.Icon = "second";
+            Assert.Equal("second", iconPresenter.Content);
+        }
+
+        [Fact]
+        public void TabItem_IndicatorTemplate_DefaultIsNull()
+        {
+            var tabItem = new TabItem();
+            Assert.Null(tabItem.IndicatorTemplate);
+        }
+
+        [Fact]
+        public void TabItem_IndicatorTemplate_RoundTrips()
+        {
+            var template = new FuncDataTemplate<object>((_, _) => new Border());
+            var tabItem = new TabItem { IndicatorTemplate = template };
+            Assert.Same(template, tabItem.IndicatorTemplate);
+        }
+
+        [Fact]
+        public void TabItem_IndicatorTemplate_CanBeSetToNull()
+        {
+            var template = new FuncDataTemplate<object>((_, _) => new Border());
+            var tabItem = new TabItem { IndicatorTemplate = template };
+            tabItem.IndicatorTemplate = null;
+            Assert.Null(tabItem.IndicatorTemplate);
+        }
+
+        [Fact]
+        public void TabControl_IndicatorTemplate_DefaultIsNull()
+        {
+            var tc = new TabControl();
+            Assert.Null(tc.IndicatorTemplate);
+        }
+
+        [Fact]
+        public void TabControl_IndicatorTemplate_RoundTrips()
+        {
+            var template = new FuncDataTemplate<object>((_, _) => new Border());
+            var tc = new TabControl { IndicatorTemplate = template };
+            Assert.Same(template, tc.IndicatorTemplate);
+        }
+
+        [Fact]
+        public void TabControl_IndicatorTemplate_CanBeSetToNull()
+        {
+            var template = new FuncDataTemplate<object>((_, _) => new Border());
+            var tc = new TabControl { IndicatorTemplate = template };
+            tc.IndicatorTemplate = null;
+            Assert.Null(tc.IndicatorTemplate);
+        }
+
+        [Fact]
+        public void TabControl_IndicatorTemplate_DoesNotOverwrite_UserSetTabItemIndicatorTemplate()
+        {
+            var tabItems = new[]
+            {
+                new TabItem { Header = "A" },
+                new TabItem { Header = "B" },
+            };
+            var userTemplate = new FuncDataTemplate<object>((_, _) => new Border());
+            tabItems[0].IndicatorTemplate = userTemplate;
+
+            var tabControlTemplate = new FuncDataTemplate<object>((_, _) => new TextBlock());
+            var tc = new TabControl
+            {
+                ItemsSource = tabItems,
+                IndicatorTemplate = tabControlTemplate,
+                Template = new FuncControlTemplate<TabControl>((_, scope) =>
+                {
+                    var ip = new ItemsPresenter { Name = "PART_ItemsPresenter" };
+                    scope.Register("PART_ItemsPresenter", ip);
+                    var cp = new ContentPresenter { Name = "PART_SelectedContentHost" };
+                    scope.Register("PART_SelectedContentHost", cp);
+                    return new Panel { Children = { ip, cp } };
+                })
+            };
+
+            var root = new TestRoot { Child = tc };
+            tc.ApplyTemplate();
+            tc.Presenter?.ApplyTemplate();
+
+            // TabItem with a local value must keep it
+            Assert.Same(userTemplate, tabItems[0].IndicatorTemplate);
+            // TabItem without a local value gets the TabControl template
+            Assert.Same(tabControlTemplate, tabItems[1].IndicatorTemplate);
         }
     }
 }

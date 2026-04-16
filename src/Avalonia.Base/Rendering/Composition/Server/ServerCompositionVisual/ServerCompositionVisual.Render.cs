@@ -94,7 +94,8 @@ partial class ServerCompositionVisual
             
             if (visual.Opacity != 1)
             {
-                _opacityStack.Push(effectiveOpacity);
+                _opacityStack.Push(_opacity);
+                _opacity = effectiveOpacity;
                 _canvas.PushOpacity(visual.Opacity, visual._transformedSubTreeBounds.Value.ToRect());
             }
 

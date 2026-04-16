@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Reactive;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -12,23 +12,24 @@ namespace Avalonia.Skia
     /// </summary>
     internal class FramebufferRenderTarget : IRenderTarget
     {
+        private readonly bool _useScaledDrawing;
         private SKImageInfo _currentImageInfo;
         private IntPtr _currentFramebufferAddress;
         private SKSurface? _framebufferSurface;
         private PixelFormatConversionShim? _conversionShim;
         private IDisposable? _preFramebufferCopyHandler;
         private IFramebufferRenderTarget? _renderTarget;
-        private IFramebufferRenderTargetWithProperties? _renderTargetWithProperties;
         private bool _hadConversionShim;
 
         /// <summary>
         /// Create new framebuffer render target using a target surface.
         /// </summary>
         /// <param name="platformSurface">Target surface.</param>
-        public FramebufferRenderTarget(IFramebufferPlatformSurface platformSurface)
+        /// <param name="useScaledDrawing">Tells the render target to scale to framebuffer dpi</param>
+        public FramebufferRenderTarget(IFramebufferPlatformSurface platformSurface, bool useScaledDrawing = false)
         {
+            _useScaledDrawing = useScaledDrawing;
             _renderTarget = platformSurface.CreateFramebufferRenderTarget();
-            _renderTargetWithProperties = _renderTarget as IFramebufferRenderTargetWithProperties;
         }
 
         /// <inheritdoc />
@@ -36,35 +37,28 @@ namespace Avalonia.Skia
         {
             _renderTarget?.Dispose();
             _renderTarget = null;
-            _renderTargetWithProperties = null;
             FreeSurface();
         }
 
         public RenderTargetProperties Properties => new()
         {
             RetainsPreviousFrameContents = !_hadConversionShim
-                                           && _renderTargetWithProperties?.RetainsFrameContents == true,
+                                           && _renderTarget?.RetainsFrameContents == true,
             IsSuitableForDirectRendering = true
         };
 
+        public PlatformRenderTargetState PlatformRenderTargetState =>
+            _renderTarget?.State ?? PlatformRenderTargetState.Disposed;
 
         /// <inheritdoc />
-        public IDrawingContextImpl CreateDrawingContext(bool scaleDrawingToDpi) =>
-            CreateDrawingContextCore(scaleDrawingToDpi,   out _);
-
-        /// <inheritdoc />
-        public IDrawingContextImpl CreateDrawingContext(PixelSize expectedPixelSize,
-            out RenderTargetDrawingContextProperties properties)
-            => CreateDrawingContextCore(false, out properties);
-        
-        IDrawingContextImpl CreateDrawingContextCore(bool scaleDrawingToDpi,
+        public IDrawingContextImpl CreateDrawingContext(IRenderTarget.RenderTargetSceneInfo sceneInfo,
             out RenderTargetDrawingContextProperties properties)
         {
             if (_renderTarget == null)
                 throw new ObjectDisposedException(nameof(FramebufferRenderTarget));
-
-            FramebufferLockProperties lockProperties = default;
-            var framebuffer = _renderTargetWithProperties?.Lock(out lockProperties) ?? _renderTarget.Lock();
+            
+            var framebuffer = _renderTarget.Lock(sceneInfo, out var lockProperties);
+            
             var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
                 framebuffer.Format.ToSkColorType(),
                 framebuffer.AlphaFormat.ToSkAlphaType());
@@ -82,7 +76,7 @@ namespace Avalonia.Skia
             {
                 Surface = _framebufferSurface,
                 Dpi = framebuffer.Dpi,
-                ScaleDrawingToDpi = scaleDrawingToDpi
+                ScaleDrawingToDpi = _useScaledDrawing
             };
 
             properties = new()
@@ -92,8 +86,7 @@ namespace Avalonia.Skia
             
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
         }
-
-        public bool IsCorrupted => false;
+        
 
         /// <summary>
         /// Check if two images info are compatible.

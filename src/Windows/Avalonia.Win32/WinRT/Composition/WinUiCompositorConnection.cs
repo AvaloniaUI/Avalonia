@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Logging;
 using Avalonia.MicroCom;
 using Avalonia.OpenGL.Egl;
@@ -15,8 +17,29 @@ namespace Avalonia.Win32.WinRT.Composition;
 internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFactory
 {
     private readonly WinUiCompositionShared _shared;
-    public event Action<TimeSpan>? Tick;
+    private readonly AutoResetEvent _wakeEvent = new(false);
+    private volatile bool _stopped = true;
+    private volatile Action<TimeSpan>? _tick;
     public bool RunsInBackground => true;
+
+    public Action<TimeSpan>? Tick
+    {
+        get => _tick;
+        set
+        {
+            if (value != null)
+            {
+                _tick = value;
+                _stopped = false;
+                _wakeEvent.Set();
+            }
+            else
+            {
+                _stopped = true;
+                _tick = null;
+            }
+        }
+    }
     
     public WinUiCompositorConnection()
     {
@@ -56,7 +79,7 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
                 });
                 connect = new WinUiCompositorConnection();
                 AvaloniaLocator.CurrentMutable.Bind<IWindowsSurfaceFactory>().ToConstant(connect);
-                AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connect);
+                AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(connect));
                 tcs.SetResult(true);
 
             }
@@ -100,8 +123,11 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
         {
             _currentCommit?.Dispose();
             _currentCommit = null;
-            _parent.Tick?.Invoke(_st.Elapsed);
+            _parent._tick?.Invoke(_st.Elapsed);
+            // Always schedule a commit so the current frame's work reaches DWM.
             ScheduleNextCommit();
+            if (_parent._stopped)
+                _parent._wakeEvent.WaitOne();
         }
 
         private void ScheduleNextCommit()
@@ -210,5 +236,5 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
     }
 
     public bool RequiresNoRedirectionBitmap => true;
-    public object CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new WinUiCompositedWindowSurface(_shared, info);
+    public IPlatformRenderSurface CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new WinUiCompositedWindowSurface(_shared, info);
 }

@@ -62,7 +62,7 @@ public abstract class DataFormat : IEquatable<DataFormat>
         {
             DataFormatKind.Application => applicationPrefix + Identifier,
             DataFormatKind.Platform => Identifier,
-            _ => throw new InvalidOperationException($"Cannot get system name for universal format {Identifier}")
+            _ => throw new InvalidOperationException($"Cannot get system name for {Kind} format {Identifier}")
         };
     }
 
@@ -136,6 +136,23 @@ public abstract class DataFormat : IEquatable<DataFormat>
     /// <returns>A new <see cref="DataFormat"/>.</returns>
     public static DataFormat<string> CreateStringApplicationFormat(string identifier)
         => CreateApplicationFormat<string>(identifier);
+
+    /// <summary>
+    /// Creates a new format that stays within the current process and is never serialized to a platform clipboard or drag-and-drop operation.
+    /// </summary>
+    /// <typeparam name="T">The data type. Can be any reference type.</typeparam>
+    /// <param name="identifier">
+    /// The format identifier. This value is only used for equality comparisons within the process
+    /// and is never passed to the underlying platform.
+    /// </param>
+    /// <returns>A new <see cref="DataFormat{T}"/>.</returns>
+    public static DataFormat<T> CreateInProcessFormat<T>(string identifier)
+        where T : class
+    {
+        ThrowHelper.ThrowIfNullOrEmpty(identifier);
+
+        return new(DataFormatKind.InProcess, identifier);
+    }
 
     private static DataFormat<T> CreateApplicationFormat<T>(string identifier)
         where T : class
@@ -213,19 +230,7 @@ public abstract class DataFormat : IEquatable<DataFormat>
         return true;
 
         static bool IsValidChar(char c)
-            => IsAsciiLetterOrDigit(c) || c == '.' || c == '-';
-
-        static bool IsAsciiLetterOrDigit(char c)
-        {
-#if NET8_0_OR_GREATER
-            return char.IsAsciiLetterOrDigit(c);
-#else
-            return c is
-                (>= '0' and <= '9') or
-                (>= 'A' and <= 'Z') or
-                (>= 'a' and <= 'z');
-#endif
-        }
+            => char.IsAsciiLetterOrDigit(c) || c == '.' || c == '-';
     }
 
     /// <inheritdoc />

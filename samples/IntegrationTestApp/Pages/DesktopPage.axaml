@@ -10,5 +10,11 @@
     <Button Name="ToggleTrayIconVisible"
             Content="Toggle TrayIcon Visible"
             Click="ToggleTrayIconVisible_Click"/>
+    <Separator Margin="0,8"/>
+    <CheckBox x:FieldModifier="public" Name="DockMenuShowMainWindow">Dock Menu Show Main Window Clicked</CheckBox>
+    <Button Name="AddDockMenuItem"
+            Content="Add Dock Menu Item"
+            Click="AddDockMenuItem_Click"/>
+    <TextBlock Name="DockMenuItemCount" Text="0"/>
   </StackPanel>
 </UserControl>

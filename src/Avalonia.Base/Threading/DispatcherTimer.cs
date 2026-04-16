@@ -7,65 +7,102 @@ namespace Avalonia.Threading;
 ///     A timer that is integrated into the Dispatcher queues, and will
 ///     be processed after a given amount of time at a specified priority.
 /// </summary>
-public partial class DispatcherTimer
+public class DispatcherTimer
 {
     internal static int ActiveTimersCount { get; private set; }
 
     /// <summary>
-    ///     Creates a timer that uses theUI thread's Dispatcher2 to
-    ///     process the timer event at background priority.
+    /// Creates a timer that uses <see cref="Avalonia.Threading.Dispatcher.CurrentDispatcher"/> to
+    /// process the timer event at background priority.
     /// </summary>
-    public DispatcherTimer() : this(DispatcherPriority.Background)
+    public DispatcherTimer()
+        : this(TimeSpan.Zero, DispatcherPriority.Background, Dispatcher.CurrentDispatcher)
     {
     }
 
     /// <summary>
-    ///     Creates a timer that uses the UI thread's Dispatcher2 to
-    ///     process the timer event at the specified priority.
+    /// Creates a timer that uses <see cref="Avalonia.Threading.Dispatcher.CurrentDispatcher"/> to
+    /// process the timer event at the specified priority.
     /// </summary>
-    /// <param name="priority">
-    ///     The priority to process the timer at.
-    /// </param>
-    public DispatcherTimer(DispatcherPriority priority) : this(Threading.Dispatcher.UIThread, priority,
-        TimeSpan.FromMilliseconds(0))
+    /// <param name="priority">The priority to process the timer at.</param>
+    public DispatcherTimer(DispatcherPriority priority)
+        : this(TimeSpan.Zero, priority, Dispatcher.CurrentDispatcher)
     {
     }
 
     /// <summary>
-    ///     Creates a timer that uses the specified Dispatcher2 to
-    ///     process the timer event at the specified priority.
+    /// Creates a timer that uses the specified <see cref="Avalonia.Threading.Dispatcher"/> to
+    /// process the timer event at the specified priority.
     /// </summary>
-    /// <param name="priority">
-    ///     The priority to process the timer at.
-    /// </param>
-    /// <param name="dispatcher">
-    ///     The dispatcher to use to process the timer.
-    /// </param>
-    internal DispatcherTimer(DispatcherPriority priority, Dispatcher dispatcher) : this(dispatcher, priority,
-        TimeSpan.FromMilliseconds(0))
+    /// <param name="priority">The priority to process the timer at.</param>
+    /// <param name="dispatcher">The dispatcher to use to process the timer.</param>
+    public DispatcherTimer(DispatcherPriority priority, Dispatcher dispatcher)
+        : this(TimeSpan.Zero, priority, dispatcher)
     {
     }
 
     /// <summary>
-    ///     Creates a timer that uses the UI thread's Dispatcher2 to
-    ///     process the timer event at the specified priority after the specified timeout.
+    /// Creates a timer that uses the specified <see cref="Avalonia.Threading.Dispatcher"/> to
+    /// process the timer event at the specified priority after the specified timeout.
     /// </summary>
-    /// <param name="interval">
-    ///     The interval to tick the timer after.
-    /// </param>
-    /// <param name="priority">
-    ///     The priority to process the timer at.
-    /// </param>
-    /// <param name="callback">
-    ///     The callback to call when the timer ticks.
-    /// </param>
-    public DispatcherTimer(TimeSpan interval, DispatcherPriority priority, EventHandler callback)
-        : this(Threading.Dispatcher.UIThread, priority, interval)
+    /// <param name="interval">The interval to tick the timer after.</param>
+    /// <param name="priority">The priority to process the timer at.</param>
+    /// <param name="dispatcher">The dispatcher to use to process the timer.</param>
+    public DispatcherTimer(TimeSpan interval, DispatcherPriority priority, Dispatcher dispatcher)
     {
-        if (callback == null)
+        ArgumentNullException.ThrowIfNull(dispatcher);
+
+        DispatcherPriority.Validate(priority, "priority");
+        if (priority == DispatcherPriority.Inactive)
         {
-            throw new ArgumentNullException(nameof(callback));
+            throw new ArgumentException("Specified priority is not valid.", nameof(priority));
         }
+
+        var ms = interval.TotalMilliseconds;
+        if (ms < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(interval),
+                "TimeSpan period must be greater than or equal to zero.");
+        }
+        if (ms > int.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(nameof(interval),
+                "TimeSpan period must be less than or equal to Int32.MaxValue.");
+        }
+
+        _dispatcher = dispatcher;
+        _priority = priority;
+        _interval = interval;
+    }
+
+    /// <summary>
+    /// Creates a timer that uses <see cref="Avalonia.Threading.Dispatcher.CurrentDispatcher"/> to
+    /// process the timer event at the specified priority after the specified timeout and with
+    /// the specified handler.
+    /// </summary>
+    /// <param name="interval">The interval to tick the timer after.</param>
+    /// <param name="priority">The priority to process the timer at.</param>
+    /// <param name="callback">The callback to call when the timer ticks.</param>
+    /// <remarks>This constructor immediately starts the timer.</remarks>
+    public DispatcherTimer(TimeSpan interval, DispatcherPriority priority, EventHandler callback)
+        : this(interval, priority, Dispatcher.CurrentDispatcher, callback)
+    {
+    }
+
+    /// <summary>
+    /// Creates a timer that uses the specified <see cref="Avalonia.Threading.Dispatcher"/> to
+    /// process the timer event at the specified priority after the specified timeout and with
+    /// the specified handler.
+    /// </summary>
+    /// <param name="interval">The interval to tick the timer after.</param>
+    /// <param name="priority">The priority to process the timer at.</param>
+    /// <param name="dispatcher">The dispatcher to use to process the timer.</param>
+    /// <param name="callback">The callback to call when the timer ticks.</param>
+    /// <remarks>This constructor immediately starts the timer.</remarks>
+    public DispatcherTimer(TimeSpan interval, DispatcherPriority priority, Dispatcher dispatcher, EventHandler callback)
+        : this(interval, priority, dispatcher)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
 
         Tick += callback;
         Start();
@@ -116,10 +153,6 @@ public partial class DispatcherTimer
             if (value.TotalMilliseconds < 0)
                 throw new ArgumentOutOfRangeException(nameof(value),
                     "TimeSpan period must be greater than or equal to zero.");
-
-            if (value.TotalMilliseconds > Int32.MaxValue)
-                throw new ArgumentOutOfRangeException(nameof(value),
-                    "TimeSpan period must be less than or equal to Int32.MaxValue.");
 
             lock (_instanceLock)
             {
@@ -251,33 +284,6 @@ public partial class DispatcherTimer
     ///     Any data that the caller wants to pass along with the timer.
     /// </summary>
     public object? Tag { get; set; }
-
-
-    internal DispatcherTimer(Dispatcher dispatcher, DispatcherPriority priority, TimeSpan interval)
-    {
-        if (dispatcher == null)
-        {
-            throw new ArgumentNullException(nameof(dispatcher));
-        }
-
-        DispatcherPriority.Validate(priority, "priority");
-        if (priority == DispatcherPriority.Inactive)
-        {
-            throw new ArgumentException("Specified priority is not valid.", nameof(priority));
-        }
-
-        if (interval.TotalMilliseconds < 0)
-            throw new ArgumentOutOfRangeException(nameof(interval), "TimeSpan period must be greater than or equal to zero.");
-
-        if (interval.TotalMilliseconds > Int32.MaxValue)
-            throw new ArgumentOutOfRangeException(nameof(interval),
-                "TimeSpan period must be less than or equal to Int32.MaxValue.");
-
-
-        _dispatcher = dispatcher;
-        _priority = priority;
-        _interval = interval;
-    }
 
     private void Restart()
     {

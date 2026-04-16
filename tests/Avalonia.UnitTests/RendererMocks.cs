@@ -17,7 +17,7 @@ namespace Avalonia.UnitTests
         }
 
         public static Compositor CreateDummyCompositor() =>
-            new(new RenderLoop(new CompositorTestServices.ManualRenderTimer()), null, false,
+            new(RenderLoop.FromTimer(new CompositorTestServices.ManualRenderTimer()), null, false,
                 new CompositionCommitScheduler(), true, Dispatcher.UIThread);
 
         class CompositionCommitScheduler : ICompositorScheduler

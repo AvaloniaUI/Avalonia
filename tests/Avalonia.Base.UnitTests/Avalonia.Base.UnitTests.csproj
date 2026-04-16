@@ -7,10 +7,7 @@
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\UnitTests.NetFX.props" />
-  <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\XUnit.props" />
-  <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
   <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\NullableEnable.props" />
   <ItemGroup>
@@ -19,7 +16,10 @@
     <EmbeddedResource Include="Media\TextFormatting\BreakPairTable.txt" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Nito.AsyncEx.Context" Version="5.1.2" />
+    <PackageReference Include="Microsoft.Reactive.Testing" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Nito.AsyncEx.Context" />
+    <PackageReference Include="System.Reactive" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />

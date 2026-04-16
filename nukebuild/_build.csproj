@@ -7,28 +7,26 @@
     <NoWarn>$(NoWarn);CS0649;CA1847</NoWarn>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <UseMicroComGenerator>true</UseMicroComGenerator>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="10.1.0" />
-    <PackageReference Include="MicroCom.CodeGenerator" Version="0.11.0" />
+    <PackageReference Include="Nuke.Common" />
+    <PackageReference Include="Numerge" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
-    <PackageReference Include="Mono.Cecil" Version="0.11.6" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="18.0.2" PrivateAssets="All" />
-    <PackageReference Include="NuGet.Protocol" Version="7.0.1" />
+    <PackageReference Include="Mono.Cecil" />
+    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
+    <PackageReference Include="NuGet.Protocol" />
     <PackageDownload Include="Microsoft.DotNet.ApiCompat.Tool" Version="[10.0.100]" />
     <PackageDownload Include="Microsoft.DotNet.ApiDiff.Tool" Version="[10.0.100-rtm.25531.102]" />
     <PackageDownload Include="dotnet-ilrepack" Version="[2.0.44]" />
   </ItemGroup>
 
+  <Import Project="..\build\MicroCOM.props" />
+
   <ItemGroup>
     <NukeMetadata Include="**\*.json" Exclude="bin\**;obj\**" />
     <NukeExternalFiles Include="**\*.*.ext" Exclude="bin\**;obj\**" />
-
-    <!-- Common build related files -->
-    <Compile Include="../external/Numerge/Numerge/**/*.cs"
-             Exclude="../external/Numerge/Numerge/obj/**/*.cs"
-             LinkBase="Numerge" />
     <EmbeddedResource Include="../build/avalonia.snk" />
   </ItemGroup>
 

@@ -13,11 +13,6 @@ namespace Avalonia.Platform
     public interface IRenderTarget : IDisposable
     {
         /// <summary>
-        /// Indicates if the render target is no longer usable and needs to be recreated
-        /// </summary>
-        bool IsCorrupted { get; }
-
-        /// <summary>
         /// Gets the properties of the render target.
         /// </summary>
         RenderTargetProperties Properties { get; }
@@ -25,16 +20,18 @@ namespace Avalonia.Platform
         /// <summary>
         /// Creates an <see cref="IDrawingContextImpl"/> for a rendering session.
         /// </summary>
-        /// <param name="useScaledDrawing">Apply DPI reported by the render target as a hidden transform matrix</param>
-        IDrawingContextImpl CreateDrawingContext(bool useScaledDrawing);
+        /// <param name="sceneInfo">Information about the scene that's about to be rendered into this render target.
+        /// This is expected to be reported to the underlying platform and affect the framebuffer size, however
+        /// the implementation may choose to ignore that information.
+        /// </param>
+        /// <param name="properties">Returns various properties about the returned drawing context</param>
+        IDrawingContextImpl CreateDrawingContext(RenderTargetSceneInfo sceneInfo, out RenderTargetDrawingContextProperties properties);
 
         /// <summary>
-        /// Creates an <see cref="IDrawingContextImpl"/> for a rendering session.
+        /// Gets the current readiness state of the render target.
         /// </summary>
-        /// <param name="expectedPixelSize">The pixel size of the surface</param>
-        /// <param name="properties">Returns various properties about the returned drawing context</param>
-        IDrawingContextImpl CreateDrawingContext(
-            PixelSize expectedPixelSize,
-            out RenderTargetDrawingContextProperties properties);
+        PlatformRenderTargetState PlatformRenderTargetState => PlatformRenderTargetState.Ready;
+        
+        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling);
     }
 }

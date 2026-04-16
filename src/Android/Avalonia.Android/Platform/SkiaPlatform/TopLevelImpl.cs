@@ -4,11 +4,11 @@ using Android.App;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using Avalonia.Android.Platform.Input;
-using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls;
@@ -19,6 +19,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
@@ -97,7 +98,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public double DesktopScaling => RenderScaling;
         public IPlatformHandle Handle { get; }
 
-        public IEnumerable<object> Surfaces { get; }
+        public IPlatformRenderSurface[] Surfaces { get; }
 
         public Compositor Compositor => AndroidPlatform.Compositor ??
             throw new InvalidOperationException("Android backend wasn't initialized. Make sure .UseAndroid() was executed.");
@@ -144,6 +145,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             private readonly TopLevelImpl _tl;
             private Size _oldSize;
             private double _oldScaling;
+            private Paint? _clearPaint;
 
             public SurfaceViewImpl(Context context, TopLevelImpl tl, bool placeOnTop) : base(context)
             {
@@ -159,11 +161,13 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 // can be seen below, but it does not.
                 if (OperatingSystem.IsAndroidVersionAtLeast(29))
                 {
-                    // Android 10+ does this (BlendMode was new)
-                    var paint = new Paint();
-                    paint.SetColor(0);
-                    paint.BlendMode = BlendMode.Clear;
-                    canvas.DrawRect(0, 0, Width, Height, paint);
+                    if (_clearPaint == null)
+                    {
+                        _clearPaint = new Paint();
+                        _clearPaint.SetColor(0);
+                        _clearPaint.BlendMode = BlendMode.Clear;
+                    }
+                    canvas.DrawRect(0, 0, Width, Height, _clearPaint);
                 }
                 else
                 {
@@ -254,7 +258,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public void SetTransparencyLevelHint(IReadOnlyList<WindowTransparencyLevel> transparencyLevels)
         {
-            if (_view.Context is not AvaloniaMainActivity activity)
+            if (_view.Context is not AvaloniaActivity activity)
                 return;
 
             foreach (var level in transparencyLevels)
@@ -366,7 +370,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             return false;
         }
 
-        private static void SetBlurBehind(AvaloniaMainActivity activity, int radius)
+        private static void SetBlurBehind(AvaloniaActivity activity, int radius)
         {
             if (radius == 0)
                 activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
@@ -384,7 +388,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             if(Input != null)
             {
-                var args = new RawTextInputEventArgs(AndroidKeyboardDevice.Instance!, (ulong)DateTime.Now.Ticks, InputRoot!, text);
+                var args = new RawTextInputEventArgs(AndroidKeyboardDevice.Instance!, (ulong)SystemClock.UptimeMillis(), InputRoot!, text);
 
                 Input(args);
             }

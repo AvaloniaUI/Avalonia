@@ -24,6 +24,13 @@ internal sealed class AvaloniaSceneDelegate : UIResponder, IUIWindowSceneDelegat
         Window.MakeKeyAndVisible();
     }
 
+    [Export("scene:continueUserActivity:")]
+    public void ContinueUserActivity(UIScene scene, NSUserActivity userActivity)
+    {
+        var appDelegate = UIApplication.SharedApplication.Delegate as IAvaloniaAppInternalDelegate;
+        appDelegate?.ContinueUserActivity(userActivity);
+    }
+
     internal static void InitWindow(UIWindow window, SingleViewLifetime lifetime)
     {
         var view = new AvaloniaView();

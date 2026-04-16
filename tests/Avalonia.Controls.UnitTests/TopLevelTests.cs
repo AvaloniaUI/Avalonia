@@ -82,11 +82,11 @@ namespace Avalonia.Controls.UnitTests
             {
                 var impl = CreateMockTopLevelImpl();
                 
-                var target = new TestTopLevel(impl.Object, Mock.Of<ILayoutManager>());
-
+                var target = new TestTopLevel(impl.Object);
+                
                 // The layout pass should be scheduled by the derived class.
-                var layoutManagerMock = Mock.Get(target.LayoutManager);
-                layoutManagerMock.Verify(x => x.ExecuteLayoutPass(), Times.Never);
+                Assert.Equal(0, target.Measured);
+                Assert.Equal(0, target.Arranged);
             }
         }
 
@@ -208,7 +208,7 @@ namespace Avalonia.Controls.UnitTests
                 var input = new RawKeyEventArgs(
                     new Mock<IKeyboardDevice>().Object,
                     0,
-                    target,
+                    target.InputRoot,
                     RawKeyEventType.KeyDown,
                     Key.A,
                     RawInputModifiers.None,
@@ -233,7 +233,6 @@ namespace Avalonia.Controls.UnitTests
                 target.Template = CreateTemplate();
                 target.Content = child;
                 target.ApplyTemplate();
-
                 Assert.Throws<InvalidOperationException>(() => target.Presenter!.ApplyTemplate());
             }
         }
@@ -255,18 +254,30 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Close_Should_Dispose_LayoutManager()
+        public void TopLevel_Should_Unfocus_When_Impl_Focus_Is_Lost()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            using (UnitTestApplication.Start(TestServices.RealFocus))
             {
                 var impl = CreateMockTopLevelImpl(true);
+                var content = new TextBox()
+                {
+                    Focusable = true
+                };
+                var target = new TestTopLevel(impl.Object)
+                {
+                    Template = CreateTemplate(),
+                    Focusable = true,
+                    Content = content
+                };
 
-                var layoutManager = new Mock<ILayoutManager>();
-                var target = new TestTopLevel(impl.Object, layoutManager.Object);
+                target.LayoutManager.ExecuteInitialLayoutPass();
 
-                impl.Object.Closed!();
+                content.Focus();
+                Assert.True(content.IsFocused);
 
-                layoutManager.Verify(x => x.Dispose());
+                impl.Object.LostFocus?.Invoke();
+
+                Assert.False(content.IsFocused);
             }
         }
 
@@ -329,18 +340,20 @@ namespace Avalonia.Controls.UnitTests
             return topLevel;
         }
 
-        private class TestTopLevel : TopLevel
+        private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl)
         {
-            private readonly ILayoutManager _layoutManager;
-            public bool IsClosed { get; private set; }
-
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
-                : base(impl)
+            public int Measured, Arranged;
+            protected override Size MeasureCore(Size availableSize)
             {
-                _layoutManager = layoutManager ?? new LayoutManager(this);
+                Measured++;
+                return base.MeasureCore(availableSize);
             }
 
-            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
+            protected override void ArrangeCore(Rect finalRect)
+            {
+                Arranged++;
+                base.ArrangeCore(finalRect);
+            }
         }
     }
 }
