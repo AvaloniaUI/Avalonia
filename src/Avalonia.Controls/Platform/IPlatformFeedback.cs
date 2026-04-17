@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Platform
         None,
 
         /// <summary>
-        /// If available, triggers both sound and haptic feedback for the attached control
+        /// Triggers the most suitable feedback type based on the feedback effect on the current platform.
         /// </summary>
         Auto,
 
