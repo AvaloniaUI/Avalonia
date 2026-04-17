@@ -1,6 +1,7 @@
-<UserControl x:Class="ControlCatalog.Pages.DialogsPage"
+<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.DialogsPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Header="Dialogs"
              xmlns:storage="clr-namespace:Avalonia.Platform.Storage;assembly=Avalonia.Base"
              xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Collections">
   <StackPanel Margin="4"
@@ -84,4 +85,4 @@
              PlaceholderText="Picked file content" />
 
   </StackPanel>
-</UserControl>
+</ContentPage>
