@@ -360,25 +360,20 @@ namespace Avalonia.Media
                 source = SystemFontsKey;
             }
 
-            if (!_fontCollections.TryGetValue(source, out fontCollection))
+            fontCollection = _fontCollections.GetOrAdd(source, static (key, platformImpl) =>
             {
-                if (source == SystemFontsKey)
+                if (key == SystemFontsKey)
                 {
-                    fontCollection = new SystemFontCollection(PlatformImpl);
-                }
-                else
-                {
-                    if (source.IsAbsoluteResm() || source.IsAvares())
-                    {
-                        fontCollection = new EmbeddedFontCollection(source, source);
-                    }
+                    return new SystemFontCollection(platformImpl);
                 }
 
-                if (fontCollection != null)
+                if (key.IsAbsoluteResm() || key.IsAvares())
                 {
-                    return _fontCollections.TryAdd(fontCollection.Key, fontCollection);
+                    return new EmbeddedFontCollection(key, key);
                 }
-            }
+
+                return null!;
+            }, PlatformImpl);
 
             return fontCollection != null;
         }
