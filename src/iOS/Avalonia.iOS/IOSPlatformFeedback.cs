@@ -7,10 +7,6 @@ namespace Avalonia.iOS
 {
     internal class IOSPlatformFeedback(AvaloniaView avaloniaView) : IPlatformFeedback
     {
-#pragma warning disable CA1823 // field is used on non TV platforms
-        private readonly AvaloniaView _avaloniaView = avaloniaView;
-#pragma warning restore CA1823
-
         public bool Perform(FeedbackEffect feedback, FeedbackType type)
         {
             var performedFeedback = false;
@@ -28,9 +24,8 @@ namespace Avalonia.iOS
             if (vibrate)
             {
                 using var generator = OperatingSystem.IsIOSVersionAtLeast(17, 5) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 5)
-                    ? UIImpactFeedbackGenerator.GetFeedbackGenerator(FeedbackToImpactStyle(feedback), _avaloniaView)
+                    ? UIImpactFeedbackGenerator.GetFeedbackGenerator(FeedbackToImpactStyle(feedback), avaloniaView)
                     : new UIImpactFeedbackGenerator(FeedbackToImpactStyle(feedback));
-                generator.Prepare();
                 generator.ImpactOccurred();
                 performedFeedback = true;
             }
@@ -44,6 +39,8 @@ namespace Avalonia.iOS
                     _ => throw new ArgumentOutOfRangeException(nameof(feedback), feedback, null)
                 };
             }
+#else
+            _ = avaloniaView;
 #endif
 
             return performedFeedback;
