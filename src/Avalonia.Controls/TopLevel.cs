@@ -286,7 +286,7 @@ namespace Avalonia.Controls
 
             _backGestureSubscription = _inputManager?.PreProcess.Subscribe(e =>
             {
-                if (e.Root != this)
+                if (e.Root != InputRoot)
                     return;
 
                 bool backRequested = false;
