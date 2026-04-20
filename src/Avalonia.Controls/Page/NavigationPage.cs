@@ -754,10 +754,9 @@ namespace Avalonia.Controls
             if (_contentHost != null && _navBar != null)
             {
                 var safeAreaPadding = IsNavBarEffectivelyVisible ? new Thickness(SafeAreaPadding.Left, 0, SafeAreaPadding.Right, SafeAreaPadding.Bottom) : SafeAreaPadding;
-                if (IsNavBarEffectivelyVisible)
-                {
-                    _navBar.Padding = new Thickness(SafeAreaPadding.Left, SafeAreaPadding.Top, SafeAreaPadding.Right, 0);
-                }
+                _navBar.Padding = IsNavBarEffectivelyVisible
+                    ? new Thickness(SafeAreaPadding.Left, SafeAreaPadding.Top, SafeAreaPadding.Right, 0)
+                    : default;
 
                 if (_pagePresenter != null)
                     _pagePresenter.Padding = Padding;
