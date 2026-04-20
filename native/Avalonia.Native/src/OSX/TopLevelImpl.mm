@@ -311,7 +311,9 @@ HRESULT TopLevelImpl::BeginDragAndDropOperation(
 
     for (auto i = 0; i < itemCount; ++i)
     {
-        auto item = source->GetItem(i);
+        ComPtr<IAvnClipboardDataItem> item;
+        if(S_OK != source->GetItem(i, item.getPPV()))
+            continue;
         auto writeableItem = [[WriteableClipboardItem alloc] initWithItem:item source:source];
         auto draggingItem = [[NSDraggingItem alloc] initWithPasteboardWriter:writeableItem];
         [draggingItem setDraggingFrame:dragItemRect contents:dragItemImage];

@@ -196,6 +196,20 @@
       <Setter Property="Opacity" Value="0.2"/>
     </Style>
 
+    <!-- Hide caption buttons when the platform does not support the action -->
+    <Style Selector="^:not(:has-minimize) /template/ Button#PART_MinimizeButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:not(:has-maximize) /template/ Button#PART_MaximizeButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:not(:has-fullscreen) /template/ Button#PART_FullScreenButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:not(:has-fullscreen) /template/ Button#PART_PopoverFullScreenButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+
     <!-- Fullscreen: hide overlay and titlebar (popover takes over) -->
     <Style Selector="^:fullscreen /template/ Panel#PART_TitleTextPanel">
       <Setter Property="IsVisible" Value="False" />
