@@ -1385,6 +1385,19 @@ public class NavigationPageTests
             var nav = new NavigationPage { IsGestureEnabled = value };
             Assert.Equal(value, nav.IsGestureEnabled);
         }
+
+        [Fact]
+        public async Task SafeAreaPadding_Affeccts_Nav_Bar_Height()
+        {
+            var nav = new NavigationPage()
+            {
+                SafeAreaPadding = new Thickness(10)
+            };
+            var page = new ContentPage();
+            NavigationPage.SetBarHeightOverride(page, 60.0);
+            await nav.PushAsync(page);
+            Assert.Equal(70.0, nav.EffectiveBarHeight);
+        }
     }
 
     public class AttachedPropertyTests : ScopedTestBase
