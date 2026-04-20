@@ -5,7 +5,7 @@
 
   <ItemGroup>
     <PackageVersion Include="Appium.WebDriver" Version="5.2.0" />
-    <PackageVersion Include="Avalonia.Angle.Windows.Natives" Version="2.1.25547.20250602" />
+    <PackageVersion Include="Avalonia.Angle.Windows.Natives" Version="2.1.27548.20260419" />
     <PackageVersion Include="Avalonia.BuildServices" Version="11.3.2" />
     <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.0-beta3" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.6" />
