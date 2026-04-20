@@ -562,26 +562,14 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (left.Type == VariantType.Quaternion && right.Type == VariantType.Double)
                 return left.Quaternion * (float)right.Double;
 
-            if (left.Type == VariantType.RelativePoint && right.Type == VariantType.Scalar)
-                return new RelativePoint(left.RelativePoint.Point.X * right.Scalar, left.RelativePoint.Point.Y * right.Scalar, left.RelativePoint.Unit);
-
             if (left.Type == VariantType.RelativePoint && right.Type == VariantType.Double)
                 return new RelativePoint(left.RelativePoint.Point.X * right.Double, left.RelativePoint.Point.Y * right.Double, left.RelativePoint.Unit);
-
-            if (left.Type == VariantType.Scalar && right.Type == VariantType.RelativePoint)
-                return new RelativePoint(left.Scalar * right.RelativePoint.Point.X, left.Scalar * right.RelativePoint.Point.Y, right.RelativePoint.Unit);
 
             if (left.Type == VariantType.Double && right.Type == VariantType.RelativePoint)
                 return new RelativePoint(left.Double * right.RelativePoint.Point.X, left.Double * right.RelativePoint.Point.Y, right.RelativePoint.Unit);
 
-            if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.Scalar)
-                return new RelativeScalar(left.RelativeScalar.Scalar * right.Scalar, left.RelativeScalar.Unit);
-
             if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.Double)
                 return new RelativeScalar(left.RelativeScalar.Scalar * right.Double, left.RelativeScalar.Unit);
-
-            if (left.Type == VariantType.Scalar && right.Type == VariantType.RelativeScalar)
-                return new RelativeScalar(left.Scalar * right.RelativeScalar.Scalar, right.RelativeScalar.Unit);
 
             if (left.Type == VariantType.Double && right.Type == VariantType.RelativeScalar)
                 return new RelativeScalar(left.Double * right.RelativeScalar.Scalar, right.RelativeScalar.Unit);
@@ -641,14 +629,9 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (left.Type == VariantType.Quaternion && right.Type == VariantType.Quaternion)
                 return left.Quaternion / right.Quaternion;
 
-            if (left.Type == VariantType.RelativePoint && right.Type == VariantType.Scalar)
-                return new RelativePoint(left.RelativePoint.Point.X / right.Scalar, left.RelativePoint.Point.Y / right.Scalar, left.RelativePoint.Unit);
-
             if (left.Type == VariantType.RelativePoint && right.Type == VariantType.Double)
                 return new RelativePoint(left.RelativePoint.Point.X / right.Double, left.RelativePoint.Point.Y / right.Double, left.RelativePoint.Unit);
 
-            if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.Scalar)
-                return new RelativeScalar(left.RelativeScalar.Scalar / right.Scalar, left.RelativeScalar.Unit);
 
             if (left.Type == VariantType.RelativeScalar && right.Type == VariantType.Double)
                 return new RelativeScalar(left.RelativeScalar.Scalar / right.Double, left.RelativeScalar.Unit);
