@@ -639,6 +639,9 @@ namespace Avalonia.Controls
                     "Direct assignment to NavigationPage.Pages is not supported. Use PushAsync, PopAsync, InsertPage, RemovePage, or ReplaceAsync to modify the navigation stack.");
             }
 
+            if (change.Property == SafeAreaPaddingProperty)
+                UpdateEffectiveBarHeight();
+
             base.OnPropertyChanged(change);
         }
 
@@ -766,8 +769,6 @@ namespace Avalonia.Controls
                     var remainingSafeArea = Padding.GetRemainingSafeAreaPadding(safeAreaPadding);
                     CurrentPage.SafeAreaPadding = new Thickness(remainingSafeArea.Left, remainingSafeArea.Top, remainingSafeArea.Right, remainingSafeArea.Bottom);
                 }
-
-                UpdateEffectiveBarHeight();
 
                 foreach (var modal in _modalStack)
                     modal.SafeAreaPadding = SafeAreaPadding;
@@ -2154,8 +2155,11 @@ namespace Avalonia.Controls
 
         private void UpdateEffectiveBarHeight()
         {
-            EffectiveBarHeight = ((CurrentPage != null ? GetBarHeightOverride(CurrentPage) : null) ?? BarHeight) + SafeAreaPadding.Top;
-            PseudoClasses.Set(":nav-bar-compact", EffectiveBarHeight < 40);
+            var contentBarHeight = (CurrentPage != null ? GetBarHeightOverride(CurrentPage) : null) ?? BarHeight;
+            EffectiveBarHeight = contentBarHeight + SafeAreaPadding.Top;
+            PseudoClasses.Set(":nav-bar-compact", contentBarHeight < 40);
+
+            UpdateContentSafeAreaPadding();
         }
 
         private void ApplyNavBarVisibility()
