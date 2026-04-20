@@ -811,6 +811,15 @@ namespace Avalonia.Rendering.Composition.Expressions
                 case Avalonia.Media.Color when Type is VariantType.Color:
                     res = (T)(object)Color;
                     return true;
+                case Avalonia.RelativePoint when Type is VariantType.RelativePoint:
+                    res = (T)(object)RelativePoint;
+                    return true;
+                case Avalonia.RelativeScalar when Type is VariantType.RelativeScalar:
+                    res = (T)(object)RelativeScalar;
+                    return true;
+                case Avalonia.RelativeUnit when Type is VariantType.RelativeUnit:
+                    res = (T)(object)RelativeUnit;
+                    return true;
                 default:
                     res = default;
                     return false;
@@ -833,6 +842,9 @@ namespace Avalonia.Rendering.Composition.Expressions
                 System.Numerics.Matrix4x4 => (Matrix4x4)(object)v,
                 System.Numerics.Quaternion => (Quaternion)(object)v,
                 Avalonia.Media.Color => (Avalonia.Media.Color)(object)v,
+                Avalonia.RelativePoint => (RelativePoint)(object)v,
+                Avalonia.RelativeScalar => (RelativeScalar)(object)v,
+                Avalonia.RelativeUnit => (RelativeUnit)(object)v,
                 _ => throw new ArgumentException("Invalid variant type: " + typeof(T))
             };
 
@@ -858,6 +870,9 @@ namespace Avalonia.Rendering.Composition.Expressions
                 VariantType.AvaloniaMatrix => AvaloniaMatrix.ToString(),
                 VariantType.Matrix4x4 => Matrix4x4.ToString(),
                 VariantType.Color => Color.ToString(),
+                VariantType.RelativePoint => RelativePoint.ToString(),
+                VariantType.RelativeScalar => RelativeScalar.ToString(),
+                VariantType.RelativeUnit => RelativeUnit.ToString(),
                 VariantType.Invalid => "Invalid",
                 _ => "Unknown"
             };
