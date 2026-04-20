@@ -750,7 +750,11 @@ namespace Avalonia.Controls
         {
             if (_contentHost != null && _navBar != null)
             {
-                _navBar.Padding = new Thickness(SafeAreaPadding.Left, SafeAreaPadding.Top, SafeAreaPadding.Right, 0);
+                var safeAreaPadding = IsNavBarEffectivelyVisible ? new Thickness(SafeAreaPadding.Left, 0, SafeAreaPadding.Right, SafeAreaPadding.Bottom) : SafeAreaPadding;
+                if (IsNavBarEffectivelyVisible)
+                {
+                    _navBar.Padding = new Thickness(SafeAreaPadding.Left, SafeAreaPadding.Top, SafeAreaPadding.Right, 0);
+                }
 
                 if (_pagePresenter != null)
                     _pagePresenter.Padding = Padding;
@@ -759,9 +763,11 @@ namespace Avalonia.Controls
 
                 if (CurrentPage != null)
                 {
-                    var remainingSafeArea = Padding.GetRemainingSafeAreaPadding(SafeAreaPadding);
-                    CurrentPage.SafeAreaPadding = new Thickness(remainingSafeArea.Left, 0, remainingSafeArea.Right, remainingSafeArea.Bottom);
+                    var remainingSafeArea = Padding.GetRemainingSafeAreaPadding(safeAreaPadding);
+                    CurrentPage.SafeAreaPadding = new Thickness(remainingSafeArea.Left, remainingSafeArea.Top, remainingSafeArea.Right, remainingSafeArea.Bottom);
                 }
+
+                UpdateEffectiveBarHeight();
 
                 foreach (var modal in _modalStack)
                     modal.SafeAreaPadding = SafeAreaPadding;
@@ -2148,7 +2154,7 @@ namespace Avalonia.Controls
 
         private void UpdateEffectiveBarHeight()
         {
-            EffectiveBarHeight = (CurrentPage != null ? GetBarHeightOverride(CurrentPage) : null) ?? BarHeight;
+            EffectiveBarHeight = ((CurrentPage != null ? GetBarHeightOverride(CurrentPage) : null) ?? BarHeight) + SafeAreaPadding.Top;
             PseudoClasses.Set(":nav-bar-compact", EffectiveBarHeight < 40);
         }
 
