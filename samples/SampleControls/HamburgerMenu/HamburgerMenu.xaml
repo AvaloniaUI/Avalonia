@@ -33,8 +33,8 @@
       <Color x:Key="HamburgerAltHighColor">#FFFFFFFF</Color>
       <Color x:Key="HamburgerChromeLowColor">#FFF2F2F2</Color>
     </ResourceDictionary>
-  </ResourceDictionary.ThemeDictionaries>
-  
+  </ResourceDictionary.ThemeDictionaries> 
+
   <x:Double x:Key="PaneCompactWidth">40</x:Double>
   <x:Double x:Key="PaneExpandWidth">220</x:Double>
   <x:Double x:Key="HeaderHeight">36</x:Double>
@@ -134,14 +134,14 @@
 
     <Style Selector="^:pointerover">
       <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
-      
+
       <Style Selector="^ /template/ Border#PART_LayoutRoot">
         <Setter Property="Background" Value="{DynamicResource HamburgerChromeLowColor}" />
         <Setter Property="BoxShadow" Value="{StaticResource NavigationItemShadow}" />
         <Setter Property="TextElement.Foreground" Value="{DynamicResource HamburgerBaseHighColor}" />
       </Style>
     </Style>
-    
+
     <Style Selector="^:selected">
       <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
 
@@ -175,10 +175,21 @@
                      OpenPaneLength="{StaticResource PaneExpandWidth}"
                      PaneBackground="Transparent">
             <SplitView.Pane>
-              <Grid Margin="0,0,1,5" RowDefinitions="Auto, *, Auto">
+              <Grid Margin="0,0,1,5" RowDefinitions="Auto, Auto, *, Auto">
                 <Panel Height="{StaticResource HeaderHeight}" />
+                <TextBox x:Name="PART_SearchBox"
+                         Grid.Row="1"
+                         PlaceholderText="Search…"
+                         Margin="4,0,8,4"
+                         VerticalContentAlignment="Center">
+                  <TextBox.InnerLeftContent>
+                    <PathIcon Width="14" Height="14" Margin="6,0,0,0"
+                              VerticalAlignment="Center"
+                              Data="M10 2.5a7.5 7.5 0 0 1 5.964 12.048l4.743 4.745a1 1 0 0 1-1.32 1.497l-.094-.083-4.745-4.743A7.5 7.5 0 1 1 10 2.5Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z" />
+                  </TextBox.InnerLeftContent>
+                </TextBox>
                 <ScrollViewer x:Name="PART_ScrollViewer"
-                              Grid.Row="1"
+                              Grid.Row="2"
                               HorizontalAlignment="Stretch"
                               HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                               VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
@@ -195,7 +206,7 @@
                   </ItemsPresenter>
                 </ScrollViewer>
                 <Button x:Name="SettingsButton"
-                        Grid.Row="2"
+                        Grid.Row="3"
                         Theme="{StaticResource NavigationButton}"
                         Content="Settings"
                         Flyout="{TemplateBinding (FlyoutBase.AttachedFlyout)}"

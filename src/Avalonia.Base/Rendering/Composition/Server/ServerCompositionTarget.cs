@@ -138,7 +138,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (Root == null) 
                 return;
 
-            if (_renderTarget?.IsCorrupted == true)
+            if (_renderTarget?.PlatformRenderTargetState.IsCorrupted == true)
             {
                 _layer?.Dispose();
                 _layer = null;
@@ -149,12 +149,16 @@ namespace Avalonia.Rendering.Composition.Server
 
             try
             {
-                if (_renderTarget == null && !_compositor.IsReadyToCreateRenderTarget(_surfaces()))
+                if (_renderTarget == null)
                 {
-                    IsWaitingForReadyRenderTarget = IsEnabled;
-                    return;
+                    if (!_compositor.IsReadyToCreateRenderTarget(_surfaces()))
+                    {
+                        IsWaitingForReadyRenderTarget = IsEnabled;
+                        return;
+                    }
+
+                    _renderTarget = _compositor.CreateRenderTarget(_surfaces());
                 }
-                _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
             }
             catch (RenderTargetNotReadyException)
             {
@@ -174,7 +178,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (!_redrawRequested)
                 return;
             
-            if (!_renderTarget.IsReady)
+            if (!_renderTarget.PlatformRenderTargetState.IsReady)
             {
                 IsWaitingForReadyRenderTarget = IsEnabled;
                 return;

@@ -24,8 +24,8 @@ namespace Avalonia.Input
         /// If <paramref name="element"/> is null, this method tries to clear the focus. However, it is not advised.
         /// For a better user experience, focus should be moved to another element when possible.
         ///
-        /// When this method return <c>true</c>, it is not guaranteed that the focus has been moved
-        /// to <paramref name="element"/>. The focus might have been redirected to another element.
+        /// When this method returns <c>true</c>, the focus has been moved to <paramref name="element"/>.
+        /// When this method returns <c>false</c>, the focus may have been canceled or redirected to another element.
         /// </remarks>
         bool Focus(
             IInputElement? element,
@@ -41,10 +41,7 @@ namespace Avalonia.Input
         /// <see cref="NavigationDirection.Left"/>, <see cref="NavigationDirection.Right"/>,
         /// <see cref="NavigationDirection.Up"/> and <see cref="NavigationDirection.Down"/>.
         /// </param>
-        /// <param name="options">
-        /// The options to help identify the next element to receive focus.
-        /// They only apply to directional navigation.
-        /// </param>
+        /// <param name="options">The options to help identify the next element to receive focus.</param>
         /// <returns>true if focus moved; otherwise, false.</returns>
         bool TryMoveFocus(NavigationDirection direction, FindNextElementOptions? options = null);
 
@@ -69,10 +66,7 @@ namespace Avalonia.Input
         /// <see cref="NavigationDirection.Left"/>, <see cref="NavigationDirection.Right"/>,
         /// <see cref="NavigationDirection.Up"/> and <see cref="NavigationDirection.Down"/>.
         /// </param>
-        /// <param name="options">
-        /// The options to help identify the next element to receive focus.
-        /// They only apply to directional navigation.
-        /// </param>
+        /// <param name="options">The options to help identify the next element to receive focus.</param>
         /// <returns>The next element to receive focus, if any.</returns>
         IInputElement? FindNextElement(NavigationDirection direction, FindNextElementOptions? options = null);
     }

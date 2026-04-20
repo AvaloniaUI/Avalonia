@@ -22,13 +22,13 @@ namespace Avalonia.UnitTests
             _popupImpl = popupImpl;
         }
 
-        public static Mock<IWindowImpl> CreateWindowMock(double initialWidth = 800, double initialHeight = 600)
+        public static Mock<IWindowImpl> CreateWindowMock(double initialWidth = 800, double initialHeight = 600, Compositor? compositor = null)
         {
             var windowImpl = new Mock<IWindowImpl>();
             var clientSize = new Size(initialWidth,  initialHeight);
 
             windowImpl.SetupAllProperties();
-            var compositor = RendererMocks.CreateDummyCompositor();
+            compositor ??= RendererMocks.CreateDummyCompositor();
             windowImpl.Setup(x => x.Compositor).Returns(compositor);
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);

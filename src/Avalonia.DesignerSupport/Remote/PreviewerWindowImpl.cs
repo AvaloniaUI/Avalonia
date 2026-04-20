@@ -44,6 +44,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action Activated { get; set; }
         public Func<WindowCloseReason, bool> Closing { get; set; }
         public WindowState WindowState { get; set; }
+        public bool WindowStateGetterIsUsable => false;
         public Action<WindowState> WindowStateChanged { get; set; }
         public Size MaxAutoSizeHint { get; } = new Size(4096, 4096);
 

@@ -12,18 +12,15 @@ class ServerObjectAnimations
     private readonly ServerObject _owner;
     private InlineDictionary<CompositionProperty, ServerObjectSubscriptionStore> _subscriptions;
     private InlineDictionary<CompositionProperty, ServerObjectAnimationInstance> _animations;
-    private readonly IReadOnlyDictionary<string, CompositionProperty> _properties;
 
     public ServerObjectAnimations(ServerObject owner)
     {
         _owner = owner;
-        _properties = CompositionProperty.TryGetPropertiesForType(owner.GetType()) ??
-                      new Dictionary<string, CompositionProperty>();
     }
 
     private class ServerObjectSubscriptionStore
     {
-        public bool IsValid;
+        public bool IsValid = true;
         public RefTrackingDictionary<IAnimationInstance>? Subscribers;
 
         public void Invalidate()
@@ -84,7 +81,6 @@ class ServerObjectAnimations
                 NeedsUpdate = false;
                 _property.SetField(Owner._owner, GetVariant().CastOrDefault<T>());
                 Owner._owner.NotifyAnimatedValueChanged(_property);
-                // Notify other expression animations
                 Owner.OnSetDirectValue(_property);
             }
         }
@@ -145,7 +141,8 @@ class ServerObjectAnimations
     
     public ExpressionVariant GetPropertyForAnimation(string name)
     {
-        if (!_properties.TryGetValue(name, out var prop))
+        var prop = _owner.GetCompositionProperty(name);
+        if (prop is null)
             return default;
 
         if (_subscriptions.TryGetValue(prop, out var subs))

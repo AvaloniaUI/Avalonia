@@ -427,7 +427,6 @@ return;
             "bool",
             "float",
             "double",
-            "Vector",
             "Vector2",
             "Vector3",
             "Vector4",
@@ -439,6 +438,7 @@ return;
             "Avalonia.Media.Color",
             "Avalonia.RelativePoint",
             "Avalonia.RelativeScalar",
+            "Vector",
             "Vector3D"
         };
 

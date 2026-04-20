@@ -4,7 +4,7 @@ using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
-    public partial class TabbedDemoPage : UserControl
+    public partial class TabbedDemoPage : ContentPage
     {
         private static readonly (string Group, string Title, string Description, Func<UserControl> Factory)[] Demos =
         {
@@ -18,7 +18,7 @@ namespace ControlCatalog.Pages
                 "Populate a TabbedPage by adding ContentPage objects directly to the Pages collection.",
                 () => new TabbedPageCollectionPage()),
             ("Populate", "Data Templates",
-                "Populate a TabbedPage with a data collection and a custom PageTemplate to render each item.",
+                "Bind TabbedPage to an ObservableCollection, add or remove tabs at runtime, and switch the page template.",
                 () => new TabbedPageDataTemplatePage()),
 
             // Appearance

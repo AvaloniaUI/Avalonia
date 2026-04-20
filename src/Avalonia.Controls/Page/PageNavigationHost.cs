@@ -1,7 +1,6 @@
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
@@ -27,6 +26,7 @@ namespace Avalonia.Controls
         static PageNavigationHost()
         {
             ContentTemplateProperty.OverrideDefaultValue<PageNavigationHost>(new DefaultPageDataTemplate());
+            TopLevel.AutoSafeAreaPaddingProperty.OverrideDefaultValue<PageNavigationHost>(false);
         }
 
         /// <summary>
@@ -54,9 +54,18 @@ namespace Avalonia.Controls
             }
 
             if (_topLevel != null)
+            {
                 _topLevel.BackRequested += TopLevel_BackRequested;
+                _topLevel.ScalingChanged += TopLevel_ScalingChanged;
+            }
 
             AttachContentPresenter();
+        }
+
+        private void TopLevel_ScalingChanged(object? sender, System.EventArgs e)
+        {
+            if (_insetManager != null && _contentPresenter?.Child is Page page)
+                page.SafeAreaPadding = _insetManager.SafeAreaPadding;
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -80,6 +89,7 @@ namespace Avalonia.Controls
             if (_topLevel != null)
             {
                 _topLevel.BackRequested -= TopLevel_BackRequested;
+                _topLevel.ScalingChanged -= TopLevel_ScalingChanged;
                 _topLevel = null;
             }
         }
@@ -114,8 +124,8 @@ namespace Avalonia.Controls
 
             if (change.Property == PageProperty)
             {
-                var oldPage = change.GetOldValue<Page?>();
-                var newPage = change.GetNewValue<Page?>();
+                var oldPage = change.OldValue as Page;
+                var newPage = change.NewValue as Page;
 
                 SetCurrentValue(ContentProperty, newPage);
 
@@ -129,12 +139,14 @@ namespace Avalonia.Controls
 
         private void ContentPresenter_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Property == ContentPresenter.ChildProperty
-                && e.NewValue is Page page
-                && _insetManager != null)
-            {
-                page.SafeAreaPadding = _insetManager.SafeAreaPadding;
-            }
+            if (e.Property != ContentPresenter.ChildProperty)
+                return;
+
+            if (e.OldValue is Page oldPage)
+                oldPage.SafeAreaPadding = default;
+
+            if (e.NewValue is Page newPage && _insetManager != null)
+                newPage.SafeAreaPadding = _insetManager.SafeAreaPadding;
         }
 
         private void TopLevel_BackRequested(object? sender, RoutedEventArgs e)

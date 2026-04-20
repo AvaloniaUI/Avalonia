@@ -100,6 +100,29 @@ public class HarfBuzzTextShaperTests
         }
     }
 
+    [Fact]
+    public void ShapeText_WithSlicedMemory_ClusterValuesAreSliceRelative()
+    {
+        using (UnitTestApplication.Start(Services))
+        {
+            var fullString = new string('A', 1000) + "Hello" + new string('B', 1000);
+            var sliced = fullString.AsMemory().Slice(1000, 5);
+
+            var options = CreateTextShaperOptions();
+
+            var result = _shaper.ShapeText(sliced, options);
+
+            Assert.NotNull(result);
+            Assert.Equal(5, result.Length);
+
+            for (var i = 0; i < result.Length; i++)
+            {
+                Assert.True(result[i].GlyphCluster >= 0 && result[i].GlyphCluster < 5,
+                    $"Glyph cluster at index {i} was {result[i].GlyphCluster}, expected a value in [0, 5).");
+            }
+        }
+    }
+
     private TextShaperOptions CreateTextShaperOptions(
         sbyte bidiLevel = 0,
         double letterSpacing = 0,

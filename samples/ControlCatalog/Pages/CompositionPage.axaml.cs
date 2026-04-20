@@ -15,7 +15,7 @@ using Math = System.Math;
 
 namespace ControlCatalog.Pages;
 
-public partial class CompositionPage : UserControl
+public partial class CompositionPage : TabbedPage
 {
     private ImplicitAnimationCollection? _implicitAnimations;
     private CompositionCustomVisual? _customVisual;
