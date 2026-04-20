@@ -42,7 +42,7 @@ dotnet run
 
 If you want to open Avalonia in Visual Studio you have two options:
 
-- Avalonia.sln: This contains the whole of Avalonia in including desktop, mobile and web. You must have a number of dotnet workloads installed in order to build everything in this solution
+- Avalonia.slnx: This contains the whole of Avalonia in including desktop, mobile and web. You must have a number of dotnet workloads installed in order to build everything in this solution
 - Avalonia.Desktop.slnf: This solution filter opens only the parts of Avalonia required to run on desktop. This requires no extra workloads to be installed.
 
 Avalonia requires Visual Studio 2022 or newer. The free Visual Studio Community edition works fine.
