@@ -7,7 +7,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ContextFlyoutPage : UserControl
+    public partial class ContextFlyoutPage : ContentPage
     {
         public ContextFlyoutPage()
         {
