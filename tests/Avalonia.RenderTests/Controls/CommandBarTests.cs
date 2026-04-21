@@ -142,5 +142,40 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
+
+        [Fact]
+        public async Task AppBarButton_Overflow_ShowsLabel_WhenCompact()
+        {
+            var target = new Decorator
+            {
+                Width = 180,
+                Height = 46,
+                Child = new Border
+                {
+                    Background = Brushes.LightGray,
+                    Padding = new Thickness(4),
+                    Child = new AppBarButton
+                    {
+                        Label = "Settings",
+                        IsCompact = true,
+                        IsInOverflow = true,
+                        LabelPosition = CommandBarDefaultLabelPosition.Right,
+                        Icon = new Path
+                        {
+                            Data = StreamGeometry.Parse("M19.43,12.98C19.47,12.66 19.5,12.34 19.5,12C19.5,11.66 19.47,11.33 19.42,11L21.54,9.34C21.73,9.19 21.78,8.92 21.66,8.7L19.66,5.24C19.54,5.02 19.29,4.93 19.06,5.02L16.56,6.03C16.04,5.63 15.5,5.3 14.87,5.05L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.05C8.5,5.3 7.96,5.64 7.44,6.03L4.94,5.02C4.71,4.93 4.46,5.02 4.34,5.24L2.34,8.7C2.21,8.92 2.27,9.19 2.46,9.34L4.58,11C4.53,11.33 4.5,11.66 4.5,12C4.5,12.34 4.53,12.66 4.57,12.98L2.45,14.64C2.26,14.79 2.21,15.06 2.33,15.28L4.33,18.74C4.45,18.96 4.7,19.05 4.93,18.96L7.43,17.95C7.95,18.35 8.5,18.68 9.12,18.93L9.49,21.56C9.54,21.8 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.95C15.5,18.7 16.04,18.36 16.56,17.97L19.06,18.98C19.29,19.07 19.54,18.98 19.66,18.76L21.66,15.3C21.78,15.08 21.73,14.81 21.54,14.66L19.43,12.98M12,15.5A3.5,3.5 0 1,1 12,8A3.5,3.5 0 0,1 12,15.5Z"),
+                            Fill = Brushes.Black,
+                            Width = 16,
+                            Height = 16,
+                            Stretch = Stretch.Uniform
+                        }
+                    }
+                }
+            };
+
+            target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
+            await RenderToFile(target);
+            CompareImages(skipImmediate: true);
+        }
     }
 }

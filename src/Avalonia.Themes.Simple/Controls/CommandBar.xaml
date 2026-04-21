@@ -100,6 +100,10 @@
     <Style Selector="^[IsInOverflow=True] /template/ StackPanel#PART_LayoutRoot">
       <Setter Property="Orientation" Value="Horizontal" />
     </Style>
+    <Style Selector="^[IsInOverflow=True] /template/ TextBlock#PART_Label">
+      <Setter Property="IsVisible" Value="True" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
   </ControlTheme>
 
   <!-- AppBarToggleButton ControlTheme -->
@@ -187,6 +191,10 @@
     </Style>
     <Style Selector="^[IsInOverflow=True] /template/ StackPanel#PART_LayoutRoot">
       <Setter Property="Orientation" Value="Horizontal" />
+    </Style>
+    <Style Selector="^[IsInOverflow=True] /template/ TextBlock#PART_Label">
+      <Setter Property="IsVisible" Value="True" />
+      <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
   </ControlTheme>
 

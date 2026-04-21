@@ -388,6 +388,8 @@ namespace Avalonia.Controls
             else if (change.Property == DefaultLabelPositionProperty)
             {
                 ApplyLabelPositionToChildren();
+                if (IsDynamicOverflowEnabled)
+                    UpdateDynamicOverflow();
             }
             else if (change.Property == OverflowButtonVisibilityProperty)
             {
@@ -591,8 +593,11 @@ namespace Avalonia.Controls
             }
         }
 
-        private static void SetOverflowMode(ICommandBarElement element, bool inOverflow)
-            => element.IsInOverflow = inOverflow;
+        private void SetOverflowMode(ICommandBarElement element, bool inOverflow)
+        {
+            element.IsInOverflow = inOverflow;
+            ApplyLabelPositionToElement(element);
+        }
 
         private static int GetDynamicOverflowOrder(ICommandBarElement element) => element switch
         {
@@ -613,12 +618,16 @@ namespace Avalonia.Controls
 
         private void ApplyLabelPositionToElement(ICommandBarElement element)
         {
-            element.IsCompact = DefaultLabelPosition == CommandBarDefaultLabelPosition.Collapsed;
+            var labelPosition = element.IsInOverflow
+                ? CommandBarDefaultLabelPosition.Right
+                : DefaultLabelPosition;
+
+            element.IsCompact = labelPosition == CommandBarDefaultLabelPosition.Collapsed;
 
             if (element is AppBarButton abb)
-                abb.LabelPosition = DefaultLabelPosition;
+                abb.LabelPosition = labelPosition;
             else if (element is AppBarToggleButton atb)
-                atb.LabelPosition = DefaultLabelPosition;
+                atb.LabelPosition = labelPosition;
         }
 
         private void UpdateStickyBehavior()
