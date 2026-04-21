@@ -69,10 +69,11 @@ public class IsolationTests
     }
 
 #if NUNIT
+    // NUnit-only: xUnit's AvaloniaFactDiscoverer wraps every [Fact] in session.Dispatch,
+    // so awaiting another session.Dispatch inside the test body would deadlock on the
+    // session's single background thread. Plain NUnit [Test] runs outside the session,
+    // which is exactly the thread context this test needs.
     [Test]
-#elif XUNIT
-    [Fact]
-#endif
     public async Task Dispatch_Cleanup_Should_Complete_Before_Task_Returns()
     {
         // Regression test for https://github.com/AvaloniaUI/Avalonia/issues/20664.
@@ -98,4 +99,5 @@ public class IsolationTests
 
         AssertHelper.True(Dispatcher.UIThread.CheckAccess());
     }
+#endif
 }
