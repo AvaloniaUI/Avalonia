@@ -165,8 +165,8 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
         {
             if (existingItem is IStorageFile existingFile)
             {
-                // Uncommenting the following code will cause the file to be truncated when it is created:
-                // using (var _ = await existingFile.OpenWriteAsync()) { }
+                // The file should be truncated when it is created.
+                using (var _ = await existingFile.OpenWriteAsync()) { }
                 return existingFile;
             }
             else if (existingItem is IStorageFolder)

@@ -103,12 +103,11 @@ export class StorageItem {
         }
 
         await item.verityPermissions("readwrite");
-        // Uncommenting the following code will cause the file to be truncated when it is created:
-        // const fileHandle = ((item.handle as any).getFileHandle(name, { create: true });
-        // const writable = await fileHandle.createWritable({ keepExistingData: false });
-        // await writable.close();
-        // return fileHandle;
-        return await ((item.handle as any).getFileHandle(name, { create: true }) as Promise<any>);
+        // The file should be truncated when it is created.
+        const fileHandle = await ((item.handle as any).getFileHandle(name, { create: true }) as Promise<any>);
+        const writable = await fileHandle.createWritable({ keepExistingData: false });
+        await writable.close();
+        return fileHandle;
     }
 
     public static async getFile(item: StorageItem, name: string): Promise<any | null> {
