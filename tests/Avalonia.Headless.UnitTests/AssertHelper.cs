@@ -49,4 +49,14 @@ internal static class AssertHelper
 #endif
     }
 
+    public static void SkipWhen(bool condition, string message)
+    {
+#if NUNIT
+        if (condition)
+            Assert.Ignore(message);
+#elif XUNIT
+        Assert.SkipWhen(condition, message);
+#endif
+    }
+
 }

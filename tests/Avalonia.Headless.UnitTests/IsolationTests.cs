@@ -88,8 +88,7 @@ public class IsolationTests
             GetType().Assembly.GetCustomAttribute<AvaloniaTestIsolationAttribute>()?.IsolationLevel
             ?? AvaloniaTestIsolationLevel.PerTest;
 
-        if (isolationLevel != AvaloniaTestIsolationLevel.PerTest)
-            return;
+        AssertHelper.SkipWhen(isolationLevel != AvaloniaTestIsolationLevel.PerTest, "Only applies to PerTest isolation.");
 
         // Uses the shared assembly session (not StartNew) so no competing thread calls
         // ResetGlobalState() concurrently with other tests in the suite.
