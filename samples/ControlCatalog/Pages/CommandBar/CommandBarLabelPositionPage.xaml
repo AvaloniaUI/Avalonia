@@ -6,6 +6,8 @@
     <StreamGeometry x:Key="SaveIcon">M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z</StreamGeometry>
     <StreamGeometry x:Key="ShareIcon">M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L15.96,7.19C16.5,7.69 17.21,8 18,8A3,3 0 0,0 21,5A3,3 0 0,0 18,2A3,3 0 0,0 15,5C15,5.24 15.04,5.47 15.09,5.7L8.04,9.81C7.5,9.31 6.79,9 6,9A3,3 0 0,0 3,12A3,3 0 0,0 6,15C6.79,15 7.5,14.69 8.04,14.19L15.16,18.34C15.11,18.55 15.08,18.77 15.08,19C15.08,20.61 16.39,21.91 18,21.91C19.61,21.91 20.92,20.61 20.92,19C20.92,17.39 19.61,16.08 18,16.08Z</StreamGeometry>
     <StreamGeometry x:Key="DeleteIcon">M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z</StreamGeometry>
+    <StreamGeometry x:Key="ExportIcon">M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M16,11V18.1L13.9,16L11.1,18.8L8.3,16L11.1,13.2L9,11.1L16,11Z</StreamGeometry>
+    <StreamGeometry x:Key="SettingsIcon">M19.43,12.98C19.47,12.66 19.5,12.34 19.5,12C19.5,11.66 19.47,11.33 19.42,11L21.54,9.34C21.73,9.19 21.78,8.92 21.66,8.7L19.66,5.24C19.54,5.02 19.29,4.93 19.06,5.02L16.56,6.03C16.04,5.63 15.5,5.3 14.87,5.05L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.05C8.5,5.3 7.96,5.64 7.44,6.03L4.94,5.02C4.71,4.93 4.46,5.02 4.34,5.24L2.34,8.7C2.21,8.92 2.27,9.19 2.46,9.34L4.58,11C4.53,11.33 4.5,11.66 4.5,12C4.5,12.34 4.53,12.66 4.57,12.98L2.45,14.64C2.26,14.79 2.21,15.06 2.33,15.28L4.33,18.74C4.45,18.96 4.7,19.05 4.93,18.96L7.43,17.95C7.95,18.35 8.5,18.68 9.12,18.93L9.49,21.56C9.54,21.8 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.95C15.5,18.7 16.04,18.36 16.56,17.97L19.06,18.98C19.29,19.07 19.54,18.98 19.66,18.76L21.66,15.3C21.78,15.08 21.73,14.81 21.54,14.66L19.43,12.98M12,15.5A3.5,3.5 0 1,1 12,8A3.5,3.5 0 0,1 12,15.5Z</StreamGeometry>
   </UserControl.Resources>
 
   <ScrollViewer>
@@ -14,33 +16,45 @@
 
       <TextBlock Text="Bottom (default)" FontWeight="SemiBold" />
       <TextBlock Text="Label appears below the icon." FontSize="12" Opacity="0.7" />
-      <CommandBar DefaultLabelPosition="Bottom" OverflowButtonVisibility="Collapsed">
+      <CommandBar DefaultLabelPosition="Bottom">
         <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
         <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
         <AppBarButton Label="Share"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
         <AppBarButton Label="Delete"><AppBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></AppBarButton.Icon></AppBarButton>
+        <CommandBar.SecondaryCommands>
+          <AppBarButton Label="Export"><AppBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></AppBarButton.Icon></AppBarButton>
+          <AppBarButton Label="Settings"><AppBarButton.Icon><PathIcon Data="{StaticResource SettingsIcon}" /></AppBarButton.Icon></AppBarButton>
+        </CommandBar.SecondaryCommands>
       </CommandBar>
 
       <Separator />
 
       <TextBlock Text="Right" FontWeight="SemiBold" />
       <TextBlock Text="Label appears to the right of the icon." FontSize="12" Opacity="0.7" />
-      <CommandBar DefaultLabelPosition="Right" OverflowButtonVisibility="Collapsed">
+      <CommandBar DefaultLabelPosition="Right">
         <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
         <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
         <AppBarButton Label="Share"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
         <AppBarButton Label="Delete"><AppBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></AppBarButton.Icon></AppBarButton>
+        <CommandBar.SecondaryCommands>
+          <AppBarButton Label="Export"><AppBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></AppBarButton.Icon></AppBarButton>
+          <AppBarButton Label="Settings"><AppBarButton.Icon><PathIcon Data="{StaticResource SettingsIcon}" /></AppBarButton.Icon></AppBarButton>
+        </CommandBar.SecondaryCommands>
       </CommandBar>
 
       <Separator />
 
       <TextBlock Text="Collapsed (icon only)" FontWeight="SemiBold" />
-      <TextBlock Text="No label shown. Use ToolTip.Tip to preserve accessibility." FontSize="12" Opacity="0.7" />
-      <CommandBar DefaultLabelPosition="Collapsed" OverflowButtonVisibility="Collapsed">
+      <TextBlock Text="Primary command labels are hidden. Overflow command labels remain visible." FontSize="12" Opacity="0.7" />
+      <CommandBar DefaultLabelPosition="Collapsed">
         <AppBarButton ToolTip.Tip="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
         <AppBarButton ToolTip.Tip="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
         <AppBarButton ToolTip.Tip="Share"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
         <AppBarButton ToolTip.Tip="Delete"><AppBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></AppBarButton.Icon></AppBarButton>
+        <CommandBar.SecondaryCommands>
+          <AppBarButton Label="Export"><AppBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></AppBarButton.Icon></AppBarButton>
+          <AppBarButton Label="Settings"><AppBarButton.Icon><PathIcon Data="{StaticResource SettingsIcon}" /></AppBarButton.Icon></AppBarButton>
+        </CommandBar.SecondaryCommands>
       </CommandBar>
     </StackPanel>
   </ScrollViewer>
