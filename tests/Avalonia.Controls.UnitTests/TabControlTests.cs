@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -1019,6 +1021,59 @@ namespace Avalonia.Controls.UnitTests
             Assert.Same(firstPage, target.SelectedContent);
         }
 
+        [Fact]
+        public void Interrupted_PageTransition_Clears_Reused_Control_From_Owning_SelectedContentHost()
+        {
+            using var app = Start();
+
+            var firstPage = new ContentPage { Content = "Alpha" };
+            var secondPage = new ContentPage { Content = "Beta" };
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var target = new TabControl
+            {
+                Items =
+                {
+                    new TabItem { Name = "first", Content = firstPage },
+                    new TabItem { Name = "second", Content = secondPage },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            var primary = target.GetVisualDescendants()
+                .OfType<ContentPresenter>()
+                .Single(x => x.Name == "PART_SelectedContentHost");
+            var secondary = target.GetVisualDescendants()
+                .OfType<ContentPresenter>()
+                .Single(x => x.Name == "PART_SelectedContentHost2");
+
+            // Simulate the stale presenter ownership that can happen when tab changes
+            // interrupt a transition: the page is still parented by the named content
+            // host, but the active field no longer points at that host.
+            primary.SetContentWithDataContext(firstPage, null);
+            secondary.IsVisible = false;
+            SetPrivateField(target, "_contentPart", secondary);
+            SetPrivateField(target, "_contentPresenter2", secondary);
+
+            target.PageTransition = transition.Object;
+            var exception = Record.Exception(() => target.SelectedIndex = 0);
+
+            Assert.Null(exception);
+            Assert.Same(firstPage, target.SelectedContent);
+            Assert.Null(primary.Content);
+            Assert.Same(firstPage, secondary.Content);
+        }
+
         private static IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>
@@ -1047,6 +1102,13 @@ namespace Avalonia.Controls.UnitTests
                         }
                     }
                 });
+        }
+
+        private static void SetPrivateField<T>(TabControl target, string name, T value)
+        {
+            var field = typeof(TabControl).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.NotNull(field);
+            field.SetValue(target, value);
         }
 
         private static IControlTemplate TabItemTemplate()
