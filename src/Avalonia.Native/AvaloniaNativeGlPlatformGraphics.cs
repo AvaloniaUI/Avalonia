@@ -173,7 +173,7 @@ namespace Avalonia.Native
             _context = context;
         }
 
-        public bool IsCorrupted => false;
+        public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
 
         public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {

@@ -17,13 +17,13 @@
       <TextBlock Text="Bottom (default)" FontWeight="SemiBold" />
       <TextBlock Text="Label appears below the icon." FontSize="12" Opacity="0.7" />
       <CommandBar DefaultLabelPosition="Bottom">
-        <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-        <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
-        <AppBarButton Label="Share"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
-        <AppBarButton Label="Delete"><AppBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></AppBarButton.Icon></AppBarButton>
+        <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+        <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
+        <CommandBarButton Label="Share"><CommandBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></CommandBarButton.Icon></CommandBarButton>
+        <CommandBarButton Label="Delete"><CommandBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></CommandBarButton.Icon></CommandBarButton>
         <CommandBar.SecondaryCommands>
-          <AppBarButton Label="Export"><AppBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></AppBarButton.Icon></AppBarButton>
-          <AppBarButton Label="Settings"><AppBarButton.Icon><PathIcon Data="{StaticResource SettingsIcon}" /></AppBarButton.Icon></AppBarButton>
+          <CommandBarButton Label="Export"><CommandBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></CommandBarButton.Icon></CommandBarButton>
+          <CommandBarButton Label="Settings"><CommandBarButton.Icon><PathIcon Data="{StaticResource SettingsIcon}" /></CommandBarButton.Icon></CommandBarButton>
         </CommandBar.SecondaryCommands>
       </CommandBar>
 
@@ -32,13 +32,13 @@
       <TextBlock Text="Right" FontWeight="SemiBold" />
       <TextBlock Text="Label appears to the right of the icon." FontSize="12" Opacity="0.7" />
       <CommandBar DefaultLabelPosition="Right">
-        <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-        <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
-        <AppBarButton Label="Share"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
-        <AppBarButton Label="Delete"><AppBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></AppBarButton.Icon></AppBarButton>
+        <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+        <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
+        <CommandBarButton Label="Share"><CommandBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></CommandBarButton.Icon></CommandBarButton>
+        <CommandBarButton Label="Delete"><CommandBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></CommandBarButton.Icon></CommandBarButton>
         <CommandBar.SecondaryCommands>
-          <AppBarButton Label="Export"><AppBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></AppBarButton.Icon></AppBarButton>
-          <AppBarButton Label="Settings"><AppBarButton.Icon><PathIcon Data="{StaticResource SettingsIcon}" /></AppBarButton.Icon></AppBarButton>
+          <CommandBarButton Label="Export"><CommandBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></CommandBarButton.Icon></CommandBarButton>
+          <CommandBarButton Label="Settings"><CommandBarButton.Icon><PathIcon Data="{StaticResource SettingsIcon}" /></CommandBarButton.Icon></CommandBarButton>
         </CommandBar.SecondaryCommands>
       </CommandBar>
 
@@ -47,13 +47,13 @@
       <TextBlock Text="Collapsed (icon only)" FontWeight="SemiBold" />
       <TextBlock Text="Primary command labels are hidden. Overflow command labels remain visible." FontSize="12" Opacity="0.7" />
       <CommandBar DefaultLabelPosition="Collapsed">
-        <AppBarButton ToolTip.Tip="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-        <AppBarButton ToolTip.Tip="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
-        <AppBarButton ToolTip.Tip="Share"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
-        <AppBarButton ToolTip.Tip="Delete"><AppBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></AppBarButton.Icon></AppBarButton>
+        <CommandBarButton ToolTip.Tip="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+        <CommandBarButton ToolTip.Tip="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
+        <CommandBarButton ToolTip.Tip="Share"><CommandBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></CommandBarButton.Icon></CommandBarButton>
+        <CommandBarButton ToolTip.Tip="Delete"><CommandBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></CommandBarButton.Icon></CommandBarButton>
         <CommandBar.SecondaryCommands>
-          <AppBarButton Label="Export"><AppBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></AppBarButton.Icon></AppBarButton>
-          <AppBarButton Label="Settings"><AppBarButton.Icon><PathIcon Data="{StaticResource SettingsIcon}" /></AppBarButton.Icon></AppBarButton>
+          <CommandBarButton Label="Export"><CommandBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></CommandBarButton.Icon></CommandBarButton>
+          <CommandBarButton Label="Settings"><CommandBarButton.Icon><PathIcon Data="{StaticResource SettingsIcon}" /></CommandBarButton.Icon></CommandBarButton>
         </CommandBar.SecondaryCommands>
       </CommandBar>
     </StackPanel>

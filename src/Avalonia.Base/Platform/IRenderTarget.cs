@@ -13,11 +13,6 @@ namespace Avalonia.Platform
     public interface IRenderTarget : IDisposable
     {
         /// <summary>
-        /// Indicates if the render target is no longer usable and needs to be recreated
-        /// </summary>
-        bool IsCorrupted { get; }
-
-        /// <summary>
         /// Gets the properties of the render target.
         /// </summary>
         RenderTargetProperties Properties { get; }
@@ -33,9 +28,9 @@ namespace Avalonia.Platform
         IDrawingContextImpl CreateDrawingContext(RenderTargetSceneInfo sceneInfo, out RenderTargetDrawingContextProperties properties);
 
         /// <summary>
-        /// Indicates if the render target is currently ready to be rendered to
+        /// Gets the current readiness state of the render target.
         /// </summary>
-        bool IsReady => true;
+        PlatformRenderTargetState PlatformRenderTargetState => PlatformRenderTargetState.Ready;
         
         public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling);
     }

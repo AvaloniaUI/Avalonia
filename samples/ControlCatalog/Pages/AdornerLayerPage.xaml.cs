@@ -4,7 +4,7 @@ using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
-    public partial class AdornerLayerPage : UserControl
+    public partial class AdornerLayerPage : ContentPage
     {
         private Control? _adorner;
 

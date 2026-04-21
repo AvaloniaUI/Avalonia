@@ -37,7 +37,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     Background = Brushes.LightGray,
                     PrimaryCommands =
                     {
-                        new AppBarButton
+                        new CommandBarButton
                         {
                             Label = "New",
                             Icon = new Path
@@ -49,7 +49,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                                 Stretch = Stretch.Uniform
                             }
                         },
-                        new AppBarButton
+                        new CommandBarButton
                         {
                             Label = "Save",
                             Icon = new Path
@@ -61,8 +61,8 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                                 Stretch = Stretch.Uniform
                             }
                         },
-                        new AppBarSeparator(),
-                        new AppBarToggleButton
+                        new CommandBarSeparator(),
+                        new CommandBarToggleButton
                         {
                             Label = "Bold",
                             Icon = new Path
@@ -98,7 +98,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Collapsed,
                     PrimaryCommands =
                     {
-                        new AppBarButton
+                        new CommandBarButton
                         {
                             Icon = new Path
                             {
@@ -109,7 +109,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                                 Stretch = Stretch.Uniform
                             }
                         },
-                        new AppBarButton
+                        new CommandBarButton
                         {
                             Icon = new Path
                             {
@@ -120,8 +120,8 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                                 Stretch = Stretch.Uniform
                             }
                         },
-                        new AppBarSeparator(),
-                        new AppBarToggleButton
+                        new CommandBarSeparator(),
+                        new CommandBarToggleButton
                         {
                             IsChecked = true,
                             Icon = new Path
@@ -144,7 +144,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
         [Fact]
-        public async Task AppBarButton_Overflow_ShowsLabel_WhenCompact()
+        public async Task CommandBarButton_Overflow_ShowsLabel_WhenCompact()
         {
             var target = new Decorator
             {
@@ -154,7 +154,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 {
                     Background = Brushes.LightGray,
                     Padding = new Thickness(4),
-                    Child = new AppBarButton
+                    Child = new CommandBarButton
                     {
                         Label = "Settings",
                         IsCompact = true,

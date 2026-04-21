@@ -2,18 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Collections;
-using Avalonia.Collections.Pooled;
 using Avalonia.Diagnostics;
-using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition;
 
@@ -201,6 +196,13 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     {
         if(_updating)
             return;
+
+        if (!CompositionTarget.IsEnabled)
+        {
+            _queuedUpdate = false;
+            return;
+        }
+
         _updating = true;
         try
         {
@@ -237,6 +239,9 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
             return;
 
         CompositionTarget.IsEnabled = true;
+
+        if (_dirty.Count > 0 || _recalculateChildren.Count > 0)
+            QueueUpdate();
     }
 
     /// <inheritdoc />

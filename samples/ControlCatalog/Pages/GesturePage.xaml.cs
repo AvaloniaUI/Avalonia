@@ -4,7 +4,7 @@ using Avalonia.Interactivity;
 
 namespace ControlCatalog.Pages
 {
-    public partial class GesturePage : UserControl
+    public partial class GesturePage : ContentPage
     {
         private static readonly (string Group, string Title, string Description, Func<UserControl> Factory)[] Demos =
         {
