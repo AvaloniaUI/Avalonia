@@ -913,6 +913,112 @@ namespace Avalonia.Controls.UnitTests
                 Times.Once);
         }
 
+        [Fact]
+        public void Interrupted_PageTransition_Can_Select_Original_Control_Before_Previous_Transition_Completes()
+        {
+            using var app = Start();
+
+            var firstPage = new ContentPage { Content = "Alpha" };
+            var secondPage = new ContentPage { Content = "Beta" };
+            var starts = new List<(object? FromContent, object? ToContent, bool Forward)>();
+            var transitionGate = new TaskCompletionSource();
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Callback<Visual?, Visual?, bool, CancellationToken>((from, to, forward, _) =>
+                {
+                    starts.Add((
+                        (from as ContentPresenter)?.Content,
+                        (to as ContentPresenter)?.Content,
+                        forward));
+                })
+                .Returns(transitionGate.Task);
+
+            var target = new TabControl
+            {
+                PageTransition = transition.Object,
+                Items =
+                {
+                    new TabItem { Name = "first", Content = firstPage },
+                    new TabItem { Name = "second", Content = secondPage },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Single(starts);
+            Assert.Same(firstPage, starts[0].FromContent);
+            Assert.Same(secondPage, starts[0].ToContent);
+            Assert.True(starts[0].Forward);
+
+            var exception = Record.Exception(() => target.SelectedIndex = 0);
+
+            Assert.Null(exception);
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(2, starts.Count);
+            Assert.Null(starts[1].FromContent);
+            Assert.Same(firstPage, starts[1].ToContent);
+            Assert.False(starts[1].Forward);
+            Assert.Same(firstPage, target.SelectedContent);
+        }
+
+        [Fact]
+        public void Pending_PageTransition_Can_Select_Original_Control_Before_Transition_Starts()
+        {
+            using var app = Start();
+
+            var firstPage = new ContentPage { Content = "Alpha" };
+            var secondPage = new ContentPage { Content = "Beta" };
+            var starts = new List<(object? FromContent, object? ToContent, bool Forward)>();
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Callback<Visual?, Visual?, bool, CancellationToken>((from, to, forward, _) =>
+                {
+                    starts.Add((
+                        (from as ContentPresenter)?.Content,
+                        (to as ContentPresenter)?.Content,
+                        forward));
+                })
+                .Returns(Task.CompletedTask);
+
+            var target = new TabControl
+            {
+                PageTransition = transition.Object,
+                Items =
+                {
+                    new TabItem { Name = "first", Content = firstPage },
+                    new TabItem { Name = "second", Content = secondPage },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SelectedIndex = 1;
+            var exception = Record.Exception(() => target.SelectedIndex = 0);
+
+            Assert.Null(exception);
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Single(starts);
+            Assert.Null(starts[0].FromContent);
+            Assert.Same(firstPage, starts[0].ToContent);
+            Assert.False(starts[0].Forward);
+            Assert.Same(firstPage, target.SelectedContent);
+        }
+
         private static IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>

@@ -306,6 +306,9 @@ namespace Avalonia.Controls
                             _contentPresenter2!.ContentTemplate = template;
                             _contentPresenter2!.IsVisible = true;
 
+                            if (content is Control && template is null && ReferenceEquals(ContentPart?.Content, content))
+                                ContentPart.Content = null;
+
                             if (content is Control && template is null)
                                 _contentPresenter2.SetContentWithDataContext(content, container.DataContext);
                             else
