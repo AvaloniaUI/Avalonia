@@ -254,6 +254,36 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void XButton1Down_Should_Raise_BackRequested()
+        {
+            // Regression test: prior to this fix, the PreProcess subscription compared
+            // e.Root against 'this' (the TopLevel/Window), but e.Root is set to the
+            // PresentationSource (the IInputRoot), not the Window itself. The comparison
+            // always failed so BackRequested was never raised for XButton1Down.
+            var services = TestServices.StyledWindow.With(inputManager: new InputManager());
+
+            using (UnitTestApplication.Start(services))
+            {
+                var impl = CreateMockTopLevelImpl(true);
+                var target = new TestTopLevel(impl.Object);
+
+                var raised = false;
+                target.BackRequested += (_, _) => raised = true;
+
+                var mouseDevice = new MouseDevice(new Pointer(0, PointerType.Mouse, true));
+                impl.Object.Input!(new RawPointerEventArgs(
+                    mouseDevice,
+                    timestamp: 0,
+                    target.InputRoot,
+                    RawPointerEventType.XButton1Down,
+                    new RawPointerPoint { Position = default },
+                    RawInputModifiers.None));
+
+                Assert.True(raised);
+            }
+        }
+
+        [Fact]
         public void TopLevel_Should_Unfocus_When_Impl_Focus_Is_Lost()
         {
             using (UnitTestApplication.Start(TestServices.RealFocus))

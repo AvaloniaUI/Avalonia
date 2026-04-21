@@ -64,13 +64,13 @@
         <CommandBar x:Name="DemoBar"
                     OverflowButtonVisibility="Auto">
           <CommandBar.PrimaryCommands>
-            <AppBarButton Label="New"><AppBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></AppBarButton.Icon></AppBarButton>
-            <AppBarButton Label="Save"><AppBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></AppBarButton.Icon></AppBarButton>
-            <AppBarButton Label="Share"><AppBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></AppBarButton.Icon></AppBarButton>
+            <CommandBarButton Label="New"><CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon></CommandBarButton>
+            <CommandBarButton Label="Save"><CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon></CommandBarButton>
+            <CommandBarButton Label="Share"><CommandBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></CommandBarButton.Icon></CommandBarButton>
           </CommandBar.PrimaryCommands>
           <CommandBar.SecondaryCommands>
-            <AppBarButton Label="Export"><AppBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></AppBarButton.Icon></AppBarButton>
-            <AppBarButton Label="Delete"><AppBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></AppBarButton.Icon></AppBarButton>
+            <CommandBarButton Label="Export"><CommandBarButton.Icon><PathIcon Data="{StaticResource ExportIcon}" /></CommandBarButton.Icon></CommandBarButton>
+            <CommandBarButton Label="Delete"><CommandBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></CommandBarButton.Icon></CommandBarButton>
           </CommandBar.SecondaryCommands>
         </CommandBar>
 

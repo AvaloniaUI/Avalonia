@@ -1,6 +1,8 @@
-<UserControl x:Class="ControlCatalog.Pages.ConnectedAnimationDemoPage"
+<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.ConnectedAnimationDemoPage"
              xmlns="https://github.com/avaloniaui"
+             Header="Connected Animations"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Grid>
   <NavigationPage x:Name="SampleNav">
     <NavigationPage.Styles>
       <Style Selector="NavigationPage#SampleNav /template/ Border#PART_NavigationBar">
@@ -8,4 +10,5 @@
       </Style>
     </NavigationPage.Styles>
   </NavigationPage>
-</UserControl>
+  </Grid>
+</ContentPage>
