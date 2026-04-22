@@ -42,5 +42,17 @@ public enum DataFormatKind
     /// It is not possible to create such a format directly.
     /// </para>
     /// </summary>
-    Universal
+    Universal,
+
+    /// <summary>
+    /// <para>
+    /// The data format is only usable within the current process.
+    /// It never crosses process or serialization boundaries.
+    /// </para>
+    /// <para>
+    /// Such a format is created using <see cref="DataFormat.CreateInProcessFormat{T}"/>.
+    /// </para>
+    /// </summary>
+    /// <seealso cref="DataFormat.CreateInProcessFormat{T}"/>
+    InProcess
 }

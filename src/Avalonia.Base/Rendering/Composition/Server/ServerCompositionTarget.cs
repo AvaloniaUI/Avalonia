@@ -138,7 +138,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (Root == null) 
                 return;
 
-            if (_renderTarget?.IsCorrupted == true)
+            if (_renderTarget?.PlatformRenderTargetState.IsCorrupted == true)
             {
                 _layer?.Dispose();
                 _layer = null;
@@ -178,7 +178,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (!_redrawRequested)
                 return;
             
-            if (!_renderTarget.IsReady)
+            if (!_renderTarget.PlatformRenderTargetState.IsReady)
             {
                 IsWaitingForReadyRenderTarget = IsEnabled;
                 return;

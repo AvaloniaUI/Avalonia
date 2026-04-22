@@ -28,9 +28,7 @@ public class CompositionAnimationParserTests
         };
         var res = expr.Evaluate(ref ctx);
         double doubleRes;
-        if (res.Type == VariantType.Scalar)
-            doubleRes = res.Scalar;
-        else if (res.Type == VariantType.Double)
+        if (res.Type == VariantType.Double)
             doubleRes = res.Double;
         else
             throw new Exception("Invalid result type: " + res.Type);
