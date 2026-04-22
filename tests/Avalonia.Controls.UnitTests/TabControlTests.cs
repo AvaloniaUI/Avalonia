@@ -1701,7 +1701,7 @@ namespace Avalonia.Controls.UnitTests
             tabItem.ApplyTemplate();
             tabItem.Presenter!.UpdateChild();
 
-            var iconPresenter = tabItem.GetTemplateChildren().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
+            var iconPresenter = tabItem.GetTemplateDescendants().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
             Assert.NotNull(iconPresenter);
             Assert.Equal("home", iconPresenter!.Content);
             Assert.NotNull(iconPresenter.ContentTemplate);
@@ -1729,7 +1729,7 @@ namespace Avalonia.Controls.UnitTests
             tabItem.ApplyTemplate();
             tabItem.Presenter!.UpdateChild();
 
-            var iconPresenter = tabItem.GetTemplateChildren().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
+            var iconPresenter = tabItem.GetTemplateDescendants().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
             Assert.NotNull(iconPresenter);
             Assert.Same(icon, iconPresenter!.Content);
             Assert.Null(iconPresenter.ContentTemplate);
@@ -1748,7 +1748,7 @@ namespace Avalonia.Controls.UnitTests
             tabItem.ApplyTemplate();
             tabItem.Presenter!.UpdateChild();
 
-            var iconPresenter = tabItem.GetTemplateChildren().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
+            var iconPresenter = tabItem.GetTemplateDescendants().OfType<ContentPresenter>().First(x => x.Name == "PART_IconPresenter");
             Assert.Equal("first", iconPresenter!.Content);
 
             tabItem.Icon = "second";
