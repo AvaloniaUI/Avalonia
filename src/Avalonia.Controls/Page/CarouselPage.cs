@@ -55,6 +55,26 @@ namespace Avalonia.Controls
         {
             ItemsPanelProperty.OverrideDefaultValue<CarouselPage>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<CarouselPage>(true);
+            PageNavigationSystemBackButtonPressedEvent.AddClassHandler<CarouselPage>((sender, eventArgs) =>
+            {
+                if (eventArgs.Handled)
+                    return;
+
+                if (sender.OnSystemBackButtonPressed())
+                {
+                    eventArgs.Handled = true;
+                }
+                else
+                {
+                    var pageEvent = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
+                    sender.CurrentPage?.RaiseEvent(pageEvent);
+
+                    if (pageEvent.Handled)
+                    {
+                        eventArgs.Handled = true;
+                    }
+                }
+            });
         }
 
         public CarouselPage()

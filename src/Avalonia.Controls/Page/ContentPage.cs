@@ -74,6 +74,16 @@ namespace Avalonia.Controls
         static ContentPage()
         {
             ContentProperty.Changed.AddClassHandler<ContentPage>((x, e) => x.ContentChanged(e));
+            PageNavigationSystemBackButtonPressedEvent.AddClassHandler<ContentPage>((sender, eventArgs) =>
+            {
+                if (eventArgs.Handled)
+                    return;
+
+                if (sender.OnSystemBackButtonPressed())
+                {
+                    eventArgs.Handled = true;
+                }
+            });
         }
 
         /// <summary>

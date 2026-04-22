@@ -9,6 +9,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -87,6 +88,26 @@ namespace Avalonia.Controls
         static TabbedPage()
         {
             FocusableProperty.OverrideDefaultValue<TabbedPage>(true);
+            PageNavigationSystemBackButtonPressedEvent.AddClassHandler<TabbedPage>((sender, eventArgs) =>
+            {
+                if (eventArgs.Handled)
+                    return;
+
+                if (sender.OnSystemBackButtonPressed())
+                {
+                    eventArgs.Handled = true;
+                }
+                else
+                {
+                    var forwarded = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
+                    sender.CurrentPage?.RaiseEvent(forwarded);
+
+                    if (forwarded.Handled)
+                    {
+                        eventArgs.Handled = true;
+                    }
+                }
+            });
         }
 
         /// <summary>

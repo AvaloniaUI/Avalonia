@@ -62,7 +62,7 @@ namespace Avalonia.Controls
         public static readonly RoutedEvent<RoutedEventArgs> PageNavigationSystemBackButtonPressedEvent =
             RoutedEvent.Register<Page, RoutedEventArgs>(
                 nameof(PageNavigationSystemBackButtonPressed),
-                RoutingStrategies.Bubble);
+                RoutingStrategies.Direct);
 
         /// <summary>
         /// Defines the <see cref="Navigation"/> property.
@@ -75,17 +75,6 @@ namespace Avalonia.Controls
 
         static Page()
         {
-            PageNavigationSystemBackButtonPressedEvent.AddClassHandler<Page>((page, args) =>
-            {
-                if (!args.Handled && page.OnSystemBackButtonPressed())
-                {
-                    args.Handled = true;
-                    return;
-                }
-
-                page.CurrentPage?.RaiseEvent(args);
-            });
-
             AffectsMeasure<Page>(SafeAreaPaddingProperty);
         }
 
