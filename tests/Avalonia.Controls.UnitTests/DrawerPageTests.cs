@@ -1106,6 +1106,25 @@ public class DrawerPageTests
         }
 
         [Fact]
+        public void Back_Event_Is_Forwarded_To_Content()
+        {
+            var dp = new DrawerPage();
+            var page = new ContentPage();
+            bool isRaised = false;
+            page.PageNavigationSystemBackButtonPressed += (s, e) =>
+            {
+                isRaised = true;
+            };
+            var root = new TestRoot { Child = dp };
+            dp.CurrentPage = page;
+
+            var args = RaiseBackButton(dp);
+
+            Assert.True(isRaised);
+            Assert.False(args.Handled);
+        }
+
+        [Fact]
         public void BackButton_ClosesOpenDrawer()
         {
             var dp = new DrawerPage { IsOpen = true };

@@ -11,10 +11,11 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
-using Avalonia.Threading;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -539,6 +540,35 @@ public class CarouselPageTests
 
             Assert.NotNull(args);
             Assert.Equal(NavigationType.Replace, args!.NavigationType);
+        }
+    }
+
+    public class SystemBackButtonTests : ScopedTestBase
+    {
+        private static RoutedEventArgs RaiseBackButton(Page dp)
+        {
+            var args = new RoutedEventArgs(Page.PageNavigationSystemBackButtonPressedEvent);
+            dp.RaiseEvent(args);
+            return args;
+        }
+
+        [Fact]
+        public void Back_Event_Is_Forwarded_To_Content()
+        {
+            var cp = new CarouselPage();
+            var page = new ContentPage();
+            bool isRaised = false;
+            page.PageNavigationSystemBackButtonPressed += (s, e) =>
+            {
+                isRaised = true;
+            };
+            var root = new TestRoot { Child = cp };
+            ((AvaloniaList<Page>)cp.Pages!).Add(page);
+
+            var args = RaiseBackButton(cp);
+
+            Assert.True(isRaised);
+            Assert.False(args.Handled);
         }
     }
 
