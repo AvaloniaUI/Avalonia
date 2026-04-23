@@ -314,7 +314,7 @@ namespace Avalonia.Controls
                     var pageEvent = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
                     sender.CurrentPage?.RaiseEvent(pageEvent);
 
-                    if(pageEvent.Handled)
+                    if (pageEvent.Handled)
                     {
                         eventArgs.Handled = true;
                     }
