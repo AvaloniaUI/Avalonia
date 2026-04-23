@@ -305,10 +305,6 @@ namespace Avalonia.Controls
                     sender.IsOpen = false;
                     eventArgs.Handled = true;
                 }
-                else if (sender.OnSystemBackButtonPressed())
-                {
-                    eventArgs.Handled = true;
-                }
                 else
                 {
                     var pageEvent = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
@@ -319,7 +315,6 @@ namespace Avalonia.Controls
                         eventArgs.Handled = true;
                     }
                 }
-
             });
         }
 

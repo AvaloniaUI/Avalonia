@@ -93,19 +93,12 @@ namespace Avalonia.Controls
                 if (eventArgs.Handled)
                     return;
 
-                if (sender.OnSystemBackButtonPressed())
+                var forwarded = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
+                sender.CurrentPage?.RaiseEvent(forwarded);
+
+                if (forwarded.Handled)
                 {
                     eventArgs.Handled = true;
-                }
-                else
-                {
-                    var forwarded = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
-                    sender.CurrentPage?.RaiseEvent(forwarded);
-
-                    if (forwarded.Handled)
-                    {
-                        eventArgs.Handled = true;
-                    }
                 }
             });
         }
@@ -310,13 +303,15 @@ namespace Avalonia.Controls
                 if (target < 0)
                 {
                     _ignoringDisabledSelection = true;
-                    try { _tabControl.SelectedIndex = SelectedIndex; }
+                    try
+                    { _tabControl.SelectedIndex = SelectedIndex; }
                     finally { _ignoringDisabledSelection = false; }
                     return;
                 }
 
                 _ignoringDisabledSelection = true;
-                try { _tabControl.SelectedIndex = target; }
+                try
+                { _tabControl.SelectedIndex = target; }
                 finally { _ignoringDisabledSelection = false; }
 
                 if (target == SelectedIndex)
@@ -679,12 +674,12 @@ namespace Avalonia.Controls
 
             int delta = (e.SwipeDirection, isHorizontal, isRtl) switch
             {
-                (SwipeDirection.Left,  true,  false) => +1,
-                (SwipeDirection.Right, true,  false) => -1,
-                (SwipeDirection.Left,  true,  true)  => -1,
-                (SwipeDirection.Right, true,  true)  => +1,
-                (SwipeDirection.Up,    false, _)     => -1,
-                (SwipeDirection.Down,  false, _)     => +1,
+                (SwipeDirection.Left, true, false) => +1,
+                (SwipeDirection.Right, true, false) => -1,
+                (SwipeDirection.Left, true, true) => -1,
+                (SwipeDirection.Right, true, true) => +1,
+                (SwipeDirection.Up, false, _) => -1,
+                (SwipeDirection.Down, false, _) => +1,
                 _ => 0
             };
 

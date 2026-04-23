@@ -60,19 +60,12 @@ namespace Avalonia.Controls
                 if (eventArgs.Handled)
                     return;
 
-                if (sender.OnSystemBackButtonPressed())
+                var pageEvent = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
+                sender.CurrentPage?.RaiseEvent(pageEvent);
+
+                if (pageEvent.Handled)
                 {
                     eventArgs.Handled = true;
-                }
-                else
-                {
-                    var pageEvent = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
-                    sender.CurrentPage?.RaiseEvent(pageEvent);
-
-                    if (pageEvent.Handled)
-                    {
-                        eventArgs.Handled = true;
-                    }
                 }
             });
         }
