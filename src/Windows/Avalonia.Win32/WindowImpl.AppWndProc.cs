@@ -132,6 +132,33 @@ namespace Avalonia.Win32
                         break;
                     }
 
+                case WindowsMessage.WM_STYLECHANGING:
+                    {
+                        // When using BorderOnly decorations with extended client area, we need to preserve
+                        // WS_CAPTION, WS_MINIMIZEBOX, and WS_MAXIMIZEBOX to maintain native Windows
+                        // minimize/maximize/close animations. Without these styles, the animations are lost
+                        // even though the window appears correct. We only preserve these styles if they're
+                        // present in the old style but not in the new style (i.e., when Windows is trying
+                        // to remove them). We skip this in FullScreen mode to avoid breaking FullScreen behavior.
+                        if (_isClientAreaExtended && _windowProperties.Decorations == WindowDecorations.BorderOnly && !_isFullScreenActive)
+                        {
+                            if ((GWLP)wParam == GWLP.GWL_STYLE)
+                            {
+                                var ss = Marshal.PtrToStructure<STYLESTRUCT>(lParam);
+                                
+                                // Only preserve styles if they're being removed
+                                if (ss.styleOld.HasAllFlags(WindowStyles.WS_CAPTION) && !ss.styleNew.HasAllFlags(WindowStyles.WS_CAPTION))
+                                    ss.styleNew |= WindowStyles.WS_CAPTION;
+                                if (_windowProperties.IsMinimizable && ss.styleOld.HasAllFlags(WindowStyles.WS_MINIMIZEBOX) && !ss.styleNew.HasAllFlags(WindowStyles.WS_MINIMIZEBOX))
+                                    ss.styleNew |= WindowStyles.WS_MINIMIZEBOX;
+                                if (_windowProperties.IsMaximizable && ss.styleOld.HasAllFlags(WindowStyles.WS_MAXIMIZEBOX) && !ss.styleNew.HasAllFlags(WindowStyles.WS_MAXIMIZEBOX))
+                                    ss.styleNew |= WindowStyles.WS_MAXIMIZEBOX;
+                                Marshal.StructureToPtr(ss, lParam, false);
+                            }
+                        }
+                        break;
+                    }
+
                 case WindowsMessage.WM_CLOSE:
                     {
                         bool? preventClosing = Closing?.Invoke(WindowCloseReason.WindowClosing);
