@@ -432,9 +432,14 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parsed = new XamlIlCompiledBindingRootControl();
-
-                var textBlock = Assert.IsType<TextBlock>(parsed.Content);
+                var parsed = (CompiledBindingRootMock)AvaloniaRuntimeXamlLoader.Parse(@"
+<UserControl x:Class='Avalonia.Markup.Xaml.UnitTests.CompiledBindingRootMock'
+    xmlns='https://github.com/avaloniaui'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <TextBlock Text='{CompiledBinding Greeting}'/>
+</UserControl>");
+                parsed.DataContext = parsed;
+                var textBlock = (TextBlock)parsed.Content!;
                 Assert.Equal("Hello", textBlock.Text);
             }
         }
@@ -444,10 +449,19 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parsed = new XamlIlCompiledBindingTemplateControl();
-
-                var listBox = Assert.IsType<ListBox>(parsed.Content);
-                Assert.NotNull(listBox.ItemTemplate);
+                var parsed = (ListBox)AvaloniaRuntimeXamlLoader.Parse(@"
+<ListBox Name='ListBoxRoot' ItemsSource='{CompiledBinding Items}'
+    xmlns='https://github.com/avaloniaui'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+    x:DataType='local:CompiledBindingRootMock'>
+    <ListBox.ItemTemplate>
+        <DataTemplate x:DataType='local:CompiledBindingItemMock'>
+            <TextBlock Text='{CompiledBinding #ListBoxRoot.DataContext.RootProperty}' />
+        </DataTemplate>
+    </ListBox.ItemTemplate>
+</ListBox>");
+                Assert.NotNull(parsed.ItemTemplate);
             }
         }
 
@@ -456,9 +470,14 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parsed = new XamlIlCompiledBindingRootControlWithMismatchedDataContext();
-
-                var textBlock = Assert.IsType<TextBlock>(parsed.Content);
+                var parsed = (CompiledBindingRootMock)AvaloniaRuntimeXamlLoader.Parse(@"
+<UserControl x:Class='Avalonia.Markup.Xaml.UnitTests.CompiledBindingRootMock'
+    xmlns='https://github.com/avaloniaui'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <TextBlock Text='{CompiledBinding Greeting}'/>
+</UserControl>");
+                parsed.DataContext = new object();
+                var textBlock = (TextBlock)parsed.Content!;
                 Assert.Null(textBlock.Text);
             }
         }
@@ -468,10 +487,25 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parsed = new XamlIlCompiledBindingNestedTemplateControl();
-
-                var listBox = Assert.IsType<ListBox>(parsed.Content);
-                Assert.NotNull(listBox.ItemTemplate);
+                 var parsed = (ListBox)AvaloniaRuntimeXamlLoader.Parse(@"
+<ListBox Name='ListBoxRoot' ItemsSource='{CompiledBinding Items}'
+    xmlns='https://github.com/avaloniaui'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+    x:DataType='local:CompiledBindingRootMock'>
+    <ListBox.ItemTemplate>
+        <DataTemplate x:DataType='local:CompiledBindingItemMock'>
+            <ListBox ItemsSource='{CompiledBinding InnerItems}'>
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType='local:CompiledBindingItemMock'>
+                        <TextBlock Text='{CompiledBinding #ListBoxRoot.DataContext.RootProperty}' />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DataTemplate>
+    </ListBox.ItemTemplate>
+</ListBox>");
+                Assert.NotNull(parsed.ItemTemplate);
             }
         }
     }
@@ -605,134 +639,16 @@ namespace Avalonia.Markup.Xaml.UnitTests
         
     }
 
-    public class XamlIlCompiledBindingRootControl : UserControl
+    public class CompiledBindingRootMock : UserControl
     {
         public string Greeting => "Hello";
-
-        public XamlIlCompiledBindingRootControl()
-        {
-            DataContext = this;
-            AvaloniaRuntimeXamlLoader.Load(@"
-<UserControl x:Class='Avalonia.Markup.Xaml.UnitTests.XamlIlCompiledBindingRootControl'
-    xmlns='https://github.com/avaloniaui'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
->
-    <TextBlock Text='{CompiledBinding Greeting}'/>
-</UserControl>
-", typeof(XamlIlTests).Assembly, this);
-        }
+        public string RootProperty => "RootValue";
+        public IReadOnlyList<CompiledBindingItemMock> Items { get; } = [new() { Name = "Outer", InnerItems = [new() { Name = "Inner" }] }];
     }
 
-    public class XamlIlCompiledBindingRootControlWithMismatchedDataContext : UserControl
-    {
-        public string Greeting => "Hello";
-
-        public XamlIlCompiledBindingRootControlWithMismatchedDataContext()
-        {
-            DataContext = new object();
-            AvaloniaRuntimeXamlLoader.Load(@"
-<UserControl x:Class='Avalonia.Markup.Xaml.UnitTests.XamlIlCompiledBindingRootControlWithMismatchedDataContext'
-    xmlns='https://github.com/avaloniaui'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
->
-    <TextBlock Text='{CompiledBinding Greeting}'/>
-</UserControl>
-", typeof(XamlIlTests).Assembly, this);
-        }
-    }
-
-    public class XamlIlCompiledBindingTemplateControl : UserControl
-    {
-        public IReadOnlyList<XamlIlCompiledBindingTemplateItem> Items { get; } =
-            [new XamlIlCompiledBindingTemplateItem { Name = "Item" }];
-
-        public ICommand ButtonCommand { get; } = new XamlIlCompiledBindingNoOpCommand();
-
-        public XamlIlCompiledBindingTemplateControl()
-        {
-            DataContext = this;
-            AvaloniaRuntimeXamlLoader.Load(@"
-<UserControl x:Class='Avalonia.Markup.Xaml.UnitTests.XamlIlCompiledBindingTemplateControl'
-    xmlns='https://github.com/avaloniaui'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
-    x:DataType='local:XamlIlCompiledBindingTemplateControl'
->
-    <ListBox Name='ListBoxRoot' ItemsSource='{CompiledBinding Items}'>
-        <ListBox.ItemTemplate>
-            <DataTemplate x:DataType='local:XamlIlCompiledBindingTemplateItem'>
-                <StackPanel>
-                    <TextBlock Text='{CompiledBinding Name}' />
-                    <Button Command='{CompiledBinding #ListBoxRoot.DataContext.ButtonCommand}'
-                                    CommandParameter='{CompiledBinding .}' />
-                </StackPanel>
-            </DataTemplate>
-        </ListBox.ItemTemplate>
-    </ListBox>
-</UserControl>
-", typeof(XamlIlTests).Assembly, this);
-        }
-    }
-
-    public class XamlIlCompiledBindingNestedTemplateControl : UserControl
-    {
-        public IReadOnlyList<XamlIlCompiledBindingOuterItem> Items { get; } =
-            [new XamlIlCompiledBindingOuterItem()];
-
-        public ICommand ButtonCommand { get; } = new XamlIlCompiledBindingNoOpCommand();
-
-        public XamlIlCompiledBindingNestedTemplateControl()
-        {
-            DataContext = this;
-            AvaloniaRuntimeXamlLoader.Load(@"
-<UserControl x:Class='Avalonia.Markup.Xaml.UnitTests.XamlIlCompiledBindingNestedTemplateControl'
-    xmlns='https://github.com/avaloniaui'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
-    x:DataType='local:XamlIlCompiledBindingNestedTemplateControl'
->
-    <ListBox Name='ListBoxRoot' ItemsSource='{CompiledBinding Items}'>
-        <ListBox.ItemTemplate>
-            <DataTemplate x:DataType='local:XamlIlCompiledBindingOuterItem'>
-                <ListBox ItemsSource='{CompiledBinding InnerItems}'>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType='local:XamlIlCompiledBindingTemplateItem'>
-                            <Button Command='{CompiledBinding #ListBoxRoot.DataContext.ButtonCommand}'
-                                    CommandParameter='{CompiledBinding .}' />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </DataTemplate>
-        </ListBox.ItemTemplate>
-    </ListBox>
-</UserControl>
-", typeof(XamlIlTests).Assembly, this);
-        }
-    }
-
-    public class XamlIlCompiledBindingOuterItem
-    {
-        public IReadOnlyList<XamlIlCompiledBindingTemplateItem> InnerItems { get; } =
-            [new XamlIlCompiledBindingTemplateItem { Name = "Inner" }];
-    }
-
-    public class XamlIlCompiledBindingTemplateItem
+    public class CompiledBindingItemMock
     {
         public string Name { get; set; } = string.Empty;
-    }
-
-    public class XamlIlCompiledBindingNoOpCommand : ICommand
-    {
-        public event EventHandler? CanExecuteChanged
-        {
-            add { }
-            remove { }
-        }
-
-        public bool CanExecute(object? parameter) => true;
-
-        public void Execute(object? parameter)
-        {
-        }
+        public IReadOnlyList<CompiledBindingItemMock> InnerItems { get; set; } = Array.Empty<CompiledBindingItemMock>();
     }
 }
