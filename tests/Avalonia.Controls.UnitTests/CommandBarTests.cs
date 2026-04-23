@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
+using Avalonia.Styling;
+using Avalonia.Themes.Simple;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -118,6 +123,28 @@ public class CommandBarButtonTests : ScopedTestBase
         var btn = new CommandBarButton { CommandParameter = "param" };
         Assert.Equal("param", btn.CommandParameter);
     }
+
+    [Fact]
+    public void Foreground_DoesNotSetOrOverwriteIconElementForeground()
+    {
+        var icon = new PathIcon();
+        var btn = new CommandBarButton
+        {
+            Icon = icon,
+            Foreground = Brushes.Red
+        };
+
+        Assert.False(icon.IsSet(TemplatedControl.ForegroundProperty));
+
+        btn.Foreground = Brushes.Blue;
+
+        Assert.False(icon.IsSet(TemplatedControl.ForegroundProperty));
+
+        icon.Foreground = Brushes.Green;
+        btn.Foreground = Brushes.Red;
+
+        Assert.Same(Brushes.Green, icon.Foreground);
+    }
 }
 
 public class CommandBarToggleButtonTests : ScopedTestBase
@@ -204,6 +231,28 @@ public class CommandBarToggleButtonTests : ScopedTestBase
     {
         var btn = new CommandBarToggleButton { CommandParameter = 42 };
         Assert.Equal(42, btn.CommandParameter);
+    }
+
+    [Fact]
+    public void Foreground_DoesNotSetOrOverwriteIconElementForeground()
+    {
+        var icon = new PathIcon();
+        var btn = new CommandBarToggleButton
+        {
+            Icon = icon,
+            Foreground = Brushes.Red
+        };
+
+        Assert.False(icon.IsSet(TemplatedControl.ForegroundProperty));
+
+        btn.Foreground = Brushes.Blue;
+
+        Assert.False(icon.IsSet(TemplatedControl.ForegroundProperty));
+
+        icon.Foreground = Brushes.Green;
+        btn.Foreground = Brushes.Red;
+
+        Assert.Same(Brushes.Green, icon.Foreground);
     }
 }
 
@@ -310,6 +359,54 @@ public class CommandBarDefaultsTests : ScopedTestBase
         => Assert.Null(new CommandBar().Content);
 
     [Fact]
+    public void Foreground_IsInheritedByCommandBarButtonPathIconThroughThemeTemplate()
+    {
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+        var icon = new PathIcon();
+        var btn = new CommandBarButton
+        {
+            Icon = icon
+        };
+        var commandBar = new CommandBar
+        {
+            Foreground = Brushes.Red
+        };
+        commandBar.PrimaryCommands.Add(btn);
+
+        Assert.Same(icon, ApplySimpleThemeAndGetPresentedPathIcon(commandBar, btn));
+        Assert.Same(Brushes.Red, icon.Foreground);
+
+        commandBar.Foreground = Brushes.Blue;
+
+        Assert.Same(Brushes.Blue, icon.Foreground);
+    }
+
+    [Fact]
+    public void Foreground_IsInheritedByCommandBarToggleButtonPathIconThroughThemeTemplate()
+    {
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+        var icon = new PathIcon();
+        var btn = new CommandBarToggleButton
+        {
+            Icon = icon
+        };
+        var commandBar = new CommandBar
+        {
+            Foreground = Brushes.Red
+        };
+        commandBar.PrimaryCommands.Add(btn);
+
+        Assert.Same(icon, ApplySimpleThemeAndGetPresentedPathIcon(commandBar, btn));
+        Assert.Same(Brushes.Red, icon.Foreground);
+
+        commandBar.Foreground = Brushes.Blue;
+
+        Assert.Same(Brushes.Blue, icon.Foreground);
+    }
+
+    [Fact]
     public void PrimaryCommands_NotNull()
         => Assert.NotNull(new CommandBar().PrimaryCommands);
 
@@ -370,6 +467,46 @@ public class CommandBarDefaultsTests : ScopedTestBase
     [Fact]
     public void ItemWidthCollapsed_DefaultIs42()
         => Assert.Equal(42d, new CommandBar().ItemWidthCollapsed);
+
+    private static PathIcon ApplySimpleThemeAndGetPresentedPathIcon(CommandBar commandBar, TemplatedControl command)
+    {
+        var simpleTheme = new SimpleTheme();
+        Assert.True(simpleTheme.TryGetResource(typeof(CommandBar), ThemeVariant.Default, out var commandBarTheme));
+        Assert.True(simpleTheme.TryGetResource(command.GetType(), ThemeVariant.Default, out var commandTheme));
+        commandBar.Theme = Assert.IsType<ControlTheme>(commandBarTheme);
+        command.Theme = Assert.IsType<ControlTheme>(commandTheme);
+
+        var root = new TestRoot
+        {
+            Width = 500,
+            Height = 200,
+            Child = commandBar,
+            Styles =
+            {
+                simpleTheme
+            }
+        };
+
+        root.ApplyStyling();
+        commandBar.ApplyStyling();
+        commandBar.ApplyTemplate();
+        root.LayoutManager.ExecuteInitialLayoutPass();
+
+        command.ApplyStyling();
+        command.ApplyTemplate();
+
+        var presenter = command.GetTemplateChildren()
+            .OfType<ContentPresenter>()
+            .Single(x => x.Name == "PART_IconPresenter");
+
+        presenter.ApplyStyling();
+        presenter.UpdateChild();
+
+        var pathIcon = Assert.IsType<PathIcon>(presenter.Child);
+        pathIcon.ApplyStyling();
+
+        return pathIcon;
+    }
 }
 
 public class CommandBarPropertyRoundTripTests : ScopedTestBase
