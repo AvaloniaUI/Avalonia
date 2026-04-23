@@ -76,6 +76,16 @@ namespace Avalonia.Controls
         static Page()
         {
             AffectsMeasure<Page>(SafeAreaPaddingProperty);
+            PageNavigationSystemBackButtonPressedEvent.AddClassHandler<Page>((sender, eventArgs) =>
+            {
+                if (eventArgs.Handled)
+                    return;
+
+                if (sender.OnSystemBackButtonPressed())
+                {
+                    eventArgs.Handled = true;
+                }
+            });
         }
 
         /// <summary>
