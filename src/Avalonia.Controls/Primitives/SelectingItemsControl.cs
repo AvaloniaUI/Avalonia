@@ -478,16 +478,13 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnApplyTemplate(e);
 
-            void ExecuteScrollWhenLayoutUpdated(object? sender, EventArgs e)
-            {
-                LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
-
-                AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
-            }
-
             if (AutoScrollToSelectedItem)
             {
-                LayoutUpdated += ExecuteScrollWhenLayoutUpdated;
+                Dispatcher.UIThread.Post(static state =>
+                {
+                    var control = (SelectingItemsControl)state!;
+                    control.AutoScrollToSelectedItemIfNecessary(control.GetAnchorIndex());
+                }, this);
             }
         }
 
@@ -535,7 +532,11 @@ namespace Avalonia.Controls.Primitives
             if (Selection.AnchorIndex == index)
                 KeyboardNavigation.SetTabOnceActiveElement(this, container);
 
-            if (AlwaysSelected && index == SelectedIndex && (!container.IsVisible || !container.IsEnabled))
+            if (AlwaysSelected && SelectedIndex == -1 && container is { IsVisible: true, IsEnabled: true })
+            {
+                SelectedIndex = index;
+            }
+            else if (AlwaysSelected && index == SelectedIndex && (!container.IsVisible || !container.IsEnabled))
             {
                 MoveSelectionToFirstVisibleAndEnabledItem();
             }
@@ -1158,21 +1159,25 @@ namespace Avalonia.Controls.Primitives
         }
 
         private int? _pendingAutoScrollAnchorIndex;
+
         private void AutoScrollToSelectedItemIfNecessary(int anchorIndex)
         {
             if (!(AutoScrollToSelectedItem && !_hasScrolledToSelectedItem && Presenter != null && anchorIndex >= 0 && IsAttachedToVisualTree))
-                return;
-
-            if (!IsEffectivelyVisible)
             {
-                // Defer scroll until visible
-                _pendingAutoScrollAnchorIndex = anchorIndex;
-                LayoutUpdated -= OnLayoutUpdatedForAutoScroll; // Avoid duplicate handlers
-                LayoutUpdated += OnLayoutUpdatedForAutoScroll;
+                ClearPendingAutoScroll();
                 return;
             }
 
-            // If already visible, scroll immediately
+            if (!IsEffectivelyVisible)
+            {
+                // Defer scroll until the control becomes effectively visible.
+                _pendingAutoScrollAnchorIndex = anchorIndex;
+                IsEffectivelyVisibleChanged -= OnIsEffectivelyVisibleChangedForAutoScroll;
+                IsEffectivelyVisibleChanged += OnIsEffectivelyVisibleChangedForAutoScroll;
+                return;
+            }
+
+            ClearPendingAutoScroll();
             Dispatcher.UIThread.Post(state =>
             {
                 ScrollIntoView((int)state!);
@@ -1180,19 +1185,25 @@ namespace Avalonia.Controls.Primitives
             }, anchorIndex);
         }
 
-        private void OnLayoutUpdatedForAutoScroll(object? sender, EventArgs e)
+        private void OnIsEffectivelyVisibleChangedForAutoScroll(object? sender, EventArgs e)
         {
-            if (_pendingAutoScrollAnchorIndex != null && IsEffectivelyVisible)
+            if (!IsEffectivelyVisible || _pendingAutoScrollAnchorIndex is not { } anchorIndex)
             {
-                int anchorIndex = _pendingAutoScrollAnchorIndex.Value;
-                LayoutUpdated -= OnLayoutUpdatedForAutoScroll;
-                _pendingAutoScrollAnchorIndex = null;
-                Dispatcher.UIThread.Post(state =>
-                {
-                    ScrollIntoView((int)state!);
-                    _hasScrolledToSelectedItem = true;
-                }, anchorIndex);
+                return;
             }
+
+            ClearPendingAutoScroll();
+            Dispatcher.UIThread.Post(state =>
+            {
+                ScrollIntoView((int)state!);
+                _hasScrolledToSelectedItem = true;
+            }, anchorIndex);
+        }
+
+        private void ClearPendingAutoScroll()
+        {
+            _pendingAutoScrollAnchorIndex = null;
+            IsEffectivelyVisibleChanged -= OnIsEffectivelyVisibleChangedForAutoScroll;
         }
 
         /// <summary>
@@ -1256,19 +1267,19 @@ namespace Avalonia.Controls.Primitives
                 {
                     if (container is { IsVisible: true, IsEnabled: true })
                         return i;
+
+                    continue;
                 }
-                else
+
+                var item = ItemsView[i];
+                if (item is Visual v)
                 {
-                    var item = ItemsView[i];
-                    if (item is Visual v)
-                    {
-                        if (v.IsVisible && (v is not Control c || c.IsEnabled))
-                            return i;
-                    }
-                    else if (item is not null)
-                    {
+                    if (v.IsVisible && (v is not Control c || c.IsEnabled))
                         return i;
-                    }
+                }
+                else if (item is not null)
+                {
+                    return i;
                 }
             }
 
@@ -1533,3 +1544,4 @@ namespace Avalonia.Controls.Primitives
         }
     }
 }
+

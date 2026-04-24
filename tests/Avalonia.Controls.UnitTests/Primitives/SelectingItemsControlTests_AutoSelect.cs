@@ -162,6 +162,51 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
         
+        [Fact]
+        public void AutoScrollToSelectedItem_Should_Work_When_Ancestor_Becomes_Visible()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var items = Enumerable.Range(0, 100).Select(i => $"Item {i}").ToList();
+
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    ItemsSource = items,
+                    ItemTemplate = new FuncDataTemplate<string>((_, _) => new TextBlock { Height = 50 }),
+                    Height = 100,
+                    ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel { CacheLength = 0 }),
+                    AutoScrollToSelectedItem = true,
+                };
+
+                target.Width = target.Height = 100;
+
+                var host = new StackPanel
+                {
+                    IsVisible = false,
+                    Children =
+                    {
+                        target,
+                    },
+                };
+
+                var root = new TestRoot(host);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                target.SelectedIndex = 50;
+                Assert.False(target.IsEffectivelyVisible);
+
+                host.IsVisible = true;
+                root.LayoutManager.ExecuteLayoutPass();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                root.LayoutManager.ExecuteLayoutPass();
+
+                var scrollViewer = (ScrollViewer)target.VisualChildren[0];
+                var offset = scrollViewer.Offset.Y;
+                Assert.InRange(offset, 2400, 2500);
+            }
+        }
+        
         private static FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
