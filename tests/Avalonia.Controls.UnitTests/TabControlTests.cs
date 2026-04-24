@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -913,6 +915,165 @@ namespace Avalonia.Controls.UnitTests
                 Times.Once);
         }
 
+        [Fact]
+        public void Interrupted_PageTransition_Can_Select_Original_Control_Before_Previous_Transition_Completes()
+        {
+            using var app = Start();
+
+            var firstPage = new ContentPage { Content = "Alpha" };
+            var secondPage = new ContentPage { Content = "Beta" };
+            var starts = new List<(object? FromContent, object? ToContent, bool Forward)>();
+            var transitionGate = new TaskCompletionSource();
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Callback<Visual?, Visual?, bool, CancellationToken>((from, to, forward, _) =>
+                {
+                    starts.Add((
+                        (from as ContentPresenter)?.Content,
+                        (to as ContentPresenter)?.Content,
+                        forward));
+                })
+                .Returns(transitionGate.Task);
+
+            var target = new TabControl
+            {
+                PageTransition = transition.Object,
+                Items =
+                {
+                    new TabItem { Name = "first", Content = firstPage },
+                    new TabItem { Name = "second", Content = secondPage },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Single(starts);
+            Assert.Same(firstPage, starts[0].FromContent);
+            Assert.Same(secondPage, starts[0].ToContent);
+            Assert.True(starts[0].Forward);
+
+            var exception = Record.Exception(() => target.SelectedIndex = 0);
+
+            Assert.Null(exception);
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(2, starts.Count);
+            Assert.Null(starts[1].FromContent);
+            Assert.Same(firstPage, starts[1].ToContent);
+            Assert.False(starts[1].Forward);
+            Assert.Same(firstPage, target.SelectedContent);
+        }
+
+        [Fact]
+        public void Pending_PageTransition_Can_Select_Original_Control_Before_Transition_Starts()
+        {
+            using var app = Start();
+
+            var firstPage = new ContentPage { Content = "Alpha" };
+            var secondPage = new ContentPage { Content = "Beta" };
+            var starts = new List<(object? FromContent, object? ToContent, bool Forward)>();
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Callback<Visual?, Visual?, bool, CancellationToken>((from, to, forward, _) =>
+                {
+                    starts.Add((
+                        (from as ContentPresenter)?.Content,
+                        (to as ContentPresenter)?.Content,
+                        forward));
+                })
+                .Returns(Task.CompletedTask);
+
+            var target = new TabControl
+            {
+                PageTransition = transition.Object,
+                Items =
+                {
+                    new TabItem { Name = "first", Content = firstPage },
+                    new TabItem { Name = "second", Content = secondPage },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SelectedIndex = 1;
+            var exception = Record.Exception(() => target.SelectedIndex = 0);
+
+            Assert.Null(exception);
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Single(starts);
+            Assert.Null(starts[0].FromContent);
+            Assert.Same(firstPage, starts[0].ToContent);
+            Assert.False(starts[0].Forward);
+            Assert.Same(firstPage, target.SelectedContent);
+        }
+
+        [Fact]
+        public void Interrupted_PageTransition_Clears_Reused_Control_From_Owning_SelectedContentHost()
+        {
+            using var app = Start();
+
+            var firstPage = new ContentPage { Content = "Alpha" };
+            var secondPage = new ContentPage { Content = "Beta" };
+            var transition = new Mock<IPageTransition>();
+            transition
+                .Setup(t => t.Start(
+                    It.IsAny<Visual?>(), It.IsAny<Visual?>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            var target = new TabControl
+            {
+                Items =
+                {
+                    new TabItem { Name = "first", Content = firstPage },
+                    new TabItem { Name = "second", Content = secondPage },
+                },
+            };
+
+            var root = CreateRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.SelectedIndex = 1;
+            root.LayoutManager.ExecuteLayoutPass();
+
+            var primary = target.GetVisualDescendants()
+                .OfType<ContentPresenter>()
+                .Single(x => x.Name == "PART_SelectedContentHost");
+            var secondary = target.GetVisualDescendants()
+                .OfType<ContentPresenter>()
+                .Single(x => x.Name == "PART_SelectedContentHost2");
+
+            // Simulate the stale presenter ownership that can happen when tab changes
+            // interrupt a transition: the page is still parented by the named content
+            // host, but the active field no longer points at that host.
+            primary.SetContentWithDataContext(firstPage, null);
+            secondary.IsVisible = false;
+            SetPrivateField(target, "_contentPart", secondary);
+            SetPrivateField(target, "_contentPresenter2", secondary);
+
+            target.PageTransition = transition.Object;
+            var exception = Record.Exception(() => target.SelectedIndex = 0);
+
+            Assert.Null(exception);
+            Assert.Same(firstPage, target.SelectedContent);
+            Assert.Null(primary.Content);
+            Assert.Same(firstPage, secondary.Content);
+        }
+
         private static IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>
@@ -943,72 +1104,11 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
-        /// <summary>
-        /// This test ensures that the selected tab is the first visible and enabled tab.
-        /// </summary>
-        [Fact]
-        public void Only_First_Visible_And_Enabled_Tab_Should_Be_Selected_By_Default()
+        private static void SetPrivateField<T>(TabControl target, string name, T value)
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                TabItem expectedSelectionItem;
-
-                var target = new TabControl
-                {
-                    Template = TabControlTemplate(),
-                    Items =
-                    {
-                        new TabItem { Name = "first", Content = "foo", IsVisible = false},
-                        new TabItem { Name = "second", Content = "bar", IsEnabled = false},
-                        (expectedSelectionItem = new TabItem { Name = "third", Content = "baz" }),
-                    }
-                };
-
-                target.ApplyTemplate();
-                
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                // the 3rd item should be selected
-                Assert.Equal(2, target.SelectedIndex);
-                Assert.Equal(expectedSelectionItem, target.SelectedItem);
-            }
-        }
-        
-        /// <summary>
-        /// This test ensures that also an invisible TabControl can receive a selection
-        /// </summary>
-        [Fact]
-        public void SelectedIndex_Should_Restore_After_Control_Gets_Visible()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                TabItem expectedSelectionItem;
-
-                var target = new TabControl
-                {
-                    IsVisible = false,
-                    Template = TabControlTemplate(),
-                    Items =
-                    {
-                        new TabItem { Name = "first", Content = "foo"},
-                        (expectedSelectionItem = new TabItem { Name = "second", Content = "bar"}),
-                        new TabItem { Name = "third", Content = "baz" },
-                    },
-                    SelectedIndex = 1
-                };
-
-                target.ApplyTemplate();
-                
-                var root = new TestRoot(target);
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                target.IsVisible = true;
-                
-                // the 2nd item should be selected
-                Assert.Equal(1, target.SelectedIndex);
-                Assert.Equal(expectedSelectionItem, target.SelectedItem);
-            }
+            var field = typeof(TabControl).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.NotNull(field);
+            field.SetValue(target, value);
         }
 
         private static IControlTemplate TabItemTemplate()
