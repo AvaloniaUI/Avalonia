@@ -97,8 +97,9 @@ namespace Avalonia.Media
             {
                 localBounds = localBounds.Union(drawing.GetBounds());
             }
-            var effectPadding = Effect?.GetEffectOutputPadding() ?? default;
-            var effectBounds = EffectBounds ?? localBounds.Inflate(effectPadding);
+
+            var effectBounds = EffectBounds ?? localBounds.Inflate(
+                Effect?.GetEffectOutputPadding() ?? default);
             
             using (context.PushTransform(Transform?.Value ?? Matrix.Identity))
             using (context.PushOpacity(Opacity))
