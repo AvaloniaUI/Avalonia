@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls.Utils;
 using Avalonia.Platform.Storage;
@@ -96,7 +97,10 @@ namespace Avalonia.Win32
             Func<string, TStorageItem> convert)
             where TStorageItem : IStorageItem
         {
-            return Task.Factory.StartNew(() =>
+            var tcs = new TaskCompletionSource<(IReadOnlyList<TStorageItem>, int)>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var thread = new Thread(() =>
             {
                 IReadOnlyList<TStorageItem> result = [];
                 try
@@ -179,7 +183,8 @@ namespace Avalonia.Win32
 
                     if ((uint)showResult == (uint)UnmanagedMethods.HRESULT.E_CANCELLED)
                     {
-                        return (result, typeIndex);
+                        tcs.SetResult((result, typeIndex));
+                        return;
                     }
                     else if ((uint)showResult != (uint)UnmanagedMethods.HRESULT.S_OK)
                     {
@@ -210,14 +215,23 @@ namespace Avalonia.Win32
                         result = [convert(singleResult)];
                     }
 
-                    return (result, typeIndex);
+                    tcs.SetResult((result, typeIndex));
                 }
                 catch (COMException ex)
                 {
                     var message = new Win32Exception(ex.HResult).Message;
-                    throw new COMException(message, ex);
+                    tcs.SetException(new COMException(message, ex));
                 }
-            }, TaskCreationOptions.LongRunning);
+                catch (Exception ex)
+                {
+                    tcs.SetException(ex);
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.IsBackground = true;
+            thread.Start();
+
+            return tcs.Task;
         }
 
         private static string? GetParsingName(IShellItem shellItem)
