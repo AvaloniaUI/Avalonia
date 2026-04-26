@@ -265,6 +265,9 @@ class RenderDataEffectNode : RenderDataPushNode
     public Rect BoundsRect { get; set; }
 
     /// <inheritdoc />
+    public override Rect? Bounds => Rect.Union(base.Bounds, BoundsRect);
+
+    /// <inheritdoc />
     public override void Push(ref RenderDataNodeRenderContext context)
     {
         if (Effect != null && context.Context is IDrawingContextImplWithEffects effectImpl)

@@ -125,6 +125,11 @@ namespace Avalonia.Media
                 rect = rect.Union(drawing.GetBounds());
             }
 
+            if (Effect != null)
+            {
+                rect = EffectBounds ?? rect.Inflate(Effect.GetEffectOutputPadding());
+            }
+
             if (Transform != null)
             {
                 rect = rect.TransformToAABB(Transform.Value);
