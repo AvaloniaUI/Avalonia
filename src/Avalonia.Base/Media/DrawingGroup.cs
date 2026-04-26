@@ -127,7 +127,14 @@ namespace Avalonia.Media
 
             if (Effect != null)
             {
-                rect = EffectBounds ?? rect.Inflate(Effect.GetEffectOutputPadding());
+                if (EffectBounds.HasValue)
+                {
+                    rect = EffectBounds.Value;
+                }
+                else if (!rect.IsEmpty)
+                {
+                    rect = rect.Inflate(Effect.GetEffectOutputPadding());
+                }
             }
 
             if (Transform != null)
