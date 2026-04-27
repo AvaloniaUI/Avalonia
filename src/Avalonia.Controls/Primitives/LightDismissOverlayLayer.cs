@@ -34,7 +34,7 @@ namespace Avalonia.Controls.Primitives
 
             if (visual is TopLevel topLevel)
             {
-                manager = topLevel.GetTemplateChildren()
+                manager = topLevel.GetTemplateDescendants()
                     .OfType<VisualLayerManager>()
                     .FirstOrDefault();
             }
