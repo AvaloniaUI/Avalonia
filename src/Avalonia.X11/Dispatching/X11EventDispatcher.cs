@@ -46,8 +46,10 @@ internal class X11EventDispatcher
                         _platform.XI2.OnEvent((XIEvent*)xev.GenericEventCookie.data);
                     }
                 }
-                else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
+                else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler) && handler is not null)
+                {
                     handler(ref xev);
+                }
             }
             finally
             {
