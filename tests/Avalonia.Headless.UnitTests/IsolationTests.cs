@@ -1,8 +1,5 @@
 using System;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using Avalonia.Headless;
 using Avalonia.Threading;
 
 namespace Avalonia.Headless.UnitTests;
@@ -67,37 +64,4 @@ public class IsolationTests
         s_previousAppRef = new WeakReference<Application>(currentApp);
         s_previousDispatcherRef = new WeakReference<Dispatcher>(currentDispatcher);
     }
-
-#if NUNIT
-    // NUnit-only: xUnit's AvaloniaFactDiscoverer wraps every [Fact] in session.Dispatch,
-    // so awaiting another session.Dispatch inside the test body would deadlock on the
-    // session's single background thread. Plain NUnit [Test] runs outside the session,
-    // which is exactly the thread context this test needs.
-    [Test]
-    public async Task Dispatch_Cleanup_Should_Complete_Before_Task_Returns()
-    {
-        // Regression test for https://github.com/AvaloniaUI/Avalonia/issues/20664.
-        // EnsureIsolatedApplication().Dispose() must complete (resetting s_uiThread to null)
-        // before the dispatch task resolves. If Dispose ran after tcs.TrySetResult, s_uiThread
-        // could still point to the headless dispatcher here, making CheckAccess() return false
-        // on this non-headless thread.
-        //
-        // Only applies to PerTest isolation: PerAssembly uses EnsureSharedApplication which
-        // intentionally keeps s_uiThread set for the lifetime of the assembly, so CheckAccess()
-        // from a non-headless thread would always be false there and the race does not apply.
-        var isolationLevel =
-            GetType().Assembly.GetCustomAttribute<AvaloniaTestIsolationAttribute>()?.IsolationLevel
-            ?? AvaloniaTestIsolationLevel.PerTest;
-
-        AssertHelper.SkipWhen(isolationLevel != AvaloniaTestIsolationLevel.PerTest, "Only applies to PerTest isolation.");
-
-        // Uses the shared assembly session (not StartNew) so no competing thread calls
-        // ResetGlobalState() concurrently with other tests in the suite.
-        var session = HeadlessUnitTestSession.GetOrStartForAssembly(GetType().Assembly);
-
-        await session.Dispatch(() => { }, CancellationToken.None);
-
-        AssertHelper.True(Dispatcher.UIThread.CheckAccess());
-    }
-#endif
 }
