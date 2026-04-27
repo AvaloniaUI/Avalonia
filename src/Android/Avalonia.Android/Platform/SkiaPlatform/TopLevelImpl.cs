@@ -79,7 +79,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public IInputRoot? InputRoot { get; private set; }
 
         public Size ClientSize => _view?.Size.ToSize(RenderScaling) ?? default;
-        public double RenderScaling => _view?.Scaling ?? 0;
+        public double RenderScaling => _view?.Scaling ?? 1;
 
         public Action? Closed { get; set; }
 
