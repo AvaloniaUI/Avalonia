@@ -127,7 +127,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             _systemNavigationManager.Dispose();
             _view?.Dispose();
-            _view = null!;
+            _view = null;
         }
 
         protected void OnResized(Size size)
