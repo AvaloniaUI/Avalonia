@@ -495,7 +495,7 @@ public class CommandBarDefaultsTests : ScopedTestBase
         command.ApplyStyling();
         command.ApplyTemplate();
 
-        var presenter = command.GetTemplateChildren()
+        var presenter = command.GetTemplateDescendants()
             .OfType<ContentPresenter>()
             .Single(x => x.Name == "PART_IconPresenter");
 
