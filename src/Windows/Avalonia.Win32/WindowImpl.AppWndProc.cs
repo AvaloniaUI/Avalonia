@@ -852,9 +852,11 @@ namespace Avalonia.Win32
                             !_isFullScreenActive &&
                             !flags.HasAllFlags(SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE))
                         {
-                            // Prefer ScreenFromRect as it contains the new position.
+                            GetWindowPlacement(Hwnd, out var placement);
+
+                            // Prefer ScreenFromRect with the window's restored bounds.
                             // If the window was minimized, ScreenFromHwnd won't return the correct monitor at this point.
-                            var screen = Screen.ScreenFromRect(new PixelRect(pos->x, pos->y, pos->cx, pos->cy))
+                            var screen = Screen.ScreenFromRect(placement.NormalPosition.ToPixelRect())
                                 ?? Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
 
                             if (screen is not null)
