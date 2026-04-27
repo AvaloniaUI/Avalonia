@@ -403,6 +403,11 @@ enum AvnAutomationProperty
     AutomationPeer_ClassName,
     AutomationPeer_Name,
     RangeValueProvider_Value,
+    ValueProvider_Value,
+    ToggleProvider_ToggleState,
+    ExpandCollapseProvider_ExpandCollapseState,
+    SelectionItemProvider_IsSelected,
+    SelectionProvider_Selection,
 }
 
 struct AvnSize

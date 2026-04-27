@@ -82,14 +82,16 @@ public:
             if(ppv == nullptr)
                 return E_POINTER;
 
-            NSError* error;
+            *ppv = nullptr;
+
+            NSError* error = nil;
             auto fileUri = [NSURL URLWithString: GetNSStringAndRelease(fileUriStr)];
             auto bookmarkData = [fileUri bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
             if (bookmarkData)
             {
                 *ppv = CreateByteArray((void*)bookmarkData.bytes, (int)bookmarkData.length);
             }
-            if (error != nil)
+            else if (error != nil && err != nullptr)
             {
                 *err = CreateAvnString([error localizedDescription]);
             }
@@ -172,6 +174,7 @@ public:
     {
         @autoreleasepool
         {
+            ComPtr<IAvnSystemDialogEvents> ownedEvents(events); // for use in the callback
             auto panel = [NSOpenPanel openPanel];
             
             panel.allowsMultipleSelection = allowMultiple;
@@ -201,7 +204,7 @@ public:
                     if(urls.count > 0)
                     {
                         auto uriStrings = CreateAvnStringArray(urls);
-                        events->OnCompleted(uriStrings);
+                        ownedEvents->OnCompleted(uriStrings);
     
                         [panel orderOut:panel];
                         
@@ -214,7 +217,7 @@ public:
                     }
                 }
                 
-                events->OnCompleted(nullptr);
+                ownedEvents->OnCompleted(nullptr);
                 
             };
             
@@ -239,6 +242,7 @@ public:
     {
         @autoreleasepool
         {
+            ComPtr<IAvnSystemDialogEvents> ownedEvents(events); // for use in the callback
             auto panel = [NSOpenPanel openPanel];
             
             panel.allowsMultipleSelection = allowMultiple;
@@ -273,7 +277,7 @@ public:
                     if(urls.count > 0)
                     {
                         auto uriStrings = CreateAvnStringArray(urls);
-                        events->OnCompleted(uriStrings);
+                        ownedEvents->OnCompleted(uriStrings);
 
                         [panel orderOut:panel];
                         
@@ -286,7 +290,7 @@ public:
                     }
                 }
                 
-                events->OnCompleted(nullptr);
+                ownedEvents->OnCompleted(nullptr);
                 
             };
             
@@ -310,6 +314,7 @@ public:
     {
         @autoreleasepool
         {
+            ComPtr<IAvnSystemDialogEvents> ownedEvents(events); // for use in the callback
             auto panel = [NSSavePanel savePanel];
             
             if(title != nullptr)
@@ -350,7 +355,7 @@ public:
                     auto url = [panel URL];
                     auto urls = [NSArray<NSURL*> arrayWithObject:url];
                     auto uriStrings = CreateAvnStringArray(urls);
-                    events->OnCompletedWithFilter(uriStrings, selectedIndex);
+                    ownedEvents->OnCompletedWithFilter(uriStrings, selectedIndex);
 
                     [panel orderOut:panel];
                     
@@ -362,7 +367,7 @@ public:
                     return;
                 }
                 
-                events->OnCompletedWithFilter(nullptr, selectedIndex);
+                ownedEvents->OnCompletedWithFilter(nullptr, selectedIndex);
                 
             };
             
@@ -395,7 +400,7 @@ public:
         }
         
         auto filePathUri = [fileUri filePathURL];
-        if (fileUri == nil)
+        if (filePathUri == nil)
         {
             *ret = nullptr;
             return S_OK;
