@@ -117,7 +117,8 @@ namespace Avalonia.Base.UnitTests.Media
                 for (int i = 0; i < iterations; i++)
                 {
                     // Remove the cached collection so both threads must re-create it.
-                    fontCollections.TryRemove(collectionKey, out _);
+                    if (fontCollections.TryRemove(collectionKey, out var removedCollection))
+                        removedCollection.Dispose();
 
                     using var barrier = new Barrier(2);
                     bool r1 = false, r2 = false;
