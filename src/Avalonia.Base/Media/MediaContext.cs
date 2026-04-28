@@ -82,39 +82,28 @@ internal partial class MediaContext : ICompositorScheduler
                 _nextRenderOp.Priority = DispatcherPriority.Render;
             return;
         }
+        // Sometimes our animation, layout and render passes might be taking more than a frame to complete
+        // which can cause a "freeze"-like state when UI is being updated, but input is never being processed
+        // So here we inject an operation with Input priority to check if Input wasn't being processed
+        // for a long time. If that's the case the next rendering operation will be scheduled to happen after all pending input
         
-        // Suppress flow because the context should not flow to next render op.
-        var shouldRestoreFlow = !ExecutionContext.IsFlowSuppressed();
-        var flowControl = shouldRestoreFlow ? ExecutionContext.SuppressFlow() : default;
-
-        try
+        var priority = DispatcherPriority.Render;
+        
+        if (_inputMarkerOp == null)
         {
-            // Sometimes our animation, layout and render passes might be taking more than a frame to complete
-            // which can cause a "freeze"-like state when UI is being updated, but input is never being processed
-            // So here we inject an operation with Input priority to check if Input wasn't being processed
-            // for a long time. If that's the case the next rendering operation will be scheduled to happen after all pending input
-            
-            var priority = DispatcherPriority.Render;
-
-            if (_inputMarkerOp == null)
-            {
-                _inputMarkerOp = _dispatcher.InvokeAsync(_inputMarkerHandler, DispatcherPriority.Input);
-                _inputMarkerAddedAt = _time.Elapsed;
-            }
-            else if (!now && (_time.Elapsed - _inputMarkerAddedAt).TotalSeconds > MaxSecondsWithoutInput)
-            {
-                priority = DispatcherPriority.Input;
-            }
-
-            var renderOp = new DispatcherOperation(_dispatcher, priority, _render, throwOnUiThread: true);
-            _nextRenderOp = renderOp;
-            _dispatcher.InvokeAsyncImpl(renderOp, CancellationToken.None);
+            _inputMarkerOp = new DispatcherOperation(_dispatcher, DispatcherPriority.Input, _inputMarkerHandler,
+                throwOnUiThread: true, captureExecutionContext: false);
+            _dispatcher.InvokeAsyncImpl(_inputMarkerOp, CancellationToken.None);
+            _inputMarkerAddedAt = _time.Elapsed;
         }
-        finally
+        else if (!now && (_time.Elapsed - _inputMarkerAddedAt).TotalSeconds > MaxSecondsWithoutInput)
         {
-            if (shouldRestoreFlow)
-                flowControl.Undo();
+            priority = DispatcherPriority.Input;
         }
+
+        var renderOp = new DispatcherOperation(_dispatcher, priority, _render, throwOnUiThread: true, captureExecutionContext: false);
+        _nextRenderOp = renderOp;
+        _dispatcher.InvokeAsyncImpl(renderOp, CancellationToken.None);
     }
     
     /// <summary>
