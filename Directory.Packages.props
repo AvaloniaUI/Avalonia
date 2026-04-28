@@ -48,9 +48,9 @@
     <PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.22.0" />
     <PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
     <PackageVersion Include="SixLabors.ImageSharp" Version="2.1.12" />
-    <PackageVersion Include="SkiaSharp" Version="3.119.3-preview.1.1" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.3-preview.1.1" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.3-preview.1.1" />
+    <PackageVersion Include="SkiaSharp" Version="3.119.4-preview.1.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4-preview.1.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.4-preview.1.1" />
     <PackageVersion Include="System.ComponentModel.Annotations" Version="4.5.0" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="9.0.10" />
     <PackageVersion Include="System.Memory" Version="4.5.5" />
