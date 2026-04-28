@@ -70,67 +70,11 @@ namespace Avalonia.Media.TextFormatting
                     firstTextSourceIndex += currentRun.Length;
                 }
 
-                // Now perform a recursive reversal of each run.
-                // From the highest level found in the text to the lowest odd level on each line, including intermediate levels
-                // not actually present in the text, reverse any contiguous sequence of characters that are at that level or higher.
-                // https://unicode.org/reports/tr9/#L2
-                sbyte max = 0;
-                var min = sbyte.MaxValue;
-
-                for (var i = 0; i < textRuns.Length; i++)
-                {
-                    var level = _runs[i].Level;
-
-                    if (level > max)
-                    {
-                        max = level;
-                    }
-
-                    if ((level & 1) != 0 && level < min)
-                    {
-                        min = level;
-                    }
-                }
-
-                if (min > max)
-                {
-                    min = max;
-                }
-
-                if (max == 0 || (min == max && (max & 1) == 0))
-                {
-                    // Nothing to reverse.
-                    return indexedTextRuns;
-                }
-
-                // Now apply the reversal and replace the original contents.
-                var minLevelToReverse = max;
-                int currentIndex;
-
-                while (minLevelToReverse >= min)
-                {
-                    currentIndex = firstIndex;
-
-                    while (currentIndex >= 0)
-                    {
-                        ref var current = ref _runs[currentIndex];
-                        if (current.Level >= minLevelToReverse && current.Level % 2 != 0)
-                        {
-                            if (current.Run is ShapedTextRun { IsReversed: false } shapedTextCharacters)
-                            {
-                                shapedTextCharacters.Reverse();
-                            }
-                        }
-
-                        currentIndex = current.NextRunIndex;
-                    }
-
-                    minLevelToReverse--;
-                }
-
+                // Shape-time already produces glyphs in visual order (RTL buffers have descending
+                // clusters), so L2 reversal of glyphs is no longer needed here — we only shuffle
+                // the run span into visual order.
                 var index = 0;
-
-                currentIndex = firstIndex;
+                var currentIndex = firstIndex;
 
                 while (currentIndex >= 0)
                 {
