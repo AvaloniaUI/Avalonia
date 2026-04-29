@@ -97,6 +97,9 @@ namespace Avalonia.Win32
             Func<string, TStorageItem> convert)
             where TStorageItem : IStorageItem
         {
+            // TODO13: verify that we're on the correct dispatcher, matching other platforms' implementations.
+            // We should then be able to remove the dedicated thread and simply use IFileDialog directly (needs to be reconfirmed).
+
             var tcs = new TaskCompletionSource<(IReadOnlyList<TStorageItem>, int)>(
                 TaskCreationOptions.RunContinuationsAsynchronously);
 
