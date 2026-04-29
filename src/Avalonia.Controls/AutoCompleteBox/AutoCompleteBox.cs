@@ -599,11 +599,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Returns the
-        /// <see cref="T:Avalonia.Controls.ISelectionAdapter" /> part, if
+        /// <see cref="T:ISelectionAdapter" /> part, if
         /// possible.
         /// </summary>
         /// <returns>
-        /// A <see cref="T:Avalonia.Controls.ISelectionAdapter" /> object,
+        /// A <see cref="T:ISelectionAdapter" /> object,
         /// if possible. Otherwise, null.
         /// </returns>
         protected virtual ISelectionAdapter? GetSelectionAdapterPart(INameScope nameScope)
@@ -665,7 +665,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Provides handling for the
-        /// <see cref="E:Avalonia.InputElement.KeyDown" /> event.
+        /// <see cref="E:InputElement.KeyDown" /> event.
         /// </summary>
         /// <param name="e">A <see cref="T:Avalonia.Input.KeyEventArgs" />
         /// that contains the event data.</param>
@@ -736,9 +736,9 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Provides handling for the
-        /// <see cref="E:Avalonia.UIElement.GotFocus" /> event.
+        /// <see cref="E:Avalonia.Controls.Control.GotFocus" /> event.
         /// </summary>
-        /// <param name="e">A <see cref="T:Avalonia.RoutedEventArgs" />
+        /// <param name="e">A <see cref="T:RoutedEventArgs" />
         /// that contains the event data.</param>
         protected override void OnGotFocus(FocusChangedEventArgs e)
         {
@@ -748,9 +748,9 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Provides handling for the
-        /// <see cref="E:Avalonia.UIElement.LostFocus" /> event.
+        /// <see cref="E:Avalonia.Controls.Control.LostFocus" /> event.
         /// </summary>
-        /// <param name="e">A <see cref="T:Avalonia.RoutedEventArgs" />
+        /// <param name="e">A <see cref="T:RoutedEventArgs" />
         /// that contains the event data.</param>
         protected override void OnLostFocus(FocusChangedEventArgs e)
         {
@@ -958,7 +958,7 @@ namespace Avalonia.Controls
         /// event.
         /// </summary>
         /// <param name="e">A
-        /// <see cref="T:Avalonia.Controls.CancelEventArgs" />
+        /// <see cref="T:CancelEventArgs" />
         /// that contains the event data.</param>
         protected virtual void OnDropDownOpening(CancelEventArgs e)
         {
@@ -984,7 +984,7 @@ namespace Avalonia.Controls
         /// event.
         /// </summary>
         /// <param name="e">A
-        /// <see cref="T:Avalonia.Controls.CancelEventArgs" />
+        /// <see cref="T:CancelEventArgs" />
         /// that contains the event data.</param>
         protected virtual void OnDropDownClosing(CancelEventArgs e)
         {
@@ -1545,7 +1545,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Notifies the
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> that the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.Items" />
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
         /// property has been set and the data can be filtered to provide
         /// possible matches in the drop-down.
         /// </summary>
