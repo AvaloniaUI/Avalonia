@@ -223,7 +223,7 @@ namespace Avalonia.Controls.UnitTests
 
         private TextBox GetTextBox(CalendarDatePicker control)
         {
-            return control.GetTemplateChildren()
+            return control.GetTemplateDescendants()
                 .OfType<TextBox>()
                 .First();
         }
