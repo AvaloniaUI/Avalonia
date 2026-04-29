@@ -86,8 +86,8 @@ namespace Avalonia.Base.UnitTests.Layout
                 Assert.Equal(new Point(300, 200), Position(scrollViewer));
                 Assert.Equal(new Size(400, 400), textBlock.Bounds.Size);
 
-                var scrollBars = scrollViewer.GetTemplateChildren().OfType<ScrollBar>().ToList();
-                var presenters = scrollViewer.GetTemplateChildren().OfType<ScrollContentPresenter>().ToList();
+                var scrollBars = scrollViewer.GetTemplateDescendants().OfType<ScrollBar>().ToList();
+                var presenters = scrollViewer.GetTemplateDescendants().OfType<ScrollContentPresenter>().ToList();
 
                 Assert.Equal(2, scrollBars.Count);
                 Assert.Single(presenters);

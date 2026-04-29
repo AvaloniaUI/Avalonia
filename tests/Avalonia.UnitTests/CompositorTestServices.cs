@@ -142,7 +142,7 @@ public class CompositorTestServices : IDisposable
         public void TriggerTick() => Tick?.Invoke(TimeSpan.Zero);
     }
 
-    class TopLevelImpl : ITopLevelImpl
+    public class TopLevelImpl : ITopLevelImpl
     {
         private readonly Compositor _compositor;
 
@@ -159,7 +159,7 @@ public class CompositorTestServices : IDisposable
 
         public double DesktopScaling => 1;
         public IPlatformHandle? Handle => null;
-        public Size ClientSize { get; }
+        public Size ClientSize { get; set; }
         public double RenderScaling => 1;
         public IPlatformRenderSurface[] Surfaces { get; } = [new DummyFramebufferSurface()];
         public Action<RawInputEventArgs>? Input { get; set; }

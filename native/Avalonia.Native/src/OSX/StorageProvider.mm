@@ -82,14 +82,16 @@ public:
             if(ppv == nullptr)
                 return E_POINTER;
 
-            NSError* error;
+            *ppv = nullptr;
+
+            NSError* error = nil;
             auto fileUri = [NSURL URLWithString: GetNSStringAndRelease(fileUriStr)];
             auto bookmarkData = [fileUri bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
             if (bookmarkData)
             {
                 *ppv = CreateByteArray((void*)bookmarkData.bytes, (int)bookmarkData.length);
             }
-            if (error != nil)
+            else if (error != nil && err != nullptr)
             {
                 *err = CreateAvnString([error localizedDescription]);
             }
@@ -398,7 +400,7 @@ public:
         }
         
         auto filePathUri = [fileUri filePathURL];
-        if (fileUri == nil)
+        if (filePathUri == nil)
         {
             *ret = nullptr;
             return S_OK;

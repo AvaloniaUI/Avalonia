@@ -35,10 +35,10 @@ namespace Avalonia.Android
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
 
-            this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+            SetBackgroundColor(global::Android.Graphics.Color.Transparent);
             OnConfigurationChanged();
 
-            _view.InternalView.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
+            _view.InternalView!.SurfaceWindowCreated += InternalView_SurfaceWindowCreated;
             _view.InternalView.SurfaceWindowDestroyed += InternalView_SurfaceWindowDestroyed;
 
             _accessHelper = new AvaloniaAccessHelper(this);
@@ -141,7 +141,7 @@ namespace Avalonia.Android
         {
             public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView)
             {
-                View.FocusChange += ViewImpl_FocusChange;
+                View!.FocusChange += ViewImpl_FocusChange;
             }
 
             private void ViewImpl_FocusChange(object? sender, FocusChangeEventArgs e)
