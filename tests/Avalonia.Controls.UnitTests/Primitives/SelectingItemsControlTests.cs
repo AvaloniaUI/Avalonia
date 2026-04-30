@@ -952,6 +952,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Resetting_Items_With_Duplicate_Selections_Should_Report_Lost_Duplicates()
+        {
+            // Reset reducing duplicate count must report only the surplus as lost.
+            var items = new ResettingCollection(0);
+            items.AddRange(new[] { "Dup", "Other", "Dup" });
+
+            var target = new TestSelector
+            {
+                ItemsSource = items,
+                Template = Template(),
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 0;
+            target.Selection.Select(2);
+
+            SelectionChangedEventArgs? receivedArgs = null;
+            target.SelectionChanged += (_, args) => receivedArgs = args;
+
+            items.Reset(new[] { "Other", "Dup" });
+
+            Assert.NotNull(receivedArgs);
+            Assert.Equal(new[] { "Dup" }, receivedArgs.RemovedItems.Cast<object>());
+        }
+
+        [Fact]
         public void Raising_IsSelectedChanged_On_Item_Should_Update_Selection()
         {
             var items = new[]

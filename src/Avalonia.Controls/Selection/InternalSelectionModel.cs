@@ -266,8 +266,7 @@ namespace Avalonia.Controls.Selection
 
         private void OnSourceReset(object? sender, EventArgs e)
         {
-            // Snapshot before sync: base.OnSourceReset already cleared _selectedIndex,
-            // so the pending Operation has no record of what was lost.
+            // Snapshot before sync: base.OnSourceReset already cleared the model.
             List<object?>? previousItems = null;
 
             if (_writableSelectedItems?.Count > 0)
@@ -282,20 +281,50 @@ namespace Avalonia.Controls.Selection
             if (previousItems is null || previousItems.Count == 0)
                 return;
 
-            // Diff against post-sync state: a reorder Reset preserves items, only
-            // genuine losses should be reported as DeselectedItems.
-            var currentItems = new HashSet<object?>();
+            // Multiset diff: selection allows duplicates, set semantics under-reports.
+            var currentItemCounts = new Dictionary<object, int>();
+            var currentNullCount = 0;
+
             if (_writableSelectedItems != null)
             {
                 foreach (var item in _writableSelectedItems)
-                    currentItems.Add(item);
+                {
+                    if (item is null)
+                    {
+                        ++currentNullCount;
+                    }
+                    else if (currentItemCounts.TryGetValue(item, out var count))
+                    {
+                        currentItemCounts[item] = count + 1;
+                    }
+                    else
+                    {
+                        currentItemCounts[item] = 1;
+                    }
+                }
             }
 
             var deselectedItems = new List<object?>();
             foreach (var item in previousItems)
             {
-                if (!currentItems.Contains(item))
+                if (item is null)
+                {
+                    if (currentNullCount > 0)
+                        --currentNullCount;
+                    else
+                        deselectedItems.Add(item);
+                }
+                else if (currentItemCounts.TryGetValue(item, out var count) && count > 0)
+                {
+                    if (count == 1)
+                        currentItemCounts.Remove(item);
+                    else
+                        currentItemCounts[item] = count - 1;
+                }
+                else
+                {
                     deselectedItems.Add(item);
+                }
             }
 
             if (deselectedItems.Count == 0)
