@@ -10,7 +10,7 @@ namespace Avalonia.Skia
     internal class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
     {
         private Rect _bounds;
-        private readonly SKPath _strokePath;
+        private SKPath _strokePath;
         private SKPath? _fillPath;
 
         /// <summary>
@@ -79,27 +79,31 @@ namespace Avalonia.Skia
         private class StreamContext : IStreamGeometryContextImpl
         {
             private readonly StreamGeometryImpl _geometryImpl;
-            private SKPath Stroke => _geometryImpl._strokePath;
-            private SKPath Fill => _geometryImpl._fillPath ??= new();
+            private readonly SKPathBuilder _strokeBuilder;
+            private SKPathBuilder? _fillBuilder;
+            private SKPathFillType _fillType;
             private bool _isFilled;
             private Point _startPoint;
             private bool _isFigureBroken;
-            private bool Duplicate => _isFilled && !ReferenceEquals(_geometryImpl._fillPath, Stroke);
+            private bool Duplicate => _isFilled && _fillBuilder != null;
 
-            private void EnsureSeparateFillPath()
+            private void EnsureSeparateFillBuilder()
             {
-                if (Stroke == Fill)
-                    _geometryImpl._fillPath = Stroke.Clone();
+                if (_fillBuilder == null)
+                {
+                    using var snapshot = _strokeBuilder.Snapshot();
+                    _fillBuilder = new SKPathBuilder(snapshot) { FillType = _fillType };
+                }
             }
-            
+
             private void BreakFigure()
             {
                 if (!_isFigureBroken)
                 {
                     _isFigureBroken = true;
-                    EnsureSeparateFillPath();
+                    EnsureSeparateFillBuilder();
                 }
-                    
+
             }
 
             /// <summary>
@@ -109,28 +113,58 @@ namespace Avalonia.Skia
             public StreamContext(StreamGeometryImpl geometryImpl)
             {
                 _geometryImpl = geometryImpl;
+                _strokeBuilder = new SKPathBuilder(geometryImpl._strokePath);
+                _fillType = geometryImpl._fillPath?.FillType ?? geometryImpl._strokePath.FillType;
+                _strokeBuilder.FillType = _fillType;
+                if (geometryImpl._fillPath != null && !ReferenceEquals(geometryImpl._fillPath, geometryImpl._strokePath))
+                    _fillBuilder = new SKPathBuilder(geometryImpl._fillPath) { FillType = _fillType };
             }
 
             /// <inheritdoc />
             /// <remarks>Will update bounds of passed geometry.</remarks>
             public void Dispose()
             {
-                _geometryImpl._bounds = Stroke.TightBounds.ToAvaloniaRect();
+                var oldStroke = _geometryImpl._strokePath;
+                var oldFill = _geometryImpl._fillPath;
+
+                var newStroke = _strokeBuilder.Detach();
+                newStroke.FillType = _fillType;
+                _strokeBuilder.Dispose();
+
+                SKPath newFill;
+                if (_fillBuilder != null)
+                {
+                    newFill = _fillBuilder.Detach();
+                    newFill.FillType = _fillType;
+                    _fillBuilder.Dispose();
+                }
+                else
+                {
+                    newFill = newStroke;
+                }
+
+                _geometryImpl._strokePath = newStroke;
+                _geometryImpl._fillPath = newFill;
+                _geometryImpl._bounds = newStroke.TightBounds.ToAvaloniaRect();
                 _geometryImpl.InvalidateCaches();
+
+                if (oldFill != null && !ReferenceEquals(oldFill, oldStroke))
+                    oldFill.Dispose();
+                oldStroke.Dispose();
             }
 
             /// <inheritdoc />
             public void BeginFigure(Point startPoint, bool isFilled = true)
             {
-                if (!isFilled) 
-                    EnsureSeparateFillPath();
+                if (!isFilled)
+                    EnsureSeparateFillBuilder();
 
                 _isFilled = isFilled;
                 _startPoint = startPoint;
                 _isFigureBroken = false;
-                Stroke.MoveTo((float)startPoint.X, (float)startPoint.Y);
+                _strokeBuilder.MoveTo((float)startPoint.X, (float)startPoint.Y);
                 if (Duplicate)
-                    Fill.MoveTo((float)startPoint.X, (float)startPoint.Y);
+                    _fillBuilder!.MoveTo((float)startPoint.X, (float)startPoint.Y);
             }
 
             /// <inheritdoc />
@@ -140,20 +174,23 @@ namespace Avalonia.Skia
                 {
                     if (_isFigureBroken)
                     {
-                        Stroke.LineTo(_startPoint.ToSKPoint());
+                        _strokeBuilder.LineTo(_startPoint.ToSKPoint());
                         _isFigureBroken = false;
                     }
                     else
-                        Stroke.Close();
+                        _strokeBuilder.Close();
                     if (Duplicate)
-                        Fill.Close();
+                        _fillBuilder!.Close();
                 }
             }
 
             /// <inheritdoc />
             public void SetFillRule(FillRule fillRule)
             {
-                Fill.FillType = fillRule == FillRule.EvenOdd ? SKPathFillType.EvenOdd : SKPathFillType.Winding;
+                _fillType = fillRule == FillRule.EvenOdd ? SKPathFillType.EvenOdd : SKPathFillType.Winding;
+                _strokeBuilder.FillType = _fillType;
+                if (_fillBuilder != null)
+                    _fillBuilder.FillType = _fillType;
             }
 
             /// <inheritdoc />
@@ -161,15 +198,15 @@ namespace Avalonia.Skia
             {
                 if (isStroked)
                 {
-                    Stroke.LineTo((float)point.X, (float)point.Y);
+                    _strokeBuilder.LineTo((float)point.X, (float)point.Y);
                 }
                 else
                 {
                     BreakFigure();
-                    Stroke.MoveTo((float)point.X, (float)point.Y);
+                    _strokeBuilder.MoveTo((float)point.X, (float)point.Y);
                 }
                 if (Duplicate)
-                    Fill.LineTo((float)point.X, (float)point.Y);
+                    _fillBuilder!.LineTo((float)point.X, (float)point.Y);
             }
 
             /// <inheritdoc />
@@ -182,7 +219,7 @@ namespace Avalonia.Skia
 
                 if (isStroked)
                 {
-                    Stroke.ArcTo(
+                    _strokeBuilder.ArcTo(
                         (float)size.Width,
                         (float)size.Height,
                         (float)rotationAngle,
@@ -194,10 +231,10 @@ namespace Avalonia.Skia
                 else
                 {
                     BreakFigure();
-                    Stroke.MoveTo((float)point.X, (float)point.Y);
+                    _strokeBuilder.MoveTo((float)point.X, (float)point.Y);
                 }
                 if (Duplicate)
-                    Fill.ArcTo(
+                    _fillBuilder!.ArcTo(
                         (float)size.Width,
                         (float)size.Height,
                         (float)rotationAngle,
@@ -212,15 +249,15 @@ namespace Avalonia.Skia
             {
                 if (isStroked)
                 {
-                    Stroke.CubicTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y, (float)point3.X, (float)point3.Y);
+                    _strokeBuilder.CubicTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y, (float)point3.X, (float)point3.Y);
                 }
                 else
                 {
                     BreakFigure();
-                    Stroke.MoveTo((float)point3.X, (float)point3.Y);
+                    _strokeBuilder.MoveTo((float)point3.X, (float)point3.Y);
                 }
                 if (Duplicate)
-                    Fill.CubicTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y, (float)point3.X, (float)point3.Y);
+                    _fillBuilder!.CubicTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y, (float)point3.X, (float)point3.Y);
             }
 
             /// <inheritdoc />
@@ -228,15 +265,15 @@ namespace Avalonia.Skia
             {
                 if (isStroked)
                 {
-                    Stroke.QuadTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
+                    _strokeBuilder.QuadTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
                 }
                 else
                 {
                     BreakFigure();
-                    Stroke.MoveTo((float)point2.X, (float)point2.Y);
+                    _strokeBuilder.MoveTo((float)point2.X, (float)point2.Y);
                 }
                 if (Duplicate)
-                    Fill.QuadTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
+                    _fillBuilder!.QuadTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
             }
         }
     }

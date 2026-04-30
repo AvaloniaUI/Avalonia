@@ -15,42 +15,42 @@ namespace Avalonia.Skia
             var fillType = fillRule == FillRule.NonZero ? SKPathFillType.Winding : SKPathFillType.EvenOdd;
             var count = children.Count;
             
-            var stroke = new SKPath
+            SKPath stroke;
+            using (var strokeBuilder = new SKPathBuilder { FillType = fillType })
             {
-                FillType = fillType
-            };
-            
-            bool requiresFillPass = false;
-            for (var i = 0; i < count; ++i)
-            {
-                if (children[i] is GeometryImpl geo)
-                {
-                    if (geo.StrokePath != null)
-                        stroke.AddPath(geo.StrokePath);
-                    if (!ReferenceEquals(geo.StrokePath, geo.FillPath))
-                        requiresFillPass = true;
-                }
-            }
-            
-            StrokePath = stroke;
-            
-            if (requiresFillPass)
-            {
-                var fill = new SKPath
-                {
-                    FillType = fillType
-                };
-
+                bool requiresFillPass = false;
                 for (var i = 0; i < count; ++i)
                 {
-                    if (children[i] is GeometryImpl { FillPath: { } fillPath })
-                        fill.AddPath(fillPath);
+                    if (children[i] is GeometryImpl geo)
+                    {
+                        if (geo.StrokePath != null)
+                            strokeBuilder.AddPath(geo.StrokePath);
+                        if (!ReferenceEquals(geo.StrokePath, geo.FillPath))
+                            requiresFillPass = true;
+                    }
                 }
 
-                FillPath = fill;
+                stroke = strokeBuilder.Detach();
+                stroke.FillType = fillType;
+                StrokePath = stroke;
+
+                if (requiresFillPass)
+                {
+                    using var fillBuilder = new SKPathBuilder { FillType = fillType };
+
+                    for (var i = 0; i < count; ++i)
+                    {
+                        if (children[i] is GeometryImpl { FillPath: { } fillPath })
+                            fillBuilder.AddPath(fillPath);
+                    }
+
+                    var fill = fillBuilder.Detach();
+                    fill.FillType = fillType;
+                    FillPath = fill;
+                }
+                else
+                    FillPath = stroke;
             }
-            else
-                FillPath = stroke;
 
             Bounds = stroke.TightBounds.ToAvaloniaRect();
         }

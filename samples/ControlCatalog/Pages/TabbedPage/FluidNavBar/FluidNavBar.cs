@@ -513,16 +513,17 @@ namespace ControlCatalog.Pages
                 float x0    = _xCenter - dist / 2f;
                 float x1    = _xCenter + dist / 2f;
 
-                using var path = new SKPath();
-                path.MoveTo(0, 0);
-                path.LineTo(x0 - r, 0);
-                path.CubicTo(x0 - r + anchr, 0,  x0 - dipc, y,  x0, y);
-                path.LineTo(x1, y);
-                path.CubicTo(x1 + dipc, y,  x1 + r - anchr, 0,  x1 + r, 0);
-                path.LineTo(_w, 0);
-                path.LineTo(_w, _h);
-                path.LineTo(0, _h);
-                path.Close();
+                using var pathBuilder = new SKPathBuilder();
+                pathBuilder.MoveTo(0, 0);
+                pathBuilder.LineTo(x0 - r, 0);
+                pathBuilder.CubicTo(x0 - r + anchr, 0,  x0 - dipc, y,  x0, y);
+                pathBuilder.LineTo(x1, y);
+                pathBuilder.CubicTo(x1 + dipc, y,  x1 + r - anchr, 0,  x1 + r, 0);
+                pathBuilder.LineTo(_w, 0);
+                pathBuilder.LineTo(_w, _h);
+                pathBuilder.LineTo(0, _h);
+                pathBuilder.Close();
+                using var path = pathBuilder.Detach();
 
                 using var paint = new SKPaint { Color = ToSK(_bar), IsAntialias = true };
                 canvas.DrawPath(path, paint);
@@ -597,9 +598,12 @@ namespace ControlCatalog.Pages
                     var len = measure.Length;
                     if (len <= 0f) continue;
 
-                    using var seg = new SKPath();
-                    if (measure.GetSegment(0f, len * fillAmount, seg, true))
+                    using var segBuilder = new SKPathBuilder();
+                    if (measure.GetSegment(0f, len * fillAmount, segBuilder, true))
+                    {
+                        using var seg = segBuilder.Detach();
                         canvas.DrawPath(seg, paint);
+                    }
                 }
                 while (measure.NextContour());
             }

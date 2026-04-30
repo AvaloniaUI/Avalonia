@@ -13,10 +13,10 @@ namespace Avalonia.Skia
 
         public RectangleGeometryImpl(Rect rect)
         {
-            var path = new SKPath();
-            path.AddRect(rect.ToSKRect());
+            using var builder = new SKPathBuilder();
+            builder.AddRect(rect.ToSKRect());
 
-            StrokePath = path;
+            StrokePath = builder.Detach();
             Bounds = rect;
         }
     }
