@@ -145,6 +145,8 @@ namespace Avalonia.Controls.Primitives
         private int _oldSelectedIndex;
         private WeakReference _oldSelectedItem = new(null);
         private WeakReference<IList?> _oldSelectedItems = new(null);
+        private object?[] _selectedItemsSnapshot = Array.Empty<object>();
+        private object?[]? _selectedItemsBeforeReset;
         private bool _ignoreContainerSelectionChanged;
         private UpdateState? _updateState;
         private bool _hasScrolledToSelectedItem;
@@ -153,7 +155,9 @@ namespace Avalonia.Controls.Primitives
 
         public SelectingItemsControl()
         {
-            ((ItemCollection)ItemsView).SourceChanged += OnItemsViewSourceChanged;
+            var items = (ItemCollection)ItemsView;
+            items.SourceChanged += OnItemsViewSourceChanged;
+            items.PreCollectionChanged += OnItemsViewPreCollectionChanged;
         }
 
         /// <summary>
@@ -462,6 +466,14 @@ namespace Avalonia.Controls.Primitives
             if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
             {
                 SelectedIndex = 0;
+            }
+        }
+
+        private void OnItemsViewPreCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset && _selectedItemsSnapshot.Length > 0)
+            {
+                _selectedItemsBeforeReset = _selectedItemsSnapshot;
             }
         }
 
@@ -1013,6 +1025,9 @@ namespace Avalonia.Controls.Primitives
                 UpdateSelectedValueFromItem();
             }
 
+            _selectedItemsSnapshot = Selection.SelectedItems.ToArray();
+            _selectedItemsBeforeReset = null;
+
             var route = BuildEventRoute(SelectionChangedEvent);
 
             if (route.HasHandlers)
@@ -1033,6 +1048,15 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void OnSelectionModelLostSelection(object? sender, EventArgs e)
         {
+            if (_selectedItemsBeforeReset?.Length > 0)
+            {
+                RaiseEvent(new SelectionChangedEventArgs(
+                    SelectionChangedEvent,
+                    _selectedItemsBeforeReset,
+                    Array.Empty<object>()));
+                _selectedItemsBeforeReset = null;
+            }
+
             if (AlwaysSelected && ItemsView.Count > 0)
             {
                 SelectedIndex = 0;
@@ -1248,6 +1272,7 @@ namespace Avalonia.Controls.Primitives
 
             _oldSelectedIndex = model.SelectedIndex;
             _oldSelectedItem.Target = model.SelectedItem;
+            _selectedItemsSnapshot = model.SelectedItems.ToArray();
 
             if (_updateState is null && AlwaysSelected && model.Count == 0)
             {
