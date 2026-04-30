@@ -228,6 +228,74 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void RTL_Text_Glyph_Order_Is_Identical_On_Cache_Miss_And_Cache_Hit()
+        {
+            using (Start())
+            {
+                // Pure RTL paragraph. Every run will have an odd BidiLevel and be reversed by BidiReorder.
+                var text = "\u05E9\u05DC\u05D5\u05DD \u05E2\u05D5\u05DC\u05DD"; // "שלום עולם" (Hello World in Hebrew)
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(
+                    FlowDirection.RightToLeft, TextAlignment.Right, true, false,
+                    defaultProperties, TextWrapping.NoWrap, 0, 0, 0);
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var formatter = new TextFormatterImpl();
+
+                const double paragraphWidth = 500.0;
+
+                using var cache = new TextRunCache();
+
+                // Cache miss.
+                var lineMiss = formatter.FormatLine(textSource, 0, paragraphWidth,
+                    paragraphProperties, null, cache);
+
+                Assert.NotNull(lineMiss);
+
+                // For RTL text the first logical character must be at a greater x-distance than the
+                // last logical character, i.e. the line reads right-to-left visually.
+                Assert.True(
+                    lineMiss!.GetDistanceFromCharacterHit(new CharacterHit(0)) >
+                    lineMiss.GetDistanceFromCharacterHit(new CharacterHit(text.Length - 1)),
+                    "Cache-miss RTL line: first character should be to the right of the last character.");
+
+                // Verify all shaped runs in the line were correctly reversed.
+                foreach (var run in lineMiss.TextRuns)
+                {
+                    if (run is ShapedTextRun shaped && !shaped.ShapedBuffer.IsLeftToRight)
+                        Assert.True(shaped.IsReversed, "Cache-miss: RTL ShapedTextRun should be reversed after FinalizeLine.");
+                }
+
+                // Capture per-character distances from the cache-miss line (same width as cache-hit below).
+                var distancesMiss = new double[text.Length];
+                for (var i = 0; i < text.Length; i++)
+                    distancesMiss[i] = lineMiss.GetDistanceFromCharacterHit(new CharacterHit(i));
+
+                // Cache hit — same paragraph width so distances are directly comparable.
+                var lineHit = formatter.FormatLine(textSource, 0, paragraphWidth,
+                    paragraphProperties, null, cache);
+
+                Assert.NotNull(lineHit);
+
+                // Distances on the cache-hit line must exactly match the cache-miss line.
+                for (var i = 0; i < text.Length; i++)
+                    Assert.Equal(distancesMiss[i], lineHit!.GetDistanceFromCharacterHit(new CharacterHit(i)));
+
+                // RTL direction must still hold on the cache-hit line.
+                Assert.True(
+                    lineHit!.GetDistanceFromCharacterHit(new CharacterHit(0)) >
+                    lineHit.GetDistanceFromCharacterHit(new CharacterHit(text.Length - 1)),
+                    "Cache-hit RTL line: first character should be to the right of the last character.");
+
+                // All RTL runs must still be reversed after FinalizeLine on the cache-hit path.
+                foreach (var run in lineHit.TextRuns)
+                {
+                    if (run is ShapedTextRun shaped && !shaped.ShapedBuffer.IsLeftToRight)
+                        Assert.True(shaped.IsReversed, "Cache-hit: RTL ShapedTextRun should be reversed after FinalizeLine.");
+                }
+            }
+        }
+
+        [Fact]
         public void Dispose_Releases_Cache_Entries()
         {
             using (Start())

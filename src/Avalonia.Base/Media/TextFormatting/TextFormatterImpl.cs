@@ -178,15 +178,33 @@ namespace Avalonia.Media.TextFormatting
         /// Creates a non-owning copy of a text run. For shaped text runs, this creates
         /// a new instance with a separate shaped buffer so that disposing the copy does
         /// not dispose the original cached shaped buffer.
+        /// 
+        /// LTR runs (even BidiLevel) share the cached glyph buffer — they are never reversed by
+        /// <see cref="BidiReorderer"/> so buffer sharing is safe and incurs no allocation.
+        /// RTL runs (odd BidiLevel) get an independent glyph buffer copy so that the in-place
+        /// reversal performed by <see cref="BidiReorderer"/> during <see cref="TextLineImpl.FinalizeLine"/>
+        /// does not corrupt the data stored in the cache.
         /// </summary>
         private static TextRun CreateNonOwningRun(TextRun run)
         {
             if (run is ShapedTextRun shaped)
             {
                 var buf = shaped.ShapedBuffer;
-                return new ShapedTextRun(
-                    new ShapedBuffer(buf.Text, buf.GlyphInfos, buf.GlyphTypeface, buf.FontRenderingEmSize, buf.BidiLevel),
-                    shaped.Properties);
+                ShapedBuffer newBuf;
+
+                if (buf.IsLeftToRight)
+                {
+                    // LTR: safe to share; BidiReorder will never reverse this run.
+                    newBuf = new ShapedBuffer(buf.Text, buf.GlyphInfos, buf.GlyphTypeface, buf.FontRenderingEmSize, buf.BidiLevel);
+                }
+                else
+                {
+                    // RTL: allocate an independent buffer so BidiReorder reversal cannot corrupt the cache.
+                    newBuf = new ShapedBuffer(buf.Text, buf.Length, buf.GlyphTypeface, buf.FontRenderingEmSize, buf.BidiLevel);
+                    buf.GlyphInfos.Span.CopyTo(newBuf.GlyphInfos.Span);
+                }
+
+                return new ShapedTextRun(newBuf, shaped.Properties);
             }
 
             return run;
