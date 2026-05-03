@@ -89,13 +89,15 @@ namespace Avalonia.Media
 
         internal override void DrawCore(DrawingContext context)
         {
-            // Compute local bounds from children for use when EffectBounds is not explicitly set.
+            // Compute local bounds from children only when EffectBounds is not explicitly set.
             // EffectBounds stores content bounds (pre-inflation); PushEffectCore handles inflation.
-            var localBounds = new Rect();
-            foreach (var drawing in Children)
-                localBounds = localBounds.Union(drawing.GetBounds());
+            var contentBounds = EffectBounds ?? new Rect();
+            if (EffectBounds is null)
+            {
+                foreach (var drawing in Children)
+                    contentBounds = contentBounds.Union(drawing.GetBounds());
+            }
 
-            var contentBounds = EffectBounds ?? localBounds;
             var effectBounds = Effect != null
                 ? contentBounds.Inflate(Effect.GetEffectOutputPadding())
                 : contentBounds;
