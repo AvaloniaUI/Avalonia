@@ -441,6 +441,21 @@ namespace Avalonia.Controls.UnitTests
             Assert.False((bool)field.GetValue(calendarItem)!);
         }
 
+        [Fact]
+        public void WeekNumberHeader_Defaults_To_Null()
+        {
+            var calendar = new Calendar();
+            Assert.Null(calendar.WeekNumberHeader);
+        }
+
+        [Fact]
+        public void WeekNumberHeader_Can_Be_Set_To_String()
+        {
+            var calendar = new Calendar();
+            calendar.WeekNumberHeader = "CW";
+            Assert.Equal("CW", calendar.WeekNumberHeader);
+        }
+
         // --- Week number tests ---
 
         [Fact]
