@@ -639,7 +639,10 @@ namespace Avalonia.Controls.Primitives
             }
 
             if (_weekNumberHeaderLabel != null)
+            {
+                _weekNumberHeaderLabel.Content = Owner?.WeekNumberHeader;
                 _weekNumberHeaderLabel.IsVisible = show;
+            }
         }
 
         internal void UpdateYearMode()

@@ -386,6 +386,23 @@ namespace Avalonia.Controls
             set => SetValue(WeekNumberRuleProperty, value);
         }
 
+        /// <summary>
+        /// Defines the <see cref="WeekNumberHeader"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object?> WeekNumberHeaderProperty =
+            AvaloniaProperty.Register<Calendar, object?>(nameof(WeekNumberHeader));
+
+        /// <summary>
+        /// Gets or sets the content displayed in the week-number column header cell.
+        /// Set this to a localized string such as <c>"CW"</c>, <c>"KW"</c>, or <c>"Wk"</c>
+        /// to give users context for the week-number column. Defaults to <c>null</c> (blank).
+        /// </summary>
+        public object? WeekNumberHeader
+        {
+            get => GetValue(WeekNumberHeaderProperty);
+            set => SetValue(WeekNumberHeaderProperty, value);
+        }
+
         public static readonly StyledProperty<CalendarMode> DisplayModeProperty =
             AvaloniaProperty.Register<Calendar, CalendarMode>(
                 nameof(DisplayMode),
@@ -2244,6 +2261,7 @@ namespace Avalonia.Controls
             DisplayDateEndProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateEndChanged(e));
             ShowWeekNumbersProperty.Changed.AddClassHandler<Calendar>((x, _) => x.UpdateMonths());
             WeekNumberRuleProperty.Changed.AddClassHandler<Calendar>((x, _) => x.UpdateMonths());
+            WeekNumberHeaderProperty.Changed.AddClassHandler<Calendar>((x, _) => x.UpdateMonths());
             KeyDownEvent.AddClassHandler<Calendar>((x, e) => x.Calendar_KeyDown(e));
             KeyUpEvent.AddClassHandler<Calendar>((x, e) => x.Calendar_KeyUp(e));
         }

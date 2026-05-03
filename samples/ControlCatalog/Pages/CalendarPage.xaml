@@ -48,6 +48,12 @@
         <Calendar Name="BlackoutDatesCalendar"
                   SelectionMode="SingleDate" />
       </StackPanel>
+      <StackPanel>
+        <TextBlock Text="Weeknumbers"/>
+        <Calendar SelectionMode="SingleDate"
+                  ShowWeekNumbers="True"
+                  WeekNumberHeader="CW" />
+      </StackPanel>
     </WrapPanel>
   </StackPanel>
 </ContentPage>
