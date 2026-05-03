@@ -57,10 +57,64 @@ public class DrawingGroupTests
         }
     }
 
+    /// <summary>
+    /// Regression test: PlatformDrawingContext.PushEffectCore was passing the raw content bounds to
+    /// the platform effect API without inflating by the effect output padding, causing effects to be clipped.
+    /// </summary>
+    [Fact]
+    public void PlatformDrawingContext_PushEffect_Should_Inflate_Bounds_For_Platform_Api()
+    {
+        var effectImpl = new Mock<IDrawingContextImplWithEffects>();
+        effectImpl.Setup(x => x.Transform).Returns(Matrix.Identity);
+        using var context = new PlatformDrawingContext(effectImpl.Object, ownsImpl: false);
+
+        var effect = new BlurEffect { Radius = 10 };
+        var contentBounds = new Rect(10, 10, 100, 100);
+        var expectedInflatedBounds = contentBounds.Inflate(effect.GetEffectOutputPadding());
+
+        using (context.PushEffect(effect, contentBounds)) { }
+
+        // Verify the platform API received the inflated (output) bounds, not the raw content bounds
+        effectImpl.Verify(x => x.PushEffect(expectedInflatedBounds, It.IsAny<IEffect>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Regression test: DrawingGroup.DrawCore was passing uninflated localBounds to PushOpacityMask
+    /// when an Effect was also set, meaning the opacity mask didn't cover the effect output region.
+    /// </summary>
+    [Fact]
+    public void DrawCore_With_Effect_And_OpacityMask_Should_Use_EffectBounds_For_OpacityMask()
+    {
+        using (UnitTestApplication.Start(new TestServices(renderInterface: Mock.Of<IPlatformRenderInterface>())))
+        {
+            var effect = new BlurEffect { Radius = 10 };
+            var contentBounds = new Rect(10, 10, 100, 100);
+            var expectedEffectBounds = contentBounds.Inflate(effect.GetEffectOutputPadding());
+
+            var group = new DrawingGroup
+            {
+                Effect = effect,
+                EffectBounds = contentBounds,
+                OpacityMask = Brushes.Red
+            };
+            group.Children.Add(new GeometryDrawing
+            {
+                Brush = Brushes.Blue,
+                Geometry = new RectangleGeometry { Rect = new Rect(20, 20, 50, 50) }
+            });
+
+            var mockContext = new MockDrawingContext();
+            group.Draw(mockContext);
+
+            Assert.Equal(expectedEffectBounds, mockContext.OpacityMaskBounds);
+        }
+    }
+
     private class MockDrawingContext : DrawingContext
     {
         public IEffect? Effect { get; private set; }
         public Rect Bounds { get; private set; }
+        public Rect OpacityMaskBounds { get; private set; }
 
         protected override void PushEffectCore(IEffect effect, Rect bounds)
         {
@@ -79,7 +133,10 @@ public class DrawingGroupTests
         protected override void PushClipCore(RoundedRect rect) { }
         protected override void PushGeometryClipCore(Geometry clip) { }
         protected override void PushOpacityCore(double opacity) { }
-        protected override void PushOpacityMaskCore(IBrush mask, Rect bounds) { }
+        protected override void PushOpacityMaskCore(IBrush mask, Rect bounds)
+        {
+            OpacityMaskBounds = bounds;
+        }
         protected override void PushTransformCore(Matrix matrix) { }
         protected override void PopClipCore() { }
         protected override void PopGeometryClipCore() { }

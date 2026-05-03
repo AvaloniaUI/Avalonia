@@ -440,7 +440,11 @@ namespace Avalonia.Media
         /// Pushes an effect.
         /// </summary>
         /// <param name="effect">The effect.</param>
-        /// <param name="bounds">The bounds of the effect.</param>
+        /// <param name="bounds">
+        /// The content bounds of the area the effect is applied to (pre-inflation).
+        /// The drawing context will internally inflate these by the effect's output padding
+        /// to ensure the full effect output (e.g. blur/shadow) is not clipped.
+        /// </param>
         /// <returns>A disposable used to undo the effect.</returns>
         public PushedState PushEffect(IEffect effect, Rect bounds)
         {

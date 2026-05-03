@@ -273,7 +273,7 @@ internal class RenderDataDrawingContext : DrawingContext
     protected override void PushEffectCore(IEffect effect, Rect bounds) => Push(new RenderDataEffectNode()
     {
         Effect = effect.ToImmutable(),
-        BoundsRect = bounds
+        BoundsRect = bounds.Inflate(effect.GetEffectOutputPadding())
     });
 
     protected override void PopClipCore() => Pop<RenderDataClipNode>();

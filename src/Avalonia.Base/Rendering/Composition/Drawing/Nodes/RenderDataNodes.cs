@@ -265,7 +265,18 @@ class RenderDataEffectNode : RenderDataPushNode
     public Rect BoundsRect { get; set; }
 
     /// <inheritdoc />
-    public override Rect? Bounds => Rect.Union(base.Bounds, BoundsRect);
+    public override Rect? Bounds
+    {
+        get
+        {
+            var bounds = base.Bounds;
+            if (bounds is null)
+                return null;
+            return Effect is { } effect
+                ? bounds.Value.Inflate(effect.GetEffectOutputPadding())
+                : bounds;
+        }
+    }
 
     /// <inheritdoc />
     public override void Push(ref RenderDataNodeRenderContext context)

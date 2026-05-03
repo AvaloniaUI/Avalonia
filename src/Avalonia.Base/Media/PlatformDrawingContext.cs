@@ -93,7 +93,7 @@ internal sealed class PlatformDrawingContext : DrawingContext
     {
         if (_impl is IDrawingContextImplWithEffects effectImpl)
         {
-            effectImpl.PushEffect(bounds, effect);
+            effectImpl.PushEffect(bounds.Inflate(effect.GetEffectOutputPadding()), effect);
         }
     }
 
