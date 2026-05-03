@@ -131,5 +131,15 @@ namespace Avalonia.Controls
             var format = GetCurrentDateFormat();
             return date.Year.ToString(format);
         }
+
+        /// <summary>
+        /// Gets the week-of-year number for the specified date.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <param name="rule">The rule that defines what constitutes the first week of the year.</param>
+        /// <param name="firstDayOfWeek">The first day of the week.</param>
+        /// <returns>The week number that <paramref name="date"/> falls in.</returns>
+        public static int GetWeekOfYear(DateTime date, CalendarWeekRule rule, DayOfWeek firstDayOfWeek)
+            => CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(date, rule, firstDayOfWeek);
     }
 }

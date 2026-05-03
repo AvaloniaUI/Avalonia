@@ -49,6 +49,9 @@ namespace Avalonia.Controls.Primitives
 
         private readonly System.Globalization.Calendar _calendar = new GregorianCalendar();
 
+        private CalendarWeekNumberLabel[] _weekNumberLabels = Array.Empty<CalendarWeekNumberLabel>();
+        private CalendarWeekNumberLabel? _weekNumberHeaderLabel;
+
         internal Calendar? Owner { get; set; }
         internal CalendarDayButton? CurrentButton { get; set; }
 
@@ -168,16 +171,18 @@ namespace Avalonia.Controls.Primitives
         {
             if (MonthView != null)
             {
-                var childCount = Calendar.RowsPerMonth + Calendar.RowsPerMonth * Calendar.ColumnsPerMonth;
+                // +7 for the week-number column (1 header + 6 data cells)
+                var childCount = Calendar.RowsPerMonth + Calendar.RowsPerMonth * Calendar.ColumnsPerMonth + Calendar.RowsPerMonth;
                 using var children = new PooledList<Control>(childCount);
 
+                // Day-of-week title cells — day columns are at 1-7 (shifted right by 1)
                 for (int i = 0; i < Calendar.ColumnsPerMonth; i++)
                 {
                     if (DayTitleTemplate?.Build() is Control cell)
                     {
                         cell.DataContext = string.Empty;
                         cell.SetValue(Grid.RowProperty, 0);
-                        cell.SetValue(Grid.ColumnProperty, i);
+                        cell.SetValue(Grid.ColumnProperty, i + 1);
                         children.Add(cell);
                     }
                 }
@@ -198,7 +203,7 @@ namespace Avalonia.Controls.Primitives
                             cell.Owner = Owner;
                         }
                         cell.SetValue(Grid.RowProperty, i);
-                        cell.SetValue(Grid.ColumnProperty, j);
+                        cell.SetValue(Grid.ColumnProperty, j + 1);
                         cell.CalendarDayButtonMouseDown += cellMouseLeftButtonDown;
                         cell.CalendarDayButtonMouseUp += cellMouseLeftButtonUp;
                         cell.PointerEntered += cellMouseEntered;
@@ -206,7 +211,25 @@ namespace Avalonia.Controls.Primitives
                         children.Add(cell);
                     }
                 }
-                
+
+                // Week-number cells — added after existing cells to preserve child indices 0–48.
+                // Header placeholder (row 0, col 0)
+                _weekNumberHeaderLabel = new CalendarWeekNumberLabel();
+                _weekNumberHeaderLabel.SetValue(Grid.RowProperty, 0);
+                _weekNumberHeaderLabel.SetValue(Grid.ColumnProperty, 0);
+                children.Add(_weekNumberHeaderLabel);
+
+                // Data labels (rows 1–6, col 0)
+                _weekNumberLabels = new CalendarWeekNumberLabel[Calendar.RowsPerMonth - 1];
+                for (int i = 1; i < Calendar.RowsPerMonth; i++)
+                {
+                    var label = new CalendarWeekNumberLabel();
+                    label.SetValue(Grid.RowProperty, i);
+                    label.SetValue(Grid.ColumnProperty, 0);
+                    _weekNumberLabels[i - 1] = label;
+                    children.Add(label);
+                }
+
                 MonthView.Children.AddRange(children);
             }
 
@@ -254,6 +277,10 @@ namespace Avalonia.Controls.Primitives
             NextButton = e.NameScope.Find<Button>(PART_ElementNextButton);
             MonthView = e.NameScope.Find<Grid>(PART_ElementMonthView);
             YearView = e.NameScope.Find<Grid>(PART_ElementYearView);
+
+            // Prepend a column for week numbers; day columns follow in positions 1–7.
+            // Done here so PopulateGrids() can place cells at the correct indices.
+            MonthView?.ColumnDefinitions.Insert(0, new ColumnDefinition(GridLength.Auto));
             
             if (Owner != null)
             {
@@ -373,6 +400,7 @@ namespace Avalonia.Controls.Primitives
             {
                 SetDayTitles();
                 SetCalendarDayButtons(_currentMonth);
+                UpdateWeekNumberLabels(_currentMonth);
             }
         }
         private void SetMonthModeHeaderButton()
@@ -587,6 +615,31 @@ namespace Avalonia.Controls.Primitives
                     }
                 }
             }
+        }
+
+        private void UpdateWeekNumberLabels(DateTime firstDayOfMonth)
+        {
+            if (_weekNumberLabels.Length == 0)
+                return;
+
+            int lastMonthToDisplay = PreviousMonthDays(firstDayOfMonth);
+            DateTime firstDateDisplayed = DateTimeHelper.CompareYearMonth(firstDayOfMonth, DateTime.MinValue) > 0
+                ? _calendar.AddDays(firstDayOfMonth, -lastMonthToDisplay)
+                : firstDayOfMonth;
+
+            bool show = Owner?.ShowWeekNumbers ?? false;
+            var rule = Owner?.WeekNumberRule ?? DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule;
+            var firstDayOfWeek = Owner?.FirstDayOfWeek ?? DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
+
+            for (int i = 0; i < _weekNumberLabels.Length; i++)
+            {
+                DateTime firstDayOfRow = _calendar.AddDays(firstDateDisplayed, i * NumberOfDaysPerWeek);
+                _weekNumberLabels[i].Content = DateTimeHelper.GetWeekOfYear(firstDayOfRow, rule, firstDayOfWeek).ToString();
+                _weekNumberLabels[i].IsVisible = show;
+            }
+
+            if (_weekNumberHeaderLabel != null)
+                _weekNumberHeaderLabel.IsVisible = show;
         }
 
         internal void UpdateYearMode()

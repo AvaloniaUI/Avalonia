@@ -6,6 +6,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -350,6 +351,39 @@ namespace Avalonia.Controls
         {
             get => GetValue(HeaderBackgroundProperty);
             set => SetValue(HeaderBackgroundProperty, value);
+        }
+
+        /// <summary>
+        /// Defines the <see cref="ShowWeekNumbers"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ShowWeekNumbersProperty =
+            AvaloniaProperty.Register<Calendar, bool>(nameof(ShowWeekNumbers));
+
+        /// <summary>
+        /// Gets or sets a value indicating whether week numbers are shown in the month view.
+        /// </summary>
+        public bool ShowWeekNumbers
+        {
+            get => GetValue(ShowWeekNumbersProperty);
+            set => SetValue(ShowWeekNumbersProperty, value);
+        }
+
+        /// <summary>
+        /// Defines the <see cref="WeekNumberRule"/> property.
+        /// </summary>
+        public static readonly StyledProperty<CalendarWeekRule> WeekNumberRuleProperty =
+            AvaloniaProperty.Register<Calendar, CalendarWeekRule>(
+                nameof(WeekNumberRule),
+                defaultValue: DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule);
+
+        /// <summary>
+        /// Gets or sets the rule used to determine the first week of the year for week number display.
+        /// The default is taken from the current culture.
+        /// </summary>
+        public CalendarWeekRule WeekNumberRule
+        {
+            get => GetValue(WeekNumberRuleProperty);
+            set => SetValue(WeekNumberRuleProperty, value);
         }
 
         public static readonly StyledProperty<CalendarMode> DisplayModeProperty =
@@ -2208,6 +2242,8 @@ namespace Avalonia.Controls
             DisplayDateProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateChanged(e));
             DisplayDateStartProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateStartChanged(e));
             DisplayDateEndProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateEndChanged(e));
+            ShowWeekNumbersProperty.Changed.AddClassHandler<Calendar>((x, _) => x.UpdateMonths());
+            WeekNumberRuleProperty.Changed.AddClassHandler<Calendar>((x, _) => x.UpdateMonths());
             KeyDownEvent.AddClassHandler<Calendar>((x, e) => x.Calendar_KeyDown(e));
             KeyUpEvent.AddClassHandler<Calendar>((x, e) => x.Calendar_KeyUp(e));
         }
