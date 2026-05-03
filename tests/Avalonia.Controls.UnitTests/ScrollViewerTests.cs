@@ -610,9 +610,9 @@ namespace Avalonia.Controls.UnitTests
         private Thumb GetVerticalThumb(ScrollViewer target)
         {
             var scrollbar = Assert.IsType<ScrollBar>(
-                target.GetTemplateChildren().FirstOrDefault(x => x.Name == "PART_VerticalScrollBar"));
+                target.GetTemplateDescendants().FirstOrDefault(x => x.Name == "PART_VerticalScrollBar"));
             var track = Assert.IsType<Track>(
-                scrollbar.GetTemplateChildren().FirstOrDefault(x => x.Name == "track"));
+                scrollbar.GetTemplateDescendants().FirstOrDefault(x => x.Name == "track"));
             return Assert.IsType<Thumb>(track.Thumb);
         }
 
