@@ -124,15 +124,9 @@ namespace Avalonia.Media
                 rect = rect.Union(drawing.GetBounds());
             }
 
-            if (Effect != null)
-            {
-                // EffectBounds stores content bounds (pre-inflation); inflate to get output bounds.
-                var contentBounds = EffectBounds ?? rect;
-                if (!contentBounds.IsEmpty())
-                {
-                    rect = contentBounds.Inflate(Effect.GetEffectOutputPadding());
-                }
-            }
+            // Note: Effect is intentionally not reflected here. GetBounds returns content/geometric
+            // bounds only, matching WPF behavior. Effects render additively outside the content
+            // bounds and must not shift the coordinate origin (e.g. when used inside DrawingImage).
 
             if (Transform != null)
             {
