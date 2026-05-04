@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
-using Avalonia.VisualTree;
+using Avalonia.Rendering;
 
 namespace Avalonia.Input
 {
     public class PointerEventArgs : RoutedEventArgs, IKeyModifiersEventArgs
     {
-        private readonly Visual? _rootVisual;
-        private readonly Point _rootVisualPosition;
+        private readonly IPresentationSource? _eventPresentationSource; // the original observer of the event
+        private readonly Point _presentationSourcePosition;
         private readonly PointerPointProperties _properties;
         private readonly Lazy<IReadOnlyList<RawPointerPoint>?>? _previousPoints;
 
@@ -24,8 +24,8 @@ namespace Avalonia.Input
            : base(routedEvent)
         {
             Source = source;
-            _rootVisual = rootVisual;
-            _rootVisualPosition = rootVisualPosition;
+            _eventPresentationSource = rootVisual?.PresentationSource;
+            _presentationSourcePosition = rootVisualPosition;
             _properties = properties;
             Pointer = pointer;
             Timestamp = timestamp;
@@ -76,23 +76,25 @@ namespace Avalonia.Input
 
         private Point GetPosition(Point pt, Visual? relativeTo)
         {
-            if (_rootVisual == null)
-                return default;
             if (relativeTo == null)
                 return pt;
+            if (_eventPresentationSource == null || relativeTo?.PresentationSource?.RootVisual == null)
+                return default;
 
-            // If the visual the user passed in, is not connected to the same visual root
-            // (i.e. they called it for a control inside a popup.
-            if (!ReferenceEquals(_rootVisual, relativeTo.VisualRoot) && relativeTo.VisualRoot is { })
+            if (relativeTo.PresentationSource != _eventPresentationSource)
             {
-                // Convert to absolute screen coordinates.
-                var screenPt = _rootVisual.PointToScreen(pt);
-
-                // Convert to client co-ordinates of the visual inside the other visual root.
-                return relativeTo.PointToClient(screenPt);
+                if (_eventPresentationSource.PointToScreen(pt) is { } screenPt &&
+                    relativeTo.PresentationSource.PointToClient(screenPt) is { } targetClientPt)
+                {
+                    pt = targetClientPt;
+                }
+                else
+                {
+                    return default;
+                }
             }
 
-            return pt * _rootVisual.TransformToVisual(relativeTo) ?? default;
+            return relativeTo.PresentationSource.RootVisual.TranslatePoint(pt, relativeTo) ?? default;
         }
 
         /// <summary>
@@ -100,7 +102,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="relativeTo">The visual whose coordinate system to use. Pass null for toplevel coordinate system</param>
         /// <returns>The pointer position in the control's coordinates.</returns>
-        public Point GetPosition(Visual? relativeTo) => GetPosition(_rootVisualPosition, relativeTo);
+        public Point GetPosition(Visual? relativeTo) => GetPosition(_presentationSourcePosition, relativeTo);
 
         /// <summary>
         /// Returns the PointerPoint associated with the current event
@@ -117,7 +119,7 @@ namespace Avalonia.Input
         /// <returns></returns>
         public IReadOnlyList<PointerPoint> GetIntermediatePoints(Visual? relativeTo)
         {
-            var previousPoints = _previousPoints?.Value;            
+            var previousPoints = _previousPoints?.Value;
             if (previousPoints == null || previousPoints.Count == 0)
                 return new[] { GetCurrentPoint(relativeTo) };
             var points = new PointerPoint[previousPoints.Count + 1];
@@ -145,7 +147,7 @@ namespace Avalonia.Input
         /// </summary>
         public PointerPointProperties Properties => _properties;
     }
-    
+
     public enum MouseButton
     {
         None,
