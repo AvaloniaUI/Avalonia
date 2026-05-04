@@ -215,6 +215,7 @@ namespace Avalonia.Controls.Primitives
                 // Week-number cells — added after existing cells to preserve child indices 0–48.
                 // Header placeholder (row 0, col 0)
                 _weekNumberHeaderLabel = new CalendarWeekNumberLabel();
+                _weekNumberHeaderLabel.IsHeader = true;
                 _weekNumberHeaderLabel.SetValue(Grid.RowProperty, 0);
                 _weekNumberHeaderLabel.SetValue(Grid.ColumnProperty, 0);
                 children.Add(_weekNumberHeaderLabel);
