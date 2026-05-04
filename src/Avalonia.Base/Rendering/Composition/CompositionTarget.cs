@@ -189,23 +189,12 @@ namespace Avalonia.Rendering.Composition
                 var queriedIndexedChildren = false;
                 if (cv.Children.Count >= CompositionContainerVisual.HitTestAabbTreeThreshold)
                 {
-                    var candidates = RentHitTestChildCandidates(out var releaseToField);
-                    try
+                    var query = new FirstHitTestQuery(this, point, filter, resultFilter);
+                    if (cv.TryQueryFirstHitTestChild(point, ref query, out var hit))
                     {
-                        if (cv.TryQueryHitTestChildren(point, candidates))
-                        {
-                            queriedIndexedChildren = true;
-                            foreach (var child in candidates)
-                            {
-                                var hit = HitTestFirstCore(child, point, filter, resultFilter);
-                                if (hit != null)
-                                    return hit;
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        ReleaseHitTestChildCandidates(candidates, releaseToField);
+                        queriedIndexedChildren = true;
+                        if (hit != null)
+                            return hit;
                     }
                 }
 
@@ -221,6 +210,16 @@ namespace Avalonia.Rendering.Composition
             }
 
             return visual.HitTest(point) && (resultFilter == null || resultFilter(visual)) ? visual : null;
+        }
+
+        private readonly struct FirstHitTestQuery(
+            CompositionTarget target,
+            Point point,
+            Func<CompositionVisual, bool>? filter,
+            Func<CompositionVisual, bool>? resultFilter) : CompositionHitTestAabbTree.IQueryHitTester
+        {
+            public CompositionVisual? HitTest(CompositionVisual visual) =>
+                target.HitTestFirstCore(visual, point, filter, resultFilter);
         }
 
         /// <summary>

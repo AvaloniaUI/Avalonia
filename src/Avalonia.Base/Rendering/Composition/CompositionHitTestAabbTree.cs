@@ -7,6 +7,11 @@ namespace Avalonia.Rendering.Composition;
 
 internal sealed class CompositionHitTestAabbTree
 {
+    internal interface IQueryHitTester
+    {
+        CompositionVisual? HitTest(CompositionVisual visual);
+    }
+
     private const int Null = -1;
     private const double FatBoundsPadding = 1;
     private static readonly CandidateComparer s_candidateComparer = new();
@@ -122,6 +127,56 @@ internal sealed class CompositionHitTestAabbTree
             results.Add(candidate.Visual);
 
         _queryCandidates.Clear();
+    }
+
+    public CompositionVisual? QueryFirst<T>(Point point, ref T hitTest)
+        where T : struct, IQueryHitTester
+    {
+        _queryCandidates.Clear();
+
+        if (_root != Null)
+        {
+            var stackCount = 0;
+            PushQueryNode(ref stackCount, _root);
+
+            while (stackCount > 0)
+            {
+                var nodeIndex = _queryStack[--stackCount];
+                var node = _nodes[nodeIndex];
+
+                if (!node.Bounds.Contains(point))
+                    continue;
+
+                if (node.IsLeaf)
+                {
+                    if (node.Visual != null)
+                        _queryCandidates.Add(new Candidate(node.Visual, node.Order));
+                }
+                else
+                {
+                    PushQueryNode(ref stackCount, node.Child1);
+                    PushQueryNode(ref stackCount, node.Child2);
+                }
+            }
+        }
+
+        foreach (var candidate in _unbounded)
+            _queryCandidates.Add(new Candidate(candidate.Key, candidate.Value));
+
+        _queryCandidates.Sort(s_candidateComparer);
+
+        foreach (var candidate in _queryCandidates)
+        {
+            var hit = hitTest.HitTest(candidate.Visual);
+            if (hit != null)
+            {
+                _queryCandidates.Clear();
+                return hit;
+            }
+        }
+
+        _queryCandidates.Clear();
+        return null;
     }
 
     private void Add(CompositionVisual visual, int order)

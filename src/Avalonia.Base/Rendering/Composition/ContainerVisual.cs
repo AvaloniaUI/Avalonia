@@ -8,7 +8,7 @@ namespace Avalonia.Rendering.Composition
     /// </summary>
     public partial class CompositionContainerVisual : CompositionVisual
     {
-        internal static readonly int HitTestAabbTreeThreshold = CompositionHitTestAabbTree.IsEnabled ? 1 : int.MaxValue;
+        internal static readonly int HitTestAabbTreeThreshold = CompositionHitTestAabbTree.IsEnabled ? 32 : int.MaxValue;
         private CompositionHitTestAabbTree? _hitTestChildren;
         private bool _hitTestChildrenDirty = true;
 
@@ -65,6 +65,29 @@ namespace Avalonia.Rendering.Composition
             }
 
             _hitTestChildren.Query(point, results);
+            return true;
+        }
+
+        internal bool TryQueryFirstHitTestChild<T>(Point point, ref T hitTest, out CompositionVisual? hit)
+            where T : struct, CompositionHitTestAabbTree.IQueryHitTester
+        {
+            if (Children.Count < HitTestAabbTreeThreshold)
+            {
+                _hitTestChildren?.Clear();
+                _hitTestChildren = null;
+                hit = null;
+                return false;
+            }
+
+            _hitTestChildren ??= new CompositionHitTestAabbTree();
+
+            if (_hitTestChildrenDirty)
+            {
+                _hitTestChildren.Rebuild(Children);
+                _hitTestChildrenDirty = false;
+            }
+
+            hit = _hitTestChildren.QueryFirst(point, ref hitTest);
             return true;
         }
     }
