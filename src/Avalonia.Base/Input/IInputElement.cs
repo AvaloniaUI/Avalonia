@@ -14,12 +14,12 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the control receives focus.
         /// </summary>
-        event EventHandler<GotFocusEventArgs>? GotFocus;
+        event EventHandler<FocusChangedEventArgs>? GotFocus;
 
         /// <summary>
         /// Occurs when the control loses focus.
         /// </summary>
-        event EventHandler<RoutedEventArgs>? LostFocus;
+        event EventHandler<FocusChangedEventArgs>? LostFocus;
 
         /// <summary>
         /// Occurs when a key is pressed while the control has focus.

@@ -264,6 +264,10 @@ internal class RenderDataDrawingContext : DrawingContext
         RenderOptions = renderOptions
     });
 
+    protected override void PushTextOptionsCore(TextOptions textOptions) => Push(new RenderDataTextOptionsNode()
+    {
+        TextOptions = textOptions
+    });
 
     protected override void PopClipCore() => Pop<RenderDataClipNode>();
 
@@ -276,6 +280,8 @@ internal class RenderDataDrawingContext : DrawingContext
     protected override void PopTransformCore() => Pop<RenderDataPushMatrixNode>();
 
     protected override void PopRenderOptionsCore() => Pop<RenderDataRenderOptionsNode>();
+
+    protected override void PopTextOptionsCore() => Pop<RenderDataTextOptionsNode>();
 
     internal override void DrawBitmap(IRef<IBitmapImpl>? source, double opacity, Rect sourceRect, Rect destRect)
     {

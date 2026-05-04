@@ -50,6 +50,7 @@
                      Foreground="{TemplateBinding Foreground}"
                      Background="Transparent"
                      Text="{TemplateBinding Text, Mode=TwoWay}"
+                     PlaceholderText="{TemplateBinding PlaceholderText}"
                      BorderThickness="0"
                      IsVisible="{TemplateBinding IsEditable}">
               <TextBox.Resources>
@@ -87,7 +88,8 @@
                       BorderThickness="1">
                 <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                               VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                              IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}">
+                              IsDeferredScrollingEnabled="{TemplateBinding (ScrollViewer.IsDeferredScrollingEnabled)}"
+                              ScrollViewer.IsScrollChainingEnabled="False">
                   <ItemsPresenter Name="PART_ItemsPresenter"
                                   ItemsPanel="{TemplateBinding ItemsPanel}" />
                 </ScrollViewer>

@@ -38,7 +38,7 @@ internal sealed class CompositionHitTestRTree
             return;
 
         var order = 0;
-        AddVisual(root, ref order);
+        AddVisual(root, Matrix.Identity, ref order);
         _root = BuildTree(_entries);
         _entries.Clear();
     }
@@ -52,12 +52,15 @@ internal sealed class CompositionHitTestRTree
             results.Add(candidate);
     }
 
-    private void AddVisual(CompositionVisual visual, ref int order)
+    private void AddVisual(CompositionVisual visual, Matrix parentTransform, ref int order)
     {
+        if (!TryGetGlobalTransform(visual, parentTransform, out var transform))
+            return;
+
         if (visual is CompositionContainerVisual container)
         {
             for (var c = container.Children.Count - 1; c >= 0; c--)
-                AddVisual(container.Children[c], ref order);
+                AddVisual(container.Children[c], transform, ref order);
         }
 
         if (visual is not CompositionDrawListVisual drawListVisual)
@@ -67,23 +70,31 @@ internal sealed class CompositionHitTestRTree
 
         if (drawListVisual.Visual is ICustomHitTest)
         {
-            if (drawListVisual.TryGetServerGlobalTransform() != null)
-                _unbounded.Add(new CompositionHitTestCandidate(drawListVisual, visualOrder));
+            _unbounded.Add(new CompositionHitTestCandidate(drawListVisual, visualOrder));
             return;
         }
 
-        if (TryGetTransformedBounds(drawListVisual, out var bounds))
+        if (TryGetTransformedBounds(drawListVisual, transform, out var bounds))
             _entries.Add(new Entry(bounds, drawListVisual, visualOrder));
     }
 
-    private static bool TryGetTransformedBounds(CompositionDrawListVisual visual, out LtrbRect bounds)
+    private static bool TryGetGlobalTransform(CompositionVisual visual, Matrix parentTransform, out Matrix transform)
+    {
+        if (visual.TryGetValidReadback() is { } readback)
+        {
+            transform = readback.Matrix * parentTransform;
+            return true;
+        }
+
+        transform = default;
+        return false;
+    }
+
+    private static bool TryGetTransformedBounds(CompositionDrawListVisual visual, Matrix transform, out LtrbRect bounds)
     {
         bounds = default;
 
         if (visual.DrawList?.Bounds is not { } localBounds)
-            return false;
-
-        if (visual.TryGetServerGlobalTransform() is not { } transform)
             return false;
 
         bounds = localBounds.TransformToAABB(transform);

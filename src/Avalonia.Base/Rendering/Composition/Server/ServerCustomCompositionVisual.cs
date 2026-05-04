@@ -42,7 +42,7 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
             Compositor.Animations.RemoveFromClock(this);
     }
 
-    public override LtrbRect OwnContentBounds => new(_handler.GetRenderBounds());
+    public override LtrbRect? ComputeOwnContentBounds() => new LtrbRect(_handler.GetRenderBounds());
 
     protected override void OnAttachedToRoot(ServerCompositionTarget target)
     {
@@ -57,13 +57,10 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
         base.OnDetachedFromRoot(target);
     }
 
-    internal void HandlerInvalidate() => ValuesInvalidated();
+    internal void HandlerInvalidate() => InvalidateContent();
 
-    internal void HandlerInvalidate(Rect rc)
-    {
-        Root?.AddDirtyRect(new LtrbRect(rc).TransformToAABB(GlobalTransformMatrix));
-    }
-    
+    internal void HandlerInvalidate(Rect rc) => AddExtraDirtyRect(new LtrbRect(rc));
+
     internal void HandlerRegisterForNextAnimationFrameUpdate()
     {
         _wantsNextAnimationFrameAfterTick = true;
@@ -73,8 +70,14 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
 
     protected override void RenderCore(ServerVisualRenderContext ctx, LtrbRect currentTransformedClip)
     {
-        ctx.Canvas.AutoFlush = true;
-        using var context = new ImmediateDrawingContext(ctx.Canvas, GlobalTransformMatrix, false);
+        var proxy = ctx.Canvas as CompositorDrawingContextProxy;
+        if (proxy != null)
+        {
+            proxy.AutoFlush = true;
+            proxy.Flush();
+        }
+
+        using var context = new ImmediateDrawingContext(ctx.Canvas, ctx.Canvas.Transform, false);
         try
         {
             _handler.Render(context, currentTransformedClip.ToRect());
@@ -85,6 +88,6 @@ internal sealed class ServerCompositionCustomVisual : ServerCompositionContainer
                 ?.Log(_handler, $"Exception in {_handler.GetType().Name}.{nameof(CompositionCustomVisualHandler.OnRender)} {{0}}", e);
         }
 
-        ctx.Canvas.AutoFlush = false;
+        proxy?.AutoFlush = false;
     }
 }

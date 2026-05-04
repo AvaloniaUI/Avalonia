@@ -5,7 +5,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Defines how a member is read, written and observed by a binding.
     /// </summary>
-    public interface IPropertyAccessorPlugin
+    internal interface IPropertyAccessorPlugin
     {
         /// <summary>
         /// Checks whether this plugin can handle accessing the properties of the specified object.

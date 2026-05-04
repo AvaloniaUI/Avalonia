@@ -3,8 +3,7 @@ using System;
 namespace Avalonia.Data.Core.Plugins
 {
     /// <summary>
-    /// Defines an accessor to a property on an object returned by a 
-    /// <see cref="IPropertyAccessorPlugin"/>
+    /// Defines an accessor to a property on an object.
     /// </summary>
     public interface IPropertyAccessor : IDisposable
     {

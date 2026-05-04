@@ -61,7 +61,7 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             Assert.Equal(1, data.ErrorsChangedSubscriptionCount);
             validator.Unsubscribe();
             // Forces WeakEvent compact
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
             Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
         }
 

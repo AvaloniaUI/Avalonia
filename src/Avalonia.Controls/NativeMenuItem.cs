@@ -119,11 +119,11 @@ namespace Avalonia.Controls
         }
         
         /// <inheritdoc cref="MenuItem.ToggleTypeProperty"/>
-        public static readonly StyledProperty<NativeMenuItemToggleType> ToggleTypeProperty =
-            AvaloniaProperty.Register<NativeMenuItem, NativeMenuItemToggleType>(nameof(ToggleType));
+        public static readonly StyledProperty<MenuItemToggleType> ToggleTypeProperty =
+            AvaloniaProperty.Register<NativeMenuItem, MenuItemToggleType>(nameof(ToggleType));
 
         /// <inheritdoc cref="MenuItem.ToggleType"/>
-        public NativeMenuItemToggleType ToggleType
+        public MenuItemToggleType ToggleType
         {
             get => GetValue(ToggleTypeProperty);
             set => SetValue(ToggleTypeProperty, value);
@@ -231,13 +231,5 @@ namespace Avalonia.Controls
                 DebugDisplayHelper.AppendOptionalValue(builder, nameof(Header), Header, true);
             }
         }
-    }
-
-    // TODO12: remove this enum and use MenuItemToggleType only 
-    public enum NativeMenuItemToggleType
-    {
-        None = MenuItemToggleType.None,
-        CheckBox = MenuItemToggleType.CheckBox,
-        Radio = MenuItemToggleType.Radio
     }
 }

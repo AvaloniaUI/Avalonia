@@ -5,6 +5,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
+    <ProjectReference Include="..\..\HarfBuzz\Avalonia.HarfBuzz\Avalonia.HarfBuzz.csproj" />
   </ItemGroup>
 
   <Import Project="..\..\..\build\DevAnalyzers.props" />
@@ -23,5 +25,10 @@
     <InternalsVisibleTo Include="Avalonia.Benchmarks, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Controls.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Skia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="BareMinimum.ttf" />
+    <EmbeddedResource Include="BareMinimum.ttf" />
   </ItemGroup>
 </Project>

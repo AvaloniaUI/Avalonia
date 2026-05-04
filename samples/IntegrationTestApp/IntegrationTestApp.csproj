@@ -2,7 +2,6 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
-    <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);AVP1012;AVLN3001</NoWarn>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
@@ -20,12 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dotnet.Bundle" Version="0.9.13" />
-    <PackageReference Include="MonoMac.NetStandard" Version="0.0.4" />
+    <PackageReference Include="Dotnet.Bundle" />
+    <PackageReference Include="MonoMac.NetStandard" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />

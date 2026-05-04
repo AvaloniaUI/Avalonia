@@ -18,7 +18,7 @@ namespace Avalonia.Headless;
 /// All UI tests are supposed to be executed from one of the <see cref="Dispatch"/> methods to keep execution flow on the UI thread.
 /// Disposing unit test session stops internal dispatcher loop. 
 /// </summary>
-public sealed class HeadlessUnitTestSession : IDisposable
+public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 {
     private static readonly Dictionary<Assembly, HeadlessUnitTestSession> s_session = new();
 
@@ -96,11 +96,16 @@ public sealed class HeadlessUnitTestSession : IDisposable
             using var globalCts = token.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
             using var localCts = cancellationToken.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
 
+            var application = _isolated
+                ? EnsureIsolatedApplication()
+                : EnsureSharedApplication();
+
+            bool shouldCancel = false;
+            Exception? caught = null;
+            TResult result = default!;
+
             try
             {
-                using var application = _isolated
-                    ? EnsureIsolatedApplication()
-                    : EnsureSharedApplication();
                 var task = action();
                 if (task.Status != TaskStatus.RanToCompletion)
                 {
@@ -110,22 +115,36 @@ public sealed class HeadlessUnitTestSession : IDisposable
 
                     if (cts.IsCancellationRequested)
                     {
-                        tcs.TrySetCanceled(cts.Token);
-                        return;
+                        shouldCancel = true;
                     }
-
-                    var frame = new DispatcherFrame();
-                    using var innerCts = cts.Token.Register(() => frame.Continue = false, true);
-                    Dispatcher.UIThread.PushFrame(frame);
+                    else
+                    {
+                        var frame = new DispatcherFrame();
+                        using var innerCts = cts.Token.Register(() => frame.Continue = false, true);
+                        Dispatcher.UIThread.PushFrame(frame);
+                        result = task.GetAwaiter().GetResult();
+                    }
                 }
-
-                var result = task.GetAwaiter().GetResult();
-                tcs.TrySetResult(result);
+                else
+                {
+                    result = task.GetAwaiter().GetResult();
+                }
             }
             catch (Exception ex)
             {
-                tcs.TrySetException(ex);
+                caught = ex;
             }
+            finally
+            {
+                application.Dispose();
+            }
+
+            if (caught != null)
+                tcs.TrySetException(caught);
+            else if (shouldCancel)
+                tcs.TrySetCanceled(cts.Token);
+            else
+                tcs.TrySetResult(result);
         }, executionContext));
         return tcs.Task;
     }
@@ -184,6 +203,14 @@ public sealed class HeadlessUnitTestSession : IDisposable
         _cancellationTokenSource.Dispose();
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        await _cancellationTokenSource.CancelAsync().ConfigureAwait(false);
+        _queue.CompleteAdding();
+        await _dispatchTask.ConfigureAwait(false);
+        _cancellationTokenSource.Dispose();
+    }
+
     /// <summary>
     /// Creates instance of <see cref="HeadlessUnitTestSession"/>. 
     /// </summary>
@@ -229,6 +256,11 @@ public sealed class HeadlessUnitTestSession : IDisposable
                 if (appBuilder.WindowingSubsystemName != "Headless")
                 {
                     appBuilder = appBuilder.UseHeadless(new AvaloniaHeadlessPlatformOptions());
+                }
+
+                if (appBuilder.TextShapingSubsystemInitializer is null)
+                {
+                    appBuilder = appBuilder.UseHarfBuzz();
                 }
 
                 // ReSharper disable once AccessToModifiedClosure

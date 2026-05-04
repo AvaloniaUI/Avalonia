@@ -81,7 +81,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 var root = new TestRoot(target);
                 target.ApplyTemplate();
-                ((Control)target.Presenter).ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
                 target.Focus();
                 Assert.Equal(target.SelectedIndex, -1);
                 Assert.True(target.IsFocused);
@@ -117,7 +117,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 var root = new TestRoot(target);
                 target.ApplyTemplate();
-                ((Control)target.Presenter).ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
                 target.Focus();
                 Assert.Equal(target.SelectedIndex, -1);
                 Assert.True(target.IsFocused);
@@ -166,9 +166,10 @@ namespace Avalonia.Controls.UnitTests
 
             var root = new TestRoot { Child = target };
             target.ApplyTemplate();
-            ((Control)target.Presenter).ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
 
             var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
+            Assert.NotNull(rectangle);
             Assert.True(((ILogical)target).IsAttachedToLogicalTree);
             Assert.True(((ILogical)rectangle).IsAttachedToLogicalTree);
 
@@ -202,7 +203,7 @@ namespace Avalonia.Controls.UnitTests
                                 Content = new ItemsPresenter
                                 {
                                     Name = "PART_ItemsPresenter",
-                                    ItemsPanel = new FuncTemplate<Panel>(() => new VirtualizingStackPanel()),
+                                    ItemsPanel = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()),
                                 }.RegisterInNameScope(scope)
                             }.RegisterInNameScope(scope)
                         }.RegisterInNameScope(scope),
@@ -234,7 +235,7 @@ namespace Avalonia.Controls.UnitTests
                 var root = new TestRoot { Child = panel = new StackPanel { Children = { target, other } } };
 
                 target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
 
                 other.Focus();
 
@@ -379,16 +380,38 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
                 
                 var exception = new System.InvalidCastException("failed validation");
                 var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
                 target.Bind(ComboBox.SelectedItemProperty, textObservable);
 
                 Assert.True(DataValidationErrors.GetHasErrors(target));
-                Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(target));
             }
             
+        }
+
+        [Fact]
+        public void Text_Validation()
+        {
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                var target = new ComboBox
+                {
+                    Template = GetTemplate(),
+                };
+
+                target.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
+                
+                var exception = new System.InvalidCastException("failed validation");
+                var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+                target.Bind(ComboBox.TextProperty, textObservable);
+
+                Assert.True(DataValidationErrors.GetHasErrors(target));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(target));
+            }
         }
 
         [Fact]
@@ -473,7 +496,7 @@ namespace Avalonia.Controls.UnitTests
             target.SelectedIndex = 0;
 
             var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
-
+            Assert.NotNull(rectangle);
             Assert.Equal(FlowDirection.LeftToRight, rectangle.FlowDirection);
         }
 
@@ -503,6 +526,7 @@ namespace Avalonia.Controls.UnitTests
             target.SelectedIndex = 0;
 
             var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
+            Assert.NotNull(rectangle);
             Assert.Equal(FlowDirection.LeftToRight, rectangle.FlowDirection);
 
             parentContent.FlowDirection = FlowDirection.RightToLeft;
@@ -539,6 +563,7 @@ namespace Avalonia.Controls.UnitTests
                 target.SelectedIndex = 0;
 
                 var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
+                Assert.NotNull(rectangle);
                 Assert.Equal(FlowDirection.LeftToRight, rectangle.FlowDirection);
 
                 parentContent.FlowDirection = FlowDirection.RightToLeft;
@@ -807,14 +832,17 @@ namespace Avalonia.Controls.UnitTests
             keyboardNavHandler.SetOwner(root);
 
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
 
-            var containerPanel = target.GetTemplateChildren().OfType<Panel>().FirstOrDefault(x => x.Name == "container");
+            var containerPanel = target.GetTemplateDescendants().OfType<Panel>().FirstOrDefault(x => x.Name == "container");
             var editableTextBox = containerPanel?.GetVisualDescendants().OfType<TextBox>().FirstOrDefault(x => x.Name == "PART_EditableTextBox");
             var popup = containerPanel?.GetVisualDescendants().OfType<Popup>().FirstOrDefault(x => x.Name == "PART_Popup");
             var popupScrollViewer = popup?.Child as ScrollViewer;
             var scrollViewerItemsPresenter = popupScrollViewer?.Content as ItemsPresenter;
             var popupVirtualizingStackPanel = scrollViewerItemsPresenter?.GetVisualDescendants().OfType<VirtualizingStackPanel>().FirstOrDefault();
+
+            Assert.NotNull(editableTextBox);
+            Assert.NotNull(scrollViewerItemsPresenter);
             Assert.NotNull(popupVirtualizingStackPanel);
 
             //force the popup to render the ComboBoxItem(s) as they are what get set as "focused" if this test fails

@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Avalonia.Automation.Peers;
 using System.Linq;
+using Avalonia.Automation;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Styling;
-using Avalonia.Automation;
 using Avalonia.Reactive;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -53,16 +53,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Placement"/> property.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1013",
-            Justification = "We keep PlacementModeProperty for backward compatibility.")]
         public static readonly StyledProperty<PlacementMode> PlacementProperty =
             Popup.PlacementProperty.AddOwner<ContextMenu>();
-
-        /// <summary>
-        /// Defines the <see cref="PlacementMode"/> property.
-        /// </summary>
-        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
-        public static readonly StyledProperty<PlacementMode> PlacementModeProperty = PlacementProperty;
 
         /// <summary>
         /// Defines the <see cref="PlacementRect"/> property.
@@ -73,7 +65,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="WindowManagerAddShadowHint"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty  =
+        public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
             Popup.WindowManagerAddShadowHintProperty.AddOwner<ContextMenu>();
 
         /// <summary>
@@ -154,14 +146,6 @@ namespace Avalonia.Controls
             set => SetValue(PlacementGravityProperty, value);
         }
 
-        /// <inheritdoc cref="Placement"/>
-        [Obsolete("Use the Placement property instead."), EditorBrowsable(EditorBrowsableState.Never)]
-        public PlacementMode PlacementMode
-        {
-            get => GetValue(PlacementProperty);
-            set => SetValue(PlacementProperty, value);
-        }
-
         /// <inheritdoc cref="Popup.Placement"/>
         public PlacementMode Placement
         {
@@ -221,6 +205,7 @@ namespace Avalonia.Controls
             if (e.OldValue is ContextMenu oldMenu)
             {
                 control.ContextRequested -= ControlContextRequested;
+                control.ContextCanceled -= ControlContextCanceled;
                 control.AttachedToVisualTree -= ControlOnAttachedToVisualTree;
                 control.DetachedFromVisualTree -= ControlDetachedFromVisualTree;
                 oldMenu._attachedControls?.Remove(control);
@@ -230,13 +215,14 @@ namespace Avalonia.Controls
             if (e.NewValue is ContextMenu)
             {
                 control.ContextRequested += ControlContextRequested;
+                control.ContextCanceled += ControlContextCanceled;
                 control.AttachedToVisualTree += ControlOnAttachedToVisualTree;
                 control.DetachedFromVisualTree += ControlDetachedFromVisualTree;
             }
-            
+
             if (control.IsAttachedToVisualTree)
             {
-                AttachControlToContextMenu(control); 
+                AttachControlToContextMenu(control);
             }
         }
 
@@ -308,9 +294,9 @@ namespace Avalonia.Controls
 
         IPopupHost? IPopupHostProvider.PopupHost => _popup?.Host;
 
-        event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
-        { 
-            add => _popupHostChangedHandler += value; 
+        event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged
+        {
+            add => _popupHostChangedHandler += value;
             remove => _popupHostChangedHandler -= value;
         }
 
@@ -400,7 +386,7 @@ namespace Avalonia.Controls
                 RoutedEvent = ClosedEvent,
                 Source = this,
             });
-            
+
             _popupHostChangedHandler?.Invoke(null);
         }
 
@@ -419,6 +405,17 @@ namespace Avalonia.Controls
             }
         }
 
+        private static void ControlContextCanceled(object? sender, RoutedEventArgs e)
+        {
+            if (!e.Handled
+                && sender is Control control
+                && control.ContextMenu is ContextMenu contextMenu
+                && contextMenu.IsOpen)
+            {
+                contextMenu.Close();
+            }
+        }
+
         private static void ControlContextRequested(object? sender, ContextRequestedEventArgs e)
         {
             if (sender is Control control
@@ -428,14 +425,14 @@ namespace Avalonia.Controls
             {
                 var requestedByPointer = e.TryGetPosition(null, out _);
                 contextMenu.Open(
-                    control, 
-                    e.Source as Control ?? control, 
+                    control,
+                    e.Source as Control ?? control,
                     requestedByPointer ? contextMenu.Placement : PlacementMode.Bottom);
                 e.Handled = true;
             }
         }
-        
-        
+
+
         private static void ControlOnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             AttachControlToContextMenu(sender);

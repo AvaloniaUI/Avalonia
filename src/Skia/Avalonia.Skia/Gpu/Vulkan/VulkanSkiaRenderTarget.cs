@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Platform;
 using Avalonia.Skia.Helpers;
 using Avalonia.Vulkan;
 using SkiaSharp;
@@ -21,8 +22,9 @@ class VulkanSkiaRenderTarget : ISkiaGpuRenderTarget
         _target.Dispose();
     }
 
-    public ISkiaGpuRenderSession BeginRenderingSession()
+    public ISkiaGpuRenderSession BeginRenderingSession(IRenderTarget.RenderTargetSceneInfo sceneInfo)
     {
+        // TODO: use expectedPixelSize
         var session = _target.BeginDraw();
         bool success = false;
         try
@@ -72,7 +74,7 @@ class VulkanSkiaRenderTarget : ISkiaGpuRenderTarget
         }
     }
    
-    public bool IsCorrupted => false;
+    public PlatformRenderTargetState State => _target.State;
 
 
     internal class VulkanSkiaRenderSession : ISkiaGpuRenderSession

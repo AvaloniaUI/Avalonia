@@ -34,14 +34,10 @@ partial class AvaloniaView
 
             public AvaloniaTextRange(int startIndex, int endIndex)
             {
-                if (startIndex < 0)
-                    throw new ArgumentOutOfRangeException(nameof(startIndex));
-
-                if (endIndex < startIndex)
-                    throw new ArgumentOutOfRangeException(nameof(endIndex));
-
-                StartIndex = startIndex;
-                EndIndex = endIndex;
+                var a = Math.Max(0, startIndex);
+                var b = Math.Max(0, endIndex);
+                StartIndex = Math.Min(a, b);
+                EndIndex = Math.Max(a, b);
             }
 
             public override bool IsEmpty => StartIndex == EndIndex;
@@ -58,9 +54,7 @@ partial class AvaloniaView
         {
             public AvaloniaTextPosition(int index)
             {
-                if (index < 0)
-                    throw new ArgumentOutOfRangeException(nameof(index));
-                Index = index;
+                Index = Math.Max(0, index);
             }
 
             public int Index { get; }
@@ -90,6 +84,7 @@ partial class AvaloniaView
         private int _inSurroundingTextUpdateEvent;
         private readonly UITextPosition _beginningOfDocument = new AvaloniaTextPosition(0);
         private readonly UITextInputStringTokenizer _tokenizer;
+        private readonly NSString _textInputContextIdentifier = new NSString(Guid.NewGuid().ToString());
         private bool _isInUpdate;
 
         public TextInputMethodClient? Client => _client;
@@ -101,7 +96,7 @@ partial class AvaloniaView
         public override UIEditingInteractionConfiguration EditingInteractionConfiguration =>
             UIEditingInteractionConfiguration.Default;
 
-        public override NSString TextInputContextIdentifier => new NSString(Guid.NewGuid().ToString());
+        public override NSString TextInputContextIdentifier => _textInputContextIdentifier;
 
         public override UITextInputMode TextInputMode
         {
@@ -216,41 +211,46 @@ partial class AvaloniaView
 
         string IUITextInput.TextInRange(UITextRange range)
         {
-            var r = (AvaloniaTextRange)range;
-            var surroundingText = _client.SurroundingText;
-
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.TextInRange {start} {end}", r.StartIndex, r.EndIndex);
-
-            string result = "";
-            if (string.IsNullOrEmpty(_markedText))
+            if (range is AvaloniaTextRange r)
             {
-                if (surroundingText != null && r.EndIndex <= surroundingText.Length)
+                var surroundingText = _client.SurroundingText;
+
+                Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.TextInRange {start} {end}", r.StartIndex, r.EndIndex);
+
+                string result = "";
+                if (string.IsNullOrEmpty(_markedText))
                 {
-                    result = surroundingText[r.StartIndex..r.EndIndex];
+                    if (surroundingText != null && r.EndIndex <= surroundingText.Length)
+                    {
+                        result = surroundingText[r.StartIndex..r.EndIndex];
+                    }
                 }
-            }
-            else
-            {
-                var currentSelection = _client.Selection;
-                var span = new CombinedSpan3<char>(surroundingText.AsSpan(0, currentSelection.Start),
-                    _markedText,
-                    surroundingText.AsSpan(currentSelection.Start, currentSelection.End - currentSelection.Start));
-                var buf = new char[r.EndIndex - r.StartIndex];
-                span.CopyTo(buf, r.StartIndex);
-                result = new string(buf);
-            }
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "result: {res}", result);
+                else
+                {
+                    var currentSelection = _client.Selection;
+                    var span = new CombinedSpan3<char>(surroundingText.AsSpan(0, currentSelection.Start),
+                        _markedText,
+                        surroundingText.AsSpan(currentSelection.Start, currentSelection.End - currentSelection.Start));
+                    var buf = new char[r.EndIndex - r.StartIndex];
+                    span.CopyTo(buf, r.StartIndex);
+                    result = new string(buf);
+                }
+                Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "result: {res}", result);
 
-            return result;
+                return result;
+            }
+
+            return null!;
         }
 
         void IUITextInput.ReplaceText(UITextRange range, string text)
         {
-            var r = (AvaloniaTextRange)range;
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)?
-                .Log(null, "IUIKeyInput.ReplaceText {start} {end} {text}", r.StartIndex, r.EndIndex, text);
-            _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
-            TextInput(text);
+            if (range is AvaloniaTextRange r)
+            {
+                Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.ReplaceText {start} {end} {text}", r.StartIndex, r.EndIndex, text);
+                _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
+                TextInput(text);
+            }
         }
 
         void IUITextInput.SetMarkedText(string markedText, NSRange selectedRange)
@@ -278,23 +278,33 @@ partial class AvaloniaView
 
         public UITextRange GetTextRange(UITextPosition fromPosition, UITextPosition toPosition)
         {
-            var f = (AvaloniaTextPosition)fromPosition;
-            var t = (AvaloniaTextPosition)toPosition;
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.GetTextRange {start} {end}", f.Index, t.Index);
+            if (fromPosition is AvaloniaTextPosition f && toPosition is AvaloniaTextPosition t)
+            {
+                Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.GetTextRange {start} {end}", f.Index, t.Index);
+                return new AvaloniaTextRange(f.Index, t.Index);
+            }
 
-            return new AvaloniaTextRange(f.Index, t.Index);
+            return null!;
         }
 
         UITextPosition IUITextInput.GetPosition(UITextPosition fromPosition, nint offset)
         {
-            var pos = (AvaloniaTextPosition)fromPosition;
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)
-                ?.Log(null, "IUIKeyInput.GetPosition {start} {offset}", pos.Index, (int)offset);
+            if (fromPosition is AvaloniaTextPosition pos)
+            {
+                Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.GetPosition {start} {offset}", pos.Index, (int)offset);
 
-            var res = GetPositionCore(pos, offset);
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)
-                ?.Log(null, $"res: " + (res == null ? "null" : (int)res.Index));
-            return res!;
+                var res = GetPositionCore(pos, offset);
+
+                if (res is not null)
+                {
+                    Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "res: {position}", res.Index);
+                    return res;
+                }
+
+                return null!;
+            }
+
+            return null!;
         }
 
         private AvaloniaTextPosition? GetPositionCore(AvaloniaTextPosition pos, nint offset)
@@ -308,24 +318,29 @@ partial class AvaloniaView
             return new AvaloniaTextPosition(end);
         }
 
-        UITextPosition IUITextInput.GetPosition(UITextPosition fromPosition, UITextLayoutDirection inDirection,
-            nint offset)
+        UITextPosition IUITextInput.GetPosition(UITextPosition fromPosition, UITextLayoutDirection inDirection, nint offset)
         {
-            var pos = (AvaloniaTextPosition)fromPosition;
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)
-                ?.Log(null, "IUIKeyInput.GetPosition {start} {direction} {offset}", pos.Index, inDirection, (int)offset);
+            if (fromPosition is AvaloniaTextPosition pos)
+            {
+                Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "IUIKeyInput.GetPosition {start} {direction} {offset}", pos.Index, inDirection, (int)offset);
 
-            var res = GetPositionCore(pos, inDirection, offset);
-            Logger.TryGet(LogEventLevel.Debug, ImeLog)
-                ?.Log(null, $"res: " + (res == null ? "null" : (int)res.Index));
-            return res!;
+                var res = GetPositionCore(pos, inDirection, offset);
+
+                if (res is not null)
+                {
+                    Logger.TryGet(LogEventLevel.Debug, ImeLog)?.Log(null, "res: {position}", res.Index);
+                    return res;
+                }
+
+                return null!;
+            }
+
+            return null!;
         }
 
-        private AvaloniaTextPosition? GetPositionCore(AvaloniaTextPosition fromPosition, UITextLayoutDirection inDirection,
-            nint offset)
+        private AvaloniaTextPosition? GetPositionCore(AvaloniaTextPosition fromPosition, UITextLayoutDirection inDirection, nint offset)
         {
-            var f = (AvaloniaTextPosition)fromPosition;
-            var newPosition = f.Index;
+            var newPosition = fromPosition.Index;
 
             switch (inDirection)
             {
@@ -339,50 +354,63 @@ partial class AvaloniaView
             }
 
             if (newPosition < 0)
-                return null!;
+                return null;
 
             if (newPosition > DocumentLength)
-                return null!;
+                return null;
 
             return new AvaloniaTextPosition(newPosition);
         }
 
         NSComparisonResult IUITextInput.ComparePosition(UITextPosition first, UITextPosition second)
         {
-            var f = (AvaloniaTextPosition)first;
-            var s = (AvaloniaTextPosition)second;
-            if (f.Index < s.Index)
-                return NSComparisonResult.Ascending;
+            if (first is AvaloniaTextPosition f && second is AvaloniaTextPosition s)
+            {
+                if (f.Index < s.Index)
+                    return NSComparisonResult.Ascending;
 
-            if (f.Index > s.Index)
-                return NSComparisonResult.Descending;
+                if (f.Index > s.Index)
+                    return NSComparisonResult.Descending;
 
-            return NSComparisonResult.Same;
+                return NSComparisonResult.Same;
+            }
+
+            return default;
         }
 
         nint IUITextInput.GetOffsetFromPosition(UITextPosition fromPosition, UITextPosition toPosition)
         {
-            var f = (AvaloniaTextPosition)fromPosition;
-            var t = (AvaloniaTextPosition)toPosition;
-            return t.Index - f.Index;
+            if (fromPosition is AvaloniaTextPosition f && toPosition is AvaloniaTextPosition t)
+            {
+                return t.Index - f.Index;
+            }
+
+            return default;
         }
 
         UITextPosition IUITextInput.GetPositionWithinRange(UITextRange range, UITextLayoutDirection direction)
         {
-            var r = (AvaloniaTextRange)range;
+            if (range is AvaloniaTextRange r)
+            {
+                if (direction is UITextLayoutDirection.Right or UITextLayoutDirection.Down)
+                    return r.End;
+                return r.Start;
+            }
 
-            if (direction is UITextLayoutDirection.Right or UITextLayoutDirection.Down)
-                return r.End;
-            return r.Start;
+            return null!;
         }
 
         UITextRange IUITextInput.GetCharacterRange(UITextPosition byExtendingPosition, UITextLayoutDirection direction)
         {
-            var p = (AvaloniaTextPosition)byExtendingPosition;
-            if (direction is UITextLayoutDirection.Left or UITextLayoutDirection.Up)
-                return new AvaloniaTextRange(0, p.Index);
+            if (byExtendingPosition is AvaloniaTextPosition p)
+            {
+                if (direction is UITextLayoutDirection.Left or UITextLayoutDirection.Up)
+                    return new AvaloniaTextRange(0, p.Index);
 
-            return new AvaloniaTextRange(p.Index, DocumentLength);
+                return new AvaloniaTextRange(p.Index, DocumentLength);
+            }
+
+            return null!;
         }
 
         NSWritingDirection IUITextInput.GetBaseWritingDirection(UITextPosition forPosition,
@@ -476,13 +504,14 @@ partial class AvaloniaView
             {
                 if (_inSurroundingTextUpdateEvent > 0)
                     return;
-                if (value == null)
-                    _client.Selection = default;
+
+                if (value is AvaloniaTextRange r)
+                {
+                    _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
+                }
                 else
                 {
-                    var r = (AvaloniaTextRange)value;
-
-                    _client.Selection = new TextSelection(r.StartIndex, r.EndIndex);
+                    _client.Selection = default;
                 }
             }
         }

@@ -1,5 +1,5 @@
 ﻿using System;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform;
 
 namespace Avalonia.Android.Platform.SkiaPlatform

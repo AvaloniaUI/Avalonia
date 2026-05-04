@@ -3,17 +3,16 @@
   <PropertyGroup>
     <TargetFrameworks>$(AvsCurrentTargetFramework);net481</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
   </PropertyGroup>
 
-  <Import Project="..\..\build\Moq.props" />
-  <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\HarfBuzzSharp.props" />
   <Import Project="..\..\build\XUnit.props" />
   <Import Project="..\..\build\SharedVersion.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
   <ItemGroup>
     <Content Include="..\TestFiles\BuildTasks\PInvoke\bin\$(Configuration)\$(AvsCurrentTargetFramework)\PInvoke.dll" Link="Assets\PInvoke.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -24,8 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.548" />
+    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="15.1.548" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="System.Reactive" />
   </ItemGroup>
   
   <ItemGroup>

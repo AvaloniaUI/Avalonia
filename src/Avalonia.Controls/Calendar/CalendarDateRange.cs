@@ -23,7 +23,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Initializes a new instance of the
-        /// <see cref="T:System.Windows.Controls.CalendarDateRange" /> class
+        /// <see cref="T:Avalonia.Controls.CalendarDateRange" /> class
         /// with a single date.
         /// </summary>
         /// <param name="day">The date to be represented by the range.</param>
@@ -35,7 +35,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Initializes a new instance of the
-        /// <see cref="T:System.Windows.Controls.CalendarDateRange" /> class
+        /// <see cref="T:Avalonia.Controls.CalendarDateRange" /> class
         /// with a range of dates.
         /// </summary>
         /// <param name="start">

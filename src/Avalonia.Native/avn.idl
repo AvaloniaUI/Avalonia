@@ -403,6 +403,11 @@ enum AvnAutomationProperty
     AutomationPeer_ClassName,
     AutomationPeer_Name,
     RangeValueProvider_Value,
+    ValueProvider_Value,
+    ToggleProvider_ToggleState,
+    ExpandCollapseProvider_ExpandCollapseState,
+    SelectionItemProvider_IsSelected,
+    SelectionProvider_Selection,
 }
 
 struct AvnSize
@@ -591,15 +596,6 @@ enum AvnMenuItemToggleType
     Radio
 }
 
-enum AvnExtendClientAreaChromeHints
-{
-    AvnNoChrome = 0,
-    AvnSystemChrome = 0x01,
-    AvnPreferSystemChrome = 0x02,
-    AvnOSXThickTitleBar = 0x08,
-    AvnDefaultChrome = AvnPreferSystemChrome,
-}
-
 enum AvnPlatformResizeReason
 {
     ResizeUnspecified,
@@ -652,6 +648,7 @@ enum AvnAutomationControlType
     AutomationTable,
     AutomationTitleBar,
     AutomationSeparator,
+    AutomationExpander,
 }
 
 enum AvnLandmarkType
@@ -688,6 +685,13 @@ enum AvnPointerDeviceType
     Pen,
 }
 
+enum AvnLiveSetting
+{
+    LiveSettingOff,
+    LiveSettingPolite,
+    LiveSettingAssertive,
+}
+
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
 interface IAvaloniaNativeFactory : IUnknown
 {
@@ -716,6 +720,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreatePlatformRenderTimer(IAvnPlatformRenderTimer** ppv);
      HRESULT ImportMTLSharedEvent([intptr]void* idMtlSharedEvent, IAvnMTLSharedEvent** ppv);
      HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement** ppv);
+     HRESULT SetDockMenu(IAvnMenu* menu);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -801,7 +806,6 @@ interface IAvnWindow : IAvnWindowBase
      HRESULT GetWindowState(AvnWindowState*ret);
      HRESULT TakeFocusFromChildren();
      HRESULT SetExtendClientArea(bool enable);
-     HRESULT SetExtendClientAreaHints(AvnExtendClientAreaChromeHints hints);
      HRESULT GetExtendTitleBarHeight(double*ret);
      HRESULT SetExtendTitleBarHeight(double value);
      HRESULT GetWindowZOrder(long*ret);
@@ -929,13 +933,13 @@ interface IAvnSystemDialogEvents : IUnknown
 [uuid(4d7a47db-a944-4061-abe7-62cb6aa0ffd5)]
 interface IAvnStorageProvider : IUnknown
 {
-     void SelectFolderDialog(IAvnWindow* parentWindowHandle,
+     void SelectFolderDialog(IAvnTopLevel* parentTopLevel,
                              IAvnSystemDialogEvents* events,
                              bool allowMultiple,
                              [const] char* title,
                              [const] char* initialPath);
 
-     void OpenFileDialog(IAvnWindow* parentWindowHandle,
+     void OpenFileDialog(IAvnTopLevel* parentTopLevel,
                                  IAvnSystemDialogEvents* events,
                                  bool allowMultiple,
                                  [const] char* title,
@@ -943,7 +947,7 @@ interface IAvnStorageProvider : IUnknown
                                  [const] char* initialFile,
                                  IAvnFilePickerFileTypes* filters);
 
-     void SaveFileDialog(IAvnWindow* parentWindowHandle,
+     void SaveFileDialog(IAvnTopLevel* parentTopLevel,
                                  IAvnSystemDialogEvents* events,
                                  [const] char* title,
                                  [const] char* initialDirectory,
@@ -1005,14 +1009,14 @@ interface IAvnClipboard : IUnknown
 interface IAvnClipboardDataSource : IUnknown
 {
     int GetItemCount();
-    IAvnClipboardDataItem* GetItem(int index);
+    HRESULT GetItem(int index, IAvnClipboardDataItem**ppv);
 }
 
 [uuid(e40f36d9-69f4-45fd-9ca2-6e64e80feb6d)]
 interface IAvnClipboardDataItem : IUnknown
 {
-    IAvnStringArray* ProvideFormats();
-    IAvnClipboardDataValue* GetValue([const] char* format);
+    HRESULT ProvideFormats(IAvnStringArray** ppv);
+    HRESULT GetValue([const] char* format, IAvnClipboardDataValue** ppv);
 }
 
 [uuid(e97f24f6-1c84-4d95-8ffe-5b2c72e016ed)]
@@ -1320,9 +1324,12 @@ interface IAvnAutomationPeer : IUnknown
      void ValueProvider_SetValue([const] char* value);
 
      IAvnString* GetHelpText();
+     IAvnString* GetPlaceholderText();
 
      AvnLandmarkType GetLandmarkType();
      int GetHeadingLevel();
+
+     AvnLiveSetting GetLiveSetting();
 }
 
 [uuid(b00af5da-78af-4b33-bfff-4ce13a6239a9)]

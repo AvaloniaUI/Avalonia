@@ -11,6 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(XamlXSourcePath)/**/*.cs"
              Exclude="$(XamlXSourcePath)/obj/**/*.cs;$(XamlXSourcePath)/IL/SreTypeSystem.cs"
              LinkBase="Compiler/XamlX" />

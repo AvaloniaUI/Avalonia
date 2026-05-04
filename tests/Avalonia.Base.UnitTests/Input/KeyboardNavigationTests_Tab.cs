@@ -1311,7 +1311,7 @@ namespace Avalonia.Base.UnitTests.Input
 
             top.ApplyTemplate();
 
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
             var result = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next) as Button;
 

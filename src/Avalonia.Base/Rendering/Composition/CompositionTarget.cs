@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Collections.Pooled;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.Composition
 {
@@ -36,91 +34,58 @@ namespace Avalonia.Rendering.Composition
         /// <returns></returns>
         public PooledList<CompositionVisual>? TryHitTest(Point point, CompositionVisual? root, Func<CompositionVisual, bool>? filter)
         {
-            using var candidates = QueryHitTestCandidates(point, out var globalPoint);
             root ??= Root;
             if (root == null)
                 return null;
-            var res = new PooledList<CompositionVisual>();
 
+            using var candidates = QueryHitTestCandidates(root, point, out var rootParentPoint);
             if (candidates == null)
-                return res;
+                return null;
+
+            var res = new PooledList<CompositionVisual>();
 
             foreach (var candidate in candidates)
             {
-                if (HitTestCandidate(root, candidate.Visual, globalPoint, filter))
+                if (HitTestCandidate(root, candidate.Visual, rootParentPoint, filter))
                     res.Add(candidate.Visual);
             }
 
             return res;
         }
 
-        /// <summary>
-        /// Attempts to transform a point to a particular CompositionVisual coordinate space
-        /// </summary>
-        /// <returns></returns>
-        public Point? TryTransformToVisual(CompositionVisual visual, Point point)
+        PooledList<CompositionHitTestCandidate>? QueryHitTestCandidates(
+            CompositionVisual root,
+            Point point,
+            out Point rootParentPoint)
         {
-            if (visual.Root != this)
-                return null;
-            var v = visual;
-            var m = Matrix.Identity;
-            while (v != null)
-            {
-                if (!TryGetInvertedTransform(v, out var cm))
-                    return null;
-                m = m * cm;
-                v = v.Parent;
-            }
+            rootParentPoint = default;
 
-            return point * m;
-        }
+            Server.Compositor.Readback.NextRead();
 
-        static bool TryGetInvertedTransform(CompositionVisual visual, out Matrix matrix)
-        {
-            var m = visual.TryGetServerGlobalTransform();
-            if (m == null)
-            {
-                matrix = default;
-                return false;
-            }
-
-            var m33 = m.Value;
-            return m33.TryInvert(out matrix);
-        }
-
-        static bool TryTransformTo(CompositionVisual visual, Point globalPoint, out Point v)
-        {
-            v = default;
-            if (TryGetInvertedTransform(visual, out var m))
-            {
-                v = globalPoint * m;
-                return true;
-            }
-
-            return false;
-        }
-        
-        PooledList<CompositionHitTestCandidate>? QueryHitTestCandidates(Point point, out Point globalPoint)
-        {
-            globalPoint = point * Scaling;
-            Server.Readback.NextRead();
-
-            if (Root == null)
+            if (Root == null || root.Root != this)
                 return null;
 
-            if (_hitTestIndexDirty || !_hitTestIndex.IsCurrent(Root, Server.Readback.ReadRevision))
+            var readRevision = Server.Compositor.Readback.ReadRevision;
+            if (_hitTestIndexDirty || !_hitTestIndex.IsCurrent(Root, readRevision))
             {
-                _hitTestIndex.Rebuild(Root, Server.Readback.ReadRevision);
+                _hitTestIndex.Rebuild(Root, readRevision);
                 _hitTestIndexDirty = false;
             }
 
+            if (!TryGetOwnTransform(root, out var rootTransform) ||
+                !TryGetGlobalTransform(root, out var globalTransform))
+                return null;
+
+            rootParentPoint = point.Transform(rootTransform);
+            var indexPoint = point.Transform(globalTransform);
+
             var candidates = new PooledList<CompositionHitTestCandidate>();
-            _hitTestIndex.Query(globalPoint, candidates);
+            _hitTestIndex.Query(indexPoint, candidates);
             candidates.Sort(static (left, right) => left.Order.CompareTo(right.Order));
             return candidates;
         }
 
-        static bool HitTestCandidate(CompositionVisual root, CompositionVisual visual, Point globalPoint,
+        static bool HitTestCandidate(CompositionVisual root, CompositionVisual visual, Point rootParentPoint,
             Func<CompositionVisual, bool>? filter)
         {
             using var path = new PooledList<CompositionVisual>();
@@ -135,17 +100,20 @@ namespace Avalonia.Rendering.Composition
             if (path.Count == 0 || !ReferenceEquals(path[path.Count - 1], root))
                 return false;
 
+            var parentPoint = rootParentPoint;
             Point point = default;
             for (var c = path.Count - 1; c >= 0; c--)
             {
-                if (!HitTestVisual(path[c], globalPoint, filter, out point))
+                if (!HitTestVisual(path[c], parentPoint, filter, out point))
                     return false;
+
+                parentPoint = point;
             }
 
             return visual.HitTest(point);
         }
 
-        static bool HitTestVisual(CompositionVisual visual, Point globalPoint, Func<CompositionVisual, bool>? filter,
+        static bool HitTestVisual(CompositionVisual visual, Point parentPoint, Func<CompositionVisual, bool>? filter,
             out Point point)
         {
             point = default;
@@ -156,8 +124,19 @@ namespace Avalonia.Rendering.Composition
             if (filter != null && !filter(visual))
                 return false;
 
-            if (!TryTransformTo(visual, globalPoint, out point))
+            var readback = visual.TryGetValidReadback();
+            if (readback == null)
                 return false;
+
+            if (!visual.DisableSubTreeBoundsHitTestOptimization &&
+                (readback.TransformedSubtreeBounds == null ||
+                 !readback.TransformedSubtreeBounds.Value.Contains(parentPoint)))
+                return false;
+
+            if (!readback.Matrix.TryInvert(out var invMatrix))
+                return false;
+
+            point = parentPoint.Transform(invMatrix);
 
             if (visual.ClipToBounds
                 && (point.X < 0 || point.Y < 0 || point.X > visual.Size.X || point.Y > visual.Size.Y))
@@ -169,19 +148,50 @@ namespace Avalonia.Rendering.Composition
             return true;
         }
 
+        static bool TryGetOwnTransform(CompositionVisual visual, out Matrix transform)
+        {
+            if (visual.TryGetValidReadback() is { } readback)
+            {
+                transform = readback.Matrix;
+                return true;
+            }
+
+            transform = default;
+            return false;
+        }
+
+        static bool TryGetGlobalTransform(CompositionVisual visual, out Matrix transform)
+        {
+            transform = Matrix.Identity;
+
+            for (var current = visual; current != null; current = current.Parent)
+            {
+                if (!TryGetOwnTransform(current, out var ownTransform))
+                {
+                    transform = default;
+                    return false;
+                }
+
+                transform *= ownTransform;
+            }
+
+            return true;
+        }
+
         public CompositionVisual? TryHitTestFirst(Point point, CompositionVisual? root, Func<CompositionVisual, bool>? filter)
         {
-            using var candidates = QueryHitTestCandidates(point, out var globalPoint);
             root ??= Root;
-            if (root == null || candidates == null)
+            if (root == null)
+                return null;
+
+            using var candidates = QueryHitTestCandidates(root, point, out var rootParentPoint);
+            if (candidates == null)
                 return null;
 
             foreach (var candidate in candidates)
             {
-                if (HitTestCandidate(root, candidate.Visual, globalPoint, filter))
-                {
+                if (HitTestCandidate(root, candidate.Visual, rootParentPoint, filter))
                     return candidate.Visual;
-                }
             }
 
             return null;

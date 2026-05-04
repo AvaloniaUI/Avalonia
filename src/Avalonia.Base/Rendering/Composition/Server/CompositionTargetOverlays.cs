@@ -11,44 +11,58 @@ internal class CompositionTargetOverlays
 {
     private FpsCounter? _fpsCounter;
     private FrameTimeGraph? _renderTimeGraph;
+    private FrameTimeGraph? _compositorUpdateTimeGraph;
     private FrameTimeGraph? _updateTimeGraph;
     private FrameTimeGraph? _layoutTimeGraph;
     private Rect? _oldFpsCounterRect;
     private long _updateStarted;
     private readonly ServerCompositionTarget _target;
-    private readonly DiagnosticTextRenderer? _diagnosticTextRenderer;
 
-    public CompositionTargetOverlays(
-        ServerCompositionTarget target,
-        DiagnosticTextRenderer? diagnosticTextRenderer)
+    public CompositionTargetOverlays(ServerCompositionTarget target)
     {
         _target = target;
-        _diagnosticTextRenderer = diagnosticTextRenderer;
     }
 
     private RendererDebugOverlays DebugOverlays { get; set; }
 
     private FpsCounter? FpsCounter
-        => _fpsCounter ??= _diagnosticTextRenderer != null ? new FpsCounter(_diagnosticTextRenderer) : null;
+        => _fpsCounter ??= DiagnosticTextRenderer is { } diagnosticTextRenderer ? new FpsCounter(diagnosticTextRenderer) : null;
 
     private FrameTimeGraph? LayoutTimeGraph
         => _layoutTimeGraph ??= CreateTimeGraph("Layout");
 
     private FrameTimeGraph? RenderTimeGraph
         => _renderTimeGraph ??= CreateTimeGraph("Render");
+
+    private FrameTimeGraph? CompositorUpdateTimeGraph
+        => _compositorUpdateTimeGraph ??= CreateTimeGraph("GUpdate");
     
     private FrameTimeGraph? UpdateTimeGraph
-        => _updateTimeGraph ??= CreateTimeGraph("RUpdate");
+        => _updateTimeGraph ??= CreateTimeGraph("TUpdate");
 
+    private DiagnosticTextRenderer? DiagnosticTextRenderer
+    {
+        get
+        {
+            if (field is null)
+            {
+                // We are running in some unit test context
+                if (AvaloniaLocator.Current.GetService<IFontManagerImpl>() == null)
+                    return null;
+                field = new DiagnosticTextRenderer(Typeface.Default.GlyphTypeface, 12.0);
+            }
 
+            return field;
+        }
+    }
 
     public bool RequireLayer => DebugOverlays.HasAnyFlag(RendererDebugOverlays.DirtyRects);
 
     private FrameTimeGraph? CreateTimeGraph(string title)
     {
-        if (_diagnosticTextRenderer == null)
+        if (DiagnosticTextRenderer is not { } diagnosticTextRenderer)
             return null;
-        return new FrameTimeGraph(360, new Size(360.0, 64.0), 1000.0 / 60.0, title, _diagnosticTextRenderer);
+        return new FrameTimeGraph(360, new Size(360.0, 64.0), 1000.0 / 60.0, title, diagnosticTextRenderer);
     }
 
 
@@ -69,6 +83,8 @@ internal class CompositionTargetOverlays
         if ((DebugOverlays & RendererDebugOverlays.RenderTimeGraph) == 0)
         {
             _renderTimeGraph?.Reset();
+            _compositorUpdateTimeGraph?.Reset();
+            _updateTimeGraph?.Reset();
         }
     }
 
@@ -108,6 +124,12 @@ internal class CompositionTargetOverlays
         if (CaptureTiming)
             UpdateTimeGraph?.AddFrameValue(StopwatchHelper.GetElapsedTime(_updateStarted).TotalMilliseconds);
     }
+    
+    public void RecordGlobalCompositorUpdateTime(TimeSpan elapsed)
+    {
+        if (CaptureTiming)
+            CompositorUpdateTimeGraph?.AddFrameValue(elapsed.TotalMilliseconds);
+    }
 
     private void DrawOverlays(ImmediateDrawingContext targetContext, bool hasLayer, Size logicalSize)
     {
@@ -122,7 +144,7 @@ internal class CompositionTargetOverlays
                 IntPtr.Size), false);
 
             _oldFpsCounterRect = FpsCounter?.RenderFps(targetContext,
-                FormattableString.Invariant($"M:{managedMem} / N:{nativeMem} R:{_target.RenderedVisuals:0000}"),
+                FormattableString.Invariant($"M:{managedMem} / N:{nativeMem} V:{_target.VisitedVisuals:0000} R:{_target.RenderedVisuals:0000}"),
                 hasLayer, _oldFpsCounterRect);
         }
 
@@ -147,6 +169,7 @@ internal class CompositionTargetOverlays
         if (DebugOverlays.HasFlag(RendererDebugOverlays.RenderTimeGraph))
         {
             DrawTimeGraph(RenderTimeGraph);
+            DrawTimeGraph(CompositorUpdateTimeGraph);
             DrawTimeGraph(UpdateTimeGraph);
         }
     }

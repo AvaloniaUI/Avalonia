@@ -118,7 +118,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     CultureInfo.CurrentCulture = culture;
                     Assert.Equal(result, length.ToString());
-                });
+                }, TestContext.Current.CancellationToken);
             }
         }
     }

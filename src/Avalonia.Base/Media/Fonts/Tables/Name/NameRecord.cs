@@ -2,44 +2,55 @@
 // Licensed under the Apache License, Version 2.0.
 // Ported from: https://github.com/SixLabors/Fonts/blob/034a440aece357341fcc6b02db58ffbe153e54ef/src/SixLabors.Fonts
 
+using System;
+
 namespace Avalonia.Media.Fonts.Tables.Name
 {
-    internal class NameRecord
+    internal readonly struct NameRecord
     {
-        private readonly string value;
+        private readonly ReadOnlyMemory<byte> _stringStorage;
 
-        public NameRecord(PlatformIDs platform, ushort languageId, KnownNameIds nameId, string value)
+        public NameRecord(
+            ReadOnlyMemory<byte> stringStorage,
+            PlatformID platform,
+            ushort languageId,
+            KnownNameIds nameId,
+            ushort offset,
+            ushort length,
+            System.Text.Encoding encoding)
         {
+            _stringStorage = stringStorage;
+
             Platform = platform;
             LanguageID = languageId;
             NameID = nameId;
-            this.value = value;
+            Offset = offset;
+            Length = length;
+            Encoding = encoding;
         }
 
-        public PlatformIDs Platform { get; }
+        public PlatformID Platform { get; }
 
         public ushort LanguageID { get; }
 
         public KnownNameIds NameID { get; }
 
-        internal StringLoader? StringReader { get; private set; }
+        public ushort Offset { get; }
 
-        public string Value => StringReader?.Value ?? value;
+        public ushort Length { get; }
 
-        public static NameRecord Read(BigEndianBinaryReader reader)
+        public System.Text.Encoding Encoding { get; }
+
+        public string GetValue()
         {
-            var platform = reader.ReadUInt16<PlatformIDs>();
-            var encodingId = reader.ReadUInt16<EncodingIDs>();
-            var encoding = encodingId.AsEncoding();
-            var languageID = reader.ReadUInt16();
-            var nameID = reader.ReadUInt16<KnownNameIds>();
-
-            var stringReader = StringLoader.Create(reader, encoding);
-
-            return new NameRecord(platform, languageID, nameID, string.Empty)
+            if (Length == 0)
             {
-                StringReader = stringReader
-            };
+                return string.Empty;
+            }
+
+            var span = _stringStorage.Span.Slice(Offset, Length);
+
+            return Encoding.GetString(span);
         }
     }
 }

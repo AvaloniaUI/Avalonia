@@ -385,6 +385,44 @@ namespace Avalonia.Skia.RenderTests
                 FontFamily = new FontFamily(symbolsFont)
             };
         }
+        
+        [InlineData(TextRenderingMode.Antialias, TextHintingMode.None)]
+        [InlineData(TextRenderingMode.Alias, TextHintingMode.None)]
+        [InlineData(TextRenderingMode.Antialias, TextHintingMode.Light)]
+        [InlineData(TextRenderingMode.Alias, TextHintingMode.Light)]
+        [Win32Theory("Depends on the backend")]
+        public async Task Should_Render_TextBlock_With_TextOptions(
+            TextRenderingMode textRenderingMode, 
+            TextHintingMode textHintingMode)
+        {
+            var textBlock = new TextBlock
+            {
+                FontFamily = TestFontFamily,
+                FontSize = 24,
+                Foreground = Brushes.Black,
+                Text = "TextOptions",
+                Background = Brushes.LightGray,
+                Padding = new Thickness(10)
+            };
+            
+            TextOptions.SetTextOptions(textBlock, new TextOptions
+            {
+                TextRenderingMode = textRenderingMode,
+                TextHintingMode = textHintingMode
+            });
+
+            var target = new Border
+            {
+                Width = 300,
+                Height = 100,
+                Background = Brushes.White,
+                Child = textBlock
+            };
+
+            var testName = $"Should_Render_TextBlock_With_TextOptions_{textRenderingMode}_{textHintingMode}";
+            await RenderToFile(target, testName);
+            CompareImages(testName);
+        }
 
     }
 }

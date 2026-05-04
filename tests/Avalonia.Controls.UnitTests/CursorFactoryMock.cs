@@ -1,4 +1,5 @@
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 namespace Avalonia.Controls.UnitTests
@@ -10,7 +11,7 @@ namespace Avalonia.Controls.UnitTests
             return new MockCursorImpl();
         }
 
-        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        public ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot)
         {
             return new MockCursorImpl();
         }

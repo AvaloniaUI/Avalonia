@@ -6,7 +6,7 @@
              x:Class="IntegrationTestApp.Pages.WindowPage">
   <Grid ColumnDefinitions="*,8,*">
     <StackPanel Grid.Column="0">
-      <TextBox Name="ShowWindowSize" Watermark="Window Size"/>
+      <TextBox Name="ShowWindowSize" PlaceholderText="Window Size"/>
       <ComboBox Name="ShowWindowMode" SelectedIndex="0">
         <ComboBoxItem>NonOwned</ComboBoxItem>
         <ComboBoxItem>Owned</ComboBoxItem>
@@ -37,7 +37,7 @@
       <Button Name="ShowWindow" Click="ShowWindow_Click">Show Window</Button>
       <Button Name="SendToBack" Click="SendToBack_Click">Send to Back</Button>
       <Button Name="EnterFullscreen" Click="EnterFullscreen_Click">Enter Fullscreen</Button>
-      <Button Name="ExitFullscreen" Click="ExitFullscreen_Click">Exit Fullscreen</Button>
+      <Button Name="ExitFullscreen" AutomationProperties.AutomationId="IntegrationTestApp_ExitFullscreen" Click="ExitFullscreen_Click">Exit Fullscreen</Button>
       <Button Name="RestoreAll" Click="RestoreAll_Click">Restore All</Button>
       <Button Name="ShowTopmostWindow" Click="ShowTopmostWindow_Click">Show Topmost Window</Button>
       <Button Name="ShowTransparentWindow" Click="ShowTransparentWindow_Click">Transparent Window</Button>

@@ -62,13 +62,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
         public static readonly StyledProperty<string?> PlaceholderTextProperty =
-            AvaloniaProperty.Register<ComboBox, string?>(nameof(PlaceholderText));
+            TextBox.PlaceholderTextProperty.AddOwner<ComboBox>();
 
         /// <summary>
         /// Defines the <see cref="PlaceholderForeground"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> PlaceholderForegroundProperty =
-            AvaloniaProperty.Register<ComboBox, IBrush?>(nameof(PlaceholderForeground));
+            TextBox.PlaceholderForegroundProperty.AddOwner<ComboBox>();
 
         /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
@@ -86,7 +86,8 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Text"/> property
         /// </summary>
         public static readonly StyledProperty<string?> TextProperty =
-            TextBlock.TextProperty.AddOwner<ComboBox>(new(string.Empty, BindingMode.TwoWay));
+            TextBlock.TextProperty.AddOwner<ComboBox>(new(string.Empty, BindingMode.TwoWay,
+                enableDataValidation: true));
 
         /// <summary>
         /// Defines the <see cref="SelectionBoxItemTemplate"/> property.
@@ -453,7 +454,7 @@ namespace Avalonia.Controls
             return new ComboBoxAutomationPeer(this);
         }
 
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             if (IsEditable && _inputTextBox != null)
             {
@@ -656,15 +657,15 @@ namespace Avalonia.Controls
         private void HandleTextValueBindingValueChanged(AvaloniaPropertyChangedEventArgs? textSearchPropChange,
             AvaloniaPropertyChangedEventArgs? displayMemberPropChange)
         {
-            IBinding? textValueBinding;
+            BindingBase? textValueBinding;
             //prioritise using the TextSearch.TextBindingProperty if possible
-            if (textSearchPropChange == null && TextSearch.GetTextBinding(this) is IBinding textSearchBinding)
+            if (textSearchPropChange == null && TextSearch.GetTextBinding(this) is BindingBase textSearchBinding)
                 textValueBinding = textSearchBinding;
 
-            else if (textSearchPropChange != null && textSearchPropChange.NewValue is IBinding eventTextSearchBinding)
+            else if (textSearchPropChange != null && textSearchPropChange.NewValue is BindingBase eventTextSearchBinding)
                 textValueBinding = eventTextSearchBinding;
 
-            else if (displayMemberPropChange != null && displayMemberPropChange.NewValue is IBinding eventDisplayMemberBinding)
+            else if (displayMemberPropChange != null && displayMemberPropChange.NewValue is BindingBase eventDisplayMemberBinding)
                 textValueBinding = eventDisplayMemberBinding;
 
             else

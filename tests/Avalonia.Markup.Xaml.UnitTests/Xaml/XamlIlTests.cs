@@ -121,7 +121,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 w.ApplyTemplate();
                 w.Show();
 
-                Dispatcher.UIThread.RunJobs();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
                 var itemsPresenter = ((ItemsControl)w.Content!).GetVisualChildren().FirstOrDefault();
                 Assert.NotNull(itemsPresenter);

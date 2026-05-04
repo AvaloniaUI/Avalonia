@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Metadata;
 
@@ -15,6 +16,14 @@ namespace Avalonia.Platform
         /// Gets or sets the minimized/maximized state of the window.
         /// </summary>
         WindowState WindowState { get; set; }
+        
+        /// <summary>
+        /// Indicates if platform implementation has a working getter for <see cref="WindowState"/> that produces
+        /// consistent results with WindowStateChanged callback.
+        /// If false, Window will not call the getter and will only use the setter and
+        /// <see cref="WindowStateChanged"/> callback to track window state.
+        /// </summary>
+        bool WindowStateGetterIsUsable { get; }
 
         /// <summary>
         /// Gets or sets a method called when the minimized/maximized state of the window changes.
@@ -45,9 +54,9 @@ namespace Avalonia.Platform
         Action? GotInputWhenDisabled { get; set; }
 
         /// <summary>
-        /// Enables or disables system window decorations (title bar, buttons, etc)
+        /// Enables or disables window decorations (title bar, buttons, etc)
         /// </summary>
-        void SetSystemDecorations(SystemDecorations enabled);
+        void SetWindowDecorations(WindowDecorations enabled);
 
         /// <summary>
         /// Sets the icon of this window.
@@ -97,6 +106,12 @@ namespace Avalonia.Platform
         bool NeedsManagedDecorations { get; }
 
         /// <summary>
+        /// Gets flags indicating which drawn decoration parts the platform requires.
+        /// For example, X11 needs shadow, border, and resize grips; Win32 only needs titlebar/buttons.
+        /// </summary>
+        PlatformRequestedDrawnDecoration RequestedDrawnDecorations { get; }
+
+        /// <summary>
         /// Gets a thickness that describes the amount each side of the non-client area extends into the client area.
         /// It includes the titlebar.
         /// </summary>
@@ -143,24 +158,19 @@ namespace Avalonia.Platform
         void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint);        
 
         /// <summary>
-        /// Sets hints that configure how the client area extends. 
-        /// </summary>
-        /// <param name="hints"></param>
-        void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints);
-
-        /// <summary>
         /// Sets how big the non-client titlebar area should be.
         /// </summary>
         /// <param name="titleBarHeight">-1 for platform default, otherwise the height in DIPs.</param>
         void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight);
 
         /// <summary>
-        /// Fills zOrder with numbers that represent the relative order of the windows in the z-order.
-        /// The topmost window should have the highest number.
-        /// Both the windows and zOrder lists are expected to be the same length.
+        /// Gets the window actions that the underlying platform currently allows.
         /// </summary>
-        /// <param name="windows">A span of windows to get their z-order</param>
-        /// <param name="zOrder">Span to be filled with associated window z-order</param>
-        void GetWindowsZOrder(Span<Window> windows, Span<long> zOrder);
+        PlatformAllowedWindowActions AllowedWindowActions => PlatformAllowedWindowActions.All;
+
+        /// <summary>
+        /// Gets or sets a callback invoked when <see cref="AllowedWindowActions"/> changes.
+        /// </summary>
+        Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged { get => null; set { } }
     }
 }

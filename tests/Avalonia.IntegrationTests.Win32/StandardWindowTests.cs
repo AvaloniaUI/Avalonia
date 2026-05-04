@@ -2,19 +2,16 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Controls.Chrome;
-using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.VisualTree;
 using Xunit;
+using static Avalonia.IntegrationTests.Win32.UnmanagedMethods;
 
 namespace Avalonia.IntegrationTests.Win32;
 
 public abstract class StandardWindowTests : IDisposable
 {
-    private const double ClientWidth = 200;
-    private const double ClientHeight = 200;
+    private const int ClientWidth = 200;
+    private const int ClientHeight = 200;
 
     private Window? _window;
 
@@ -27,14 +24,17 @@ public abstract class StandardWindowTests : IDisposable
         }
     }
 
-    protected abstract SystemDecorations Decorations { get; }
+    protected abstract WindowDecorations Decorations { get; }
 
     protected abstract bool HasCaption { get; }
 
-    public static MatrixTheoryData<bool, WindowState> States
-        => new([true, false], Enum.GetValues<WindowState>());
+    public static MatrixTheoryData<int, WindowState, bool> States
+        => new(
+            Enumerable.Range(0, GetSystemMetrics(SM_CMONITORS)),
+            Enum.GetValues<WindowState>(),
+            [true, false]);
 
-    private async Task InitWindowAsync(WindowState state, bool canResize)
+    private async Task InitWindowAsync(int screenIndex, WindowState state, bool canResize)
     {
         Assert.Null(_window);
 
@@ -42,12 +42,11 @@ public abstract class StandardWindowTests : IDisposable
         {
             CanResize = canResize,
             WindowState = state,
-            SystemDecorations = Decorations,
+            WindowDecorations = Decorations,
             ExtendClientAreaToDecorationsHint = false,
             Width = ClientWidth,
             Height = ClientHeight,
             WindowStartupLocation = WindowStartupLocation.Manual,
-            Position = new PixelPoint(50, 50),
             Content = new Border
             {
                 Background = Brushes.DodgerBlue,
@@ -56,6 +55,9 @@ public abstract class StandardWindowTests : IDisposable
             }
         };
 
+        var screenCenter = _window.Screens.All[screenIndex].Bounds.Center;
+        _window.Position = new PixelPoint(screenCenter.X - ClientWidth / 2, screenCenter.Y - ClientHeight / 2);
+
         _window.Show();
 
         await Window.WhenLoadedAsync();
@@ -63,16 +65,16 @@ public abstract class StandardWindowTests : IDisposable
 
     [Theory]
     [MemberData(nameof(States))]
-    public async Task Maximized_State_Fills_Screen_Working_Area(bool canResize, WindowState initialState)
+    public async Task Maximized_State_Fills_Screen_Working_Area(int screenIndex, WindowState initialState, bool canResize)
     {
-        await InitWindowAsync(initialState, canResize);
+        await InitWindowAsync(screenIndex, initialState, canResize);
 
         if (initialState != WindowState.Maximized)
             Window.WindowState = WindowState.Maximized;
 
         // The client size should match the screen working area
         var clientSize = Window.GetWin32ClientSize();
-        var screenWorkingArea = Window.GetScreen().WorkingArea;
+        var screenWorkingArea = Window.GetScreenAtIndex(screenIndex).WorkingArea;
 
         if (HasCaption)
         {
@@ -85,16 +87,16 @@ public abstract class StandardWindowTests : IDisposable
 
     [Theory]
     [MemberData(nameof(States))]
-    public async Task FullScreen_State_Fills_Screen(bool canResize, WindowState initialState)
+    public async Task FullScreen_State_Fills_Screen(int screenIndex, WindowState initialState, bool canResize)
     {
-        await InitWindowAsync(initialState, canResize);
+        await InitWindowAsync(screenIndex, initialState, canResize);
 
         if (initialState != WindowState.FullScreen)
             Window.WindowState = WindowState.FullScreen;
 
         // The client size should match the screen bounds
         var clientSize = Window.GetWin32ClientSize();
-        var screenBounds = Window.GetScreen().Bounds;
+        var screenBounds = Window.GetScreenAtIndex(screenIndex).Bounds;
         Assert.Equal(screenBounds.Width, clientSize.Width);
         Assert.Equal(screenBounds.Height, clientSize.Height);
 
@@ -108,8 +110,8 @@ public abstract class StandardWindowTests : IDisposable
 
     public sealed class DecorationsFull : StandardWindowTests
     {
-        protected override SystemDecorations Decorations
-            => SystemDecorations.Full;
+        protected override WindowDecorations Decorations
+            => WindowDecorations.Full;
 
         protected override bool HasCaption
             => true;
@@ -117,8 +119,8 @@ public abstract class StandardWindowTests : IDisposable
 
     public sealed class DecorationsBorderOnly : StandardWindowTests
     {
-        protected override SystemDecorations Decorations
-            => SystemDecorations.BorderOnly;
+        protected override WindowDecorations Decorations
+            => WindowDecorations.BorderOnly;
 
         protected override bool HasCaption
             => false;
@@ -126,8 +128,8 @@ public abstract class StandardWindowTests : IDisposable
 
     public sealed class DecorationsNone : StandardWindowTests
     {
-        protected override SystemDecorations Decorations
-            => SystemDecorations.None;
+        protected override WindowDecorations Decorations
+            => WindowDecorations.None;
 
         protected override bool HasCaption
             => false;

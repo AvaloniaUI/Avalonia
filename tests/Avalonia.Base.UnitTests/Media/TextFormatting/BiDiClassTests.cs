@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Media.TextFormatting.Unicode;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 {

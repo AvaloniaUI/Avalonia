@@ -10,10 +10,4 @@ namespace Avalonia.Input.TextInput
         void SetOptions(TextInputOptions options);
         void Reset();
     }
-    
-    [NotClientImplementable]
-    public interface ITextInputMethodRoot : IInputRoot
-    {
-        ITextInputMethodImpl? InputMethod { get; }
-    }
 }

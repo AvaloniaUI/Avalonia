@@ -1,7 +1,6 @@
 ﻿using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 {

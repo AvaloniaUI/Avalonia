@@ -9,7 +9,7 @@ namespace ControlCatalog.Desktop;
 
 public class EmbedSampleGtk : INativeDemoControl
 {
-    private Process _mplayer;
+    private Process? _mplayer;
 
     public IPlatformHandle CreateControl(bool isSecond, IPlatformHandle parent, Func<IPlatformHandle> createDefault)
     {

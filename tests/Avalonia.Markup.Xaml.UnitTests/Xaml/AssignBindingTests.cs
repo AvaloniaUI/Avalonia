@@ -48,15 +48,15 @@ public class AssignBindingTests : XamlTestBase
 public sealed class AssignBindingTestControl : Control
 {
     [AssignBinding]
-    public IBinding? ClrBinding { get; set; }
+    public BindingBase? ClrBinding { get; set; }
 
-    public static readonly AttachedProperty<IBinding?> AttachedBindingProperty =
-        AvaloniaProperty.RegisterAttached<AssignBindingTestControl, Control, IBinding?>("AttachedBinding");
+    public static readonly AttachedProperty<BindingBase?> AttachedBindingProperty =
+        AvaloniaProperty.RegisterAttached<AssignBindingTestControl, Control, BindingBase?>("AttachedBinding");
 
     [AssignBinding]
-    public static IBinding? GetAttachedBinding(Control obj)
+    public static BindingBase? GetAttachedBinding(Control obj)
         => obj.GetValue(AttachedBindingProperty);
 
-    public static void SetAttachedBinding(Control obj, IBinding? value)
+    public static void SetAttachedBinding(Control obj, BindingBase? value)
         => obj.SetValue(AttachedBindingProperty, value);
 }

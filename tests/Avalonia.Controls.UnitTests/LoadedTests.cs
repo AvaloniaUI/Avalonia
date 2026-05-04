@@ -25,7 +25,7 @@ public class LoadedTests : ScopedTestBase
             Assert.Equal(0, unloadedCount);
             
             target.Show();
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
             Assert.True(target.IsLoaded);
 
             Assert.Equal(1, loadedCount);
@@ -59,7 +59,7 @@ public class LoadedTests : ScopedTestBase
             Assert.Equal(0, unloadedCount);
             
             window.Content = target;
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
             Assert.True(target.IsLoaded);
 
             Assert.Equal(1, loadedCount);
@@ -98,7 +98,7 @@ public class LoadedTests : ScopedTestBase
         // Attach to another logical parent (this can actually happen outside tests with overlay popups)
         ((ISetLogicalParent) target).SetParent(new Window());
 
-        Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+        Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
 
         // At this point, the control shouldn't have been loaded at all.
         Assert.Null(target.VisualParent);

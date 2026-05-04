@@ -188,25 +188,35 @@ namespace Avalonia.Input
 
                 if (changeFocus)
                 {
+                    var oldElement = FocusedElement;
+
                     // Clear keyboard focus from currently focused element
-                    if (FocusedElement != null &&
-                        (!((Visual)FocusedElement).IsAttachedToVisualTree ||
-                         _focusedRoot != ((Visual?)element)?.VisualRoot as IInputRoot) &&
+                    if (oldElement != null &&
+                        (!((Visual)oldElement).IsAttachedToVisualTree ||
+                         _focusedRoot != ((Visual?)element)?.GetInputRoot()) &&
                         _focusedRoot != null)
                     {
-                        ClearChildrenFocusWithin(_focusedRoot, true);
+                        ClearChildrenFocusWithin(_focusedRoot.RootElement, true);
                     }
 
-                    SetIsFocusWithin(FocusedElement, element);
+                    SetIsFocusWithin(oldElement, element);
                     _focusedElement = element;
-                    _focusedRoot = ((Visual?)_focusedElement)?.VisualRoot as IInputRoot;
+                    _focusedRoot = (_focusedElement as Visual)?.GetInputRoot();
 
-                    interactive?.RaiseEvent(new RoutedEventArgs(InputElement.LostFocusEvent));
-
-                    (element as Interactive)?.RaiseEvent(new GotFocusEventArgs
+                    interactive?.RaiseEvent(new FocusChangedEventArgs(InputElement.LostFocusEvent)
                     {
+                        OldFocusedElement = oldElement,
+                        NewFocusedElement = element,
                         NavigationMethod = method,
-                        KeyModifiers = keyModifiers,
+                        KeyModifiers = keyModifiers
+                    });
+
+                    (element as Interactive)?.RaiseEvent(new FocusChangedEventArgs(InputElement.GotFocusEvent)
+                    {
+                        OldFocusedElement = oldElement,
+                        NewFocusedElement = element,
+                        NavigationMethod = method,
+                        KeyModifiers = keyModifiers
                     });
 
                     _textInputManager.SetFocusedElement(element);
@@ -225,7 +235,7 @@ namespace Avalonia.Input
             if(e.Handled)
                 return;
 
-            var element = FocusedElement ?? e.Root;
+            var element = FocusedElement ?? e.Root.FocusRoot;
 
             if (e is RawKeyEventArgs keyInput)
             {

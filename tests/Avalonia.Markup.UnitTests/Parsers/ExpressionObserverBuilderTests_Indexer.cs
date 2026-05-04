@@ -7,8 +7,8 @@ using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.Diagnostics;
-using Avalonia.Markup.Parsers;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
@@ -167,7 +167,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             }
 
             // Forces WeakEvent compact
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             Assert.Equal(new[] { AvaloniaProperty.UnsetValue, "baz" }, result);
             Assert.Null(((INotifyCollectionChangedDebug)data.Foo).GetCollectionChangedSubscribers());
@@ -188,7 +188,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             }
 
             // Forces WeakEvent compact
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             Assert.Equal(new[] { "foo", "bar" }, result);
             Assert.Null(((INotifyCollectionChangedDebug)data.Foo).GetCollectionChangedSubscribers());
@@ -209,7 +209,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             }
 
             // Forces WeakEvent compact
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             Assert.Equal(new[] { "bar", "baz" }, result);
             Assert.Null(((INotifyCollectionChangedDebug)data.Foo).GetCollectionChangedSubscribers());
@@ -268,7 +268,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             }
 
             // Forces WeakEvent compact
-            Dispatcher.UIThread.RunJobs();
+            Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
 
             var expected = new[] { "bar", "bar2" };
             Assert.Equal(expected, result);

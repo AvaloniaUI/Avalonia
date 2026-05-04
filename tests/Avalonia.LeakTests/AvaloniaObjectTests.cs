@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
@@ -151,7 +149,7 @@ namespace Avalonia.LeakTests
             }
 
             var weakTarget = SetupBinding();
-            
+
             CollectGarbage();
             Assert.False(weakTarget.IsAlive);
         }

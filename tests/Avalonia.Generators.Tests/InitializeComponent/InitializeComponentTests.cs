@@ -61,7 +61,7 @@ public class InitializeComponentTests
             .Replace("\r", string.Empty)
             .Replace("$GeneratorVersion", generatorVersion);
             
-        CSharpSyntaxTree.ParseText(code);
+        CSharpSyntaxTree.ParseText(code, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(expected, code);
     }
 }

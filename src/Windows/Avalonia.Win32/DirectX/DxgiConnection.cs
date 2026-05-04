@@ -1,12 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Logging;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Rendering;
-using static Avalonia.Win32.Interop.UnmanagedMethods;
-using static Avalonia.Win32.DirectX.DirectXUnmanagedMethods;
+
 using MicroCom.Runtime;
+
+using Windows.Win32;
+using Windows.Win32.Graphics.Gdi;
+
+using static Avalonia.Win32.DirectX.DirectXUnmanagedMethods;
+using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32.DirectX
 {
@@ -16,8 +26,10 @@ namespace Avalonia.Win32.DirectX
 
         public bool RunsInBackground => true;
 
-        public event Action<TimeSpan>? Tick;
+        private volatile Action<TimeSpan>? _tick;
         private readonly object _syncLock;
+        private readonly AutoResetEvent _wakeEvent = new(false);
+        private volatile bool _stopped = true;
 
         private IDXGIOutput? _output;
 
@@ -27,6 +39,25 @@ namespace Avalonia.Win32.DirectX
         public DxgiConnection(object syncLock)
         {
             _syncLock = syncLock;
+        }
+
+        public Action<TimeSpan>? Tick
+        {
+            get => _tick;
+            set
+            {
+                if (value != null)
+                {
+                    _tick = value;
+                    _stopped = false;
+                    _wakeEvent.Set();
+                }
+                else
+                {
+                    _stopped = true;
+                    _tick = null;
+                }
+            }
         }
         
         public static bool TryCreateAndRegister()
@@ -61,6 +92,9 @@ namespace Avalonia.Win32.DirectX
             {
                 try
                 {
+                    if (_stopped)
+                        _wakeEvent.WaitOne();
+
                     lock (_syncLock)
                     {
                         if (_output is not null)
@@ -85,7 +119,7 @@ namespace Avalonia.Win32.DirectX
                             // but theoretically someone could have a weirder setup out there 
                             DwmFlush();
                         }
-                        Tick?.Invoke(_stopwatch.Elapsed);
+                        _tick?.Invoke(_stopwatch.Elapsed);
                     }
                 }
                 catch (Exception ex)
@@ -111,6 +145,8 @@ namespace Avalonia.Win32.DirectX
 
             ushort adapterIndex = 0;
 
+            Dictionary<HMONITOR /*MonitorHandler*/, uint /*Frequency*/> monitorFrequencies = GetAllMonitorFrequencies();
+
             // this looks odd, but that's just how one enumerates adapters in DXGI 
             while (fact.EnumAdapters(adapterIndex, &adapterPointer) == 0)
             {
@@ -122,8 +158,12 @@ namespace Avalonia.Win32.DirectX
                     using var output = MicroComRuntime.CreateProxyFor<IDXGIOutput>(outputPointer, true);
                     DXGI_OUTPUT_DESC outputDesc = output.Desc;
 
-                    var screen = Win32Platform.Instance.Screen.ScreenFromHMonitor((IntPtr)outputDesc.Monitor.Value);
-                    var frequency = screen?.Frequency ?? highestRefreshRate;
+                    var hMonitor = new HMONITOR(outputDesc.Monitor.Value);
+
+                    var frequency =
+                        monitorFrequencies.TryGetValue(hMonitor, out uint frequencyValue) ?
+                            frequencyValue :
+                            highestRefreshRate;
 
                     if (highestRefreshRate < frequency)
                     {
@@ -145,6 +185,33 @@ namespace Avalonia.Win32.DirectX
 
         }
 
+        private unsafe Dictionary<HMONITOR /*MonitorHandler*/, uint /*Frequency*/> GetAllMonitorFrequencies()
+        {
+            var monitorHandlers = ScreenImpl.GetAllDisplayMonitorHandlers();
+            var dictionary = new Dictionary<HMONITOR /*MonitorHandler*/, uint /*Frequency*/>(monitorHandlers.Count);
+
+            foreach (var monitorHandler in monitorHandlers)
+            {
+                var info = MONITORINFOEX.Create();
+                var hMonitor = new HMONITOR(monitorHandler);
+                PInvoke.GetMonitorInfo(hMonitor, (MONITORINFO*)&info);
+
+                var deviceMode = new DEVMODEW
+                {
+                    dmFields = DEVMODE_FIELD_FLAGS.DM_DISPLAYORIENTATION | DEVMODE_FIELD_FLAGS.DM_DISPLAYFREQUENCY,
+                    dmSize = (ushort)Marshal.SizeOf<DEVMODEW>()
+                };
+                PInvoke.EnumDisplaySettings(info.szDevice.ToString(), ENUM_DISPLAY_SETTINGS_MODE.ENUM_CURRENT_SETTINGS,
+                    ref deviceMode);
+
+                var frequency = deviceMode.dmDisplayFrequency;
+
+                dictionary[hMonitor] = frequency;
+            }
+
+            return dictionary;
+        }
+
         // Used the windows composition as a blueprint for this startup/creation 
         private static bool TryCreateAndRegisterCore()
         {
@@ -157,7 +224,7 @@ namespace Avalonia.Win32.DirectX
                     var connection = new DxgiConnection(pumpLock);
 
                     AvaloniaLocator.CurrentMutable.Bind<IWindowsSurfaceFactory>().ToConstant(connection);
-                    AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connection);
+                    AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(connection));
                     tcs.SetResult(true);
                     connection.RunLoop();
                 }
@@ -168,12 +235,13 @@ namespace Avalonia.Win32.DirectX
             });
             thread.IsBackground = true;
             thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Name = "DxgiRenderTimerLoop";
             thread.Start();
             // block until 
             return tcs.Task.Result;
         }
 
         public bool RequiresNoRedirectionBitmap => false;
-        public object CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new DxgiSwapchainWindow(this, info);
+        public IPlatformRenderSurface CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new DxgiSwapchainWindow(this, info);
     }
 }

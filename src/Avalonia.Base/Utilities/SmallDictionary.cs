@@ -177,7 +177,6 @@ internal struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, 
         return false;
     }
 
-#if NET6_0_OR_GREATER
     [UnscopedRef]
     public ref TValue GetValueRefOrNullRef(TKey key)
     {
@@ -263,8 +262,6 @@ internal struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, 
         return ref arr[1].Value!;
 
     }
-    
-#endif
 
     public bool TryGetAndRemoveValue(TKey key, [MaybeNullWhen(false)]out TValue value)
     {

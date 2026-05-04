@@ -117,7 +117,9 @@ public partial class XYFocus
     {
         if (element == null) return null;
 
-        var root = (InputElement)element.GetVisualRoot()!;
+        var root = (InputElement?)element.VisualRoot;
+        if (root == null)
+            return null;
         var isRightToLeft = element.FlowDirection == FlowDirection.RightToLeft;
         var mode = GetStrategy(element, direction, xyFocusOptions.NavigationStrategyOverride);
 
@@ -415,7 +417,7 @@ public partial class XYFocus
         while (parent != null)
         {
             var element = parent;
-            if (element is IInternalScroller scrollable)
+            if (element is IScrollable scrollable)
             {
                 var isHorizontallyScrollable = scrollable.CanHorizontallyScroll;
                 var isVerticallyScrollable = scrollable.CanVerticallyScroll;

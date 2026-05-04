@@ -107,15 +107,25 @@ namespace Avalonia.Controls
         private AvaloniaList<object>? _view;
 
         /// <summary>
-        /// Gets or sets a value to ignore a number of pending change handlers.
-        /// The value is decremented after each use. This is used to reset the
-        /// value of properties without performing any of the actions in their
-        /// change handlers.
+        /// Gets or sets a counter that tracks how many pending Text property change
+        /// notifications should be ignored. This is used when the Text property is set
+        /// programmatically and we want to suppress the corresponding change handlers.
+        /// The counter is decremented after each ignored notification.
         /// </summary>
-        /// <remarks>The int is important as a value because the TextBox
-        /// TextChanged event does not immediately fire, and this will allow for
-        /// nested property changes to be ignored.</remarks>
+        /// <remarks>
+        /// The counter is important because the TextBox TextChanged event does not fire
+        /// immediately; using a counter allows nested property changes to be ignored safely.
+        /// </remarks>
         private int _ignoreTextPropertyChange;
+
+        /// <summary>
+        /// Gets or sets a counter that tracks how many pending TextBox TextChanged
+        /// events should be ignored. This is distinct from <see cref="_ignoreTextPropertyChange"/>
+        /// and is used when the TextBox's TextChanged event needs to be suppressed
+        /// (e.g., during programmatic updates to the text box content).
+        /// The counter is decremented after each ignored event.
+        /// </summary>
+        private int _ignoreTextBoxTextChange;
 
         /// <summary>
         /// Gets or sets a value indicating whether to ignore calling a pending
@@ -189,7 +199,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// A control that can provide updated string values from a binding.
         /// </summary>
-        private BindingEvaluator<string>? _valueBindingEvaluator;
+        private BindingEvaluator<string?>? _valueMemberBindingEvaluator;
 
         /// <summary>
         /// A weak subscription for the collection changed event.
@@ -371,6 +381,12 @@ namespace Avalonia.Controls
         /// <param name="e">Event arguments.</param>
         private void OnTextPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
+            if (_ignoreTextPropertyChange > 0)
+            {
+                _ignoreTextPropertyChange--;
+                return;
+            }
+
             TextUpdated((string?)e.NewValue, false);
         }
 
@@ -439,7 +455,8 @@ namespace Avalonia.Controls
             if (!_settingItemTemplateFromValueMemberBinding)
                 _itemTemplateIsFromValueMemberBinding = false;
         }
-        private void OnValueMemberBindingChanged(IBinding? value)
+
+        private void OnValueMemberBindingChanged(BindingBase? value)
         {
             if (_itemTemplateIsFromValueMemberBinding)
             {
@@ -457,6 +474,16 @@ namespace Avalonia.Controls
                 _settingItemTemplateFromValueMemberBinding = true;
                 SetCurrentValue(ItemTemplateProperty, template);
                 _settingItemTemplateFromValueMemberBinding = false;
+            }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ValueMemberBindingProperty)
+            {
+                OnValueMemberBindingChanged(change.GetNewValue<BindingBase?>());
             }
         }
 
@@ -588,11 +615,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Returns the
-        /// <see cref="T:Avalonia.Controls.ISelectionAdapter" /> part, if
+        /// <see cref="T:ISelectionAdapter" /> part, if
         /// possible.
         /// </summary>
         /// <returns>
-        /// A <see cref="T:Avalonia.Controls.ISelectionAdapter" /> object,
+        /// A <see cref="T:ISelectionAdapter" /> object,
         /// if possible. Otherwise, null.
         /// </returns>
         protected virtual ISelectionAdapter? GetSelectionAdapterPart(INameScope nameScope)
@@ -654,7 +681,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Provides handling for the
-        /// <see cref="E:Avalonia.InputElement.KeyDown" /> event.
+        /// <see cref="E:InputElement.KeyDown" /> event.
         /// </summary>
         /// <param name="e">A <see cref="T:Avalonia.Input.KeyEventArgs" />
         /// that contains the event data.</param>
@@ -725,11 +752,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Provides handling for the
-        /// <see cref="E:Avalonia.UIElement.GotFocus" /> event.
+        /// <see cref="E:Avalonia.Controls.Control.GotFocus" /> event.
         /// </summary>
-        /// <param name="e">A <see cref="T:Avalonia.RoutedEventArgs" />
+        /// <param name="e">A <see cref="T:RoutedEventArgs" />
         /// that contains the event data.</param>
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
             FocusChanged(HasFocus());
@@ -737,11 +764,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Provides handling for the
-        /// <see cref="E:Avalonia.UIElement.LostFocus" /> event.
+        /// <see cref="E:Avalonia.Controls.Control.LostFocus" /> event.
         /// </summary>
-        /// <param name="e">A <see cref="T:Avalonia.RoutedEventArgs" />
+        /// <param name="e">A <see cref="T:RoutedEventArgs" />
         /// that contains the event data.</param>
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             base.OnLostFocus(e);
             FocusChanged(HasFocus());
@@ -947,7 +974,7 @@ namespace Avalonia.Controls
         /// event.
         /// </summary>
         /// <param name="e">A
-        /// <see cref="T:Avalonia.Controls.CancelEventArgs" />
+        /// <see cref="T:CancelEventArgs" />
         /// that contains the event data.</param>
         protected virtual void OnDropDownOpening(CancelEventArgs e)
         {
@@ -973,7 +1000,7 @@ namespace Avalonia.Controls
         /// event.
         /// </summary>
         /// <param name="e">A
-        /// <see cref="T:Avalonia.Controls.CancelEventArgs" />
+        /// <see cref="T:CancelEventArgs" />
         /// that contains the event data.</param>
         protected virtual void OnDropDownClosing(CancelEventArgs e)
         {
@@ -1182,25 +1209,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Formats an Item for text comparisons based on Converter
-        /// and ConverterCulture properties.
-        /// </summary>
-        /// <param name="value">The object to format.</param>
-        /// <param name="clearDataContext">A value indicating whether to clear
-        /// the data context after the lookup is performed.</param>
-        /// <returns>Formatted Value.</returns>
-        private string? FormatValue(object? value, bool clearDataContext)
-        {
-            string? result = FormatValue(value);
-            if (clearDataContext && _valueBindingEvaluator != null)
-            {
-                _valueBindingEvaluator.ClearDataContext();
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Converts the specified object to a string by using the
         /// <see cref="P:Avalonia.Data.Binding.Converter" /> and
         /// <see cref="P:Avalonia.Data.Binding.ConverterCulture" /> values
@@ -1215,9 +1223,13 @@ namespace Avalonia.Controls
         /// </remarks>
         protected virtual string? FormatValue(object? value)
         {
-            if (_valueBindingEvaluator != null)
+            if (ValueMemberBinding is { } valueMemberBinding)
             {
-                return _valueBindingEvaluator.GetDynamicValue(value) ?? String.Empty;
+                _valueMemberBindingEvaluator ??= new();
+                _valueMemberBindingEvaluator.UpdateBinding(valueMemberBinding);
+                var result = _valueMemberBindingEvaluator.Evaluate(value) ?? string.Empty;
+                _valueMemberBindingEvaluator.ClearDataContext();
+                return result;
             }
 
             return value == null ? String.Empty : value.ToString();
@@ -1230,6 +1242,12 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnTextBoxTextChanged()
         {
+            if (_ignoreTextBoxTextChange > 0)
+            {
+                _ignoreTextBoxTextChange--;
+                return;
+            }
+
             //Uses Dispatcher.Post to allow the TextBox selection to update before processing
             Dispatcher.UIThread.Post(() =>
             {
@@ -1274,7 +1292,7 @@ namespace Avalonia.Controls
             // Update the TextBox's Text dependency property
             if ((userInitiated == null || userInitiated == false) && TextBox != null && TextBox.Text != value)
             {
-                _ignoreTextPropertyChange++;
+                _ignoreTextBoxTextChange++; 
                 TextBox.Text = value ?? string.Empty;
 
                 // Text dependency property value was set, fire event
@@ -1300,14 +1318,6 @@ namespace Avalonia.Controls
         /// TextUpdated method is called from a TextBox event handler.</param>
         private void TextUpdated(string? newText, bool userInitiated)
         {
-            // Only process this event if it is coming from someone outside
-            // setting the Text dependency property directly.
-            if (_ignoreTextPropertyChange > 0)
-            {
-                _ignoreTextPropertyChange--;
-                return;
-            }
-
             if (newText == null)
             {
                 newText = string.Empty;
@@ -1451,9 +1461,6 @@ namespace Avalonia.Controls
 
                 _view?.Clear();
                 _view?.AddRange(_newViewItems);
-
-                // Clear the evaluator to discard a reference to the last item
-                _valueBindingEvaluator?.ClearDataContext();
             }
             finally
             {
@@ -1552,7 +1559,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Notifies the
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> that the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.Items" />
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
         /// property has been set and the data can be filtered to provide
         /// possible matches in the drop-down.
         /// </summary>
@@ -1638,7 +1645,7 @@ namespace Avalonia.Controls
                         if (top != null)
                         {
                             newSelectedItem = top;
-                            string? topString = FormatValue(top, true);
+                            string? topString = FormatValue(top);
 
                             // Only replace partially when the two words being the same
                             int minLength = Math.Min(topString?.Length ?? 0, Text?.Length ?? 0);
@@ -1744,7 +1751,7 @@ namespace Avalonia.Controls
             }
             else if (TextSelector != null)
             {
-                text = TextSelector(SearchText, FormatValue(newItem, true));
+                text = TextSelector(SearchText, FormatValue(newItem));
             }
             else if (ItemSelector != null)
             {
@@ -1752,7 +1759,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                text = FormatValue(newItem, true);
+                text = FormatValue(newItem);
             }
 
             // Update the Text property and the TextBox values
@@ -2018,110 +2025,6 @@ namespace Avalonia.Controls
             public static bool EqualsOrdinalCaseSensitive(string? text, string? value)
             {
                 return string.Equals(value, text, StringComparison.Ordinal);
-            }
-        }
-
-        // TODO12: Remove, this shouldn't be part of the public API. Use our internal BindingEvaluator instead.
-        /// <summary>
-        /// A framework element that permits a binding to be evaluated in a new data
-        /// context leaf node.
-        /// </summary>
-        /// <typeparam name="T">The type of dynamic binding to return.</typeparam>
-        public class BindingEvaluator<T> : Control
-        {
-            /// <summary>
-            /// Gets or sets the string value binding used by the control.
-            /// </summary>
-            private IBinding? _binding;
-
-            /// <summary>
-            /// Identifies the Value dependency property.
-            /// </summary>
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1002:AvaloniaProperty objects should not be owned by a generic type",
-                Justification = "This property is not supposed to be used from XAML.")]
-            public static readonly StyledProperty<T> ValueProperty =
-                AvaloniaProperty.Register<BindingEvaluator<T>, T>(nameof(Value));
-
-            /// <summary>
-            /// Gets or sets the data item value.
-            /// </summary>
-            public T Value
-            {
-                get => GetValue(ValueProperty);
-                set => SetValue(ValueProperty, value);
-            }
-
-            /// <summary>
-            /// Gets or sets the value binding.
-            /// </summary>
-            public IBinding? ValueBinding
-            {
-                get => _binding;
-                set
-                {
-                    _binding = value;
-                    if (value is not null)
-                        Bind(ValueProperty, value);
-                }
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the BindingEvaluator class.
-            /// </summary>
-            public BindingEvaluator()
-            { }
-
-            /// <summary>
-            /// Initializes a new instance of the BindingEvaluator class,
-            /// setting the initial binding to the provided parameter.
-            /// </summary>
-            /// <param name="binding">The initial string value binding.</param>
-            public BindingEvaluator(IBinding? binding)
-                : this()
-            {
-                ValueBinding = binding;
-            }
-
-            /// <summary>
-            /// Clears the data context so that the control does not keep a
-            /// reference to the last-looked up item.
-            /// </summary>
-            public void ClearDataContext()
-            {
-                DataContext = null;
-            }
-
-            /// <summary>
-            /// Updates the data context of the framework element and returns the
-            /// updated binding value.
-            /// </summary>
-            /// <param name="o">The object to use as the data context.</param>
-            /// <param name="clearDataContext">If set to true, this parameter will
-            /// clear the data context immediately after retrieving the value.</param>
-            /// <returns>Returns the evaluated T value of the bound dependency
-            /// property.</returns>
-            public T GetDynamicValue(object o, bool clearDataContext)
-            {
-                DataContext = o;
-                T value = Value;
-                if (clearDataContext)
-                {
-                    DataContext = null;
-                }
-                return value;
-            }
-
-            /// <summary>
-            /// Updates the data context of the framework element and returns the
-            /// updated binding value.
-            /// </summary>
-            /// <param name="o">The object to use as the data context.</param>
-            /// <returns>Returns the evaluated T value of the bound dependency
-            /// property.</returns>
-            public T GetDynamicValue(object? o)
-            {
-                DataContext = o;
-                return Value;
             }
         }
     }

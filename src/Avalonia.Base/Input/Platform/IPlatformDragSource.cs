@@ -1,20 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Avalonia.Metadata;
 
 namespace Avalonia.Input.Platform
 {
-    [NotClientImplementable]
+    [PrivateApi]
     public interface IPlatformDragSource
     {
-        [Obsolete($"Use {nameof(DoDragDropAsync)} instead.")]
-        Task<DragDropEffects> DoDragDrop(
-            PointerEventArgs triggerEvent,
-            IDataObject data,
-            DragDropEffects allowedEffects);
-
         Task<DragDropEffects> DoDragDropAsync(
-            PointerEventArgs triggerEvent,
+            PointerPressedEventArgs triggerEvent,
             IDataTransfer dataTransfer,
             DragDropEffects allowedEffects);
     }

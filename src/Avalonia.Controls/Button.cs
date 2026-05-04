@@ -208,14 +208,14 @@ namespace Avalonia.Controls
 
             if (IsDefault)
             {
-                if (e.Root is IInputElement inputElement)
+                if (e.RootVisual is IInputElement inputElement)
                 {
                     ListenForDefault(inputElement);
                 }
             }
             if (IsCancel)
             {
-                if (e.Root is IInputElement inputElement)
+                if (e.RootVisual is IInputElement inputElement)
                 {
                     ListenForCancel(inputElement);
                 }
@@ -229,14 +229,14 @@ namespace Avalonia.Controls
 
             if (IsDefault)
             {
-                if (e.Root is IInputElement inputElement)
+                if (e.RootVisual is IInputElement inputElement)
                 {
                     StopListeningForDefault(inputElement);
                 }
             }
             if (IsCancel)
             {
-                if (e.Root is IInputElement inputElement)
+                if (e.RootVisual is IInputElement inputElement)
                 {
                     StopListeningForCancel(inputElement);
                 }
@@ -453,7 +453,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             base.OnLostFocus(e);
 
@@ -543,11 +543,21 @@ namespace Avalonia.Controls
                     oldFlyout.Hide();
                 }
 
+                (oldFlyout as PopupFlyoutBase)?.SetDefaultPlacementTarget(null);
+
                 // Must unregister events here while a reference to the old flyout still exists
                 UnregisterFlyoutEvents(oldFlyout);
 
                 RegisterFlyoutEvents(newFlyout);
+                (newFlyout as PopupFlyoutBase)?.SetDefaultPlacementTarget(this);
                 UpdatePseudoClasses();
+            }
+            else if (change.Property == IsEffectivelyEnabledProperty)
+            {
+                if (!change.GetNewValue<bool>())
+                {
+                    IsPressed = false;
+                }
             }
         }
 

@@ -1,11 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
@@ -27,7 +26,7 @@ namespace Avalonia.Controls.UnitTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.True(DataValidationErrors.GetHasErrors(control));
-                Assert.True(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(control));
             });
         }
 
@@ -42,7 +41,7 @@ namespace Avalonia.Controls.UnitTests
                 Dispatcher.UIThread.RunJobs();
 
                 Assert.True(DataValidationErrors.GetHasErrors(control));
-                Assert.True(DataValidationErrors.GetErrors(control).SequenceEqual(new[] { exception }));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(control));
             });
         }
 
@@ -59,7 +58,7 @@ namespace Avalonia.Controls.UnitTests
             var spinner = GetSpinner(control);
 
             spinner.RaiseEvent(new SpinEventArgs(Spinner.SpinEvent, direction));
-            
+
             Assert.Equal(control.Value, expected);
         }
 
@@ -101,21 +100,21 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
-        public static IEnumerable<object[]> Increment_Decrement_TestData()
+        public static IEnumerable<object?[]> Increment_Decrement_TestData()
         {
             // if min and max are not defined and value was null, 0 should be ne new value after spin
-            yield return new object[] { decimal.MinValue, decimal.MaxValue, null, SpinDirection.Decrease, 0m };
-            yield return new object[] { decimal.MinValue, decimal.MaxValue, null, SpinDirection.Increase, 0m };
-            
+            yield return [decimal.MinValue, decimal.MaxValue, null, SpinDirection.Decrease, 0m];
+            yield return [decimal.MinValue, decimal.MaxValue, null, SpinDirection.Increase, 0m];
+
             // if no value was defined, but Min or Max are defined, use these as the new value
-            yield return new object[] { -400m, -200m, null, SpinDirection.Decrease, -200m };
-            yield return new object[] { 200m, 400m, null, SpinDirection.Increase, 200m };
-            
+            yield return [-400m, -200m, null, SpinDirection.Decrease, -200m];
+            yield return [200m, 400m, null, SpinDirection.Increase, 200m];
+
             // Value should be clamped to Min / Max after spinning
-            yield return new object[] { 200m, 400m, 5m, SpinDirection.Increase, 200m };
-            yield return new object[] { 200m, 400m, 200m, SpinDirection.Decrease, 200m };
+            yield return [200m, 400m, 5m, SpinDirection.Increase, 200m];
+            yield return [200m, 400m, 200m, SpinDirection.Decrease, 200m];
         }
-        
+
         private void RunTest(Action<NumericUpDown, TextBox> test)
         {
             using (UnitTestApplication.Start(Services))
@@ -125,7 +124,7 @@ namespace Avalonia.Controls.UnitTests
                 var window = new Window { Content = control };
                 window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
                 Dispatcher.UIThread.RunJobs();
                 test.Invoke(control, textBox);
             }
@@ -143,20 +142,20 @@ namespace Avalonia.Controls.UnitTests
         }
         private static TextBox GetTextBox(NumericUpDown control)
         {
-            return control.GetTemplateChildren()
+            return control.GetTemplateDescendants()
                           .OfType<ButtonSpinner>()
                           .Select(b => b.Content)
                           .OfType<TextBox>()
                           .First();
         }
-        
+
         private static ButtonSpinner GetSpinner(NumericUpDown control)
         {
-            return control.GetTemplateChildren()
+            return control.GetTemplateDescendants()
                 .OfType<ButtonSpinner>()
                 .First();
         }
-        
+
         private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<NumericUpDown>((control, scope) =>
@@ -181,14 +180,27 @@ namespace Avalonia.Controls.UnitTests
             {
                 // Set TabIndex on NumericUpDown
                 control.TabIndex = 5;
-                
+
                 // The inner TextBox should inherit the same TabIndex
                 Assert.Equal(5, textbox.TabIndex);
-                
+
                 // Change TabIndex and verify it gets synchronized
                 control.TabIndex = 10;
                 Assert.Equal(10, textbox.TabIndex);
             });
+        }
+
+        [Fact]
+        public void PlaceholderForeground_Can_Be_Set()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var control = CreateControl();
+                control.PlaceholderText = "Enter value";
+                control.PlaceholderForeground = Media.Brushes.Red;
+
+                Assert.Equal(Media.Brushes.Red, control.PlaceholderForeground);
+            }
         }
     }
 }

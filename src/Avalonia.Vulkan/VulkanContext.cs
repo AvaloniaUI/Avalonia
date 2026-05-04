@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Vulkan.UnmanagedInterop;
 
 namespace Avalonia.Vulkan;
@@ -40,6 +41,10 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
     {
         if (featureType == typeof(IVulkanContextExternalObjectsFeature))
             return _externalObjectsFeature;
+                
+        if (featureType == typeof(IVulkanKhrSurfacePlatformSurfaceFactory))
+            return _surfaceFactory;
+
         return null;
     }
 
@@ -54,7 +59,7 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
 
     public VulkanInstanceApi InstanceApi { get; }
     public VulkanDeviceApi DeviceApi { get; }
-    public IVulkanRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+    public IVulkanRenderTarget CreateRenderTarget(IEnumerable<IPlatformRenderSurface> surfaces)
     {
         foreach (var surf in surfaces)
         {

@@ -127,22 +127,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly AttachedProperty<Control?> PreviewWithProperty = AvaloniaProperty
             .RegisterAttached<AvaloniaObject, Control?>("PreviewWith", typeof (Design));
-
-        /// <summary>
-        /// Sets a preview template for the specified <see cref="AvaloniaObject"/> at design-time.
-        /// </summary>
-        /// <remarks>
-        /// This method allows you to specify a substitute control to be rendered in the previewer
-        /// for a given object.
-        /// </remarks>
-        /// <param name="target">The target object.</param>
-        /// <param name="control">The preview control.</param>
-        // TODO12: Remove this overload in Avalonia 12
-        [Obsolete("Use SetPreviewWith(AvaloniaObject, ITemplate<Control>) overload instead. Use <Template></Template> from XAML")]
-        public static void SetPreviewWith(AvaloniaObject target, Control? control)
-        {
-            s_previewWith[target] = control is not null ? new FuncTemplate<Control>(() => control) : null;
-        }
     
         /// <summary>
         /// Sets a preview template for the specified <see cref="AvaloniaObject"/> at design-time.
@@ -156,6 +140,40 @@ namespace Avalonia.Controls
         public static void SetPreviewWith(AvaloniaObject target, ITemplate<Control>? template)
         {
             s_previewWith[target] = template;
+        }
+
+        /// <summary>
+        /// Sets a preview control for the specified <see cref="AvaloniaObject"/> at design-time.
+        /// </summary>
+        /// <param name="target">The target object.</param>
+        /// <param name="control">The preview control.</param>
+        public static void SetPreviewWith(AvaloniaObject target, Control? control)
+        {
+            if (control is null)
+            {
+                s_previewWith[target] = null;
+                return;
+            }
+
+            switch (target)
+            {
+                case ResourceDictionary resourceDictionary:
+                    SetPreviewWith(resourceDictionary, control);
+                    break;
+                case IDataTemplate dataTemplate:
+                    SetPreviewWith(dataTemplate, control);
+                    break;
+                case IStyle style:
+                    SetPreviewWith(style, control);
+                    break;
+                case Visual:
+                    // Not a supported scenario without templates; causes stack overflows.
+                    s_previewWith[target] = null;
+                    break;
+                default:
+                    SetPreviewWith(target, new FuncTemplate<Control>(() => control));
+                    break;
+            }
         }
 
         /// <summary>
@@ -319,11 +337,11 @@ namespace Avalonia.Controls
         public static void ApplyDesignModeProperties(Control target, Control source)
         {
             if (source.IsSet(WidthProperty))
-                target.Bind(Layoutable.WidthProperty, target.GetBindingObservable(WidthProperty));
+                target.Bind(Layoutable.WidthProperty, source[!WidthProperty]);
             if (source.IsSet(HeightProperty))
-                target.Bind(Layoutable.HeightProperty, target.GetBindingObservable(HeightProperty));
+                target.Bind(Layoutable.HeightProperty, source[!HeightProperty]);
             if (source.IsSet(DataContextProperty))
-                target.Bind(StyledElement.DataContextProperty, target.GetBindingObservable(DataContextProperty));
+                target.Bind(StyledElement.DataContextProperty, source[!DataContextProperty]);
             if (source.IsSet(DesignStyleProperty))
                 target.Styles.Add(GetDesignStyle(source));
         }

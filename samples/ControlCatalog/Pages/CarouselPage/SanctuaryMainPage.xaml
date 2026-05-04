@@ -1,0 +1,298 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.SanctuaryMainPage">
+  <UserControl.Styles>
+    <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#f47b25" />
+      <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#e0701f" />
+    </Style>
+    <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#c9611a" />
+    </Style>
+    <Style Selector="Button.glass /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#18FFFFFF" />
+      <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius}" />
+    </Style>
+    <Style Selector="Button.glass:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#2AFFFFFF" />
+    </Style>
+    <Style Selector="Button.glass:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#10FFFFFF" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+
+    <ScrollViewer DockPanel.Dock="Right" Width="220">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="Sanctuary" FontSize="16" FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+        <TextBlock TextWrapping="Wrap" FontSize="12" Opacity="0.7"
+                   Text="Main landing page with a full-screen hero card, Featured Escapes section, and a bottom TabbedPage navigation. Navigated to from the onboarding carousel." />
+        <Separator />
+        <TextBlock Text="Design" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock FontSize="12" Text="Theme: Dark (#221710)" />
+        <TextBlock FontSize="12" Text="Primary: #f47b25 (warm orange)" />
+        <Separator />
+        <TextBlock Text="Tabs" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="Home — hero + Featured Escapes cards" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="Explore — destination discovery" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="Saved — bookmarked destinations" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="Profile — account and settings" />
+        <Separator />
+        <TextBlock Text="Navigation" FontSize="13" FontWeight="SemiBold" />
+        <TextBlock FontSize="12" TextWrapping="Wrap" Text="Reached via 'Get Started' on the Urban Adventures carousel page. Back stack is cleared on arrival." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <Grid RowDefinitions="Auto,*" Background="#221710">
+
+    <!-- Top Nav Bar -->
+    <Border Grid.Row="0" Background="#DD221710" Padding="16,10,16,10">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Panel Width="30" Height="30">
+            <Ellipse Fill="#f47b25" />
+            <TextBlock Text="▲" Foreground="White" FontSize="13" FontWeight="Bold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Panel>
+          <TextBlock Text="Sanctuary" FontSize="18" FontWeight="Bold"
+                     Foreground="White" VerticalAlignment="Center" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Border Width="48" Height="48" CornerRadius="24" Background="#18FFFFFF">
+            <TextBlock Text="⌕" FontSize="20" Foreground="#80FFFFFF"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <Border Width="48" Height="48" CornerRadius="24" Background="#33f47b25">
+            <TextBlock Text="◉" FontSize="19" Foreground="#f47b25"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Tabbed content -->
+    <TabbedPage Grid.Row="1"
+                TabPlacement="Bottom"
+                SelectedIndex="0">
+      <TabbedPage.Resources>
+        <SolidColorBrush x:Key="TabbedPageTabStripBackground">#221710</SolidColorBrush>
+        <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundSelected">#f47b25</SolidColorBrush>
+        <SolidColorBrush x:Key="TabbedPageTabItemHeaderForegroundUnselected">#50FFFFFF</SolidColorBrush>
+        <Thickness x:Key="TabbedPageTabItemHeaderPadding">8,10,8,4</Thickness>
+      </TabbedPage.Resources>
+
+      <!-- Home Tab -->
+      <ContentPage Header="Home"
+                   Background="#221710">
+        <ContentPage.Icon>
+          <PathIcon Data="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+        </ContentPage.Icon>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Hidden">
+          <StackPanel>
+
+            <!-- Hero Card -->
+            <Border Margin="12,12,12,8" CornerRadius="16" ClipToBounds="True" Height="380">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Sanctuary/main_hero.jpg"
+                            Stretch="UniformToFill" />
+              </Border.Background>
+              <Grid>
+                <Border ClipToBounds="True" Margin="-1">
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                      <GradientStop Offset="0" Color="Transparent" />
+                      <GradientStop Offset="0.45" Color="#55221710" />
+                      <GradientStop Offset="1" Color="#EE221710" />
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                            Margin="28,0,28,32" Spacing="14">
+                  <StackPanel HorizontalAlignment="Center" Spacing="2">
+                    <TextBlock Text="Find Your" FontSize="40" FontWeight="ExtraBold"
+                               Foreground="White" TextAlignment="Center" />
+                    <TextBlock Text="Sanctuary" FontSize="40" FontWeight="ExtraBold"
+                               Foreground="#f47b25" TextAlignment="Center" />
+                  </StackPanel>
+                  <TextBlock Text="Embark on a curated journey through the world's most serene and breathtaking natural wonders. Escape the noise and rediscover peace."
+                             FontSize="13" Foreground="#CAffffff"
+                             TextAlignment="Center" TextWrapping="Wrap" MaxWidth="280" />
+                  <StackPanel Spacing="10" HorizontalAlignment="Center">
+                    <Button Classes="primary"
+                            Foreground="#221710" FontWeight="Bold" FontSize="14"
+                            CornerRadius="24" Padding="28,14"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center">
+                      <TextBlock Text="Explore the Collection" Foreground="#221710" FontWeight="Bold" />
+                    </Button>
+                    <Button Classes="glass"
+                            Foreground="White" FontWeight="Bold" FontSize="14"
+                            CornerRadius="24" Padding="28,14"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center">
+                      <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                        <TextBlock Text="⊕" Foreground="White" VerticalAlignment="Center" />
+                        <TextBlock Text="View Map" Foreground="White" FontWeight="Bold" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Button>
+                  </StackPanel>
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- Featured Escapes Header -->
+            <Grid Margin="16,8,16,12" ColumnDefinitions="*,Auto">
+              <StackPanel Grid.Column="0" Spacing="3">
+                <TextBlock Text="Featured Escapes" FontSize="20" FontWeight="Bold" Foreground="White" />
+                <TextBlock Text="Hand-picked destinations for your next retreat"
+                           FontSize="12" Foreground="#80FFFFFF" />
+              </StackPanel>
+              <TextBlock Grid.Column="1" Text="See All" FontSize="12" FontWeight="Bold"
+                         Foreground="#f47b25" VerticalAlignment="Bottom" />
+            </Grid>
+
+            <!-- Card 1: Deep Forest -->
+            <Border Margin="16,0,16,12" CornerRadius="16" ClipToBounds="True" Height="240">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Sanctuary/main_deep_forest.jpg"
+                            Stretch="UniformToFill" />
+              </Border.Background>
+              <Grid>
+                <Border ClipToBounds="True" Margin="-1">
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                      <GradientStop Offset="0" Color="#66000000" />
+                      <GradientStop Offset="0.5" Color="Transparent" />
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <StackPanel VerticalAlignment="Bottom" Margin="16,0,16,16" Spacing="4">
+                  <Border CornerRadius="12" Background="#33f47b25" Padding="8,4" HorizontalAlignment="Left">
+                    <TextBlock Text="FOREST" FontSize="10" FontWeight="Bold" Foreground="#f47b25" />
+                  </Border>
+                  <TextBlock Text="Deep Forest" FontSize="22" FontWeight="Bold" Foreground="White" />
+                  <TextBlock Text="Quiet trails in Oregon, USA" FontSize="12" Foreground="#CCffffff" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- Card 2: Arctic Silence -->
+            <Border Margin="16,0,16,12" CornerRadius="16" ClipToBounds="True" Height="240">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Sanctuary/main_arctic_silence.jpg"
+                            Stretch="UniformToFill" />
+              </Border.Background>
+              <Grid>
+                <Border ClipToBounds="True" Margin="-1">
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                      <GradientStop Offset="0" Color="#66000000" />
+                      <GradientStop Offset="0.5" Color="Transparent" />
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <StackPanel VerticalAlignment="Bottom" Margin="16,0,16,16" Spacing="4">
+                  <Border CornerRadius="12" Background="#33f47b25" Padding="8,4" HorizontalAlignment="Left">
+                    <TextBlock Text="ALPINE" FontSize="10" FontWeight="Bold" Foreground="#f47b25" />
+                  </Border>
+                  <TextBlock Text="Arctic Silence" FontSize="22" FontWeight="Bold" Foreground="White" />
+                  <TextBlock Text="Remote retreats in Svalbard" FontSize="12" Foreground="#CCffffff" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- Card 3: Desert Sands -->
+            <Border Margin="16,0,16,20" CornerRadius="16" ClipToBounds="True" Height="240">
+              <Border.Background>
+                <ImageBrush Source="avares://ControlCatalog/Assets/Sanctuary/main_desert_sands.jpg"
+                            Stretch="UniformToFill" />
+              </Border.Background>
+              <Grid>
+                <Border ClipToBounds="True" Margin="-1">
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
+                      <GradientStop Offset="0" Color="#66000000" />
+                      <GradientStop Offset="0.5" Color="Transparent" />
+                    </LinearGradientBrush>
+                  </Border.Background>
+                </Border>
+                <StackPanel VerticalAlignment="Bottom" Margin="16,0,16,16" Spacing="4">
+                  <Border CornerRadius="12" Background="#33f47b25" Padding="8,4" HorizontalAlignment="Left">
+                    <TextBlock Text="DESERT" FontSize="10" FontWeight="Bold" Foreground="#f47b25" />
+                  </Border>
+                  <TextBlock Text="Desert Sands" FontSize="22" FontWeight="Bold" Foreground="White" />
+                  <TextBlock Text="Star gazing in Wadi Rum" FontSize="12" Foreground="#CCffffff" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+          </StackPanel>
+        </ScrollViewer>
+      </ContentPage>
+
+      <!-- Explore Tab -->
+      <ContentPage Header="Explore"
+                   Background="#221710">
+        <ContentPage.Icon>
+          <PathIcon Data="M12 10.9c-.61 0-1.1.49-1.1 1.1s.49 1.1 1.1 1.1c.61 0 1.1-.49 1.1-1.1s-.49-1.1-1.1-1.1zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z" />
+        </ContentPage.Icon>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Spacing="12" Margin="32">
+          <TextBlock Text="✦" FontSize="48" Foreground="#33FFFFFF" HorizontalAlignment="Center" />
+          <TextBlock Text="Explore" FontSize="20" FontWeight="Bold" Foreground="White"
+                     HorizontalAlignment="Center" />
+          <TextBlock Text="Discover new destinations around the world."
+                     FontSize="13" Foreground="#80FFFFFF"
+                     TextAlignment="Center" TextWrapping="Wrap" />
+        </StackPanel>
+      </ContentPage>
+
+      <!-- Saved Tab -->
+      <ContentPage Header="Saved"
+                   Background="#221710">
+        <ContentPage.Icon>
+          <PathIcon Data="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+        </ContentPage.Icon>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Spacing="12" Margin="32">
+          <TextBlock Text="♡" FontSize="48" Foreground="#33FFFFFF" HorizontalAlignment="Center" />
+          <TextBlock Text="Saved" FontSize="20" FontWeight="Bold" Foreground="White"
+                     HorizontalAlignment="Center" />
+          <TextBlock Text="Your saved destinations will appear here."
+                     FontSize="13" Foreground="#80FFFFFF"
+                     TextAlignment="Center" TextWrapping="Wrap" />
+        </StackPanel>
+      </ContentPage>
+
+      <!-- Profile Tab -->
+      <ContentPage Header="Profile"
+                   Background="#221710">
+        <ContentPage.Icon>
+          <PathIcon Data="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+        </ContentPage.Icon>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Spacing="12" Margin="32">
+          <TextBlock Text="◉" FontSize="48" Foreground="#33FFFFFF" HorizontalAlignment="Center" />
+          <TextBlock Text="Profile" FontSize="20" FontWeight="Bold" Foreground="White"
+                     HorizontalAlignment="Center" />
+          <TextBlock Text="Your profile and settings will appear here."
+                     FontSize="13" Foreground="#80FFFFFF"
+                     TextAlignment="Center" TextWrapping="Wrap" />
+        </StackPanel>
+      </ContentPage>
+
+    </TabbedPage>
+
+    </Grid>
+
+  </DockPanel>
+</UserControl>

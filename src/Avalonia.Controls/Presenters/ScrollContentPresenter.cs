@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.Reactive;
+using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
+using Avalonia.Layout;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-using System.Linq;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -118,9 +118,9 @@ namespace Avalonia.Controls.Presenters
         public ScrollContentPresenter()
         {
             AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
-            AddHandler(Gestures.ScrollGestureEvent, OnScrollGesture);
-            AddHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
-            AddHandler(Gestures.ScrollGestureInertiaStartingEvent, OnScrollGestureInertiaStartingEnded);
+            AddHandler(InputElement.ScrollGestureEvent, OnScrollGesture);
+            AddHandler(InputElement.ScrollGestureEndedEvent, OnScrollGestureEnded);
+            AddHandler(InputElement.ScrollGestureInertiaStartingEvent, OnScrollGestureInertiaStartingEnded);
 
             this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
         }
@@ -535,6 +535,8 @@ namespace Avalonia.Controls.Presenters
                 var scrollable = Child as ILogicalScrollable;
                 var isLogical = scrollable?.IsLogicalScrollEnabled == true;
                 var logicalScrollItemSize = new Vector(1, 1);
+                var canXScroll = false;
+                var canYScroll = false;
 
                 double x = Offset.X;
                 double y = Offset.Y;
@@ -565,6 +567,8 @@ namespace Avalonia.Controls.Presenters
                     y += dy;
                     y = Math.Max(y, 0);
                     y = Math.Min(y, Extent.Height - Viewport.Height);
+
+                    canYScroll = dy != 0;
                 }
 
                 if (Extent.Width > Viewport.Width)
@@ -581,6 +585,8 @@ namespace Avalonia.Controls.Presenters
                     x += dx;
                     x = Math.Max(x, 0);
                     x = Math.Min(x, Extent.Width - Viewport.Width);
+
+                    canXScroll = dx != 0;
                 }
 
                 if (isLogical)
@@ -614,6 +620,12 @@ namespace Avalonia.Controls.Presenters
                 SetCurrentValue(OffsetProperty, newOffset);
 
                 e.Handled = !IsScrollChainingEnabled || offsetChanged;
+
+                if(!e.Handled && !IsScrollChainingEnabled)
+                {
+                    // Gesture may cause an overscroll so we mark the event as handled if it did.
+                    e.Handled = canXScroll || canYScroll;
+                }
 
                 e.ShouldEndScrollGesture = !IsScrollChainingEnabled && !offsetChanged;
             }

@@ -16,10 +16,10 @@ namespace BindingDemo.ViewModels
     {
         private string _booleanString = "True";
         private double _doubleValue = 5.0;
-        private string _stringValue = "Simple Binding";
+        private string? _stringValue = "Simple Binding";
         private bool _booleanFlag = false;
-        private string _currentTime;
-        private NestedCommandViewModel _nested;
+        private string? _currentTime;
+        private NestedCommandViewModel? _nested;
 
         public MainWindowViewModel()
         {
@@ -74,7 +74,7 @@ namespace BindingDemo.ViewModels
             set { this.RaiseAndSetIfChanged(ref _doubleValue, value); }
         }
 
-        public string StringValue
+        public string? StringValue
         {
             get { return _stringValue; }
             set { this.RaiseAndSetIfChanged(ref _stringValue, value); }
@@ -86,7 +86,7 @@ namespace BindingDemo.ViewModels
             set { this.RaiseAndSetIfChanged(ref _booleanFlag, value); }
         }
 
-        public string CurrentTime
+        public string? CurrentTime
         {
             get { return _currentTime; }
             private set { this.RaiseAndSetIfChanged(ref _currentTime, value); }
@@ -99,7 +99,7 @@ namespace BindingDemo.ViewModels
         public ExceptionErrorViewModel ExceptionDataValidation { get; } = new ExceptionErrorViewModel();
         public IndeiErrorViewModel IndeiDataValidation { get; } = new IndeiErrorViewModel();
 
-        public NestedCommandViewModel NestedModel
+        public NestedCommandViewModel? NestedModel
         {
             get { return _nested; }
             private set { this.RaiseAndSetIfChanged(ref _nested, value); }
@@ -119,16 +119,16 @@ namespace BindingDemo.ViewModels
         // Nested class, jsut so we can test it in XAML
         public class TestItem<T> : ViewModelBase
         {
-            private T _value;
-            private string _detail;
+            private T? _value;
+            private string? _detail;
 
-            public T Value
+            public T? Value
             {
                 get { return _value; }
                 set { this.RaiseAndSetIfChanged(ref this._value, value); }
             }
 
-            public string Detail
+            public string? Detail
             {
                 get { return _detail; }
                 set { this.RaiseAndSetIfChanged(ref this._detail, value); }

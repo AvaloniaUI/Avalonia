@@ -358,7 +358,7 @@ namespace Avalonia.Controls
 
             if (hasResources)
             {
-                owner.NotifyHostedResourcesChanged(ResourcesChangedToken.Create());
+                owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Create());
             }
         }
 
@@ -385,7 +385,7 @@ namespace Avalonia.Controls
 
             if (hasResources)
             {
-                owner.NotifyHostedResourcesChanged(ResourcesChangedToken.Create());
+                owner.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Create());
             }
         }
 

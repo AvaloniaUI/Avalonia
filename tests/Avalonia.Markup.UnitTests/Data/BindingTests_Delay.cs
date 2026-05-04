@@ -24,12 +24,17 @@ public class BindingTests_Delay : ScopedTestBase, IDisposable
     
     public BindingTests_Delay()
     {
+        _app = UnitTestApplication.Start(new(keyboardDevice: () => new KeyboardDevice()));
         _dispatcher = new ManualTimerDispatcher();
-        _app = UnitTestApplication.Start(new(dispatcherImpl: _dispatcher, keyboardDevice: () => new KeyboardDevice()));
+        _ = new Dispatcher(_dispatcher);
 
         _source = new BindingTests.Source { Foo = InitialFooValue };
         _target = new TextBox { DataContext = _source };
-        _binding = new Binding(nameof(_source.Foo), BindingMode.TwoWay) { Delay = DelayMilliseconds };
+        _binding = new Binding(nameof(_source.Foo))
+        {
+            Mode = BindingMode.TwoWay,
+            Delay = DelayMilliseconds
+        };
 
         _bindingExpr = _target.Bind(TextBox.TextProperty, _binding);
 
@@ -120,7 +125,12 @@ public class BindingTests_Delay : ScopedTestBase, IDisposable
 
         new TestRoot() { Child = new Panel() { Children = { _target, secondBox } } };
 
-        _target.Bind(TextBox.TextProperty, new Binding(nameof(_source.Foo), BindingMode.TwoWay) { Delay = DelayMilliseconds, UpdateSourceTrigger = UpdateSourceTrigger.LostFocus });
+        _target.Bind(TextBox.TextProperty, new Binding(nameof(_source.Foo))
+        {
+            Mode = BindingMode.TwoWay,
+            Delay = DelayMilliseconds,
+            UpdateSourceTrigger = UpdateSourceTrigger.LostFocus
+        });
 
         Assert.True(_target.Focus());
         _target.Text = "bar";
@@ -134,7 +144,11 @@ public class BindingTests_Delay : ScopedTestBase, IDisposable
     [Fact]
     public void Delayed_Binding_OneWayToSource_DataContext_Change_Should_Update_Source_Immediately()
     {
-        _target.Bind(TextBlock.TextProperty, new Binding(nameof(_source.Foo), BindingMode.OneWayToSource) { Delay = DelayMilliseconds });
+        _target.Bind(TextBlock.TextProperty, new Binding(nameof(_source.Foo))
+        {
+            Mode = BindingMode.OneWayToSource,
+            Delay = DelayMilliseconds
+        });
 
         _target.Text = "bar";
 

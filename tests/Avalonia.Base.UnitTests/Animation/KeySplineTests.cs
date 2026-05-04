@@ -130,7 +130,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var clock = new TestClock();
 
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             // position is what you'd expect at end and beginning
             clock.Step(TimeSpan.Zero);
@@ -185,7 +185,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var clock = new TestClock();
 
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             // position is what you'd expect at end and beginning
             clock.Step(TimeSpan.Zero);
@@ -250,7 +250,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var clock = new TestClock();
 
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             clock.Step(TimeSpan.Zero);
             Assert.Equal(10.0, transform.Y, 0.0001);
@@ -299,7 +299,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
             var clock = new TestClock();
 
-            animation.RunAsync(rect, clock);
+            animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
             clock.Step(TimeSpan.Zero);
             Assert.Equal(50.0, transform.Y, 0.0001);

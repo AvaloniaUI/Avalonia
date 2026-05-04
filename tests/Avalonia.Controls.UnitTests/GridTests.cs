@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.UnitTests;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -16,19 +15,19 @@ namespace Avalonia.Controls.UnitTests
             this.output = output;
         }
 
-        private static Grid CreateGrid(params (string name, GridLength width)[] columns)
+        private static Grid CreateGrid(params (string? name, GridLength width)[] columns)
         {
             return CreateGrid(columns.Select(c =>
                 (c.name, c.width, ColumnDefinition.MinWidthProperty.GetDefaultValue(typeof(ColumnDefinition)))).ToArray());
         }
 
-        private static Grid CreateGrid(params (string name, GridLength width, double minWidth)[] columns)
+        private static Grid CreateGrid(params (string? name, GridLength width, double minWidth)[] columns)
         {
             return CreateGrid(columns.Select(c =>
                 (c.name, c.width, c.minWidth, ColumnDefinition.MaxWidthProperty.GetDefaultValue(typeof(ColumnDefinition)))).ToArray());
         }
 
-        private static Grid CreateGrid(params (string name, GridLength width, double minWidth, double maxWidth)[] columns)
+        private static Grid CreateGrid(params (string? name, GridLength width, double minWidth, double maxWidth)[] columns)
         {
             var grid = new Grid();
             foreach (var k in columns.Select(c => new ColumnDefinition
@@ -1818,6 +1817,7 @@ namespace Avalonia.Controls.UnitTests
                         [Grid.ColumnSpanProperty] = 3,
                         Content = new TextBlock()
                         {
+                            FontSize = 10,
                             Text = @"0: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
 1: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
 2: 1234567890 1234567890 1234567890 1234567890 1234567890 1234567890
@@ -1878,6 +1878,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         [Grid.ColumnProperty] = 1,
                         Height = 20,
+                        Width = 100,
                         Text="1234567890"
                     }
                 }

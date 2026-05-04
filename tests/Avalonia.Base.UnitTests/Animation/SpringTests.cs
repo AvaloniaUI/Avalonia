@@ -77,7 +77,7 @@ public class SpringTests
         var rect = new Rectangle() { RenderTransform = rotateTransform };
 
         var clock = new TestClock();
-        animation.RunAsync(rect, clock);
+        animation.RunAsync(rect, clock, TestContext.Current.CancellationToken);
 
         clock.Step(TimeSpan.Zero);
         Assert.Equal(-2.5, rotateTransform.Angle);

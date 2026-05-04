@@ -1,24 +1,25 @@
-using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Avalonia.Reactive;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Media;
-using Avalonia.Metadata;
 using Avalonia.Data;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Utilities;
-using Avalonia.Controls.Metadata;
+using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Automation.Peers;
 using Avalonia.Media.TextFormatting.Unicode;
+using Avalonia.Metadata;
+using Avalonia.Platform;
+using Avalonia.Reactive;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -28,8 +29,14 @@ namespace Avalonia.Controls
     [TemplatePart("PART_TextPresenter", typeof(TextPresenter), IsRequired = true)]
     [TemplatePart("PART_ScrollViewer", typeof(ScrollViewer))]
     [PseudoClasses(":empty")]
+    [PseudoClasses(":touch-mode")]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
+        /// <summary>
+        /// The radius for touch input. Used to determine if selection should change from moving a touch pointer.
+        /// </summary>
+        private readonly Lazy<int> _touchRadius = new(() => (int)((AvaloniaLocator.Current?.GetService<IPlatformSettings>()?.GetTapSize(PointerType.Touch).Height ?? 10) / 2) + 5);
+
         /// <summary>
         /// Gets a platform-specific <see cref="KeyGesture"/> for the Cut action
         /// </summary>
@@ -48,13 +55,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsInactiveSelectionHighlightEnabled"/> property
         /// </summary>
-        public static readonly StyledProperty<bool> IsInactiveSelectionHighlightEnabledProperty = 
+        public static readonly StyledProperty<bool> IsInactiveSelectionHighlightEnabledProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsInactiveSelectionHighlightEnabled), defaultValue: true);
 
         /// <summary>
         /// Defines the <see cref="ClearSelectionOnLostFocus"/> property
         /// </summary>
-        public static readonly StyledProperty<bool> ClearSelectionOnLostFocusProperty = 
+        public static readonly StyledProperty<bool> ClearSelectionOnLostFocusProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(ClearSelectionOnLostFocus), defaultValue: true);
 
         /// <summary>
@@ -181,16 +188,46 @@ namespace Avalonia.Controls
             TextBlock.LineHeightProperty.AddOwner<TextBox>(new(defaultValue: double.NaN));
 
         /// <summary>
-        /// Defines the <see cref="Watermark"/> property
+        /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
-        public static readonly StyledProperty<string?> WatermarkProperty =
-            AvaloniaProperty.Register<TextBox, string?>(nameof(Watermark));
+        public static readonly StyledProperty<string?> PlaceholderTextProperty =
+            AvaloniaProperty.Register<TextBox, string?>(nameof(PlaceholderText));
 
         /// <summary>
-        /// Defines the <see cref="UseFloatingWatermark"/> property
+        /// Defines the <see cref="Watermark"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
-            AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingWatermark));
+        [Obsolete("Use PlaceholderTextProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<string?> WatermarkProperty = PlaceholderTextProperty;
+
+        /// <summary>
+        /// Defines the <see cref="UseFloatingPlaceholder"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> UseFloatingPlaceholderProperty =
+            AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingPlaceholder));
+
+        /// <summary>
+        /// Defines the <see cref="UseFloatingWatermark"/> property.
+        /// </summary>
+        [Obsolete("Use UseFloatingPlaceholderProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<bool> UseFloatingWatermarkProperty = UseFloatingPlaceholderProperty;
+
+        /// <summary>
+        /// Defines the <see cref="PlaceholderForeground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush?> PlaceholderForegroundProperty =
+            AvaloniaProperty.Register<TextBox, IBrush?>(nameof(PlaceholderForeground));
+
+        /// <summary>
+        /// Defines the <see cref="WatermarkForeground"/> property.
+        /// </summary>
+        [Obsolete("Use PlaceholderForegroundProperty instead.", false)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1022",
+            Justification = "Obsolete property alias for backward compatibility.")]
+        public static readonly StyledProperty<IBrush?> WatermarkForegroundProperty = PlaceholderForegroundProperty;
 
         /// <summary>
         /// Defines the <see cref="NewLine"/> property
@@ -338,9 +375,13 @@ namespace Avalonia.Controls
         private int _wordSelectionStart = -1;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
         private bool _hasDoneSnapshotOnce;
-        private static bool _isHolding;
         private int _currentClickCount;
         private bool _isDoubleTapped;
+        private bool _isInTouchMode;
+        private Point _lastPoint;
+        private bool _isInTouchSelectionMode;
+        private bool _isInTouchCaretMode;
+        private bool _hasTouchSelection;
         private const int _maxCharsBeforeUndoSnapshot = 7;
 
         static TextBox()
@@ -394,8 +435,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ClearSelectionOnLostFocus
         {
-            get=> GetValue(ClearSelectionOnLostFocusProperty);
-            set=> SetValue(ClearSelectionOnLostFocusProperty, value);
+            get => GetValue(ClearSelectionOnLostFocusProperty);
+            set => SetValue(ClearSelectionOnLostFocusProperty, value);
         }
 
         /// <summary>
@@ -408,7 +449,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value that determins whether the TextBox allows and displays tabs
+        /// Gets or sets a value that determines whether the TextBox allows and displays tabs
         /// </summary>
         public bool AcceptsTab
         {
@@ -437,7 +478,7 @@ namespace Avalonia.Controls
             SetCurrentValue(SelectionStartProperty, newValue);
             SetCurrentValue(SelectionEndProperty, newValue);
 
-           _presenter?.SetCurrentValue(TextPresenter.CaretIndexProperty, newValue);
+            _presenter?.SetCurrentValue(TextPresenter.CaretIndexProperty, newValue);
         }
 
         /// <summary>
@@ -516,7 +557,7 @@ namespace Avalonia.Controls
         /// Gets or sets the end position of the text selected in the TextBox
         /// </summary>
         /// <remarks>
-        /// When the SelectionEnd is equal to <see cref="SelectionStart"/>, there is no 
+        /// When the SelectionEnd is equal to <see cref="SelectionStart"/>, there is no
         /// selected text and it marks the caret position
         /// </remarks>
         public int SelectionEnd
@@ -665,20 +706,67 @@ namespace Avalonia.Controls
         /// Gets or sets the placeholder or descriptive text that is displayed even if the <see cref="Text"/>
         /// property is not yet set.
         /// </summary>
-        public string? Watermark
+        public string? PlaceholderText
         {
-            get => GetValue(WatermarkProperty);
-            set => SetValue(WatermarkProperty, value);
+            get => GetValue(PlaceholderTextProperty);
+            set => SetValue(PlaceholderTextProperty, value);
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the <see cref="Watermark"/> will still be shown above the
+        /// Gets or sets the placeholder or descriptive text that is displayed even if the <see cref="Text"/>
+        /// property is not yet set.
+        /// </summary>
+        [Obsolete("Use PlaceholderText instead.", false)]
+        public string? Watermark
+        {
+            get => PlaceholderText;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => PlaceholderText = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the <see cref="PlaceholderText"/> will still be shown above the
         /// <see cref="Text"/> even after a text value is set.
         /// </summary>
+        public bool UseFloatingPlaceholder
+        {
+            get => GetValue(UseFloatingPlaceholderProperty);
+            set => SetValue(UseFloatingPlaceholderProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the <see cref="PlaceholderText"/> will still be shown above the
+        /// <see cref="Text"/> even after a text value is set.
+        /// </summary>
+        [Obsolete("Use UseFloatingPlaceholder instead.", false)]
         public bool UseFloatingWatermark
         {
-            get => GetValue(UseFloatingWatermarkProperty);
-            set => SetValue(UseFloatingWatermarkProperty, value);
+            get => UseFloatingPlaceholder;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => UseFloatingPlaceholder = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        public IBrush? PlaceholderForeground
+        {
+            get => GetValue(PlaceholderForegroundProperty);
+            set => SetValue(PlaceholderForegroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used for the foreground color of the placeholder text.
+        /// </summary>
+        [Obsolete("Use PlaceholderForeground instead.", false)]
+        public IBrush? WatermarkForeground
+        {
+            get => PlaceholderForeground;
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1012",
+                Justification = "Obsolete property setter for backward compatibility.")]
+            set => PlaceholderForeground = value;
         }
 
         /// <summary>
@@ -876,17 +964,7 @@ namespace Avalonia.Controls
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
 
-            if (_scrollViewer != null)
-            {
-                _scrollViewer.ScrollChanged -= ScrollViewer_ScrollChanged;
-            }
-
             _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
-
-            if (_scrollViewer != null)
-            {
-                _scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
-            }
 
             _imClient.SetPresenter(_presenter, this);
 
@@ -894,11 +972,6 @@ namespace Avalonia.Controls
             {
                 _presenter?.ShowCaret();
             }
-        }
-
-        private void ScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
-        {
-            _presenter?.TextSelectionHandleCanvas?.MoveHandlesToSelection();
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -1011,14 +1084,14 @@ namespace Avalonia.Controls
             CanPaste = !IsReadOnly;
         }
 
-        protected override void OnGotFocus(GotFocusEventArgs e)
+        protected override void OnGotFocus(FocusChangedEventArgs e)
         {
             base.OnGotFocus(e);
 
-            if(_presenter != null)
+            if (_presenter != null)
             {
                 _presenter.ShowSelectionHighlight = true;
-            }           
+            }
 
             // when navigating to a textbox via the tab key, select all text if
             //   1) this textbox is *not* a multiline textbox
@@ -1035,9 +1108,12 @@ namespace Avalonia.Controls
             _imClient.SetPresenter(_presenter, this);
 
             _presenter?.ShowCaret();
+
+            if (SelectionStart != SelectionEnd)
+                _presenter?.TextSelectionHandleCanvas?.Show();
         }
 
-        protected override void OnLostFocus(RoutedEventArgs e)
+        protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             base.OnLostFocus(e);
 
@@ -1050,6 +1126,7 @@ namespace Avalonia.Controls
                 }
 
                 SetCurrentValue(RevealPasswordProperty, false);
+                _presenter?.RemoveTextSelectionCanvas();
             }
 
             UpdateCommandStates();
@@ -1593,6 +1670,78 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnHolding(HoldingRoutedEventArgs e)
+        {
+            base.OnHolding(e);
+
+            if (_presenter == null || e.HoldingState != HoldingState.Started)
+            {
+                _isInTouchSelectionMode = e.HoldingState == HoldingState.Canceled;
+                _hasTouchSelection = false;
+                return;
+            }
+
+            var text = Text;
+
+            using var _ = _imClient.BeginChange();
+
+            if (text != null)
+            {
+                var position = e.PointerEventArgs.GetPosition(_presenter);
+                var selectionStart = SelectionStart;
+                var selectionEnd = SelectionEnd;
+                _presenter.MoveCaretToPoint(position);
+                var caretIndex = _presenter.CaretIndex;
+                var isInSelection = selectionStart != selectionEnd &&
+                    caretIndex >= selectionStart && caretIndex <= selectionEnd;
+
+                if (isInSelection)
+                {
+                    _presenter.RaiseEvent(new ContextRequestedEventArgs(e.PointerEventArgs));
+                }
+                else
+                {
+                    // We select the current held word, or the whole hidden content
+                    if (IsPasswordBox && !RevealPassword)
+                    {
+                        _wordSelectionStart = -1;
+
+                        SelectAll();
+                    }
+                    else
+                    {
+                        SelectWord(text, caretIndex, caretIndex, caretIndex);
+                    }
+
+                    _presenter?.EnsureTextSelectionLayer();
+
+                    if (SelectionStart != SelectionEnd)
+                    {
+                        _presenter?.TextSelectionHandleCanvas?.Show(true);
+                    }
+                    else
+                    {
+                        _presenter?.RaiseEvent(new ContextRequestedEventArgs(e.PointerEventArgs));
+                    }
+                }
+
+                _hasTouchSelection = true;
+
+                e.Handled = true;
+            }
+        }
+
+        protected override void OnTapped(TappedEventArgs e)
+        {
+            base.OnTapped(e);
+
+            if (e.Pointer.Type != PointerType.Mouse)
+            {
+                _presenter?.EnsureTextSelectionLayer();
+                _presenter?.TextSelectionHandleCanvas?.Show();
+            }
+        }
+
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             if (_presenter == null)
@@ -1605,112 +1754,184 @@ namespace Avalonia.Controls
 
             using var _ = _imClient.BeginChange();
 
-            if (text != null && (e.Pointer.Type == PointerType.Mouse || e.ClickCount >= 2) && clickInfo.Properties.IsLeftButtonPressed &&
-                !(clickInfo.Pointer?.Captured is Border))
+            _isInTouchMode = false;
+            _isInTouchSelectionMode = false;
+            _isDoubleTapped = e.ClickCount == 2;
+            if (text != null && clickInfo.Pointer?.Captured is not Border)
             {
-                _currentClickCount = e.ClickCount;
-                var point = e.GetPosition(_presenter);
-
-                _presenter.MoveCaretToPoint(point);
-
-                var caretIndex = _presenter.CaretIndex;
-                var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
-                var selectionStart = SelectionStart;
-                var selectionEnd = SelectionEnd;
-
-                switch (e.ClickCount)
+                if (e.Pointer.Type == PointerType.Mouse && clickInfo.Properties.IsLeftButtonPressed)
                 {
-                    case 1:
-                        if (clickToSelect)
-                        {
-                            if (_wordSelectionStart >= 0)
-                            {
-                                UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+                    _presenter.TextSelectionHandleCanvas?.Hide();
+                    _currentClickCount = e.ClickCount;
+                    var point = e.GetPosition(_presenter);
 
-                                SetCurrentValue(SelectionStartProperty, selectionStart);
-                                SetCurrentValue(SelectionEndProperty, selectionEnd);
+                    _presenter.MoveCaretToPoint(point);
+
+                    var caretIndex = _presenter.CaretIndex;
+                    var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+                    var selectionStart = SelectionStart;
+                    var selectionEnd = SelectionEnd;
+
+                    switch (e.ClickCount)
+                    {
+                        case 1:
+                            if (clickToSelect)
+                            {
+                                if (_wordSelectionStart >= 0)
+                                {
+                                    UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+
+                                    SetCurrentValue(SelectionStartProperty, selectionStart);
+                                    SetCurrentValue(SelectionEndProperty, selectionEnd);
+                                }
+                                else
+                                {
+                                    SetCurrentValue(SelectionEndProperty, caretIndex);
+                                }
                             }
                             else
                             {
+                                SetCurrentValue(SelectionStartProperty, caretIndex);
                                 SetCurrentValue(SelectionEndProperty, caretIndex);
+                                _wordSelectionStart = -1;
                             }
-                        }
-                        else
-                        {
-                            SetCurrentValue(SelectionStartProperty, caretIndex);
-                            SetCurrentValue(SelectionEndProperty, caretIndex);
+
+                            break;
+                        case 2:
+                            SelectWord(text, caretIndex, selectionStart, selectionEnd);
+
+                            break;
+                        case 3:
                             _wordSelectionStart = -1;
-                        }
 
-                        break;
-                    case 2:
-                        if (IsPasswordBox && !RevealPassword)
-                        {
-                            // double-clicking in a cloaked single-line password box selects all text
-                            // see https://github.com/AvaloniaUI/Avalonia/issues/14956
-                            goto case 3;
-                        }
+                            SelectAll();
+                            break;
+                    }
+                }
+                else if (e.Pointer.Type != PointerType.Mouse)
+                {
+                    _isInTouchMode = true;
+                    _lastPoint = e.GetCurrentPoint(_presenter).Position;
 
-                        if (!StringUtils.IsStartOfWord(text, caretIndex))
-                        {
-                            selectionStart = StringUtils.PreviousWord(text, caretIndex);
-                        }
+                    if (_isDoubleTapped)
+                    {
+                        _presenter.MoveCaretToPoint(_lastPoint);
+                        var caretIndex = _presenter.CaretIndex;
 
-                        if (!StringUtils.IsEndOfWord(text, caretIndex))
-                        {
-                            selectionEnd = StringUtils.NextWord(text, caretIndex);
-                        }
+                        var selectionStart = SelectionStart;
+                        var selectionEnd = SelectionEnd;
 
-                        if (selectionStart != selectionEnd)
-                        {
-                            _wordSelectionStart = selectionStart;
-                        }
-
-                        SetCurrentValue(SelectionStartProperty, selectionStart);
-                        SetCurrentValue(SelectionEndProperty, selectionEnd);
-
-                        break;
-                    case 3:
-                        _wordSelectionStart = -1;
-
-                        SelectAll();
-                        break;
+                        SelectWord(text, caretIndex, selectionStart, selectionEnd);
+                        _presenter?.EnsureTextSelectionLayer();
+                        _presenter?.TextSelectionHandleCanvas?.Show();
+                    }
                 }
             }
 
-            _isDoubleTapped = e.ClickCount == 2;
+            UpdatePseudoclasses();
+
             e.Pointer.Capture(_presenter);
             e.Handled = true;
         }
 
+        private void SelectWord(string text, int caretIndex, int selectionStart, int selectionEnd)
+        {
+            if (IsPasswordBox && !RevealPassword)
+            {
+                // double-clicking in a cloaked single-line password box selects all text
+                // see https://github.com/AvaloniaUI/Avalonia/issues/14956
+                _wordSelectionStart = -1;
+
+                SelectAll();
+            }
+
+            if (!StringUtils.IsStartOfWord(text, caretIndex))
+            {
+                selectionStart = StringUtils.PreviousWord(text, caretIndex);
+            }
+
+            if (!StringUtils.IsEndOfWord(text, caretIndex))
+            {
+                selectionEnd = StringUtils.NextWord(text, caretIndex);
+            }
+
+            if (selectionStart != selectionEnd)
+            {
+                _wordSelectionStart = selectionStart;
+            }
+
+            SetCurrentValue(SelectionStartProperty, selectionStart);
+            SetCurrentValue(SelectionEndProperty, selectionEnd);
+        }
+
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (_presenter == null || _isHolding)
+            if (_presenter == null || e.Pointer.Captured != _presenter)
             {
                 return;
             }
             using var _ = _imClient.BeginChange();
+            var point = e.GetPosition(_presenter);
 
-            // selection should not change during pointer move if the user right clicks
-            if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (e.Pointer.Type == PointerType.Mouse)
             {
-                var point = e.GetPosition(_presenter);
-
-                point = new Point(
-                    MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
-                    MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
-
-                var previousIndex = _presenter.CaretIndex;
-
-                _presenter.MoveCaretToPoint(point);
-
-                var caretIndex = _presenter.CaretIndex;
-
-                if (Math.Abs(caretIndex - previousIndex) == 1)
-                    e.PreventGestureRecognition();
-
-                if (e.Pointer.Type == PointerType.Mouse || _isDoubleTapped)
+                // selection should not change during pointer move if the user right clicks
+                if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
                 {
+                    point = new Point(
+                        MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
+                        MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
+
+                    var previousIndex = _presenter.CaretIndex;
+
+                    _presenter.MoveCaretToPoint(point);
+
+                    var caretIndex = _presenter.CaretIndex;
+
+                    if (Math.Abs(caretIndex - previousIndex) == 1)
+                        e.PreventGestureRecognition();
+
+                    if (e.Pointer.Type == PointerType.Mouse || _isDoubleTapped)
+                    {
+                        var selectionStart = SelectionStart;
+                        var selectionEnd = SelectionEnd;
+
+                        if (_wordSelectionStart >= 0)
+                        {
+                            UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+
+                            SetCurrentValue(SelectionStartProperty, selectionStart);
+                            SetCurrentValue(SelectionEndProperty, selectionEnd);
+                        }
+                        else
+                        {
+                            SetCurrentValue(SelectionEndProperty, caretIndex);
+                        }
+                    }
+                    else
+                    {
+                        SetCurrentValue(SelectionStartProperty, caretIndex);
+                        SetCurrentValue(SelectionEndProperty, caretIndex);
+                    }
+                }
+            }
+            else if (_isInTouchMode)
+            {
+                if (_isInTouchSelectionMode)
+                {
+                    point = new Point(
+                        MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
+                        MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
+
+                    var previousIndex = _presenter.CaretIndex;
+
+                    _presenter.MoveCaretToPoint(point);
+
+                    var caretIndex = _presenter.CaretIndex;
+
+                    if (Math.Abs(caretIndex - previousIndex) == 1)
+                        e.PreventGestureRecognition();
+
                     var selectionStart = SelectionStart;
                     var selectionEnd = SelectionEnd;
 
@@ -1728,8 +1949,28 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    SetCurrentValue(SelectionStartProperty, caretIndex);
-                    SetCurrentValue(SelectionEndProperty, caretIndex);
+                    if (!_isInTouchCaretMode)
+                    {
+
+                        var touchRect = new Rect(_lastPoint.X, _lastPoint.Y, 0, 0).Inflate(_touchRadius.Value);
+                        var isInRect = touchRect.X < point.X &&
+                           touchRect.Y < point.Y &&
+                           touchRect.Right > point.X &&
+                           touchRect.Bottom > point.Y;
+                        if (!isInRect)
+                        {
+                            _isInTouchCaretMode = true;
+                        }
+                    }
+
+                    if (_isInTouchCaretMode)
+                    {
+                        e.PreventGestureRecognition();
+                        _presenter.MoveCaretToPoint(point);
+                        var caretIndex = _presenter.CaretIndex;
+                        SetCurrentValue(SelectionStartProperty, caretIndex);
+                        SetCurrentValue(SelectionEndProperty, caretIndex);
+                    }
                 }
             }
         }
@@ -1774,52 +2015,22 @@ namespace Avalonia.Controls
 
             using var _ = _imClient.BeginChange();
 
-            if (e.Pointer.Type != PointerType.Mouse && !_isDoubleTapped)
+            if (e.Pointer.Type != PointerType.Mouse && !_isInTouchSelectionMode)
             {
-                var text = Text;
-                var clickInfo = e.GetCurrentPoint(this);
-                if (text != null && !(clickInfo.Pointer?.Captured is Border))
+                if (!_isDoubleTapped && !_hasTouchSelection)
                 {
                     var point = e.GetPosition(_presenter);
 
                     _presenter.MoveCaretToPoint(point);
 
                     var caretIndex = _presenter.CaretIndex;
-                    var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
-                    var selectionStart = SelectionStart;
-                    var selectionEnd = SelectionEnd;
-
-                    if (clickToSelect)
-                    {
-                        if (_wordSelectionStart >= 0)
-                        {
-                            UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
-
-                            SetCurrentValue(SelectionStartProperty, selectionStart);
-                            SetCurrentValue(SelectionEndProperty, selectionEnd);
-                        }
-                        else
-                        {
-                            SetCurrentValue(SelectionEndProperty, caretIndex);
-                        }
-                    }
-                    else
-                    {
-                        SetCurrentValue(SelectionStartProperty, caretIndex);
-                        SetCurrentValue(SelectionEndProperty, caretIndex);
-                        _wordSelectionStart = -1;
-                    }
-
-                    _presenter.TextSelectionHandleCanvas?.MoveHandlesToSelection();
+                    SetCurrentValue(CaretIndexProperty, caretIndex);
+                    SetCurrentValue(SelectionEndProperty, caretIndex);
+                    SetCurrentValue(SelectionStartProperty, caretIndex);
                 }
             }
 
-            // Don't update selection if the pointer was held
-            if (_isHolding)
-            {
-                _isHolding = false;
-            }
-            else if (e.InitialPressMouseButton == MouseButton.Right)
+            if (e.InitialPressMouseButton == MouseButton.Right)
             {
                 var point = e.GetPosition(_presenter);
 
@@ -1840,28 +2051,9 @@ namespace Avalonia.Controls
                     SetCurrentValue(SelectionStartProperty, caretIndex);
                 }
             }
-            else if (e.Pointer.Type == PointerType.Touch)
-            {
-                if (_currentClickCount == 1)
-                {
-                    var point = e.GetPosition(_presenter);
-
-                    _presenter.MoveCaretToPoint(point);
-
-                    var caretIndex = _presenter.CaretIndex;
-                    SetCurrentValue(SelectionStartProperty, caretIndex);
-                    SetCurrentValue(SelectionEndProperty, caretIndex);
-                }
-
-                _presenter.TextSelectionHandleCanvas?.Show();
-
-                if (SelectionStart != SelectionEnd)
-                {
-                    _presenter.TextSelectionHandleCanvas?.ShowContextMenu();
-                }
-            }
-
-            e.Pointer.Capture(null);
+            _isInTouchSelectionMode = false;
+            _isInTouchCaretMode = false;
+            _hasTouchSelection = false;
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
@@ -2290,6 +2482,7 @@ namespace Avalonia.Controls
         private void UpdatePseudoclasses()
         {
             PseudoClasses.Set(":empty", string.IsNullOrEmpty(Text));
+            PseudoClasses.Set(":touch-mode", _isInTouchMode);
         }
 
         private bool IsPasswordBox => PasswordChar != default(char);

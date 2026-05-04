@@ -101,12 +101,6 @@ public interface ICompositionGpuImportedObject : IAsyncDisposable
     /// </summary>
     Task ImportCompleted { get; }
     
-    /// <inheritdoc cref="ImportCompleted"/>
-    /// <seealso cref="ImportCompleted">ImportCompleted (recommended replacement)</seealso>
-    [Obsolete("Please use ICompositionGpuImportedObject.ImportCompleted instead")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    Task ImportCompeted { get; }
-    
     /// <summary>
     /// Indicates if the device context this instance is associated with is no longer available
     /// </summary>

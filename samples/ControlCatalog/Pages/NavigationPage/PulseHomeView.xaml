@@ -1,0 +1,270 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.PulseHomeView">
+  <UserControl.Styles>
+    <Style Selector="Button.icon-btn">
+      <Setter Property="Width" Value="40"/>
+      <Setter Property="Height" Value="40"/>
+      <Setter Property="CornerRadius" Value="20"/>
+      <Setter Property="Background" Value="#1a1a1a"/>
+      <Setter Property="Foreground" Value="#94a3b8"/>
+      <Setter Property="Padding" Value="8"/>
+      <Setter Property="BorderBrush" Value="#4D256af4"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="0">
+
+      <!-- Header: avatar + greeting + bell -->
+      <Grid ColumnDefinitions="Auto,*,Auto" Margin="16,20,16,8">
+        <Border Width="44" Height="44" CornerRadius="22"
+                BorderBrush="#4D256af4" BorderThickness="2"
+                ClipToBounds="True">
+          <Image Source="avares://ControlCatalog/Assets/Pulse/profile_avatar.jpg"
+                 Stretch="UniformToFill"
+                 Margin="-2"/>
+        </Border>
+        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+          <TextBlock Text="WELCOME BACK" FontSize="10" FontWeight="Medium"
+                     Foreground="#64748b" LetterSpacing="2"/>
+          <TextBlock Text="Alex Johnson" FontSize="18" FontWeight="Bold" Foreground="White"/>
+        </StackPanel>
+        <Button Grid.Column="2" Classes="icon-btn" VerticalAlignment="Center">
+          <Path Data="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+                Fill="#94a3b8" Width="18" Height="18" Stretch="Uniform"/>
+        </Button>
+      </Grid>
+
+      <!-- Category chips -->
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled"
+                    Margin="0,8,0,16">
+        <StackPanel Orientation="Horizontal" Spacing="10" Margin="16,0">
+          <Border CornerRadius="999" Background="#256af4" Padding="18,10">
+            <TextBlock Text="All Workouts" FontSize="13" FontWeight="SemiBold" Foreground="White"/>
+          </Border>
+          <Border CornerRadius="999" Background="#1a1a1a"
+                  BorderBrush="#1e293b" BorderThickness="1" Padding="18,10">
+            <TextBlock Text="Beginner" FontSize="13" FontWeight="Medium" Foreground="#94a3b8"/>
+          </Border>
+          <Border CornerRadius="999" Background="#1a1a1a"
+                  BorderBrush="#1e293b" BorderThickness="1" Padding="18,10">
+            <TextBlock Text="15-30 min" FontSize="13" FontWeight="Medium" Foreground="#94a3b8"/>
+          </Border>
+          <Border CornerRadius="999" Background="#1a1a1a"
+                  BorderBrush="#1e293b" BorderThickness="1" Padding="18,10">
+            <TextBlock Text="Equipment" FontSize="13" FontWeight="Medium" Foreground="#94a3b8"/>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+
+      <!-- Categories header -->
+      <Grid ColumnDefinitions="*,Auto" Margin="16,0,16,12">
+        <TextBlock Text="Categories" FontSize="18" FontWeight="Bold" Foreground="White"/>
+        <TextBlock Grid.Column="1" Text="See All" FontSize="12" FontWeight="SemiBold"
+                   Foreground="#256af4" VerticalAlignment="Center"/>
+      </Grid>
+
+      <!-- Category Cards (horizontal scroll) -->
+      <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled">
+        <StackPanel Orientation="Horizontal" Spacing="12" Margin="16,0">
+          <!-- HIIT -->
+          <Border Width="140" Height="190" CornerRadius="16" ClipToBounds="True">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/cat_hiit.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+            <Panel>
+              <Border>
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#00000000" Offset="0"/>
+                    <GradientStop Color="#33000000" Offset="0.4"/>
+                    <GradientStop Color="#CC000000" Offset="1"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <StackPanel VerticalAlignment="Bottom" Margin="12,0,12,12">
+                <TextBlock Text="HIIT" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="12 Sessions" FontSize="11" FontWeight="Light" Foreground="#94a3b8"/>
+              </StackPanel>
+            </Panel>
+          </Border>
+          <!-- Strength -->
+          <Border Width="140" Height="190" CornerRadius="16" ClipToBounds="True">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/cat_strength.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+            <Panel>
+              <Border>
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#00000000" Offset="0"/>
+                    <GradientStop Color="#33000000" Offset="0.4"/>
+                    <GradientStop Color="#CC000000" Offset="1"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <StackPanel VerticalAlignment="Bottom" Margin="12,0,12,12">
+                <TextBlock Text="Strength" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="18 Sessions" FontSize="11" FontWeight="Light" Foreground="#94a3b8"/>
+              </StackPanel>
+            </Panel>
+          </Border>
+          <!-- Yoga -->
+          <Border Width="140" Height="190" CornerRadius="16" ClipToBounds="True">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/cat_yoga.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+            <Panel>
+              <Border>
+                <Border.Background>
+                  <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#00000000" Offset="0"/>
+                    <GradientStop Color="#33000000" Offset="0.4"/>
+                    <GradientStop Color="#CC000000" Offset="1"/>
+                  </LinearGradientBrush>
+                </Border.Background>
+              </Border>
+              <StackPanel VerticalAlignment="Bottom" Margin="12,0,12,12">
+                <TextBlock Text="Yoga" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="8 Sessions" FontSize="11" FontWeight="Light" Foreground="#94a3b8"/>
+              </StackPanel>
+            </Panel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+
+      <Border Height="20"/>
+
+      <!-- Recommended header -->
+      <TextBlock Text="Recommended for You" FontSize="18" FontWeight="Bold" Foreground="White"
+                 Margin="16,0,16,12"/>
+
+      <!-- Recommended Card 1: Full Body Ignite -->
+      <Border x:Name="RecCard1" CornerRadius="16" Background="#1a1a1a"
+              Padding="12" Margin="16,0,16,12"
+              Cursor="Hand" PointerPressed="OnRecCard1Pressed">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Border Width="80" Height="80" CornerRadius="12" ClipToBounds="True">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/rec_fullbody.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+          </Border>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+            <TextBlock Text="INTERMEDIATE" FontSize="9" FontWeight="Bold"
+                       Foreground="#256af4" LetterSpacing="1" Margin="0,0,0,2"/>
+            <TextBlock Text="Full Body Ignite" FontSize="14" FontWeight="Bold" Foreground="White"/>
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,4,0,0">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <Path Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z"
+                      Fill="#64748b" Stretch="Uniform" Width="12" Height="12"
+                      VerticalAlignment="Center"/>
+                <TextBlock Text="32 min" FontSize="11" Foreground="#94a3b8"/>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <Path Data="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"
+                      Fill="#64748b" Stretch="Uniform" Width="12" Height="12"
+                      VerticalAlignment="Center"/>
+                <TextBlock Text="450 kcal" FontSize="11" Foreground="#94a3b8"/>
+              </StackPanel>
+            </StackPanel>
+          </StackPanel>
+          <Button Grid.Column="2" Width="40" Height="40" CornerRadius="20"
+                  Background="#1A256af4" BorderThickness="0" Padding="0"
+                  VerticalAlignment="Center"
+                  Click="OnPlayButtonClicked">
+            <PathIcon Data="M8 5v14l11-7z" Width="16" Height="16" Foreground="#256af4"/>
+          </Button>
+        </Grid>
+      </Border>
+
+      <!-- Recommended Card 2: Sunrise Mobility -->
+      <Border x:Name="RecCard2" CornerRadius="16" Background="#1a1a1a"
+              Padding="12" Margin="16,0,16,12"
+              Cursor="Hand" PointerPressed="OnRecCard2Pressed">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Border Width="80" Height="80" CornerRadius="12" ClipToBounds="True">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/rec_mobility.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+          </Border>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+            <TextBlock Text="BEGINNER" FontSize="9" FontWeight="Bold"
+                       Foreground="#10b981" LetterSpacing="1" Margin="0,0,0,2"/>
+            <TextBlock Text="Sunrise Mobility" FontSize="14" FontWeight="Bold" Foreground="White"/>
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,4,0,0">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <Path Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z"
+                      Fill="#64748b" Stretch="Uniform" Width="12" Height="12"
+                      VerticalAlignment="Center"/>
+                <TextBlock Text="15 min" FontSize="11" Foreground="#94a3b8"/>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <Path Data="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"
+                      Fill="#64748b" Stretch="Uniform" Width="12" Height="12"
+                      VerticalAlignment="Center"/>
+                <TextBlock Text="120 kcal" FontSize="11" Foreground="#94a3b8"/>
+              </StackPanel>
+            </StackPanel>
+          </StackPanel>
+          <Button Grid.Column="2" Width="40" Height="40" CornerRadius="20"
+                  Background="#1A10b981" BorderThickness="0" Padding="0"
+                  VerticalAlignment="Center"
+                  Click="OnPlayButtonClicked">
+            <PathIcon Data="M8 5v14l11-7z" Width="16" Height="16" Foreground="#10b981"/>
+          </Button>
+        </Grid>
+      </Border>
+
+      <!-- Recommended Card 3: Power Core 2.0 -->
+      <Border x:Name="RecCard3" CornerRadius="16" Background="#1a1a1a"
+              Padding="12" Margin="16,0,16,12"
+              Cursor="Hand" PointerPressed="OnRecCard3Pressed">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Border Width="80" Height="80" CornerRadius="12" ClipToBounds="True">
+            <Border.Background>
+              <ImageBrush Source="avares://ControlCatalog/Assets/Pulse/rec_powercore.jpg"
+                          Stretch="UniformToFill"/>
+            </Border.Background>
+          </Border>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+            <TextBlock Text="ADVANCED" FontSize="9" FontWeight="Bold"
+                       Foreground="#f97316" LetterSpacing="1" Margin="0,0,0,2"/>
+            <TextBlock Text="Power Core 2.0" FontSize="14" FontWeight="Bold" Foreground="White"/>
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,4,0,0">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <Path Data="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z"
+                      Fill="#64748b" Stretch="Uniform" Width="12" Height="12"
+                      VerticalAlignment="Center"/>
+                <TextBlock Text="45 min" FontSize="11" Foreground="#94a3b8"/>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <Path Data="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"
+                      Fill="#64748b" Stretch="Uniform" Width="12" Height="12"
+                      VerticalAlignment="Center"/>
+                <TextBlock Text="600 kcal" FontSize="11" Foreground="#94a3b8"/>
+              </StackPanel>
+            </StackPanel>
+          </StackPanel>
+          <Button Grid.Column="2" Width="40" Height="40" CornerRadius="20"
+                  Background="#1Af97316" BorderThickness="0" Padding="0"
+                  VerticalAlignment="Center"
+                  Click="OnPlayButtonClicked">
+            <PathIcon Data="M8 5v14l11-7z" Width="16" Height="16" Foreground="#f97316"/>
+          </Button>
+        </Grid>
+      </Border>
+
+      <Border Height="16"/>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

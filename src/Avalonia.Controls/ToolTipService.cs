@@ -38,12 +38,12 @@ namespace Avalonia.Controls
             if (e is RawPointerEventArgs pointerEvent)
             {
                 bool isTooltipEvent = false;
-                if (_tipControl?.GetValue(ToolTip.ToolTipProperty) is { } currentTip && e.Root == currentTip.PopupHost)
+                if (_tipControl?.GetValue(ToolTip.ToolTipProperty) is { } currentTip && e.Root == (currentTip.PopupHost as Visual)?.GetInputRoot())
                 {
                     isTooltipEvent = true;
                     _lastTipEventTime = pointerEvent.Timestamp;
                 }
-                else if (e.Root == _tipControl?.VisualRoot)
+                else if (e.Root.RootElement == _tipControl?.VisualRoot)
                 {
                     _lastWindowEventTime = pointerEvent.Timestamp;
                 }
@@ -53,7 +53,7 @@ namespace Avalonia.Controls
                     case RawPointerEventType.Move:
                         Update(pointerEvent.Root, pointerEvent.InputHitTestResult.element as Visual);
                         break;
-                    case RawPointerEventType.LeaveWindow when (e.Root == _tipControl?.VisualRoot && _lastTipEventTime != e.Timestamp) || (isTooltipEvent && _lastWindowEventTime != e.Timestamp):
+                    case RawPointerEventType.LeaveWindow when (e.Root.RootElement == _tipControl?.VisualRoot && _lastTipEventTime != e.Timestamp) || (isTooltipEvent && _lastWindowEventTime != e.Timestamp):
                         ClearTip();
                         _tipControl = null;
                         break;

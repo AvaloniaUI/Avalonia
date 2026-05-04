@@ -1,10 +1,7 @@
-using System;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 
 namespace Avalonia.Native;
-
-#nullable enable
 
 internal class MacOSActivatableLifetime : ActivatableLifetimeBase
 {

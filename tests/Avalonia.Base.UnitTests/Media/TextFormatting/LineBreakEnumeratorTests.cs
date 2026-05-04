@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net.Http;
 using Avalonia.Media.TextFormatting.Unicode;
 using Xunit;
-using Xunit.Abstractions;
 using static Avalonia.Media.TextFormatting.Unicode.LineBreakEnumerator;
 
 namespace Avalonia.Base.UnitTests.Media.TextFormatting
