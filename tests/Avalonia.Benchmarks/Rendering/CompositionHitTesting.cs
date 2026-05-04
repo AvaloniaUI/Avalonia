@@ -19,7 +19,6 @@ public class CompositionHitTesting
     private CompositorTestServices? _services;
     private CompositionVisual? _rootVisual;
     private Point _hitPoint;
-    private Point _globalHitPoint;
     private Border? _expectedHit;
 
     [Params(1024, 4096, 16384)]
@@ -60,7 +59,6 @@ public class CompositionHitTesting
 
         _rootVisual = _services.TopLevel.CompositionVisual;
         _hitPoint = new Point(CellSize / 2d, CellSize / 2d);
-        _globalHitPoint = _hitPoint * _services.Renderer.CompositionTarget.Scaling;
 
         if (!ReferenceEquals(HitTestFirst_RTree(), _expectedHit))
             throw new InvalidOperationException("R-tree hit test returned an unexpected visual.");
@@ -81,10 +79,14 @@ public class CompositionHitTesting
     [Benchmark(Baseline = true)]
     public Visual? HitTestFirst_Linear()
     {
-        _services!.Renderer.CompositionTarget.Server.Readback.NextRead();
+        _services!.Renderer.CompositionTarget.Server.Compositor.Readback.NextRead();
+
+        var rootReadback = _rootVisual!.TryGetValidReadback();
+        if (rootReadback == null)
+            return null;
 
         using var results = new PooledList<CompositionVisual>();
-        LinearHitTestCore(_rootVisual!, _globalHitPoint, results);
+        LinearHitTestCore(_rootVisual, _hitPoint.Transform(rootReadback.Matrix), results);
 
         foreach (var visual in results)
         {
@@ -101,13 +103,24 @@ public class CompositionHitTesting
         return _services!.Renderer.HitTestFirst(_hitPoint, _services.TopLevel, null);
     }
 
-    private static void LinearHitTestCore(CompositionVisual visual, Point globalPoint, PooledList<CompositionVisual> result)
+    private static void LinearHitTestCore(CompositionVisual visual, Point parentPoint, PooledList<CompositionVisual> result)
     {
         if (visual.Visible == false)
             return;
 
-        if (!TryTransformTo(visual, globalPoint, out var point))
+        var readback = visual.TryGetValidReadback();
+        if (readback == null)
             return;
+
+        if (!visual.DisableSubTreeBoundsHitTestOptimization &&
+            (readback.TransformedSubtreeBounds == null ||
+             !readback.TransformedSubtreeBounds.Value.Contains(parentPoint)))
+            return;
+
+        if (!readback.Matrix.TryInvert(out var inverted))
+            return;
+
+        var point = parentPoint.Transform(inverted);
 
         if (visual.ClipToBounds
             && (point.X < 0 || point.Y < 0 || point.X > visual.Size.X || point.Y > visual.Size.Y))
@@ -119,22 +132,10 @@ public class CompositionHitTesting
         if (visual is CompositionContainerVisual container)
         {
             for (var c = container.Children.Count - 1; c >= 0; c--)
-                LinearHitTestCore(container.Children[c], globalPoint, result);
+                LinearHitTestCore(container.Children[c], point, result);
         }
 
         if (visual.HitTest(point))
             result.Add(visual);
-    }
-
-    private static bool TryTransformTo(CompositionVisual visual, Point globalPoint, out Point point)
-    {
-        point = default;
-
-        var matrix = visual.TryGetServerGlobalTransform();
-        if (matrix == null || !matrix.Value.TryInvert(out var inverted))
-            return false;
-
-        point = globalPoint * inverted;
-        return true;
     }
 }
