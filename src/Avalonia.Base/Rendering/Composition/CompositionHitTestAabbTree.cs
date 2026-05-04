@@ -24,6 +24,12 @@ internal sealed class CompositionHitTestAabbTree
     private int _root = Null;
     private int _freeList = Null;
 
+    public CompositionHitTestAabbTree(CompositionVisualCollection children)
+    {
+        for (var i = 0; i < children.Count; i++)
+            Add(children[i], i);
+    }
+
     public void Clear()
     {
         _leaves.Clear();
@@ -34,19 +40,10 @@ internal sealed class CompositionHitTestAabbTree
         _freeList = Null;
     }
 
-    public void Rebuild(CompositionVisualCollection children)
-    {
-        Clear();
-
-        for (var i = 0; i < children.Count; i++)
-            Add(children[i], i);
-    }
-
-    public bool Update(CompositionVisual visual)
+    public void Update(CompositionVisual visual, int order)
     {
         if (_leaves.TryGetValue(visual, out var leaf))
         {
-            var order = _nodes[leaf].Order;
             var state = GetBoundsState(visual, out var bounds);
 
             if (state == BoundsState.Bounded)
@@ -61,27 +58,51 @@ internal sealed class CompositionHitTestAabbTree
                     _unbounded[visual] = order;
             }
 
-            return true;
+            return;
         }
 
-        if (_unbounded.TryGetValue(visual, out var unboundedOrder))
+        if (_unbounded.ContainsKey(visual))
         {
             var state = GetBoundsState(visual, out var bounds);
 
             if (state == BoundsState.Unbounded)
             {
-                return true;
+                _unbounded[visual] = order;
+                return;
             }
 
             _unbounded.Remove(visual);
 
             if (state == BoundsState.Bounded)
-                CreateLeaf(visual, bounds, unboundedOrder);
+                CreateLeaf(visual, bounds, order);
 
-            return true;
+            return;
         }
 
-        return false;
+        Add(visual, order);
+    }
+
+    public void Remove(CompositionVisual visual)
+    {
+        if (_leaves.TryGetValue(visual, out var leaf))
+        {
+            DestroyLeaf(visual, leaf);
+            return;
+        }
+
+        _unbounded.Remove(visual);
+    }
+
+    public void UpdateOrder(CompositionVisual visual, int order)
+    {
+        if (_leaves.TryGetValue(visual, out var leaf))
+        {
+            SetOrder(leaf, order);
+            return;
+        }
+
+        if (_unbounded.ContainsKey(visual))
+            _unbounded[visual] = order;
     }
 
     public void Query(Point point, PooledList<CompositionVisual> results)
@@ -218,6 +239,7 @@ internal sealed class CompositionHitTestAabbTree
 
     private void MoveLeaf(int leaf, LtrbRect bounds)
     {
+        // If the exact bounds still fit inside the fat bounds, the tree shape can stay unchanged.
         if (_nodes[leaf].Bounds.Contains(bounds))
             return;
 
@@ -294,6 +316,14 @@ internal sealed class CompositionHitTestAabbTree
         var sibling = FindBestSibling(leafBounds);
         var oldParent = _nodes[sibling].Parent;
         var newParent = AllocateNode();
+
+        // Insert by replacing the chosen sibling with a new internal parent:
+        //
+        // Before: oldParent        After: oldParent
+        //             |                       |
+        //          sibling                newParent
+        //                                  /      \
+        //                             sibling    leaf
         var parentNode = _nodes[newParent];
         parentNode.Parent = oldParent;
         parentNode.Bounds = leafBounds.Union(_nodes[sibling].Bounds);
@@ -344,6 +374,7 @@ internal sealed class CompositionHitTestAabbTree
             var cost1 = GetInsertionCost(child1, leafBounds, inheritanceCost);
             var cost2 = GetInsertionCost(child2, leafBounds, inheritanceCost);
 
+            // Stop descending when pairing with this internal node is already cheaper.
             if (cost < cost1 && cost < cost2)
                 break;
 
@@ -378,8 +409,14 @@ internal sealed class CompositionHitTestAabbTree
         var grandParent = parentNode.Parent;
         var sibling = parentNode.Child1 == leaf ? parentNode.Child2 : parentNode.Child1;
 
+        // Collapse the removed leaf's parent and promote the sibling.
         if (grandParent != Null)
         {
+            // Before: grandParent        After: grandParent
+            //             |                       |
+            //           parent                 sibling
+            //           /    \
+            //        leaf  sibling
             var grandParentNode = _nodes[grandParent];
             if (grandParentNode.Child1 == parent)
                 grandParentNode.Child1 = sibling;
@@ -396,6 +433,11 @@ internal sealed class CompositionHitTestAabbTree
         }
         else
         {
+            // If the parent was the root, the sibling becomes the new root.
+            //
+            // Before: parent(root)       After: sibling(root)
+            //          /    \
+            //       leaf  sibling
             _root = sibling;
             var siblingNode = _nodes[sibling];
             siblingNode.Parent = Null;
@@ -416,6 +458,8 @@ internal sealed class CompositionHitTestAabbTree
             var node = _nodes[index];
             var child1 = _nodes[node.Child1];
             var child2 = _nodes[node.Child2];
+
+            // Ancestor bounds always cover both children after insert/remove/rotate.
             node.Bounds = child1.Bounds.Union(child2.Bounds);
             node.Height = 1 + Math.Max(child1.Height, child2.Height);
             _nodes[index] = node;
@@ -436,9 +480,11 @@ internal sealed class CompositionHitTestAabbTree
         var c = _nodes[indexC];
         var balance = c.Height - b.Height;
 
+        // The right subtree is heavier than the left. Rotate C up.
         if (balance > 1)
             return RotateCUp(indexA, indexB, indexC);
 
+        // The left subtree is heavier than the right. Rotate B up.
         if (balance < -1)
             return RotateBUp(indexA, indexB, indexC);
 
@@ -447,6 +493,19 @@ internal sealed class CompositionHitTestAabbTree
 
     private int RotateCUp(int indexA, int indexB, int indexC)
     {
+        // Rotate C above A:
+        //
+        // Before:      A                   After, if F taller:  C
+        //             / \                                      / \
+        //            B   C                                    A   F
+        //               / \                                  / \
+        //              F   G                                B   G
+        //
+        //                                  After, otherwise:    C
+        //                                                      / \
+        //                                                     A   G
+        //                                                    / \
+        //                                                   B   F
         var a = _nodes[indexA];
         var c = _nodes[indexC];
         var indexF = c.Child1;
@@ -458,8 +517,10 @@ internal sealed class CompositionHitTestAabbTree
         c.Parent = a.Parent;
         a.Parent = indexC;
 
+        // C takes A's old place in the parent chain.
         ReplaceParentChild(indexA, indexC, c.Parent);
 
+        // Keep the taller C child with C, and move the other child under A.
         if (f.Height > g.Height)
         {
             c.Child2 = indexF;
@@ -490,6 +551,19 @@ internal sealed class CompositionHitTestAabbTree
 
     private int RotateBUp(int indexA, int indexB, int indexC)
     {
+        // Rotate B above A:
+        //
+        // Before:      A                  After, if D taller:   B
+        //             / \                                      / \
+        //            B   C                                    A   D
+        //           / \                                      / \
+        //          D   E                                    E   C
+        //
+        //                                 After, otherwise:     B
+        //                                                      / \
+        //                                                     A   E
+        //                                                    / \
+        //                                                   D   C
         var a = _nodes[indexA];
         var b = _nodes[indexB];
         var indexD = b.Child1;
@@ -501,8 +575,10 @@ internal sealed class CompositionHitTestAabbTree
         b.Parent = a.Parent;
         a.Parent = indexB;
 
+        // B takes A's old place in the parent chain.
         ReplaceParentChild(indexA, indexB, b.Parent);
 
+        // Keep the taller B child with B, and move the other child under A.
         if (d.Height > e.Height)
         {
             b.Child2 = indexD;
@@ -565,6 +641,7 @@ internal sealed class CompositionHitTestAabbTree
         return BoundsState.Bounded;
     }
 
+    // Fatten the bounds by a small amount to avoid having to update the tree for every tiny movement.
     private static LtrbRect Fatten(LtrbRect bounds) =>
         new(bounds.Left - FatBoundsPadding,
             bounds.Top - FatBoundsPadding,
@@ -602,6 +679,7 @@ internal sealed class CompositionHitTestAabbTree
 
     private sealed class CandidateComparer : IComparer<Candidate>
     {
+        // Higher child order is topmost, sort descending.
         public int Compare(Candidate left, Candidate right) => right.Order.CompareTo(left.Order);
     }
 }

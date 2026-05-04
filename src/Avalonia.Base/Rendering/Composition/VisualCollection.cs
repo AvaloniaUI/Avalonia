@@ -41,7 +41,7 @@ namespace Avalonia.Rendering.Composition
         partial void OnAdded(CompositionVisual item)
         {
             item.Parent = _owner;
-            InvalidateHitTestChildren();
+            AddHitTestChild(item);
         }
 
         partial void OnBeforeReplace(CompositionVisual oldItem, CompositionVisual newItem)
@@ -62,7 +62,7 @@ namespace Avalonia.Rendering.Composition
         partial void OnRemoved(CompositionVisual item)
         {
             item.Parent = null;
-            InvalidateHitTestChildren();
+            RemoveHitTestChild(item);
         }
 
         partial void OnBeforeClear()
@@ -71,7 +71,7 @@ namespace Avalonia.Rendering.Composition
                 i.Parent = null;
         }
 
-        partial void OnClear() => InvalidateHitTestChildren();
+        partial void OnClear() => ClearHitTestChildren();
 
         partial void OnBeforeAdded(CompositionVisual item)
         {
@@ -80,10 +80,22 @@ namespace Avalonia.Rendering.Composition
             item.Parent = _owner;
         }
 
-        private void InvalidateHitTestChildren()
+        private void AddHitTestChild(CompositionVisual item)
         {
             if (_owner is CompositionContainerVisual container)
-                container.InvalidateHitTestChildren();
+                container.AddHitTestChild(item);
+        }
+
+        private void RemoveHitTestChild(CompositionVisual item)
+        {
+            if (_owner is CompositionContainerVisual container)
+                container.RemoveHitTestChild(item);
+        }
+
+        private void ClearHitTestChildren()
+        {
+            if (_owner is CompositionContainerVisual container)
+                container.ClearHitTestChildren();
         }
     }
 }

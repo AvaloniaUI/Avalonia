@@ -10,7 +10,6 @@ namespace Avalonia.Rendering.Composition
     {
         internal const int HitTestAabbTreeThreshold = 32;
         private CompositionHitTestAabbTree? _hitTestChildren;
-        private bool _hitTestChildrenDirty = true;
 
         public CompositionVisualCollection Children { get; private set; } = null!;
 
@@ -26,43 +25,58 @@ namespace Avalonia.Rendering.Composition
             base.OnRootChangedCore();
         }
 
-        internal void InvalidateHitTestChildren()
+        internal void AddHitTestChild(CompositionVisual child)
         {
-            _hitTestChildrenDirty = true;
+            if (_hitTestChildren == null)
+                return;
+
+            var order = Children.IndexOf(child);
+            if (order >= 0)
+                _hitTestChildren.Update(child, order);
+
+            UpdateHitTestChildOrder();
+        }
+
+        internal void RemoveHitTestChild(CompositionVisual child)
+        {
+            if (_hitTestChildren == null)
+                return;
+
+            _hitTestChildren.Remove(child);
+
+            UpdateHitTestChildOrder();
+        }
+
+        internal void ClearHitTestChildren()
+        {
+            _hitTestChildren?.Clear();
         }
 
         internal void UpdateHitTestChildBounds(CompositionVisual child)
         {
-            if (_hitTestChildren == null || _hitTestChildrenDirty)
+            if (_hitTestChildren == null)
                 return;
 
             if (Children.Count < HitTestAabbTreeThreshold)
             {
-                _hitTestChildren.Clear();
                 _hitTestChildren = null;
                 return;
             }
 
-            if (!_hitTestChildren.Update(child))
-                _hitTestChildrenDirty = true;
+            var order = Children.IndexOf(child);
+            if (order >= 0)
+                _hitTestChildren.Update(child, order);
         }
 
         internal bool TryQueryHitTestChildren(Point point, PooledList<CompositionVisual> results)
         {
             if (Children.Count < HitTestAabbTreeThreshold)
             {
-                _hitTestChildren?.Clear();
                 _hitTestChildren = null;
                 return false;
             }
 
-            _hitTestChildren ??= new CompositionHitTestAabbTree();
-
-            if (_hitTestChildrenDirty)
-            {
-                _hitTestChildren.Rebuild(Children);
-                _hitTestChildrenDirty = false;
-            }
+            _hitTestChildren ??= new CompositionHitTestAabbTree(Children);
 
             _hitTestChildren.Query(point, results);
             return true;
@@ -73,22 +87,24 @@ namespace Avalonia.Rendering.Composition
         {
             if (Children.Count < HitTestAabbTreeThreshold)
             {
-                _hitTestChildren?.Clear();
                 _hitTestChildren = null;
                 hit = null;
                 return false;
             }
 
-            _hitTestChildren ??= new CompositionHitTestAabbTree();
-
-            if (_hitTestChildrenDirty)
-            {
-                _hitTestChildren.Rebuild(Children);
-                _hitTestChildrenDirty = false;
-            }
+            _hitTestChildren ??= new CompositionHitTestAabbTree(Children);
 
             hit = _hitTestChildren.QueryFirst(point, ref hitTest);
             return true;
+        }
+
+        private void UpdateHitTestChildOrder()
+        {
+            if (_hitTestChildren == null)
+                return;
+
+            for (var i = 0; i < Children.Count; i++)
+                _hitTestChildren.UpdateOrder(Children[i], i);
         }
     }
 }
