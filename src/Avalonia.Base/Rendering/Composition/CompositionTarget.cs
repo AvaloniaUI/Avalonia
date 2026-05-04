@@ -61,7 +61,7 @@ namespace Avalonia.Rendering.Composition
             }
         }
 
-        PooledList<CompositionVisual> RentHitTestChildCandidates(out bool releaseToField)
+        private PooledList<CompositionVisual> RentHitTestChildCandidates(out bool releaseToField)
         {
             if (!_hitTestChildCandidatesInUse)
             {
@@ -72,10 +72,10 @@ namespace Avalonia.Rendering.Composition
             }
 
             releaseToField = false;
-            return new PooledList<CompositionVisual>();
+            return [];
         }
 
-        void ReleaseHitTestChildCandidates(PooledList<CompositionVisual> candidates, bool releaseToField)
+        private void ReleaseHitTestChildCandidates(PooledList<CompositionVisual> candidates, bool releaseToField)
         {
             if (releaseToField)
             {
@@ -88,7 +88,7 @@ namespace Avalonia.Rendering.Composition
             }
         }
 
-        void HitTestCore(CompositionVisual visual, Point parentPoint, PooledList<CompositionVisual> result, Func<CompositionVisual, bool>? filter)
+        private void HitTestCore(CompositionVisual visual, Point parentPoint, PooledList<CompositionVisual> result, Func<CompositionVisual, bool>? filter)
         {
             if (!HitTestVisual(visual, parentPoint, filter, out var point))
                 return;
@@ -102,7 +102,7 @@ namespace Avalonia.Rendering.Composition
                 result.Add(visual);
         }
 
-        void HitTestChildren(CompositionContainerVisual visual, Point point, PooledList<CompositionVisual> result, Func<CompositionVisual, bool>? filter)
+        private void HitTestChildren(CompositionContainerVisual visual, Point point, PooledList<CompositionVisual> result, Func<CompositionVisual, bool>? filter)
         {
             if (visual.Children.Count >= CompositionContainerVisual.HitTestAabbTreeThreshold)
             {
@@ -126,7 +126,7 @@ namespace Avalonia.Rendering.Composition
                 HitTestCore(visual.Children[c], point, result, filter);
         }
 
-        static bool HitTestVisual(CompositionVisual visual, Point parentPoint, Func<CompositionVisual, bool>? filter, out Point point)
+        private static bool HitTestVisual(CompositionVisual visual, Point parentPoint, Func<CompositionVisual, bool>? filter, out Point point)
         {
             point = default;
 
