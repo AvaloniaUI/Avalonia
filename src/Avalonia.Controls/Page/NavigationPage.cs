@@ -221,6 +221,18 @@ namespace Avalonia.Controls
                 if (eventArgs.Handled)
                     return;
 
+                if(sender.CurrentPage != null)
+                {
+                    var forwarded = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
+                    sender.CurrentPage.RaiseEvent(forwarded);
+
+                    if (forwarded.Handled)
+                        eventArgs.Handled = true;
+                }
+
+                if (eventArgs.Handled)
+                    return;
+
                 if (sender._modalStack.Count > 0)
                 {
                     var forwarded = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
