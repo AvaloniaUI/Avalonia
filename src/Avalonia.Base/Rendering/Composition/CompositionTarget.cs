@@ -11,7 +11,7 @@ namespace Avalonia.Rendering.Composition
     /// </summary>
     internal partial class CompositionTarget
     {
-        private readonly PooledList<CompositionVisual> _hitTestChildCandidates = new();
+        private readonly PooledList<CompositionVisual> _hitTestChildCandidates = [];
         private bool _hitTestChildCandidatesInUse;
 
         partial void OnRootChanged()
