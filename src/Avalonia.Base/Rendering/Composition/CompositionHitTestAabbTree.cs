@@ -7,11 +7,6 @@ namespace Avalonia.Rendering.Composition;
 
 internal sealed class CompositionHitTestAabbTree
 {
-    internal interface IQueryHitTester
-    {
-        CompositionVisual? HitTest(CompositionVisual visual);
-    }
-
     private const int Null = -1;
     private const double FatBoundsPadding = 1;
     private static readonly CandidateComparer s_candidateComparer = new();
