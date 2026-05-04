@@ -20,6 +20,11 @@ namespace Avalonia.Rendering.Composition
         {
         }
 
+        partial void InitializeDefaultsExtra()
+        {
+            Server.Client = this;
+        }
+
         partial void OnRootChanged() => OnRootChangedCore();
 
         partial void OnParentChanging()

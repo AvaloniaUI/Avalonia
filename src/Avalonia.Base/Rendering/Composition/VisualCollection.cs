@@ -38,7 +38,11 @@ namespace Avalonia.Rendering.Composition
 
         public void RemoveAll() => Clear();
 
-        partial void OnAdded(CompositionVisual item) => item.Parent = _owner;
+        partial void OnAdded(CompositionVisual item)
+        {
+            item.Parent = _owner;
+            InvalidateHitTestChildren();
+        }
 
         partial void OnBeforeReplace(CompositionVisual oldItem, CompositionVisual newItem)
         {
@@ -55,7 +59,11 @@ namespace Avalonia.Rendering.Composition
             }
         }
 
-        partial void OnRemoved(CompositionVisual item) => item.Parent = null;
+        partial void OnRemoved(CompositionVisual item)
+        {
+            item.Parent = null;
+            InvalidateHitTestChildren();
+        }
 
         partial void OnBeforeClear()
         {
@@ -63,11 +71,19 @@ namespace Avalonia.Rendering.Composition
                 i.Parent = null;
         }
 
+        partial void OnClear() => InvalidateHitTestChildren();
+
         partial void OnBeforeAdded(CompositionVisual item)
         {
             if (item.Parent != null)
                 throw new InvalidOperationException("Visual already has a parent");
             item.Parent = _owner;
+        }
+
+        private void InvalidateHitTestChildren()
+        {
+            if (_owner is CompositionContainerVisual container)
+                container.InvalidateHitTestChildren();
         }
     }
 }

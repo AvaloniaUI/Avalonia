@@ -1,3 +1,4 @@
+using Avalonia.Collections.Pooled;
 using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition
@@ -7,6 +8,10 @@ namespace Avalonia.Rendering.Composition
     /// </summary>
     public partial class CompositionContainerVisual : CompositionVisual
     {
+        internal static readonly int HitTestAabbTreeThreshold = CompositionHitTestAabbTree.IsEnabled ? 1 : int.MaxValue;
+        private CompositionHitTestAabbTree? _hitTestChildren;
+        private bool _hitTestChildrenDirty = true;
+
         public CompositionVisualCollection Children { get; private set; } = null!;
 
         partial void InitializeDefaultsExtra()
@@ -19,6 +24,48 @@ namespace Avalonia.Rendering.Composition
             foreach (var ch in Children)
                 ch.Root = Root;
             base.OnRootChangedCore();
+        }
+
+        internal void InvalidateHitTestChildren()
+        {
+            _hitTestChildrenDirty = true;
+        }
+
+        internal void UpdateHitTestChildBounds(CompositionVisual child)
+        {
+            if (_hitTestChildren == null || _hitTestChildrenDirty)
+                return;
+
+            if (Children.Count < HitTestAabbTreeThreshold)
+            {
+                _hitTestChildren.Clear();
+                _hitTestChildren = null;
+                return;
+            }
+
+            if (!_hitTestChildren.Update(child))
+                _hitTestChildrenDirty = true;
+        }
+
+        internal bool TryQueryHitTestChildren(Point point, PooledList<CompositionVisual> results)
+        {
+            if (Children.Count < HitTestAabbTreeThreshold)
+            {
+                _hitTestChildren?.Clear();
+                _hitTestChildren = null;
+                return false;
+            }
+
+            _hitTestChildren ??= new CompositionHitTestAabbTree();
+
+            if (_hitTestChildrenDirty)
+            {
+                _hitTestChildren.Rebuild(Children);
+                _hitTestChildrenDirty = false;
+            }
+
+            _hitTestChildren.Query(point, results);
+            return true;
         }
     }
 }

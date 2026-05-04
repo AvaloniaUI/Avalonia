@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Avalonia.Rendering.Composition.Server
@@ -15,11 +16,25 @@ namespace Avalonia.Rendering.Composition.Server
         private ulong _nextWriteRevision = 1;
         public ulong WriteRevision { get; private set; }
         public ulong LastCompletedWrite { get; private set; }
+        private readonly HashSet<CompositionVisual> _pendingHitTestUpdateSet = new();
+        private List<CompositionVisual> _pendingHitTestUpdates = new();
+        private List<CompositionVisual> _readHitTestUpdates = new();
 
-        public void NextRead()
+        public IReadOnlyList<CompositionVisual> NextRead()
         {
             lock (_lock)
+            {
                 ReadRevision = LastCompletedWrite;
+                _readHitTestUpdates.Clear();
+
+                if (_pendingHitTestUpdates.Count > 0)
+                {
+                    (_pendingHitTestUpdates, _readHitTestUpdates) = (_readHitTestUpdates, _pendingHitTestUpdates);
+                    _pendingHitTestUpdateSet.Clear();
+                }
+
+                return _readHitTestUpdates;
+            }
         }
         
         public void BeginWrite()
@@ -32,6 +47,12 @@ namespace Avalonia.Rendering.Composition.Server
         {
             LastCompletedWrite = WriteRevision;
             Monitor.Exit(_lock);
+        }
+
+        internal void AddHitTestUpdate(CompositionVisual? visual)
+        {
+            if (visual != null && _pendingHitTestUpdateSet.Add(visual))
+                _pendingHitTestUpdates.Add(visual);
         }
     }
 }
