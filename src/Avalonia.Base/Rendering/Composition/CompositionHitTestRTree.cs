@@ -8,7 +8,6 @@ namespace Avalonia.Rendering.Composition;
 
 internal readonly struct CompositionHitTestCandidate(CompositionVisual visual, int order)
 {
-
     public CompositionVisual Visual { get; } = visual;
     public int Order { get; } = order;
 }
@@ -23,8 +22,7 @@ internal sealed class CompositionHitTestRTree
 
     public ulong Revision { get; private set; }
 
-    public bool IsCurrent(CompositionVisual root, ulong revision) =>
-        ReferenceEquals(_indexedRoot, root) && Revision == revision;
+    public bool IsCurrent(CompositionVisual root, ulong revision) => ReferenceEquals(_indexedRoot, root) && Revision == revision;
 
     public void Rebuild(CompositionVisual? root, ulong revision)
     {
@@ -194,8 +192,7 @@ internal sealed class CompositionHitTestRTree
     }
 
     private static LtrbRect Union(LtrbRect left, LtrbRect right) =>
-        new(
-            Math.Min(left.Left, right.Left),
+        new(Math.Min(left.Left, right.Left),
             Math.Min(left.Top, right.Top),
             Math.Max(left.Right, right.Right),
             Math.Max(left.Bottom, right.Bottom));

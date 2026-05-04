@@ -110,8 +110,7 @@ namespace Avalonia.Rendering.Composition
                 _hitTestIndexDirty = false;
             }
 
-            if (!TryGetOwnTransform(root, out var rootTransform) ||
-                !TryGetGlobalTransform(root, out var globalTransform))
+            if (!TryGetOwnTransform(root, out var rootTransform) || !TryGetGlobalTransform(root, out var globalTransform))
                 return false;
 
             rootParentPoint = point.Transform(rootTransform);
