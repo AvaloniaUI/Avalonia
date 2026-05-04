@@ -179,7 +179,7 @@ namespace Avalonia.Rendering.Composition
             return HitTestFirstCore(root, point.Transform(readback.Matrix), filter, resultFilter);
         }
 
-        CompositionVisual? HitTestFirstCore(CompositionVisual visual, Point parentPoint, Func<CompositionVisual, bool>? filter, Func<CompositionVisual, bool>? resultFilter)
+        internal CompositionVisual? HitTestFirstCore(CompositionVisual visual, Point parentPoint, Func<CompositionVisual, bool>? filter, Func<CompositionVisual, bool>? resultFilter)
         {
             if (!HitTestVisual(visual, parentPoint, filter, out var point))
                 return null;
@@ -189,8 +189,7 @@ namespace Avalonia.Rendering.Composition
                 var queriedIndexedChildren = false;
                 if (cv.Children.Count >= CompositionContainerVisual.HitTestAabbTreeThreshold)
                 {
-                    var query = new FirstHitTestQuery(this, point, filter, resultFilter);
-                    if (cv.TryQueryFirstHitTestChild(point, ref query, out var hit))
+                    if (cv.TryQueryFirstHitTestChild(this, point, filter, resultFilter, out var hit))
                     {
                         queriedIndexedChildren = true;
                         if (hit != null)
@@ -210,16 +209,6 @@ namespace Avalonia.Rendering.Composition
             }
 
             return visual.HitTest(point) && (resultFilter == null || resultFilter(visual)) ? visual : null;
-        }
-
-        private readonly struct FirstHitTestQuery(
-            CompositionTarget target,
-            Point point,
-            Func<CompositionVisual, bool>? filter,
-            Func<CompositionVisual, bool>? resultFilter) : CompositionHitTestAabbTree.IQueryHitTester
-        {
-            public CompositionVisual? HitTest(CompositionVisual visual) =>
-                target.HitTestFirstCore(visual, point, filter, resultFilter);
         }
 
         /// <summary>

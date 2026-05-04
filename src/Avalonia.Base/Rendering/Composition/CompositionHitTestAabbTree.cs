@@ -146,8 +146,7 @@ internal sealed class CompositionHitTestAabbTree
         _queryCandidates.Clear();
     }
 
-    public CompositionVisual? QueryFirst<T>(Point point, ref T hitTest)
-        where T : struct, IQueryHitTester
+    public CompositionVisual? QueryFirst(CompositionTarget target, Point point, Func<CompositionVisual, bool>? filter, Func<CompositionVisual, bool>? resultFilter)
     {
         _queryCandidates.Clear();
 
@@ -184,7 +183,7 @@ internal sealed class CompositionHitTestAabbTree
 
         foreach (var candidate in _queryCandidates)
         {
-            var hit = hitTest.HitTest(candidate.Visual);
+            var hit = target.HitTestFirstCore(candidate.Visual, point, filter, resultFilter);
             if (hit != null)
             {
                 _queryCandidates.Clear();
