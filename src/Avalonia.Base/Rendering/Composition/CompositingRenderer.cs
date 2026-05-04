@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -133,8 +132,21 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
     /// <inheritdoc/>
     public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter)
     {
-        // TODO: Optimize
-        return HitTest(p, root, filter).FirstOrDefault();
+        using var _ = Diagnostic.PerformingHitTest();
+
+        if (root.CompositionVisual == null)
+            return null;
+
+        Func<CompositionVisual, bool>? f = filter == null ? null : v =>
+        {
+            if (v is CompositionDrawListVisual dlv)
+                return filter(dlv.Visual);
+            return true;
+        };
+
+        return CompositionTarget.TryHitTestFirst(p, root.CompositionVisual, f) is CompositionDrawListVisual dv
+            ? dv.Visual
+            : null;
     }
 
     /// <inheritdoc/>

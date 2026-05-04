@@ -38,7 +38,11 @@ namespace Avalonia.Rendering.Composition
 
         public void RemoveAll() => Clear();
 
-        partial void OnAdded(CompositionVisual item) => item.Parent = _owner;
+        partial void OnAdded(CompositionVisual item)
+        {
+            item.Parent = _owner;
+            _owner.Root?.InvalidateHitTestIndex();
+        }
 
         partial void OnBeforeReplace(CompositionVisual oldItem, CompositionVisual newItem)
         {
@@ -55,10 +59,15 @@ namespace Avalonia.Rendering.Composition
             }
         }
 
-        partial void OnRemoved(CompositionVisual item) => item.Parent = null;
+        partial void OnRemoved(CompositionVisual item)
+        {
+            _owner.Root?.InvalidateHitTestIndex();
+            item.Parent = null;
+        }
 
         partial void OnBeforeClear()
         {
+            _owner.Root?.InvalidateHitTestIndex();
             foreach (var i in this)
                 i.Parent = null;
         }

@@ -11,17 +11,24 @@ namespace Avalonia.Rendering.Composition
     /// </summary>
     internal partial class CompositionTarget
     {
+        private readonly CompositionHitTestRTree _hitTestIndex = new();
+        private bool _hitTestIndexDirty = true;
+
         partial void OnRootChanged()
         {
             if (Root != null)
                 Root.Root = this;
+            InvalidateHitTestIndex();
         }
 
         partial void OnRootChanging()
         {
             if (Root != null)
                 Root.Root = null;
+            InvalidateHitTestIndex();
         }
+
+        internal void InvalidateHitTestIndex() => _hitTestIndexDirty = true;
         
         /// <summary>
         /// Attempts to perform a hit-tst
@@ -29,13 +36,21 @@ namespace Avalonia.Rendering.Composition
         /// <returns></returns>
         public PooledList<CompositionVisual>? TryHitTest(Point point, CompositionVisual? root, Func<CompositionVisual, bool>? filter)
         {
-            point *= Scaling;
-            Server.Readback.NextRead();
+            using var candidates = QueryHitTestCandidates(point, out var globalPoint);
             root ??= Root;
             if (root == null)
                 return null;
             var res = new PooledList<CompositionVisual>();
-            HitTestCore(root, point, res, filter);
+
+            if (candidates == null)
+                return res;
+
+            foreach (var candidate in candidates)
+            {
+                if (HitTestCandidate(root, candidate.Visual, globalPoint, filter))
+                    res.Add(candidate.Visual);
+            }
+
             return res;
         }
 
@@ -85,36 +100,91 @@ namespace Avalonia.Rendering.Composition
             return false;
         }
         
-        void HitTestCore(CompositionVisual visual, Point globalPoint, PooledList<CompositionVisual> result,
+        PooledList<CompositionHitTestCandidate>? QueryHitTestCandidates(Point point, out Point globalPoint)
+        {
+            globalPoint = point * Scaling;
+            Server.Readback.NextRead();
+
+            if (Root == null)
+                return null;
+
+            if (_hitTestIndexDirty || !_hitTestIndex.IsCurrent(Root, Server.Readback.ReadRevision))
+            {
+                _hitTestIndex.Rebuild(Root, Server.Readback.ReadRevision);
+                _hitTestIndexDirty = false;
+            }
+
+            var candidates = new PooledList<CompositionHitTestCandidate>();
+            _hitTestIndex.Query(globalPoint, candidates);
+            candidates.Sort(static (left, right) => left.Order.CompareTo(right.Order));
+            return candidates;
+        }
+
+        static bool HitTestCandidate(CompositionVisual root, CompositionVisual visual, Point globalPoint,
             Func<CompositionVisual, bool>? filter)
         {
+            using var path = new PooledList<CompositionVisual>();
+
+            for (var current = visual; current != null; current = current.Parent)
+            {
+                path.Add(current);
+                if (ReferenceEquals(current, root))
+                    break;
+            }
+
+            if (path.Count == 0 || !ReferenceEquals(path[path.Count - 1], root))
+                return false;
+
+            Point point = default;
+            for (var c = path.Count - 1; c >= 0; c--)
+            {
+                if (!HitTestVisual(path[c], globalPoint, filter, out point))
+                    return false;
+            }
+
+            return visual.HitTest(point);
+        }
+
+        static bool HitTestVisual(CompositionVisual visual, Point globalPoint, Func<CompositionVisual, bool>? filter,
+            out Point point)
+        {
+            point = default;
+
             if (visual.Visible == false)
-                return;
-            
+                return false;
+
             if (filter != null && !filter(visual))
-                return;
-            
-            if (!TryTransformTo(visual, globalPoint, out var point))
-                return;
+                return false;
+
+            if (!TryTransformTo(visual, globalPoint, out point))
+                return false;
 
             if (visual.ClipToBounds
                 && (point.X < 0 || point.Y < 0 || point.X > visual.Size.X || point.Y > visual.Size.Y))
-                return;
+                return false;
 
             if (visual.Clip?.FillContains(point) == false)
-                return;
-            
-            // Inspect children
-            if (visual is CompositionContainerVisual cv)
-                for (var c = cv.Children.Count - 1; c >= 0; c--)
+                return false;
+
+            return true;
+        }
+
+        public CompositionVisual? TryHitTestFirst(Point point, CompositionVisual? root, Func<CompositionVisual, bool>? filter)
+        {
+            using var candidates = QueryHitTestCandidates(point, out var globalPoint);
+            root ??= Root;
+            if (root == null || candidates == null)
+                return null;
+
+            foreach (var candidate in candidates)
+            {
+                if (HitTestCandidate(root, candidate.Visual, globalPoint, filter))
                 {
-                    var ch = cv.Children[c];
-                    HitTestCore(ch, globalPoint, result, filter);
+                    return candidate.Visual;
                 }
-            
-            // Hit-test the current node
-            if (visual.HitTest(point)) 
-                result.Add(visual);
+            }
+
+            return null;
         }
 
         /// <summary>

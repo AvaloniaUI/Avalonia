@@ -17,9 +17,29 @@ namespace Avalonia.Rendering.Composition
         {
         }
 
-        partial void OnRootChanged() => OnRootChangedCore();
+        partial void OnRootChanged()
+        {
+            OnRootChangedCore();
+            Root?.InvalidateHitTestIndex();
+        }
+
+            partial void OnRootChanging() => Root?.InvalidateHitTestIndex();
 
         partial void OnParentChanged() => Root = Parent?.Root;
+
+        partial void OnVisibleChanged() => Root?.InvalidateHitTestIndex();
+        partial void OnClipChanged() => Root?.InvalidateHitTestIndex();
+        partial void OnClipToBoundsChanged() => Root?.InvalidateHitTestIndex();
+        partial void OnOffsetChanged() => Root?.InvalidateHitTestIndex();
+        partial void OnSizeChanged() => Root?.InvalidateHitTestIndex();
+        partial void OnAnchorPointChanged() => Root?.InvalidateHitTestIndex();
+        partial void OnCenterPointChanged() => Root?.InvalidateHitTestIndex();
+        partial void OnRotationAngleChanged() => Root?.InvalidateHitTestIndex();
+        partial void OnOrientationChanged() => Root?.InvalidateHitTestIndex();
+        partial void OnScaleChanged() => Root?.InvalidateHitTestIndex();
+        partial void OnTransformMatrixChanged() => Root?.InvalidateHitTestIndex();
+        partial void OnAdornedVisualChanged() => Root?.InvalidateHitTestIndex();
+        partial void OnAdornerIsClippedChanged() => Root?.InvalidateHitTestIndex();
 
         public IBrush? OpacityMask
         {

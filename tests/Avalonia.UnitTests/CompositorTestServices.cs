@@ -108,7 +108,7 @@ public class CompositorTestServices : IDisposable
     public void AssertHitTestFirst(Point pt, Func<Visual, bool>? filter, Visual? expected)
     {
         RunJobs();
-        var tested = Renderer.HitTest(pt, TopLevel, filter).First();
+        var tested = Renderer.HitTestFirst(pt, TopLevel, filter);
         Assert.Equal(expected, tested);
     }
 

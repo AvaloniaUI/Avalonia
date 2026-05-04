@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Drawing.Nodes;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
@@ -22,11 +23,27 @@ internal class CompositionRenderData : ICompositorSerializable, IDisposable
     public ServerCompositionRenderData Server { get; }
     private PooledInlineList<ICompositionRenderResource> _resources;
     private PooledInlineList<IRenderDataItem> _items;
+    private LtrbRect? _bounds;
+    private bool _boundsValid;
     private bool _itemsSent;
     public void AddResource(ICompositionRenderResource resource) => _resources.Add(resource);
 
     public void Add(IRenderDataItem item) => _items.Add(item);
-    
+
+    public LtrbRect? Bounds
+    {
+        get
+        {
+            if (!_boundsValid)
+            {
+                _bounds = CalculateRenderBounds();
+                _boundsValid = true;
+            }
+
+            return _bounds;
+        }
+    }
+
     public void Dispose()
     {
         if (!_itemsSent)
@@ -46,6 +63,15 @@ internal class CompositionRenderData : ICompositorSerializable, IDisposable
     }
 
     public SimpleServerObject TryGetServer(Compositor c) => Server;
+
+    private LtrbRect? CalculateRenderBounds()
+    {
+        LtrbRect? totalBounds = null;
+        foreach (var item in _items)
+            totalBounds = LtrbRect.FullUnion(totalBounds, item.Bounds);
+
+        return ServerCompositionRenderData.ApplyRenderBoundsRounding(totalBounds);
+    }
 
     public void SerializeChanges(Compositor c, BatchStreamWriter writer)
     {

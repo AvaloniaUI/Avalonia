@@ -28,6 +28,7 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
             _drawList?.Dispose();
             _drawList = value;
             _drawListChanged = true;
+            Root?.InvalidateHitTestIndex();
             RegisterForSerialization();
         }
     }
