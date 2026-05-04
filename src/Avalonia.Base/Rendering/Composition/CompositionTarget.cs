@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Collections.Pooled;
 
@@ -9,8 +10,13 @@ namespace Avalonia.Rendering.Composition
     /// </summary>
     internal partial class CompositionTarget
     {
+        private static readonly HitTestCandidateComparer s_hitTestCandidateComparer = new();
         private readonly CompositionHitTestRTree _hitTestIndex = new();
+        private readonly PooledList<CompositionHitTestCandidate> _hitTestCandidates = new();
+        private readonly PooledList<CompositionVisual> _hitTestPath = new();
         private bool _hitTestIndexDirty = true;
+        private bool _hitTestCandidatesInUse;
+        private bool _hitTestPathInUse;
 
         partial void OnRootChanged()
         {
@@ -38,32 +44,64 @@ namespace Avalonia.Rendering.Composition
             if (root == null)
                 return null;
 
-            using var candidates = QueryHitTestCandidates(root, point, out var rootParentPoint);
-            if (candidates == null)
-                return null;
-
-            var res = new PooledList<CompositionVisual>();
-
-            foreach (var candidate in candidates)
+            var candidates = RentHitTestCandidates(out var releaseToField);
+            try
             {
-                if (HitTestCandidate(root, candidate.Visual, rootParentPoint, filter))
-                    res.Add(candidate.Visual);
-            }
+                if (!QueryHitTestCandidates(root, point, candidates, out var rootParentPoint))
+                    return null;
 
-            return res;
+                var res = new PooledList<CompositionVisual>();
+
+                foreach (var candidate in candidates)
+                {
+                    if (HitTestCandidate(root, candidate.Visual, rootParentPoint, filter))
+                        res.Add(candidate.Visual);
+                }
+
+                return res;
+            }
+            finally
+            {
+                ReleaseHitTestCandidates(candidates, releaseToField);
+            }
         }
 
-        PooledList<CompositionHitTestCandidate>? QueryHitTestCandidates(
-            CompositionVisual root,
-            Point point,
-            out Point rootParentPoint)
+        PooledList<CompositionHitTestCandidate> RentHitTestCandidates(out bool releaseToField)
+        {
+            if (!_hitTestCandidatesInUse)
+            {
+                _hitTestCandidatesInUse = true;
+                releaseToField = true;
+                _hitTestCandidates.Clear();
+                return _hitTestCandidates;
+            }
+
+            releaseToField = false;
+            return new PooledList<CompositionHitTestCandidate>();
+        }
+
+        void ReleaseHitTestCandidates(PooledList<CompositionHitTestCandidate> candidates, bool releaseToField)
+        {
+            if (releaseToField)
+            {
+                candidates.Clear();
+                _hitTestCandidatesInUse = false;
+            }
+            else
+            {
+                candidates.Dispose();
+            }
+        }
+
+        bool QueryHitTestCandidates(CompositionVisual root, Point point, PooledList<CompositionHitTestCandidate> candidates, out Point rootParentPoint)
         {
             rootParentPoint = default;
+            candidates.Clear();
 
             Server.Compositor.Readback.NextRead();
 
             if (Root == null || root.Root != this)
-                return null;
+                return false;
 
             var readRevision = Server.Compositor.Readback.ReadRevision;
             if (_hitTestIndexDirty || !_hitTestIndex.IsCurrent(Root, readRevision))
@@ -74,47 +112,77 @@ namespace Avalonia.Rendering.Composition
 
             if (!TryGetOwnTransform(root, out var rootTransform) ||
                 !TryGetGlobalTransform(root, out var globalTransform))
-                return null;
+                return false;
 
             rootParentPoint = point.Transform(rootTransform);
             var indexPoint = point.Transform(globalTransform);
 
-            var candidates = new PooledList<CompositionHitTestCandidate>();
             _hitTestIndex.Query(indexPoint, candidates);
-            candidates.Sort(static (left, right) => left.Order.CompareTo(right.Order));
-            return candidates;
+            candidates.Sort(s_hitTestCandidateComparer);
+            return true;
         }
 
-        static bool HitTestCandidate(CompositionVisual root, CompositionVisual visual, Point rootParentPoint,
-            Func<CompositionVisual, bool>? filter)
+        PooledList<CompositionVisual> RentHitTestPath(out bool releaseToField)
         {
-            using var path = new PooledList<CompositionVisual>();
-
-            for (var current = visual; current != null; current = current.Parent)
+            if (!_hitTestPathInUse)
             {
-                path.Add(current);
-                if (ReferenceEquals(current, root))
-                    break;
+                _hitTestPathInUse = true;
+                releaseToField = true;
+                _hitTestPath.Clear();
+                return _hitTestPath;
             }
 
-            if (path.Count == 0 || !ReferenceEquals(path[path.Count - 1], root))
-                return false;
+            releaseToField = false;
+            return new PooledList<CompositionVisual>();
+        }
 
-            var parentPoint = rootParentPoint;
-            Point point = default;
-            for (var c = path.Count - 1; c >= 0; c--)
+        void ReleaseHitTestPath(PooledList<CompositionVisual> path, bool releaseToField)
+        {
+            if (releaseToField)
             {
-                if (!HitTestVisual(path[c], parentPoint, filter, out point))
+                path.Clear();
+                _hitTestPathInUse = false;
+            }
+            else
+            {
+                path.Dispose();
+            }
+        }
+
+        bool HitTestCandidate(CompositionVisual root, CompositionVisual visual, Point rootParentPoint, Func<CompositionVisual, bool>? filter)
+        {
+            var path = RentHitTestPath(out var releaseToField);
+            try
+            {
+                for (var current = visual; current != null; current = current.Parent)
+                {
+                    path.Add(current);
+                    if (ReferenceEquals(current, root))
+                        break;
+                }
+
+                if (path.Count == 0 || !ReferenceEquals(path[path.Count - 1], root))
                     return false;
 
-                parentPoint = point;
-            }
+                var parentPoint = rootParentPoint;
+                Point point = default;
+                for (var c = path.Count - 1; c >= 0; c--)
+                {
+                    if (!HitTestVisual(path[c], parentPoint, filter, out point))
+                        return false;
 
-            return visual.HitTest(point);
+                    parentPoint = point;
+                }
+
+                return visual.HitTest(point);
+            }
+            finally
+            {
+                ReleaseHitTestPath(path, releaseToField);
+            }
         }
 
-        static bool HitTestVisual(CompositionVisual visual, Point parentPoint, Func<CompositionVisual, bool>? filter,
-            out Point point)
+        static bool HitTestVisual(CompositionVisual visual, Point parentPoint, Func<CompositionVisual, bool>? filter, out Point point)
         {
             point = default;
 
@@ -184,22 +252,35 @@ namespace Avalonia.Rendering.Composition
             if (root == null)
                 return null;
 
-            using var candidates = QueryHitTestCandidates(root, point, out var rootParentPoint);
-            if (candidates == null)
-                return null;
-
-            foreach (var candidate in candidates)
+            var candidates = RentHitTestCandidates(out var releaseToField);
+            try
             {
-                if (HitTestCandidate(root, candidate.Visual, rootParentPoint, filter))
-                    return candidate.Visual;
-            }
+                if (!QueryHitTestCandidates(root, point, candidates, out var rootParentPoint))
+                    return null;
 
-            return null;
+                foreach (var candidate in candidates)
+                {
+                    if (HitTestCandidate(root, candidate.Visual, rootParentPoint, filter))
+                        return candidate.Visual;
+                }
+
+                return null;
+            }
+            finally
+            {
+                ReleaseHitTestCandidates(candidates, releaseToField);
+            }
         }
 
         /// <summary>
         /// Registers the composition target for explicit redraw
         /// </summary>
         public void RequestRedraw() => RegisterForSerialization();
+
+        private sealed class HitTestCandidateComparer : IComparer<CompositionHitTestCandidate>
+        {
+            public int Compare(CompositionHitTestCandidate left, CompositionHitTestCandidate right) =>
+                left.Order.CompareTo(right.Order);
+        }
     }
 }
