@@ -8,7 +8,7 @@ namespace Avalonia.Rendering.Composition
     /// </summary>
     public partial class CompositionContainerVisual : CompositionVisual
     {
-        internal static readonly int HitTestAabbTreeThreshold = CompositionHitTestAabbTree.IsEnabled ? 32 : int.MaxValue;
+        internal const int HitTestAabbTreeThreshold = 32;
         private CompositionHitTestAabbTree? _hitTestChildren;
         private bool _hitTestChildrenDirty = true;
 

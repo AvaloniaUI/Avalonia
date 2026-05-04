@@ -101,8 +101,7 @@ partial class ServerCompositionVisual
         slot.TransformedSubtreeBounds = _transformedSubTreeBounds;
         slot.Visible = Visible;
 
-        if (CompositionHitTestAabbTree.IsEnabled)
-            Compositor.Readback.AddHitTestUpdate(Client);
+        Compositor.Readback.AddHitTestUpdate(Client);
     }
     
 

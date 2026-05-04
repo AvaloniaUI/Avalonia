@@ -8,6 +8,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -491,6 +492,105 @@ public class CompositorHitTestingTests : CompositorTestsBase
 
             s.AssertHitTest(new Point(100, 100), null, child, parent);
             s.AssertHitTest(new Point(100, 100), v => v != parent);
+        }
+    }
+
+    [Fact]
+    public void HitTestFirst_Should_Skip_Element_Child_Composition_Visual()
+    {
+        using (var s = new CompositorTestServices(new Size(200, 200)))
+        {
+            var target = new Border
+            {
+                Width = 200,
+                Height = 200,
+                Background = Brushes.Red
+            };
+
+            s.TopLevel.Content = target;
+            s.RunJobs();
+
+            var childVisual = s.Compositor.CreateSolidColorVisual();
+            childVisual.Size = new Vector(200, 200);
+            childVisual.Color = Colors.Blue;
+            ElementComposition.SetElementChildVisual(target, childVisual);
+
+            s.AssertHitTestFirst(new Point(100, 100), null, target);
+        }
+    }
+
+    [Fact]
+    public void HitTest_Should_Find_Control_With_Many_Siblings()
+    {
+        using (var s = new CompositorTestServices(new Size(1000, 200)))
+        {
+            Border target = null!;
+            var canvas = new Canvas { Width = 1000, Height = 200 };
+
+            for (var i = 0; i < 70; i++)
+            {
+                var child = new Border { Width = 8, Height = 8, Background = Brushes.Red };
+                Canvas.SetLeft(child, i * 12);
+                canvas.Children.Add(child);
+
+                if (i == 0)
+                    target = child;
+            }
+
+            s.TopLevel.Content = canvas;
+            s.AssertHitTestFirst(new Point(4, 4), null, target);
+        }
+    }
+
+    [Fact]
+    public void HitTest_Should_Return_Top_Controls_First_With_Many_Overlapping_Siblings()
+    {
+        using (var s = new CompositorTestServices(new Size(200, 200)))
+        {
+            Border top = null!;
+            var canvas = new Canvas { Width = 200, Height = 200 };
+
+            for (var i = 0; i < 70; i++)
+            {
+                var child = new Border { Width = 100, Height = 100, Background = Brushes.Red };
+                Canvas.SetLeft(child, 50);
+                Canvas.SetTop(child, 50);
+                canvas.Children.Add(child);
+
+                if (i == 69)
+                    top = child;
+            }
+
+            s.TopLevel.Content = canvas;
+            s.AssertHitTestFirst(new Point(100, 100), null, top);
+            s.AssertHitTest(new Point(100, 100), null, canvas.Children.Cast<Visual>().Reverse().ToArray());
+        }
+    }
+
+    [Fact]
+    public void HitTest_Should_Update_Many_Sibling_Index_When_Child_Moves()
+    {
+        using (var s = new CompositorTestServices(new Size(1000, 200)))
+        {
+            Border moving = null!;
+            var canvas = new Canvas { Width = 1000, Height = 200 };
+
+            for (var i = 0; i < 70; i++)
+            {
+                var child = new Border { Width = 8, Height = 8, Background = Brushes.Red };
+                Canvas.SetLeft(child, i * 12);
+                canvas.Children.Add(child);
+
+                if (i == 69)
+                    moving = child;
+            }
+
+            s.TopLevel.Content = canvas;
+            s.AssertHitTestFirst(new Point(69 * 12 + 4, 4), null, moving);
+
+            Canvas.SetLeft(moving, 10);
+            Canvas.SetTop(moving, 100);
+            s.AssertHitTestFirst(new Point(14, 104), null, moving);
         }
     }
 

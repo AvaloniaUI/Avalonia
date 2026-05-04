@@ -16,8 +16,6 @@ internal sealed class CompositionHitTestAabbTree
     private const double FatBoundsPadding = 1;
     private static readonly CandidateComparer s_candidateComparer = new();
 
-    internal static bool IsEnabled { get; } = InitializeIsEnabled();
-
     private readonly Dictionary<CompositionVisual, int> _leaves = [];
     private readonly Dictionary<CompositionVisual, int> _unbounded = [];
     private readonly List<Node> _nodes = [];
@@ -25,8 +23,6 @@ internal sealed class CompositionHitTestAabbTree
     private int[] _queryStack = [];
     private int _root = Null;
     private int _freeList = Null;
-
-    private static bool InitializeIsEnabled() => !AppContext.TryGetSwitch("Avalonia.Rendering.Composition.DisableHitTestAabbTree", out var disabled) || !disabled;
 
     public void Clear()
     {
