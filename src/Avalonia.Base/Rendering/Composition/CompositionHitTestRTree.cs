@@ -45,8 +45,8 @@ internal sealed class CompositionHitTestRTree
 
     public void Query(Point point, PooledList<CompositionHitTestCandidate> results)
     {
-        if (_root != null)
-            Query(_root, point, results);
+        if (_root is { } root)
+            Query(in root, point, results);
 
         foreach (var candidate in _unbounded)
             results.Add(candidate);
@@ -125,7 +125,7 @@ internal sealed class CompositionHitTestRTree
         return nodes[0];
     }
 
-    private static void Query(Node node, Point point, PooledList<CompositionHitTestCandidate> results)
+    private static void Query(in Node node, Point point, PooledList<CompositionHitTestCandidate> results)
     {
         if (!Contains(node.Bounds, point))
             return;
@@ -140,8 +140,9 @@ internal sealed class CompositionHitTestRTree
         }
         else if (node.Children != null)
         {
-            foreach (var child in node.Children)
-                Query(child, point, results);
+            var children = node.Children;
+            for (var i = 0; i < children.Length; i++)
+                Query(in children[i], point, results);
         }
     }
 
@@ -195,7 +196,7 @@ internal sealed class CompositionHitTestRTree
         public int Order { get; } = order;
     }
 
-    private sealed class Node(LtrbRect bounds, Entry[]? entries, Node[]? children)
+    private readonly struct Node(LtrbRect bounds, Entry[]? entries, Node[]? children)
     {
         public LtrbRect Bounds { get; } = bounds;
         public Entry[]? Entries { get; } = entries;
