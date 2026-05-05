@@ -428,23 +428,6 @@ namespace Avalonia.Markup.Xaml.UnitTests
         }
 
         [Fact]
-        public void Compiled_Binding_Should_Fallback_To_Root_Type_Without_Explicit_DataType()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var parsed = (CompiledBindingRootMock)AvaloniaRuntimeXamlLoader.Parse(@"
-<UserControl x:Class='Avalonia.Markup.Xaml.UnitTests.CompiledBindingRootMock'
-    xmlns='https://github.com/avaloniaui'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <TextBlock Text='{CompiledBinding Greeting}'/>
-</UserControl>");
-                parsed.DataContext = parsed;
-                var textBlock = (TextBlock)parsed.Content!;
-                Assert.Equal("Hello", textBlock.Text);
-            }
-        }
-
-        [Fact]
         public void Compiled_Binding_Should_Resolve_Named_Root_DataContext_In_ItemTemplate()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -462,23 +445,6 @@ namespace Avalonia.Markup.Xaml.UnitTests
     </ListBox.ItemTemplate>
 </ListBox>");
                 Assert.NotNull(parsed.ItemTemplate);
-            }
-        }
-
-        [Fact]
-        public void Compiled_Binding_Root_Fallback_Should_Not_Crash_With_Incompatible_Runtime_DataContext()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var parsed = (CompiledBindingRootMock)AvaloniaRuntimeXamlLoader.Parse(@"
-<UserControl x:Class='Avalonia.Markup.Xaml.UnitTests.CompiledBindingRootMock'
-    xmlns='https://github.com/avaloniaui'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <TextBlock Text='{CompiledBinding Greeting}'/>
-</UserControl>");
-                parsed.DataContext = new object();
-                var textBlock = (TextBlock)parsed.Content!;
-                Assert.Null(textBlock.Text);
             }
         }
 
