@@ -1,5 +1,8 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Avalonia.Collections.Pooled;
 using Avalonia.Platform;
 
@@ -8,249 +11,372 @@ namespace Avalonia.Rendering.Composition;
 internal sealed class CompositionHitTestAabbTree
 {
     private const int Null = -1;
+    private const int OrderBucketSize = 32;
     private const double FatBoundsPadding = 1;
     private static readonly CandidateComparer s_candidateComparer = new();
 
-    private readonly Dictionary<CompositionVisual, int> _leaves = [];
-    private readonly Dictionary<CompositionVisual, int> _unbounded = [];
+    private readonly Dictionary<CompositionVisual, Entry> _entries = [];
+    private readonly List<Bucket> _buckets = [];
     private readonly List<Node> _nodes = [];
-    private readonly List<Candidate> _queryCandidates = [];
-    private int[] _queryStack = [];
-    private int _root = Null;
     private int _freeList = Null;
 
     public CompositionHitTestAabbTree(CompositionVisualCollection children)
     {
         for (var i = 0; i < children.Count; i++)
-            Add(children[i], i);
+            Update(children[i], i);
     }
 
     public void Clear()
     {
-        _leaves.Clear();
-        _unbounded.Clear();
+        _entries.Clear();
+        _buckets.Clear();
         _nodes.Clear();
-        _queryCandidates.Clear();
-        _root = Null;
         _freeList = Null;
     }
 
     public void Update(CompositionVisual visual, int order)
     {
-        if (_leaves.TryGetValue(visual, out var leaf))
+        ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(_entries, visual, out var exists);
+        if (!exists)
+            entry = new Entry(order);
+
+        var oldOrder = entry.Order;
+        entry.Order = order;
+
+        if (entry.Leaf != Null)
         {
             var state = GetBoundsState(visual, out var bounds);
 
             if (state == BoundsState.Bounded)
             {
-                MoveLeaf(leaf, bounds);
-                SetOrder(leaf, order);
+                UpdateLeaf(entry.Leaf, bounds, order);
             }
             else
             {
-                DestroyLeaf(visual, leaf);
+                DestroyLeaf(entry.Leaf);
+                entry.Leaf = Null;
                 if (state == BoundsState.Unbounded)
-                    _unbounded[visual] = order;
+                    AddUnbounded(visual, order, ref entry);
             }
 
             return;
         }
 
-        if (_unbounded.ContainsKey(visual))
+        if (entry.IsUnbounded)
         {
             var state = GetBoundsState(visual, out var bounds);
 
             if (state == BoundsState.Unbounded)
             {
-                _unbounded[visual] = order;
+                MoveUnbounded(visual, oldOrder, order);
                 return;
             }
 
-            _unbounded.Remove(visual);
+            RemoveUnbounded(visual, oldOrder);
+            entry.IsUnbounded = false;
 
             if (state == BoundsState.Bounded)
-                CreateLeaf(visual, bounds, order);
+                entry.Leaf = CreateLeaf(visual, bounds, order);
 
             return;
         }
 
-        Add(visual, order);
+        Add(visual, order, ref entry);
+    }
+
+    public void UpdateBounds(CompositionVisual visual)
+    {
+        if (_entries.TryGetValue(visual, out var entry))
+            Update(visual, entry.Order);
     }
 
     public void Remove(CompositionVisual visual)
     {
-        if (_leaves.TryGetValue(visual, out var leaf))
+        if (!_entries.Remove(visual, out var entry))
+            return;
+
+        if (entry.Leaf != Null)
         {
-            DestroyLeaf(visual, leaf);
+            DestroyLeaf(entry.Leaf);
             return;
         }
 
-        _unbounded.Remove(visual);
+        if (entry.IsUnbounded)
+            RemoveUnbounded(visual, entry.Order);
     }
 
     public void UpdateOrder(CompositionVisual visual, int order)
     {
-        if (_leaves.TryGetValue(visual, out var leaf))
+        ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(_entries, visual, out var exists);
+        if (!exists)
         {
-            SetOrder(leaf, order);
+            entry = new Entry(order);
             return;
         }
 
-        if (_unbounded.ContainsKey(visual))
-            _unbounded[visual] = order;
+        var oldOrder = entry.Order;
+        entry.Order = order;
+
+        if (entry.Leaf != Null)
+        {
+            MoveLeafToOrder(entry.Leaf, order);
+            return;
+        }
+
+        if (entry.IsUnbounded)
+            MoveUnbounded(visual, oldOrder, order);
     }
 
     public void Query(Point point, PooledList<CompositionVisual> results)
     {
-        _queryCandidates.Clear();
+        var candidates = ArrayPool<Candidate>.Shared.Rent(OrderBucketSize);
+        var stack = ArrayPool<int>.Shared.Rent(16);
+        var candidateCount = 0;
 
-        if (_root != Null)
+        try
         {
-            var stackCount = 0;
-            PushQueryNode(ref stackCount, _root);
-
-            while (stackCount > 0)
+            for (var i = _buckets.Count - 1; i >= 0; i--)
             {
-                var nodeIndex = _queryStack[--stackCount];
-                var node = _nodes[nodeIndex];
-
-                if (!node.Bounds.Contains(point))
+                var bucket = _buckets[i];
+                if (bucket.IsEmpty)
                     continue;
 
-                if (node.IsLeaf)
-                {
-                    if (node.Visual != null)
-                        _queryCandidates.Add(new Candidate(node.Visual, node.Order));
-                }
-                else
-                {
-                    PushQueryNode(ref stackCount, node.Child1);
-                    PushQueryNode(ref stackCount, node.Child2);
-                }
+                candidateCount = 0;
+                var stackCount = 0;
+                QueryBucket(bucket, point, ref candidates, ref candidateCount, ref stack, ref stackCount);
+                Array.Sort(candidates, 0, candidateCount, s_candidateComparer);
+
+                for (var j = 0; j < candidateCount; j++)
+                    results.Add(candidates[j].Visual);
+
+                Array.Clear(candidates, 0, candidateCount);
             }
         }
-
-        foreach (var candidate in _unbounded)
-            _queryCandidates.Add(new Candidate(candidate.Key, candidate.Value));
-
-        _queryCandidates.Sort(s_candidateComparer);
-
-        foreach (var candidate in _queryCandidates)
-            results.Add(candidate.Visual);
-
-        _queryCandidates.Clear();
+        finally
+        {
+            Array.Clear(candidates, 0, candidateCount);
+            ArrayPool<Candidate>.Shared.Return(candidates);
+            ArrayPool<int>.Shared.Return(stack);
+        }
     }
 
     public CompositionVisual? QueryFirst(CompositionTarget target, Point point, Func<CompositionVisual, bool>? filter, Func<CompositionVisual, bool>? resultFilter)
     {
-        _queryCandidates.Clear();
+        var candidates = ArrayPool<Candidate>.Shared.Rent(OrderBucketSize);
+        var stack = ArrayPool<int>.Shared.Rent(16);
+        var candidateCount = 0;
 
-        if (_root != Null)
+        try
         {
-            var stackCount = 0;
-            PushQueryNode(ref stackCount, _root);
-
-            while (stackCount > 0)
+            for (var i = _buckets.Count - 1; i >= 0; i--)
             {
-                var nodeIndex = _queryStack[--stackCount];
-                var node = _nodes[nodeIndex];
-
-                if (!node.Bounds.Contains(point))
+                var bucket = _buckets[i];
+                if (bucket.IsEmpty)
                     continue;
 
-                if (node.IsLeaf)
+                candidateCount = 0;
+                var stackCount = 0;
+                QueryBucket(bucket, point, ref candidates, ref candidateCount, ref stack, ref stackCount);
+                Array.Sort(candidates, 0, candidateCount, s_candidateComparer);
+
+                for (var j = 0; j < candidateCount; j++)
                 {
-                    if (node.Visual != null)
-                        _queryCandidates.Add(new Candidate(node.Visual, node.Order));
+                    var hit = target.HitTestFirstCore(candidates[j].Visual, point, filter, resultFilter);
+                    if (hit != null)
+                        return hit;
                 }
-                else
-                {
-                    PushQueryNode(ref stackCount, node.Child1);
-                    PushQueryNode(ref stackCount, node.Child2);
-                }
+
+                Array.Clear(candidates, 0, candidateCount);
             }
         }
-
-        foreach (var candidate in _unbounded)
-            _queryCandidates.Add(new Candidate(candidate.Key, candidate.Value));
-
-        _queryCandidates.Sort(s_candidateComparer);
-
-        foreach (var candidate in _queryCandidates)
+        finally
         {
-            var hit = target.HitTestFirstCore(candidate.Visual, point, filter, resultFilter);
-            if (hit != null)
-            {
-                _queryCandidates.Clear();
-                return hit;
-            }
+            Array.Clear(candidates, 0, candidateCount);
+            ArrayPool<Candidate>.Shared.Return(candidates);
+            ArrayPool<int>.Shared.Return(stack);
         }
 
-        _queryCandidates.Clear();
         return null;
     }
 
-    private void Add(CompositionVisual visual, int order)
+    private void Add(CompositionVisual visual, int order, ref Entry entry)
     {
         var state = GetBoundsState(visual, out var bounds);
 
         if (state == BoundsState.Bounded)
-            CreateLeaf(visual, bounds, order);
+            entry.Leaf = CreateLeaf(visual, bounds, order);
         else if (state == BoundsState.Unbounded)
-            _unbounded[visual] = order;
+            AddUnbounded(visual, order, ref entry);
     }
 
-    private void PushQueryNode(ref int count, int nodeIndex)
+    private void QueryBucket(Bucket bucket, Point point, ref Candidate[] candidates, ref int candidateCount, ref int[] stack, ref int stackCount)
+    {
+        PushQueryNode(ref stack, ref stackCount, bucket.Root);
+
+        while (stackCount > 0)
+        {
+            var nodeIndex = stack[--stackCount];
+            var node = _nodes[nodeIndex];
+
+            if (!node.Bounds.Contains(point))
+                continue;
+
+            if (node.IsLeaf)
+            {
+                if (node.Visual != null)
+                    AddCandidate(ref candidates, ref candidateCount, new Candidate(node.Visual, node.Order));
+            }
+            else
+            {
+                PushQueryNode(ref stack, ref stackCount, node.Child1);
+                PushQueryNode(ref stack, ref stackCount, node.Child2);
+            }
+        }
+
+        if (bucket.Unbounded != null)
+            foreach (var visual in bucket.Unbounded)
+                if (_entries.TryGetValue(visual, out var entry))
+                    AddCandidate(ref candidates, ref candidateCount, new Candidate(visual, entry.Order));
+    }
+
+    private static void AddCandidate(ref Candidate[] candidates, ref int count, Candidate candidate)
+    {
+        if (count == candidates.Length)
+            Resize(ref candidates, count);
+
+        candidates[count++] = candidate;
+    }
+
+    private static void PushQueryNode(ref int[] stack, ref int count, int nodeIndex)
     {
         if (nodeIndex == Null)
             return;
 
-        if (count == _queryStack.Length)
-            Array.Resize(ref _queryStack, Math.Max(16, _queryStack.Length * 2));
+        if (count == stack.Length)
+            Resize(ref stack, count);
 
-        _queryStack[count++] = nodeIndex;
+        stack[count++] = nodeIndex;
     }
 
-    private void CreateLeaf(CompositionVisual visual, LtrbRect bounds, int order)
+    private static void Resize<T>(ref T[] buffer, int count)
+    {
+        var resized = ArrayPool<T>.Shared.Rent(buffer.Length * 2);
+        Array.Copy(buffer, resized, count);
+        ArrayPool<T>.Shared.Return(buffer, RuntimeHelpers.IsReferenceOrContainsReferences<T>());
+        buffer = resized;
+    }
+
+    private static int GetBucketIndex(int order)
+    {
+        if (order <= 0)
+            return 0;
+        return order / OrderBucketSize;
+    }
+
+    private ref Bucket GetOrCreateBucket(int bucketIndex)
+    {
+        while (_buckets.Count <= bucketIndex)
+            _buckets.Add(new Bucket(Null));
+
+        return ref GetRef(_buckets, bucketIndex);
+    }
+
+    private void RemoveBucketIfEmpty(int bucketIndex)
+    {
+        if (bucketIndex >= _buckets.Count)
+            return;
+
+        bool removeTrailingBucket;
+        {
+            ref var bucket = ref GetRef(_buckets, bucketIndex);
+            if (bucket.Unbounded?.Count == 0)
+                bucket.Unbounded = null;
+
+            removeTrailingBucket = bucket.IsEmpty && bucketIndex == _buckets.Count - 1;
+        }
+
+        if (!removeTrailingBucket)
+            return;
+
+        do
+        {
+            _buckets.RemoveAt(_buckets.Count - 1);
+        } while (_buckets.Count > 0 && _buckets[^1].IsEmpty);
+    }
+
+    private static ref T GetRef<T>(List<T> items, int index) => ref CollectionsMarshal.AsSpan(items)[index];
+
+    private int CreateLeaf(CompositionVisual visual, LtrbRect bounds, int order)
     {
         var leaf = AllocateNode();
-        var node = _nodes[leaf];
-        node.Bounds = Fatten(bounds);
-        node.Visual = visual;
-        node.Order = order;
-        node.Height = 0;
-        _nodes[leaf] = node;
-        _leaves[visual] = leaf;
+        {
+            ref var node = ref GetRef(_nodes, leaf);
+            node.Bounds = Fatten(bounds);
+            node.Visual = visual;
+            node.Order = order;
+            node.Bucket = GetBucketIndex(order);
+            node.Height = 0;
+        }
+
         InsertLeaf(leaf);
+        return leaf;
     }
 
-    private void DestroyLeaf(CompositionVisual visual, int leaf)
+    private void DestroyLeaf(int leaf)
     {
         RemoveLeaf(leaf);
         FreeNode(leaf);
-        _leaves.Remove(visual);
     }
 
-    private void MoveLeaf(int leaf, LtrbRect bounds)
+    private void UpdateLeaf(int leaf, LtrbRect bounds, int order)
     {
-        // If the exact bounds still fit inside the fat bounds, the tree shape can stay unchanged.
-        if (_nodes[leaf].Bounds.Contains(bounds))
-            return;
+        var bucket = GetBucketIndex(order);
+
+        {
+            ref var node = ref GetRef(_nodes, leaf);
+
+            // If the exact bounds still fit inside the fat bounds, the tree shape can stay unchanged.
+            if (node.Bucket == bucket && node.Bounds.Contains(bounds))
+            {
+                node.Order = order;
+                return;
+            }
+        }
 
         RemoveLeaf(leaf);
 
-        var node = _nodes[leaf];
-        node.Bounds = Fatten(bounds);
-        _nodes[leaf] = node;
+        {
+            ref var removedNode = ref GetRef(_nodes, leaf);
+            removedNode.Bounds = Fatten(bounds);
+            removedNode.Bucket = bucket;
+            removedNode.Order = order;
+        }
 
         InsertLeaf(leaf);
     }
 
-    private void SetOrder(int nodeIndex, int order)
+    private void MoveLeafToOrder(int leaf, int order)
     {
-        var node = _nodes[nodeIndex];
-        node.Order = order;
-        _nodes[nodeIndex] = node;
+        var bucket = GetBucketIndex(order);
+
+        {
+            ref var node = ref GetRef(_nodes, leaf);
+            if (node.Bucket == bucket)
+            {
+                node.Order = order;
+                return;
+            }
+        }
+
+        RemoveLeaf(leaf);
+
+        {
+            ref var removedNode = ref GetRef(_nodes, leaf);
+            removedNode.Order = order;
+            removedNode.Bucket = bucket;
+        }
+
+        InsertLeaf(leaf);
     }
 
     private int AllocateNode()
@@ -268,7 +394,7 @@ internal sealed class CompositionHitTestAabbTree
         }
 
         var index = _freeList;
-        var node = _nodes[index];
+        ref var node = ref GetRef(_nodes, index);
         _freeList = node.Next;
         node.Parent = Null;
         node.Child1 = Null;
@@ -277,13 +403,13 @@ internal sealed class CompositionHitTestAabbTree
         node.Height = 0;
         node.Visual = null;
         node.Order = 0;
-        _nodes[index] = node;
+        node.Bucket = 0;
         return index;
     }
 
     private void FreeNode(int index)
     {
-        var node = _nodes[index];
+        ref var node = ref GetRef(_nodes, index);
         node.Next = _freeList;
         node.Parent = Null;
         node.Child1 = Null;
@@ -291,24 +417,26 @@ internal sealed class CompositionHitTestAabbTree
         node.Height = -1;
         node.Visual = null;
         node.Order = 0;
-        _nodes[index] = node;
+        node.Bucket = 0;
         _freeList = index;
     }
 
     private void InsertLeaf(int leaf)
     {
-        if (_root == Null)
+        var bucketIndex = GetRef(_nodes, leaf).Bucket;
+        ref var bucket = ref GetOrCreateBucket(bucketIndex);
+
+        if (bucket.Root == Null)
         {
-            _root = leaf;
-            var root = _nodes[_root];
+            bucket.Root = leaf;
+            ref var root = ref GetRef(_nodes, leaf);
             root.Parent = Null;
-            _nodes[_root] = root;
             return;
         }
 
-        var leafBounds = _nodes[leaf].Bounds;
-        var sibling = FindBestSibling(leafBounds);
-        var oldParent = _nodes[sibling].Parent;
+        var leafBounds = GetRef(_nodes, leaf).Bounds;
+        var sibling = FindBestSibling(bucket.Root, leafBounds);
+        var oldParent = GetRef(_nodes, sibling).Parent;
         var newParent = AllocateNode();
 
         // Insert by replacing the chosen sibling with a new internal parent:
@@ -318,43 +446,40 @@ internal sealed class CompositionHitTestAabbTree
         //          sibling                newParent
         //                                  /      \
         //                             sibling    leaf
-        var parentNode = _nodes[newParent];
+        ref var parentNode = ref GetRef(_nodes, newParent);
         parentNode.Parent = oldParent;
-        parentNode.Bounds = leafBounds.Union(_nodes[sibling].Bounds);
-        parentNode.Height = _nodes[sibling].Height + 1;
+        parentNode.Bounds = leafBounds.Union(GetRef(_nodes, sibling).Bounds);
+        parentNode.Height = GetRef(_nodes, sibling).Height + 1;
         parentNode.Child1 = sibling;
         parentNode.Child2 = leaf;
         parentNode.Visual = null;
-        _nodes[newParent] = parentNode;
+        parentNode.Bucket = bucketIndex;
 
-        var siblingNode = _nodes[sibling];
+        ref var siblingNode = ref GetRef(_nodes, sibling);
         siblingNode.Parent = newParent;
-        _nodes[sibling] = siblingNode;
 
-        var leafNode = _nodes[leaf];
+        ref var leafNode = ref GetRef(_nodes, leaf);
         leafNode.Parent = newParent;
-        _nodes[leaf] = leafNode;
 
         if (oldParent == Null)
         {
-            _root = newParent;
+            bucket.Root = newParent;
         }
         else
         {
-            var oldParentNode = _nodes[oldParent];
+            ref var oldParentNode = ref GetRef(_nodes, oldParent);
             if (oldParentNode.Child1 == sibling)
                 oldParentNode.Child1 = newParent;
             else
                 oldParentNode.Child2 = newParent;
-            _nodes[oldParent] = oldParentNode;
         }
 
         FixAncestors(newParent);
     }
 
-    private int FindBestSibling(LtrbRect leafBounds)
+    private int FindBestSibling(int root, LtrbRect leafBounds)
     {
-        var index = _root;
+        var index = root;
         while (!_nodes[index].IsLeaf)
         {
             var node = _nodes[index];
@@ -391,15 +516,25 @@ internal sealed class CompositionHitTestAabbTree
 
     private void RemoveLeaf(int leaf)
     {
-        if (leaf == _root)
+        var bucketIndex = GetRef(_nodes, leaf).Bucket;
+        var removedRoot = false;
         {
-            _root = Null;
+            ref var bucket = ref GetRef(_buckets, bucketIndex);
+            if (leaf == bucket.Root)
+            {
+                bucket.Root = Null;
+                removedRoot = true;
+            }
+        }
+
+        if (removedRoot)
+        {
+            RemoveBucketIfEmpty(bucketIndex);
             return;
         }
 
-        var leafNode = _nodes[leaf];
-        var parent = leafNode.Parent;
-        var parentNode = _nodes[parent];
+        var parent = GetRef(_nodes, leaf).Parent;
+        var parentNode = GetRef(_nodes, parent);
         var grandParent = parentNode.Parent;
         var sibling = parentNode.Child1 == leaf ? parentNode.Child2 : parentNode.Child1;
 
@@ -411,16 +546,14 @@ internal sealed class CompositionHitTestAabbTree
             //           parent                 sibling
             //           /    \
             //        leaf  sibling
-            var grandParentNode = _nodes[grandParent];
+            ref var grandParentNode = ref GetRef(_nodes, grandParent);
             if (grandParentNode.Child1 == parent)
                 grandParentNode.Child1 = sibling;
             else
                 grandParentNode.Child2 = sibling;
-            _nodes[grandParent] = grandParentNode;
 
-            var siblingNode = _nodes[sibling];
+            ref var siblingNode = ref GetRef(_nodes, sibling);
             siblingNode.Parent = grandParent;
-            _nodes[sibling] = siblingNode;
 
             FreeNode(parent);
             FixAncestors(grandParent);
@@ -432,15 +565,22 @@ internal sealed class CompositionHitTestAabbTree
             // Before: parent(root)       After: sibling(root)
             //          /    \
             //       leaf  sibling
-            _root = sibling;
-            var siblingNode = _nodes[sibling];
+            {
+                ref var bucket = ref GetRef(_buckets, bucketIndex);
+                bucket.Root = sibling;
+            }
+
+            ref var siblingNode = ref GetRef(_nodes, sibling);
             siblingNode.Parent = Null;
-            _nodes[sibling] = siblingNode;
             FreeNode(parent);
         }
 
-        leafNode.Parent = Null;
-        _nodes[leaf] = leafNode;
+        {
+            ref var leafNode = ref GetRef(_nodes, leaf);
+            leafNode.Parent = Null;
+        }
+
+        RemoveBucketIfEmpty(bucketIndex);
     }
 
     private void FixAncestors(int index)
@@ -449,14 +589,13 @@ internal sealed class CompositionHitTestAabbTree
         {
             index = Balance(index);
 
-            var node = _nodes[index];
-            var child1 = _nodes[node.Child1];
-            var child2 = _nodes[node.Child2];
+            ref var node = ref GetRef(_nodes, index);
+            var child1 = GetRef(_nodes, node.Child1);
+            var child2 = GetRef(_nodes, node.Child2);
 
             // Ancestor bounds always cover both children after insert/remove/rotate.
             node.Bounds = child1.Bounds.Union(child2.Bounds);
             node.Height = 1 + Math.Max(child1.Height, child2.Height);
-            _nodes[index] = node;
 
             index = node.Parent;
         }
@@ -464,14 +603,14 @@ internal sealed class CompositionHitTestAabbTree
 
     private int Balance(int indexA)
     {
-        var a = _nodes[indexA];
+        var a = GetRef(_nodes, indexA);
         if (a.IsLeaf || a.Height < 2)
             return indexA;
 
         var indexB = a.Child1;
         var indexC = a.Child2;
-        var b = _nodes[indexB];
-        var c = _nodes[indexC];
+        var b = GetRef(_nodes, indexB);
+        var c = GetRef(_nodes, indexC);
         var balance = c.Height - b.Height;
 
         // The right subtree is heavier than the left. Rotate C up.
@@ -500,12 +639,12 @@ internal sealed class CompositionHitTestAabbTree
         //                                                     A   G
         //                                                    / \
         //                                                   B   F
-        var a = _nodes[indexA];
-        var c = _nodes[indexC];
+        ref var a = ref GetRef(_nodes, indexA);
+        ref var c = ref GetRef(_nodes, indexC);
         var indexF = c.Child1;
         var indexG = c.Child2;
-        var f = _nodes[indexF];
-        var g = _nodes[indexG];
+        ref var f = ref GetRef(_nodes, indexF);
+        ref var g = ref GetRef(_nodes, indexG);
 
         c.Child1 = indexA;
         c.Parent = a.Parent;
@@ -520,10 +659,9 @@ internal sealed class CompositionHitTestAabbTree
             c.Child2 = indexF;
             a.Child2 = indexG;
             g.Parent = indexA;
-            _nodes[indexG] = g;
-            a.Bounds = _nodes[indexB].Bounds.Union(g.Bounds);
+            a.Bounds = GetRef(_nodes, indexB).Bounds.Union(g.Bounds);
             c.Bounds = a.Bounds.Union(f.Bounds);
-            a.Height = 1 + Math.Max(_nodes[indexB].Height, g.Height);
+            a.Height = 1 + Math.Max(GetRef(_nodes, indexB).Height, g.Height);
             c.Height = 1 + Math.Max(a.Height, f.Height);
         }
         else
@@ -531,15 +669,12 @@ internal sealed class CompositionHitTestAabbTree
             c.Child2 = indexG;
             a.Child2 = indexF;
             f.Parent = indexA;
-            _nodes[indexF] = f;
-            a.Bounds = _nodes[indexB].Bounds.Union(f.Bounds);
+            a.Bounds = GetRef(_nodes, indexB).Bounds.Union(f.Bounds);
             c.Bounds = a.Bounds.Union(g.Bounds);
-            a.Height = 1 + Math.Max(_nodes[indexB].Height, f.Height);
+            a.Height = 1 + Math.Max(GetRef(_nodes, indexB).Height, f.Height);
             c.Height = 1 + Math.Max(a.Height, g.Height);
         }
 
-        _nodes[indexA] = a;
-        _nodes[indexC] = c;
         return indexC;
     }
 
@@ -558,12 +693,12 @@ internal sealed class CompositionHitTestAabbTree
         //                                                     A   E
         //                                                    / \
         //                                                   D   C
-        var a = _nodes[indexA];
-        var b = _nodes[indexB];
+        ref var a = ref GetRef(_nodes, indexA);
+        ref var b = ref GetRef(_nodes, indexB);
         var indexD = b.Child1;
         var indexE = b.Child2;
-        var d = _nodes[indexD];
-        var e = _nodes[indexE];
+        ref var d = ref GetRef(_nodes, indexD);
+        ref var e = ref GetRef(_nodes, indexE);
 
         b.Child1 = indexA;
         b.Parent = a.Parent;
@@ -578,10 +713,9 @@ internal sealed class CompositionHitTestAabbTree
             b.Child2 = indexD;
             a.Child1 = indexE;
             e.Parent = indexA;
-            _nodes[indexE] = e;
-            a.Bounds = _nodes[indexC].Bounds.Union(e.Bounds);
+            a.Bounds = GetRef(_nodes, indexC).Bounds.Union(e.Bounds);
             b.Bounds = a.Bounds.Union(d.Bounds);
-            a.Height = 1 + Math.Max(_nodes[indexC].Height, e.Height);
+            a.Height = 1 + Math.Max(GetRef(_nodes, indexC).Height, e.Height);
             b.Height = 1 + Math.Max(a.Height, d.Height);
         }
         else
@@ -589,15 +723,12 @@ internal sealed class CompositionHitTestAabbTree
             b.Child2 = indexE;
             a.Child1 = indexD;
             d.Parent = indexA;
-            _nodes[indexD] = d;
-            a.Bounds = _nodes[indexC].Bounds.Union(d.Bounds);
+            a.Bounds = GetRef(_nodes, indexC).Bounds.Union(d.Bounds);
             b.Bounds = a.Bounds.Union(e.Bounds);
-            a.Height = 1 + Math.Max(_nodes[indexC].Height, d.Height);
+            a.Height = 1 + Math.Max(GetRef(_nodes, indexC).Height, d.Height);
             b.Height = 1 + Math.Max(a.Height, e.Height);
         }
 
-        _nodes[indexA] = a;
-        _nodes[indexB] = b;
         return indexB;
     }
 
@@ -605,16 +736,54 @@ internal sealed class CompositionHitTestAabbTree
     {
         if (parent == Null)
         {
-            _root = newChild;
+            ref var bucket = ref GetOrCreateBucket(GetRef(_nodes, newChild).Bucket);
+            bucket.Root = newChild;
             return;
         }
 
-        var parentNode = _nodes[parent];
+        ref var parentNode = ref GetRef(_nodes, parent);
         if (parentNode.Child1 == oldChild)
             parentNode.Child1 = newChild;
         else
             parentNode.Child2 = newChild;
-        _nodes[parent] = parentNode;
+    }
+
+    private void AddUnbounded(CompositionVisual visual, int order, ref Entry entry)
+    {
+        var bucketIndex = GetBucketIndex(order);
+        ref var bucket = ref GetOrCreateBucket(bucketIndex);
+        (bucket.Unbounded ??= []).Add(visual);
+        entry.IsUnbounded = true;
+    }
+
+    private void MoveUnbounded(CompositionVisual visual, int oldOrder, int order)
+    {
+        var oldBucketIndex = GetBucketIndex(oldOrder);
+        var newBucketIndex = GetBucketIndex(order);
+
+        if (oldBucketIndex == newBucketIndex)
+            return;
+
+        RemoveUnbounded(visual, oldOrder);
+        ref var newBucket = ref GetOrCreateBucket(newBucketIndex);
+        (newBucket.Unbounded ??= []).Add(visual);
+    }
+
+    private void RemoveUnbounded(CompositionVisual visual, int order)
+    {
+        var bucketIndex = GetBucketIndex(order);
+        if (bucketIndex >= _buckets.Count)
+            return;
+
+        {
+            ref var bucket = ref GetRef(_buckets, bucketIndex);
+            if (bucket.Unbounded == null)
+                return;
+
+            bucket.Unbounded.Remove(visual);
+        }
+
+        RemoveBucketIfEmpty(bucketIndex);
     }
 
     private static BoundsState GetBoundsState(CompositionVisual visual, out LtrbRect bounds)
@@ -661,8 +830,24 @@ internal sealed class CompositionHitTestAabbTree
         public int Next;
         public int Height;
         public int Order;
+        public int Bucket;
 
         public readonly bool IsLeaf => Child1 == Null;
+    }
+
+    private struct Bucket(int root)
+    {
+        public int Root = root;
+        public List<CompositionVisual>? Unbounded = null;
+
+        public readonly bool IsEmpty => Root == Null && (Unbounded == null || Unbounded.Count == 0);
+    }
+
+    private struct Entry(int order)
+    {
+        public int Order = order;
+        public int Leaf = Null;
+        public bool IsUnbounded;
     }
 
     private readonly struct Candidate(CompositionVisual visual, int order)

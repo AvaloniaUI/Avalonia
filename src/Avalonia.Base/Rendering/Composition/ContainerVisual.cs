@@ -64,9 +64,7 @@ namespace Avalonia.Rendering.Composition
                 return;
             }
 
-            var order = Children.IndexOf(child);
-            if (order >= 0)
-                _hitTestChildren.Update(child, order);
+            _hitTestChildren.UpdateBounds(child);
         }
 
         internal bool TryQueryHitTestChildren(Point point, PooledList<CompositionVisual> results)

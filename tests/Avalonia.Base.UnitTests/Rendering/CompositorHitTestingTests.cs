@@ -594,6 +594,40 @@ public class CompositorHitTestingTests : CompositorTestsBase
         }
     }
 
+    [Fact]
+    public void HitTest_Should_Update_Many_Sibling_Index_When_Child_Is_Added_And_Removed()
+    {
+        using (var s = new CompositorTestServices(new Size(200, 200)))
+        {
+            Border top = null!;
+            var canvas = new Canvas { Width = 200, Height = 200 };
+
+            for (var i = 0; i < 70; i++)
+            {
+                var child = new Border { Width = 100, Height = 100, Background = Brushes.Red };
+                Canvas.SetLeft(child, 50);
+                Canvas.SetTop(child, 50);
+                canvas.Children.Add(child);
+
+                if (i == 69)
+                    top = child;
+            }
+
+            s.TopLevel.Content = canvas;
+            s.AssertHitTestFirst(new Point(100, 100), null, top);
+
+            var added = new Border { Width = 100, Height = 100, Background = Brushes.Blue };
+            Canvas.SetLeft(added, 50);
+            Canvas.SetTop(added, 50);
+            canvas.Children.Add(added);
+
+            s.AssertHitTestFirst(new Point(100, 100), null, added);
+
+            canvas.Children.Remove(added);
+            s.AssertHitTestFirst(new Point(100, 100), null, top);
+        }
+    }
+
     private static IDisposable TestApplication()
     {
         return UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
