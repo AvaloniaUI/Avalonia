@@ -52,10 +52,13 @@ namespace Avalonia.Rendering.Composition
             return res;
         }
 
-        private static void ProcessHitTestReadbackUpdates(IReadOnlyList<CompositionVisual> readbackUpdates)
+        private static void ProcessHitTestReadbackUpdates(IReadOnlyList<WeakReference<CompositionVisual>> readbackUpdates)
         {
-            foreach (var visual in readbackUpdates)
+            foreach (var weakVisual in readbackUpdates)
             {
+                if (!weakVisual.TryGetTarget(out var visual))
+                    continue;
+
                 if (visual.Parent is CompositionContainerVisual parent)
                     parent.UpdateHitTestChildBounds(visual);
             }
