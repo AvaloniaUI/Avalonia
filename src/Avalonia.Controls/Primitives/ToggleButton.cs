@@ -72,6 +72,11 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnClick()
         {
+            if (!IsEffectivelyEnabled)
+            {
+                return;
+            }
+
             Toggle();
             base.OnClick();
         }

@@ -481,7 +481,7 @@ partial class Build : NukeBuild
                     .SetProperty("AvaloniaVersion", Parameters.Version)
                     .SetProperty("NuGetPackageRoot", nugetCacheDirectory)
                     .SetPackageDirectory(nugetCacheDirectory)
-                    .SetProjectFile(buildTestsDirectory / "BuildTests.sln")
+                    .SetProjectFile(buildTestsDirectory / "BuildTests.slnx")
                     .SetProcessAdditionalArguments("--nodeReuse:false"));
 
                 // Standard compilation - should have compiled XAML

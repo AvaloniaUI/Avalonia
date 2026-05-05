@@ -141,6 +141,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, WindowDecorations>(nameof(WindowDecorations), WindowDecorations.Full);
 
         /// <summary>
+        /// Defines the <see cref="WindowDecorationsTheme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme?> WindowDecorationsThemeProperty =
+            AvaloniaProperty.Register<Window, ControlTheme?>(nameof(WindowDecorationsTheme));
+
+        /// <summary>
         /// Defines the <see cref="ShowActivated"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> ShowActivatedProperty =
@@ -220,6 +226,7 @@ namespace Avalonia.Controls
         private bool _positionWasSet;
         private bool _wasShownBefore;
         private IDisposable? _modalSubscription;
+        private PlatformAllowedWindowActions _allowedWindowActions = PlatformAllowedWindowActions.All;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -250,6 +257,8 @@ namespace Avalonia.Controls
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
+            impl.AllowedWindowActionsChanged = OnAllowedWindowActionsChanged;
+            _allowedWindowActions = impl.AllowedWindowActions;
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x =>
             {
                 ResizePlatformImpl(x, WindowResizeReason.Application);
@@ -373,6 +382,15 @@ namespace Avalonia.Controls
             set => SetValue(WindowDecorationsProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the theme used to render the window decorations when they are not drawn by the system.
+        /// </summary>
+        public ControlTheme? WindowDecorationsTheme
+        {
+            get => GetValue(WindowDecorationsThemeProperty);
+            set => SetValue(WindowDecorationsThemeProperty, value);
+        }
+
         [Obsolete("Use WindowDecorations instead.")]
         public WindowDecorations SystemDecorations
         {
@@ -484,6 +502,11 @@ namespace Avalonia.Controls
             get => GetValue(CanMaximizeProperty);
             set => SetValue(CanMaximizeProperty, value);
         }
+
+        /// <summary>
+        /// Gets the window actions currently allowed by the underlying platform.
+        /// </summary>
+        internal PlatformAllowedWindowActions AllowedWindowActions => _allowedWindowActions;
 
         /// <summary>
         /// Gets or sets the icon of the window.
@@ -673,6 +696,14 @@ namespace Avalonia.Controls
             UpdateDrawnDecorationParts();
         }
 
+        internal event Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged;
+
+        private void OnAllowedWindowActionsChanged(PlatformAllowedWindowActions actions)
+        {
+            _allowedWindowActions = actions;
+            AllowedWindowActionsChanged?.Invoke(actions);
+        }
+
         private void ExtendClientAreaToDecorationsChanged(bool isExtended)
         {
             IsExtendedIntoWindowDecorations = isExtended;
@@ -688,7 +719,7 @@ namespace Avalonia.Controls
             // Detect forced mode: platform needs managed decorations but app hasn't opted in
             _isForcedDecorationMode = parts != null && !IsExtendedIntoWindowDecorations;
 
-            TopLevelHost.UpdateDrawnDecorations(parts, WindowState);
+            TopLevelHost.UpdateDrawnDecorations(parts, WindowState, WindowDecorationsTheme);
 
             if (parts != null)
             {
@@ -723,7 +754,7 @@ namespace Avalonia.Controls
             if (TopLevelHost.Decorations == null)
                 return;
 
-            TopLevelHost.UpdateDrawnDecorations(ComputeDecorationParts(), WindowState);
+            TopLevelHost.UpdateDrawnDecorations(ComputeDecorationParts(), WindowState, WindowDecorationsTheme);
         }
 
         private Chrome.DrawnWindowDecorationParts? ComputeDecorationParts()
@@ -1477,11 +1508,17 @@ namespace Avalonia.Controls
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
+
             if (change.Property == WindowDecorationsProperty)
             {
                 var (_, typedNewValue) = change.GetOldAndNewValue<WindowDecorations>();
 
                 PlatformImpl?.SetWindowDecorations(typedNewValue);
+            }
+
+            else if (change.Property == WindowDecorationsThemeProperty)
+            {
+                UpdateDrawnDecorations();
             }
 
             else if (change.Property == OwnerProperty)

@@ -1,0 +1,121 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.CommandBarKeyboardPage">
+  <UserControl.Resources>
+    <StreamGeometry x:Key="AddIcon">M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z</StreamGeometry>
+    <StreamGeometry x:Key="SaveIcon">M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z</StreamGeometry>
+    <StreamGeometry x:Key="BoldIcon">M15.6,10.79C17.04,10.07 18,8.64 18,7C18,4.79 16.21,3 14,3H7V21H14.73C16.78,21 18.5,19.37 18.5,17.32C18.5,15.82 17.72,14.53 16.5,13.77C16.2,13.59 15.9,13.44 15.6,13.32V10.79M10,6.5H13C13.83,6.5 14.5,7.17 14.5,8C14.5,8.83 13.83,9.5 13,9.5H10V6.5M13.5,17.5H10V14H13.5C14.33,14 15,14.67 15,15.5C15,16.33 14.33,17.5 13.5,17.5Z</StreamGeometry>
+    <StreamGeometry x:Key="ShareIcon">M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L15.96,7.19C16.5,7.69 17.21,8 18,8A3,3 0 0,0 21,5A3,3 0 0,0 18,2A3,3 0 0,0 15,5C15,5.24 15.04,5.47 15.09,5.7L8.04,9.81C7.5,9.31 6.79,9 6,9A3,3 0 0,0 3,12A3,3 0 0,0 6,15C6.79,15 7.5,14.69 8.04,14.19L15.16,18.34C15.11,18.55 15.08,18.77 15.08,19C15.08,20.61 16.39,21.91 18,21.91C19.61,21.91 20.92,20.61 20.92,19C20.92,17.39 19.61,16.08 18,16.08Z</StreamGeometry>
+    <StreamGeometry x:Key="DeleteIcon">M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z</StreamGeometry>
+  </UserControl.Resources>
+
+  <DockPanel>
+    <ScrollViewer DockPanel.Dock="Right" Width="240">
+      <StackPanel Margin="12" Spacing="8">
+        <TextBlock Text="How to test" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource SystemControlHighlightAccentBrush}" />
+
+        <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
+                   Text="1. Click &quot;Open overflow&quot; below, or click the ··· button with the mouse." />
+        <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
+                   Text="2. Use Up/Down arrow keys to navigate. Focus wraps from last to first and back." />
+        <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
+                   Text="3. The separator and the disabled Delete item are skipped during navigation." />
+        <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
+                   Text="4. Press Escape to close. Focus returns to the ··· button." />
+        <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
+                   Text="5. You can also Tab into the CommandBar. Focus walks through primary items and the ··· button in order." />
+
+        <Separator />
+
+        <Button Content="Open overflow"
+                HorizontalAlignment="Stretch"
+                Click="OnOpenOverflow" />
+
+        <Button Content="Clear Log"
+                HorizontalAlignment="Stretch"
+                Click="OnClearLog" />
+
+        <Separator />
+
+        <TextBlock Text="About" FontWeight="SemiBold" />
+        <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
+                   Text="The focus log updates as keyboard navigation moves between overflow items. Separators and disabled items are excluded from the cycle." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border DockPanel.Dock="Right" Width="1"
+            Background="{DynamicResource SystemControlForegroundBaseMediumLowBrush}" />
+
+    <ScrollViewer>
+      <StackPanel Spacing="16" Margin="12,12,12,0">
+        <TextBlock Classes="h2">Keyboard navigation in the overflow popup: Up/Down to move, Home/End to jump, Escape to close.</TextBlock>
+
+        <CommandBar x:Name="DemoBar">
+          <CommandBar.PrimaryCommands>
+            <CommandBarButton Label="New">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource AddIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
+            <CommandBarButton Label="Save">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource SaveIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
+          </CommandBar.PrimaryCommands>
+          <CommandBar.SecondaryCommands>
+            <CommandBarButton x:Name="BtnCopy"     Label="Copy" />
+            <CommandBarButton x:Name="BtnPaste"    Label="Paste" />
+            <CommandBarToggleButton x:Name="BtnBold" Label="Bold">
+              <CommandBarToggleButton.Icon><PathIcon Data="{StaticResource BoldIcon}" /></CommandBarToggleButton.Icon>
+            </CommandBarToggleButton>
+            <CommandBarSeparator />
+            <CommandBarButton x:Name="BtnShare"    Label="Share">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource ShareIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
+            <CommandBarButton x:Name="BtnDelete"   Label="Delete" IsEnabled="False">
+              <CommandBarButton.Icon><PathIcon Data="{StaticResource DeleteIcon}" /></CommandBarButton.Icon>
+            </CommandBarButton>
+            <CommandBarButton x:Name="BtnExport"   Label="Export" />
+          </CommandBar.SecondaryCommands>
+        </CommandBar>
+
+        <!-- Keyboard shortcuts reference -->
+        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="10">
+          <StackPanel Spacing="6">
+            <TextBlock Text="Keyboard shortcuts" FontWeight="SemiBold" />
+            <Grid ColumnDefinitions="80,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+              <TextBlock Grid.Row="0" Grid.Column="0" FontFamily="Consolas,Menlo,monospace" FontSize="12" Text="Down" />
+              <TextBlock Grid.Row="0" Grid.Column="1" FontSize="12" Opacity="0.7" Text="Next item (wraps to first)" />
+              <TextBlock Grid.Row="1" Grid.Column="0" FontFamily="Consolas,Menlo,monospace" FontSize="12" Text="Up" />
+              <TextBlock Grid.Row="1" Grid.Column="1" FontSize="12" Opacity="0.7" Text="Previous item (wraps to last)" />
+              <TextBlock Grid.Row="2" Grid.Column="0" FontFamily="Consolas,Menlo,monospace" FontSize="12" Text="Home" />
+              <TextBlock Grid.Row="2" Grid.Column="1" FontSize="12" Opacity="0.7" Text="First item" />
+              <TextBlock Grid.Row="3" Grid.Column="0" FontFamily="Consolas,Menlo,monospace" FontSize="12" Text="End" />
+              <TextBlock Grid.Row="3" Grid.Column="1" FontSize="12" Opacity="0.7" Text="Last item" />
+              <TextBlock Grid.Row="4" Grid.Column="0" FontFamily="Consolas,Menlo,monospace" FontSize="12" Text="Escape" />
+              <TextBlock Grid.Row="4" Grid.Column="1" FontSize="12" Opacity="0.7" Text="Close menu, focus returns to ··· button" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- Focus log -->
+        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="10">
+          <StackPanel Spacing="6">
+            <TextBlock Text="Focus log" FontWeight="SemiBold" />
+            <TextBlock x:Name="FocusLogText"
+                       FontFamily="Consolas, Menlo, monospace"
+                       FontSize="12"
+                       TextWrapping="Wrap"
+                       MinHeight="120"
+                       Opacity="0.8"
+                       Text="Open the overflow menu and use keyboard navigation." />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>
