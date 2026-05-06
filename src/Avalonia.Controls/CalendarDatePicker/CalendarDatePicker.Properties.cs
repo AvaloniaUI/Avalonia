@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Layout;
@@ -139,6 +140,24 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
             ContentControl.VerticalContentAlignmentProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
+        /// Defines the <see cref="ShowWeekNumbers"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ShowWeekNumbersProperty =
+            Calendar.ShowWeekNumbersProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
+        /// Defines the <see cref="WeekNumberRule"/> property.
+        /// </summary>
+        public static readonly StyledProperty<CalendarWeekRule> WeekNumberRuleProperty =
+            Calendar.WeekNumberRuleProperty.AddOwner<CalendarDatePicker>();
+
+        /// <summary>
+        /// Defines the <see cref="WeekNumberHeader"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object?> WeekNumberHeaderProperty =
+            Calendar.WeekNumberHeaderProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
         /// Gets a collection of dates that are marked as not selectable.
@@ -357,6 +376,37 @@ namespace Avalonia.Controls
         {
             get => GetValue(VerticalContentAlignmentProperty);
             set => SetValue(VerticalContentAlignmentProperty, value);
+        }
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether week numbers are shown in the month view
+        /// of the drop-down <see cref="Calendar"/>.
+        /// </summary>
+        public bool ShowWeekNumbers
+        {
+            get => GetValue(ShowWeekNumbersProperty);
+            set => SetValue(ShowWeekNumbersProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the rule used to determine the first week of the year for week number display.
+        /// The default is taken from the current culture.
+        /// </summary>
+        public CalendarWeekRule WeekNumberRule
+        {
+            get => GetValue(WeekNumberRuleProperty);
+            set => SetValue(WeekNumberRuleProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the content displayed in the week-number column header cell of the drop-down
+        /// <see cref="Calendar"/>. Set to a localized string such as <c>"CW"</c>, <c>"KW"</c>,
+        /// or <c>"Wk"</c> to give users context. Defaults to <c>null</c> (blank).
+        /// </summary>
+        public object? WeekNumberHeader
+        {
+            get => GetValue(WeekNumberHeaderProperty);
+            set => SetValue(WeekNumberHeaderProperty, value);
         }
     }
 }

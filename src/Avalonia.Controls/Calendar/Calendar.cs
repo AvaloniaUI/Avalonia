@@ -390,7 +390,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="WeekNumberHeader"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> WeekNumberHeaderProperty =
-            AvaloniaProperty.Register<Calendar, object?>(nameof(WeekNumberHeader));
+            AvaloniaProperty.Register<Calendar, object?>(nameof(WeekNumberHeader), "#");
 
         /// <summary>
         /// Gets or sets the content displayed in the week-number column header cell.
