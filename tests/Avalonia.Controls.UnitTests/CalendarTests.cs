@@ -494,6 +494,8 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(2023, 1, 2, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 1)]
         // 2022-12-31 is still in ISO week 52 of 2022
         [InlineData(2022, 12, 31, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 52)]
+        // .NET bug: 2018-12-31 is a Monday and is ISO week 1 of 2019, not week 53 of 2018
+        [InlineData(2018, 12, 31, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 1)]
         // US rule: week 1 always starts on Jan 1
         [InlineData(2023, 1, 1, System.Globalization.CalendarWeekRule.FirstDay, DayOfWeek.Sunday, 1)]
         [InlineData(2023, 12, 31, System.Globalization.CalendarWeekRule.FirstDay, DayOfWeek.Sunday, 53)]
