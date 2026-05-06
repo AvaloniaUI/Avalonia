@@ -23,9 +23,9 @@ internal partial class PresentationSource
         _pointerOverPreProcessor?.SceneInvalidated(sceneInvalidatedEventArgs.DirtyRect);
     }
 
-    public PixelPoint PointToScreen(Point point) => PlatformImpl?.PointToScreen(point) ?? default;
+    public PixelPoint? PointToScreen(Point point) => PlatformImpl?.PointToScreen(point);
 
-    public Point PointToClient(PixelPoint point) => PlatformImpl?.PointToClient(point) ?? default;
+    public Point? PointToClient(PixelPoint point) => PlatformImpl?.PointToClient(point);
 
     private void HandleScalingChanged(double scaling)
         => RenderScaling = LayoutHelper.ValidateScaling(scaling);
