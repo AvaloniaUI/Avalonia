@@ -442,10 +442,10 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void WeekNumberHeader_Defaults_To_Null()
+        public void WeekNumberHeader_Defaults_To_Hash_Symbol()
         {
             var calendar = new Calendar();
-            Assert.Null(calendar.WeekNumberHeader);
+            Assert.Equal(calendar.WeekNumberHeader, "#");
         }
 
         [Fact]
