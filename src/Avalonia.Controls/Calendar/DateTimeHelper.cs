@@ -140,6 +140,14 @@ namespace Avalonia.Controls
         /// <param name="firstDayOfWeek">The first day of the week.</param>
         /// <returns>The week number that <paramref name="date"/> falls in.</returns>
         public static int GetWeekOfYear(DateTime date, CalendarWeekRule rule, DayOfWeek firstDayOfWeek)
-            => CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(date, rule, firstDayOfWeek);
+        {
+            // .NET's Calendar.GetWeekOfYear does not correctly implement ISO 8601 for the combination
+            // of FirstFourDayWeek + Monday: late-December dates that belong to week 1 of the next year
+            // are incorrectly returned as week 53. Use ISOWeek for that specific combination.
+            if (rule == CalendarWeekRule.FirstFourDayWeek && firstDayOfWeek == DayOfWeek.Monday)
+                return ISOWeek.GetWeekOfYear(date);
+
+            return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(date, rule, firstDayOfWeek);
+        }
     }
 }
