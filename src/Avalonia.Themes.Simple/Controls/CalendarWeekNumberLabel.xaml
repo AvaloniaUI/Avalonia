@@ -3,8 +3,6 @@
                     x:ClassModifier="internal">
 
   <ControlTheme x:Key="{x:Type CalendarWeekNumberLabel}" TargetType="CalendarWeekNumberLabel">
-    <Setter Property="Margin" Value="0,4,0,4" />
-    <Setter Property="Padding" Value="4,0,6,0" />
     <Setter Property="FontSize" Value="9.5" />
     <Setter Property="FontStyle" Value="Italic" />
     <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
