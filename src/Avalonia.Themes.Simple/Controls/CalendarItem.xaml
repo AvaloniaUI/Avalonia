@@ -176,12 +176,5 @@
     <Style Selector="^:calendardisabled /template/ Rectangle#DisabledVisual">
       <Setter Property="IsVisible" Value="True" />
     </Style>
-    <!-- When week numbers are visible the MonthView is wider than the YearView.
-         Lock CalendarItem's own MinWidth so the size stays stable when switching
-         between month and year/decade views.
-         37px per CalendarButton × 4 cols = 148 + the week-number column (~30px) -->
-    <Style Selector="^:showweeknumbers">
-      <Setter Property="MinWidth" Value="200" />
-    </Style>
   </ControlTheme>
 </ResourceDictionary>
