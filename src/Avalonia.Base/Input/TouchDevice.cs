@@ -48,7 +48,7 @@ namespace Avalonia.Input
 
                 _pointers[args.RawPointerId] = pointer = new Pointer(Pointer.GetNextFreeId(),
                     PointerType.Touch, _pointers.Count == 0);
-                pointer.Capture(hit);
+                pointer.Capture(hit, CaptureSource.Implicit);
             }
 
             var target = pointer.Captured ?? args.InputHitTestResult.firstEnabledAncestor ?? args.Root.RootElement;
@@ -109,6 +109,7 @@ namespace Avalonia.Input
                     {
                         target.RaiseEvent(e);
                     }
+                    pointer?.Capture(null, CaptureSource.Implicit);
                 }
             }
 
@@ -117,7 +118,7 @@ namespace Avalonia.Input
                 _pointers.Remove(args.RawPointerId);
                 using (pointer)
                 {
-                    pointer?.Capture(null);
+                    pointer?.Capture(null, CaptureSource.Platform);
                     pointer?.CaptureGestureRecognizer(null);
                     if (pointer != null)
                         pointer.IsGestureRecognitionSkipped = false;
