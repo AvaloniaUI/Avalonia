@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -472,5 +473,8 @@ namespace Avalonia.Controls
         {
             PseudoClasses.Set(":open", newValue);
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+            => new ToolTipAutomationPeer(this);
     }
 }

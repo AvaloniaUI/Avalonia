@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -70,5 +71,7 @@ namespace Avalonia.Controls
                 menu.Bind(ItemsControl.ItemsSourceProperty, topLevel.GetBindingObservable(NativeMenu.MenuProperty)
                     .Select(v => v.GetValueOrDefault<NativeMenu>()?.Items)));
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new NativeMenuBarAutomationPeer(this);
     }
 }
