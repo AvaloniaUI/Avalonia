@@ -21,10 +21,7 @@ namespace Avalonia.Media
 #if !BUILDTASK
     public
 #endif
-    readonly struct Color : IEquatable<Color>
-#if !BUILDTASK
-        , IFormattable
-#endif
+    readonly struct Color : IEquatable<Color>, IFormattable
     {
         private const double byteToDouble = 1.0 / 255;
 
@@ -464,7 +461,6 @@ namespace Avalonia.Media
             }
         }
 
-#if !BUILDTASK
         /// <summary>
         /// Returns a formatted string representation of the color.
         /// </summary>
@@ -501,10 +497,10 @@ namespace Avalonia.Media
                 "x" => $"#{R:X2}{G:X2}{B:X2}",
                 "H" => $"#{R:X2}{G:X2}{B:X2}{A:X2}",
 
-                "R" => string.Format(CultureInfo.InvariantCulture, "rgba({0}, {1}, {2}, {3:F2})", R, G, B, A * byteToDouble),
-                "r" => string.Format(CultureInfo.InvariantCulture, "rgb({0}, {1}, {2})", R, G, B),
-                "R%" => FormatRgbaPercent(),
-                "r%" => FormatRgbPercent(),
+                "R" => FormatRgbCss(),
+                "r" => FormatRgbCss(includeAlpha: false),
+                "R%" => FormatRgbPercentCss(),
+                "r%" => FormatRgbPercentCss(includeAlpha: false),
 
                 "L" or "l" or "L%" or "l%" => ToHsl().ToString(format, formatProvider),
                 "V" or "v" or "V%" or "v%" => ToHsv().ToString(format, formatProvider),
@@ -513,23 +509,48 @@ namespace Avalonia.Media
             };
         }
 
-        private string FormatRgbaPercent()
+        /// <summary>
+        /// Formats the color as a CSS rgb() or rgba() string using absolute RGB components and fractional alpha.
+        /// </summary>
+        private string FormatRgbCss(bool includeAlpha = true)
         {
-            int rPct = (int)Math.Round(R * byteToDouble * 100.0);
-            int gPct = (int)Math.Round(G * byteToDouble * 100.0);
-            int bPct = (int)Math.Round(B * byteToDouble * 100.0);
-            int aPct = (int)Math.Round(A * byteToDouble * 100.0);
-            return string.Format(CultureInfo.InvariantCulture, "rgba({0}%, {1}%, {2}%, {3}%)", rPct, gPct, bPct, aPct);
+            if (includeAlpha)
+            {
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "rgba({0}, {1}, {2}, {3:F2})",
+                    R,
+                    G,
+                    B,
+                    A * byteToDouble);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "rgb({0}, {1}, {2})", R, G, B);
         }
 
-        private string FormatRgbPercent()
+        /// <summary>
+        /// Formats the color as a CSS rgb() or rgba() string with all components as percentages.
+        /// </summary>
+        private string FormatRgbPercentCss(bool includeAlpha = true)
         {
             int rPct = (int)Math.Round(R * byteToDouble * 100.0);
             int gPct = (int)Math.Round(G * byteToDouble * 100.0);
             int bPct = (int)Math.Round(B * byteToDouble * 100.0);
+
+            if (includeAlpha)
+            {
+                int aPct = (int)Math.Round(A * byteToDouble * 100.0);
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "rgba({0}%, {1}%, {2}%, {3}%)",
+                    rPct,
+                    gPct,
+                    bPct,
+                    aPct);
+            }
+
             return string.Format(CultureInfo.InvariantCulture, "rgb({0}%, {1}%, {2}%)", rPct, gPct, bPct);
         }
-#endif
 
         /// <summary>
         /// Returns the integer representation of the color.

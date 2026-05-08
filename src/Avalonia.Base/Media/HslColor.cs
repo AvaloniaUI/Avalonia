@@ -17,10 +17,7 @@ namespace Avalonia.Media
 #if !BUILDTASK
     public
 #endif
-    readonly struct HslColor : IEquatable<HslColor>
-#if !BUILDTASK
-        , IFormattable
-#endif
+    readonly struct HslColor : IEquatable<HslColor>, IFormattable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="HslColor"/> struct.
@@ -180,7 +177,6 @@ namespace Avalonia.Media
             return HslColor.ToHsv(H, S, L, A);
         }
 
-#if !BUILDTASK
         /// <summary>
         /// Returns a formatted string representation of the HSL color.
         /// </summary>
@@ -215,10 +211,10 @@ namespace Avalonia.Media
             {
                 "X" or "x" or "H" or "R" or "r" or "R%" or "r%" => ToRgb().ToString(format, formatProvider),
 
-                "L" => FormatHsla(),
-                "l" => FormatHsl(),
-                "L%" => FormatHslaPercent(),
-                "l%" => FormatHslPercent(),
+                "L" => FormatHslCss(),
+                "l" => FormatHslCss(includeAlpha: false),
+                "L%" => FormatHslPercentCss(),
+                "l%" => FormatHslPercentCss(includeAlpha: false),
 
                 "V" or "v" or "V%" or "v%" => ToHsv().ToString(format, formatProvider),
 
@@ -226,39 +222,53 @@ namespace Avalonia.Media
             };
         }
 
-        private string FormatHsla()
+        /// <summary>
+        /// Formats the color as a CSS hsl() or hsla() string using degrees, percent saturation/lightness,
+        /// and fractional alpha.
+        /// </summary>
+        private string FormatHslCss(bool includeAlpha = true)
         {
             int hDeg = (int)Math.Round(H);
             int sPct = (int)Math.Round(S * 100.0);
             int lPct = (int)Math.Round(L * 100.0);
-            return string.Format(CultureInfo.InvariantCulture, "hsla({0}, {1}%, {2}%, {3:F2})", hDeg, sPct, lPct, A);
-        }
 
-        private string FormatHsl()
-        {
-            int hDeg = (int)Math.Round(H);
-            int sPct = (int)Math.Round(S * 100.0);
-            int lPct = (int)Math.Round(L * 100.0);
+            if (includeAlpha)
+            {
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "hsla({0}, {1}%, {2}%, {3:F2})",
+                    hDeg,
+                    sPct,
+                    lPct,
+                    A);
+            }
+
             return string.Format(CultureInfo.InvariantCulture, "hsl({0}, {1}%, {2}%)", hDeg, sPct, lPct);
         }
 
-        private string FormatHslaPercent()
+        /// <summary>
+        /// Formats the color as a CSS hsl() or hsla() string with all components as percentages.
+        /// </summary>
+        private string FormatHslPercentCss(bool includeAlpha = true)
         {
             int hPct = (int)Math.Round(H / 360.0 * 100.0);
             int sPct = (int)Math.Round(S * 100.0);
             int lPct = (int)Math.Round(L * 100.0);
-            int aPct = (int)Math.Round(A * 100.0);
-            return string.Format(CultureInfo.InvariantCulture, "hsla({0}%, {1}%, {2}%, {3}%)", hPct, sPct, lPct, aPct);
-        }
 
-        private string FormatHslPercent()
-        {
-            int hPct = (int)Math.Round(H / 360.0 * 100.0);
-            int sPct = (int)Math.Round(S * 100.0);
-            int lPct = (int)Math.Round(L * 100.0);
+            if (includeAlpha)
+            {
+                int aPct = (int)Math.Round(A * 100.0);
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "hsla({0}%, {1}%, {2}%, {3}%)",
+                    hPct,
+                    sPct,
+                    lPct,
+                    aPct);
+            }
+
             return string.Format(CultureInfo.InvariantCulture, "hsl({0}%, {1}%, {2}%)", hPct, sPct, lPct);
         }
-#endif
 
         /// <inheritdoc/>
         public override string ToString()
