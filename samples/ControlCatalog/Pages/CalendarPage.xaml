@@ -1,5 +1,6 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Header="Calendar"
              x:Class="ControlCatalog.Pages.CalendarPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">A calendar control for selecting dates</TextBlock>
@@ -49,4 +50,4 @@
       </StackPanel>
     </WrapPanel>
   </StackPanel>
-</UserControl>
+</ContentPage>

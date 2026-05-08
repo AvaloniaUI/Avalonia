@@ -8,7 +8,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.LinuxFramebuffer;
 
-internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
+internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl, IDispatcherImplWithExplicitBackgroundProcessing
 {
     private readonly ManagedDispatcherImpl.IManagedDispatcherInputProvider _inputProvider;
     private readonly Thread _mainThread;
@@ -88,6 +88,7 @@ internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
     private TimeSpan? _nextTimer;
     private int _epoll;
     private Stopwatch _clock = Stopwatch.StartNew();
+    private bool _backgroundProcessingRequested;
 
     public EpollDispatcherImpl(ManagedDispatcherImpl.IManagedDispatcherInputProvider inputProvider)
     {
@@ -148,6 +149,19 @@ internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
             if (_inputProvider.HasInput)
             {
                 _inputProvider.DispatchNextInputEvent();
+                continue;
+            }
+
+            bool triggerBackgroundProcessing;
+            lock (_lock)
+            {
+                triggerBackgroundProcessing = _backgroundProcessingRequested;
+                _backgroundProcessingRequested = false;
+            }
+
+            if (triggerBackgroundProcessing)
+            {
+                ReadyForBackgroundProcessing?.Invoke();
                 continue;
             }
 
@@ -235,4 +249,20 @@ internal unsafe class EpollDispatcherImpl : IControlledDispatcherImpl
     public bool CanQueryPendingInput => true;
 
     public bool HasPendingInput => _inputProvider.HasInput;
+
+    private Action? ReadyForBackgroundProcessing { get; set; }
+    event Action? IDispatcherImplWithExplicitBackgroundProcessing.ReadyForBackgroundProcessing
+    {
+        add => ReadyForBackgroundProcessing += value;
+        remove => ReadyForBackgroundProcessing -= value;
+    }
+
+    void IDispatcherImplWithExplicitBackgroundProcessing.RequestBackgroundProcessing()
+    {
+        lock (_lock)
+        {
+            _backgroundProcessingRequested = true;
+            Wakeup();
+        }
+    }
 }

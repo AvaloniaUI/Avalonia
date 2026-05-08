@@ -8,7 +8,8 @@
     <ResourceDictionary>
       <!-- Custom controls defined in other assemblies -->
       <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="avares://ControlSamples/HamburgerMenu/HamburgerMenu.xaml" />
+        <ResourceInclude Source="avares://ControlCatalog/ScrollPage.xaml"/>
+        <ResourceInclude Source="avares://ControlCatalog/NavHeaderItem.xaml"/>
       </ResourceDictionary.MergedDictionaries>
 
       <!-- Resources used only in the control catalog -->
