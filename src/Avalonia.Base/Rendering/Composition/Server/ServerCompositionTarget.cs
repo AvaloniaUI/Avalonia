@@ -39,6 +39,8 @@ namespace Avalonia.Rendering.Composition.Server
         public ICompositionTargetDebugEvents? DebugEvents { get; set; }
         public int RenderedVisuals { get; set; }
         public int VisitedVisuals { get; set; }
+
+        internal PixelSize PixelSize => Avalonia.PixelSize.FromSizeCeiling(Size, Scaling);
         
         /// <summary>
         /// Returns true if the target is enabled and has pending work but its render target was not ready.
@@ -189,7 +191,7 @@ namespace Avalonia.Rendering.Composition.Server
                             || !(_renderTarget.Properties.RetainsPreviousFrameContents
                                  && _renderTarget.Properties.IsSuitableForDirectRendering);
             
-            using (var renderTargetContext = _renderTarget.CreateDrawingContext(new(PixelSize, Scaling), out var properties))
+            using (var renderTargetContext = _renderTarget.CreateDrawingContext(new(PixelSize, Scaling, Size), out var properties))
             using (var renderTiming = Diagnostic.BeginCompositorRenderPass())
             {
                 var fullRedraw = false;
