@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 
@@ -11,7 +12,7 @@ public class ColorSpectrumAutomationPeer : ControlAutomationPeer, IValueProvider
     public ColorSpectrumAutomationPeer(ColorSpectrum owner)
         : base(owner)
     {
-        owner.PropertyChanged += OwnerPropertyChanged;
+        owner.ColorChanged += OwnerOnColorChanged;
     }
 
     public bool IsReadOnly => false;
@@ -31,12 +32,9 @@ public class ColorSpectrumAutomationPeer : ControlAutomationPeer, IValueProvider
     protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
 
     protected override string GetClassNameCore() => nameof(ColorSpectrum);
-
-    private void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+ 
+    private void OwnerOnColorChanged(object? sender, ColorChangedEventArgs e)
     {
-        if (e.Property == ColorSpectrum.ColorProperty)
-        {
-            RaisePropertyChangedEvent(ValuePatternIdentifiers.ValueProperty, e.OldValue?.ToString(), e.NewValue?.ToString());
-        }
+        RaisePropertyChangedEvent(ValuePatternIdentifiers.ValueProperty, e.OldColor.ToString(), e.NewColor.ToString());
     }
 }
