@@ -153,7 +153,11 @@ public static class HeadlessWindowExtensions
 
     private static IHeadlessWindow GetImpl(this TopLevel topLevel)
     {
-        return topLevel.PlatformImpl as IHeadlessWindow ??
-               throw new InvalidOperationException("TopLevel must be a headless window.");
+        return topLevel.PlatformImpl switch
+        {
+            null => throw new ObjectDisposedException(topLevel.GetType().Name),
+            IHeadlessWindow headless => headless,
+            _ => throw new InvalidOperationException("TopLevel must be a headless window.")
+        };
     }
 }

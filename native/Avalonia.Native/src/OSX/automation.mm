@@ -130,7 +130,7 @@
         case AutomationExpander: return NSAccessibilityDisclosureTriangleRole;
         // Treat unknown roles as generic group container items. Returning
         // NSAccessibilityUnknownRole is also possible but makes the screen
-       // reader focus on the item instead of passing focus to child items.
+        // reader focus on the item instead of passing focus to child items.
         default: return NSAccessibilityGroupRole;
     }
 }
@@ -191,6 +191,7 @@
     {
         switch (_peer->GetLiveSetting())
         {
+            case LiveSettingOff: return nil;
             case LiveSettingPolite: return @"polite";
             case LiveSettingAssertive: return @"assertive";
         }
@@ -317,7 +318,30 @@
 - (id)accessibilityParent
 {
     auto parentPeer = _peer->GetParent();
-    return parentPeer ? [AvnAccessibilityElement acquire:parentPeer] : [NSApplication sharedApplication];
+
+    if (parentPeer == nullptr)
+        return [NSApplication sharedApplication];
+
+    // When the parent is a root provider, return the AvnView (content view)
+    // rather than the AvnWindow. macOS accessibility requires that the parent
+    // chain is consistent with the children chain: AvnView exposes these
+    // elements as its accessibilityChildren, so the elements must report
+    // AvnView as their accessibilityParent.  A mismatch causes macOS to be
+    // unable to resolve AXUIElementRefs back to the correct object, which
+    // makes setter calls like AXUIElementSetAttributeValue silently land on
+    // AvnView instead of the target AvnAccessibilityElement.
+    if (parentPeer->IsRootProvider())
+    {
+        auto window = parentPeer->RootProvider_GetWindow();
+        if (window != nullptr)
+        {
+            auto holder = dynamic_cast<INSViewHolder*>(window);
+            if (holder != nullptr)
+                return holder->GetNSView();
+        }
+    }
+
+    return [AvnAccessibilityElement acquire:parentPeer];
 }
 
 - (id)accessibilityTopLevelUIElement
@@ -403,7 +427,11 @@
 
 - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector
 {
-    if (selector == @selector(accessibilityPerformShowMenu))
+    if (selector == @selector(setAccessibilityValue:))
+    {
+        return _peer->IsValueProvider() || _peer->IsRangeValueProvider();
+    }
+    else if (selector == @selector(accessibilityPerformShowMenu))
     {
         return _peer->IsExpandCollapseProvider() && _peer->ExpandCollapseProvider_GetShowsMenu();
     }
@@ -422,7 +450,7 @@
     {
         return _peer->IsRangeValueProvider();
     }
-    
+
     return [super isAccessibilitySelectorAllowed:selector];
 }
 
@@ -461,13 +489,66 @@
 
 - (void)raisePropertyChanged:(AvnAutomationProperty)property
 {
-    if (property == AutomationPeer_Name && _peer->GetLiveSetting() != LiveSettingOff)
-        [self raiseLiveRegionChanged];
+    switch (property)
+    {
+        case AutomationPeer_Name:
+            NSAccessibilityPostNotification(self, NSAccessibilityTitleChangedNotification);
+            if (_peer->GetLiveSetting() != LiveSettingOff)
+                [self raiseLiveRegionChanged];
+            break;
+        case ValueProvider_Value:
+        case RangeValueProvider_Value:
+            NSAccessibilityPostNotification(self, NSAccessibilityValueChangedNotification);
+            break;
+        case AutomationPeer_BoundingRectangle:
+            NSAccessibilityPostNotification(self, NSAccessibilityMovedNotification);
+            NSAccessibilityPostNotification(self, NSAccessibilityResizedNotification);
+            break;
+        case SelectionItemProvider_IsSelected:
+        case SelectionProvider_Selection:
+            NSAccessibilityPostNotification(self, NSAccessibilitySelectedChildrenChangedNotification);
+            break;
+        case ToggleProvider_ToggleState:
+        case ExpandCollapseProvider_ExpandCollapseState:
+            NSAccessibilityPostNotification(self, NSAccessibilityValueChangedNotification);
+            break;
+        default:
+            break;
+    }
 }
 
 - (void)raiseLiveRegionChanged
 {
     NSAccessibilityPostNotification(self, @"AXLiveRegionChanged" /* kAXLiveRegionChangedNotification */);
+
+    // Announce the new string
+    auto name = _peer->GetName();
+    if (name != nullptr)
+    {
+        NSAccessibilityPriorityLevel priority = NSAccessibilityPriorityLow;
+        switch (_peer->GetLiveSetting())
+        {
+            case LiveSettingOff:
+                return;
+            case LiveSettingPolite:
+                priority = NSAccessibilityPriorityMedium;
+                break;
+            case LiveSettingAssertive:
+                priority = NSAccessibilityPriorityHigh;
+                break;
+        }
+
+        NSDictionary <NSString *, id> *userInfo = @{
+            NSAccessibilityAnnouncementKey: GetNSStringAndRelease(name),
+            NSAccessibilityPriorityKey: @(priority)
+        };
+
+        id topLevel = [self accessibilityTopLevelUIElement];
+        if ([topLevel isKindOfClass:[AvnWindow class]])
+        {
+            NSAccessibilityPostNotificationWithUserInfo(topLevel, NSAccessibilityAnnouncementRequestedNotification, userInfo);
+        }
+    }
 }
 
 - (void)setAccessibilityFocused:(BOOL)accessibilityFocused

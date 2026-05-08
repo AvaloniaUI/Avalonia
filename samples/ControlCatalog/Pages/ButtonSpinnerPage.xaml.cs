@@ -3,7 +3,7 @@ using Avalonia.Controls;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ButtonSpinnerPage : UserControl
+    public partial class ButtonSpinnerPage : ContentPage
     {
         public ButtonSpinnerPage()
         {

@@ -91,7 +91,9 @@ internal partial class MediaContext : ICompositorScheduler
         
         if (_inputMarkerOp == null)
         {
-            _inputMarkerOp = _dispatcher.InvokeAsync(_inputMarkerHandler, DispatcherPriority.Input);
+            _inputMarkerOp = new DispatcherOperation(_dispatcher, DispatcherPriority.Input, _inputMarkerHandler,
+                throwOnUiThread: true, captureExecutionContext: false);
+            _dispatcher.InvokeAsyncImpl(_inputMarkerOp, CancellationToken.None);
             _inputMarkerAddedAt = _time.Elapsed;
         }
         else if (!now && (_time.Elapsed - _inputMarkerAddedAt).TotalSeconds > MaxSecondsWithoutInput)
@@ -99,7 +101,7 @@ internal partial class MediaContext : ICompositorScheduler
             priority = DispatcherPriority.Input;
         }
 
-        var renderOp = new DispatcherOperation(_dispatcher, priority, _render, throwOnUiThread: true);
+        var renderOp = new DispatcherOperation(_dispatcher, priority, _render, throwOnUiThread: true, captureExecutionContext: false);
         _nextRenderOp = renderOp;
         _dispatcher.InvokeAsyncImpl(renderOp, CancellationToken.None);
     }

@@ -92,7 +92,7 @@ namespace ControlCatalog.Pages
         public List<SnapPointsAlignment> AvailableSnapPointsAlignment { get; }
     }
 
-    public partial class ScrollViewerPage : UserControl
+    public partial class ScrollViewerPage : TabbedPage
     {
         public ScrollViewerPage()
         {

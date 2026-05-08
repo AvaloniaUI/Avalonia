@@ -57,7 +57,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter!.ApplyTemplate();
 
-            foreach (Control child in target.GetTemplateChildren())
+            foreach (var child in target.GetTemplateDescendants().OfType<Control>())
                 Assert.Equal("foo", child.Tag);
         }
 
