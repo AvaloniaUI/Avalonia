@@ -203,6 +203,27 @@ namespace Avalonia
             (int)Math.Round(size.Width * scale),
             (int)Math.Round(size.Height * scale));
 
+        private const double FromSizeCeilingEpsilon = 1e-6;
+
+        /// <summary>
+        /// Converts logical size back to PixelSize and rounds it up with a small epsilon to avoid having
+        /// extra pixels when doing platform pixel size -> logical size -> pixel size conversions
+        /// </summary>
+        /// <param name="size">The logical size.</param>
+        /// <param name="scale">The scaling factor.</param>
+        /// <returns>The pixel size that contains the logical size at the given scale.</returns>
+        public static PixelSize FromSizeCeiling(Size size, double scale) => new PixelSize(
+            CeilWithEpsilon(size.Width * scale),
+            CeilWithEpsilon(size.Height * scale));
+
+        private static int CeilWithEpsilon(double value)
+        {
+            var rounded = Math.Round(value);
+            if (Math.Abs(value - rounded) < FromSizeCeilingEpsilon)
+                return (int)rounded;
+            return (int)Math.Ceiling(value);
+        }
+
 
         /// <summary>
         /// Converts a <see cref="Size"/> to device pixels using the specified scaling factor.
