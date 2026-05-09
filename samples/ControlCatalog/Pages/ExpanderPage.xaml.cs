@@ -3,7 +3,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ExpanderPage : UserControl
+    public partial class ExpanderPage : ContentPage
     {
         public ExpanderPage()
         {

@@ -1,0 +1,197 @@
+<Solution>
+  <Folder Name="/Android/">
+    <Project Path="src/Android/Avalonia.Android/Avalonia.Android.csproj" />
+  </Folder>
+  <Folder Name="/Browser/">
+    <Project Path="src/Browser/Avalonia.Browser/Avalonia.Browser.csproj" />
+  </Folder>
+  <Folder Name="/HarfBuzz/">
+    <Project Path="src/HarfBuzz/Avalonia.HarfBuzz/Avalonia.HarfBuzz.csproj" />
+  </Folder>
+  <Folder Name="/Headless/">
+    <Project Path="src/Headless/Avalonia.Headless.NUnit/Avalonia.Headless.NUnit.csproj" />
+    <Project Path="src/Headless/Avalonia.Headless.Vnc/Avalonia.Headless.Vnc.csproj" />
+    <Project Path="src/Headless/Avalonia.Headless.XUnit/Avalonia.Headless.XUnit.csproj" />
+    <Project Path="src/Headless/Avalonia.Headless/Avalonia.Headless.csproj" />
+  </Folder>
+  <Folder Name="/iOS/">
+    <Project Path="src/iOS/Avalonia.iOS/Avalonia.iOS.csproj" />
+  </Folder>
+  <Folder Name="/Linux/">
+    <Project Path="src/Avalonia.FreeDesktop.AtSpi/Avalonia.FreeDesktop.AtSpi.csproj" />
+    <Project Path="src/Avalonia.FreeDesktop/Avalonia.FreeDesktop.csproj" />
+    <Project Path="src/Avalonia.X11/Avalonia.X11.csproj" />
+    <Project Path="src/Linux/Avalonia.LinuxFramebuffer/Avalonia.LinuxFramebuffer.csproj" />
+  </Folder>
+  <Folder Name="/Markup/">
+    <Project Path="src/Markup/Avalonia.Markup.Xaml.Loader/Avalonia.Markup.Xaml.Loader.csproj" />
+    <Project Path="src/Markup/Avalonia.Markup.Xaml/Avalonia.Markup.Xaml.csproj" />
+    <Project Path="src/Markup/Avalonia.Markup/Avalonia.Markup.csproj" />
+  </Folder>
+  <Folder Name="/Packages/">
+    <Project Path="packages/Avalonia/Avalonia.csproj" />
+    <Project Path="src/Avalonia.Desktop/Avalonia.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/Props/">
+    <File Path="build/AvaloniaPublicKey.props" />
+    <File Path="build/Base.props" />
+    <File Path="build/CoreLibraries.props" />
+    <File Path="build/DevAnalyzers.props" />
+    <File Path="build/EmbedXaml.props" />
+    <File Path="build/HarfBuzzSharp.props" />
+    <File Path="build/MicroCOM.props" />
+    <File Path="build/NetAnalyzers.props" />
+    <File Path="build/NullableEnable.props" />
+    <File Path="build/ReferenceCoreLibraries.props" />
+    <File Path="build/SampleApp.props" />
+    <File Path="build/SharedVersion.props" />
+    <File Path="build/SkiaSharp.props" />
+    <File Path="build/SourceGenerators.props" />
+    <File Path="build/SourceLink.props" />
+    <File Path="build/TargetFrameworks.props" />
+    <File Path="build/TrimmingEnable.props" />
+    <File Path="build/UnitTests.NetFX.props" />
+    <File Path="build/XUnit.props" />
+  </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="samples/AppWithoutLifetime/AppWithoutLifetime.csproj" />
+    <Project Path="samples/BindingDemo/BindingDemo.csproj" />
+    <Project Path="samples/ControlCatalog.Android/ControlCatalog.Android.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="samples/ControlCatalog.Browser/ControlCatalog.Browser.csproj" />
+    <Project Path="samples/ControlCatalog.Desktop/ControlCatalog.Desktop.csproj" />
+    <Project Path="samples/ControlCatalog.iOS/ControlCatalog.iOS.csproj" />
+    <Project Path="samples/ControlCatalog.MacCatalyst/ControlCatalog.MacCatalyst.csproj" />
+    <Project Path="samples/ControlCatalog.tvOS/ControlCatalog.tvOS.csproj" />
+    <Project Path="samples/ControlCatalog/ControlCatalog.csproj" />
+    <Project Path="samples/Generators.Sandbox/Generators.Sandbox.csproj" />
+    <Project Path="samples/GpuInterop/GpuInterop.csproj" />
+    <Project Path="samples/IntegrationTestApp/IntegrationTestApp.csproj" />
+    <Project Path="samples/MiniMvvm/MiniMvvm.csproj" />
+    <Project Path="samples/PlatformSanityChecks/PlatformSanityChecks.csproj" />
+    <Project Path="samples/RenderDemo/RenderDemo.csproj" />
+    <Project Path="samples/SafeAreaDemo.Android/SafeAreaDemo.Android.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="samples/SafeAreaDemo.Desktop/SafeAreaDemo.Desktop.csproj" />
+    <Project Path="samples/SafeAreaDemo.iOS/SafeAreaDemo.iOS.csproj">
+      <Deploy />
+    </Project>
+    <Project Path="samples/SafeAreaDemo/SafeAreaDemo.csproj" />
+    <Project Path="samples/SampleControls/ControlSamples.csproj" />
+    <Project Path="samples/Sandbox/Sandbox.csproj" />
+    <Project Path="samples/SingleProjectSandbox/SingleProjectSandbox.csproj" />
+    <Project Path="samples/TextTestApp/TextTestApp.csproj" />
+    <Project Path="samples/VirtualizationDemo/VirtualizationDemo.csproj" />
+    <Project Path="samples/XEmbedSample/XEmbedSample.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Interop/">
+    <Project Path="samples/interop/WindowsInteropTest/WindowsInteropTest.csproj" />
+  </Folder>
+  <Folder Name="/Samples/UnloadableAssemblyLoadContext/">
+    <Project Path="samples/UnloadableAssemblyLoadContext/UnloadableAssemblyLoadContext/UnloadableAssemblyLoadContext.csproj" />
+    <Project Path="samples/UnloadableAssemblyLoadContext/UnloadableAssemblyLoadContextPlug/UnloadableAssemblyLoadContextPlug.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <File Path=".editorconfig" />
+    <File Path="src/Shared/CallerArgumentExpressionAttribute.cs" />
+    <File Path="src/Shared/IsExternalInit.cs" />
+    <File Path="src/Shared/ModuleInitializer.cs" />
+    <File Path="src/Shared/SourceGeneratorAttributes.cs" />
+    <File Path="src/Shared/StreamCompatibilityExtensions.cs" />
+    <File Path="src/Shared/StringCompatibilityExtensions.cs" />
+  </Folder>
+  <Folder Name="/Skia/">
+    <Project Path="src/Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="azure-pipelines-integrationtests.yml" />
+    <File Path="azure-pipelines.yml" />
+    <File Path="CODE_OF_CONDUCT.md" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="dirs.proj" />
+    <File Path="global.json" />
+    <File Path="licence.md" />
+    <File Path="NOTICE.md" />
+    <File Path="NuGet.Config" />
+    <File Path="readme.md" />
+  </Folder>
+  <Folder Name="/Targets/">
+    <File Path="build/AnalyzerProject.targets" />
+    <File Path="build/BuildTargets.targets" />
+    <File Path="build/DevSingleProject.targets" />
+    <File Path="build/UnitTests.NetCore.targets" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/Avalonia.Base.UnitTests/Avalonia.Base.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.Benchmarks/Avalonia.Benchmarks.csproj" />
+    <Project Path="tests/Avalonia.Build.Tasks.UnitTest/Avalonia.Build.Tasks.UnitTest.csproj" />
+    <Project Path="tests/Avalonia.Controls.UnitTests/Avalonia.Controls.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.DesignerSupport.TestApp/Avalonia.DesignerSupport.TestApp.csproj" />
+    <Project Path="tests/Avalonia.DesignerSupport.Tests/Avalonia.DesignerSupport.Tests.csproj" />
+    <Project Path="tests/Avalonia.Generators.Tests/Avalonia.Generators.Tests.csproj" />
+    <Project Path="tests/Avalonia.Headless.NUnit.PerAssembly.UnitTests/Avalonia.Headless.NUnit.PerAssembly.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.Headless.NUnit.PerTest.UnitTests/Avalonia.Headless.NUnit.PerTest.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.Headless.XUnit.PerAssembly.UnitTests/Avalonia.Headless.XUnit.PerAssembly.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.Headless.XUnit.PerTest.UnitTests/Avalonia.Headless.XUnit.PerTest.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj" />
+    <Project Path="tests/Avalonia.IntegrationTests.Win32/Avalonia.IntegrationTests.Win32.csproj" />
+    <Project Path="tests/Avalonia.LeakTests/Avalonia.LeakTests.csproj" />
+    <Project Path="tests/Avalonia.Markup.UnitTests/Avalonia.Markup.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.Markup.Xaml.UnitTests/Avalonia.Markup.Xaml.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.RenderTests.WpfCompare/Avalonia.RenderTests.WpfCompare.csproj" />
+    <Project Path="tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj" />
+    <Project Path="tests/Avalonia.Skia.UnitTests/Avalonia.Skia.UnitTests.csproj" />
+    <Project Path="tests/Avalonia.UnitTests/Avalonia.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/TestFiles/" />
+  <Folder Name="/Tests/TestFiles/BuildTasks/">
+    <Project Path="tests/TestFiles/BuildTasks/PInvoke/PInvoke.csproj" />
+  </Folder>
+  <Folder Name="/Themes/">
+    <Project Path="src/Avalonia.Themes.Fluent/Avalonia.Themes.Fluent.csproj" />
+    <Project Path="src/Avalonia.Themes.Simple/Avalonia.Themes.Simple.csproj" />
+  </Folder>
+  <Folder Name="/Tools/">
+    <Project Path="src/tools/Avalonia.Analyzers.CodeFixes.CSharp/Avalonia.Analyzers.CodeFixes.CSharp.csproj">
+      <BuildType Project="Release" />
+    </Project>
+    <Project Path="src/tools/Avalonia.Analyzers.CSharp/Avalonia.Analyzers.CSharp.csproj">
+      <BuildType Project="Release" />
+    </Project>
+    <Project Path="src/tools/Avalonia.Analyzers.VisualBasic/Avalonia.Analyzers.VisualBasic.csproj">
+      <BuildType Project="Release" />
+    </Project>
+    <Project Path="src/tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.csproj" />
+    <Project Path="src/tools/Avalonia.Designer.HostApp/Avalonia.Designer.HostApp.csproj" />
+    <Project Path="src/tools/Avalonia.Generators/Avalonia.Generators.csproj" />
+    <Project Path="src/tools/DevAnalyzers/DevAnalyzers.csproj" />
+    <Project Path="src/tools/DevGenerators/DevGenerators.csproj" />
+  </Folder>
+  <Folder Name="/Windows/">
+    <Project Path="src/Windows/Avalonia.Win32.Automation/Avalonia.Win32.Automation.csproj" />
+    <Project Path="src/Windows/Avalonia.Win32.Interoperability/Avalonia.Win32.Interoperability.csproj" />
+    <Project Path="src/Windows/Avalonia.Win32/Avalonia.Win32.csproj" />
+  </Folder>
+  <Project Path="nukebuild/_build.csproj">
+    <Build Project="false" />
+  </Project>
+  <Project Path="src/Avalonia.Base/Avalonia.Base.csproj" />
+  <Project Path="src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" />
+  <Project Path="src/Avalonia.Controls.ColorPicker/Avalonia.Controls.ColorPicker.csproj" />
+  <Project Path="src/Avalonia.Controls/Avalonia.Controls.csproj" />
+  <Project Path="src/Avalonia.DesignerSupport/Avalonia.DesignerSupport.csproj" />
+  <Project Path="src/Avalonia.Dialogs/Avalonia.Dialogs.csproj" />
+  <Project Path="src/Avalonia.Fonts.Inter/Avalonia.Fonts.Inter.csproj" />
+  <Project Path="src/Avalonia.Metal/Avalonia.Metal.csproj" />
+  <Project Path="src/Avalonia.MicroCom/Avalonia.MicroCom.csproj" />
+  <Project Path="src/Avalonia.Native/Avalonia.Native.csproj" />
+  <Project Path="src/Avalonia.OpenGL/Avalonia.OpenGL.csproj" />
+  <Project Path="src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" />
+  <Project Path="src/Avalonia.Vulkan/Avalonia.Vulkan.csproj" />
+</Solution>
