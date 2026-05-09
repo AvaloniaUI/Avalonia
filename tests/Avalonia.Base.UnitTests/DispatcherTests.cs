@@ -854,7 +854,7 @@ public partial class DispatcherTests
         var impl = new SimpleDispatcherImpl();
         Dispatcher.InitializeUIThreadDispatcher(impl);
         Thread? continuationThread = null;
-        _ = Task.CompletedTask.ContinueWith(t => continuationThread = Thread.CurrentThread, Dispatcher.UIThread);
+        _ = Task.CompletedTask.ContinueWith(t => continuationThread = Thread.CurrentThread, Dispatcher.UIThread.ToTaskScheduler());
         Assert.True(impl.AskedForSignal);
         impl.ExecuteSignal();
         Assert.Equal(Dispatcher.UIThread.Thread, continuationThread);

@@ -7,17 +7,30 @@ public partial class Dispatcher
 {
     private TaskScheduler? _taskScheduler;
 
-    public static implicit operator TaskScheduler(Dispatcher dispatcher)
+    /// <summary>
+    /// Gets a <see cref="TaskScheduler"/> which executes tasks on this <see cref="Dispatcher"/>. A <see cref="DispatcherPriority"/> is captured from
+    /// the current <see cref="AvaloniaSynchronizationContext"/> if one is available. Otherwise, <see cref="DispatcherPriority.Default"/> is used.
+    /// </summary>
+    public TaskScheduler ToTaskScheduler() => ToTaskScheduler(SynchronizationContext.Current switch
     {
-        lock (dispatcher.InstanceLock)
+        AvaloniaSynchronizationContext avaloniaContext => avaloniaContext.Priority,
+        _ => DispatcherPriority.Default
+    });
+
+    /// <summary>
+    /// Gets a <see cref="TaskScheduler"/> which executes tasks on this <see cref="Dispatcher"/> with the specified <see cref="DispatcherPriority"/>.
+    /// </summary>
+    public TaskScheduler ToTaskScheduler(DispatcherPriority priority)
+    {
+        lock (InstanceLock)
         {
-            if (dispatcher._taskScheduler == null)
+            if (_taskScheduler == null)
             {
                 var prevContext = SynchronizationContext.Current;
-                SynchronizationContext.SetSynchronizationContext(dispatcher.GetContextWithPriority(DispatcherPriority.Default));
+                SynchronizationContext.SetSynchronizationContext(GetContextWithPriority(priority));
                 try
                 {
-                    dispatcher._taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                    _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
                 }
                 finally
                 {
@@ -26,6 +39,6 @@ public partial class Dispatcher
             }
         }
 
-        return dispatcher._taskScheduler;
+        return _taskScheduler;
     }
 }
