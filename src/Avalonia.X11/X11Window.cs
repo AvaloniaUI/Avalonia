@@ -269,7 +269,8 @@ namespace Avalonia.X11
             _storageProvider = new FallbackStorageProvider(new[]
             {
                 () => _platform.Options.UseDBusFilePicker
-                    ? DBusSystemDialog.TryCreateAsync(Handle)
+                    ? DBusSystemDialog.TryCreateAsync(() => Task.FromResult<IPortalParentLease?>(
+                        new TrivialPortalParentLease($"x11:{Handle.Handle:X}")))
                     : Task.FromResult<IStorageProvider?>(null),
                 () => GtkSystemDialog.TryCreate(this),
                 // TODO: This will be incompatible with "root element is not a TopLevel" scenarios,

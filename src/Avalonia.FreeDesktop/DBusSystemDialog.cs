@@ -16,7 +16,16 @@ namespace Avalonia.FreeDesktop
 {
     internal class DBusSystemDialog : BclStorageProvider
     {
-        internal static async Task<IStorageProvider?> TryCreateAsync(IPlatformHandle handle)
+        /// <summary>
+        /// Creates a portal-backed storage provider if xdg-desktop-portal FileChooser is available.
+        /// </summary>
+        /// <param name="parentLeaseProvider">
+        /// Callback invoked once per picker call to obtain the parent-window handle to pass to the
+        /// portal. The returned <see cref="IPortalParentLease"/> is held until the picker call
+        /// completes and then disposed. May return <c>null</c> to call the portal with an empty
+        /// parent_window string (per portal spec: "no parent").
+        /// </param>
+        internal static async Task<IStorageProvider?> TryCreateAsync(Func<Task<IPortalParentLease?>>? parentLeaseProvider)
         {
             if (DBusHelper.DefaultConnection is not { } conn)
                 return null;
@@ -35,22 +44,25 @@ namespace Avalonia.FreeDesktop
                 return null;
             }
 
-            return new DBusSystemDialog(conn, handle, dbusFileChooser, version);
+            return new DBusSystemDialog(conn, parentLeaseProvider, dbusFileChooser, version);
         }
 
         private readonly Connection _connection;
         private readonly OrgFreedesktopPortalFileChooserProxy _fileChooser;
-        private readonly IPlatformHandle _handle;
+        private readonly Func<Task<IPortalParentLease?>>? _parentLeaseProvider;
         private readonly uint _version;
 
-        private DBusSystemDialog(Connection connection, IPlatformHandle handle,
+        private DBusSystemDialog(Connection connection, Func<Task<IPortalParentLease?>>? parentLeaseProvider,
             OrgFreedesktopPortalFileChooserProxy fileChooser, uint version)
         {
             _connection = connection;
             _fileChooser = fileChooser;
-            _handle = handle;
+            _parentLeaseProvider = parentLeaseProvider;
             _version = version;
         }
+
+        private async Task<IPortalParentLease?> AcquireParentLeaseAsync()
+            => _parentLeaseProvider is null ? null : await _parentLeaseProvider().ConfigureAwait(false);
 
         public override bool CanOpen => true;
 
@@ -60,7 +72,8 @@ namespace Avalonia.FreeDesktop
 
         public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
         {
-            var parentWindow = $"x11:{_handle.Handle:X}";
+            await using var parentLease = await AcquireParentLeaseAsync().ConfigureAwait(false);
+            var parentWindow = parentLease?.Handle ?? string.Empty;
             ObjectPath objectPath;
             var chooserOptions = new Dictionary<string, VariantValue>();
 
@@ -109,7 +122,8 @@ namespace Avalonia.FreeDesktop
         private async Task<(IStorageFile? file, FilePickerFileType? selectedType)> SaveFilePickerCoreAsync(
             FilePickerSaveOptions options)
         {
-            var parentWindow = $"x11:{_handle.Handle:X}";
+            await using var parentLease = await AcquireParentLeaseAsync().ConfigureAwait(false);
+            var parentWindow = parentLease?.Handle ?? string.Empty;
             ObjectPath objectPath;
             var chooserOptions = new Dictionary<string, VariantValue>();
             if (TryParseFilters(options.FileTypeChoices, options.SuggestedFileType, out var filters,
@@ -182,7 +196,8 @@ namespace Avalonia.FreeDesktop
             if (_version < 3)
                 return [];
 
-            var parentWindow = $"x11:{_handle.Handle:X}";
+            await using var parentLease = await AcquireParentLeaseAsync().ConfigureAwait(false);
+            var parentWindow = parentLease?.Handle ?? string.Empty;
             var chooserOptions = new Dictionary<string, VariantValue>
             {
                 { "directory", VariantValue.Bool(true) }, { "multiple", VariantValue.Bool(options.AllowMultiple) }
