@@ -172,5 +172,13 @@ namespace Avalonia.Platform
         /// Gets or sets a callback invoked when <see cref="AllowedWindowActions"/> changes.
         /// </summary>
         Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged { get => null; set { } }
+        
+        /// <summary>
+        /// Informs the platform about the thickness of application-drawn shadow decorations
+        /// so that the platform can distinguish the window content area from shadows.
+        /// It's platform's responsibility to synchronize this with window resize and rendering of the next frame 
+        /// </summary>
+        /// <param name="extents">The shadow thickness on each side, in DIPs.</param>
+        void SetShadowExtents(Thickness extents) { }
     }
 }
