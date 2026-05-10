@@ -84,6 +84,7 @@ namespace ControlCatalog.ViewModels
             new PageItem("TabbedPage",() => new TabbedDemoPage(), Icons.Tab),
             new PageItem("TabControl",() => new TabControlPage(), Icons.Tab),
             new PageItem("TabStrip",() => new TabStripPage(), Icons.Tab),
+            new PageItem("TableView",() => new TableViewPage(), Icons.Grid),
             new PageItem("TextBox",() => new TextBoxPage(), Icons.TextInput),
             new PageItem("TextBlock",() => new TextBlockPage(), Icons.TextInput),
             new PageItem("Theme Variants",() => new ThemePage(), Icons.Theme),

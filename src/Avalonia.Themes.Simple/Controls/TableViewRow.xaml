@@ -1,0 +1,49 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+
+  <Thickness x:Key="TableViewRowPadding">2,1</Thickness>
+
+  <ControlTheme x:Key="{x:Type TableViewRow}" TargetType="TableViewRow">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="{DynamicResource TableViewRowPadding}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="Border"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}"
+                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
+          <TableViewRowPresenter Name="PART_RowPresenter" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ Border#Border">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}" />
+    </Style>
+
+    <Style Selector="^:selected /template/ Border#Border">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}" />
+    </Style>
+
+    <Style Selector="^:selected:focus /template/ Border#Border">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}" />
+    </Style>
+
+    <Style Selector="^:selected:pointerover /template/ Border#Border">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}" />
+    </Style>
+
+    <Style Selector="^:selected:focus:pointerover /template/ Border#Border">
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}" />
+    </Style>
+
+  </ControlTheme>
+
+</ResourceDictionary>
