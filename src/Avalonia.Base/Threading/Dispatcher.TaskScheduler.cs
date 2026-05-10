@@ -1,11 +1,12 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Avalonia.Threading;
 
 public partial class Dispatcher
 {
-    private TaskScheduler? _taskScheduler;
+    private readonly Dictionary<DispatcherPriority, TaskScheduler> _taskSchedulers = [];
 
     /// <summary>
     /// Gets a <see cref="TaskScheduler"/> which executes tasks on this <see cref="Dispatcher"/>. A <see cref="DispatcherPriority"/> is captured from
@@ -24,21 +25,21 @@ public partial class Dispatcher
     {
         lock (InstanceLock)
         {
-            if (_taskScheduler == null)
+            if (!_taskSchedulers.TryGetValue(priority, out var scheduler))
             {
                 var prevContext = SynchronizationContext.Current;
                 SynchronizationContext.SetSynchronizationContext(GetContextWithPriority(priority));
                 try
                 {
-                    _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                    scheduler = _taskSchedulers[priority] = TaskScheduler.FromCurrentSynchronizationContext();
                 }
                 finally
                 {
                     SynchronizationContext.SetSynchronizationContext(prevContext);
                 }
             }
-        }
 
-        return _taskScheduler;
+            return scheduler;
+        }
     }
 }
