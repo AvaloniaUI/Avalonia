@@ -7,6 +7,7 @@ using Avalonia.Media.Immutable;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Drawing;
+using Avalonia.Rendering.Composition.Drawing.Nodes;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
@@ -353,6 +354,193 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 
             rd.Dispose();
             Assert.Equal(1, op.DisposeCount);
+        }
+
+        [Fact]
+        public void GlyphRun_Node_Releases_Reference_On_Direct_Dispose()
+        {
+            var glyphRunRef = RefCountable.Create(Mock.Of<IGlyphRunImpl>());
+            Assert.Equal(1, glyphRunRef.RefCount);
+
+            var node = new RenderDataGlyphRunNode { GlyphRun = glyphRunRef.Clone() };
+            Assert.Equal(2, glyphRunRef.RefCount);
+
+            node.Dispose();
+            Assert.Equal(1, glyphRunRef.RefCount);
+        }
+
+        [Fact]
+        public void GlyphRun_Node_Disposed_When_Containing_Push_Node_Disposed()
+        {
+            var glyphRunRef = RefCountable.Create(Mock.Of<IGlyphRunImpl>());
+            var glyphNode = new RenderDataGlyphRunNode { GlyphRun = glyphRunRef.Clone() };
+            Assert.Equal(2, glyphRunRef.RefCount);
+
+            var pushNode = new RenderDataOpacityNode { Opacity = 0.5 };
+            pushNode.Children.Add(glyphNode);
+
+            pushNode.Dispose();
+            Assert.Equal(1, glyphRunRef.RefCount);
+        }
+
+        [Fact]
+        public void PushOpacityMask_Brush_Is_AddRefed_Once_And_Released_On_Dispose()
+        {
+            var brush = new TrackingBrush();
+            var ctx = new TestContext(_services);
+            using (ctx.Context.PushOpacityMask(brush, new Rect(0, 0, 100, 100)))
+                ctx.Context.DrawRectangle(Brushes.Black, null, new RoundedRect(new Rect(0, 0, 10, 10)));
+            var rd = ctx.Context.GetRenderResults()!;
+
+            Assert.Equal(1, brush.AddRefCount);
+            Assert.Equal(0, brush.ReleaseCount);
+
+            rd.Dispose();
+            Assert.Equal(1, brush.ReleaseCount);
+        }
+
+        [Fact]
+        public void PushOpacityMask_HitTest_Recurses_Into_Children()
+        {
+            var brush = new TrackingBrush();
+            var ctx = new TestContext(_services);
+            using (ctx.Context.PushOpacityMask(brush, new Rect(0, 0, 100, 100)))
+                ctx.Context.DrawRectangle(Brushes.Black, null, new RoundedRect(new Rect(0, 0, 10, 10)));
+            var rd = ctx.Context.GetRenderResults()!;
+
+            Assert.True(rd.HitTest(new Point(5, 5)));
+            Assert.False(rd.HitTest(new Point(50, 50)));
+        }
+
+        [Fact]
+        public void PushGeometryClip_HitTest_Restricts_By_FillContains()
+        {
+            var geomMock = new Mock<IGeometryImpl>();
+            geomMock.Setup(g => g.FillContains(new Point(5, 5))).Returns(true);
+            geomMock.Setup(g => g.FillContains(new Point(50, 50))).Returns(false);
+
+            var node = new RenderDataGeometryClipNode { Geometry = geomMock.Object };
+            node.Children.Add(new RenderDataRectangleNode
+            {
+                ServerBrush = Brushes.Black,
+                Rect = new RoundedRect(new Rect(0, 0, 100, 100))
+            });
+
+            Assert.True(node.HitTest(new Point(5, 5)));
+            Assert.False(node.HitTest(new Point(50, 50)));
+        }
+
+        [Fact]
+        public void Geometry_Node_AddRefs_Brush_And_Pen()
+        {
+            var brush = new TrackingBrush();
+            var pen = new TrackingPen();
+            var ctx = new TestContext(_services);
+            ctx.Context.DrawGeometry(brush, pen, Mock.Of<IGeometryImpl>());
+            var rd = ctx.Context.GetRenderResults()!;
+
+            Assert.Equal(1, brush.AddRefCount);
+            Assert.Equal(1, pen.AddRefCount);
+
+            rd.Dispose();
+            Assert.Equal(1, brush.ReleaseCount);
+            Assert.Equal(1, pen.ReleaseCount);
+        }
+
+        [Fact]
+        public void Geometry_Node_HitTest_Uses_FillContains_When_Brush_Set()
+        {
+            var geomMock = new Mock<IGeometryImpl>();
+            geomMock.Setup(g => g.FillContains(new Point(5, 5))).Returns(true);
+            geomMock.Setup(g => g.FillContains(new Point(50, 50))).Returns(false);
+
+            var ctx = new TestContext(_services);
+            ctx.Context.DrawGeometry(Brushes.Black, null, geomMock.Object);
+            var rd = ctx.Context.GetRenderResults()!;
+
+            Assert.True(rd.HitTest(new Point(5, 5)));
+            Assert.False(rd.HitTest(new Point(50, 50)));
+        }
+
+        [Fact]
+        public void Geometry_Node_HitTest_Uses_StrokeContains_When_Pen_Set()
+        {
+            var pen = new ImmutablePen(Brushes.Black, 1);
+            var geomMock = new Mock<IGeometryImpl>();
+            geomMock.Setup(g => g.StrokeContains(pen, new Point(5, 5))).Returns(true);
+            geomMock.Setup(g => g.StrokeContains(pen, new Point(50, 50))).Returns(false);
+
+            var ctx = new TestContext(_services);
+            ctx.Context.DrawGeometry(null, pen, geomMock.Object);
+            var rd = ctx.Context.GetRenderResults()!;
+
+            Assert.True(rd.HitTest(new Point(5, 5)));
+            Assert.False(rd.HitTest(new Point(50, 50)));
+        }
+
+        [Fact]
+        public void PushRenderOptions_Forwards_Push_And_Pop_To_Drawing_Context_Impl()
+        {
+            var mockImpl = new Mock<IDrawingContextImpl>();
+            var ctx = new RenderDataNodeRenderContext(mockImpl.Object);
+            var opts = new RenderOptions { EdgeMode = EdgeMode.Aliased };
+            var node = new RenderDataRenderOptionsNode { RenderOptions = opts };
+
+            node.Push(ref ctx);
+            node.Pop(ref ctx);
+
+            mockImpl.Verify(x => x.PushRenderOptions(opts), Times.Once);
+            mockImpl.Verify(x => x.PopRenderOptions(), Times.Once);
+        }
+
+        [Fact]
+        public void PushTextOptions_Forwards_Push_And_Pop_To_Drawing_Context_Impl()
+        {
+            var mockImpl = new Mock<IDrawingContextImpl>();
+            var ctx = new RenderDataNodeRenderContext(mockImpl.Object);
+            var opts = new TextOptions { TextRenderingMode = TextRenderingMode.Antialias };
+            var node = new RenderDataTextOptionsNode { TextOptions = opts };
+
+            node.Push(ref ctx);
+            node.Pop(ref ctx);
+
+            mockImpl.Verify(x => x.PushTextOptions(opts), Times.Once);
+            mockImpl.Verify(x => x.PopTextOptions(), Times.Once);
+        }
+
+        [Fact]
+        public void Two_Distinct_Brushes_Are_AddRefed_Separately()
+        {
+            var brush1 = new TrackingBrush();
+            var brush2 = new TrackingBrush();
+            var ctx = new TestContext(_services);
+            ctx.Context.DrawRectangle(brush1, null, new RoundedRect(new Rect(0, 0, 10, 10)));
+            ctx.Context.DrawRectangle(brush2, null, new RoundedRect(new Rect(20, 20, 10, 10)));
+            var rd = ctx.Context.GetRenderResults()!;
+
+            Assert.Equal(1, brush1.AddRefCount);
+            Assert.Equal(1, brush2.AddRefCount);
+
+            rd.Dispose();
+            Assert.Equal(1, brush1.ReleaseCount);
+            Assert.Equal(1, brush2.ReleaseCount);
+        }
+
+        [Fact]
+        public void Brush_And_Pen_On_Same_Draw_Are_Both_AddRefed_Once()
+        {
+            var brush = new TrackingBrush();
+            var pen = new TrackingPen();
+            var ctx = new TestContext(_services);
+            ctx.Context.DrawRectangle(brush, pen, new RoundedRect(new Rect(0, 0, 10, 10)));
+            var rd = ctx.Context.GetRenderResults()!;
+
+            Assert.Equal(1, brush.AddRefCount);
+            Assert.Equal(1, pen.AddRefCount);
+
+            rd.Dispose();
+            Assert.Equal(1, brush.ReleaseCount);
+            Assert.Equal(1, pen.ReleaseCount);
         }
 
         sealed class TrackingBrush : IBrush, ICompositionRenderResource<IBrush>
