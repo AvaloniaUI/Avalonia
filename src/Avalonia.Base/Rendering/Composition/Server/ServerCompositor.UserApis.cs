@@ -83,4 +83,10 @@ internal partial class ServerCompositor
             }
         }
     }
+
+    public void InvalidateAllCompositionTargets()
+    {
+        foreach(var target in _activeTargets)
+            target.RequestFullRedraw();
+    }
 }
