@@ -1175,6 +1175,62 @@ public class DrawerPageTests
             Assert.False(dp.IsOpen);
             Assert.False(args.Handled);
         }
+
+        [Fact]
+        public async Task BackButton_ForwardsThroughNavigationPageToModalBeforeCoveredPage()
+        {
+            var dp = new DrawerPage();
+            var nav = new NavigationPage();
+            var coveredPage = new BackHandlingPage { HandleBack = true };
+            var modal = new BackHandlingPage();
+            await nav.PushAsync(coveredPage);
+            await nav.PushModalAsync(modal);
+            dp.Content = nav;
+            var root = new TestRoot { Child = dp };
+
+            var args = RaiseBackButton(dp);
+
+            Assert.True(args.Handled);
+            Assert.Equal(0, coveredPage.BackButtonPressCount);
+            Assert.Equal(1, modal.BackButtonPressCount);
+            Assert.Empty(nav.ModalStack);
+            Assert.Same(coveredPage, nav.CurrentPage);
+        }
+
+        [Fact]
+        public async Task BackButton_ClosesOpenDrawerBeforeForwardingToNestedNavigationPage()
+        {
+            var dp = new DrawerPage { IsOpen = true };
+            var nav = new NavigationPage();
+            var coveredPage = new BackHandlingPage { HandleBack = true };
+            var modal = new BackHandlingPage();
+            await nav.PushAsync(coveredPage);
+            await nav.PushModalAsync(modal);
+            dp.Content = nav;
+            var root = new TestRoot { Child = dp };
+
+            var args = RaiseBackButton(dp);
+
+            Assert.True(args.Handled);
+            Assert.False(dp.IsOpen);
+            Assert.Equal(0, coveredPage.BackButtonPressCount);
+            Assert.Equal(0, modal.BackButtonPressCount);
+            Assert.Single(nav.ModalStack);
+            Assert.Same(modal, nav.ModalStack[0]);
+        }
+
+        private sealed class BackHandlingPage : ContentPage
+        {
+            public int BackButtonPressCount { get; private set; }
+
+            public bool HandleBack { get; set; }
+
+            protected override bool OnSystemBackButtonPressed()
+            {
+                BackButtonPressCount++;
+                return HandleBack;
+            }
+        }
     }
 
     public class IconTests : ScopedTestBase
