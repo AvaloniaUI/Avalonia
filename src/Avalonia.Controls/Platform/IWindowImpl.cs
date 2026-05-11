@@ -112,6 +112,18 @@ namespace Avalonia.Platform
         PlatformRequestedDrawnDecoration RequestedDrawnDecorations { get; }
 
         /// <summary>
+        /// Triggered when decorations request from platform got changed
+        /// </summary>
+        Action? DrawnDecorationsRequestChanged
+        {
+            get => null;
+            set
+            {
+
+            }
+        }
+
+        /// <summary>
         /// Gets a thickness that describes the amount each side of the non-client area extends into the client area.
         /// It includes the titlebar.
         /// </summary>
