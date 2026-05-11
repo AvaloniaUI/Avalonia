@@ -2,6 +2,7 @@ import { CaretHelper } from "./caretHelper";
 import { JsExports } from "./jsExports";
 import { IMemoryView } from "../../types/dotnet";
 import { StorageItem } from "../storage/storageItem";
+declare var EditContext: any;
 
 enum RawInputModifiers {
     None = 0,
@@ -318,6 +319,37 @@ export class InputHelper {
         };
     }
 
+    public static subscribeEditContextEvents(editContext: EditContext, topLevelId: number) {
+        const textUpdateHandler = (args: TextUpdateEvent) => {
+            JsExports.InputHelper.OnTextUpdate(topLevelId,
+                args.updateRangeStart, args.updateRangeEnd, args.text, args.selectionStart, args.selectionEnd);
+        };
+        editContext.addEventListener("textupdate", textUpdateHandler);
+
+        const compositionStartHandler = (args: Event) => {
+            JsExports.InputHelper.OnCompositionStart(topLevelId);
+        };
+        editContext.addEventListener("compositionstart", compositionStartHandler);
+
+        const characterBoundsUpdateHandler = (args: CharacterBoundsUpdateEvent) => {
+            JsExports.InputHelper.OnCharacterBoundsUpdate(topLevelId,
+                args.rangeStart, args.rangeEnd);
+        };
+        editContext.addEventListener("characterboundsupdate", characterBoundsUpdateHandler);
+
+        const compositionEndHandler = (args: Event) => {
+            JsExports.InputHelper.OnCompositionEnd(topLevelId);
+        };
+        editContext.addEventListener("compositionend", compositionEndHandler);
+
+        return () => {
+            editContext.removeEventListener("textupdate", textUpdateHandler);
+            editContext.removeEventListener("compositionstart", compositionStartHandler);
+            editContext.removeEventListener("characterboundsupdate", characterBoundsUpdateHandler);
+            editContext.removeEventListener("compositionend", compositionEndHandler);
+        };
+    }
+
     public static subscribeKeyEvents(element: HTMLInputElement, topLevelId: number) {
         const keyDownHandler = (args: KeyboardEvent) => {
             JsExports.InputHelper.OnKeyDown(topLevelId, args.code, args.key, this.getModifiers(args))
@@ -505,7 +537,7 @@ export class InputHelper {
             };
         }
 
-        return () => {};
+        return () => { };
     }
 
     public static clearInput(inputElement: HTMLInputElement) {
@@ -514,6 +546,44 @@ export class InputHelper {
 
     public static focusElement(inputElement: HTMLElement) {
         inputElement.focus();
+    }
+
+    public static attachEditContext(inputElement: HTMLElement): EditContext {
+        if (inputElement.editContext != undefined)
+            inputElement.editContext = undefined;
+
+        const editContext = new EditContext();
+
+        inputElement.editContext = editContext;
+        return editContext;
+    }
+
+    public static detachEditContext(inputElement: HTMLElement) {
+        inputElement.editContext = undefined; DOMRect
+    }
+
+    public static updateText(editContext: EditContext, rangeStart: number, rangeEnd: number, text: string) {
+        editContext.updateText(rangeStart, rangeEnd, text);
+    }
+
+    public static clearText(editContext: EditContext) {
+        editContext.updateText(0, editContext.text.length, "");
+    }
+
+    public static updateSelection(editContext: EditContext, start: number, end: number) {
+        editContext.updateSelection(start, end);
+    }
+
+    public static updateControlBounds(editContext: EditContext, x: number, y: number, width: number, height: number) {
+        editContext.updateControlBounds(new DOMRect(x, y, width, height));
+    }
+
+    public static updateSelectionBounds(editContext: EditContext, x: number, y: number, width: number, height: number) {
+        editContext.updateSelectionBounds(new DOMRect(x, y, width, height));
+    }
+
+    public static updateCharacterBounds(editContext: EditContext, rangeStart: number, x: number, y: number, width: number, height: number) {
+        editContext.updateCharacterBounds(rangeStart, [new DOMRect(x, y, width, height)]);
     }
 
     public static setCursor(inputElement: HTMLInputElement, kind: string) {

@@ -3,12 +3,13 @@ using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
 using Avalonia.Input.TextInput;
 
-namespace Avalonia.Browser;
+namespace Avalonia.Browser.Text;
 
 internal class BrowserTextInputMethod(
     BrowserInputHandler inputHandler,
     JSObject containerElement,
-    JSObject inputElement)
+    JSObject inputElement,
+    int topLevelId)
     : ITextInputMethodImpl
 {
     private readonly JSObject _inputElement = inputElement ?? throw new ArgumentNullException(nameof(inputElement));
@@ -16,11 +17,15 @@ internal class BrowserTextInputMethod(
     private readonly BrowserInputHandler _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
     private TextInputMethodClient? _client;
 
+    private static readonly bool s_supportsEditContext = InputHelper.SupportsEditContext();
+
+    private IInputMethod _inputMethod = s_supportsEditContext ? new EditContextInputMethod(inputElement, topLevelId) : new ClassicInputMethod(inputElement);
+
     public bool IsComposing { get; private set; }
 
     private void HideIme()
     {
-        InputHelper.HideElement(_inputElement);
+        InputHelper.HideElement(inputElement);
         InputHelper.FocusElement(_containerElement);
     }
 
@@ -30,15 +35,18 @@ internal class BrowserTextInputMethod(
         {
             _client.SurroundingTextChanged -= SurroundingTextChanged;
             _client.InputPaneActivationRequested -= InputPaneActivationRequested;
+            _client.SelectionChanged -= Client_SelectionChanged;
         }
 
         if (client != null)
         {
             client.SurroundingTextChanged += SurroundingTextChanged;
             client.InputPaneActivationRequested += InputPaneActivationRequested;
+            client.SelectionChanged += Client_SelectionChanged;
         }
 
-        InputHelper.ClearInputElement(_inputElement);
+        _inputMethod.SetClient(client);
+        _inputMethod.ClearInput();
 
         _client = client;
 
@@ -49,11 +57,22 @@ internal class BrowserTextInputMethod(
             var surroundingText = _client.SurroundingText ?? "";
             var selection = _client.Selection;
 
-            InputHelper.SetSurroundingText(_inputElement, surroundingText, selection.Start, selection.End);
+            _inputMethod.SetSurroundingText(surroundingText, selection.Start, selection.End);
         }
         else
         {
             HideIme();
+        }
+    }
+
+    private void Client_SelectionChanged(object? sender, EventArgs e)
+    {
+        if (_client != null && _inputMethod is EditContextInputMethod inputMethod)
+        {
+            var surroundingText = _client.SurroundingText ?? "";
+            var selection = _client.Selection;
+
+            _inputMethod.SetSurroundingText(surroundingText, selection.Start, selection.End);
         }
     }
 
@@ -67,8 +86,8 @@ internal class BrowserTextInputMethod(
 
     private void ShowIme()
     {
-        InputHelper.ShowElement(_inputElement);
-        InputHelper.FocusElement(_inputElement);
+        InputHelper.ShowElement(inputElement);
+        InputHelper.FocusElement(inputElement);
     }
 
     private void SurroundingTextChanged(object? sender, EventArgs e)
@@ -78,26 +97,23 @@ internal class BrowserTextInputMethod(
             var surroundingText = _client.SurroundingText ?? "";
             var selection = _client.Selection;
 
-            InputHelper.SetSurroundingText(_inputElement, surroundingText, selection.Start, selection.End);
+            _inputMethod.SetSurroundingText(surroundingText, selection.Start, selection.End);
         }
     }
 
     public void SetCursorRect(Rect rect)
     {
-        InputHelper.FocusElement(_inputElement);
-        InputHelper.SetBounds(_inputElement, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height,
-            _client?.Selection.End ?? 0);
-        InputHelper.FocusElement(_inputElement);
+        _inputMethod.SetCursorRect(rect);
     }
 
     public void SetOptions(TextInputOptions options)
     {
+        _inputMethod.SetOptions(options);
     }
 
     public void Reset()
     {
-        InputHelper.ClearInputElement(_inputElement);
-        InputHelper.SetSurroundingText(_inputElement, "", 0, 0);
+        _inputMethod.Reset();
     }
 
     public void OnBeforeInput(string inputType, int start, int end)
@@ -147,10 +163,53 @@ internal class BrowserTextInputMethod(
         IsComposing = false;
 
         _client.SetPreeditText(null);
-        
+
         if (data != null)
         {
             _inputHandler.RawTextEvent(data);
         }
+    }
+
+    internal void OnTextUpdate(int rangeStart, int rangeEnd, string? text, int selectionStart, int selectionEnd)
+    {
+        if (_client != null && _inputMethod is EditContextInputMethod inputMethod)
+        {
+            inputMethod.IsUpdating = true;
+            try
+            {
+                _client.Selection = new TextSelection(rangeStart, rangeEnd);
+                var isDelete = string.IsNullOrEmpty(text);
+
+                if (!isDelete && rangeStart != rangeEnd)
+                {
+                    _inputHandler.RawTextEvent(text ?? "");
+                }
+                else
+                {
+                    inputHandler.OnKeyDown("Delete", "Delete", 0);
+                    inputHandler.OnKeyUp("Delete", "Delete", 0);
+                }
+            }
+            finally
+            {
+                inputMethod.IsUpdating = false;
+            }
+        }
+    }
+
+    internal void OnCharacterBoundsUpdate(int rangeStart, int rangeEnd)
+    {
+        if (_inputMethod is EditContextInputMethod editContextInputMethod)
+        {
+            editContextInputMethod.UpdateCharacterBounds();
+        }
+    }
+
+    internal void OnCompositionEnd()
+    {
+        if (_client == null)
+            return;
+
+        IsComposing = false;
     }
 }

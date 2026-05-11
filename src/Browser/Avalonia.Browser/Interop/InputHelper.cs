@@ -8,11 +8,12 @@ internal static partial class InputHelper
 {
     public static Task RedirectInputAsync(int topLevelId, Action<BrowserTopLevelImpl> handler)
     {
-        if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl) handler(topLevelImpl);
+        if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl)
+            handler(topLevelImpl);
         return Task.CompletedTask;
     }
 
-    public static Task<T> RedirectInputRetunAsync<T>(int topLevelId, Func<BrowserTopLevelImpl,T> handler, T @default)
+    public static Task<T> RedirectInputRetunAsync<T>(int topLevelId, Func<BrowserTopLevelImpl, T> handler, T @default)
     {
         if (BrowserTopLevelImpl.TryGetTopLevel(topLevelId) is { } topLevelImpl)
             return Task.FromResult(handler(topLevelImpl));
@@ -21,6 +22,9 @@ internal static partial class InputHelper
 
     [JSImport("InputHelper.subscribeInputEvents", AvaloniaModule.MainModuleName)]
     public static partial void SubscribeInputEvents(JSObject htmlElement, int topLevelId);
+
+    [JSImport("InputHelper.subscribeEditContextEvents", AvaloniaModule.MainModuleName)]
+    public static partial JSObject SubscribeEditContextEvents(JSObject htmlElement, int topLevelId);
 
     [JSExport]
     public static Task<bool> OnKeyDown(int topLevelId, string code, string key, int modifier) =>
@@ -39,12 +43,24 @@ internal static partial class InputHelper
         RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionStart());
 
     [JSExport]
+    public static Task OnTextUpdate(int topLevelId, int rangeStart, int rangeEnd, string? text, int selectionStart, int selectionEnd) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnTextUpdate(rangeStart, rangeEnd, text, selectionStart, selectionEnd));
+
+    [JSExport]
+    public static Task OnCharacterBoundsUpdate(int topLevelId, int rangeStart, int rangeEnd) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCharacterBoundsUpdate(rangeStart, rangeEnd));
+
+    [JSExport]
     public static Task OnCompositionUpdate(int topLevelId, string? data) =>
         RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionUpdate(data));
 
     [JSExport]
     public static Task OnCompositionEnd(int topLevelId, string? data) =>
         RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionEnd(data));
+
+    [JSExport]
+    public static Task OnCompositionEnd(int topLevelId) =>
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionEnd());
 
     [JSExport]
     public static Task OnPointerMove(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId,
@@ -85,12 +101,21 @@ internal static partial class InputHelper
         RedirectInputAsync(topLevelId, t => t.InputHandler.InputPane
             .OnGeometryChange(x, y, width, height));
 
+    [JSImport("Caniuse.supportsEditContext", AvaloniaModule.MainModuleName)]
+    public static partial bool SupportsEditContext();
+
     [JSImport("InputHelper.getCoalescedEvents", AvaloniaModule.MainModuleName)]
     [return: JSMarshalAs<JSType.Array<JSType.Number>>]
     public static partial double[] GetCoalescedEvents(JSObject pointerEvent);
 
     [JSImport("InputHelper.clearInput", AvaloniaModule.MainModuleName)]
     public static partial void ClearInputElement(JSObject htmlElement);
+
+    [JSImport("InputHelper.attachEditContext", AvaloniaModule.MainModuleName)]
+    public static partial JSObject AttachEditContext(JSObject htmlElement);
+
+    [JSImport("InputHelper.detachEditContext", AvaloniaModule.MainModuleName)]
+    public static partial void DetachEditContext(JSObject htmlElement);
 
     [JSImport("InputHelper.focusElement", AvaloniaModule.MainModuleName)]
     public static partial void FocusElement(JSObject htmlElement);
@@ -150,4 +175,22 @@ internal static partial class InputHelper
     [JSImport("InputHelper.releasePointerCapture", AvaloniaModule.MainModuleName)]
     public static partial void ReleasePointerCapture(JSObject containerElement,
         [JSMarshalAs<JSType.Number>] long pointerId);
+
+    [JSImport("InputHelper.updateText", AvaloniaModule.MainModuleName)]
+    public static partial void UpdateText(JSObject item, int rangeStart, int rangeEnd, string? text);
+
+    [JSImport("InputHelper.clearText", AvaloniaModule.MainModuleName)]
+    public static partial void ClearText(JSObject item);
+
+    [JSImport("InputHelper.updateSelection", AvaloniaModule.MainModuleName)]
+    public static partial void UpdateSelection(JSObject item, int start, int end);
+
+    [JSImport("InputHelper.updateControlBounds", AvaloniaModule.MainModuleName)]
+    public static partial void UpdateControlBounds(JSObject item, int x, int y, int width, int height);
+
+    [JSImport("InputHelper.updateSelectionBounds", AvaloniaModule.MainModuleName)]
+    public static partial void UpdateSelectionBounds(JSObject item, int x, int y, int width, int height);
+
+    [JSImport("InputHelper.updateCharacterBounds", AvaloniaModule.MainModuleName)]
+    public static partial void UpdateCharacterBounds(JSObject item, int rangeStart, int x, int y, int width, int height);
 }

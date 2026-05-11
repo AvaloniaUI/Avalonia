@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
+using Avalonia.Browser.Text;
 using Avalonia.Collections.Pooled;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -37,7 +38,7 @@ internal class BrowserInputHandler
             ? new RawEventGrouper(DispatchInput, BrowserWindowingPlatform.EventGrouperDispatchQueue)
             : null;
 
-        TextInputMethod = new BrowserTextInputMethod(this, container, inputElement);
+        TextInputMethod = new BrowserTextInputMethod(this, container, inputElement, topLevelId);
         InputPane = new BrowserInputPane();
 
         InputHelper.SubscribeInputEvents(container, topLevelId);

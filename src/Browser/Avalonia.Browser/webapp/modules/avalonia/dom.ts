@@ -71,11 +71,15 @@ export class AvaloniaDOM {
         nativeHost.style.position = "absolute";
 
         // IME
-        const inputElement = document.createElement("input");
+        const supportsEditContext = "showSaveFilePicker" in globalThis;
+        const inputElement = supportsEditContext ? document.createElement("canvas") : document.createElement("input");
         inputElement.id = `inputElement${containerId}`;
         inputElement.classList.add("avalonia-input-element");
         inputElement.autocapitalize = "none";
-        inputElement.type = "text";
+
+        if (!supportsEditContext) {
+            (inputElement as HTMLInputElement).type = "text";
+        }
         inputElement.spellcheck = false;
         inputElement.style.padding = "0";
         inputElement.style.margin = "0";
