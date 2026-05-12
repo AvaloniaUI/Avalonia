@@ -351,31 +351,34 @@ namespace Avalonia.Media
             return [];
         }
 
-        private bool TryGetFontCollection(Uri source, [NotNullWhen(true)] out IFontCollection? fontCollection)
+        internal bool TryGetFontCollection(Uri source, [NotNullWhen(true)] out IFontCollection? fontCollection)
         {
             Debug.Assert(source.IsAbsoluteUri);
 
-            if (source.Scheme == SystemFontScheme)
+            // Both the systemfont: scheme and SystemFontsKey (fonts:SystemFonts) map to the system
+            // font collection. SystemFontsKey is checked before the generic IsFontCollection branch
+            // so that the SystemFontCollection is created on demand regardless of which URI form is used.
+            if (source.Scheme == SystemFontScheme || source == SystemFontsKey)
             {
-                source = SystemFontsKey;
+                fontCollection = _fontCollections.GetOrAdd(SystemFontsKey, static (_, platformImpl) => new SystemFontCollection(platformImpl), PlatformImpl);
+                return true;
             }
 
-            fontCollection = _fontCollections.GetOrAdd(source, static (key, platformImpl) =>
+            // Other fonts: URIs are only returned when they have been explicitly registered
+            // via AddFontCollection — no implicit creation to avoid caching null for unknown keys.
+            if (source.IsFontCollection())
             {
-                if (key == SystemFontsKey)
-                {
-                    return new SystemFontCollection(platformImpl);
-                }
+                return _fontCollections.TryGetValue(source, out fontCollection);
+            }
 
-                if (key.IsAbsoluteResm() || key.IsAvares())
-                {
-                    return new EmbeddedFontCollection(key, key);
-                }
+            if (source.IsAbsoluteResm() || source.IsAvares())
+            {
+                fontCollection = _fontCollections.GetOrAdd(source, static (key, _) => new EmbeddedFontCollection(key, key), PlatformImpl);
+                return true;
+            }
 
-                return null!;
-            }, PlatformImpl);
-
-            return fontCollection != null;
+            fontCollection = null;
+            return false;
         }
 
         private string GetDefaultFontFamilyName(FontManagerOptions? options)
