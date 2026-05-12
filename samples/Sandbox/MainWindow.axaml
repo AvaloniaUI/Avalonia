@@ -1,8 +1,4 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         x:Class="Sandbox.MainWindow">
-  <StackPanel>
-    <TextBlock FontSize="24">נָחָשׁ.</TextBlock>
-    <TextBlock FontSize="24" FlowDirection="RightToLeft">נָחָשׁ.</TextBlock>
-  </StackPanel>
 </Window>
