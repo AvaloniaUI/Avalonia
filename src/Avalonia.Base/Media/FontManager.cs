@@ -360,7 +360,8 @@ namespace Avalonia.Media
             // so that the SystemFontCollection is created on demand regardless of which URI form is used.
             if (source.Scheme == SystemFontScheme || source == SystemFontsKey)
             {
-                fontCollection = _fontCollections.GetOrAdd(SystemFontsKey, static (_, platformImpl) => new SystemFontCollection(platformImpl), PlatformImpl);
+                fontCollection = GetOrCreateFontCollection(SystemFontsKey, PlatformImpl,
+                    static (_, impl) => new SystemFontCollection(impl));
                 return true;
             }
 
@@ -373,12 +374,35 @@ namespace Avalonia.Media
 
             if (source.IsAbsoluteResm() || source.IsAvares())
             {
-                fontCollection = _fontCollections.GetOrAdd(source, static (key, _) => new EmbeddedFontCollection(key, key), PlatformImpl);
+                fontCollection = GetOrCreateFontCollection(source, 0,
+                    static (key, _) => new EmbeddedFontCollection(key, key));
                 return true;
             }
 
             fontCollection = null;
             return false;
+        }
+
+        /// <summary>
+        /// Thread-safe get-or-create that disposes any candidate that loses the insertion race,
+        /// preventing resource leaks that <see cref="ConcurrentDictionary{TKey,TValue}.GetOrAdd(TKey,Func{TKey,TValue})"/>
+        /// can cause when the factory is invoked concurrently by multiple threads.
+        /// </summary>
+        private IFontCollection GetOrCreateFontCollection<TState>(Uri key, TState state, Func<Uri, TState, IFontCollection> factory)
+        {
+            if (_fontCollections.TryGetValue(key, out var existing))
+                return existing;
+
+            var candidate = factory(key, state);
+
+            // GetOrAdd(key, value) atomically inserts or returns the existing value;
+            // it never invokes a factory, so only one IFontCollection instance survives.
+            var winner = _fontCollections.GetOrAdd(key, candidate);
+
+            if (!ReferenceEquals(winner, candidate))
+                candidate.Dispose(); // Our candidate lost the race – dispose it to avoid the leak.
+
+            return winner;
         }
 
         private string GetDefaultFontFamilyName(FontManagerOptions? options)
