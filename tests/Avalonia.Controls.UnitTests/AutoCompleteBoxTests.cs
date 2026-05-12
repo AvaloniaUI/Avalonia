@@ -1235,7 +1235,7 @@ namespace Avalonia.Controls.UnitTests
         }
         private TextBox GetTextBox(AutoCompleteBox control)
         {
-            return control.GetTemplateChildren()
+            return control.GetTemplateDescendants()
                           .OfType<TextBox>()
                           .First();
         }

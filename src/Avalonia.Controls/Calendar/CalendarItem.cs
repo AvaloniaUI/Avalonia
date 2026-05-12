@@ -244,7 +244,7 @@ namespace Avalonia.Controls.Primitives
 
         /// <summary>
         /// Builds the visual tree for the
-        /// <see cref="T:System.Windows.Controls.Primitives.CalendarItem" />
+        /// <see cref="T:Avalonia.Controls.Primitives.CalendarItem" />
         /// when a new template is applied.
         /// </summary>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
