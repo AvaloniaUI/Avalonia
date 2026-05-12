@@ -229,9 +229,9 @@ namespace Avalonia.Base.UnitTests.Media
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                // If null were stored, a second call with a different unknown URI sharing
-                // the same key would incorrectly find a null entry.  Simply verify that
-                // repeated lookups with an unknown scheme consistently return false/null.
+                // Verify that repeated lookups for the same unknown-scheme URI
+                // consistently return false/null rather than succeeding due to an
+                // accidentally cached null or invalid entry.
                 var source = new Uri("file:///some/path/fonts", UriKind.Absolute);
                 var fm = FontManager.Current;
 
