@@ -306,14 +306,12 @@ export class InputHelper {
     public static subscribeInputEvents(element: HTMLInputElement, topLevelId: number) {
         const keySub = this.subscribeKeyEvents(element, topLevelId);
         const pointerSub = this.subscribePointerEvents(element, topLevelId);
-        const textSub = this.subscribeTextEvents(element, topLevelId);
         const dndSub = this.subscribeDropEvents(element, topLevelId);
         const paneSub = this.subscribeKeyboardGeometryChange(element, topLevelId);
 
         return () => {
             keySub();
             pointerSub();
-            textSub();
             dndSub();
             paneSub();
         };
@@ -379,50 +377,6 @@ export class InputHelper {
         return () => {
             element.removeEventListener("keydown", keyDownHandler);
             element.removeEventListener("keyup", keyUpHandler);
-        };
-    }
-
-    public static subscribeTextEvents(
-        element: HTMLInputElement,
-        topLevelId: number) {
-        const compositionStartHandler = (args: CompositionEvent) => {
-            JsExports.InputHelper.OnCompositionStart(topLevelId);
-        };
-        element.addEventListener("compositionstart", compositionStartHandler);
-
-        const beforeInputHandler = (args: InputEvent) => {
-            const ranges = args.getTargetRanges();
-            let start = -1;
-            let end = -1;
-            if (ranges.length > 0) {
-                start = ranges[0].startOffset;
-                end = ranges[0].endOffset;
-            }
-
-            if (args.inputType === "insertCompositionText") {
-                start = 2;
-                end = start + 2;
-            }
-
-            JsExports.InputHelper.OnBeforeInput(topLevelId, args.inputType, start, end);
-        };
-        element.addEventListener("beforeinput", beforeInputHandler);
-
-        const compositionUpdateHandler = (args: CompositionEvent) => {
-            JsExports.InputHelper.OnCompositionUpdate(topLevelId, args.data);
-        };
-        element.addEventListener("compositionupdate", compositionUpdateHandler);
-
-        const compositionEndHandler = (args: CompositionEvent) => {
-            JsExports.InputHelper.OnCompositionEnd(topLevelId, args.data);
-            args.preventDefault();
-        };
-        element.addEventListener("compositionend", compositionEndHandler);
-
-        return () => {
-            element.removeEventListener("compositionstart", compositionStartHandler);
-            element.removeEventListener("compositionupdate", compositionUpdateHandler);
-            element.removeEventListener("compositionend", compositionEndHandler);
         };
     }
 

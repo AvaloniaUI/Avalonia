@@ -35,32 +35,20 @@ internal static partial class InputHelper
         RedirectInputRetunAsync(topLevelId, t => t.InputHandler.OnKeyUp(code, key, modifier), false);
 
     [JSExport]
-    public static Task OnBeforeInput(int topLevelId, string inputType, int start, int end) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnBeforeInput(inputType, start, end));
-
-    [JSExport]
     public static Task OnCompositionStart(int topLevelId) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionStart());
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod?.OnCompositionStart());
 
     [JSExport]
     public static Task OnTextUpdate(int topLevelId, int rangeStart, int rangeEnd, string? text, int selectionStart, int selectionEnd) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnTextUpdate(rangeStart, rangeEnd, text, selectionStart, selectionEnd));
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod?.OnTextUpdate(rangeStart, rangeEnd, text, selectionStart, selectionEnd));
 
     [JSExport]
     public static Task OnCharacterBoundsUpdate(int topLevelId, int rangeStart, int rangeEnd) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCharacterBoundsUpdate(rangeStart, rangeEnd));
-
-    [JSExport]
-    public static Task OnCompositionUpdate(int topLevelId, string? data) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionUpdate(data));
-
-    [JSExport]
-    public static Task OnCompositionEnd(int topLevelId, string? data) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionEnd(data));
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod?.OnCharacterBoundsUpdate(rangeStart, rangeEnd));
 
     [JSExport]
     public static Task OnCompositionEnd(int topLevelId) =>
-        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod.OnCompositionEnd());
+        RedirectInputAsync(topLevelId, t => t.InputHandler.TextInputMethod?.OnCompositionEnd());
 
     [JSExport]
     public static Task OnPointerMove(int topLevelId, string pointerType, [JSMarshalAs<JSType.Number>] long pointerId,

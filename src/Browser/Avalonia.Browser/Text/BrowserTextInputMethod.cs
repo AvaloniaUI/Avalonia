@@ -12,14 +12,11 @@ internal class BrowserTextInputMethod(
     int topLevelId)
     : ITextInputMethodImpl
 {
-    private readonly JSObject _inputElement = inputElement ?? throw new ArgumentNullException(nameof(inputElement));
     private readonly JSObject _containerElement = containerElement ?? throw new ArgumentNullException(nameof(containerElement));
     private readonly BrowserInputHandler _inputHandler = inputHandler ?? throw new ArgumentNullException(nameof(inputHandler));
     private TextInputMethodClient? _client;
 
-    private static readonly bool s_supportsEditContext = InputHelper.SupportsEditContext();
-
-    private IInputMethod _inputMethod = s_supportsEditContext ? new EditContextInputMethod(inputElement, topLevelId) : new ClassicInputMethod(inputElement);
+    private readonly EditContextInputMethod? _inputMethod = InputHelper.SupportsEditContext() ? new(inputElement, topLevelId) : null;
 
     public bool IsComposing { get; private set; }
 
@@ -31,33 +28,33 @@ internal class BrowserTextInputMethod(
 
     public void SetClient(TextInputMethodClient? client)
     {
-        if (_client != null)
+        _client?.InputPaneActivationRequested -= InputPaneActivationRequested;
+        if (_inputMethod != null)
         {
-            _client.SurroundingTextChanged -= SurroundingTextChanged;
-            _client.InputPaneActivationRequested -= InputPaneActivationRequested;
-            _client.SelectionChanged -= Client_SelectionChanged;
-        }
+            _client?.SurroundingTextChanged -= SurroundingTextChanged;
+            _client?.SelectionChanged -= Client_SelectionChanged;
 
-        if (client != null)
-        {
-            client.SurroundingTextChanged += SurroundingTextChanged;
-            client.InputPaneActivationRequested += InputPaneActivationRequested;
-            client.SelectionChanged += Client_SelectionChanged;
-        }
+            client?.SurroundingTextChanged += SurroundingTextChanged;
+            client?.SelectionChanged += Client_SelectionChanged;
 
-        _inputMethod.SetClient(client);
-        _inputMethod.ClearInput();
+            _inputMethod.SetClient(client);
+            _inputMethod.ClearInput();
+        }
 
         _client = client;
+        client?.InputPaneActivationRequested += InputPaneActivationRequested;
 
         if (_client != null)
         {
             ShowIme();
 
-            var surroundingText = _client.SurroundingText ?? "";
-            var selection = _client.Selection;
+            if (_inputMethod != null)
+            {
+                var surroundingText = _client.SurroundingText ?? "";
+                var selection = _client.Selection;
 
-            _inputMethod.SetSurroundingText(surroundingText, selection.Start, selection.End);
+                _inputMethod.SetSurroundingText(surroundingText, selection.Start, selection.End);
+            }
         }
         else
         {
@@ -67,7 +64,7 @@ internal class BrowserTextInputMethod(
 
     private void Client_SelectionChanged(object? sender, EventArgs e)
     {
-        if (_client != null && _inputMethod is EditContextInputMethod inputMethod)
+        if (_client != null && _inputMethod != null)
         {
             var surroundingText = _client.SurroundingText ?? "";
             var selection = _client.Selection;
@@ -92,7 +89,7 @@ internal class BrowserTextInputMethod(
 
     private void SurroundingTextChanged(object? sender, EventArgs e)
     {
-        if (_client != null)
+        if (_client != null && _inputMethod != null)
         {
             var surroundingText = _client.SurroundingText ?? "";
             var selection = _client.Selection;
@@ -103,88 +100,37 @@ internal class BrowserTextInputMethod(
 
     public void SetCursorRect(Rect rect)
     {
-        _inputMethod.SetCursorRect(rect);
+        _inputMethod?.SetCursorRect(rect);
     }
 
     public void SetOptions(TextInputOptions options)
     {
-        _inputMethod.SetOptions(options);
+        _inputMethod?.SetOptions(options);
     }
 
     public void Reset()
     {
-        _inputMethod.Reset();
-    }
-
-    public void OnBeforeInput(string inputType, int start, int end)
-    {
-        if (inputType != "deleteByComposition")
-        {
-            if (inputType == "deleteContentBackward")
-            {
-                start = _inputElement.GetPropertyAsInt32("selectionStart");
-                end = _inputElement.GetPropertyAsInt32("selectionEnd");
-            }
-            else
-            {
-                start = -1;
-                end = -1;
-            }
-        }
-
-        if (start != -1 && end != -1 && _client != null)
-        {
-            _client.Selection = new TextSelection(start, end);
-        }
-    }
-
-    public void OnCompositionStart()
-    {
-        if (_client == null)
-            return;
-
-        _client.SetPreeditText(null);
-        IsComposing = true;
-    }
-
-    public void OnCompositionUpdate(string? data)
-    {
-        if (_client == null)
-            return;
-
-        _client.SetPreeditText(data);
-    }
-
-    public void OnCompositionEnd(string? data)
-    {
-        if (_client == null)
-            return;
-
-        IsComposing = false;
-
-        _client.SetPreeditText(null);
-
-        if (data != null)
-        {
-            _inputHandler.RawTextEvent(data);
-        }
+        _inputMethod?.Reset();
     }
 
     internal void OnTextUpdate(int rangeStart, int rangeEnd, string? text, int selectionStart, int selectionEnd)
     {
-        if (_client != null && _inputMethod is EditContextInputMethod inputMethod)
+        if (_client != null && _inputMethod != null)
         {
-            inputMethod.IsUpdating = true;
+            if (_inputMethod.IsUpdating)
+                return;
+
+            _inputMethod.IsUpdating = true;
             try
             {
                 _client.Selection = new TextSelection(rangeStart, rangeEnd);
                 var isDelete = string.IsNullOrEmpty(text);
 
-                if (!isDelete && rangeStart != rangeEnd)
+                if (!isDelete)
                 {
                     _inputHandler.RawTextEvent(text ?? "");
                 }
-                else
+                else if (rangeStart != rangeEnd)
                 {
                     inputHandler.OnKeyDown("Delete", "Delete", 0);
                     inputHandler.OnKeyUp("Delete", "Delete", 0);
@@ -192,7 +138,8 @@ internal class BrowserTextInputMethod(
             }
             finally
             {
-                inputMethod.IsUpdating = false;
+                _inputMethod.IsUpdating = false;
+                _client.Selection = new TextSelection(selectionStart, selectionEnd);
             }
         }
     }
@@ -211,5 +158,13 @@ internal class BrowserTextInputMethod(
             return;
 
         IsComposing = false;
+    }
+
+    internal void OnCompositionStart()
+    {
+        if (_client == null)
+            return;
+
+        IsComposing = true;
     }
 }

@@ -1,10 +1,11 @@
-﻿using System.Runtime.InteropServices.JavaScript;
+﻿using System;
+using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
 using Avalonia.Input.TextInput;
 
 namespace Avalonia.Browser.Text
 {
-    internal class EditContextInputMethod : IInputMethod
+    internal class EditContextInputMethod
     {
         private readonly JSObject _inputElement;
         private readonly int _topLevelId;
@@ -68,11 +69,22 @@ namespace Avalonia.Browser.Text
             if (IsUpdating)
                 return;
 
-            if (EditContext is { } editContext && _editContextHandle != null)
+            IsUpdating = true;
+
+            Console.WriteLine($"dotnet: {selectionStart}, {selectionEnd}");
+            try
             {
-                InputHelper.ClearText(_editContextHandle);
-                InputHelper.UpdateText(_editContextHandle, 0, 0, surroundingText);
-                InputHelper.UpdateSelection(_editContextHandle, selectionStart, selectionEnd);
+                if (EditContext is { } editContext && _editContextHandle != null)
+                {
+
+                    InputHelper.ClearText(_editContextHandle);
+                    InputHelper.UpdateText(_editContextHandle, 0, 0, surroundingText);
+                    InputHelper.UpdateSelection(_editContextHandle, selectionStart, selectionEnd);
+                }
+            }
+            finally
+            {
+                IsUpdating = false;
             }
         }
 
@@ -82,16 +94,6 @@ namespace Avalonia.Browser.Text
             {
                 var rect = _client.CursorRectangle;
                 InputHelper.UpdateCharacterBounds(_editContextHandle, _client.Selection.Start, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
-            }
-        }
-
-        internal void SetSelection(TextSelection selection)
-        {
-            if (IsUpdating)
-                return;
-            if (_client != null && _editContextHandle != null)
-            {
-                InputHelper.UpdateSelection(_editContextHandle, selection.Start, selection.End);
             }
         }
     }
