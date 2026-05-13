@@ -41,16 +41,16 @@
     <PackageVersion Include="NUnit" Version="4.5.1" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.2.0" />
     <PackageVersion Include="Quamotion.RemoteViewing" Version="1.1.211" />
-    <PackageVersion Include="SharpCompress" Version="0.41.0" />
+    <PackageVersion Include="SharpCompress" Version="0.48.0" />
     <PackageVersion Include="Silk.NET.Direct3D.Compilers" Version="2.22.0" />
     <PackageVersion Include="Silk.NET.Direct3D11" Version="2.22.0" />
     <PackageVersion Include="Silk.NET.Vulkan" Version="2.22.0" />
     <PackageVersion Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.22.0" />
     <PackageVersion Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.22.0" />
     <PackageVersion Include="SixLabors.ImageSharp" Version="2.1.12" />
-    <PackageVersion Include="SkiaSharp" Version="3.119.3-preview.1.1" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.3-preview.1.1" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.3-preview.1.1" />
+    <PackageVersion Include="SkiaSharp" Version="3.119.4-preview.1.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4-preview.1.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.4-preview.1.1" />
     <PackageVersion Include="System.ComponentModel.Annotations" Version="4.5.0" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="9.0.10" />
     <PackageVersion Include="System.Memory" Version="4.5.5" />
