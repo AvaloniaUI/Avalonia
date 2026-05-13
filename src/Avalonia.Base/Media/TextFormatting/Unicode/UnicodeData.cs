@@ -10,6 +10,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         internal const int CATEGORY_BITS = 6;
         internal const int SCRIPT_BITS = 8;
         internal const int LINEBREAK_BITS = 6;
+        internal const int WORDBREAK_BITS = 5;
 
         internal const int BIDIPAIREDBRACKED_BITS = 16;
         internal const int BIDIPAIREDBRACKEDTYPE_BITS = 2;
@@ -17,6 +18,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         internal const int SCRIPT_SHIFT = CATEGORY_BITS;
         internal const int LINEBREAK_SHIFT = CATEGORY_BITS + SCRIPT_BITS;
+        internal const int WORDBREAK_SHIFT = CATEGORY_BITS + SCRIPT_BITS + LINEBREAK_BITS;
 
         internal const int BIDIPAIREDBRACKEDTYPE_SHIFT = BIDIPAIREDBRACKED_BITS;
         internal const int BIDICLASS_SHIFT = BIDIPAIREDBRACKED_BITS + BIDIPAIREDBRACKEDTYPE_BITS;
@@ -24,6 +26,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         internal const int CATEGORY_MASK = (1 << CATEGORY_BITS) - 1;
         internal const int SCRIPT_MASK = (1 << SCRIPT_BITS) - 1;
         internal const int LINEBREAK_MASK = (1 << LINEBREAK_BITS) - 1;
+        internal const int WORDBREAK_MASK = (1 << WORDBREAK_BITS) - 1;
 
         internal const int BIDIPAIREDBRACKED_MASK = (1 << BIDIPAIREDBRACKED_BITS) - 1;
         internal const int BIDIPAIREDBRACKEDTYPE_MASK = (1 << BIDIPAIREDBRACKEDTYPE_BITS) - 1;
@@ -93,6 +96,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public static LineBreakClass GetLineBreakClass(uint codepoint)
         {
             return (LineBreakClass)((UnicodeDataTrie.Trie.Get(codepoint) >> LINEBREAK_SHIFT) & LINEBREAK_MASK);
+        }
+
+        /// <summary>
+        /// Gets the word break class for a Unicode codepoint.
+        /// </summary>
+        /// <param name="codepoint">The codepoint in question.</param>
+        /// <returns>The code point's word break class.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static WordBreakClass GetWordBreakClass(uint codepoint)
+        {
+            return (WordBreakClass)((UnicodeDataTrie.Trie.Get(codepoint) >> WORDBREAK_SHIFT) & WORDBREAK_MASK);
         }
 
         /// <summary>

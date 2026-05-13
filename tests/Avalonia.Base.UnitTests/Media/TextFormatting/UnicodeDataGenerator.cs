@@ -144,14 +144,24 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             var lineBreakClassMappings = CreateTagToIndexMappings(lineBreakClassEntries);
 
-            unicodeData = GetUnicodeData(generalCategoryMappings, scriptMappings, lineBreakClassMappings);
+            var wordBreakClassEntries =
+                UnicodeEnumsGenerator.CreateWordBreakClassEnum();
+
+            var wordBreakClassMappings = CreateNameAndTagToIndexMappings(wordBreakClassEntries);
+
+            unicodeData = GetUnicodeData(
+                generalCategoryMappings,
+                scriptMappings,
+                lineBreakClassMappings,
+                wordBreakClassMappings);
             
             var unicodeDataTrieBuilder = new UnicodeTrieBuilder(/*initialValue*/);
             
             foreach (var properties in unicodeData.Values)
             {
-                //[line break]|[biDi]|[script]|[category]
-                var value = (properties.LineBreakClass << UnicodeData.LINEBREAK_SHIFT) |
+                //[word break]|[line break]|[biDi]|[script]|[category]
+                var value = (properties.WordBreakClass << UnicodeData.WORDBREAK_SHIFT) |
+                            (properties.LineBreakClass << UnicodeData.LINEBREAK_SHIFT) |
                             (properties.Script << UnicodeData.SCRIPT_SHIFT) | properties.GeneralCategory;
 
                 unicodeDataTrieBuilder.Set(properties.Codepoint, (uint)value);
@@ -161,7 +171,8 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             {
                 Scripts = scriptEntries,
                 GeneralCategories = generalCategoryEntries,
-                LineBreakClasses = lineBreakClassEntries
+                LineBreakClasses = lineBreakClassEntries,
+                WordBreakClasses = wordBreakClassEntries
             };
 
             var trie = unicodeDataTrieBuilder.Freeze();
@@ -171,8 +182,11 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             return trie;
         }
 
-        private static Dictionary<int, UnicodeDataItem> GetUnicodeData(IReadOnlyDictionary<string, int> generalCategoryMappings, 
-            IReadOnlyDictionary<string, int> scriptMappings, IReadOnlyDictionary<string, int> lineBreakClassMappings)
+        private static Dictionary<int, UnicodeDataItem> GetUnicodeData(
+            IReadOnlyDictionary<string, int> generalCategoryMappings,
+            IReadOnlyDictionary<string, int> scriptMappings,
+            IReadOnlyDictionary<string, int> lineBreakClassMappings,
+            IReadOnlyDictionary<string, int> wordBreakClassMappings)
         {
             var unicodeData = new Dictionary<int, UnicodeDataItem>();
             
@@ -203,6 +217,15 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 AddLineBreakClassRange(unicodeData, range, lineBreakClass);
             }
 
+            var wordBreakClassData = ReadWordBreakClassData();
+
+            foreach (var (range, name) in wordBreakClassData)
+            {
+                var wordBreakClass = wordBreakClassMappings[name];
+
+                AddWordBreakClassRange(unicodeData, range, wordBreakClass);
+            }
+
             return unicodeData;
         }
 
@@ -225,6 +248,20 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             for (var i = 0; i < entries.Count; i++)
             {
                 mappings.Add(entries[i].Name, i);
+            }
+
+            return mappings;
+        }
+
+        public static Dictionary<string, int> CreateNameAndTagToIndexMappings(IReadOnlyList<DataEntry> entries)
+        {
+            var mappings = new Dictionary<string, int>();
+
+            for (var i = 0; i < entries.Count; i++)
+            {
+                mappings[entries[i].Name] = i;
+                mappings[entries[i].Name.Replace("_", "")] = i;
+                mappings[entries[i].Tag] = i;
             }
 
             return mappings;
@@ -311,6 +348,22 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             }
         }
 
+        private static void AddWordBreakClassRange(Dictionary<int, UnicodeDataItem> codepoints, CodepointRange range,
+            int wordBreakClass)
+        {
+            for (var i = range.Start; i <= range.End; i++)
+            {
+                if (!codepoints.ContainsKey(i))
+                {
+                    codepoints.Add(i, new UnicodeDataItem { Codepoint = i, WordBreakClass = wordBreakClass });
+                }
+                else
+                {
+                    codepoints[i].WordBreakClass = wordBreakClass;
+                }
+            }
+        }
+
         public static List<(CodepointRange, string)> ReadGeneralCategoryData()
         {
             return ReadUnicodeData("extracted/DerivedGeneralCategory.txt");
@@ -329,6 +382,11 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         public static List<(CodepointRange, string)> ReadLineBreakClassData()
         {
             return ReadUnicodeData("extracted/DerivedLineBreak.txt");
+        }
+
+        public static List<(CodepointRange, string)> ReadWordBreakClassData()
+        {
+            return ReadUnicodeData("auxiliary/WordBreakProperty.txt");
         }
         
         public static List<(CodepointRange, string)> ReadBiDiPairedBracketData()
@@ -452,6 +510,8 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             public int BiDiClass { get; set; }
 
             public int LineBreakClass { get; set; }
+
+            public int WordBreakClass { get; set; }
         }
         
         internal class BiDiDataItem
@@ -471,6 +531,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         public IReadOnlyList<DataEntry> Scripts { get; set; } = [];
         public IReadOnlyList<DataEntry> GeneralCategories { get; set; } = [];
         public IReadOnlyList<DataEntry> LineBreakClasses { get; set; } = [];
+        public IReadOnlyList<DataEntry> WordBreakClasses { get; set; } = [];
     }
     
     internal class BiDiDataEntries

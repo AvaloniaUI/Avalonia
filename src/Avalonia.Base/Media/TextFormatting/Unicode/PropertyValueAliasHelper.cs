@@ -486,6 +486,38 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return value;
         }
 
+        private static readonly Dictionary<string, WordBreakClass> s_tagToWordBreakClass = 
+            new Dictionary<string,WordBreakClass>{
+                { "XX", WordBreakClass.Other},
+                { "CR", WordBreakClass.CarriageReturn},
+                { "LF", WordBreakClass.LineFeed},
+                { "NL", WordBreakClass.Newline},
+                { "Extend", WordBreakClass.Extend},
+                { "ZWJ", WordBreakClass.ZWJ},
+                { "RI", WordBreakClass.RegionalIndicator},
+                { "FO", WordBreakClass.Format},
+                { "KA", WordBreakClass.Katakana},
+                { "HL", WordBreakClass.HebrewLetter},
+                { "LE", WordBreakClass.ALetter},
+                { "SQ", WordBreakClass.SingleQuote},
+                { "DQ", WordBreakClass.DoubleQuote},
+                { "MB", WordBreakClass.MidNumLet},
+                { "ML", WordBreakClass.MidLetter},
+                { "MN", WordBreakClass.MidNum},
+                { "NU", WordBreakClass.Numeric},
+                { "EX", WordBreakClass.ExtendNumLet},
+                { "WSegSpace", WordBreakClass.WSegSpace},
+        };
+
+        public static WordBreakClass GetWordBreakClass(string tag)
+        {
+            if (!s_tagToWordBreakClass.TryGetValue(tag, out var value))
+            {
+                return WordBreakClass.Other;
+            }
+            return value;
+        }
+
         private static readonly Dictionary<string, BidiPairedBracketType> s_tagToBidiPairedBracketType = 
             new Dictionary<string,BidiPairedBracketType>{
                 { "n", BidiPairedBracketType.None},
