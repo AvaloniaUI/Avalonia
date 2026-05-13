@@ -555,6 +555,13 @@ namespace Avalonia.Controls
                 (newFlyout as PopupFlyoutBase)?.SetDefaultPlacementTarget(this);
                 UpdatePseudoClasses();
             }
+            else if (change.Property == IsEffectivelyEnabledProperty)
+            {
+                if (!change.GetNewValue<bool>())
+                {
+                    IsPressed = false;
+                }
+            }
         }
 
         protected override AutomationPeer OnCreateAutomationPeer() => new ButtonAutomationPeer(this);
