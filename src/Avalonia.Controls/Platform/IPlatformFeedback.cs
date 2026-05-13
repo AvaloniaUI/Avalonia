@@ -40,7 +40,7 @@ namespace Avalonia.Controls.Platform
     }
 
     /// <summary>
-    /// Predefined platform feedback effect.
+    /// Defines which action triggered the feedback.
     /// </summary>
     public class FeedbackAction
     {
