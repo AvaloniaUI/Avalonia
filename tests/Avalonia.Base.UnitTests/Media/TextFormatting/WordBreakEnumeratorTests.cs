@@ -18,7 +18,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             _outputHelper = outputHelper;
         }
 
-        [Theory(Skip = "Only runs when the spec changes")]
+        [Theory(Skip = "Only run when we update Unicode data.")]
         [ClassData(typeof(WordBreakTestDataGenerator))]
         public void ShouldFindBreaks(int lineNumber, int[] codePoints, int[] breakPoints, string rules)
         {

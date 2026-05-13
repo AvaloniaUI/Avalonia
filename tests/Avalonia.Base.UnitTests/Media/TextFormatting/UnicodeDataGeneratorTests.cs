@@ -10,7 +10,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         ///     This test is used to generate all Unicode related types.
         ///     We only need to run this when the Unicode spec changes.
         /// </summary>
-        [Fact(Skip = "Only run when we update the trie.")]
+        [Fact(Skip = "Only run when we update Unicode data.")]
         public void Should_Generate_Data()
         {
             if (!Directory.Exists("Generated"))

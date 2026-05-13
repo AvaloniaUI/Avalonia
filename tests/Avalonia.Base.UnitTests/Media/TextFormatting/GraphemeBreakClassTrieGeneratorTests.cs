@@ -19,7 +19,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         }
 
         [ClassData(typeof(GraphemeBreakTestDataGenerator))]
-        [Theory(Skip = "Only run when we update the trie.")]
+        [Theory(Skip = "Only run when we update Unicode data.")]
         public void Should_Enumerate(string line, int lineNumber, string grapheme, string text)
         {
             var enumerator = new GraphemeEnumerator(text);

@@ -9,7 +9,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
     internal static class UnicodeDataGenerator
     {
-        public const string Ucd = "https://www.unicode.org/Public/16.0.0/ucd/";
+        public const string Ucd = "https://www.unicode.org/Public/17.0.0/ucd/";
 
         public static UnicodeTrie GenerateBiDiTrie(out BiDiDataEntries biDiDataEntries, out Dictionary<int, BiDiDataItem> biDiData)
         {
@@ -142,7 +142,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             var lineBreakClassEntries =
                 UnicodeEnumsGenerator.CreateLineBreakClassEnum();
 
-            var lineBreakClassMappings = CreateTagToIndexMappings(lineBreakClassEntries);
+            var lineBreakClassMappings = CreateNameAndTagToIndexMappings(lineBreakClassEntries);
 
             var wordBreakClassEntries =
                 UnicodeEnumsGenerator.CreateWordBreakClassEnum();
@@ -155,7 +155,10 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 lineBreakClassMappings,
                 wordBreakClassMappings);
             
-            var unicodeDataTrieBuilder = new UnicodeTrieBuilder(/*initialValue*/);
+            // Unassigned code points are not listed in every UCD file, so the trie
+            // default must match the explicit fallback classes rather than enum zero.
+            var initialValue = lineBreakClassMappings["XX"] << UnicodeData.LINEBREAK_SHIFT;
+            var unicodeDataTrieBuilder = new UnicodeTrieBuilder((uint)initialValue);
             
             foreach (var properties in unicodeData.Values)
             {
@@ -224,6 +227,19 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 var wordBreakClass = wordBreakClassMappings[name];
 
                 AddWordBreakClassRange(unicodeData, range, wordBreakClass);
+            }
+
+            foreach (var properties in unicodeData.Values)
+            {
+                if (properties.LineBreakClass < 0)
+                {
+                    properties.LineBreakClass = lineBreakClassMappings["XX"];
+                }
+
+                if (properties.WordBreakClass < 0)
+                {
+                    properties.WordBreakClass = wordBreakClassMappings["Other"];
+                }
             }
 
             return unicodeData;
@@ -381,7 +397,13 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
         public static List<(CodepointRange, string)> ReadLineBreakClassData()
         {
-            return ReadUnicodeData("extracted/DerivedLineBreak.txt");
+            const string file = "extracted/DerivedLineBreak.txt";
+
+            var data = ReadMissingUnicodeData(file);
+
+            data.AddRange(ReadUnicodeData(file));
+
+            return data;
         }
 
         public static List<(CodepointRange, string)> ReadWordBreakClassData()
@@ -499,6 +521,60 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             return data;
         }
 
+        private static List<(CodepointRange, string)> ReadMissingUnicodeData(string file)
+        {
+            var data = new List<(CodepointRange, string)>();
+
+            var regex = new Regex(@"# @missing:\s+([0-9A-F]+)(?:\.\.([0-9A-F]+))?;\s+(\w+)", RegexOptions.Compiled);
+
+            using (var client = new HttpClient())
+            {
+                var url = Path.Combine(Ucd, file);
+
+                using (var result = client.GetAsync(url).GetAwaiter().GetResult())
+                {
+                    if (!result.IsSuccessStatusCode)
+                    {
+                        return data;
+                    }
+
+                    using (var stream = result.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
+                    using (var reader = new StreamReader(stream))
+                    {
+                        while (!reader.EndOfStream)
+                        {
+                            var line = reader.ReadLine();
+
+                            if (string.IsNullOrEmpty(line))
+                            {
+                                continue;
+                            }
+
+                            var match = regex.Match(line);
+
+                            if (!match.Success || match.Groups[3].Value == "Unknown")
+                            {
+                                continue;
+                            }
+
+                            var start = Convert.ToInt32(match.Groups[1].Value, 16);
+
+                            var end = start;
+
+                            if (!string.IsNullOrEmpty(match.Groups[2].Value))
+                            {
+                                end = Convert.ToInt32(match.Groups[2].Value, 16);
+                            }
+
+                            data.Add((new CodepointRange(start, end), match.Groups[3].Value));
+                        }
+                    }
+                }
+            }
+
+            return data;
+        }
+
         internal class UnicodeDataItem
         {
             public int Codepoint { get; set; }
@@ -509,9 +585,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             public int BiDiClass { get; set; }
 
-            public int LineBreakClass { get; set; }
+            public int LineBreakClass { get; set; } = -1;
 
-            public int WordBreakClass { get; set; }
+            public int WordBreakClass { get; set; } = -1;
         }
         
         internal class BiDiDataItem

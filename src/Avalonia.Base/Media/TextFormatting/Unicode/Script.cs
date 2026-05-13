@@ -17,6 +17,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         BassaVah, //Bass
         Batak, //Batk
         Bengali, //Beng
+        BeriaErfe, //Berf
         Bhaiksuki, //Bhks
         Bopomofo, //Bopo
         Brahmi, //Brah
@@ -136,6 +137,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Shavian, //Shaw
         Sharada, //Shrd
         Siddham, //Sidd
+        Sidetic, //Sidt
         Khudawadi, //Sind
         Sinhala, //Sinh
         Sogdian, //Sogd
@@ -153,6 +155,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Tamil, //Taml
         Tangut, //Tang
         TaiViet, //Tavt
+        TaiYo, //Tayo
         Telugu, //Telu
         Tifinagh, //Tfng
         Tagalog, //Tglg
@@ -162,6 +165,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Tirhuta, //Tirh
         Tangsa, //Tnsa
         Todhri, //Todr
+        TolongSiki, //Tols
         Toto, //Toto
         TuluTigalari, //Tutg
         Ugaritic, //Ugar
