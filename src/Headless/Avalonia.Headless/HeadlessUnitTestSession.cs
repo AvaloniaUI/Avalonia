@@ -66,7 +66,7 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
     /// <inheritdoc cref="DispatchCore{TResult}"/>
     public Task<TResult> Dispatch<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken)
     {
-        return DispatchCore(action, false, cancellationToken);
+        return DispatchCore(action, true, cancellationToken);
     }
 
     /// <summary>
