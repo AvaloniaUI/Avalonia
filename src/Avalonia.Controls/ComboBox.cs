@@ -367,7 +367,7 @@ namespace Avalonia.Controls
                 if (_popup?.IsInsidePopup(source) != true && PseudoClasses.Contains(pcPressed))
                 {
                     SetCurrentValue(IsDropDownOpenProperty, !IsDropDownOpen);
-                    this.PerformFeedback(FeedbackEffect.Click);
+                    this.PerformFeedback(FeedbackAction.Click);
                     e.Handled = true;
                 }
             }

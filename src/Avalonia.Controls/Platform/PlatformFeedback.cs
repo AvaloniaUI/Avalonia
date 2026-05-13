@@ -34,11 +34,11 @@ namespace Avalonia.Controls.Platform
     public static class PlatformFeedbackExtensions
     {
         /// <summary>
-        /// Performs the specified <see cref="FeedbackEffect"/> on this <see cref="InputElement"/>. The type of feedback to perform is defined in the <see cref="PlatformFeedback.FeedbackTypeProperty"/>
+        /// Performs the specified <see cref="FeedbackAction"/> on this <see cref="InputElement"/>. The type of feedback to perform is defined in the <see cref="PlatformFeedback.FeedbackTypeProperty"/>
         /// </summary>
         /// <param name="inputElement">The element to trigger the feedback effect on</param>
         /// <param name="feedbackEffect">The feedback effect relating to the action that triggered it</param>
-        public static void PerformFeedback(this InputElement inputElement, FeedbackEffect feedbackEffect)
+        public static void PerformFeedback(this InputElement inputElement, FeedbackAction feedbackEffect)
         {
             var feedback = PlatformFeedback.GetFeedbackType(inputElement);
             if (feedback != FeedbackType.None &&

@@ -685,7 +685,7 @@ namespace Avalonia.Controls
 
                     if (eventArgs is PointerEventArgs)
                     {
-                        container.PerformFeedback(FeedbackEffect.Click);
+                        container.PerformFeedback(FeedbackAction.Click);
                     }
 
                     eventArgs.Handled = true;

@@ -7,13 +7,13 @@ namespace Avalonia.iOS
 {
     internal class IOSPlatformFeedback(AvaloniaView avaloniaView) : IPlatformFeedback
     {
-        public bool Perform(FeedbackEffect feedback, FeedbackType type)
+        public bool Perform(FeedbackAction feedback, FeedbackType type)
         {
             var performedFeedback = false;
             var playSound = type != FeedbackType.Haptic;
             var vibrate = type != FeedbackType.Sound;
 
-            if (feedback == FeedbackEffect.Click && playSound)
+            if (feedback == FeedbackAction.Click && playSound)
             {
                 var sound = new SystemSound(1104);
                 sound.PlaySystemSound();
@@ -30,14 +30,17 @@ namespace Avalonia.iOS
                 performedFeedback = true;
             }
 
-            UIImpactFeedbackStyle FeedbackToImpactStyle(FeedbackEffect feedback)
+            UIImpactFeedbackStyle FeedbackToImpactStyle(FeedbackAction feedback)
             {
-                return feedback switch
+                if (feedback == FeedbackAction.Click)
                 {
-                    FeedbackEffect.Click => UIImpactFeedbackStyle.Light,
-                    FeedbackEffect.LongPress => UIImpactFeedbackStyle.Medium,
-                    _ => throw new ArgumentOutOfRangeException(nameof(feedback), feedback, null)
-                };
+                    return UIImpactFeedbackStyle.Light;
+                }
+                else if(feedback == FeedbackAction.Hold)
+                {
+                    return UIImpactFeedbackStyle.Medium;
+                }
+                throw new ArgumentException($"{feedback.Key} is not a valid FeedbackAction for iOS", nameof(feedback), null);
             }
 #else
             _ = avaloniaView;

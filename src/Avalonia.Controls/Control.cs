@@ -215,7 +215,7 @@ namespace Avalonia.Controls
         private static void OnFeedbackHoldEventHandler(Control control, HoldingRoutedEventArgs args)
         {
             if (args.Handled && args.HoldingState == HoldingState.Started)
-                control.PerformFeedback(FeedbackEffect.LongPress);
+                control.PerformFeedback(FeedbackAction.Hold);
         }
 
         /// <inheritdoc/>

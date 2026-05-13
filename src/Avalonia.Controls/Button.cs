@@ -356,7 +356,7 @@ namespace Avalonia.Controls
                     OpenFlyout();
                 }
 
-                this.PerformFeedback(FeedbackEffect.Click);
+                this.PerformFeedback(FeedbackAction.Click);
 
                 var e = new RoutedEventArgs(ClickEvent);
                 RaiseEvent(e);

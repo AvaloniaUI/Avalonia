@@ -10,7 +10,7 @@ namespace Avalonia.Controls.Platform
         /// <param name="feedback">The feedback type to perform.</param>
         /// <param name="type">The feedback effect relating to the action that triggered it</param>
         /// <returns>true if the platform performed the requested feedback; false otherwise.</returns>
-        bool Perform(FeedbackEffect feedback, FeedbackType type);
+        bool Perform(FeedbackAction feedback, FeedbackType type);
     }
 
     /// <summary>
@@ -42,16 +42,22 @@ namespace Avalonia.Controls.Platform
     /// <summary>
     /// Predefined platform feedback effect.
     /// </summary>
-    public enum FeedbackEffect
+    public class FeedbackAction
     {
+        internal string Key { get; }
+        internal FeedbackAction(string label)
+        {
+            Key = label;
+        }
+
         /// <summary>
         /// The feedback is related to the Click action
         /// </summary>
-        Click,
+        public static FeedbackAction Click { get; } = new FeedbackAction("Click");
 
         /// <summary>
         /// The feedback is related to the Hold action
         /// </summary>
-        LongPress,
+        public static FeedbackAction Hold { get; } = new FeedbackAction("Hold");
     }
 }
