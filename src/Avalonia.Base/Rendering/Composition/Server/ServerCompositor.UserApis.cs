@@ -83,4 +83,17 @@ internal partial class ServerCompositor
             }
         }
     }
+
+    public void ResetAllGpuResources()
+    {
+        foreach (var target in _activeTargets)
+            target.ResetRenderTarget();
+        RenderInterface.Reset();
+    }
+    
+    public void InvalidateAllCompositionTargets()
+    {
+        foreach (var target in _activeTargets) 
+            target.RequestFullRedraw();
+    }
 }

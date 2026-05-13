@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using Avalonia.Collections.Pooled;
 using Avalonia.Diagnostics;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
@@ -188,8 +189,25 @@ namespace Avalonia.Rendering.Composition.Server
                             // Check if render target can be rendered to directly and preserves the previous frame
                             || !(_renderTarget.Properties.RetainsPreviousFrameContents
                                  && _renderTarget.Properties.IsSuitableForDirectRendering);
+
+            IDrawingContextImpl renderTargetContext;
+            RenderTargetDrawingContextProperties properties;
+            try
+            {
+                renderTargetContext =
+                    _renderTarget.CreateDrawingContext(new(PixelSize, Scaling), out properties);
+            }
+            catch (RenderTargetNotReadyException)
+            {
+                IsWaitingForReadyRenderTarget = IsEnabled;
+                return;
+            }
+            catch (RenderTargetCorruptedException)
+            {
+                return;
+            }
             
-            using (var renderTargetContext = _renderTarget.CreateDrawingContext(new(PixelSize, Scaling), out var properties))
+            using (renderTargetContext)
             using (var renderTiming = Diagnostic.BeginCompositorRenderPass())
             {
                 var fullRedraw = false;
@@ -285,18 +303,37 @@ namespace Avalonia.Rendering.Composition.Server
             if (_disposed)
                 return;
             _disposed = true;
-            using (_compositor.RenderInterface.EnsureCurrent())
-            {
-                if (_layer != null)
-                {
-                    _layer.Dispose();
-                    _layer = null;
-                }
-
-                _renderTarget?.Dispose();
-                _renderTarget = null;
-            }
+            ResetRenderTarget();
             _compositor.RemoveCompositionTarget(this);
+        }
+
+        public void ResetRenderTarget()
+        {
+            if (_layer == null && _renderTarget == null)
+                return;
+            try
+            {
+                using (_compositor.RenderInterface.EnsureCurrent())
+                {
+                    if (_layer != null)
+                    {
+                        _layer.Dispose();
+                        _layer = null;
+                    }
+                    _renderTarget?.Dispose();
+                    _renderTarget = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this, "Unable to the render interface current: {Error}", ex);
+                // Set to null for now
+                // TODO: Check per-platform to make sure that it's safe to dispose anyay
+                _layer = null;
+                _renderTarget = null;
+                
+            }
+
         }
 
         public void AddVisual(ServerCompositionVisual visual)
@@ -310,5 +347,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (_attachedVisuals.Remove(visual) && IsEnabled)
                 visual.Deactivate();
         }
+
+        public void RequestFullRedraw() => _redrawRequested = true;
     }
 }
