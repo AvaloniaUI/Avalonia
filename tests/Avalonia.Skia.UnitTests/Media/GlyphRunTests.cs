@@ -455,19 +455,12 @@ namespace Avalonia.Skia.UnitTests.Media
 
         private static GlyphRun CreateGlyphRun(ShapedBuffer shapedBuffer)
         {
-            var glyphRun = new GlyphRun(
+            return new GlyphRun(
                 shapedBuffer.GlyphTypeface,
                 shapedBuffer.FontRenderingEmSize,
                 shapedBuffer.Text,
                 shapedBuffer,
                 biDiLevel: shapedBuffer.BidiLevel);
-
-            if (shapedBuffer.BidiLevel == 1)
-            {
-                shapedBuffer.Reverse();
-            }
-
-            return glyphRun;
         }
 
         private static IDisposable Start()
