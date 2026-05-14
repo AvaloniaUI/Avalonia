@@ -25,6 +25,33 @@ internal partial class RenderDataStream : IDisposable
 
     public ReadOnlySpan<byte> Opcodes => _writer.Written;
 
+    public int OpcodeLength => _writer.Length;
+
+    public int ResourceCount => _resources.Count;
+
+    public object? GetResource(int handle) => _resources[handle];
+
+    public void Rewind(int length) => _writer.Rewind(length);
+
+    public void DisposeResources()
+    {
+        for (var i = 0; i < _resources.Count; i++)
+        {
+            switch (_resources[i])
+            {
+                case IRef<IBitmapImpl> bitmap:
+                    bitmap.Dispose();
+                    break;
+                case IRef<IGlyphRunImpl> glyphRun:
+                    glyphRun.Dispose();
+                    break;
+                case ICustomDrawOperation operation:
+                    operation.Dispose();
+                    break;
+            }
+        }
+    }
+
     public void DrawLine(IPen? serverPen, IPen? clientPen, Point p1, Point p2)
     {
         _writer.WriteOpcode(RenderDataOpcode.DrawLine);

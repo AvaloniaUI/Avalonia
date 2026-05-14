@@ -35,6 +35,8 @@ internal struct RenderDataWriter : IDisposable
 
     public Span<byte> Reserve(int count) => Advance(count);
 
+    public void Rewind(int length) => _length = length;
+
     public void WriteByte(byte value) => Advance(1)[0] = value;
 
     public void WriteOpcode(RenderDataOpcode opcode) => WriteByte((byte)opcode);
