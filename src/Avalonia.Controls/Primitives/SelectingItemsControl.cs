@@ -461,7 +461,7 @@ namespace Avalonia.Controls.Primitives
 
             if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
             {
-                SelectedIndex = 0;
+                SelectedIndex = GetFirstVisibleAndEnabledIndex();
             }
         }
 
@@ -478,16 +478,13 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnApplyTemplate(e);
 
-            void ExecuteScrollWhenLayoutUpdated(object? sender, EventArgs e)
-            {
-                LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
-
-                AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
-            }
-
             if (AutoScrollToSelectedItem)
             {
-                LayoutUpdated += ExecuteScrollWhenLayoutUpdated;
+                Dispatcher.UIThread.Post(static state =>
+                {
+                    var control = (SelectingItemsControl)state!;
+                    control.AutoScrollToSelectedItemIfNecessary(control.GetAnchorIndex());
+                }, this);
             }
         }
 
@@ -534,6 +531,15 @@ namespace Avalonia.Controls.Primitives
 
             if (Selection.AnchorIndex == index)
                 KeyboardNavigation.SetTabOnceActiveElement(this, container);
+
+            if (AlwaysSelected && SelectedIndex == -1 && container is { IsVisible: true, IsEnabled: true })
+            {
+                SelectedIndex = index;
+            }
+            else if (AlwaysSelected && index == SelectedIndex && (!container.IsVisible || !container.IsEnabled))
+            {
+                MoveSelectionToFirstVisibleAndEnabledItem();
+            }
         }
 
         /// <inheritdoc />
@@ -615,6 +621,13 @@ namespace Avalonia.Controls.Primitives
             if (change.Property == AutoScrollToSelectedItemProperty)
             {
                 AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
+            }
+            else if (change.Property == IsVisibleProperty)
+            {
+                if (change.GetNewValue<bool>())
+                {
+                    AutoScrollToSelectedItemIfNecessary(GetAnchorIndex());
+                }
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
@@ -1035,7 +1048,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (AlwaysSelected && ItemsView.Count > 0)
             {
-                SelectedIndex = 0;
+                SelectedIndex = GetFirstVisibleAndEnabledIndex();
             }
         }
 
@@ -1145,20 +1158,52 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        private int? _pendingAutoScrollAnchorIndex;
+
         private void AutoScrollToSelectedItemIfNecessary(int anchorIndex)
         {
-            if (AutoScrollToSelectedItem &&
-                !_hasScrolledToSelectedItem &&
-                Presenter is object &&
-                anchorIndex >= 0 &&
-                IsAttachedToVisualTree)
+            if (!(AutoScrollToSelectedItem && !_hasScrolledToSelectedItem && Presenter != null && anchorIndex >= 0 && IsAttachedToVisualTree))
             {
-                Dispatcher.UIThread.Post(state =>
-                {
-                    ScrollIntoView((int)state!);
-                    _hasScrolledToSelectedItem = true;
-                }, anchorIndex);
+                ClearPendingAutoScroll();
+                return;
             }
+
+            if (!IsEffectivelyVisible)
+            {
+                // Defer scroll until the control becomes effectively visible.
+                _pendingAutoScrollAnchorIndex = anchorIndex;
+                IsEffectivelyVisibleChanged -= OnIsEffectivelyVisibleChangedForAutoScroll;
+                IsEffectivelyVisibleChanged += OnIsEffectivelyVisibleChangedForAutoScroll;
+                return;
+            }
+
+            ClearPendingAutoScroll();
+            Dispatcher.UIThread.Post(state =>
+            {
+                ScrollIntoView((int)state!);
+                _hasScrolledToSelectedItem = true;
+            }, anchorIndex);
+        }
+
+        private void OnIsEffectivelyVisibleChangedForAutoScroll(object? sender, EventArgs e)
+        {
+            if (!IsEffectivelyVisible || _pendingAutoScrollAnchorIndex is not { } anchorIndex)
+            {
+                return;
+            }
+
+            ClearPendingAutoScroll();
+            Dispatcher.UIThread.Post(state =>
+            {
+                ScrollIntoView((int)state!);
+                _hasScrolledToSelectedItem = true;
+            }, anchorIndex);
+        }
+
+        private void ClearPendingAutoScroll()
+        {
+            _pendingAutoScrollAnchorIndex = null;
+            IsEffectivelyVisibleChanged -= OnIsEffectivelyVisibleChangedForAutoScroll;
         }
 
         /// <summary>
@@ -1202,6 +1247,54 @@ namespace Avalonia.Controls.Primitives
             finally
             {
                 _ignoreContainerSelectionChanged = false;
+            }
+        }
+
+        /// <summary>
+        /// Finds the first visible and enabled index in the ItemsSource.
+        /// </summary>
+        /// <returns>the index of the first visible and enabled item, or -1 if none found</returns>
+        private int GetFirstVisibleAndEnabledIndex()
+        {
+            var count = ItemCount;
+            if (count == 0)
+                return -1;
+
+            for (var i = 0; i < count; i++)
+            {
+                var container = ContainerFromIndex(i);
+                if (container is not null)
+                {
+                    if (container is { IsVisible: true, IsEnabled: true })
+                        return i;
+
+                    continue;
+                }
+
+                var item = ItemsView[i];
+                if (item is Visual v)
+                {
+                    if (v.IsVisible && (v is not Control c || c.IsEnabled))
+                        return i;
+                }
+                else if (item is not null)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// this method moves selection to first visible and enabled item.
+        /// </summary>
+        private void MoveSelectionToFirstVisibleAndEnabledItem()
+        {
+            var index = GetFirstVisibleAndEnabledIndex();
+            if (index != -1 && index != SelectedIndex)
+            {
+                SelectedIndex = index;
             }
         }
 
@@ -1251,7 +1344,7 @@ namespace Avalonia.Controls.Primitives
 
             if (_updateState is null && AlwaysSelected && model.Count == 0)
             {
-                model.SelectedIndex = 0;
+                model.SelectedIndex = GetFirstVisibleAndEnabledIndex();
             }
 
             UpdateContainerSelection();
@@ -1358,7 +1451,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
                 {
-                    SelectedIndex = 0;
+                    SelectedIndex = GetFirstVisibleAndEnabledIndex();
                 }
             }
         }
@@ -1451,3 +1544,4 @@ namespace Avalonia.Controls.Primitives
         }
     }
 }
+
