@@ -1,6 +1,6 @@
 using System;
 using System.Buffers;
-using System.Buffers.Binary;
+using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 
@@ -33,6 +33,12 @@ internal struct RenderDataWriter : IDisposable
         return span;
     }
 
+    private void WriteBlittable<T>(T value) where T : unmanaged
+    {
+        var bytes = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref value, 1));
+        bytes.CopyTo(Advance(bytes.Length));
+    }
+
     public Span<byte> Reserve(int count) => Advance(count);
 
     public void Rewind(int length) => _length = length;
@@ -41,88 +47,31 @@ internal struct RenderDataWriter : IDisposable
 
     public void WriteOpcode(RenderDataOpcode opcode) => WriteByte((byte)opcode);
 
-    public void WriteInt32(int value) => BinaryPrimitives.WriteInt32LittleEndian(Advance(4), value);
+    public void WriteInt32(int value) => WriteBlittable(value);
 
-    public void WriteUInt32(uint value) => BinaryPrimitives.WriteUInt32LittleEndian(Advance(4), value);
+    public void WriteUInt32(uint value) => WriteBlittable(value);
 
-    public void WriteDouble(double value) => BinaryPrimitives.WriteDoubleLittleEndian(Advance(8), value);
+    public void WriteDouble(double value) => WriteBlittable(value);
 
-    public void WriteBoolean(bool value) => WriteByte(value ? (byte)1 : (byte)0);
+    public void WriteBoolean(bool value) => WriteBlittable(value);
 
-    public void WritePoint(Point value)
-    {
-        WriteDouble(value.X);
-        WriteDouble(value.Y);
-    }
+    public void WritePoint(Point value) => WriteBlittable(value);
 
-    public void WriteVector(Vector value)
-    {
-        WriteDouble(value.X);
-        WriteDouble(value.Y);
-    }
+    public void WriteVector(Vector value) => WriteBlittable(value);
 
-    public void WriteRect(Rect value)
-    {
-        WriteDouble(value.X);
-        WriteDouble(value.Y);
-        WriteDouble(value.Width);
-        WriteDouble(value.Height);
-    }
+    public void WriteRect(Rect value) => WriteBlittable(value);
 
-    public void WriteRoundedRect(RoundedRect value)
-    {
-        WriteRect(value.Rect);
-        WriteVector(value.RadiiTopLeft);
-        WriteVector(value.RadiiTopRight);
-        WriteVector(value.RadiiBottomRight);
-        WriteVector(value.RadiiBottomLeft);
-    }
+    public void WriteRoundedRect(RoundedRect value) => WriteBlittable(value);
 
-    public void WriteMatrix(Matrix value)
-    {
-        WriteDouble(value.M11);
-        WriteDouble(value.M12);
-        WriteDouble(value.M13);
-        WriteDouble(value.M21);
-        WriteDouble(value.M22);
-        WriteDouble(value.M23);
-        WriteDouble(value.M31);
-        WriteDouble(value.M32);
-        WriteDouble(value.M33);
-    }
+    public void WriteMatrix(Matrix value) => WriteBlittable(value);
 
-    public void WriteColor(Color value) => WriteUInt32(value.ToUInt32());
+    public void WriteColor(Color value) => WriteBlittable(value);
 
-    public void WriteBoxShadow(BoxShadow value)
-    {
-        WriteDouble(value.OffsetX);
-        WriteDouble(value.OffsetY);
-        WriteDouble(value.Blur);
-        WriteDouble(value.Spread);
-        WriteColor(value.Color);
-        WriteBoolean(value.IsInset);
-    }
+    public void WriteBoxShadow(BoxShadow value) => WriteBlittable(value);
 
-    public void WriteRenderOptions(RenderOptions value)
-    {
-#pragma warning disable CS0618 // TextRenderingMode is obsolete but still carried for back-compat.
-        WriteByte((byte)value.TextRenderingMode);
-#pragma warning restore CS0618
-        WriteByte((byte)value.BitmapInterpolationMode);
-        WriteByte((byte)value.EdgeMode);
-        WriteByte((byte)value.BitmapBlendingMode);
-        WriteNullableBoolean(value.RequiresFullOpacityHandling);
-    }
+    public void WriteRenderOptions(RenderOptions value) => WriteBlittable(value);
 
-    public void WriteTextOptions(TextOptions value)
-    {
-        WriteByte((byte)value.TextRenderingMode);
-        WriteByte((byte)value.TextHintingMode);
-        WriteByte((byte)value.BaselinePixelAlignment);
-    }
-
-    private void WriteNullableBoolean(bool? value) =>
-        WriteByte(value is null ? (byte)0 : value.Value ? (byte)2 : (byte)1);
+    public void WriteTextOptions(TextOptions value) => WriteBlittable(value);
 
     public void Dispose()
     {
