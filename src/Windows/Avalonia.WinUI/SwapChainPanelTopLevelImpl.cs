@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using global::Avalonia;
 using global::Avalonia.Controls;
 using global::Avalonia.Input;
+using global::Avalonia.Input.Platform;
 using global::Avalonia.Input.Raw;
 using global::Avalonia.OpenGL.Surfaces;
 using global::Avalonia.Platform;
@@ -91,7 +92,12 @@ internal class SwapChainPanelTopLevelImpl : ITopLevelImpl
 
     public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
-    public object? TryGetFeature(Type featureType) => null;
+    public object? TryGetFeature(Type featureType)
+    {
+        if (featureType == typeof(IClipboard))
+            return AvaloniaLocator.Current.GetService<IClipboard>();
+        return null;
+    }
 
     public void Dispose()
     {
