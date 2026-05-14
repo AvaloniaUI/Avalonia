@@ -8,7 +8,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Drawing;
 
-internal class RenderDataStream : IDisposable
+internal partial class RenderDataStream : IDisposable
 {
     private RenderDataWriter _writer;
     private RenderDataResources _resources;
