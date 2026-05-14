@@ -1,18 +1,21 @@
 using System;
-using System.Collections.Generic;
+using System.Buffers;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Rendering.SceneGraph;
-using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Drawing;
 
 internal partial class RenderDataStream : IDisposable
 {
+    private const int MaxStackScopeDepth = 64;
+
     private RenderDataWriter _writer;
     private RenderDataResources _resources;
+    private int _depth;
+    private int _maxDepth;
 
     private struct ReplayScope
     {
@@ -21,17 +24,28 @@ internal partial class RenderDataStream : IDisposable
         public Matrix SavedTransform;
     }
 
-    private static readonly ThreadSafeObjectPool<Stack<ReplayScope>> s_scopePool = new();
-
     public ReadOnlySpan<byte> Opcodes => _writer.Written;
 
     public int OpcodeLength => _writer.Length;
+
+    public int Depth => _depth;
 
     public int ResourceCount => _resources.Count;
 
     public object? GetResource(int handle) => _resources[handle];
 
-    public void Rewind(int length) => _writer.Rewind(length);
+    public void Rewind(int length, int depth)
+    {
+        _writer.Rewind(length);
+        _depth = depth;
+    }
+
+    private void EnterScope()
+    {
+        _depth++;
+        if (_depth > _maxDepth)
+            _maxDepth = _depth;
+    }
 
     public void DisposeResources()
     {
@@ -118,18 +132,21 @@ internal partial class RenderDataStream : IDisposable
     {
         _writer.WriteOpcode(RenderDataOpcode.PushClip);
         _writer.WriteRoundedRect(clip);
+        EnterScope();
     }
 
     public void PushGeometryClip(IGeometryImpl? geometry)
     {
         _writer.WriteOpcode(RenderDataOpcode.PushGeometryClip);
         _writer.WriteInt32(_resources.Intern(geometry));
+        EnterScope();
     }
 
     public void PushOpacity(double opacity)
     {
         _writer.WriteOpcode(RenderDataOpcode.PushOpacity);
         _writer.WriteDouble(opacity);
+        EnterScope();
     }
 
     public void PushOpacityMask(IBrush? serverBrush, Rect bounds)
@@ -137,31 +154,40 @@ internal partial class RenderDataStream : IDisposable
         _writer.WriteOpcode(RenderDataOpcode.PushOpacityMask);
         _writer.WriteInt32(_resources.Intern(serverBrush));
         _writer.WriteRect(bounds);
+        EnterScope();
     }
 
     public void PushTransform(Matrix matrix)
     {
         _writer.WriteOpcode(RenderDataOpcode.PushTransform);
         _writer.WriteMatrix(matrix);
+        EnterScope();
     }
 
     public void PushRenderOptions(RenderOptions renderOptions)
     {
         _writer.WriteOpcode(RenderDataOpcode.PushRenderOptions);
         _writer.WriteRenderOptions(renderOptions);
+        EnterScope();
     }
 
     public void PushTextOptions(TextOptions textOptions)
     {
         _writer.WriteOpcode(RenderDataOpcode.PushTextOptions);
         _writer.WriteTextOptions(textOptions);
+        EnterScope();
     }
 
-    public void Pop() => _writer.WriteOpcode(RenderDataOpcode.Pop);
+    public void Pop()
+    {
+        _writer.WriteOpcode(RenderDataOpcode.Pop);
+        _depth--;
+    }
 
     public void SerializeTo(BatchStreamWriter writer)
     {
         var opcodes = _writer.Written;
+        writer.Write(_maxDepth);
         writer.Write(_resources.Count);
         for (var i = 0; i < _resources.Count; i++)
             writer.WriteObject(_resources[i]);
@@ -171,6 +197,8 @@ internal partial class RenderDataStream : IDisposable
 
     public void DeserializeFrom(BatchStreamReader reader)
     {
+        _maxDepth = reader.Read<int>();
+
         var resourceCount = reader.Read<int>();
         for (var i = 0; i < resourceCount; i++)
             _resources.Add(reader.ReadObject());
@@ -183,7 +211,13 @@ internal partial class RenderDataStream : IDisposable
     public void Replay(IDrawingContextImpl context)
     {
         var reader = new RenderDataReader(_writer.Written);
-        var scopes = s_scopePool.Get();
+        ReplayScope[]? rented = null;
+        scoped Span<ReplayScope> scopes;
+        if (_maxDepth <= MaxStackScopeDepth)
+            scopes = stackalloc ReplayScope[_maxDepth];
+        else
+            scopes = rented = ArrayPool<ReplayScope>.Shared.Rent(_maxDepth);
+        var depth = 0;
         try
         {
             while (!reader.IsAtEnd)
@@ -252,7 +286,7 @@ internal partial class RenderDataStream : IDisposable
                     {
                         var clip = reader.ReadRoundedRect();
                         context.PushClip(clip);
-                        scopes.Push(new ReplayScope { Kind = RenderDataOpcode.PushClip, Active = true });
+                        scopes[depth++] = new ReplayScope { Kind = RenderDataOpcode.PushClip, Active = true };
                         break;
                     }
                     case RenderDataOpcode.PushGeometryClip:
@@ -260,8 +294,8 @@ internal partial class RenderDataStream : IDisposable
                         var geometry = (IGeometryImpl?)_resources[reader.ReadInt32()];
                         if (geometry != null)
                             context.PushGeometryClip(geometry);
-                        scopes.Push(new ReplayScope
-                            { Kind = RenderDataOpcode.PushGeometryClip, Active = geometry != null });
+                        scopes[depth++] = new ReplayScope
+                            { Kind = RenderDataOpcode.PushGeometryClip, Active = geometry != null };
                         break;
                     }
                     case RenderDataOpcode.PushOpacity:
@@ -269,8 +303,8 @@ internal partial class RenderDataStream : IDisposable
                         var opacity = reader.ReadDouble();
                         if (opacity != 1)
                             context.PushOpacity(opacity, null);
-                        scopes.Push(new ReplayScope
-                            { Kind = RenderDataOpcode.PushOpacity, Active = opacity != 1 });
+                        scopes[depth++] = new ReplayScope
+                            { Kind = RenderDataOpcode.PushOpacity, Active = opacity != 1 };
                         break;
                     }
                     case RenderDataOpcode.PushOpacityMask:
@@ -279,8 +313,8 @@ internal partial class RenderDataStream : IDisposable
                         var bounds = reader.ReadRect();
                         if (brush != null)
                             context.PushOpacityMask(brush, bounds);
-                        scopes.Push(new ReplayScope
-                            { Kind = RenderDataOpcode.PushOpacityMask, Active = brush != null });
+                        scopes[depth++] = new ReplayScope
+                            { Kind = RenderDataOpcode.PushOpacityMask, Active = brush != null };
                         break;
                     }
                     case RenderDataOpcode.PushTransform:
@@ -288,25 +322,25 @@ internal partial class RenderDataStream : IDisposable
                         var matrix = reader.ReadMatrix();
                         var saved = context.Transform;
                         context.Transform = matrix * saved;
-                        scopes.Push(new ReplayScope
-                            { Kind = RenderDataOpcode.PushTransform, Active = true, SavedTransform = saved });
+                        scopes[depth++] = new ReplayScope
+                            { Kind = RenderDataOpcode.PushTransform, Active = true, SavedTransform = saved };
                         break;
                     }
                     case RenderDataOpcode.PushRenderOptions:
                     {
                         context.PushRenderOptions(reader.ReadRenderOptions());
-                        scopes.Push(new ReplayScope { Kind = RenderDataOpcode.PushRenderOptions, Active = true });
+                        scopes[depth++] = new ReplayScope { Kind = RenderDataOpcode.PushRenderOptions, Active = true };
                         break;
                     }
                     case RenderDataOpcode.PushTextOptions:
                     {
                         context.PushTextOptions(reader.ReadTextOptions());
-                        scopes.Push(new ReplayScope { Kind = RenderDataOpcode.PushTextOptions, Active = true });
+                        scopes[depth++] = new ReplayScope { Kind = RenderDataOpcode.PushTextOptions, Active = true };
                         break;
                     }
                     case RenderDataOpcode.Pop:
                     {
-                        var scope = scopes.Pop();
+                        var scope = scopes[--depth];
                         if (scope.Active)
                             PopScope(context, scope);
                         break;
@@ -316,8 +350,8 @@ internal partial class RenderDataStream : IDisposable
         }
         finally
         {
-            scopes.Clear();
-            s_scopePool.ReturnAndSetNull(ref scopes);
+            if (rented != null)
+                ArrayPool<ReplayScope>.Shared.Return(rented);
         }
     }
 

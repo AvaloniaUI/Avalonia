@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
+using System.Buffers;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
-using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Drawing;
@@ -17,12 +16,16 @@ internal partial class RenderDataStream
         public Point SavedPoint;
     }
 
-    private static readonly ThreadSafeObjectPool<Stack<HitTestScope>> s_hitTestScopePool = new();
-
     public bool HitTest(Point point)
     {
         var reader = new RenderDataReader(_writer.Written);
-        var scopes = s_hitTestScopePool.Get();
+        HitTestScope[]? rented = null;
+        scoped Span<HitTestScope> scopes;
+        if (_maxDepth <= MaxStackScopeDepth)
+            scopes = stackalloc HitTestScope[_maxDepth];
+        else
+            scopes = rented = ArrayPool<HitTestScope>.Shared.Rent(_maxDepth);
+        var depth = 0;
         var current = point;
         var live = true;
         try
@@ -105,7 +108,7 @@ internal partial class RenderDataStream
                         var scope = new HitTestScope { SavedLive = live };
                         if (live && !clip.Rect.Contains(current))
                             live = false;
-                        scopes.Push(scope);
+                        scopes[depth++] = scope;
                         break;
                     }
                     case RenderDataOpcode.PushGeometryClip:
@@ -114,7 +117,7 @@ internal partial class RenderDataStream
                         var scope = new HitTestScope { SavedLive = live };
                         if (live && geometry != null && !geometry.FillContains(current))
                             live = false;
-                        scopes.Push(scope);
+                        scopes[depth++] = scope;
                         break;
                     }
                     case RenderDataOpcode.PushTransform:
@@ -132,37 +135,37 @@ internal partial class RenderDataStream
                             else
                                 live = false;
                         }
-                        scopes.Push(scope);
+                        scopes[depth++] = scope;
                         break;
                     }
                     case RenderDataOpcode.PushOpacity:
                     {
                         reader.ReadDouble();
-                        scopes.Push(new HitTestScope { SavedLive = live });
+                        scopes[depth++] = new HitTestScope { SavedLive = live };
                         break;
                     }
                     case RenderDataOpcode.PushOpacityMask:
                     {
                         reader.ReadInt32();
                         reader.ReadRect();
-                        scopes.Push(new HitTestScope { SavedLive = live });
+                        scopes[depth++] = new HitTestScope { SavedLive = live };
                         break;
                     }
                     case RenderDataOpcode.PushRenderOptions:
                     {
                         reader.ReadRenderOptions();
-                        scopes.Push(new HitTestScope { SavedLive = live });
+                        scopes[depth++] = new HitTestScope { SavedLive = live };
                         break;
                     }
                     case RenderDataOpcode.PushTextOptions:
                     {
                         reader.ReadTextOptions();
-                        scopes.Push(new HitTestScope { SavedLive = live });
+                        scopes[depth++] = new HitTestScope { SavedLive = live };
                         break;
                     }
                     case RenderDataOpcode.Pop:
                     {
-                        var scope = scopes.Pop();
+                        var scope = scopes[--depth];
                         live = scope.SavedLive;
                         if (scope.RestorePoint)
                             current = scope.SavedPoint;
@@ -175,8 +178,8 @@ internal partial class RenderDataStream
         }
         finally
         {
-            scopes.Clear();
-            s_hitTestScopePool.ReturnAndSetNull(ref scopes);
+            if (rented != null)
+                ArrayPool<HitTestScope>.Shared.Return(rented);
         }
     }
 

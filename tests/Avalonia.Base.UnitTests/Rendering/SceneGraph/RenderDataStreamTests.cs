@@ -192,6 +192,25 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             glyphRun.Dispose();
         }
 
+        [Fact]
+        public void Replay_Handles_Deeply_Nested_Scopes()
+        {
+            var context = new Mock<IDrawingContextImpl>();
+
+            using var stream = new RenderDataStream();
+            for (var i = 0; i < 100; i++)
+                stream.PushOpacity(0.5);
+            stream.DrawRectangle(Brushes.Black, null, null,
+                new RoundedRect(new Rect(0, 0, 10, 10)), default);
+            for (var i = 0; i < 100; i++)
+                stream.Pop();
+
+            stream.Replay(context.Object);
+
+            context.Verify(x => x.DrawRectangle(Brushes.Black, null,
+                It.IsAny<RoundedRect>(), It.IsAny<BoxShadows>()), Times.Once);
+        }
+
         private static Mock<IDrawingContextImpl> RecordingContext(List<string> calls)
         {
             var context = new Mock<IDrawingContextImpl>();

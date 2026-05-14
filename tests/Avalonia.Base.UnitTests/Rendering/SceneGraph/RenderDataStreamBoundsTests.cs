@@ -159,5 +159,19 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 
             Assert.Equal(new Rect(0, 0, 10, 10), stream.CalculateBounds());
         }
+
+        [Fact]
+        public void Bounds_Handles_Deeply_Nested_Scopes()
+        {
+            using var stream = new RenderDataStream();
+            for (var i = 0; i < 100; i++)
+                stream.PushOpacity(0.5);
+            stream.DrawRectangle(Brushes.Black, null, null,
+                new RoundedRect(new Rect(0, 0, 10, 10)), default);
+            for (var i = 0; i < 100; i++)
+                stream.Pop();
+
+            Assert.Equal(new Rect(0, 0, 10, 10), stream.CalculateBounds());
+        }
     }
 }
