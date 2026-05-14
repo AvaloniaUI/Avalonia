@@ -14,6 +14,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Reactive;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -387,7 +388,9 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IEnumerable<IMenuItem> IMenuElement.SubItems => LogicalChildren.OfType<IMenuItem>();
 
-        private IMenuInteractionHandler? MenuInteractionHandler => this.FindLogicalAncestorOfType<MenuBase>()?.InteractionHandler;
+        private IMenuInteractionHandler? MenuInteractionHandler =>
+            this.FindLogicalAncestorOfType<MenuBase>()?.InteractionHandler ??
+            this.FindAncestorOfType<MenuBase>()?.InteractionHandler;
 
         /// <summary>
         /// Opens the submenu.
@@ -470,6 +473,7 @@ namespace Avalonia.Controls
             base.OnAttachedToVisualTree(e);
 
             TryUpdateCanExecute();
+            RegisterInMenuInteractionHandler();
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -906,6 +910,16 @@ namespace Avalonia.Controls
         private void PopupClosed(object? sender, EventArgs e)
         {
             SelectedItem = null;
+        }
+
+        private void RegisterInMenuInteractionHandler()
+        {
+            if (ToggleType != MenuItemToggleType.Radio || MenuInteractionHandler is not DefaultMenuInteractionHandler handler)
+            {
+                return;
+            }
+
+            handler.OnGroupOrTypeChanged(this, null);
         }
 
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => CanExecuteChangedHandler(sender, e);
