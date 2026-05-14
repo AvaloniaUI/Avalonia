@@ -189,5 +189,20 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 
             Assert.True(stream.HitTest(new Point(5, 5)));
         }
+
+        [Fact]
+        public void Hit_Test_Handles_Deeply_Nested_Scopes()
+        {
+            using var stream = new RenderDataStream();
+            for (var i = 0; i < 100; i++)
+                stream.PushOpacity(0.5);
+            stream.DrawRectangle(Brushes.Black, null, null,
+                new RoundedRect(new Rect(0, 0, 10, 10)), default);
+            for (var i = 0; i < 100; i++)
+                stream.Pop();
+
+            Assert.True(stream.HitTest(new Point(5, 5)));
+            Assert.False(stream.HitTest(new Point(50, 50)));
+        }
     }
 }

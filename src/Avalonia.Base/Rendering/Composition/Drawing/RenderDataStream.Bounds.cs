@@ -1,8 +1,8 @@
-using System.Collections.Generic;
+using System;
+using System.Buffers;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
-using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition.Drawing;
@@ -16,12 +16,16 @@ internal partial class RenderDataStream
         public Matrix Matrix;
     }
 
-    private static readonly ThreadSafeObjectPool<Stack<BoundsScope>> s_boundsScopePool = new();
-
     public Rect? CalculateBounds()
     {
         var reader = new RenderDataReader(_writer.Written);
-        var scopes = s_boundsScopePool.Get();
+        BoundsScope[]? rented = null;
+        scoped Span<BoundsScope> scopes;
+        if (_maxDepth <= MaxStackScopeDepth)
+            scopes = stackalloc BoundsScope[_maxDepth];
+        else
+            scopes = rented = ArrayPool<BoundsScope>.Shared.Rent(_maxDepth);
+        var depth = 0;
         Rect? current = null;
         try
         {
@@ -94,21 +98,21 @@ internal partial class RenderDataStream
                     case RenderDataOpcode.PushClip:
                     {
                         reader.ReadRoundedRect();
-                        scopes.Push(new BoundsScope { SavedBounds = current });
+                        scopes[depth++] = new BoundsScope { SavedBounds = current };
                         current = null;
                         break;
                     }
                     case RenderDataOpcode.PushGeometryClip:
                     {
                         reader.ReadInt32();
-                        scopes.Push(new BoundsScope { SavedBounds = current });
+                        scopes[depth++] = new BoundsScope { SavedBounds = current };
                         current = null;
                         break;
                     }
                     case RenderDataOpcode.PushOpacity:
                     {
                         reader.ReadDouble();
-                        scopes.Push(new BoundsScope { SavedBounds = current });
+                        scopes[depth++] = new BoundsScope { SavedBounds = current };
                         current = null;
                         break;
                     }
@@ -116,34 +120,34 @@ internal partial class RenderDataStream
                     {
                         reader.ReadInt32();
                         reader.ReadRect();
-                        scopes.Push(new BoundsScope { SavedBounds = current });
+                        scopes[depth++] = new BoundsScope { SavedBounds = current };
                         current = null;
                         break;
                     }
                     case RenderDataOpcode.PushTransform:
                     {
                         var matrix = reader.ReadMatrix();
-                        scopes.Push(new BoundsScope { SavedBounds = current, IsTransform = true, Matrix = matrix });
+                        scopes[depth++] = new BoundsScope { SavedBounds = current, IsTransform = true, Matrix = matrix };
                         current = null;
                         break;
                     }
                     case RenderDataOpcode.PushRenderOptions:
                     {
                         reader.ReadRenderOptions();
-                        scopes.Push(new BoundsScope { SavedBounds = current });
+                        scopes[depth++] = new BoundsScope { SavedBounds = current };
                         current = null;
                         break;
                     }
                     case RenderDataOpcode.PushTextOptions:
                     {
                         reader.ReadTextOptions();
-                        scopes.Push(new BoundsScope { SavedBounds = current });
+                        scopes[depth++] = new BoundsScope { SavedBounds = current };
                         current = null;
                         break;
                     }
                     case RenderDataOpcode.Pop:
                     {
-                        var scope = scopes.Pop();
+                        var scope = scopes[--depth];
                         var childUnion = current;
                         if (scope.IsTransform)
                             childUnion = childUnion?.TransformToAABB(scope.Matrix);
@@ -157,8 +161,8 @@ internal partial class RenderDataStream
         }
         finally
         {
-            scopes.Clear();
-            s_boundsScopePool.ReturnAndSetNull(ref scopes);
+            if (rented != null)
+                ArrayPool<BoundsScope>.Shared.Return(rented);
         }
     }
 }

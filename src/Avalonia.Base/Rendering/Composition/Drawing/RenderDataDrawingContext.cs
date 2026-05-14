@@ -25,6 +25,7 @@ internal class RenderDataDrawingContext : DrawingContext
         public bool Emitted;
         public int PositionBefore;
         public int PositionAfter;
+        public int DepthBefore;
     }
 
     public RenderDataDrawingContext(Compositor? compositor)
@@ -66,7 +67,8 @@ internal class RenderDataDrawingContext : DrawingContext
         {
             Emitted = true,
             PositionBefore = positionBefore,
-            PositionAfter = Stream.OpcodeLength
+            PositionAfter = Stream.OpcodeLength,
+            DepthBefore = Stream.Depth - 1
         });
 
     private void PushedNoOpScope() =>
@@ -79,7 +81,7 @@ internal class RenderDataDrawingContext : DrawingContext
             return;
 
         if (Stream.OpcodeLength == entry.PositionAfter)
-            Stream.Rewind(entry.PositionBefore);
+            Stream.Rewind(entry.PositionBefore, entry.DepthBefore);
         else
             Stream.Pop();
     }
