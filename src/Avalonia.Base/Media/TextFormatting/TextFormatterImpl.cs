@@ -71,7 +71,8 @@ namespace Avalonia.Media.TextFormatting
                     nextLineBreak = new TextLineBreak(textEndOfLine, resolvedFlowDirection);
                 }
 
-                // Store shaped runs in cache for reuse.
+                // Store shaped runs in cache for reuse. The cache takes its own references;
+                // the formatter keeps the fresh-from-shape references for the current line.
                 if (textRunCache != null)
                 {
                     textRunCache.Add(firstTextSourceIndex,
@@ -83,18 +84,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case TextWrapping.NoWrap:
                         {
-                            TextRun[] lineRuns;
-
-                            if (textRunCache != null)
-                            {
-                                // When caching, the cache owns the shaped runs.
-                                // Create non-owning copies for the line.
-                                lineRuns = CreateNonOwningRuns(shapedTextRuns);
-                            }
-                            else
-                            {
-                                lineRuns = shapedTextRuns.ToArray();
-                            }
+                            var lineRuns = shapedTextRuns.ToArray();
 
                             var textLine = new TextLineImpl(lineRuns, firstTextSourceIndex,
                                 textSourceLength,
@@ -107,16 +97,6 @@ namespace Avalonia.Media.TextFormatting
                     case TextWrapping.WrapWithOverflow:
                     case TextWrapping.Wrap:
                         {
-                            if (textRunCache != null)
-                            {
-                                // When caching, create non-owning copies for wrapping.
-                                var nonOwningRuns = CreateNonOwningRunsList(shapedTextRuns);
-
-                                return PerformTextWrapping(nonOwningRuns, false, firstTextSourceIndex,
-                                    paragraphWidth, paragraphProperties, resolvedFlowDirection,
-                                    nextLineBreak, objectPool);
-                            }
-
                             return PerformTextWrapping(shapedTextRuns, false, firstTextSourceIndex, paragraphWidth,
                                 paragraphProperties, resolvedFlowDirection, nextLineBreak, objectPool);
                         }
@@ -150,7 +130,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 case TextWrapping.NoWrap:
                     {
-                        var lineRuns = CreateNonOwningRuns(cached.ShapedRuns);
+                        var lineRuns = AddRefShapedRuns(cached.ShapedRuns);
 
                         var textLine = new TextLineImpl(lineRuns, firstTextSourceIndex,
                             cached.TextSourceLength,
@@ -163,9 +143,16 @@ namespace Avalonia.Media.TextFormatting
                 case TextWrapping.WrapWithOverflow:
                 case TextWrapping.Wrap:
                     {
-                        var nonOwningRuns = CreateNonOwningRunsList(cached.ShapedRuns);
+                        var runs = new List<TextRun>(cached.ShapedRuns.Length);
 
-                        return PerformTextWrapping(nonOwningRuns, false, firstTextSourceIndex,
+                        for (var i = 0; i < cached.ShapedRuns.Length; i++)
+                        {
+                            runs.Add(cached.ShapedRuns[i] is ShapedTextRun shaped
+                                ? shaped.AddRef()
+                                : cached.ShapedRuns[i]);
+                        }
+
+                        return PerformTextWrapping(runs, false, firstTextSourceIndex,
                             paragraphWidth, paragraphProperties, resolvedFlowDirection,
                             nextLineBreak, objectPool);
                     }
@@ -175,49 +162,16 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Creates a non-owning copy of a text run. For shaped text runs, this creates
-        /// a new instance with a separate shaped buffer so that disposing the copy does
-        /// not dispose the original cached shaped buffer.
+        /// Produces an array of text runs for a line, adding an extra reference to each
+        /// <see cref="ShapedTextRun"/> so that the caller owns a disposable reference.
         /// </summary>
-        private static TextRun CreateNonOwningRun(TextRun run)
-        {
-            if (run is ShapedTextRun shaped)
-            {
-                var buf = shaped.ShapedBuffer;
-                return new ShapedTextRun(
-                    new ShapedBuffer(buf.Text, buf.GlyphInfos, buf.GlyphTypeface, buf.FontRenderingEmSize, buf.BidiLevel),
-                    shaped.Properties);
-            }
-
-            return run;
-        }
-
-        /// <summary>
-        /// Creates non-owning copies of shaped text runs for use in text lines,
-        /// so that disposing the line does not dispose the cached shaped buffers.
-        /// </summary>
-        private static TextRun[] CreateNonOwningRuns(IReadOnlyList<TextRun> runs)
+        private static TextRun[] AddRefShapedRuns(IReadOnlyList<TextRun> runs)
         {
             var result = new TextRun[runs.Count];
 
             for (var i = 0; i < runs.Count; i++)
             {
-                result[i] = CreateNonOwningRun(runs[i]);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Creates a non-owning list of shaped text runs for use with text wrapping.
-        /// </summary>
-        private static List<TextRun> CreateNonOwningRunsList(IReadOnlyList<TextRun> runs)
-        {
-            var result = new List<TextRun>(runs.Count);
-
-            for (var i = 0; i < runs.Count; i++)
-            {
-                result.Add(CreateNonOwningRun(runs[i]));
+                result[i] = runs[i] is ShapedTextRun shaped ? shaped.AddRef() : runs[i];
             }
 
             return result;
@@ -309,6 +263,10 @@ namespace Avalonia.Media.TextFormatting
                         {
                             second.Add(split.Second);
                         }
+
+                        // The split produced fresh ShapedTextRuns for each half, so the
+                        // caller's reference to the original is no longer needed — release it.
+                        shapedTextCharacters.Dispose();
                     }
 
                     for (var j = 1; j < secondCount; j++)
@@ -764,43 +722,53 @@ namespace Avalonia.Media.TextFormatting
                         {
                             if (shapedTextCharacters.ShapedBuffer.Length > 0)
                             {
+                                var bufferLength = shapedTextCharacters.ShapedBuffer.Length;
                                 var runLength = 0;
+                                var runTextLength = shapedTextCharacters.Length;
+                                var isLeftToRight = shapedTextCharacters.ShapedBuffer.IsLeftToRight;
 
-                                for (var j = 0; j < shapedTextCharacters.ShapedBuffer.Length; j++)
+                                // Cluster values stay anchored to the original text even after
+                                // splits, so anchor the run's logical end from FirstCluster.
+                                var logicalEnd = shapedTextCharacters.GlyphRun.Metrics.FirstCluster + runTextLength;
+
+                                // Walk in LOGICAL order: LTR is already logical (ascending
+                                // clusters from j=0 onwards), RTL visual is reverse-logical so
+                                // we iterate from the tail. The algorithm below reads
+                                // `currentInfo` / `nextInfo` in logical progression — next
+                                // always means "the next glyph logically after the current".
+                                int step = isLeftToRight ? 1 : -1;
+                                int start = isLeftToRight ? 0 : bufferLength - 1;
+                                int end = isLeftToRight ? bufferLength : -1;
+
+                                for (var j = start; j != end; j += step)
                                 {
                                     var currentInfo = shapedTextCharacters.ShapedBuffer[j];
 
                                     var clusterWidth = currentInfo.GlyphAdvance;
 
                                     GlyphInfo nextInfo = default;
+                                    var hasNext = false;
 
-                                    while (j + 1 < shapedTextCharacters.ShapedBuffer.Length)
+                                    // Collect additional glyphs belonging to the same cluster.
+                                    while ((isLeftToRight ? j + 1 < bufferLength : j - 1 >= 0))
                                     {
-                                        nextInfo = shapedTextCharacters.ShapedBuffer[j + 1];
+                                        nextInfo = shapedTextCharacters.ShapedBuffer[j + step];
 
                                         if (currentInfo.GlyphCluster == nextInfo.GlyphCluster)
                                         {
                                             clusterWidth += nextInfo.GlyphAdvance;
 
-                                            j++;
+                                            j += step;
 
                                             continue;
                                         }
 
+                                        hasNext = true;
                                         break;
                                     }
 
-                                    var clusterLength = Math.Max(0, nextInfo.GlyphCluster - currentInfo.GlyphCluster);
-
-                                    if (clusterLength == 0)
-                                    {
-                                        clusterLength = currentRun.Length - runLength;
-                                    }
-
-                                    if (clusterLength == 0)
-                                    {
-                                        clusterLength = shapedTextCharacters.GlyphRun.Metrics.FirstCluster + currentRun.Length - currentInfo.GlyphCluster;
-                                    }
+                                    var nextLogicalCluster = hasNext ? nextInfo.GlyphCluster : logicalEnd;
+                                    var clusterLength = nextLogicalCluster - currentInfo.GlyphCluster;
 
                                     if (MathUtilities.GreaterThan(currentWidth + clusterWidth, paragraphWidth))
                                     {
@@ -1174,7 +1142,13 @@ namespace Avalonia.Media.TextFormatting
                     {
                         if (trailingWhitespaceRuns[i] is ShapedTextRun shapedTextRun)
                         {
-                            shapedTextRun.ShapedBuffer.ResetBidiLevel(paragraphEmbeddingLevel);
+                            var newBuffer = shapedTextRun.ShapedBuffer.WithBidiLevel(paragraphEmbeddingLevel);
+
+                            if (!ReferenceEquals(newBuffer, shapedTextRun.ShapedBuffer))
+                            {
+                                trailingWhitespaceRuns[i] = new ShapedTextRun(newBuffer, shapedTextRun.Properties);
+                                shapedTextRun.Dispose();
+                            }
                         }
                     }
 
