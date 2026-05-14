@@ -33,6 +33,8 @@ internal struct RenderDataWriter : IDisposable
         return span;
     }
 
+    public Span<byte> Reserve(int count) => Advance(count);
+
     public void WriteByte(byte value) => Advance(1)[0] = value;
 
     public void WriteOpcode(RenderDataOpcode opcode) => WriteByte((byte)opcode);
