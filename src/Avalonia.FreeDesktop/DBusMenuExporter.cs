@@ -137,7 +137,7 @@ namespace Avalonia.FreeDesktop
                         if (t.Exception != null)
                         {
                             Logger.TryGet(LogEventLevel.Warning, LogArea.Platform)
-                                ?.Log(this, "DBusMenu UnregisterWindowAsync failed: " + t.Exception);
+                                ?.Log(this, "DBusMenu UnregisterWindowAsync failed: {Exception}", t.Exception);
                         }
                     }
                     catch
