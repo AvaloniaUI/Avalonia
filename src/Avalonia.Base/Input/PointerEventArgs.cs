@@ -40,10 +40,12 @@ namespace Avalonia.Input
             ulong timestamp,
             PointerPointProperties properties,
             KeyModifiers modifiers,
-            Lazy<IReadOnlyList<RawPointerPoint>?>? previousPoints)
+            Lazy<IReadOnlyList<RawPointerPoint>?>? previousPoints,
+            object? platformInputEventCookie = null)
             : this(routedEvent, source, pointer, rootVisual, rootVisualPosition, timestamp, properties, modifiers)
         {
             _previousPoints = previousPoints;
+            PlatformInputEventCookie = platformInputEventCookie;
         }
 
         /// <summary>
@@ -55,6 +57,13 @@ namespace Avalonia.Input
         /// Gets the time when the input occurred.
         /// </summary>
         public ulong Timestamp { get; }
+
+        /// <summary>
+        /// An opaque platform-specific cookie associated with this event.
+        /// Used by backends to pass platform data through the input pipeline.
+        /// </summary>
+        [PrivateApi]
+        public object? PlatformInputEventCookie { get; }
 
         internal bool IsGestureRecognitionSkipped
         {
@@ -170,6 +179,22 @@ namespace Avalonia.Input
             int clickCount = 1)
             : base(InputElement.PointerPressedEvent, source, pointer, rootVisual, rootVisualPosition,
                 timestamp, properties, modifiers)
+        {
+            ClickCount = clickCount;
+        }
+
+        [PrivateApi]
+        public PointerPressedEventArgs(
+            object? source,
+            IPointer pointer,
+            Visual rootVisual, Point rootVisualPosition,
+            ulong timestamp,
+            PointerPointProperties properties,
+            KeyModifiers modifiers,
+            int clickCount,
+            object? platformInputEventCookie)
+            : base(InputElement.PointerPressedEvent, source, pointer, rootVisual, rootVisualPosition,
+                timestamp, properties, modifiers, null, platformInputEventCookie)
         {
             ClickCount = clickCount;
         }

@@ -109,7 +109,7 @@ internal class CompositionTargetOverlays
             targetContext.Transform = Matrix.CreateScale(_target.Scaling, _target.Scaling);
             
             using (var immediate = new ImmediateDrawingContext(targetContext, false))
-                DrawOverlays(immediate, hasLayer, _target.PixelSize.ToSize(_target.Scaling));
+                DrawOverlays(immediate, hasLayer, _target.Size);
         }
     }
 

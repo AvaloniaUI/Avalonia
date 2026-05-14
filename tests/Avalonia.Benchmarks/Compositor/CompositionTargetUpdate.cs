@@ -55,7 +55,7 @@ public class CompositionTargetUpdateOnly : IDisposable
         _compositor = new Compositor(RenderLoop.FromTimer(new Timer()), null, true, new ManualScheduler(), true,
             Dispatcher.UIThread, null);
         _target = _compositor.CreateCompositionTarget(() => [new NullFramebuffer()]);
-        _target.PixelSize = new PixelSize(1000, 1000);
+        _target.Size = new Size(1000, 1000);
         _target.Scaling = 1;
         var root = _compositor.CreateContainerVisual();
         root.Size = new Vector(1000, 1000);
