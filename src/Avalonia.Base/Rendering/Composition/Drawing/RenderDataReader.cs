@@ -1,7 +1,6 @@
 using System;
-using System.Buffers.Binary;
+using System.Runtime.InteropServices;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 
 namespace Avalonia.Rendering.Composition.Drawing;
 
@@ -27,65 +26,41 @@ internal ref struct RenderDataReader
         return span;
     }
 
+    private T ReadBlittable<T>() where T : unmanaged
+    {
+        T value = default;
+        var bytes = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref value, 1));
+        Take(bytes.Length).CopyTo(bytes);
+        return value;
+    }
+
     public byte ReadByte() => Take(1)[0];
 
     public RenderDataOpcode ReadOpcode() => (RenderDataOpcode)ReadByte();
 
-    public int ReadInt32() => BinaryPrimitives.ReadInt32LittleEndian(Take(4));
+    public int ReadInt32() => ReadBlittable<int>();
 
-    public uint ReadUInt32() => BinaryPrimitives.ReadUInt32LittleEndian(Take(4));
+    public uint ReadUInt32() => ReadBlittable<uint>();
 
-    public double ReadDouble() => BinaryPrimitives.ReadDoubleLittleEndian(Take(8));
+    public double ReadDouble() => ReadBlittable<double>();
 
-    public bool ReadBoolean() => ReadByte() != 0;
+    public bool ReadBoolean() => ReadBlittable<bool>();
 
-    public Point ReadPoint() => new(ReadDouble(), ReadDouble());
+    public Point ReadPoint() => ReadBlittable<Point>();
 
-    public Vector ReadVector() => new(ReadDouble(), ReadDouble());
+    public Vector ReadVector() => ReadBlittable<Vector>();
 
-    public Rect ReadRect() => new(ReadDouble(), ReadDouble(), ReadDouble(), ReadDouble());
+    public Rect ReadRect() => ReadBlittable<Rect>();
 
-    public RoundedRect ReadRoundedRect() =>
-        new(ReadRect(), ReadVector(), ReadVector(), ReadVector(), ReadVector());
+    public RoundedRect ReadRoundedRect() => ReadBlittable<RoundedRect>();
 
-    public Matrix ReadMatrix() => new(
-        ReadDouble(), ReadDouble(), ReadDouble(),
-        ReadDouble(), ReadDouble(), ReadDouble(),
-        ReadDouble(), ReadDouble(), ReadDouble());
+    public Matrix ReadMatrix() => ReadBlittable<Matrix>();
 
-    public Color ReadColor() => Color.FromUInt32(ReadUInt32());
+    public Color ReadColor() => ReadBlittable<Color>();
 
-    public BoxShadow ReadBoxShadow() => new()
-    {
-        OffsetX = ReadDouble(),
-        OffsetY = ReadDouble(),
-        Blur = ReadDouble(),
-        Spread = ReadDouble(),
-        Color = ReadColor(),
-        IsInset = ReadBoolean()
-    };
+    public BoxShadow ReadBoxShadow() => ReadBlittable<BoxShadow>();
 
-    public RenderOptions ReadRenderOptions() => new()
-    {
-#pragma warning disable CS0618 // TextRenderingMode is obsolete but still carried for back-compat.
-        TextRenderingMode = (TextRenderingMode)ReadByte(),
-#pragma warning restore CS0618
-        BitmapInterpolationMode = (BitmapInterpolationMode)ReadByte(),
-        EdgeMode = (EdgeMode)ReadByte(),
-        BitmapBlendingMode = (BitmapBlendingMode)ReadByte(),
-        RequiresFullOpacityHandling = ReadNullableBoolean()
-    };
+    public RenderOptions ReadRenderOptions() => ReadBlittable<RenderOptions>();
 
-    public TextOptions ReadTextOptions() => new()
-    {
-        TextRenderingMode = (TextRenderingMode)ReadByte(),
-        TextHintingMode = (TextHintingMode)ReadByte(),
-        BaselinePixelAlignment = (BaselinePixelAlignment)ReadByte()
-    };
-
-    private bool? ReadNullableBoolean()
-    {
-        var value = ReadByte();
-        return value == 0 ? null : value == 2;
-    }
+    public TextOptions ReadTextOptions() => ReadBlittable<TextOptions>();
 }
