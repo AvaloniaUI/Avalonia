@@ -1,4 +1,6 @@
 using global::Avalonia;
+using global::Avalonia.Controls;
+using global::Avalonia.Controls.ApplicationLifetimes;
 using global::Avalonia.Skia;
 using global::Avalonia.Win32;
 using WinUIApplication = Microsoft.UI.Xaml.Application;
@@ -11,6 +13,8 @@ namespace ControlGallery.WinUI
     {
         private Window? _window;
 
+        internal static SingleViewLifetime Lifetime { get; } = new();
+
         public App()
         {
             InitializeComponent();
@@ -22,10 +26,15 @@ namespace ControlGallery.WinUI
                 .UseWin32()
                 .UseSkia()
                 .UseHarfBuzz()
-                .SetupWithoutStarting();
+                .SetupWithLifetime(Lifetime);
 
             _window = new MainWindow();
             _window.Activate();
         }
+    }
+
+    internal sealed class SingleViewLifetime : ISingleViewApplicationLifetime
+    {
+        public Control? MainView { get; set; }
     }
 }

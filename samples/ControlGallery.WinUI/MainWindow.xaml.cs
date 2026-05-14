@@ -5,7 +5,7 @@ namespace ControlGallery.WinUI
         public MainWindow()
         {
             InitializeComponent();
-            AvaloniaPanel.Content = new ControlCatalog.MainView();
+            AvaloniaPanel.Content = App.Lifetime.MainView;
         }
     }
 }
