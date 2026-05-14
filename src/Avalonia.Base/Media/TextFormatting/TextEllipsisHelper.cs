@@ -35,11 +35,6 @@ namespace Avalonia.Media.TextFormatting
 
                             if (textRunWidth > availableWidth)
                             {
-                                if (shapedRun.IsReversed)
-                                {
-                                    shapedRun.Reverse();
-                                }
-
                                 if (shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength))
                                 {
                                     if (isWordEllipsis && measuredLength < textLine.Length)
