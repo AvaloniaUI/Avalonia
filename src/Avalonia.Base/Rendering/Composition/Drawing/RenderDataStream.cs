@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
@@ -130,6 +131,27 @@ internal partial class RenderDataStream : IDisposable
     }
 
     public void Pop() => _writer.WriteOpcode(RenderDataOpcode.Pop);
+
+    public void SerializeTo(BatchStreamWriter writer)
+    {
+        var opcodes = _writer.Written;
+        writer.Write(_resources.Count);
+        for (var i = 0; i < _resources.Count; i++)
+            writer.WriteObject(_resources[i]);
+        writer.Write(opcodes.Length);
+        writer.Write(opcodes);
+    }
+
+    public void DeserializeFrom(BatchStreamReader reader)
+    {
+        var resourceCount = reader.Read<int>();
+        for (var i = 0; i < resourceCount; i++)
+            _resources.Add(reader.ReadObject());
+
+        var byteCount = reader.Read<int>();
+        if (byteCount > 0)
+            reader.Read(_writer.Reserve(byteCount));
+    }
 
     public void Replay(IDrawingContextImpl context)
     {
