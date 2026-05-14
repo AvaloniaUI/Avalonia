@@ -135,6 +135,63 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
                 calls);
         }
 
+        [Fact]
+        public void Replay_Forwards_Render_Options()
+        {
+            var options = new RenderOptions { EdgeMode = EdgeMode.Aliased };
+            var context = new Mock<IDrawingContextImpl>();
+
+            using var stream = new RenderDataStream();
+            stream.PushRenderOptions(options);
+            stream.Pop();
+            stream.Replay(context.Object);
+
+            context.Verify(x => x.PushRenderOptions(options), Times.Once);
+            context.Verify(x => x.PopRenderOptions(), Times.Once);
+        }
+
+        [Fact]
+        public void Replay_Forwards_Text_Options()
+        {
+            var options = new TextOptions { TextRenderingMode = TextRenderingMode.Antialias };
+            var context = new Mock<IDrawingContextImpl>();
+
+            using var stream = new RenderDataStream();
+            stream.PushTextOptions(options);
+            stream.Pop();
+            stream.Replay(context.Object);
+
+            context.Verify(x => x.PushTextOptions(options), Times.Once);
+            context.Verify(x => x.PopTextOptions(), Times.Once);
+        }
+
+        [Fact]
+        public void Dispose_Resources_Disposes_Owned_Resources()
+        {
+            var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+            var glyphRun = RefCountable.Create(Mock.Of<IGlyphRunImpl>());
+            var operation = new Mock<ICustomDrawOperation>();
+
+            using (var stream = new RenderDataStream())
+            {
+                stream.DrawBitmap(bitmap.Clone(), 1, new Rect(0, 0, 1, 1), new Rect(0, 0, 1, 1));
+                stream.DrawGlyphRun(null, glyphRun.Clone());
+                stream.DrawCustom(operation.Object);
+
+                Assert.Equal(2, bitmap.RefCount);
+                Assert.Equal(2, glyphRun.RefCount);
+
+                stream.DisposeResources();
+            }
+
+            Assert.Equal(1, bitmap.RefCount);
+            Assert.Equal(1, glyphRun.RefCount);
+            operation.Verify(x => x.Dispose(), Times.Once);
+
+            bitmap.Dispose();
+            glyphRun.Dispose();
+        }
+
         private static Mock<IDrawingContextImpl> RecordingContext(List<string> calls)
         {
             var context = new Mock<IDrawingContextImpl>();
