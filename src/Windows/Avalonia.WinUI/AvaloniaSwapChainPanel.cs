@@ -7,6 +7,7 @@ using global::Avalonia.Input.Raw;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Windows.Foundation;
 using AvControl = global::Avalonia.Controls.Control;
 using AvSize = global::Avalonia.Size;
 using AvPoint = global::Avalonia.Point;
@@ -41,9 +42,11 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         PointerReleased += OnPointerReleased;
         PointerWheelChanged += OnPointerWheelChanged;
         PointerCanceled += OnPointerCanceled;
-        KeyDown += OnKeyDown;
-        KeyUp += OnKeyUp;
-        CharacterReceived += OnCharacterReceived;
+        AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown), handledEventsToo: true);
+        AddHandler(KeyUpEvent, new KeyEventHandler(OnKeyUp), handledEventsToo: true);
+        AddHandler(CharacterReceivedEvent,
+            new TypedEventHandler<UIElement, CharacterReceivedRoutedEventArgs>(OnCharacterReceived),
+            handledEventsToo: true);
     }
 
     public AvControl? Content
@@ -366,10 +369,14 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         {
             var keyboard = GetKeyboardDevice();
             if (keyboard is null) return;
-            input(new RawKeyEventArgs(keyboard, (ulong)Environment.TickCount64, inputRoot,
+            var args = new RawKeyEventArgs(keyboard, (ulong)Environment.TickCount64, inputRoot,
                 RawKeyEventType.KeyDown, key, GetCurrentModifiers(),
-                PhysicalKey.None, null));
-            e.Handled = true;
+                PhysicalKey.None, null);
+            input(args);
+            // Only mark handled if Avalonia consumed the event. Marking KeyDown as handled
+            // suppresses the subsequent CharacterReceived event, breaking text input.
+            if (args.Handled)
+                e.Handled = true;
         }
     }
 
@@ -383,10 +390,12 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         {
             var keyboard = GetKeyboardDevice();
             if (keyboard is null) return;
-            input(new RawKeyEventArgs(keyboard, (ulong)Environment.TickCount64, inputRoot,
+            var args = new RawKeyEventArgs(keyboard, (ulong)Environment.TickCount64, inputRoot,
                 RawKeyEventType.KeyUp, key, GetCurrentModifiers(),
-                PhysicalKey.None, null));
-            e.Handled = true;
+                PhysicalKey.None, null);
+            input(args);
+            if (args.Handled)
+                e.Handled = true;
         }
     }
 
