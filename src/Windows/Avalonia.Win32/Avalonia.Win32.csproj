@@ -3,6 +3,7 @@
     <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
+    <UseMicroComGeneratorRoslyn>true</UseMicroComGeneratorRoslyn>
   </PropertyGroup>
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
     <PackageReference Include="System.Numerics.Vectors" />
@@ -17,17 +18,14 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" />
-    <PackageReference Include="MicroCom.CodeGenerator.MSBuild" PrivateAssets="all" />
-    <MicroComIdl Include="WinRT\winrt.idl" CSharpInteropPath="WinRT\WinRT.Generated.cs" />
-    <MicroComIdl Include="Win32Com\win32.idl" CSharpInteropPath="Win32Com\Win32.Generated.cs" />
-    <MicroComIdl Include="DirectX\directx.idl" CSharpInteropPath="DirectX\directx.Generated.cs" />
-    <MicroComIdl Include="DComposition\dcomp.idl" CSharpInteropPath="DComposition\DComp.Generated.cs" />
     <ProjectReference Include="..\Avalonia.Win32.Automation\Avalonia.Win32.Automation.csproj" />
   </ItemGroup>
+  <Import Project="..\..\..\build\MicroCOM.props" />
   <Import Project="..\..\..\build\NullableEnable.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\SourceGenerators.props" />
   <ItemGroup>
+    <MicroComIdl Include="**/*.idl" />
     <Compile Remove="..\..\Shared\SourceGeneratorAttributes.cs" />
   </ItemGroup>
   <Import Project="..\..\..\build\TrimmingEnable.props" />

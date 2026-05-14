@@ -1423,6 +1423,52 @@ public class TabbedPageTests
         }
     }
 
+    public class SystemBackButtonTests : ScopedTestBase
+    {
+        private static RoutedEventArgs RaiseBackButton(Page dp)
+        {
+            var args = new RoutedEventArgs(Page.PageNavigationSystemBackButtonPressedEvent);
+            dp.RaiseEvent(args);
+            return args;
+        }
+
+        [Fact]
+        public void Back_Event_Is_Forwarded_To_Content()
+        {
+            var tp = new TestableTabbedPage();
+            var page1 = new ContentPage { Header = "Page1" };
+            var page2 = new ContentPage { Header = "Page2" };
+            var page3 = new ContentPage { Header = "Page3" };
+            var pages = new AvaloniaList<Page> { page1, page2, page3 };
+            tp.Pages = pages;
+
+            NotifyCollectionChangedEventArgs? received = null;
+            tp.PagesChanged += (_, e) => received = e;
+            bool isRaisedOnPage1 = false, isRaisedOnPage2 = false, isRaisedOnPage3 = false;
+            page1.PageNavigationSystemBackButtonPressed += (s, e) =>
+            {
+                isRaisedOnPage1 = true;
+            };
+            page2.PageNavigationSystemBackButtonPressed += (s, e) =>
+            {
+                isRaisedOnPage2 = true;
+            };
+            page3.PageNavigationSystemBackButtonPressed += (s, e) =>
+            {
+                isRaisedOnPage3 = true;
+            };
+            var root = new TestRoot { Child = tp };
+            tp.CallCommitSelection(1, page2);
+
+            var args = RaiseBackButton(tp);
+
+            Assert.False(isRaisedOnPage1);
+            Assert.True(isRaisedOnPage2);
+            Assert.False(isRaisedOnPage3);
+            Assert.False(args.Handled);
+        }
+    }
+
     private sealed class TestableTabbedPage : TabbedPage
     {
         public void CallCommitSelection(int index, Page? page) => CommitSelection(index, page);

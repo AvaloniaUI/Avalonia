@@ -38,6 +38,11 @@ namespace Avalonia.Media.TextFormatting
         public int Length => _glyphInfos.Length;
 
         /// <summary>
+        /// The buffer's glyph infos.
+        /// </summary>
+        internal ArraySlice<GlyphInfo> GlyphInfos => _glyphInfos;
+
+        /// <summary>
         /// The buffer's glyph typeface.
         /// </summary>
         public GlyphTypeface GlyphTypeface { get; }

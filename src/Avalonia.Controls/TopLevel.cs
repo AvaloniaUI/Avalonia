@@ -212,7 +212,7 @@ namespace Avalonia.Controls
             LogicalChildren.Add(hostVisual);
 
             _source = new PresentationSource(hostVisual, this,
-                impl, dependencyResolver, () => ClientSize);
+                impl, dependencyResolver);
             _source.Renderer.SceneInvalidated += SceneInvalidated;
 
             _scaling = LayoutHelper.ValidateScaling(impl.RenderScaling);
@@ -286,7 +286,7 @@ namespace Avalonia.Controls
 
             _backGestureSubscription = _inputManager?.PreProcess.Subscribe(e =>
             {
-                if (e.Root != this)
+                if (e.Root != InputRoot)
                     return;
 
                 bool backRequested = false;

@@ -98,6 +98,7 @@ namespace Avalonia.Controls
         private Thickness _offScreenMargin;
         private bool _canHandleResized = false;
         private Size _arrangeBounds;
+        private bool _isForcedDecorationMode;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -138,6 +139,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<WindowDecorations> WindowDecorationsProperty =
             AvaloniaProperty.Register<Window, WindowDecorations>(nameof(WindowDecorations), WindowDecorations.Full);
+
+        /// <summary>
+        /// Defines the <see cref="WindowDecorationsTheme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme?> WindowDecorationsThemeProperty =
+            AvaloniaProperty.Register<Window, ControlTheme?>(nameof(WindowDecorationsTheme));
 
         /// <summary>
         /// Defines the <see cref="ShowActivated"/> property.
@@ -219,6 +226,7 @@ namespace Avalonia.Controls
         private bool _positionWasSet;
         private bool _wasShownBefore;
         private IDisposable? _modalSubscription;
+        private PlatformAllowedWindowActions _allowedWindowActions = PlatformAllowedWindowActions.All;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -249,7 +257,13 @@ namespace Avalonia.Controls
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
-            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
+            impl.AllowedWindowActionsChanged = OnAllowedWindowActionsChanged;
+            _allowedWindowActions = impl.AllowedWindowActions;
+            this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x =>
+            {
+                ResizePlatformImpl(x, WindowResizeReason.Application);
+            });
+            ScalingChanged += OnScalingChangedUpdateDecorations;
 
             CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
             CreatePlatformImplBinding(IconProperty, SetEffectiveIcon);
@@ -368,6 +382,15 @@ namespace Avalonia.Controls
             set => SetValue(WindowDecorationsProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the theme used to render the window decorations when they are not drawn by the system.
+        /// </summary>
+        public ControlTheme? WindowDecorationsTheme
+        {
+            get => GetValue(WindowDecorationsThemeProperty);
+            set => SetValue(WindowDecorationsThemeProperty, value);
+        }
+
         [Obsolete("Use WindowDecorations instead.")]
         public WindowDecorations SystemDecorations
         {
@@ -479,6 +502,11 @@ namespace Avalonia.Controls
             get => GetValue(CanMaximizeProperty);
             set => SetValue(CanMaximizeProperty, value);
         }
+
+        /// <summary>
+        /// Gets the window actions currently allowed by the underlying platform.
+        /// </summary>
+        internal PlatformAllowedWindowActions AllowedWindowActions => _allowedWindowActions;
 
         /// <summary>
         /// Gets or sets the icon of the window.
@@ -668,7 +696,15 @@ namespace Avalonia.Controls
             UpdateDrawnDecorationParts();
         }
 
-        protected virtual void ExtendClientAreaToDecorationsChanged(bool isExtended)
+        internal event Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged;
+
+        private void OnAllowedWindowActionsChanged(PlatformAllowedWindowActions actions)
+        {
+            _allowedWindowActions = actions;
+            AllowedWindowActionsChanged?.Invoke(actions);
+        }
+
+        private void ExtendClientAreaToDecorationsChanged(bool isExtended)
         {
             IsExtendedIntoWindowDecorations = isExtended;
             OffScreenMargin = PlatformImpl?.OffScreenMargin ?? default;
@@ -679,7 +715,11 @@ namespace Avalonia.Controls
         private void UpdateDrawnDecorations()
         {
             var parts = ComputeDecorationParts();
-            TopLevelHost.UpdateDrawnDecorations(parts, WindowState);
+            
+            // Detect forced mode: platform needs managed decorations but app hasn't opted in
+            _isForcedDecorationMode = parts != null && !IsExtendedIntoWindowDecorations;
+
+            TopLevelHost.UpdateDrawnDecorations(parts, WindowState, WindowDecorationsTheme);
 
             if (parts != null)
             {
@@ -687,6 +727,8 @@ namespace Avalonia.Controls
                 var decorations = TopLevelHost.Decorations;
                 if (decorations != null)
                 {
+                    decorations.RenderScaling = RenderScaling;
+
                     var hint = ExtendClientAreaTitleBarHeightHint;
                     if (hint >= 0)
                         decorations.TitleBarHeightOverride = hint;
@@ -694,6 +736,13 @@ namespace Avalonia.Controls
             }
             
             UpdateDrawnDecorationMargins();
+        }
+
+        private void OnScalingChangedUpdateDecorations(object? sender, EventArgs e)
+        {
+            var decorations = TopLevelHost.Decorations;
+            if (decorations != null)
+                decorations.RenderScaling = RenderScaling;
         }
 
         /// <summary>
@@ -705,7 +754,7 @@ namespace Avalonia.Controls
             if (TopLevelHost.Decorations == null)
                 return;
 
-            TopLevelHost.UpdateDrawnDecorations(ComputeDecorationParts(), WindowState);
+            TopLevelHost.UpdateDrawnDecorations(ComputeDecorationParts(), WindowState, WindowDecorationsTheme);
         }
 
         private Chrome.DrawnWindowDecorationParts? ComputeDecorationParts()
@@ -753,7 +802,9 @@ namespace Avalonia.Controls
             var decorations = TopLevelHost.Decorations;
             if (decorations == null)
             {
+                // Only use platform margins if drawn decorations are not active
                 WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
+                TopLevelHost.DecorationInset = default;
                 return;
             }
 
@@ -764,11 +815,25 @@ namespace Avalonia.Controls
                 ? decorations.FrameThickness : default;
             var shadow = parts.HasFlag(Chrome.DrawnWindowDecorationParts.Shadow)
                 ? decorations.ShadowThickness : default;
-            WindowDecorationMargin = new Thickness(
+            var margin = new Thickness(
                 frame.Left + shadow.Left,
                 titleBarHeight + frame.Top + shadow.Top,
                 frame.Right + shadow.Right,
                 frame.Bottom + shadow.Bottom);
+
+            if (_isForcedDecorationMode)
+            {
+                // In forced mode, app is unaware of decorations.
+                // TopLevelHost insets the Window child; WindowDecorationMargin stays zero.
+                WindowDecorationMargin = default;
+                TopLevelHost.DecorationInset = margin;
+            }
+            else
+            {
+                // In extended mode, app handles the margin itself.
+                WindowDecorationMargin = margin;
+                TopLevelHost.DecorationInset = default;
+            }
         }
 
         private void OnTitleBarHeightHintChanged()
@@ -933,6 +998,15 @@ namespace Avalonia.Controls
                 // Enable drawn decorations before layout so margins are computed
                 UpdateDrawnDecorations();
                 
+                // In forced mode, adjust ClientSize to reflect usable content area
+                if (_isForcedDecorationMode)
+                {
+                    var inset = TopLevelHost.DecorationInset;
+                    ClientSize = new Size(
+                        Math.Max(0, ClientSize.Width - inset.Left - inset.Right),
+                        Math.Max(0, ClientSize.Height - inset.Top - inset.Bottom));
+                }
+                
                 _shown = true;
                 IsVisible = true;
 
@@ -978,10 +1052,18 @@ namespace Avalonia.Controls
 
                 DesktopScalingOverride = null;
 
-                if (clientSizeChanged || ClientSize != PlatformImpl?.ClientSize)
+                // In forced mode, compare against adjusted platform size
+                var platformClientSize = PlatformImpl?.ClientSize ?? default;
+                var comparableClientSize = _isForcedDecorationMode
+                    ? new Size(
+                        Math.Max(0, platformClientSize.Width - TopLevelHost.DecorationInset.Left - TopLevelHost.DecorationInset.Right),
+                        Math.Max(0, platformClientSize.Height - TopLevelHost.DecorationInset.Top - TopLevelHost.DecorationInset.Bottom))
+                    : platformClientSize;
+
+                if (clientSizeChanged || ClientSize != comparableClientSize)
                 {
                     // Previously it was called before ExecuteInitialLayoutPass
-                    PlatformImpl?.Resize(ClientSize, WindowResizeReason.Layout);
+                    ResizePlatformImpl(ClientSize, WindowResizeReason.Layout);
 
                     // we do not want PlatformImpl?.Resize to trigger HandleResized yet because it will set Width and Height.
                     // So perform some important actions from HandleResized
@@ -1035,6 +1117,22 @@ namespace Avalonia.Controls
 
                 return result;
             }
+        }
+
+        private void ResizePlatformImpl(Size size, WindowResizeReason reason)
+        {
+            // In forced mode, add decoration inset so platform gets full frame size
+            if (_isForcedDecorationMode)
+            {
+                var inset = TopLevelHost.DecorationInset;
+                size = new Size(
+                    size.Width + inset.Left + inset.Right,
+                    size.Height + inset.Top + inset.Bottom);
+                if (PlatformImpl?.ClientSize != size)
+                    PlatformImpl?.Resize(size, reason);
+            }
+            else
+                PlatformImpl?.Resize(size, reason);
         }
 
         /// <summary>
@@ -1272,6 +1370,14 @@ namespace Avalonia.Controls
         {
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
+            if (_isForcedDecorationMode)
+            {
+                clientSize = PlatformImpl?.ClientSize ?? clientSize;
+                var inset = TopLevelHost.DecorationInset;
+                clientSize = new Size(
+                    Math.Max(0, clientSize.Width - inset.Left - inset.Right),
+                    Math.Max(0, clientSize.Height - inset.Top - inset.Bottom));
+            }
             var maxAutoSize = PlatformImpl?.MaxAutoSizeHint ?? Size.Infinity;
             var useAutoWidth = sizeToContent.HasAllFlags(SizeToContent.Width);
             var useAutoHeight = sizeToContent.HasAllFlags(SizeToContent.Height);
@@ -1332,7 +1438,9 @@ namespace Avalonia.Controls
         {
             _arrangeBounds = size;
             if (_canHandleResized)
-                PlatformImpl?.Resize(size, WindowResizeReason.Layout);
+            {
+                ResizePlatformImpl(size, WindowResizeReason.Layout);
+            }
             return ClientSize;
         }
 
@@ -1350,6 +1458,16 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         internal override void HandleResized(Size clientSize, WindowResizeReason reason)
         {
+            // In forced decoration mode, the platform's clientSize includes decoration area.
+            // Subtract the decoration inset so Window.ClientSize reflects the usable content area.
+            if (_isForcedDecorationMode)
+            {
+                var inset = TopLevelHost.DecorationInset;
+                clientSize = new Size(
+                    Math.Max(0, clientSize.Width - inset.Left - inset.Right),
+                    Math.Max(0, clientSize.Height - inset.Top - inset.Bottom));
+            }
+
             if (_canHandleResized && (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height)))
             {
                 var sizeToContent = SizeToContent;
@@ -1390,11 +1508,17 @@ namespace Avalonia.Controls
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
+
             if (change.Property == WindowDecorationsProperty)
             {
                 var (_, typedNewValue) = change.GetOldAndNewValue<WindowDecorations>();
 
                 PlatformImpl?.SetWindowDecorations(typedNewValue);
+            }
+
+            else if (change.Property == WindowDecorationsThemeProperty)
+            {
+                UpdateDrawnDecorations();
             }
 
             else if (change.Property == OwnerProperty)

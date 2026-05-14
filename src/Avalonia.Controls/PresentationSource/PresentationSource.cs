@@ -23,10 +23,8 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
     public PresentationSource(InputElement rootVisual, InputElement defaultFocusVisual,
         ITopLevelImpl platformImpl,
-        IAvaloniaDependencyResolver dependencyResolver, Func<Size> clientSizeProvider)
+        IAvaloniaDependencyResolver dependencyResolver)
     {
-        _clientSizeProvider = clientSizeProvider;
-
         PlatformImpl = platformImpl;
 
 
@@ -146,14 +144,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
     WindowDecorationsElementRole? IInputRoot.HitTestChromeElement(Point point)
     {
-        // Check all visuals at the point (not just topmost) because chrome elements
-        // may be in the underlay layer which sits below the TopLevel in the visual tree.
-        foreach (var visual in RootVisual.GetVisualsAt(point, ChromeHitTestFilter))
-        {
-            var role = GetChromeRoleFromVisual(visual);
-            if (role != null)
-                return role;
-        }
-        return null;
+        var visual = RootVisual.GetVisualAt(point, ChromeHitTestFilter);
+        return GetChromeRoleFromVisual(visual);
     }
 }
