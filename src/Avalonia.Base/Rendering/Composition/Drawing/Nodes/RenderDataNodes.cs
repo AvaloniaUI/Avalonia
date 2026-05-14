@@ -14,7 +14,8 @@ enum RenderDataPopNodeType
     Clip,
     GeometryClip,
     Opacity,
-    OpacityMask
+    OpacityMask,
+    Effect
 }
 
 interface IRenderDataServerResourcesCollector
@@ -245,5 +246,49 @@ class RenderDataTextOptionsNode : RenderDataPushNode
     public override void Pop(ref RenderDataNodeRenderContext context)
     {
         context.Context.PopTextOptions();
+    }
+}
+
+/// <summary>
+/// A render data node that pushes an effect.
+/// </summary>
+class RenderDataEffectNode : RenderDataPushNode
+{
+    /// <summary>
+    /// Gets or sets the effect to push.
+    /// </summary>
+    public IEffect? Effect { get; set; }
+
+    /// <summary>
+    /// Gets or sets the bounds of the effect.
+    /// </summary>
+    public Rect BoundsRect { get; set; }
+
+    /// <inheritdoc />
+    public override Rect? Bounds
+    {
+        get
+        {
+            var bounds = base.Bounds;
+            if (bounds is null)
+                return null;
+            return Effect is { } effect
+                ? bounds.Value.Inflate(effect.GetEffectOutputPadding())
+                : bounds;
+        }
+    }
+
+    /// <inheritdoc />
+    public override void Push(ref RenderDataNodeRenderContext context)
+    {
+        if (Effect != null && context.Context is IDrawingContextImplWithEffects effectImpl)
+            effectImpl.PushEffect(BoundsRect, Effect);
+    }
+
+    /// <inheritdoc />
+    public override void Pop(ref RenderDataNodeRenderContext context)
+    {
+        if (Effect != null && context.Context is IDrawingContextImplWithEffects effectImpl)
+            effectImpl.PopEffect();
     }
 }
