@@ -132,16 +132,10 @@ namespace Avalonia.FreeDesktop
                 // Fire and forget
                 _ = _registrar?.UnregisterWindowAsync(_xid)?.ContinueWith(t =>
                 {
-                    try
+                    if (t.Exception != null)
                     {
-                        if (t.Exception != null)
-                        {
-                            Logger.TryGet(LogEventLevel.Warning, LogArea.Platform)
-                                ?.Log(this, "DBusMenu UnregisterWindowAsync failed: {Exception}", t.Exception);
-                        }
-                    }
-                    catch
-                    {
+                        Logger.TryGet(LogEventLevel.Warning, LogArea.Platform)
+                            ?.Log(this, "DBusMenu UnregisterWindowAsync failed: {Exception}", t.Exception);
                     }
                 }, TaskContinuationOptions.OnlyOnFaulted);
                 _pathHandler.Remove(this);
