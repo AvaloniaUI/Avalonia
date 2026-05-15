@@ -349,17 +349,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         break;
                     case BindingExpressionGrammar.NameNode elementName:
                         IXamlType? elementType = null, dataType = null;
+                        (elementType, dataType) = ScopeRegistrationFinder.GetTargetType(context.ParentNodes().Last(), elementName.Name) ?? default;
+
                         foreach (var deferredContent in context.ParentNodes().OfType<NestedScopeMetadataNode>())
                         {
+                            if (!(elementType is null))
+                            {
+                                break;
+                            }
+
                             (elementType, dataType) = ScopeRegistrationFinder.GetTargetType(deferredContent, elementName.Name) ?? default;
                             if (!(elementType is null))
                             {
                                 break;
                             }
-                        }
-                        if (elementType is null)
-                        {
-                            (elementType, dataType) = ScopeRegistrationFinder.GetTargetType(context.ParentNodes().Last(), elementName.Name) ?? default;
                         }
 
                         if (elementType is null)
@@ -506,17 +509,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 // Ignore name registrations, if we are inside of the nested namescope.
                 if (_childScopesStack.Count == 0)
                 {
-                    if (node is AvaloniaNameScopeRegistrationXamlIlNode registration
+                    if (TargetType is null
+                        && node is AvaloniaNameScopeRegistrationXamlIlNode registration
                         && registration.Name is XamlAstTextNode text && text.Text == Name)
                     {
                         TargetType = registration.TargetType;
-                    }
-                    // We are visiting nodes top to bottom.
-                    // If we have already found target type by its name,
-                    // it means all next nodes will be below, and not applicable for data context inheritance.
-                    else if (TargetType is null && node is AvaloniaXamlIlDataContextTypeMetadataNode dataContextTypeMetadata)
-                    {
-                        DataContextType = dataContextTypeMetadata.DataContextType;
+                        DataContextType = _stack
+                            .OfType<AvaloniaXamlIlDataContextTypeMetadataNode>()
+                            .FirstOrDefault()
+                            ?.DataContextType;
                     }
                 }
                 return node;

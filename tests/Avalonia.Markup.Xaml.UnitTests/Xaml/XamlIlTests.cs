@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
@@ -425,6 +426,54 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 Assert.Equal((IEnumerable<string>)["a", "b", "c"], parsed.MyProp.Select(x => x.Value));
             }
         }
+
+        [Fact]
+        public void Compiled_Binding_Should_Resolve_Named_Root_DataContext_In_ItemTemplate()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parsed = (ListBox)AvaloniaRuntimeXamlLoader.Parse(@"
+<ListBox Name='ListBoxRoot' ItemsSource='{CompiledBinding Items}'
+    xmlns='https://github.com/avaloniaui'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+    x:DataType='local:CompiledBindingRootMock'>
+    <ListBox.ItemTemplate>
+        <DataTemplate x:DataType='local:CompiledBindingItemMock'>
+            <TextBlock Text='{CompiledBinding #ListBoxRoot.DataContext.RootProperty}' />
+        </DataTemplate>
+    </ListBox.ItemTemplate>
+</ListBox>");
+                Assert.NotNull(parsed.ItemTemplate);
+            }
+        }
+
+        [Fact]
+        public void Compiled_Binding_Should_Resolve_Root_Command_From_Nested_ItemTemplate_Namescope()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                 var parsed = (ListBox)AvaloniaRuntimeXamlLoader.Parse(@"
+<ListBox Name='ListBoxRoot' ItemsSource='{CompiledBinding Items}'
+    xmlns='https://github.com/avaloniaui'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+    x:DataType='local:CompiledBindingRootMock'>
+    <ListBox.ItemTemplate>
+        <DataTemplate x:DataType='local:CompiledBindingItemMock'>
+            <ListBox ItemsSource='{CompiledBinding InnerItems}'>
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType='local:CompiledBindingItemMock'>
+                        <TextBlock Text='{CompiledBinding #ListBoxRoot.DataContext.RootProperty}' />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DataTemplate>
+    </ListBox.ItemTemplate>
+</ListBox>");
+                Assert.NotNull(parsed.ItemTemplate);
+            }
+        }
     }
 
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
@@ -554,5 +603,18 @@ namespace Avalonia.Markup.Xaml.UnitTests
             set => SetValue(MyPropProperty, value);
         }
         
+    }
+
+    public class CompiledBindingRootMock : UserControl
+    {
+        public string Greeting => "Hello";
+        public string RootProperty => "RootValue";
+        public IReadOnlyList<CompiledBindingItemMock> Items { get; } = [new() { Name = "Outer", InnerItems = [new() { Name = "Inner" }] }];
+    }
+
+    public class CompiledBindingItemMock
+    {
+        public string Name { get; set; } = string.Empty;
+        public IReadOnlyList<CompiledBindingItemMock> InnerItems { get; set; } = Array.Empty<CompiledBindingItemMock>();
     }
 }
