@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -9,6 +10,40 @@ namespace Avalonia.Controls.UnitTests
 {
     public class SelectableTextBlockTests : ScopedTestBase
     {
+        [Theory]
+        [InlineData(TextAlignment.Center)]
+        [InlineData(TextAlignment.Right)]
+        public void Dragging_Selection_Should_Reach_End_Of_Text_When_Text_Is_Aligned(TextAlignment textAlignment)
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Width = 200,
+                    Text = "Aligned text",
+                    TextAlignment = textAlignment
+                };
+
+                var root = new TestRoot(target)
+                {
+                    ClientSize = new Size(300, 100)
+                };
+
+                root.Measure(root.ClientSize);
+                root.Arrange(new Rect(root.ClientSize));
+                root.ExecuteInitialLayoutPass();
+
+                var line = target.TextLayout.TextLines[0];
+                var mouse = new MouseTestHelper();
+                var y = target.Bounds.Height / 2;
+
+                mouse.Down(target, position: new Point(line.Start, y));
+                mouse.Move(target, new Point(target.Bounds.Width - 1, y));
+
+                Assert.Equal(target.Text!.Length, Math.Max(target.SelectionStart, target.SelectionEnd));
+            }
+        }
+
         [Fact]
         public void SelectionForeground_Should_Not_Reset_Run_Typeface_And_Style()
         {
