@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Collections.Pooled;
 using Avalonia.VisualTree;
@@ -32,8 +31,7 @@ namespace Avalonia.Rendering.Composition
         /// <returns></returns>
         public PooledList<CompositionVisual>? TryHitTest(Point point, CompositionVisual? root, Func<CompositionVisual, bool>? filter)
         {
-            var readbackUpdates = Server.Compositor.Readback.NextRead();
-            ProcessHitTestReadbackUpdates(readbackUpdates);
+            Server.Compositor.Readback.NextRead();
 
             root ??= Root;
             if (root == null)
@@ -50,18 +48,6 @@ namespace Avalonia.Rendering.Composition
             var res = new PooledList<CompositionVisual>();
             HitTestCore(root, point, res, filter);
             return res;
-        }
-
-        private static void ProcessHitTestReadbackUpdates(IReadOnlyList<WeakReference<CompositionVisual>> readbackUpdates)
-        {
-            foreach (var weakVisual in readbackUpdates)
-            {
-                if (!weakVisual.TryGetTarget(out var visual))
-                    continue;
-
-                if (visual.Parent is CompositionContainerVisual parent)
-                    parent.UpdateHitTestChildBounds(visual);
-            }
         }
 
         private PooledList<CompositionVisual> RentHitTestChildCandidates(out bool releaseToField)
@@ -165,8 +151,7 @@ namespace Avalonia.Rendering.Composition
 
         public CompositionVisual? TryHitTestFirst(Point point, CompositionVisual? root, Func<CompositionVisual, bool>? filter, Func<CompositionVisual, bool>? resultFilter)
         {
-            var readbackUpdates = Server.Compositor.Readback.NextRead();
-            ProcessHitTestReadbackUpdates(readbackUpdates);
+            Server.Compositor.Readback.NextRead();
 
             root ??= Root;
             if (root == null)

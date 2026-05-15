@@ -100,8 +100,6 @@ partial class ServerCompositionVisual
         slot.TargetId = Root?.Id ?? -1;
         slot.TransformedSubtreeBounds = _transformedSubTreeBounds;
         slot.Visible = Visible;
-
-        Compositor.Readback.AddHitTestUpdate(Client);
     }
     
 

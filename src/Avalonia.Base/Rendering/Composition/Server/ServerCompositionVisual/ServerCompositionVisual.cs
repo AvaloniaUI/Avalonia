@@ -20,7 +20,6 @@ namespace Avalonia.Rendering.Composition.Server
     {
         public ServerCompositionVisualCollection? Children { get; private set; } = null!;
         public ServerCompositionVisualCache? Cache { get; private set; }
-        internal WeakReference<CompositionVisual>? Client { get; set; }
 
         partial void OnRootChanging()
         {

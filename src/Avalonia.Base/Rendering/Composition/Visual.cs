@@ -20,11 +20,6 @@ namespace Avalonia.Rendering.Composition
         {
         }
 
-        partial void InitializeDefaultsExtra()
-        {
-            Server.Client = new WeakReference<CompositionVisual>(this);
-        }
-
         partial void OnRootChanged() => OnRootChangedCore();
 
         partial void OnParentChanging()

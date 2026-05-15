@@ -15,6 +15,7 @@ internal sealed class CompositionHitTestAabbTree
     private const double FatBoundsPadding = 1;
     private static readonly CandidateComparer s_candidateComparer = new();
 
+    private readonly CompositionVisualCollection _children;
     private readonly Dictionary<CompositionVisual, Entry> _entries = [];
     private readonly List<Bucket> _buckets = [];
     private readonly List<Node> _nodes = [];
@@ -22,6 +23,8 @@ internal sealed class CompositionHitTestAabbTree
 
     public CompositionHitTestAabbTree(CompositionVisualCollection children)
     {
+        _children = children;
+
         for (var i = 0; i < children.Count; i++)
             Update(children[i], i);
     }
@@ -38,56 +41,18 @@ internal sealed class CompositionHitTestAabbTree
     {
         ref var entry = ref CollectionsMarshal.GetValueRefOrAddDefault(_entries, visual, out var exists);
         if (!exists)
+        {
+            var bucketIndex = GetBucketIndex(order);
             entry = new Entry(order);
-
-        var oldOrder = entry.Order;
-        entry.Order = order;
-
-        if (entry.Leaf != Null)
+            GetOrCreateBucket(bucketIndex);
+        }
+        else if (entry.Order != order)
         {
-            var state = GetBoundsState(visual, out var bounds);
-
-            if (state == BoundsState.Bounded)
-            {
-                UpdateLeaf(entry.Leaf, bounds, order);
-            }
-            else
-            {
-                DestroyLeaf(entry.Leaf);
-                entry.Leaf = Null;
-                if (state == BoundsState.Unbounded)
-                    AddUnbounded(visual, order, ref entry);
-            }
-
-            return;
+            UpdateOrderCore(visual, ref entry, order);
         }
 
-        if (entry.IsUnbounded)
-        {
-            var state = GetBoundsState(visual, out var bounds);
-
-            if (state == BoundsState.Unbounded)
-            {
-                MoveUnbounded(visual, oldOrder, order);
-                return;
-            }
-
-            RemoveUnbounded(visual, oldOrder);
-            entry.IsUnbounded = false;
-
-            if (state == BoundsState.Bounded)
-                entry.Leaf = CreateLeaf(visual, bounds, order);
-
-            return;
-        }
-
-        Add(visual, order, ref entry);
-    }
-
-    public void UpdateBounds(CompositionVisual visual)
-    {
-        if (_entries.TryGetValue(visual, out var entry))
-            Update(visual, entry.Order);
+        var state = GetBoundsState(visual, out var bounds, out var revision);
+        UpdateBounds(visual, ref entry, state, bounds, revision);
     }
 
     public void Remove(CompositionVisual visual)
@@ -96,13 +61,11 @@ internal sealed class CompositionHitTestAabbTree
             return;
 
         if (entry.Leaf != Null)
-        {
             DestroyLeaf(entry.Leaf);
-            return;
-        }
-
-        if (entry.IsUnbounded)
+        else if (entry.IsUnbounded)
             RemoveUnbounded(visual, entry.Order);
+
+        RemoveBucketIfEmpty(GetBucketIndex(entry.Order));
     }
 
     public void UpdateOrder(CompositionVisual visual, int order)
@@ -114,20 +77,34 @@ internal sealed class CompositionHitTestAabbTree
             return;
         }
 
+        if (entry.Order != order)
+            UpdateOrderCore(visual, ref entry, order);
+    }
+
+    private void UpdateOrderCore(CompositionVisual visual, ref Entry entry, int order)
+    {
         var oldOrder = entry.Order;
+        var oldBucket = GetBucketIndex(oldOrder);
+        var newBucket = GetBucketIndex(order);
         entry.Order = order;
 
         if (entry.Leaf != Null)
         {
-            MoveLeafToOrder(entry.Leaf, order);
+            MoveLeaf(entry.Leaf, order);
             return;
         }
 
         if (entry.IsUnbounded)
+        {
             MoveUnbounded(visual, oldOrder, order);
+            return;
+        }
+
+        if (oldBucket != newBucket)
+            RemoveBucketIfEmpty(oldBucket);
     }
 
-    public void Query(Point point, PooledList<CompositionVisual> results)
+    public void Query(Point point, PooledList<CompositionVisual> results, ulong readbackRevision)
     {
         var candidates = ArrayPool<Candidate>.Shared.Rent(OrderBucketSize);
         var stack = ArrayPool<int>.Shared.Rent(16);
@@ -137,30 +114,32 @@ internal sealed class CompositionHitTestAabbTree
         {
             for (var i = _buckets.Count - 1; i >= 0; i--)
             {
+                UpdateBucket(i, readbackRevision);
+
                 var bucket = _buckets[i];
-                if (bucket.IsEmpty)
+                if (bucket.Root == Null && bucket.Unbounded is not { Count: > 0 })
                     continue;
 
                 candidateCount = 0;
                 var stackCount = 0;
                 QueryBucket(bucket, point, ref candidates, ref candidateCount, ref stack, ref stackCount);
-                Array.Sort(candidates, 0, candidateCount, s_candidateComparer);
+                candidates.AsSpan(0, candidateCount).Sort(s_candidateComparer);
 
                 for (var j = 0; j < candidateCount; j++)
                     results.Add(candidates[j].Visual);
 
-                Array.Clear(candidates, 0, candidateCount);
+                candidates.AsSpan(0, candidateCount).Clear();
             }
         }
         finally
         {
-            Array.Clear(candidates, 0, candidateCount);
+            candidates.AsSpan(0, candidateCount).Clear();
             ArrayPool<Candidate>.Shared.Return(candidates);
             ArrayPool<int>.Shared.Return(stack);
         }
     }
 
-    public CompositionVisual? QueryFirst(CompositionTarget target, Point point, Func<CompositionVisual, bool>? filter, Func<CompositionVisual, bool>? resultFilter)
+    public CompositionVisual? QueryFirst(CompositionTarget target, Point point, Func<CompositionVisual, bool>? filter, Func<CompositionVisual, bool>? resultFilter, ulong readbackRevision)
     {
         var candidates = ArrayPool<Candidate>.Shared.Rent(OrderBucketSize);
         var stack = ArrayPool<int>.Shared.Rent(16);
@@ -170,14 +149,16 @@ internal sealed class CompositionHitTestAabbTree
         {
             for (var i = _buckets.Count - 1; i >= 0; i--)
             {
+                UpdateBucket(i, readbackRevision);
+
                 var bucket = _buckets[i];
-                if (bucket.IsEmpty)
+                if (bucket.Root == Null && bucket.Unbounded is not { Count: > 0 })
                     continue;
 
                 candidateCount = 0;
                 var stackCount = 0;
                 QueryBucket(bucket, point, ref candidates, ref candidateCount, ref stack, ref stackCount);
-                Array.Sort(candidates, 0, candidateCount, s_candidateComparer);
+                candidates.AsSpan(0, candidateCount).Sort(s_candidateComparer);
 
                 for (var j = 0; j < candidateCount; j++)
                 {
@@ -186,12 +167,12 @@ internal sealed class CompositionHitTestAabbTree
                         return hit;
                 }
 
-                Array.Clear(candidates, 0, candidateCount);
+                candidates.AsSpan(0, candidateCount).Clear();
             }
         }
         finally
         {
-            Array.Clear(candidates, 0, candidateCount);
+            candidates.AsSpan(0, candidateCount).Clear();
             ArrayPool<Candidate>.Shared.Return(candidates);
             ArrayPool<int>.Shared.Return(stack);
         }
@@ -199,14 +180,65 @@ internal sealed class CompositionHitTestAabbTree
         return null;
     }
 
-    private void Add(CompositionVisual visual, int order, ref Entry entry)
+    private void UpdateBucket(int bucketIndex, ulong readbackRevision)
     {
-        var state = GetBoundsState(visual, out var bounds);
+        ref var bucket = ref GetRef(_buckets, bucketIndex);
+        if (bucket.ReadbackRevision == readbackRevision)
+            return;
+
+        var end = Math.Min(_children.Count, (bucketIndex + 1) * OrderBucketSize);
+        for (var i = bucketIndex * OrderBucketSize; i < end; i++)
+        {
+            var visual = _children[i];
+            ref var entry = ref CollectionsMarshal.GetValueRefOrNullRef(_entries, visual);
+
+            var state = GetBoundsState(visual, out var bounds, out var revision);
+            if (entry.Revision != revision)
+                UpdateBounds(visual, ref entry, state, bounds, revision);
+        }
+
+        bucket.ReadbackRevision = readbackRevision;
+    }
+
+    private void UpdateBounds(CompositionVisual visual, ref Entry entry, BoundsState state, LtrbRect bounds, ulong revision)
+    {
+        entry.Revision = revision;
+
+        if (entry.Leaf != Null)
+        {
+            if (state == BoundsState.Bounded)
+            {
+                UpdateLeaf(entry.Leaf, bounds, entry.Order);
+            }
+            else
+            {
+                DestroyLeaf(entry.Leaf);
+                entry.Leaf = Null;
+                if (state == BoundsState.Unbounded)
+                    AddUnbounded(visual, entry.Order, ref entry);
+            }
+
+            return;
+        }
+
+        if (entry.IsUnbounded)
+        {
+            if (state == BoundsState.Unbounded)
+                return;
+
+            RemoveUnbounded(visual, entry.Order);
+            entry.IsUnbounded = false;
+
+            if (state == BoundsState.Bounded)
+                entry.Leaf = CreateLeaf(visual, bounds, entry.Order);
+
+            return;
+        }
 
         if (state == BoundsState.Bounded)
-            entry.Leaf = CreateLeaf(visual, bounds, order);
+            entry.Leaf = CreateLeaf(visual, bounds, entry.Order);
         else if (state == BoundsState.Unbounded)
-            AddUnbounded(visual, order, ref entry);
+            AddUnbounded(visual, entry.Order, ref entry);
     }
 
     private void QueryBucket(Bucket bucket, Point point, ref Candidate[] candidates, ref int candidateCount, ref int[] stack, ref int stackCount)
@@ -261,17 +293,12 @@ internal sealed class CompositionHitTestAabbTree
     private static void Resize<T>(ref T[] buffer, int count)
     {
         var resized = ArrayPool<T>.Shared.Rent(buffer.Length * 2);
-        Array.Copy(buffer, resized, count);
+        buffer.AsSpan(0, count).CopyTo(resized);
         ArrayPool<T>.Shared.Return(buffer, RuntimeHelpers.IsReferenceOrContainsReferences<T>());
         buffer = resized;
     }
 
-    private static int GetBucketIndex(int order)
-    {
-        if (order <= 0)
-            return 0;
-        return order / OrderBucketSize;
-    }
+    private static int GetBucketIndex(int order) => order / OrderBucketSize;
 
     private ref Bucket GetOrCreateBucket(int bucketIndex)
     {
@@ -286,13 +313,16 @@ internal sealed class CompositionHitTestAabbTree
         if (bucketIndex >= _buckets.Count)
             return;
 
+        var lastRequiredBucketIndex = _children.Count == 0 ? Null : GetBucketIndex(_children.Count - 1);
         bool removeTrailingBucket;
         {
             ref var bucket = ref GetRef(_buckets, bucketIndex);
             if (bucket.Unbounded?.Count == 0)
                 bucket.Unbounded = null;
 
-            removeTrailingBucket = bucket.IsEmpty && bucketIndex == _buckets.Count - 1;
+            removeTrailingBucket = bucket.IsEmpty &&
+                bucketIndex == _buckets.Count - 1 &&
+                bucketIndex > lastRequiredBucketIndex;
         }
 
         if (!removeTrailingBucket)
@@ -301,7 +331,9 @@ internal sealed class CompositionHitTestAabbTree
         do
         {
             _buckets.RemoveAt(_buckets.Count - 1);
-        } while (_buckets.Count > 0 && _buckets[^1].IsEmpty);
+        } while (_buckets.Count > 0 &&
+                 _buckets.Count - 1 > lastRequiredBucketIndex &&
+                 _buckets[^1].IsEmpty);
     }
 
     private static ref T GetRef<T>(List<T> items, int index) => ref CollectionsMarshal.AsSpan(items)[index];
@@ -355,7 +387,7 @@ internal sealed class CompositionHitTestAabbTree
         InsertLeaf(leaf);
     }
 
-    private void MoveLeafToOrder(int leaf, int order)
+    private void MoveLeaf(int leaf, int order)
     {
         var bucket = GetBucketIndex(order);
 
@@ -542,8 +574,8 @@ internal sealed class CompositionHitTestAabbTree
         if (grandParent != Null)
         {
             // Before: grandParent        After: grandParent
-            //             |                       |
-            //           parent                 sibling
+            //             |                         |
+            //           parent                   sibling
             //           /    \
             //        leaf  sibling
             ref var grandParentNode = ref GetRef(_nodes, grandParent);
@@ -736,7 +768,7 @@ internal sealed class CompositionHitTestAabbTree
     {
         if (parent == Null)
         {
-            ref var bucket = ref GetOrCreateBucket(GetRef(_nodes, newChild).Bucket);
+            ref var bucket = ref GetRef(_buckets, GetRef(_nodes, newChild).Bucket);
             bucket.Root = newChild;
             return;
         }
@@ -772,27 +804,23 @@ internal sealed class CompositionHitTestAabbTree
     private void RemoveUnbounded(CompositionVisual visual, int order)
     {
         var bucketIndex = GetBucketIndex(order);
-        if (bucketIndex >= _buckets.Count)
-            return;
-
         {
             ref var bucket = ref GetRef(_buckets, bucketIndex);
-            if (bucket.Unbounded == null)
-                return;
-
-            bucket.Unbounded.Remove(visual);
+            bucket.Unbounded!.Remove(visual);
         }
 
         RemoveBucketIfEmpty(bucketIndex);
     }
 
-    private static BoundsState GetBoundsState(CompositionVisual visual, out LtrbRect bounds)
+    private static BoundsState GetBoundsState(CompositionVisual visual, out LtrbRect bounds, out ulong revision)
     {
         bounds = default;
+        revision = 0;
 
         var readback = visual.TryGetValidReadback();
         if (readback == null)
             return BoundsState.Empty;
+        revision = readback.Revision;
 
         if (visual.DisableSubTreeBoundsHitTestOptimization)
             return BoundsState.Unbounded;
@@ -839,6 +867,7 @@ internal sealed class CompositionHitTestAabbTree
     {
         public int Root = root;
         public List<CompositionVisual>? Unbounded = null;
+        public ulong ReadbackRevision;
 
         public readonly bool IsEmpty => Root == Null && (Unbounded == null || Unbounded.Count == 0);
     }
@@ -847,6 +876,7 @@ internal sealed class CompositionHitTestAabbTree
     {
         public int Order = order;
         public int Leaf = Null;
+        public ulong Revision;
         public bool IsUnbounded;
     }
 

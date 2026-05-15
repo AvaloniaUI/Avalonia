@@ -53,20 +53,6 @@ namespace Avalonia.Rendering.Composition
             _hitTestChildren?.Clear();
         }
 
-        internal void UpdateHitTestChildBounds(CompositionVisual child)
-        {
-            if (_hitTestChildren == null)
-                return;
-
-            if (Children.Count < HitTestAabbTreeThreshold)
-            {
-                _hitTestChildren = null;
-                return;
-            }
-
-            _hitTestChildren.UpdateBounds(child);
-        }
-
         internal bool TryQueryHitTestChildren(Point point, PooledList<CompositionVisual> results)
         {
             if (Children.Count < HitTestAabbTreeThreshold)
@@ -77,7 +63,7 @@ namespace Avalonia.Rendering.Composition
 
             _hitTestChildren ??= new CompositionHitTestAabbTree(Children);
 
-            _hitTestChildren.Query(point, results);
+            _hitTestChildren.Query(point, results, Server.Compositor.Readback.ReadRevision);
             return true;
         }
 
@@ -92,7 +78,7 @@ namespace Avalonia.Rendering.Composition
 
             _hitTestChildren ??= new CompositionHitTestAabbTree(Children);
 
-            hit = _hitTestChildren.QueryFirst(target, point, filter, resultFilter);
+            hit = _hitTestChildren.QueryFirst(target, point, filter, resultFilter, Server.Compositor.Readback.ReadRevision);
             return true;
         }
 
