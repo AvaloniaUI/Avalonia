@@ -41,6 +41,23 @@ internal class RadioButtonGroupManager
                 _registeredGroups.Add(groupName, group);
             }
 
+            int i = 0;
+            while (i < group.Count)
+            {
+                if (!group[i].TryGetTarget(out var current))
+                {
+                    group.RemoveAt(i);
+                    continue;
+                }
+
+                if (current == radioButton)
+                {
+                    return;
+                }
+
+                i++;
+            }
+
             group.Add(new WeakReference<IRadioButton>(radioButton));
         }
     }
