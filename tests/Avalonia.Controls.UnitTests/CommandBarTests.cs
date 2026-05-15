@@ -905,7 +905,7 @@ public class CommandBarLabelPositionTests : ScopedTestBase
     }
 
     [Fact]
-    public void DefaultLabelPosition_Collapsed_AppliesToSecondaryCommands()
+    public void DefaultLabelPosition_Collapsed_DoesNotCompactSecondaryCommands()
     {
         var cb = new CommandBar();
         var btn = new CommandBarButton();
@@ -913,7 +913,84 @@ public class CommandBarLabelPositionTests : ScopedTestBase
 
         cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
 
-        Assert.True(btn.IsCompact);
+        Assert.True(btn.IsInOverflow);
+        Assert.False(btn.IsCompact);
+        Assert.Equal(CommandBarDefaultLabelPosition.Right, btn.LabelPosition);
+    }
+
+    [Fact]
+    public void NewSecondaryCommand_GetsOverflowLabelPosition_WhenAlreadyCollapsed()
+    {
+        var cb = new CommandBar { DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed };
+
+        var btn = new CommandBarButton();
+        cb.SecondaryCommands!.Add(btn);
+
+        Assert.True(btn.IsInOverflow);
+        Assert.False(btn.IsCompact);
+        Assert.Equal(CommandBarDefaultLabelPosition.Right, btn.LabelPosition);
+    }
+
+    [Fact]
+    public void DefaultLabelPosition_Collapsed_DoesNotCompactSecondaryToggleButton()
+    {
+        var cb = new CommandBar();
+        var toggle = new CommandBarToggleButton();
+        cb.SecondaryCommands!.Add(toggle);
+
+        cb.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
+
+        Assert.True(toggle.IsInOverflow);
+        Assert.False(toggle.IsCompact);
+        Assert.Equal(CommandBarDefaultLabelPosition.Right, toggle.LabelPosition);
+    }
+
+    [Fact]
+    public void DefaultLabelPosition_Collapsed_DoesNotCompactOverflowedPrimaryCommand()
+    {
+        var cb = new CommandBar
+        {
+            DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed,
+            IsDynamicOverflowEnabled = true
+        };
+        cb.Measure(new Size(81, double.PositiveInfinity));
+
+        var visible = new CommandBarButton();
+        var overflowed = new CommandBarButton();
+        cb.PrimaryCommands!.Add(visible);
+        cb.PrimaryCommands!.Add(overflowed);
+
+        Assert.Contains(visible, cb.VisiblePrimaryCommands);
+        Assert.True(visible.IsCompact);
+        Assert.Equal(CommandBarDefaultLabelPosition.Collapsed, visible.LabelPosition);
+        Assert.Contains(overflowed, cb.OverflowItems);
+        Assert.True(overflowed.IsInOverflow);
+        Assert.False(overflowed.IsCompact);
+        Assert.Equal(CommandBarDefaultLabelPosition.Right, overflowed.LabelPosition);
+    }
+
+    [Fact]
+    public void OverflowedPrimaryCommand_ReappliesDefaultLabelPosition_WhenRestored()
+    {
+        var cb = new CommandBar
+        {
+            DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed,
+            IsDynamicOverflowEnabled = true
+        };
+        cb.Measure(new Size(81, double.PositiveInfinity));
+
+        var visible = new CommandBarButton();
+        var overflowed = new CommandBarButton();
+        cb.PrimaryCommands!.Add(visible);
+        cb.PrimaryCommands!.Add(overflowed);
+        Assert.Contains(overflowed, cb.OverflowItems);
+
+        cb.Measure(new Size(400, double.PositiveInfinity));
+
+        Assert.Contains(overflowed, cb.VisiblePrimaryCommands);
+        Assert.False(overflowed.IsInOverflow);
+        Assert.True(overflowed.IsCompact);
+        Assert.Equal(CommandBarDefaultLabelPosition.Collapsed, overflowed.LabelPosition);
     }
 
     [Fact]

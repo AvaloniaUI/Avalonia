@@ -25,6 +25,16 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             Setters = { new Setter(TextBlock.FontFamilyProperty, TestFontFamily) }
         };
 
+        private static Style OverflowLabelRectStyle => new Style(x => x.OfType<CommandBarButton>().Template().Name("PART_Label"))
+        {
+            Setters =
+            {
+                new Setter(TextBlock.WidthProperty, 50d),
+                new Setter(TextBlock.HeightProperty, 10d),
+                new Setter(TextBlock.BackgroundProperty, Brushes.Black),
+            }
+        };
+
         [Fact]
         public async Task CommandBar_Default_PrimaryCommands()
         {
@@ -142,5 +152,42 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
+
+        [Fact]
+        public async Task CommandBarButton_Overflow_ShowsLabel_WhenCompact()
+        {
+            var target = new Decorator
+            {
+                Width = 180,
+                Height = 46,
+                Child = new Border
+                {
+                    Background = Brushes.LightGray,
+                    Padding = new Thickness(4),
+                    Child = new CommandBarButton
+                    {
+                        Label = string.Empty,
+                        IsCompact = true,
+                        IsInOverflow = true,
+                        LabelPosition = CommandBarDefaultLabelPosition.Right,
+                        Icon = new Path
+                        {
+                            Data = StreamGeometry.Parse("M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"),
+                            Fill = Brushes.Black,
+                            Width = 16,
+                            Height = 16,
+                            Stretch = Stretch.Uniform
+                        }
+                    }
+                }
+            };
+
+            target.Styles.Add(new SimpleTheme());
+            target.Styles.Add(FontStyle);
+            target.Styles.Add(OverflowLabelRectStyle);
+            await RenderToFile(target);
+            CompareImages(skipImmediate: true);
+        }
+
     }
 }
