@@ -105,7 +105,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var runClusters = shapedRun.ShapedBuffer.Select(glyph => glyph.GlyphCluster + runOffset);
 
-                    clusters.AddRange(shapedRun.IsReversed ? runClusters.Reverse() : runClusters);
+                    clusters.AddRange(shapedRun.ShapedBuffer.IsLeftToRight ? runClusters : runClusters.Reverse());
                 }
 
                 var nextCharacterHit = new CharacterHit(0, clusters[1] - clusters[0]);
@@ -155,7 +155,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var runClusters = shapedRun.ShapedBuffer.Select(glyph => glyph.GlyphCluster + runOffset);
 
-                    clusters.AddRange(shapedRun.IsReversed ? runClusters.Reverse() : runClusters);
+                    clusters.AddRange(shapedRun.ShapedBuffer.IsLeftToRight ? runClusters : runClusters.Reverse());
                 }
 
                 clusters.Reverse();

@@ -561,6 +561,47 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Radio_MenuItem_In_Same_Group_In_MenuFlyout_Is_Unchecked()
+        {
+            using var app = Application();
+
+            var menuItem1 = new MenuItem
+            {
+                GroupName = "A",
+                IsChecked = true,
+                StaysOpenOnClick = true,
+                ToggleType = MenuItemToggleType.Radio,
+            };
+            var menuItem2 = new MenuItem
+            {
+                GroupName = "A",
+                IsChecked = false,
+                StaysOpenOnClick = true,
+                ToggleType = MenuItemToggleType.Radio,
+            };
+
+            var flyout = new MenuFlyout
+            {
+                Items =
+                {
+                    menuItem1,
+                    menuItem2,
+                }
+            };
+            var button = new Button { ContextFlyout = flyout };
+            var window = new Window { Content = button };
+
+            window.Show();
+            flyout.ShowAt(button);
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded, TestContext.Current.CancellationToken);
+
+            menuItem2.IsChecked = true;
+
+            Assert.False(menuItem1.IsChecked);
+            Assert.True(menuItem2.IsChecked);
+        }
+
+        [Fact]
         public void Radio_Menu_Group_Can_Be_Changed_In_Runtime()
         {
             using var app = Application();
