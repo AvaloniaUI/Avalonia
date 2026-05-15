@@ -61,14 +61,26 @@ namespace Avalonia.X11
             _cursors = new Dictionary<StandardCursorType, IntPtr>();
         }
 
+        // We don't have a "DragNo" standard cursor type, but Xcursor provides one
+        public IntPtr DragNoDropCursorHandle
+        {
+            get
+            {
+                if (field == 0)
+                    field = LoadDragNoDropCursor();
+                return field;
+            }
+        }
+
         public ICursorImpl GetCursor(StandardCursorType cursorType)
         {
-            IntPtr handle;
-            if (cursorType == StandardCursorType.None)
-                handle = _nullCursor;
-            else
-                handle = GetCursorHandleCached(cursorType);
+            var handle = GetCursorHandle(cursorType);
             return new CursorImpl(handle);
+        }
+
+        public IntPtr GetCursorHandle(StandardCursorType cursorType)
+        {
+            return cursorType == StandardCursorType.None ? _nullCursor : GetCursorHandleCached(cursorType);
         }
 
         public unsafe ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot)
@@ -82,6 +94,15 @@ namespace Avalonia.X11
             IntPtr window = XLib.XRootWindow(display, 0);
             IntPtr pixmap = XLib.XCreateBitmapFromData(display, window, NullCursorData, 1, 1);
             return XLib.XCreatePixmapCursor(display, pixmap, pixmap, ref color, ref color, 0, 0);
+        }
+
+        private IntPtr LoadDragNoDropCursor()
+        {
+            var handle = XLib.XcursorLibraryLoadCursor(_display, "dnd-no-drop");
+
+            if (handle == 0)
+                handle = GetCursorHandleCached(StandardCursorType.No);
+            return handle;
         }
 
         private unsafe class XImageCursor : CursorImpl, IPlatformHandle
@@ -130,9 +151,10 @@ namespace Avalonia.X11
         {
             if (!_cursors.TryGetValue(type, out var handle))
             {
-                if(s_libraryCursors.TryGetValue(type, out var cursorName))
+                if (s_libraryCursors.TryGetValue(type, out var cursorName))
                     handle = XLib.XcursorLibraryLoadCursor(_display, cursorName);
-                else if(s_mapping.TryGetValue(type, out var cursorShape))
+
+                if (handle == 0 && s_mapping.TryGetValue(type, out var cursorShape))
                     handle = XLib.XCreateFontCursor(_display, cursorShape);
 
                 if (handle == IntPtr.Zero)

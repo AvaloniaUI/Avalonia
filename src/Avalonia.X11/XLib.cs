@@ -60,10 +60,13 @@ namespace Avalonia.X11
         public static extern IntPtr XDefaultRootWindow(IntPtr display);
 
         [DllImport(libX11)]
-        public static extern IntPtr XNextEvent(IntPtr display, out XEvent xevent);
+        public static extern int XNextEvent(IntPtr display, out XEvent xevent);
         
         [DllImport(libX11)]
-        public static extern IntPtr XNextEvent(IntPtr display, XEvent* xevent);
+        public static extern int XNextEvent(IntPtr display, XEvent* xevent);
+
+        [LibraryImport(libX11)]
+        public static partial int XPutBackEvent(IntPtr display, in XEvent evt);
 
         [DllImport(libX11)]
         public static extern int XConnectionNumber(IntPtr diplay);
@@ -164,7 +167,7 @@ namespace Avalonia.X11
         public static extern int XSetWMProtocols(IntPtr display, IntPtr window, IntPtr[] protocols, int count);
 
         [DllImport(libX11)]
-        public static extern int XGrabPointer(IntPtr display, IntPtr window, bool owner_events, EventMask event_mask,
+        public static extern GrabResult XGrabPointer(IntPtr display, IntPtr window, bool owner_events, EventMask event_mask,
             GrabMode pointer_mode, GrabMode keyboard_mode, IntPtr confine_to, IntPtr cursor, IntPtr timestamp);
 
         [DllImport(libX11)]
@@ -172,11 +175,11 @@ namespace Avalonia.X11
 
         [DllImport(libX11)]
         public static extern bool XQueryPointer(IntPtr display, IntPtr window, out IntPtr root, out IntPtr child,
-            out int root_x, out int root_y, out int win_x, out int win_y, out int keys_buttons);
+            out int root_x, out int root_y, out int win_x, out int win_y, out XModifierMask mask);
 
         [DllImport(libX11)]
         public static extern bool XTranslateCoordinates(IntPtr display, IntPtr src_w, IntPtr dest_w, int src_x,
-            int src_y, out int intdest_x_return, out int dest_y_return, out IntPtr child_return);
+            int src_y, out int dest_x_return, out int dest_y_return, out IntPtr child_return);
 
         [DllImport(libX11)]
         public static extern bool XGetGeometry(IntPtr display, IntPtr window, out IntPtr root, out int x, out int y,
@@ -468,6 +471,9 @@ namespace Avalonia.X11
             XLookupKeySym = 3,
             XLookupBoth = 4
         }
+
+        [LibraryImport(libX11)]
+        public static partial XKeySym XLookupKeysym(in XKeyEvent key_event, int index);
         
         [DllImport (libX11)]
         public static extern int XLookupString(ref XKeyEvent xevent, byte* buffer, int num_bytes, out nint keysym, IntPtr composeStatus);
@@ -691,7 +697,7 @@ namespace Avalonia.X11
         
         public static void QueryPointer (IntPtr display, IntPtr w, out IntPtr root, out IntPtr child,
             out int root_x, out int root_y, out int child_x, out int child_y,
-            out int mask)
+            out XModifierMask mask)
         {
 
             IntPtr c;
@@ -726,7 +732,7 @@ namespace Avalonia.X11
             int root_y;
             int win_x;
             int win_y;
-            int keys_buttons;
+            XModifierMask keys_buttons;
 
 
 
@@ -748,7 +754,7 @@ namespace Avalonia.X11
         {
             var win = XCreateSimpleWindow(plat.Display, plat.Info.DefaultRootWindow, 
                 0, 0, 1, 1, 0, IntPtr.Zero, IntPtr.Zero);
-            plat.Windows[win] = handler;
+            plat.Windows[win] = new X11WindowInfo(handler, null);
             return win;
         }
 
@@ -757,5 +763,14 @@ namespace Avalonia.X11
 
         public static int XkbSetGroupForCoreState(int state, int newGroup)
             => (state & ~(0x3 << 13)) | ((newGroup & 0x3) << 13);
+
+        public enum GrabResult
+        {
+            GrabSuccess = 0,
+            AlreadyGrabbed = 1,
+            GrabInvalidTime = 2,
+            GrabNotViewable = 3,
+            GrabFrozen = 4,
+        }
     }
 }
