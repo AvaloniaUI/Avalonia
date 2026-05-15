@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
@@ -386,7 +387,8 @@ namespace Avalonia.Controls
 
         static TextBox()
         {
-            FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
+            FocusableProperty.OverrideDefaultValue<TextBox>(true);
+            PlatformFeedback.FeedbackTypeProperty.OverrideDefaultValue<TextBox>(FeedbackType.Auto);
             TextInputMethodClientRequestedEvent.AddClassHandler<TextBox>((tb, e) =>
             {
                 if (!tb.IsReadOnly)

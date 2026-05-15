@@ -1,0 +1,63 @@
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Controls.Platform
+{
+    internal interface IPlatformFeedback
+    {
+        /// <summary>
+        /// Performs the specified <see cref="FeedbackType"/> on the platform.
+        /// </summary>
+        /// <param name="feedback">The feedback type to perform.</param>
+        /// <param name="type">The feedback effect relating to the action that triggered it</param>
+        /// <returns>true if the platform performed the requested feedback; false otherwise.</returns>
+        bool Perform(FeedbackAction feedback, FeedbackType type);
+    }
+
+    /// <summary>
+    /// The feedback type to be triggered for the attached control.
+    /// </summary>
+    public enum FeedbackType
+    {
+        /// <summary>
+        /// Disables feedback for the attached control
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// Triggers the most suitable feedback type based on the feedback effect on the current platform.
+        /// </summary>
+        Auto,
+
+        /// <summary>
+        /// If available, triggers only sound feedback for the attached control
+        /// </summary>
+        Sound,
+
+        /// <summary>
+        /// If available, triggers only haptic feedback for the attached control
+        /// </summary>
+        Haptic
+    }
+
+    /// <summary>
+    /// Defines which action triggered the feedback.
+    /// </summary>
+    public class FeedbackAction
+    {
+        internal string Key { get; }
+        internal FeedbackAction(string label)
+        {
+            Key = label;
+        }
+
+        /// <summary>
+        /// The feedback is related to the Click action
+        /// </summary>
+        public static FeedbackAction Click { get; } = new FeedbackAction("Click");
+
+        /// <summary>
+        /// The feedback is related to the Hold action
+        /// </summary>
+        public static FeedbackAction Hold { get; } = new FeedbackAction("Hold");
+    }
+}

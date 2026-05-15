@@ -39,6 +39,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly Clipboard _clipboard;
         private readonly AndroidLauncher? _launcher;
         private readonly AndroidScreens? _screens;
+        private readonly AndroidPlatformFeedback _feedback;
         private SurfaceViewImpl? _view;
         private WindowTransparencyLevel _transparencyLevel;
 
@@ -57,6 +58,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 context.GetSystemService(Context.ClipboardService).JavaCast<ClipboardManager>(),
                 context));
             _screens = new AndroidScreens(context);
+            _feedback = new AndroidPlatformFeedback(avaloniaView);
 
             if (context is Activity mainActivity)
             {
@@ -356,6 +358,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return _screens;
             }
 
+            if(featureType == typeof(IPlatformFeedback))
+            {
+                return _feedback;
+            }
             return null;
         }
 
