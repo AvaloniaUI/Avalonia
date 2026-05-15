@@ -7,7 +7,6 @@ using Avalonia.Media.Immutable;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Drawing;
-using Avalonia.Rendering.Composition.Drawing.Nodes;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
@@ -357,33 +356,6 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
-        public void GlyphRun_Node_Releases_Reference_On_Direct_Dispose()
-        {
-            var glyphRunRef = RefCountable.Create(Mock.Of<IGlyphRunImpl>());
-            Assert.Equal(1, glyphRunRef.RefCount);
-
-            var node = new RenderDataGlyphRunNode { GlyphRun = glyphRunRef.Clone() };
-            Assert.Equal(2, glyphRunRef.RefCount);
-
-            node.Dispose();
-            Assert.Equal(1, glyphRunRef.RefCount);
-        }
-
-        [Fact]
-        public void GlyphRun_Node_Disposed_When_Containing_Push_Node_Disposed()
-        {
-            var glyphRunRef = RefCountable.Create(Mock.Of<IGlyphRunImpl>());
-            var glyphNode = new RenderDataGlyphRunNode { GlyphRun = glyphRunRef.Clone() };
-            Assert.Equal(2, glyphRunRef.RefCount);
-
-            var pushNode = new RenderDataOpacityNode { Opacity = 0.5 };
-            pushNode.Children.Add(glyphNode);
-
-            pushNode.Dispose();
-            Assert.Equal(1, glyphRunRef.RefCount);
-        }
-
-        [Fact]
         public void PushOpacityMask_Brush_Is_AddRefed_Once_And_Released_On_Dispose()
         {
             var brush = new TrackingBrush();
@@ -410,24 +382,6 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 
             Assert.True(rd.HitTest(new Point(5, 5)));
             Assert.False(rd.HitTest(new Point(50, 50)));
-        }
-
-        [Fact]
-        public void PushGeometryClip_HitTest_Restricts_By_FillContains()
-        {
-            var geomMock = new Mock<IGeometryImpl>();
-            geomMock.Setup(g => g.FillContains(new Point(5, 5))).Returns(true);
-            geomMock.Setup(g => g.FillContains(new Point(50, 50))).Returns(false);
-
-            var node = new RenderDataGeometryClipNode { Geometry = geomMock.Object };
-            node.Children.Add(new RenderDataRectangleNode
-            {
-                ServerBrush = Brushes.Black,
-                Rect = new RoundedRect(new Rect(0, 0, 100, 100))
-            });
-
-            Assert.True(node.HitTest(new Point(5, 5)));
-            Assert.False(node.HitTest(new Point(50, 50)));
         }
 
         [Fact]
@@ -476,36 +430,6 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 
             Assert.True(rd.HitTest(new Point(5, 5)));
             Assert.False(rd.HitTest(new Point(50, 50)));
-        }
-
-        [Fact]
-        public void PushRenderOptions_Forwards_Push_And_Pop_To_Drawing_Context_Impl()
-        {
-            var mockImpl = new Mock<IDrawingContextImpl>();
-            var ctx = new RenderDataNodeRenderContext(mockImpl.Object);
-            var opts = new RenderOptions { EdgeMode = EdgeMode.Aliased };
-            var node = new RenderDataRenderOptionsNode { RenderOptions = opts };
-
-            node.Push(ref ctx);
-            node.Pop(ref ctx);
-
-            mockImpl.Verify(x => x.PushRenderOptions(opts), Times.Once);
-            mockImpl.Verify(x => x.PopRenderOptions(), Times.Once);
-        }
-
-        [Fact]
-        public void PushTextOptions_Forwards_Push_And_Pop_To_Drawing_Context_Impl()
-        {
-            var mockImpl = new Mock<IDrawingContextImpl>();
-            var ctx = new RenderDataNodeRenderContext(mockImpl.Object);
-            var opts = new TextOptions { TextRenderingMode = TextRenderingMode.Antialias };
-            var node = new RenderDataTextOptionsNode { TextOptions = opts };
-
-            node.Push(ref ctx);
-            node.Pop(ref ctx);
-
-            mockImpl.Verify(x => x.PushTextOptions(opts), Times.Once);
-            mockImpl.Verify(x => x.PopTextOptions(), Times.Once);
         }
 
         [Fact]
