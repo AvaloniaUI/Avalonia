@@ -54,6 +54,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public LineBreakClass LineBreakClass => UnicodeData.GetLineBreakClass(_value);
 
         /// <summary>
+        /// Gets the <see cref="Unicode.WordBreakClass"/>.
+        /// </summary>
+        public WordBreakClass WordBreakClass => UnicodeData.GetWordBreakClass(_value);
+
+        /// <summary>
         /// Gets the <see cref="GraphemeBreakClass"/>.
         /// </summary>
         public GraphemeBreakClass GraphemeBreakClass => UnicodeData.GetGraphemeClusterBreak(_value);

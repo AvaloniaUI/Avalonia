@@ -10,7 +10,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         ///     This test is used to generate all Unicode related types.
         ///     We only need to run this when the Unicode spec changes.
         /// </summary>
-        [Fact(Skip = "Only run when we update the trie.")]
+        [Fact(Skip = "Only run when we update Unicode data.")]
         public void Should_Generate_Data()
         {
             if (!Directory.Exists("Generated"))
@@ -29,6 +29,8 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 Assert.Equal(value.Script, GetValue(data, UnicodeData.SCRIPT_SHIFT, UnicodeData.SCRIPT_MASK));
                 
                 Assert.Equal(value.LineBreakClass, GetValue(data, UnicodeData.LINEBREAK_SHIFT, UnicodeData.LINEBREAK_MASK));
+
+                Assert.Equal(value.WordBreakClass, GetValue(data, UnicodeData.WORDBREAK_SHIFT, UnicodeData.WORDBREAK_MASK));
             }
             
             var biDiTrie = UnicodeDataGenerator.GenerateBiDiTrie(out var biDiDataEntries, out var biDiData);

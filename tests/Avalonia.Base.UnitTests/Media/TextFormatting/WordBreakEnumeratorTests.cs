@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -6,104 +6,35 @@ using System.Linq;
 using System.Net.Http;
 using Avalonia.Media.TextFormatting.Unicode;
 using Xunit;
-using static Avalonia.Media.TextFormatting.Unicode.LineBreakEnumerator;
 
 namespace Avalonia.Base.UnitTests.Media.TextFormatting
 {
-    public class LineBreakEnumeratorTests
+    public class WordBreakEnumeratorTests
     {
         private readonly ITestOutputHelper _outputHelper;
 
-        public LineBreakEnumeratorTests(ITestOutputHelper outputHelper)
+        public WordBreakEnumeratorTests(ITestOutputHelper outputHelper)
         {
             _outputHelper = outputHelper;
         }
 
-        [Fact]
-        public void BasicLatinTest()
-        {
-            var lineBreaker = new LineBreakEnumerator("Hello World\r\nThis is a test.");
-            LineBreak lineBreak;
-
-            Assert.True(lineBreaker.MoveNext(out lineBreak));
-            Assert.Equal(6, lineBreak.PositionWrap);
-            Assert.False(lineBreak.Required);
-
-            Assert.True(lineBreaker.MoveNext(out lineBreak));
-            Assert.Equal(13, lineBreak.PositionWrap);
-            Assert.True(lineBreak.Required);
-
-            Assert.True(lineBreaker.MoveNext(out lineBreak));
-            Assert.Equal(18, lineBreak.PositionWrap);
-            Assert.False(lineBreak.Required);
-
-            Assert.True(lineBreaker.MoveNext(out lineBreak));
-            Assert.Equal(21, lineBreak.PositionWrap);
-            Assert.False(lineBreak.Required);
-
-            Assert.True(lineBreaker.MoveNext(out lineBreak));
-            Assert.Equal(23, lineBreak.PositionWrap);
-            Assert.False(lineBreak.Required);
-
-            Assert.True(lineBreaker.MoveNext(out lineBreak));
-            Assert.Equal(28, lineBreak.PositionWrap);
-            Assert.False(lineBreak.Required);
-
-            Assert.False(lineBreaker.MoveNext(out lineBreak));
-        }
-
-        [InlineData("Hello\nWorld", 5, 6)]
-        [InlineData("Hello\rWorld", 5, 6 )]
-        [InlineData("Hello\r\nWorld", 5 , 7)]
-        [Theory]
-        public void ShouldFindMandatoryBreaks(string text, int positionMeasure, int positionWrap)
-        {
-            var lineBreaker = new LineBreakEnumerator(text);
-            
-            var breaks = GetBreaks(lineBreaker);
-
-            Assert.Equal(2, breaks.Count);
-
-            var firstBreak = breaks[0];
-
-            Assert.True(firstBreak.Required);
-
-            Assert.Equal(positionMeasure, firstBreak.PositionMeasure);
-
-            Assert.Equal(positionWrap, firstBreak.PositionWrap);
-        }
-
-        [Fact]
-        public void ForwardTextWithOuterWhitespace()
-        {
-            var lineBreaker = new LineBreakEnumerator(" Apples Pears Bananas   ");
-            var positionsF = GetBreaks(lineBreaker);
-            Assert.Equal(1, positionsF[0].PositionWrap);
-            Assert.Equal(0, positionsF[0].PositionMeasure);
-            Assert.Equal(8, positionsF[1].PositionWrap);
-            Assert.Equal(7, positionsF[1].PositionMeasure);
-            Assert.Equal(14, positionsF[2].PositionWrap);
-            Assert.Equal(13, positionsF[2].PositionMeasure);
-            Assert.Equal(24, positionsF[3].PositionWrap);
-            Assert.Equal(21, positionsF[3].PositionMeasure);
-        }
-
         [Theory(Skip = "Only run when we update Unicode data.")]
-        [ClassData(typeof(LineBreakTestDataGenerator))]
+        [ClassData(typeof(WordBreakTestDataGenerator))]
         public void ShouldFindBreaks(int lineNumber, int[] codePoints, int[] breakPoints, string rules)
         {
             var text = string.Join(null, codePoints.Select(char.ConvertFromUtf32));
 
-            var lineBreaker = new LineBreakEnumerator(text);
+            var wordBreaker = new WordBreakEnumerator(text);
 
-            var foundBreaks = new List<int>();
+            var foundBreaks = new List<int> { 0 };
+            var currentPosition = 0;
 
-            while (lineBreaker.MoveNext(out var lineBreak))
+            while (wordBreaker.MoveNext(out var segment))
             {
-                foundBreaks.Add(lineBreak.PositionWrap);
+                currentPosition += segment.CodepointLength;
+                foundBreaks.Add(currentPosition);
             }
 
-            // Check the same
             var pass = true;
 
             if (foundBreaks.Count != breakPoints.Length)
@@ -129,7 +60,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 _outputHelper.WriteLine($"Expected Breaks: {string.Join(" ", breakPoints)}");
                 _outputHelper.WriteLine($"  Actual Breaks: {string.Join(" ", foundBreaks)}");
                 _outputHelper.WriteLine($"           Text: {text}");
-                _outputHelper.WriteLine($"     Char Props: {string.Join(" ", codePoints.Select(x => new Codepoint((uint)x).LineBreakClass))}");
+                _outputHelper.WriteLine($"     Char Props: {string.Join(" ", codePoints.Select(x => new Codepoint((uint)x).WordBreakClass))}");
                 _outputHelper.WriteLine($"     Rules: {rules}");
                 _outputHelper.WriteLine("");
             }
@@ -137,23 +68,11 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             Assert.True(pass);
         }
 
-        private static List<LineBreak> GetBreaks(LineBreakEnumerator lineBreaker)
-        {
-            var breaks = new List<LineBreak>();
-
-            while (lineBreaker.MoveNext(out var lineBreak))
-            {
-                breaks.Add(lineBreak);
-            }
-
-            return breaks;
-        }
-
-        public class LineBreakTestDataGenerator : IEnumerable<object[]>
+        public class WordBreakTestDataGenerator : IEnumerable<object[]>
         {
             private readonly List<object[]> _testData;
 
-            public LineBreakTestDataGenerator()
+            public WordBreakTestDataGenerator()
             {
                 _testData = GenerateTestData();
             }
@@ -170,11 +89,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             private static List<object[]> GenerateTestData()
             {
-                // Process each line
                 var tests = new List<object[]>();
 
-                // Read the test file
-                var url = Path.Combine(UnicodeDataGenerator.Ucd, "auxiliary/LineBreakTest.txt");
+                var url = Path.Combine(UnicodeDataGenerator.Ucd, "auxiliary/WordBreakTest.txt");
 
                 using (var client = new HttpClient())
                 using (var result = client.GetAsync(url).GetAwaiter().GetResult())
@@ -198,12 +115,8 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                                 break;
                             }
 
-
-
-                            // Get the line, remove comments
                             var segments = line.Split('#');
 
-                            // Ignore blank/comment only lines
                             if (string.IsNullOrWhiteSpace(segments[0]))
                             {
                                 lineNumber++;
@@ -226,13 +139,10 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             {
                 var codePoints = new List<int>();
                 var breakPoints = new List<int>();
-
-                // Parse the test
                 var p = 0;
 
                 while (p < line.Length)
                 {
-                    // Ignore white space
                     if (char.IsWhiteSpace(line[p]))
                     {
                         p++;
@@ -247,7 +157,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
                     if (line[p] == '÷')
                     {
-                        breakPoints.Add(codePoints.Select(x => x > ushort.MaxValue ? 2 : 1).Sum());
+                        breakPoints.Add(codePoints.Count);
                         p++;
                         continue;
                     }
@@ -261,6 +171,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
                     var codePointStr = line.Substring(codePointPos, p - codePointPos);
                     var codePoint = Convert.ToInt32(codePointStr, 16);
+
                     codePoints.Add(codePoint);
                 }
 
