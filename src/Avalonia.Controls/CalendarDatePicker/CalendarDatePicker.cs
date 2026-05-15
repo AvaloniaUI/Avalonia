@@ -7,6 +7,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using Avalonia.Automation.Peers;
 using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -194,6 +195,8 @@ namespace Avalonia.Controls
 
             UpdatePseudoClasses();
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new CalendarDatePickerAutomationPeer(this);
 
         /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

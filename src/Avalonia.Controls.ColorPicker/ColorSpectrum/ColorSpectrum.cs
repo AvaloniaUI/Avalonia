@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Collections.Pooled;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
@@ -195,6 +196,11 @@ namespace Avalonia.Controls.Primitives
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ColorSpectrumAutomationPeer(this);
         }
 
         /// <summary>
