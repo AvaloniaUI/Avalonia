@@ -9,7 +9,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
-using Avalonia.LogicalTree;
+using Avalonia.Interactivity;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -88,6 +88,19 @@ namespace Avalonia.Controls
         static TabbedPage()
         {
             FocusableProperty.OverrideDefaultValue<TabbedPage>(true);
+            PageNavigationSystemBackButtonPressedEvent.AddClassHandler<TabbedPage>((sender, eventArgs) =>
+            {
+                if (eventArgs.Handled)
+                    return;
+
+                var forwarded = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
+                sender.CurrentPage?.RaiseEvent(forwarded);
+
+                if (forwarded.Handled)
+                {
+                    eventArgs.Handled = true;
+                }
+            });
         }
 
         /// <summary>
@@ -149,6 +162,8 @@ namespace Avalonia.Controls
             get => GetValue(IndicatorTemplateProperty);
             set => SetValue(IndicatorTemplateProperty, value);
         }
+
+        protected override Type StyleKeyOverride => typeof(TabbedPage);
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
@@ -288,13 +303,15 @@ namespace Avalonia.Controls
                 if (target < 0)
                 {
                     _ignoringDisabledSelection = true;
-                    try { _tabControl.SelectedIndex = SelectedIndex; }
+                    try
+                    { _tabControl.SelectedIndex = SelectedIndex; }
                     finally { _ignoringDisabledSelection = false; }
                     return;
                 }
 
                 _ignoringDisabledSelection = true;
-                try { _tabControl.SelectedIndex = target; }
+                try
+                { _tabControl.SelectedIndex = target; }
                 finally { _ignoringDisabledSelection = false; }
 
                 if (target == SelectedIndex)
@@ -657,12 +674,12 @@ namespace Avalonia.Controls
 
             int delta = (e.SwipeDirection, isHorizontal, isRtl) switch
             {
-                (SwipeDirection.Left,  true,  false) => +1,
-                (SwipeDirection.Right, true,  false) => -1,
-                (SwipeDirection.Left,  true,  true)  => -1,
-                (SwipeDirection.Right, true,  true)  => +1,
-                (SwipeDirection.Up,    false, _)     => -1,
-                (SwipeDirection.Down,  false, _)     => +1,
+                (SwipeDirection.Left, true, false) => +1,
+                (SwipeDirection.Right, true, false) => -1,
+                (SwipeDirection.Left, true, true) => -1,
+                (SwipeDirection.Right, true, true) => +1,
+                (SwipeDirection.Up, false, _) => -1,
+                (SwipeDirection.Down, false, _) => +1,
                 _ => 0
             };
 

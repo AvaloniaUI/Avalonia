@@ -95,7 +95,10 @@ public class AvaloniaActivity : AppCompatActivity, IAvaloniaActivity
     public override void OnBackPressed()
     {
         if (OperatingSystem.IsAndroidVersionAtLeast(33))
+        {
+            OnBackPressedDispatcher.OnBackPressed();
             return;
+        }
 
         var eventArgs = new AndroidBackRequestedEventArgs();
 

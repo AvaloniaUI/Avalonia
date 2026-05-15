@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,14 +6,13 @@ using Avalonia.Animation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
-using Avalonia.Logging;
-using Avalonia.LogicalTree;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
+using Avalonia.Logging;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
@@ -63,13 +61,14 @@ namespace Avalonia.Controls
         private ContentPresenter? _modalPresenter;
         private ContentPresenter? _topCommandBarPresenter;
         private IDisposable? _hasNavigationBarSub;
+        private IDisposable? _hasBackButtonSub;
         private IDisposable? _isBackButtonEnabledSub;
         private IDisposable? _barLayoutBehaviorSub;
         private IDisposable? _barHeightSub;
         private IDisposable? _backButtonContentSub;
         private bool _isNavigating;
         private bool _canGoBack;
-        private bool? _isBackButtonEffectivelyVisible;
+        private bool _isBackButtonEffectivelyVisible;
         private bool _isNavBarEffectivelyVisible;
         private double _effectiveBarHeight;
         private bool _isBackButtonEffectivelyEnabled;
@@ -110,8 +109,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsBackButtonEffectivelyVisible"/> property.
         /// </summary>
-        public static readonly DirectProperty<NavigationPage, bool?> IsBackButtonEffectivelyVisibleProperty =
-            AvaloniaProperty.RegisterDirect<NavigationPage, bool?>(nameof(IsBackButtonEffectivelyVisible), o => o.IsBackButtonEffectivelyVisible);
+        public static readonly DirectProperty<NavigationPage, bool> IsBackButtonEffectivelyVisibleProperty =
+            AvaloniaProperty.RegisterDirect<NavigationPage, bool>(nameof(IsBackButtonEffectivelyVisible), o => o.IsBackButtonEffectivelyVisible);
 
         /// <summary>
         /// Defines the <see cref="IsNavBarEffectivelyVisible"/> property.
@@ -235,6 +234,18 @@ namespace Avalonia.Controls
                     return;
                 }
 
+                if (sender.CurrentPage != null)
+                {
+                    var forwarded = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
+                    sender.CurrentPage.RaiseEvent(forwarded);
+
+                    if (forwarded.Handled)
+                        eventArgs.Handled = true;
+                }
+
+                if (eventArgs.Handled)
+                    return;
+
                 if (sender.StackDepth > 1)
                 {
                     eventArgs.Handled = true;
@@ -330,7 +341,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the effective back-button visibility.
         /// </summary>
-        public bool? IsBackButtonEffectivelyVisible
+        public bool IsBackButtonEffectivelyVisible
         {
             get => _isBackButtonEffectivelyVisible;
             private set => SetAndRaise(IsBackButtonEffectivelyVisibleProperty, ref _isBackButtonEffectivelyVisible, value);
@@ -618,6 +629,8 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override Type StyleKeyOverride => typeof(NavigationPage);
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == PagesProperty &&
@@ -637,6 +650,9 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException(
                     "Direct assignment to NavigationPage.Pages is not supported. Use PushAsync, PopAsync, InsertPage, RemovePage, or ReplaceAsync to modify the navigation stack.");
             }
+
+            if (change.Property == SafeAreaPaddingProperty)
+                UpdateEffectiveBarHeight();
 
             base.OnPropertyChanged(change);
         }
@@ -730,6 +746,8 @@ namespace Avalonia.Controls
 
             _hasNavigationBarSub?.Dispose();
             _hasNavigationBarSub = null;
+            _hasBackButtonSub?.Dispose();
+            _hasBackButtonSub = null;
             _isBackButtonEnabledSub?.Dispose();
             _isBackButtonEnabledSub = null;
             _barLayoutBehaviorSub?.Dispose();
@@ -747,7 +765,10 @@ namespace Avalonia.Controls
         {
             if (_contentHost != null && _navBar != null)
             {
-                _navBar.Padding = new Thickness(SafeAreaPadding.Left, SafeAreaPadding.Top, SafeAreaPadding.Right, 0);
+                var safeAreaPadding = IsNavBarEffectivelyVisible ? new Thickness(SafeAreaPadding.Left, 0, SafeAreaPadding.Right, SafeAreaPadding.Bottom) : SafeAreaPadding;
+                _navBar.Padding = IsNavBarEffectivelyVisible
+                    ? new Thickness(SafeAreaPadding.Left, SafeAreaPadding.Top, SafeAreaPadding.Right, 0)
+                    : default;
 
                 if (_pagePresenter != null)
                     _pagePresenter.Padding = Padding;
@@ -756,8 +777,8 @@ namespace Avalonia.Controls
 
                 if (CurrentPage != null)
                 {
-                    var remainingSafeArea = Padding.GetRemainingSafeAreaPadding(SafeAreaPadding);
-                    CurrentPage.SafeAreaPadding = new Thickness(remainingSafeArea.Left, 0, remainingSafeArea.Right, remainingSafeArea.Bottom);
+                    var remainingSafeArea = Padding.GetRemainingSafeAreaPadding(safeAreaPadding);
+                    CurrentPage.SafeAreaPadding = new Thickness(remainingSafeArea.Left, remainingSafeArea.Top, remainingSafeArea.Right, remainingSafeArea.Bottom);
                 }
 
                 foreach (var modal in _modalStack)
@@ -1840,6 +1861,9 @@ namespace Avalonia.Controls
             _hasNavigationBarSub?.Dispose();
             _hasNavigationBarSub = null;
 
+            _hasBackButtonSub?.Dispose();
+            _hasBackButtonSub = null;
+
             _isBackButtonEnabledSub?.Dispose();
             _isBackButtonEnabledSub = null;
 
@@ -1856,6 +1880,9 @@ namespace Avalonia.Controls
             {
                 _hasNavigationBarSub = page.GetObservable(HasNavigationBarProperty)
                     .Subscribe(new AnonymousObserver<bool>(_ => UpdateIsNavBarEffectivelyVisible()));
+
+                _hasBackButtonSub = page.GetObservable(HasBackButtonProperty)
+                    .Subscribe(new AnonymousObserver<bool>(_ => UpdateIsBackButtonEffectivelyVisible()));
 
                 _isBackButtonEnabledSub = page.GetObservable(IsBackButtonEnabledProperty)
                     .Subscribe(new AnonymousObserver<bool>(_ => UpdateIsBackButtonEffectivelyEnabled()));
@@ -2139,8 +2166,11 @@ namespace Avalonia.Controls
 
         private void UpdateEffectiveBarHeight()
         {
-            EffectiveBarHeight = (CurrentPage != null ? GetBarHeightOverride(CurrentPage) : null) ?? BarHeight;
-            PseudoClasses.Set(":nav-bar-compact", EffectiveBarHeight < 40);
+            var contentBarHeight = (CurrentPage != null ? GetBarHeightOverride(CurrentPage) : null) ?? BarHeight;
+            EffectiveBarHeight = contentBarHeight + SafeAreaPadding.Top;
+            PseudoClasses.Set(":nav-bar-compact", contentBarHeight < 40);
+
+            UpdateContentSafeAreaPadding();
         }
 
         private void ApplyNavBarVisibility()

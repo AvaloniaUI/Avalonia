@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Avalonia.Media.TextFormatting
         {
             Text = text;
             _rentedBuffer = ArrayPool<GlyphInfo>.Shared.Rent(bufferLength);
-            _glyphInfos = new ArraySlice<GlyphInfo>(_rentedBuffer, 0, bufferLength);      
+            _glyphInfos = new ArraySlice<GlyphInfo>(_rentedBuffer, 0, bufferLength);
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
@@ -38,6 +38,11 @@ namespace Avalonia.Media.TextFormatting
         public int Length => _glyphInfos.Length;
 
         /// <summary>
+        /// The buffer's glyph infos.
+        /// </summary>
+        internal ArraySlice<GlyphInfo> GlyphInfos => _glyphInfos;
+
+        /// <summary>
         /// The buffer's glyph typeface.
         /// </summary>
         public GlyphTypeface GlyphTypeface { get; }
@@ -50,7 +55,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// The buffer's bidi level.
         /// </summary>
-        public sbyte BidiLevel { get; private set; }
+        public sbyte BidiLevel { get; }
 
         /// <summary>
         /// The buffer's reading direction.
@@ -61,14 +66,6 @@ namespace Avalonia.Media.TextFormatting
         /// The text that is represended by this buffer.
         /// </summary>
         public ReadOnlyMemory<char> Text { get; }
-        
-        /// <summary>
-        /// Reverses the buffer.
-        /// </summary>
-        public void Reverse()
-        {
-            _glyphInfos.Span.Reverse();
-        }
 
         public void Dispose()
         {
@@ -90,7 +87,20 @@ namespace Avalonia.Media.TextFormatting
 
         public IEnumerator<GlyphInfo> GetEnumerator() => _glyphInfos.GetEnumerator();
 
-        internal void ResetBidiLevel(sbyte paragraphEmbeddingLevel) => BidiLevel = paragraphEmbeddingLevel;
+        /// <summary>
+        /// Creates a view of this buffer that reports the given <paramref name="paragraphEmbeddingLevel"/>
+        /// as its <see cref="BidiLevel"/> while sharing the same underlying glyphs.
+        /// Used for trailing-whitespace handling where the visual direction follows the paragraph.
+        /// </summary>
+        internal ShapedBuffer WithBidiLevel(sbyte paragraphEmbeddingLevel)
+        {
+            if (BidiLevel == paragraphEmbeddingLevel)
+            {
+                return this;
+            }
+
+            return new ShapedBuffer(Text, _glyphInfos, GlyphTypeface, FontRenderingEmSize, paragraphEmbeddingLevel);
+        }
 
         int IReadOnlyCollection<GlyphInfo>.Count => _glyphInfos.Length;
 
@@ -121,25 +131,30 @@ namespace Avalonia.Media.TextFormatting
                 return new SplitResult<ShapedBuffer>(this, null);
             }
 
+            return IsLeftToRight ? SplitAscending(textLength) : SplitDescending(textLength);
+        }
+
+        /// <summary>
+        /// Split a buffer whose glyphs are ordered by ascending cluster (LTR visual / logical order).
+        /// </summary>
+        private SplitResult<ShapedBuffer> SplitAscending(int textLength)
+        {
             var sliceStart = _glyphInfos.Start;
             var glyphInfos = _glyphInfos.Span;
             var glyphInfosLength = _glyphInfos.Length;
 
-            // the first glyph’s cluster is our “zero” for this sub‐buffer.
-            // we want an absolute target cluster = baseCluster + textLength
+            // the first glyph’s cluster is our “zero” for this sub-buffer.
             var baseCluster = glyphInfos[0].GlyphCluster;
             var targetCluster = baseCluster + textLength;
 
-            // binary‐search for a dummy with cluster == targetCluster
             var searchValue = new GlyphInfo(0, targetCluster, 0, default);
             var foundIndex = glyphInfos.BinarySearch(searchValue, GlyphInfo.ClusterAscendingComparer);
 
-            int splitGlyphIndex;    // how many glyph‐slots go into "leading"
-            int splitCharCount;   // how many chars go into "leading" Text
+            int splitGlyphIndex;
+            int splitCharCount;
 
             if (foundIndex >= 0)
             {
-                // found a glyph info whose cluster == targetCluster
                 // back up to the start of the cluster
                 var i = foundIndex;
 
@@ -147,26 +162,21 @@ namespace Avalonia.Media.TextFormatting
                 {
                     i--;
                 }
-                    
+
                 splitGlyphIndex = i;
                 splitCharCount = targetCluster - baseCluster;
             }
             else
             {
-                // no exact match need to invert so ~foundIndex is the insertion point
-                // the first cluster > targetCluster
                 var invertedIndex = ~foundIndex;
 
                 if (invertedIndex >= glyphInfosLength)
                 {
-                    // happens only if targetCluster ≥ lastCluster
-                    // put everything into leading
                     splitGlyphIndex = glyphInfosLength;
                     splitCharCount = Text.Length;
                 }
                 else
                 {
-                    // snap to the start of that next cluster
                     splitGlyphIndex = invertedIndex;
                     var nextCluster = glyphInfos[invertedIndex].GlyphCluster;
                     splitCharCount = nextCluster - baseCluster;
@@ -183,8 +193,7 @@ namespace Avalonia.Media.TextFormatting
                 firstText, firstGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel);
 
-            // this happens if we try to find a position inside a cluster and we moved to the end
-            if(secondText.Length == 0)
+            if (secondText.Length == 0)
             {
                 return new SplitResult<ShapedBuffer>(leading, null);
             }
@@ -194,6 +203,70 @@ namespace Avalonia.Media.TextFormatting
                 GlyphTypeface, FontRenderingEmSize, BidiLevel);
 
             return new SplitResult<ShapedBuffer>(leading, trailing);
+        }
+
+        /// <summary>
+        /// Split a buffer whose glyphs are ordered by descending cluster (RTL visual order).
+        /// The leading <see cref="ShapedBuffer"/> corresponds to text[0..textLength], whose glyphs
+        /// live at the <em>tail</em> of the visual array.
+        /// </summary>
+        private SplitResult<ShapedBuffer> SplitDescending(int textLength)
+        {
+            var sliceStart = _glyphInfos.Start;
+            var glyphInfos = _glyphInfos.Span;
+            var glyphInfosLength = _glyphInfos.Length;
+
+            // Cluster values are anchored to the original text and can start from any value
+            // after a previous split. The logical-first cluster of this buffer is at the
+            // tail of the visual array (smallest cluster). The split happens at logical
+            // offset textLength from there.
+            var baseCluster = glyphInfos[glyphInfosLength - 1].GlyphCluster;
+            var targetCluster = baseCluster + textLength;
+
+            var searchValue = new GlyphInfo(0, targetCluster, 0, default);
+            var foundIndex = glyphInfos.BinarySearch(searchValue, GlyphInfo.ClusterDescendingComparer);
+
+            int splitGlyphIndex; // boundary between "second" (head/leading-visual) and "first" (tail/trailing-visual)
+
+            if (foundIndex >= 0)
+            {
+                // Snap to the last glyph that still has cluster == targetCluster; that glyph
+                // belongs to the trailing chunk (text[textLength..]) — i.e. still "second".
+                while (foundIndex + 1 < glyphInfosLength
+                       && glyphInfos[foundIndex + 1].GlyphCluster == targetCluster)
+                {
+                    foundIndex++;
+                }
+
+                splitGlyphIndex = foundIndex + 1;
+            }
+            else
+            {
+                splitGlyphIndex = ~foundIndex;
+            }
+
+            // Visual leading = glyphs [0, splitGlyphIndex) → logically text[textLength..]  (our "second")
+            // Visual trailing = glyphs [splitGlyphIndex, end) → logically text[0..textLength] (our "first")
+            var secondGlyphs = _glyphInfos.Slice(sliceStart, splitGlyphIndex);
+            var firstGlyphs = _glyphInfos.Slice(sliceStart + splitGlyphIndex, glyphInfosLength - splitGlyphIndex);
+
+            var firstText = Text.Slice(0, textLength);
+            var secondText = Text.Slice(textLength);
+
+            var first = new ShapedBuffer(
+                firstText, firstGlyphs,
+                GlyphTypeface, FontRenderingEmSize, BidiLevel);
+
+            if (secondText.Length == 0 || secondGlyphs.Length == 0)
+            {
+                return new SplitResult<ShapedBuffer>(first, null);
+            }
+
+            var second = new ShapedBuffer(
+                secondText, secondGlyphs,
+                GlyphTypeface, FontRenderingEmSize, BidiLevel);
+
+            return new SplitResult<ShapedBuffer>(first, second);
         }
     }
 }

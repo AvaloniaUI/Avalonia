@@ -25,19 +25,19 @@ namespace Avalonia.Rendering.Composition.Expressions
         {
             // We can parse keywords, parameter names and constants
             expr = null;
-            if (parser.TryParseKeywordLowerCase("this.startingvalue"))
+            if (parser.TryParseKeywordLowerCase(ExpressionKeywords.StartingValue))
                 expr = new KeywordExpression(ExpressionKeyword.StartingValue);
-            else if(parser.TryParseKeywordLowerCase("this.currentvalue"))
+            else if(parser.TryParseKeywordLowerCase(ExpressionKeywords.CurrentValue))
                 expr = new KeywordExpression(ExpressionKeyword.CurrentValue);
-            else if(parser.TryParseKeywordLowerCase("this.finalvalue"))
+            else if(parser.TryParseKeywordLowerCase(ExpressionKeywords.FinalValue))
                 expr = new KeywordExpression(ExpressionKeyword.FinalValue);
-            else if(parser.TryParseKeywordLowerCase("pi"))
+            else if(parser.TryParseKeywordLowerCase(ExpressionKeywords.Pi))
                 expr = new KeywordExpression(ExpressionKeyword.Pi);
-            else if(parser.TryParseKeywordLowerCase("true"))
+            else if(parser.TryParseKeywordLowerCase(ExpressionKeywords.True))
                 expr = new KeywordExpression(ExpressionKeyword.True);
-            else if(parser.TryParseKeywordLowerCase("false"))
+            else if(parser.TryParseKeywordLowerCase(ExpressionKeywords.False))
                 expr = new KeywordExpression(ExpressionKeyword.False);
-            else if (parser.TryParseKeywordLowerCase("this.target"))
+            else if (parser.TryParseKeywordLowerCase(ExpressionKeywords.Target))
                 expr = new KeywordExpression(ExpressionKeyword.Target);
 
             if (expr != null)

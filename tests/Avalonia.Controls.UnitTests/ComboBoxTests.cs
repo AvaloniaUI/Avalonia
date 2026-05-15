@@ -393,6 +393,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Text_Validation()
+        {
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                var target = new ComboBox
+                {
+                    Template = GetTemplate(),
+                };
+
+                target.ApplyTemplate();
+                target.Presenter!.ApplyTemplate();
+                
+                var exception = new System.InvalidCastException("failed validation");
+                var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
+                target.Bind(ComboBox.TextProperty, textObservable);
+
+                Assert.True(DataValidationErrors.GetHasErrors(target));
+                Assert.Equal([exception], DataValidationErrors.GetErrors(target));
+            }
+        }
+
+        [Fact]
         public void Close_Window_On_Alt_F4_When_ComboBox_Is_Focus()
         {
             var inputManagerMock = new Moq.Mock<IInputManager>();
@@ -812,7 +834,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter!.ApplyTemplate();
 
-            var containerPanel = target.GetTemplateChildren().OfType<Panel>().FirstOrDefault(x => x.Name == "container");
+            var containerPanel = target.GetTemplateDescendants().OfType<Panel>().FirstOrDefault(x => x.Name == "container");
             var editableTextBox = containerPanel?.GetVisualDescendants().OfType<TextBox>().FirstOrDefault(x => x.Name == "PART_EditableTextBox");
             var popup = containerPanel?.GetVisualDescendants().OfType<Popup>().FirstOrDefault(x => x.Name == "PART_Popup");
             var popupScrollViewer = popup?.Child as ScrollViewer;

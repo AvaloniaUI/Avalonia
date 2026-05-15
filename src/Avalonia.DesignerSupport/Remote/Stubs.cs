@@ -44,6 +44,7 @@ namespace Avalonia.DesignerSupport.Remote
         public PixelPoint Position { get; set; }
         public Action<PixelPoint>? PositionChanged { get; set; }
         public WindowState WindowState { get; set; }
+        public bool WindowStateGetterIsUsable => false;
         public Action<WindowState>? WindowStateChanged { get; set; }
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }

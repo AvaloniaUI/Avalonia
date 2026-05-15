@@ -253,6 +253,9 @@ namespace Avalonia.X11.Clipboard
             {
                 foreach (var format in dataTransfer.Formats)
                 {
+                    if (format.Kind == DataFormatKind.InProcess)
+                        continue;
+
                     foreach (var atom in ClipboardDataFormatHelper.ToAtoms(format, _textAtoms, _x11.Atoms))
                         atoms.Add(atom);
                 }

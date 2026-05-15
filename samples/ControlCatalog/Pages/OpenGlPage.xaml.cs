@@ -11,7 +11,7 @@ using ControlCatalog.Pages.OpenGl;
 
 namespace ControlCatalog.Pages
 {
-    public partial class OpenGlPage : UserControl
+    public partial class OpenGlPage : ContentPage
     {
         public OpenGlPage()
         {

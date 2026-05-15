@@ -157,29 +157,61 @@ internal class AndroidStorageFolder : AndroidStorageItem, IStorageBookmarkFolder
     {
     }
 
-    public Task<IStorageFile?> CreateFileAsync(string name)
+    public async Task<IStorageFile?> CreateFileAsync(string name)
     {
-        var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
-        var treeUri = GetTreeUri().treeUri;
-        var newFile = CreateDocument(Activity.ContentResolver!, treeUri!, mimeType, name);
-        if (newFile == null)
+        // Try to return an existing file to avoid creating file (1).
+        var existingItem = await GetItemAsync(name, false);
+        if (existingItem != null)
         {
-            return Task.FromResult<IStorageFile?>(null);
+            if (existingItem is IStorageFile existingFile)
+            {
+                // The file should be truncated when it is created.
+                using (var _ = await existingFile.OpenWriteAsync()) { }
+                return existingFile;
+            }
+            else if (existingItem is IStorageFolder)
+            {
+                // There is an item with the same name but it's not a file. We can't create a file in this case.
+                throw new IOException($"Can not create '{name}' because a directory with the same name already exists.");
+            }
+        }
+        // Create new one and return it.
+        var treeUri = GetTreeUri().treeUri;
+        var mimeType = MimeTypeMap.Singleton?.GetMimeTypeFromExtension(MimeTypeMap.GetFileExtensionFromUrl(name)) ?? "application/octet-stream";
+        var newFile = DocumentsContract.CreateDocument(Activity.ContentResolver!, treeUri!, mimeType, name);
+        if(newFile == null)
+        {
+            return null;
         }
 
-        return Task.FromResult<IStorageFile?>(new AndroidStorageFile(Activity, newFile, this));
+        return new AndroidStorageFile(Activity, newFile, this);
     }
 
-    public Task<IStorageFolder?> CreateFolderAsync(string name)
+    public async Task<IStorageFolder?> CreateFolderAsync(string name)
     {
+        // Try to return an existing folder to avoid creating folder (1).
+        var existingItem = await GetItemAsync(name, true);
+        if (existingItem != null)
+        {
+            if (existingItem is IStorageFolder existingFolder)
+            {
+                return existingFolder;
+            }
+            else if (existingItem is IStorageFile)
+            {
+                // There is an item with the same name but it's not a folder. We can't create a folder in this case.
+                throw new IOException($"Can not create '{name}' because a file with the same name already exists.");
+            }
+        }
+        // Create new one and return it.
         var treeUri = GetTreeUri().treeUri;
         var newFolder = CreateDocument(Activity.ContentResolver!, treeUri!, Document.MimeTypeDir, name);
         if (newFolder == null)
         {
-            return Task.FromResult<IStorageFolder?>(null);
+            return null;
         }
 
-        return Task.FromResult<IStorageFolder?>(new AndroidStorageFolder(Activity, newFolder, false, this, PermissionRoot));
+        return new AndroidStorageFolder(Activity, newFolder, false, this, PermissionRoot);
     }
 
     public override async Task DeleteAsync()
@@ -514,8 +546,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
         {
             var projection = new[]
             {
-                MediaStore.IMediaColumns.Size, MediaStore.IMediaColumns.DateAdded,
-                MediaStore.IMediaColumns.DateModified
+                Document.ColumnSize, Document.ColumnLastModified
             };
             using var cursor = Activity.ContentResolver!.Query(Uri, projection, null, null, null);
 
@@ -523,7 +554,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
             {
                 try
                 {
-                    var columnIndex = cursor.GetColumnIndex(MediaStore.IMediaColumns.Size);
+                    var columnIndex = cursor.GetColumnIndex(Document.ColumnSize);
                     if (columnIndex != -1)
                     {
                         size = (ulong)cursor.GetLong(columnIndex);
@@ -537,22 +568,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
 
                 try
                 {
-                    var columnIndex = cursor.GetColumnIndex(MediaStore.IMediaColumns.DateAdded);
-                    if (columnIndex != -1)
-                    {
-                        var longValue = cursor.GetLong(columnIndex);
-                        itemDate = longValue > 0 ? DateTimeOffset.FromUnixTimeMilliseconds(longValue) : null;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
-                        .Log(this, "File DateAdded metadata reader failed: '{Exception}'", ex);
-                }
-
-                try
-                {
-                    var columnIndex = cursor.GetColumnIndex(MediaStore.IMediaColumns.DateModified);
+                    var columnIndex = cursor.GetColumnIndex(Document.ColumnLastModified);
                     if (columnIndex != -1)
                     {
                         var longValue = cursor.GetLong(columnIndex);
@@ -562,7 +578,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
                 catch (Exception ex)
                 {
                     Logger.TryGet(LogEventLevel.Verbose, LogArea.AndroidPlatform)?
-                        .Log(this, "File DateAdded metadata reader failed: '{Exception}'", ex);
+                        .Log(this, "File LastModified metadata reader failed: '{Exception}'", ex);
                 }
             }
         }

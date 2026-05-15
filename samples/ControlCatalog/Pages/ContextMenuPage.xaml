@@ -1,7 +1,8 @@
-<UserControl x:Class="ControlCatalog.Pages.ContextMenuPage"
+<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.ContextMenuPage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
+             Header="ContextMenu"
              x:DataType="viewModels:ContextPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">A right click menu that can be applied to any control.</TextBlock>
@@ -42,6 +43,15 @@
                           IsHitTestVisible="False" />
               </MenuItem.Icon>
             </MenuItem>
+            <MenuItem GroupName="Radio-ableMenuItem"
+                      Header="Menu Item with _RadioButton1"
+                      IsChecked="True"
+                      StaysOpenOnClick="True"
+                      ToggleType="Radio" />
+            <MenuItem GroupName="Radio-ableMenuItem"
+                      Header="Menu Item with _RadioButton2"
+                      StaysOpenOnClick="True"
+                      ToggleType="Radio" />
             <MenuItem Header="Menu Item that won't close on click" StaysOpenOnClick="True" />
           </ContextMenu>
         </Border.ContextMenu>
@@ -86,4 +96,4 @@
       </Border>
     </UniformGrid>
   </StackPanel>
-</UserControl>
+</ContentPage>

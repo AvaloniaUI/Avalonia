@@ -142,7 +142,7 @@ namespace Avalonia.Controls.UnitTests
         }
         private static TextBox GetTextBox(NumericUpDown control)
         {
-            return control.GetTemplateChildren()
+            return control.GetTemplateDescendants()
                           .OfType<ButtonSpinner>()
                           .Select(b => b.Content)
                           .OfType<TextBox>()
@@ -151,7 +151,7 @@ namespace Avalonia.Controls.UnitTests
 
         private static ButtonSpinner GetSpinner(NumericUpDown control)
         {
-            return control.GetTemplateChildren()
+            return control.GetTemplateDescendants()
                 .OfType<ButtonSpinner>()
                 .First();
         }

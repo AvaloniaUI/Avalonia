@@ -173,7 +173,7 @@ namespace Avalonia.Native
             _context = context;
         }
 
-        public bool IsCorrupted => false;
+        public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
 
         public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
@@ -264,7 +264,7 @@ namespace Avalonia.Native
             {
                 // We are reversing bytes to match MoltenVK (LUID is a Vulkan term after all)
                 var bytes = BitConverter.GetBytes(registryId);
-                bytes.Reverse();
+                bytes.AsSpan().Reverse();
                 DeviceLuid = bytes;
             }
         }
