@@ -72,6 +72,29 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         }
 
         [Fact]
+        public void Should_Return_Whole_Run_When_Split_Falls_Inside_Trailing_Cluster()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Cascadia Code"));
+
+                // The text ends with a multi-char cluster ("๊) that is shaped as a single,
+                // unbreakable cluster reaching the end of the run.
+                var buffer = TextShaper.Current.ShapeText("a\"๊", new TextShaperOptions(typeface.GlyphTypeface));
+
+                var run = new ShapedTextRun(buffer, new GenericTextRunProperties(typeface));
+
+                // Splitting at index 2 lands inside the trailing cluster, which cannot be split.
+                // This must not throw: the whole run is returned as the first part instead.
+                var splitResult = run.Split(2);
+
+                Assert.NotNull(splitResult.First);
+                Assert.Equal(run.Length, splitResult.First.Length);
+                Assert.Null(splitResult.Second);
+            }
+        }
+
+        [Fact]
         public void Should_Split_RightToLeft()
         {
             var text = "أَبْجَدِيَّة عَرَبِيَّة";
