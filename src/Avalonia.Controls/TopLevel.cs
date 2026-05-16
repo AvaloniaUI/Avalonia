@@ -218,7 +218,8 @@ namespace Avalonia.Controls
             _scaling = LayoutHelper.ValidateScaling(impl.RenderScaling);
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;
 
-
+            _source.Renderer.CompositionTarget.TransparencyLevel =
+                ToCompositionTransparencyLevel(_actualTransparencyLevel);
 
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
@@ -731,6 +732,8 @@ namespace Avalonia.Controls
             }
 
             ActualTransparencyLevel = transparencyLevel;
+            Renderer.CompositionTarget.TransparencyLevel =
+                ToCompositionTransparencyLevel(transparencyLevel);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -832,6 +835,19 @@ namespace Avalonia.Controls
         protected internal override void InvalidateMirrorTransform()
         {
             // Do nothing becuase TopLevel should't apply MirrorTransform on himself.
+        }
+
+        private static CompositionTransparencyLevel ToCompositionTransparencyLevel(WindowTransparencyLevel level)
+        {
+            if (level == WindowTransparencyLevel.Transparent)
+                return CompositionTransparencyLevel.Transparent;
+            if (level == WindowTransparencyLevel.Blur)
+                return CompositionTransparencyLevel.Blur;
+            if (level == WindowTransparencyLevel.AcrylicBlur)
+                return CompositionTransparencyLevel.AcrylicBlur;
+            if (level == WindowTransparencyLevel.Mica)
+                return CompositionTransparencyLevel.Mica;
+            return CompositionTransparencyLevel.None;
         }
     }
 }
