@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
+using Avalonia.Browser.Text;
 using Avalonia.Collections.Pooled;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -23,7 +24,7 @@ internal class BrowserInputHandler
     private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
     private readonly RawEventGrouper? _rawEventGrouper;
 
-    public BrowserInputHandler(BrowserTopLevelImpl topLevelImpl, JSObject container, JSObject inputElement, int topLevelId)
+    public BrowserInputHandler(BrowserTopLevelImpl topLevelImpl, JSObject container, int topLevelId, JSObject inputElement)
     {
         _topLevelImpl = topLevelImpl;
         _container = container ?? throw new ArgumentNullException(nameof(container));
@@ -37,15 +38,15 @@ internal class BrowserInputHandler
             ? new RawEventGrouper(DispatchInput, BrowserWindowingPlatform.EventGrouperDispatchQueue)
             : null;
 
-        TextInputMethod = new BrowserTextInputMethod(this, container, inputElement);
+        TextInputMethod = new BrowserTextInputMethod(this, container, inputElement, topLevelId);
         InputPane = new BrowserInputPane();
 
         InputHelper.SubscribeInputEvents(container, topLevelId);
     }
 
-    public BrowserTextInputMethod TextInputMethod { get; }
+    public BrowserTextInputMethod? TextInputMethod { get; }
     public BrowserInputPane InputPane { get; }
-    
+
     public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
 
     internal void SetInputRoot(IInputRoot inputRoot)
@@ -55,13 +56,13 @@ internal class BrowserInputHandler
 
     private static RawPointerPoint CreateRawPointer(double offsetX, double offsetY,
         double pressure, double tiltX, double tiltY, double twist) => new()
-    {
-        Position = new Point(offsetX, offsetY),
-        Pressure = (float)pressure,
-        XTilt = (float)tiltX,
-        YTilt = (float)tiltY,
-        Twist = (float)twist
-    };
+        {
+            Position = new Point(offsetX, offsetY),
+            Pressure = (float)pressure,
+            XTilt = (float)tiltX,
+            YTilt = (float)tiltY,
+            Twist = (float)twist
+        };
 
     public bool OnPointerMove(string pointerType, long pointerId, double offsetX, double offsetY,
         double pressure, double tiltX, double tiltY, double twist, int modifier, JSObject argsObj)
@@ -259,7 +260,8 @@ internal class BrowserInputHandler
                 } :
                 new RawPointerEventArgs(device, Timestamp, _inputRoot, eventType, p, modifiers)
                 {
-                    RawPointerId = touchPointId, IntermediatePoints = intermediatePoints
+                    RawPointerId = touchPointId,
+                    IntermediatePoints = intermediatePoints
                 };
 
             ScheduleInput(args);
