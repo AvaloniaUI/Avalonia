@@ -216,7 +216,13 @@ namespace Avalonia.Media.TextFormatting
 
             if (splitBuffer.Second == null)
             {
-                return new SplitResult<ShapedTextRun>(first, null);
+                // The requested split position falls inside an unbreakable cluster that extends
+                // to the end of the run (e.g. a ligature or grapheme shaped as a single glyph),
+                // so the run cannot be split any further. Return the whole run as a single part
+                // instead of throwing: the caller treats a null counterpart as "nothing left to split".
+                return isReversed
+                    ? new SplitResult<ShapedTextRun>(null, first)
+                    : new SplitResult<ShapedTextRun>(first, null);
             }
 
             var second = new ShapedTextRun(splitBuffer.Second, Properties);
