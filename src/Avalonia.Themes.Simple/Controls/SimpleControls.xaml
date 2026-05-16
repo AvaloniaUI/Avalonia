@@ -56,6 +56,7 @@
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CalendarButton.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CalendarDayButton.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CalendarItem.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CalendarWeekNumberLabel.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Calendar.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CalendarDatePicker.xaml" />
         <MergeResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Slider.xaml" />

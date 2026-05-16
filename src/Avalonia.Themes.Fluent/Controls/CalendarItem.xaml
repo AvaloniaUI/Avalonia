@@ -73,9 +73,10 @@
           <!-- To keep calendar from resizing when switching DisplayMode
                  In WinUI Min-Width from TemplateSettings
                  basically...MinWidth of DayItem = 40, 40 * 7 = 280 + margins/padding = ~294
+                 With week numbers: 40 * 8 = 320 + margins/padding = ~334 (see :showweeknumbers style below)
                  Viewport height is set from # of rows displayed (2-8) in Month mode, = ~290 for 6 weeks (+ day names)
                  -->
-          <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" RowDefinitions="40,*" MinWidth="294">
+          <Grid x:Name="LayoutRoot" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" RowDefinitions="40,*" MinWidth="294">
             <Grid ColumnDefinitions="5*,*,*">
               <Button Name="PART_HeaderButton"
                       Theme="{StaticResource FluentCalendarButton}"
@@ -158,6 +159,13 @@
     </Style>
     <Style Selector="^ /template/ Button:pressed > Path">
       <Setter Property="Stroke" Value="{DynamicResource CalendarViewNavigationButtonForegroundPressed}" />
+    </Style>
+    <!-- When week numbers are visible, the MonthView gains an extra 40px column.
+         Increase the LayoutRoot MinWidth to prevent the calendar from shrinking
+         when switching to year/decade view (which does not have that extra column).
+         334 = 40 (week-number col) + 294 (7 day-cols + margins/padding) -->
+    <Style Selector="^:showweeknumbers /template/ Grid#LayoutRoot">
+      <Setter Property="MinWidth" Value="334" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>

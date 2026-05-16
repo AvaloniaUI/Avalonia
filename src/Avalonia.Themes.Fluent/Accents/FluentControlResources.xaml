@@ -402,6 +402,8 @@
       <StaticResource x:Key="CalendarViewBorderBrush" ResourceKey="SystemControlForegroundChromeMediumBrush" />
       <StaticResource x:Key="CalendarViewWeekDayForegroundDisabled"
                       ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+      <StaticResource x:Key="CalendarViewWeekNumberSeparatorForeground" 
+                      ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
       <StaticResource x:Key="CalendarViewNavigationButtonBackground" ResourceKey="SystemControlTransparentBrush" />
       <StaticResource x:Key="CalendarViewNavigationButtonForegroundPointerOver"
                       ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -1227,6 +1229,8 @@
       <StaticResource x:Key="CalendarViewBackground" ResourceKey="SystemControlBackgroundAltHighBrush" />
       <StaticResource x:Key="CalendarViewBorderBrush" ResourceKey="SystemControlForegroundChromeMediumBrush" />
       <StaticResource x:Key="CalendarViewWeekDayForegroundDisabled"
+                      ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+      <StaticResource x:Key="CalendarViewWeekNumberSeparatorForeground" 
                       ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
       <StaticResource x:Key="CalendarViewNavigationButtonBackground" ResourceKey="SystemControlTransparentBrush" />
       <StaticResource x:Key="CalendarViewNavigationButtonForegroundPointerOver"

@@ -24,6 +24,7 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarDatePicker.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarDayButton.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarItem.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CalendarWeekNumberLabel.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Carousel.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/CheckBox.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/FlyoutPresenter.xaml" />

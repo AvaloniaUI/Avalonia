@@ -1,0 +1,35 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    x:ClassModifier="internal">
+
+  <ControlTheme x:Key="{x:Type CalendarWeekNumberLabel}" TargetType="CalendarWeekNumberLabel">
+    <Setter Property="FontSize" Value="9.5" />
+    <Setter Property="FontStyle" Value="Italic" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border BorderBrush="{DynamicResource ThemeBorderLowBrush}"
+                BorderThickness="0,0,1,0">
+          <ContentPresenter Name="PART_ContentPresenter"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Margin="{TemplateBinding Padding}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <!-- Header cell (row 0): match the DayTitleTemplate appearance (Bold, normal foreground) -->
+    <Style Selector="^:header">
+      <Setter Property="FontStyle" Value="Normal" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Padding" Value="4,0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    </Style>
+  </ControlTheme>
+
+</ResourceDictionary>
