@@ -147,6 +147,8 @@ namespace Avalonia.Media.TextFormatting
                                                             var splitSuffix =
                                                                 endShapedRun.Split(run.Length - suffixCount);
 
+                                                            // Second is null when the run consists of a single
+                                                            // unbreakable cluster: keep the whole run in that case.
                                                             collapsedRuns.Add(splitSuffix.Second!);
                                                         }
                                                     }
