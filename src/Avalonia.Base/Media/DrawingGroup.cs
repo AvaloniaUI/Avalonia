@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
@@ -28,6 +29,24 @@ namespace Avalonia.Media
                 (o, v) => o.Children = v);
 
         private DrawingCollection _children = new DrawingCollection();
+        private List<Drawing>? _subscribedChildren;
+        private TargetWeakEventSubscriber<DrawingGroup, EventArgs>? _childInvalidatedSubscriber;
+        private TargetWeakEventSubscriber<DrawingGroup, NotifyCollectionChangedEventArgs>? _childrenCollectionChangedSubscriber;
+
+        static DrawingGroup()
+        {
+            AffectsDrawingContent<DrawingGroup>(
+                OpacityProperty,
+                TransformProperty,
+                ClipGeometryProperty,
+                OpacityMaskProperty,
+                ChildrenProperty);
+        }
+
+        public DrawingGroup()
+        {
+            SubscribeToChildren(_children);
+        }
 
         public double Opacity
         {
@@ -69,7 +88,141 @@ namespace Avalonia.Media
             }
         }
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ChildrenProperty)
+            {
+                var (oldChildren, newChildren) = change.GetOldAndNewValue<DrawingCollection>();
+
+                if (oldChildren is not null)
+                {
+                    UnsubscribeFromChildren(oldChildren);
+                }
+
+                if (newChildren is not null)
+                {
+                    SubscribeToChildren(newChildren);
+                }
+            }
+        }
+
         public DrawingContext Open() => new DrawingGroupDrawingContext(this);
+
+        private void SubscribeToChildren(DrawingCollection children)
+        {
+            _childInvalidatedSubscriber ??=
+                new TargetWeakEventSubscriber<DrawingGroup, EventArgs>(
+                    this,
+                    static (target, _, _, _) => target.RaiseInvalidated());
+            _childrenCollectionChangedSubscriber ??=
+                new TargetWeakEventSubscriber<DrawingGroup, NotifyCollectionChangedEventArgs>(
+                    this,
+                    static (target, _, _, e) => target.OnChildrenCollectionChanged(e));
+
+            foreach (var child in children)
+            {
+                SubscribeToChild(child);
+            }
+
+            WeakEvents.CollectionChanged.Subscribe(children, _childrenCollectionChangedSubscriber);
+        }
+
+        private void UnsubscribeFromChildren(DrawingCollection children)
+        {
+            if (_subscribedChildren is not null)
+            {
+                foreach (var child in _subscribedChildren)
+                {
+                    InvalidatedWeakEvent.Unsubscribe(child, _childInvalidatedSubscriber!);
+                }
+
+                _subscribedChildren.Clear();
+            }
+
+            WeakEvents.CollectionChanged.Unsubscribe(children, _childrenCollectionChangedSubscriber!);
+        }
+
+        private void OnChildrenCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    if (e.NewItems is not null)
+                    {
+                        foreach (Drawing child in e.NewItems)
+                        {
+                            SubscribeToChild(child);
+                        }
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    if (e.OldItems is not null)
+                    {
+                        foreach (Drawing child in e.OldItems)
+                        {
+                            UnsubscribeFromChild(child);
+                        }
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    if (e.OldItems is not null)
+                    {
+                        foreach (Drawing child in e.OldItems)
+                        {
+                            UnsubscribeFromChild(child);
+                        }
+                    }
+
+                    if (e.NewItems is not null)
+                    {
+                        foreach (Drawing child in e.NewItems)
+                        {
+                            SubscribeToChild(child);
+                        }
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    ResetChildSubscriptions();
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+            }
+
+            RaiseInvalidated();
+        }
+
+        private void SubscribeToChild(Drawing child)
+        {
+            _subscribedChildren ??= new List<Drawing>();
+            _subscribedChildren.Add(child);
+            InvalidatedWeakEvent.Subscribe(child, _childInvalidatedSubscriber!);
+        }
+
+        private void UnsubscribeFromChild(Drawing child)
+        {
+            InvalidatedWeakEvent.Unsubscribe(child, _childInvalidatedSubscriber!);
+            _subscribedChildren?.Remove(child);
+        }
+
+        private void ResetChildSubscriptions()
+        {
+            if (_subscribedChildren is not null)
+            {
+                foreach (var child in _subscribedChildren)
+                {
+                    InvalidatedWeakEvent.Unsubscribe(child, _childInvalidatedSubscriber!);
+                }
+
+                _subscribedChildren.Clear();
+            }
+
+            foreach (var child in _children)
+            {
+                SubscribeToChild(child);
+            }
+        }
 
         internal override void DrawCore(DrawingContext context)
         {

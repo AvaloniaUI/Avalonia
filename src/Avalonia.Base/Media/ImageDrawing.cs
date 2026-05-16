@@ -7,6 +7,11 @@ namespace Avalonia.Media
     /// </summary>
     public sealed class ImageDrawing : Drawing
     {
+        static ImageDrawing()
+        {
+            AffectsDrawingContent<ImageDrawing>(ImageSourceProperty, RectProperty);
+        }
+
         /// <summary>
         /// Defines the <see cref="ImageSource"/> property.
         /// </summary>
