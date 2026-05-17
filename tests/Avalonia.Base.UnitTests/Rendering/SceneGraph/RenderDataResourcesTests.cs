@@ -69,13 +69,13 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
-        public void Add_Appends_Without_Deduplication()
+        public void AppendDeserialized_Appends_Without_Deduplication()
         {
             var resources = new RenderDataResources();
             var obj = new object();
 
-            var first = resources.Add(obj);
-            var second = resources.Add(obj);
+            var first = resources.AppendDeserialized(obj);
+            var second = resources.AppendDeserialized(obj);
 
             Assert.NotEqual(first, second);
             Assert.Equal(2, resources.Count);

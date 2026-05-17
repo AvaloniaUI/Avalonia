@@ -201,7 +201,7 @@ internal partial class RenderDataStream : IDisposable
 
         var resourceCount = reader.Read<int>();
         for (var i = 0; i < resourceCount; i++)
-            _resources.Add(reader.ReadObject());
+            _resources.AppendDeserialized(reader.ReadObject());
 
         var byteCount = reader.Read<int>();
         if (byteCount > 0)

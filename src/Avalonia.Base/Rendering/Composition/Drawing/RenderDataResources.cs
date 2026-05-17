@@ -13,6 +13,7 @@ internal struct RenderDataResources : IDisposable
 
     public int Count => _resources?.Count ?? 0;
 
+    // Recording path: dedupes by reference equality so a resource reused across many draws gets one slot.
     public int Intern(object? resource)
     {
         if (resource is null)
@@ -30,7 +31,8 @@ internal struct RenderDataResources : IDisposable
         return handle;
     }
 
-    public int Add(object? resource)
+    // Deserialize path: appends without deduping since the wire format is already deduped.
+    public int AppendDeserialized(object? resource)
     {
         if (resource is null)
             return NullHandle;
