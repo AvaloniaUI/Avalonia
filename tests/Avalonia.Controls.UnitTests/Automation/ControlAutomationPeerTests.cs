@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -191,6 +193,42 @@ namespace Avalonia.Controls.UnitTests.Automation
 
                 parentPeer = Assert.IsAssignableFrom<ControlAutomationPeer>(target.GetParent());
                 Assert.Same(root2, parentPeer.Owner);
+            }
+        }
+
+        public class AutomationIdNotifications : ScopedTestBase
+        {
+            [Fact]
+            public void Raises_PropertyChanged_When_AutomationId_Set()
+            {
+                var button = new Button();
+                var peer = CreatePeer(button);
+                var raised = new List<AutomationPropertyChangedEventArgs>();
+                peer.PropertyChanged += (_, e) => raised.Add(e);
+
+                AutomationProperties.SetAutomationId(button, "btn1");
+
+                Assert.Single(raised);
+                Assert.Same(AutomationElementIdentifiers.AutomationIdProperty, raised[0].Property);
+                Assert.Equal("btn1", raised[0].NewValue);
+            }
+
+            [Fact]
+            public void AutomationId_Overrides_Name_Fallback_In_Notification()
+            {
+                // Name="fallback" is set before styles apply (the only valid window),
+                // then AutomationId is set at runtime and the notification should reflect
+                // the explicit AutomationId, not the Name fallback.
+                var button = new Button { Name = "fallback" };
+                var peer = CreatePeer(button);
+                var raised = new List<AutomationPropertyChangedEventArgs>();
+                peer.PropertyChanged += (_, e) => raised.Add(e);
+
+                AutomationProperties.SetAutomationId(button, "explicit");
+
+                Assert.Single(raised);
+                Assert.Same(AutomationElementIdentifiers.AutomationIdProperty, raised[0].Property);
+                Assert.Equal("explicit", raised[0].NewValue);
             }
         }
 

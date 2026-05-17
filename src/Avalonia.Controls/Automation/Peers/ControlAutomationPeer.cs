@@ -305,6 +305,13 @@ namespace Avalonia.Automation.Peers
                     e.OldValue,
                     e.NewValue);
             }
+            else if (e.Property == AutomationProperties.AutomationIdProperty)
+            {
+                RaisePropertyChangedEvent(
+                    AutomationElementIdentifiers.AutomationIdProperty,
+                    null,
+                    GetAutomationId());
+            }
         }
 
 

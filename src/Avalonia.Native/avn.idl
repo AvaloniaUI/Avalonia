@@ -399,6 +399,7 @@ enum SystemDecorations
 
 enum AvnAutomationProperty
 {
+    AutomationPeer_AutomationId,
     AutomationPeer_BoundingRectangle,
     AutomationPeer_ClassName,
     AutomationPeer_Name,
