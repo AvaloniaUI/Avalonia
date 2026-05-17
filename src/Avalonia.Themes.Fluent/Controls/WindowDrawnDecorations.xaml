@@ -41,14 +41,14 @@
           <WindowDrawnDecorationsContent.Underlay>
             <Panel x:Name="PART_UnderlayWrapper">
               <Border x:Name="PART_WindowBorder"
-                      Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                      Background="{DynamicResource SystemControlTransparentBrush}"
                       BorderThickness="{TemplateBinding FrameThickness}"
                       BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                       IsHitTestVisible="False" />
               <!-- Titlebar: background, title text, and drag area live in underlay -->
               <Panel x:Name="PART_TitleBar" VerticalAlignment="Top"
                      Height="{TemplateBinding TitleBarHeight}"
-                     Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                     Background="{DynamicResource SystemControlTransparentBrush}"
                      IsVisible="{TemplateBinding HasTitleBar}"
                      WindowDecorationProperties.ElementRole="TitleBar" />
 
