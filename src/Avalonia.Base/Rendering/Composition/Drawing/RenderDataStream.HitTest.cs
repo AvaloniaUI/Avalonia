@@ -1,6 +1,6 @@
 using System;
-using System.Buffers;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
@@ -9,185 +9,137 @@ namespace Avalonia.Rendering.Composition.Drawing;
 
 internal partial class RenderDataStream
 {
-    private struct HitTestScope
+    internal struct HitTestScope
     {
         public bool SavedLive;
         public bool RestorePoint;
         public Point SavedPoint;
     }
 
-    public bool HitTest(Point point)
+    internal struct HitTestVisitor : IRenderDataVisitor<HitTestScope>
     {
-        var reader = new RenderDataReader(_writer.Written);
-        HitTestScope[]? rented = null;
-        scoped Span<HitTestScope> scopes;
-        if (_maxDepth <= MaxStackScopeDepth)
-            scopes = stackalloc HitTestScope[_maxDepth];
-        else
-            scopes = rented = ArrayPool<HitTestScope>.Shared.Rent(_maxDepth);
-        var depth = 0;
-        var current = point;
-        var live = true;
-        try
-        {
-            while (!reader.IsAtEnd)
-            {
-                switch (reader.ReadOpcode())
-                {
-                    case RenderDataOpcode.DrawLine:
-                    {
-                        reader.ReadInt32();
-                        var clientPen = (IPen?)_resources[reader.ReadInt32()];
-                        var p1 = reader.ReadPoint();
-                        var p2 = reader.ReadPoint();
-                        if (live && HitTestLine(clientPen, p1, p2, current))
-                            return true;
-                        break;
-                    }
-                    case RenderDataOpcode.DrawRectangle:
-                    {
-                        var serverBrush = (IBrush?)_resources[reader.ReadInt32()];
-                        reader.ReadInt32();
-                        var clientPen = (IPen?)_resources[reader.ReadInt32()];
-                        var rect = reader.ReadRoundedRect();
-                        SkipBoxShadows(ref reader);
-                        if (live && HitTestRectangle(serverBrush, clientPen, rect, current))
-                            return true;
-                        break;
-                    }
-                    case RenderDataOpcode.DrawEllipse:
-                    {
-                        var serverBrush = (IBrush?)_resources[reader.ReadInt32()];
-                        reader.ReadInt32();
-                        var clientPen = (IPen?)_resources[reader.ReadInt32()];
-                        var rect = reader.ReadRect();
-                        if (live && HitTestEllipse(serverBrush, clientPen, rect, current))
-                            return true;
-                        break;
-                    }
-                    case RenderDataOpcode.DrawGeometry:
-                    {
-                        var serverBrush = (IBrush?)_resources[reader.ReadInt32()];
-                        reader.ReadInt32();
-                        var clientPen = (IPen?)_resources[reader.ReadInt32()];
-                        var geometry = (IGeometryImpl?)_resources[reader.ReadInt32()];
-                        if (live && geometry != null &&
-                            ((serverBrush != null && geometry.FillContains(current)) ||
-                             (clientPen != null && geometry.StrokeContains(clientPen, current))))
-                            return true;
-                        break;
-                    }
-                    case RenderDataOpcode.DrawGlyphRun:
-                    {
-                        reader.ReadInt32();
-                        var glyphRun = (IRef<IGlyphRunImpl>?)_resources[reader.ReadInt32()];
-                        if (live && glyphRun != null && glyphRun.Item.Bounds.ContainsExclusive(current))
-                            return true;
-                        break;
-                    }
-                    case RenderDataOpcode.DrawBitmap:
-                    {
-                        reader.ReadInt32();
-                        reader.ReadDouble();
-                        reader.ReadRect();
-                        var destRect = reader.ReadRect();
-                        if (live && destRect.Contains(current))
-                            return true;
-                        break;
-                    }
-                    case RenderDataOpcode.DrawCustom:
-                    {
-                        var operation = (ICustomDrawOperation?)_resources[reader.ReadInt32()];
-                        if (live && operation != null && operation.HitTest(current))
-                            return true;
-                        break;
-                    }
-                    case RenderDataOpcode.PushClip:
-                    {
-                        var clip = reader.ReadRoundedRect();
-                        var scope = new HitTestScope { SavedLive = live };
-                        if (live && !clip.Rect.Contains(current))
-                            live = false;
-                        scopes[depth++] = scope;
-                        break;
-                    }
-                    case RenderDataOpcode.PushGeometryClip:
-                    {
-                        var geometry = (IGeometryImpl?)_resources[reader.ReadInt32()];
-                        var scope = new HitTestScope { SavedLive = live };
-                        if (live && geometry != null && !geometry.FillContains(current))
-                            live = false;
-                        scopes[depth++] = scope;
-                        break;
-                    }
-                    case RenderDataOpcode.PushTransform:
-                    {
-                        var matrix = reader.ReadMatrix();
-                        var scope = new HitTestScope { SavedLive = live };
-                        if (live)
-                        {
-                            if (matrix.TryInvert(out var inverted))
-                            {
-                                scope.RestorePoint = true;
-                                scope.SavedPoint = current;
-                                current = current.Transform(inverted);
-                            }
-                            else
-                                live = false;
-                        }
-                        scopes[depth++] = scope;
-                        break;
-                    }
-                    case RenderDataOpcode.PushOpacity:
-                    {
-                        reader.ReadDouble();
-                        scopes[depth++] = new HitTestScope { SavedLive = live };
-                        break;
-                    }
-                    case RenderDataOpcode.PushOpacityMask:
-                    {
-                        reader.ReadInt32();
-                        reader.ReadRect();
-                        scopes[depth++] = new HitTestScope { SavedLive = live };
-                        break;
-                    }
-                    case RenderDataOpcode.PushRenderOptions:
-                    {
-                        reader.ReadRenderOptions();
-                        scopes[depth++] = new HitTestScope { SavedLive = live };
-                        break;
-                    }
-                    case RenderDataOpcode.PushTextOptions:
-                    {
-                        reader.ReadTextOptions();
-                        scopes[depth++] = new HitTestScope { SavedLive = live };
-                        break;
-                    }
-                    case RenderDataOpcode.Pop:
-                    {
-                        var scope = scopes[--depth];
-                        live = scope.SavedLive;
-                        if (scope.RestorePoint)
-                            current = scope.SavedPoint;
-                        break;
-                    }
-                }
-            }
+        public bool StopVisiting { get; private set; }
+        public bool HitFound;
+        public Point Current;
+        public bool Live;
 
-            return false;
-        }
-        finally
+        public HitTestVisitor(Point point)
         {
-            if (rented != null)
-                ArrayPool<HitTestScope>.Shared.Return(rented);
+            StopVisiting = false;
+            HitFound = false;
+            Current = point;
+            Live = true;
+        }
+
+        private void Hit()
+        {
+            HitFound = true;
+            StopVisiting = true;
+        }
+
+        public void OnDrawLine(IPen? serverPen, IPen? clientPen, Point p1, Point p2)
+        {
+            if (Live && HitTestLine(clientPen, p1, p2, Current))
+                Hit();
+        }
+
+        public void OnDrawRectangle(IBrush? serverBrush, IPen? serverPen, IPen? clientPen, RoundedRect rect,
+            BoxShadows boxShadows)
+        {
+            if (Live && HitTestRectangle(serverBrush, clientPen, rect, Current))
+                Hit();
+        }
+
+        public void OnDrawEllipse(IBrush? serverBrush, IPen? serverPen, IPen? clientPen, Rect rect)
+        {
+            if (Live && HitTestEllipse(serverBrush, clientPen, rect, Current))
+                Hit();
+        }
+
+        public void OnDrawGeometry(IBrush? serverBrush, IPen? serverPen, IPen? clientPen, IGeometryImpl? geometry)
+        {
+            if (Live && geometry != null &&
+                ((serverBrush != null && geometry.FillContains(Current)) ||
+                 (clientPen != null && geometry.StrokeContains(clientPen, Current))))
+                Hit();
+        }
+
+        public void OnDrawGlyphRun(IBrush? serverBrush, IRef<IGlyphRunImpl>? glyphRun)
+        {
+            if (Live && glyphRun != null && glyphRun.Item.Bounds.ContainsExclusive(Current))
+                Hit();
+        }
+
+        public void OnDrawBitmap(IRef<IBitmapImpl>? bitmap, double opacity, Rect sourceRect, Rect destRect)
+        {
+            if (Live && destRect.Contains(Current))
+                Hit();
+        }
+
+        public void OnDrawCustom(ICustomDrawOperation? operation)
+        {
+            if (Live && operation != null && operation.HitTest(Current))
+                Hit();
+        }
+
+        public HitTestScope OnPushClip(RoundedRect clip)
+        {
+            var scope = new HitTestScope { SavedLive = Live };
+            if (Live && !clip.Rect.Contains(Current))
+                Live = false;
+            return scope;
+        }
+
+        public HitTestScope OnPushGeometryClip(IGeometryImpl? geometry)
+        {
+            var scope = new HitTestScope { SavedLive = Live };
+            if (Live && geometry != null && !geometry.FillContains(Current))
+                Live = false;
+            return scope;
+        }
+
+        public HitTestScope OnPushOpacity(double opacity)
+            => new HitTestScope { SavedLive = Live };
+
+        public HitTestScope OnPushOpacityMask(IBrush? brush, Rect bounds)
+            => new HitTestScope { SavedLive = Live };
+
+        public HitTestScope OnPushTransform(Matrix matrix)
+        {
+            var scope = new HitTestScope { SavedLive = Live };
+            if (Live)
+            {
+                if (matrix.TryInvert(out var inverted))
+                {
+                    scope.RestorePoint = true;
+                    scope.SavedPoint = Current;
+                    Current = Current.Transform(inverted);
+                }
+                else
+                    Live = false;
+            }
+            return scope;
+        }
+
+        public HitTestScope OnPushRenderOptions(RenderOptions options)
+            => new HitTestScope { SavedLive = Live };
+
+        public HitTestScope OnPushTextOptions(TextOptions options)
+            => new HitTestScope { SavedLive = Live };
+
+        public void OnPop(in HitTestScope scope)
+        {
+            Live = scope.SavedLive;
+            if (scope.RestorePoint)
+                Current = scope.SavedPoint;
         }
     }
 
-    private static void SkipBoxShadows(ref RenderDataReader reader)
+    public bool HitTest(Point point)
     {
-        var count = reader.ReadInt32();
-        for (var i = 0; i < count; i++)
-            reader.ReadBoxShadow();
+        var visitor = new HitTestVisitor(point);
+        Visit<HitTestVisitor, HitTestScope>(ref visitor);
+        return visitor.HitFound;
     }
 
     private static bool HitTestLine(IPen? clientPen, Point p1, Point p2, Point p)

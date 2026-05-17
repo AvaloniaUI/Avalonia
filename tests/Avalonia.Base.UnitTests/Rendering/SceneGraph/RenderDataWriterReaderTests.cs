@@ -13,22 +13,22 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             var writer = new RenderDataWriter();
             try
             {
-                writer.WriteByte(200);
+                writer.Write<byte>(200);
                 writer.WriteOpcode(RenderDataOpcode.DrawGeometry);
-                writer.WriteInt32(-123456);
-                writer.WriteUInt32(4000000000);
-                writer.WriteDouble(3.14159);
-                writer.WriteBoolean(true);
-                writer.WriteBoolean(false);
+                writer.Write(-123456);
+                writer.Write(4000000000u);
+                writer.Write(3.14159);
+                writer.Write(true);
+                writer.Write(false);
 
                 var reader = new RenderDataReader(writer.Written);
-                Assert.Equal(200, reader.ReadByte());
-                Assert.Equal(RenderDataOpcode.DrawGeometry, reader.ReadOpcode());
-                Assert.Equal(-123456, reader.ReadInt32());
-                Assert.Equal(4000000000, reader.ReadUInt32());
-                Assert.Equal(3.14159, reader.ReadDouble());
-                Assert.True(reader.ReadBoolean());
-                Assert.False(reader.ReadBoolean());
+                Assert.Equal(200, reader.Read<byte>());
+                Assert.Equal(RenderDataOpcode.DrawGeometry, reader.Read<RenderDataOpcode>());
+                Assert.Equal(-123456, reader.Read<int>());
+                Assert.Equal(4000000000u, reader.Read<uint>());
+                Assert.Equal(3.14159, reader.Read<double>());
+                Assert.True(reader.Read<bool>());
+                Assert.False(reader.Read<bool>());
                 Assert.True(reader.IsAtEnd);
             }
             finally
@@ -50,25 +50,25 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             var writer = new RenderDataWriter();
             try
             {
-                writer.WritePoint(point);
-                writer.WriteVector(vector);
-                writer.WriteRect(rect);
-                writer.WriteRoundedRect(roundedRect);
-                writer.WriteMatrix(matrix);
+                writer.Write(point);
+                writer.Write(vector);
+                writer.Write(rect);
+                writer.Write(roundedRect);
+                writer.Write(matrix);
 
                 var reader = new RenderDataReader(writer.Written);
-                Assert.Equal(point, reader.ReadPoint());
-                Assert.Equal(vector, reader.ReadVector());
-                Assert.Equal(rect, reader.ReadRect());
+                Assert.Equal(point, reader.Read<Point>());
+                Assert.Equal(vector, reader.Read<Vector>());
+                Assert.Equal(rect, reader.Read<Rect>());
 
-                var readRounded = reader.ReadRoundedRect();
+                var readRounded = reader.Read<RoundedRect>();
                 Assert.Equal(roundedRect.Rect, readRounded.Rect);
                 Assert.Equal(roundedRect.RadiiTopLeft, readRounded.RadiiTopLeft);
                 Assert.Equal(roundedRect.RadiiTopRight, readRounded.RadiiTopRight);
                 Assert.Equal(roundedRect.RadiiBottomRight, readRounded.RadiiBottomRight);
                 Assert.Equal(roundedRect.RadiiBottomLeft, readRounded.RadiiBottomLeft);
 
-                Assert.Equal(matrix, reader.ReadMatrix());
+                Assert.Equal(matrix, reader.Read<Matrix>());
                 Assert.True(reader.IsAtEnd);
             }
             finally
@@ -94,13 +94,13 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             var writer = new RenderDataWriter();
             try
             {
-                writer.WriteColor(color);
-                writer.WriteBoxShadow(shadow);
+                writer.Write(color);
+                writer.Write(shadow);
 
                 var reader = new RenderDataReader(writer.Written);
-                Assert.Equal(color, reader.ReadColor());
+                Assert.Equal(color, reader.Read<Color>());
 
-                var readShadow = reader.ReadBoxShadow();
+                var readShadow = reader.Read<BoxShadow>();
                 Assert.Equal(shadow.OffsetX, readShadow.OffsetX);
                 Assert.Equal(shadow.OffsetY, readShadow.OffsetY);
                 Assert.Equal(shadow.Blur, readShadow.Blur);
@@ -138,12 +138,12 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             var writer = new RenderDataWriter();
             try
             {
-                writer.WriteRenderOptions(renderOptions);
-                writer.WriteTextOptions(textOptions);
+                writer.Write(renderOptions);
+                writer.Write(textOptions);
 
                 var reader = new RenderDataReader(writer.Written);
-                Assert.Equal(renderOptions, reader.ReadRenderOptions());
-                Assert.Equal(textOptions, reader.ReadTextOptions());
+                Assert.Equal(renderOptions, reader.Read<RenderOptions>());
+                Assert.Equal(textOptions, reader.Read<TextOptions>());
                 Assert.True(reader.IsAtEnd);
             }
             finally
@@ -161,10 +161,10 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             var writer = new RenderDataWriter();
             try
             {
-                writer.WriteRenderOptions(new RenderOptions { RequiresFullOpacityHandling = value });
+                writer.Write(new RenderOptions { RequiresFullOpacityHandling = value });
 
                 var reader = new RenderDataReader(writer.Written);
-                Assert.Equal(value, reader.ReadRenderOptions().RequiresFullOpacityHandling);
+                Assert.Equal(value, reader.Read<RenderOptions>().RequiresFullOpacityHandling);
             }
             finally
             {
@@ -179,11 +179,11 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             try
             {
                 Assert.Equal(0, writer.Length);
-                writer.WriteByte(1);
+                writer.Write<byte>(1);
                 Assert.Equal(1, writer.Length);
-                writer.WriteInt32(2);
+                writer.Write(2);
                 Assert.Equal(5, writer.Length);
-                writer.WriteDouble(3);
+                writer.Write(3d);
                 Assert.Equal(13, writer.Length);
             }
             finally
@@ -199,13 +199,33 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             try
             {
                 for (var i = 0; i < 1000; i++)
-                    writer.WriteInt32(i);
+                    writer.Write(i);
 
                 Assert.Equal(4000, writer.Length);
 
                 var reader = new RenderDataReader(writer.Written);
                 for (var i = 0; i < 1000; i++)
-                    Assert.Equal(i, reader.ReadInt32());
+                    Assert.Equal(i, reader.Read<int>());
+                Assert.True(reader.IsAtEnd);
+            }
+            finally
+            {
+                writer.Dispose();
+            }
+        }
+
+        [Fact]
+        public void Payload_Auto_Prepends_Opcode()
+        {
+            var writer = new RenderDataWriter();
+            try
+            {
+                writer.WritePayload(new PushOpacityPayload { Opacity = 0.5 });
+
+                var reader = new RenderDataReader(writer.Written);
+                Assert.Equal(RenderDataOpcode.PushOpacity, reader.Read<RenderDataOpcode>());
+                var payload = reader.Read<PushOpacityPayload>();
+                Assert.Equal(0.5, payload.Opacity);
                 Assert.True(reader.IsAtEnd);
             }
             finally

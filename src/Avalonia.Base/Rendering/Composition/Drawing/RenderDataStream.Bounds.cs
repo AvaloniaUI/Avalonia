@@ -1,6 +1,5 @@
-using System;
-using System.Buffers;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
@@ -9,160 +8,76 @@ namespace Avalonia.Rendering.Composition.Drawing;
 
 internal partial class RenderDataStream
 {
-    private struct BoundsScope
+    internal struct BoundsScope
     {
         public Rect? SavedBounds;
         public bool IsTransform;
         public Matrix Matrix;
     }
 
+    internal struct BoundsVisitor : IRenderDataVisitor<BoundsScope>
+    {
+        public Rect? Current;
+
+        public bool StopVisiting => false;
+
+        public void OnDrawLine(IPen? serverPen, IPen? clientPen, Point p1, Point p2)
+        {
+            if (serverPen != null)
+                Current = Rect.Union(Current, LineBoundsHelper.CalculateBounds(p1, p2, serverPen));
+        }
+
+        public void OnDrawRectangle(IBrush? serverBrush, IPen? serverPen, IPen? clientPen, RoundedRect rect,
+            BoxShadows boxShadows)
+        {
+            var bounds = boxShadows.TransformBounds(rect.Rect)
+                .Inflate((serverPen?.Thickness ?? 0) / 2);
+            Current = Rect.Union(Current, bounds);
+        }
+
+        public void OnDrawEllipse(IBrush? serverBrush, IPen? serverPen, IPen? clientPen, Rect rect)
+            => Current = Rect.Union(Current, rect.Inflate(serverPen?.Thickness ?? 0));
+
+        public void OnDrawGeometry(IBrush? serverBrush, IPen? serverPen, IPen? clientPen, IGeometryImpl? geometry)
+            => Current = Rect.Union(Current, geometry?.GetRenderBounds(serverPen) ?? default);
+
+        public void OnDrawGlyphRun(IBrush? serverBrush, IRef<IGlyphRunImpl>? glyphRun)
+            => Current = Rect.Union(Current, glyphRun?.Item?.Bounds ?? default);
+
+        public void OnDrawBitmap(IRef<IBitmapImpl>? bitmap, double opacity, Rect sourceRect, Rect destRect)
+            => Current = Rect.Union(Current, destRect);
+
+        public void OnDrawCustom(ICustomDrawOperation? operation)
+            => Current = Rect.Union(Current, operation?.Bounds);
+
+        private BoundsScope EnterChildScope(bool isTransform = false, Matrix matrix = default)
+        {
+            var scope = new BoundsScope { SavedBounds = Current, IsTransform = isTransform, Matrix = matrix };
+            Current = null;
+            return scope;
+        }
+
+        public BoundsScope OnPushClip(RoundedRect clip) => EnterChildScope();
+        public BoundsScope OnPushGeometryClip(IGeometryImpl? geometry) => EnterChildScope();
+        public BoundsScope OnPushOpacity(double opacity) => EnterChildScope();
+        public BoundsScope OnPushOpacityMask(IBrush? brush, Rect bounds) => EnterChildScope();
+        public BoundsScope OnPushTransform(Matrix matrix) => EnterChildScope(true, matrix);
+        public BoundsScope OnPushRenderOptions(RenderOptions options) => EnterChildScope();
+        public BoundsScope OnPushTextOptions(TextOptions options) => EnterChildScope();
+
+        public void OnPop(in BoundsScope scope)
+        {
+            var childUnion = Current;
+            if (scope.IsTransform)
+                childUnion = childUnion?.TransformToAABB(scope.Matrix);
+            Current = Rect.Union(scope.SavedBounds, childUnion);
+        }
+    }
+
     public Rect? CalculateBounds()
     {
-        var reader = new RenderDataReader(_writer.Written);
-        BoundsScope[]? rented = null;
-        scoped Span<BoundsScope> scopes;
-        if (_maxDepth <= MaxStackScopeDepth)
-            scopes = stackalloc BoundsScope[_maxDepth];
-        else
-            scopes = rented = ArrayPool<BoundsScope>.Shared.Rent(_maxDepth);
-        var depth = 0;
-        Rect? current = null;
-        try
-        {
-            while (!reader.IsAtEnd)
-            {
-                switch (reader.ReadOpcode())
-                {
-                    case RenderDataOpcode.DrawLine:
-                    {
-                        var serverPen = (IPen?)_resources[reader.ReadInt32()];
-                        reader.ReadInt32();
-                        var p1 = reader.ReadPoint();
-                        var p2 = reader.ReadPoint();
-                        if (serverPen != null)
-                            current = Rect.Union(current, LineBoundsHelper.CalculateBounds(p1, p2, serverPen));
-                        break;
-                    }
-                    case RenderDataOpcode.DrawRectangle:
-                    {
-                        reader.ReadInt32();
-                        var serverPen = (IPen?)_resources[reader.ReadInt32()];
-                        reader.ReadInt32();
-                        var rect = reader.ReadRoundedRect();
-                        var boxShadows = ReadBoxShadows(ref reader);
-                        var bounds = boxShadows.TransformBounds(rect.Rect)
-                            .Inflate((serverPen?.Thickness ?? 0) / 2);
-                        current = Rect.Union(current, bounds);
-                        break;
-                    }
-                    case RenderDataOpcode.DrawEllipse:
-                    {
-                        reader.ReadInt32();
-                        var serverPen = (IPen?)_resources[reader.ReadInt32()];
-                        reader.ReadInt32();
-                        var rect = reader.ReadRect();
-                        current = Rect.Union(current, rect.Inflate(serverPen?.Thickness ?? 0));
-                        break;
-                    }
-                    case RenderDataOpcode.DrawGeometry:
-                    {
-                        reader.ReadInt32();
-                        var serverPen = (IPen?)_resources[reader.ReadInt32()];
-                        reader.ReadInt32();
-                        var geometry = (IGeometryImpl?)_resources[reader.ReadInt32()];
-                        current = Rect.Union(current, geometry?.GetRenderBounds(serverPen) ?? default);
-                        break;
-                    }
-                    case RenderDataOpcode.DrawGlyphRun:
-                    {
-                        reader.ReadInt32();
-                        var glyphRun = (IRef<IGlyphRunImpl>?)_resources[reader.ReadInt32()];
-                        current = Rect.Union(current, glyphRun?.Item?.Bounds ?? default);
-                        break;
-                    }
-                    case RenderDataOpcode.DrawBitmap:
-                    {
-                        reader.ReadInt32();
-                        reader.ReadDouble();
-                        reader.ReadRect();
-                        var destRect = reader.ReadRect();
-                        current = Rect.Union(current, destRect);
-                        break;
-                    }
-                    case RenderDataOpcode.DrawCustom:
-                    {
-                        var operation = (ICustomDrawOperation?)_resources[reader.ReadInt32()];
-                        current = Rect.Union(current, operation?.Bounds);
-                        break;
-                    }
-                    case RenderDataOpcode.PushClip:
-                    {
-                        reader.ReadRoundedRect();
-                        scopes[depth++] = new BoundsScope { SavedBounds = current };
-                        current = null;
-                        break;
-                    }
-                    case RenderDataOpcode.PushGeometryClip:
-                    {
-                        reader.ReadInt32();
-                        scopes[depth++] = new BoundsScope { SavedBounds = current };
-                        current = null;
-                        break;
-                    }
-                    case RenderDataOpcode.PushOpacity:
-                    {
-                        reader.ReadDouble();
-                        scopes[depth++] = new BoundsScope { SavedBounds = current };
-                        current = null;
-                        break;
-                    }
-                    case RenderDataOpcode.PushOpacityMask:
-                    {
-                        reader.ReadInt32();
-                        reader.ReadRect();
-                        scopes[depth++] = new BoundsScope { SavedBounds = current };
-                        current = null;
-                        break;
-                    }
-                    case RenderDataOpcode.PushTransform:
-                    {
-                        var matrix = reader.ReadMatrix();
-                        scopes[depth++] = new BoundsScope { SavedBounds = current, IsTransform = true, Matrix = matrix };
-                        current = null;
-                        break;
-                    }
-                    case RenderDataOpcode.PushRenderOptions:
-                    {
-                        reader.ReadRenderOptions();
-                        scopes[depth++] = new BoundsScope { SavedBounds = current };
-                        current = null;
-                        break;
-                    }
-                    case RenderDataOpcode.PushTextOptions:
-                    {
-                        reader.ReadTextOptions();
-                        scopes[depth++] = new BoundsScope { SavedBounds = current };
-                        current = null;
-                        break;
-                    }
-                    case RenderDataOpcode.Pop:
-                    {
-                        var scope = scopes[--depth];
-                        var childUnion = current;
-                        if (scope.IsTransform)
-                            childUnion = childUnion?.TransformToAABB(scope.Matrix);
-                        current = Rect.Union(scope.SavedBounds, childUnion);
-                        break;
-                    }
-                }
-            }
-
-            return current;
-        }
-        finally
-        {
-            if (rented != null)
-                ArrayPool<BoundsScope>.Shared.Return(rented);
-        }
+        var visitor = new BoundsVisitor();
+        Visit<BoundsVisitor, BoundsScope>(ref visitor);
+        return visitor.Current;
     }
 }

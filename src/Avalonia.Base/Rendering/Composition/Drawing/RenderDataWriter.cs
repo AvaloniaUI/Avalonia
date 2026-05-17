@@ -1,8 +1,6 @@
 using System;
 using System.Buffers;
 using System.Runtime.InteropServices;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
 
 namespace Avalonia.Rendering.Composition.Drawing;
 
@@ -33,45 +31,23 @@ internal struct RenderDataWriter : IDisposable
         return span;
     }
 
-    private void WriteBlittable<T>(T value) where T : unmanaged
+    public Span<byte> Reserve(int count) => Advance(count);
+
+    public void Rewind(int length) => _length = length;
+
+    public void Write<T>(T value) where T : unmanaged
     {
         var bytes = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref value, 1));
         bytes.CopyTo(Advance(bytes.Length));
     }
 
-    public Span<byte> Reserve(int count) => Advance(count);
+    public void WriteOpcode(RenderDataOpcode opcode) => Write(opcode);
 
-    public void Rewind(int length) => _length = length;
-
-    public void WriteByte(byte value) => Advance(1)[0] = value;
-
-    public void WriteOpcode(RenderDataOpcode opcode) => WriteByte((byte)opcode);
-
-    public void WriteInt32(int value) => WriteBlittable(value);
-
-    public void WriteUInt32(uint value) => WriteBlittable(value);
-
-    public void WriteDouble(double value) => WriteBlittable(value);
-
-    public void WriteBoolean(bool value) => WriteBlittable(value);
-
-    public void WritePoint(Point value) => WriteBlittable(value);
-
-    public void WriteVector(Vector value) => WriteBlittable(value);
-
-    public void WriteRect(Rect value) => WriteBlittable(value);
-
-    public void WriteRoundedRect(RoundedRect value) => WriteBlittable(value);
-
-    public void WriteMatrix(Matrix value) => WriteBlittable(value);
-
-    public void WriteColor(Color value) => WriteBlittable(value);
-
-    public void WriteBoxShadow(BoxShadow value) => WriteBlittable(value);
-
-    public void WriteRenderOptions(RenderOptions value) => WriteBlittable(value);
-
-    public void WriteTextOptions(TextOptions value) => WriteBlittable(value);
+    public void WritePayload<T>(T payload) where T : unmanaged, IRenderDataPayload<T>
+    {
+        Write(T.Opcode);
+        Write(payload);
+    }
 
     public void Dispose()
     {
