@@ -25,23 +25,37 @@ internal static class GraphemeBreakClassTrieGenerator
         var graphemeBreakData = ReadBreakData("auxiliary/GraphemeBreakProperty.txt");
         var emojiBreakData = ReadBreakData("emoji/emoji-data.txt");
 
-        foreach (var breakData in new[] { graphemeBreakData, emojiBreakData })
+        foreach (var (start, end, graphemeBreakType) in graphemeBreakData)
         {
-            foreach (var (start, end, graphemeBreakType) in breakData)
+            if (!Enum.TryParse<GraphemeBreakClass>(graphemeBreakType.Replace("_", ""), out var value))
             {
-                if (!Enum.TryParse<GraphemeBreakClass>(graphemeBreakType.Replace("_", ""), out var value))
-                {
-                    continue;
-                }
-
-                AddRange(
-                    values,
-                    start,
-                    end,
-                    (uint)value,
-                    0,
-                    UnicodeData.GRAPHEMEBREAK_MASK);
+                throw new InvalidDataException(
+                    $"Unknown grapheme break class '{graphemeBreakType}' in auxiliary/GraphemeBreakProperty.txt for range U+{start:X4}..U+{end:X4}.");
             }
+
+            AddRange(
+                values,
+                start,
+                end,
+                (uint)value,
+                0,
+                UnicodeData.GRAPHEMEBREAK_MASK);
+        }
+
+        foreach (var (start, end, graphemeBreakType) in emojiBreakData)
+        {
+            if (!Enum.TryParse<GraphemeBreakClass>(graphemeBreakType.Replace("_", ""), out var value))
+            {
+                continue;
+            }
+
+            AddRange(
+                values,
+                start,
+                end,
+                (uint)value,
+                0,
+                UnicodeData.GRAPHEMEBREAK_MASK);
         }
 
         foreach (var (start, end, indicConjunctBreakType) in ReadIndicConjunctBreakData())
