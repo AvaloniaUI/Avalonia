@@ -33,12 +33,18 @@ namespace Avalonia.Controls.UnitTests
                 root.Arrange(new Rect(root.ClientSize));
                 root.ExecuteInitialLayoutPass();
 
-                var line = target.TextLayout.TextLines[0];
+                var firstCharacterBounds = target.TextLayout.HitTestTextPosition(0);
+                var lastCharacterBounds = target.TextLayout.HitTestTextPosition(target.Text!.Length - 1);
                 var mouse = new MouseTestHelper();
-                var y = target.Bounds.Height / 2;
+                var startPoint = new Point(
+                    firstCharacterBounds.X + firstCharacterBounds.Width / 2,
+                    firstCharacterBounds.Y + firstCharacterBounds.Height / 2);
+                var endPoint = new Point(
+                    Math.Min(target.Bounds.Width - 1, lastCharacterBounds.Right + 10),
+                    lastCharacterBounds.Y + lastCharacterBounds.Height / 2);
 
-                mouse.Down(target, position: new Point(line.Start, y));
-                mouse.Move(target, new Point(target.Bounds.Width - 1, y));
+                mouse.Down(target, position: target.TranslatePoint(startPoint, root));
+                mouse.Move(target, position: target.TranslatePoint(endPoint, root).GetValueOrDefault());
 
                 Assert.Equal(target.Text!.Length, Math.Max(target.SelectionStart, target.SelectionEnd));
             }
