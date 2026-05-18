@@ -44,6 +44,12 @@ namespace Avalonia.Rendering.Composition.Server
         /// Returns true if the target is enabled and has pending work but its render target was not ready.
         /// </summary>
         internal bool IsWaitingForReadyRenderTarget { get; private set; }
+        
+        /// <summary>
+        /// Returns true if the target's render target is waiting for a render loop wakeup
+        /// (i.e. the platform will call Wakeup() when ready, no need to keep polling).
+        /// </summary>
+        internal bool IsWaitingForRenderLoopWakeup { get; private set; }
 
         public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<IPlatformRenderSurface>> surfaces)
             : base(compositor)
@@ -131,6 +137,7 @@ namespace Avalonia.Rendering.Composition.Server
         public void Render()
         {
             IsWaitingForReadyRenderTarget = false;
+            IsWaitingForRenderLoopWakeup = false;
             
             if (_disposed)
                 return;
@@ -181,6 +188,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (!_renderTarget.PlatformRenderTargetState.IsReady)
             {
                 IsWaitingForReadyRenderTarget = IsEnabled;
+                IsWaitingForRenderLoopWakeup = IsEnabled && _renderTarget.PlatformRenderTargetState.WillWakeUpRenderLoopWhenReady;
                 return;
             }
 
@@ -310,5 +318,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (_attachedVisuals.Remove(visual) && IsEnabled)
                 visual.Deactivate();
         }
+
+        public void RequestFullRedraw() => _redrawRequested = true;
     }
 }
