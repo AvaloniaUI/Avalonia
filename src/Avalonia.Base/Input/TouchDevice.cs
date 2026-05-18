@@ -88,7 +88,7 @@ namespace Avalonia.Input
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
                     args.Root.RootElement, args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind, args.Point),
-                    keyModifier, _clickCount));
+                    keyModifier, _clickCount, args.PlatformInputEventCookie));
             }
 
             if (args.Type == RawPointerEventType.TouchEnd)
