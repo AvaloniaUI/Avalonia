@@ -59,6 +59,9 @@ namespace Avalonia.OpenGL.Egl
         [GetProcAddress("eglBindAPI")]
         public partial bool BindApi(int api);
 
+        [GetProcAddress("eglQueryAPI")]
+        public partial int QueryApi();
+
         [GetProcAddress("eglChooseConfig")]
         public partial bool ChooseConfig(IntPtr display, int[] attribs,
             out IntPtr surfaceConfig, int numConfigs, out int choosenConfig);
