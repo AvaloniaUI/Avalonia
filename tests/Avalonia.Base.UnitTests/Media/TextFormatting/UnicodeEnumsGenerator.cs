@@ -124,6 +124,52 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             return entries;
         }
 
+        public static List<DataEntry> CreateWordBreakClassEnum()
+        {
+            var entries = new List<DataEntry>
+            {
+                new("Other", "XX", string.Empty),
+                new("Carriage_Return", "CR", string.Empty),
+                new("Line_Feed", "LF", string.Empty),
+                new("Newline", "NL", string.Empty),
+                new("Extend", "Extend", string.Empty),
+                new("ZWJ", "ZWJ", string.Empty),
+                new("Regional_Indicator", "RI", string.Empty),
+                new("Format", "FO", string.Empty),
+                new("Katakana", "KA", string.Empty),
+                new("Hebrew_Letter", "HL", string.Empty),
+                new("ALetter", "LE", string.Empty),
+                new("Single_Quote", "SQ", string.Empty),
+                new("Double_Quote", "DQ", string.Empty),
+                new("MidNumLet", "MB", string.Empty),
+                new("MidLetter", "ML", string.Empty),
+                new("MidNum", "MN", string.Empty),
+                new("Numeric", "NU", string.Empty),
+                new("ExtendNumLet", "EX", string.Empty),
+                new("WSegSpace", "WSegSpace", string.Empty)
+            };
+
+            using (var stream = File.Create("Generated\\WordBreakClass.cs"))
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.WriteLine("namespace Avalonia.Media.TextFormatting.Unicode");
+                writer.WriteLine("{");
+                writer.WriteLine("    public enum WordBreakClass");
+                writer.WriteLine("    {");
+
+                foreach (var entry in entries)
+                {
+                    writer.WriteLine("        " + entry.Name.Replace("_", "") + ", //" + entry.Tag +
+                                     (string.IsNullOrEmpty(entry.Comment) ? string.Empty : "#" + entry.Comment));
+                }
+
+                writer.WriteLine("    }");
+                writer.WriteLine("}");
+            }
+
+            return entries;
+        }
+
         private static List<string> GenerateBreakPairTable()
         {
             var rows = new List<string[]>();
@@ -348,6 +394,8 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 WritePropertyValueAlias(writer, unicodeDataEntries.GeneralCategories, "GeneralCategory", "Other");
                 
                 WritePropertyValueAlias(writer, unicodeDataEntries.LineBreakClasses, "LineBreakClass", "Unknown");
+
+                WritePropertyValueAlias(writer, unicodeDataEntries.WordBreakClasses, "WordBreakClass", "Other");
 
                 WritePropertyValueAlias(writer, biDiDataEntries.PairedBracketTypes, "BidiPairedBracketType", "None");
                 
