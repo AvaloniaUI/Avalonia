@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using Avalonia.SourceGenerator;
 
 namespace Avalonia.OpenGL.Egl
@@ -33,7 +34,16 @@ namespace Avalonia.OpenGL.Egl
         static Func<string, IntPtr> Load(string library)
         {
             var lib = NativeLibrary.Load(library);
-            return (s) => NativeLibrary.TryGetExport(lib, s, out var address) ? address : default;
+            NativeLibrary.TryGetExport(lib, "eglGetProcAddress", out var getProcAddress);
+            if (getProcAddress == IntPtr.Zero)
+                throw new OpenGlException($"{library} doesn't expose eglGetProcAddress");
+            return s =>
+            {
+                var bytes = new byte[Encoding.UTF8.GetByteCount(s) + 1];
+                Encoding.UTF8.GetBytes(s, bytes.AsSpan().Slice(0, bytes.Length - 1));
+                fixed (byte* ptr = bytes)
+                    return ((delegate* unmanaged[Stdcall]<byte*, IntPtr>)getProcAddress)(ptr);
+            };
         }
 
         // ReSharper disable UnassignedGetOnlyAutoProperty
