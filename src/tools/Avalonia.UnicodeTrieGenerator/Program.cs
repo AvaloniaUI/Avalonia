@@ -23,11 +23,11 @@ internal static class Program
         }
 
         Directory.CreateDirectory(outputDir);
-        Directory.CreateDirectory(UcdDownloader.CacheRoot);
+        Directory.CreateDirectory(UcdDownloader.VersionedCacheRoot);
 
-        Console.WriteLine($"Unicode version: {UcdDownloader.UnicodeVersion}");
+        Console.WriteLine($"Unicode version: {UnicodeDataSource.Version}");
         Console.WriteLine($"Output directory: {outputDir}");
-        Console.WriteLine($"Cache directory:  {UcdDownloader.CacheRoot}");
+        Console.WriteLine($"Cache directory:  {UcdDownloader.VersionedCacheRoot}");
         Console.WriteLine();
 
         Console.WriteLine("Generating UnicodeData trie...");
@@ -47,7 +47,8 @@ internal static class Program
 
         Console.WriteLine("Generating GraphemeBreak trie...");
         UnicodeEnumsGenerator.CreateGraphemeBreakTypeEnum(outputDir);
-        GraphemeBreakClassTrieGenerator.Execute(outputDir);
+        var graphemeBreakTrie = GraphemeBreakClassTrieGenerator.Execute(outputDir, out var graphemeBreakValues);
+        VerifyGraphemeBreakTrie(graphemeBreakTrie, graphemeBreakValues);
 
         Console.WriteLine("Generating PropertyValueAliasHelper...");
         UnicodeEnumsGenerator.CreatePropertyValueAliasHelper(outputDir, unicodeDataEntries, biDiDataEntries);
@@ -105,15 +106,35 @@ internal static class Program
         UnicodeTrie trie,
         System.Collections.Generic.List<(uint start, uint end, EastAsianWidthClass)> values)
     {
-        foreach (var (start, _, value) in values)
+        foreach (var (start, end, value) in values)
         {
             var expected = (uint)value;
-            var actual = trie.Get(start);
+
+            for (var codepoint = start; codepoint <= end; codepoint++)
+            {
+                var actual = trie.Get(codepoint);
+
+                if (expected != actual)
+                {
+                    throw new InvalidOperationException(
+                        $"EastAsianWidth trie mismatch at U+{codepoint:X4} (range U+{start:X4}..U+{end:X4}): expected {expected}, got {actual}.");
+                }
+            }
+        }
+    }
+
+    private static void VerifyGraphemeBreakTrie(
+        UnicodeTrie trie,
+        System.Collections.Generic.Dictionary<int, uint> values)
+    {
+        foreach (var (codepoint, expected) in values)
+        {
+            var actual = trie.Get((uint)codepoint);
 
             if (expected != actual)
             {
                 throw new InvalidOperationException(
-                    $"EastAsianWidth trie mismatch at U+{start:X4}: expected {expected}, got {actual}.");
+                    $"GraphemeBreak trie mismatch at U+{codepoint:X4}: expected 0x{expected:X8}, got 0x{actual:X8}.");
             }
         }
     }

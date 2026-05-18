@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode;
 
-internal static class BidiTrie
+internal static class BiDiTrie
 {
     public static UnicodeTrie Trie
     {

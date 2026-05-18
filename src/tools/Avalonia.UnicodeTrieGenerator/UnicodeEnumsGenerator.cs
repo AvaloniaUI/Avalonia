@@ -168,7 +168,7 @@ internal static class UnicodeEnumsGenerator
 
         ParseDataEntries("# Bidi_Class (bc)", entries);
 
-        WriteEnumFile(outputDir, "BidiClass", "BidiClass", entries);
+        WriteEnumFile(outputDir, "BiDiClass", "BidiClass", entries);
 
         return entries;
     }
@@ -179,7 +179,7 @@ internal static class UnicodeEnumsGenerator
 
         ParseDataEntries("# Bidi_Paired_Bracket_Type (bpt)", entries);
 
-        WriteEnumFile(outputDir, "BidiPairedBracketType", "BidiPairedBracketType", entries);
+        WriteEnumFile(outputDir, "BiDiPairedBracketType", "BidiPairedBracketType", entries);
 
         return entries;
     }

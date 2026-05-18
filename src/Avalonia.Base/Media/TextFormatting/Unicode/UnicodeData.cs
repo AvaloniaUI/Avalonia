@@ -67,7 +67,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BidiClass GetBiDiClass(uint codepoint)
         {
-            return (BidiClass)((BidiTrie.Trie.Get(codepoint) >> BIDICLASS_SHIFT) & BIDICLASS_MASK);
+            return (BidiClass)((BiDiTrie.Trie.Get(codepoint) >> BIDICLASS_SHIFT) & BIDICLASS_MASK);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BidiPairedBracketType GetBiDiPairedBracketType(uint codepoint)
         {
-            return (BidiPairedBracketType)((BidiTrie.Trie.Get(codepoint) >> BIDIPAIREDBRACKEDTYPE_SHIFT) & BIDIPAIREDBRACKEDTYPE_MASK);
+            return (BidiPairedBracketType)((BiDiTrie.Trie.Get(codepoint) >> BIDIPAIREDBRACKEDTYPE_SHIFT) & BIDIPAIREDBRACKEDTYPE_MASK);
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Codepoint GetBiDiPairedBracket(uint codepoint)
         {
-            return new Codepoint(BidiTrie.Trie.Get(codepoint) & BIDIPAIREDBRACKED_MASK);
+            return new Codepoint(BiDiTrie.Trie.Get(codepoint) & BIDIPAIREDBRACKED_MASK);
         }
 
         /// <summary>

@@ -53,7 +53,7 @@ internal static class UnicodeDataGenerator
 
         var trie = biDiTrieBuilder.Freeze();
 
-        GenerateTrieClass(outputDir, "Bidi", trie);
+        GenerateTrieClass(outputDir, "BiDi", trie);
 
         return trie;
     }

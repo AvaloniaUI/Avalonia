@@ -8,17 +8,19 @@ namespace Avalonia.UnicodeTrieGenerator;
 
 internal static class GraphemeBreakClassTrieGenerator
 {
-    public static void Execute(string outputDir)
+    public static UnicodeTrie Execute(string outputDir, out Dictionary<int, uint> values)
     {
-        var trie = GenerateBreakTypeTrie();
+        var trie = GenerateBreakTypeTrie(out values);
 
         UnicodeDataGenerator.GenerateTrieClass(outputDir, "GraphemeBreak", trie);
+
+        return trie;
     }
 
-    private static UnicodeTrie GenerateBreakTypeTrie()
+    private static UnicodeTrie GenerateBreakTypeTrie(out Dictionary<int, uint> values)
     {
         var trieBuilder = new UnicodeTrieBuilder();
-        var values = new Dictionary<int, uint>();
+        values = new Dictionary<int, uint>();
 
         var graphemeBreakData = ReadBreakData("auxiliary/GraphemeBreakProperty.txt");
         var emojiBreakData = ReadBreakData("emoji/emoji-data.txt");

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
-using Avalonia.Base.UnitTests.Media.TextFormatting;
+using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 {
@@ -28,7 +28,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
         {
             var testData = new List<object[]>();
 
-            var url = Path.Combine(UnicodeTestData.Ucd, "auxiliary/GraphemeBreakTest.txt");
+            var url = Path.Combine(UnicodeDataSource.Ucd, "auxiliary/GraphemeBreakTest.txt");
 
             using (var client = new HttpClient())
             using (var result = client.GetAsync(url).GetAwaiter().GetResult())

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using Avalonia.Base.UnitTests.Media.TextFormatting;
+using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 {
@@ -33,7 +33,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             
             using (var client = new HttpClient())
             {
-                var url = Path.Combine(UnicodeTestData.Ucd, "BidiCharacterTest.txt");
+                var url = Path.Combine(UnicodeDataSource.Ucd, "BidiCharacterTest.txt");
 
                 using (var result = client.GetAsync(url).GetAwaiter().GetResult())
                 {
