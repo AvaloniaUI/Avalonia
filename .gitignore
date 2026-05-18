@@ -221,3 +221,6 @@ src/Browser/Avalonia.Browser/wwwroot
 api/diff
 src/Browser/Avalonia.Browser/staticwebassets
 .serena
+
+# Claude agent worktrees
+.claude/worktrees/

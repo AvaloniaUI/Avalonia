@@ -104,7 +104,7 @@ namespace Avalonia.Input
 
             if (source != null)
             {
-                pointer.Capture(source);
+                pointer.Capture(source, CaptureSource.Implicit);
                 var settings = (source as Interactive)?.GetPlatformSettings();
                 if (settings is not null)
                 {
@@ -173,7 +173,7 @@ namespace Avalonia.Input
                 }
                 finally
                 {
-                    pointer.Capture(null);
+                    pointer.Capture(null, CaptureSource.Implicit);
                     pointer.CaptureGestureRecognizer(null);
                     pointer.IsGestureRecognitionSkipped = false;
                     _lastMouseDownButton = default;
