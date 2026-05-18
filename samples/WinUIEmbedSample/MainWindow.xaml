@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="WinUIEmbedSample.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalonia="using:Avalonia.WinUI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="WinUI + Avalonia side by side">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: native WinUI controls -->
+        <Border Grid.Column="0" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+            <ScrollViewer Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="WinUI"
+                               FontSize="22"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,4" />
+                  
+                    <Button x:Name="WinUiButton"
+                            Content="WinUI button"
+                            HorizontalAlignment="Stretch"
+                            Click="WinUiButton_Click" />
+                    <TextBlock x:Name="WinUiClickCount" Text="Clicked 0 times" />
+
+                    <Slider x:Name="WinUiSlider"
+                            Minimum="0"
+                            Maximum="100"
+                            Value="25"
+                            ValueChanged="WinUiSlider_ValueChanged" />
+                    <TextBlock x:Name="WinUiSliderValue" Text="Slider: 25" />
+
+                    <TextBox PlaceholderText="Type something…"
+                             Text="Hello from WinUI" />
+
+                    <ToggleSwitch Header="ToggleSwitch" IsOn="True" />
+
+                    <TextBlock Text="Theme" Margin="0,8,0,0" />
+                    <ComboBox x:Name="WinUiThemeCombo"
+                              SelectedIndex="2"
+                              HorizontalAlignment="Stretch"
+                              SelectionChanged="WinUiThemeCombo_SelectionChanged">
+                        <x:String>Light</x:String>
+                        <x:String>Dark</x:String>
+                        <x:String>System</x:String>
+                    </ComboBox>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Right: Avalonia content embedded via AvaloniaSwapChainPanel -->
+        <avalonia:AvaloniaSwapChainPanel Grid.Column="1" x:Name="AvaloniaPanel" />
+    </Grid>
+</Window>

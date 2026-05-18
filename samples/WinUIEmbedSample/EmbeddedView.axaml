@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="WinUIEmbedSample.EmbeddedView">
+    <Border>
+        <ScrollViewer>
+            <StackPanel Margin="16" Spacing="8">
+                <TextBlock Text="Avalonia"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,4" />
+
+                <Button x:Name="AvButton"
+                        Content="Avalonia button"
+                        HorizontalAlignment="Stretch"
+                        Click="OnAvButtonClick" />
+                <TextBlock x:Name="AvClickCount" Text="Clicked 0 times" />
+
+                <Slider x:Name="AvSlider"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="25" />
+                <TextBlock x:Name="AvSliderValue" Text="Slider: 25" />
+
+                <TextBox PlaceholderText="Type something…"
+                         Text="Hello from Avalonia" />
+
+                <ToggleSwitch Content="ToggleSwitch" IsChecked="True" />
+
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

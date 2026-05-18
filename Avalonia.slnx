@@ -88,6 +88,10 @@
     <Project Path="samples/SingleProjectSandbox/SingleProjectSandbox.csproj" />
     <Project Path="samples/TextTestApp/TextTestApp.csproj" />
     <Project Path="samples/VirtualizationDemo/VirtualizationDemo.csproj" />
+    <Project Path="samples/WinUIEmbedSample/WinUIEmbedSample.csproj">
+      <Platform Project="x64" />
+      <Deploy />
+    </Project>
     <Project Path="samples/XEmbedSample/XEmbedSample.csproj" />
   </Folder>
   <Folder Name="/Samples/Interop/">
