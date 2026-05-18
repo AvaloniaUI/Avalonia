@@ -21,6 +21,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Platform.IRenderTarget.RenderTargetSceneInfo.Deconstruct(Avalonia.PixelSize@,System.Double@)</Target>
+    <Left>baseline/Avalonia/lib/net10.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net10.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Input.PointerEventArgs.#ctor(Avalonia.Interactivity.RoutedEvent,System.Object,Avalonia.Input.IPointer,Avalonia.Visual,Avalonia.Point,System.UInt64,Avalonia.Input.PointerPointProperties,Avalonia.Input.KeyModifiers,System.Lazy{System.Collections.Generic.IReadOnlyList{Avalonia.Input.Raw.RawPointerPoint}})</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
@@ -34,6 +40,12 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Avalonia.Media.TextFormatting.ShapedTextRun.get_IsReversed</Target>
+    <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
+    <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Avalonia.Platform.IRenderTarget.RenderTargetSceneInfo.Deconstruct(Avalonia.PixelSize@,System.Double@)</Target>
     <Left>baseline/Avalonia/lib/net8.0/Avalonia.Base.dll</Left>
     <Right>current/Avalonia/lib/net8.0/Avalonia.Base.dll</Right>
   </Suppression>
