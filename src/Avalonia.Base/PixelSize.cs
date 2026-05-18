@@ -212,7 +212,7 @@ namespace Avalonia
         /// <param name="size">The logical size.</param>
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The pixel size that contains the logical size at the given scale.</returns>
-        public static PixelSize FromSizeCeiling(Size size, double scale) => new PixelSize(
+        internal static PixelSize FromSizeCeiling(Size size, double scale) => new PixelSize(
             CeilWithEpsilon(size.Width * scale),
             CeilWithEpsilon(size.Height * scale));
 
