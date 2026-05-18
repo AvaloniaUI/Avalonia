@@ -41,11 +41,12 @@ namespace Avalonia.Media.TextFormatting
                                     {
                                         var currentBreakPosition = 0;
 
-                                        var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
+                                        var text = currentRun.Text.Span;
+                                        var wordBreaker = new WordBreakEnumerator(text);
 
-                                        while (currentBreakPosition < measuredLength && lineBreaker.MoveNext(out var lineBreak))
+                                        while (currentBreakPosition < measuredLength && wordBreaker.MoveNext(out var wordSegment))
                                         {
-                                            var nextBreakPosition = lineBreak.PositionMeasure;
+                                            var nextBreakPosition = wordSegment.Offset + wordSegment.Length;
 
                                             if (nextBreakPosition == 0)
                                             {
@@ -55,6 +56,17 @@ namespace Avalonia.Media.TextFormatting
                                             if (nextBreakPosition >= measuredLength)
                                             {
                                                 break;
+                                            }
+
+                                            var firstCodepoint = Codepoint.ReadAt(text, wordSegment.Offset, out _);
+
+                                            if (firstCodepoint.WordBreakClass == WordBreakClass.WSegSpace)
+                                            {
+                                                // UAX #29 allows boundaries on both sides of WSegSpace; use the start
+                                                // to preserve the existing behavior of trimming spaces before the ellipsis.
+                                                currentBreakPosition = wordSegment.Offset;
+
+                                                continue;
                                             }
 
                                             currentBreakPosition = nextBreakPosition;
