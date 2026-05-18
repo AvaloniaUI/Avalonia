@@ -255,6 +255,7 @@ namespace Avalonia.Controls
             impl.Closing = HandleClosing;
             impl.GotInputWhenDisabled = OnGotInputWhenDisabled;
             impl.WindowStateChanged = HandleWindowStateChanged;
+            impl.DrawnDecorationsRequestChanged = UpdateDrawnDecorations;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
             impl.AllowedWindowActionsChanged = OnAllowedWindowActionsChanged;
