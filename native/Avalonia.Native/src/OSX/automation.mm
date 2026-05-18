@@ -509,6 +509,8 @@
             NSAccessibilityPostNotification(self, NSAccessibilitySelectedChildrenChangedNotification);
             break;
         case ToggleProvider_ToggleState:
+            NSAccessibilityPostNotification(self, NSAccessibilityValueChangedNotification);
+            break;
         case ExpandCollapseProvider_ExpandCollapseState:
             NSAccessibilityPostNotification(self, NSAccessibilityValueChangedNotification);
             if (_peer->ExpandCollapseProvider_GetIsExpanded())
