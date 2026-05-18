@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Avalonia.UnicodeTrieGenerator</RootNamespace>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CA1304;CA1815;CA1854</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
+  </ItemGroup>
+</Project>

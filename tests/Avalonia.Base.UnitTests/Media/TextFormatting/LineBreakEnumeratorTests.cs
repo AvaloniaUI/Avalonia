@@ -174,7 +174,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 var tests = new List<object[]>();
 
                 // Read the test file
-                var url = Path.Combine(UnicodeDataGenerator.Ucd, "auxiliary/LineBreakTest.txt");
+                var url = Path.Combine(UnicodeTestData.Ucd, "auxiliary/LineBreakTest.txt");
 
                 using (var client = new HttpClient())
                 using (var result = client.GetAsync(url).GetAwaiter().GetResult())

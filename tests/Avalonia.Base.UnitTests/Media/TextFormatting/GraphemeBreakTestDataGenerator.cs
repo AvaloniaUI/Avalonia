@@ -28,7 +28,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
         {
             var testData = new List<object[]>();
 
-            var url = Path.Combine(UnicodeDataGenerator.Ucd, "auxiliary/GraphemeBreakTest.txt");
+            var url = Path.Combine(UnicodeTestData.Ucd, "auxiliary/GraphemeBreakTest.txt");
 
             using (var client = new HttpClient())
             using (var result = client.GetAsync(url).GetAwaiter().GetResult())
