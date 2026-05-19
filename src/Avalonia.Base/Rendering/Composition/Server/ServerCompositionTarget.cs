@@ -326,7 +326,7 @@ namespace Avalonia.Rendering.Composition.Server
             }
             catch (Exception ex)
             {
-                Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this, "Unable to the render interface current: {Error}", ex);
+                Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this, "Unable to make the render interface current: {Error}", ex);
                 // Set to null for now
                 // TODO: Check per-platform to make sure that it's safe to dispose anyay
                 _layer = null;
