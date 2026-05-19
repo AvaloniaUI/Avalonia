@@ -8,67 +8,73 @@ namespace Avalonia.UnicodeTrieGenerator;
 
 internal static class GraphemeBreakClassTrieGenerator
 {
+    // Mirrors the values of IndicConjunctBreakClass in Avalonia.Base. Hardcoded
+    // here so the generator doesn't take a reference on the enum type — if the
+    // enum gains a new value the generator and Avalonia.Base must be updated
+    // together. Order/values must stay in sync with IndicConjunctBreakClass.cs.
+    private static readonly Dictionary<string, uint> s_indicConjunctBreakMap = new()
+    {
+        ["Linker"] = 1,
+        ["Consonant"] = 2,
+        ["Extend"] = 3,
+    };
+
     public static UnicodeTrie Execute(string outputDir, out Dictionary<int, uint> values)
     {
-        var trie = GenerateBreakTypeTrie(out values);
+        var entries = UnicodeEnumsGenerator.CreateGraphemeBreakTypeEnum(outputDir);
+
+        // Map UCD names/tags to packed values. ExtendedPictographic isn't in
+        // PropertyValueAliases (it lives in emoji-data.txt as its own property)
+        // but is emitted as the last enum member by CreateGraphemeBreakTypeEnum,
+        // so its index is entries.Count.
+        var mappings = UnicodeDataGenerator.CreateNameAndTagToIndexMappings(entries);
+        var extendedPictographicIndex = entries.Count;
+        mappings["Extended_Pictographic"] = extendedPictographicIndex;
+        mappings["ExtendedPictographic"] = extendedPictographicIndex;
+
+        var trie = GenerateBreakTypeTrie(mappings, out values);
 
         UnicodeDataGenerator.GenerateTrieClass(outputDir, "GraphemeBreak", trie);
 
         return trie;
     }
 
-    private static UnicodeTrie GenerateBreakTypeTrie(out Dictionary<int, uint> values)
+    private static UnicodeTrie GenerateBreakTypeTrie(
+        IReadOnlyDictionary<string, int> graphemeBreakMappings,
+        out Dictionary<int, uint> values)
     {
-        var trieBuilder = new UnicodeTrieBuilder();
+        // "Other" (XX) is the GCB fallback class for codepoints with no explicit
+        // assignment. Without an explicit initialValue, an unset trie slot would
+        // resolve to whatever GCB class lands at index 0 in UCD's alphabetical
+        // ordering instead.
+        var trieBuilder = new UnicodeTrieBuilder((uint)graphemeBreakMappings["XX"]);
         values = new Dictionary<int, uint>();
 
         var graphemeBreakData = ReadBreakData("auxiliary/GraphemeBreakProperty.txt");
         var emojiBreakData = ReadBreakData("emoji/emoji-data.txt");
 
-        foreach (var (start, end, graphemeBreakType) in graphemeBreakData)
+        foreach (var breakData in new[] { graphemeBreakData, emojiBreakData })
         {
-            if (!Enum.TryParse<GraphemeBreakClass>(graphemeBreakType.Replace("_", ""), out var value))
+            foreach (var (start, end, graphemeBreakType) in breakData)
             {
-                throw new InvalidDataException(
-                    $"Unknown grapheme break class '{graphemeBreakType}' in auxiliary/GraphemeBreakProperty.txt for range U+{start:X4}..U+{end:X4}.");
+                if (!graphemeBreakMappings.TryGetValue(graphemeBreakType.Replace("_", ""), out var index))
+                {
+                    continue;
+                }
+
+                AddRange(
+                    values,
+                    start,
+                    end,
+                    (uint)index,
+                    0,
+                    UnicodeData.GRAPHEMEBREAK_MASK);
             }
-
-            AddRange(
-                values,
-                start,
-                end,
-                (uint)value,
-                0,
-                UnicodeData.GRAPHEMEBREAK_MASK);
-        }
-
-        foreach (var (start, end, graphemeBreakType) in emojiBreakData)
-        {
-            if (!Enum.TryParse<GraphemeBreakClass>(graphemeBreakType.Replace("_", ""), out var value))
-            {
-                continue;
-            }
-
-            AddRange(
-                values,
-                start,
-                end,
-                (uint)value,
-                0,
-                UnicodeData.GRAPHEMEBREAK_MASK);
         }
 
         foreach (var (start, end, indicConjunctBreakType) in ReadIndicConjunctBreakData())
         {
-            var value = indicConjunctBreakType switch
-            {
-                "Linker" => IndicConjunctBreakClass.Linker,
-                "Consonant" => IndicConjunctBreakClass.Consonant,
-                "Extend" => IndicConjunctBreakClass.Extend,
-                _ => IndicConjunctBreakClass.None
-            };
-
-            if (value == IndicConjunctBreakClass.None)
+            if (!s_indicConjunctBreakMap.TryGetValue(indicConjunctBreakType, out var value))
             {
                 continue;
             }
@@ -77,7 +83,7 @@ internal static class GraphemeBreakClassTrieGenerator
                 values,
                 start,
                 end,
-                (uint)value,
+                value,
                 UnicodeData.INDICCONJUNCTBREAK_SHIFT,
                 UnicodeData.INDICCONJUNCTBREAK_MASK);
         }

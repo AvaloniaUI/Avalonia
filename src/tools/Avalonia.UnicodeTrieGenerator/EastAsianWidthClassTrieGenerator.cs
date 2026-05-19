@@ -8,58 +8,48 @@ namespace Avalonia.UnicodeTrieGenerator;
 
 internal static class EastAsianWidthClassTrieGenerator
 {
-    public static UnicodeTrie Execute(string outputDir, out List<(uint start, uint end, EastAsianWidthClass)> values)
+    public static UnicodeTrie Execute(string outputDir, out List<(uint start, uint end, uint value)> values)
     {
-        var trie = GenerateTrie(out values);
+        // CreateEastAsianWidthClassEnum writes the EastAsianWidthClass.cs file
+        // and returns the entries in their enum order. We index by tag so we
+        // don't have to take a hard reference on the generated enum type.
+        var entries = UnicodeEnumsGenerator.CreateEastAsianWidthClassEnum(outputDir);
+        var mappings = UnicodeDataGenerator.CreateTagToIndexMappings(entries);
+
+        var trie = GenerateTrie(mappings, out values);
 
         UnicodeDataGenerator.GenerateTrieClass(outputDir, "EastAsianWidth", trie);
 
         return trie;
     }
 
-    private static UnicodeTrie GenerateTrie(out List<(uint start, uint end, EastAsianWidthClass)> values)
+    private static UnicodeTrie GenerateTrie(
+        IReadOnlyDictionary<string, int> mappings,
+        out List<(uint start, uint end, uint value)> values)
     {
-        var trieBuilder = new UnicodeTrieBuilder((uint)EastAsianWidthClass.Neutral);
+        // "N" (Neutral) is the EAW fallback class for unassigned codepoints.
+        var trieBuilder = new UnicodeTrieBuilder((uint)mappings["N"]);
 
         var data = ReadData("EastAsianWidth.txt");
 
-        values = new List<(uint start, uint end, EastAsianWidthClass)>(data.Count);
+        values = new List<(uint start, uint end, uint value)>(data.Count);
 
         foreach (var (start, end, tag) in data)
         {
-            EastAsianWidthClass value;
-
-            switch (tag.Replace("_", ""))
+            if (!mappings.TryGetValue(tag.Replace("_", ""), out var index))
             {
-                case "A":
-                    value = EastAsianWidthClass.Ambiguous;
-                    break;
-                case "F":
-                    value = EastAsianWidthClass.Fullwidth;
-                    break;
-                case "H":
-                    value = EastAsianWidthClass.Halfwidth;
-                    break;
-                case "N":
-                    value = EastAsianWidthClass.Neutral;
-                    break;
-                case "Na":
-                    value = EastAsianWidthClass.Narrow;
-                    break;
-                case "W":
-                    value = EastAsianWidthClass.Wide;
-                    break;
-                default:
-                    continue;
+                continue;
             }
+
+            var value = (uint)index;
 
             if (start == end)
             {
-                trieBuilder.Set(start, (uint)value);
+                trieBuilder.Set(start, value);
             }
             else
             {
-                trieBuilder.SetRange(start, end, (uint)value);
+                trieBuilder.SetRange(start, end, value);
             }
 
             values.Add(((uint)start, (uint)end, value));

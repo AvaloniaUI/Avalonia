@@ -34,7 +34,14 @@ internal static class UnicodeDataGenerator
             AddBiDiBracket(biDiData, range, bracketType);
         }
 
-        var biDiTrieBuilder = new UnicodeTrieBuilder();
+        // After moving away from seeded enum entries the default int positions of
+        // BidiClass.LeftToRight and BidiPairedBracketType.None are no longer 0,
+        // so an unset trie slot would otherwise resolve to whichever class lands
+        // at index 0 in UCD's alphabetical-by-tag ordering. Pack the real defaults
+        // explicitly: LeftToRight bidi class, None bracket type, no paired bracket.
+        var initialBiDiValue = ((uint)bidiClassMappings["L"] << UnicodeData.BIDICLASS_SHIFT) |
+                               ((uint)biDiPairedBracketTypeMappings["n"] << UnicodeData.BIDIPAIREDBRACKEDTYPE_SHIFT);
+        var biDiTrieBuilder = new UnicodeTrieBuilder(initialBiDiValue);
 
         foreach (var properties in biDiData.Values)
         {

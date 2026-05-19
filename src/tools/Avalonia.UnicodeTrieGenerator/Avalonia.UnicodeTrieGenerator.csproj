@@ -6,7 +6,24 @@
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);CA1304;CA1815;CA1854</NoWarn>
   </PropertyGroup>
+  <!--
+    The generator deliberately does NOT reference Avalonia.Base. It links only
+    the trie data structures, the bit-packing constants, and the Unicode
+    version/URL source-of-truth — never the enum types it generates, since
+    that would be a circular dependency. The generator instead resolves every
+    UCD tag/name to an int index via the DataEntry list each Create*Enum
+    method returns.
+  -->
   <ItemGroup>
-    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
+    <Compile Include="..\..\Avalonia.Base\Media\TextFormatting\Unicode\UnicodeTrie.cs"
+             LinkBase="Linked\Avalonia.Base\Unicode" />
+    <Compile Include="..\..\Avalonia.Base\Media\TextFormatting\Unicode\UnicodeTrieBuilder.cs"
+             LinkBase="Linked\Avalonia.Base\Unicode" />
+    <Compile Include="..\..\Avalonia.Base\Media\TextFormatting\Unicode\UnicodeTrieBuilder.Constants.cs"
+             LinkBase="Linked\Avalonia.Base\Unicode" />
+    <Compile Include="..\..\Avalonia.Base\Media\TextFormatting\Unicode\UnicodeData.cs"
+             LinkBase="Linked\Avalonia.Base\Unicode" />
+    <Compile Include="..\..\Avalonia.Base\Media\TextFormatting\Unicode\UnicodeDataSource.cs"
+             LinkBase="Linked\Avalonia.Base\Unicode" />
   </ItemGroup>
 </Project>

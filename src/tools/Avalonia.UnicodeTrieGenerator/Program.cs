@@ -104,12 +104,10 @@ internal static class Program
 
     private static void VerifyEastAsianWidthTrie(
         UnicodeTrie trie,
-        System.Collections.Generic.List<(uint start, uint end, EastAsianWidthClass)> values)
+        System.Collections.Generic.List<(uint start, uint end, uint value)> values)
     {
-        foreach (var (start, end, value) in values)
+        foreach (var (start, end, expected) in values)
         {
-            var expected = (uint)value;
-
             for (var codepoint = start; codepoint <= end; codepoint++)
             {
                 var actual = trie.Get(codepoint);

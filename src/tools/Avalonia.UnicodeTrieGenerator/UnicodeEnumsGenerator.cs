@@ -2,11 +2,31 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Avalonia.UnicodeTrieGenerator;
 
 internal static class UnicodeEnumsGenerator
 {
+    // ABI INVARIANT for every Create*Enum method below
+    // ----------------------------------------------------------------------
+    // The seed list at the top of each method pins the int positions of every
+    // currently-committed enum member. Avalonia.Base ships these enums as part
+    // of its public API, so reordering them is an ABI break for downstream
+    // consumers and would also invalidate every committed .trie.cs file
+    // (packed values reference the int positions).
+    //
+    // Rules for maintainers:
+    //   * NEVER reorder or remove a seed entry. Mark removed entries with an
+    //     Obsolete comment but keep the slot.
+    //   * UCD-added entries that aren't in the seed list will be appended by
+    //     ParseDataEntries at the next available int (logged as a warning so
+    //     the generator points them out at runtime). If we want them to keep
+    //     stable positions, add them to the seed list.
+    //   * The seed Name is what becomes the public enum member name (after
+    //     underscore stripping). WordBreakClass uses this to give the UCD
+    //     CR / LF members friendlier names (Carriage_Return / Line_Feed).
+
     public static List<DataEntry> CreateScriptEnum(string outputDir)
     {
         var entries = new List<DataEntry>
@@ -51,6 +71,18 @@ internal static class UnicodeEnumsGenerator
 
         ParseDataEntries("# Grapheme_Cluster_Break (GCB)", entries);
 
+        // GraphemeBreakClass has a synthetic ExtendedPictographic member appended
+        // at the end (it's defined in emoji-data.txt, not PropertyValueAliases).
+        // The ABI check needs to know it lives at index entries.Count.
+        var positions = new Dictionary<string, int>();
+        for (var i = 0; i < entries.Count; i++)
+        {
+            positions[entries[i].Tag] = i;
+        }
+        positions[ExtendedPictographicSentinel] = entries.Count;
+
+        ValidateAbiStability(outputDir, "GraphemeBreakClass.cs", "GraphemeBreakClass", positions);
+
         using var stream = File.Create(Path.Combine(outputDir, "GraphemeBreakClass.cs"));
         using var writer = new StreamWriter(stream);
 
@@ -74,8 +106,9 @@ internal static class UnicodeEnumsGenerator
 
     public static List<DataEntry> CreateWordBreakClassEnum(string outputDir)
     {
-        // Common WB classes seeded in hot-path order; ParseDataEntries appends
-        // anything new UCD introduces.
+        // Seeds pin the int positions of the public WordBreakClass members AND
+        // override UCD's bare "CR"/"LF" with the friendlier Carriage_Return /
+        // Line_Feed names. See the ABI INVARIANT comment above.
         var entries = new List<DataEntry>
         {
             new("Other", "XX", string.Empty),
@@ -114,9 +147,6 @@ internal static class UnicodeEnumsGenerator
 
     public static List<DataEntry> CreateLineBreakClassEnum(string outputDir)
     {
-        // LB classes that participate in the pair-table are the hot path; seeding
-        // them up front keeps their packed trie values in a dense low range, then
-        // the default Unknown, then everything else UCD declares.
         var entries = new List<DataEntry>
         {
             new("Open_Punctuation", "OP", string.Empty),
@@ -213,8 +243,16 @@ internal static class UnicodeEnumsGenerator
         writer.WriteLine("}");
     }
 
-    private static void WriteEnumFile(string outputDir, string fileBaseName, string typeName, IEnumerable<DataEntry> entries)
+    private static void WriteEnumFile(string outputDir, string fileBaseName, string typeName, IReadOnlyList<DataEntry> entries)
     {
+        var positions = new Dictionary<string, int>();
+        for (var i = 0; i < entries.Count; i++)
+        {
+            positions[entries[i].Tag] = i;
+        }
+
+        ValidateAbiStability(outputDir, fileBaseName + ".cs", typeName, positions);
+
         using var stream = File.Create(Path.Combine(outputDir, fileBaseName + ".cs"));
         using var writer = new StreamWriter(stream);
 
@@ -231,6 +269,119 @@ internal static class UnicodeEnumsGenerator
 
         writer.WriteLine("    }");
         writer.WriteLine("}");
+    }
+
+    // Synthetic tag for tag-less enum members (currently only GraphemeBreakClass's
+    // ExtendedPictographic, which is defined outside PropertyValueAliases).
+    private const string ExtendedPictographicSentinel = "$ExtendedPictographic";
+
+    // Matches an enum member line exactly as written by WriteEnumFile / the
+    // GraphemeBreakClass custom writer:
+    //   "        Name, //Tag[#Comment]"      ← most entries
+    //   "        Name = N, //Tag[#Comment]"  ← post-bump shape if positions are
+    //                                         ever made explicit
+    //   "        Name"                       ← ExtendedPictographic
+    private static readonly Regex s_enumMemberLineRegex = new(
+        @"^        (?<name>\w+)(?:\s*=\s*(?<pos>\d+))?\s*,?\s*(?://(?<tag>[^\s#]+))?",
+        RegexOptions.Compiled);
+
+    /// <summary>
+    /// Reads the int positions of every member in an existing generated enum
+    /// file. Returns the empty map if the file doesn't exist (first generation).
+    /// Tag-less members (e.g. <c>ExtendedPictographic</c>) are keyed by a
+    /// synthetic <c>$Name</c> tag so they round-trip through ABI checks.
+    /// </summary>
+    private static Dictionary<string, int> ReadExistingEnumPositions(string outputDir, string fileName)
+    {
+        var positions = new Dictionary<string, int>();
+        var path = Path.Combine(outputDir, fileName);
+
+        if (!File.Exists(path))
+        {
+            return positions;
+        }
+
+        var implicitIndex = 0;
+
+        foreach (var rawLine in File.ReadAllLines(path))
+        {
+            var match = s_enumMemberLineRegex.Match(rawLine);
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            var name = match.Groups["name"].Value;
+
+            // Filter the few non-member lines that satisfy the prefix anchor
+            // (shouldn't happen with our writer, but defensive).
+            if (name == "public" || name == "internal" || name == "namespace")
+            {
+                continue;
+            }
+
+            var explicitPos = match.Groups["pos"].Success
+                ? int.Parse(match.Groups["pos"].Value)
+                : -1;
+            var tag = match.Groups["tag"].Success
+                ? match.Groups["tag"].Value
+                : "$" + name;
+
+            var pos = explicitPos >= 0 ? explicitPos : implicitIndex;
+            positions[tag] = pos;
+            implicitIndex = pos + 1;
+        }
+
+        return positions;
+    }
+
+    /// <summary>
+    /// Avalonia ships these enums as part of its public API; int positions are
+    /// ABI. This check fails if a regeneration would shift the position of any
+    /// member that was present in the committed source. The fix is always to
+    /// edit the seed list in this file to preserve the old position; never to
+    /// commit a regenerated enum with shifted positions.
+    /// </summary>
+    private static void ValidateAbiStability(
+        string outputDir,
+        string fileName,
+        string typeName,
+        IReadOnlyDictionary<string, int> newPositions)
+    {
+        var existing = ReadExistingEnumPositions(outputDir, fileName);
+        if (existing.Count == 0)
+        {
+            return; // First generation, nothing to compare against.
+        }
+
+        var problems = new List<string>();
+
+        foreach (var (tag, oldPos) in existing)
+        {
+            if (newPositions.TryGetValue(tag, out var newPos))
+            {
+                if (newPos != oldPos)
+                {
+                    problems.Add(
+                        $"    tag '{tag}' moved from position {oldPos} to position {newPos}");
+                }
+            }
+            else
+            {
+                problems.Add(
+                    $"    tag '{tag}' (was at position {oldPos}) is no longer present in the regenerated enum");
+            }
+        }
+
+        if (problems.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"ABI break detected in {typeName}: enum member positions changed.\n" +
+                string.Join("\n", problems) + "\n" +
+                "Update the seed list in UnicodeEnumsGenerator.cs to restore these positions. " +
+                "If a member was intentionally removed, keep its slot with an Obsolete-marked seed " +
+                "entry instead of deleting it.");
+        }
     }
 
     public static void ParseDataEntries(string property, List<DataEntry> entries)
