@@ -91,7 +91,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             {
                 var tests = new List<object[]>();
 
-                var url = Path.Combine(UnicodeDataGenerator.Ucd, "auxiliary/WordBreakTest.txt");
+                var url = Path.Combine(UnicodeDataSource.Ucd, "auxiliary/WordBreakTest.txt");
 
                 using (var client = new HttpClient())
                 using (var result = client.GetAsync(url).GetAwaiter().GetResult())
