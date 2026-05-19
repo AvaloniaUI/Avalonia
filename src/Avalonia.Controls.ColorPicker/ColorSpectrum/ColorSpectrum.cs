@@ -403,6 +403,8 @@ namespace Avalonia.Controls.Primitives
         {
             if (change.Property == ColorProperty)
             {
+                _oldColor = change.GetOldValue<Color>();
+
                 // If we're in the process of internally updating the color,
                 // then we don't want to respond to the Color property changing.
                 if (!_updatingColor)
@@ -416,9 +418,8 @@ namespace Avalonia.Controls.Primitives
 
                     UpdateEllipse();
                     UpdateBitmapSources();
+                    RaiseColorChanged();
                 }
-
-                _oldColor = change.GetOldValue<Color>();
             }
             else if (change.Property == HsvColorProperty)
             {
