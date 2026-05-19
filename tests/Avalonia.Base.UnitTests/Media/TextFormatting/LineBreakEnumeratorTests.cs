@@ -88,7 +88,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             Assert.Equal(21, positionsF[3].PositionMeasure);
         }
 
-        [Theory(Skip = "Only runs when the spec changes")]
+        [Theory(Skip = "Only run when we update Unicode data.")]
         [ClassData(typeof(LineBreakTestDataGenerator))]
         public void ShouldFindBreaks(int lineNumber, int[] codePoints, int[] breakPoints, string rules)
         {
@@ -174,7 +174,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
                 var tests = new List<object[]>();
 
                 // Read the test file
-                var url = Path.Combine(UnicodeDataGenerator.Ucd, "auxiliary/LineBreakTest.txt");
+                var url = Path.Combine(UnicodeDataSource.Ucd, "auxiliary/LineBreakTest.txt");
 
                 using (var client = new HttpClient())
                 using (var result = client.GetAsync(url).GetAwaiter().GetResult())

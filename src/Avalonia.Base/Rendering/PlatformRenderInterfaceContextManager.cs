@@ -90,4 +90,10 @@ internal class PlatformRenderInterfaceContextManager
             return IsReady;
         return _backend.IsReadyToCreateRenderTarget(surfaces);
     }
+
+    public void Reset()
+    {
+        _backend?.Dispose();
+        _backend = null;
+    }
 }
