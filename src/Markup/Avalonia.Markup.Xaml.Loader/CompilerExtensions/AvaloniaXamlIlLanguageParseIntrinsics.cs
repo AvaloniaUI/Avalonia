@@ -453,7 +453,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             return type.GetAllInterfaces().FirstOrDefault(i =>
-                    i.FullName.StartsWith(types.IEnumerableT.FullName))?
+                    i.FullName.StartsWith(types.IEnumerableOfT.FullName))?
                 .GenericArguments[0];
         }
     }

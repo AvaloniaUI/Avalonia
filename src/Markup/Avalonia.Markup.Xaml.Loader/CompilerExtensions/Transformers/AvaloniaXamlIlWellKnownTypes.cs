@@ -72,7 +72,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType Int { get; }
         public IXamlType Long { get; }
         public IXamlType Uri { get; }
+        public IXamlType TaskOfT { get; }
         public IXamlType IDictionaryT { get; }
+        public IXamlType WeakReferenceOfT { get; }
+        public IXamlType IObservableOfT { get; }
         public IXamlType FontFamily { get; }
         public IXamlConstructor FontFamilyConstructorUriName { get; }
         public IXamlType Thickness { get; }
@@ -129,6 +132,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType Style { get; }
         public IXamlType Container { get; }
         public IXamlType Styles { get; }
+        public IXamlType StyleQueries { get; }
+        public IXamlType Selectors { get; }
         public IXamlType ControlTheme { get; }
         public IXamlType WindowTransparencyLevel { get; }
         public IXamlType IReadOnlyListOfT { get; }
@@ -262,7 +267,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             Int = typeSystem.GetType("System.Int32");
             Long = typeSystem.GetType("System.Int64");
             Uri = typeSystem.GetType("System.Uri");
+            TaskOfT = typeSystem.GetType("System.Threading.Tasks.Task`1");
             IDictionaryT = typeSystem.GetType("System.Collections.Generic.IDictionary`2");
+            WeakReferenceOfT = typeSystem.GetType("System.WeakReference`1");
+            IObservableOfT = typeSystem.GetType("System.IObservable`1");
             FontFamily = typeSystem.GetType("Avalonia.Media.FontFamily");
             FontFamilyConstructorUriName = FontFamily.GetConstructor(new List<IXamlType> { Uri, XamlIlTypes.String });
             ThemeVariant = typeSystem.GetType("Avalonia.Styling.ThemeVariant");
@@ -333,6 +341,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             Style = typeSystem.GetType("Avalonia.Styling.Style");
             Container = typeSystem.GetType("Avalonia.Styling.ContainerQuery");
             Styles = typeSystem.GetType("Avalonia.Styling.Styles");
+            StyleQueries = typeSystem.GetType("Avalonia.Styling.StyleQueries");
+            Selectors = typeSystem.GetType("Avalonia.Styling.Selectors");
             ControlTheme = typeSystem.GetType("Avalonia.Styling.ControlTheme");
             ControlTemplate = typeSystem.GetType("Avalonia.Markup.Xaml.Templates.ControlTemplate");
             IReadOnlyListOfT = typeSystem.GetType("System.Collections.Generic.IReadOnlyList`1");

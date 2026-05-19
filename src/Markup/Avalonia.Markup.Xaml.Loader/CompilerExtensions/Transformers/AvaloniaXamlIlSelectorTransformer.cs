@@ -313,7 +313,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
         protected void EmitCall(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen, Func<IXamlMethod, bool> method)
         {
-            var selectors = context.Configuration.TypeSystem.GetType("Avalonia.Styling.Selectors");
+            var selectors = context.GetAvaloniaTypes().Selectors;
             var found = selectors.GetMethod(m => m.IsStatic && m.Parameters.Count > 0 && method(m));
             codeGen.EmitCall(found);
         }
@@ -564,7 +564,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 _selectors[0].Emit(context, codeGen);
                 return;
             }
-            var listType = context.Configuration.TypeSystem.GetType("System.Collections.Generic.List`1")
+            var listType = context.Configuration.WellKnownTypes.ListOfT
                 .MakeGenericType(base.Type.GetClrType());
             var add = listType.GetMethod("Add", context.Configuration.WellKnownTypes.Void, false, Type.GetClrType());
             codeGen
