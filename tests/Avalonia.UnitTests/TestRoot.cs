@@ -113,9 +113,9 @@ namespace Avalonia.UnitTests
         {
         }
 
-        public Point PointToClient(PixelPoint p) => p.ToPoint(1);
+        public Point? PointToClient(PixelPoint p) => p.ToPoint(1);
 
-        public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
+        public PixelPoint? PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
         
 
         public void RegisterChildrenNames()

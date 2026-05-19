@@ -64,7 +64,7 @@ namespace Avalonia.Controls
         public event EventHandler? CalendarOpened;
 
         /// <summary>
-        /// Occurs when <see cref="P:Avalonia.Controls.DatePicker.Text" />
+        /// Occurs when <see cref="P:Avalonia.Controls.CalendarDatePicker.Text" />
         /// is assigned a value that cannot be interpreted as a date.
         /// </summary>
         public event EventHandler<CalendarDatePickerDateValidationErrorEventArgs>? DateValidationError;

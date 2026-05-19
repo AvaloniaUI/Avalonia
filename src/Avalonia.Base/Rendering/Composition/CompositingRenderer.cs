@@ -173,7 +173,7 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
         _dirty.Clear();
         _recalculateChildren.Clear();
         
-        CompositionTarget.PixelSize = PixelSize.FromSizeRounded(_root.ClientSize, _root.RenderScaling);
+        CompositionTarget.Size = _root.ClientSize;
         CompositionTarget.Scaling = _root.RenderScaling;
         
         var commit = _compositor.RequestCompositionBatchCommitAsync();

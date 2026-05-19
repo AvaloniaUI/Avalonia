@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.AtSpi;
@@ -226,7 +227,13 @@ namespace Avalonia.X11
 
                 if (renderingMode == X11RenderingMode.Egl)
                 {
-                    if (EglPlatformGraphics.TryCreate() is { } egl)
+                    if (EglPlatformGraphics.TryCreate(()=>new EglDisplay(new EglDisplayCreationOptions()
+                        {
+                            SupportsContextSharing = true,
+                            SupportsMultipleContexts = true,
+                            GlVersions = opts.GlProfiles,
+                            Egl = new EglInterface()
+                        })) is { } egl)
                     {
                         return egl;
                     }
