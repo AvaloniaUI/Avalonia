@@ -212,9 +212,33 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
+        /// Combines LB06 and LB07. Both rules read <c>state.Next(text).LineBreakClass</c>
+        /// only; sharing that read removes a state-access pair from every codepoint
+        /// advance through this range.
+        /// </summary>
+        private static RuleResult LB06_LB07_Combined(ReadOnlySpan<char> text, ref LineBreakState state)
+        {
+            var nextClass = state.Next(text).LineBreakClass;
+
+            // LB06: × (BK | CR | LF | NL)
+            if (IsBreakClass(nextClass))
+            {
+                return RuleResult.NoBreak;
+            }
+
+            // LB07: × SP | ZW
+            if (nextClass == LineBreakClass.Space || nextClass == LineBreakClass.ZWSpace)
+            {
+                return RuleResult.NoBreak;
+            }
+
+            return RuleResult.Pass;
+        }
+
+        /// <summary>
         /// LB6: Do not break before hard line breaks.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>Subsumed by <see cref="LB06_LB07_Combined"/>; kept for documentation parity with UAX#14.</remarks>
         private static RuleResult LB06(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × ( BK | CR | LF | NL )
@@ -324,8 +348,59 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
+        /// Combines LB11, LB12, LB12a, LB13. All four are pure functions of
+        /// <c>(currentClass, nextClass)</c> and form a contiguous run between the
+        /// state-machine rules LB10 (preceding) and LB14 (following).
+        /// </summary>
+        private static RuleResult LB11_LB13_Combined(ReadOnlySpan<char> text, ref LineBreakState state)
+        {
+            var currentClass = state.Current.LineBreakClass;
+            var nextClass = state.Next(text).LineBreakClass;
+
+            // LB11: × WJ; WJ ×
+            if (nextClass == LineBreakClass.WordJoiner || currentClass == LineBreakClass.WordJoiner)
+            {
+                return RuleResult.NoBreak;
+            }
+
+            // LB12: GL ×
+            if (currentClass == LineBreakClass.Glue)
+            {
+                return RuleResult.NoBreak;
+            }
+
+            // LB12a: [^SP BA HY UnambiguousHyphen] × GL
+            if (nextClass == LineBreakClass.Glue)
+            {
+                switch (currentClass)
+                {
+                    case LineBreakClass.Space:
+                    case LineBreakClass.BreakAfter:
+                    case LineBreakClass.Hyphen:
+                    case LineBreakClass.UnambiguousHyphen:
+                        break;
+                    default:
+                        return RuleResult.NoBreak;
+                }
+            }
+
+            // LB13: × CL | CP | EX | SY
+            switch (nextClass)
+            {
+                case LineBreakClass.ClosePunctuation:
+                case LineBreakClass.CloseParenthesis:
+                case LineBreakClass.Exclamation:
+                case LineBreakClass.BreakSymbols:
+                    return RuleResult.NoBreak;
+            }
+
+            return RuleResult.Pass;
+        }
+
+        /// <summary>
         /// LB11: Do not break before or after Word joiner and related characters.
         /// </summary>
+        /// <remarks>Subsumed by <see cref="LB11_LB13_Combined"/>; kept for documentation parity with UAX#14.</remarks>
         private static RuleResult LB11(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             if (state.Next(text).LineBreakClass == LineBreakClass.WordJoiner /* × WJ */
@@ -691,8 +766,93 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
+        /// Combines LB21, LB21b, LB22, LB23, LB23a, LB24 into a single dispatched rule.
+        /// All six are pure functions of <c>(currentClass, nextClass)</c> and form a
+        /// contiguous run between the state-machine rules LB21a (preceding) and LB25
+        /// (following) — so their relative priority is preserved by evaluating them in
+        /// their original order inside this function, while reading <c>state.Current</c>
+        /// and <c>state.Next</c> only once for the whole group.
+        /// </summary>
+        private static RuleResult LB21_LB24_Combined(ReadOnlySpan<char> text, ref LineBreakState state)
+        {
+            var currentClass = state.Current.LineBreakClass;
+            var nextClass = state.Next(text).LineBreakClass;
+
+            // LB21: × (BA | HY | UnambiguousHyphen | NS)
+            switch (nextClass)
+            {
+                case LineBreakClass.BreakAfter:
+                case LineBreakClass.UnambiguousHyphen:
+                case LineBreakClass.Hyphen:
+                case LineBreakClass.Nonstarter:
+                    return RuleResult.NoBreak;
+            }
+
+            // LB21: BB ×
+            if (currentClass == LineBreakClass.BreakBefore)
+            {
+                return RuleResult.NoBreak;
+            }
+
+            // LB21b: SY × HL
+            if (currentClass == LineBreakClass.BreakSymbols && nextClass == LineBreakClass.HebrewLetter)
+            {
+                return RuleResult.NoBreak;
+            }
+
+            // LB22: × IN
+            if (nextClass == LineBreakClass.Inseparable)
+            {
+                return RuleResult.NoBreak;
+            }
+
+            // LB23: (AL | HL) × NU; NU × (AL | HL)
+            if (nextClass == LineBreakClass.Numeric &&
+                (currentClass == LineBreakClass.Alphabetic || currentClass == LineBreakClass.HebrewLetter))
+            {
+                return RuleResult.NoBreak;
+            }
+            if (currentClass == LineBreakClass.Numeric &&
+                (nextClass == LineBreakClass.Alphabetic || nextClass == LineBreakClass.HebrewLetter))
+            {
+                return RuleResult.NoBreak;
+            }
+
+            // LB23a: PR × (ID | EB | EM); (ID | EB | EM) × PO
+            if (currentClass == LineBreakClass.PrefixNumeric && IsIdEbEm(nextClass))
+            {
+                return RuleResult.NoBreak;
+            }
+            if (nextClass == LineBreakClass.PostfixNumeric && IsIdEbEm(currentClass))
+            {
+                return RuleResult.NoBreak;
+            }
+
+            // LB24: (PR | PO) × (AL | HL); (AL | HL) × (PR | PO)
+            if (IsPrPo(currentClass) && (nextClass == LineBreakClass.Alphabetic || nextClass == LineBreakClass.HebrewLetter))
+            {
+                return RuleResult.NoBreak;
+            }
+            if ((currentClass == LineBreakClass.Alphabetic || currentClass == LineBreakClass.HebrewLetter) && IsPrPo(nextClass))
+            {
+                return RuleResult.NoBreak;
+            }
+
+            return RuleResult.Pass;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static bool IsIdEbEm(LineBreakClass cls)
+                => cls == LineBreakClass.Ideographic || cls == LineBreakClass.EBase || cls == LineBreakClass.EModifier;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static bool IsPrPo(LineBreakClass cls)
+                => cls == LineBreakClass.PrefixNumeric || cls == LineBreakClass.PostfixNumeric;
+        }
+
+        /// <summary>
         /// LB21: Do not break before hyphen-minus, other hyphens, fixed-width spaces, small kana, and other non-starters, or after acute accents.
         /// </summary>
+        /// <remarks>Subsumed by <see cref="LB21_LB24_Combined"/> in the rule dispatch table; kept for documentation parity with UAX#14.</remarks>
         private static RuleResult LB21(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × (BA | HY | NS)
@@ -1088,8 +1248,91 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
+        /// Combines LB26, LB27, LB28. All three are pure functions of
+        /// <c>(currentClass, nextClass)</c> and form a contiguous run between the
+        /// state-machine rules LB25 (preceding) and LB28a (following). LB28 in
+        /// particular fires for almost every position in word-heavy text, so the
+        /// shared state read pays off most here.
+        /// </summary>
+        private static RuleResult LB26_LB28_Combined(ReadOnlySpan<char> text, ref LineBreakState state)
+        {
+            var currentClass = state.Current.LineBreakClass;
+            var nextClass = state.Next(text).LineBreakClass;
+
+            // LB26: Korean syllable composition.
+            switch (currentClass)
+            {
+                case LineBreakClass.JL:
+                    // JL × (JL | JV | H2 | H3)
+                    switch (nextClass)
+                    {
+                        case LineBreakClass.JL:
+                        case LineBreakClass.JV:
+                        case LineBreakClass.H2:
+                        case LineBreakClass.H3:
+                            return RuleResult.NoBreak;
+                    }
+                    break;
+                case LineBreakClass.JV:
+                case LineBreakClass.H2:
+                    // (JV | H2) × (JV | JT)
+                    if (nextClass == LineBreakClass.JV || nextClass == LineBreakClass.JT)
+                    {
+                        return RuleResult.NoBreak;
+                    }
+                    break;
+                case LineBreakClass.JT:
+                case LineBreakClass.H3:
+                    // (JT | H3) × JT
+                    if (nextClass == LineBreakClass.JT)
+                    {
+                        return RuleResult.NoBreak;
+                    }
+                    break;
+            }
+
+            // LB27: Korean syllable + numeric prefix/postfix.
+            switch (currentClass)
+            {
+                case LineBreakClass.JL:
+                case LineBreakClass.JV:
+                case LineBreakClass.JT:
+                case LineBreakClass.H2:
+                case LineBreakClass.H3:
+                    // (JL | JV | JT | H2 | H3) × PO
+                    if (nextClass == LineBreakClass.PostfixNumeric)
+                    {
+                        return RuleResult.NoBreak;
+                    }
+                    break;
+                case LineBreakClass.PrefixNumeric:
+                    // PR × (JL | JV | JT | H2 | H3)
+                    switch (nextClass)
+                    {
+                        case LineBreakClass.JL:
+                        case LineBreakClass.JV:
+                        case LineBreakClass.JT:
+                        case LineBreakClass.H2:
+                        case LineBreakClass.H3:
+                            return RuleResult.NoBreak;
+                    }
+                    break;
+            }
+
+            // LB28: (AL | HL) × (AL | HL)
+            if ((currentClass == LineBreakClass.Alphabetic || currentClass == LineBreakClass.HebrewLetter)
+                && (nextClass == LineBreakClass.Alphabetic || nextClass == LineBreakClass.HebrewLetter))
+            {
+                return RuleResult.NoBreak;
+            }
+
+            return RuleResult.Pass;
+        }
+
+        /// <summary>
         /// LB26: Do not break a Korean syllable.
         /// </summary>
+        /// <remarks>Subsumed by <see cref="LB26_LB28_Combined"/>; kept for documentation parity with UAX#14.</remarks>
         private static RuleResult LB26(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             switch (state.Current.LineBreakClass)
@@ -1413,11 +1656,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     return LineBreakClass.Alphabetic;
                 }
 
-                if (cp.Value == 327685)
-                {
-                    return LineBreakClass.Alphabetic;
-                }
-
                 // LB 1
                 // ==========================================
                 // Resolved Original    General_Category
@@ -1633,16 +1871,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
             LB03,
             LB04,
             LB05,
-            LB06,
-            LB07,
+            LB06_LB07_Combined, // Replaces LB06, LB07
             LB08,
             LB08a,
             LB09,
             LB10,
-            LB11,
-            LB12,
-            LB12a,
-            LB13,
+            LB11_LB13_Combined, // Replaces LB11, LB12, LB12a, LB13
             LB14,
             LB15a,
             LB15b,
@@ -1654,17 +1888,10 @@ namespace Avalonia.Media.TextFormatting.Unicode
             LB19,
             LB20,
             LB20a,
-            LB21a, // Must be before LB21
-            LB21,
-            LB21b,
-            LB22,
-            LB23,
-            LB23a,
-            LB24,
+            LB21a, // Must be before LB21_LB24_Combined
+            LB21_LB24_Combined, // Replaces LB21, LB21b, LB22, LB23, LB23a, LB24
             LB25,
-            LB26,
-            LB27,
-            LB28,
+            LB26_LB28_Combined, // Replaces LB26, LB27, LB28
             LB28a,
             LB29,
             LB30,
