@@ -136,10 +136,7 @@ namespace Avalonia.Input
 
         public void Dispose()
         {
-            if (Captured != null)
-            {
-                Capture(null);
-            }
+            // callers are responsible for calling Capture(null, source) with an appropriate source
         }
 
         /// <summary>

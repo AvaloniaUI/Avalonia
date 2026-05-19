@@ -570,7 +570,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             var target = positionRequest.Target;
             if (target == null)
                 throw new InvalidOperationException("Placement mode is not Pointer and PlacementTarget is null");
-            Matrix? matrix = target.TransformToVisual(topLevel);
+            Matrix? matrix = target.TransformToVisual(topLevel.PresentationSource.RootVisual);
             
             if (matrix == null)
             {

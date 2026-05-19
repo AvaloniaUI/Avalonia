@@ -40,11 +40,19 @@ namespace Avalonia.Rendering.Composition.Server
         public ICompositionTargetDebugEvents? DebugEvents { get; set; }
         public int RenderedVisuals { get; set; }
         public int VisitedVisuals { get; set; }
+
+        internal PixelSize PixelSize => Avalonia.PixelSize.FromSizeCeiling(Size, Scaling);
         
         /// <summary>
         /// Returns true if the target is enabled and has pending work but its render target was not ready.
         /// </summary>
         internal bool IsWaitingForReadyRenderTarget { get; private set; }
+        
+        /// <summary>
+        /// Returns true if the target's render target is waiting for a render loop wakeup
+        /// (i.e. the platform will call Wakeup() when ready, no need to keep polling).
+        /// </summary>
+        internal bool IsWaitingForRenderLoopWakeup { get; private set; }
 
         public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<IPlatformRenderSurface>> surfaces)
             : base(compositor)
@@ -132,6 +140,7 @@ namespace Avalonia.Rendering.Composition.Server
         public void Render()
         {
             IsWaitingForReadyRenderTarget = false;
+            IsWaitingForRenderLoopWakeup = false;
             
             if (_disposed)
                 return;
@@ -182,6 +191,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (!_renderTarget.PlatformRenderTargetState.IsReady)
             {
                 IsWaitingForReadyRenderTarget = IsEnabled;
+                IsWaitingForRenderLoopWakeup = IsEnabled && _renderTarget.PlatformRenderTargetState.WillWakeUpRenderLoopWhenReady;
                 return;
             }
 
@@ -195,7 +205,7 @@ namespace Avalonia.Rendering.Composition.Server
             try
             {
                 renderTargetContext =
-                    _renderTarget.CreateDrawingContext(new(PixelSize, Scaling), out properties);
+                    _renderTarget.CreateDrawingContext(new(PixelSize, Scaling, Size), out properties);
             }
             catch (RenderTargetNotReadyException)
             {
