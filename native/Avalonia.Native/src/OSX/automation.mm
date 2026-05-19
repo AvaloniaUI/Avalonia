@@ -491,6 +491,9 @@
 {
     switch (property)
     {
+        case AutomationPeer_AutomationId:
+            // accessibilityIdentifier is read on-demand; no VoiceOver announcement required.
+            break;
         case AutomationPeer_Name:
             NSAccessibilityPostNotification(self, NSAccessibilityTitleChangedNotification);
             if (_peer->GetLiveSetting() != LiveSettingOff)
