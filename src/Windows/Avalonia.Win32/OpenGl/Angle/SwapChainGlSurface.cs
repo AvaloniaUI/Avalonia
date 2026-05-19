@@ -1,15 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
-using global::Avalonia;
-using global::Avalonia.OpenGL;
-using global::Avalonia.OpenGL.Egl;
-using global::Avalonia.OpenGL.Surfaces;
-using global::Avalonia.Platform;
-using global::Avalonia.Win32.DirectX;
-using global::Avalonia.Win32.OpenGl.Angle;
+using Avalonia.OpenGL;
+using Avalonia.OpenGL.Egl;
+using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
+using Avalonia.Win32.DirectX;
 using MicroCom.Runtime;
 
-namespace Avalonia.WinUI;
+namespace Avalonia.Win32.OpenGl.Angle;
 
 internal unsafe class SwapChainGlSurface : EglGlPlatformSurfaceBase
 {

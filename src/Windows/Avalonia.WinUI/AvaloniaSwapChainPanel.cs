@@ -4,6 +4,8 @@ using global::Avalonia;
 using global::Avalonia.Controls.Embedding;
 using global::Avalonia.Input;
 using global::Avalonia.Input.Raw;
+using global::Avalonia.Win32;
+using global::Avalonia.Win32.OpenGl.Angle;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -19,7 +21,7 @@ namespace Avalonia.WinUI;
 public partial class AvaloniaSwapChainPanel : SwapChainPanel
 {
     private SwapChainGlSurface? _glSurface;
-    private SwapChainPanelTopLevelImpl? _topLevelImpl;
+    private SwapChainTopLevelImpl? _topLevelImpl;
     private EmbeddableControlRoot? _root;
     private AvControl? _content;
     private readonly MouseDevice _mouseDevice = new();
@@ -82,7 +84,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         // Create the GL surface — swap chain creation is deferred to CreateGlRenderTarget
         // where we have the actual rendering context's D3D device
         _glSurface = new SwapChainGlSurface(GetPixelSize, GetScaling, OnSwapChainCreated);
-        _topLevelImpl = new SwapChainPanelTopLevelImpl(_glSurface);
+        _topLevelImpl = new SwapChainTopLevelImpl(_glSurface);
         _topLevelImpl.ClientSize = new AvSize(ActualWidth, ActualHeight);
         _topLevelImpl.RenderScaling = CompositionScaleX;
 

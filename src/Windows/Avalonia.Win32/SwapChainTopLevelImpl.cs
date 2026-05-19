@@ -1,28 +1,29 @@
 using System;
 using System.Collections.Generic;
-using global::Avalonia;
-using global::Avalonia.Controls;
-using global::Avalonia.Input;
-using global::Avalonia.Input.Platform;
-using global::Avalonia.Input.Raw;
-using global::Avalonia.OpenGL.Surfaces;
-using global::Avalonia.Platform;
-using global::Avalonia.Platform.Surfaces;
-using global::Avalonia.Rendering.Composition;
-using Size = global::Avalonia.Size;
-using Point = global::Avalonia.Point;
-using Rect = global::Avalonia.Rect;
-using PixelPoint = global::Avalonia.PixelPoint;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
+using Avalonia.Input.Raw;
+using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
+using Avalonia.Rendering.Composition;
 
-namespace Avalonia.WinUI;
+namespace Avalonia.Win32;
 
-internal class SwapChainPanelTopLevelImpl : ITopLevelImpl
+/// <summary>
+/// A minimal <see cref="ITopLevelImpl"/> that hosts an Avalonia content tree on top of an
+/// externally managed swap-chain surface (e.g. a WinUI <c>SwapChainPanel</c> or any other
+/// host that supplies an <see cref="IGlPlatformSurface"/>). Sizing, scaling and input
+/// pumping are driven by the host.
+/// </summary>
+internal class SwapChainTopLevelImpl : ITopLevelImpl
 {
     private readonly IGlPlatformSurface _glSurface;
     private Size _clientSize;
     private double _scaling = 1.0;
 
-    public SwapChainPanelTopLevelImpl(IGlPlatformSurface glSurface)
+    public SwapChainTopLevelImpl(IGlPlatformSurface glSurface)
     {
         _glSurface = glSurface;
         var platformGraphics = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
