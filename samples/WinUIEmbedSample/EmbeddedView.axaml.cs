@@ -21,6 +21,15 @@ public partial class EmbeddedView : UserControl
         AvSlider.PropertyChanged += OnSliderPropertyChanged;
         HoverPanel.PointerEntered += (_, _) => HoverState.Text = "over";
         HoverPanel.PointerExited += (_, _) => HoverState.Text = "out";
+        AddHandler(KeyDownEvent, OnKeyReadout, handledEventsToo: true);
+    }
+
+    private void OnKeyReadout(object? sender, KeyEventArgs e)
+    {
+        var symbol = e.KeySymbol is { Length: > 0 } s ? $"\"{s}\"" : "null";
+        KeyReadout.Text =
+            $"Key={e.Key}  Physical={e.PhysicalKey}  Symbol={symbol}\n" +
+            $"Modifiers={e.KeyModifiers}";
     }
 
     private void OnAvButtonClick(object? sender, RoutedEventArgs e)

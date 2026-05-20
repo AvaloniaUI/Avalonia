@@ -29,6 +29,26 @@
 
                 <ToggleSwitch Content="ToggleSwitch" IsChecked="True" />
 
+                <TextBlock Text="Keys"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <TextBlock Text="Focus the box below and press keys — left and right Shift / Ctrl / Alt should report distinct PhysicalKeys; letter keys should report a non-null Key, PhysicalKey, and KeySymbol."
+                           TextWrapping="Wrap"
+                           Opacity="0.7" />
+                <Border BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="8"
+                        Focusable="True"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+                    <StackPanel Spacing="2">
+                        <TextBlock x:Name="KeyReadout"
+                                   FontFamily="Cascadia Code,Consolas,monospace"
+                                   Text="(focus here and press a key)" />
+                    </StackPanel>
+                </Border>
+
                 <TextBlock Text="Hover"
                            FontSize="16"
                            FontWeight="SemiBold"
