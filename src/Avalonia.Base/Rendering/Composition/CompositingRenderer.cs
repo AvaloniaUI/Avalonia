@@ -267,6 +267,6 @@ internal class CompositingRenderer : IRendererWithCompositor, IHitTester
 
         Stop();
 
-        MediaContext.Instance.SyncDisposeCompositionTarget(CompositionTarget);
+        MediaContext.Instance.RequestDisposeCompositionTarget(CompositionTarget);
     }
 }

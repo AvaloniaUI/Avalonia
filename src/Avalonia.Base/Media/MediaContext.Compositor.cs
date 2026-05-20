@@ -125,20 +125,17 @@ partial class MediaContext
 
 
     /// <summary>
-    /// This method handles synchronous destruction of the composition target, so we are guaranteed
-    /// to release all resources when a TopLevel is being destroyed 
+    /// Requests destruction of the composition target. The OOB dispose batch and its wait are
+    /// posted to the dispatcher so a TopLevel destroy that originates from a wndproc frame does
+    /// not block message processing on the compositor commit.
     /// </summary>
-    public void SyncDisposeCompositionTarget(CompositionTarget compositionTarget)
+    public void RequestDisposeCompositionTarget(CompositionTarget compositionTarget)
     {
-        using var _ = NonPumpingLockHelper.Use();
-        
-        // TODO: We are sending a dispose command outside of the normal commit cycle and we might
-        // want to ask the compositor to skip any actual rendering and return the control ASAP
-        // Not sure if we should do that for background thread rendering since it might affect the animation
-        // smoothness of other windows
-        
-        var oobBatch = compositionTarget.Compositor.OobDispose(compositionTarget);
-        SyncWaitCompositorBatch(compositionTarget.Compositor, oobBatch, false, true);
+        Dispatcher.UIThread.Post(() =>
+        {
+            var oobBatch = compositionTarget.Compositor.OobDispose(compositionTarget);
+            SyncWaitCompositorBatch(compositionTarget.Compositor, oobBatch, false, true);
+        }, DispatcherPriority.Input);
     }
     
     /// <summary>
