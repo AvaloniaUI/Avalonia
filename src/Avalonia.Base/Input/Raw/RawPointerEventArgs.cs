@@ -124,6 +124,13 @@ namespace Avalonia.Input.Raw
         /// </summary>
         public Lazy<IReadOnlyList<RawPointerPoint>?>? IntermediatePoints { get; set; }
 
+        /// <summary>
+        /// An opaque platform-specific cookie associated with this event.
+        /// Used by backends to pass platform data (e.g. Wayland serial + seat) through
+        /// the input pipeline to platform-consuming code like BeginMoveDrag.
+        /// </summary>
+        public object? PlatformInputEventCookie { get; set; }
+
         internal (IInputElement? element, IInputElement? firstEnabledAncestor) InputHitTestResult { get; set; }
     }
 

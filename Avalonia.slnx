@@ -178,6 +178,7 @@
     <Project Path="src/tools/Avalonia.DBus.Generators/Avalonia.DBus.Generators.csproj" />
     <Project Path="src/tools/Avalonia.Designer.HostApp/Avalonia.Designer.HostApp.csproj" />
     <Project Path="src/tools/Avalonia.Generators/Avalonia.Generators.csproj" />
+    <Project Path="src/tools/Avalonia.UnicodeTrieGenerator/Avalonia.UnicodeTrieGenerator.csproj" />
     <Project Path="src/tools/DevAnalyzers/DevAnalyzers.csproj" />
     <Project Path="src/tools/DevGenerators/DevGenerators.csproj" />
   </Folder>
