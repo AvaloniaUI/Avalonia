@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
@@ -93,10 +94,17 @@ internal class SwapChainTopLevelImpl : ITopLevelImpl
 
     public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
+    /// <summary>
+    /// Optional IME implementation provided by the host.
+    /// </summary>
+    public ITextInputMethodImpl? TextInputMethod { get; set; }
+
     public object? TryGetFeature(Type featureType)
     {
         if (featureType == typeof(IClipboard))
             return AvaloniaLocator.Current.GetService<IClipboard>();
+        if (featureType == typeof(ITextInputMethodImpl))
+            return TextInputMethod;
         return null;
     }
 

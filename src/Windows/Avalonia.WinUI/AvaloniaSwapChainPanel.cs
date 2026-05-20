@@ -34,6 +34,8 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
     private static readonly List<RawPointerPoint> s_intermediatePoints = new();
 
+    private WinUITextInputMethod? _textInputMethod;
+
     public AvaloniaSwapChainPanel()
     {
         IsTabStop = true;
@@ -50,6 +52,8 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         PointerCanceled += OnPointerCanceled;
         PointerEntered += OnPointerEntered;
         PointerExited += OnPointerExited;
+        GotFocus += OnGotFocus;
+        LostFocus += OnLostFocus;
         AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown), handledEventsToo: true);
         AddHandler(KeyUpEvent, new KeyEventHandler(OnKeyUp), handledEventsToo: true);
         AddHandler(CharacterReceivedEvent,
@@ -90,13 +94,24 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         // Create the GL surface — swap chain creation is deferred to CreateGlRenderTarget
         // where we have the actual rendering context's D3D device
         _glSurface = new SwapChainGlSurface(GetPixelSize, GetScaling, OnSwapChainCreated);
-        _topLevelImpl = new SwapChainTopLevelImpl(_glSurface);
-        _topLevelImpl.ClientSize = new AvSize(ActualWidth, ActualHeight);
-        _topLevelImpl.RenderScaling = CompositionScaleX;
+        _topLevelImpl = new SwapChainTopLevelImpl(_glSurface)
+        {
+            ClientSize = new AvSize(ActualWidth, ActualHeight),
+            RenderScaling = CompositionScaleX
+        };
+
+        _textInputMethod = new WinUITextInputMethod(
+            this,
+            () => _topLevelImpl?.Input,
+            () => _topLevelImpl?.InputRoot,
+            () => AvaloniaLocator.Current.GetService<IKeyboardDevice>());
+        _topLevelImpl.TextInputMethod = _textInputMethod;
 
         // Create and start the EmbeddableControlRoot
-        _root = new EmbeddableControlRoot(_topLevelImpl);
-        _root.Content = _content;
+        _root = new EmbeddableControlRoot(_topLevelImpl)
+        {
+            Content = _content
+        };
         _root.Prepare();
         _root.StartRendering();
     }
@@ -368,6 +383,12 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
             new AvPoint(pos.X, pos.Y), new AvVector(0, delta), GetPointerModifiers(e)));
         e.Handled = true;
     }
+
+    private void OnGotFocus(object sender, RoutedEventArgs e)
+        => _textInputMethod?.OnPanelFocusChanged(true);
+
+    private void OnLostFocus(object sender, RoutedEventArgs e)
+        => _textInputMethod?.OnPanelFocusChanged(false);
 
     private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
     {
