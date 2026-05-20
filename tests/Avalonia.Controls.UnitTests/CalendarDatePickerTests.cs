@@ -99,7 +99,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class CalendarDatePickerParser : IValueConverter
+        private class CalendarDatePickerTextConverter : IValueConverter
         {
             // date to text
             public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -134,7 +134,7 @@ namespace Avalonia.Controls.UnitTests
                 CalendarDatePicker datePicker = CreateControl();
                 datePicker.SelectedDateFormat = CalendarDatePickerFormat.Custom;
                 datePicker.CustomDateFormatString = "dd.MM.yyyy";
-                datePicker.TextConverter = new CalendarDatePickerParser();
+                datePicker.TextConverter = new CalendarDatePickerTextConverter();
                 var tb = GetTextBox(datePicker);
 
                 datePicker.SelectedDate = new DateTime(2024, 2, 13);
@@ -160,7 +160,7 @@ namespace Avalonia.Controls.UnitTests
                 CalendarDatePicker datePicker = CreateControl();
                 datePicker.SelectedDateFormat = CalendarDatePickerFormat.Custom;
                 datePicker.CustomDateFormatString = "dd.MM.yyyy";
-                datePicker.TextConverter = new CalendarDatePickerParser();
+                datePicker.TextConverter = new CalendarDatePickerTextConverter();
                 var tb = GetTextBox(datePicker);
 
                 // parser can work with same format as CustomDateFormatString (but TextConverter must handle it)
