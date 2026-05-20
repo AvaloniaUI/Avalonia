@@ -36,7 +36,7 @@
     <Setter Property="Background" Value="{DynamicResource TextControlButtonBackground}" />
     <Setter Property="BorderBrush" Value="{DynamicResource TextControlButtonBorderBrush}" />
     <Setter Property="Focusable" Value="False"/>
-    <Setter Property="MinWidth" Value="34" />
+    <Setter Property="MinWidth" Value="{DynamicResource TextControlInternalButtonMinWidth}" />
     <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
     <Setter Property="Width" Value="{Binding $self.Bounds.Height}"/>
     <Setter Property="TextElement.Foreground" Value="{DynamicResource TextControlButtonForeground}"/>

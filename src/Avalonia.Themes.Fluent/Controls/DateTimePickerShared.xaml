@@ -45,7 +45,7 @@
   <!-- This is used for both the accept/dismiss & repeatbuttons in the presenter-->
   <ControlTheme x:Key="FluentDateTimePickerButton" TargetType="Button">
     <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackground}" />
-    <Setter Property="Height" Value="22" />
+    <Setter Property="Height" Value="{DynamicResource DateTimePickerButtonHeight}" />
     <Setter Property="HorizontalContentAlignment" Value="Center"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="Template">
@@ -85,7 +85,7 @@
 
   <ControlTheme x:Key="FluentDateTimePickerUpButton" TargetType="RepeatButton" BasedOn="{StaticResource FluentDateTimePickerButton}">
     <Setter Property="VerticalAlignment" Value="Top"/>
-    <Setter Property="Height" Value="22" />
+    <Setter Property="Height" Value="{DynamicResource DateTimePickerButtonHeight}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Focusable" Value="False" />
     <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
@@ -101,7 +101,7 @@
 
   <ControlTheme x:Key="FluentDateTimePickerDownButton" TargetType="RepeatButton" BasedOn="{StaticResource FluentDateTimePickerButton}">
     <Setter Property="VerticalAlignment" Value="Bottom"/>
-    <Setter Property="Height" Value="22" />
+    <Setter Property="Height" Value="{DynamicResource DateTimePickerButtonHeight}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Focusable" Value="False" />
     <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />

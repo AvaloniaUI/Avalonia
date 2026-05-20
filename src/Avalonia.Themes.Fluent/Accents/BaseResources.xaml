@@ -15,6 +15,69 @@
   <sys:Double x:Key="IconElementThemeWidth">20</sys:Double>
   <sys:Double x:Key="RefreshVisualizerIndicatorSize">24</sys:Double>
   <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
+  <Thickness x:Key="CheckBoxPadding">8,0,0,0</Thickness>
+  <Thickness x:Key="RadioButtonPadding">8,0,0,0</Thickness>
+  <Thickness x:Key="ButtonSpinnerPadding">10,0</Thickness>
+  <Thickness x:Key="LabelPadding">3</Thickness>
+  <Thickness x:Key="HeaderedContentControlPadding">3</Thickness>
+  <Thickness x:Key="CalendarDatePickerPadding">4</Thickness>
+  <Thickness x:Key="CommandBarButtonPadding">8,4</Thickness>
+  <Thickness x:Key="CommandBarToggleButtonPadding">8,4</Thickness>
+  <Thickness x:Key="CommandBarSeparatorMargin">8,4</Thickness>
+  <Thickness x:Key="CommandBarSeparatorOverflowMargin">4,4</Thickness>
+  <Thickness x:Key="CommandBarPadding">4,0</Thickness>
+  <Thickness x:Key="CommandBarOverflowButtonPadding">12,0</Thickness>
+  <Thickness x:Key="ManagedFileChooserQuickLinksPadding">0,20</Thickness>
+  <Thickness x:Key="ManagedFileChooserQuickLinksItemPadding">30,6</Thickness>
+  <Thickness x:Key="NavigationPageCommandBarButtonPadding">8,0</Thickness>
+
+  <!-- Calendar cell sizes -->
+  <x:Double x:Key="CalendarButtonMinWidth">40</x:Double>
+  <x:Double x:Key="CalendarButtonMinHeight">40</x:Double>
+  <Thickness x:Key="CalendarButtonBorderThickness">2</Thickness>
+  <Thickness x:Key="CalendarBorderThickness">1</Thickness>
+  <x:Double x:Key="CalendarDatePickerDropDownButtonWidth">20</x:Double>
+
+  <!-- CommandBar dimensions -->
+  <x:Double x:Key="CommandBarButtonWidth">68</x:Double>
+  <x:Double x:Key="CommandBarButtonCompactWidth">40</x:Double>
+  <x:Double x:Key="CommandBarButtonLabelRightMinWidth">40</x:Double>
+  <x:Double x:Key="CommandBarButtonMinHeight">40</x:Double>
+  <x:Double x:Key="CommandBarButtonIsInOverflowMinHeight">36</x:Double>
+  <x:Double x:Key="CommandBarSeparatorWidth">1</x:Double>
+  <x:Double x:Key="CommandBarSeparatorOverflowHeight">1</x:Double>
+  <x:Double x:Key="CommandBarSeparatorMinHeight">24</x:Double>
+  <x:Double x:Key="CommandBarMinHeight">48</x:Double>
+
+  <!-- DatePicker / TimePicker -->
+  <Thickness x:Key="DatePickerBorderThickness">1</Thickness>
+  <x:Double x:Key="DatePickerPresenterWidth">296</x:Double>
+  <x:Double x:Key="TimePickerPresenterWidth">242</x:Double>
+  <x:Double x:Key="DateTimePickerButtonHeight">22</x:Double>
+
+  <!-- GridSplitter -->
+  <x:Double x:Key="GridSplitterThickness">6</x:Double>
+
+  <!-- ManagedFileChooser -->
+  <x:Double x:Key="ManagedFileChooserOverwritePromptMinWidth">270</x:Double>
+  <x:Double x:Key="ManagedFileChooserQuickLinksWidth">240</x:Double>
+  <x:Double x:Key="ManagedFileChooserQuickLinksItemHeight">32</x:Double>
+  <x:Double x:Key="ManagedFileChooserNavBarControlHeight">30</x:Double>
+  <x:Double x:Key="ManagedFileChooserNavBarButtonWidth">40</x:Double>
+
+  <!-- NotificationCard -->
+  <x:Double x:Key="NotificationCardWidth">350</x:Double>
+
+  <!-- PipsPager -->
+  <x:Double x:Key="PipsPagerNavigationButtonSize">24</x:Double>
+  <Thickness x:Key="PipsPagerNavigationButtonBorderThickness">1</Thickness>
+  <x:Double x:Key="PipsPagerItemWidth">12</x:Double>
+  <x:Double x:Key="PipsPagerItemHeight">24</x:Double>
+  <x:Double x:Key="PipsPagerItemDotSize">4</x:Double>
+  <x:Double x:Key="PipsPagerItemDotSizeActive">6</x:Double>
+
+  <!-- Internal text-control buttons (TextBox clear/reveal, ButtonSpinner arrows) -->
+  <x:Double x:Key="TextControlInternalButtonMinWidth">34</x:Double>
 
   <!-- Override system shape defaults -->
   <CornerRadius x:Key="ControlCornerRadius">3</CornerRadius>
