@@ -721,7 +721,7 @@ namespace Avalonia.Controls
             {
                 if (TextConverter != null)
                 {
-                    newSelectedDate = (DateTime?)TextConverter.Convert(text, typeof(DateTime?), null, CultureInfo.CurrentCulture);
+                    newSelectedDate = TextConverter.Convert(text, typeof(DateTime?), null, CultureInfo.CurrentCulture) as DateTime?;
                 }
                 else
                 {
