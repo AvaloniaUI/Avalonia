@@ -184,6 +184,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         _topLevelImpl = null;
         _glSurface?.DisposeSwapChain();
         _glSurface = null;
+        _mouseDevice.Dispose();
         _touchDevice.Dispose();
         _penDevice.Dispose();
     }
