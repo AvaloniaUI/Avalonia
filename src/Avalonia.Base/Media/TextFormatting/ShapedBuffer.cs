@@ -13,6 +13,32 @@ namespace Avalonia.Media.TextFormatting
         private GlyphInfo[]? _rentedBuffer;
         private ArraySlice<GlyphInfo> _glyphInfos;
 
+        // Lazily-computed cluster-width cache (A1). MeasureLength and metrics
+        // queries both fold multi-glyph clusters and accumulate per-cluster
+        // advances — the result depends only on the shaped glyphs and the
+        // text, both immutable for a given ShapedBuffer instance.
+        //
+        // To make wrap-time splits cheap, the cache is shared by reference
+        // across split halves: when this buffer was produced by Split, the
+        // arrays point at the parent's cache and _clusterStartIdx is the offset
+        // at which this buffer's first cluster lives. That keeps post-split
+        // wrap iterations O(1) per query instead of re-walking glyphs.
+        //
+        // _clusterPrefix[i] = sum of cluster advances [0..i) in logical order
+        // over the full source buffer (parent's view); width of this sub-buffer
+        // is `_clusterPrefix[_clusterStartIdx + _clusterCount] - _clusterPrefix[_clusterStartIdx]`.
+        // _clusterStartChars[i] = char offset into the parent's Text where the
+        // i-th cluster begins; this sub-buffer's start char in parent space is
+        // `_clusterStartChars[_clusterStartIdx]`.
+        //
+        // Sums in this prefix are in logical (not visual) order, which can
+        // differ by ULPs from a visual-order sum for RTL buffers. Consumers
+        // comparing layout dimensions should use tolerant equality.
+        private double[]? _clusterPrefix;
+        private int[]? _clusterStartChars;
+        private int _clusterStartIdx;
+        private int _clusterCount;
+
         public ShapedBuffer(ReadOnlyMemory<char> text, int bufferLength, GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
         {
             Text = text;
@@ -30,6 +56,27 @@ namespace Avalonia.Media.TextFormatting
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
+        }
+
+        /// <summary>
+        /// Internal constructor used by <see cref="Split"/> to hand off a shared cluster
+        /// cache to the new sub-buffer. The cache arrays are owned by the parent buffer;
+        /// this sub-buffer's queries adjust by <paramref name="clusterStartIdx"/>.
+        /// </summary>
+        private ShapedBuffer(ReadOnlyMemory<char> text, ArraySlice<GlyphInfo> glyphInfos,
+            GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel,
+            double[] sharedClusterPrefix, int[] sharedClusterStartChars,
+            int clusterStartIdx, int clusterCount)
+        {
+            Text = text;
+            _glyphInfos = glyphInfos;
+            GlyphTypeface = glyphTypeface;
+            FontRenderingEmSize = fontRenderingEmSize;
+            BidiLevel = bidiLevel;
+            _clusterPrefix = sharedClusterPrefix;
+            _clusterStartChars = sharedClusterStartChars;
+            _clusterStartIdx = clusterStartIdx;
+            _clusterCount = clusterCount;
         }
 
         /// <summary>
@@ -82,7 +129,251 @@ namespace Avalonia.Media.TextFormatting
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _glyphInfos[index];
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _glyphInfos[index] = value;
+            set
+            {
+                _glyphInfos[index] = value;
+                InvalidateClusterCache();
+            }
+        }
+
+        /// <summary>
+        /// Returns the total advance of all glyphs in the buffer (i.e. the buffer's
+        /// rendered width). Cached after first access; the value is summed in
+        /// logical cluster order, which can differ by ULPs from a visual-order sum
+        /// on RTL buffers — fine for layout but tests should use FP-tolerant equality.
+        /// </summary>
+        internal double TotalGlyphAdvance
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                var prefix = _clusterPrefix ?? EnsureClusterCache();
+                var start = _clusterStartIdx;
+                return prefix[start + _clusterCount] - prefix[start];
+            }
+        }
+
+        /// <summary>
+        /// Finds how many text characters from the start of this buffer fit within
+        /// <paramref name="availableWidth"/>, walking in logical cluster order.
+        /// Returns the character count and the width consumed (always &lt;= availableWidth
+        /// unless the very first cluster overflows, in which case the caller is expected
+        /// to honour the overflow contract documented in <c>TextFormatterImpl.MeasureLength</c>).
+        /// </summary>
+        internal int MeasureCharactersThatFit(double availableWidth, out double widthConsumed)
+        {
+            var prefix = _clusterPrefix ?? EnsureClusterCache();
+            var starts = _clusterStartChars!;
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            if (count == 0)
+            {
+                widthConsumed = 0d;
+                return 0;
+            }
+
+            // Find the largest k such that prefix[startIdx + k] - prefix[startIdx] <=
+            // availableWidth. Standard binary search on the prefix-sum array, with the
+            // sub-buffer's base width subtracted out.
+            var basePrefix = prefix[startIdx];
+            var baseChar = starts[startIdx];
+
+            var lo = 0;
+            var hi = count;
+            while (lo < hi)
+            {
+                var mid = (lo + hi + 1) >> 1;
+                if (prefix[startIdx + mid] - basePrefix <= availableWidth)
+                {
+                    lo = mid;
+                }
+                else
+                {
+                    hi = mid - 1;
+                }
+            }
+
+            widthConsumed = prefix[startIdx + lo] - basePrefix;
+            return starts[startIdx + lo] - baseChar;
+        }
+
+        /// <summary>
+        /// Returns the character length of the first logical cluster in this buffer.
+        /// Used by <c>MeasureLength</c> to satisfy the "include at least one cluster"
+        /// rule when even the first cluster does not fit the paragraph width.
+        /// </summary>
+        internal int FirstClusterCharLength
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                _ = _clusterPrefix ?? EnsureClusterCache();
+                if (_clusterCount == 0)
+                {
+                    return 0;
+                }
+                var starts = _clusterStartChars!;
+                var startIdx = _clusterStartIdx;
+                return starts[startIdx + 1] - starts[startIdx];
+            }
+        }
+
+        /// <summary>
+        /// Returns the width consumed by the first <paramref name="charCount"/> characters,
+        /// using the cluster cache. The result is the prefix advance up to the first cluster
+        /// whose start character is &gt;= <paramref name="charCount"/>.
+        /// </summary>
+        internal double GetWidthForCharCount(int charCount)
+        {
+            if (charCount <= 0)
+            {
+                return 0d;
+            }
+
+            var prefix = _clusterPrefix ?? EnsureClusterCache();
+            var starts = _clusterStartChars!;
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            var basePrefix = prefix[startIdx];
+            var baseChar = starts[startIdx];
+
+            // Cluster starts are non-decreasing within the sub-buffer's range.
+            // Linear search from the end; typical callers pass the line's full length
+            // and hit the last cluster immediately.
+            for (var i = count; i >= 0; i--)
+            {
+                if (starts[startIdx + i] - baseChar <= charCount)
+                {
+                    return prefix[startIdx + i] - basePrefix;
+                }
+            }
+            return 0d;
+        }
+
+        /// <summary>
+        /// Builds the cluster cache in <em>logical</em> order. LTR buffers store glyphs
+        /// in ascending cluster order so logical order is the same as visual order
+        /// (walk forward from index 0). RTL buffers store glyphs in descending cluster
+        /// order — visual order is reverse-logical — so logical order means walking
+        /// the underlying array backwards. The output `prefix` and `startChars` are
+        /// always in logical order: `startChars[0] == 0`, `startChars[count] == Text.Length`,
+        /// and `prefix[count]` equals the total advance.
+        /// </summary>
+        private double[] EnsureClusterCache()
+        {
+            var glyphInfos = _glyphInfos.Span;
+            var bufferLength = _glyphInfos.Length;
+
+            if (bufferLength == 0)
+            {
+                _clusterCount = 0;
+                _clusterStartChars = new[] { 0 };
+                return _clusterPrefix = new[] { 0d };
+            }
+
+            var isLtr = IsLeftToRight;
+            var step = isLtr ? 1 : -1;
+            var start = isLtr ? 0 : bufferLength - 1;
+            var end = isLtr ? bufferLength : -1;
+
+            // First pass: count clusters by counting cluster-id transitions in
+            // logical order.
+            var clusters = 1;
+            for (int j = start + step, prevId = glyphInfos[start].GlyphCluster; j != end; j += step)
+            {
+                var id = glyphInfos[j].GlyphCluster;
+                if (id != prevId)
+                {
+                    clusters++;
+                    prevId = id;
+                }
+            }
+
+            var prefix = new double[clusters + 1];
+            var startChars = new int[clusters + 1];
+
+            // The first logical glyph's cluster value is the absolute source-text
+            // offset of the run's first character. We anchor character offsets here.
+            var baseCluster = glyphInfos[start].GlyphCluster;
+            var textLength = Text.Length;
+
+            var clusterIndex = 0;
+            var currentClusterId = baseCluster;
+            var currentWidth = 0d;
+            startChars[0] = 0;
+
+            for (var j = start; j != end; j += step)
+            {
+                var info = glyphInfos[j];
+
+                if (info.GlyphCluster != currentClusterId)
+                {
+                    prefix[clusterIndex + 1] = prefix[clusterIndex] + currentWidth;
+                    // Cluster IDs increase in logical order in both directions: for LTR
+                    // we walk forward over ascending IDs; for RTL we walk backward over
+                    // (visually descending = logically ascending) IDs.
+                    startChars[clusterIndex + 1] = info.GlyphCluster - baseCluster;
+                    clusterIndex++;
+                    currentClusterId = info.GlyphCluster;
+                    currentWidth = info.GlyphAdvance;
+                }
+                else
+                {
+                    currentWidth += info.GlyphAdvance;
+                }
+            }
+
+            // Close the final cluster.
+            prefix[clusterIndex + 1] = prefix[clusterIndex] + currentWidth;
+            startChars[clusterIndex + 1] = textLength;
+
+            _clusterCount = clusters;
+            _clusterStartChars = startChars;
+            _clusterPrefix = prefix;
+            return prefix;
+        }
+
+        /// <summary>
+        /// Returns the cluster index (relative to this sub-buffer's cache view) at
+        /// which a logical text-character offset lands. Split methods snap their
+        /// boundaries to whole clusters, so this is an exact match in the cluster
+        /// starts table.
+        /// </summary>
+        private int FindClusterOffsetForSplit(int splitCharCount)
+        {
+            var starts = _clusterStartChars!;
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            var targetChar = starts[startIdx] + splitCharCount;
+
+            // Binary search for the first cluster whose start char >= targetChar.
+            var lo = 0;
+            var hi = count;
+            while (lo < hi)
+            {
+                var mid = (lo + hi) >> 1;
+                if (starts[startIdx + mid] < targetChar)
+                {
+                    lo = mid + 1;
+                }
+                else
+                {
+                    hi = mid;
+                }
+            }
+            return lo;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void InvalidateClusterCache()
+        {
+            _clusterPrefix = null;
+            _clusterStartChars = null;
+            _clusterStartIdx = 0;
+            _clusterCount = 0;
         }
 
         public IEnumerator<GlyphInfo> GetEnumerator() => _glyphInfos.GetEnumerator();
@@ -189,9 +480,16 @@ namespace Avalonia.Media.TextFormatting
             var firstText = Text.Slice(0, splitCharCount);
             var secondText = Text.Slice(splitCharCount);
 
+            // A1-followup: ensure parent's cluster cache exists, then hand sub-views of
+            // it to the children. Splitting is O(1) per child instead of O(glyphs).
+            var sharedPrefix = _clusterPrefix ?? EnsureClusterCache();
+            var sharedStarts = _clusterStartChars!;
+            var leadingClusterCount = FindClusterOffsetForSplit(splitCharCount);
+
             var leading = new ShapedBuffer(
                 firstText, firstGlyphs,
-                GlyphTypeface, FontRenderingEmSize, BidiLevel);
+                GlyphTypeface, FontRenderingEmSize, BidiLevel,
+                sharedPrefix, sharedStarts, _clusterStartIdx, leadingClusterCount);
 
             if (secondText.Length == 0)
             {
@@ -200,7 +498,9 @@ namespace Avalonia.Media.TextFormatting
 
             var trailing = new ShapedBuffer(
                 secondText, secondGlyphs,
-                GlyphTypeface, FontRenderingEmSize, BidiLevel);
+                GlyphTypeface, FontRenderingEmSize, BidiLevel,
+                sharedPrefix, sharedStarts,
+                _clusterStartIdx + leadingClusterCount, _clusterCount - leadingClusterCount);
 
             return new SplitResult<ShapedBuffer>(leading, trailing);
         }
@@ -253,9 +553,18 @@ namespace Avalonia.Media.TextFormatting
             var firstText = Text.Slice(0, textLength);
             var secondText = Text.Slice(textLength);
 
+            // A1-followup: share the parent's cluster cache. The cache stores
+            // clusters in logical order, so "first" (text[0..textLength]) gets the
+            // leading slice and "second" gets the trailing slice — same indexing
+            // as the LTR case.
+            var sharedPrefix = _clusterPrefix ?? EnsureClusterCache();
+            var sharedStarts = _clusterStartChars!;
+            var firstClusterCount = FindClusterOffsetForSplit(textLength);
+
             var first = new ShapedBuffer(
                 firstText, firstGlyphs,
-                GlyphTypeface, FontRenderingEmSize, BidiLevel);
+                GlyphTypeface, FontRenderingEmSize, BidiLevel,
+                sharedPrefix, sharedStarts, _clusterStartIdx, firstClusterCount);
 
             if (secondText.Length == 0 || secondGlyphs.Length == 0)
             {
@@ -264,7 +573,9 @@ namespace Avalonia.Media.TextFormatting
 
             var second = new ShapedBuffer(
                 secondText, secondGlyphs,
-                GlyphTypeface, FontRenderingEmSize, BidiLevel);
+                GlyphTypeface, FontRenderingEmSize, BidiLevel,
+                sharedPrefix, sharedStarts,
+                _clusterStartIdx + firstClusterCount, _clusterCount - firstClusterCount);
 
             return new SplitResult<ShapedBuffer>(first, second);
         }

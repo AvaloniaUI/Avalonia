@@ -39,18 +39,14 @@ namespace Avalonia.Skia
             _glyphIndices = new ushort[count];
             _glyphPositions = new SKPoint[count];
 
-            var currentX = 0.0;
-
+            // C1: GetGlyphWidths needs _glyphIndices populated before the
+            // per-glyph bounds can be fetched, so this walk has to come
+            // first. It deliberately does no other work — positions and
+            // runBounds are built together in the fused walk below, using
+            // a single currentX accumulator.
             for (int i = 0; i < count; i++)
             {
-                var glyphInfo = glyphInfos[i];
-                var offset = glyphInfo.GlyphOffset;
-
-                _glyphIndices[i] = glyphInfo.GlyphIndex;
-
-                _glyphPositions[i] = new SKPoint((float)(currentX + offset.X), (float)offset.Y);
-
-                currentX += glyphInfos[i].GlyphAdvance;
+                _glyphIndices[i] = glyphInfos[i].GlyphIndex;
             }
 
             // Ideally the requested edging should be passed to the glyph run.
@@ -67,22 +63,30 @@ namespace Avalonia.Skia
 
             using var font = CreateFont(defaultTextOptions);
 
-            var runBounds = new Rect();
             var glyphBounds = ArrayPool<SKRect>.Shared.Rent(count);
 
             font.GetGlyphWidths(_glyphIndices, null, glyphBounds.AsSpan(0, count));
 
-            currentX = 0;
+            // C1 fused walk: build _glyphPositions and union runBounds in a
+            // single pass. Replaces the previous two separate walks (each
+            // maintaining its own currentX) — each glyphInfo is read once,
+            // and one accumulator covers both outputs.
+            var currentX = 0.0;
+            var runBounds = new Rect();
 
-            for (var i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
+                var glyphInfo = glyphInfos[i];
+                var offset = glyphInfo.GlyphOffset;
                 var gBounds = glyphBounds[i];
-                var advance = glyphInfos[i].GlyphAdvance;
+
+                _glyphPositions[i] = new SKPoint((float)(currentX + offset.X), (float)offset.Y);
 
                 runBounds = runBounds.Union(new Rect(currentX + gBounds.Left, gBounds.Top, gBounds.Width, gBounds.Height));
 
-                currentX += advance;
+                currentX += glyphInfo.GlyphAdvance;
             }
+
             ArrayPool<SKRect>.Shared.Return(glyphBounds);
 
             BaselineOrigin = baselineOrigin;

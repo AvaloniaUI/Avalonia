@@ -684,15 +684,24 @@ namespace Avalonia.Media
             }
 
             var height = GlyphTypeface.Metrics.LineSpacing * Scale;
-            var widthIncludingTrailingWhitespace = 0d;
 
             var trailingWhitespaceLength = GetTrailingWhitespaceLength(isReversed, out var newLineLength, out var glyphCount);
 
-            for (var index = 0; index < _glyphInfos.Count; index++)
+            // A2: when our glyph source is a ShapedBuffer (the common case — every
+            // shape result flows through one), it already maintains a cluster-width
+            // prefix sum we can read in O(1) instead of summing all advances here.
+            double widthIncludingTrailingWhitespace;
+            if (_glyphInfos is TextFormatting.ShapedBuffer shapedBuffer)
             {
-                var advance = _glyphInfos[index].GlyphAdvance;
-
-                widthIncludingTrailingWhitespace += advance;
+                widthIncludingTrailingWhitespace = shapedBuffer.TotalGlyphAdvance;
+            }
+            else
+            {
+                widthIncludingTrailingWhitespace = 0d;
+                for (var index = 0; index < _glyphInfos.Count; index++)
+                {
+                    widthIncludingTrailingWhitespace += _glyphInfos[index].GlyphAdvance;
+                }
             }
 
             var width = widthIncludingTrailingWhitespace;

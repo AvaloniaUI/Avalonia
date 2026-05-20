@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Avalonia.Harfbuzz;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Platform;
+using Avalonia.Skia;
 using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
@@ -52,7 +55,18 @@ namespace Avalonia.Benchmarks
 
         private static void ProfileTextLayout()
         {
-            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            // Bootstrap with the real Skia render interface (instead of the mock used
+            // by TestServices.StyledWindow). That makes GlyphRunImpl construction —
+            // which builds per-glyph absolute positions and walks the ink bounds —
+            // appear on the hot path, so we can see whether the render-side prefix
+            // sum is a real production cost. The mock platform returns trivial
+            // values and hides this work.
+            var services = TestServices.StyledWindow
+                .With(
+                    renderInterface: new PlatformRenderInterface(),
+                    textShaperImpl: new HarfBuzzTextShaper(),
+                    fontManagerImpl: new FontManagerImpl());
+            using var app = UnitTestApplication.Start(services);
 
             // Real Avalonia consumers (e.g. TextBlock) share a TextRunCache across
             // re-layouts of the same string, so shaping cost amortises after the

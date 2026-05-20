@@ -19,6 +19,11 @@ namespace Avalonia.Benchmarks.Text;
 public class TextLayoutProfile : IDisposable
 {
     private readonly IDisposable _app;
+    // Real Avalonia consumers (e.g. TextBlock) share a TextRunCache across
+    // re-layouts of the same string, so shaping cost amortises. The wrap-path
+    // perf doc relies on this benchmark to mirror that scenario; without the
+    // cache shaping dominates and obscures wrap-loop changes.
+    private readonly TextRunCache _runCache = new();
 
     public TextLayoutProfile()
     {
@@ -37,7 +42,8 @@ public class TextLayoutProfile : IDisposable
             Brushes.Black,
             maxWidth: 120,
             textTrimming: TextTrimming.None,
-            textWrapping: TextWrapping.WrapWithOverflow);
+            textWrapping: TextWrapping.WrapWithOverflow,
+            textRunCache: _runCache);
         layout.Dispose();
         return layout;
     }
