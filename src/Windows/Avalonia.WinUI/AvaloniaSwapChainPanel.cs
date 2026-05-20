@@ -5,6 +5,7 @@ using global::Avalonia;
 using global::Avalonia.Controls.Embedding;
 using global::Avalonia.Input;
 using global::Avalonia.Input.Raw;
+using global::Avalonia.Platform;
 using global::Avalonia.Win32;
 using global::Avalonia.Win32.OpenGl.Angle;
 using Microsoft.UI.Xaml;
@@ -36,9 +37,34 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
     private WinUITextInputMethod? _textInputMethod;
 
+    private readonly CursorOverlay _cursorOverlay;
+
+    // ProtectedCursor is protected on UIElement; derive to expose it.
+    private sealed partial class CursorOverlay : Microsoft.UI.Xaml.Controls.Grid
+    {
+        public void SetCursor(Microsoft.UI.Input.InputCursor? cursor) => ProtectedCursor = cursor;
+    }
+
+    static AvaloniaSwapChainPanel()
+    {
+        AvaloniaLocator.CurrentMutable
+            .Bind<ICursorFactory>()
+            .ToConstant(WinUICursorFactory.Instance);
+    }
+
     public AvaloniaSwapChainPanel()
     {
         IsTabStop = true;
+        // SwapChainPanel disallows Background, but without a hit-testable
+        // surface WinUI won't resolve ProtectedCursor for the panel. Add a
+        // transparent overlay that fills the panel — it costs nothing
+        // visually but participates in cursor hit-testing.
+        _cursorOverlay = new CursorOverlay
+        {
+            Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
+            IsHitTestVisible = true,
+        };
+        Children.Add(_cursorOverlay);
 
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
@@ -106,6 +132,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
             () => _topLevelImpl?.InputRoot,
             () => AvaloniaLocator.Current.GetService<IKeyboardDevice>());
         _topLevelImpl.TextInputMethod = _textInputMethod;
+        _topLevelImpl.CursorChanged = OnAvaloniaCursorChanged;
 
         // Create and start the EmbeddableControlRoot
         _root = new EmbeddableControlRoot(_topLevelImpl)
@@ -382,6 +409,11 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         input(new RawMouseWheelEventArgs(device as MouseDevice ?? _mouseDevice, timestamp, inputRoot,
             new AvPoint(pos.X, pos.Y), new AvVector(0, delta), GetPointerModifiers(e)));
         e.Handled = true;
+    }
+
+    private void OnAvaloniaCursorChanged(ICursorImpl? cursor)
+    {
+        _cursorOverlay.SetCursor((cursor as WinUICursorImpl)?.Cursor);
     }
 
     private void OnGotFocus(object sender, RoutedEventArgs e)

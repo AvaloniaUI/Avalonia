@@ -85,7 +85,14 @@ internal class SwapChainTopLevelImpl : ITopLevelImpl
 
     public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, _scaling);
 
-    public void SetCursor(ICursorImpl? cursor) { }
+    /// <summary>
+    /// Raised when Avalonia requests a cursor change. The host is responsible
+    /// for translating the (host-supplied) <see cref="ICursorImpl"/> into a
+    /// native cursor and applying it to its surface.
+    /// </summary>
+    public Action<ICursorImpl?>? CursorChanged { get; set; }
+
+    public void SetCursor(ICursorImpl? cursor) => CursorChanged?.Invoke(cursor);
 
     // Uses overlays instead of popups.
     public IPopupImpl? CreatePopup() => null;
