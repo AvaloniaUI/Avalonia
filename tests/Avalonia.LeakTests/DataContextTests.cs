@@ -69,8 +69,7 @@ public class DataContextTests : ScopedTestBase
 
     private static void CollectGarbage()
     {
-        // Process all Loaded events to free control reference(s)
-        Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
+        Dispatcher.UIThread.RunJobs();
         GC.Collect();
     }
 }
