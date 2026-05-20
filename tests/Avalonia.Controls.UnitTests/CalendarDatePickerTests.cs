@@ -104,16 +104,9 @@ namespace Avalonia.Controls.UnitTests
             // date to text
             public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
-                try
-                {
-                    if (value is DateTime d)
-                        return d.ToString("yyyy-MM-dd");
-                    return AvaloniaProperty.UnsetValue;
-                }
-                catch
-                {
-                    return AvaloniaProperty.UnsetValue;
-                }
+                if (value is DateTime d)
+                    return d.ToString("yyyy-MM-dd");
+                return AvaloniaProperty.UnsetValue;
             }
 
             // text to date
@@ -133,7 +126,33 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Setting_Date_Manually_Can_Accept_Multiple_Formats()
+        public void Setting_Date_Manually_Uses_Text_Converter()
+        {
+            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+            using (UnitTestApplication.Start(Services))
+            {
+                CalendarDatePicker datePicker = CreateControl();
+                datePicker.SelectedDateFormat = CalendarDatePickerFormat.Custom;
+                datePicker.CustomDateFormatString = "dd.MM.yyyy";
+                datePicker.TextConverter = new CalendarDatePickerParser();
+                var tb = GetTextBox(datePicker);
+
+                datePicker.SelectedDate = new DateTime(2024, 2, 13);
+                Assert.Equal("2024-02-13", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate!.Value, new DateTime(2024, 2, 13)));
+
+                // invalid input results in going back to last known (valid) date
+                tb.Clear();
+                RaiseTextEvent(tb, "Not A Valid Date");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+
+                Assert.Equal("2024-02-13", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate!.Value, new DateTime(2024, 2, 13)));
+            }
+        }
+
+        [Fact]
+        public void Setting_Date_String_Manually_Can_Accept_Multiple_Formats()
         {
             CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
             using (UnitTestApplication.Start(Services))
