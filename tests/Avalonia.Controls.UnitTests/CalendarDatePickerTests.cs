@@ -101,21 +101,8 @@ namespace Avalonia.Controls.UnitTests
 
         private class CalendarDatePickerParser : IValueConverter
         {
+            // date to text
             public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-            {
-                var str = value?.ToString();
-                if (str == null)
-                    return AvaloniaProperty.UnsetValue;
-                // allow for a few different date formats
-                string[] formats = ["yyyy-MM-dd", "MM dd yyyy", "dd.MM.yyyy"];
-                if (DateTime.TryParseExact(str, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateValue))
-                {
-                    return dateValue;
-                }
-                return AvaloniaProperty.UnsetValue;
-            }
-
-            public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
                 try
                 {
@@ -127,6 +114,21 @@ namespace Avalonia.Controls.UnitTests
                 {
                     return AvaloniaProperty.UnsetValue;
                 }
+            }
+
+            // text to date
+            public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            {
+                var str = value?.ToString();
+                if (str == null)
+                    return AvaloniaProperty.UnsetValue;
+                // allow for a few different date formats
+                string[] formats = ["yyyy-MM-dd", "MM dd yyyy", "dd.MM.yyyy"];
+                if (DateTime.TryParseExact(str, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateValue))
+                {
+                    return dateValue;
+                }
+                return AvaloniaProperty.UnsetValue;
             }
         }
 
