@@ -443,43 +443,32 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
     }
 
     private void OnKeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (_topLevelImpl?.Input is not { } input || _topLevelImpl.InputRoot is not { } inputRoot)
-            return;
-
-        var key = WinUIKeyInterop.KeyFromVirtualKey(e.Key);
-        if (key != Key.None)
-        {
-            var keyboard = GetKeyboardDevice();
-            if (keyboard is null) return;
-            var args = new RawKeyEventArgs(keyboard, (ulong)Environment.TickCount64, inputRoot,
-                RawKeyEventType.KeyDown, key, GetCurrentModifiers(),
-                PhysicalKey.None, null);
-            input(args);
-            // Only mark handled if Avalonia consumed the event. Marking KeyDown as handled
-            // suppresses the subsequent CharacterReceived event, breaking text input.
-            if (args.Handled)
-                e.Handled = true;
-        }
-    }
+        => DispatchKey(e, RawKeyEventType.KeyDown);
 
     private void OnKeyUp(object sender, KeyRoutedEventArgs e)
+        => DispatchKey(e, RawKeyEventType.KeyUp);
+
+    private void DispatchKey(KeyRoutedEventArgs e, RawKeyEventType type)
     {
         if (_topLevelImpl?.Input is not { } input || _topLevelImpl.InputRoot is not { } inputRoot)
             return;
 
-        var key = WinUIKeyInterop.KeyFromVirtualKey(e.Key);
-        if (key != Key.None)
-        {
-            var keyboard = GetKeyboardDevice();
-            if (keyboard is null) return;
-            var args = new RawKeyEventArgs(keyboard, (ulong)Environment.TickCount64, inputRoot,
-                RawKeyEventType.KeyUp, key, GetCurrentModifiers(),
-                PhysicalKey.None, null);
-            input(args);
-            if (args.Handled)
-                e.Handled = true;
-        }
+        var (key, physicalKey, keySymbol) = WinUIKeyInterop.Resolve(e.Key, e.KeyStatus);
+        if (key == Key.None && physicalKey == PhysicalKey.None)
+            return;
+
+        var keyboard = GetKeyboardDevice();
+        if (keyboard is null)
+            return;
+
+        var args = new RawKeyEventArgs(keyboard, (ulong)Environment.TickCount64, inputRoot,
+            type, key, GetCurrentModifiers(), physicalKey, keySymbol);
+        input(args);
+
+        // Only mark handled if Avalonia consumed the event — marking a KeyDown
+        // handled suppresses the matching CharacterReceived and breaks text input.
+        if (args.Handled)
+            e.Handled = true;
     }
 
     private void OnCharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs e)
