@@ -122,9 +122,10 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         private static LineBreak? ExecuteRules(ReadOnlySpan<char> text, ref LineBreakState state)
         {
-            for (var i = 0; i < s_rules.Length; i++)
+            // JIT elides bounds checks and hoists the array reference more aggressively for the
+            // canonical foreach. Do not rewrite this as an explicit for loop.
+            foreach (var rule in s_rules)
             {
-                var rule = s_rules[i];
                 var res = rule.Invoke(text, ref state);
 
                 switch (res)

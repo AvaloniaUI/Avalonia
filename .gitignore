@@ -226,3 +226,4 @@ src/Browser/Avalonia.Browser/staticwebassets
 .claude/worktrees/
 /.claude/settings.local.json
 /planning
+BenchmarkDotNet.Artifacts.*
