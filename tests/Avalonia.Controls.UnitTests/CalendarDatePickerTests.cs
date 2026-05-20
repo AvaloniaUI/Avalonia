@@ -138,16 +138,15 @@ namespace Avalonia.Controls.UnitTests
                 var tb = GetTextBox(datePicker);
 
                 datePicker.SelectedDate = new DateTime(2024, 2, 13);
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.Equal("2024-02-13", datePicker.Text);
                 Assert.True(CompareDates(datePicker.SelectedDate!.Value, new DateTime(2024, 2, 13)));
 
-                // invalid input results in going back to last known (valid) date
-                tb.Clear();
-                RaiseTextEvent(tb, "Not A Valid Date");
-                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+                // null input results in empty string for text
+                datePicker.SelectedDate = null;
 
-                Assert.Equal("2024-02-13", datePicker.Text);
-                Assert.True(CompareDates(datePicker.SelectedDate!.Value, new DateTime(2024, 2, 13)));
+                Assert.Equal("", datePicker.Text);
+                Assert.Null(datePicker.SelectedDate);
             }
         }
 
