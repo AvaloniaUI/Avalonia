@@ -49,6 +49,56 @@
                     </StackPanel>
                 </Border>
 
+                <TextBlock Text="Cursors"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <TextBlock Text="Hover each tile — the system cursor should change to match the label."
+                           TextWrapping="Wrap"
+                           Opacity="0.7" />
+                <UniformGrid Columns="4" Rows="2">
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="Ibeam"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="IBeam" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="Hand"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="Hand" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="Cross"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="Cross" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="Wait"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="Wait" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="SizeAll"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="SizeAll" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="SizeWestEast"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="SizeWE" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="Help"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="Help" HorizontalAlignment="Center" />
+                    </Border>
+                    <Border Margin="2" Padding="6" BorderThickness="1" CornerRadius="3"
+                            Cursor="No"
+                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                        <TextBlock Text="No" HorizontalAlignment="Center" />
+                    </Border>
+                </UniformGrid>
+
                 <TextBlock Text="Hover"
                            FontSize="16"
                            FontWeight="SemiBold"
