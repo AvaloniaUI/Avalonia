@@ -49,6 +49,24 @@
                     </StackPanel>
                 </Border>
 
+                <TextBlock Text="Clipboard"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <TextBlock Text="Copy from Avalonia, paste in the WinUI TextBox (and vice versa) to confirm the shared system clipboard works."
+                           TextWrapping="Wrap"
+                           Opacity="0.7" />
+                <TextBox x:Name="ClipboardText"
+                         Text="Hello clipboard" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Copy" Click="OnClipboardCopy" />
+                    <Button Content="Paste" Click="OnClipboardPaste" />
+                    <TextBlock x:Name="ClipboardStatus"
+                               VerticalAlignment="Center"
+                               Opacity="0.7"
+                               Text="" />
+                </StackPanel>
+
                 <TextBlock Text="Drag source"
                            FontSize="16"
                            FontWeight="SemiBold"

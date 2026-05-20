@@ -32,6 +32,41 @@ public partial class EmbeddedView : UserControl
         DragSourceBorder.PointerPressed += OnDragSourcePointerPressed;
     }
 
+    private async void OnClipboardCopy(object? sender, RoutedEventArgs e)
+    {
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard is null)
+        {
+            ClipboardStatus.Text = "no clipboard";
+            return;
+        }
+        var data = new global::Avalonia.Input.DataTransfer();
+        data.Add(DataTransferItem.CreateText(ClipboardText.Text ?? ""));
+        await clipboard.SetDataAsync(data);
+        ClipboardStatus.Text = $"copied {(ClipboardText.Text ?? "").Length} chars";
+    }
+
+    private async void OnClipboardPaste(object? sender, RoutedEventArgs e)
+    {
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard is null)
+        {
+            ClipboardStatus.Text = "no clipboard";
+            return;
+        }
+        using var data = await clipboard.TryGetDataAsync();
+        var text = data is null ? null : await data.TryGetTextAsync();
+        if (text is not null)
+        {
+            ClipboardText.Text = text;
+            ClipboardStatus.Text = $"pasted {text.Length} chars";
+        }
+        else
+        {
+            ClipboardStatus.Text = "no text on clipboard";
+        }
+    }
+
     private async void OnDragSourcePointerPressed(object? sender, PointerPressedEventArgs e)
     {
         var data = new global::Avalonia.Input.DataTransfer();
