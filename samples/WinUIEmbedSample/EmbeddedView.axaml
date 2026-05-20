@@ -49,6 +49,45 @@
                     </StackPanel>
                 </Border>
 
+                <TextBlock Text="Drag source"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <TextBlock Text="Press and drag the box below to drag text out — drop it into Notepad, the WinUI TextBox at the top, or the drop target below."
+                           TextWrapping="Wrap"
+                           Opacity="0.7" />
+                <Border x:Name="DragSourceBorder"
+                        Height="40"
+                        CornerRadius="4"
+                        BorderThickness="1"
+                        Padding="8"
+                        Cursor="SizeAll"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+                    <TextBlock Text="Drag me — payload: &quot;Hello from Avalonia&quot;"
+                               VerticalAlignment="Center" />
+                </Border>
+
+                <TextBlock Text="Drop target"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <TextBlock Text="Drag a file from Explorer (or text from a TextBox) onto the box below. The most recent payload is shown."
+                           TextWrapping="Wrap"
+                           Opacity="0.7" />
+                <Border x:Name="DropTargetBorder"
+                        Height="80"
+                        CornerRadius="4"
+                        BorderThickness="1"
+                        Padding="8"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+                    <TextBlock x:Name="DropStatus"
+                               Text="(drop something here)"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center" />
+                </Border>
+
                 <TextBlock Text="Cursors"
                            FontSize="16"
                            FontWeight="SemiBold"

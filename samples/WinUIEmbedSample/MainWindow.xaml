@@ -42,6 +42,26 @@
 
                     <ToggleSwitch Header="ToggleSwitch" IsOn="True" />
 
+                    <TextBlock Text="Drag source (native WinUI baseline)"
+                               FontWeight="SemiBold"
+                               Margin="0,16,0,0" />
+                    <TextBlock Text="Drag the box below — payload: 'Hello from WinUI'. Drop into Notepad, this TextBox, or the Avalonia drop target. Use this to compare against the Avalonia drag source."
+                               TextWrapping="Wrap"
+                               Opacity="0.7"
+                               FontSize="12" />
+                    <Border x:Name="WinUiDragSource"
+                            CanDrag="True"
+                            Height="40"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="8"
+                            DragStarting="WinUiDragSource_DragStarting"
+                            BorderBrush="{ThemeResource SystemControlForegroundBaseMediumLowBrush}"
+                            Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
+                        <TextBlock Text="Drag me (native WinUI)"
+                                   VerticalAlignment="Center" />
+                    </Border>
+
                     <TextBlock Text="Theme" Margin="0,8,0,0" />
                     <ComboBox x:Name="WinUiThemeCombo"
                               SelectedIndex="2"

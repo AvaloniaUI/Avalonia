@@ -1,3 +1,4 @@
+using System.Linq;
 using global::Avalonia;
 using global::Avalonia.Controls;
 using global::Avalonia.Controls.Shapes;
@@ -6,6 +7,7 @@ using global::Avalonia.Interactivity;
 using global::Avalonia.Markup.Xaml;
 using global::Avalonia.Markup.Xaml.MarkupExtensions;
 using global::Avalonia.Media;
+using global::Avalonia.Platform.Storage;
 
 namespace WinUIEmbedSample;
 
@@ -22,6 +24,51 @@ public partial class EmbeddedView : UserControl
         HoverPanel.PointerEntered += (_, _) => HoverState.Text = "over";
         HoverPanel.PointerExited += (_, _) => HoverState.Text = "out";
         AddHandler(KeyDownEvent, OnKeyReadout, handledEventsToo: true);
+
+        DragDrop.SetAllowDrop(DropTargetBorder, true);
+        DropTargetBorder.AddHandler(DragDrop.DragOverEvent, OnDropDragOver);
+        DropTargetBorder.AddHandler(DragDrop.DropEvent, OnDrop);
+
+        DragSourceBorder.PointerPressed += OnDragSourcePointerPressed;
+    }
+
+    private async void OnDragSourcePointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        var data = new global::Avalonia.Input.DataTransfer();
+        data.Add(DataTransferItem.CreateText("Hello from Avalonia"));
+        try
+        {
+            await DragDrop.DoDragDropAsync(e, data, DragDropEffects.Copy | DragDropEffects.Move);
+        }
+        catch
+        {
+            // Ignore — drag may be cancelled or the source unavailable.
+        }
+    }
+
+    private void OnDropDragOver(object? sender, DragEventArgs e)
+    {
+        e.DragEffects = e.DragEffects & (DragDropEffects.Copy | DragDropEffects.Link | DragDropEffects.Move);
+        if (e.DragEffects == DragDropEffects.None)
+            e.DragEffects = DragDropEffects.Copy;
+        e.Handled = true;
+    }
+
+    private void OnDrop(object? sender, DragEventArgs e)
+    {
+        var dt = e.DataTransfer;
+        var files = dt.TryGetValues(DataFormat.File)?.ToArray() ?? System.Array.Empty<IStorageItem>();
+        var text = dt.TryGetValue(DataFormat.Text);
+
+        if (files.Length > 0)
+            DropStatus.Text = $"{files.Length} file(s):\n" +
+                string.Join('\n', files.Select(f => f.Path.LocalPath));
+        else if (!string.IsNullOrEmpty(text))
+            DropStatus.Text = $"text: {text}";
+        else
+            DropStatus.Text = "(unknown payload)";
+
+        e.Handled = true;
     }
 
     private void OnKeyReadout(object? sender, KeyEventArgs e)

@@ -23,6 +23,16 @@ namespace WinUIEmbedSample
             WinUiClickCount.Text = $"Clicked {++_clicks} times";
         }
 
+        private void WinUiDragSource_DragStarting(
+            Microsoft.UI.Xaml.UIElement sender,
+            Microsoft.UI.Xaml.DragStartingEventArgs e)
+        {
+            e.Data.SetText("Hello from WinUI");
+            e.AllowedOperations =
+                Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy |
+                Windows.ApplicationModel.DataTransfer.DataPackageOperation.Move;
+        }
+
         private void WinUiSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (WinUiSliderValue is not null)
