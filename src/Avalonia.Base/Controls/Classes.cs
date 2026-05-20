@@ -280,6 +280,26 @@ namespace Avalonia.Controls
             NotifyChanged();
         }
 
+        internal void Replace(IList<string>? toRemove, IList<string> toAdd)
+        {
+            foreach (var name in toAdd)
+            {
+                ThrowIfPseudoclass(name, "added");
+            }
+
+            if (toRemove != null)
+            {
+                foreach (var name in toRemove)
+                {
+                    ThrowIfPseudoclass(name, "removed");
+                }
+                base.RemoveAll(toRemove);
+            }
+
+            base.AddRange(toAdd);
+            NotifyChanged();
+        }
+
         /// <inheritdoc/>
         void IPseudoClasses.Add(string name)
         {
