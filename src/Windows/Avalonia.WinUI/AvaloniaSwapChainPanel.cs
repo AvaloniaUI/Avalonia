@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using global::Avalonia;
 using global::Avalonia.Controls.Embedding;
 using global::Avalonia.Input;
@@ -50,7 +51,28 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         AvaloniaLocator.CurrentMutable
             .Bind<ICursorFactory>()
             .ToConstant(WinUICursorFactory.Instance);
+        AvaloniaLocator.CurrentMutable
+            .Bind<global::Avalonia.Input.Platform.IPlatformDragSource>()
+            .ToSingleton<WinUIDragSource>();
     }
+
+    // Looking up panels from the drag source: keyed by the Avalonia toplevel
+    // PlatformImpl so multi-panel hosts work.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<
+        global::Avalonia.Platform.ITopLevelImpl, AvaloniaSwapChainPanel> s_panelsByImpl = new();
+
+    internal static AvaloniaSwapChainPanel? GetPanelFor(global::Avalonia.Platform.ITopLevelImpl impl)
+        => s_panelsByImpl.TryGetValue(impl, out var p) ? p : null;
+
+    // Most recent WinUI PointerPoint observed by the panel — needed by
+    // StartDragAsync. Avalonia's IPointer.Id is assigned sequentially and
+    // does not correspond to WinUI's PointerId, so we can't look up per
+    // pointer; the latest is good enough for the dominant mouse-drag case.
+    private WinUIPointerPoint? _lastPointerPoint;
+
+    // Cleared in DragStarting and OnUnloaded.
+    private IDataTransfer? _outgoingDragData;
+    private DragDropEffects _outgoingDragAllowed;
 
     public AvaloniaSwapChainPanel()
     {
@@ -63,7 +85,14 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         {
             Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
             IsHitTestVisible = true,
+            AllowDrop = true,
+            CanDrag = true,
         };
+        _cursorOverlay.DragEnter += OnDragEnter;
+        _cursorOverlay.DragOver += OnDragOver;
+        _cursorOverlay.DragLeave += OnDragLeave;
+        _cursorOverlay.Drop += OnDrop;
+        _cursorOverlay.DragStarting += OnDragStarting;
         Children.Add(_cursorOverlay);
 
         Loaded += OnLoaded;
@@ -141,6 +170,8 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         };
         _root.Prepare();
         _root.StartRendering();
+
+        s_panelsByImpl[_topLevelImpl] = this;
     }
 
     private unsafe void OnSwapChainCreated(IntPtr swapChainPtr)
@@ -178,6 +209,8 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
+        if (_topLevelImpl is not null)
+            s_panelsByImpl.TryRemove(_topLevelImpl, out _);
         _root?.StopRendering();
         _root?.Dispose();
         _root = null;
@@ -284,6 +317,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
     private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
     {
+        _lastPointerPoint = e.GetCurrentPoint(this);
         if (_topLevelImpl?.Input is not { } input || _topLevelImpl.InputRoot is not { } inputRoot)
             return;
 
@@ -321,6 +355,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
     private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
     {
+        _lastPointerPoint = e.GetCurrentPoint(this);
         if (_topLevelImpl?.Input is not { } input || _topLevelImpl.InputRoot is not { } inputRoot)
             return;
 
@@ -518,6 +553,209 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
             input(new RawTextInputEventArgs(keyboard, (ulong)Environment.TickCount64, inputRoot,
                 new string(ch, 1)));
             e.Handled = true;
+        }
+    }
+
+    // Incoming drag-and-drop
+    private DataTransfer? _activeDrag;
+
+    private async void OnDragEnter(object sender, Microsoft.UI.Xaml.DragEventArgs e)
+    {
+        var deferral = e.GetDeferral();
+        try
+        {
+            ((IDisposable?)_activeDrag)?.Dispose();
+            _activeDrag = await BuildDataTransferAsync(e.DataView);
+            UpdateDragUi(e, RawDragEventType.DragEnter);
+        }
+        finally
+        {
+            deferral.Complete();
+        }
+    }
+
+    private void OnDragOver(object sender, Microsoft.UI.Xaml.DragEventArgs e)
+        => UpdateDragUi(e, RawDragEventType.DragOver);
+
+    private void OnDragLeave(object sender, Microsoft.UI.Xaml.DragEventArgs e)
+    {
+        UpdateDragUi(e, RawDragEventType.DragLeave);
+        ((IDisposable?)_activeDrag)?.Dispose();
+        _activeDrag = null;
+    }
+
+    private void OnDrop(object sender, Microsoft.UI.Xaml.DragEventArgs e)
+    {
+        UpdateDragUi(e, RawDragEventType.Drop);
+        ((IDisposable?)_activeDrag)?.Dispose();
+        _activeDrag = null;
+    }
+
+    private void UpdateDragUi(Microsoft.UI.Xaml.DragEventArgs e, RawDragEventType type)
+    {
+        if (_topLevelImpl?.Input is not { } input
+            || _topLevelImpl.InputRoot is not { } inputRoot
+            || _activeDrag is null)
+            return;
+
+        var device = AvaloniaLocator.Current.GetService<IDragDropDevice>();
+        if (device is null)
+            return;
+
+        var pt = e.GetPosition(this);
+        var allowed = (DragDropEffects)(int)e.AllowedOperations;
+        if (allowed == DragDropEffects.None)
+            allowed = DragDropEffects.Copy | DragDropEffects.Move | DragDropEffects.Link;
+        var modifiers = GetCurrentModifiers();
+
+        var args = new RawDragEvent(device, type, inputRoot,
+            new AvPoint(pt.X, pt.Y), _activeDrag, allowed, modifiers);
+        input(args);
+
+        e.AcceptedOperation = (Windows.ApplicationModel.DataTransfer.DataPackageOperation)(int)args.Effects;
+        e.Handled = true;
+    }
+
+    private static async System.Threading.Tasks.Task<DataTransfer> BuildDataTransferAsync(
+        Windows.ApplicationModel.DataTransfer.DataPackageView view)
+    {
+        var dt = new DataTransfer();
+
+        if (view.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.StorageItems))
+        {
+            try
+            {
+                var items = await view.GetStorageItemsAsync();
+                foreach (var item in items)
+                {
+                    var path = item.Path;
+                    if (string.IsNullOrEmpty(path))
+                        continue;
+                    // Reuse Avalonia's BclStorage* via the same helper Win32 uses
+                    // (IVT-granted to Avalonia.WinUI on Avalonia.Base).
+                    if (global::Avalonia.Platform.Storage.FileIO.StorageProviderHelpers
+                        .TryCreateBclStorageItem(path) is { } storage)
+                    {
+                        dt.Add(DataTransferItem.CreateFile(storage));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                WinUILog.Warn(null, "Failed to resolve dragged storage items", ex);
+            }
+        }
+
+        if (view.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.Text))
+        {
+            try
+            {
+                var text = await view.GetTextAsync();
+                if (!string.IsNullOrEmpty(text))
+                    dt.Add(DataTransferItem.CreateText(text));
+            }
+            catch (Exception ex)
+            {
+                WinUILog.Warn(null, "Failed to resolve dragged text", ex);
+            }
+        }
+
+        return dt;
+    }
+
+    // Outgoing drag — invoked by WinUIDragSource on the UI thread.
+    internal async Task<DragDropEffects> StartOutgoingDragAsync(
+        IDataTransfer data, DragDropEffects allowed)
+    {
+        if (_lastPointerPoint is not { } pp)
+        {
+            WinUILog.Warn(this, "StartOutgoingDragAsync called with no cached PointerPoint; drag suppressed.");
+            return DragDropEffects.None;
+        }
+
+        _outgoingDragData = data;
+        _outgoingDragAllowed = allowed;
+        try
+        {
+            var op = await _cursorOverlay.StartDragAsync(pp);
+            return (DragDropEffects)(int)op;
+        }
+        catch (Exception ex)
+        {
+            WinUILog.Warn(this, "StartDragAsync threw", ex);
+            return DragDropEffects.None;
+        }
+        finally
+        {
+            _outgoingDragData = null;
+            _outgoingDragAllowed = DragDropEffects.None;
+        }
+    }
+
+    private async void OnDragStarting(UIElement sender, DragStartingEventArgs e)
+    {
+        if (_outgoingDragData is null)
+        {
+            // The overlay was the drag origin (CanDrag=true) but no Avalonia
+            // drag was in flight — most likely a user grab on empty panel
+            // space. Suppress the native drag rather than emit an empty one.
+            WinUILog.Verbose(this, "DragStarting cancelled: no active Avalonia drag.");
+            e.Cancel = true;
+            return;
+        }
+
+        e.AllowedOperations = (Windows.ApplicationModel.DataTransfer.DataPackageOperation)(int)_outgoingDragAllowed;
+        var deferral = e.GetDeferral();
+        try
+        {
+            await PopulateDataPackageAsync(e.Data, _outgoingDragData);
+        }
+        catch (Exception ex)
+        {
+            WinUILog.Warn(this, "Populating outgoing DataPackage threw", ex);
+        }
+        finally
+        {
+            deferral.Complete();
+        }
+    }
+
+    private static async Task PopulateDataPackageAsync(
+        Windows.ApplicationModel.DataTransfer.DataPackage package, IDataTransfer source)
+    {
+        // Text — direct copy.
+        var text = source.TryGetValue(DataFormat.Text);
+        if (!string.IsNullOrEmpty(text))
+            package.SetText(text);
+
+        // Files — convert Avalonia IStorageItem paths to native
+        // Windows.Storage.IStorageItem instances via the OS APIs.
+        var avFiles = source.TryGetValues(DataFormat.File);
+        if (avFiles is not null)
+        {
+            var winuiItems = new System.Collections.Generic.List<Windows.Storage.IStorageItem>();
+            foreach (var av in avFiles)
+            {
+                string? path = null;
+                if (av.Path is { IsAbsoluteUri: true, Scheme: "file" } uri)
+                    path = uri.LocalPath;
+                if (string.IsNullOrEmpty(path))
+                    continue;
+                try
+                {
+                    Windows.Storage.IStorageItem item =
+                        System.IO.Directory.Exists(path)
+                            ? await Windows.Storage.StorageFolder.GetFolderFromPathAsync(path)
+                            : await Windows.Storage.StorageFile.GetFileFromPathAsync(path);
+                    winuiItems.Add(item);
+                }
+                catch (Exception ex)
+                {
+                    WinUILog.Warn(null, $"Failed to expose dragged path '{path}' as Windows.Storage item", ex);
+                }
+            }
+            if (winuiItems.Count > 0)
+                package.SetStorageItems(winuiItems);
         }
     }
 

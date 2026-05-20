@@ -211,9 +211,10 @@ internal sealed class WinUITextInputMethod : ITextInputMethodImpl
             args.Request.LayoutBounds.TextBounds = screenRect;
             args.Request.LayoutBounds.ControlBounds = screenRect;
         }
-        catch
+        catch (Exception ex)
         {
             // Panel not in tree yet, or transform unavailable — leave bounds default.
+            WinUILog.Verbose(this, $"LayoutRequested couldn't compute screen rect: {ex.Message}");
         }
     }
 
