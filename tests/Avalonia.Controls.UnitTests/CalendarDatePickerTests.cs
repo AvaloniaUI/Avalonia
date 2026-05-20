@@ -163,6 +163,14 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal("22.04.2026", datePicker.Text);
                 Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2026, 4, 22)));
+
+                // invalid input results in going back to last known (valid) date
+                tb.Clear();
+                RaiseTextEvent(tb, "Not A Valid Date");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+
+                Assert.Equal("22.04.2026", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2026, 4, 22)));
             }
         }
 
