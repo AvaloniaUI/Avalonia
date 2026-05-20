@@ -289,7 +289,12 @@ namespace Avalonia.Controls
         }
         
         /// <summary> 
-        /// Gets or sets the custom bidirectional Text-Value converter. 
+        /// Gets or sets the custom bidirectional Text-Value converter for custom date
+        /// string formatting (e.g. for converting user input formats to DateTime or 
+        /// displaying a DateTime in a custom string format).
+        /// If set, has priority for formatting over <see cref="CustomDateFormatString"/>.
+        /// Convert: DateTime -> string
+        /// ConvertBack: string -> DateTIme
         /// </summary> 
         public IValueConverter? TextConverter 
         { 
