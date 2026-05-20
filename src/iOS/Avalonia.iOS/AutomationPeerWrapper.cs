@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Input;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -128,10 +129,11 @@ namespace Avalonia.iOS
         private static void UpdateBoundingRectangle(AutomationPeerWrapper self)
         {
             AutomationPeer peer = self;
+            InputElement? root = self._view.TopLevel.GetInputRoot()?.RootElement;
             Rect bounds = peer.GetBoundingRectangle();
             PixelRect screenRect = new PixelRect(
-                self._view.TopLevel.PointToScreen(bounds.TopLeft),
-                self._view.TopLevel.PointToScreen(bounds.BottomRight)
+                root?.PointToScreen(bounds.TopLeft) ?? default,
+                root?.PointToScreen(bounds.BottomRight) ?? default
                 );
             CGRect nativeRect = new CGRect(
                 screenRect.X, screenRect.Y,
