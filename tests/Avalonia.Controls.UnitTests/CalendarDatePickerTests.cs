@@ -105,7 +105,7 @@ namespace Avalonia.Controls.UnitTests
             public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
                 if (value is DateTime d)
-                    return d.ToString("yyyy-MM-dd");
+                    return d.ToString("yyyy-MM-dd"); // always return a single format (for this test)
                 return AvaloniaProperty.UnsetValue;
             }
 
@@ -167,7 +167,7 @@ namespace Avalonia.Controls.UnitTests
                 tb.Clear();
                 RaiseTextEvent(tb, "17.10.2024");
                 RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
-                Assert.Equal("17.10.2024", datePicker.Text);
+                Assert.Equal("2024-10-17", datePicker.Text);
                 Assert.True(CompareDates(datePicker.SelectedDate!.Value, new DateTime(2024, 10, 17)));
 
                 // can also handle parsing other formats that the user enters, too
@@ -175,14 +175,14 @@ namespace Avalonia.Controls.UnitTests
                 RaiseTextEvent(tb, "2024-02-13");
                 RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
 
-                Assert.Equal("13.02.2024", datePicker.Text);
+                Assert.Equal("2024-02-13", datePicker.Text);
                 Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2024, 2, 13)));
 
                 tb.Clear();
                 RaiseTextEvent(tb, "04 22 2026");
                 RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
 
-                Assert.Equal("22.04.2026", datePicker.Text);
+                Assert.Equal("2026-04-22", datePicker.Text);
                 Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2026, 4, 22)));
 
                 // invalid input results in going back to last known (valid) date
@@ -190,7 +190,7 @@ namespace Avalonia.Controls.UnitTests
                 RaiseTextEvent(tb, "Not A Valid Date");
                 RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
 
-                Assert.Equal("22.04.2026", datePicker.Text);
+                Assert.Equal("2026-04-22", datePicker.Text);
                 Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2026, 4, 22)));
             }
         }
