@@ -261,7 +261,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                                 currentParamIndex++;
                             }
 
-                            bool isNotifyingCollection = targetType.GetAllInterfaces().Any(i => i.FullName == "System.Collections.Specialized.INotifyCollectionChanged");
+                            bool isNotifyingCollection = targetType.GetAllInterfaces().Any(i => i.Is("System.Collections.Specialized", "INotifyCollectionChanged"));
 
                             nodes.Add(new XamlIlClrIndexerPathElementNode(property, values, string.Join(",", indexer.Arguments), isNotifyingCollection));
                             break;
