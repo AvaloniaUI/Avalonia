@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using global::Avalonia;
 using global::Avalonia.Controls.Embedding;
@@ -10,6 +11,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
+using WinUIPointerPoint = Microsoft.UI.Input.PointerPoint;
 using AvControl = global::Avalonia.Controls.Control;
 using AvSize = global::Avalonia.Size;
 using AvPoint = global::Avalonia.Point;
@@ -29,6 +31,8 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
     private readonly PenDevice _penDevice = new(releasePointerOnPenUp: false);
     private PixelSize _cachedPixelSize = new(1, 1);
     private double _cachedScaling = 1.0;
+
+    private static readonly List<RawPointerPoint> s_intermediatePoints = new();
 
     public AvaloniaSwapChainPanel()
     {
@@ -166,9 +170,8 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         };
     }
 
-    private RawPointerPoint CreateRawPointerPoint(PointerRoutedEventArgs e)
+    private static RawPointerPoint CreateRawPointerPoint(WinUIPointerPoint point)
     {
-        var point = e.GetCurrentPoint(this);
         var props = point.Properties;
         var pos = point.Position;
 
@@ -241,7 +244,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
         var device = GetPointerDevice(e);
         var timestamp = GetTimestamp(e);
-        var rawPoint = CreateRawPointerPoint(e);
+        var rawPoint = CreateRawPointerPoint(e.GetCurrentPoint(this));
         var modifiers = GetPointerModifiers(e);
         var pointerId = e.Pointer.PointerId;
 
@@ -278,13 +281,33 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
         var device = GetPointerDevice(e);
         var timestamp = GetTimestamp(e);
-        var rawPoint = CreateRawPointerPoint(e);
+        var rawPoint = CreateRawPointerPoint(e.GetCurrentPoint(this));
         var modifiers = GetPointerModifiers(e);
         var pointerId = e.Pointer.PointerId;
 
         var type = device is TouchDevice ? RawPointerEventType.TouchUpdate : RawPointerEventType.Move;
 
-        input(CreatePointerArgs(device, timestamp, inputRoot, type, rawPoint, modifiers, pointerId));
+        var args = CreatePointerArgs(device, timestamp, inputRoot, type, rawPoint, modifiers, pointerId);
+        args.IntermediatePoints = new Lazy<IReadOnlyList<RawPointerPoint>?>(() => GetIntermediatePoints(e));
+        input(args);
+    }
+
+    private IReadOnlyList<RawPointerPoint>? GetIntermediatePoints(PointerRoutedEventArgs e)
+    {
+        // WinUI returns the points oldest-first and includes the current point as the
+        // last entry; drop that last entry (it is the one we already dispatched).
+        var coalesced = e.GetIntermediatePoints(this);
+        if (coalesced is null || coalesced.Count <= 1)
+            return null;
+
+        s_intermediatePoints.Clear();
+        if (s_intermediatePoints.Capacity < coalesced.Count - 1)
+            s_intermediatePoints.Capacity = coalesced.Count - 1;
+
+        for (var i = 0; i < coalesced.Count - 1; i++)
+            s_intermediatePoints.Add(CreateRawPointerPoint(coalesced[i]));
+
+        return s_intermediatePoints;
     }
 
     private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -294,7 +317,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
         var device = GetPointerDevice(e);
         var timestamp = GetTimestamp(e);
-        var rawPoint = CreateRawPointerPoint(e);
+        var rawPoint = CreateRawPointerPoint(e.GetCurrentPoint(this));
         var modifiers = GetPointerModifiers(e);
         var pointerId = e.Pointer.PointerId;
 
@@ -351,7 +374,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
         var device = GetPointerDevice(e);
         var timestamp = GetTimestamp(e);
-        var rawPoint = CreateRawPointerPoint(e);
+        var rawPoint = CreateRawPointerPoint(e.GetCurrentPoint(this));
         var modifiers = GetPointerModifiers(e);
         var pointerId = e.Pointer.PointerId;
 
