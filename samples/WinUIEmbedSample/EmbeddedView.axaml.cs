@@ -19,6 +19,8 @@ public partial class EmbeddedView : UserControl
     {
         InitializeComponent();
         AvSlider.PropertyChanged += OnSliderPropertyChanged;
+        HoverPanel.PointerEntered += (_, _) => HoverState.Text = "over";
+        HoverPanel.PointerExited += (_, _) => HoverState.Text = "out";
     }
 
     private void OnAvButtonClick(object? sender, RoutedEventArgs e)

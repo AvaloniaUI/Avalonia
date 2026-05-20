@@ -29,6 +29,28 @@
 
                 <ToggleSwitch Content="ToggleSwitch" IsChecked="True" />
 
+                <TextBlock Text="Hover"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <Border x:Name="HoverPanel"
+                        Height="60"
+                        CornerRadius="4"
+                        BorderThickness="1"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+                    <Border.Styles>
+                        <Style Selector="Border#HoverPanel:pointerover">
+                            <Setter Property="Background"
+                                    Value="{DynamicResource SystemControlBackgroundAccentBrush}" />
+                        </Style>
+                    </Border.Styles>
+                    <TextBlock x:Name="HoverState"
+                               Text="out"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+
                 <TextBlock Text="Ink"
                            FontSize="16"
                            FontWeight="SemiBold"
