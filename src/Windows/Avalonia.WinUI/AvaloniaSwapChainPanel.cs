@@ -48,6 +48,8 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         PointerReleased += OnPointerReleased;
         PointerWheelChanged += OnPointerWheelChanged;
         PointerCanceled += OnPointerCanceled;
+        PointerEntered += OnPointerEntered;
+        PointerExited += OnPointerExited;
         AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown), handledEventsToo: true);
         AddHandler(KeyUpEvent, new KeyEventHandler(OnKeyUp), handledEventsToo: true);
         AddHandler(CharacterReceivedEvent,
@@ -365,6 +367,41 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         input(new RawMouseWheelEventArgs(device as MouseDevice ?? _mouseDevice, timestamp, inputRoot,
             new AvPoint(pos.X, pos.Y), new AvVector(0, delta), GetPointerModifiers(e)));
         e.Handled = true;
+    }
+
+    private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        // Touch never hovers — enter is implied by the press that produced it.
+        if (e.Pointer.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Touch)
+            return;
+        if (_topLevelImpl?.Input is not { } input || _topLevelImpl.InputRoot is not { } inputRoot)
+            return;
+
+        var device = GetPointerDevice(e);
+        var timestamp = GetTimestamp(e);
+        var rawPoint = CreateRawPointerPoint(e.GetCurrentPoint(this));
+        var modifiers = GetPointerModifiers(e);
+        var pointerId = e.Pointer.PointerId;
+
+        input(CreatePointerArgs(device, timestamp, inputRoot,
+            RawPointerEventType.Move, rawPoint, modifiers, pointerId));
+    }
+
+    private void OnPointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        if (e.Pointer.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Touch)
+            return;
+        if (_topLevelImpl?.Input is not { } input || _topLevelImpl.InputRoot is not { } inputRoot)
+            return;
+
+        var device = GetPointerDevice(e);
+        var timestamp = GetTimestamp(e);
+        var rawPoint = CreateRawPointerPoint(e.GetCurrentPoint(this));
+        var modifiers = GetPointerModifiers(e);
+        var pointerId = e.Pointer.PointerId;
+
+        input(CreatePointerArgs(device, timestamp, inputRoot,
+            RawPointerEventType.LeaveWindow, rawPoint, modifiers, pointerId));
     }
 
     private void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
