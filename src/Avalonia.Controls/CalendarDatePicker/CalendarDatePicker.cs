@@ -761,6 +761,10 @@ namespace Avalonia.Controls
 
         private string? DateTimeToString(DateTime d)
         {
+            if (TextConverter != null)
+            {
+                return TextConverter.Convert(d, typeof(string), null, CultureInfo.CurrentCulture) as string;
+            }
             DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
 
             switch (SelectedDateFormat)
