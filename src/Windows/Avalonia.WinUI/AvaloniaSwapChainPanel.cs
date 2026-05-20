@@ -456,7 +456,14 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         => _textInputMethod?.OnPanelFocusChanged(true);
 
     private void OnLostFocus(object sender, RoutedEventArgs e)
-        => _textInputMethod?.OnPanelFocusChanged(false);
+    {
+        _textInputMethod?.OnPanelFocusChanged(false);
+        // Clear Avalonia's internal focus so the previously focused control
+        // doesn't keep its :focus visual once keyboard focus moves to a
+        // native WinUI element.
+        if (_root is not null)
+            global::Avalonia.Input.FocusManager.GetFocusManager(_root)?.Focus(null);
+    }
 
     private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
     {
@@ -525,6 +532,12 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         if (key == Key.None && physicalKey == PhysicalKey.None)
             return;
 
+        // Tab boundary: when Avalonia would wrap focus inside its toplevel
+        // (TopLevelHost.TabNavigation = Cycle), forward to WinUI so focus
+        // escapes to the next/previous native control instead.
+        if (type == RawKeyEventType.KeyDown && key == Key.Tab && TryEscapeTabBoundary(e))
+            return;
+
         var keyboard = GetKeyboardDevice();
         if (keyboard is null)
             return;
@@ -537,6 +550,79 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         // handled suppresses the matching CharacterReceived and breaks text input.
         if (args.Handled)
             e.Handled = true;
+    }
+
+    /// <summary>
+    /// If the current Avalonia focus is at the first or last tab stop in the
+    /// embedded content, handle Tab / Shift+Tab here by moving WinUI focus to
+    /// the next or previous native element. Returns true if the event was
+    /// consumed (the caller must not forward it to Avalonia).
+    /// </summary>
+    private bool TryEscapeTabBoundary(KeyRoutedEventArgs e)
+    {
+        if (_root is null)
+            return false;
+
+        var focusManager = global::Avalonia.Input.FocusManager.GetFocusManager(_root);
+        var current = focusManager?.GetFocusedElement();
+        if (current is null)
+            return false;
+
+        var shift = global::Microsoft.UI.Input.InputKeyboardSource
+            .GetKeyStateForCurrentThread(Windows.System.VirtualKey.Shift)
+            .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+
+        var first = global::Avalonia.Input.KeyboardNavigationHandler.GetNext(
+            _root, global::Avalonia.Input.NavigationDirection.Next);
+        if (first is null)
+            return false;
+
+        bool atBoundary;
+        if (shift)
+        {
+            // At the first tab stop — backward tab would wrap.
+            atBoundary = ReferenceEquals(current, first);
+        }
+        else
+        {
+            // At the last tab stop — forward tab would wrap. Cycle mode means
+            // GetNext from the last returns the first; detect that.
+            var next = global::Avalonia.Input.KeyboardNavigationHandler.GetNext(
+                current, global::Avalonia.Input.NavigationDirection.Next);
+            atBoundary = next is null || ReferenceEquals(next, first);
+        }
+
+        if (!atBoundary)
+            return false;
+
+        var direction = shift
+            ? Microsoft.UI.Xaml.Input.FocusNavigationDirection.Previous
+            : Microsoft.UI.Xaml.Input.FocusNavigationDirection.Next;
+
+        // WinUI Desktop requires SearchRoot — the parameterless TryMoveFocus
+        // overload only works in UWP. Use the panel's XamlRoot.Content as the
+        // search scope; that covers the whole window's visual tree.
+        var searchRoot = XamlRoot?.Content as DependencyObject;
+        if (searchRoot is null)
+        {
+            WinUILog.Verbose(this, "Tab boundary: no XamlRoot.Content available; letting Avalonia handle.");
+            return false;
+        }
+
+        var options = new Microsoft.UI.Xaml.Input.FindNextElementOptions
+        {
+            SearchRoot = searchRoot,
+        };
+        var moved = Microsoft.UI.Xaml.Input.FocusManager.TryMoveFocus(direction, options);
+        if (moved)
+        {
+            e.Handled = true;
+            WinUILog.Verbose(this, $"Tab boundary: moved WinUI focus {direction}.");
+            return true;
+        }
+
+        WinUILog.Verbose(this, "Tab boundary detected but TryMoveFocus returned false; letting Avalonia handle.");
+        return false;
     }
 
     private void OnCharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs e)
