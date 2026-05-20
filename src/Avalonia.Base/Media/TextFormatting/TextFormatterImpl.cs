@@ -145,11 +145,10 @@ namespace Avalonia.Media.TextFormatting
                     {
                         var runs = new List<TextRun>(cached.ShapedRuns.Length);
 
-                        for (var i = 0; i < cached.ShapedRuns.Length; i++)
+                        // foreach over T[] benefits from JIT pattern-match bounds-check elision.
+                        foreach (var cachedRun in cached.ShapedRuns)
                         {
-                            runs.Add(cached.ShapedRuns[i] is ShapedTextRun shaped
-                                ? shaped.AddRef()
-                                : cached.ShapedRuns[i]);
+                            runs.Add(cachedRun is ShapedTextRun shaped ? shaped.AddRef() : cachedRun);
                         }
 
                         return PerformTextWrapping(runs, false, firstTextSourceIndex,
