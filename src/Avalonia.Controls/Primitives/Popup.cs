@@ -13,6 +13,7 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Avalonia.Media;
 using Avalonia.Interactivity;
@@ -549,7 +550,11 @@ namespace Avalonia.Controls.Primitives
                 state.popupHost.Hide();
 
                 ((ISetLogicalParent)state.popupHost).SetParent(null);
-                state.popupHost.Dispose();
+
+                // Defer the host teardown so any pending render-priority work drains first,
+                // and so the click that triggered the close finishes routing before the
+                // window is destroyed.
+                Dispatcher.UIThread.Post(state.popupHost.Dispose, DispatcherPriority.Input);
             });
 
             if (IsLightDismissEnabled)
