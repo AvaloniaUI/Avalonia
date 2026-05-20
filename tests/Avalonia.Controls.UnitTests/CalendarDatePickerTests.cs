@@ -138,6 +138,7 @@ namespace Avalonia.Controls.UnitTests
                 var tb = GetTextBox(datePicker);
 
                 datePicker.SelectedDate = new DateTime(2024, 2, 13);
+                // DateTimeToString called async so need to let that complete before testing value
                 Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
                 Assert.Equal("2024-02-13", datePicker.Text);
                 Assert.True(CompareDates(datePicker.SelectedDate!.Value, new DateTime(2024, 2, 13)));
