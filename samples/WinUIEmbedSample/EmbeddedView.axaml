@@ -29,6 +29,30 @@
 
                 <ToggleSwitch Content="ToggleSwitch" IsChecked="True" />
 
+                <TextBlock Text="Ink"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Height="240">
+                    <Canvas x:Name="InkCanvas"
+                            Background="Transparent"
+                            ClipToBounds="True"
+                            PointerPressed="OnInkPointerPressed"
+                            PointerMoved="OnInkPointerMoved"
+                            PointerReleased="OnInkPointerReleased" />
+                </Border>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Clear" Click="OnClearInk" />
+                    <TextBlock x:Name="InkStats"
+                               VerticalAlignment="Center"
+                               Opacity="0.7"
+                               Text="0 points / 0 intermediate" />
+                </StackPanel>
+
             </StackPanel>
         </ScrollViewer>
     </Border>
