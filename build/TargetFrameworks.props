@@ -4,7 +4,7 @@
     <AvsCurrentWindowsTargetFramework>$(AvsCurrentTargetFramework)-windows</AvsCurrentWindowsTargetFramework>
     <AvsCurrentMacOSTargetFramework>$(AvsCurrentTargetFramework)-macos</AvsCurrentMacOSTargetFramework>
     <AvsCurrentAndroidTargetFramework>$(AvsCurrentTargetFramework)-android36.0</AvsCurrentAndroidTargetFramework>
-    <AvsCurrentMacCatalystTargetFramework>$(AvsCurrentTargetFramework)-maccatalyst26.0</AvsCurrentMacCatalystTargetFramework>
+    <AvsCurrentMacCatalystTargetFramework>$(AvsCurrentTargetFramework)-maccatalyst26.5</AvsCurrentMacCatalystTargetFramework>
     <AvsCurrentIOSTargetFramework>$(AvsCurrentTargetFramework)-ios26.0</AvsCurrentIOSTargetFramework>
     <AvsCurrentTvOSTargetFramework>$(AvsCurrentTargetFramework)-tvos26.0</AvsCurrentTvOSTargetFramework>
     <AvsCurrentBrowserTargetFramework>$(AvsCurrentTargetFramework)-browser</AvsCurrentBrowserTargetFramework>
