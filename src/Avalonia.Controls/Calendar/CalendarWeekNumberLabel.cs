@@ -8,8 +8,6 @@ namespace Avalonia.Controls.Primitives
     /// </summary>
     public sealed class CalendarWeekNumberLabel : ContentControl
     {
-        private bool _isHeader;
-
         /// <summary>
         /// Gets or sets a value indicating whether this label is the column header cell
         /// (placed in row 0 of the month grid, above the week-number data cells).
@@ -17,11 +15,11 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool IsHeader
         {
-            get => _isHeader;
+            get => field;
             internal set
             {
-                if (_isHeader == value) return;
-                _isHeader = value;
+                if (field == value) return;
+                field = value;
                 PseudoClasses.Set(":header", value);
             }
         }
