@@ -142,15 +142,15 @@ namespace Avalonia.Controls
             ContentControl.VerticalContentAlignmentProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
-        /// Defines the <see cref="ShowWeekNumbers"/> property.
+        /// Defines the <see cref="IsWeekNumberVisible"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> ShowWeekNumbersProperty =
-            Calendar.ShowWeekNumbersProperty.AddOwner<CalendarDatePicker>();
+        public static readonly StyledProperty<bool> IsWeekNumberVisibleProperty =
+            Calendar.IsWeekNumberVisibleProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
         /// Defines the <see cref="WeekNumberRule"/> property.
         /// </summary>
-        public static readonly StyledProperty<CalendarWeekRule> WeekNumberRuleProperty =
+        public static readonly StyledProperty<CalendarWeekNumberRule> WeekNumberRuleProperty =
             Calendar.WeekNumberRuleProperty.AddOwner<CalendarDatePicker>();
 
         /// <summary>
@@ -378,15 +378,15 @@ namespace Avalonia.Controls
             set => SetValue(VerticalContentAlignmentProperty, value);
         }
         
-        /// <inheritdoc cref="Calendar.ShowWeekNumbers"/>
-        public bool ShowWeekNumbers
+        /// <inheritdoc cref="Calendar.IsWeekNumberVisible"/>
+        public bool IsWeekNumberVisible
         {
-            get => GetValue(ShowWeekNumbersProperty);
-            set => SetValue(ShowWeekNumbersProperty, value);
+            get => GetValue(IsWeekNumberVisibleProperty);
+            set => SetValue(IsWeekNumberVisibleProperty, value);
         }
 
         /// <inheritdoc cref="Calendar.WeekNumberRule"/>
-        public CalendarWeekRule WeekNumberRule
+        public CalendarWeekNumberRule WeekNumberRule
         {
             get => GetValue(WeekNumberRuleProperty);
             set => SetValue(WeekNumberRuleProperty, value);

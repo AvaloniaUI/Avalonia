@@ -129,7 +129,7 @@
                       IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"
                       SelectedDate="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=SelectedDate,
                                                      Mode=TwoWay}"
-                      ShowWeekNumbers="{TemplateBinding ShowWeekNumbers}"
+                      IsWeekNumberVisible="{TemplateBinding IsWeekNumberVisible}"
                       WeekNumberRule="{TemplateBinding WeekNumberRule}"
                       WeekNumberHeader="{TemplateBinding WeekNumberHeader}" />
           </Popup>

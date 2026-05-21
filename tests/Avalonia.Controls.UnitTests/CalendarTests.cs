@@ -459,49 +459,52 @@ namespace Avalonia.Controls.UnitTests
         // --- Week number tests ---
 
         [Fact]
-        public void ShowWeekNumbers_Defaults_To_False()
+        public void IsWeekNumberVisible_Defaults_To_False()
         {
             var calendar = new Calendar();
-            Assert.False(calendar.ShowWeekNumbers);
+            Assert.False(calendar.IsWeekNumberVisible);
         }
 
         [Fact]
         public void WeekNumberRule_Defaults_To_Culture_CalendarWeekRule()
         {
             var calendar = new Calendar();
-            // Default is read from culture at property registration time
-            Assert.IsType<System.Globalization.CalendarWeekRule>(calendar.WeekNumberRule);
+            Assert.IsType<CalendarWeekNumberRule>(calendar.WeekNumberRule);
         }
 
         [Fact]
-        public void ShowWeekNumbers_Can_Be_Set()
+        public void IsWeekNumberVisible_Can_Be_Set()
         {
             var calendar = new Calendar();
-            calendar.ShowWeekNumbers = true;
-            Assert.True(calendar.ShowWeekNumbers);
+            calendar.IsWeekNumberVisible = true;
+            Assert.True(calendar.IsWeekNumberVisible);
         }
 
         [Fact]
         public void WeekNumberRule_Can_Be_Set()
         {
             var calendar = new Calendar();
-            calendar.WeekNumberRule = System.Globalization.CalendarWeekRule.FirstFourDayWeek;
-            Assert.Equal(System.Globalization.CalendarWeekRule.FirstFourDayWeek, calendar.WeekNumberRule);
+            calendar.WeekNumberRule = CalendarWeekNumberRule.FirstFourDayWeek;
+            Assert.Equal(CalendarWeekNumberRule.FirstFourDayWeek, calendar.WeekNumberRule);
         }
 
         [Theory]
         // ISO 8601: week 1 of 2023 starts on Monday 2 Jan 2023
-        [InlineData(2023, 1, 2, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 1)]
+        [InlineData(2023, 1, 2, CalendarWeekNumberRule.FirstFourDayWeek, DayOfWeek.Monday, 1)]
         // 2022-12-31 is still in ISO week 52 of 2022
-        [InlineData(2022, 12, 31, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 52)]
+        [InlineData(2022, 12, 31, CalendarWeekNumberRule.FirstFourDayWeek, DayOfWeek.Monday, 52)]
         // .NET bug: 2018-12-31 is a Monday and is ISO week 1 of 2019, not week 53 of 2018
-        [InlineData(2018, 12, 31, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday, 1)]
+        [InlineData(2018, 12, 31, CalendarWeekNumberRule.FirstFourDayWeek, DayOfWeek.Monday, 1)]
         // US rule: week 1 always starts on Jan 1
-        [InlineData(2023, 1, 1, System.Globalization.CalendarWeekRule.FirstDay, DayOfWeek.Sunday, 1)]
-        [InlineData(2023, 12, 31, System.Globalization.CalendarWeekRule.FirstDay, DayOfWeek.Sunday, 53)]
+        [InlineData(2023, 1, 1, CalendarWeekNumberRule.FirstDay, DayOfWeek.Sunday, 1)]
+        [InlineData(2023, 12, 31, CalendarWeekNumberRule.FirstDay, DayOfWeek.Sunday, 53)]
+        // Iso shorthand: same results as FirstFourDayWeek + Monday
+        [InlineData(2023, 1, 2, CalendarWeekNumberRule.Iso, DayOfWeek.Sunday, 1)]
+        [InlineData(2022, 12, 31, CalendarWeekNumberRule.Iso, DayOfWeek.Sunday, 52)]
+        [InlineData(2018, 12, 31, CalendarWeekNumberRule.Iso, DayOfWeek.Sunday, 1)]
         public void GetWeekOfYear_Returns_Correct_Week_Number(
             int year, int month, int day,
-            System.Globalization.CalendarWeekRule rule,
+            CalendarWeekNumberRule rule,
             DayOfWeek firstDayOfWeek,
             int expectedWeek)
         {
