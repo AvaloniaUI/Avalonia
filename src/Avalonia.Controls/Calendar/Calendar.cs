@@ -6,8 +6,8 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Avalonia.Automation.Peers;
 using System.Globalization;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
