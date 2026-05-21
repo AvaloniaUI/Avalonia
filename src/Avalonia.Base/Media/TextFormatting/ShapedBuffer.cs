@@ -170,6 +170,16 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         public ReadOnlyMemory<char> Text { get; }
 
+        /// <summary>
+        /// Test hook: <c>true</c> while this instance still holds an
+        /// <see cref="ArrayPool{T}"/>-rented <c>GlyphInfo[]</c>. Flips to
+        /// <c>false</c> once the array is returned to the pool — either when
+        /// the last reference to a pool-backed buffer is disposed, or for
+        /// instances that were constructed with a caller-supplied GC-managed
+        /// array (which never had pool ownership in the first place).
+        /// </summary>
+        internal bool IsPoolArrayRented => _rentedBuffer is not null;
+
         public void Dispose()
         {
             var owner = _arrayOwner;

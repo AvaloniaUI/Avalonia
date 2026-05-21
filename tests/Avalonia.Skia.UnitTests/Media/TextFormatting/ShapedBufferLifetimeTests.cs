@@ -1,7 +1,6 @@
 #nullable enable
 
 using System.Linq;
-using System.Reflection;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Xunit;
@@ -12,23 +11,20 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
     /// <see cref="ShapedBuffer"/> rents its glyph storage from
     /// <c>ArrayPool&lt;GlyphInfo&gt;.Shared</c> and <see cref="ShapedBuffer.Split"/> /
     /// <see cref="ShapedBuffer.WithBidiLevel"/> produce child buffers that view into
-    /// the parent's pool-rented array via <c>ArraySlice</c>. Without a shared
-    /// ownership refcount, disposing the parent (which
-    /// <see cref="TextFormatterImpl.SplitTextRuns"/> does unconditionally) returns
-    /// the pool array while the children still reference it; later pool consumers
-    /// can then corrupt those children's glyph data.
+    /// the owner's pool-rented array via <c>ArraySlice</c>. Without a shared
+    /// ownership refcount, disposing the owner (which
+    /// <see cref="TextFormatterImpl.SplitTextRuns"/> does unconditionally) returned
+    /// the pool array while children still referenced it; later pool consumers
+    /// could then corrupt those views' glyph data.
     ///
-    /// The tests below assert the ownership invariant directly via reflection
-    /// on the owner's private <c>_rentedBuffer</c> field — that's deterministic
-    /// regardless of whether the pool happens to re-rent the same array, and it
-    /// pins the contract the fix introduces: the pool array survives as long as
-    /// any view into it is still alive.
+    /// The tests below assert the ownership invariant directly via the
+    /// internal <c>ShapedBuffer.IsPoolArrayRented</c> test hook — that's
+    /// deterministic regardless of whether <c>ArrayPool</c> happens to re-rent
+    /// the same array, and it pins the contract the fix introduces: the pool
+    /// array survives as long as any view into it is still alive.
     /// </summary>
     public class ShapedBufferLifetimeTests
     {
-        private static readonly FieldInfo s_rentedBufferField =
-            typeof(ShapedBuffer).GetField("_rentedBuffer", BindingFlags.NonPublic | BindingFlags.Instance)!;
-
         [Fact]
         public void Split_Children_Keep_Pool_Array_Alive_Until_All_Disposed()
         {
@@ -37,26 +33,25 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 const string text = "Hello world abcdef";
                 var ownerRun = BuildShapedRun(text, FlowDirection.LeftToRight);
                 var ownerBuffer = ownerRun.ShapedBuffer;
-
-                Assert.NotNull(GetRentedBuffer(ownerBuffer));
+                Assert.True(ownerBuffer.IsPoolArrayRented);
 
                 var split = ownerRun.Split(text.Length / 2);
                 Assert.NotNull(split.First);
                 Assert.NotNull(split.Second);
 
                 // Mimic TextFormatterImpl.SplitTextRuns: dispose the owner
-                // immediately after splitting. The fix's contract: while child
-                // views still reference the rented array, it must NOT be
-                // returned to the pool.
+                // immediately after splitting. The contract: while child views
+                // still reference the rented array, it must NOT be returned
+                // to the pool.
                 ownerRun.Dispose();
-                Assert.NotNull(GetRentedBuffer(ownerBuffer));
+                Assert.True(ownerBuffer.IsPoolArrayRented);
 
                 split.First!.Dispose();
-                Assert.NotNull(GetRentedBuffer(ownerBuffer));
+                Assert.True(ownerBuffer.IsPoolArrayRented);
 
                 split.Second!.Dispose();
                 // Last reference released — now the pool array is returned.
-                Assert.Null(GetRentedBuffer(ownerBuffer));
+                Assert.False(ownerBuffer.IsPoolArrayRented);
             }
         }
 
@@ -68,18 +63,18 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 const string text = "السلام عليكم ورحمة الله وبركاته";
                 var ownerRun = BuildShapedRun(text, FlowDirection.RightToLeft);
                 var ownerBuffer = ownerRun.ShapedBuffer;
-                Assert.NotNull(GetRentedBuffer(ownerBuffer));
+                Assert.True(ownerBuffer.IsPoolArrayRented);
 
                 var split = ownerRun.Split(text.Length / 2);
                 Assert.NotNull(split.First);
                 Assert.NotNull(split.Second);
 
                 ownerRun.Dispose();
-                Assert.NotNull(GetRentedBuffer(ownerBuffer));
+                Assert.True(ownerBuffer.IsPoolArrayRented);
 
                 split.First!.Dispose();
                 split.Second!.Dispose();
-                Assert.Null(GetRentedBuffer(ownerBuffer));
+                Assert.False(ownerBuffer.IsPoolArrayRented);
             }
         }
 
@@ -105,13 +100,13 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 ownerRun.Dispose();
                 split1.First!.Dispose();
                 split1.Second!.Dispose();
-                Assert.NotNull(GetRentedBuffer(ownerBuffer));
+                Assert.True(ownerBuffer.IsPoolArrayRented);
 
                 split2.First!.Dispose();
-                Assert.NotNull(GetRentedBuffer(ownerBuffer));
+                Assert.True(ownerBuffer.IsPoolArrayRented);
 
                 split2.Second!.Dispose();
-                Assert.Null(GetRentedBuffer(ownerBuffer));
+                Assert.False(ownerBuffer.IsPoolArrayRented);
             }
         }
 
@@ -131,10 +126,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.NotSame(ownerBuffer, viewBuffer);
 
                 ownerRun.Dispose();
-                Assert.NotNull(GetRentedBuffer(ownerBuffer));
+                Assert.True(ownerBuffer.IsPoolArrayRented);
 
                 viewBuffer.Dispose();
-                Assert.Null(GetRentedBuffer(ownerBuffer));
+                Assert.False(ownerBuffer.IsPoolArrayRented);
             }
         }
 
@@ -189,8 +184,5 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             // the test controls disposal explicitly.
             return run!;
         }
-
-        private static object? GetRentedBuffer(ShapedBuffer buffer)
-            => s_rentedBufferField.GetValue(buffer);
     }
 }
