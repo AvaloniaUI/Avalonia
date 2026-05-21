@@ -127,6 +127,26 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         }
     }
 
+    protected override Microsoft.UI.Xaml.Automation.Peers.AutomationPeer OnCreateAutomationPeer()
+        => new global::Avalonia.WinUI.Automation.AvaloniaSwapChainPanelAutomationPeer(this);
+
+    // ---- Diagnostics / internal automation hooks ----
+
+    /// <summary>
+    /// Returns the embedded control root, or null if the panel has not loaded yet.
+    /// Used by the automation peer to enumerate Avalonia children; also exposed as
+    /// a diagnostic surface for WinUIEmbedSample to verify peer lifecycle.
+    /// </summary>
+    internal global::Avalonia.Controls.Embedding.EmbeddableControlRoot? GetEmbeddedRootForAutomation() => _root;
+
+    /// <summary>
+    /// Diagnostic accessor for the Avalonia TopLevel's render scaling — used by
+    /// WinUIEmbedSample to verify it stays in sync with <c>XamlRoot.RasterizationScale</c>.
+    /// Returns NaN if the panel has not loaded yet.
+    /// </summary>
+    public double GetAvaloniaRenderScalingForDiagnostics()
+        => _topLevelImpl?.RenderScaling ?? double.NaN;
+
     private void UpdateCachedSize()
     {
         var w = Math.Max(1, (int)(ActualWidth * CompositionScaleX));
