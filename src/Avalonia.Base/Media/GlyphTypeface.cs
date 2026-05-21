@@ -5,6 +5,7 @@ using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Cmap;
+using Avalonia.Media.Fonts.Tables.Glyf;
 using Avalonia.Media.Fonts.Tables.Metrics;
 using Avalonia.Media.Fonts.Tables.Name;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -25,6 +26,8 @@ namespace Avalonia.Media
         private static readonly IReadOnlyDictionary<CultureInfo, string> s_emptyStringDictionary =
             new Dictionary<CultureInfo, string>(0);
 
+        private static readonly IPlatformRenderInterface _renderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+
         private bool _isDisposed;
 
         private readonly NameTable? _nameTable;
@@ -34,6 +37,9 @@ namespace Avalonia.Media
         private readonly VerticalHeaderTable _vhTable;
         private readonly HorizontalMetricsTable? _hmTable;
         private readonly VerticalMetricsTable? _vmTable;
+
+        private readonly GlyfTable? _glyfTable;
+
         private readonly bool _hasOs2Table;
         private readonly bool _hasHorizontalMetrics;
         private readonly bool _hasVerticalMetrics;
@@ -138,6 +144,12 @@ namespace Avalonia.Media
             }
 
             HeadTable.TryLoad(this, out var headTable);
+
+            if (headTable is not null)
+            {
+                // Load glyf table once and cache for reuse by GetGlyphOutline
+                GlyfTable.TryLoad(this, headTable, maxpTable, out _glyfTable);
+            }
 
             IsLastResort = (headTable is not null && (headTable.Flags & HeadFlags.LastResortFont) != 0) ||
                            _cmapTable.Format == CmapFormat.Format13;
@@ -751,6 +763,48 @@ namespace Avalonia.Media
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Retrieves the vector outline geometry for the specified glyph, optionally applying a transformation and font
+        /// variation settings.
+        /// </summary>
+        /// <remarks>The returned geometry reflects any transformation and variation settings provided. If
+        /// the font does not contain outline data for the specified glyph, or if the glyph identifier is out of range,
+        /// the method returns null.</remarks>
+        /// <param name="glyphId">The identifier of the glyph to retrieve. Must be less than or equal to the total number of glyphs in the
+        /// font.</param>
+        /// <param name="transform">A transformation matrix to apply to the glyph outline geometry.</param>
+        /// <param name="variation">Optional font variation settings to use when retrieving the glyph outline. If null, default font variations
+        /// are used.</param>
+        /// <returns>A Geometry object representing the outline of the specified glyph, or null if the glyph does not exist or
+        /// the outline cannot be retrieved.</returns>
+        public Geometry? GetGlyphOutline(ushort glyphId, Matrix transform, FontVariationSettings? variation = null)
+        {
+            if (glyphId > GlyphCount)
+            {
+                return null;
+            }
+
+            if (_glyfTable is null)
+            {
+                return null;
+            }
+
+            var geometry = _renderInterface.CreateStreamGeometry();
+
+            using (var ctx = geometry.Open())
+            {
+                // Try to build the glyph geometry using the glyf table
+                if (_glyfTable.TryBuildGlyphGeometry((int)glyphId, transform, ctx))
+                {
+                    var platformGeometry = new PlatformGeometry(geometry);
+
+                    return platformGeometry;
+                }
+            }
+
+            return null;
         }
 
         public void Dispose()
