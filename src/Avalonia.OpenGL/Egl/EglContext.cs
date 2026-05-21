@@ -13,6 +13,7 @@ namespace Avalonia.OpenGL.Egl
         private readonly EglDisplay _disp;
         private readonly EglInterface _egl;
         private readonly EglContext? _sharedWith;
+        private readonly int _api;
         private bool _isLost;
         private IntPtr _context;
         private readonly Action? _disposeCallback;
@@ -26,6 +27,7 @@ namespace Avalonia.OpenGL.Egl
             _disp = display;
             _egl = egl;
             _sharedWith = sharedWith;
+            _api = display.Api;
             _context = ctx;
             _disposeCallback = disposeCallback;
             OffscreenSurface = offscreenSurface;
@@ -56,21 +58,28 @@ namespace Avalonia.OpenGL.Egl
             private readonly object _l;
             private readonly IntPtr _display;
             private readonly IntPtr _context, _read, _draw;
+            private readonly int _api;
 
             public RestoreContext(EglInterface egl, IntPtr defDisplay, object l)
             {
                 _egl = egl;
                 _l = l;
+                _api = _egl.QueryApi();
                 _display = _egl.GetCurrentDisplay();
                 if (_display == IntPtr.Zero)
+                    // Fallback display, it's invalid to call eglMakeCurrent without a display
                     _display = defDisplay;
-                _context = _egl.GetCurrentContext();
-                _read = _egl.GetCurrentSurface(EGL_READ);
-                _draw = _egl.GetCurrentSurface(EGL_DRAW);
+                else
+                {
+                    _context = _egl.GetCurrentContext();
+                    _read = _egl.GetCurrentSurface(EGL_READ);
+                    _draw = _egl.GetCurrentSurface(EGL_DRAW);
+                }
             }
 
             public void Dispose() 
             {
+                _egl.BindApi(_api);
                 _egl.MakeCurrent(_display, _draw, _read, _context);
                 Monitor.Exit(_l);
             }
@@ -90,6 +99,7 @@ namespace Avalonia.OpenGL.Egl
             {
                 var old = new RestoreContext(_egl, _disp.Handle, _lock);
                 var surf = surface ?? OffscreenSurface;
+                _egl.BindApi(_api);
                 _egl.MakeCurrent(_disp.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
                 if (!_egl.MakeCurrent(_disp.Handle, surf?.DangerousGetHandle() ?? IntPtr.Zero,
                         surf?.DangerousGetHandle() ?? IntPtr.Zero, Context))
@@ -154,7 +164,7 @@ namespace Avalonia.OpenGL.Egl
                 ShareWith = _sharedWith ?? this
             });
 
-        public bool IsCurrent => _context != default && _egl.GetCurrentDisplay() == _disp.Handle && _egl.GetCurrentContext() == _context;
+        public bool IsCurrent => _context != default && _egl.GetCurrentDisplay() == _disp.Handle && _egl.GetCurrentContext() == _context && _egl.QueryApi() == _api;
 
         public void Dispose()
         {

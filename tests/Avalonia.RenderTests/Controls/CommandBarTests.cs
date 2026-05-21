@@ -142,5 +142,6 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             await RenderToFile(target);
             CompareImages(skipImmediate: true);
         }
+
     }
 }

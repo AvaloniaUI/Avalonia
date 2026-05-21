@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 using Avalonia.Controls.Metadata;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -73,6 +74,8 @@ namespace Avalonia.Controls
         private bool _isKeyboardPressed       = false;
 
         private IDisposable? _flyoutPropertyChangedDisposable;
+
+        internal event EventHandler? FlyoutStateChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SplitButton"/> class.
@@ -256,6 +259,8 @@ namespace Avalonia.Controls
             UpdatePseudoClasses();
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer() => new SplitButtonAutomationPeer(this);
+
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
@@ -418,6 +423,23 @@ namespace Avalonia.Controls
             }
         }
 
+        internal void InvokePrimary()
+        {
+            OnClickPrimary(null);
+        }
+
+        internal bool IsFlyoutOpen => _isFlyoutOpen;
+
+        internal void OpenFlyoutForAutomation()
+        {
+            OpenFlyout();
+        }
+
+        internal void CloseFlyoutForAutomation()
+        {
+            CloseFlyout();
+        }
+
         /// <summary>
         /// Invoked when the secondary button part is clicked.
         /// </summary>
@@ -516,6 +538,7 @@ namespace Avalonia.Controls
             {
                 _isFlyoutOpen = true;
                 UpdatePseudoClasses();
+                FlyoutStateChanged?.Invoke(this, EventArgs.Empty);
 
                 OnFlyoutOpened();
             }
@@ -533,6 +556,7 @@ namespace Avalonia.Controls
             {
                 _isFlyoutOpen = false;
                 UpdatePseudoClasses();
+                FlyoutStateChanged?.Invoke(this, EventArgs.Empty);
 
                 OnFlyoutClosed();
             }

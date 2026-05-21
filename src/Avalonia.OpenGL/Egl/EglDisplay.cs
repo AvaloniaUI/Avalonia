@@ -49,6 +49,7 @@ namespace Avalonia.OpenGL.Egl
         }
         
         public EglInterface EglInterface => _egl;
+        internal int Api => _config.Api;
         public EglContext CreateContext(EglContextOptions? options)
         {
             if (SingleContext && _contexts.Any())
