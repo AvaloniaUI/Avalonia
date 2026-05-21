@@ -40,6 +40,7 @@ public class MiniCompilerTests
         CSharpCompilation
             .Create("BasicLib", options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
             .AddReferences(MetadataReference.CreateFromFile(typeof(string).Assembly.Location))
+            .AddReferences(MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location))
             .AddReferences(MetadataReference.CreateFromFile(typeof(IServiceProvider).Assembly.Location))
             .AddReferences(MetadataReference.CreateFromFile(typeof(ITypeDescriptorContext).Assembly.Location))
             .AddReferences(MetadataReference.CreateFromFile(typeof(ISupportInitialize).Assembly.Location))

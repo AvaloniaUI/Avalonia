@@ -19,7 +19,6 @@ internal class AvaloniaXamlIlTransformRoutedEvent : IXamlAstTransformer
             var xkt = context.GetAvaloniaTypes();
             var interactiveType = xkt.Interactivity.Interactive;
             var routedEventType = xkt.Interactivity.RoutedEvent;
-            var AddHandlerT = xkt.Interactivity.AddHandlerT;
 
             if (interactiveType.IsAssignableFrom(targetRef.Type))
             {

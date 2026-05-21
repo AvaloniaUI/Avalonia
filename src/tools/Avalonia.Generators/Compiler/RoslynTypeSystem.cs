@@ -24,9 +24,13 @@ internal class RoslynTypeSystem : IXamlTypeSystem
             .ToList();
 
         _assemblies.AddRange(assemblySymbols);
+
+        WellKnownTypes = new XamlTypeWellKnownTypes(this);
     }
 
     public IEnumerable<IXamlAssembly> Assemblies => _assemblies;
+
+    public XamlTypeWellKnownTypes WellKnownTypes { get; }
 
     public IXamlAssembly? FindAssembly(string name) =>
         Assemblies
