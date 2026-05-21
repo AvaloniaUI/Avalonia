@@ -71,6 +71,39 @@
                         <x:String>Dark</x:String>
                         <x:String>System</x:String>
                     </ComboBox>
+
+                    <TextBlock Text="Automation diagnostics"
+                               FontWeight="SemiBold"
+                               Margin="0,16,0,0" />
+                    <TextBlock Text="Verifies the WinUI automation peer over the Avalonia content. Click Probe peer at different lifecycle points to confirm reachability; the scale readout updates live."
+                               TextWrapping="Wrap"
+                               Opacity="0.7"
+                               FontSize="12" />
+                    <Button x:Name="ProbePeerButton"
+                            Content="Probe peer + log children"
+                            HorizontalAlignment="Stretch"
+                            Click="ProbePeerButton_Click" />
+                    <Button x:Name="ProbeDeepButton"
+                            Content="Probe deep (walk full tree)"
+                            HorizontalAlignment="Stretch"
+                            Click="ProbeDeepButton_Click" />
+                    <Button x:Name="ProbeWorkerButton"
+                            Content="Probe deep on worker thread"
+                            HorizontalAlignment="Stretch"
+                            Click="ProbeWorkerButton_Click" />
+                    <TextBlock x:Name="ScaleReadout"
+                               Text="Scales: (waiting for Loaded)"
+                               FontFamily="Consolas"
+                               FontSize="12"
+                               TextWrapping="Wrap" />
+                    <TextBox x:Name="DiagnosticsLog"
+                             IsReadOnly="True"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             FontFamily="Consolas"
+                             FontSize="11"
+                             Height="160"
+                             Text="" />
                 </StackPanel>
             </ScrollViewer>
         </Border>

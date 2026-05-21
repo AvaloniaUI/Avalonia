@@ -29,13 +29,42 @@
 
                 <ToggleSwitch Content="ToggleSwitch" IsChecked="True" />
 
+                <TextBlock Text="Selection &amp; expand patterns"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,16,0,0" />
+                <ComboBox x:Name="AvComboBox"
+                          PlaceholderText="Pick a color"
+                          HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Red" />
+                    <ComboBoxItem Content="Green" />
+                    <ComboBoxItem Content="Blue" IsSelected="True" />
+                </ComboBox>
+                <ListBox x:Name="AvListBox"
+                         Height="100"
+                         SelectionMode="Single">
+                    <ListBoxItem Content="Item 1" />
+                    <ListBoxItem Content="Item 2" IsSelected="True" />
+                    <ListBoxItem Content="Item 3" />
+                    <ListBoxItem Content="Item 4" />
+                </ListBox>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <RadioButton x:Name="AvRadioOne" GroupName="DemoGroup" Content="Option A" IsChecked="True" />
+                    <RadioButton x:Name="AvRadioTwo" GroupName="DemoGroup" Content="Option B" />
+                    <RadioButton x:Name="AvRadioThree" GroupName="DemoGroup" Content="Option C" />
+                </StackPanel>
+                <Expander x:Name="AvExpander" Header="Expandable section">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Content inside the expander." />
+                        <TextBlock Text="Used to verify ExpandCollapse pattern."
+                                   Opacity="0.7"
+                                   FontSize="12" />
+                    </StackPanel>
+                </Expander>
                 <TextBlock Text="Keys"
                            FontSize="16"
                            FontWeight="SemiBold"
                            Margin="0,16,0,0" />
-                <TextBlock Text="Focus the box below and press keys — left and right Shift / Ctrl / Alt should report distinct PhysicalKeys; letter keys should report a non-null Key, PhysicalKey, and KeySymbol."
-                           TextWrapping="Wrap"
-                           Opacity="0.7" />
                 <Border BorderThickness="1"
                         CornerRadius="4"
                         Padding="8"
@@ -53,9 +82,6 @@
                            FontSize="16"
                            FontWeight="SemiBold"
                            Margin="0,16,0,0" />
-                <TextBlock Text="Copy from Avalonia, paste in the WinUI TextBox (and vice versa) to confirm the shared system clipboard works."
-                           TextWrapping="Wrap"
-                           Opacity="0.7" />
                 <TextBox x:Name="ClipboardText"
                          Text="Hello clipboard" />
                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -71,9 +97,6 @@
                            FontSize="16"
                            FontWeight="SemiBold"
                            Margin="0,16,0,0" />
-                <TextBlock Text="Press and drag the box below to drag text out — drop it into Notepad, the WinUI TextBox at the top, or the drop target below."
-                           TextWrapping="Wrap"
-                           Opacity="0.7" />
                 <Border x:Name="DragSourceBorder"
                         Height="40"
                         CornerRadius="4"
@@ -90,9 +113,6 @@
                            FontSize="16"
                            FontWeight="SemiBold"
                            Margin="0,16,0,0" />
-                <TextBlock Text="Drag a file from Explorer (or text from a TextBox) onto the box below. The most recent payload is shown."
-                           TextWrapping="Wrap"
-                           Opacity="0.7" />
                 <Border x:Name="DropTargetBorder"
                         Height="80"
                         CornerRadius="4"

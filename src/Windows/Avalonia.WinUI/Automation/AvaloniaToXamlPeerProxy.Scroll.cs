@@ -20,8 +20,6 @@ internal sealed partial class AvaloniaToXamlPeerProxy : IScrollProvider, IScroll
     void IScrollProvider.SetScrollPercent(double horizontalPercent, double verticalPercent)
         => _peer.GetProvider<AvScroll>()?.SetScrollPercent(horizontalPercent, verticalPercent);
 
-    // IScrollItemProvider is satisfied by Avalonia's peer-level BringIntoView — Avalonia has
-    // no separate IScrollItemProvider interface; every peer can be brought into view.
     void IScrollItemProvider.ScrollIntoView() => _peer.BringIntoView();
 
     private static AvScrollAmount ToAvalonia(ScrollAmount amount) => amount switch

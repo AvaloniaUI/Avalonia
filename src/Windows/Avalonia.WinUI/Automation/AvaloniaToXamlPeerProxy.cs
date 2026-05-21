@@ -15,13 +15,6 @@ namespace Avalonia.WinUI.Automation;
 /// through WinUI XAML's automation infrastructure. Mirrors the role of
 /// <c>Avalonia.Win32.Automation.AutomationNode</c> but for WinUI hosts.
 /// </summary>
-/// <remarks>
-/// WinUI XAML <see cref="XamlAutomationPeer"/> instances are strictly UI-thread bound:
-/// calling an overridden <c>*Core</c> method from a worker thread throws
-/// <c>RPC_E_WRONG_THREAD</c> at the WinRT ABI boundary. UIA itself marshals into the
-/// UI thread (via the WinUI <c>DispatcherQueue</c>) before invoking us, so we can call
-/// the wrapped Avalonia peer directly. No explicit dispatcher marshalling is required.
-/// </remarks>
 internal sealed partial class AvaloniaToXamlPeerProxy : XamlAutomationPeer
 {
     private static readonly ConditionalWeakTable<AvPeer, AvaloniaToXamlPeerProxy> s_cache = new();
@@ -67,9 +60,6 @@ internal sealed partial class AvaloniaToXamlPeerProxy : XamlAutomationPeer
         foreach (var child in children)
         {
             var childProxy = GetOrCreate(child, _host);
-            // Peers not tied to a UIElement must declare their parent explicitly;
-            // without it UIA can't connect them into the tree and silently prunes
-            // them. (Microsoft.UI.Xaml.Automation.Peers.AutomationPeer.SetParent.)
             childProxy.SetParent(this);
             list.Add(childProxy);
         }
