@@ -168,11 +168,8 @@ namespace Avalonia.iOS
             }
         }
 
-        private void PeerChildrenChanged(object? sender, EventArgs e)
-        {
+        private void PeerChildrenChanged(object? sender, EventArgs e) =>
             UpdateChildren();
-            UIAccessibility.PostNotification(UIAccessibilityPostNotification.ScreenChanged, this);
-        }
 
         private void PeerPropertyChanged(object? sender, AutomationPropertyChangedEventArgs e) =>
             UpdateProperties(e.Property);
@@ -196,21 +193,39 @@ namespace Avalonia.iOS
         {
             UpdateProperties(s_propertySetters.Keys.ToArray());
 
-            if (_peer.IsContentElement() && !_peer.IsOffscreen() &&
-                (_peer.GetName().Length > 0 || _peer.IsKeyboardFocusable()))
+            bool isContainerFlag;
+            switch (_peer.GetAutomationControlType())
             {
-                AccessibilityContainerType = UIAccessibilityContainerType.None;
-                IsAccessibilityElement = true;
+                case AutomationControlType.DataGrid:
+                case AutomationControlType.Document:
+                case AutomationControlType.Group:
+                case AutomationControlType.List:
+                case AutomationControlType.Menu:
+                case AutomationControlType.Pane:
+                case AutomationControlType.Tab:
+                case AutomationControlType.Table:
+                case AutomationControlType.Tree:
+                    isContainerFlag = true;
+                    break;
+                default:
+                    isContainerFlag = false;
+                    break;
             }
-            else if (_peer.IsOffscreen())
+
+            if (_peer.IsOffscreen())
             {
                 AccessibilityContainerType = UIAccessibilityContainerType.None;
+                IsAccessibilityElement = false;
+            }
+            else if (isContainerFlag)
+            {
+                AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
                 IsAccessibilityElement = false;
             }
             else
             {
-                AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
-                IsAccessibilityElement = false;
+                AccessibilityContainerType = UIAccessibilityContainerType.None;
+                IsAccessibilityElement = _peer.IsControlElement();
             }
         }
 
