@@ -114,16 +114,21 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
         private List<CodepointRange> GetRanges()
         {
-            if (_cachedRanges == null)
+            var cachedRanges = _cachedRanges;
+            if (cachedRanges != null)
             {
-                _cachedRanges = new List<CodepointRange>();
-                var enumerator = _map.GetMappedRanges();
-                while (enumerator.MoveNext())
-                {
-                    _cachedRanges.Add(enumerator.Current);
-                }
+                return cachedRanges;
             }
-            return _cachedRanges;
+
+            var ranges = new List<CodepointRange>();
+            var enumerator = _map.GetMappedRanges();
+            while (enumerator.MoveNext())
+            {
+                ranges.Add(enumerator.Current);
+            }
+
+            _cachedRanges = ranges;
+            return ranges;
         }
     }
 }
