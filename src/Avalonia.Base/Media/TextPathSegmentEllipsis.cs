@@ -485,20 +485,44 @@ namespace Avalonia.Media
                             var localStart = overlapStart - runStart;
                             var localEnd = overlapEnd - runStart;
 
-                            // base cluster used by this buffer (see ShapedBuffer.Split logic)
-                            var baseCluster = buffer[0].GlyphCluster;
+                            // Buffer ordering depends on bidi direction:
+                            //   LTR: glyphs in ascending cluster order;
+                            //        buffer[0] holds the smallest cluster.
+                            //   RTL: glyphs in descending cluster order
+                            //        (visual L-to-R order); buffer[Length-1]
+                            //        holds the smallest cluster.
+                            // baseCluster always refers to the SMALLEST cluster
+                            // so that `clusterLocal` is a logical offset
+                            // measured from the start of the run.
+                            var isLtr = buffer.IsLeftToRight;
+                            var baseCluster = isLtr
+                                ? buffer[0].GlyphCluster
+                                : buffer[buffer.Length - 1].GlyphCluster;
 
-                            // glyph clusters are increasing — stop once we passed localEnd
                             for (var gi = 0; gi < buffer.Length; gi++)
                             {
                                 var g = buffer[gi];
                                 var clusterLocal = g.GlyphCluster - baseCluster;
 
-                                if (clusterLocal < localStart)
-                                    continue;
-
-                                if (clusterLocal >= localEnd)
-                                    break;
+                                if (isLtr)
+                                {
+                                    // Ascending: skip until we reach localStart,
+                                    // stop once we pass localEnd.
+                                    if (clusterLocal < localStart)
+                                        continue;
+                                    if (clusterLocal >= localEnd)
+                                        break;
+                                }
+                                else
+                                {
+                                    // Descending: skip the high-cluster glyphs
+                                    // until we drop into the window, stop once
+                                    // we fall below localStart.
+                                    if (clusterLocal >= localEnd)
+                                        continue;
+                                    if (clusterLocal < localStart)
+                                        break;
+                                }
 
                                 width += g.GlyphAdvance;
                             }

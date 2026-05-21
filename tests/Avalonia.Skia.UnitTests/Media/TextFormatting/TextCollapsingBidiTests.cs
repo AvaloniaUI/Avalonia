@@ -300,6 +300,68 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        // --- Middle-collapse coverage (distinguishes the main path from the
+        //     "trim from start" fallback). For an LTR path with the
+        //     middle segment large enough to make a single-segment collapse
+        //     bring the line under budget, the result should keep BOTH
+        //     the first and last segments. The fallback would drop the
+        //     first segments.
+
+        [Fact]
+        public void Ltr_PathSegmentEllipsis_Middle_Collapse_Preserves_First_And_Last_Segments()
+        {
+            using (TextFormatterTests.Start())
+            {
+                // 3-segment path; middle is intentionally long so collapsing
+                // it alone produces a fitting result.
+                const string text = "a/middlemiddlemiddlemiddlemiddlemiddlemiddlemiddlemiddlemiddle/c.txt";
+                var line = BuildLine(text, FlowDirection.LeftToRight);
+                var budget = line.Width * 0.3;
+                var collapsing = new TextPathSegmentEllipsis(
+                    "…", budget,
+                    new GenericTextRunProperties(Typeface.Default),
+                    FlowDirection.LeftToRight);
+                var collapsed = line.Collapse(collapsing);
+
+                AssertCollapsed(collapsed, line);
+                var logical = LogicalText(collapsed);
+                Assert.Contains("…", logical);
+                Assert.Contains("a", logical);
+                Assert.Contains("c.txt", logical);
+            }
+        }
+
+        [Fact]
+        public void Rtl_PathSegmentEllipsis_Middle_Collapse_Preserves_First_And_Last_Segments()
+        {
+            // B8: TextPathSegmentEllipsis.MeasureSegmentWidth assumes the
+            // ShapedBuffer's GlyphCluster values increase monotonically with
+            // glyph index. That holds for LTR buffers but NOT for RTL — RTL
+            // buffers have glyphs in visual order with cluster values
+            // DECREASING. The result: any RTL segment's measured width comes
+            // out close to a single glyph's advance, never close to its real
+            // width. The middle-collapse algorithm then can't find a window
+            // whose collapse-savings make the line fit, and falls back to
+            // "trim from start" — which drops the logical-first segment.
+            using (TextFormatterTests.Start())
+            {
+                const string text = "اول/منتصفمنتصفمنتصفمنتصفمنتصفمنتصفمنتصفمنتصف/اخر.txt";
+                var line = BuildLine(text, FlowDirection.RightToLeft);
+                var budget = line.Width * 0.3;
+                var collapsing = new TextPathSegmentEllipsis(
+                    "…", budget,
+                    new GenericTextRunProperties(Typeface.Default),
+                    FlowDirection.RightToLeft);
+                var collapsed = line.Collapse(collapsing);
+
+                AssertCollapsed(collapsed, line);
+                var logical = LogicalText(collapsed);
+                Assert.Contains("…", logical);
+                Assert.Contains("اول", logical);
+                Assert.Contains("اخر.txt", logical);
+            }
+        }
+
         // --- B1: LogicalTextRunEnumerator ------------------------------------
 
         [Fact]
