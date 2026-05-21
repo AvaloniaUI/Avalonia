@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
@@ -12,6 +13,17 @@ namespace Avalonia.Media.TextFormatting
     {
         private GlyphInfo[]? _rentedBuffer;
         private ArraySlice<GlyphInfo> _glyphInfos;
+
+        // Pool-array ownership. The instance that called ArrayPool.Rent owns the
+        // array via _rentedBuffer and has _arrayOwner == this with _refCount == 1.
+        // Every view that shares the same array (via Split / WithBidiLevel) sets
+        // _arrayOwner to that owner and increments owner._refCount. Dispose
+        // decrements the owner's refcount; the array is only returned to the
+        // pool when the last reference drops. _arrayOwner stays null for
+        // instances backed by a GC-managed (non-pooled) array passed in by
+        // a caller — disposing those is a no-op.
+        private ShapedBuffer? _arrayOwner;
+        private int _refCount;
 
         // Lazily-computed cluster-width cache (A1). MeasureLength and metrics
         // queries both fold multi-glyph clusters and accumulate per-cluster
@@ -47,8 +59,16 @@ namespace Avalonia.Media.TextFormatting
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
+            _arrayOwner = this;
+            _refCount = 1;
         }
 
+        /// <summary>
+        /// Constructs a buffer backed by a caller-supplied, GC-managed glyph array.
+        /// The buffer takes no pool ownership and <see cref="Dispose"/> is a no-op.
+        /// Used for synthetic single-glyph runs where the caller owns the array's
+        /// lifetime directly.
+        /// </summary>
         internal ShapedBuffer(ReadOnlyMemory<char> text, ArraySlice<GlyphInfo> glyphInfos, GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
         {
             Text = text;
@@ -56,14 +76,34 @@ namespace Avalonia.Media.TextFormatting
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
+            // _arrayOwner stays null: nothing pooled, nothing to refcount.
         }
 
         /// <summary>
-        /// Internal constructor used by <see cref="Split"/> to hand off a shared cluster
-        /// cache to the new sub-buffer. The cache arrays are owned by the parent buffer;
-        /// this sub-buffer's queries adjust by <paramref name="clusterStartIdx"/>.
+        /// Constructs a view over another buffer's array. Used by
+        /// <see cref="WithBidiLevel"/> and by <see cref="Split"/> for views that
+        /// don't carry the cluster cache. The view shares pool ownership with
+        /// <paramref name="arrayOwnerSource"/>: incrementing the owner's
+        /// refcount keeps the pool array alive until this view is also disposed.
         /// </summary>
-        private ShapedBuffer(ReadOnlyMemory<char> text, ArraySlice<GlyphInfo> glyphInfos,
+        private ShapedBuffer(ShapedBuffer arrayOwnerSource, ReadOnlyMemory<char> text, ArraySlice<GlyphInfo> glyphInfos, GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
+        {
+            Text = text;
+            _glyphInfos = glyphInfos;
+            GlyphTypeface = glyphTypeface;
+            FontRenderingEmSize = fontRenderingEmSize;
+            BidiLevel = bidiLevel;
+            AcquireArrayOwner(arrayOwnerSource);
+        }
+
+        /// <summary>
+        /// Constructs a view over another buffer's array that also inherits the
+        /// shared cluster-width cache. Used by <see cref="Split"/>'s
+        /// <c>SplitAscending</c> / <c>SplitDescending</c> paths so the cache
+        /// (built once on the owner) is shared across all post-split sub-buffers.
+        /// Same lifetime semantics as the other view constructor.
+        /// </summary>
+        private ShapedBuffer(ShapedBuffer arrayOwnerSource, ReadOnlyMemory<char> text, ArraySlice<GlyphInfo> glyphInfos,
             GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel,
             double[] sharedClusterPrefix, int[] sharedClusterStartChars,
             int clusterStartIdx, int clusterCount)
@@ -77,6 +117,22 @@ namespace Avalonia.Media.TextFormatting
             _clusterStartChars = sharedClusterStartChars;
             _clusterStartIdx = clusterStartIdx;
             _clusterCount = clusterCount;
+            AcquireArrayOwner(arrayOwnerSource);
+        }
+
+        /// <summary>
+        /// Adopt <paramref name="source"/>'s pool-array owner (chain-root) and
+        /// take a reference on it. No-op when the source isn't backed by a
+        /// pooled array.
+        /// </summary>
+        private void AcquireArrayOwner(ShapedBuffer source)
+        {
+            var owner = source._arrayOwner;
+            if (owner != null)
+            {
+                Interlocked.Increment(ref owner._refCount);
+                _arrayOwner = owner;
+            }
         }
 
         /// <summary>
@@ -116,11 +172,31 @@ namespace Avalonia.Media.TextFormatting
 
         public void Dispose()
         {
-            if (_rentedBuffer is not null)
+            var owner = _arrayOwner;
+            if (owner == null)
             {
-                ArrayPool<GlyphInfo>.Shared.Return(_rentedBuffer);
-                _rentedBuffer = null;
-                _glyphInfos = ArraySlice<GlyphInfo>.Empty; // ensure we don't misuse the returned array
+                // Either already disposed (idempotent path) or a non-pooled
+                // (GC-managed) buffer that owns no ArrayPool resource.
+                return;
+            }
+
+            // Release THIS view's reference. Two-step so a double-Dispose on the
+            // same instance is a no-op the second time.
+            _arrayOwner = null;
+            _glyphInfos = ArraySlice<GlyphInfo>.Empty;
+
+            if (Interlocked.Decrement(ref owner._refCount) != 0)
+            {
+                // Other views still hold the array; don't return it yet.
+                return;
+            }
+
+            // Last reference — actually return the pool array.
+            if (owner._rentedBuffer is not null)
+            {
+                ArrayPool<GlyphInfo>.Shared.Return(owner._rentedBuffer);
+                owner._rentedBuffer = null;
+                owner._glyphInfos = ArraySlice<GlyphInfo>.Empty;
             }
         }
 
@@ -552,7 +628,9 @@ namespace Avalonia.Media.TextFormatting
                 return this;
             }
 
-            return new ShapedBuffer(Text, _glyphInfos, GlyphTypeface, FontRenderingEmSize, paragraphEmbeddingLevel);
+            // View into our glyph array — share pool ownership so the array
+            // outlives both `this` and the new view independently.
+            return new ShapedBuffer(this, Text, _glyphInfos, GlyphTypeface, FontRenderingEmSize, paragraphEmbeddingLevel);
         }
 
         int IReadOnlyCollection<GlyphInfo>.Count => _glyphInfos.Length;
@@ -572,7 +650,7 @@ namespace Avalonia.Media.TextFormatting
             if (textLength <= 0)
             {
                 var emptyBuffer = new ShapedBuffer(
-                    Text.Slice(0, 0), _glyphInfos.Slice(_glyphInfos.Start, 0),
+                    this, Text.Slice(0, 0), _glyphInfos.Slice(_glyphInfos.Start, 0),
                     GlyphTypeface, FontRenderingEmSize, BidiLevel);
 
                 return new SplitResult<ShapedBuffer>(emptyBuffer, this);
@@ -649,7 +727,7 @@ namespace Avalonia.Media.TextFormatting
             var leadingClusterCount = FindClusterOffsetForSplit(splitCharCount);
 
             var leading = new ShapedBuffer(
-                firstText, firstGlyphs,
+                this, firstText, firstGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
                 sharedPrefix, sharedStarts, _clusterStartIdx, leadingClusterCount);
 
@@ -659,7 +737,7 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var trailing = new ShapedBuffer(
-                secondText, secondGlyphs,
+                this, secondText, secondGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
                 sharedPrefix, sharedStarts,
                 _clusterStartIdx + leadingClusterCount, _clusterCount - leadingClusterCount);
@@ -724,7 +802,7 @@ namespace Avalonia.Media.TextFormatting
             var firstClusterCount = FindClusterOffsetForSplit(textLength);
 
             var first = new ShapedBuffer(
-                firstText, firstGlyphs,
+                this, firstText, firstGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
                 sharedPrefix, sharedStarts, _clusterStartIdx, firstClusterCount);
 
@@ -734,7 +812,7 @@ namespace Avalonia.Media.TextFormatting
             }
 
             var second = new ShapedBuffer(
-                secondText, secondGlyphs,
+                this, secondText, secondGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
                 sharedPrefix, sharedStarts,
                 _clusterStartIdx + firstClusterCount, _clusterCount - firstClusterCount);
