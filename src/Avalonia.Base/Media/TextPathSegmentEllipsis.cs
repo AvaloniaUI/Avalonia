@@ -78,6 +78,18 @@ namespace Avalonia.Media
                     logicalRuns.Add(r);
                 }
 
+                // Pre-compute cumulative run start char positions so that
+                // MeasureSegmentWidth can binary-search to the first overlapping
+                // run instead of re-scanning from index 0 on every call. Built
+                // once per Collapse; reused by every segment-width measurement.
+                // runStartChars[i] = sum of lengths of runs 0..i-1;
+                // runStartChars[Count] = total char length (sentinel).
+                var runStartChars = new int[logicalRuns.Count + 1];
+                for (var i = 0; i < logicalRuns.Count; i++)
+                {
+                    runStartChars[i + 1] = runStartChars[i] + logicalRuns[i].Length;
+                }
+
                 // Segment ranges
                 var segments = new List<(int Start, int Length, double Width, bool IsSeparator)>();
                 var candidateSegmentIndices = new List<int>();
@@ -105,12 +117,12 @@ namespace Avalonia.Media
                                 // finish previous non-separator segment
                                 if (!inSeparator && globalIndex - currentSegStart > 0)
                                 {
-                                    var segmentWidth = TextPathSegmentEllipsis.MeasureSegmentWidth(logicalRuns, currentSegStart, globalIndex - currentSegStart);
+                                    var segmentWidth = MeasureSegmentWidth(logicalRuns, runStartChars, currentSegStart, globalIndex - currentSegStart);
 
                                     segments.Add((currentSegStart, globalIndex - currentSegStart, segmentWidth, false));
                                 }
 
-                                var separatorWidth = TextPathSegmentEllipsis.MeasureSegmentWidth(logicalRuns, globalIndex, 1);
+                                var separatorWidth = MeasureSegmentWidth(logicalRuns, runStartChars, globalIndex, 1);
 
                                 // separator as its own segment
                                 segments.Add((globalIndex, 1, separatorWidth, true));
@@ -149,7 +161,7 @@ namespace Avalonia.Media
                 // Add last pending segment if any
                 if (globalIndex - currentSegStart > 0)
                 {
-                    var segmentWidth = TextPathSegmentEllipsis.MeasureSegmentWidth(logicalRuns, currentSegStart, globalIndex - currentSegStart);
+                    var segmentWidth = MeasureSegmentWidth(logicalRuns, runStartChars, currentSegStart, globalIndex - currentSegStart);
 
                     segments.Add((currentSegStart, globalIndex - currentSegStart, segmentWidth, false));
                 }
@@ -428,46 +440,51 @@ namespace Avalonia.Media
         /// <summary>
         /// Calculates the total width of a specified segment within a sequence of text runs.
         /// </summary>
-        /// <remarks>The method accounts for partial overlaps between the segment and individual text
-        /// runs. Drawable runs are measured as a whole if any part overlaps the segment.</remarks>
-        /// <param name="runs">The collection of text runs to measure. Each run represents a contiguous sequence of formatted text.</param>
-        /// <param name="segmentStart">The zero-based index of the first character in the segment to measure, relative to the combined text runs.</param>
-        /// <param name="segmentLength">The number of characters in the segment to measure. Must be non-negative.</param>
-        /// <returns>The total width, in device-independent units, of the specified text segment. Returns 0.0 if the segment is
-        /// empty or does not overlap any runs.</returns>
-        private static double MeasureSegmentWidth(IReadOnlyList<TextRun> runs, int segmentStart, int segmentLength)
+        /// <remarks>
+        /// Uses the pre-computed <paramref name="runStartChars"/> cumulative-offset table
+        /// to binary-search the first overlapping run (O(log N)) instead of re-scanning all
+        /// runs from index 0 on every call. For each shaped overlap, delegates to
+        /// <see cref="ShapedBuffer.GetCharRangeWidth"/>, which uses the cluster-width cache —
+        /// O(log clusters) per call and direction-agnostic (the cache is built in logical
+        /// order for both LTR and RTL buffers). Drawable runs are measured as a whole if
+        /// they fully overlap the segment, matching the original behavior.
+        /// </remarks>
+        /// <param name="runs">The collection of text runs to measure.</param>
+        /// <param name="runStartChars">Cumulative char-offset table; entry <c>i</c> is the
+        /// total length of runs <c>0..i-1</c>, entry <c>Count</c> is the total char length.</param>
+        /// <param name="segmentStart">Zero-based start index of the segment, relative to the combined text runs.</param>
+        /// <param name="segmentLength">Number of characters in the segment. Must be non-negative.</param>
+        /// <returns>The segment width in device-independent units, or 0 if the segment is empty or out of range.</returns>
+        private static double MeasureSegmentWidth(IReadOnlyList<TextRun> runs, int[] runStartChars, int segmentStart, int segmentLength)
         {
-            // segment range in global character indices
+            if (segmentLength <= 0)
+            {
+                return 0.0;
+            }
+
             var segmentEnd = segmentStart + segmentLength;
-            var currentChar = 0;
+
+            // Binary search runStartChars for the largest i with runStartChars[i] <= segmentStart.
+            // That's the first run whose range can overlap the segment.
+            var i = FindFirstOverlappingRun(runStartChars, segmentStart);
+
             double width = 0.0;
 
-            for (var i = 0; i < runs.Count; i++)
+            for (; i < runs.Count; i++)
             {
-                var run = runs[i];
-                var runStart = currentChar;
-                var runEnd = runStart + run.Length;
-
-                // no overlap with requested segment
-                if (runEnd <= segmentStart)
-                {
-                    currentChar = runEnd;
-                    continue;
-                }
-
+                var runStart = runStartChars[i];
                 if (runStart >= segmentEnd)
                 {
                     break;
                 }
 
-                // overlap range within this run [overlapStart, overlapEnd)
+                var run = runs[i];
+                var runEnd = runStart + run.Length;
+
                 var overlapStart = Math.Max(segmentStart, runStart);
                 var overlapEnd = Math.Min(segmentEnd, runEnd);
-                var overlapLen = overlapEnd - overlapStart;
-
-                if (overlapLen <= 0)
+                if (overlapEnd <= overlapStart)
                 {
-                    currentChar = runEnd;
                     continue;
                 }
 
@@ -475,79 +492,58 @@ namespace Avalonia.Media
                 {
                     case ShapedTextRun shaped:
                         {
-                            var buffer = shaped.ShapedBuffer;
-                            if (buffer.Length == 0)
-                            {
-                                break;
-                            }
-
-                            // local char offsets inside this run
-                            var localStart = overlapStart - runStart;
-                            var localEnd = overlapEnd - runStart;
-
-                            // Buffer ordering depends on bidi direction:
-                            //   LTR: glyphs in ascending cluster order;
-                            //        buffer[0] holds the smallest cluster.
-                            //   RTL: glyphs in descending cluster order
-                            //        (visual L-to-R order); buffer[Length-1]
-                            //        holds the smallest cluster.
-                            // baseCluster always refers to the SMALLEST cluster
-                            // so that `clusterLocal` is a logical offset
-                            // measured from the start of the run.
-                            var isLtr = buffer.IsLeftToRight;
-                            var baseCluster = isLtr
-                                ? buffer[0].GlyphCluster
-                                : buffer[buffer.Length - 1].GlyphCluster;
-
-                            for (var gi = 0; gi < buffer.Length; gi++)
-                            {
-                                var g = buffer[gi];
-                                var clusterLocal = g.GlyphCluster - baseCluster;
-
-                                if (isLtr)
-                                {
-                                    // Ascending: skip until we reach localStart,
-                                    // stop once we pass localEnd.
-                                    if (clusterLocal < localStart)
-                                        continue;
-                                    if (clusterLocal >= localEnd)
-                                        break;
-                                }
-                                else
-                                {
-                                    // Descending: skip the high-cluster glyphs
-                                    // until we drop into the window, stop once
-                                    // we fall below localStart.
-                                    if (clusterLocal >= localEnd)
-                                        continue;
-                                    if (clusterLocal < localStart)
-                                        break;
-                                }
-
-                                width += g.GlyphAdvance;
-                            }
-
+                            // ShapedBuffer.GetCharRangeWidth uses the cluster cache; O(log clusters).
+                            width += shaped.ShapedBuffer.GetCharRangeWidth(overlapStart - runStart, overlapEnd - runStart);
                             break;
                         }
                     case DrawableTextRun d:
                         {
-                            // For drawable runs, count full width if they completely overlap
-                            if (overlapLen >= d.Length)
+                            // Drawables are atomic: count full width when they completely overlap.
+                            if (overlapEnd - overlapStart >= d.Length)
                             {
                                 width += d.Size.Width;
                             }
                             break;
                         }
-                    default:
-                        {
-                            break;
-                        }
                 }
-
-                currentChar = runEnd;
             }
 
             return width;
+        }
+
+        /// <summary>
+        /// Binary-search <paramref name="runStartChars"/> for the largest index
+        /// <c>i</c> such that <c>runStartChars[i] &lt;= charIndex</c>. That index
+        /// is the first run that can contain or precede <paramref name="charIndex"/>.
+        /// </summary>
+        private static int FindFirstOverlappingRun(int[] runStartChars, int charIndex)
+        {
+            if (charIndex <= 0)
+            {
+                return 0;
+            }
+
+            var lo = 0;
+            // Upper bound excludes the sentinel entry; we want a run index, not a boundary.
+            var hi = runStartChars.Length - 2;
+            if (hi < 0)
+            {
+                return 0;
+            }
+
+            while (lo < hi)
+            {
+                var mid = (lo + hi + 1) >> 1;
+                if (runStartChars[mid] <= charIndex)
+                {
+                    lo = mid;
+                }
+                else
+                {
+                    hi = mid - 1;
+                }
+            }
+            return lo;
         }
     }
 }

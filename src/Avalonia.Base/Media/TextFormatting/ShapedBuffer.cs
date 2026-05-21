@@ -253,6 +253,72 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Returns the cumulative glyph advance for the logical character range
+        /// <c>[<paramref name="startChar"/>, <paramref name="endChar"/>)</c>
+        /// within this sub-buffer. Uses the cluster cache via binary search, so
+        /// each call is O(log clusters) regardless of how big the buffer is or
+        /// where the range sits inside it.
+        /// </summary>
+        /// <remarks>
+        /// The cluster cache is built in <i>logical</i> order for both LTR and
+        /// RTL buffers (see <see cref="EnsureClusterCache"/>), so callers pass
+        /// logical char offsets and the same code path serves both directions.
+        /// Out-of-range arguments are clamped to <c>[0, Text.Length]</c>.
+        /// </remarks>
+        internal double GetCharRangeWidth(int startChar, int endChar)
+        {
+            if (endChar <= startChar)
+            {
+                return 0d;
+            }
+
+            var prefix = _clusterPrefix ?? EnsureClusterCache();
+            var starts = _clusterStartChars!;
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            var basePrefix = prefix[startIdx];
+            var baseChar = starts[startIdx];
+
+            var startBoundary = FindLargestClusterAtOrBefore(starts, startIdx, count, baseChar, startChar);
+            var endBoundary = FindLargestClusterAtOrBefore(starts, startIdx, count, baseChar, endChar);
+
+            return prefix[startIdx + endBoundary] - prefix[startIdx + startBoundary];
+        }
+
+        /// <summary>
+        /// Binary-search the largest cluster boundary index <c>i ∈ [0, count]</c>
+        /// such that <c>starts[startIdx + i] - baseChar ≤ charPos</c>. Cluster
+        /// starts are non-decreasing within the sub-buffer range, so a standard
+        /// upper-bound search works in both LTR and RTL buffers (the cache is
+        /// always built in logical order).
+        /// </summary>
+        private static int FindLargestClusterAtOrBefore(int[] starts, int startIdx, int count, int baseChar, int charPos)
+        {
+            if (charPos < 0)
+            {
+                return 0;
+            }
+
+            // Standard "rightmost <= charPos" upper-bound shape.
+            var lo = 0;
+            var hi = count;
+            while (lo < hi)
+            {
+                var mid = (lo + hi + 1) >> 1;
+                if (starts[startIdx + mid] - baseChar <= charPos)
+                {
+                    lo = mid;
+                }
+                else
+                {
+                    hi = mid - 1;
+                }
+            }
+            return lo;
+        }
+
+        /// <summary>
         /// Builds the cluster cache in <em>logical</em> order. LTR buffers store glyphs
         /// in ascending cluster order so logical order is the same as visual order
         /// (walk forward from index 0). RTL buffers store glyphs in descending cluster
