@@ -10,6 +10,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using Avalonia.Logging;
 using Tmds.DBus.Protocol;
 using Tmds.DBus.SourceGenerator;
 
@@ -129,7 +130,14 @@ namespace Avalonia.FreeDesktop
                     return;
                 _disposed = true;
                 // Fire and forget
-                _ = _registrar?.UnregisterWindowAsync(_xid);
+                _ = _registrar?.UnregisterWindowAsync(_xid)?.ContinueWith(t =>
+                {
+                    if (t.Exception != null)
+                    {
+                        Logger.TryGet(LogEventLevel.Warning, LogArea.Platform)
+                            ?.Log(this, "DBusMenu UnregisterWindowAsync failed: {Exception}", t.Exception);
+                    }
+                }, TaskContinuationOptions.OnlyOnFaulted);
                 _pathHandler.Remove(this);
                 Connection.RemoveMethodHandler(_pathHandler.Path);
             }
