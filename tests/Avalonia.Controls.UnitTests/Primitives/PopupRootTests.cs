@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Platform;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
@@ -328,6 +331,51 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 positioner.Verify(x => 
                     x.Update(It.Is<PopupPositionerParameters>(x => x.Size.Width == 410)));
                 Assert.Equal(410, target.Width);
+            }
+        }
+
+        [Fact]
+        public void Popup_Anchor_Rect_Should_Account_For_Decoration_Inset()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var windowImpl = MockWindowingPlatform.CreateWindowMock();
+                windowImpl.Setup(x => x.NeedsManagedDecorations).Returns(true);
+                windowImpl.Setup(x => x.RequestedDrawnDecorations).Returns(
+                    PlatformRequestedDrawnDecoration.TitleBar | PlatformRequestedDrawnDecoration.Border);
+
+                var placementTarget = new Panel
+                {
+                    Width = 10,
+                    Height = 10,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+
+                var window = new Window(windowImpl.Object)
+                {
+                    SizeToContent = SizeToContent.Manual,
+                    Content = placementTarget,
+                };
+                window.Show();
+
+                var inset = window.TopLevelHost.DecorationInset;
+                Assert.True(inset.Top > 0, "Expected non-zero decoration inset top (title bar)");
+
+                var popupImpl = MockWindowingPlatform.CreatePopupMock(windowImpl.Object);
+                var target = CreateTarget(window, popupImpl.Object);
+                target.Width = 10;
+                target.Height = 10;
+
+                ((IPopupHost)target).ConfigurePosition(
+                    new PopupPositionRequest(placementTarget, PlacementMode.Bottom));
+                target.Show();
+
+                // The popup should be placed below the placement target.
+                var popupScreenPos = popupImpl.Object.Position;
+                Assert.True(popupScreenPos.Y >= (int)(inset.Top + placementTarget.Bounds.Height),
+                    $"Popup Y ({popupScreenPos.Y}) should be >= inset.Top ({inset.Top}) + target height ({placementTarget.Bounds.Height}). " +
+                    $"If this fails, CalculateAnchorRect is not accounting for the decoration offset.");
             }
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -487,6 +488,8 @@ namespace Avalonia.Controls
 
             SetValidSpinDirection();
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new NumericUpDownAutomationPeer(this);
 
         /// <inheritdoc />
         protected override void OnKeyDown(KeyEventArgs e)
