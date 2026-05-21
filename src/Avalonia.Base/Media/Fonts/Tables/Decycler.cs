@@ -76,9 +76,16 @@ namespace Avalonia.Media.Fonts.Tables
         /// <summary>
         /// Creates a new Decycler with the specified maximum depth.
         /// </summary>
-        /// <param name="maxDepth">Maximum traversal depth before returning an error.</param>
+        /// <param name="maxDepth">Maximum traversal depth before <see cref="Enter"/> throws a
+        /// <see cref="DecyclerException"/>. Must be at least 1.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="maxDepth"/> is less than 1.</exception>
         public Decycler(int maxDepth)
         {
+            if (maxDepth < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxDepth), maxDepth, "maxDepth must be at least 1.");
+            }
+
             _visited = new HashSet<T>();
             _maxDepth = maxDepth;
             _currentDepth = 0;
