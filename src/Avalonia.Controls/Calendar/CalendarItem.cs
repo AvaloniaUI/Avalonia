@@ -628,8 +628,8 @@ namespace Avalonia.Controls.Primitives
                 ? _calendar.AddDays(firstDayOfMonth, -lastMonthToDisplay)
                 : firstDayOfMonth;
 
-            bool show = Owner?.ShowWeekNumbers ?? false;
-            var rule = Owner?.WeekNumberRule ?? DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule;
+            bool show = Owner?.IsWeekNumberVisible ?? false;
+            var rule = Owner?.WeekNumberRule ?? (CalendarWeekNumberRule)DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule;
             var firstDayOfWeek = Owner?.FirstDayOfWeek ?? DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
 
             PseudoClasses.Set(":hasweeknumbers", show);

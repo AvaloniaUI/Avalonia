@@ -134,7 +134,7 @@
                           DisplayDate="{TemplateBinding DisplayDate}"
                           DisplayDateStart="{TemplateBinding DisplayDateStart}"
                           DisplayDateEnd="{TemplateBinding DisplayDateEnd}"
-                          ShowWeekNumbers="{TemplateBinding ShowWeekNumbers}"
+                          IsWeekNumberVisible="{TemplateBinding IsWeekNumberVisible}"
                           WeekNumberRule="{TemplateBinding WeekNumberRule}"
                           WeekNumberHeader="{TemplateBinding WeekNumberHeader}" />
               </Popup>
