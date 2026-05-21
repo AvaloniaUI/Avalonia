@@ -395,7 +395,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the content displayed in the week-number column header cell.
         /// Set this to a localized string such as <c>"CW"</c>, <c>"KW"</c>, or <c>"Wk"</c>
-        /// to give users context for the week-number column. Defaults to <c>null</c> (blank).
+        /// to give users context for the week-number column. Defaults to <c>"#"</c>.
         /// </summary>
         public object? WeekNumberHeader
         {

@@ -378,31 +378,21 @@ namespace Avalonia.Controls
             set => SetValue(VerticalContentAlignmentProperty, value);
         }
         
-        /// <summary>
-        /// Gets or sets a value indicating whether week numbers are shown in the month view
-        /// of the drop-down <see cref="Calendar"/>.
-        /// </summary>
+        /// <inheritdoc cref="Calendar.ShowWeekNumbers"/>
         public bool ShowWeekNumbers
         {
             get => GetValue(ShowWeekNumbersProperty);
             set => SetValue(ShowWeekNumbersProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the rule used to determine the first week of the year for week number display.
-        /// The default is taken from the current culture.
-        /// </summary>
+        /// <inheritdoc cref="Calendar.WeekNumberRule"/>
         public CalendarWeekRule WeekNumberRule
         {
             get => GetValue(WeekNumberRuleProperty);
             set => SetValue(WeekNumberRuleProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the content displayed in the week-number column header cell of the drop-down
-        /// <see cref="Calendar"/>. Set to a localized string such as <c>"CW"</c>, <c>"KW"</c>,
-        /// or <c>"Wk"</c> to give users context. Defaults to <c>null</c> (blank).
-        /// </summary>
+        /// <inheritdoc cref="Calendar.WeekNumberHeader"/>
         public object? WeekNumberHeader
         {
             get => GetValue(WeekNumberHeaderProperty);

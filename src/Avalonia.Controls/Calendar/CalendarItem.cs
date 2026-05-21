@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Primitives
     [TemplatePart(PART_ElementNextButton,     typeof(Button))]
     [TemplatePart(PART_ElementPreviousButton, typeof(Button))]
     [TemplatePart(PART_ElementYearView,       typeof(Grid))]
-    [PseudoClasses(":calendardisabled", ":showweeknumbers")]
+    [PseudoClasses(":calendardisabled", ":hasweeknumbers")]
     public sealed class CalendarItem : TemplatedControl
     {
         /// <summary>
@@ -632,7 +632,7 @@ namespace Avalonia.Controls.Primitives
             var rule = Owner?.WeekNumberRule ?? DateTimeHelper.GetCurrentDateFormat().CalendarWeekRule;
             var firstDayOfWeek = Owner?.FirstDayOfWeek ?? DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
 
-            PseudoClasses.Set(":showweeknumbers", show);
+            PseudoClasses.Set(":hasweeknumbers", show);
 
             for (int i = 0; i < _weekNumberLabels.Length; i++)
             {
