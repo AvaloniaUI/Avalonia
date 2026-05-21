@@ -103,20 +103,14 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Measures the number of characters that fit into available width.
-        /// </summary>
-        /// <param name="availableWidth">The available width.</param>
-        /// <param name="length">The count of fitting characters.</param>
-        /// <returns>
-        /// <c>true</c> if characters fit into the available width; otherwise, <c>false</c>.
-        /// </returns>
-        /// <summary>
         /// Returns the largest count of <b>logical leading</b> characters of this
         /// run that fit within <paramref name="availableWidth"/>. Cluster-atomic
         /// and direction-agnostic — for RTL runs the result is the count of chars
         /// from the logical start (not the visually-leftmost chars, which would
         /// be the logical tail).
         /// </summary>
+        /// <param name="availableWidth">The available width.</param>
+        /// <param name="length">The count of fitting characters.</param>
         /// <returns>
         /// <c>true</c> if at least one character fits within
         /// <paramref name="availableWidth"/>; otherwise <c>false</c>.
