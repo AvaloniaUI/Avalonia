@@ -15,6 +15,7 @@ namespace Avalonia.iOS
     internal interface IAvaloniaAppInternalDelegate
     {
         bool ContinueUserActivity(NSUserActivity userActivity);
+        bool OpenUrl(NSUrl url);
     }
 
     public class AvaloniaAppDelegate<TApp> : UIResponder, IUIApplicationDelegate, IAvaloniaAppDelegate, IAvaloniaAppInternalDelegate
@@ -87,6 +88,9 @@ namespace Avalonia.iOS
 
         [Export("application:openURL:options:")]
         public bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
+            => ((IAvaloniaAppInternalDelegate)this).OpenUrl(url);
+
+        bool IAvaloniaAppInternalDelegate.OpenUrl(NSUrl url)
         {
             if (Uri.TryCreate(url.ToString(), UriKind.Absolute, out var uri))
             {
@@ -98,7 +102,7 @@ namespace Avalonia.iOS
                 else
 #endif
                 {
-                    _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));   
+                    _onActivated?.Invoke(this, new ProtocolActivatedEventArgs(uri));
                 }
                 return true;
             }

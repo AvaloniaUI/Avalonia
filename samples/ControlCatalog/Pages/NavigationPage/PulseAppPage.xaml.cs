@@ -99,7 +99,7 @@ public partial class PulseAppPage : UserControl
             Content    = homeView,
             Background = new SolidColorBrush(BgDashboard),
             Header     = "Home",
-            Icon       = Geometry.Parse("M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"),
+            Icon       = new PathIcon { Data = Geometry.Parse("M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z") },
         };
 
         var workoutsPage = new ContentPage
@@ -107,7 +107,7 @@ public partial class PulseAppPage : UserControl
             Content    = new PulseWorkoutsView(),
             Background = new SolidColorBrush(BgDashboard),
             Header     = "Workouts",
-            Icon       = Geometry.Parse("M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"),
+            Icon       = new PathIcon { Data = Geometry.Parse("M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z") },
         };
 
         var profilePage = new ContentPage
@@ -115,7 +115,7 @@ public partial class PulseAppPage : UserControl
             Content    = new PulseProfileView(),
             Background = new SolidColorBrush(BgDashboard),
             Header     = "Profile",
-            Icon       = Geometry.Parse("M12 2C9.243 2 7 4.243 7 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zM12 14c-5.523 0-10 3.582-10 8a1 1 0 001 1h18a1 1 0 001-1c0-4.418-4.477-8-10-8z"),
+            Icon       = new PathIcon { Data = Geometry.Parse("M12 2C9.243 2 7 4.243 7 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zM12 14c-5.523 0-10 3.582-10 8a1 1 0 001 1h18a1 1 0 001-1c0-4.418-4.477-8-10-8z") },
         };
 
         tp.Pages = new ObservableCollection<Page> { homePage, workoutsPage, profilePage };

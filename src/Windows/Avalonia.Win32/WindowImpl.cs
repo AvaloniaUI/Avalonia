@@ -208,6 +208,7 @@ namespace Avalonia.Win32
 
         public Action<PixelPoint>? PositionChanged { get; set; }
 
+        public bool WindowStateGetterIsUsable => false;
         public Action<WindowState>? WindowStateChanged { get; set; }
 
         public Action? LostFocus { get; set; }
@@ -1187,6 +1188,7 @@ namespace Avalonia.Win32
         {
             if (!_shown)
             {
+                ExtendClientAreaToDecorationsChanged?.Invoke(_isClientAreaExtended);
                 return;
             }
 

@@ -4,7 +4,7 @@ using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages;
 
-public partial class HeaderedContentPage : UserControl
+public partial class HeaderedContentPage : ContentPage
 {
     public HeaderedContentPage()
     {

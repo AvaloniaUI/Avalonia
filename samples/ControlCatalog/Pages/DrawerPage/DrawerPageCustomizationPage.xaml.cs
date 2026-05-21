@@ -1,8 +1,10 @@
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Templates;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
 
 namespace ControlCatalog.Pages
@@ -143,7 +145,7 @@ namespace ControlCatalog.Pages
         {
             if (!_isLoaded)
                 return;
-            DemoDrawer.DrawerIcon = Geometry.Parse(_iconPaths[IconCombo.SelectedIndex]);
+            DemoDrawer.DrawerIcon = new PathIcon { Data = Geometry.Parse(_iconPaths[IconCombo.SelectedIndex]) };
         }
 
         private void OnBackdropChanged(object? sender, SelectionChangedEventArgs e)
@@ -164,7 +166,7 @@ namespace ControlCatalog.Pages
             if (!_isLoaded)
                 return;
             if (ShowHeaderCheck.IsChecked == true)
-                DemoDrawer.DrawerHeader = DrawerHeaderBorder;
+                DemoDrawer.DrawerHeader = HeaderTemplateCombo.SelectedIndex == 0 ? DrawerHeaderBorder : (object)"My Application";
             else
                 DemoDrawer.DrawerHeader = null;
         }
@@ -174,9 +176,128 @@ namespace ControlCatalog.Pages
             if (!_isLoaded)
                 return;
             if (ShowFooterCheck.IsChecked == true)
-                DemoDrawer.DrawerFooter = DrawerFooterBorder;
+            {
+                DemoDrawer.DrawerFooter = FooterTemplateCombo.SelectedIndex switch
+                {
+                    1 => (object)"v12.0",
+                    2 => (object)"Avalonia",
+                    _ => DrawerFooterBorder
+                };
+            }
             else
+            {
                 DemoDrawer.DrawerFooter = null;
+            }
+        }
+
+        private void OnHeaderTemplateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded)
+                return;
+
+            switch (HeaderTemplateCombo.SelectedIndex)
+            {
+                case 1:
+                    DemoDrawer.DrawerHeader = "My Application";
+                    DemoDrawer.DrawerHeaderTemplate = new FuncDataTemplate<string>((data, _) =>
+                        new Border
+                        {
+                            Padding = new Avalonia.Thickness(16),
+                            Child = new StackPanel
+                            {
+                                Spacing = 2,
+                                Children =
+                                {
+                                    new TextBlock { Text = data, FontSize = 18, FontWeight = FontWeight.SemiBold, Foreground = Brushes.White },
+                                    new TextBlock { Text = "Navigation", FontSize = 12, Foreground = Brushes.White, Opacity = 0.7 }
+                                }
+                            }
+                        });
+                    break;
+
+                case 2:
+                    DemoDrawer.DrawerHeader = "My Application";
+                    DemoDrawer.DrawerHeaderTemplate = new FuncDataTemplate<string>((data, _) =>
+                    {
+                        var initial = data?.Length > 0 ? data[0].ToString().ToUpperInvariant() : "?";
+                        var avatar = new Border
+                        {
+                            Width = 40,
+                            Height = 40,
+                            CornerRadius = new Avalonia.CornerRadius(20),
+                            Background = new SolidColorBrush(Color.Parse("#1976D2")),
+                            Child = new TextBlock
+                            {
+                                Text = initial,
+                                FontSize = 18,
+                                FontWeight = FontWeight.Bold,
+                                Foreground = Brushes.White,
+                                HorizontalAlignment = HorizontalAlignment.Center,
+                                VerticalAlignment = VerticalAlignment.Center
+                            }
+                        };
+                        var label = new TextBlock { Text = data, FontSize = 14, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center };
+                        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+                        row.Children.Add(avatar);
+                        row.Children.Add(label);
+                        return new Border { Padding = new Avalonia.Thickness(12), Child = row };
+                    });
+                    break;
+
+                default:
+                    DemoDrawer.DrawerHeader = DrawerHeaderBorder;
+                    DemoDrawer.DrawerHeaderTemplate = null;
+                    break;
+            }
+        }
+
+        private void OnFooterTemplateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoaded)
+                return;
+
+            switch (FooterTemplateCombo.SelectedIndex)
+            {
+                case 1:
+                    DemoDrawer.DrawerFooter = "v12.0";
+                    DemoDrawer.DrawerFooterTemplate = new FuncDataTemplate<string>((data, _) =>
+                        new Border
+                        {
+                            Padding = new Avalonia.Thickness(12, 8),
+                            Child = new Border
+                            {
+                                Padding = new Avalonia.Thickness(8, 4),
+                                CornerRadius = new Avalonia.CornerRadius(4),
+                                Background = new SolidColorBrush(Color.Parse("#1976D2")),
+                                Child = new TextBlock { Text = data, FontSize = 11, Foreground = Brushes.White, FontWeight = FontWeight.SemiBold }
+                            }
+                        });
+                    break;
+
+                case 2:
+                    DemoDrawer.DrawerFooter = "Avalonia";
+                    DemoDrawer.DrawerFooterTemplate = new FuncDataTemplate<string>((data, _) =>
+                    {
+                        var icon = new PathIcon
+                        {
+                            Width = 14,
+                            Height = 14,
+                            Data = Geometry.Parse("M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"),
+                            Opacity = 0.5
+                        };
+                        var label = new TextBlock { Text = data, FontSize = 12, Opacity = 0.6, VerticalAlignment = VerticalAlignment.Center };
+                        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
+                        row.Children.Add(icon);
+                        row.Children.Add(label);
+                        return new Border { Padding = new Avalonia.Thickness(14, 10), Child = row };
+                    });
+                    break;
+
+                default:
+                    DemoDrawer.DrawerFooter = DrawerFooterBorder;
+                    DemoDrawer.DrawerFooterTemplate = null;
+                    break;
+            }
         }
 
         private void OnMenuItemClick(object? sender, RoutedEventArgs e)

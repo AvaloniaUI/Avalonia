@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Metadata;
 using Avalonia.Platform;
@@ -13,10 +14,6 @@ namespace Avalonia.Threading;
 /// <summary>
 /// Provides services for managing work items on a thread.
 /// </summary>
-/// <remarks>
-/// In Avalonia, there is usually only a single <see cref="Dispatcher"/> in the application -
-/// the one for the UI thread, retrieved via the <see cref="UIThread"/> property.
-/// </remarks>
 public partial class Dispatcher : IDispatcher
 {
     private IDispatcherImpl _impl;
@@ -52,6 +49,8 @@ public partial class Dispatcher : IDispatcher
                 s_currentThreadDispatcher = new() { Reference = new WeakReference<Dispatcher>(this) });
         }
 
+        IsSta = _thread.GetApartmentState() == ApartmentState.STA;
+
         if (impl is null)
         {
             var st = Stopwatch.StartNew();
@@ -69,6 +68,8 @@ public partial class Dispatcher : IDispatcher
     }
 
     public bool SupportsRunLoops => _controlledImpl != null;
+
+    internal bool IsSta { get; }
 
     /// <summary>
     /// Checks that the current thread is the UI thread.
@@ -102,6 +103,21 @@ public partial class Dispatcher : IDispatcher
         var index = priority - DispatcherPriority.MinValue;
         return _priorityContexts[index] ??= new(this, priority);
     }
+
+    /// <summary>
+    /// Gets a <see cref="TaskScheduler"/> which executes tasks on this <see cref="Dispatcher"/>. A <see cref="DispatcherPriority"/> is captured from
+    /// the current <see cref="AvaloniaSynchronizationContext"/> if one is available. Otherwise, <see cref="DispatcherPriority.Default"/> is used.
+    /// </summary>
+    public TaskScheduler ToTaskScheduler() => SynchronizationContext.Current switch
+    {
+        AvaloniaSynchronizationContext avaloniaContext => avaloniaContext.ToTaskScheduler(),
+        _ => ToTaskScheduler(DispatcherPriority.Default),
+    };
+
+    /// <summary>
+    /// Gets a <see cref="TaskScheduler"/> which executes tasks on this <see cref="Dispatcher"/> with the specified <see cref="DispatcherPriority"/>.
+    /// </summary>
+    public TaskScheduler ToTaskScheduler(DispatcherPriority priority) => GetContextWithPriority(priority).ToTaskScheduler();
 
     [PrivateApi]
     public IDispatcherImpl PlatformImpl => _impl;

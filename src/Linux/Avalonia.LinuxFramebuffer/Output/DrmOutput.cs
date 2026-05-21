@@ -407,7 +407,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                 _parent = parent;
             }
 
-            public bool IsCorrupted => false;
+            public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
 
             public void Dispose()
             {

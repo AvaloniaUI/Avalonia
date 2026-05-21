@@ -33,5 +33,83 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.NotNull(mainAdornerLayer);
             Assert.NotSame(overlayAdornerLayer, mainAdornerLayer);
         }
+        
+        [Fact]
+        public void GetAdornerLayer_Returns_Same_AdornerLayer_For_VisualLayerManager()
+        {
+            var vlm = new VisualLayerManager();
+            var root = new TestRoot { Child = vlm };
+
+            root.Measure(new Size(100, 100));
+            root.Arrange(new Rect(0, 0, 100, 100));
+
+            var adornerLayer = vlm.AdornerLayer;
+            Assert.NotNull(adornerLayer);
+            
+            // The adorner layer for a control inside the OverlayLayer
+            // should be the dedicated one, not the main VLM adorner layer.
+            var target = AdornerLayer.GetAdornerLayer(vlm);
+            Assert.NotNull(target);
+            Assert.Same(adornerLayer, target);
+        }
+        
+        [Fact]
+        public void GetAdornerLayer_Returns_Same_AdornerLayer_For_Child()
+        {
+            var button = new Button();
+            var vlm = new VisualLayerManager() { Child = button };
+            var root = new TestRoot { Child = vlm };
+
+            root.Measure(new Size(100, 100));
+            root.Arrange(new Rect(0, 0, 100, 100));
+
+            var adornerLayer = vlm.AdornerLayer;
+            Assert.NotNull(adornerLayer);
+            
+            // The adorner layer for a control inside the OverlayLayer
+            // should be the dedicated one, not the main VLM adorner layer.
+            var target = AdornerLayer.GetAdornerLayer(button);
+            Assert.NotNull(target);
+            Assert.Same(adornerLayer, target);
+        }
+        
+        [Fact]
+        public void GetOverlayLayer_Returns_Same_OverlayLayer_For_VisualLayerManager()
+        {
+            var vlm = new VisualLayerManager() { EnableOverlayLayer = true };
+            var root = new TestRoot { Child = vlm };
+
+            root.Measure(new Size(100, 100));
+            root.Arrange(new Rect(0, 0, 100, 100));
+
+            var overlayLayer = vlm.OverlayLayer;
+            Assert.NotNull(overlayLayer);
+            
+            // The adorner layer for a control inside the OverlayLayer
+            // should be the dedicated one, not the main VLM adorner layer.
+            var target = OverlayLayer.GetOverlayLayer(vlm);
+            Assert.NotNull(target);
+            Assert.Same(overlayLayer, target);
+        }
+        
+        [Fact]
+        public void GetOverlayLayer_Returns_Same_OverlayLayer_For_Child()
+        {
+            var button = new Button();
+            var vlm = new VisualLayerManager() { EnableOverlayLayer = true, Child = button };
+            var root = new TestRoot { Child = vlm };
+
+            root.Measure(new Size(100, 100));
+            root.Arrange(new Rect(0, 0, 100, 100));
+
+            var overlayLayer = vlm.OverlayLayer;
+            Assert.NotNull(overlayLayer);
+            
+            // The adorner layer for a control inside the OverlayLayer
+            // should be the dedicated one, not the main VLM adorner layer.
+            var target = OverlayLayer.GetOverlayLayer(button);
+            Assert.NotNull(target);
+            Assert.Same(overlayLayer, target);
+        }
     }
 }

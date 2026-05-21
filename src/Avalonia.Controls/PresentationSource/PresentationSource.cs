@@ -23,18 +23,19 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
     public PresentationSource(InputElement rootVisual, InputElement defaultFocusVisual,
         ITopLevelImpl platformImpl,
-        IAvaloniaDependencyResolver dependencyResolver, Func<Size> clientSizeProvider)
+        IAvaloniaDependencyResolver dependencyResolver)
     {
-        _clientSizeProvider = clientSizeProvider;
-
         PlatformImpl = platformImpl;
 
-    
+
         _inputManager = TryGetService<IInputManager>(dependencyResolver);
         _handleInputCore = HandleInputCore;
         
         PlatformImpl.SetInputRoot(this);
         PlatformImpl.Input = HandleInput;
+
+        RenderScaling = LayoutHelper.ValidateScaling(platformImpl.RenderScaling);
+        PlatformImpl.ScalingChanged += HandleScalingChanged;
         
         _pointerOverPreProcessor = new PointerOverPreProcessor(this);
         _pointerOverPreProcessorSubscription = _inputManager?.PreProcess.Subscribe(_pointerOverPreProcessor);
@@ -83,6 +84,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
         // We need to wait for the renderer to complete any in-flight operations
         Renderer.Dispose();
 
+        PlatformImpl?.ScalingChanged -= HandleScalingChanged;
         PlatformImpl = null;
         _pointerOverPreProcessor?.OnCompleted();
         _pointerOverPreProcessorSubscription?.Dispose();
@@ -142,14 +144,7 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
 
     WindowDecorationsElementRole? IInputRoot.HitTestChromeElement(Point point)
     {
-        // Check all visuals at the point (not just topmost) because chrome elements
-        // may be in the underlay layer which sits below the TopLevel in the visual tree.
-        foreach (var visual in RootVisual.GetVisualsAt(point, ChromeHitTestFilter))
-        {
-            var role = GetChromeRoleFromVisual(visual);
-            if (role != null)
-                return role;
-        }
-        return null;
+        var visual = RootVisual.GetVisualAt(point, ChromeHitTestFilter);
+        return GetChromeRoleFromVisual(visual);
     }
 }

@@ -1,6 +1,6 @@
 ﻿{
   "solution": {
-    "path": "Avalonia.sln",
+    "path": "Avalonia.slnx",
     "projects": [
       "packages\\Avalonia\\Avalonia.csproj",
       "samples\\AppWithoutLifetime\\AppWithoutLifetime.csproj",

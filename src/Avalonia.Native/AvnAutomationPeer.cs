@@ -15,10 +15,16 @@ namespace Avalonia.Native
     {
         private static readonly Dictionary<AutomationProperty, AvnAutomationProperty> s_propertyMap = new()
         {
+            { AutomationElementIdentifiers.AutomationIdProperty, AvnAutomationProperty.AutomationPeer_AutomationId },
             { AutomationElementIdentifiers.BoundingRectangleProperty, AvnAutomationProperty.AutomationPeer_BoundingRectangle },
             { AutomationElementIdentifiers.ClassNameProperty, AvnAutomationProperty.AutomationPeer_ClassName },
             { AutomationElementIdentifiers.NameProperty, AvnAutomationProperty.AutomationPeer_Name },
             { RangeValuePatternIdentifiers.ValueProperty, AvnAutomationProperty.RangeValueProvider_Value },
+            { ValuePatternIdentifiers.ValueProperty, AvnAutomationProperty.ValueProvider_Value },
+            { TogglePatternIdentifiers.ToggleStateProperty, AvnAutomationProperty.ToggleProvider_ToggleState },
+            { ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty, AvnAutomationProperty.ExpandCollapseProvider_ExpandCollapseState },
+            { SelectionItemPatternIdentifiers.IsSelectedProperty, AvnAutomationProperty.SelectionItemProvider_IsSelected },
+            { SelectionPatternIdentifiers.SelectionProperty, AvnAutomationProperty.SelectionProvider_Selection },
         };
 
         private static readonly ConditionalWeakTable<AutomationPeer, AvnAutomationPeer> s_wrappers = new();

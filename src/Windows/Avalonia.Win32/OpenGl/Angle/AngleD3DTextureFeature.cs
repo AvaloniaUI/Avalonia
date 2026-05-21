@@ -83,7 +83,8 @@ internal class AngleD3DTextureFeature  : IGlPlatformSurfaceRenderTargetFactory
             base.Dispose();
         }
 
-        public override bool IsCorrupted => _target.IsCorrupted || base.IsCorrupted;
+        public override PlatformRenderTargetState State =>
+            base.IsCorrupted ? PlatformRenderTargetState.Corrupted : _target.State;
     }
     
     public IGlPlatformSurfaceRenderTarget CreateRenderTarget(IGlContext context, IPlatformRenderSurface surface)

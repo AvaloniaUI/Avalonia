@@ -141,13 +141,13 @@ namespace ControlCatalog.Pages
 
         private void OnCommandItemClick(object? sender, RoutedEventArgs e)
         {
-            if (sender is AppBarButton button)
+            if (sender is CommandBarButton button)
                 AppendLog($"Click, {button.Label}, {DescribePlacement(button)}");
         }
 
-        private AppBarButton CreateButton(string label)
+        private CommandBarButton CreateButton(string label)
         {
-            var button = new AppBarButton
+            var button = new CommandBarButton
             {
                 Label = label,
                 Icon = new PathIcon
@@ -170,14 +170,14 @@ namespace ControlCatalog.Pages
         {
             foreach (var item in items)
             {
-                if (item is AppBarButton button)
+                if (item is CommandBarButton button)
                     button.Click -= OnCommandItemClick;
             }
         }
 
         private void AttachItemHandler(ICommandBarElement item)
         {
-            if (item is not AppBarButton button)
+            if (item is not CommandBarButton button)
                 return;
 
             button.Click -= OnCommandItemClick;
@@ -191,10 +191,10 @@ namespace ControlCatalog.Pages
                 return;
 
             var item = items[^1];
-            var label = item is AppBarButton button ? button.Label ?? "(unnamed)" : item.GetType().Name;
+            var label = item is CommandBarButton button ? button.Label ?? "(unnamed)" : item.GetType().Name;
 
-            if (item is AppBarButton appBarButton)
-                appBarButton.Click -= OnCommandItemClick;
+            if (item is CommandBarButton commandBarButton)
+                commandBarButton.Click -= OnCommandItemClick;
 
             items.RemoveAt(items.Count - 1);
 
@@ -202,7 +202,7 @@ namespace ControlCatalog.Pages
             RefreshState();
         }
 
-        private static string DescribePlacement(AppBarButton button)
+        private static string DescribePlacement(CommandBarButton button)
         {
             return button.IsInOverflow ? "overflow" : "primary";
         }

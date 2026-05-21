@@ -73,7 +73,7 @@ namespace Avalonia.Controls.Primitives
         public static AdornerLayer? GetAdornerLayer(Visual visual)
         {
             // Check if the visual is inside an OverlayLayer with a dedicated AdornerLayer
-            foreach (var ancestor in visual.GetVisualAncestors())
+            foreach (var ancestor in visual.GetSelfAndVisualAncestors())
             {
                 if (GetDirectAdornerLayer(ancestor) is { } adornerLayer)
                     return adornerLayer;

@@ -74,9 +74,7 @@ class VulkanSkiaRenderTarget : ISkiaGpuRenderTarget
         }
     }
    
-    public bool IsCorrupted => false;
-
-    public bool IsReady => _target.IsReady;
+    public PlatformRenderTargetState State => _target.State;
 
 
     internal class VulkanSkiaRenderSession : ISkiaGpuRenderSession

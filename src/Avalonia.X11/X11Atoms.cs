@@ -144,6 +144,10 @@ namespace Avalonia.X11
         public IntPtr _NET_WM_WINDOW_TYPE;
         public IntPtr _NET_WM_STATE;
         public IntPtr _NET_WM_ALLOWED_ACTIONS;
+        public IntPtr _NET_WM_ACTION_MAXIMIZE_VERT;
+        public IntPtr _NET_WM_ACTION_MAXIMIZE_HORZ;
+        public IntPtr _NET_WM_ACTION_FULLSCREEN;
+        public IntPtr _NET_WM_ACTION_MINIMIZE;
         public IntPtr _NET_WM_STRUT;
         public IntPtr _NET_WM_STRUT_PARTIAL;
         public IntPtr _NET_WM_ICON_GEOMETRY;

@@ -9,7 +9,13 @@ namespace ControlCatalog.Pages
         public CommandBarDynamicOverflowPage()
         {
             InitializeComponent();
+            if (SecondaryVisibleCheck.IsChecked != true)
+            {
+                DemoBar.SecondaryCommands?.Remove(DemoSecondaryCommand);
+            }
+
             ((INotifyCollectionChanged)DemoBar.OverflowItems).CollectionChanged += OnOverflowChanged;
+            ((INotifyCollectionChanged)DemoBar.VisiblePrimaryCommands).CollectionChanged += OnOverflowChanged;
             UpdateStatus();
         }
 
@@ -29,6 +35,26 @@ namespace ControlCatalog.Pages
             DemoBar.IsDynamicOverflowEnabled = DynamicOverflowCheck.IsChecked == true;
         }
 
+        private void OnSecondaryVisibilityChanged(object? sender, RoutedEventArgs e)
+        {
+            if (DemoBar?.SecondaryCommands == null || DemoSecondaryCommand == null)
+                return;
+
+            bool shouldInclude = SecondaryVisibleCheck.IsChecked == true;
+            bool isIncluded = DemoBar.SecondaryCommands.Contains(DemoSecondaryCommand);
+
+            if (shouldInclude && !isIncluded)
+            {
+                DemoBar.SecondaryCommands.Add(DemoSecondaryCommand);
+            }
+            else if (!shouldInclude && isIncluded)
+            {
+                DemoBar.SecondaryCommands.Remove(DemoSecondaryCommand);
+            }
+
+            UpdateStatus();
+        }
+
         private void OnOverflowChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             UpdateStatus();
@@ -36,10 +62,40 @@ namespace ControlCatalog.Pages
 
         private void UpdateStatus()
         {
-            var total = DemoBar.PrimaryCommands.Count;
-            var overflow = DemoBar.OverflowItems.Count;
-            var visible = total - overflow;
-            StatusText.Text = $"Showing {visible} of {total} commands, {overflow} in overflow";
+            int visiblePrimaryCommandCount = 0;
+            int visiblePrimarySeparatorCount = 0;
+            foreach (var item in DemoBar.VisiblePrimaryCommands)
+            {
+                if (item is CommandBarSeparator)
+                    visiblePrimarySeparatorCount++;
+                else
+                    visiblePrimaryCommandCount++;
+            }
+
+            int overflowCommandCount = 0;
+            int overflowSeparatorCount = 0;
+            bool hasSyntheticOverflowDivider = false;
+            foreach (var item in DemoBar.OverflowItems)
+            {
+                if (item is CommandBarSeparator separator)
+                {
+                    overflowSeparatorCount++;
+                    if (!DemoBar.PrimaryCommands.Contains(separator) &&
+                        !DemoBar.SecondaryCommands.Contains(separator))
+                    {
+                        hasSyntheticOverflowDivider = true;
+                    }
+                }
+                else
+                {
+                    overflowCommandCount++;
+                }
+            }
+
+            StatusText.Text =
+                $"Visible primary: {visiblePrimaryCommandCount} commands, {visiblePrimarySeparatorCount} separators\n" +
+                $"Overflow items: {overflowCommandCount} commands, {overflowSeparatorCount} separators\n" +
+                $"Synthetic overflow divider: {(hasSyntheticOverflowDivider ? "present" : "absent")}";
         }
     }
 }

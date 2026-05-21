@@ -16,6 +16,14 @@ namespace Avalonia.Platform
         /// Gets or sets the minimized/maximized state of the window.
         /// </summary>
         WindowState WindowState { get; set; }
+        
+        /// <summary>
+        /// Indicates if platform implementation has a working getter for <see cref="WindowState"/> that produces
+        /// consistent results with WindowStateChanged callback.
+        /// If false, Window will not call the getter and will only use the setter and
+        /// <see cref="WindowStateChanged"/> callback to track window state.
+        /// </summary>
+        bool WindowStateGetterIsUsable { get; }
 
         /// <summary>
         /// Gets or sets a method called when the minimized/maximized state of the window changes.
@@ -104,6 +112,18 @@ namespace Avalonia.Platform
         PlatformRequestedDrawnDecoration RequestedDrawnDecorations { get; }
 
         /// <summary>
+        /// Triggered when decorations request from platform got changed
+        /// </summary>
+        Action? DrawnDecorationsRequestChanged
+        {
+            get => null;
+            set
+            {
+
+            }
+        }
+
+        /// <summary>
         /// Gets a thickness that describes the amount each side of the non-client area extends into the client area.
         /// It includes the titlebar.
         /// </summary>
@@ -154,5 +174,23 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="titleBarHeight">-1 for platform default, otherwise the height in DIPs.</param>
         void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight);
+
+        /// <summary>
+        /// Gets the window actions that the underlying platform currently allows.
+        /// </summary>
+        PlatformAllowedWindowActions AllowedWindowActions => PlatformAllowedWindowActions.All;
+
+        /// <summary>
+        /// Gets or sets a callback invoked when <see cref="AllowedWindowActions"/> changes.
+        /// </summary>
+        Action<PlatformAllowedWindowActions>? AllowedWindowActionsChanged { get => null; set { } }
+        
+        /// <summary>
+        /// Informs the platform about the thickness of application-drawn shadow decorations
+        /// so that the platform can distinguish the window content area from shadows.
+        /// It's platform's responsibility to synchronize this with window resize and rendering of the next frame 
+        /// </summary>
+        /// <param name="extents">The shadow thickness on each side, in DIPs.</param>
+        void SetShadowExtents(Thickness extents) { }
     }
 }

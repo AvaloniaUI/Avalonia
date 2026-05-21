@@ -71,7 +71,7 @@ namespace Avalonia.Rendering.Composition.Server
         ExpressionVariant IExpressionObject.GetProperty(string name)
         {
             if (_animations == null)
-                return CompositionProperty.Find(this.GetType(), name)?.GetVariant?.Invoke(this) ?? default;
+                return GetCompositionProperty(name)?.GetVariant?.Invoke(this) ?? default;
 
             return _animations.GetPropertyForAnimation(name);
         }

@@ -1,5 +1,6 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Header="DataGrid"
              x:Class="ControlCatalog.Pages.DataGridPage">
 
   <StackPanel>
@@ -8,4 +9,4 @@
                      Click="OnLinkClicked" />
   </StackPanel>
 
-</UserControl>
+</ContentPage>

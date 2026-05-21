@@ -63,10 +63,11 @@ namespace Avalonia.Harfbuzz
 
             font.Shape(buffer, GetFeatures(options));
 
-            if (buffer.Direction == Direction.RightToLeft)
-            {
-                buffer.Reverse();
-            }
+            // HarfBuzz produces glyphs in visual order for RTL by default: the first glyph
+            // in the buffer is the leftmost visual glyph (highest cluster value). LTR output
+            // already has clusters in ascending (logical = visual) order. We preserve that
+            // order in the ShapedBuffer so downstream rendering/hit-testing can operate on
+            // visual-order glyphs without an extra bidi reversal step.
 
             font.GetScale(out var scaleX, out _);
 
@@ -86,13 +87,14 @@ namespace Avalonia.Harfbuzz
 
                 var glyphIndex = (ushort)sourceInfo.Codepoint;
 
-                var glyphCluster = (int)sourceInfo.Cluster;
+                var originalCluster = (int)sourceInfo.Cluster;
+                var glyphCluster = originalCluster - start;
 
                 var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale) + options.LetterSpacing;
 
                 var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                if (glyphCluster < containingText.Length && containingText[glyphCluster] == '\t')
+                if (originalCluster < containingText.Length && containingText[originalCluster] == '\t')
                 {
                     glyphIndex = glyphTypeface.CharacterToGlyphMap[' '];
 

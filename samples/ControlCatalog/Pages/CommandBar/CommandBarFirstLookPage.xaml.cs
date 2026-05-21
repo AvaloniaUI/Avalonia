@@ -12,13 +12,13 @@ namespace ControlCatalog.Pages
 
         private void OnButtonClick(object? sender, RoutedEventArgs e)
         {
-            if (sender is AppBarButton btn)
+            if (sender is CommandBarButton btn)
                 StatusText.Text = $"{btn.Label} clicked";
         }
 
         private void OnToggleChanged(object? sender, RoutedEventArgs e)
         {
-            if (sender is AppBarToggleButton btn)
+            if (sender is CommandBarToggleButton btn)
                 StatusText.Text = btn.IsChecked == true
                     ? $"{btn.Label} enabled"
                     : $"{btn.Label} disabled";

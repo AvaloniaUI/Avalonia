@@ -7,7 +7,7 @@ using ControlCatalog.Pages.Transitions;
 
 namespace ControlCatalog.Pages
 {
-    public partial class CarouselPage : UserControl
+    public partial class CarouselPage : ContentPage
     {
         public CarouselPage()
         {

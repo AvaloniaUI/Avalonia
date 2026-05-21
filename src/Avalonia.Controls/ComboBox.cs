@@ -86,7 +86,8 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Text"/> property
         /// </summary>
         public static readonly StyledProperty<string?> TextProperty =
-            TextBlock.TextProperty.AddOwner<ComboBox>(new(string.Empty, BindingMode.TwoWay));
+            TextBlock.TextProperty.AddOwner<ComboBox>(new(string.Empty, BindingMode.TwoWay,
+                enableDataValidation: true));
 
         /// <summary>
         /// Defines the <see cref="SelectionBoxItemTemplate"/> property.

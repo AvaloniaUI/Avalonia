@@ -1,13 +1,14 @@
-<UserControl x:Class="ControlCatalog.Pages.ThemePage"
+<ContentPage Theme="{StaticResource ScrollPage}" x:Class="ControlCatalog.Pages.ThemePage"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:pages="clr-namespace:ControlCatalog.Pages"
+             Header="Theme"
              d:DesignWidth="300"
              mc:Ignorable="d">
 
-  <UserControl.Resources>
+  <ContentPage.Resources>
     <ResourceDictionary>
       <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
@@ -52,7 +53,7 @@
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>
-  </UserControl.Resources>
+  </ContentPage.Resources>
 
   <ThemeVariantScope x:Name="ThemeVariantScope">
     <Border Background="{DynamicResource DemoBackground}"
@@ -76,4 +77,4 @@
       </Grid>
     </Border>
   </ThemeVariantScope>
-</UserControl>
+</ContentPage>

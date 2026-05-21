@@ -1,6 +1,6 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
@@ -11,7 +11,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -56,6 +55,19 @@ namespace Avalonia.Controls
         {
             ItemsPanelProperty.OverrideDefaultValue<CarouselPage>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<CarouselPage>(true);
+            PageNavigationSystemBackButtonPressedEvent.AddClassHandler<CarouselPage>((sender, eventArgs) =>
+            {
+                if (eventArgs.Handled)
+                    return;
+
+                var pageEvent = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
+                sender.CurrentPage?.RaiseEvent(pageEvent);
+
+                if (pageEvent.Handled)
+                {
+                    eventArgs.Handled = true;
+                }
+            });
         }
 
         public CarouselPage()
@@ -110,6 +122,8 @@ namespace Avalonia.Controls
             get => GetValue(IsKeyboardNavigationEnabledProperty);
             set => SetValue(IsKeyboardNavigationEnabledProperty, value);
         }
+
+        protected override Type StyleKeyOverride => typeof(CarouselPage);
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {

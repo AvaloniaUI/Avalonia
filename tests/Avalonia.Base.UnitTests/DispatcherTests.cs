@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
@@ -600,6 +601,19 @@ public partial class DispatcherTests
         public AsyncLocal<string?> AsyncLocalField { get; set; } = new AsyncLocal<string?>();
     }
 
+    private sealed class AsyncLocalMeasureControl(Func<string?> getValue, Action<string?> setValue) : Control
+    {
+        public bool RecordMeasure { get; set; }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            if (RecordMeasure)
+                setValue(getValue());
+
+            return new Size(1, 1);
+        }
+    }
+
     [Fact]
     public async Task ExecutionContextIsPreservedInDispatcherInvokeAsync()
     {
@@ -698,6 +712,76 @@ public partial class DispatcherTests
     }
 
     [Fact]
+    public void MediaContextRenderSchedulingDoesNotCaptureAmbientExecutionContext()
+    {
+        var impl = new SimpleDispatcherWithBackgroundProcessingImpl();
+        using var services = new DispatcherServices(impl);
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+
+        var testObject = new AsyncLocalTestClass();
+        string? test = "Not measured";
+        var control = new AsyncLocalMeasureControl(() => testObject.AsyncLocalField.Value, value => test = value);
+        var root = new TestRoot { Child = control };
+
+        root.ExecuteInitialLayoutPass();
+        control.RecordMeasure = true;
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            testObject.AsyncLocalField.Value = "Initial Value";
+            control.InvalidateMeasure();
+            testObject.AsyncLocalField.Value = null;
+        });
+
+        Assert.True(impl.AskedForSignal);
+        impl.ExecuteSignal();
+
+        Assert.Null(test);
+    }
+
+    [Fact]
+    public void MediaContextRenderSchedulingAllowsAlreadySuppressedExecutionContextFlow()
+    {
+        var impl = new SimpleDispatcherWithBackgroundProcessingImpl();
+        using var services = new DispatcherServices(impl);
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+
+        var testObject = new AsyncLocalTestClass();
+        string? test = "Not measured";
+        Exception? schedulingException = null;
+        var control = new AsyncLocalMeasureControl(() => testObject.AsyncLocalField.Value, value => test = value);
+        var root = new TestRoot { Child = control };
+
+        root.ExecuteInitialLayoutPass();
+        control.RecordMeasure = true;
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            testObject.AsyncLocalField.Value = "Initial Value";
+
+            try
+            {
+                using (ExecutionContext.SuppressFlow())
+                {
+                    control.InvalidateMeasure();
+                }
+            }
+            catch (Exception e)
+            {
+                schedulingException = e;
+            }
+
+            testObject.AsyncLocalField.Value = null;
+        });
+
+        Assert.True(impl.AskedForSignal);
+        impl.ExecuteSignal();
+
+        Assert.Null(schedulingException);
+        Assert.Null(test);
+    }
+
+    [Fact]
     public async Task ExecutionContextCultureInfoIsPreservedInDispatcherInvokeAsync()
     {
         using var services = new DispatcherServices(new SimpleControlledDispatcherImpl());
@@ -764,4 +848,15 @@ public partial class DispatcherTests
         }
     }
 
+    [Fact]
+    public async Task Dispatcher_Can_Act_As_TaskScheduler()
+    {
+        var impl = new SimpleDispatcherImpl();
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+        Thread? continuationThread = null;
+        _ = Task.CompletedTask.ContinueWith(t => continuationThread = Thread.CurrentThread, Dispatcher.UIThread.ToTaskScheduler());
+        Assert.True(impl.AskedForSignal);
+        impl.ExecuteSignal();
+        Assert.Equal(Dispatcher.UIThread.Thread, continuationThread);
+    }
 }

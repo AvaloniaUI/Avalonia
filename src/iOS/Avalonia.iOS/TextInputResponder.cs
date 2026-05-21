@@ -84,6 +84,7 @@ partial class AvaloniaView
         private int _inSurroundingTextUpdateEvent;
         private readonly UITextPosition _beginningOfDocument = new AvaloniaTextPosition(0);
         private readonly UITextInputStringTokenizer _tokenizer;
+        private readonly NSString _textInputContextIdentifier = new NSString(Guid.NewGuid().ToString());
         private bool _isInUpdate;
 
         public TextInputMethodClient? Client => _client;
@@ -95,7 +96,7 @@ partial class AvaloniaView
         public override UIEditingInteractionConfiguration EditingInteractionConfiguration =>
             UIEditingInteractionConfiguration.Default;
 
-        public override NSString TextInputContextIdentifier => new NSString(Guid.NewGuid().ToString());
+        public override NSString TextInputContextIdentifier => _textInputContextIdentifier;
 
         public override UITextInputMode TextInputMode
         {

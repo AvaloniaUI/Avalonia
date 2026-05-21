@@ -8,7 +8,7 @@ using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
-    class MainWindowViewModel : ViewModelBase
+    partial class MainWindowViewModel : ViewModelBase
     {
         private WindowState _windowState;
         private WindowState[] _windowStates = Array.Empty<WindowState>();
@@ -20,6 +20,7 @@ namespace ControlCatalog.ViewModels
         private bool _canResize;
         private bool _canMinimize;
         private bool _canMaximize;
+        private int _selectedDecorationIndex;
 
         public MainWindowViewModel()
         {
@@ -51,6 +52,8 @@ namespace ControlCatalog.ViewModels
             CanResize = true;
             CanMinimize = true;
             CanMaximize = true;
+
+            Filter();
         }        
         
         public bool ExtendClientAreaEnabled
@@ -111,6 +114,12 @@ namespace ControlCatalog.ViewModels
         {
             get { return _canMaximize; }
             set { RaiseAndSetIfChanged(ref _canMaximize, value); }
+        }
+
+        public int SelectedDecorationIndex
+        {
+            get { return _selectedDecorationIndex; }
+            set { RaiseAndSetIfChanged(ref _selectedDecorationIndex, value); }
         }
 
 

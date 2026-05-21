@@ -33,23 +33,19 @@ public class DesignModeTests : XamlTestBase
     }
 
     [Fact]
-    public void Design_Mode_PreviewWith_Works_With_Control_Template()
+    public void Design_Mode_PreviewWith_Returns_Original_Control()
     {
         using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
         {
             var obj = (Control)AvaloniaRuntimeXamlLoader.Load(@"
 <Button xmlns='https://github.com/avaloniaui'>
     <Design.PreviewWith>
-        <Template>
-            <Border>
-                <Button />
-            </Border>
-        </Template>
+        <Border />
     </Design.PreviewWith>
 </Button>", designMode: true);
             var preview = Design.CreatePreviewWithControl(obj);
-            var previewBorder = Assert.IsType<Border>(preview);
-            Assert.IsType<Button>(previewBorder.Child);
+            // Should return the original control, not the preview, as this is not supported to avoid stack overflows.
+            Assert.Same(obj, preview);
         }
     }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.AtSpi;
@@ -226,7 +227,13 @@ namespace Avalonia.X11
 
                 if (renderingMode == X11RenderingMode.Egl)
                 {
-                    if (EglPlatformGraphics.TryCreate() is { } egl)
+                    if (EglPlatformGraphics.TryCreate(()=>new EglDisplay(new EglDisplayCreationOptions()
+                        {
+                            SupportsContextSharing = true,
+                            SupportsMultipleContexts = true,
+                            GlVersions = opts.GlProfiles,
+                            Egl = new EglInterface()
+                        })) is { } egl)
                     {
                         return egl;
                     }
@@ -482,13 +489,32 @@ namespace Avalonia
             , Message = "Experimental, used mostly for testing"
             #endif
             )]
-        public bool? EnableDrawnDecorations
-        {
-            get => EnableDrawnDecorationsInternal;
-            set => EnableDrawnDecorationsInternal = value;
-        }
+        public bool? EnableDrawnDecorations { get; set; }
+        
+        internal bool EnableDrawnDecorationsInternal =>
+#pragma warning disable AVALONIA_X11_CSD
+            EnableDrawnDecorations == true || ForceDrawnDecorationsInternal;
+#pragma warning restore AVALONIA_X11_CSD
 
-        internal bool? EnableDrawnDecorationsInternal { get; set; }
+
+        /// <summary>
+        /// Forces client-side drawn window decorations on X11 for all windows,
+        /// even when the app has not opted in via ExtendClientAreaToDecorationsHint.
+        /// In this mode, Window.ClientSize reflects the usable content area
+        /// (platform client size minus decoration margins) and the app is unaware
+        /// of the decorations.
+        /// Implies EnableDrawnDecorations = true.
+        /// </summary>
+        [Experimental("AVALONIA_X11_FORCE_CSD"
+            #if NET10_0_OR_GREATER
+            , Message = "Experimental, used mostly for testing"
+            #endif
+            )]
+        public bool ForceDrawnDecorations { get; set; }
+
+#pragma warning disable AVALONIA_X11_FORCE_CSD
+        internal bool ForceDrawnDecorationsInternal => ForceDrawnDecorations;
+#pragma warning restore AVALONIA_X11_FORCE_CSD
 
         /// <summary>
         /// If Avalonia is in control of a run loop, we propagate exceptions by stopping the run loop frame

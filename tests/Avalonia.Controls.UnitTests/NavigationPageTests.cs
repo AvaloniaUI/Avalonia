@@ -429,7 +429,7 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage();
             await nav.PushAsync(new ContentPage());
-            Assert.Equal(false, nav.IsBackButtonEffectivelyVisible);
+            Assert.False(nav.IsBackButtonEffectivelyVisible);
         }
 
         [Fact]
@@ -438,7 +438,7 @@ public class NavigationPageTests
             var nav = new NavigationPage();
             await nav.PushAsync(new ContentPage());
             await nav.PushAsync(new ContentPage());
-            Assert.Equal(true, nav.IsBackButtonEffectivelyVisible);
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
         }
 
         [Fact]
@@ -447,7 +447,7 @@ public class NavigationPageTests
             var nav = new NavigationPage { IsBackButtonVisible = false };
             await nav.PushAsync(new ContentPage());
             await nav.PushAsync(new ContentPage());
-            Assert.Equal(false, nav.IsBackButtonEffectivelyVisible);
+            Assert.False(nav.IsBackButtonEffectivelyVisible);
         }
 
         [Fact]
@@ -458,7 +458,7 @@ public class NavigationPageTests
             var top = new ContentPage();
             NavigationPage.SetHasBackButton(top, false);
             await nav.PushAsync(top);
-            Assert.Equal(false, nav.IsBackButtonEffectivelyVisible);
+            Assert.False(nav.IsBackButtonEffectivelyVisible);
         }
 
         [Fact]
@@ -468,7 +468,25 @@ public class NavigationPageTests
             await nav.PushAsync(new ContentPage());
             await nav.PushAsync(new ContentPage());
             nav.IsBackButtonVisible = true;
-            Assert.Equal(true, nav.IsBackButtonEffectivelyVisible);
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
+        }
+
+        [Fact]
+        public async Task BackButtonVisible_UpdatesWhenCurrentPageHasBackButtonChanges()
+        {
+            var nav = new NavigationPage();
+            await nav.PushAsync(new ContentPage());
+
+            var top = new ContentPage();
+            await nav.PushAsync(top);
+
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
+
+            NavigationPage.SetHasBackButton(top, false);
+            Assert.False(nav.IsBackButtonEffectivelyVisible);
+
+            NavigationPage.SetHasBackButton(top, true);
+            Assert.True(nav.IsBackButtonEffectivelyVisible);
         }
     }
 
@@ -1336,6 +1354,43 @@ public class NavigationPageTests
             Assert.Same(modal, nav.ModalStack[0]);
         }
 
+        [Fact]
+        public async Task BackButton_WithModal_DoesNotForwardToCoveredCurrentPage()
+        {
+            var nav = new NavigationPage();
+            var root = new BackHandlingPage { HandleBack = true };
+            var modal = new BackHandlingPage();
+            await nav.PushAsync(root);
+            await nav.PushModalAsync(modal);
+
+            var args = RaiseBackButton(nav);
+
+            Assert.True(args.Handled);
+            Assert.Equal(0, root.BackButtonPressCount);
+            Assert.Equal(1, modal.BackButtonPressCount);
+            Assert.Empty(nav.ModalStack);
+            Assert.Equal(1, nav.StackDepth);
+            Assert.Same(root, nav.CurrentPage);
+        }
+
+        [Fact]
+        public async Task BackButton_WithHandledModal_DoesNotForwardToCoveredCurrentPage()
+        {
+            var nav = new NavigationPage();
+            var root = new BackHandlingPage { HandleBack = true };
+            var modal = new BackHandlingPage { HandleBack = true };
+            await nav.PushAsync(root);
+            await nav.PushModalAsync(modal);
+
+            var args = RaiseBackButton(nav);
+
+            Assert.True(args.Handled);
+            Assert.Equal(0, root.BackButtonPressCount);
+            Assert.Equal(1, modal.BackButtonPressCount);
+            Assert.Single(nav.ModalStack);
+            Assert.Same(modal, nav.ModalStack[0]);
+        }
+
         private sealed class BackHandlingPage : ContentPage
         {
             public int BackButtonPressCount { get; private set; }
@@ -1366,6 +1421,19 @@ public class NavigationPageTests
         {
             var nav = new NavigationPage { IsGestureEnabled = value };
             Assert.Equal(value, nav.IsGestureEnabled);
+        }
+
+        [Fact]
+        public async Task SafeAreaPadding_Affeccts_Nav_Bar_Height()
+        {
+            var nav = new NavigationPage()
+            {
+                SafeAreaPadding = new Thickness(10)
+            };
+            var page = new ContentPage();
+            NavigationPage.SetBarHeightOverride(page, 60.0);
+            await nav.PushAsync(page);
+            Assert.Equal(70.0, nav.EffectiveBarHeight);
         }
     }
 

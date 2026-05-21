@@ -265,5 +265,20 @@ namespace Avalonia.Layout
             // should be.
             return Math.Round(value, 8, MidpointRounding.ToZero);
         }
+
+        internal static double ValidateScaling(double scaling)
+        {
+            if (MathUtilities.IsNegativeOrNonFinite(scaling) || MathUtilities.IsZero(scaling))
+                throw new InvalidOperationException($"Invalid render scaling value {scaling}");
+
+            if (MathUtilities.IsOne(scaling))
+            {
+                // Ensure we've got exactly 1.0 and not an approximation,
+                // so we don't have to use MathUtilities.IsOne in various layout hot paths.
+                return 1.0;
+            }
+
+            return scaling;
+        }
     }
 }

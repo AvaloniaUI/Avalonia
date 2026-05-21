@@ -8,13 +8,25 @@ namespace Avalonia.Platform.Storage;
 
 internal class FallbackStorageProvider : IStorageProvider
 {
-    private readonly Func<Task<IStorageProvider?>>[] _factories;
+    private Func<Task<IStorageProvider?>>[] _factories;
     private readonly List<IStorageProvider> _providers = new();
     private int _nextProviderFactory = 0;
     
     public FallbackStorageProvider(Func<Task<IStorageProvider?>>[] factories)
     {
         _factories = factories;
+    }
+
+    /// <summary>
+    /// Discards any cached providers and replaces the factory list. Useful when the
+    /// underlying platform state has changed (e.g. wayland compositor reconnect) and
+    /// previously-selected providers may no longer be appropriate.
+    /// </summary>
+    public void Reset(Func<Task<IStorageProvider?>>[] factories)
+    {
+        _factories = factories;
+        _providers.Clear();
+        _nextProviderFactory = 0;
     }
     
     async IAsyncEnumerable<IStorageProvider> GetProviders()

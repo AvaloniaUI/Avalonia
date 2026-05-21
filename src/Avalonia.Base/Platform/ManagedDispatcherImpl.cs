@@ -7,7 +7,7 @@ using Avalonia.Threading;
 namespace Avalonia.Controls.Platform;
 
 [Unstable]
-public class ManagedDispatcherImpl : IControlledDispatcherImpl
+public class ManagedDispatcherImpl : IControlledDispatcherImpl, IDispatcherImplWithExplicitBackgroundProcessing
 {
     private readonly IManagedDispatcherInputProvider? _inputProvider;
     private readonly AutoResetEvent _wakeup = new(false);
@@ -16,6 +16,7 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
     private readonly Stopwatch _clock = Stopwatch.StartNew();
     private TimeSpan? _nextTimer; 
     private readonly Thread _loopThread = Thread.CurrentThread;
+    private bool _backgroundProcessingRequested;
 
     public interface IManagedDispatcherInputProvider
     {
@@ -55,6 +56,22 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
 
     public bool CanQueryPendingInput => _inputProvider != null;
     public bool HasPendingInput => _inputProvider?.HasInput ?? false;
+    
+    private Action? ReadyForBackgroundProcessing { get; set; }
+    event Action? IDispatcherImplWithExplicitBackgroundProcessing.ReadyForBackgroundProcessing
+    {
+        add => ReadyForBackgroundProcessing += value;
+        remove => ReadyForBackgroundProcessing -= value;
+    }
+
+    void IDispatcherImplWithExplicitBackgroundProcessing.RequestBackgroundProcessing()
+    {
+        lock (_lock)
+        {
+            _backgroundProcessingRequested = true;
+            _wakeup.Set();
+        }
+    }
     
     public void RunLoop(CancellationToken token)
     {
@@ -96,6 +113,19 @@ public class ManagedDispatcherImpl : IControlledDispatcherImpl
             if (_inputProvider?.HasInput == true)
             {
                 _inputProvider.DispatchNextInputEvent();
+                continue;
+            }
+            
+            bool triggerBackgroundProcessing;
+            lock (_lock)
+            {
+                triggerBackgroundProcessing = _backgroundProcessingRequested;
+                _backgroundProcessingRequested = false;
+            }
+
+            if (triggerBackgroundProcessing)
+            {
+                ReadyForBackgroundProcessing?.Invoke();
                 continue;
             }
 

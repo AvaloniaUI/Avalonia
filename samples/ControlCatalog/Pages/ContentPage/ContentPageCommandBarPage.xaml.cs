@@ -78,7 +78,7 @@ namespace ControlCatalog.Pages
         private void OnAddPrimary(object? sender, RoutedEventArgs e)
         {
             _itemCounter++;
-            var btn = new AppBarButton { Label = $"Action {_itemCounter}" };
+            var btn = new CommandBarButton { Label = $"Action {_itemCounter}" };
             if (UseIconCheck.IsChecked == true)
             {
                 var preset = IconPresets[(_itemCounter - 1) % IconPresets.Length];
@@ -93,13 +93,13 @@ namespace ControlCatalog.Pages
         private void OnAddSecondary(object? sender, RoutedEventArgs e)
         {
             _itemCounter++;
-            _secondaryItems.Add(new AppBarButton { Label = $"Item {_itemCounter}" });
+            _secondaryItems.Add(new CommandBarButton { Label = $"Item {_itemCounter}" });
             RebuildCommandBar();
         }
 
         private void OnAddSeparator(object? sender, RoutedEventArgs e)
         {
-            _primaryItems.Add(new AppBarSeparator());
+            _primaryItems.Add(new CommandBarSeparator());
             RebuildCommandBar();
         }
 
@@ -177,26 +177,26 @@ namespace ControlCatalog.Pages
 
             foreach (var item in _primaryItems)
             {
-                if (item is AppBarButton btn)
+                if (item is CommandBarButton btn)
                 {
                     PathIcon? icon = null;
                     if (btn.Icon is PathIcon src)
                         icon = new PathIcon { Data = src.Data };
-                    commandBar.PrimaryCommands.Add(new AppBarButton
+                    commandBar.PrimaryCommands.Add(new CommandBarButton
                     {
                         Label = btn.Label,
                         Icon = icon,
                         IsCompact = btn.IsCompact,
                     });
                 }
-                else if (item is AppBarSeparator)
-                    commandBar.PrimaryCommands.Add(new AppBarSeparator());
+                else if (item is CommandBarSeparator)
+                    commandBar.PrimaryCommands.Add(new CommandBarSeparator());
             }
 
             foreach (var item in _secondaryItems)
             {
-                if (item is AppBarButton btn)
-                    commandBar.SecondaryCommands.Add(new AppBarButton { Label = btn.Label });
+                if (item is CommandBarButton btn)
+                    commandBar.SecondaryCommands.Add(new CommandBarButton { Label = btn.Label });
             }
 
             if (_position == "Top")
@@ -204,7 +204,7 @@ namespace ControlCatalog.Pages
             else
                 NavigationPage.SetBottomCommandBar(activePage, commandBar);
 
-            var primaryCount = _primaryItems.Count(i => i is AppBarButton);
+            var primaryCount = _primaryItems.Count(i => i is CommandBarButton);
             var secondaryCount = _secondaryItems.Count;
             StatusText.Text = $"{primaryCount} primary, {secondaryCount} secondary ({_position})";
         }

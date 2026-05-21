@@ -10,6 +10,8 @@
     <Setter Property="BorderBrush" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="PreviousButtonTheme" Value="{StaticResource {x:Type Button}}" />
+    <Setter Property="NextButtonTheme" Value="{StaticResource {x:Type Button}}" />
     <Setter Property="Template">
       <ControlTemplate>
         <StackPanel Name="PART_RootPanel" 
@@ -19,6 +21,7 @@
                     ClipToBounds="False">
             
             <Button Name="PART_PreviousButton"
+                    Theme="{TemplateBinding PreviousButtonTheme}"
                     Width="24"
                     Height="24"
                     Padding="0"
@@ -99,6 +102,7 @@
             </ListBox>
 
             <Button Name="PART_NextButton"
+                    Theme="{TemplateBinding NextButtonTheme}"
                     Width="24"
                     Height="24"
                     Padding="0"

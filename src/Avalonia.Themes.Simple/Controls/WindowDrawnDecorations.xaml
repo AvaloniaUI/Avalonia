@@ -41,14 +41,14 @@
           <WindowDrawnDecorationsContent.Underlay>
             <Panel x:Name="PART_UnderlayWrapper">
               <Border x:Name="PART_WindowBorder"
-                      Background="{DynamicResource ThemeBackgroundBrush}"
+                      Background="Transparent"
                       BorderThickness="{TemplateBinding FrameThickness}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       IsHitTestVisible="False" />
               <!-- Titlebar: background, title text, and drag area live in underlay -->
               <Panel x:Name="PART_TitleBar" VerticalAlignment="Top"
                      Height="{TemplateBinding TitleBarHeight}"
-                     Background="{DynamicResource ThemeBackgroundBrush}"
+                     Background="Transparent"
                      IsVisible="{TemplateBinding HasTitleBar}"
                      WindowDecorationProperties.ElementRole="TitleBar" />
             </Panel>
@@ -200,6 +200,20 @@
     <!-- Disabled buttons -->
     <Style Selector="^ /template/ Button:disabled">
       <Setter Property="Opacity" Value="0.2"/>
+    </Style>
+
+    <!-- Hide caption buttons when the platform does not support the action -->
+    <Style Selector="^:not(:has-minimize) /template/ Button#PART_MinimizeButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:not(:has-maximize) /template/ Button#PART_MaximizeButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:not(:has-fullscreen) /template/ Button#PART_FullScreenButton">
+      <Setter Property="IsVisible" Value="False"/>
+    </Style>
+    <Style Selector="^:not(:has-fullscreen) /template/ Button#PART_PopoverFullScreenButton">
+      <Setter Property="IsVisible" Value="False"/>
     </Style>
 
     <!-- Fullscreen: hide overlay and titlebar (popover takes over) -->

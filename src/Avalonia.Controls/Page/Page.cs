@@ -27,6 +27,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Page, object?>(nameof(Header));
 
         /// <summary>
+        /// Defines the <see cref="HeaderTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
+            AvaloniaProperty.Register<Page, IDataTemplate?>(nameof(HeaderTemplate));
+
+        /// <summary>
         /// Defines the <see cref="Icon"/> property.
         /// </summary>
         public static readonly StyledProperty<object?> IconProperty =
@@ -56,7 +62,7 @@ namespace Avalonia.Controls
         public static readonly RoutedEvent<RoutedEventArgs> PageNavigationSystemBackButtonPressedEvent =
             RoutedEvent.Register<Page, RoutedEventArgs>(
                 nameof(PageNavigationSystemBackButtonPressed),
-                RoutingStrategies.Bubble);
+                RoutingStrategies.Direct);
 
         /// <summary>
         /// Defines the <see cref="Navigation"/> property.
@@ -69,18 +75,17 @@ namespace Avalonia.Controls
 
         static Page()
         {
-            PageNavigationSystemBackButtonPressedEvent.AddClassHandler<Page>((page, args) =>
-            {
-                if (!args.Handled && page.OnSystemBackButtonPressed())
-                {
-                    args.Handled = true;
-                    return;
-                }
-
-                page.CurrentPage?.RaiseEvent(args);
-            });
-
             AffectsMeasure<Page>(SafeAreaPaddingProperty);
+            PageNavigationSystemBackButtonPressedEvent.AddClassHandler<Page>((sender, eventArgs) =>
+            {
+                if (eventArgs.Handled)
+                    return;
+
+                if (sender.OnSystemBackButtonPressed())
+                {
+                    eventArgs.Handled = true;
+                }
+            });
         }
 
         /// <summary>
@@ -90,6 +95,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(HeaderProperty);
             set => SetValue(HeaderProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to display the header.
+        /// </summary>
+        public IDataTemplate? HeaderTemplate
+        {
+            get => GetValue(HeaderTemplateProperty);
+            set => SetValue(HeaderTemplateProperty, value);
         }
 
         /// <summary>

@@ -1,8 +1,9 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="using:ControlCatalog.ViewModels"
              xmlns:system="clr-namespace:System;assembly=System.Runtime"
              x:Class="ControlCatalog.Pages.NotificationsPage"
+             Header="Notifications"
              x:DataType="viewModels:NotificationViewModel">
   <DockPanel>
     <TextBlock DockPanel.Dock="Top"
@@ -25,4 +26,4 @@
       <WindowNotificationManager x:Name="ControlNotifications" />
     </Border>
   </DockPanel>
-</UserControl>
+</ContentPage>

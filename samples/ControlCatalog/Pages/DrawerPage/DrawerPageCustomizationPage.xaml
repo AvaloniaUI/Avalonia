@@ -72,6 +72,14 @@
           <ComboBoxItem Content="Purple" />
         </ComboBox>
 
+        <TextBlock Text="Header Template" FontSize="12" Opacity="0.7" />
+        <ComboBox x:Name="HeaderTemplateCombo" SelectedIndex="0"
+                  SelectionChanged="OnHeaderTemplateChanged" HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="None (direct control)" />
+          <ComboBoxItem Content="Banner" />
+          <ComboBoxItem Content="Avatar card" />
+        </ComboBox>
+
         <TextBlock Text="Footer Background" FontSize="12" Opacity="0.7" />
         <ComboBox x:Name="FooterBgCombo" SelectedIndex="0"
                   SelectionChanged="OnFooterBgChanged" HorizontalAlignment="Stretch">
@@ -80,6 +88,14 @@
           <ComboBoxItem Content="DarkSlateBlue" />
           <ComboBoxItem Content="DarkOliveGreen" />
           <ComboBoxItem Content="Maroon" />
+        </ComboBox>
+
+        <TextBlock Text="Footer Template" FontSize="12" Opacity="0.7" />
+        <ComboBox x:Name="FooterTemplateCombo" SelectedIndex="0"
+                  SelectionChanged="OnFooterTemplateChanged" HorizontalAlignment="Stretch">
+          <ComboBoxItem Content="None (direct control)" />
+          <ComboBoxItem Content="Version badge" />
+          <ComboBoxItem Content="Icon + label" />
         </ComboBox>
 
         <TextBlock Text="Drawer Icon" FontSize="12" Opacity="0.7" />

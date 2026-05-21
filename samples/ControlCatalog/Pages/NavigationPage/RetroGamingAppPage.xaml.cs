@@ -51,30 +51,11 @@ public partial class RetroGamingAppPage : UserControl
             _infoPanel.IsVisible = Bounds.Width >= 650;
     }
 
-    void ApplyHomeNavigationBarAppearance()
-    {
-        if (_nav == null)
-            return;
-
-        _nav.Resources["NavigationBarBackground"] = new SolidColorBrush(SurfaceColor);
-        _nav.Resources["NavigationBarForeground"] = new SolidColorBrush(CyanColor);
-    }
-
-    void ApplyDetailNavigationBarAppearance()
-    {
-        if (_nav == null)
-            return;
-
-        _nav.Resources["NavigationBarBackground"] = Brushes.Transparent;
-        _nav.Resources["NavigationBarForeground"] = new SolidColorBrush(CyanColor);
-    }
-
     ContentPage BuildHomePage()
     {
         var page = new ContentPage { Background = new SolidColorBrush(BgColor) };
         page.Header = BuildPixelArcadeLogo();
         NavigationPage.SetTopCommandBar(page, BuildNavBarRight());
-        ApplyHomeNavigationBarAppearance();
 
         var panel = new Panel();
         panel.Children.Add(BuildHomeTabbedPage());
@@ -193,7 +174,7 @@ public partial class RetroGamingAppPage : UserControl
         var homeTab = new ContentPage
         {
             Header     = "Home",
-            Icon       = Geometry.Parse("M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"),
+            Icon       = new PathIcon { Data = Geometry.Parse("M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z") },
             Background = new SolidColorBrush(BgColor),
             Content    = homeView,
         };
@@ -204,7 +185,7 @@ public partial class RetroGamingAppPage : UserControl
         var gamesTab = new ContentPage
         {
             Header     = "Games",
-            Icon       = Geometry.Parse("M7.97,16L5,19C4.67,19.3 4.23,19.5 3.75,19.5A1.75,1.75 0 0,1 2,17.75V17.5L3,10.12C3.21,7.81 5.14,6 7.5,6H16.5C18.86,6 20.79,7.81 21,10.12L22,17.5V17.75A1.75,1.75 0 0,1 20.25,19.5C19.77,19.5 19.33,19.3 19,19L16.03,16H7.97M7,9V11H5V13H7V15H9V13H11V11H9V9H7M14.5,12A1.5,1.5 0 0,0 13,13.5A1.5,1.5 0 0,0 14.5,15A1.5,1.5 0 0,0 16,13.5A1.5,1.5 0 0,0 14.5,12M17.5,9A1.5,1.5 0 0,0 16,10.5A1.5,1.5 0 0,0 17.5,12A1.5,1.5 0 0,0 19,10.5A1.5,1.5 0 0,0 17.5,9Z"),
+            Icon       = new PathIcon { Data = Geometry.Parse("M7.97,16L5,19C4.67,19.3 4.23,19.5 3.75,19.5A1.75,1.75 0 0,1 2,17.75V17.5L3,10.12C3.21,7.81 5.14,6 7.5,6H16.5C18.86,6 20.79,7.81 21,10.12L22,17.5V17.75A1.75,1.75 0 0,1 20.25,19.5C19.77,19.5 19.33,19.3 19,19L16.03,16H7.97M7,9V11H5V13H7V15H9V13H11V11H9V9H7M14.5,12A1.5,1.5 0 0,0 13,13.5A1.5,1.5 0 0,0 14.5,15A1.5,1.5 0 0,0 16,13.5A1.5,1.5 0 0,0 14.5,12M17.5,9A1.5,1.5 0 0,0 16,10.5A1.5,1.5 0 0,0 17.5,12A1.5,1.5 0 0,0 19,10.5A1.5,1.5 0 0,0 17.5,9Z") },
             Background = new SolidColorBrush(BgColor),
             Content    = gamesView,
         };
@@ -212,7 +193,7 @@ public partial class RetroGamingAppPage : UserControl
         var favTab = new ContentPage
         {
             Header     = "Favorites",
-            Icon       = Geometry.Parse("M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"),
+            Icon       = new PathIcon { Data = Geometry.Parse("M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z") },
             Background = new SolidColorBrush(BgColor),
             Content    = new RetroGamingFavoritesView(),
         };
@@ -220,7 +201,7 @@ public partial class RetroGamingAppPage : UserControl
         var profileTab = new ContentPage
         {
             Header     = "Profile",
-            Icon       = Geometry.Parse("M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"),
+            Icon       = new PathIcon { Data = Geometry.Parse("M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z") },
             Background = new SolidColorBrush(BgColor),
             Content    = new RetroGamingProfileView(),
         };
@@ -279,8 +260,7 @@ public partial class RetroGamingAppPage : UserControl
 
     async void PushDetailPage(string gameTitle)
     {
-        if (_nav == null)
-            return;
+        if (_nav == null) return;
 
         var detailView = new RetroGamingDetailView(gameTitle);
 
@@ -291,13 +271,8 @@ public partial class RetroGamingAppPage : UserControl
         };
 
         NavigationPage.SetBarLayoutBehavior(page, BarLayoutBehavior.Overlay);
-        page.Navigating += args =>
-        {
-            if (args.NavigationType == NavigationType.Pop)
-                ApplyHomeNavigationBarAppearance();
-
-            return Task.CompletedTask;
-        };
+        page.NavigatedTo   += (_, _) => { if (_nav != null) _nav.Resources["NavigationBarBackground"] = Brushes.Transparent; };
+        page.NavigatedFrom += (_, _) => { if (_nav != null) _nav.Resources["NavigationBarBackground"] = new SolidColorBrush(SurfaceColor); };
 
         var cmdBar = new StackPanel
         {
@@ -326,10 +301,6 @@ public partial class RetroGamingAppPage : UserControl
         cmdBar.Children.Add(shareBtn);
         NavigationPage.SetTopCommandBar(page, cmdBar);
 
-        ApplyDetailNavigationBarAppearance();
         await _nav.PushAsync(page);
-
-        if (!ReferenceEquals(_nav.CurrentPage, page))
-            ApplyHomeNavigationBarAppearance();
     }
 }

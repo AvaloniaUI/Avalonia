@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
@@ -107,15 +108,25 @@ namespace Avalonia.Controls
         private AvaloniaList<object>? _view;
 
         /// <summary>
-        /// Gets or sets a value to ignore a number of pending change handlers.
-        /// The value is decremented after each use. This is used to reset the
-        /// value of properties without performing any of the actions in their
-        /// change handlers.
+        /// Gets or sets a counter that tracks how many pending Text property change
+        /// notifications should be ignored. This is used when the Text property is set
+        /// programmatically and we want to suppress the corresponding change handlers.
+        /// The counter is decremented after each ignored notification.
         /// </summary>
-        /// <remarks>The int is important as a value because the TextBox
-        /// TextChanged event does not immediately fire, and this will allow for
-        /// nested property changes to be ignored.</remarks>
+        /// <remarks>
+        /// The counter is important because the TextBox TextChanged event does not fire
+        /// immediately; using a counter allows nested property changes to be ignored safely.
+        /// </remarks>
         private int _ignoreTextPropertyChange;
+
+        /// <summary>
+        /// Gets or sets a counter that tracks how many pending TextBox TextChanged
+        /// events should be ignored. This is distinct from <see cref="_ignoreTextPropertyChange"/>
+        /// and is used when the TextBox's TextChanged event needs to be suppressed
+        /// (e.g., during programmatic updates to the text box content).
+        /// The counter is decremented after each ignored event.
+        /// </summary>
+        private int _ignoreTextBoxTextChange;
 
         /// <summary>
         /// Gets or sets a value indicating whether to ignore calling a pending
@@ -371,6 +382,12 @@ namespace Avalonia.Controls
         /// <param name="e">Event arguments.</param>
         private void OnTextPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
+            if (_ignoreTextPropertyChange > 0)
+            {
+                _ignoreTextPropertyChange--;
+                return;
+            }
+
             TextUpdated((string?)e.NewValue, false);
         }
 
@@ -599,11 +616,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Returns the
-        /// <see cref="T:Avalonia.Controls.ISelectionAdapter" /> part, if
+        /// <see cref="T:ISelectionAdapter" /> part, if
         /// possible.
         /// </summary>
         /// <returns>
-        /// A <see cref="T:Avalonia.Controls.ISelectionAdapter" /> object,
+        /// A <see cref="T:ISelectionAdapter" /> object,
         /// if possible. Otherwise, null.
         /// </returns>
         protected virtual ISelectionAdapter? GetSelectionAdapterPart(INameScope nameScope)
@@ -665,7 +682,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Provides handling for the
-        /// <see cref="E:Avalonia.InputElement.KeyDown" /> event.
+        /// <see cref="E:InputElement.KeyDown" /> event.
         /// </summary>
         /// <param name="e">A <see cref="T:Avalonia.Input.KeyEventArgs" />
         /// that contains the event data.</param>
@@ -736,9 +753,9 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Provides handling for the
-        /// <see cref="E:Avalonia.UIElement.GotFocus" /> event.
+        /// <see cref="E:Avalonia.Controls.Control.GotFocus" /> event.
         /// </summary>
-        /// <param name="e">A <see cref="T:Avalonia.RoutedEventArgs" />
+        /// <param name="e">A <see cref="T:RoutedEventArgs" />
         /// that contains the event data.</param>
         protected override void OnGotFocus(FocusChangedEventArgs e)
         {
@@ -748,15 +765,17 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Provides handling for the
-        /// <see cref="E:Avalonia.UIElement.LostFocus" /> event.
+        /// <see cref="E:Avalonia.Controls.Control.LostFocus" /> event.
         /// </summary>
-        /// <param name="e">A <see cref="T:Avalonia.RoutedEventArgs" />
+        /// <param name="e">A <see cref="T:RoutedEventArgs" />
         /// that contains the event data.</param>
         protected override void OnLostFocus(FocusChangedEventArgs e)
         {
             base.OnLostFocus(e);
             FocusChanged(HasFocus());
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new AutoCompleteBoxAutomationPeer(this);
 
         /// <summary>
         /// Determines whether the text box or drop-down portion of the
@@ -958,7 +977,7 @@ namespace Avalonia.Controls
         /// event.
         /// </summary>
         /// <param name="e">A
-        /// <see cref="T:Avalonia.Controls.CancelEventArgs" />
+        /// <see cref="T:CancelEventArgs" />
         /// that contains the event data.</param>
         protected virtual void OnDropDownOpening(CancelEventArgs e)
         {
@@ -984,7 +1003,7 @@ namespace Avalonia.Controls
         /// event.
         /// </summary>
         /// <param name="e">A
-        /// <see cref="T:Avalonia.Controls.CancelEventArgs" />
+        /// <see cref="T:CancelEventArgs" />
         /// that contains the event data.</param>
         protected virtual void OnDropDownClosing(CancelEventArgs e)
         {
@@ -1226,6 +1245,12 @@ namespace Avalonia.Controls
         /// </summary>
         private void OnTextBoxTextChanged()
         {
+            if (_ignoreTextBoxTextChange > 0)
+            {
+                _ignoreTextBoxTextChange--;
+                return;
+            }
+
             //Uses Dispatcher.Post to allow the TextBox selection to update before processing
             Dispatcher.UIThread.Post(() =>
             {
@@ -1270,7 +1295,7 @@ namespace Avalonia.Controls
             // Update the TextBox's Text dependency property
             if ((userInitiated == null || userInitiated == false) && TextBox != null && TextBox.Text != value)
             {
-                _ignoreTextPropertyChange++;
+                _ignoreTextBoxTextChange++; 
                 TextBox.Text = value ?? string.Empty;
 
                 // Text dependency property value was set, fire event
@@ -1296,14 +1321,6 @@ namespace Avalonia.Controls
         /// TextUpdated method is called from a TextBox event handler.</param>
         private void TextUpdated(string? newText, bool userInitiated)
         {
-            // Only process this event if it is coming from someone outside
-            // setting the Text dependency property directly.
-            if (_ignoreTextPropertyChange > 0)
-            {
-                _ignoreTextPropertyChange--;
-                return;
-            }
-
             if (newText == null)
             {
                 newText = string.Empty;
@@ -1545,7 +1562,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Notifies the
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> that the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.Items" />
+        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
         /// property has been set and the data can be filtered to provide
         /// possible matches in the drop-down.
         /// </summary>

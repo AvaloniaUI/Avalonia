@@ -703,7 +703,7 @@ public partial class CareCompanionAppPage : UserControl
 
         var home = BuildHomeTab();
         home.Header = "Home";
-        home.Icon = Geometry.Parse("M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z");
+        home.Icon = new PathIcon { Data = Geometry.Parse("M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z") };
 
         tp.Pages = new ObservableCollection<Page>
         {
@@ -729,7 +729,7 @@ public partial class CareCompanionAppPage : UserControl
         => new ContentPage
         {
             Header = header,
-            Icon = Geometry.Parse(iconData),
+            Icon = new PathIcon { Data = Geometry.Parse(iconData) },
             Background = new SolidColorBrush(BgLight),
             Content = new StackPanel
             {

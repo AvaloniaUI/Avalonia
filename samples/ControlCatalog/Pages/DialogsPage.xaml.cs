@@ -12,7 +12,7 @@ using Avalonia.Platform.Storage;
 
 namespace ControlCatalog.Pages
 {
-    public partial class DialogsPage : UserControl
+    public partial class DialogsPage : ContentPage
     {
         public DialogsPage()
         {

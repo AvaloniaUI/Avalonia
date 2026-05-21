@@ -50,6 +50,7 @@
                      Foreground="{TemplateBinding Foreground}"
                      Background="Transparent"
                      Text="{TemplateBinding Text, Mode=TwoWay}"
+                     PlaceholderText="{TemplateBinding PlaceholderText}"
                      BorderThickness="0"
                      IsVisible="{TemplateBinding IsEditable}">
               <TextBox.Resources>

@@ -7,6 +7,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using Avalonia.Automation.Peers;
 using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -64,7 +65,7 @@ namespace Avalonia.Controls
         public event EventHandler? CalendarOpened;
 
         /// <summary>
-        /// Occurs when <see cref="P:Avalonia.Controls.DatePicker.Text" />
+        /// Occurs when <see cref="P:Avalonia.Controls.CalendarDatePicker.Text" />
         /// is assigned a value that cannot be interpreted as a date.
         /// </summary>
         public event EventHandler<CalendarDatePickerDateValidationErrorEventArgs>? DateValidationError;
@@ -194,6 +195,8 @@ namespace Avalonia.Controls
 
             UpdatePseudoClasses();
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new CalendarDatePickerAutomationPeer(this);
 
         /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

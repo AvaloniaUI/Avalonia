@@ -13,12 +13,12 @@
   <StreamGeometry x:Key="PipsPagerPreviousPageButtonVerticalData">M 2.29,8.12 L 7.00,3.41 C 7.27,3.14 7.71,3.14 7.98,3.41 L 12.69,8.12 C 13.14,8.57 12.82,9.33 12.19,9.33 L 2.79,9.33 C 2.16,9.33 1.84,8.57 2.29,8.12 Z</StreamGeometry>
   <StreamGeometry x:Key="PipsPagerNextPageButtonVerticalData">M 2.29,3.88 L 7.00,8.59 C 7.27,8.86 7.71,8.86 7.98,8.59 L 12.69,3.88 C 13.14,3.43 12.82,2.67 12.19,2.67 L 2.79,2.67 C 2.16,2.67 1.84,3.43 2.29,3.88 Z</StreamGeometry>
 
-  <!-- Base navigation button theme (for custom button styles to inherit from) -->
+  <!-- Base navigation button theme (for custom button themes to inherit from) -->
   <ControlTheme x:Key="PipsPagerNavigationButtonTheme" TargetType="Button">
-    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Background" Value="{DynamicResource PipsPagerNavigationButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForeground}" />
-    <Setter Property="BorderBrush" Value="Transparent" />
-    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="BorderBrush" Value="{DynamicResource PipsPagerNavigationButtonBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
     <Setter Property="Width" Value="24" />
     <Setter Property="Height" Value="24" />
     <Setter Property="Padding" Value="0" />
@@ -41,16 +41,20 @@
     </Setter>
 
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Background" Value="{DynamicResource PipsPagerNavigationButtonBackgroundPointerOver}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PipsPagerNavigationButtonBorderBrushPointerOver}" />
       <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPointerOver}" />
     </Style>
 
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Background" Value="{DynamicResource PipsPagerNavigationButtonBackgroundPressed}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PipsPagerNavigationButtonBorderBrushPressed}" />
       <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundPressed}" />
     </Style>
 
     <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource PipsPagerNavigationButtonBackgroundDisabled}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource PipsPagerNavigationButtonBorderBrushDisabled}" />
       <Setter Property="Foreground" Value="{DynamicResource PipsPagerNavigationButtonForegroundDisabled}" />
     </Style>
   </ControlTheme>
@@ -73,6 +77,21 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Background="Transparent">
+          <Ellipse Name="PipBackground"
+                   Width="10"
+                   Height="10"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Fill="{DynamicResource PipsPagerSelectionIndicatorBackground}"
+                   Stroke="{DynamicResource PipsPagerSelectionIndicatorBorderBrush}"
+                   StrokeThickness="1">
+            <Ellipse.Transitions>
+              <Transitions>
+                <BrushTransition Property="Fill" Duration="0:0:0.167" />
+                <BrushTransition Property="Stroke" Duration="0:0:0.167" />
+              </Transitions>
+            </Ellipse.Transitions>
+          </Ellipse>
           <Ellipse Name="Pip"
                    Width="4"
                    Height="4"
@@ -96,10 +115,18 @@
       <Setter Property="Height" Value="6" />
       <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPointerOver}" />
     </Style>
+    <Style Selector="^:pointerover /template/ Ellipse#PipBackground">
+      <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorBackgroundPointerOver}" />
+      <Setter Property="Stroke" Value="{DynamicResource PipsPagerSelectionIndicatorBorderBrushPointerOver}" />
+    </Style>
     <Style Selector="^:pressed /template/ Ellipse#Pip">
       <Setter Property="Width" Value="4" />
       <Setter Property="Height" Value="4" />
       <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPressed}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Ellipse#PipBackground">
+      <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorBackgroundPressed}" />
+      <Setter Property="Stroke" Value="{DynamicResource PipsPagerSelectionIndicatorBorderBrushPressed}" />
     </Style>
 
     <Style Selector="^:selected /template/ Ellipse#Pip">
@@ -107,13 +134,25 @@
       <Setter Property="Height" Value="6" />
       <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundSelected}" />
     </Style>
+    <Style Selector="^:selected /template/ Ellipse#PipBackground">
+      <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorBackgroundSelected}" />
+      <Setter Property="Stroke" Value="{DynamicResource PipsPagerSelectionIndicatorBorderBrushSelected}" />
+    </Style>
     <Style Selector="^:selected:pointerover /template/ Ellipse#Pip">
       <Setter Property="Width" Value="6" />
       <Setter Property="Height" Value="6" />
       <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundPointerOver}" />
     </Style>
+    <Style Selector="^:selected:pointerover /template/ Ellipse#PipBackground">
+      <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorBackgroundPointerOver}" />
+      <Setter Property="Stroke" Value="{DynamicResource PipsPagerSelectionIndicatorBorderBrushPointerOver}" />
+    </Style>
     <Style Selector="^:disabled /template/ Ellipse#Pip">
       <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorForegroundDisabled}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Ellipse#PipBackground">
+      <Setter Property="Fill" Value="{DynamicResource PipsPagerSelectionIndicatorBackgroundDisabled}" />
+      <Setter Property="Stroke" Value="{DynamicResource PipsPagerSelectionIndicatorBorderBrushDisabled}" />
     </Style>
   </ControlTheme>
 
@@ -122,8 +161,8 @@
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="IsTabStop" Value="False" />
-    <Setter Property="PreviousButtonStyle" Value="{StaticResource PipsPagerPreviousButtonTheme}" />
-    <Setter Property="NextButtonStyle" Value="{StaticResource PipsPagerNextButtonTheme}" />
+    <Setter Property="PreviousButtonTheme" Value="{StaticResource PipsPagerPreviousButtonTheme}" />
+    <Setter Property="NextButtonTheme" Value="{StaticResource PipsPagerNextButtonTheme}" />
     <Setter Property="Template">
       <ControlTemplate>
         <StackPanel Name="PART_RootPanel"
@@ -131,7 +170,7 @@
                     Background="{TemplateBinding Background}"
                     ClipToBounds="False">
           <Button Name="PART_PreviousButton"
-                  Theme="{TemplateBinding PreviousButtonStyle}"
+                  Theme="{TemplateBinding PreviousButtonTheme}"
                   IsVisible="{TemplateBinding IsPreviousButtonVisible}"
                   VerticalAlignment="Center"
                   HorizontalAlignment="Center">
@@ -168,7 +207,7 @@
           </ListBox>
 
           <Button Name="PART_NextButton"
-                  Theme="{TemplateBinding NextButtonStyle}"
+                  Theme="{TemplateBinding NextButtonTheme}"
                   IsVisible="{TemplateBinding IsNextButtonVisible}"
                   VerticalAlignment="Center"
                   HorizontalAlignment="Center">

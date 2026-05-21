@@ -100,11 +100,14 @@ void WindowImpl::ZOrderChildWindows()
 {
     for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
     {
-        auto window = (*iterator)->Window;
+        auto child = (*iterator).tryGet();
+        if (!child) continue;
+        
+        auto window = child->Window;
         
         // #9565: Only bring window to front if it's on the currently active space
         if ([window isOnActiveSpace]) {
-            (*iterator)->BringToFront();
+            child->BringToFront();
         }
     }
 }
@@ -113,7 +116,8 @@ bool WindowImpl::CanBecomeKeyWindow()
 {
     for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
     {
-        if((*iterator)->IsModal())
+        auto child = (*iterator).tryGet();
+        if(child && child->IsModal())
         {
             return false;
         }

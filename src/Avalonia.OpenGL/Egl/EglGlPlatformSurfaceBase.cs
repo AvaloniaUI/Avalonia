@@ -110,6 +110,9 @@ namespace Avalonia.OpenGL.Egl
             public bool IsYFlipped { get; }
         }
 
+        public virtual PlatformRenderTargetState State =>
+            IsCorrupted ? PlatformRenderTargetState.Corrupted : PlatformRenderTargetState.Ready;
+        
         public virtual bool IsCorrupted => Context.IsLost;
     }
 }

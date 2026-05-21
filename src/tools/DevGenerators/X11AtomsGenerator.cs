@@ -72,7 +72,7 @@ public class X11AtomsGenerator : IIncrementalGenerator
                     classBuilder.Pad(3).Append("\"").Append(writeableFields[c].Name).AppendLine("\",");
                 classBuilder.Pad(2).AppendLine("};");
                 
-                classBuilder.Pad(2).AppendLine("XInternAtoms(display, atomNames, atomNames.Length, true, atoms);");
+                classBuilder.Pad(2).AppendLine("XInternAtoms(display, atomNames, atomNames.Length, false, atoms);");
 
                 for (int c = 0; c < writeableFields.Count; c++)
                     classBuilder.Pad(2).Append("InitAtom(ref ").Append(writeableFields[c].Name).Append(", \"")
