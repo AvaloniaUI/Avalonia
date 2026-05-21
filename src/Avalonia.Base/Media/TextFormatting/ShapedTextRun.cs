@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Threading;
 using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Media.TextFormatting
@@ -6,9 +7,22 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// A text run that holds shaped characters.
     /// </summary>
+    /// <remarks>
+    /// Glyph data in the underlying <see cref="ShapedBuffer"/> is immutable after shaping:
+    /// LTR buffers are in ascending-cluster (logical) order, RTL buffers are in
+    /// descending-cluster (visual) order. <see cref="BidiReorderer"/> only reorders runs,
+    /// it never mutates glyph order.
+    ///
+    /// Ref-counted: the initial constructor call establishes one reference. Call
+    /// <see cref="AddRef"/> when taking an additional reference (e.g., when a
+    /// <see cref="TextRunCache"/> stores a shaped run a formatter is also about to use),
+    /// and <see cref="Dispose"/> to release. The underlying shaped buffer is disposed only
+    /// when the last reference is released.
+    /// </remarks>
     public sealed class ShapedTextRun : DrawableTextRun, IDisposable
     {
         private GlyphRun? _glyphRun;
+        private int _refCount = 1;
 
         public ShapedTextRun(ShapedBuffer shapedBuffer, TextRunProperties properties)
         {
@@ -16,8 +30,6 @@ namespace Avalonia.Media.TextFormatting
             Properties = properties;
             TextMetrics = new TextMetrics(properties.CachedGlyphTypeface, properties.FontRenderingEmSize);
         }
-
-        public bool IsReversed { get; private set; }
 
         public sbyte BidiLevel => ShapedBuffer.BidiLevel;
 
@@ -41,6 +53,15 @@ namespace Avalonia.Media.TextFormatting
         public override Size Size => GlyphRun.Bounds.Size;
 
         public GlyphRun GlyphRun => _glyphRun ??= CreateGlyphRun();
+
+        /// <summary>
+        /// Takes an additional reference to this run. Must be paired with <see cref="Dispose"/>.
+        /// </summary>
+        internal ShapedTextRun AddRef()
+        {
+            Interlocked.Increment(ref _refCount);
+            return this;
+        }
 
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point origin)
@@ -81,15 +102,6 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
-        internal void Reverse()
-        {
-            _glyphRun = null;
-
-            ShapedBuffer.Reverse();
-
-            IsReversed = !IsReversed;
-        }
-
         /// <summary>
         /// Measures the number of characters that fit into available width.
         /// </summary>
@@ -101,10 +113,23 @@ namespace Avalonia.Media.TextFormatting
         public bool TryMeasureCharacters(double availableWidth, out int length)
         {
             length = 0;
+
+            if (ShapedBuffer.Length == 0)
+            {
+                return false;
+            }
+
             var currentWidth = 0.0;
             var charactersSpan = GlyphRun.Characters.Span;
+            var isLeftToRight = ShapedBuffer.IsLeftToRight;
+            var bufferLength = ShapedBuffer.Length;
+            var textLength = Text.Length;
 
-            for (var i = 0; i < ShapedBuffer.Length; i++)
+            // Previous visual glyph's cluster — used in RTL mode to compute the char count
+            // contributed by the current glyph (which spans [currentCluster, prevCluster) logically).
+            var previousCluster = 0;
+
+            for (var i = 0; i < bufferLength; i++)
             {
                 var advance = ShapedBuffer[i].GlyphAdvance;
                 var currentCluster = ShapedBuffer[i].GlyphCluster;
@@ -114,23 +139,35 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                if(i + 1 < ShapedBuffer.Length)
+                int count;
+
+                if (isLeftToRight)
                 {
-                    var nextCluster = ShapedBuffer[i + 1].GlyphCluster;
-
-                    var count = nextCluster - currentCluster;
-
-                    length += count;
+                    if (i + 1 < bufferLength)
+                    {
+                        var nextCluster = ShapedBuffer[i + 1].GlyphCluster;
+                        count = nextCluster - currentCluster;
+                    }
+                    else
+                    {
+                        Codepoint.ReadAt(charactersSpan, length, out count);
+                    }
                 }
                 else
                 {
-                    Codepoint.ReadAt(charactersSpan, length, out var count);
-
-                    length += count;
+                    if (i == 0)
+                    {
+                        count = textLength - currentCluster;
+                    }
+                    else
+                    {
+                        count = previousCluster - currentCluster;
+                    }
                 }
 
-             
+                length += count;
                 currentWidth += advance;
+                previousCluster = currentCluster;
             }
 
             return length > 0;
@@ -162,20 +199,11 @@ namespace Avalonia.Media.TextFormatting
 
         internal SplitResult<ShapedTextRun> Split(int length)
         {
-            var isReversed = IsReversed;
-
-            if (isReversed)
-            {
-                Reverse();
-
-                length = Length - length;
-            }
-
             if (length == 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(length), "length must be greater than zero.");
             }
-       
+
             var splitBuffer = ShapedBuffer.Split(length);
 
             // first cannot be null as length > 0
@@ -188,19 +216,10 @@ namespace Avalonia.Media.TextFormatting
 
             if (splitBuffer.Second == null)
             {
-                // If there's no second part, return the entire run as the second in reversed mode, or throw
-                if (isReversed)
-                {
-                    return new SplitResult<ShapedTextRun>(null, first);
-                }
-                throw new InvalidOperationException($"Cannot split: requested length {length} consumes entire run.");
+                return new SplitResult<ShapedTextRun>(first, null);
             }
-            var second = new ShapedTextRun(splitBuffer.Second, Properties);
 
-            if (isReversed)
-            {
-                return new SplitResult<ShapedTextRun>(second, first);
-            }
+            var second = new ShapedTextRun(splitBuffer.Second, Properties);
 
             return new SplitResult<ShapedTextRun>(first, second);
         }
@@ -217,6 +236,11 @@ namespace Avalonia.Media.TextFormatting
 
         public void Dispose()
         {
+            if (Interlocked.Decrement(ref _refCount) != 0)
+            {
+                return;
+            }
+
             _glyphRun?.Dispose();
             ShapedBuffer.Dispose();
         }

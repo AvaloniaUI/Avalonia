@@ -43,6 +43,15 @@
                           IsHitTestVisible="False" />
               </MenuItem.Icon>
             </MenuItem>
+            <MenuItem GroupName="Radio-ableMenuItem"
+                      Header="Menu Item with _RadioButton1"
+                      IsChecked="True"
+                      StaysOpenOnClick="True"
+                      ToggleType="Radio" />
+            <MenuItem GroupName="Radio-ableMenuItem"
+                      Header="Menu Item with _RadioButton2"
+                      StaysOpenOnClick="True"
+                      ToggleType="Radio" />
             <MenuItem Header="Menu Item that won't close on click" StaysOpenOnClick="True" />
           </ContextMenu>
         </Border.ContextMenu>

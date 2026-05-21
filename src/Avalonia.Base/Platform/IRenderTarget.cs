@@ -32,6 +32,11 @@ namespace Avalonia.Platform
         /// </summary>
         PlatformRenderTargetState PlatformRenderTargetState => PlatformRenderTargetState.Ready;
         
-        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling);
+        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, Size LogicalSize)
+        {
+            public RenderTargetSceneInfo(PixelSize size, double scaling) : this(size, scaling, size.ToSize(scaling))
+            {
+            }
+        }
     }
 }

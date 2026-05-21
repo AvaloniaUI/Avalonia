@@ -30,7 +30,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             startType = extension.Type.GetClrType();
 
                             //let's try to infer StaticResource type from parent resources in xaml
-                            if (extension.Value.Type.GetClrType().FullName == "Avalonia.Markup.Xaml.MarkupExtensions.StaticResourceExtension" &&
+                            if (extension.Value.Type.GetClrType().Is("Avalonia.Markup.Xaml.MarkupExtensions", "StaticResourceExtension") &&
                                 extension.Value is XamlAstConstructableObjectNode cn &&
                                 cn.Arguments.Count == 1 && cn.Arguments[0] is XamlAstTextNode keyNode)
                             {
@@ -56,7 +56,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                     {
                                         if (propertyNode.Values.Count == 1 &&
                                             propertyNode.Values[0] is XamlAstConstructableObjectNode obj &&
-                                            obj.Type.GetClrType().FullName == "Avalonia.Controls.ResourceDictionary")
+                                            obj.Type.GetClrType().Is("Avalonia.Controls", "ResourceDictionary"))
                                         {
                                             foreach (var r in obj.Children.SelectMany(c => getResourceValues(c)))
                                             {
