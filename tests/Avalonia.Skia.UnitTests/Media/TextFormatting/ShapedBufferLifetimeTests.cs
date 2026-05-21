@@ -13,7 +13,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
     /// <see cref="ShapedBuffer.WithBidiLevel"/> produce child buffers that view into
     /// the owner's pool-rented array via <c>ArraySlice</c>. Without a shared
     /// ownership refcount, disposing the owner (which
-    /// <see cref="TextFormatterImpl.SplitTextRuns"/> does unconditionally) returned
+    /// <c>TextFormatterImpl.SplitTextRun</c> does unconditionally) returned
     /// the pool array while children still referenced it; later pool consumers
     /// could then corrupt those views' glyph data.
     ///
