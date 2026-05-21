@@ -460,6 +460,18 @@ partial class Build : NukeBuild
             file.GenerateCppHeader());
     });
 
+    Target GenerateUnicodeData => _ => _.Executes(() =>
+    {
+        var project = RootDirectory / "src" / "tools" / "Avalonia.UnicodeTrieGenerator"
+                      / "Avalonia.UnicodeTrieGenerator.csproj";
+        var output = RootDirectory / "src" / "Avalonia.Base" / "Media" / "TextFormatting" / "Unicode";
+        var cache = RootDirectory / "artifacts" / "ucd-cache";
+
+        DotNetRun(c => ApplySettingCore(c).Run
+            .SetProjectFile(project)
+            .AddApplicationArguments("--output", output, "--cache", cache));
+    });
+
     Target VerifyXamlCompilation => _ => _
         .DependsOn(CreateNugetPackages)
         .Executes(() =>
