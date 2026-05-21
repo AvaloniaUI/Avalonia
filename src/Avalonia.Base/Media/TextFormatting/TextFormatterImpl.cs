@@ -262,6 +262,7 @@ namespace Avalonia.Media.TextFormatting
 
                     var second = objectPool.TextRunLists.Rent();
                     var addedFirstLength = 0;
+                    int trailingLoopStart;
 
                     if (currentRun is ShapedTextRun shapedTextCharacters)
                     {
@@ -281,9 +282,33 @@ namespace Avalonia.Media.TextFormatting
                         // The split produced fresh ShapedTextRuns for each half, so the
                         // caller's reference to the original is no longer needed — release it.
                         shapedTextCharacters.Dispose();
+
+                        // currentRun is consumed by the split; the trailing loop adds the
+                        // runs *after* it.
+                        trailingLoopStart = 1;
+                    }
+                    else if (currentLength == 0)
+                    {
+                        // Non-splittable run at the very start of the list, asked to split
+                        // strictly inside it. Snapping before would leave first empty and
+                        // the wrap caller would loop forever — same situation as the wrap
+                        // algorithm's "include at least one cluster" overflow rule. Place
+                        // currentRun in first and let the line overflow.
+                        first.Add(currentRun);
+                        addedFirstLength = currentRunLength;
+                        trailingLoopStart = 1;
+                    }
+                    else
+                    {
+                        // Non-splittable run at the split point. Snap the boundary BEFORE
+                        // it: currentRun goes into second along with the remaining runs,
+                        // first ends at currentLength (shorter than requested but
+                        // content-preserving). Without this branch the run would be
+                        // dropped from both halves.
+                        trailingLoopStart = 0;
                     }
 
-                    for (var j = 1; j < secondCount; j++)
+                    for (var j = trailingLoopStart; j < secondCount; j++)
                     {
                         second.Add(textRuns[i + j]);
                     }

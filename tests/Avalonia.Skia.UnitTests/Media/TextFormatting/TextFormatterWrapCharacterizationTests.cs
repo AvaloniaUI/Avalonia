@@ -235,7 +235,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         // --- Sanity / regression --------------------------------------------
 
         [Fact]
-        public void Wrap_Empty_Text_Yields_Empty_Line()
+        public void Wrap_Empty_Text_Yields_Null()
         {
             using (TextFormatterTests.Start())
             {
