@@ -362,6 +362,90 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        // --- B9: TryMeasureCharacters/Backwards bidi contract ----------------
+        // These two methods walk the ShapedBuffer in visual order. For LTR the
+        // visual order equals the logical order, so the returned "length"
+        // (counted via cluster deltas) is the logical-leading / logical-trailing
+        // char count that callers want. For RTL the visual order is the
+        // logical-REVERSE order, so the cumulative width is measured for the
+        // wrong set of characters even though the COUNT happens to come out
+        // right for uniform-width fonts. The contract callers depend on:
+        //   * TryMeasureCharacters(budget) → largest N such that the LOGICAL
+        //     leading N characters fit within `budget`.
+        //   * TryMeasureCharactersBackwards(budget) → largest N such that the
+        //     LOGICAL trailing N characters fit within `budget`.
+        // We verify each by cross-checking the returned length against the
+        // cluster-cache-based logical width measurement.
+
+        [Theory]
+        [InlineData("Hello world abcdef", true)]
+        [InlineData("السلام عليكم ورحمة", false)]
+        public void TryMeasureCharacters_Returned_Length_Fits_Logical_Leading_In_Budget(string text, bool ltr)
+        {
+            using (TextFormatterTests.Start())
+            {
+                var dir = ltr ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+                var line = BuildLine(text, dir);
+                var shapedRun = line.TextRuns.OfType<ShapedTextRun>().FirstOrDefault();
+                Assert.NotNull(shapedRun);
+
+                var buffer = shapedRun!.ShapedBuffer;
+                var totalWidth = shapedRun.Size.Width;
+
+                // Probe at several budget points; the contract must hold at all of them.
+                for (var i = 1; i < 10; i++)
+                {
+                    var budget = totalWidth * i / 10;
+                    if (!shapedRun.TryMeasureCharacters(budget, out var measured) || measured <= 0)
+                    {
+                        continue;
+                    }
+
+                    // The width of the LOGICAL leading `measured` characters must fit
+                    // in `budget`. GetCharRangeWidth uses the cluster cache, which is
+                    // built in logical order for both directions.
+                    var actualLeadingWidth = buffer.GetCharRangeWidth(0, measured);
+
+                    Assert.True(actualLeadingWidth <= budget + 0.5,
+                        $"{dir}: budget={budget:F2}, measured={measured}, " +
+                        $"actual logical-leading width={actualLeadingWidth:F2}");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("Hello world abcdef", true)]
+        [InlineData("السلام عليكم ورحمة", false)]
+        public void TryMeasureCharactersBackwards_Returned_Length_Fits_Logical_Trailing_In_Budget(string text, bool ltr)
+        {
+            using (TextFormatterTests.Start())
+            {
+                var dir = ltr ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+                var line = BuildLine(text, dir);
+                var shapedRun = line.TextRuns.OfType<ShapedTextRun>().FirstOrDefault();
+                Assert.NotNull(shapedRun);
+
+                var buffer = shapedRun!.ShapedBuffer;
+                var totalWidth = shapedRun.Size.Width;
+                var textLength = shapedRun.Length;
+
+                for (var i = 1; i < 10; i++)
+                {
+                    var budget = totalWidth * i / 10;
+                    if (!shapedRun.TryMeasureCharactersBackwards(budget, out var measured, out _) || measured <= 0)
+                    {
+                        continue;
+                    }
+
+                    var actualTrailingWidth = buffer.GetCharRangeWidth(textLength - measured, textLength);
+
+                    Assert.True(actualTrailingWidth <= budget + 0.5,
+                        $"{dir}: budget={budget:F2}, measured={measured}, " +
+                        $"actual logical-trailing width={actualTrailingWidth:F2}");
+                }
+            }
+        }
+
         // --- B1: LogicalTextRunEnumerator ------------------------------------
 
         [Fact]

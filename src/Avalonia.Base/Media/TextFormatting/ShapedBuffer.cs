@@ -253,6 +253,102 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Finds the largest <c>N</c> such that the first <c>N</c> logical
+        /// characters of this sub-buffer fit within <paramref name="availableWidth"/>.
+        /// Cluster-atomic: a multi-glyph cluster either fits completely or not at
+        /// all. Returns 0 if <paramref name="availableWidth"/> is non-positive
+        /// or the first cluster's width already exceeds it.
+        /// </summary>
+        /// <remarks>
+        /// Walks the cluster cache (built in logical order for both LTR and RTL
+        /// buffers) via binary search, so each call is O(log clusters) and the
+        /// returned count is the correct logical-leading char count regardless
+        /// of the buffer's visual direction.
+        /// </remarks>
+        internal int FindLeadingCharCountWithinWidth(double availableWidth)
+        {
+            if (availableWidth <= 0)
+            {
+                return 0;
+            }
+
+            var prefix = _clusterPrefix ?? EnsureClusterCache();
+            var starts = _clusterStartChars!;
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            var basePrefix = prefix[startIdx];
+            var baseChar = starts[startIdx];
+
+            // Largest k in [0, count] with prefix[startIdx + k] - basePrefix <= availableWidth.
+            var lo = 0;
+            var hi = count;
+            while (lo < hi)
+            {
+                var mid = (lo + hi + 1) >> 1;
+                if (prefix[startIdx + mid] - basePrefix <= availableWidth)
+                {
+                    lo = mid;
+                }
+                else
+                {
+                    hi = mid - 1;
+                }
+            }
+
+            return starts[startIdx + lo] - baseChar;
+        }
+
+        /// <summary>
+        /// Finds the largest <c>N</c> such that the last <c>N</c> logical
+        /// characters of this sub-buffer fit within <paramref name="availableWidth"/>.
+        /// Cluster-atomic; <paramref name="consumedWidth"/> reports the actual
+        /// cumulative advance of those <c>N</c> chars.
+        /// </summary>
+        /// <remarks>
+        /// O(log clusters) via the cluster cache; direction-agnostic (cache is
+        /// always in logical order). The returned count is the logical-trailing
+        /// char count regardless of whether the buffer is LTR or RTL.
+        /// </remarks>
+        internal int FindTrailingCharCountWithinWidth(double availableWidth, out double consumedWidth)
+        {
+            consumedWidth = 0;
+
+            if (availableWidth <= 0)
+            {
+                return 0;
+            }
+
+            var prefix = _clusterPrefix ?? EnsureClusterCache();
+            var starts = _clusterStartChars!;
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            var endPrefix = prefix[startIdx + count];
+            var endChar = starts[startIdx + count];
+
+            // Smallest k in [0, count] with endPrefix - prefix[startIdx + k] <= availableWidth.
+            // (That cluster index marks where the trailing-fitting suffix starts.)
+            var lo = 0;
+            var hi = count;
+            while (lo < hi)
+            {
+                var mid = (lo + hi) >> 1;
+                if (endPrefix - prefix[startIdx + mid] <= availableWidth)
+                {
+                    hi = mid;
+                }
+                else
+                {
+                    lo = mid + 1;
+                }
+            }
+
+            consumedWidth = endPrefix - prefix[startIdx + lo];
+            return endChar - starts[startIdx + lo];
+        }
+
+        /// <summary>
         /// Returns the cumulative glyph advance for the logical character range
         /// <c>[<paramref name="startChar"/>, <paramref name="endChar"/>)</c>
         /// within this sub-buffer. Uses the cluster cache via binary search, so

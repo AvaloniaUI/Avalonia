@@ -110,90 +110,32 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// <c>true</c> if characters fit into the available width; otherwise, <c>false</c>.
         /// </returns>
+        /// <summary>
+        /// Returns the largest count of <b>logical leading</b> characters of this
+        /// run that fit within <paramref name="availableWidth"/>. Cluster-atomic
+        /// and direction-agnostic — for RTL runs the result is the count of chars
+        /// from the logical start (not the visually-leftmost chars, which would
+        /// be the logical tail).
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> if at least one character fits within
+        /// <paramref name="availableWidth"/>; otherwise <c>false</c>.
+        /// </returns>
         public bool TryMeasureCharacters(double availableWidth, out int length)
         {
-            length = 0;
-
-            if (ShapedBuffer.Length == 0)
-            {
-                return false;
-            }
-
-            var currentWidth = 0.0;
-            var charactersSpan = GlyphRun.Characters.Span;
-            var isLeftToRight = ShapedBuffer.IsLeftToRight;
-            var bufferLength = ShapedBuffer.Length;
-            var textLength = Text.Length;
-
-            // Previous visual glyph's cluster — used in RTL mode to compute the char count
-            // contributed by the current glyph (which spans [currentCluster, prevCluster) logically).
-            var previousCluster = 0;
-
-            for (var i = 0; i < bufferLength; i++)
-            {
-                var advance = ShapedBuffer[i].GlyphAdvance;
-                var currentCluster = ShapedBuffer[i].GlyphCluster;
-
-                if (currentWidth + advance > availableWidth)
-                {
-                    break;
-                }
-
-                int count;
-
-                if (isLeftToRight)
-                {
-                    if (i + 1 < bufferLength)
-                    {
-                        var nextCluster = ShapedBuffer[i + 1].GlyphCluster;
-                        count = nextCluster - currentCluster;
-                    }
-                    else
-                    {
-                        Codepoint.ReadAt(charactersSpan, length, out count);
-                    }
-                }
-                else
-                {
-                    if (i == 0)
-                    {
-                        count = textLength - currentCluster;
-                    }
-                    else
-                    {
-                        count = previousCluster - currentCluster;
-                    }
-                }
-
-                length += count;
-                currentWidth += advance;
-                previousCluster = currentCluster;
-            }
-
+            length = ShapedBuffer.FindLeadingCharCountWithinWidth(availableWidth);
             return length > 0;
         }
 
+        /// <summary>
+        /// Returns the largest count of <b>logical trailing</b> characters of
+        /// this run that fit within <paramref name="availableWidth"/>, along
+        /// with the cumulative advance they consume. Cluster-atomic and
+        /// direction-agnostic.
+        /// </summary>
         internal bool TryMeasureCharactersBackwards(double availableWidth, out int length, out double width)
         {
-            length = 0;
-            width = 0;
-            var charactersSpan = GlyphRun.Characters.Span;
-
-            for (var i = ShapedBuffer.Length - 1; i >= 0; i--)
-            {
-                var advance = ShapedBuffer[i].GlyphAdvance;
-
-                if (width + advance > availableWidth)
-                {
-                    break;
-                }
-
-                Codepoint.ReadAt(charactersSpan, length, out var count);
-
-                length += count;
-                width += advance;
-            }
-
+            length = ShapedBuffer.FindTrailingCharCountWithinWidth(availableWidth, out width);
             return length > 0;
         }
 
