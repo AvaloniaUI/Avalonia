@@ -458,8 +458,8 @@ namespace Avalonia.Build.Tasks
                                 .Methods.First(m => m.Name == document.TypeBuilderProvider.PopulateMethod.Name);
 
                             var designLoaderFieldType = typeSystem
-                                .GetType("System.Action`1")
-                                .MakeGenericType(typeSystem.GetType("System.Object"));
+                                .WellKnownTypes.GetActionOfT(1)
+                                .MakeGenericType(typeSystem.WellKnownTypes.Object);
 
                             var designLoaderFieldTypeReference = (GenericInstanceType)typeSystem.GetTypeReference(designLoaderFieldType);
                             designLoaderFieldTypeReference.GenericArguments[0] =
