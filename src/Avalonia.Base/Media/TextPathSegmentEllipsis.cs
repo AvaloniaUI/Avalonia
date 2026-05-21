@@ -352,7 +352,17 @@ namespace Avalonia.Media
                                 {
                                     var splitAt = shapedRun.Length - length;
 
-                                    (_, trimmedRun) = shapedRun.Split(splitAt);
+                                    if (splitAt > 0)
+                                    {
+                                        (_, trimmedRun) = shapedRun.Split(splitAt);
+                                    }
+                                    else if (length > 0)
+                                    {
+                                        // The whole run fits in the remaining budget — no split needed,
+                                        // use the run as-is. (Calling Split(0) throws.)
+                                        trimmedRun = shapedRun;
+                                    }
+                                    // else: length == 0 → nothing of this run survives; trimmedRun stays null.
                                 }
                             }
                         }
