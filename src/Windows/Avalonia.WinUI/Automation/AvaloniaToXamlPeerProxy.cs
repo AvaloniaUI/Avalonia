@@ -32,8 +32,6 @@ internal sealed partial class AvaloniaToXamlPeerProxy : XamlAutomationPeer
         _isEmbeddedRoot = peer is EmbeddableControlRootAutomationPeer;
         _uniqueId = "Avalonia.WinUI.Peer:" + System.Threading.Interlocked.Increment(ref s_nextId).ToString(
             System.Globalization.CultureInfo.InvariantCulture);
-
-        peer.ChildrenChanged += OnPeerChildrenChanged;
     }
 
     internal AvPeer Peer => _peer;
@@ -139,11 +137,5 @@ internal sealed partial class AvaloniaToXamlPeerProxy : XamlAutomationPeer
                 when _peer.GetProvider<global::Avalonia.Automation.Provider.IExpandCollapseProvider>() is not null => this,
             _ => null!,
         };
-    }
-
-    private void OnPeerChildrenChanged(object? sender, EventArgs e)
-    {
-        if (ListenerExists(AutomationEvents.StructureChanged))
-            RaiseAutomationEvent(AutomationEvents.StructureChanged);
     }
 }
