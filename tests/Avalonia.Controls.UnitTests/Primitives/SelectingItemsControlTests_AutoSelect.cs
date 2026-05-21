@@ -121,6 +121,82 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void First_Visible_Item_Should_Be_Selected_When_First_Container_Is_Hidden()
+        {
+            // Uses own-container items (Controls) so that IsVisible can be set before preparation.
+            var target = new TestSelector
+            {
+                ItemsSource = new object[]
+                {
+                    new ListBoxItem { Content = "hidden", IsVisible = false },
+                    new ListBoxItem { Content = "visible" },
+                },
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
+
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void First_Enabled_Item_Should_Be_Selected_When_First_Container_Is_Disabled()
+        {
+            var target = new TestSelector
+            {
+                ItemsSource = new object[]
+                {
+                    new ListBoxItem { Content = "disabled", IsEnabled = false },
+                    new ListBoxItem { Content = "enabled" },
+                },
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
+
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void First_Visible_Item_Should_Be_Selected_When_Container_Becomes_Hidden_During_Preparation()
+        {
+            // Regression test for https://github.com/AvaloniaUI/Avalonia/pull/20798
+            // Simulates a MVVM scenario where container visibility is set by a binding applied
+            // during PrepareContainerForItemOverride (e.g. an ItemContainerTheme). Verifies that
+            // selection lands on the first truly visible container rather than an unrealized item.
+            var target = new TestSelectorHidingFirstContainers(hiddenCount: 2)
+            {
+                ItemsSource = new[] { "item-0", "item-1", "item-2" },
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
+
+            Assert.Equal(2, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Selection_Should_Be_Cleared_When_All_Containers_Are_Hidden_During_Preparation()
+        {
+            // When all containers are made invisible during preparation (MVVM binding scenario),
+            // SelectedIndex must be -1 rather than the last container's index. Previously the
+            // selection would cascade to the last unrealized item and land on an invisible one.
+            var target = new TestSelectorHidingFirstContainers(hiddenCount: 3)
+            {
+                ItemsSource = new[] { "item-0", "item-1", "item-2" },
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.Presenter!.ApplyTemplate();
+
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
         public void AutoScrollToSelectedItem_Should_Work_When_Becoming_Visible()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
@@ -235,6 +311,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 CollectionChanged?.Invoke(
                     this,
                     new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+        }
+
+        /// <summary>
+        /// A selector with AlwaysSelected that hides the first N containers during preparation.
+        /// This simulates a MVVM scenario where an ItemContainerTheme binding sets
+        /// IsVisible=false on some containers.
+        /// </summary>
+        private class TestSelectorHidingFirstContainers : SelectingItemsControl
+        {
+            private readonly int _hiddenCount;
+
+            public TestSelectorHidingFirstContainers(int hiddenCount)
+            {
+                _hiddenCount = hiddenCount;
+            }
+
+            static TestSelectorHidingFirstContainers()
+            {
+                SelectionModeProperty.OverrideDefaultValue<TestSelectorHidingFirstContainers>(SelectionMode.AlwaysSelected);
+            }
+
+            protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)
+            {
+                base.PrepareContainerForItemOverride(container, item, index);
+                if (index < _hiddenCount)
+                    container.IsVisible = false;
             }
         }
         

@@ -1287,15 +1287,33 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// this method moves selection to first visible and enabled item.
+        /// Moves selection to the first visible and enabled item, considering only realized (prepared)
+        /// containers. If no such container exists, selection is cleared to -1 so that the next
+        /// valid container prepared in <see cref="ContainerForItemPreparedOverride"/> can pick it up.
         /// </summary>
         private void MoveSelectionToFirstVisibleAndEnabledItem()
         {
-            var index = GetFirstVisibleAndEnabledIndex();
-            if (index != -1 && index != SelectedIndex)
+            var index = GetFirstRealizedVisibleAndEnabledIndex();
+            if (index != SelectedIndex)
             {
                 SelectedIndex = index;
             }
+        }
+
+        /// <summary>
+        /// Finds the first realized (prepared) container that is both visible and enabled.
+        /// </summary>
+        /// <returns>The index of the first qualifying realized container, or -1 if none found.</returns>
+        private int GetFirstRealizedVisibleAndEnabledIndex()
+        {
+            var count = ItemCount;
+            for (var i = 0; i < count; i++)
+            {
+                var container = ContainerFromIndex(i);
+                if (container is { IsVisible: true, IsEnabled: true })
+                    return i;
+            }
+            return -1;
         }
 
         private void UpdateContainerSelection()
