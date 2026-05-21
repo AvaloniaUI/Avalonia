@@ -21,9 +21,16 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="factory">Factory function to create new instances.</param>
         /// <param name="validator">Optional validator to clean and validate objects before returning to the pool. Return false to discard the object.</param>
-        /// <param name="maxSize">Maximum number of objects to keep in the pool. Default is 32.</param>
+        /// <param name="maxSize">Maximum number of objects to keep in the pool. Must be at least 1. Default is 32.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="factory"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="maxSize"/> is less than 1.</exception>
         public ObjectPool(Func<T> factory, Func<T, bool>? validator = null, int maxSize = 32)
         {
+            if (maxSize < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxSize), maxSize, "maxSize must be at least 1.");
+            }
+
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _validator = validator;
             _maxSize = maxSize;
