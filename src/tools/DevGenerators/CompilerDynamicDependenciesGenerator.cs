@@ -55,7 +55,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
             foreach (var type in types)
             {
                 if (type is "System.Void" or "XamlX.XamlDebugHatch"
-                    || type.StartsWith("CompiledAvaloniaXaml"))
+                    || type.StartsWith("CompiledAvaloniaXaml")
+                    || type == "System.Diagnostics.CodeAnalysis.ExperimentalAttribute")
                 {
                     continue;
                 }

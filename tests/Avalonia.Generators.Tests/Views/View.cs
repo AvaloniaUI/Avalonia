@@ -41,6 +41,7 @@ public static class View
         var compilation = CSharpCompilation
             .Create("AvaloniaLib", options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
             .AddReferences(MetadataReference.CreateFromFile(typeof(string).Assembly.Location))
+            .AddReferences(MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location))
             .AddReferences(MetadataReference.CreateFromFile(typeof(IServiceProvider).Assembly.Location))
             .AddReferences(MetadataReference.CreateFromFile(typeof(ITypeDescriptorContext).Assembly.Location))
             .AddReferences(MetadataReference.CreateFromFile(typeof(ISupportInitialize).Assembly.Location))
