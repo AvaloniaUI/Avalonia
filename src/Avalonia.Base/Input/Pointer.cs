@@ -102,9 +102,32 @@ namespace Avalonia.Input
             if (Captured != null)
                 CaptureGestureRecognizer(null);
 
-            if(Captured == null && CapturedGestureRecognizer == null)
+            if (Captured == null && CapturedGestureRecognizer == null)
             {
                 IsGestureRecognitionSkipped = false;
+            }
+
+            // Update the cursor following the capture change
+            if (Type != PointerType.Touch)
+            {
+                var oldInputRoot = oldVisual?.PresentationSource?.InputRoot;
+                var newInputRoot = newVisual?.PresentationSource?.InputRoot;
+
+                if (oldInputRoot is not null)
+                {
+                    if (oldCapture == oldInputRoot.CursorElement)
+                    {
+                        if (oldInputRoot == newInputRoot)
+                            oldInputRoot.CursorElement = control;
+                        else
+                        {
+                            oldInputRoot.CursorElement = null;
+                            newInputRoot?.CursorElement = control;
+                        }
+                    }
+                }
+                else
+                    newInputRoot?.CursorElement = control;
             }
         }
 
