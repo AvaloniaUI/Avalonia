@@ -169,6 +169,12 @@ internal class AndroidStorageProvider : IStorageProvider
         return uris.Select(u => new AndroidStorageFile(_activity, u)).ToArray();
     }
 
+    public async Task<OpenFilePickerResult> OpenFilePickerWithResultAsync(FilePickerOpenOptions options)
+    {
+        var files = await OpenFilePickerAsync(options).ConfigureAwait(false);
+        return new OpenFilePickerResult { Files = files };
+    }
+
     public async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
     {
         var mimeTypes = options.FileTypeChoices?.Where(t => t != FilePickerFileTypes.All)

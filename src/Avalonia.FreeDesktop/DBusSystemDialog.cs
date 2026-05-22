@@ -70,63 +70,64 @@ namespace Avalonia.FreeDesktop
 
         public override bool CanPickFolder => _version >= 3;
 
-        public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
+        public override async Task<OpenFilePickerResult> OpenFilePickerWithResultAsync(FilePickerOpenOptions options)
         {
-            await using var parentLease = await AcquireParentLeaseAsync().ConfigureAwait(false);
-            var parentWindow = parentLease?.Handle ?? string.Empty;
-            ObjectPath objectPath;
-            var chooserOptions = new Dictionary<string, VariantValue>();
+            var (paths, selectedType) = await ShowFilePickerAsync(
+                options.SuggestedFileType,
+                options.SuggestedFileName,
+                options.SuggestedStartLocation,
+                options.FileTypeFilter,
+                options.Title,
+                options.AllowMultiple,
+                _fileChooser.OpenFileAsync)
+                .ConfigureAwait(false);
 
-            if (TryParseFilters(options.FileTypeFilter, options.SuggestedFileType, out var filters,
-                    out var currentFilter))
-            {
-                chooserOptions.Add("filters", filters);
-                if (currentFilter is { } filter)
-                    chooserOptions.Add("current_filter", filter);
-            }
+            var files = paths.Select(path => new BclStorageFile(new FileInfo(path))).ToArray();
 
-            if (options.SuggestedStartLocation?.TryGetLocalPath() is { } folderPath)
-                chooserOptions.Add("current_folder", VariantValue.Array(Encoding.UTF8.GetBytes(folderPath + "\0")));
-
-            chooserOptions.Add("multiple", VariantValue.Bool(options.AllowMultiple));
-
-            objectPath = await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
-
-            var request =
-                new OrgFreedesktopPortalRequestProxy(_connection, "org.freedesktop.portal.Desktop", objectPath);
-            var tsc = new TaskCompletionSource<string[]?>();
-            using var disposable = await request.WatchResponseAsync((e, x) =>
-            {
-                if (e is not null)
-                    tsc.TrySetException(e);
-                else
-                    tsc.TrySetResult(x.Results["uris"].GetArray<string>());
-            });
-
-            var uris = await tsc.Task ?? [];
-            return uris.Select(static path => new BclStorageFile(new FileInfo(new Uri(path).LocalPath))).ToList();
-        }
-
-        public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
-        {
-            var (file, _) = await SaveFilePickerCoreAsync(options).ConfigureAwait(false);
-            return file;
+            return new OpenFilePickerResult { Files = files, SelectedFileType = selectedType };
         }
 
         public override async Task<SaveFilePickerResult> SaveFilePickerWithResultAsync(FilePickerSaveOptions options)
         {
-            var (file, selectedType) = await SaveFilePickerCoreAsync(options).ConfigureAwait(false);
+            var (paths, selectedType) = await ShowFilePickerAsync(
+                options.SuggestedFileType,
+                options.SuggestedFileName,
+                options.SuggestedStartLocation,
+                options.FileTypeChoices,
+                options.Title,
+                null,
+                _fileChooser.SaveFileAsync)
+            .ConfigureAwait(false);
+
+            var path = paths.FirstOrDefault();
+
+            BclStorageFile? file;
+            if (path is null)
+                file = null;
+            else
+            {
+                // WSL2 freedesktop automatically adds extension from selected file type, but we can't pass "default ext". So apply it manually.
+                path = StorageProviderHelpers.NameWithExtension(path, options.DefaultExtension, selectedType);
+                file = new BclStorageFile(new FileInfo(path));
+            }
+
             return new SaveFilePickerResult { File = file, SelectedFileType = selectedType };
         }
 
-        private async Task<(IStorageFile? file, FilePickerFileType? selectedType)> SaveFilePickerCoreAsync(
-            FilePickerSaveOptions options)
+        private async Task<(string[] paths, FilePickerFileType? selectedType)> ShowFilePickerAsync(
+            FilePickerFileType? suggestedFileType,
+            string? suggestedFileName,
+            IStorageFolder? suggestedStartLocation,
+            IReadOnlyList<FilePickerFileType>? fileTypes,
+            string? title,
+            bool? allowMultiple,
+            Func<string, string, Dictionary<string, VariantValue>, Task<ObjectPath>> showAsync)
         {
             await using var parentLease = await AcquireParentLeaseAsync().ConfigureAwait(false);
             var parentWindow = parentLease?.Handle ?? string.Empty;
             ObjectPath objectPath;
             var chooserOptions = new Dictionary<string, VariantValue>();
-            if (TryParseFilters(options.FileTypeChoices, options.SuggestedFileType, out var filters,
+            if (TryParseFilters(fileTypes,suggestedFileType, out var filters,
                     out var currentFilter))
             {
                 chooserOptions.Add("filters", filters);
@@ -134,12 +135,14 @@ namespace Avalonia.FreeDesktop
                     chooserOptions.Add("current_filter", filter);
             }
 
-            if (options.SuggestedFileName is { } currentName)
-                chooserOptions.Add("current_name", VariantValue.String(currentName));
-            if (options.SuggestedStartLocation?.TryGetLocalPath() is { } folderPath)
+            if (suggestedFileName is not null)
+                chooserOptions.Add("current_name", VariantValue.String(suggestedFileName));
+            if (suggestedStartLocation?.TryGetLocalPath() is { } folderPath)
                 chooserOptions.Add("current_folder", VariantValue.Array(Encoding.UTF8.GetBytes(folderPath + "\0")));
+            if (allowMultiple.HasValue)
+                chooserOptions.Add("multiple", VariantValue.Bool(allowMultiple.Value));
 
-            objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions)
+            objectPath = await showAsync(parentWindow, title ?? string.Empty, chooserOptions)
                 .ConfigureAwait(false);
             var request =
                 new OrgFreedesktopPortalRequestProxy(_connection, "org.freedesktop.portal.Desktop", objectPath);
@@ -170,7 +173,7 @@ namespace Avalonia.FreeDesktop
                         // Reuse the file type objects from options
                         // so the consuming code can match exactly the
                         // file type selected instead of spawning one.
-                        selectedType = options.FileTypeChoices?.FirstOrDefault(type => type.Name == name && (
+                        selectedType = fileTypes?.FirstOrDefault(type => type.Name == name && (
                             (type.MimeTypes?.All(y => mimeTypes.Contains(y)) ?? false) ||
                             (type.Patterns?.All(y => patterns.Contains(y)) ?? false))) 
                             ?? new FilePickerFileType(name) { MimeTypes = mimeTypes, Patterns = patterns };
@@ -180,15 +183,9 @@ namespace Avalonia.FreeDesktop
                 }
             }).ConfigureAwait(false);
 
-            var uris = await tsc.Task.ConfigureAwait(false);
-            var path = uris?.FirstOrDefault() is { } filePath ? new Uri(filePath).LocalPath : null;
-
-            if (path is null)
-                return (null, selectedType);
-
-            // WSL2 freedesktop automatically adds extension from selected file type, but we can't pass "default ext". So apply it manually.
-            path = StorageProviderHelpers.NameWithExtension(path, options.DefaultExtension, selectedType);
-            return (new BclStorageFile(new FileInfo(path)), selectedType);
+            var uris = await tsc.Task.ConfigureAwait(false) ?? [];
+            var paths = uris.Select(uri => new Uri(uri).LocalPath).ToArray();
+            return (paths, selectedType);
         }
 
         public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
