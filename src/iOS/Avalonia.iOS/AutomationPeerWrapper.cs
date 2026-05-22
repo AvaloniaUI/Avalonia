@@ -199,20 +199,26 @@ namespace Avalonia.iOS
                 case AutomationControlType.Calendar:
                 case AutomationControlType.Custom:
                 case AutomationControlType.DataGrid:
+                case AutomationControlType.DataItem:
                 case AutomationControlType.Document:
                 case AutomationControlType.Expander:
                 case AutomationControlType.Group:
                 case AutomationControlType.Header:
+                case AutomationControlType.HeaderItem:
                 case AutomationControlType.List:
+                case AutomationControlType.ListItem:
                 case AutomationControlType.Menu:
                 case AutomationControlType.MenuBar:
+                case AutomationControlType.MenuItem:
                 case AutomationControlType.Pane:
                 case AutomationControlType.SplitButton:
                 case AutomationControlType.Tab:
+                case AutomationControlType.TabItem:
                 case AutomationControlType.Table:
                 case AutomationControlType.TitleBar:
                 case AutomationControlType.ToolBar:
                 case AutomationControlType.Tree:
+                case AutomationControlType.TreeItem:
                 case AutomationControlType.Window:
                     isContainerFlag = true;
                     break;
