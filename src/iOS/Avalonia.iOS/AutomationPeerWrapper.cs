@@ -196,15 +196,22 @@ namespace Avalonia.iOS
             bool isContainerFlag;
             switch (_peer.GetAutomationControlType())
             {
+                case AutomationControlType.Calendar:
                 case AutomationControlType.DataGrid:
                 case AutomationControlType.Document:
+                case AutomationControlType.Expander:
                 case AutomationControlType.Group:
+                case AutomationControlType.Header:
                 case AutomationControlType.List:
                 case AutomationControlType.Menu:
+                case AutomationControlType.MenuBar:
                 case AutomationControlType.Pane:
                 case AutomationControlType.Tab:
                 case AutomationControlType.Table:
+                case AutomationControlType.TitleBar:
+                case AutomationControlType.ToolBar:
                 case AutomationControlType.Tree:
+                case AutomationControlType.Window:
                     isContainerFlag = true;
                     break;
                 default:
