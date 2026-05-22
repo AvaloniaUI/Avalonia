@@ -88,8 +88,8 @@ internal partial class PresentationSource : IPresentationSource, IInputRoot, IDi
         PlatformImpl = null;
         _pointerOverPreProcessor?.OnCompleted();
         _pointerOverPreProcessorSubscription?.Dispose();
-        if (((IInputRoot)this).PointerOverElement is AvaloniaObject pointerOverElement)
-            pointerOverElement.PropertyChanged -= PointerOverElement_PropertyChanged;
+        if (((IInputRoot)this).CursorElement is AvaloniaObject cursorElement)
+            cursorElement.PropertyChanged -= CursorElement_PropertyChanged;
     }
     
     /// <summary>

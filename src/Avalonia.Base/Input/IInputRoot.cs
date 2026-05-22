@@ -22,6 +22,8 @@ namespace Avalonia.Input
         /// Gets or sets the input element that the pointer is currently over.
         /// </summary>
         internal IInputElement? PointerOverElement { get; set; }
+
+        internal IInputElement? CursorElement { get; set; }
         
         internal ITextInputMethodImpl? InputMethod { get; }
         

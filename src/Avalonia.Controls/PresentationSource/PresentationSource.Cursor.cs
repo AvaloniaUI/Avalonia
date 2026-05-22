@@ -24,21 +24,26 @@ internal partial class PresentationSource
         UpdateCursor();
     }
     
-    IInputElement? IInputRoot.PointerOverElement
+    IInputElement? IInputRoot.PointerOverElement { get; set; }
+
+    IInputElement? IInputRoot.CursorElement
     {
-        get => field;
+        get;
         set
         {
+            if (field == value)
+                return;
+
             if (field is AvaloniaObject old)
-                old.PropertyChanged -= PointerOverElement_PropertyChanged;
+                old.PropertyChanged -= CursorElement_PropertyChanged;
             field = value;
             if (field is AvaloniaObject @new)
-                @new.PropertyChanged += PointerOverElement_PropertyChanged;
+                @new.PropertyChanged += CursorElement_PropertyChanged;
             SetCursor(value?.Cursor);
         }
     }
 
-    private void PointerOverElement_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    private void CursorElement_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (e.Property == InputElement.CursorProperty)
             SetCursor((sender as IInputElement)?.Cursor);

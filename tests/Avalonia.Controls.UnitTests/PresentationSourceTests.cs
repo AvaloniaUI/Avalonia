@@ -147,7 +147,7 @@ public sealed class PresentationSourceTests : ScopedTestBase
     }
 
     [Fact]
-    public void Cursor_Should_Not_Change_While_Pointer_Is_Captured()
+    public void Cursor_Should_Not_Change_When_Pointer_Over_Changes_During_Capture()
     {
         using var app = UnitTestApplication.Start(
             TestServices.StyledWindow.With(inputManager: new InputManager()));
@@ -215,6 +215,11 @@ public sealed class PresentationSourceTests : ScopedTestBase
 
         Assert.Same(captured, pointer?.Captured);
         Assert.Same(cursorWhileCaptured, currentCursor);
+
+        // Changing the captured element's cursor should still work.
+        var newCursor = new Cursor(StandardCursorType.Hand);
+        captured.Cursor = newCursor;
+        Assert.Same(newCursor.PlatformImpl, currentCursor);
     }
 
     private static void Render(CompositorTestServices.ManualRenderTimer renderTimer)

@@ -74,6 +74,7 @@ namespace Avalonia.Skia.RenderTests
         public IFocusManager? FocusManager { get; }
         public IPlatformSettings? PlatformSettings { get; }
         public IInputElement? PointerOverElement { get; set; }
+        public IInputElement? CursorElement { get; set; }
         public ITextInputMethodImpl? InputMethod { get; }
         public InputElement RootElement => this;
         public InputElement FocusRoot => this;
