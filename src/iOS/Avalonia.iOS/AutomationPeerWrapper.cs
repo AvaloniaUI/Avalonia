@@ -206,6 +206,7 @@ namespace Avalonia.iOS
                 case AutomationControlType.Menu:
                 case AutomationControlType.MenuBar:
                 case AutomationControlType.Pane:
+                case AutomationControlType.SplitButton:
                 case AutomationControlType.Tab:
                 case AutomationControlType.Table:
                 case AutomationControlType.TitleBar:
