@@ -16,9 +16,16 @@ namespace Avalonia.Media
     /// they reference the same named instance and the same set of axis coordinates.
     /// </para>
     /// <para>
-    /// Construction is currently internal while public APIs that consume axis configuration
-    /// are still being wired up; pass <see cref="Default"/> or <c>null</c> from outside the
-    /// assembly to mean "no variation applied".
+    /// <see cref="FontVariationSettings"/> is typeface-agnostic: it holds normalized numbers
+    /// that the renderer maps to whichever axes the active font exposes. Axes that are not
+    /// present in the font are silently ignored, so the same settings object can be shared
+    /// across a variable-font family.
+    /// </para>
+    /// <para>
+    /// To construct settings from human-readable user-space axis values (e.g. <c>wght = 700</c>),
+    /// use <c>GlyphTypeface.CreateVariationSettings</c>; it reads the font's
+    /// <c>fvar</c>/<c>avar</c> tables and normalizes the values for you.
+    /// Use <see cref="FromCoordinates"/> directly only when the normalized values are already known.
     /// </para>
     /// </remarks>
     public sealed class FontVariationSettings : IEquatable<FontVariationSettings>
@@ -65,16 +72,23 @@ namespace Avalonia.Media
         /// Creates a <see cref="FontVariationSettings"/> from an axis-tag → normalized-coordinate
         /// map, optionally combined with a named-instance index.
         /// </summary>
-        /// <param name="normalizedCoordinates">Axis coordinates in <c>[-1.0, 1.0]</c>. The
+        /// <param name="normalizedCoordinates">
+        /// Axis coordinates in the OpenType-normalized range <c>[-1.0, 1.0]</c>. The
         /// dictionary is defensively copied; mutations to the caller's instance after this
-        /// call have no effect on the returned settings.</param>
+        /// call have no effect on the returned settings.
+        /// <para>
+        /// Prefer <c>GlyphTypeface.CreateVariationSettings</c> when you have
+        /// user-space axis values (e.g. <c>wght = 700</c>) — it normalizes them via the
+        /// font's <c>fvar</c>/<c>avar</c> tables automatically.
+        /// </para>
+        /// </param>
         /// <param name="instanceIndex">Optional named-instance index. Must be non-negative if set.</param>
         /// <exception cref="ArgumentNullException"><paramref name="normalizedCoordinates"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
         /// A coordinate value is <c>NaN</c> or outside <c>[-1, 1]</c>, or
         /// <paramref name="instanceIndex"/> is negative.
         /// </exception>
-        internal static FontVariationSettings FromCoordinates(
+        public static FontVariationSettings FromCoordinates(
             IReadOnlyDictionary<OpenTypeTag, float> normalizedCoordinates,
             int? instanceIndex = null)
         {
@@ -110,9 +124,14 @@ namespace Avalonia.Media
         /// Creates a <see cref="FontVariationSettings"/> that selects a named variation
         /// instance from the font's <c>fvar</c> table without any per-axis overrides.
         /// </summary>
+        /// <remarks>
+        /// The index is the zero-based position in the font's named-instance list.
+        /// Use <c>GlyphTypeface.VariationInstances</c> to enumerate the available
+        /// instances and their display names.
+        /// </remarks>
         /// <param name="instanceIndex">Index of the named instance. Must be non-negative.</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="instanceIndex"/> is negative.</exception>
-        internal static FontVariationSettings FromInstance(int instanceIndex)
+        public static FontVariationSettings FromInstance(int instanceIndex)
         {
             if (instanceIndex < 0)
             {
