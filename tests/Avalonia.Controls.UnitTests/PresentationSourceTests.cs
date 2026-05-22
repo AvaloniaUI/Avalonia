@@ -3,12 +3,16 @@ using Avalonia.Controls.Chrome;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
@@ -112,10 +116,7 @@ public sealed class PresentationSourceTests : ScopedTestBase
         };
 
         window.Show();
-
-        Dispatcher.CurrentDispatcher.RunJobs(null, TestContext.Current.CancellationToken);
-        renderTimer.TriggerTick();
-        Dispatcher.CurrentDispatcher.RunJobs(null, TestContext.Current.CancellationToken);
+        Render(renderTimer);
 
         var hitTestPoint = new Point(width / 2, height / 2);
 
@@ -143,5 +144,83 @@ public sealed class PresentationSourceTests : ScopedTestBase
                 new Setter(WindowDrawnDecorations.TemplateProperty, template)
             }
         };
+    }
+
+    [Fact]
+    public void Cursor_Should_Not_Change_While_Pointer_Is_Captured()
+    {
+        using var app = UnitTestApplication.Start(
+            TestServices.StyledWindow.With(inputManager: new InputManager()));
+
+        var captured = new Border
+        {
+            Background = Brushes.Red,
+            Width = 20,
+            Cursor = new Cursor(StandardCursorType.SizeWestEast)
+        };
+
+        var other = new Border
+        {
+            Background = Brushes.Blue,
+            Width = 100,
+            Cursor = new Cursor(StandardCursorType.Ibeam)
+        };
+
+        ICursorImpl? currentCursor = null;
+        var renderTimer = new CompositorTestServices.ManualRenderTimer();
+        var compositor = RendererMocks.CreateDummyCompositor(renderTimer);
+        var windowImpl = MockWindowingPlatform.CreateWindowMock(200, 100, compositor);
+        windowImpl
+            .Setup(w => w.SetCursor(It.IsAny<ICursorImpl?>()))
+            .Callback<ICursorImpl?>(cursor => currentCursor = cursor);
+
+        var window = new Window(windowImpl.Object)
+        {
+            Content = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Children = { captured, other }
+            }
+        };
+
+        IPointer? pointer = null;
+        captured.PointerPressed += (_, e) =>
+        {
+            e.Pointer.Capture(captured);
+            pointer = e.Pointer;
+        };
+
+        window.Show();
+        Render(renderTimer);
+
+        var mouse = new MouseDevice();
+        var root = window.PresentationSource;
+
+        // Press inside the first border: the pointer becomes captured and the cursor is its own.
+        windowImpl.Object.Input!(new RawPointerEventArgs(
+            mouse, 1, root, RawPointerEventType.LeftButtonDown, new Point(10, 50),
+            RawInputModifiers.LeftMouseButton));
+
+        Assert.Same(captured, pointer?.Captured);
+        Assert.Same(captured.Cursor!.PlatformImpl, currentCursor);
+        var cursorWhileCaptured = currentCursor;
+
+        // Drag over the other border. With the pointer still captured by the first border,
+        // PresentationSource.PointerOverElement changes (it becomes null), but the displayed
+        // cursor must keep coming from the captured element rather than following the new
+        // PointerOverElement.
+        windowImpl.Object.Input!(new RawPointerEventArgs(
+            mouse, 2, root, RawPointerEventType.Move, new Point(60, 50),
+            RawInputModifiers.LeftMouseButton));
+
+        Assert.Same(captured, pointer?.Captured);
+        Assert.Same(cursorWhileCaptured, currentCursor);
+    }
+
+    private static void Render(CompositorTestServices.ManualRenderTimer renderTimer)
+    {
+        Dispatcher.CurrentDispatcher.RunJobs(null, TestContext.Current.CancellationToken);
+        renderTimer.TriggerTick();
+        Dispatcher.CurrentDispatcher.RunJobs(null, TestContext.Current.CancellationToken);
     }
 }
