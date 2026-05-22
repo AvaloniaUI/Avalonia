@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
@@ -13,6 +14,35 @@ namespace Avalonia.iOS
 {
     public class AutomationPeerWrapper : UIAccessibilityElement, IUIAccessibilityContainer
     {
+        private static readonly ImmutableHashSet<AutomationControlType> s_containerTypes =
+        [
+            AutomationControlType.Calendar,
+            AutomationControlType.Custom,
+            AutomationControlType.DataGrid,
+            AutomationControlType.DataItem,
+            AutomationControlType.Document,
+            AutomationControlType.Expander,
+            AutomationControlType.Group,
+            AutomationControlType.Header,
+            AutomationControlType.HeaderItem,
+            AutomationControlType.List,
+            AutomationControlType.ListItem,
+            AutomationControlType.Menu,
+            AutomationControlType.MenuBar,
+            AutomationControlType.MenuItem,
+            AutomationControlType.Pane,
+            AutomationControlType.SplitButton,
+            AutomationControlType.Tab,
+            AutomationControlType.TabItem,
+            AutomationControlType.Table,
+            AutomationControlType.TitleBar,
+            AutomationControlType.ToolBar,
+            AutomationControlType.Tree,
+            AutomationControlType.TreeItem,
+            AutomationControlType.Window,
+        ];
+
+
         private static readonly IReadOnlyDictionary<AutomationProperty, Action<AutomationPeerWrapper>> s_propertySetters =
             new Dictionary<AutomationProperty, Action<AutomationPeerWrapper>>()
             {
@@ -34,8 +64,14 @@ namespace Avalonia.iOS
         private readonly List<AutomationPeer?> _childrenList;
         private readonly Dictionary<AutomationPeer, AutomationPeerWrapper> _childrenMap;
 
-        [Export("accessibilityContainerType")]
-        public UIAccessibilityContainerType AccessibilityContainerType { get; set; }
+        private bool IsContainer
+        {
+            get
+            {
+                AutomationControlType controlType = _peer.GetAutomationControlType();
+                return s_containerTypes.Contains(controlType);
+            }
+        }
 
         private AutomationPeerWrapper(AutomationPeerWrapper parent, AvaloniaView view, AutomationPeer peer) : base(parent)
         {
@@ -88,6 +124,9 @@ namespace Avalonia.iOS
             int indexOf = _childrenList.IndexOf((element as AutomationPeerWrapper)?._peer);
             return indexOf < 0 ? NSRange.NotFound : indexOf;
         }
+
+        [Export("accessibilityContainerType")]
+        public UIAccessibilityContainerType AccessibilityContainerType { get; set; }
 
         void UpdateChildren()
         {
@@ -193,48 +232,18 @@ namespace Avalonia.iOS
         {
             UpdateProperties(s_propertySetters.Keys.ToArray());
 
-            bool isContainerFlag;
-            switch (_peer.GetAutomationControlType())
-            {
-                case AutomationControlType.Calendar:
-                case AutomationControlType.Custom:
-                case AutomationControlType.DataGrid:
-                case AutomationControlType.DataItem:
-                case AutomationControlType.Document:
-                case AutomationControlType.Expander:
-                case AutomationControlType.Group:
-                case AutomationControlType.Header:
-                case AutomationControlType.HeaderItem:
-                case AutomationControlType.List:
-                case AutomationControlType.ListItem:
-                case AutomationControlType.Menu:
-                case AutomationControlType.MenuBar:
-                case AutomationControlType.MenuItem:
-                case AutomationControlType.Pane:
-                case AutomationControlType.SplitButton:
-                case AutomationControlType.Tab:
-                case AutomationControlType.TabItem:
-                case AutomationControlType.Table:
-                case AutomationControlType.TitleBar:
-                case AutomationControlType.ToolBar:
-                case AutomationControlType.Tree:
-                case AutomationControlType.TreeItem:
-                case AutomationControlType.Window:
-                    isContainerFlag = true;
-                    break;
-                default:
-                    isContainerFlag = false;
-                    break;
-            }
+            AutomationControlType controlType = _peer.GetAutomationControlType();
+            bool isContainer = s_containerTypes.Contains(controlType);
+            bool isOffscreen = _peer.IsOffscreen();
 
-            if (_peer.IsOffscreen())
-            {
-                AccessibilityContainerType = UIAccessibilityContainerType.None;
-                IsAccessibilityElement = false;
-            }
-            else if (isContainerFlag)
+            if (isContainer)
             {
                 AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
+                IsAccessibilityElement = false;
+            }
+            else if (isOffscreen)
+            {
+                AccessibilityContainerType = UIAccessibilityContainerType.None;
                 IsAccessibilityElement = false;
             }
             else
