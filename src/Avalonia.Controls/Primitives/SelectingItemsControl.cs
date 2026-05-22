@@ -1178,11 +1178,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             ClearPendingAutoScroll();
-            Dispatcher.UIThread.Post(state =>
-            {
-                ScrollIntoView((int)state!);
-                _hasScrolledToSelectedItem = true;
-            }, anchorIndex);
+            ScrollToAnchorIndex(anchorIndex);
         }
 
         private void OnIsEffectivelyVisibleChangedForAutoScroll(object? sender, EventArgs e)
@@ -1193,17 +1189,22 @@ namespace Avalonia.Controls.Primitives
             }
 
             ClearPendingAutoScroll();
-            Dispatcher.UIThread.Post(state =>
-            {
-                ScrollIntoView((int)state!);
-                _hasScrolledToSelectedItem = true;
-            }, anchorIndex);
+            ScrollToAnchorIndex(anchorIndex);
         }
 
         private void ClearPendingAutoScroll()
         {
             _pendingAutoScrollAnchorIndex = null;
             IsEffectivelyVisibleChanged -= OnIsEffectivelyVisibleChangedForAutoScroll;
+        }
+
+        private void ScrollToAnchorIndex(int anchorIndex)
+        {
+            Dispatcher.UIThread.Post(state =>
+            {
+                ScrollIntoView((int)state!);
+                _hasScrolledToSelectedItem = true;
+            }, anchorIndex);
         }
 
         /// <summary>
@@ -1562,4 +1563,3 @@ namespace Avalonia.Controls.Primitives
         }
     }
 }
-
