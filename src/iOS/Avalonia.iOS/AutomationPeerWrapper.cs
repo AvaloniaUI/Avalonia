@@ -197,6 +197,7 @@ namespace Avalonia.iOS
             switch (_peer.GetAutomationControlType())
             {
                 case AutomationControlType.Calendar:
+                case AutomationControlType.Custom:
                 case AutomationControlType.DataGrid:
                 case AutomationControlType.Document:
                 case AutomationControlType.Expander:
