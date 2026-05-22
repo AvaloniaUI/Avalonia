@@ -219,7 +219,7 @@ namespace Avalonia.Win32
         {
             get
             {
-                if (HasFullDecorations)
+                if (HasBorder)
                 {
                     var style = GetStyle();
                     var exStyle = GetExtendedStyle();
@@ -547,6 +547,7 @@ namespace Avalonia.Win32
         }
 
         private bool HasFullDecorations => _windowProperties.Decorations == WindowDecorations.Full;
+        private bool HasBorder => _windowProperties.Decorations != WindowDecorations.None;
 
 
         public void Move(PixelPoint point) => Position = point;
