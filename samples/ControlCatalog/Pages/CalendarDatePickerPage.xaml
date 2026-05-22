@@ -51,7 +51,7 @@
         <CalendarDatePicker SelectedDate="{CompiledBinding ValidatedDateExample, Mode=TwoWay}"/>
         
         <TextBlock Text="Show WeekNumbers" />
-        <CalendarDatePicker ShowWeekNumbers="True" 
+        <CalendarDatePicker IsWeekNumberVisible="True" 
                             FirstDayOfWeek="Monday"
                             WeekNumberRule="FirstFourDayWeek" />
       </StackPanel>

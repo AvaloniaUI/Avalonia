@@ -51,7 +51,7 @@
       <StackPanel>
         <TextBlock Text="Weeknumbers"/>
         <Calendar SelectionMode="SingleDate"
-                  ShowWeekNumbers="True"
+                  IsWeekNumberVisible="True"
                   WeekNumberHeader="CW" />
       </StackPanel>
     </WrapPanel>
