@@ -79,6 +79,7 @@ namespace Avalonia.iOS
             if (_isContainer = s_containerTypes.Contains(controlType))
             {
                 AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
+                IsAccessibilityElement = false;
             }
 
             _childrenList = new();
@@ -97,6 +98,7 @@ namespace Avalonia.iOS
             if (_isContainer = s_containerTypes.Contains(controlType))
             {
                 AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
+                IsAccessibilityElement = false;
             }
 
             _childrenList = new();
@@ -238,8 +240,10 @@ namespace Avalonia.iOS
         public void UpdateAllProperties()
         {
             UpdateProperties(s_propertySetters.Keys.ToArray());
-            IsAccessibilityElement = !_isContainer &&
-                !_peer.IsOffscreen() && _peer.IsControlElement();
+            if (!_isContainer)
+            {
+                IsAccessibilityElement = !_peer.IsOffscreen() && _peer.IsControlElement();
+            }
         }
 
         public void UpdateTraits()
