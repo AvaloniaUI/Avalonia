@@ -58,19 +58,11 @@ namespace Avalonia.Headless
         /// Forces renderer to process a rendering timer tick.
         /// Use this method before calling <see cref="HeadlessWindowExtensions.GetLastRenderedFrame"/>. 
         /// </summary>
+        /// <remarks>
+        /// This method is only usable when headless platform is initialized with <see cref="AvaloniaHeadlessPlatformOptions.ShouldRenderOnUIThread"/> set to true.
+        /// </remarks>
         /// <param name="count">Count of frames to be ticked on the timer.</param>
-        /// <exception cref="NotSupportedException">Thrown when the current render timer setup doesn't support forcing ticks.</exception>
-        public static void ForceRenderTimerTick(int count = 1)
-        {
-            if (s_renderTimer is SleepLoopRenderTimer)
-                throw new NotSupportedException(
-                    "Can't force render timer tick with current setup." +
-                    "Set ShouldRenderOnUIThread to true in AvaloniaHeadlessPlatformOptions to enable ForceRenderTimerTick.");
-
-            ForceRenderTimerTickCore();
-        }
-
-        internal static void ForceRenderTimerTickCore(int count = 1)
+        internal static void ForceRenderTimerTick(int count = 1)
         {
             if (s_renderTimer is not HeadlessRenderTimer timer)
             {

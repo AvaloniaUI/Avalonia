@@ -140,7 +140,7 @@ public static class HeadlessWindowExtensions
             for (var i = 0; i < 10; i++)
             {
                 dispatcher.RunJobs();
-                AvaloniaHeadlessPlatform.ForceRenderTimerTickCore();
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick();
 
                 if (!dispatcher.HasJobsWithPriority(DispatcherPriority.MinimumActiveValue))
                     return;
