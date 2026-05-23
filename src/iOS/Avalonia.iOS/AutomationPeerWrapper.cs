@@ -237,11 +237,9 @@ namespace Avalonia.iOS
 
         public void UpdateAllProperties()
         {
-            if (!_isContainer)
-            {
-                UpdateProperties(s_propertySetters.Keys.ToArray());
-                IsAccessibilityElement = !_peer.IsOffscreen() && _peer.IsControlElement();
-            }
+            UpdateProperties(s_propertySetters.Keys.ToArray());
+            IsAccessibilityElement = !_isContainer &&
+                !_peer.IsOffscreen() && _peer.IsControlElement();
         }
 
         public void UpdateTraits()
