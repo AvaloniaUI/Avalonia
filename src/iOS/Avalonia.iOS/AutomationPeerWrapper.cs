@@ -17,6 +17,7 @@ namespace Avalonia.iOS
         private static readonly ImmutableHashSet<AutomationControlType> s_containerTypes =
         [
             AutomationControlType.Calendar,
+            AutomationControlType.ComboBoxItem,
             AutomationControlType.Custom,
             AutomationControlType.DataGrid,
             AutomationControlType.DataItem,
@@ -43,35 +44,28 @@ namespace Avalonia.iOS
         ];
 
 
-        private static readonly IReadOnlyDictionary<AutomationProperty, Action<AutomationPeerWrapper>> s_propertySetters =
-            new Dictionary<AutomationProperty, Action<AutomationPeerWrapper>>()
-            {
-                { AutomationElementIdentifiers.NameProperty, UpdateName },
-                { AutomationElementIdentifiers.HelpTextProperty, UpdateHelpText },
-                { AutomationElementIdentifiers.BoundingRectangleProperty, UpdateBoundingRectangle },
+        private static readonly ImmutableDictionary<AutomationProperty, Action<AutomationPeerWrapper>> s_propertySetters =
+        [
+            new(AutomationElementIdentifiers.NameProperty, UpdateName),
+            new(AutomationElementIdentifiers.HelpTextProperty, UpdateHelpText),
+            new(AutomationElementIdentifiers.BoundingRectangleProperty, UpdateBoundingRectangle),
 
-                { RangeValuePatternIdentifiers.IsReadOnlyProperty, UpdateIsReadOnly },
-                { RangeValuePatternIdentifiers.ValueProperty, UpdateValue },
+            new(RangeValuePatternIdentifiers.IsReadOnlyProperty, UpdateIsReadOnly),
+            new(RangeValuePatternIdentifiers.ValueProperty, UpdateValue),
 
-                { ValuePatternIdentifiers.IsReadOnlyProperty, UpdateIsReadOnly },
-                { ValuePatternIdentifiers.ValueProperty, UpdateValue },
-            };
+            new(ValuePatternIdentifiers.IsReadOnlyProperty, UpdateIsReadOnly),
+            new(ValuePatternIdentifiers.ValueProperty, UpdateValue),
+        ];
 
         private readonly AvaloniaView _view;
 
         private readonly AutomationPeer _peer;
 
         private readonly List<AutomationPeer?> _childrenList;
+
         private readonly Dictionary<AutomationPeer, AutomationPeerWrapper> _childrenMap;
 
-        private bool IsContainer
-        {
-            get
-            {
-                AutomationControlType controlType = _peer.GetAutomationControlType();
-                return s_containerTypes.Contains(controlType);
-            }
-        }
+        private readonly bool _isContainer;
 
         private AutomationPeerWrapper(AutomationPeerWrapper parent, AvaloniaView view, AutomationPeer peer) : base(parent)
         {
@@ -80,6 +74,12 @@ namespace Avalonia.iOS
             _peer = peer;
             _peer.ChildrenChanged += PeerChildrenChanged;
             _peer.PropertyChanged += PeerPropertyChanged;
+
+            AutomationControlType controlType = _peer.GetAutomationControlType();
+            if (_isContainer = s_containerTypes.Contains(controlType))
+            {
+                AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
+            }
 
             _childrenList = new();
             _childrenMap = new();
@@ -92,6 +92,12 @@ namespace Avalonia.iOS
             _peer = peer;
             _peer.ChildrenChanged += PeerChildrenChanged;
             _peer.PropertyChanged += PeerPropertyChanged;
+
+            AutomationControlType controlType = _peer.GetAutomationControlType();
+            if (_isContainer = s_containerTypes.Contains(controlType))
+            {
+                AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
+            }
 
             _childrenList = new();
             _childrenMap = new();
@@ -136,16 +142,17 @@ namespace Avalonia.iOS
             foreach (AutomationPeer child in _peer.GetChildren())
             {
                 AutomationPeerWrapper? wrapper;
-                if (!_childrenMap.TryGetValue(child, out wrapper) && !child.IsOffscreen())
+                if (child.IsOffscreen())
+                {
+                    _childrenList.Remove(child);
+                    _childrenMap.Remove(child);
+                    continue;
+                }
+                else if (!_childrenMap.TryGetValue(child, out wrapper))
                 {
                     wrapper = new(this, _view, child);
                     _childrenList.Add(child);
                     _childrenMap.Add(child, wrapper);
-                }
-                else if (child.IsOffscreen())
-                {
-                    _childrenList.Remove(child);
-                    _childrenMap.Remove(child);
                 }
 
                 wrapper?.UpdateAllProperties();
@@ -230,26 +237,10 @@ namespace Avalonia.iOS
 
         public void UpdateAllProperties()
         {
-            UpdateProperties(s_propertySetters.Keys.ToArray());
-
-            AutomationControlType controlType = _peer.GetAutomationControlType();
-            bool isContainer = s_containerTypes.Contains(controlType);
-            bool isOffscreen = _peer.IsOffscreen();
-
-            if (isContainer)
+            if (!_isContainer)
             {
-                AccessibilityContainerType = UIAccessibilityContainerType.SemanticGroup;
-                IsAccessibilityElement = false;
-            }
-            else if (isOffscreen)
-            {
-                AccessibilityContainerType = UIAccessibilityContainerType.None;
-                IsAccessibilityElement = false;
-            }
-            else
-            {
-                AccessibilityContainerType = UIAccessibilityContainerType.None;
-                IsAccessibilityElement = _peer.IsControlElement();
+                UpdateProperties(s_propertySetters.Keys.ToArray());
+                IsAccessibilityElement = !_peer.IsOffscreen() && _peer.IsControlElement();
             }
         }
 
