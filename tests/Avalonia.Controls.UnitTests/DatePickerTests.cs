@@ -371,6 +371,24 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
+        [Theory]
+        [InlineData(Avalonia.Layout.VerticalAlignment.Top)]
+        [InlineData(Avalonia.Layout.VerticalAlignment.Center)]
+        [InlineData(Avalonia.Layout.VerticalAlignment.Bottom)]
+        [InlineData(Avalonia.Layout.VerticalAlignment.Stretch)]
+        public void VerticalContentAlignment_RoundTrips(Avalonia.Layout.VerticalAlignment value)
+        {
+            var datePicker = new DatePicker { VerticalContentAlignment = value };
+            Assert.Equal(value, datePicker.VerticalContentAlignment);
+        }
+
+        [Fact]
+        public void VerticalContentAlignment_Default_Is_Stretch()
+        {
+            var datePicker = new DatePicker();
+            Assert.Equal(Avalonia.Layout.VerticalAlignment.Stretch, datePicker.VerticalContentAlignment);
+        }
+
         private static IControlTemplate CreatePickerTemplate()
         {
             return new FuncControlTemplate((_, scope) =>

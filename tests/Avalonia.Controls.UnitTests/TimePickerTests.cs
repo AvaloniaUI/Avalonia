@@ -466,5 +466,23 @@ namespace Avalonia.Controls.UnitTests
                 return contentPanel;
             });
         }
+
+        [Theory]
+        [InlineData(Avalonia.Layout.VerticalAlignment.Top)]
+        [InlineData(Avalonia.Layout.VerticalAlignment.Center)]
+        [InlineData(Avalonia.Layout.VerticalAlignment.Bottom)]
+        [InlineData(Avalonia.Layout.VerticalAlignment.Stretch)]
+        public void VerticalContentAlignment_RoundTrips(Avalonia.Layout.VerticalAlignment value)
+        {
+            var timePicker = new TimePicker { VerticalContentAlignment = value };
+            Assert.Equal(value, timePicker.VerticalContentAlignment);
+        }
+
+        [Fact]
+        public void VerticalContentAlignment_Default_Is_Stretch()
+        {
+            var timePicker = new TimePicker();
+            Assert.Equal(Avalonia.Layout.VerticalAlignment.Stretch, timePicker.VerticalContentAlignment);
+        }
     }
 }
