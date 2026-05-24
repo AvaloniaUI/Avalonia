@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.LogicalTree;
 using Avalonia.Media.Imaging;
-using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -30,6 +27,10 @@ namespace Avalonia.Win32
         private static readonly Dictionary<int, TrayIconImpl> s_trayIcons = new();
         private bool _disposedValue;
         private static readonly uint WM_TASKBARCREATED = RegisterWindowMessage("TaskbarCreated");
+
+        private readonly Dictionary<int, NativeMenuItem> _menuItemMap = new();
+        private static TrayIconImpl? s_activeMenuOwner;
+        private int _nextMenuId = 1000;
 
         internal static void ChangeWindowMessageFilter(IntPtr hWnd)
         {
@@ -70,6 +71,13 @@ namespace Avalonia.Win32
                             tray._iconStale = true;
                             tray.UpdateIcon();
                         }
+                    }
+                    break;
+                case (uint)WindowsMessage.WM_COMMAND:
+                    if (s_activeMenuOwner != null)
+                    {
+                        int cmdId = wParam.ToInt32() & 0xFFFF;
+                        s_activeMenuOwner.HandleMenuCommand(cmdId);
                     }
                     break;
                 default:
@@ -228,22 +236,106 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var _trayMenu = new TrayPopupRoot
-            {
-                Name = "AvaloniaTrayPopupRoot_" + _tooltipText,
-                WindowDecorations = WindowDecorations.None,
-                SizeToContent = SizeToContent.WidthAndHeight,
-                Background = null,
-                TransparencyLevelHint = new[] { WindowTransparencyLevel.Transparent },
-                Content = new TrayIconMenuFlyoutPresenter() { ItemsSource = menu.Items }
-            };
+            // Raise Opening event so listeners can modify items before display
+            if (menu is INativeMenuExporterEventsImplBridge bridge)
+                bridge.RaiseOpening();
+
+            _menuItemMap.Clear();
+            _nextMenuId = 1000;
+
+            IntPtr hMenu = BuildNativeMenu(menu);
+            if (hMenu == IntPtr.Zero)
+                return;
 
             GetCursorPos(out POINT pt);
 
-            _trayMenu.Position = new PixelPoint(pt.X, pt.Y);
+            s_activeMenuOwner = this;
+            SetForegroundWindow(Win32Platform.Instance.Handle);
+            TrackPopupMenu(hMenu, TPM_RIGHTBUTTON, pt.X, pt.Y, 0, Win32Platform.Instance.Handle, IntPtr.Zero);
+            s_activeMenuOwner = null;
 
-            _trayMenu.Show();
+            DestroyMenu(hMenu);
+
+            // Raise Closed event after menu dismissed
+            if (menu is INativeMenuExporterEventsImplBridge bridge2)
+                bridge2.RaiseClosed();
         }
+
+        private IntPtr BuildNativeMenu(NativeMenu menu)
+        {
+            IntPtr hMenu = CreatePopupMenu();
+
+            foreach (var item in menu.Items)
+            {
+                if (item is NativeMenuItem { IsVisible: false })
+                    continue;
+
+                if (item is NativeMenuItemSeparator)
+                {
+                    AppendMenuW(hMenu, MF_SEPARATOR, IntPtr.Zero, null);
+                }
+                else if (item is NativeMenuItem menuItem)
+                {
+                    if (menuItem.Menu is { Items.Count: > 0 })
+                    {
+                        // Submenu
+                        IntPtr hSubMenu = BuildNativeMenu(menuItem.Menu);
+                        uint flags = MF_POPUP;
+                        if (!menuItem.IsEnabled)
+                            flags |= MF_DISABLED | MF_GRAYED;
+                        if (!AppendMenuW(hMenu, flags, hSubMenu, menuItem.Header ?? ""))
+                            DestroyMenu(hSubMenu);
+                    }
+                    else
+                    {
+                        int cmdId = _nextMenuId++;
+                        uint flags = MF_STRING;
+                        if (!menuItem.IsEnabled)
+                            flags |= MF_DISABLED | MF_GRAYED;
+                        if (menuItem.IsChecked)
+                            flags |= MF_CHECKED;
+                        AppendMenuW(hMenu, flags, (IntPtr)cmdId, menuItem.Header ?? "");
+                        _menuItemMap[cmdId] = menuItem;
+                    }
+                }
+            }
+
+            return hMenu;
+        }
+
+        private void HandleMenuCommand(int cmdId)
+        {
+            if (_menuItemMap.TryGetValue(cmdId, out var menuItem))
+            {
+                if (menuItem is INativeMenuItemExporterEventsImplBridge bridge)
+                    bridge.RaiseClicked();
+            }
+        }
+
+        // P/Invoke for native menu APIs
+        [DllImport("user32.dll")]
+        private static extern IntPtr CreatePopupMenu();
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool AppendMenuW(IntPtr hMenu, uint uFlags, IntPtr uIDNewItem, string? lpNewItem);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool TrackPopupMenu(IntPtr hMenu, uint uFlags, int x, int y,
+            int nReserved, IntPtr hWnd, IntPtr prcRect);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool DestroyMenu(IntPtr hMenu);
+
+        private const uint MF_STRING = 0x00000000;
+        private const uint MF_SEPARATOR = 0x00000800;
+        private const uint MF_DISABLED = 0x00000002;
+        private const uint MF_GRAYED = 0x00000001;
+        private const uint MF_CHECKED = 0x00000008;
+        private const uint MF_POPUP = 0x00000010;
+        private const uint TPM_RIGHTBUTTON = 0x0002;
 
         /// <summary>
         /// Custom Win32 window messages for the NotifyIcon
@@ -252,123 +344,6 @@ namespace Avalonia.Win32
         {
             WM_TRAYICON = WindowsMessage.WM_APP + 1024,
             WM_TRAYMOUSE = WindowsMessage.WM_USER + 1024,
-        }
-
-        private class TrayIconMenuFlyoutPresenter : MenuFlyoutPresenter
-        {
-            protected override Type StyleKeyOverride => typeof(MenuFlyoutPresenter);
-
-            public override void Close()
-            {
-                // DefaultMenuInteractionHandler calls this
-                var host = this.FindLogicalAncestorOfType<TrayPopupRoot>();
-                if (host != null)
-                {
-                    SelectedIndex = -1;
-                    host.Close();
-                }
-            }
-
-            protected internal override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
-            {
-                return NativeMenuBarPresenter.CreateContainerForNativeItem(item, index, recycleKey)
-                       ?? base.CreateContainerForItemOverride(item, index, recycleKey);
-            }
-        }
-
-        private class TrayPopupRoot : Window
-        {
-            private readonly ManagedPopupPositioner _positioner;
-            private readonly TrayIconManagedPopupPositionerPopupImplHelper _positionerHelper;
-            public TrayPopupRoot()
-            {
-                _positionerHelper = new TrayIconManagedPopupPositionerPopupImplHelper(MoveResize);
-                _positioner = new ManagedPopupPositioner(_positionerHelper);
-                Topmost = true;
-
-                Deactivated += TrayPopupRoot_Deactivated;
-
-                ShowInTaskbar = false;
-
-                ShowActivated = true;
-            }
-
-            private void TrayPopupRoot_Deactivated(object? sender, EventArgs e)
-            {
-                Close();
-            }
-
-            protected override void OnClosed(EventArgs e)
-            {
-                base.OnClosed(e);
-                _positionerHelper.Dispose();
-            }
-
-            private void MoveResize(PixelPoint position, Size size, double scaling)
-            {
-                if (PlatformImpl is { } platformImpl)
-                {
-                    platformImpl.Move(position);
-                    platformImpl.Resize(size, WindowResizeReason.Layout);
-                }
-            }
-
-            protected override void ArrangeCore(Rect finalRect)
-            {
-                base.ArrangeCore(finalRect);
-
-                _positioner.Update(new PopupPositionerParameters
-                {
-                    Anchor = PopupAnchor.TopLeft,
-                    Gravity = PopupGravity.BottomRight,
-                    AnchorRectangle = new Rect(Position.ToPoint(Screens.Primary?.Scaling ?? 1.0), new Size(1, 1)),
-                    Size = finalRect.Size,
-                    ConstraintAdjustment = PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY,
-                });
-            }
-
-            private class TrayIconManagedPopupPositionerPopupImplHelper : IManagedPopupPositionerPopup, IDisposable
-            {
-                private readonly Action<PixelPoint, Size, double> _moveResize;
-                private readonly Window _hiddenWindow;
-
-                public TrayIconManagedPopupPositionerPopupImplHelper(Action<PixelPoint, Size, double> moveResize)
-                {
-                    _moveResize = moveResize;
-                    _hiddenWindow = new Window();
-                }
-
-                public IReadOnlyList<ManagedPopupPositionerScreenInfo> Screens =>
-                    _hiddenWindow.Screens.All
-                        .Select(s => new ManagedPopupPositionerScreenInfo(s.Bounds.ToRect(1), s.Bounds.ToRect(1)))
-                        .ToArray();
-
-                public Rect ParentClientAreaScreenGeometry
-                {
-                    get
-                    {
-                        if (_hiddenWindow.Screens.Primary is { } screen)
-                        {
-                            var point = screen.Bounds.TopLeft;
-                            var size = screen.Bounds.Size;
-                            return new Rect(point.X, point.Y, size.Width * screen.Scaling, size.Height * screen.Scaling);
-                        }
-                        return default;
-                    }
-                }
-
-                public void MoveAndResize(Point devicePoint, Size virtualSize)
-                {
-                    _moveResize(new PixelPoint((int)devicePoint.X, (int)devicePoint.Y), virtualSize, Scaling);
-                }
-
-                public void Dispose()
-                {
-                    _hiddenWindow.Close();
-                }
-
-                public double Scaling => _hiddenWindow.Screens.Primary?.Scaling ?? 1.0;
-            }
         }
 
         protected virtual void Dispose(bool disposing)
