@@ -11,6 +11,7 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
+using Avalonia.Layout;
 using Moq;
 using Xunit;
 
@@ -483,6 +484,37 @@ namespace Avalonia.Controls.UnitTests
         {
             var timePicker = new TimePicker();
             Assert.Equal(Avalonia.Layout.VerticalAlignment.Stretch, timePicker.VerticalContentAlignment);
+        }
+
+        [Fact]
+        public void VerticalContentAlignment_Should_Propagate_To_Internal_Grid()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var picker = new TimePicker { VerticalContentAlignment = VerticalAlignment.Bottom };
+
+                picker.Template = new Avalonia.Controls.Templates.FuncControlTemplate<TimePicker>((parent, scope) =>
+                {
+                    var grid = new Grid { Name = "PART_FlyoutButtonContentGrid" };
+                    
+                    grid.Bind(Grid.VerticalAlignmentProperty, new Avalonia.Data.Binding("VerticalContentAlignment") 
+                    { 
+                        RelativeSource = new Avalonia.Data.RelativeSource(Avalonia.Data.RelativeSourceMode.TemplatedParent) 
+                    });
+                    return grid;
+                });
+
+                var root = new Avalonia.UnitTests.TestRoot { Child = picker };
+                root.Measure(new Avalonia.Size(100, 100));
+                root.Arrange(new Avalonia.Rect(0, 0, 100, 100));
+
+                var internalGrid = picker.GetVisualDescendants()
+                                        .OfType<Grid>()
+                                        .FirstOrDefault(g => g.Name == "PART_FlyoutButtonContentGrid");
+
+                Assert.NotNull(internalGrid);
+                Assert.Equal(VerticalAlignment.Bottom, internalGrid.VerticalAlignment);
+            }
         }
     }
 }
