@@ -14,6 +14,9 @@
     <ProjectReference Remove="samples/*.Android/*.csproj" />
     <ProjectReference Remove="samples/*.Browser/*.csproj" />
     <ProjectReference Remove="samples/SingleProjectSandbox/*.csproj" />
+    <!-- Exclude WinUI samples when Platform is not specified or is AnyCPU -->
+    <ProjectReference Remove="samples/*.WinUI/*.csproj" Condition="'$(Platform)' == '' Or '$(Platform)' == 'AnyCPU'" />
+    <ProjectReference Remove="samples/WinUIEmbedSample/*.csproj" Condition="'$(Platform)' == '' Or '$(Platform)' == 'AnyCPU'" />
   </ItemGroup>
 
   <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
