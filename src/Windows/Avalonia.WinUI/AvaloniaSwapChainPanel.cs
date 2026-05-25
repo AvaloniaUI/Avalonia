@@ -6,6 +6,7 @@ using global::Avalonia;
 using global::Avalonia.Controls.Embedding;
 using global::Avalonia.Input;
 using global::Avalonia.Input.Raw;
+using global::Avalonia.Logging;
 using global::Avalonia.Platform;
 using global::Avalonia.Win32;
 using global::Avalonia.Win32.OpenGl.Angle;
@@ -625,7 +626,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         var searchRoot = XamlRoot?.Content as DependencyObject;
         if (searchRoot is null)
         {
-            WinUILog.Verbose(this, "Tab boundary: no XamlRoot.Content available; letting Avalonia handle.");
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.WinUIPlatform)?.Log(this, "Tab boundary: no XamlRoot.Content available; letting Avalonia handle.");
             return false;
         }
 
@@ -637,11 +638,11 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         if (moved)
         {
             e.Handled = true;
-            WinUILog.Verbose(this, $"Tab boundary: moved WinUI focus {direction}.");
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.WinUIPlatform)?.Log(this, $"Tab boundary: moved WinUI focus {direction}.");
             return true;
         }
 
-        WinUILog.Verbose(this, "Tab boundary detected but TryMoveFocus returned false; letting Avalonia handle.");
+        Logger.TryGet(LogEventLevel.Verbose, LogArea.WinUIPlatform)?.Log(this, "Tab boundary detected but TryMoveFocus returned false; letting Avalonia handle.");
         return false;
     }
 
@@ -748,7 +749,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
             }
             catch (Exception ex)
             {
-                WinUILog.Warn(null, "Failed to resolve dragged storage items", ex);
+                Logger.TryGet(LogEventLevel.Warning, LogArea.WinUIPlatform)?.Log(null, "Failed to resolve dragged storage items: {Exception}", ex);
             }
         }
 
@@ -762,7 +763,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
             }
             catch (Exception ex)
             {
-                WinUILog.Warn(null, "Failed to resolve dragged text", ex);
+                Logger.TryGet(LogEventLevel.Warning, LogArea.WinUIPlatform)?.Log(null, "Failed to resolve dragged text: {Exception}", ex);
             }
         }
 
@@ -775,7 +776,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
     {
         if (_lastPointerPoint is not { } pp)
         {
-            WinUILog.Warn(this, "StartOutgoingDragAsync called with no cached PointerPoint; drag suppressed.");
+            Logger.TryGet(LogEventLevel.Warning, LogArea.WinUIPlatform)?.Log(this, "StartOutgoingDragAsync called with no cached PointerPoint; drag suppressed.");
             return DragDropEffects.None;
         }
 
@@ -788,7 +789,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         }
         catch (Exception ex)
         {
-            WinUILog.Warn(this, "StartDragAsync threw", ex);
+            Logger.TryGet(LogEventLevel.Warning, LogArea.WinUIPlatform)?.Log(this, "StartDragAsync threw: {Exception}", ex);
             return DragDropEffects.None;
         }
         finally
@@ -805,7 +806,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
             // The overlay was the drag origin (CanDrag=true) but no Avalonia
             // drag was in flight — most likely a user grab on empty panel
             // space. Suppress the native drag rather than emit an empty one.
-            WinUILog.Verbose(this, "DragStarting cancelled: no active Avalonia drag.");
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.WinUIPlatform)?.Log(this, "DragStarting cancelled: no active Avalonia drag.");
             e.Cancel = true;
             return;
         }
@@ -818,7 +819,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         }
         catch (Exception ex)
         {
-            WinUILog.Warn(this, "Populating outgoing DataPackage threw", ex);
+            Logger.TryGet(LogEventLevel.Warning, LogArea.WinUIPlatform)?.Log(this, "Populating outgoing DataPackage threw: {Exception}", ex);
         }
         finally
         {
@@ -857,7 +858,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
                 }
                 catch (Exception ex)
                 {
-                    WinUILog.Warn(null, $"Failed to expose dragged path '{path}' as Windows.Storage item", ex);
+                    Logger.TryGet(LogEventLevel.Warning, LogArea.WinUIPlatform)?.Log(null, "Failed to expose dragged path '{Path}' as Windows.Storage item: {Exception}", path, ex);
                 }
             }
             if (winuiItems.Count > 0)

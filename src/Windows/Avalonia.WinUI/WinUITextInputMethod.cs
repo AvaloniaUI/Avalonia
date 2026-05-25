@@ -4,6 +4,7 @@ using global::Avalonia;
 using global::Avalonia.Input;
 using global::Avalonia.Input.Raw;
 using global::Avalonia.Input.TextInput;
+using global::Avalonia.Logging;
 using Microsoft.UI.Xaml;
 using Windows.UI.Text.Core;
 using AvRect = global::Avalonia.Rect;
@@ -214,7 +215,7 @@ internal sealed class WinUITextInputMethod : ITextInputMethodImpl
         catch (Exception ex)
         {
             // Panel not in tree yet, or transform unavailable — leave bounds default.
-            WinUILog.Verbose(this, $"LayoutRequested couldn't compute screen rect: {ex.Message}");
+            Logger.TryGet(LogEventLevel.Verbose, LogArea.WinUIPlatform)?.Log(this, "LayoutRequested couldn't compute screen rect: {Message}", ex.Message);
         }
     }
 

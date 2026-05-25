@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using global::Avalonia.Controls;
 using global::Avalonia.Input;
 using global::Avalonia.Input.Platform;
+using global::Avalonia.Logging;
 
 namespace Avalonia.WinUI;
 
@@ -29,10 +30,11 @@ internal sealed class WinUIDragSource : IPlatformDragSource
 
         if (panel is null)
         {
-            WinUILog.Warn(this,
+            Logger.TryGet(LogEventLevel.Warning, LogArea.WinUIPlatform)?.Log(this,
                 "Could not resolve AvaloniaSwapChainPanel for drag source. " +
-                $"TopLevel={topLevel?.GetType().Name ?? "null"}, " +
-                $"PlatformImpl={topLevel?.PlatformImpl?.GetType().Name ?? "null"}.");
+                "TopLevel={TopLevel}, PlatformImpl={PlatformImpl}.",
+                topLevel?.GetType().Name ?? "null",
+                topLevel?.PlatformImpl?.GetType().Name ?? "null");
             return DragDropEffects.None;
         }
 
