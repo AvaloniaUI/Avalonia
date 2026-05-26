@@ -7,6 +7,7 @@ using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Cmap;
 using Avalonia.Media.Fonts.Tables.Metrics;
 using Avalonia.Media.Fonts.Tables.Name;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
@@ -39,6 +40,7 @@ namespace Avalonia.Media
 
         private IReadOnlyList<OpenTypeTag>? _supportedFeatures;
         private ITextShaperTypeface? _textShaperTypeface;
+        private UnicodeRange? _supportedUnicodeRange;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GlyphTypeface"/> class with the specified platform typeface and
@@ -340,6 +342,95 @@ namespace Avalonia.Media
 
                 return _supportedFeatures;
             }
+        }
+
+        /// <summary>
+        /// Gets the union of Unicode codepoint ranges covered by the font's character map.
+        /// </summary>
+        /// <remarks>
+        /// The returned <see cref="UnicodeRange"/> is derived from the cmap table and represents every
+        /// codepoint for which the font defines a glyph. It is computed lazily on first access and cached
+        /// for the lifetime of the <see cref="GlyphTypeface"/>. Prefer this property over enumerating
+        /// <see cref="CharacterToGlyphMap"/> when only coverage information (not glyph IDs) is required.
+        /// </remarks>
+        public UnicodeRange SupportedUnicodeRange
+        {
+            get
+            {
+                if (_supportedUnicodeRange.HasValue)
+                {
+                    return _supportedUnicodeRange.Value;
+                }
+
+                _supportedUnicodeRange = BuildSupportedUnicodeRange();
+
+                return _supportedUnicodeRange.Value;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the font advertises support for the supplied Unicode script.
+        /// </summary>
+        /// <remarks>
+        /// When the font ships an OS/2 table the answer is taken from the OS/2 ulUnicodeRange bitfield
+        /// (the font's own self-declaration of script coverage). When OS/2 is absent or the bit is unset,
+        /// this falls back to probing the cmap with a representative codepoint for the script. Returns
+        /// <c>true</c> for scripts that don't have a meaningful per-script signal (for example
+        /// <see cref="Script.Common"/> or <see cref="Script.Unknown"/>).
+        /// </remarks>
+        public bool SupportsScript(Script script)
+        {
+            // For scripts we don't track per-script, treat the font as supporting them — the cmap
+            // is still the final authority via TryGetGlyph at the call site.
+            if (!FontFallbackScriptHints.TryGetOS2Bit(script, out var bit) &&
+                FontFallbackScriptHints.GetProbeCodepoint(script) == 0)
+            {
+                return true;
+            }
+
+            if (_hasOs2Table && bit >= 0)
+            {
+                var range = bit switch
+                {
+                    < 32 => _os2Table.UnicodeRange1,
+                    < 64 => _os2Table.UnicodeRange2,
+                    < 96 => _os2Table.UnicodeRange3,
+                    _ => _os2Table.UnicodeRange4,
+                };
+
+                if ((range & (1u << (bit & 31))) != 0)
+                {
+                    return true;
+                }
+            }
+
+            var probe = FontFallbackScriptHints.GetProbeCodepoint(script);
+
+            if (probe != 0 && _cmapTable.TryGetGlyph(probe, out _))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private UnicodeRange BuildSupportedUnicodeRange()
+        {
+            var segments = new List<UnicodeRangeSegment>();
+            var enumerator = _cmapTable.GetMappedRanges();
+
+            while (enumerator.MoveNext())
+            {
+                var range = enumerator.Current;
+                segments.Add(new UnicodeRangeSegment(range.Start, range.End));
+            }
+
+            if (segments.Count == 0)
+            {
+                return new UnicodeRange(0, -1);
+            }
+
+            return new UnicodeRange(segments);
         }
 
         /// <summary>
