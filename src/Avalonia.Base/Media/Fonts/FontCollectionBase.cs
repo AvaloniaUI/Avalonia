@@ -79,7 +79,7 @@ namespace Avalonia.Media.Fonts
 
             // --- Tier C: deterministic cache sweep (non last-resort), culture-scored ---
             if (TryMatchInCache(codepoint, key, familyName, culture, script, refinedScript, isLastResort: false, out var bestGt, out var bestFamilyName))
-            {
+            {               
                 if (FontFallbackScriptHints.IsLocaleSensitive(refinedScript) || culture != null)
                 {
                     _scriptFallbackCache.TryAdd(scriptKey, bestFamilyName);
@@ -258,18 +258,22 @@ namespace Avalonia.Media.Fonts
         {
             var matchedKey = glyphTypeface.ToFontCollectionKey();
 
-            if (matchedKey != requestedKey &&
-                TryCreateSyntheticGlyphTypeface(glyphTypeface, requestedKey.Style, requestedKey.Weight, requestedKey.Stretch, out var synthetic))
+            // The fallback search already found a font face that maps the codepoint. Synthesis
+            // (re-loading the stream with FontSimulations) is unsafe here: with .ttc collections
+            // the platform may resolve a different face from the same stream (e.g. asking for an
+            // oblique simulation of "Yu Gothic UI" returns "Yu Gothic Medium"). Accept the matched
+            // glyph typeface as-is and pre-cache it under the requested key so later
+            // GlyphTypeface lookups via the returned Typeface short-circuit through the cache.
+            if (matchedKey != requestedKey)
             {
-                glyphTypeface = synthetic;
-                matchedKey = glyphTypeface.ToFontCollectionKey();
+                TryAddGlyphTypeface(glyphTypeface.FamilyName, requestedKey, glyphTypeface);
             }
 
             return new Typeface(
                 new FontFamily(null, Key.AbsoluteUri + "#" + glyphTypeface.FamilyName),
-                matchedKey.Style,
-                matchedKey.Weight,
-                matchedKey.Stretch);
+                requestedKey.Style,
+                requestedKey.Weight,
+                requestedKey.Stretch);
         }
 
         /// <summary>
