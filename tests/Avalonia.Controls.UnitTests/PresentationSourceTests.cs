@@ -159,11 +159,18 @@ public sealed class PresentationSourceTests : ScopedTestBase
             Cursor = new Cursor(StandardCursorType.SizeWestEast)
         };
 
-        var other = new Border
+        var other1 = new Border
         {
             Background = Brushes.Blue,
             Width = 100,
             Cursor = new Cursor(StandardCursorType.Ibeam)
+        };
+
+        var other2 = new Border
+        {
+            Background = Brushes.Blue,
+            Width = 100,
+            Cursor = new Cursor(StandardCursorType.Cross)
         };
 
         ICursorImpl? currentCursor = null;
@@ -179,7 +186,7 @@ public sealed class PresentationSourceTests : ScopedTestBase
             Content = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Children = { captured, other }
+                Children = { captured, other1 }
             }
         };
 
@@ -223,8 +230,13 @@ public sealed class PresentationSourceTests : ScopedTestBase
         Assert.Same(newCursor.PlatformImpl, currentCursor);
 
         // Changing the capture explicitly should update the cursor.
-        pointer.Capture(other);
-        Assert.Same(other.Cursor!.PlatformImpl, currentCursor);
+        pointer.Capture(other1);
+        Assert.Same(other1.Cursor!.PlatformImpl, currentCursor);
+
+        // Releasing the capture should reset the cursor to match the element the cursor is over.
+        ((IInputRoot)root).PointerOverElement = other2;
+        pointer.Capture(null);
+        Assert.Same(other2.Cursor!.PlatformImpl, currentCursor);
     }
 
     private static void Render(CompositorTestServices.ManualRenderTimer renderTimer)

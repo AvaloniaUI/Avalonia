@@ -121,7 +121,7 @@ namespace Avalonia.Input
                             oldInputRoot.CursorElement = control;
                         else
                         {
-                            oldInputRoot.CursorElement = null;
+                            oldInputRoot.CursorElement = oldInputRoot.PointerOverElement;
                             newInputRoot?.CursorElement = control;
                         }
                     }
