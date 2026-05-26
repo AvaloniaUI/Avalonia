@@ -491,6 +491,9 @@
 {
     switch (property)
     {
+        case AutomationPeer_AutomationId:
+            // accessibilityIdentifier is read on-demand; no VoiceOver announcement required.
+            break;
         case AutomationPeer_Name:
             NSAccessibilityPostNotification(self, NSAccessibilityTitleChangedNotification);
             if (_peer->GetLiveSetting() != LiveSettingOff)
@@ -509,8 +512,14 @@
             NSAccessibilityPostNotification(self, NSAccessibilitySelectedChildrenChangedNotification);
             break;
         case ToggleProvider_ToggleState:
+            NSAccessibilityPostNotification(self, NSAccessibilityValueChangedNotification);
+            break;
         case ExpandCollapseProvider_ExpandCollapseState:
             NSAccessibilityPostNotification(self, NSAccessibilityValueChangedNotification);
+            if (_peer->ExpandCollapseProvider_GetIsExpanded())
+                NSAccessibilityPostNotification(self, (__bridge NSString *)kAXRowExpandedNotification);
+            else
+                NSAccessibilityPostNotification(self, (__bridge NSString *)kAXRowCollapsedNotification);
             break;
         default:
             break;

@@ -35,6 +35,7 @@
         "CreateNugetPackages",
         "DownloadApiBaselinePackages",
         "GenerateCppHeaders",
+        "GenerateUnicodeData",
         "InitDnx",
         "OutputApiDiff",
         "OutputVersion",
