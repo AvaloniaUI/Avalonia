@@ -113,5 +113,50 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             return (EastAsianWidthClass)EastAsianWidthTrie.Trie.Get(codepoint);
         }
+
+        /// <summary>
+        /// Determines whether the given codepoint's Script_Extensions property (UAX #24) contains
+        /// the supplied script. When the codepoint has no explicit Script_Extensions entry the
+        /// extensions set is taken to be the singleton of the codepoint's primary
+        /// <see cref="Script"/> property.
+        /// </summary>
+        /// <param name="codepoint">The codepoint in question.</param>
+        /// <param name="script">The script being tested.</param>
+        public static bool HasScriptExtension(uint codepoint, Script script)
+        {
+            if (script == Script.Unknown)
+            {
+                return false;
+            }
+
+            var packed = UnicodeDataTrie.Trie.Get(codepoint);
+            var setIndex = (int)((packed >> SCRIPTEXTENSIONS_SHIFT) & SCRIPTEXTENSIONS_MASK);
+
+            if (setIndex == 0)
+            {
+                var primary = (Script)((packed >> SCRIPT_SHIFT) & SCRIPT_MASK);
+                return primary == script;
+            }
+
+            var sets = s_scriptExtensionSets;
+
+            if ((uint)setIndex >= (uint)sets.Length)
+            {
+                return false;
+            }
+
+            var target = (byte)script;
+            var set = sets[setIndex];
+
+            for (var i = 0; i < set.Length; i++)
+            {
+                if (set[i] == target)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

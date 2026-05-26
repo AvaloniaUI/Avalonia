@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using Avalonia.Media.TextFormatting.Unicode;
 
@@ -6,51 +7,122 @@ namespace Avalonia.Media.Fonts
     /// <summary>
     /// Script-aware hints used by <see cref="FontCollectionBase.TryMatchCharacter"/> to
     /// disambiguate locale-sensitive scripts (e.g. CJK), to provide deterministic probe
-    /// codepoints for scoring candidate fonts, and to skip cache pollution for scripts that
-    /// don't benefit from per-culture fallback caching (e.g. Latin / Common).
+    /// codepoints for scoring candidate fonts, and to decide whether a candidate font is
+    /// compatible with the caller's culture.
     /// </summary>
     internal static class FontFallbackScriptHints
     {
         /// <summary>
-        /// Returns true if the script's preferred font typically depends on the user's
-        /// culture (CJK Han is the canonical example: same codepoints render with different
-        /// fonts in zh-CN vs. ja-JP vs. ko-KR).
+        /// Returns true when the script's preferred font typically depends on the user's
+        /// culture (CJK Han is the canonical example: identical codepoints render with
+        /// different fonts in zh-CN vs. ja-JP vs. ko-KR).
         /// </summary>
         public static bool IsLocaleSensitive(Script script)
             => GetProbeCodepoint(script) != 0;
 
         /// <summary>
-        /// Refines a script using the supplied culture. Pure-Han codepoints will be remapped
-        /// to <see cref="Script.Hiragana"/> for Japanese cultures and <see cref="Script.Hangul"/>
-        /// for Korean cultures so the candidate font is scored against a probe in the user's
-        /// preferred script. CJK ambiguous (<see cref="Script.KatakanaOrHiragana"/>) is
-        /// normalised to <see cref="Script.Hiragana"/>.
+        /// Refines an ambiguous script using the supplied codepoint's
+        /// <see cref="Codepoint.HasScriptExtension"/> data and the requested culture.
         /// </summary>
-        public static Script RefineWithCulture(Script script, CultureInfo? culture)
+        /// <remarks>
+        /// <para>
+        /// The rules mirror what major shaping/font-matching stacks (DirectWrite/UniscribeExtensions,
+        /// CoreText, HarfBuzz + ICU likelySubtags) do:
+        /// </para>
+        /// <list type="bullet">
+        /// <item><description>
+        /// <see cref="Script.KatakanaOrHiragana"/> (Hrkt) is resolved using the codepoint's
+        /// <c>Script_Extensions</c> set per UAX #24 — if it contains Hiragana the codepoint
+        /// is treated as Hiragana, otherwise Katakana.
+        /// </description></item>
+        /// <item><description>
+        /// <see cref="Script.Han"/> is refined to the user's regional CJK variant via
+        /// <see cref="Bcp47ScriptResolver.GetScriptSubtag"/>: <c>"Jpan"</c> selects Hiragana
+        /// (which forces matching against a Japanese font), <c>"Kore"</c> selects Hangul,
+        /// and <c>"Hans"/"Hant"</c> leave the script as Han.
+        /// </description></item>
+        /// <item><description>
+        /// Any other script is returned unchanged.
+        /// </description></item>
+        /// </list>
+        /// </remarks>
+        public static Script RefineWithCulture(Codepoint codepoint, CultureInfo? culture)
         {
+            var script = codepoint.Script;
+
             if (script == Script.KatakanaOrHiragana)
             {
-                return Script.Hiragana;
+                return codepoint.HasScriptExtension(Script.Hiragana)
+                    ? Script.Hiragana
+                    : Script.Katakana;
             }
 
-            if (culture == null || script != Script.Han)
+            if (script != Script.Han)
             {
                 return script;
             }
 
-            var name = culture.Name;
+            var subtag = Bcp47ScriptResolver.GetScriptSubtag(culture);
 
-            if (StartsWithIgnoreCase(name, "ja"))
+            if (subtag is null)
             {
-                return Script.Hiragana;
+                return script;
             }
 
-            if (StartsWithIgnoreCase(name, "ko"))
+            return subtag switch
             {
-                return Script.Hangul;
+                "Jpan" => Script.Hiragana,
+                "Kore" => Script.Hangul,
+                _ => script,
+            };
+        }
+
+        /// <summary>
+        /// Determines whether <paramref name="candidate"/> self-declares coverage for the supplied
+        /// culture's writing system. Used as a positive signal in font fallback scoring.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> when the font advertises the culture's BCP-47 tag in its OpenType <c>meta</c>
+        /// table (<c>dlng</c>/<c>slng</c>), or when its OS/2 codepage range bits cover the
+        /// resolved script subtag's canonical codepage. Returns <c>false</c> when no positive
+        /// signal exists; this is a non-negative test and should be combined with the probe-based
+        /// fallback in <see cref="FontCollectionBase"/>.
+        /// </returns>
+        public static bool IsFontCompatibleWithCulture(GlyphTypeface candidate, CultureInfo? culture)
+        {
+            if (culture is null || culture == CultureInfo.InvariantCulture)
+            {
+                return false;
             }
 
-            return script;
+            if (candidate.DeclaresLanguageCoverage(culture))
+            {
+                return true;
+            }
+
+            var coverage = candidate.CodePageCoverage;
+
+            if (coverage == FontCodePageCoverage.None)
+            {
+                return false;
+            }
+
+            var subtag = Bcp47ScriptResolver.GetScriptSubtag(culture);
+
+            return subtag switch
+            {
+                "Jpan" => (coverage & FontCodePageCoverage.JapaneseJis) != 0,
+                "Kore" => (coverage & (FontCodePageCoverage.KoreanWansung | FontCodePageCoverage.KoreanJohab)) != 0,
+                "Hans" => (coverage & FontCodePageCoverage.ChineseSimplified) != 0,
+                "Hant" => (coverage & FontCodePageCoverage.ChineseTraditional) != 0,
+                "Cyrl" => (coverage & FontCodePageCoverage.Cyrillic) != 0,
+                "Grek" => (coverage & FontCodePageCoverage.Greek) != 0,
+                "Arab" => (coverage & FontCodePageCoverage.Arabic) != 0,
+                "Hebr" => (coverage & FontCodePageCoverage.Hebrew) != 0,
+                "Thai" => (coverage & FontCodePageCoverage.Thai) != 0,
+                "Latn" => (coverage & FontCodePageCoverage.Latin1) != 0,
+                _ => false,
+            };
         }
 
         /// <summary>
@@ -104,37 +176,6 @@ namespace Avalonia.Media.Fonts
             };
 
             return bit >= 0;
-        }
-
-        private static bool StartsWithIgnoreCase(string value, string prefix)
-        {
-            if (value.Length < prefix.Length)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < prefix.Length; i++)
-            {
-                var a = value[i];
-                var b = prefix[i];
-
-                if (a >= 'A' && a <= 'Z')
-                {
-                    a = (char)(a + 32);
-                }
-
-                if (b >= 'A' && b <= 'Z')
-                {
-                    b = (char)(b + 32);
-                }
-
-                if (a != b)
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }

@@ -37,6 +37,8 @@ namespace Avalonia.Media
         private readonly bool _hasOs2Table;
         private readonly bool _hasHorizontalMetrics;
         private readonly bool _hasVerticalMetrics;
+        private readonly string[] _designLanguages;
+        private readonly string[] _supportedLanguages;
 
         private IReadOnlyList<OpenTypeTag>? _supportedFeatures;
         private ITextShaperTypeface? _textShaperTypeface;
@@ -60,6 +62,27 @@ namespace Avalonia.Media
 
             _hasOs2Table = OS2Table.TryLoad(this, out _os2Table);
             _cmapTable = CmapTable.Load(this);
+
+            if (MetaTable.TryLoad(this, out var metaTable))
+            {
+                _designLanguages = metaTable.DesignLanguages;
+                _supportedLanguages = metaTable.SupportedLanguages;
+            }
+            else
+            {
+                _designLanguages = Array.Empty<string>();
+                _supportedLanguages = Array.Empty<string>();
+            }
+
+            if (_hasOs2Table && _os2Table.Version >= 1)
+            {
+                CodePageCoverage = (FontCodePageCoverage)(
+                    _os2Table.CodePageRange1 | ((ulong)_os2Table.CodePageRange2 << 32));
+            }
+            else
+            {
+                CodePageCoverage = FontCodePageCoverage.None;
+            }
 
             var maxpTable = MaxpTable.Load(this);
 
@@ -365,6 +388,112 @@ namespace Avalonia.Media
                 _supportedUnicodeRange = BuildSupportedUnicodeRange();
 
                 return _supportedUnicodeRange.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the codepage coverage advertised by the font via the OpenType
+        /// <c>OS/2.ulCodePageRange1/2</c> bitfields.
+        /// </summary>
+        /// <remarks>
+        /// Returns <see cref="FontCodePageCoverage.None"/> when the font does not ship an OS/2 table
+        /// or only supplies an OS/2 version &lt; 1 (where the codepage range fields are not present).
+        /// </remarks>
+        public FontCodePageCoverage CodePageCoverage { get; }
+
+        /// <summary>
+        /// Gets the BCP-47 language tags the font's designer declared as the design target for the
+        /// font (the <c>dlng</c> data tag in the OpenType <c>meta</c> table).
+        /// </summary>
+        /// <remarks>
+        /// Returns an empty span when the font does not ship a <c>meta</c> table or omits the
+        /// <c>dlng</c> data tag.
+        /// </remarks>
+        public ReadOnlySpan<string> DesignLanguages => _designLanguages;
+
+        /// <summary>
+        /// Gets the BCP-47 language tags the font advertises as supported (the <c>slng</c> data tag
+        /// in the OpenType <c>meta</c> table).
+        /// </summary>
+        /// <remarks>
+        /// Returns an empty span when the font does not ship a <c>meta</c> table or omits the
+        /// <c>slng</c> data tag.
+        /// </remarks>
+        public ReadOnlySpan<string> SupportedLanguages => _supportedLanguages;
+
+        /// <summary>
+        /// Determines whether this font self-declares coverage for the supplied culture via its
+        /// OpenType <c>meta</c> table <c>dlng</c> or <c>slng</c> tag list.
+        /// </summary>
+        /// <param name="culture">
+        /// The culture to check. If <c>null</c> the method returns <c>false</c>.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> when one of the declared language tags is a BCP-47 prefix of the culture's
+        /// <see cref="CultureInfo.Name"/> (or vice versa, when the font specifies a narrower tag).
+        /// </returns>
+        /// <remarks>
+        /// The match is case-insensitive and BCP-47-aware: the comparison succeeds when one tag is
+        /// a prefix of the other up to a subtag boundary (e.g. <c>"ja"</c> matches <c>"ja-JP"</c>,
+        /// and <c>"zh-Hans"</c> matches <c>"zh-Hans-CN"</c>). Returns <c>false</c> when the font
+        /// declares no design or supported languages.
+        /// </remarks>
+        public bool DeclaresLanguageCoverage(CultureInfo? culture)
+        {
+            if (culture == null || culture == CultureInfo.InvariantCulture)
+            {
+                return false;
+            }
+
+            if (_designLanguages.Length == 0 && _supportedLanguages.Length == 0)
+            {
+                return false;
+            }
+
+            var name = culture.Name;
+
+            if (string.IsNullOrEmpty(name))
+            {
+                return false;
+            }
+
+            return MatchesAny(_designLanguages, name) || MatchesAny(_supportedLanguages, name);
+
+            static bool MatchesAny(string[] tags, string cultureName)
+            {
+                foreach (var tag in tags)
+                {
+                    if (IsBcp47PrefixMatch(tag, cultureName))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        private static bool IsBcp47PrefixMatch(string tag, string cultureName)
+        {
+            // Either side may be the narrower one — match if one is a subtag-prefix of the other.
+            return IsPrefix(tag, cultureName) || IsPrefix(cultureName, tag);
+
+            static bool IsPrefix(string prefix, string candidate)
+            {
+                if (prefix.Length == 0 || prefix.Length > candidate.Length)
+                {
+                    return false;
+                }
+
+                if (!candidate.AsSpan(0, prefix.Length).Equals(prefix.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // Either exact match, or the next character is a subtag separator.
+                return prefix.Length == candidate.Length
+                    || candidate[prefix.Length] == '-'
+                    || candidate[prefix.Length] == '_';
             }
         }
 

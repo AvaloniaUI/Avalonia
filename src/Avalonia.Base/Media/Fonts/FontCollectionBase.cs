@@ -50,7 +50,7 @@ namespace Avalonia.Media.Fonts
             var key = new FontCollectionKey { Style = style, Weight = weight, Stretch = stretch };
             var cp = new Codepoint((uint)codepoint);
             var script = cp.Script;
-            var refinedScript = FontFallbackScriptHints.RefineWithCulture(script, culture);
+            var refinedScript = FontFallbackScriptHints.RefineWithCulture(cp, culture);
             var scriptKey = new ScriptFallbackKey(refinedScript, culture?.Name);
 
             // --- Tier A: requested family, coverage-checked, culture-compatible ---
@@ -190,6 +190,12 @@ namespace Avalonia.Media.Fonts
                 }
             }
 
+            // Self-declared culture coverage via OS/2 codepage bits or meta dlng/slng.
+            if (culture != null && FontFallbackScriptHints.IsFontCompatibleWithCulture(candidate, culture))
+            {
+                score += 4;
+            }
+
             // Font's primary script aligns with the requested script — ask the font directly.
             if (FontFallbackScriptHints.IsLocaleSensitive(refinedScript))
             {
@@ -215,6 +221,13 @@ namespace Avalonia.Media.Fonts
         {
             // If no culture or codepoint is locale-insensitive, the candidate is fine.
             if (culture == null || !FontFallbackScriptHints.IsLocaleSensitive(script))
+            {
+                return true;
+            }
+
+            // Positive signal from the font's own self-declaration (OS/2 codepage bits or meta dlng/slng).
+            // When the font declares coverage we accept it as compatible regardless of localized names.
+            if (FontFallbackScriptHints.IsFontCompatibleWithCulture(candidate, culture))
             {
                 return true;
             }
