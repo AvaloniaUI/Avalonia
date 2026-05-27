@@ -170,13 +170,16 @@ namespace Avalonia.Media.TextFormatting
             {
                 _prefixRef = sourcePrefixRef.Clone();
                 _clusterPrefix = _prefixRef.Item.Array;
+
                 if (sourceStartsRef is not null)
                 {
                     _startsRef = sourceStartsRef.Clone();
                     _clusterStartChars = _startsRef.Item.Array;
                 }
+
                 _clusterStartIdx = clusterStartIdx;
                 _clusterCount = clusterCount;
+                _cacheGeneration = sourceCacheGeneration;
             }
         }
 
@@ -280,6 +283,14 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
+        /// Test hook: exposes the backing cluster-prefix array reference so unit
+        /// tests can assert that <see cref="Split"/> / <see cref="WithBidiLevel"/>
+        /// aliases share the parent's cache rather than rebuilding their own.
+        /// Returns null when no cache has been built yet.
+        /// </summary>
+        internal double[]? ClusterPrefix => _clusterPrefix;
+
+        /// <summary>
         /// Returns the total advance of all glyphs in the buffer (i.e. the buffer's
         /// rendered width). Cached after first access; the value is summed in
         /// logical cluster order, which can differ by ULPs from a visual-order sum
@@ -325,7 +336,7 @@ namespace Avalonia.Media.TextFormatting
             while (lo < hi)
             {
                 var mid = (lo + hi + 1) >> 1;
-                if (prefix[startIdx + mid] - basePrefix <= availableWidth)
+                if (MathUtilities.GreaterThan(prefix[startIdx + mid] - basePrefix, availableWidth))
                 {
                     lo = mid;
                 }

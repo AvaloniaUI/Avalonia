@@ -102,18 +102,43 @@ public class ShapedBufferOps : IDisposable
     public double SplitChain()
     {
         var quarter = _primed!.Text.Length / 4;
-        var halves = _primed.Split(quarter * 2);
-        var first = halves.First!;
-        var second = halves.Second!;
 
-        var firstSplit = first.Split(quarter);
-        var secondSplit = second.Split(quarter);
+        ShapedBuffer? first = null;
+        ShapedBuffer? second = null;
+        ShapedBuffer? firstFirst = null;
+        ShapedBuffer? firstSecond = null;
+        ShapedBuffer? secondFirst = null;
+        ShapedBuffer? secondSecond = null;
 
-        var total = (firstSplit.First?.TotalGlyphAdvance ?? 0)
-                  + (firstSplit.Second?.TotalGlyphAdvance ?? 0)
-                  + (secondSplit.First?.TotalGlyphAdvance ?? 0)
-                  + (secondSplit.Second?.TotalGlyphAdvance ?? 0);
-        return total;
+        try
+        {
+            var halves = _primed.Split(quarter * 2);
+            first = halves.First!;
+            second = halves.Second!;
+            var firstSplit = first.Split(quarter);
+            var secondSplit = second.Split(quarter);
+
+            firstFirst = firstSplit.First;
+            firstSecond = firstSplit.Second;
+            secondFirst = secondSplit.First;
+            secondSecond = secondSplit.Second;
+
+            var total = (firstFirst?.TotalGlyphAdvance ?? 0)
+                      + (firstSecond?.TotalGlyphAdvance ?? 0)
+                      + (secondFirst?.TotalGlyphAdvance ?? 0)
+                      + (secondSecond?.TotalGlyphAdvance ?? 0);
+
+            return total;
+        }
+        finally
+        {
+            firstFirst?.Dispose();
+            firstSecond?.Dispose();
+            secondFirst?.Dispose();
+            secondSecond?.Dispose();
+            first?.Dispose();
+            second?.Dispose();
+        }
     }
 
     public void Dispose()

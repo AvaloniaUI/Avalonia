@@ -216,6 +216,70 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        // Regression: when a buffer is mutated *before* it is Split / aliased,
+        // the parent's _cacheGeneration is already > 0 by the time the alias
+        // inherits the cluster cache. The alias constructor must copy that
+        // generation onto the child; otherwise the child's stamp stays at 0,
+        // EnsureClusterCache sees a mismatch on first access and rebuilds a
+        // fresh cache instead of reusing the parent's pooled arrays — silently
+        // defeating the cached-split fast path.
+        [Fact]
+        public void Split_Children_Share_Parent_Cluster_Cache_When_Parent_Was_Mutated_Before_Split()
+        {
+            using (Start())
+            {
+                using var parent = ShapeAscii(AsciiText);
+
+                // Mutate first so the shared glyph holder's generation is
+                // non-zero before the cluster cache is built.
+                var first0 = parent[0];
+                parent[0] = new GlyphInfo(
+                    first0.GlyphIndex, first0.GlyphCluster,
+                    first0.GlyphAdvance + 10d, first0.GlyphOffset);
+
+                // Prime the parent's cluster cache against the bumped generation.
+                _ = parent.TotalGlyphAdvance;
+                var parentPrefix = parent.ClusterPrefix;
+                Assert.NotNull(parentPrefix);
+
+                var split = parent.Split(parent.Text.Length / 2);
+                using var first = split.First!;
+                using var second = split.Second!;
+
+                // Touching the child's metrics must reuse the parent's prefix
+                // array, not rebuild a fresh one.
+                _ = first.TotalGlyphAdvance;
+                _ = second.TotalGlyphAdvance;
+
+                Assert.Same(parentPrefix, first.ClusterPrefix);
+                Assert.Same(parentPrefix, second.ClusterPrefix);
+            }
+        }
+
+        [Fact]
+        public void WithBidiLevel_Alias_Shares_Cluster_Cache_When_Original_Was_Mutated_Before_Alias()
+        {
+            using (Start())
+            {
+                using var original = ShapeAscii(AsciiText);
+
+                var first0 = original[0];
+                original[0] = new GlyphInfo(
+                    first0.GlyphIndex, first0.GlyphCluster,
+                    first0.GlyphAdvance + 7d, first0.GlyphOffset);
+
+                _ = original.TotalGlyphAdvance;
+                var originalPrefix = original.ClusterPrefix;
+                Assert.NotNull(originalPrefix);
+
+                using var alias = original.WithBidiLevel(2);
+
+                _ = alias.TotalGlyphAdvance;
+
+                Assert.Same(originalPrefix, alias.ClusterPrefix);
+            }
+        }
+
         private static ShapedBuffer ShapeAscii(string text)
         {
             var options = new TextShaperOptions(
