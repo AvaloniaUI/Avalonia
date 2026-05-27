@@ -1,0 +1,24 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ControlCatalog">
+
+  <!-- Only used when WindowTransparencyLevel != None -->
+
+  <Styles.Resources>
+    <SolidColorBrush x:Key="NavigationBarBackground" Color="Transparent" />
+    <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderHeaderBackground" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderHeaderBackgroundPointerOver" Color="#33808080" />
+    <SolidColorBrush x:Key="ExpanderHeaderBackgroundPressed" Color="#66808080" />
+  </Styles.Resources>
+
+  <Style Selector="local|MainView">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="DrawerBackground" Value="Transparent" />
+
+    <Style Selector="^ TabbedPage">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+  </Style>
+
+</Styles>

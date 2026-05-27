@@ -12,7 +12,6 @@
         CanResize="{Binding CanResize}"
         CanMinimize="{Binding CanMinimize}"
         CanMaximize="{Binding CanMaximize}"
-        Background="Transparent"
         x:Class="ControlCatalog.MainWindow" WindowState="{Binding WindowState, Mode=TwoWay}"
         x:DataType="vm:MainWindowViewModel">
   <NativeMenu.Menu>
@@ -60,11 +59,20 @@
     <Panel Margin="{Binding $parent[local:MainWindow].OffScreenMargin}">
       <local:MainView Margin="{Binding $parent[local:MainWindow].WindowDecorationMargin}" />
     </Panel>
-    <Border IsVisible="{Binding ExtendClientAreaEnabled}" BorderThickness="1 1 1 0" CornerRadius="4 4 0 0" BorderBrush="#55000000" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="250 8 0 0">
+    <Border IsVisible="{Binding ExtendClientAreaEnabled}"
+            BorderThickness="1"
+            CornerRadius="4"
+            BorderBrush="#55000000"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Left"
+            Margin="250,0,0,0"
+            Height="{Binding $parent[local:MainWindow].WindowDecorationMargin.Top}">
       <Border.Background>
-        <SolidColorBrush Color="White" Opacity="0.7" />
+        <SolidColorBrush Color="DodgerBlue" Opacity="0.7" />
       </Border.Background>
-      <TextBlock Margin="5 5 5 0" Text="Content In Title Bar" />
+      <TextBlock Text="Content In Title Bar"
+                 Margin="4"
+                 VerticalAlignment="Center" />
     </Border>
   </Panel>
 </Window>
