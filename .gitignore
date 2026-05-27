@@ -224,3 +224,5 @@ src/Browser/Avalonia.Browser/staticwebassets
 # Claude agent worktrees
 .claude/worktrees/
 /.claude/settings.local.json
+/planning
+BenchmarkDotNet.Artifacts.*
