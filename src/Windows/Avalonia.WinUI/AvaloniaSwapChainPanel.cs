@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
+using Microsoft.UI.Input;
 using WinUIPointerPoint = Microsoft.UI.Input.PointerPoint;
 using AvControl = global::Avalonia.Controls.Control;
 using AvSize = global::Avalonia.Size;
@@ -50,9 +51,6 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
     static AvaloniaSwapChainPanel()
     {
-        AvaloniaLocator.CurrentMutable
-            .Bind<ICursorFactory>()
-            .ToConstant(WinUICursorFactory.Instance);
         AvaloniaLocator.CurrentMutable
             .Bind<global::Avalonia.Input.Platform.IPlatformDragSource>()
             .ToSingleton<WinUIDragSource>();
@@ -471,7 +469,37 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
     private void OnAvaloniaCursorChanged(ICursorImpl? cursor)
     {
-        _cursorOverlay.SetCursor((cursor as WinUICursorImpl)?.Cursor);
+        if (cursor is WinUICursorImpl winUiCursor)
+        {
+            _cursorOverlay.SetCursor(winUiCursor.Cursor);
+        }
+        else if (cursor is Win32.CursorImpl win32Cursor)
+        {
+            _cursorOverlay.SetCursor(MapWin32CursorToWinUI(win32Cursor));
+        }
+        else
+        {
+            _cursorOverlay.SetCursor(null);
+        }
+    }
+
+    private static InputCursor? MapWin32CursorToWinUI(Win32.CursorImpl cursor)
+    {
+        var handle = cursor.Handle;
+        if (handle == IntPtr.Zero)
+            return null;
+
+        foreach (StandardCursorType type in Enum.GetValues(typeof(StandardCursorType)))
+        {
+            var cached = Win32.CursorFactory.Instance.GetCursor(type);
+            if (cached is Win32.CursorImpl c && c.Handle == handle)
+            {
+                var shape = WinUICursorFactory.Instance.GetCursor(type);
+                return (shape as WinUICursorImpl)?.Cursor;
+            }
+        }
+
+        return InputSystemCursor.Create(InputSystemCursorShape.Arrow);
     }
 
     private void OnGotFocus(object sender, RoutedEventArgs e)
