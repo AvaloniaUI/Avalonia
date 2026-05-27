@@ -474,8 +474,6 @@ namespace Avalonia.Controls.Primitives
         {
             if (e.Action == NotifyCollectionChangedAction.Reset && _selectedItemsSnapshot.Count > 0)
             {
-                // The snapshot is always consumed by either OnSelectionModelSelectionChanged
-                // (selection preserved) or OnSelectionModelLostSelection (selection lost).
                 _selectedItemsBeforeReset = _selectedItemsSnapshot.ToArray();
             }
         }
@@ -1032,7 +1030,7 @@ namespace Avalonia.Controls.Primitives
             _selectedItemsSnapshot.AddRange(Selection.SelectedItems);
             _selectedItemsBeforeReset = null;
 
-            RaiseSelectionChanged(e.DeselectedItems.ToArray(), e.SelectedItems.ToArray());
+            RaiseSelectionChanged(e.DeselectedItems, e.SelectedItems);
         }
 
         /// <summary>
@@ -1061,14 +1059,16 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="removedItems">The items removed from the selection.</param>
         /// <param name="addedItems">The items added to the selection.</param>
-        private void RaiseSelectionChanged(IList removedItems, IList addedItems)
+        private void RaiseSelectionChanged(IReadOnlyList<object?> removedItems, IReadOnlyList<object?> addedItems)
         {
             var route = BuildEventRoute(SelectionChangedEvent);
 
             if (route.HasHandlers)
             {
-                var ev = new SelectionChangedEventArgs(SelectionChangedEvent, removedItems, addedItems);
-                RaiseEvent(ev);
+                RaiseEvent(new SelectionChangedEventArgs(
+                    SelectionChangedEvent,
+                    removedItems as IList ?? removedItems.ToArray(),
+                    addedItems as IList ?? addedItems.ToArray()));
             }
         }
 
