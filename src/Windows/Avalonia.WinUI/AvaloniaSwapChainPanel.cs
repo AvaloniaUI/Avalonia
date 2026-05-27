@@ -38,6 +38,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
     private static readonly List<RawPointerPoint> s_intermediatePoints = new();
 
     private WinUITextInputMethod? _textInputMethod;
+    private bool _ignoreCharacterReceived;
 
     private readonly CursorOverlay _cursorOverlay;
 
@@ -567,6 +568,11 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
             type, key, GetCurrentModifiers(), physicalKey, keySymbol);
         input(args);
 
+        if (type == RawKeyEventType.KeyDown)
+            _ignoreCharacterReceived = key == Key.ImeProcessed || args.Handled;
+        else if (type == RawKeyEventType.KeyUp)
+            _ignoreCharacterReceived = false;
+
         // Only mark handled if Avalonia consumed the event — marking a KeyDown
         // handled suppresses the matching CharacterReceived and breaks text input.
         if (args.Handled)
@@ -648,6 +654,9 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
 
     private void OnCharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs e)
     {
+        if (_ignoreCharacterReceived)
+            return;
+
         if (_topLevelImpl?.Input is not { } input || _topLevelImpl.InputRoot is not { } inputRoot)
             return;
 

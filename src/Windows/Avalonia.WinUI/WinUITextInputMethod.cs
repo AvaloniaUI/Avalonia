@@ -25,6 +25,7 @@ internal sealed class WinUITextInputMethod : ITextInputMethodImpl
     private TextInputMethodClient? _client;
     private bool _hasFocus;
     private bool _isComposing;
+
     private string _imeText = string.Empty;
     private CoreTextRange _imeSelection;
     private int _compositionStart;
@@ -303,6 +304,29 @@ internal sealed class WinUITextInputMethod : ITextInputMethodImpl
 
     private void OnCompositionStarted(CoreTextEditContext sender, CoreTextCompositionStartedEventArgs args)
     {
+        if (_imeSelection.StartCaretPosition != _imeSelection.EndCaretPosition)
+        {
+            var input = _getInput();
+            var inputRoot = _getInputRoot();
+            var keyboard = _getKeyboardDevice();
+            if (input is not null && inputRoot is not null && keyboard is not null)
+            {
+                _suppressClientEcho = true;
+                try
+                {
+                    var timestamp = (ulong)Environment.TickCount64;
+                    input(new RawKeyEventArgs(keyboard, timestamp, inputRoot,
+                        RawKeyEventType.KeyDown, Key.Delete, RawInputModifiers.None, PhysicalKey.Delete, null));
+                    input(new RawKeyEventArgs(keyboard, timestamp, inputRoot,
+                        RawKeyEventType.KeyUp, Key.Delete, RawInputModifiers.None, PhysicalKey.Delete, null));
+                }
+                finally
+                {
+                    _suppressClientEcho = false;
+                }
+            }
+        }
+
         _isComposing = true;
         _compositionStart = _imeSelection.StartCaretPosition;
         _compositionLength = 0;
