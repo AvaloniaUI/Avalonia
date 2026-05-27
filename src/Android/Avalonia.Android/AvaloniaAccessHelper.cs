@@ -8,6 +8,7 @@ using Avalonia.Android.Automation;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls;
 using Java.Lang;
 
 namespace Avalonia.Android
@@ -208,8 +209,8 @@ namespace Avalonia.Android
             // On-screen bounds
             Rect bounds = peer.GetBoundingRectangle();
             PixelRect screenRect = new PixelRect(
-                _view.TopLevelImpl.PointToScreen(bounds.TopLeft),
-                _view.TopLevelImpl.PointToScreen(bounds.BottomRight)
+                _view.TopLevelImpl.InputRoot?.RootElement.PointToScreen(bounds.TopLeft) ?? default,
+                _view.TopLevelImpl.InputRoot?.RootElement.PointToScreen(bounds.BottomRight) ?? default
                 );
             nodeInfo.SetBoundsInScreen(new(
                 screenRect.X, screenRect.Y,

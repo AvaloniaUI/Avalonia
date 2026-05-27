@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
@@ -84,6 +86,55 @@ namespace Avalonia.Base.UnitTests.Media
                     defaultFamilyName: null!))))
             {
                 Assert.Equal("DejaVu", FontManager.Current.DefaultFontFamily.Name);
+            }
+        }
+
+        [Fact]
+        public async Task TryGetGlyphTypeface_Should_Be_Thread_Safe_For_Embedded_Fonts()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var fontManager = FontManager.Current;
+        
+                const string fontUri =
+                    "resm:Avalonia.Base.UnitTests.Assets?assembly=Avalonia.Base.UnitTests#Noto Mono";
+                var collectionKey =
+                    new Uri("resm:Avalonia.Base.UnitTests.Assets?assembly=Avalonia.Base.UnitTests");
+
+                // Warm up to validate the font URI is correct.
+                Assert.True(fontManager.TryGetGlyphTypeface(new Typeface(new FontFamily(fontUri)), out _));
+
+                const int iterations = 50;
+                int failures = 0;
+
+                for (int i = 0; i < iterations; i++)
+                {
+                    fontManager.RemoveFontCollection(collectionKey);
+
+                    using var barrier = new Barrier(2);
+                    bool r1 = false, r2 = false;
+
+                    var t1 = Task.Run(() =>
+                    {
+                        barrier.SignalAndWait();
+                        r1 = fontManager.TryGetGlyphTypeface(new Typeface(new FontFamily(fontUri)), out _);
+                    }, TestContext.Current.CancellationToken);
+
+                    var t2 = Task.Run(() =>
+                    {
+                        barrier.SignalAndWait();
+                        r2 = fontManager.TryGetGlyphTypeface(new Typeface(new FontFamily(fontUri)), out _);
+                    }, TestContext.Current.CancellationToken);
+
+                    await Task.WhenAll(t1, t2);
+
+                    if (!r1 || !r2)
+                    {
+                        Interlocked.Increment(ref failures);
+                    }
+                }
+
+                Assert.Equal(0, failures);
             }
         }
     }

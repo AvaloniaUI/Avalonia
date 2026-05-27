@@ -33,6 +33,11 @@ namespace Avalonia.Platform
         /// </summary>
         PlatformRenderTargetState PlatformRenderTargetState => PlatformRenderTargetState.Ready;
         
-        public readonly record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, CompositionTransparencyLevel TransparencyLevel);
+        public record struct RenderTargetSceneInfo(PixelSize Size, double Scaling, Size LogicalSize, CompositionTransparencyLevel TransparencyLevel)
+        {
+            public RenderTargetSceneInfo(PixelSize size, double scaling, CompositionTransparencyLevel transparencyLevel) : this(size, scaling, size.ToSize(scaling), transparencyLevel)
+            {
+            }
+        }
     }
 }

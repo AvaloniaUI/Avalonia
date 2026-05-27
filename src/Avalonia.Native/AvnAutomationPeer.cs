@@ -15,6 +15,7 @@ namespace Avalonia.Native
     {
         private static readonly Dictionary<AutomationProperty, AvnAutomationProperty> s_propertyMap = new()
         {
+            { AutomationElementIdentifiers.AutomationIdProperty, AvnAutomationProperty.AutomationPeer_AutomationId },
             { AutomationElementIdentifiers.BoundingRectangleProperty, AvnAutomationProperty.AutomationPeer_BoundingRectangle },
             { AutomationElementIdentifiers.ClassNameProperty, AvnAutomationProperty.AutomationPeer_ClassName },
             { AutomationElementIdentifiers.NameProperty, AvnAutomationProperty.AutomationPeer_Name },

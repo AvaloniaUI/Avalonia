@@ -29,7 +29,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
             using (var client = new HttpClient())
             {
-                var url = Path.Combine(UnicodeDataGenerator.Ucd, "BidiTest.txt");
+                var url = Path.Combine(UnicodeDataSource.Ucd, "BidiTest.txt");
 
                 using (var result = client.GetAsync(url).GetAwaiter().GetResult())
                 {

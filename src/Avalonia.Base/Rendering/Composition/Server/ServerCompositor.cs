@@ -281,8 +281,9 @@ namespace Avalonia.Rendering.Composition.Server
                 return true;
             
             // Request a tick if we had unready targets in the last tick, to check if they are ready next time
+            // But skip targets that are waiting for a render loop wakeup from the platform
             foreach (var target in _activeTargets)
-                if (target.IsWaitingForReadyRenderTarget)
+                if (target.IsWaitingForReadyRenderTarget && !target.IsWaitingForRenderLoopWakeup)
                     return true;
             
             // Otherwise there is no need to waste CPU cycles, tell the timer to pause
