@@ -11,7 +11,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Win32.DComposition;
 
-internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface, IDisposable, ICompositionEffectsSurface
+internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface, IDirect3D11TexturePlatformSurface2, IDisposable, ICompositionEffectsSurface
 {
     private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
     private readonly DirectCompositionShared _shared;
@@ -24,7 +24,12 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
         _info = info;
     }
 
-    public IDirect3D11TextureRenderTarget CreateRenderTarget(IPlatformGraphicsContext context, IntPtr d3dDevice)
+    IDirect3D11TextureRenderTarget IDirect3D11TexturePlatformSurface.CreateRenderTarget(IPlatformGraphicsContext context, IntPtr d3dDevice)
+    {
+        return (IDirect3D11TextureRenderTarget) CreateRenderTarget(context, d3dDevice);
+    }
+
+    public IDirect3D11TextureRenderTarget2 CreateRenderTarget(IPlatformGraphicsContext context, IntPtr d3dDevice)
     {
         _window ??= new DirectCompositedWindow(_info, _shared);
         SetBlur(_blurEffect);
@@ -48,7 +53,7 @@ internal class DirectCompositedWindowSurface : IDirect3D11TexturePlatformSurface
     }
 }
 
-internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarget
+internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarget, IDirect3D11TextureRenderTarget2
 {
     private static readonly Guid IID_ID3D11Texture2D = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
 
@@ -97,7 +102,13 @@ internal class DirectCompositedWindowRenderTarget : IDirect3D11TextureRenderTarg
     }
 
     public PlatformRenderTargetState State => _context.IsLost || _lost ? PlatformRenderTargetState.Corrupted : PlatformRenderTargetState.Ready;
-    
+
+    IDirect3D11TextureRenderTargetRenderSession IDirect3D11TextureRenderTarget.BeginDraw()
+    {
+        var fallbackSceneInfo = new IRenderTarget.RenderTargetSceneInfo(_window.WindowInfo.Size,
+            _window.WindowInfo.Scaling, CompositionTransparencyLevel.None);
+        return BeginDraw(fallbackSceneInfo);
+    }
 
     public unsafe IDirect3D11TextureRenderTargetRenderSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
     {
