@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -145,7 +146,7 @@ namespace Avalonia.Controls.Primitives
         private int _oldSelectedIndex;
         private WeakReference _oldSelectedItem = new(null);
         private WeakReference<IList?> _oldSelectedItems = new(null);
-        private object?[] _selectedItemsSnapshot = Array.Empty<object>();
+        private readonly List<object?> _selectedItemsSnapshot = new();
         private object?[]? _selectedItemsBeforeReset;
         private bool _ignoreContainerSelectionChanged;
         private UpdateState? _updateState;
@@ -471,9 +472,9 @@ namespace Avalonia.Controls.Primitives
 
         private void OnItemsViewPreCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Reset && _selectedItemsSnapshot.Length > 0)
+            if (e.Action == NotifyCollectionChangedAction.Reset && _selectedItemsSnapshot.Count > 0)
             {
-                _selectedItemsBeforeReset = _selectedItemsSnapshot;
+                _selectedItemsBeforeReset = _selectedItemsSnapshot.ToArray();
             }
         }
 
@@ -1025,7 +1026,8 @@ namespace Avalonia.Controls.Primitives
                 UpdateSelectedValueFromItem();
             }
 
-            _selectedItemsSnapshot = Selection.SelectedItems.ToArray();
+            _selectedItemsSnapshot.Clear();
+            _selectedItemsSnapshot.AddRange(Selection.SelectedItems);
             _selectedItemsBeforeReset = null;
 
             var route = BuildEventRoute(SelectionChangedEvent);
@@ -1050,10 +1052,17 @@ namespace Avalonia.Controls.Primitives
         {
             if (_selectedItemsBeforeReset?.Length > 0)
             {
-                RaiseEvent(new SelectionChangedEventArgs(
-                    SelectionChangedEvent,
-                    _selectedItemsBeforeReset,
-                    Array.Empty<object>()));
+                var route = BuildEventRoute(SelectionChangedEvent);
+
+                if (route.HasHandlers)
+                {
+                    var ev = new SelectionChangedEventArgs(
+                        SelectionChangedEvent,
+                        _selectedItemsBeforeReset,
+                        Array.Empty<object?>());
+                    RaiseEvent(ev);
+                }
+
                 _selectedItemsBeforeReset = null;
             }
 
@@ -1272,7 +1281,8 @@ namespace Avalonia.Controls.Primitives
 
             _oldSelectedIndex = model.SelectedIndex;
             _oldSelectedItem.Target = model.SelectedItem;
-            _selectedItemsSnapshot = model.SelectedItems.ToArray();
+            _selectedItemsSnapshot.Clear();
+            _selectedItemsSnapshot.AddRange(model.SelectedItems);
 
             if (_updateState is null && AlwaysSelected && model.Count == 0)
             {

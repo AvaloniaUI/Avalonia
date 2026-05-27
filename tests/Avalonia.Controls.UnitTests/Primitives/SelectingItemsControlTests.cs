@@ -877,16 +877,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var selectedItem = items[1];
 
-            SelectionChangedEventArgs? receivedArgs = null;
-            target.SelectionChanged += (_, args) => receivedArgs = args;
+            var receivedArgs = new List<SelectionChangedEventArgs>();
+            target.SelectionChanged += (_, args) => receivedArgs.Add(args);
 
             items.Clear();
 
             Assert.Null(target.SelectedItem);
             Assert.Equal(-1, target.SelectedIndex);
-            Assert.NotNull(receivedArgs);
-            Assert.Empty(receivedArgs.AddedItems);
-            Assert.Equal(new[] { selectedItem }, receivedArgs.RemovedItems);
+            Assert.Single(receivedArgs);
+            Assert.Empty(receivedArgs[0].AddedItems);
+            Assert.Equal(new[] { selectedItem }, receivedArgs[0].RemovedItems);
         }
 
         [Fact]
@@ -913,18 +913,18 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var selected0 = items[0];
             var selected2 = items[2];
 
-            SelectionChangedEventArgs? receivedArgs = null;
-            target.SelectionChanged += (_, args) => receivedArgs = args;
+            var receivedArgs = new List<SelectionChangedEventArgs>();
+            target.SelectionChanged += (_, args) => receivedArgs.Add(args);
 
             items.Clear();
 
             Assert.Null(target.SelectedItem);
             Assert.Equal(-1, target.SelectedIndex);
-            Assert.NotNull(receivedArgs);
-            Assert.Empty(receivedArgs.AddedItems);
-            Assert.Equal(2, receivedArgs.RemovedItems.Count);
-            Assert.Contains(selected0, receivedArgs.RemovedItems.Cast<object>());
-            Assert.Contains(selected2, receivedArgs.RemovedItems.Cast<object>());
+            Assert.Single(receivedArgs);
+            Assert.Empty(receivedArgs[0].AddedItems);
+            Assert.Equal(2, receivedArgs[0].RemovedItems.Count);
+            Assert.Contains(selected0, receivedArgs[0].RemovedItems.Cast<object>());
+            Assert.Contains(selected2, receivedArgs[0].RemovedItems.Cast<object>());
         }
 
         [Fact]
@@ -941,14 +941,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.ApplyTemplate();
             target.SelectedIndex = 1;
 
-            SelectionChangedEventArgs? receivedArgs = null;
-            target.SelectionChanged += (_, args) => receivedArgs = args;
+            var receivedArgs = new List<SelectionChangedEventArgs>();
+            target.SelectionChanged += (_, args) => receivedArgs.Add(args);
 
             items.Reset(new[] { "Item2", "Item0", "Item1" });
 
             Assert.Equal("Item1", target.SelectedItem);
-            Assert.NotNull(receivedArgs);
-            Assert.Empty(receivedArgs.RemovedItems);
+            Assert.Single(receivedArgs);
+            Assert.Empty(receivedArgs[0].RemovedItems);
         }
 
         [Fact]
