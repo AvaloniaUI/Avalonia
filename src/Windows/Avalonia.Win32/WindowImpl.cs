@@ -219,9 +219,9 @@ namespace Avalonia.Win32
         {
             get
             {
-                if (HasFullDecorations)
+                var style = GetStyle();
+                if (style.HasFlag(WindowStyles.WS_BORDER))
                 {
-                    var style = GetStyle();
                     var exStyle = GetExtendedStyle();
 
                     var padding = new RECT();
@@ -431,7 +431,7 @@ namespace Avalonia.Win32
 
         private bool SetTransparencyTransparent()
         {
-            if (CompositionEffectsSurface is {} surface)
+            if (CompositionEffectsSurface is { } surface)
             {
                 surface.SetBlur(BlurEffect.None);
                 return true;
@@ -529,7 +529,7 @@ namespace Avalonia.Win32
                     0,
                     0,
                     SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_NOZORDER);
-                
+
                 if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
                 {
                     var monitor = MonitorFromWindow(Handle.Handle, MONITOR.MONITOR_DEFAULTTONEAREST);
@@ -805,7 +805,7 @@ namespace Avalonia.Win32
             var hCursor = impl?.Handle ?? s_defaultCursor;
             SetClassLong(_hwnd, ClassLongIndex.GCLP_HCURSOR, hCursor);
 
-            UnmanagedMethods.SetCursor(hCursor);    
+            UnmanagedMethods.SetCursor(hCursor);
         }
 
         public void SetIcon(IWindowIconImpl? icon)
@@ -925,7 +925,7 @@ namespace Avalonia.Win32
 
         private void EnsureTopmost()
         {
-            if(_topmost)
+            if (_topmost)
             {
                 SetWindowPos(_hwnd,
                     WindowPosZOrder.HWND_TOPMOST,
@@ -1009,7 +1009,7 @@ namespace Avalonia.Win32
 
             Handle = new WindowImplPlatformHandle(this);
 
-                RegisterTouchWindow(_hwnd, 0);
+            RegisterTouchWindow(_hwnd, 0);
 
             if (ShCoreAvailable && Win32Platform.WindowsVersion >= PlatformConstants.Windows8_1)
             {
@@ -1206,7 +1206,8 @@ namespace Avalonia.Win32
 
                 // On Windows 11 21H2 and later, corners are configurable.
                 // When doing so, we need to make sure that DWM draws the non-client frame for that to work correctly.
-                if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000)) {
+                if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
+                {
                     SetWindowCornerPreference(DwmWindowCornerPreference.DWMWCP_ROUND);
                     SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_ENABLED);
                 }
@@ -1527,7 +1528,7 @@ namespace Avalonia.Win32
 
                 if (_shown || forceChanges)
                 {
-                    SetWindowPos(_hwnd, IntPtr.Zero, 0, 0, 0 ,0,
+                    SetWindowPos(_hwnd, IntPtr.Zero, 0, 0, 0, 0,
                         SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE |
                         SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOMOVE |
                         SetWindowPosFlags.SWP_FRAMECHANGED);
