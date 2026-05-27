@@ -122,25 +122,65 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
         private static LineBreak? ExecuteRules(ReadOnlySpan<char> text, ref LineBreakState state)
         {
-            foreach (var rule in s_rules)
+            // Rules are invoked directly (not through a delegate array) so the JIT can
+            // inline trivial early-exit rules and eliminate per-rule indirect-call
+            // overhead. Order is significant: LB21a must run before LB21.
+            RuleResult res;
+
+            if ((res = RegionalIndicator(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB03(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB04(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB05(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB06(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB07(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB08(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB08a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB09(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB10(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB11(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB12(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB12a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB13(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB14(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB15a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB15b(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB15c(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB15d(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB16(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB17(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB18(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB19(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB20(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB20a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB21a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB21(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB21b(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB22(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB23(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB23a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB24(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB25(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB26(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB27(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB28(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB28a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB29(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB30(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB30a(text, ref state)) != RuleResult.Pass) goto Done;
+            if ((res = LB30b(text, ref state)) != RuleResult.Pass) goto Done;
+            res = LB31(text, ref state); // always returns MayBreak
+
+        Done:
+            switch (res)
             {
-                var res = rule.Invoke(text, ref state);
-
-                switch (res)
-                {
-                    case RuleResult.Pass:
-                        continue;
-                    case RuleResult.NoBreak:
-                        return null;
-                    case RuleResult.MayBreak:
-                    case RuleResult.MustBreak:
-                        return GetLineBreak(text, state, IsBreakClass(state.Current.LineBreakClass));
-                    default:
-                        throw new InvalidOperationException("Invalid state.");
-                }
+                case RuleResult.NoBreak:
+                    return null;
+                case RuleResult.MayBreak:
+                case RuleResult.MustBreak:
+                    return GetLineBreak(text, state, IsBreakClass(state.Current.LineBreakClass));
+                default:
+                    return null;
             }
-
-            return null;
         }
 
         private static RuleResult RegionalIndicator(ReadOnlySpan<char> text, ref LineBreakState state)
@@ -164,6 +204,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB3: Always break at the end of text.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB03(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             if (state.Current.EndOfText)
@@ -177,6 +218,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB4: Always break after hard line breaks.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB04(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // BK !
@@ -214,6 +256,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB6: Do not break before hard line breaks.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB06(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × ( BK | CR | LF | NL )
@@ -228,6 +271,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB7: Do not break before spaces or zero width space.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB07(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × SP
@@ -261,6 +305,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB8a: Do not break after a zero width joiner.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB08a(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // ZWJ ×
@@ -325,6 +370,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB11: Do not break before or after Word joiner and related characters.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB11(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             if (state.NextClass == LineBreakClass.WordJoiner /* × WJ */
@@ -339,6 +385,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB12: Do not break after NBSP and related characters.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB12(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // GL ×
@@ -376,6 +423,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB13: Do not break before ‘]’ or ‘!’ or ‘;’ or ‘/’, even after spaces.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB13(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × CL
@@ -397,6 +445,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB14: Do not break after ‘[’, even after spaces.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB14(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // OP SP* ×
@@ -510,6 +559,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB15d: Otherwise, do not break before ‘;’, ‘,’, or ‘.’, even after spaces.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB15d(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × IS
@@ -571,6 +621,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB18: Break after spaces.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB18(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // SP ÷
@@ -633,6 +684,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB20: Break before and after unresolved CB.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB20(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // ÷ CB
@@ -738,6 +790,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB21b: Don’t break between Solidus and Hebrew letters.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB21b(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // [21.2] SY × HL
@@ -752,6 +805,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB22: Do not break before ellipses.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB22(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // × IN
@@ -1244,6 +1298,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB29: Do not break between numeric punctuation and alphabetics (“e.g.”).
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB29(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             // IS × (AL | HL)
@@ -1352,6 +1407,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// LB31: Break everywhere else.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static RuleResult LB31(ReadOnlySpan<char> text, ref LineBreakState state)
         {
             return RuleResult.MayBreak;
@@ -1668,50 +1724,5 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         private delegate RuleResult BreakUnitDelegate(ReadOnlySpan<char> text, ref LineBreakState state);
-
-        private static readonly BreakUnitDelegate[] s_rules = [
-            RegionalIndicator,
-            LB03,
-            LB04,
-            LB05,
-            LB06,
-            LB07,
-            LB08,
-            LB08a,
-            LB09,
-            LB10,
-            LB11,
-            LB12,
-            LB12a,
-            LB13,
-            LB14,
-            LB15a,
-            LB15b,
-            LB15c,
-            LB15d,
-            LB16,
-            LB17,
-            LB18,
-            LB19,
-            LB20,
-            LB20a,
-            LB21a, // Must be before LB21
-            LB21,
-            LB21b,
-            LB22,
-            LB23,
-            LB23a,
-            LB24,
-            LB25,
-            LB26,
-            LB27,
-            LB28,
-            LB28a,
-            LB29,
-            LB30,
-            LB30a,
-            LB30b,
-            LB31,
-        ];
     }
 }
