@@ -766,20 +766,25 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Retrieves the vector outline geometry for the specified glyph, optionally applying a transformation and font
-        /// variation settings.
+        /// Retrieves the vector outline geometry for the specified glyph with the given
+        /// transformation applied.
         /// </summary>
-        /// <remarks>The returned geometry reflects any transformation and variation settings provided. If
-        /// the font does not contain outline data for the specified glyph, or if the glyph identifier is out of range,
-        /// the method returns null.</remarks>
-        /// <param name="glyphId">The identifier of the glyph to retrieve. Must be less than or equal to the total number of glyphs in the
-        /// font.</param>
-        /// <param name="transform">A transformation matrix to apply to the glyph outline geometry.</param>
-        /// <param name="variation">Optional font variation settings to use when retrieving the glyph outline. If null, default font variations
-        /// are used.</param>
-        /// <returns>A Geometry object representing the outline of the specified glyph, or null if the glyph does not exist or
-        /// the outline cannot be retrieved.</returns>
-        public Geometry? GetGlyphOutline(ushort glyphId, Matrix transform, FontVariationSettings? variation = null)
+        /// <remarks>
+        /// Returns <c>null</c> when the glyph ID is out of range, the font has no <c>glyf</c>
+        /// table (e.g. CFF / CFF2), or the glyph data cannot be parsed (malformed font,
+        /// cyclic composite, depth limit exceeded). Callers typically pass
+        /// <c>Matrix.CreateScale(1, -1)</c> as <paramref name="transform"/> to flip from
+        /// font-space (Y-up) into drawing-space (Y-down).
+        /// </remarks>
+        /// <param name="glyphId">The identifier of the glyph to retrieve.</param>
+        /// <param name="transform">A transformation matrix to apply to the outline.</param>
+        /// <returns>
+        /// A <see cref="Geometry"/> for the glyph outline, or <c>null</c> when no outline
+        /// is available. Variable-font axis configuration is taken from the typeface
+        /// instance itself; to render at a different variation point, obtain a separately
+        /// configured <see cref="GlyphTypeface"/> from the font collection.
+        /// </returns>
+        public Geometry? GetGlyphOutline(ushort glyphId, Matrix transform)
         {
             if (glyphId > GlyphCount)
             {
