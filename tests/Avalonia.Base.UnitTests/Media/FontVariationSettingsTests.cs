@@ -13,26 +13,41 @@ namespace Avalonia.Base.UnitTests.Media
         private static readonly OpenTypeTag Ital = OpenTypeTag.Parse("ital");
 
         [Fact]
-        public void Default_Has_Empty_Coordinates_And_Null_InstanceIndex()
+        public void Default_Struct_Is_The_No_Variation_Case()
         {
-            var settings = FontVariationSettings.Default;
+            var settings = default(FontVariationSettings);
 
-            Assert.NotNull(settings);
-            Assert.Empty(settings.NormalizedCoordinates);
-            Assert.Null(settings.InstanceIndex);
+            Assert.True(settings.IsDefault);
+            Assert.Empty(settings.Coordinates);
+            Assert.Equal(0, settings.GetHashCode());
         }
 
         [Fact]
-        public void Default_Is_A_Singleton()
+        public void Default_Structs_Are_Equal()
         {
-            Assert.Same(FontVariationSettings.Default, FontVariationSettings.Default);
+            // Two zero-initialized structs must compare equal, even though they're
+            // distinct values on the stack. This is the substitute for the previous
+            // singleton Default.
+            Assert.Equal(default(FontVariationSettings), default(FontVariationSettings));
+            Assert.True(default(FontVariationSettings) == default(FontVariationSettings));
         }
 
         [Fact]
-        public void FromCoordinates_Throws_On_Null_Map()
+        public void Coordinates_Property_Returns_Empty_Not_Default_For_Default_Struct()
+        {
+            // The IsDefault → Empty normalization in the property lets callers iterate
+            // / index without first checking ImmutableArray.IsDefault.
+            var settings = default(FontVariationSettings);
+
+            Assert.False(settings.Coordinates.IsDefault);
+            Assert.Equal(0, settings.Coordinates.Length);
+        }
+
+        [Fact]
+        public void FromCoordinates_Dictionary_Throws_On_Null()
         {
             Assert.Throws<ArgumentNullException>(
-                () => FontVariationSettings.FromCoordinates(null!));
+                () => FontVariationSettings.FromCoordinates((IReadOnlyDictionary<OpenTypeTag, float>)null!));
         }
 
         [Theory]
@@ -41,7 +56,7 @@ namespace Avalonia.Base.UnitTests.Media
         [InlineData(1.0001f)]
         [InlineData(float.PositiveInfinity)]
         [InlineData(float.NegativeInfinity)]
-        public void FromCoordinates_Rejects_Out_Of_Range_Or_NaN(float value)
+        public void FromCoordinates_Dictionary_Rejects_Out_Of_Range_Or_NaN(float value)
         {
             var coords = new Dictionary<OpenTypeTag, float> { [Wght] = value };
 
@@ -53,112 +68,157 @@ namespace Avalonia.Base.UnitTests.Media
         [InlineData(-1f)]
         [InlineData(0f)]
         [InlineData(1f)]
-        public void FromCoordinates_Accepts_Boundary_Values(float value)
+        public void FromCoordinates_Dictionary_Accepts_Boundary_Values(float value)
         {
             var coords = new Dictionary<OpenTypeTag, float> { [Wght] = value };
 
             var settings = FontVariationSettings.FromCoordinates(coords);
 
-            Assert.Single(settings.NormalizedCoordinates);
-            Assert.Equal(value, settings.NormalizedCoordinates[Wght]);
+            Assert.Single(settings.Coordinates);
+            Assert.Equal(Wght, settings.Coordinates[0].Axis);
+            Assert.Equal(value, settings.Coordinates[0].NormalizedValue);
         }
 
         [Fact]
-        public void FromCoordinates_Rejects_Negative_InstanceIndex()
+        public void FromCoordinates_Dictionary_Empty_Returns_Default_Struct()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(
-                () => FontVariationSettings.FromCoordinates(
-                    new Dictionary<OpenTypeTag, float>(), instanceIndex: -1));
-        }
-
-        [Fact]
-        public void FromCoordinates_With_Empty_Map_And_No_Instance_Returns_Default()
-        {
-            // When the inputs carry no actual configuration, the factory returns the
-            // shared Default singleton instead of allocating a fresh instance.
             var settings = FontVariationSettings.FromCoordinates(new Dictionary<OpenTypeTag, float>());
 
-            Assert.Same(FontVariationSettings.Default, settings);
+            Assert.True(settings.IsDefault);
+            Assert.Equal(default(FontVariationSettings), settings);
         }
 
         [Fact]
-        public void FromCoordinates_Stores_InstanceIndex()
+        public void FromCoordinates_Dictionary_Sorts_By_Axis_Tag()
         {
-            var settings = FontVariationSettings.FromCoordinates(
-                new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f },
-                instanceIndex: 3);
-
-            Assert.Equal(3, settings.InstanceIndex);
-        }
-
-        [Fact]
-        public void FromCoordinates_Populates_Both_Coordinates_And_InstanceIndex()
-        {
-            // Coordinates and a named-instance index are intended to combine: the
-            // instance picks the baseline, per-axis entries override individual axes.
-            // Make sure both survive the factory call together.
-            var settings = FontVariationSettings.FromCoordinates(
-                new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f, [Wdth] = -0.25f },
-                instanceIndex: 2);
-
-            Assert.Equal(2, settings.InstanceIndex);
-            Assert.Equal(2, settings.NormalizedCoordinates.Count);
-            Assert.Equal(0.5f, settings.NormalizedCoordinates[Wght]);
-            Assert.Equal(-0.25f, settings.NormalizedCoordinates[Wdth]);
-        }
-
-        [Fact]
-        public void FromCoordinates_Defensively_Copies_The_Input_Dictionary()
-        {
-            var mutable = new Dictionary<OpenTypeTag, float>
+            // Insertion order shouldn't matter — coordinates land sorted by (uint)tag
+            // so equality and hashing are insertion-order-independent.
+            var unordered = new Dictionary<OpenTypeTag, float>
             {
                 [Wght] = 0.5f,
+                [Ital] = 1f,
+                [Wdth] = -0.25f,
             };
+
+            var settings = FontVariationSettings.FromCoordinates(unordered);
+
+            Assert.Equal(3, settings.Coordinates.Length);
+            // Sorted: ital (0x6974616c), wdth (0x77647468), wght (0x77676874).
+            // Lexically by the 4-char ASCII tag uint, that's ital < wdth < wght.
+            Assert.Equal(Ital, settings.Coordinates[0].Axis);
+            Assert.Equal(Wdth, settings.Coordinates[1].Axis);
+            Assert.Equal(Wght, settings.Coordinates[2].Axis);
+        }
+
+        [Fact]
+        public void FromCoordinates_Dictionary_Defensively_Copies_The_Input()
+        {
+            var mutable = new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f };
 
             var settings = FontVariationSettings.FromCoordinates(mutable);
 
-            // Mutation of the caller's dictionary after construction must not leak
-            // into the settings instance.
             mutable[Wght] = 0.9f;
             mutable[Wdth] = -0.25f;
 
-            Assert.Single(settings.NormalizedCoordinates);
-            Assert.Equal(0.5f, settings.NormalizedCoordinates[Wght]);
-            Assert.False(settings.NormalizedCoordinates.ContainsKey(Wdth));
+            Assert.Single(settings.Coordinates);
+            Assert.Equal(0.5f, settings.Coordinates[0].NormalizedValue);
         }
 
         [Fact]
-        public void NormalizedCoordinates_Is_Read_Only()
+        public void FromCoordinates_Span_Empty_Returns_Default_Struct()
+        {
+            var settings = FontVariationSettings.FromCoordinates(ReadOnlySpan<FontVariationCoordinate>.Empty);
+
+            Assert.True(settings.IsDefault);
+        }
+
+        [Fact]
+        public void FromCoordinates_Span_Sorts_And_Validates()
+        {
+            Span<FontVariationCoordinate> coords =
+            [
+                new FontVariationCoordinate(Wght, 0.5f),
+                new FontVariationCoordinate(Ital, 1f),
+                new FontVariationCoordinate(Wdth, -0.25f),
+            ];
+
+            var settings = FontVariationSettings.FromCoordinates(coords);
+
+            Assert.Equal(3, settings.Coordinates.Length);
+            Assert.Equal(Ital, settings.Coordinates[0].Axis);
+            Assert.Equal(Wdth, settings.Coordinates[1].Axis);
+            Assert.Equal(Wght, settings.Coordinates[2].Axis);
+        }
+
+        [Fact]
+        public void FromCoordinates_Span_Rejects_Duplicate_Axes()
+        {
+            Assert.Throws<ArgumentException>(static () =>
+            {
+                Span<FontVariationCoordinate> coords =
+                [
+                    new FontVariationCoordinate(OpenTypeTag.Parse("wght"), 0.5f),
+                    new FontVariationCoordinate(OpenTypeTag.Parse("wght"), -0.5f),
+                ];
+                FontVariationSettings.FromCoordinates(coords);
+            });
+        }
+
+        [Fact]
+        public void FromCoordinates_Span_Rejects_Out_Of_Range_Value()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(static () =>
+            {
+                Span<FontVariationCoordinate> coords = [new FontVariationCoordinate(OpenTypeTag.Parse("wght"), 2f)];
+                FontVariationSettings.FromCoordinates(coords);
+            });
+        }
+
+        [Fact]
+        public void TryGetCoordinate_Returns_True_For_Present_Axis()
+        {
+            var settings = FontVariationSettings.FromCoordinates(
+                new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f, [Wdth] = -0.25f });
+
+            Assert.True(settings.TryGetCoordinate(Wght, out var w));
+            Assert.Equal(0.5f, w);
+
+            Assert.True(settings.TryGetCoordinate(Wdth, out var wd));
+            Assert.Equal(-0.25f, wd);
+        }
+
+        [Fact]
+        public void TryGetCoordinate_Returns_False_For_Absent_Axis()
         {
             var settings = FontVariationSettings.FromCoordinates(
                 new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f });
 
-            // FrozenDictionary implements IDictionary<K,V> but is read-only:
-            // IsReadOnly returns true and any mutation attempt throws.
-            var mutableView = settings.NormalizedCoordinates as IDictionary<OpenTypeTag, float>;
-            Assert.NotNull(mutableView);
-            Assert.True(mutableView!.IsReadOnly);
-            Assert.Throws<NotSupportedException>(() => mutableView[Wght] = 0.9f);
+            Assert.False(settings.TryGetCoordinate(Ital, out var v));
+            Assert.Equal(0f, v);
         }
 
         [Fact]
-        public void FromInstance_Rejects_Negative_Index()
+        public void TryGetCoordinate_Returns_False_For_Default_Struct()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(
-                () => FontVariationSettings.FromInstance(-1));
+            var settings = default(FontVariationSettings);
+
+            Assert.False(settings.TryGetCoordinate(Wght, out var v));
+            Assert.Equal(0f, v);
         }
 
         [Fact]
-        public void FromInstance_Returns_Settings_With_Empty_Coordinates_And_Given_Index()
+        public void GetCoordinateOrDefault_Returns_Fallback_For_Absent_Axis()
         {
-            var settings = FontVariationSettings.FromInstance(2);
+            var settings = FontVariationSettings.FromCoordinates(
+                new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f });
 
-            Assert.Empty(settings.NormalizedCoordinates);
-            Assert.Equal(2, settings.InstanceIndex);
+            Assert.Equal(0.5f, settings.GetCoordinateOrDefault(Wght));
+            Assert.Equal(0f, settings.GetCoordinateOrDefault(Ital));
+            Assert.Equal(-1f, settings.GetCoordinateOrDefault(Ital, -1f));
         }
 
         [Fact]
-        public void Equals_Is_Reflexive()
+        public void Equality_Is_Reflexive()
         {
             var settings = FontVariationSettings.FromCoordinates(
                 new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f });
@@ -167,21 +227,20 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
-        public void Equals_Is_Structural_For_Identical_Coordinates()
+        public void Equality_Is_Structural_For_Identical_Coordinates()
         {
             var a = FontVariationSettings.FromCoordinates(
                 new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f, [Wdth] = -0.25f });
             var b = FontVariationSettings.FromCoordinates(
                 new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f, [Wdth] = -0.25f });
 
-            Assert.NotSame(a, b);
             Assert.True(a.Equals(b));
             Assert.True(b.Equals(a));
             Assert.Equal(a.GetHashCode(), b.GetHashCode());
         }
 
         [Fact]
-        public void Equals_Ignores_Insertion_Order_Of_Coordinates()
+        public void Equality_Ignores_Insertion_Order()
         {
             var a = FontVariationSettings.FromCoordinates(
                 new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f, [Wdth] = -0.25f });
@@ -193,7 +252,7 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
-        public void Equals_Differs_When_A_Coordinate_Value_Differs()
+        public void Equality_Differs_When_A_Coordinate_Value_Differs()
         {
             var a = FontVariationSettings.FromCoordinates(
                 new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f });
@@ -204,7 +263,7 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
-        public void Equals_Differs_When_A_Coordinate_Key_Differs()
+        public void Equality_Differs_When_A_Coordinate_Key_Differs()
         {
             var a = FontVariationSettings.FromCoordinates(
                 new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f });
@@ -215,7 +274,7 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
-        public void Equals_Differs_When_Coordinate_Counts_Differ()
+        public void Equality_Differs_When_Coordinate_Counts_Differ()
         {
             var a = FontVariationSettings.FromCoordinates(
                 new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f });
@@ -226,31 +285,30 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
-        public void Equals_Differs_When_InstanceIndex_Differs()
+        public void Equality_Differs_Between_Default_And_Populated()
         {
-            var a = FontVariationSettings.FromInstance(0);
-            var b = FontVariationSettings.FromInstance(1);
-
-            Assert.False(a.Equals(b));
-        }
-
-        [Fact]
-        public void Equals_Differs_Between_Instance_And_Coordinate_Forms()
-        {
-            var a = FontVariationSettings.FromCoordinates(
+            var a = default(FontVariationSettings);
+            var b = FontVariationSettings.FromCoordinates(
                 new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f });
-            var b = FontVariationSettings.FromInstance(0);
 
             Assert.False(a.Equals(b));
+            Assert.False(b.Equals(a));
         }
 
         [Fact]
-        public void Equals_Returns_False_For_Null()
+        public void Hash_Is_Cached_And_Stable_Across_Equal_Instances()
         {
-            var settings = FontVariationSettings.FromInstance(0);
+            // The hash is computed once at construction. Two structurally-equal settings
+            // must have the same hash regardless of how the coordinates were inserted.
+            var a = FontVariationSettings.FromCoordinates(
+                new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f, [Wdth] = -0.25f, [Ital] = 1f });
+            var b = FontVariationSettings.FromCoordinates(
+                new Dictionary<OpenTypeTag, float> { [Ital] = 1f, [Wght] = 0.5f, [Wdth] = -0.25f });
 
-            Assert.False(settings.Equals(null));
-            Assert.False(settings.Equals((object?)null));
+            var hashA = a.GetHashCode();
+            // Subsequent calls return the same cached value.
+            Assert.Equal(hashA, a.GetHashCode());
+            Assert.Equal(hashA, b.GetHashCode());
         }
 
         [Fact]
@@ -267,11 +325,37 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.False(a != b);
             Assert.False(a == c);
             Assert.True(a != c);
+        }
 
-            FontVariationSettings? nullSettings = null;
-            Assert.True(nullSettings == null);
-            Assert.False(a == null);
-            Assert.False(null == a);
+        [Fact]
+        public void Equality_With_Boxed_Object()
+        {
+            // Cache-key paths box rarely, but Equals(object) must still be correct.
+            var a = FontVariationSettings.FromCoordinates(
+                new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f });
+            object boxed = FontVariationSettings.FromCoordinates(
+                new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f });
+
+            Assert.True(a.Equals(boxed));
+            Assert.False(a.Equals((object?)null));
+            Assert.False(a.Equals("not a settings"));
+        }
+
+        [Fact]
+        public void FontVariationCoordinate_Has_Structural_Equality()
+        {
+            // The coordinate record-struct provides equality for free; verify it
+            // behaves as expected so callers can use it in their own comparisons.
+            var a = new FontVariationCoordinate(Wght, 0.5f);
+            var b = new FontVariationCoordinate(Wght, 0.5f);
+            var c = new FontVariationCoordinate(Wght, 0.6f);
+            var d = new FontVariationCoordinate(Wdth, 0.5f);
+
+            Assert.Equal(a, b);
+            Assert.NotEqual(a, c);
+            Assert.NotEqual(a, d);
+            Assert.True(a == b);
+            Assert.True(a != c);
         }
     }
 }
