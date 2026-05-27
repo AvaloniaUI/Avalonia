@@ -107,27 +107,16 @@ namespace Avalonia.Input
                 IsGestureRecognitionSkipped = false;
             }
 
-            // Update the cursor following the capture change
+            // Update the pointer-over + cursor immediately following the capture change
             if (Type != PointerType.Touch)
             {
                 var oldInputRoot = oldVisual?.PresentationSource?.InputRoot;
                 var newInputRoot = newVisual?.PresentationSource?.InputRoot;
 
-                if (oldInputRoot is not null)
-                {
-                    if (oldCapture == oldInputRoot.CursorElement)
-                    {
-                        if (oldInputRoot == newInputRoot)
-                            oldInputRoot.CursorElement = control;
-                        else
-                        {
-                            oldInputRoot.CursorElement = oldInputRoot.PointerOverElement;
-                            newInputRoot?.CursorElement = control;
-                        }
-                    }
-                }
-                else
-                    newInputRoot?.CursorElement = control;
+                oldInputRoot?.PointerOverInvalidated();
+
+                if (oldInputRoot != newInputRoot)
+                    newInputRoot?.PointerOverInvalidated();
             }
         }
 

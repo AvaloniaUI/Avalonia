@@ -186,7 +186,7 @@ public sealed class PresentationSourceTests : ScopedTestBase
             Content = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
-                Children = { captured, other1 }
+                Children = { captured, other1, other2 }
             }
         };
 
@@ -218,7 +218,7 @@ public sealed class PresentationSourceTests : ScopedTestBase
         // cursor must keep coming from the captured element rather than following the new
         // PointerOverElement.
         windowImpl.Object.Input!(new RawPointerEventArgs(
-            mouse, 2, root, RawPointerEventType.Move, new Point(60, 50),
+            mouse, 2, root, RawPointerEventType.Move, new Point(70, 50),
             RawInputModifiers.LeftMouseButton));
 
         Assert.Same(captured, pointer.Captured);
@@ -233,8 +233,14 @@ public sealed class PresentationSourceTests : ScopedTestBase
         pointer.Capture(other1);
         Assert.Same(other1.Cursor!.PlatformImpl, currentCursor);
 
-        // Releasing the capture should reset the cursor to match the element the cursor is over.
+        // Move the pointer to an unrelated element and release the capture:
+        // it should reset the cursor to match that new element.
         ((IInputRoot)root).PointerOverElement = other2;
+
+        windowImpl.Object.Input!(new RawPointerEventArgs(
+            mouse, 2, root, RawPointerEventType.Move, new Point(120, 50),
+            RawInputModifiers.LeftMouseButton));
+
         pointer.Capture(null);
         Assert.Same(other2.Cursor!.PlatformImpl, currentCursor);
     }

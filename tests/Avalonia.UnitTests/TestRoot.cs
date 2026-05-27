@@ -143,5 +143,9 @@ namespace Avalonia.UnitTests
         {
             return base.MeasureOverride(ClientSize);
         }
+
+        public void PointerOverInvalidated()
+        {
+        }
     }
 }

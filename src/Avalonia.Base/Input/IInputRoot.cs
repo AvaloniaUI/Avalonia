@@ -47,5 +47,10 @@ namespace Avalonia.Input
         /// Any other non-<see cref="WindowDecorationsElementRole.None"/> value indicates a specific non-client role (titlebar, resize grip, etc.).
         /// </returns>
         internal WindowDecorationsElementRole? HitTestChromeElement(Point point) => null;
+
+        /// <summary>
+        /// Ask for the pointer-over element to be refreshed (usually after a capture change).
+        /// </summary>
+        internal void PointerOverInvalidated();
     }
 }

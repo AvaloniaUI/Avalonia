@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Input;
 
 namespace Avalonia.Controls;
@@ -14,7 +15,7 @@ internal partial class PresentationSource
         _cursor = cursor;
         UpdateCursor();
     }
-    
+
     /// <summary>
     /// This should only be used by InProcessDragSource
     /// </summary>
@@ -23,7 +24,7 @@ internal partial class PresentationSource
         _cursorOverride = cursor;
         UpdateCursor();
     }
-    
+
     IInputElement? IInputRoot.PointerOverElement { get; set; }
 
     IInputElement? IInputRoot.CursorElement
@@ -42,6 +43,9 @@ internal partial class PresentationSource
             SetCursor(value?.Cursor);
         }
     }
+
+    void IInputRoot.PointerOverInvalidated()
+        => _pointerOverPreProcessor?.SceneInvalidated(new Rect(new Point(0, 0), Size.Infinity));
 
     private void CursorElement_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
