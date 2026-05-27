@@ -56,6 +56,14 @@ namespace Avalonia.Utilities
         /// <summary>
         /// Returns an object to the pool if it passes validation and the pool is not full.
         /// </summary>
+        /// <remarks>
+        /// Callers must not return the same item more than once without an intervening
+        /// <see cref="Rent"/>. The pool does not detect duplicate returns; doing so would
+        /// place the same instance into the pool twice and let two callers rent it
+        /// concurrently. The pool also does not call <see cref="IDisposable.Dispose"/> on
+        /// items it drops (e.g. when full or when the validator returns <c>false</c>);
+        /// any cleanup belongs in the validator or in the caller.
+        /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Return(T item)
         {

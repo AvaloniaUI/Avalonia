@@ -66,6 +66,22 @@ namespace Avalonia.Media.Fonts.Tables
     /// Tracks visited nodes to detect cycles in a graph (composite glyphs, paint graphs, etc.).
     /// Uses a depth limit to prevent stack overflow during recursive traversal.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Instances are <b>not thread-safe</b>: <see cref="Enter"/>, <see cref="Exit"/>, and
+    /// <see cref="Reset"/> all mutate shared state without synchronization. The intended
+    /// usage pattern is "one instance per traversal" — rent an instance from a pool at
+    /// the start of a single-threaded walk and return it when done. Sharing one
+    /// <see cref="Decycler{T}"/> across concurrent traversals will corrupt the visited
+    /// set.
+    /// </para>
+    /// <para>
+    /// <see cref="Enter"/> uses exceptions to signal cycle / depth-limit failures.
+    /// Callers that traverse user-supplied data (e.g. font tables) should wrap the
+    /// outermost traversal in a <c>try</c> / <c>catch (DecyclerException)</c> and treat
+    /// the failure as "stop traversing this subgraph".
+    /// </para>
+    /// </remarks>
     /// <typeparam name="T">The type of the node identifier.</typeparam>
     internal class Decycler<T> where T : struct
     {

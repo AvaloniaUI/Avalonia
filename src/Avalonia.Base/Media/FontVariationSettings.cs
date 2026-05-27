@@ -34,6 +34,11 @@ namespace Avalonia.Media
         /// Singleton instance representing "no variation": no axis coordinates and no
         /// named instance.
         /// </summary>
+        /// <remarks>
+        /// APIs that accept a <see cref="FontVariationSettings"/> parameter treat a
+        /// <c>null</c> argument as equivalent to <see cref="Default"/>. Pass either to
+        /// mean "leave the font at its default axis configuration".
+        /// </remarks>
         public static FontVariationSettings Default { get; } =
             new FontVariationSettings(FrozenDictionary<OpenTypeTag, float>.Empty, instanceIndex: null);
 

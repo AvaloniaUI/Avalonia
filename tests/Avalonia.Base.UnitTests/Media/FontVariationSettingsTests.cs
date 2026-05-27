@@ -92,6 +92,22 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
+        public void FromCoordinates_Populates_Both_Coordinates_And_InstanceIndex()
+        {
+            // Coordinates and a named-instance index are intended to combine: the
+            // instance picks the baseline, per-axis entries override individual axes.
+            // Make sure both survive the factory call together.
+            var settings = FontVariationSettings.FromCoordinates(
+                new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f, [Wdth] = -0.25f },
+                instanceIndex: 2);
+
+            Assert.Equal(2, settings.InstanceIndex);
+            Assert.Equal(2, settings.NormalizedCoordinates.Count);
+            Assert.Equal(0.5f, settings.NormalizedCoordinates[Wght]);
+            Assert.Equal(-0.25f, settings.NormalizedCoordinates[Wdth]);
+        }
+
+        [Fact]
         public void FromCoordinates_Defensively_Copies_The_Input_Dictionary()
         {
             var mutable = new Dictionary<OpenTypeTag, float>

@@ -122,6 +122,29 @@ namespace Avalonia.Base.UnitTests.Utilities
         }
 
         [Fact]
+        public void Validator_Is_Not_Invoked_On_Rent()
+        {
+            // The validator's job is to prepare an item for re-use *before* it goes back
+            // into the pool. Running it on Rent would either duplicate the work or imply
+            // a different contract (validate-on-take). Pin the current contract.
+            var validatorCalls = 0;
+            var pool = new ObjectPool<Item>(
+                factory: () => new Item(),
+                validator: _ =>
+                {
+                    validatorCalls++;
+                    return true;
+                });
+
+            _ = pool.Rent();           // fresh from factory; validator must not run
+            var item = pool.Rent();
+            pool.Return(item);          // one validator call here
+            _ = pool.Rent();           // pulled from pool; validator must not run again
+
+            Assert.Equal(1, validatorCalls);
+        }
+
+        [Fact]
         public void Return_Drops_Item_When_Validator_Returns_False()
         {
             var pool = new ObjectPool<Item>(

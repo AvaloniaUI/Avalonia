@@ -22,6 +22,20 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
+        public void Parameterless_Constructor_Produces_An_Instance_Equal_To_Default()
+        {
+            // The record's equality contract should treat a freshly-constructed
+            // instance with no overrides as equal to the Default singleton, even
+            // though they're distinct instances. This keeps callers from having
+            // to compare against Default by reference.
+            var fresh = new GlyphDrawingOptions();
+
+            Assert.NotSame(GlyphDrawingOptions.Default, fresh);
+            Assert.Equal(GlyphDrawingOptions.Default, fresh);
+            Assert.Equal(GlyphDrawingOptions.Default.GetHashCode(), fresh.GetHashCode());
+        }
+
+        [Fact]
         public void PaletteIndex_Accepts_Null()
         {
             var options = new GlyphDrawingOptions { PaletteIndex = null };
