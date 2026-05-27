@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using global::Avalonia.Automation.Provider;
 using Microsoft.UI.Xaml.Automation.Peers;
 using AvPeer = global::Avalonia.Automation.Peers.AutomationPeer;
@@ -65,12 +66,33 @@ internal sealed partial class AvaloniaSwapChainPanelAutomationPeer : FrameworkEl
     /// </summary>
     internal (double x, double y, double width, double height) TransformAvaloniaRectToScreen(AvRect rect)
     {
-        var topLeft = _panel.TransformToVisual(null).TransformPoint(new XamlPoint(rect.X, rect.Y));
-        var bottomRight = _panel.TransformToVisual(null).TransformPoint(new XamlPoint(rect.Right, rect.Bottom));
-        var scale = _panel.XamlRoot?.RasterizationScale ?? 1.0;
+        var transform = _panel.TransformToVisual(null);
+        var topLeft = transform.TransformPoint(new XamlPoint(rect.X, rect.Y));
+        var bottomRight = transform.TransformPoint(new XamlPoint(rect.Right, rect.Bottom));
 
-        return (topLeft.X * scale, topLeft.Y * scale,
-                (bottomRight.X - topLeft.X) * scale, (bottomRight.Y - topLeft.Y) * scale);
+        var xamlRoot = _panel.XamlRoot;
+        var scale = xamlRoot?.RasterizationScale ?? 1.0;
+
+        var x = topLeft.X * scale;
+        var y = topLeft.Y * scale;
+        var w = (bottomRight.X - topLeft.X) * scale;
+        var h = (bottomRight.Y - topLeft.Y) * scale;
+
+        if (xamlRoot?.ContentIslandEnvironment is { } island)
+        {
+            var hwnd = Microsoft.UI.Win32Interop.GetWindowFromWindowId(island.AppWindowId);
+            if (hwnd != IntPtr.Zero)
+            {
+                var pt = new POINT { x = 0, y = 0 };
+                if (ClientToScreen(hwnd, ref pt))
+                {
+                    x += pt.x;
+                    y += pt.y;
+                }
+            }
+        }
+
+        return (x, y, w, h);
     }
 
     private AvPeer? TryGetEmbeddedRootPeer()
@@ -107,4 +129,15 @@ internal sealed partial class AvaloniaSwapChainPanelAutomationPeer : FrameworkEl
         var proxy = AvaloniaToXamlPeerProxy.GetOrCreate(focused, this);
         proxy.RaiseAutomationEvent(AutomationEvents.AutomationFocusChanged);
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int x;
+        public int y;
+    }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
 }
