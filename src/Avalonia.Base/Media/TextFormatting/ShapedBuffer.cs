@@ -4,13 +4,57 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
     public sealed class ShapedBuffer : IReadOnlyList<GlyphInfo>, IDisposable
     {
-        private GlyphInfo[]? _rentedBuffer;
+        /// <summary>
+        /// Disposable wrapper around an <see cref="ArrayPool{T}"/>-rented array.
+        /// Combined with <see cref="IRef{T}"/> this gives <see cref="ShapedBuffer"/>
+        /// shared, ref-counted ownership of its glyph and cluster-cache storage so
+        /// that <see cref="Split"/> and <see cref="WithBidiLevel"/> can safely alias
+        /// the same backing arrays.
+        /// </summary>
+        internal sealed class PooledArray<T> : IDisposable
+        {
+            private T[]? _array;
+            private int _generation;
+
+            public PooledArray(int minLength)
+            {
+                _array = ArrayPool<T>.Shared.Rent(minLength);
+            }
+
+            public T[] Array => _array ?? throw new ObjectDisposedException(nameof(PooledArray<T>));
+
+            /// <summary>
+            /// Monotonically increasing version stamp. Bumped whenever the underlying
+            /// data is mutated so siblings sharing this holder can detect that any
+            /// cache derived from the data is stale and must be rebuilt.
+            /// </summary>
+            public int Generation => Volatile.Read(ref _generation);
+
+            public void BumpGeneration() => Interlocked.Increment(ref _generation);
+
+            public void Dispose()
+            {
+                var arr = Interlocked.Exchange(ref _array, null);
+                if (arr is not null)
+                {
+                    ArrayPool<T>.Shared.Return(arr);
+                }
+            }
+        }
+
+        // Ref-counted handle to the pooled GlyphInfo[] that backs _glyphInfos.
+        // Null when the buffer was constructed over caller-owned storage
+        // (e.g. an externally allocated array for the empty-line synthetic run).
+        // Split children and WithBidiLevel aliases clone this ref so the array
+        // survives until every observer has been disposed.
+        private IRef<PooledArray<GlyphInfo>>? _glyphRef;
         private ArraySlice<GlyphInfo> _glyphInfos;
 
         // Lazily-computed cluster-width cache. MeasureLength and metrics
@@ -52,20 +96,32 @@ namespace Avalonia.Media.TextFormatting
         // The pool may hand back larger arrays than requested — we always read
         // through bounded indices (_clusterStartIdx + [0.._clusterCount]) so the
         // unused tail is harmless.
+        // Pooling: the cluster-cache arrays are reached through ref-counted
+        // <see cref="IRef{PooledArray}"/> handles. The hot-path read fields
+        // <c>_clusterPrefix</c> and <c>_clusterStartChars</c> alias the rented
+        // arrays directly so measure/split loops stay indirection-free. Split
+        // children and <see cref="WithBidiLevel"/> aliases clone the refs, so the
+        // arrays survive until every sibling is disposed; the pool may hand back
+        // larger arrays than requested so we always read through bounded indices
+        // (_clusterStartIdx + [0.._clusterCount]).
         private double[]? _clusterPrefix;
         private int[]? _clusterStartChars;
-        private double[]? _rentedClusterPrefix;
-        private int[]? _rentedClusterStartChars;
+        private IRef<PooledArray<double>>? _prefixRef;
+        private IRef<PooledArray<int>>? _startsRef;
         private int _clusterStartIdx;
         private int _clusterCount;
 
-        // Set when this buffer has published its cluster-cache to a sibling
-        // (a Split child or a WithBidiLevel alias). Once shared, the buffer is
-        // expected to be observationally immutable — mutating the glyph array
-        // via the indexer setter would silently corrupt the siblings' view.
-        // The guard fires in DEBUG only; release builds keep the existing
-        // contract that the shaper never mutates a buffer after splitting.
-        private bool _cacheShared;
+        // Generation observed on the shared glyph holder when this buffer's
+        // cluster cache was built. If the holder's current generation differs,
+        // a sibling has mutated the glyph array since and we must rebuild.
+        // Zero is the initial value for both fields, so a freshly populated
+        // cache against an unmutated holder matches without extra bookkeeping.
+        private int _cacheGeneration;
+
+        // Guard so Dispose is idempotent. Multiple Dispose calls (e.g. via
+        // cache eviction overlapping with TextLine teardown) only release the
+        // ref-counted handles once.
+        private bool _disposed;
 
         private static readonly int[] s_emptyStartChars = new[] { 0 };
         private static readonly double[] s_emptyPrefix = new[] { 0d };
@@ -73,8 +129,8 @@ namespace Avalonia.Media.TextFormatting
         public ShapedBuffer(ReadOnlyMemory<char> text, int bufferLength, GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
         {
             Text = text;
-            _rentedBuffer = ArrayPool<GlyphInfo>.Shared.Rent(bufferLength);
-            _glyphInfos = new ArraySlice<GlyphInfo>(_rentedBuffer, 0, bufferLength);
+            _glyphRef = RefCountable.Create(new PooledArray<GlyphInfo>(bufferLength));
+            _glyphInfos = new ArraySlice<GlyphInfo>(_glyphRef.Item.Array, 0, bufferLength);
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
@@ -90,27 +146,38 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Internal constructor used by <see cref="Split"/> to hand off a shared cluster
-        /// cache to the new sub-buffer. The cache arrays are owned by the parent buffer;
-        /// this sub-buffer's queries adjust by <paramref name="clusterStartIdx"/>.
+        /// Internal constructor used by <see cref="Split"/> and <see cref="WithBidiLevel"/> to
+        /// alias the source buffer's pooled glyph storage and (optionally) cluster cache.
+        /// Each non-null ref is <see cref="IRef{T}.Clone"/>d so the underlying arrays survive
+        /// until every sibling has been disposed. When <paramref name="sourcePrefixRef"/>
+        /// is null the alias starts without a cluster cache and will build its own lazily.
         /// </summary>
         private ShapedBuffer(ReadOnlyMemory<char> text, ArraySlice<GlyphInfo> glyphInfos,
             GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel,
-            double[] sharedClusterPrefix, int[]? sharedClusterStartChars,
-            int clusterStartIdx, int clusterCount)
+            IRef<PooledArray<GlyphInfo>>? sourceGlyphRef,
+            IRef<PooledArray<double>>? sourcePrefixRef,
+            IRef<PooledArray<int>>? sourceStartsRef,
+            int clusterStartIdx, int clusterCount, int sourceCacheGeneration)
         {
             Text = text;
             _glyphInfos = glyphInfos;
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
-            _clusterPrefix = sharedClusterPrefix;
-            _clusterStartChars = sharedClusterStartChars;
-            _clusterStartIdx = clusterStartIdx;
-            _clusterCount = clusterCount;
-            // this buffer inherited the cache from a parent and now also
-            // sees it as shared (any mutation would be visible to the parent).
-            _cacheShared = true;
+            _glyphRef = sourceGlyphRef?.Clone();
+
+            if (sourcePrefixRef is not null)
+            {
+                _prefixRef = sourcePrefixRef.Clone();
+                _clusterPrefix = _prefixRef.Item.Array;
+                if (sourceStartsRef is not null)
+                {
+                    _startsRef = sourceStartsRef.Clone();
+                    _clusterStartChars = _startsRef.Item.Array;
+                }
+                _clusterStartIdx = clusterStartIdx;
+                _clusterCount = clusterCount;
+            }
         }
 
         /// <summary>
@@ -150,38 +217,35 @@ namespace Avalonia.Media.TextFormatting
 
         public void Dispose()
         {
-            if (_rentedBuffer is not null)
+            if (_disposed)
             {
-                ArrayPool<GlyphInfo>.Shared.Return(_rentedBuffer);
-                _rentedBuffer = null;
-                _glyphInfos = ArraySlice<GlyphInfo>.Empty; // ensure we don't misuse the returned array
+                return;
             }
+            _disposed = true;
 
-            ReturnRentedClusterCache();
+            _glyphRef?.Dispose();
+            _glyphRef = null;
+            _glyphInfos = ArraySlice<GlyphInfo>.Empty; // ensure we don't misuse a returned array
+
+            ReleaseClusterCacheRefs();
+            _clusterPrefix = null;
+            _clusterStartChars = null;
+            _clusterStartIdx = 0;
+            _clusterCount = 0;
         }
 
         /// <summary>
-        /// Returns this buffer's owned cluster-cache arrays (if any) to their
-        /// shared pools. No-op for split children, which never own the arrays.
-        /// Callers must ensure no sibling buffer is still reading the cache;
-        /// today that's guaranteed because clearing only happens via
-        /// <see cref="Dispose"/> and <see cref="InvalidateClusterCache"/>, the
-        /// latter being triggered only by the indexer setter which the contract
-        /// already forbids after splits.
+        /// Releases this buffer's ref-counted handles to the cluster-cache arrays
+        /// (if any). The underlying arrays are only returned to the pool when the
+        /// last sibling releases its handle, so this is safe to call from both
+        /// <see cref="Dispose"/> and <see cref="InvalidateClusterCache"/>.
         /// </summary>
-        private void ReturnRentedClusterCache()
+        private void ReleaseClusterCacheRefs()
         {
-            if (_rentedClusterPrefix is { } prefix)
-            {
-                ArrayPool<double>.Shared.Return(prefix);
-                _rentedClusterPrefix = null;
-            }
-
-            if (_rentedClusterStartChars is { } startChars)
-            {
-                ArrayPool<int>.Shared.Return(startChars);
-                _rentedClusterStartChars = null;
-            }
+            _prefixRef?.Dispose();
+            _prefixRef = null;
+            _startsRef?.Dispose();
+            _startsRef = null;
         }
 
         public GlyphInfo this[int index]
@@ -191,9 +255,11 @@ namespace Avalonia.Media.TextFormatting
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
-                Debug.Assert(!_cacheShared,
-                    "ShapedBuffer indexer must not be written after Split or WithBidiLevel has published the cluster cache to a sibling.");
                 _glyphInfos[index] = value;
+                // Bump the shared glyph generation so any sibling that built a
+                // cluster cache against the pre-mutation glyphs will detect the
+                // mismatch on its next EnsureClusterCache call and rebuild.
+                _glyphRef?.Item.BumpGeneration();
                 InvalidateClusterCache();
             }
         }
@@ -319,9 +385,18 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         private double[] EnsureClusterCache()
         {
-            if(_clusterPrefix is not null)
+            var currentGeneration = _glyphRef?.Item.Generation ?? 0;
+            if (_clusterPrefix is not null)
             {
-                return _clusterPrefix;
+                if (_cacheGeneration == currentGeneration)
+                {
+                    return _clusterPrefix;
+                }
+                // A sibling mutated the shared glyph array since this cache was
+                // built — drop the stale view (releasing our refs; other
+                // siblings keep their clones alive) and rebuild below against
+                // the current glyph data.
+                InvalidateClusterCache();
             }
 
             var glyphInfos = _glyphInfos.Span;
@@ -331,6 +406,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 _clusterCount = 0;
                 _clusterStartChars = s_emptyStartChars;
+                _cacheGeneration = currentGeneration;
                 return _clusterPrefix = s_emptyPrefix;
             }
 
@@ -372,17 +448,19 @@ namespace Avalonia.Media.TextFormatting
 
             var simple = canBeSimple && clusters == bufferLength;
 
-            // Rent (possibly oversized) from the shared pools. We track the rented
-            // arrays separately from the view references so that splits can share
-            // the data without taking ownership.
-            var prefix = ArrayPool<double>.Shared.Rent(clusters + 1);
-            _rentedClusterPrefix = prefix;
+            // Rent (possibly oversized) ref-counted holders from the shared pools.
+            // Split children / WithBidiLevel aliases will Clone these refs so the
+            // arrays survive until every sibling has released them.
+            var prefixHolder = new PooledArray<double>(clusters + 1);
+            _prefixRef = RefCountable.Create(prefixHolder);
+            var prefix = prefixHolder.Array;
 
             int[]? startChars = null;
             if (!simple)
             {
-                startChars = ArrayPool<int>.Shared.Rent(clusters + 1);
-                _rentedClusterStartChars = startChars;
+                var startsHolder = new PooledArray<int>(clusters + 1);
+                _startsRef = RefCountable.Create(startsHolder);
+                startChars = startsHolder.Array;
             }
 
             // Pool-provided arrays come pre-populated with old data; the first
@@ -432,6 +510,7 @@ namespace Avalonia.Media.TextFormatting
             _clusterCount = clusters;
             _clusterStartChars = startChars;
             _clusterPrefix = prefix;
+            _cacheGeneration = currentGeneration;
             return prefix;
         }
 
@@ -476,10 +555,11 @@ namespace Avalonia.Media.TextFormatting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InvalidateClusterCache()
         {
-            // Only this buffer's owned arrays go back to the pool; if we
-            // inherited the cache from a parent via Split, the parent still
-            // owns those arrays and is responsible for returning them.
-            ReturnRentedClusterCache();
+            // Releasing our refs is safe even when siblings hold clones — the
+            // underlying pool arrays survive until the last ref is disposed.
+            // After invalidation a fresh cache will be rented on the next
+            // EnsureClusterCache call (independent from any sibling's view).
+            ReleaseClusterCacheRefs();
             _clusterPrefix = null;
             _clusterStartChars = null;
             _clusterStartIdx = 0;
@@ -500,25 +580,26 @@ namespace Avalonia.Media.TextFormatting
                 return this;
             }
 
-            var alias = new ShapedBuffer(Text, _glyphInfos, GlyphTypeface, FontRenderingEmSize, paragraphEmbeddingLevel);
-
-            // if the source buffer has already built its cluster cache,
-            // hand the data references to the alias so it doesn't have to
-            // rebuild. The alias shares the same glyph order (BidiLevel only
-            // affects how callers interpret the buffer, not the underlying
-            // layout produced by the shaper), so the logical-order prefix sums
-            // are identical. The rented handles stay with the original owner.
-            if (_clusterPrefix is not null)
+            // If we already have a populated cluster cache, hand the alias its
+            // own clones of the ref-counted holders so it can read the prefix
+            // sums without rebuilding. BidiLevel only affects how callers
+            // interpret the buffer, not the shaper's glyph order, so the
+            // logical-order prefix sums are identical.
+            IRef<PooledArray<double>>? prefixRef = null;
+            IRef<PooledArray<int>>? startsRef = null;
+            var startIdx = 0;
+            var count = 0;
+            if (_prefixRef is not null)
             {
-                alias._clusterPrefix = _clusterPrefix;
-                alias._clusterStartChars = _clusterStartChars;
-                alias._clusterStartIdx = _clusterStartIdx;
-                alias._clusterCount = _clusterCount;
-                _cacheShared = true;
-                alias._cacheShared = true;
+                prefixRef = _prefixRef;
+                startsRef = _startsRef;
+                startIdx = _clusterStartIdx;
+                count = _clusterCount;
             }
 
-            return alias;
+            return new ShapedBuffer(
+                Text, _glyphInfos, GlyphTypeface, FontRenderingEmSize, paragraphEmbeddingLevel,
+                _glyphRef, prefixRef, startsRef, startIdx, count, _cacheGeneration);
         }
 
         int IReadOnlyCollection<GlyphInfo>.Count => _glyphInfos.Length;
@@ -610,15 +691,14 @@ namespace Avalonia.Media.TextFormatting
 
             // Ensure parent's cluster cache exists, then hand sub-views of
             // it to the children. Splitting is O(1) per child instead of O(glyphs).
-            var sharedPrefix = EnsureClusterCache();
-            var sharedStarts = _clusterStartChars; // may be null in simple mode
+            EnsureClusterCache();
             var leadingClusterCount = FindClusterOffsetForSplit(splitCharCount);
-            _cacheShared = true;
 
             var leading = new ShapedBuffer(
                 firstText, firstGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
-                sharedPrefix, sharedStarts, _clusterStartIdx, leadingClusterCount);
+                _glyphRef, _prefixRef, _startsRef,
+                _clusterStartIdx, leadingClusterCount, _cacheGeneration);
 
             if (secondText.Length == 0)
             {
@@ -628,8 +708,8 @@ namespace Avalonia.Media.TextFormatting
             var trailing = new ShapedBuffer(
                 secondText, secondGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
-                sharedPrefix, sharedStarts,
-                _clusterStartIdx + leadingClusterCount, _clusterCount - leadingClusterCount);
+                _glyphRef, _prefixRef, _startsRef,
+                _clusterStartIdx + leadingClusterCount, _clusterCount - leadingClusterCount, _cacheGeneration);
 
             return new SplitResult<ShapedBuffer>(leading, trailing);
         }
@@ -686,15 +766,14 @@ namespace Avalonia.Media.TextFormatting
             // clusters in logical order, so "first" (text[0..textLength]) gets the
             // leading slice and "second" gets the trailing slice — same indexing
             // as the LTR case.
-            var sharedPrefix = EnsureClusterCache();
-            var sharedStarts = _clusterStartChars; // may be null in simple mode
+            EnsureClusterCache();
             var firstClusterCount = FindClusterOffsetForSplit(textLength);
-            _cacheShared = true;
 
             var first = new ShapedBuffer(
                 firstText, firstGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
-                sharedPrefix, sharedStarts, _clusterStartIdx, firstClusterCount);
+                _glyphRef, _prefixRef, _startsRef,
+                _clusterStartIdx, firstClusterCount, _cacheGeneration);
 
             if (secondText.Length == 0 || secondGlyphs.Length == 0)
             {
@@ -704,8 +783,8 @@ namespace Avalonia.Media.TextFormatting
             var second = new ShapedBuffer(
                 secondText, secondGlyphs,
                 GlyphTypeface, FontRenderingEmSize, BidiLevel,
-                sharedPrefix, sharedStarts,
-                _clusterStartIdx + firstClusterCount, _clusterCount - firstClusterCount);
+                _glyphRef, _prefixRef, _startsRef,
+                _clusterStartIdx + firstClusterCount, _clusterCount - firstClusterCount, _cacheGeneration);
 
             return new SplitResult<ShapedBuffer>(first, second);
         }
