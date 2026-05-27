@@ -474,6 +474,8 @@ namespace Avalonia.Controls.Primitives
         {
             if (e.Action == NotifyCollectionChangedAction.Reset && _selectedItemsSnapshot.Count > 0)
             {
+                // The snapshot is always consumed by either OnSelectionModelSelectionChanged
+                // (selection preserved) or OnSelectionModelLostSelection (selection lost).
                 _selectedItemsBeforeReset = _selectedItemsSnapshot.ToArray();
             }
         }
@@ -1030,16 +1032,7 @@ namespace Avalonia.Controls.Primitives
             _selectedItemsSnapshot.AddRange(Selection.SelectedItems);
             _selectedItemsBeforeReset = null;
 
-            var route = BuildEventRoute(SelectionChangedEvent);
-
-            if (route.HasHandlers)
-            {
-                var ev = new SelectionChangedEventArgs(
-                    SelectionChangedEvent,
-                    e.DeselectedItems.ToArray(),
-                    e.SelectedItems.ToArray());
-                RaiseEvent(ev);
-            }
+            RaiseSelectionChanged(e.DeselectedItems.ToArray(), e.SelectedItems.ToArray());
         }
 
         /// <summary>
@@ -1052,23 +1045,30 @@ namespace Avalonia.Controls.Primitives
         {
             if (_selectedItemsBeforeReset?.Length > 0)
             {
-                var route = BuildEventRoute(SelectionChangedEvent);
-
-                if (route.HasHandlers)
-                {
-                    var ev = new SelectionChangedEventArgs(
-                        SelectionChangedEvent,
-                        _selectedItemsBeforeReset,
-                        Array.Empty<object?>());
-                    RaiseEvent(ev);
-                }
-
-                _selectedItemsBeforeReset = null;
+                RaiseSelectionChanged(_selectedItemsBeforeReset, Array.Empty<object?>());
             }
+
+            _selectedItemsBeforeReset = null;
 
             if (AlwaysSelected && ItemsView.Count > 0)
             {
                 SelectedIndex = 0;
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="SelectionChangedEvent"/> if there are registered handlers.
+        /// </summary>
+        /// <param name="removedItems">The items removed from the selection.</param>
+        /// <param name="addedItems">The items added to the selection.</param>
+        private void RaiseSelectionChanged(IList removedItems, IList addedItems)
+        {
+            var route = BuildEventRoute(SelectionChangedEvent);
+
+            if (route.HasHandlers)
+            {
+                var ev = new SelectionChangedEventArgs(SelectionChangedEvent, removedItems, addedItems);
+                RaiseEvent(ev);
             }
         }
 
