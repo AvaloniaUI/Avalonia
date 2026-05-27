@@ -218,8 +218,14 @@ internal unsafe class SwapChainGlRenderTarget : EglPlatformSurfaceRenderTargetBa
 
             var res = base.BeginDraw(_surface, size, scaling, () =>
             {
-                _swapChain.Present(1, 0);
-                contextLock?.Dispose();
+                try
+                {
+                    _swapChain.Present(1, 0);
+                }
+                finally
+                {
+                    contextLock?.Dispose();
+                }
             }, true);
             success = true;
             return res;
