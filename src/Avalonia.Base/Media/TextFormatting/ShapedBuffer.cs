@@ -336,7 +336,7 @@ namespace Avalonia.Media.TextFormatting
             while (lo < hi)
             {
                 var mid = (lo + hi + 1) >> 1;
-                if (MathUtilities.GreaterThan(prefix[startIdx + mid] - basePrefix, availableWidth))
+                if (MathUtilities.LessThanOrClose(prefix[startIdx + mid] - basePrefix, availableWidth))
                 {
                     lo = mid;
                 }
