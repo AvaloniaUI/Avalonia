@@ -316,18 +316,28 @@ internal sealed class WinUITextInputMethod : ITextInputMethodImpl
         var committed = len > 0 ? _imeText.Substring(_compositionStart, len) : string.Empty;
 
         _client?.SetPreeditText(null);
-
-        if (len > 0)
-            _imeText = _imeText.Remove(_compositionStart, len);
-        _imeSelection = new CoreTextRange
-        {
-            StartCaretPosition = _compositionStart,
-            EndCaretPosition = _compositionStart,
-        };
         _compositionLength = 0;
 
         if (!string.IsNullOrEmpty(committed))
-            DispatchRawText(committed);
+        {
+            var input = _getInput();
+            var inputRoot = _getInputRoot();
+            var keyboard = _getKeyboardDevice();
+            if (input is not null && inputRoot is not null && keyboard is not null)
+            {
+                _suppressClientEcho = true;
+                try
+                {
+                    input(new RawTextInputEventArgs(keyboard, (ulong)Environment.TickCount64, inputRoot, committed));
+                }
+                finally
+                {
+                    _suppressClientEcho = false;
+                }
+            }
+
+            SyncFromClient(notifyServer: false);
+        }
     }
 
     private void OnFocusRemoved(CoreTextEditContext sender, object args)
