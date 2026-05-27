@@ -266,16 +266,15 @@ internal sealed class WinUITextInputMethod : ITextInputMethodImpl
         {
             if (_compositionLength == 0)
                 _compositionStart = start;
-            _compositionLength = (_compositionStart + _compositionLength + (newText.Length - (end - start))) - _compositionStart;
             _compositionLength = Math.Max(0, _imeSelection.EndCaretPosition - _compositionStart);
             _compositionLength = Math.Min(_compositionLength, _imeText.Length - _compositionStart);
 
             var preedit = _imeText.Substring(_compositionStart, _compositionLength);
             _client?.SetPreeditText(preedit, _imeSelection.EndCaretPosition - _compositionStart);
         }
-        else
+        else if (!string.IsNullOrEmpty(newText))
         {
-            CommitToClient(newText, start, end);
+            DispatchRawText(newText, notifyServer: true);
         }
 
         args.Result = CoreTextTextUpdatingResult.Succeeded;
@@ -319,25 +318,7 @@ internal sealed class WinUITextInputMethod : ITextInputMethodImpl
         _compositionLength = 0;
 
         if (!string.IsNullOrEmpty(committed))
-        {
-            var input = _getInput();
-            var inputRoot = _getInputRoot();
-            var keyboard = _getKeyboardDevice();
-            if (input is not null && inputRoot is not null && keyboard is not null)
-            {
-                _suppressClientEcho = true;
-                try
-                {
-                    input(new RawTextInputEventArgs(keyboard, (ulong)Environment.TickCount64, inputRoot, committed));
-                }
-                finally
-                {
-                    _suppressClientEcho = false;
-                }
-            }
-
-            SyncFromClient(notifyServer: false);
-        }
+            DispatchRawText(committed, notifyServer: false);
     }
 
     private void OnFocusRemoved(CoreTextEditContext sender, object args)
@@ -345,17 +326,8 @@ internal sealed class WinUITextInputMethod : ITextInputMethodImpl
         _hasFocus = false;
     }
 
-    private void CommitToClient(string newText, int start, int end)
+    private void DispatchRawText(string text, bool notifyServer)
     {
-        if (string.IsNullOrEmpty(newText))
-            return;
-        DispatchRawText(newText);
-    }
-
-    private void DispatchRawText(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-            return;
         var input = _getInput();
         var inputRoot = _getInputRoot();
         var keyboard = _getKeyboardDevice();
@@ -372,8 +344,7 @@ internal sealed class WinUITextInputMethod : ITextInputMethodImpl
             _suppressClientEcho = false;
         }
 
-        // The client just changed; pull its new state and propagate to the server.
-        SyncFromClient(notifyServer: true);
+        SyncFromClient(notifyServer);
     }
 
     [StructLayout(LayoutKind.Sequential)]
