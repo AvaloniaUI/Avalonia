@@ -11,9 +11,8 @@ namespace Avalonia.WinUI;
 /// drags (via <see cref="Microsoft.UI.Xaml.UIElement.StartDragAsync"/>) for
 /// content hosted inside an <see cref="AvaloniaSwapChainPanel"/>. WinUI only
 /// permits starting a drag with a <see cref="Microsoft.UI.Input.PointerPoint"/>
-/// captured during an active pointer interaction; the panel keeps the most
-/// recent one per pointer id, and we look it up by the triggering Avalonia
-/// pointer's id.
+/// captured during an active pointer interaction; the panel caches the most
+/// recent pointer point (regardless of pointer id) and uses it to start the drag.
 /// </summary>
 internal sealed class WinUIDragSource : IPlatformDragSource
 {
