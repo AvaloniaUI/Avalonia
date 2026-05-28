@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Styling;
@@ -13,10 +12,7 @@ namespace ControlCatalog
 {
     public partial class MainView : DrawerPage
     {
-        private readonly StyleInclude _transparentStyles = new(new Uri($"avares://{typeof(MainView).Assembly.GetName().Name}", UriKind.Absolute))
-        {
-            Source = new Uri("/TransparentStyles.axaml", UriKind.Relative)
-        };
+        private readonly TransparentStyles _transparentStyles = new();
 
         public MainView()
         {
