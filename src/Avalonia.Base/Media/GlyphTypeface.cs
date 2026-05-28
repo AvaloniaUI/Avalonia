@@ -763,24 +763,78 @@ namespace Avalonia.Media
                 return false;
             }
 
-            // Combine horizontal, vertical and bounding-box metrics. Bounds are read per
-            // glyph from the glyf header (loca offset + a 10-byte header), allocation-free.
+            // Read all bounding boxes in one batch (spans fetched once), then combine. When
+            // the font has no glyf table, bearings fall back to hmtx/vmtx and the box is zero.
+            var hasGlyf = _glyfTable != null;
+
+            Span<GlyphBounds> bounds = glyphIds.Length <= 256
+                ? stackalloc GlyphBounds[glyphIds.Length]
+                : new GlyphBounds[glyphIds.Length];
+
+            if (hasGlyf)
+            {
+                _glyfTable!.GetGlyphBounds(glyphIds, bounds);
+            }
+
             for (int i = 0; i < glyphIds.Length; i++)
             {
-                short xMin = 0, yMin = 0, xMax = 0, yMax = 0;
-                var hasBounds = _glyfTable != null
-                    && _glyfTable.TryGetGlyphBounds(glyphIds[i], out xMin, out yMin, out xMax, out yMax);
-
-                metrics[i] = new GlyphMetrics
+                if (hasGlyf)
                 {
-                    XBearing = hasBounds ? xMin : (hasHorizontal ? hMetrics[i].LeftSideBearing : (short)0),
-                    YBearing = hasBounds ? yMax : (hasVertical ? vMetrics[i].TopSideBearing : (short)0),
-                    Width = hasBounds ? (ushort)(xMax - xMin) : (ushort)0,
-                    Height = hasBounds ? (ushort)(yMax - yMin) : (ushort)0,
-                    AdvanceWidth = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
-                    AdvanceHeight = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0,
-                };
+                    var b = bounds[i];
+
+                    metrics[i] = new GlyphMetrics
+                    {
+                        XBearing = b.XMin,
+                        YBearing = b.YMax,
+                        Width = (ushort)b.Width,
+                        Height = (ushort)b.Height,
+                        AdvanceWidth = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
+                        AdvanceHeight = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0,
+                    };
+                }
+                else
+                {
+                    metrics[i] = new GlyphMetrics
+                    {
+                        XBearing = hasHorizontal ? hMetrics[i].LeftSideBearing : (short)0,
+                        YBearing = hasVertical ? vMetrics[i].TopSideBearing : (short)0,
+                        Width = 0,
+                        Height = 0,
+                        AdvanceWidth = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
+                        AdvanceHeight = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0,
+                    };
+                }
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Reads ink bounding boxes for a batch of glyphs from the font's <c>glyf</c> table.
+        /// </summary>
+        /// <remarks>
+        /// Allocation-free hot path for glyph ink-bounds computation: the <c>glyf</c> and
+        /// <c>loca</c> spans are fetched once for the whole batch. Use this rather than
+        /// <see cref="TryGetGlyphMetrics(ReadOnlySpan{ushort}, Span{GlyphMetrics})"/> when
+        /// only bounds are needed and advances are already known (e.g. from shaping).
+        /// </remarks>
+        /// <param name="glyphIds">Glyph identifiers to read.</param>
+        /// <param name="bounds">Output; must be at least as long as <paramref name="glyphIds"/>.
+        /// Out-of-range, empty, or malformed glyphs are written as the default (zero) box.</param>
+        /// <returns><c>true</c> if the font has a <c>glyf</c> table; otherwise <c>false</c>.</returns>
+        internal bool TryGetGlyphBounds(ReadOnlySpan<ushort> glyphIds, Span<GlyphBounds> bounds)
+        {
+            if (bounds.Length < glyphIds.Length)
+            {
+                throw new ArgumentException("Output span must be at least as long as input span", nameof(bounds));
+            }
+
+            if (_glyfTable is null)
+            {
+                return false;
+            }
+
+            _glyfTable.GetGlyphBounds(glyphIds, bounds);
 
             return true;
         }

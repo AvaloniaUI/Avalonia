@@ -153,6 +153,72 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         }
 
         /// <summary>
+        /// Reads bounding boxes for a batch of glyphs into <paramref name="bounds"/>.
+        /// </summary>
+        /// <remarks>
+        /// The hot path for ink-bounds computation. The <c>glyf</c> and <c>loca</c> spans are
+        /// fetched once for the whole batch (not per glyph), and offsets and headers are read
+        /// directly — no per-glyph <see cref="ReadOnlyMemory{T}.Span"/> conversion, no
+        /// intermediate slices, no nested call chain. Out-of-range, empty, or malformed
+        /// glyphs are written as the default (zero) box.
+        /// </remarks>
+        /// <param name="glyphIds">The glyph indices to read.</param>
+        /// <param name="bounds">Output; must be at least as long as <paramref name="glyphIds"/>.</param>
+        public void GetGlyphBounds(ReadOnlySpan<ushort> glyphIds, Span<GlyphBounds> bounds)
+        {
+            var glyf = _glyfData.Span;
+            var loca = _locaTable.RawData;
+            var shortFormat = _locaTable.IsShortFormat;
+            var glyphCount = _locaTable.GlyphCount;
+            var entrySize = shortFormat ? 2 : 4;
+
+            for (var i = 0; i < glyphIds.Length; i++)
+            {
+                bounds[i] = default;
+
+                int gid = glyphIds[i];
+
+                if ((uint)gid >= (uint)glyphCount)
+                {
+                    continue;
+                }
+
+                var locaOffset = gid * entrySize;
+
+                // Need both loca[gid] and loca[gid + 1].
+                if (locaOffset + (2 * entrySize) > loca.Length)
+                {
+                    continue;
+                }
+
+                int start, end;
+
+                if (shortFormat)
+                {
+                    start = BinaryPrimitives.ReadUInt16BigEndian(loca.Slice(locaOffset)) * 2;
+                    end = BinaryPrimitives.ReadUInt16BigEndian(loca.Slice(locaOffset + 2)) * 2;
+                }
+                else
+                {
+                    start = (int)BinaryPrimitives.ReadUInt32BigEndian(loca.Slice(locaOffset));
+                    end = (int)BinaryPrimitives.ReadUInt32BigEndian(loca.Slice(locaOffset + 4));
+                }
+
+                // Empty (start == end) or malformed glyph → leave the zero box.
+                if (end - start < 10 || start < 0 || (uint)end > (uint)glyf.Length)
+                {
+                    continue;
+                }
+
+                bounds[i] = new GlyphBounds(
+                    BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start + 2)),
+                    BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start + 4)),
+                    BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start + 6)),
+                    BinaryPrimitives.ReadInt16BigEndian(glyf.Slice(start + 8)));
+            }
+        }
+
+        /// <summary>
         /// Builds the glyph outline into the provided geometry context. Returns false for empty glyphs.
         /// Coordinates are in font design units. Composite glyphs are supported.
         /// </summary>
