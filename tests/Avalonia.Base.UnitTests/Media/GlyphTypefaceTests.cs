@@ -73,8 +73,8 @@ namespace Avalonia.Base.UnitTests.Media
             // Ensure advance can be retrieved
             Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphId, out var advance));
 
-            // Advance returned by GetGlyphAdvance should match the metrics width
-            Assert.Equal(metrics.Width, advance);
+            // The advance lives on AdvanceWidth; Width is the ink bounding-box width.
+            Assert.Equal(metrics.AdvanceWidth, advance);
         }
 
         [Theory]
@@ -275,6 +275,71 @@ namespace Avalonia.Base.UnitTests.Media
 
             Assert.True(result);
             Assert.True(metrics.Width > 0);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Width_Is_Ink_Box_Not_Advance()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var glyphId = typeface.CharacterToGlyphMap['A'];
+
+            Assert.True(typeface.TryGetGlyphMetrics(glyphId, out var metrics));
+            Assert.True(typeface.TryGetHorizontalGlyphAdvance(glyphId, out var advance));
+
+            // The advance belongs on AdvanceWidth...
+            Assert.Equal(advance, metrics.AdvanceWidth);
+
+            // ...and Width is the ink bounding-box width, a distinct value.
+            Assert.True(metrics.Width > 0);
+            Assert.NotEqual(metrics.AdvanceWidth, metrics.Width);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Empty_Glyph_Has_Advance_But_No_Ink()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var spaceGlyph = typeface.CharacterToGlyphMap[' '];
+
+            Assert.True(typeface.TryGetGlyphMetrics(spaceGlyph, out var metrics));
+
+            // The space glyph has a horizontal advance but no ink.
+            Assert.True(metrics.AdvanceWidth > 0);
+            Assert.Equal((ushort)0, metrics.Width);
+            Assert.Equal((ushort)0, metrics.Height);
+        }
+
+        [Fact]
+        public void TryGetGlyphMetrics_Batch_Matches_Single()
+        {
+            var assetLoader = new StandardAssetLoader();
+
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+            var glyphIds = new ushort[] { map['A'], map['B'], map['g'], map[' '] };
+
+            var batch = new GlyphMetrics[glyphIds.Length];
+            Assert.True(typeface.TryGetGlyphMetrics(glyphIds, batch));
+
+            for (var i = 0; i < glyphIds.Length; i++)
+            {
+                Assert.True(typeface.TryGetGlyphMetrics(glyphIds[i], out var single));
+
+                // GlyphMetrics is a record struct, so this is structural equality.
+                Assert.Equal(single, batch[i]);
+            }
         }
 
         [Fact]
