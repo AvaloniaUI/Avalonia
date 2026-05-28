@@ -11,24 +11,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
     /// <summary>
     /// Characterization tests for <see cref="TextCollapsingProperties"/>
-    /// implementations, with emphasis on BiDi correctness. Pins current
-    /// behavior before the fixes described in
-    /// <c>planning/text-collapsing-bidi-plan.md</c>.
-    ///
-    /// Conventions:
-    ///   * Tests that pass today are <c>[Fact]</c> — they protect against
-    ///     regressions from the upcoming refactor.
-    ///   * Tests that document a known bug carry <c>[Fact(Skip = "Bx: …")]</c>
-    ///     so the suite stays green; remove the <c>Skip</c> when the
-    ///     corresponding fix lands.
-    ///   * Assertions target invariants (content preserved, ellipsis present,
-    ///     prefix preserved, etc.) rather than exact glyph output so they
-    ///     survive font changes.
+    /// implementations, with emphasis on BiDi correctness.
     /// </summary>
     public class TextCollapsingBidiTests
     {
-        // --- LTR sanity (regression guards) -----------------------------------
-
         [Fact]
         public void Ltr_TrailingCharacter_Trims_From_End()
         {
@@ -62,8 +48,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         [Fact]
         public void Ltr_PrefixCharacterEllipsis_Preserves_Prefix_And_Suffix()
         {
-            // Matches the existing Should_Collapse_Line LTR baseline:
-            //   "01234 01234 01234" @ width=120, prefixLength=8 → "01234 01…4 01234"
             using (TextFormatterTests.Start())
             {
                 var line = BuildLine("01234 01234 01234", FlowDirection.LeftToRight);
@@ -101,8 +85,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        // --- Width edges -------------------------------------------------------
-
         [Fact]
         public void Width_Greater_Than_Line_Returns_Same_Line()
         {
@@ -134,13 +116,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Empty(collapsed.TextRuns);
             }
         }
-
-        // --- RTL paragraph -----------------------------------------------------
-        // Per the plan: trimming should happen in LOGICAL order. The consumer
-        // (TextLineImpl.Collapse → FinalizeLine → BidiReorderer) handles the
-        // visual reordering. So for an RTL paragraph, the logical prefix
-        // (start of the original string) must be preserved by trailing-*
-        // ellipsis, and the ellipsis symbol must appear in the output.
 
         [Fact]
         public void Rtl_TrailingCharacter_Preserves_Logical_Prefix()
@@ -174,10 +149,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        // Note: this passes today because a single-run RTL line has visual
-        // order == logical order, so the B2 visual-iteration bug doesn't
-        // manifest. The multi-run B2 case is covered by
-        // Mixed_PrefixCharacterEllipsis_Preserves_Logical_Prefix_And_Suffix.
         [Fact]
         public void Rtl_PrefixCharacterEllipsis_Preserves_Logical_Prefix()
         {
@@ -194,8 +165,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Contains("…", logical);
             }
         }
-
-        // --- Mixed bidi --------------------------------------------------------
 
         [Fact]
         public void Mixed_TrailingCharacter_Preserves_Logical_Prefix()
@@ -228,12 +197,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Contains("…", logical);
             }
         }
-
-        // --- Phase 3: TextEllipsisHelper + TextPathSegmentEllipsis BiDi -------
-        // These classes were already structured correctly (both use
-        // LogicalTextRunEnumerator) but the original test surface only had LTR
-        // cases. The tests below pin BiDi behavior so future refactors can't
-        // silently break it.
 
         [Fact]
         public void Mixed_TrailingWord_Preserves_Logical_Prefix()
@@ -300,13 +263,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        // --- Middle-collapse coverage (distinguishes the main path from the
-        //     "trim from start" fallback). For an LTR path with the
-        //     middle segment large enough to make a single-segment collapse
-        //     bring the line under budget, the result should keep BOTH
-        //     the first and last segments. The fallback would drop the
-        //     first segments.
-
         [Fact]
         public void Ltr_PathSegmentEllipsis_Middle_Collapse_Preserves_First_And_Last_Segments()
         {
@@ -334,15 +290,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         [Fact]
         public void Rtl_PathSegmentEllipsis_Middle_Collapse_Preserves_First_And_Last_Segments()
         {
-            // B8: TextPathSegmentEllipsis.MeasureSegmentWidth assumes the
-            // ShapedBuffer's GlyphCluster values increase monotonically with
-            // glyph index. That holds for LTR buffers but NOT for RTL — RTL
-            // buffers have glyphs in visual order with cluster values
-            // DECREASING. The result: any RTL segment's measured width comes
-            // out close to a single glyph's advance, never close to its real
-            // width. The middle-collapse algorithm then can't find a window
-            // whose collapse-savings make the line fit, and falls back to
-            // "trim from start" — which drops the logical-first segment.
             using (TextFormatterTests.Start())
             {
                 const string text = "اول/منتصفمنتصفمنتصفمنتصفمنتصفمنتصفمنتصفمنتصف/اخر.txt";
@@ -361,21 +308,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Contains("اخر.txt", logical);
             }
         }
-
-        // --- B9: TryMeasureCharacters/Backwards bidi contract ----------------
-        // These two methods walk the ShapedBuffer in visual order. For LTR the
-        // visual order equals the logical order, so the returned "length"
-        // (counted via cluster deltas) is the logical-leading / logical-trailing
-        // char count that callers want. For RTL the visual order is the
-        // logical-REVERSE order, so the cumulative width is measured for the
-        // wrong set of characters even though the COUNT happens to come out
-        // right for uniform-width fonts. The contract callers depend on:
-        //   * TryMeasureCharacters(budget) → largest N such that the LOGICAL
-        //     leading N characters fit within `budget`.
-        //   * TryMeasureCharactersBackwards(budget) → largest N such that the
-        //     LOGICAL trailing N characters fit within `budget`.
-        // We verify each by cross-checking the returned length against the
-        // cluster-cache-based logical width measurement.
 
         [Theory]
         [InlineData("Hello world abcdef", true)]
@@ -446,8 +378,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        // --- B1: LogicalTextRunEnumerator ------------------------------------
-
         [Fact]
         public void LogicalTextRunEnumerator_Without_IndexedRuns_Returns_Distinct_Runs()
         {
@@ -481,8 +411,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
-        // --- B3: TextLeadingPrefixCharacterEllipsis constructor validation ----
-
         [Fact]
         public void LeadingPrefix_Negative_PrefixLength_Throws()
         {
@@ -494,8 +422,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         "…", prefixLength: -1, width: 100, props, FlowDirection.LeftToRight));
             }
         }
-
-        // --- B4: TextLeadingPrefixCharacterEllipsis honours FlowDirection -----
 
         [Fact]
         public void LeadingPrefix_Honours_FlowDirection_For_Symbol()
@@ -520,8 +446,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.False(ellipsisRun!.ShapedBuffer.IsLeftToRight);
             }
         }
-
-        // --- Mixed shaped + drawable / multi-run -------------------------------
 
         [Fact]
         public void Collapse_With_Multiple_Shaped_Runs_Preserves_Ellipsis()
@@ -556,8 +480,6 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.StartsWith(preserved, "AAAABBBBCCCC");
             }
         }
-
-        // --- Helpers -----------------------------------------------------------
 
         private static TextLine BuildLine(string text, FlowDirection flow)
         {

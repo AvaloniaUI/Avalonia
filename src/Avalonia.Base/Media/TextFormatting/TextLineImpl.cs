@@ -1171,8 +1171,6 @@ namespace Avalonia.Media.TextFormatting
 
         public override void Dispose()
         {
-            // JIT pattern-matches the canonical foreach over T[] for bounds-check
-            // elision; an explicit for over .Length is measurably slower on hot paths.
             foreach (var textRun in _textRuns)
             {
                 if (textRun is ShapedTextRun shapedTextRun)
@@ -1300,8 +1298,6 @@ namespace Avalonia.Media.TextFormatting
             var lineHeight = _paragraphProperties.LineHeight;
             var lineSpacing = _paragraphProperties.LineSpacing;
 
-            // JIT pattern-matches the canonical foreach over T[] for bounds-check
-            // elision; an explicit for over .Length is measurably slower on hot paths.
             foreach (var run in _textRuns)
             {
                 switch (run)
