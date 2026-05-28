@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
+using Avalonia.Media.Imaging;
 using static Avalonia.Browser.BrowserDataFormatHelper;
 using static Avalonia.Browser.Interop.InputHelper;
 
@@ -61,7 +62,7 @@ internal sealed class ClipboardImpl : IClipboardImpl
                     if (bitmap != null)
                     {
                         using var stream = new MemoryStream();
-                        bitmap.Save(stream);
+                        bitmap.Save(stream, PngBitmapEncoderOptions.Default);
 
                         writeableItem ??= CreateWriteableClipboardItem(source);
                         AddBytesToWriteableClipboardItem(writeableItem, formatString, stream.ToArray());

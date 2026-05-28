@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Logging;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using static Avalonia.X11.XLib;
 
@@ -172,7 +173,7 @@ namespace Avalonia.X11.Clipboard
                     return null;
 
                 using var stream = new MemoryStream();
-                bitmap.Save(stream);
+                bitmap.Save(stream, PngBitmapEncoderOptions.Default);
 
                 return stream.ToArray();
             }
