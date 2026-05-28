@@ -683,17 +683,26 @@ namespace Avalonia.Media
                 hasVertical = _vmTable.TryGetMetrics(glyph, out vMetric);
             }
 
-            if (!hasHorizontal && !hasVertical)
+            short xMin = 0, yMin = 0, xMax = 0, yMax = 0;
+            var hasBounds = _glyfTable != null
+                && _glyfTable.TryGetGlyphBounds(glyph, out xMin, out yMin, out xMax, out yMax);
+
+            if (!hasHorizontal && !hasVertical && !hasBounds)
             {
                 return false;
             }
 
             metrics = new GlyphMetrics
             {
-                XBearing = hMetric.LeftSideBearing,
-                YBearing = vMetric.TopSideBearing,
-                Width = hMetric.AdvanceWidth,
-                Height = vMetric.AdvanceHeight
+                // Bounding box (ink extent) from the glyf header; side bearings fall back
+                // to hmtx/vmtx when the glyph has no outline data.
+                XBearing = hasBounds ? xMin : (hasHorizontal ? hMetric.LeftSideBearing : (short)0),
+                YBearing = hasBounds ? yMax : (hasVertical ? vMetric.TopSideBearing : (short)0),
+                Width = hasBounds ? (ushort)(xMax - xMin) : (ushort)0,
+                Height = hasBounds ? (ushort)(yMax - yMin) : (ushort)0,
+                // Advances come from the metrics tables.
+                AdvanceWidth = hasHorizontal ? hMetric.AdvanceWidth : (ushort)0,
+                AdvanceHeight = hasVertical ? vMetric.AdvanceHeight : (ushort)0,
             };
 
             return true;
@@ -754,15 +763,22 @@ namespace Avalonia.Media
                 return false;
             }
 
-            // Combine horizontal and vertical metrics
+            // Combine horizontal, vertical and bounding-box metrics. Bounds are read per
+            // glyph from the glyf header (loca offset + a 10-byte header), allocation-free.
             for (int i = 0; i < glyphIds.Length; i++)
             {
+                short xMin = 0, yMin = 0, xMax = 0, yMax = 0;
+                var hasBounds = _glyfTable != null
+                    && _glyfTable.TryGetGlyphBounds(glyphIds[i], out xMin, out yMin, out xMax, out yMax);
+
                 metrics[i] = new GlyphMetrics
                 {
-                    XBearing = hasHorizontal ? hMetrics[i].LeftSideBearing : (short)0,
-                    YBearing = hasVertical ? vMetrics[i].TopSideBearing : (short)0,
-                    Width = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
-                    Height = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0
+                    XBearing = hasBounds ? xMin : (hasHorizontal ? hMetrics[i].LeftSideBearing : (short)0),
+                    YBearing = hasBounds ? yMax : (hasVertical ? vMetrics[i].TopSideBearing : (short)0),
+                    Width = hasBounds ? (ushort)(xMax - xMin) : (ushort)0,
+                    Height = hasBounds ? (ushort)(yMax - yMin) : (ushort)0,
+                    AdvanceWidth = hasHorizontal ? hMetrics[i].AdvanceWidth : (ushort)0,
+                    AdvanceHeight = hasVertical ? vMetrics[i].AdvanceHeight : (ushort)0,
                 };
             }
 
