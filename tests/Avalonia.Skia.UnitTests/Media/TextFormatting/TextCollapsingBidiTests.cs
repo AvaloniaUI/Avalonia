@@ -481,6 +481,42 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void LeadingPrefix_With_Fully_Fitting_Tail_Run_Does_Not_Throw()
+        {
+            // Regression: on a multi-run line a logical-tail run can fit entirely
+            // within the remaining suffix budget. TryMeasureCharactersBackwards then
+            // returns suffixCount == run.Length, and the old code called
+            // ShapedTextRun.Split(0), which throws ArgumentOutOfRangeException. The
+            // long leading run forces the collapse; the short trailing run wholly
+            // fits the suffix budget and exercises that boundary.
+            using (TextFormatterTests.Start())
+            {
+                var props = new GenericTextRunProperties(Typeface.Default);
+                var sourceRuns = new TextRun[]
+                {
+                    new TextCharacters("AAAAAAAAAAAA", props), // long: forces the collapse
+                    new TextCharacters("B", props),            // short: wholly fits the suffix budget
+                };
+                var src = new FixedRunsTextSource(sourceRuns);
+                var formatter = new TextFormatterImpl();
+                var line = formatter.FormatLine(src, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(props));
+                Assert.NotNull(line);
+
+                var collapsing = LeadingPrefix(prefixLength: 2, width: line!.Width * 0.7, FlowDirection.LeftToRight);
+
+                // Previously threw ArgumentOutOfRangeException from Split(0).
+                var collapsed = line.Collapse(collapsing);
+
+                AssertCollapsed(collapsed, line);
+                var text = LogicalText(collapsed);
+                Assert.Contains("…", text);
+                // The fully-fitting trailing run must survive in the logical-tail suffix.
+                Assert.Contains("B", text);
+            }
+        }
+
         private static TextLine BuildLine(string text, FlowDirection flow)
         {
             var props = new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);

@@ -187,13 +187,21 @@ namespace Avalonia.Media.TextFormatting
                                                         {
                                                             availableSuffixWidth -= suffixWidth;
 
-                                                            if (suffixCount > 0)
+                                                            var splitAt = run.Length - suffixCount;
+
+                                                            if (splitAt > 0)
                                                             {
-                                                                var splitSuffix =
-                                                                    endShapedRun.Split(run.Length - suffixCount);
+                                                                var splitSuffix = endShapedRun.Split(splitAt);
 
                                                                 reversedSuffix.Add(splitSuffix.Second!);
                                                             }
+                                                            else if (suffixCount > 0)
+                                                            {
+                                                                // The whole run fits in the remaining suffix budget, so no
+                                                                // split is needed; use the run as-is. (Calling Split(0) throws.)
+                                                                reversedSuffix.Add(endShapedRun);
+                                                            }
+                                                            // else: suffixCount == 0, nothing of this run survives.
                                                         }
 
                                                         break;
