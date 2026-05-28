@@ -189,6 +189,65 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.True(context.AllFiguresClosed);
         }
 
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(int.MaxValue)]
+        public void TryGetGlyphBounds_Returns_False_For_Out_Of_Range(int glyphIndex)
+        {
+            var glyf = LoadGlyf(LoadInter());
+
+            Assert.False(glyf.TryGetGlyphBounds(glyphIndex, out _, out _, out _, out _));
+        }
+
+        [Fact]
+        public void TryGetGlyphBounds_Returns_Zero_For_Empty_Glyph()
+        {
+            var typeface = LoadInter();
+            var glyf = LoadGlyf(typeface);
+
+            var spaceGlyph = GlyphFor(typeface, ' ');
+
+            // Empty glyph is valid but carries no box.
+            Assert.True(glyf.TryGetGlyphBounds(spaceGlyph, out var xMin, out var yMin, out var xMax, out var yMax));
+            Assert.Equal(0, xMin);
+            Assert.Equal(0, yMin);
+            Assert.Equal(0, xMax);
+            Assert.Equal(0, yMax);
+        }
+
+        [Fact]
+        public void TryGetGlyphBounds_Returns_NonEmpty_Box_For_Letter()
+        {
+            var typeface = LoadInter();
+            var glyf = LoadGlyf(typeface);
+
+            var letterGlyph = GlyphFor(typeface, 'A');
+
+            Assert.True(glyf.TryGetGlyphBounds(letterGlyph, out var xMin, out var yMin, out var xMax, out var yMax));
+            Assert.True(xMax > xMin, "Letter glyph should have a positive-width box.");
+            Assert.True(yMax > yMin, "Letter glyph should have a positive-height box.");
+        }
+
+        [Fact]
+        public void TryGetGlyphBounds_Matches_GlyphDescriptor_Header()
+        {
+            var typeface = LoadInter();
+            var glyf = LoadGlyf(typeface);
+
+            var letterGlyph = GlyphFor(typeface, 'A');
+
+            Assert.True(glyf.TryGetGlyphData(letterGlyph, out var data));
+            var descriptor = new GlyphDescriptor(data);
+
+            Assert.True(glyf.TryGetGlyphBounds(letterGlyph, out var xMin, out var yMin, out var xMax, out var yMax));
+
+            // The header-only read must agree with the descriptor's parsed bounds.
+            Assert.Equal((double)xMin, descriptor.ConservativeBounds.X);
+            Assert.Equal((double)yMin, descriptor.ConservativeBounds.Y);
+            Assert.Equal((double)(xMax - xMin), descriptor.ConservativeBounds.Width);
+            Assert.Equal((double)(yMax - yMin), descriptor.ConservativeBounds.Height);
+        }
+
         private static int FindCompositeGlyph(GlyfTable glyf)
         {
             for (var i = 0; i < glyf.GlyphCount; i++)
