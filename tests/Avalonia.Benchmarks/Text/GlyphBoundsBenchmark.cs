@@ -11,11 +11,12 @@ namespace Avalonia.Benchmarks.Text;
 
 /// <summary>
 /// Compares obtaining glyph ink bounds via the table-based
-/// <see cref="GlyphTypeface.TryGetGlyphMetrics(ReadOnlySpan{ushort}, Span{GlyphMetrics})"/>
-/// against Skia's <c>SKFont.GetGlyphWidths(..., bounds)</c> — the path
-/// <c>GlyphRunImpl</c> uses today. Two scenario pairs isolate the pure bounds-read
-/// cost (font pre-created) from the realistic per-run cost (Skia pays SKFont creation,
-/// which the table path avoids entirely).
+/// <c>GlyphTypeface.TryGetGlyphBounds</c> against Skia's
+/// <c>SKFont.GetGlyphWidths(..., bounds)</c> — the path <c>GlyphRunImpl</c> uses today.
+/// Both sides compute bounds only (Skia is passed a null widths array), so the
+/// comparison is like-for-like. Two scenario pairs isolate the pure bounds-read cost
+/// (font pre-created) from the realistic per-run cost (Skia pays SKFont creation, which
+/// the table path avoids entirely).
 /// </summary>
 [MemoryDiagnoser]
 public class GlyphBoundsBenchmark : IDisposable
@@ -30,7 +31,7 @@ public class GlyphBoundsBenchmark : IDisposable
 
     private ushort[] _glyphIds = Array.Empty<ushort>();
     private SKRect[] _skBounds = Array.Empty<SKRect>();
-    private GlyphMetrics[] _metrics = Array.Empty<GlyphMetrics>();
+    private GlyphBounds[] _bounds = Array.Empty<GlyphBounds>();
 
     [Params(1, 16, 256)]
     public int GlyphCount { get; set; }
@@ -69,7 +70,7 @@ public class GlyphBoundsBenchmark : IDisposable
         }
 
         _skBounds = new SKRect[GlyphCount];
-        _metrics = new GlyphMetrics[GlyphCount];
+        _bounds = new GlyphBounds[GlyphCount];
     }
 
     // ---- Kernel: SKFont already created; measure only the bounds query. ----
@@ -83,7 +84,7 @@ public class GlyphBoundsBenchmark : IDisposable
     [Benchmark]
     public void Table_BoundsOnly()
     {
-        _glyphTypeface.TryGetGlyphMetrics(_glyphIds, _metrics.AsSpan(0, GlyphCount));
+        _glyphTypeface.TryGetGlyphBounds(_glyphIds, _bounds.AsSpan(0, GlyphCount));
     }
 
     // ---- Realistic per-run: Skia pays SKFont creation; the table path doesn't. ----
@@ -101,11 +102,11 @@ public class GlyphBoundsBenchmark : IDisposable
     [Benchmark]
     public void Table_PerRun()
     {
-        Span<GlyphMetrics> metrics = GlyphCount <= 256
-            ? stackalloc GlyphMetrics[GlyphCount]
-            : new GlyphMetrics[GlyphCount];
+        Span<GlyphBounds> bounds = GlyphCount <= 256
+            ? stackalloc GlyphBounds[GlyphCount]
+            : new GlyphBounds[GlyphCount];
 
-        _glyphTypeface.TryGetGlyphMetrics(_glyphIds, metrics);
+        _glyphTypeface.TryGetGlyphBounds(_glyphIds, bounds);
     }
 
     public void Dispose()

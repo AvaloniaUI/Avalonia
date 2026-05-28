@@ -30,6 +30,19 @@ namespace Avalonia.Media.Fonts.Tables
         public int GlyphCount => _glyphCount;
 
         /// <summary>
+        /// Gets the raw table bytes. Exposed so batch readers can fetch the span once and
+        /// read offsets directly, avoiding a per-glyph <see cref="ReadOnlyMemory{T}.Span"/>
+        /// conversion.
+        /// </summary>
+        internal ReadOnlySpan<byte> RawData => _data.Span;
+
+        /// <summary>
+        /// Gets a value indicating whether offsets are stored in the short (<c>uint16</c>×2)
+        /// format; otherwise the long (<c>uint32</c>) format is used.
+        /// </summary>
+        internal bool IsShortFormat => _isShortFormat;
+
+        /// <summary>
         /// Loads the loca table from the specified typeface.
         /// </summary>
         /// <param name="glyphTypeface">The glyph typeface to load from.</param>
