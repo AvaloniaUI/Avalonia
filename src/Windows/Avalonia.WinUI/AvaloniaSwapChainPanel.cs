@@ -489,7 +489,7 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
         if (handle == IntPtr.Zero)
             return null;
 
-        foreach (StandardCursorType type in Enum.GetValues(typeof(StandardCursorType)))
+        foreach (StandardCursorType type in Enum.GetValues<StandardCursorType>())
         {
             var cached = Win32.CursorFactory.Instance.GetCursor(type);
             if (cached is Win32.CursorImpl c && c.Handle == handle)
