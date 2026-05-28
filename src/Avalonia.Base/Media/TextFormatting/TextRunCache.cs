@@ -171,9 +171,10 @@ namespace Avalonia.Media.TextFormatting
 
         private static void AddRefShapedRuns(TextRun[] runs)
         {
-            for (var i = 0; i < runs.Length; i++)
+            // foreach over T[] benefits from JIT pattern-match bounds-check elision.
+            foreach (var run in runs)
             {
-                if (runs[i] is ShapedTextRun shaped)
+                if (run is ShapedTextRun shaped)
                 {
                     shaped.AddRef();
                 }
@@ -189,11 +190,10 @@ namespace Avalonia.Media.TextFormatting
 
         private static void DisposeCachedRuns(CachedShapingResult result)
         {
-            var runs = result.ShapedRuns;
-
-            for (var i = 0; i < runs.Length; i++)
+            // foreach over T[] benefits from JIT pattern-match bounds-check elision.
+            foreach (var run in result.ShapedRuns)
             {
-                if (runs[i] is ShapedTextRun shaped)
+                if (run is ShapedTextRun shaped)
                 {
                     shaped.Dispose();
                 }
