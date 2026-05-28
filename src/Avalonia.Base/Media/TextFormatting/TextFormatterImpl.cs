@@ -810,7 +810,7 @@ namespace Avalonia.Media.TextFormatting
 
                     case DrawableTextRun drawableTextRun:
                         {
-                            if (currentWidth + drawableTextRun.Size.Width >= paragraphWidth)
+                            if (MathUtilities.GreaterThan(currentWidth + drawableTextRun.Size.Width, paragraphWidth))
                             {
                                 return measuredLength;
                             }

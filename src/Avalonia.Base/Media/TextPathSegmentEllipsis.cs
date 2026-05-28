@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -50,7 +51,7 @@ namespace Avalonia.Media
 
             var shapedSymbol = TextFormatter.CreateSymbol(Symbol, FlowDirection);
 
-            if (Width < shapedSymbol.Size.Width)
+            if (MathUtilities.LessThan(Width, shapedSymbol.Size.Width))
             {
                 // Nothing to collapse
                 return null;
@@ -58,7 +59,7 @@ namespace Avalonia.Media
 
             double totalWidth = textLine.Width;
 
-            if (totalWidth <= Width)
+            if (MathUtilities.LessThanOrClose(totalWidth, Width))
             {
                 // Nothing to collapse
                 return null;
@@ -262,7 +263,7 @@ namespace Avalonia.Media
 
                             var trimmedWidth = prefix[segEndIndex + 1] - prefix[segStartIndex];
 
-                            if (totalWidth - trimmedWidth + shapedSymbol.Size.Width <= Width)
+                            if (MathUtilities.LessThanOrClose(totalWidth - trimmedWidth + shapedSymbol.Size.Width, Width))
                             {
                                 // perform split using character indices
                                 var removeStart = segments[segStartIndex].Start;
@@ -331,7 +332,7 @@ namespace Avalonia.Media
                 {
                     var segment = segments[segmentIndex];
 
-                    if (segmentIndex < segments.Count - 1 && remainingWidth - segment.Width > Width)
+                    if (segmentIndex < segments.Count - 1 && MathUtilities.GreaterThan(remainingWidth - segment.Width, Width))
                     {
                         remainingWidth -= segment.Width;
                         currentLength += segment.Length;

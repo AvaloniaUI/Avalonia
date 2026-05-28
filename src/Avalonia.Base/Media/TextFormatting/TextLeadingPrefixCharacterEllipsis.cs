@@ -1,6 +1,7 @@
 ﻿// ReSharper disable ForCanBeConvertedToForeach
 using System;
 using System.Collections.Generic;
+using Avalonia.Utilities;
 using static Avalonia.Media.TextFormatting.FormattingObjectPool;
 
 namespace Avalonia.Media.TextFormatting
@@ -66,7 +67,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var shapedSymbol = TextFormatter.CreateSymbol(Symbol, FlowDirection);
 
-                if (Width < shapedSymbol.GlyphRun.Bounds.Width)
+                if (MathUtilities.LessThan(Width, shapedSymbol.GlyphRun.Bounds.Width))
                 {
                     return Array.Empty<TextRun>();
                 }
@@ -90,7 +91,7 @@ namespace Avalonia.Media.TextFormatting
                                 //  pattern was comparing cumulative-so-far against budget-remaining,
                                 //  which double-counted and tripped overflow far too early on
                                 //  multi-run lines.)
-                                if (shapedRun.Size.Width > availableWidth)
+                                if (MathUtilities.GreaterThan(shapedRun.Size.Width, availableWidth))
                                 {
                                     shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength);
 
