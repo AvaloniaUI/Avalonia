@@ -100,6 +100,59 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         }
 
         /// <summary>
+        /// Reads a glyph's bounding box from its 'glyf' header without parsing contours.
+        /// </summary>
+        /// <remarks>
+        /// The values are the control-point bounding box stored in the glyph header
+        /// (the min/max of all on- and off-curve points), in font design units. This is a
+        /// slight superset of the rendered ink bounds for glyphs with off-curve points.
+        /// Composite glyphs carry their overall bounding box in the header too, so no
+        /// recursion is needed. Returns <see langword="true"/> with all-zero bounds for
+        /// empty glyphs (e.g. whitespace); returns <see langword="false"/> when the glyph
+        /// index is out of range or the glyph data is too short to contain a header.
+        /// </remarks>
+        /// <param name="glyphIndex">The zero-based glyph index.</param>
+        /// <param name="xMin">The minimum x coordinate of the bounding box.</param>
+        /// <param name="yMin">The minimum y coordinate of the bounding box.</param>
+        /// <param name="xMax">The maximum x coordinate of the bounding box.</param>
+        /// <param name="yMax">The maximum y coordinate of the bounding box.</param>
+        /// <returns><see langword="true"/> if bounds were resolved (including empty glyphs); otherwise <see langword="false"/>.</returns>
+        public bool TryGetGlyphBounds(int glyphIndex, out short xMin, out short yMin, out short xMax, out short yMax)
+        {
+            xMin = 0;
+            yMin = 0;
+            xMax = 0;
+            yMax = 0;
+
+            if (!TryGetGlyphData(glyphIndex, out var data))
+            {
+                // Out of range.
+                return false;
+            }
+
+            if (data.IsEmpty)
+            {
+                // Empty glyph (e.g. whitespace): valid, zero bounds.
+                return true;
+            }
+
+            var span = data.Span;
+
+            // Glyph header: int16 numberOfContours, then int16 xMin, yMin, xMax, yMax.
+            if (span.Length < 10)
+            {
+                return false;
+            }
+
+            xMin = BinaryPrimitives.ReadInt16BigEndian(span.Slice(2, 2));
+            yMin = BinaryPrimitives.ReadInt16BigEndian(span.Slice(4, 2));
+            xMax = BinaryPrimitives.ReadInt16BigEndian(span.Slice(6, 2));
+            yMax = BinaryPrimitives.ReadInt16BigEndian(span.Slice(8, 2));
+
+            return true;
+        }
+
+        /// <summary>
         /// Builds the glyph outline into the provided geometry context. Returns false for empty glyphs.
         /// Coordinates are in font design units. Composite glyphs are supported.
         /// </summary>
