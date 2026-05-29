@@ -86,7 +86,7 @@
 - (NSAccessibilityRole)accessibilityRole
 {
     auto controlType = _peer->GetAutomationControlType();
-    
+
     switch (controlType) {
         case AutomationButton: return NSAccessibilityButtonRole;
         case AutomationCalendar: return NSAccessibilityGridRole;
@@ -123,6 +123,7 @@
         case AutomationSplitButton: return NSAccessibilityPopUpButtonRole;
         case AutomationWindow: return NSAccessibilityWindowRole;
         case AutomationPane: return NSAccessibilityGroupRole;
+        case AutomationScrollViewer: return NSAccessibilityScrollAreaRole;
         case AutomationHeader: return @"AXHeading";
         case AutomationHeaderItem:  return NSAccessibilityButtonRole;
         case AutomationTable: return NSAccessibilityTableRole;
@@ -416,6 +417,25 @@
         return NO;
     _peer->ExpandCollapseProvider_Expand();
     return YES;
+}
+
+- (NSArray<NSAccessibilityActionName> *)accessibilityActionNames
+{
+    NSAccessibilityActionName scrollToVisible = @"AXScrollToVisible";
+    NSArray<NSAccessibilityActionName> *base = [super accessibilityActionNames];
+    if (base == nil)
+        base = @[];
+    if ([base containsObject:scrollToVisible])
+        return base;
+    return [base arrayByAddingObject:scrollToVisible];
+}
+
+- (void)accessibilityPerformAction:(NSAccessibilityActionName)action
+{
+    if ([action isEqualToString:@"AXScrollToVisible"])
+        _peer->BringIntoView();
+    else
+        [super accessibilityPerformAction:action];
 }
 
 - (BOOL)isAccessibilitySelected

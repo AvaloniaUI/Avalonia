@@ -66,6 +66,7 @@ namespace Avalonia.Native
         public int IsKeyboardFocusable() => _inner.IsKeyboardFocusable().AsComBool();
         public void SetFocus() => _inner.SetFocus();
         public int ShowContextMenu() => _inner.ShowContextMenu().AsComBool();
+        public void BringIntoView() => _inner.BringIntoView();
 
         public void SetNode(IAvnAutomationNode node)
         {
