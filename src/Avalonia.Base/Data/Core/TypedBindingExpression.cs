@@ -1,6 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.PropertyStore;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core;
 
@@ -19,13 +21,17 @@ namespace Avalonia.Data.Core;
 ///   UpdateSourceTrigger != PropertyChanged.
 /// - The source and destination types must be the same, i.e. no type conversion is performed.
 /// </remarks>
-internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase, IDescription, IValueEntry<TValue>
+internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
+    IDescription,
+    IValueEntry<TValue>,
+    IWeakEventSubscriber<PropertyChangedEventArgs>
     where TSource : class
 {
     private readonly IPropertyInfo<TSource, TValue> _propertyInfo;
     private bool _isRunning;
     private bool _produceValue;
     private IBindingExpressionSink? _sink;
+    private WeakReference<TSource?>? _source;
     private WeakReference<StyledElement>? _target;
     private Optional<TValue> _value;
 
@@ -62,6 +68,13 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase, 
             throw new InvalidOperationException("TypedBindingExpression may only target StyledElements");
         if (TargetProperty is not null && TargetProperty != targetProperty)
             throw new InvalidOperationException("TypedBindingExpression was already attached to a different property.");
+        
+        if (!typeof(TValue).IsAssignableTo(targetProperty.PropertyType))
+        {
+            throw new InvalidOperationException(
+                $"TypedBindingExpression of type '{typeof(TValue)}' cannot be bound " +
+                $"to a property of type '{targetProperty.PropertyType}' .");
+        }
 
         _sink = sink;
         _target = new(element);
@@ -118,12 +131,17 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase, 
 
     void IValueEntry.Unsubscribe() => StopCore();
 
+    void IWeakEventSubscriber<PropertyChangedEventArgs>.OnEvent(object? sender, WeakEvent ev, PropertyChangedEventArgs e)
+    {
+        OnSourcePropertyChanged(sender, e);
+    }
+
     private void StartCore()
     {
         if (TryGetTarget(out var target))
         {
-            target.DataContextChanged += OnTargetDataContextChanged;
-            UpdateValue(target.DataContext as TSource);
+            target.PropertyChanged += OnTargetPropertyChanged;
+            UpdateSource(target.DataContext as TSource);
         }
     }
 
@@ -131,23 +149,61 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase, 
     {
         if (TryGetTarget(out var target))
         {
-            target.DataContextChanged -= OnTargetDataContextChanged;
-            UpdateValue(target.DataContext as TSource);
+            target.PropertyChanged -= OnTargetPropertyChanged;
+            UpdateSource(null);
         }
     }
 
-    private void UpdateValue(TSource? dataContext)
+    private void UpdateSource(TSource? source)
+    {
+        if (TryGetSource(out var oldSource))
+        {
+            if (oldSource is INotifyPropertyChanged oldInpc)
+                WeakEvents.ThreadSafePropertyChanged.Unsubscribe(oldInpc, this);
+        }
+
+        _source = new(source);
+
+        if (source is INotifyPropertyChanged inpc)
+            WeakEvents.ThreadSafePropertyChanged.Subscribe(inpc, this);
+
+        UpdateValue(source);
+    }
+
+    private void UpdateValue()
+    {
+        if (TryGetSource(out var source))
+            UpdateValue(source);
+    }
+
+    private void UpdateValue(TSource? source)
     {
         var oldValue = _value;
-        _value = dataContext is null ? default : new(_propertyInfo.Get(dataContext));
+
+        _value = source is null ? default : new(_propertyInfo.Get(source));
 
         if (_produceValue && oldValue != _value)
             _sink?.OnChanged(this, true, false, _value.GetValueOrDefault(), null);
     }
 
-    private void OnTargetDataContextChanged(object? sender, EventArgs e)
+    private void OnSourcePropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        UpdateValue(((StyledElement?)sender)?.DataContext as TSource);
+        if (e.PropertyName == _propertyInfo.Name)
+            UpdateValue();
+    }
+
+    private void OnTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == StyledElement.DataContextProperty)
+            UpdateSource(((StyledElement?)sender)?.DataContext as TSource);
+    }
+
+    private bool TryGetSource([NotNullWhen(true)] out TSource? source)
+    {
+        if (_source?.TryGetTarget(out source) == true)
+            return true;
+        source = null;
+        return false;
     }
 
     private bool TryGetTarget([NotNullWhen(true)] out StyledElement? target)
