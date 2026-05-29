@@ -47,27 +47,31 @@ namespace Avalonia.PropertyStore
 
         public BindingExpressionBase AddBinding(
             AvaloniaProperty property,
-            UntypedBindingExpressionBase source)
+            BindingExpressionBase source)
         {
-            var priority = source.Priority;
+            var priority = source.DefaultPriority;
+
             if (priority == BindingPriority.LocalValue || property.IsDirect)
             {
                 DisposeExistingLocalValueBinding(property);
                 _localValueBindings ??= new();
                 _localValueBindings[property.Id] = source;
-                source.AttachAndStart(this, Owner, property, BindingPriority.LocalValue);
+                source.Attach(this, null, Owner, property, BindingPriority.LocalValue);
+                source.Start(produceValue: true);
                 return source;
             }
             else
             {
                 var effective = GetEffectiveValue(property);
                 var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
+                var valueEntry = source as IValueEntry ?? 
+                    throw new InvalidOperationException("BindingExpressionBase must implement IValueEntry");
 
                 source.Attach(this, frame, Owner, property, priority);
-                frame.AddBinding(source);
+                frame.AddBinding(valueEntry);
 
                 if (effective is null || priority <= effective.Priority)
-                    source.Start();
+                    source.Start(produceValue: true);
 
                 return source;
             }
@@ -787,7 +791,7 @@ namespace Avalonia.PropertyStore
         }
 
         void IBindingExpressionSink.OnChanged(
-            UntypedBindingExpressionBase instance,
+            BindingExpressionBase instance,
             bool hasValueChanged,
             bool hasErrorChanged,
             object? value,
@@ -797,6 +801,7 @@ namespace Avalonia.PropertyStore
             Debug.Assert(instance.TargetProperty is not null);
 
             var property = instance.TargetProperty;
+            var entry = (IValueEntry)instance;
 
             if (property.IsDirect)
             {
@@ -823,11 +828,11 @@ namespace Avalonia.PropertyStore
                         if (TryGetEffectiveValue(property, out var existing))
                         {
                             if (priority <= existing.BasePriority)
-                                ReevaluateEffectiveValue(property, existing, changedValueEntry: instance);
+                                ReevaluateEffectiveValue(property, existing, changedValueEntry: entry);
                         }
                         else
                         {
-                            AddEffectiveValueAndRaise(property, instance, priority);
+                            AddEffectiveValueAndRaise(property, entry, priority);
                         }
                     }
                 }

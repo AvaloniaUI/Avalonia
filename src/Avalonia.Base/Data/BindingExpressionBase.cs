@@ -1,14 +1,48 @@
 ﻿using System;
+using Avalonia.Data.Core;
 using Avalonia.PropertyStore;
 using Avalonia.Styling;
 
 namespace Avalonia.Data;
 
+/// <summary>
+/// Represents the base class for binding expressions.
+/// </summary>
+/// <remarks>
+/// A binding expression represents an instantiation of a binding on an object.
+/// </remarks>
 public abstract class BindingExpressionBase : IDisposable, ISetterInstance
 {
-    private protected BindingExpressionBase()
+    private protected BindingExpressionBase(BindingPriority defaultPriority)
     {
+        DefaultPriority = defaultPriority;
     }
+
+    /// <summary>
+    /// Gets the priority of the binding expression.
+    /// </summary>
+    public BindingPriority Priority { get; private protected set; }
+
+    /// <summary>
+    /// Gets the <see cref="AvaloniaProperty"/> that the binding expression is targeting.
+    /// </summary>
+    public AvaloniaProperty? TargetProperty { get; private protected set; }
+
+    /// <summary>
+    /// Gets the default priority of the binding expression.
+    /// </summary>
+    /// <remarks>
+    /// This property describes the preferred priority of the binding expression; the priority
+    /// passed to the <see cref="Attach"/> method may differ if the binding targets a direct
+    /// property, in which case the priority will be elevated to
+    /// <see cref="BindingPriority.LocalValue"/>.
+    /// </remarks>
+    internal BindingPriority DefaultPriority { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether data validation is enabled for the binding expression.
+    /// </summary>
+    internal bool IsDataValidationEnabled { get; private protected set; }
 
     public virtual void Dispose()
     {
@@ -39,15 +73,23 @@ public abstract class BindingExpressionBase : IDisposable, ISetterInstance
     /// When overridden in a derived class, attaches the binding expression to a value store but
     /// does not start it.
     /// </summary>
-    /// <param name="valueStore">The value store to attach to.</param>
+    /// <param name="sink">The binding expression sink to attach to.</param>
     /// <param name="frame">The immediate value frame to attach to, if any.</param>
     /// <param name="target">The target object.</param>
     /// <param name="targetProperty">The target property.</param>
     /// <param name="priority">The priority of the binding.</param>
     internal abstract void Attach(
-        ValueStore valueStore,
+        IBindingExpressionSink sink,
         ImmediateValueFrame? frame,
         AvaloniaObject target,
         AvaloniaProperty targetProperty,
         BindingPriority priority);
+
+    /// <summary>
+    /// Starts the binding expression.
+    /// </summary>
+    /// <param name="produceValue">
+    /// Indicates whether the binding expression should produce an initial value.
+    /// </param>
+    internal abstract void Start(bool produceValue);
 }

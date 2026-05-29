@@ -69,7 +69,8 @@ internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingEx
                 throw new NotSupportedException($"Unsupported BindingExpressionBase implementation '{expression}'.");
 
             _expressions[i] = e;
-            e.AttachAndStart(this, target, null, Priority);
+            e.Attach(this, null, target, null, DefaultPriority);
+            e.Start(produceValue: true);
         }
     }
 
@@ -84,7 +85,7 @@ internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingEx
     }
 
     void IBindingExpressionSink.OnChanged(
-        UntypedBindingExpressionBase instance,
+        BindingExpressionBase instance,
         bool hasValueChanged,
         bool hasErrorChanged,
         object? value,

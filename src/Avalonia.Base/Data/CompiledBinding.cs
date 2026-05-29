@@ -197,6 +197,21 @@ public class CompiledBinding : BindingBase
         AvaloniaProperty? targetProperty,
         object? anchor)
     {
+        if (Path?.Elements.Count == 1 && Path.Elements[0] is TypedPropertyElement typed)
+        {
+            return typed.CreateExpression(target, targetProperty, anchor, Priority);
+        }
+        else
+        {
+            return CreateUntypedExpression(target, targetProperty, anchor);
+        }
+    }
+
+    private BindingExpression CreateUntypedExpression(
+        AvaloniaObject target,
+        AvaloniaProperty? targetProperty,
+        object? anchor)
+    {
         var enableDataValidation = targetProperty?.GetMetadata(target).EnableDataValidation ?? false;
         var nodes = new List<ExpressionNode>();
         var isRooted = false;

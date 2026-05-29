@@ -22,7 +22,6 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     IValueEntry
 {
     protected static readonly object UnchangedValue = new();
-    private readonly bool _isDataValidationEnabled;
     private object? _defaultValue;
     private BindingError? _error;
     private ImmediateValueFrame? _frame;
@@ -45,11 +44,12 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         BindingPriority defaultPriority,
         AvaloniaProperty? targetProperty = null,
         bool isDataValidationEnabled = false)
+        : base(defaultPriority)
     {
         Priority = defaultPriority;
         TargetProperty = targetProperty;
         TargetType = targetProperty?.PropertyType ?? typeof(object);
-        _isDataValidationEnabled = isDataValidationEnabled;
+        IsDataValidationEnabled = isDataValidationEnabled;
     }
 
     /// <summary>
@@ -63,28 +63,9 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     public BindingErrorType ErrorType => _error?.ErrorType ?? BindingErrorType.None;
 
     /// <summary>
-    /// Gets a value indicating whether data validation is enabled for the binding expression.
-    /// </summary>
-    public bool IsDataValidationEnabled => _isDataValidationEnabled;
-
-    /// <summary>
     /// Gets a value indicating whether the binding expression is currently running.
     /// </summary>
     public bool IsRunning => _isRunning;
-
-    /// <summary>
-    /// Gets the priority of the binding expression.
-    /// </summary>
-    /// <remarks>
-    /// Before being attached to a value store, this property describes the default priority of the
-    /// binding expression; this may change when the expression is attached to a value store.
-    /// </remarks>
-    public BindingPriority Priority { get; private set; }
-
-    /// <summary>
-    /// Gets the <see cref="AvaloniaProperty"/> which the binding expression is targeting.
-    /// </summary>
-    public AvaloniaProperty? TargetProperty { get; private set; }
 
     /// <summary>
     /// Gets the target type of the binding expression; that is, the type that values produced by
@@ -143,11 +124,6 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         return result;
     }
 
-    /// <summary>
-    /// Starts the binding expression following a call to <see cref="AttachCore"/>.
-    /// </summary>
-    public void Start() => Start(produceValue: true);
-
     bool IValueEntry.GetDataValidationState(out BindingValueType state, out Exception? error)
     {
         if (_error is not null)
@@ -184,31 +160,41 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     void IValueEntry.Unsubscribe() => Stop();
 
     internal override void Attach(
-        ValueStore valueStore,
+        IBindingExpressionSink sink,
         ImmediateValueFrame? frame,
-        AvaloniaObject target,
-        AvaloniaProperty targetProperty,
-        BindingPriority priority)
-    {
-        AttachCore(valueStore, frame, target, targetProperty, priority);
-    }
-
-    /// <summary>
-    /// Initializes the binding expression with the specified subscriber and target property and
-    /// starts it.
-    /// </summary>
-    /// <param name="subscriber">The subscriber.</param>
-    /// <param name="target">The target object.</param>
-    /// <param name="targetProperty">The target property.</param>
-    /// <param name="priority">The priority of the binding.</param>
-    internal void AttachAndStart(
-        IBindingExpressionSink subscriber,
         AvaloniaObject target,
         AvaloniaProperty? targetProperty,
         BindingPriority priority)
     {
-        AttachCore(subscriber, null, target, targetProperty, priority);
-        Start(produceValue: true);
+        if (_sink is not null)
+            throw new InvalidOperationException("BindingExpression was already attached.");
+        if (TargetProperty is not null && TargetProperty != targetProperty)
+            throw new InvalidOperationException("BindingExpression was already attached to a different property.");
+
+        _sink = sink;
+        _frame = frame;
+        _target = new(target);
+        TargetProperty = targetProperty;
+        TargetType = targetProperty?.PropertyType ?? typeof(object);
+        Priority = priority;
+    }
+
+    internal override void Start(bool produceValue)
+    {
+        if (_isRunning)
+            return;
+
+        _isRunning = true;
+
+        try
+        {
+            _produceValue = produceValue;
+            StartCore();
+        }
+        finally
+        {
+            _produceValue = true;
+        }
     }
 
     /// <summary>
@@ -255,27 +241,6 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// True if the value could be written to the binding source; otherwise false.
     /// </returns>
     internal virtual bool WriteValueToSource(object? value) => false;
-
-    private void AttachCore(
-        IBindingExpressionSink sink,
-        ImmediateValueFrame? frame,
-        AvaloniaObject target,
-        AvaloniaProperty? targetProperty,
-        BindingPriority priority)
-    {
-        if (_sink is not null)
-            throw new InvalidOperationException("BindingExpression was already attached.");
-        if (TargetProperty is not null && TargetProperty != targetProperty)
-            throw new InvalidOperationException("BindingExpression was already attached to a different property.");
-
-        _sink = sink;
-        _frame = frame;
-        _target = new(target);
-        TargetProperty = targetProperty;
-        TargetType = targetProperty?.PropertyType ?? typeof(object);
-        Priority = priority;
-    }
-
 
     /// <summary>
     /// Converts a value using a value converter, logging a warning if necessary.
@@ -466,30 +431,6 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     }
 
     /// <summary>
-    /// Starts the binding expression by calling <see cref="StartCore"/>.
-    /// </summary>
-    /// <param name="produceValue">
-    /// Indicates whether the binding expression should produce an initial value.
-    /// </param>
-    protected void Start(bool produceValue)
-    {
-        if (_isRunning)
-            return;
-
-        _isRunning = true;
-
-        try
-        {
-            _produceValue = produceValue;
-            StartCore();
-        }
-        finally
-        {
-            _produceValue = true;
-        }
-    }
-
-    /// <summary>
     /// When overridden in a derived class, starts the binding expression.
     /// </summary>
     /// <remarks>
@@ -562,13 +503,15 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         public ObservableSink(UntypedBindingExpressionBase expression) => _expression = expression;
 
         void IBindingExpressionSink.OnChanged(
-            UntypedBindingExpressionBase instance,
+            BindingExpressionBase instance,
             bool hasValueChanged,
             bool hasErrorChanged,
             object? value,
             BindingError? error)
         {
-            if (instance.IsDataValidationEnabled || error is not null)
+            var expression = (UntypedBindingExpressionBase)instance;
+
+            if (expression.IsDataValidationEnabled || error is not null)
             {
                 BindingNotification notification;
 

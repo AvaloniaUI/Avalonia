@@ -7,6 +7,7 @@ using Avalonia.Data.Core;
 using Avalonia.Data.Core.ExpressionNodes;
 using Avalonia.Data.Core.Parsers;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Styling;
 
 namespace Avalonia.Data
 {
@@ -93,7 +94,7 @@ namespace Avalonia.Data
                 result.Add(new LogicalNotNode());
         }
 
-        internal IEnumerable<ICompiledBindingPathElement> Elements => _elements;
+        internal IReadOnlyList<ICompiledBindingPathElement> Elements => _elements;
 
         /// <inheritdoc />
         public override string ToString()
@@ -126,6 +127,13 @@ namespace Avalonia.Data
             bool acceptsNull)
         {
             _elements.Add(new PropertyElement(info, accessorFactory, _elements.Count == 0, acceptsNull));
+            return this;
+        }
+
+        public CompiledBindingPathBuilder Property<TSource, TResult>(IPropertyInfo<TSource, TResult> info)
+            where TSource : class
+        {
+            _elements.Add(new TypedPropertyElement<TSource, TResult>(info));
             return this;
         }
 
@@ -262,6 +270,31 @@ namespace Avalonia.Data
 
         public override string ToString()
             => _isFirstElement ? Property.Name : $".{Property.Name}";
+    }
+
+    internal abstract class TypedPropertyElement : ICompiledBindingPathElement
+    {
+        public abstract BindingExpressionBase CreateExpression(
+            AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
+            object? anchor,
+            BindingPriority priority);
+    }
+
+    internal sealed class TypedPropertyElement<TSource, TValue> : TypedPropertyElement
+        where TSource : class
+    {
+        public TypedPropertyElement(IPropertyInfo<TSource, TValue> property) => Property = property;
+        public IPropertyInfo<TSource, TValue> Property { get; }
+
+        public override BindingExpressionBase CreateExpression(
+            AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
+            object? anchor,
+            BindingPriority priority)
+        {
+            return new TypedBindingExpression<TSource, TValue>(Property, priority);
+        }
     }
 
     internal class MethodAsDelegateElement : ICompiledBindingPathElement

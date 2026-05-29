@@ -20,7 +20,7 @@ internal interface IBindingExpressionSink
     /// The new binding error; if <paramref name="hasErrorChanged"/> is true.
     /// </param>
     void OnChanged(
-        UntypedBindingExpressionBase instance,
+        BindingExpressionBase instance,
         bool hasValueChanged,
         bool hasErrorChanged,
         object? value,
