@@ -278,6 +278,7 @@ namespace Avalonia.Data
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor,
+            BindingMode mode,
             BindingPriority priority);
     }
 
@@ -291,9 +292,10 @@ namespace Avalonia.Data
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor,
+            BindingMode mode,
             BindingPriority priority)
         {
-            return new TypedBindingExpression<TSource, TValue>(Property, priority);
+            return new TypedBindingExpression<TSource, TValue>(Property, mode, priority);
         }
     }
 

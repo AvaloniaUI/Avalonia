@@ -199,12 +199,31 @@ public class CompiledBinding : BindingBase
     {
         if (Path?.Elements.Count == 1 && Path.Elements[0] is TypedPropertyElement typed)
         {
-            return typed.CreateExpression(target, targetProperty, anchor, Priority);
+            return CreateTypedExpression(typed, target, targetProperty, anchor);
         }
         else
         {
             return CreateUntypedExpression(target, targetProperty, anchor);
         }
+    }
+
+    private BindingExpressionBase CreateTypedExpression(
+        TypedPropertyElement element,
+        AvaloniaObject target,
+        AvaloniaProperty? targetProperty,
+        object? anchor)
+    {
+        var (mode, trigger) = ResolveDefaultsFromMetadata(target, targetProperty);
+
+        if (trigger is not UpdateSourceTrigger.PropertyChanged)
+            throw new NotSupportedException("TypedBindingExpression only supports PropertyChanged UpdateSourceTrigger.");
+
+        return element.CreateExpression(
+            target,
+            targetProperty,
+            anchor,
+            mode,
+            Priority);
     }
 
     private BindingExpression CreateUntypedExpression(
