@@ -530,7 +530,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
             }
         }
 
-        void IBindingExpressionSink.OnCompleted(UntypedBindingExpressionBase instance) => PublishCompleted();
+        void IBindingExpressionSink.OnCompleted(BindingExpressionBase instance) => PublishCompleted();
 
         void IObserver<object?>.OnCompleted() { }
         void IObserver<object?>.OnError(Exception error) { }

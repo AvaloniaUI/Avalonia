@@ -33,6 +33,7 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
     private bool _isRunning;
     private bool _produceValue;
     private IBindingExpressionSink? _sink;
+    private ImmediateValueFrame? _frame;
     private WeakReference<TSource?>? _source;
     private WeakReference<StyledElement>? _target;
     private Optional<TValue> _sourceValue;
@@ -77,9 +78,28 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         }
 
         _sink = sink;
+        _frame = frame;
         _target = new(element);
         TargetProperty = targetProperty;
         Priority = priority;
+    }
+
+    public override void Dispose()
+    {
+        if (_sink is null)
+            return;
+
+        // Null the sink before stopping so that the unsubscribe doesn't push a final value to a
+        // value store that's about to clear this entry anyway.
+        var sink = _sink;
+        var frame = _frame;
+        _sink = null;
+        _frame = null;
+
+        StopCore();
+
+        sink.OnCompleted(this);
+        frame?.OnEntryDisposed(this);
     }
 
     internal override void Start(bool produceValue)
@@ -170,7 +190,7 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         if (_mode is BindingMode.OneWayToSource)
         {
             if (TryGetTargetValue(out var value))
-                WriteValueToSource(value);
+                WriteValueToSource(value!);
         }
         else
         {

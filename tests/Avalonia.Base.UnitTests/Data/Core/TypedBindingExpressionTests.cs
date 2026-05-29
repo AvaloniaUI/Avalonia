@@ -247,6 +247,40 @@ public class TypedBindingExpressionTests : ScopedTestBase
             target.Bind(TextBlock.OpacityProperty, binding));
     }
 
+    [Fact]
+    public void Disposing_Binding_Unsubscribes_From_Source()
+    {
+        var data = new ViewModel { StringValue = "foo" };
+        var target = new TextBox { DataContext = data };
+        var binding = CreateBinding();
+        var expression = target.Bind(TextBox.TextProperty, binding);
+
+        Assert.Equal("foo", target.Text);
+        Assert.Equal(1, data.PropertyChangedSubscriptionCount);
+
+        expression.Dispose();
+
+        Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+
+        // Source changes no longer propagate to the (now unbound) target.
+        data.StringValue = "bar";
+        Assert.NotEqual("bar", target.Text);
+    }
+
+    [Fact]
+    public void Rebinding_Same_Property_Unsubscribes_Previous_Binding()
+    {
+        var data = new ViewModel { StringValue = "foo" };
+        var target = new TextBox { DataContext = data };
+
+        target.Bind(TextBox.TextProperty, CreateBinding());
+        target.Bind(TextBox.TextProperty, CreateBinding());
+
+        // The first binding should have been disposed when the second was applied, leaving a
+        // single subscription rather than two.
+        Assert.Equal(1, data.PropertyChangedSubscriptionCount);
+    }
+
     private static TypedBindingExpression<ViewModel, string?> BindAndAssert(StyledElement target, BindingBase binding)
     {
         var expression = target.Bind(TextBlock.TextProperty, binding);

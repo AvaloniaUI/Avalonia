@@ -27,8 +27,8 @@ internal interface IBindingExpressionSink
         BindingError? error);
 
     /// <summary>
-    /// Called when an <see cref="UntypedBindingExpressionBase"/> completes.
+    /// Called when a <see cref="BindingExpressionBase"/> completes.
     /// </summary>
     /// <param name="instance">The binding expression.</param>
-    void OnCompleted(UntypedBindingExpressionBase instance);
+    void OnCompleted(BindingExpressionBase instance);
 }

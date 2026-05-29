@@ -98,7 +98,7 @@ internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingEx
         PublishValue();
     }
 
-    void IBindingExpressionSink.OnCompleted(UntypedBindingExpressionBase instance)
+    void IBindingExpressionSink.OnCompleted(BindingExpressionBase instance)
     {
         // Nothing to do here.
     }

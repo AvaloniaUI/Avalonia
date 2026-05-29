@@ -849,7 +849,7 @@ namespace Avalonia.PropertyStore
         /// Called by a binding expression when the binding produces completes.
         /// </summary>
         /// <param name="instance">The binding expression.</param>
-        void IBindingExpressionSink.OnCompleted(UntypedBindingExpressionBase instance)
+        void IBindingExpressionSink.OnCompleted(BindingExpressionBase instance)
         {
             Dispatcher.UIThread.VerifyAccess();
             Debug.Assert(instance.TargetProperty is not null);
