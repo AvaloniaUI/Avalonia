@@ -18,8 +18,7 @@ namespace Avalonia.Data.Core;
 [PrivateApi]
 public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     IDisposable,
-    IDescription,
-    IValueEntry
+    IDescription
 {
     protected static readonly object UnchangedValue = new();
     private object? _defaultValue;
@@ -73,8 +72,6 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
     /// </summary>
     public Type TargetType { get; private set; }
 
-    AvaloniaProperty IValueEntry.Property => TargetProperty ?? throw new Exception();
-
     /// <summary>
     /// Terminates the binding.
     /// </summary>
@@ -124,7 +121,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         return result;
     }
 
-    bool IValueEntry.GetDataValidationState(out BindingValueType state, out Exception? error)
+    private protected override bool GetDataValidationState(out BindingValueType state, out Exception? error)
     {
         if (_error is not null)
         {
@@ -145,19 +142,19 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         return IsDataValidationEnabled;
     }
 
-    bool IValueEntry.HasValue()
+    private protected override bool HasValue()
     {
         Start(produceValue: false);
         return true;
     }
 
-    object? IValueEntry.GetValue()
+    private protected override object? GetUntypedValue()
     {
         Start(produceValue: false);
         return GetValueOrDefault();
     }
 
-    void IValueEntry.Unsubscribe() => Stop();
+    private protected override void Unsubscribe() => Stop();
 
     internal override void Attach(
         IBindingExpressionSink sink,

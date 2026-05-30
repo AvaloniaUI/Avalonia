@@ -53,9 +53,6 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
 
     public string Description => _propertyInfo.Name;
 
-    AvaloniaProperty IValueEntry.Property => TargetProperty ??
-        throw new InvalidOperationException("TypedBindingExpression is not attached.");
-
     internal override void Attach(
         IBindingExpressionSink sink,
         ImmediateValueFrame? frame,
@@ -120,7 +117,7 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         }
     }
 
-    bool IValueEntry.GetDataValidationState(out BindingValueType state, out Exception? error)
+    private protected override bool GetDataValidationState(out BindingValueType state, out Exception? error)
     {
         // TODO: Data validation support.
         state = BindingValueType.Value;
@@ -128,7 +125,7 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         return false;
     }
 
-    object? IValueEntry.GetValue()
+    private protected override object? GetUntypedValue()
     {
         Start(produceValue: false);
         if (!_sourceValue.HasValue)
@@ -144,13 +141,13 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         return _sourceValue.Value;
     }
 
-    bool IValueEntry.HasValue()
+    private protected override bool HasValue()
     {
         Start(produceValue: false);
         return _sourceValue.HasValue;
     }
 
-    void IValueEntry.Unsubscribe() => StopCore();
+    private protected override void Unsubscribe() => StopCore();
 
     void IWeakEventSubscriber<PropertyChangedEventArgs>.OnEvent(object? sender, WeakEvent ev, PropertyChangedEventArgs e)
     {

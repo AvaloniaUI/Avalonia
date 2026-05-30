@@ -64,11 +64,9 @@ namespace Avalonia.PropertyStore
             {
                 var effective = GetEffectiveValue(property);
                 var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
-                var valueEntry = source as IValueEntry ?? 
-                    throw new InvalidOperationException("BindingExpressionBase must implement IValueEntry");
 
                 source.Attach(this, frame, Owner, property, priority);
-                frame.AddBinding(valueEntry);
+                frame.AddBinding(source);
 
                 if (effective is null || priority <= effective.Priority)
                     source.Start(produceValue: true);
@@ -813,7 +811,7 @@ namespace Avalonia.PropertyStore
             Debug.Assert(instance.TargetProperty is not null);
 
             var property = instance.TargetProperty;
-            var entry = (IValueEntry)instance;
+            IValueEntry entry = instance;
 
             if (property.IsDirect)
             {

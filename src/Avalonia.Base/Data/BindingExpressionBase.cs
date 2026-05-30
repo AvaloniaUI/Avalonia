@@ -11,7 +11,7 @@ namespace Avalonia.Data;
 /// <remarks>
 /// A binding expression represents an instantiation of a binding on an object.
 /// </remarks>
-public abstract class BindingExpressionBase : IDisposable, ISetterInstance
+public abstract class BindingExpressionBase : IDisposable, ISetterInstance, IValueEntry
 {
     private protected BindingExpressionBase(BindingPriority defaultPriority)
     {
@@ -43,6 +43,15 @@ public abstract class BindingExpressionBase : IDisposable, ISetterInstance
     /// Gets a value indicating whether data validation is enabled for the binding expression.
     /// </summary>
     internal bool IsDataValidationEnabled { get; private protected set; }
+
+    AvaloniaProperty IValueEntry.Property => TargetProperty ??
+        throw new InvalidOperationException("The binding expression is not attached.");
+
+    bool IValueEntry.HasValue() => HasValue();
+    object? IValueEntry.GetValue() => GetUntypedValue();
+    bool IValueEntry.GetDataValidationState(out BindingValueType state, out Exception? error) =>
+        GetDataValidationState(out state, out error);
+    void IValueEntry.Unsubscribe() => Unsubscribe();
 
     public virtual void Dispose()
     {
@@ -92,4 +101,24 @@ public abstract class BindingExpressionBase : IDisposable, ISetterInstance
     /// Indicates whether the binding expression should produce an initial value.
     /// </param>
     internal abstract void Start(bool produceValue);
+
+    /// <summary>
+    /// Checks whether the binding expression has a value, starting it if necessary.
+    /// </summary>
+    private protected abstract bool HasValue();
+
+    /// <summary>
+    /// Gets the current value of the binding expression as a boxed object.
+    /// </summary>
+    private protected abstract object? GetUntypedValue();
+
+    /// <summary>
+    /// Gets the data validation state of the binding expression, if supported.
+    /// </summary>
+    private protected abstract bool GetDataValidationState(out BindingValueType state, out Exception? error);
+
+    /// <summary>
+    /// Called when the binding expression is removed from the value store as a value entry.
+    /// </summary>
+    private protected abstract void Unsubscribe();
 }
