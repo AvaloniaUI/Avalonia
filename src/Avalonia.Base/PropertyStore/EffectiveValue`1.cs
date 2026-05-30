@@ -83,6 +83,15 @@ namespace Avalonia.PropertyStore
             SetAndRaiseCore(owner, property, value, BindingPriority.LocalValue);
         }
 
+        public override void SetLocalValueAndRaise(
+            ValueStore owner,
+            AvaloniaProperty property,
+            IValueEntry entry)
+        {
+            var value = GetValue(entry);
+            SetLocalValueAndRaise(owner, property, value);
+        }
+
         public void SetCurrentValueAndRaise(
             ValueStore owner,
             StyledProperty<T> property,
@@ -193,12 +202,17 @@ namespace Avalonia.PropertyStore
 
         protected override object? GetBoxedValue() => Value;
 
-        private static T GetValue(IValueEntry entry)
+        private T GetValue(IValueEntry entry)
         {
-            if (entry is IValueEntry<T> typed)
-                return typed.GetValue();
-            else
-                return (T)entry.GetValue()!;
+            if (entry.HasValue())
+            {
+                if (entry is IValueEntry<T> typed)
+                    return typed.GetValue();
+                else
+                    return (T)entry.GetValue()!;
+            }
+
+            return _metadata.DefaultValue;
         }
 
         private void SetAndRaiseCore(

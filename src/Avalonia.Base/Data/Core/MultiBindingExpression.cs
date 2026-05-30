@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Data.Converters;
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Data.Core;
 
@@ -87,14 +88,15 @@ internal class MultiBindingExpression : UntypedBindingExpressionBase, IBindingEx
     void IBindingExpressionSink.OnChanged(
         BindingExpressionBase instance,
         bool hasValueChanged,
-        bool hasErrorChanged,
-        object? value,
-        BindingError? error)
+        bool hasErrorChanged)
     {
         var i = Array.IndexOf(_expressions, instance);
         Debug.Assert(i != -1);
 
-        _values[i] = BindingNotification.ExtractValue(value);
+        var entry = (IValueEntry)instance;
+        _values[i] = entry.HasValue() ?
+            BindingNotification.ExtractValue(entry.GetValue()) :
+            AvaloniaProperty.UnsetValue;
         PublishValue();
     }
 

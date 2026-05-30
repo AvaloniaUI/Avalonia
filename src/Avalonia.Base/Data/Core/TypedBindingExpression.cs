@@ -131,7 +131,9 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
     object? IValueEntry.GetValue()
     {
         Start(produceValue: false);
-        return _sourceValue.GetValueOrDefault();
+        if (!_sourceValue.HasValue)
+            throw new AvaloniaInternalException("The binding expression has no value.");
+        return _sourceValue.Value;
     }
 
     TValue IValueEntry<TValue>.GetValue()
@@ -223,7 +225,7 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         if (_produceValue && _mode is not BindingMode.OneWayToSource)
         {
             if (!_targetValue.HasValue || _targetValue != _sourceValue)
-                _sink?.OnChanged(this, true, false, _sourceValue.GetValueOrDefault(), null);
+                _sink?.OnChanged(this, true, false);
             if (_mode is BindingMode.OneTime)
                 _shouldUpdateOneTimeBindingTarget = false;
         }

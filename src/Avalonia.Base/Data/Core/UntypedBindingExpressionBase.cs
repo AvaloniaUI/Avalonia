@@ -402,7 +402,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
 
         if (Dispatcher.UIThread.CheckAccess())
         {
-            _sink.OnChanged(this, hasValueChanged, hasErrorChanged, GetValueOrDefault(), _error);
+            _sink.OnChanged(this, hasValueChanged, hasErrorChanged);
         }
         else
         {
@@ -413,7 +413,7 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
             var ec = hasErrorChanged;
             var v = GetValueOrDefault();
             var e = _error;
-            Dispatcher.UIThread.Post(() => sink.OnChanged(this, vc, ec, v, e));
+            Dispatcher.UIThread.Post(() => sink.OnChanged(this, vc, ec));
         }
     }
 
@@ -505,11 +505,11 @@ public abstract class UntypedBindingExpressionBase : BindingExpressionBase,
         void IBindingExpressionSink.OnChanged(
             BindingExpressionBase instance,
             bool hasValueChanged,
-            bool hasErrorChanged,
-            object? value,
-            BindingError? error)
+            bool hasErrorChanged)
         {
             var expression = (UntypedBindingExpressionBase)instance;
+            var error = expression._error;
+            var value = expression.GetValueOrDefault();
 
             if (expression.IsDataValidationEnabled || error is not null)
             {

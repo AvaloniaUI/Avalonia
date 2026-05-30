@@ -277,6 +277,20 @@ namespace Avalonia.PropertyStore
             }
         }
 
+        public void SetLocalValue(AvaloniaProperty property, IValueEntry entry)
+        {
+            if (TryGetEffectiveValue(property, out var existing))
+            {
+                existing.SetLocalValueAndRaise(this, property, entry);
+            }
+            else
+            {
+                var effectiveValue = property.CreateEffectiveValue(Owner);
+                AddEffectiveValue(property, effectiveValue);
+                effectiveValue.SetLocalValueAndRaise(this, property, entry);
+            }
+        }
+
         public object? GetValue(AvaloniaProperty property)
         {
             if (_effectiveValues.TryGetValue(property, out var v))
@@ -793,9 +807,7 @@ namespace Avalonia.PropertyStore
         void IBindingExpressionSink.OnChanged(
             BindingExpressionBase instance,
             bool hasValueChanged,
-            bool hasErrorChanged,
-            object? value,
-            BindingError? error)
+            bool hasErrorChanged)
         {
             Dispatcher.UIThread.VerifyAccess();
             Debug.Assert(instance.TargetProperty is not null);
@@ -806,7 +818,7 @@ namespace Avalonia.PropertyStore
             if (property.IsDirect)
             {
                 if (hasValueChanged)
-                    property.RouteSetDirectValueUnchecked(Owner, value);
+                    property.RouteSetDirectValueUnchecked(Owner, entry);
             }
             else
             {
@@ -816,12 +828,7 @@ namespace Avalonia.PropertyStore
                 {
                     if (priority == BindingPriority.LocalValue)
                     {
-                        if (value != AvaloniaProperty.UnsetValue)
-                            SetLocalValue(property, value);
-                        else if (property == StyledElement.DataContextProperty)
-                            SetLocalValue(property, null);
-                        else
-                            ClearValue(property);
+                        SetLocalValue(property, entry);
                     }
                     else
                     {
@@ -838,10 +845,9 @@ namespace Avalonia.PropertyStore
                 }
             }
 
-            if (hasErrorChanged && instance.IsDataValidationEnabled)
+            if (hasErrorChanged && entry.GetDataValidationState(out var errorType, out var error))
             {
-                var e = error?.ErrorType.ToBindingValueType() ?? BindingValueType.Value;
-                Owner.OnUpdateDataValidation(property, e, error?.Exception);
+                Owner.OnUpdateDataValidation(property, errorType, error);
             }
         }
 
