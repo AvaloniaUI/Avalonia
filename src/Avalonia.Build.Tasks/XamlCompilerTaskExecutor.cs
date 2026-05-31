@@ -89,7 +89,7 @@ namespace Avalonia.Build.Tasks
 
                 var refWriterParameters = new WriterParameters { WriteSymbols = false };
                 if (!string.IsNullOrWhiteSpace(strongNameKey))
-	                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
+	                refWriterParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
                 refAsm?.Write(refOutput, refWriterParameters);
 
                 return new CompileResult(true, true);
