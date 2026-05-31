@@ -17,5 +17,6 @@ internal enum RenderDataOpcode : byte
     PushTransform,
     PushRenderOptions,
     PushTextOptions,
+    PushEffect,
     Pop
 }

@@ -223,6 +223,13 @@ internal class RenderDataDrawingContext : DrawingContext
         PushedScope(before);
     }
 
+    protected override void PushEffectCore(IEffect effect, Rect bounds)
+    {
+        var before = Stream.OpcodeLength;
+        Stream.PushEffect(effect.ToImmutable(), bounds.Inflate(effect.GetEffectOutputPadding()));
+        PushedScope(before);
+    }
+
     protected override void PopClipCore() => PopCore();
 
     protected override void PopGeometryClipCore() => PopCore();
@@ -236,6 +243,8 @@ internal class RenderDataDrawingContext : DrawingContext
     protected override void PopRenderOptionsCore() => PopCore();
 
     protected override void PopTextOptionsCore() => PopCore();
+
+    protected override void PopEffectCore() => PopCore();
 
     private void FlushStack()
     {

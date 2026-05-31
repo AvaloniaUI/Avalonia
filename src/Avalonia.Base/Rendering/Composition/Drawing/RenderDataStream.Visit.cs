@@ -137,6 +137,13 @@ internal partial class RenderDataStream
                         scopes[depth++] = visitor.OnPushTextOptions(p.Options);
                         break;
                     }
+                    case RenderDataOpcode.PushEffect:
+                    {
+                        var p = reader.ReadPayload<PushEffectPayload>();
+                        scopes[depth++] = visitor.OnPushEffect(
+                            (IEffect?)_resources[p.Effect], p.Bounds);
+                        break;
+                    }
                     case RenderDataOpcode.Pop:
                     {
                         reader.Read<RenderDataOpcode>();

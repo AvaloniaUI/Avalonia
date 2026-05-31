@@ -105,6 +105,17 @@ internal partial class RenderDataStream
             return new ReplayScope { Kind = RenderDataOpcode.PushTextOptions, Active = true };
         }
 
+        public ReplayScope OnPushEffect(IEffect? effect, Rect bounds)
+        {
+            var active = false;
+            if (effect != null && _context is IDrawingContextImplWithEffects effectImpl)
+            {
+                effectImpl.PushEffect(bounds, effect);
+                active = true;
+            }
+            return new ReplayScope { Kind = RenderDataOpcode.PushEffect, Active = active };
+        }
+
         public void OnPop(in ReplayScope scope)
         {
             if (!scope.Active)
@@ -132,6 +143,9 @@ internal partial class RenderDataStream
                     break;
                 case RenderDataOpcode.PushTextOptions:
                     _context.PopTextOptions();
+                    break;
+                case RenderDataOpcode.PushEffect:
+                    ((IDrawingContextImplWithEffects)_context).PopEffect();
                     break;
             }
         }

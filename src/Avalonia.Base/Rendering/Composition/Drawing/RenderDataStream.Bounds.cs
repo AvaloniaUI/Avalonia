@@ -13,6 +13,7 @@ internal partial class RenderDataStream
         public Rect? SavedBounds;
         public bool IsTransform;
         public Matrix Matrix;
+        public Thickness EffectPadding;
     }
 
     internal struct BoundsVisitor : IRenderDataVisitor<BoundsScope>
@@ -50,9 +51,13 @@ internal partial class RenderDataStream
         public void OnDrawCustom(ICustomDrawOperation? operation)
             => Current = Rect.Union(Current, operation?.Bounds);
 
-        private BoundsScope EnterChildScope(bool isTransform = false, Matrix matrix = default)
+        private BoundsScope EnterChildScope(bool isTransform = false, Matrix matrix = default,
+            Thickness effectPadding = default)
         {
-            var scope = new BoundsScope { SavedBounds = Current, IsTransform = isTransform, Matrix = matrix };
+            var scope = new BoundsScope
+            {
+                SavedBounds = Current, IsTransform = isTransform, Matrix = matrix, EffectPadding = effectPadding
+            };
             Current = null;
             return scope;
         }
@@ -65,11 +70,16 @@ internal partial class RenderDataStream
         public BoundsScope OnPushRenderOptions(RenderOptions options) => EnterChildScope();
         public BoundsScope OnPushTextOptions(TextOptions options) => EnterChildScope();
 
+        public BoundsScope OnPushEffect(IEffect? effect, Rect bounds)
+            => EnterChildScope(effectPadding: effect.GetEffectOutputPadding());
+
         public void OnPop(in BoundsScope scope)
         {
             var childUnion = Current;
             if (scope.IsTransform)
                 childUnion = childUnion?.TransformToAABB(scope.Matrix);
+            else if (childUnion.HasValue && !scope.EffectPadding.Equals(default))
+                childUnion = childUnion.Value.Inflate(scope.EffectPadding);
             Current = Rect.Union(scope.SavedBounds, childUnion);
         }
     }
