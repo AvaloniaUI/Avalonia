@@ -29,8 +29,6 @@ namespace WinUIEmbedSample
             {
                 AppendDiagnostic("Loaded: " + DescribePeer());
             };
-            AvaloniaPanel.SizeChanged += (_, _) => UpdateScaleReadout();
-            AvaloniaPanel.CompositionScaleChanged += (_, _) => UpdateScaleReadout();
         }
 
         private string DescribePeer()
