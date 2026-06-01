@@ -234,6 +234,18 @@ namespace Avalonia.Controls
                     return;
                 }
 
+                if (sender.CurrentPage != null)
+                {
+                    var forwarded = new RoutedEventArgs(PageNavigationSystemBackButtonPressedEvent);
+                    sender.CurrentPage.RaiseEvent(forwarded);
+
+                    if (forwarded.Handled)
+                        eventArgs.Handled = true;
+                }
+
+                if (eventArgs.Handled)
+                    return;
+
                 if (sender.StackDepth > 1)
                 {
                     eventArgs.Handled = true;
@@ -639,6 +651,9 @@ namespace Avalonia.Controls
                     "Direct assignment to NavigationPage.Pages is not supported. Use PushAsync, PopAsync, InsertPage, RemovePage, or ReplaceAsync to modify the navigation stack.");
             }
 
+            if (change.Property == SafeAreaPaddingProperty)
+                UpdateEffectiveBarHeight();
+
             base.OnPropertyChanged(change);
         }
 
@@ -750,7 +765,10 @@ namespace Avalonia.Controls
         {
             if (_contentHost != null && _navBar != null)
             {
-                _navBar.Padding = new Thickness(SafeAreaPadding.Left, SafeAreaPadding.Top, SafeAreaPadding.Right, 0);
+                var safeAreaPadding = IsNavBarEffectivelyVisible ? new Thickness(SafeAreaPadding.Left, 0, SafeAreaPadding.Right, SafeAreaPadding.Bottom) : SafeAreaPadding;
+                _navBar.Padding = IsNavBarEffectivelyVisible
+                    ? new Thickness(SafeAreaPadding.Left, SafeAreaPadding.Top, SafeAreaPadding.Right, 0)
+                    : default;
 
                 if (_pagePresenter != null)
                     _pagePresenter.Padding = Padding;
@@ -759,8 +777,8 @@ namespace Avalonia.Controls
 
                 if (CurrentPage != null)
                 {
-                    var remainingSafeArea = Padding.GetRemainingSafeAreaPadding(SafeAreaPadding);
-                    CurrentPage.SafeAreaPadding = new Thickness(remainingSafeArea.Left, 0, remainingSafeArea.Right, remainingSafeArea.Bottom);
+                    var remainingSafeArea = Padding.GetRemainingSafeAreaPadding(safeAreaPadding);
+                    CurrentPage.SafeAreaPadding = new Thickness(remainingSafeArea.Left, remainingSafeArea.Top, remainingSafeArea.Right, remainingSafeArea.Bottom);
                 }
 
                 foreach (var modal in _modalStack)
@@ -2148,8 +2166,11 @@ namespace Avalonia.Controls
 
         private void UpdateEffectiveBarHeight()
         {
-            EffectiveBarHeight = (CurrentPage != null ? GetBarHeightOverride(CurrentPage) : null) ?? BarHeight;
-            PseudoClasses.Set(":nav-bar-compact", EffectiveBarHeight < 40);
+            var contentBarHeight = (CurrentPage != null ? GetBarHeightOverride(CurrentPage) : null) ?? BarHeight;
+            EffectiveBarHeight = contentBarHeight + SafeAreaPadding.Top;
+            PseudoClasses.Set(":nav-bar-compact", contentBarHeight < 40);
+
+            UpdateContentSafeAreaPadding();
         }
 
         private void ApplyNavBarVisibility()

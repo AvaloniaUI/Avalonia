@@ -52,7 +52,7 @@ export class StorageItem {
             throw new Error("StorageItem is not a file");
         }
 
-        await item.verityPermissions("read");
+        await item.verifyPermissions("read");
 
         const file = await (item.handle as FileSystemFileHandle).getFile();
         return file;
@@ -63,9 +63,9 @@ export class StorageItem {
             throw new Error("StorageItem is not a writeable file");
         }
 
-        await item.verityPermissions("readwrite");
+        await item.verifyPermissions("readwrite");
 
-        return await (item.handle as FileSystemFileHandle).createWritable({ keepExistingData: true });
+        return await (item.handle as FileSystemFileHandle).createWritable({ keepExistingData: false });
     }
 
     public static async getProperties(item: StorageItem): Promise<{ Size: number; LastModified: number; Type: string } | null> {
@@ -102,9 +102,12 @@ export class StorageItem {
             throw new TypeError("Unable to create item in the requested directory");
         }
 
-        await item.verityPermissions("readwrite");
-
-        return await ((item.handle as any).getFileHandle(name, { create: true }) as Promise<any>);
+        await item.verifyPermissions("readwrite");
+        // The file should be truncated when it is created.
+        const fileHandle = await ((item.handle as any).getFileHandle(name, { create: true }) as Promise<any>);
+        const writable = await fileHandle.createWritable({ keepExistingData: false });
+        await writable.close();
+        return fileHandle;
     }
 
     public static async getFile(item: StorageItem, name: string): Promise<any | null> {
@@ -112,7 +115,7 @@ export class StorageItem {
             return null;
         }
 
-        await item.verityPermissions("read");
+        await item.verifyPermissions("read");
 
         return await ((item.handle as any).getFileHandle(name) as Promise<any>);
     }
@@ -122,7 +125,7 @@ export class StorageItem {
             throw new TypeError("Unable to create item in the requested directory");
         }
 
-        await item.verityPermissions("readwrite");
+        await item.verifyPermissions("readwrite");
 
         return await ((item.handle as any).getDirectoryHandle(name, { create: true }) as Promise<any>);
     }
@@ -132,7 +135,7 @@ export class StorageItem {
             return null;
         }
 
-        await item.verityPermissions("read");
+        await item.verifyPermissions("read");
 
         return await ((item.handle as any).getDirectoryHandle(name) as Promise<any>);
     }
@@ -142,7 +145,7 @@ export class StorageItem {
             return null;
         }
 
-        await item.verityPermissions("readwrite");
+        await item.verifyPermissions("readwrite");
 
         return await ((item.handle as any).remove({ recursive: true }) as Promise<any>);
     }
@@ -155,12 +158,12 @@ export class StorageItem {
             throw new TypeError("Unable to move item to the requested directory");
         }
 
-        await item.verityPermissions("readwrite");
+        await item.verifyPermissions("readwrite");
 
         return await ((item.handle as any).move(destination /*, newName */) as Promise<any>);
     }
 
-    private async verityPermissions(mode: "read" | "readwrite"): Promise<void | never> {
+    private async verifyPermissions(mode: "read" | "readwrite"): Promise<void | never> {
         if (!this.handle) {
             return;
         }

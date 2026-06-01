@@ -852,9 +852,11 @@ namespace Avalonia.Win32
                             !_isFullScreenActive &&
                             !flags.HasAllFlags(SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE))
                         {
-                            // Prefer ScreenFromRect as it contains the new position.
+                            GetWindowPlacement(Hwnd, out var placement);
+
+                            // Prefer ScreenFromRect with the window's restored bounds.
                             // If the window was minimized, ScreenFromHwnd won't return the correct monitor at this point.
-                            var screen = Screen.ScreenFromRect(new PixelRect(pos->x, pos->y, pos->cx, pos->cy))
+                            var screen = Screen.ScreenFromRect(placement.NormalPosition.ToPixelRect())
                                 ?? Screen.ScreenFromHwnd(Hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
 
                             if (screen is not null)
@@ -1361,14 +1363,34 @@ namespace Avalonia.Win32
 
             Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
         }
+        
+        // GetPointerDeviceRects is part of the WM_POINTER API (Windows 8+) but is not implemented
+        // by Wine/Proton. Probe once and fall back to the integer pixel location when missing,
+        // otherwise the P/Invoke throws EntryPointNotFoundException for every pointer message.
+        // See https://github.com/AvaloniaUI/Avalonia/issues/21081.
+        private static readonly bool s_isGetPointerDeviceRectsAvailable = ProbeGetPointerDeviceRects();
+
+        private static bool ProbeGetPointerDeviceRects()
+        {
+            var user32 = LoadLibrary("user32.dll");
+            return user32 != IntPtr.Zero
+                && GetProcAddress(user32, nameof(GetPointerDeviceRects)) != IntPtr.Zero;
+        }
 
         /// <summary>
-        /// Get the location of the pointer in himetric units.
+        /// Get the location of the pointer in screen coordinates with HIMETRIC sub-pixel precision
+        /// when supported, falling back to the integer pixel location on platforms that do not
+        /// implement <c>GetPointerDeviceRects</c> (e.g. Wine/Proton).
         /// </summary>
         /// <param name="info">The pointer info.</param>
-        /// <returns>The location of the pointer in himetric units.</returns>
+        /// <returns>The pointer location in screen pixels.</returns>
         private Point GetHimetricLocation(POINTER_INFO info)
         {
+            if (!s_isGetPointerDeviceRectsAvailable)
+            {
+                return new Point(info.ptPixelLocationX, info.ptPixelLocationY);
+            }
+
             GetPointerDeviceRects(info.sourceDevice, out var pointerDeviceRect, out var displayRect);
             var himetricLocation = new Point(
                 info.ptHimetricLocationRawX * displayRect.Width / (double)pointerDeviceRect.Width + displayRect.left,

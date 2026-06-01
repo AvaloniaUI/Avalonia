@@ -1,3 +1,5 @@
+using Avalonia.Collections;
+using Avalonia.Interactivity;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -161,6 +163,44 @@ public class PageNavigationHostTests
             Assert.Equal(default, first.SafeAreaPadding);
             Assert.NotNull(host.Presenter);
             Assert.Same(second, host.Presenter!.Child);
+        }
+    }
+
+    public class SystemBackButtonTests : ScopedTestBase
+    {
+        [Fact]
+        public void BackRequested_ForwardsToNestedCurrentPageOnce()
+        {
+            using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+            var child = new ContentPage { Header = "Child" };
+            var parent = new CarouselPage
+            {
+                Pages = new AvaloniaList<Page> { child }
+            };
+            var host = new PageNavigationHost { Page = parent };
+            var window = new Window
+            {
+                Width = 400,
+                Height = 300,
+                Content = host
+            };
+            var raiseCount = 0;
+            child.PageNavigationSystemBackButtonPressed += (_, e) =>
+            {
+                raiseCount++;
+                e.Handled = true;
+            };
+
+            window.Show();
+
+            Assert.Same(child, parent.CurrentPage);
+            Assert.Same(parent, host.Presenter?.Child);
+
+            var args = new RoutedEventArgs(TopLevel.BackRequestedEvent);
+            window.RaiseEvent(args);
+
+            Assert.Equal(1, raiseCount);
+            Assert.True(args.Handled);
         }
     }
 }
