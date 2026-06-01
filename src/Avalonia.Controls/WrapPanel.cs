@@ -380,7 +380,7 @@ namespace Avalonia.Controls
                     }
                 }
 
-                Debug.Assert(this.Minor(finalSize) >= totalMinor + minorSpacing * minorSpacingCount);
+                Debug.Assert(MathUtilities.GreaterThanOrClose(this.Minor(finalSize), totalMinor + minorSpacing * minorSpacingCount));
 
                 switch (tempItemsAlignment)
                 {
@@ -395,12 +395,14 @@ namespace Avalonia.Controls
                         minorStart = this.Minor(finalSize) - totalMinor;
                         break;
                     case WrapPanelItemsAlignment.Justify:
-                        var totalMinorSpacing = this.Minor(finalSize) - totalMinor - 0.01; // small epsilon to avoid rounding issues
+                        var totalMinorSpacing = GetDistributableSpace(this.Minor(finalSize), totalMinor);
                         if (minorSpacingCount > 0)
                             minorSpacing = totalMinorSpacing / minorSpacingCount;
                         break;
                     case WrapPanelItemsAlignment.Stretch /*or WrapPanelItemsAlignment.StretchAll*/:
-                        var finalMinorWithoutSpacing = this.Minor(finalSize) - minorSpacing * minorSpacingCount - 0.01; // small epsilon to avoid rounding issues
+                        var finalMinorWithoutSpacing = GetDistributableSpace(
+                            this.Minor(finalSize),
+                            minorSpacing * minorSpacingCount);
                         minorStretchRatio = finalMinorWithoutSpacing / totalMinor;
                         break;
                     default:
@@ -417,6 +419,21 @@ namespace Avalonia.Controls
                 return;
                 double GetChildMinor(int i) => useItemMinor ? itemMinor : this.Minor(children[i].DesiredSize);
             }
+        }
+
+        private const double DistributionEpsilon = 0.01;
+
+        private static double GetDistributableSpace(double availableSize, double occupiedSpace)
+        {
+            var distributableSpace = availableSize - occupiedSpace;
+            if (!MathUtilities.GreaterThan(distributableSpace, 0))
+                return 0;
+
+            // The epsilon only exists to absorb rounding drift in positive free space.
+            // Applying it after the free space has already reached 0 would manufacture a negative layout size.
+            return distributableSpace > DistributionEpsilon
+                ? distributableSpace - DistributionEpsilon
+                : 0;
         }
     }
 }
