@@ -28,7 +28,6 @@ namespace WinUIEmbedSample
             AvaloniaPanel.Loaded += (_, _) =>
             {
                 AppendDiagnostic("Loaded: " + DescribePeer());
-                UpdateScaleReadout();
             };
             AvaloniaPanel.SizeChanged += (_, _) => UpdateScaleReadout();
             AvaloniaPanel.CompositionScaleChanged += (_, _) => UpdateScaleReadout();
@@ -62,27 +61,9 @@ namespace WinUIEmbedSample
             }
         }
 
-        private void UpdateScaleReadout()
-        {
-            try
-            {
-                var xaml = AvaloniaPanel.XamlRoot?.RasterizationScale ?? double.NaN;
-                var comp = AvaloniaPanel.CompositionScaleX;
-                var av = AvaloniaPanel.GetAvaloniaRenderScalingForDiagnostics();
-                ScaleReadout.Text =
-                    $"Scales: xaml={xaml:F3} comp={comp:F3} avRender={av:F3} " +
-                    (Math.Abs(xaml - av) < 0.001 ? "(in sync)" : "(DIVERGENT)");
-            }
-            catch (Exception ex)
-            {
-                ScaleReadout.Text = "Scales: " + ex.Message;
-            }
-        }
-
         private void ProbePeerButton_Click(object sender, RoutedEventArgs e)
         {
             AppendDiagnostic("Probe: " + DescribePeer());
-            UpdateScaleReadout();
         }
 
         private async void ProbeWorkerButton_Click(object sender, RoutedEventArgs e)

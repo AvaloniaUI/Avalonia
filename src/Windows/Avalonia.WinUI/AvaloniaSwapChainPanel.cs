@@ -139,14 +139,6 @@ public partial class AvaloniaSwapChainPanel : SwapChainPanel
     /// </summary>
     internal global::Avalonia.Controls.Embedding.EmbeddableControlRoot? GetEmbeddedRootForAutomation() => _root;
 
-    /// <summary>
-    /// Diagnostic accessor for the Avalonia TopLevel's render scaling — used by
-    /// WinUIEmbedSample to verify it stays in sync with <c>XamlRoot.RasterizationScale</c>.
-    /// Returns NaN if the panel has not loaded yet.
-    /// </summary>
-    public double GetAvaloniaRenderScalingForDiagnostics()
-        => _topLevelImpl?.RenderScaling ?? double.NaN;
-
     private void UpdateCachedSize()
     {
         var w = Math.Max(1, (int)(ActualWidth * CompositionScaleX));
