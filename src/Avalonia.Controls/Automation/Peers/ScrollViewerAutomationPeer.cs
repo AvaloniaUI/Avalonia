@@ -66,7 +66,7 @@ namespace Avalonia.Automation.Peers
 
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
-            return AutomationControlType.Pane;
+            return AutomationControlType.ScrollViewer;
         }
 
         protected override bool IsContentElementCore() => false;
