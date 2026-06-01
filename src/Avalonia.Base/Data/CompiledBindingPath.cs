@@ -130,10 +130,17 @@ namespace Avalonia.Data
             return this;
         }
 
-        public CompiledBindingPathBuilder Property<TSource, TResult>(IPropertyInfo<TSource, TResult> info)
+        public CompiledBindingPathBuilder Property<TSource, TResult>(
+            IPropertyInfo<TSource, TResult> info,
+            Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> accessorFactory,
+            bool acceptsNull)
             where TSource : class
         {
-            _elements.Add(new TypedPropertyElement<TSource, TResult>(info));
+            _elements.Add(new TypedPropertyElement<TSource, TResult>(
+                info,
+                accessorFactory,
+                _elements.Count == 0,
+                acceptsNull));
             return this;
         }
 
@@ -272,8 +279,16 @@ namespace Avalonia.Data
             => _isFirstElement ? Property.Name : $".{Property.Name}";
     }
 
-    internal abstract class TypedPropertyElement : ICompiledBindingPathElement
+    internal abstract class TypedPropertyElement : PropertyElement
     {
+        protected TypedPropertyElement(
+            IPropertyInfo property,
+            Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> accessorFactory,
+            bool isFirstElement,
+            bool acceptsNull) : base(property, accessorFactory, isFirstElement, acceptsNull)
+        {
+        }
+
         public abstract BindingExpressionBase CreateExpression(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
@@ -285,8 +300,14 @@ namespace Avalonia.Data
     internal sealed class TypedPropertyElement<TSource, TValue> : TypedPropertyElement
         where TSource : class
     {
-        public TypedPropertyElement(IPropertyInfo<TSource, TValue> property) => Property = property;
-        public IPropertyInfo<TSource, TValue> Property { get; }
+        public TypedPropertyElement(
+            IPropertyInfo<TSource, TValue> property,
+            Func<WeakReference<object?>, IPropertyInfo, IPropertyAccessor> accessorFactory,
+            bool isFirstElement,
+            bool acceptsNull)
+            : base(property, accessorFactory, isFirstElement, acceptsNull)
+        {
+        }
 
         public override BindingExpressionBase CreateExpression(
             AvaloniaObject target,
@@ -295,7 +316,8 @@ namespace Avalonia.Data
             BindingMode mode,
             BindingPriority priority)
         {
-            return new TypedBindingExpression<TSource, TValue>(Property, mode, priority);
+            var property = (IPropertyInfo<TSource, TValue>)Property;
+            return new TypedBindingExpression<TSource, TValue>(property, mode, priority);
         }
     }
 

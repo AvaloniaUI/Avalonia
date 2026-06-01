@@ -20,7 +20,8 @@ namespace Avalonia.Data.Core;
 ///   a typed binding but `{Binding Foo.Bar}` cannot.
 /// - It cannot have a Converter, Delay, FallbackValue. StringFormat, TargetNullValue or
 ///   UpdateSourceTrigger != PropertyChanged.
-/// - The source and destination types must be the same, i.e. no type conversion is performed.
+/// - The value must be directly assignable to the target property, i.e. no type conversion is
+///   performed.
 /// </remarks>
 internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
     IDescription,

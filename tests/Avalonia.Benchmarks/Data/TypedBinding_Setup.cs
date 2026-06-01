@@ -87,7 +87,10 @@ public class TypedBinding_Setup
             nameof(TestData.IntValue),
             v => v.IntValue,
             (o, v) => o.IntValue = v);
-        var path = new CompiledBindingPathBuilder().Property(propertyInfo).Build();
+        var path = new CompiledBindingPathBuilder().Property(
+            propertyInfo,
+            PropertyInfoAccessorFactory.CreateInpcPropertyAccessor,
+            false).Build();
         return new CompiledBinding(path) { Mode = mode };
     }
 

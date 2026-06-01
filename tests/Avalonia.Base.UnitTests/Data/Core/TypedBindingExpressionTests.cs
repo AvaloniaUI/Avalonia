@@ -1,7 +1,9 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
+using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -236,18 +238,6 @@ public class TypedBindingExpressionTests : ScopedTestBase
     }
 
     [Fact]
-    public void Should_Throw_When_Binding_String_To_Double()
-    {
-        var log = string.Empty;
-        using var logger = TestLogSink.Start((_, _, _, m, _) => log += m);
-        var source = new ViewModel { StringValue = "Hello" };
-        var binding = CreateBinding();
-        var target = new TextBlock { DataContext = source };
-        var exception = Assert.Throws<InvalidOperationException>(() => 
-            target.Bind(TextBlock.OpacityProperty, binding));
-    }
-
-    [Fact]
     public void Disposing_Binding_Unsubscribes_From_Source()
     {
         var data = new ViewModel { StringValue = "foo" };
@@ -281,6 +271,31 @@ public class TypedBindingExpressionTests : ScopedTestBase
         Assert.Equal(1, data.PropertyChangedSubscriptionCount);
     }
 
+    [Fact]
+    public void Should_Not_Produce_TypedBindingExpression_When_Binding_String_To_Double()
+    {
+        var log = string.Empty;
+        using var logger = TestLogSink.Start((_, _, _, m, _) => log += m);
+        var source = new ViewModel { StringValue = "Hello" };
+        var binding = CreateBinding();
+        var target = new TextBlock { DataContext = source };
+        var expression = target.Bind(TextBlock.OpacityProperty, binding);
+
+        Assert.IsType<BindingExpression>(expression);
+    }
+
+    [Fact]
+    public void Should_Not_Produce_TypedBindingExpression_When_Converter_Is_Present()
+    {
+        var binding = CreateBinding();
+        binding.Converter = new FuncValueConverter<string?, string?>(s => s);
+
+        var target = new TextBlock();
+        var expression = target.Bind(TextBlock.TextProperty, binding);
+
+        Assert.IsType<BindingExpression>(expression);
+    }
+
     private static TypedBindingExpression<ViewModel, string?> BindAndAssert(StyledElement target, BindingBase binding)
     {
         var expression = target.Bind(TextBlock.TextProperty, binding);
@@ -293,7 +308,10 @@ public class TypedBindingExpressionTests : ScopedTestBase
             nameof(ViewModel.StringValue),
             v => v.StringValue,
             (o, v) => o.StringValue = v);
-        var path = new CompiledBindingPathBuilder().Property(propertyInfo).Build();
+        var path = new CompiledBindingPathBuilder().Property<ViewModel, string?>(
+            propertyInfo,
+            PropertyInfoAccessorFactory.CreateInpcPropertyAccessor,
+            false).Build();
         return new CompiledBinding(path) { Mode = mode, };
     }
 

@@ -197,7 +197,7 @@ public class CompiledBinding : BindingBase
         AvaloniaProperty? targetProperty,
         object? anchor)
     {
-        if (Path?.Elements.Count == 1 && Path.Elements[0] is TypedPropertyElement typed)
+        if (CanUseTypedBindingExpression(targetProperty, out var typed))
         {
             return CreateTypedExpression(typed, target, targetProperty, anchor);
         }
@@ -205,6 +205,43 @@ public class CompiledBinding : BindingBase
         {
             return CreateUntypedExpression(target, targetProperty, anchor);
         }
+    }
+
+    private bool CanUseTypedBindingExpression(
+        AvaloniaProperty? targetProperty,
+        [NotNullWhen(true)] out TypedPropertyElement? element)
+    {
+        element = null;
+
+        // We need a path with a single TypedPropertyElement
+        if (Path?.Elements.Count != 1 || Path.Elements[0] is not TypedPropertyElement typed)
+            return false;
+
+        // We need a DataContext binding.
+        if (Source != AvaloniaProperty.UnsetValue)
+            return false;
+
+        // It cannot have a Converter, Delay, FallbackValue. StringFormat, TargetNullValue or
+        // UpdateSourceTrigger != PropertyChanged.
+        if (Converter is not null ||
+            Delay != 0 ||
+            FallbackValue != AvaloniaProperty.UnsetValue ||
+            StringFormat != null ||
+            TargetNullValue != AvaloniaProperty.UnsetValue ||
+            UpdateSourceTrigger is not (UpdateSourceTrigger.Default or UpdateSourceTrigger.PropertyChanged))
+        {
+            return false;
+        }
+
+        // The value must be directly assignable to the target property.
+        if (targetProperty is null ||
+            !typed.Property.PropertyType.IsAssignableTo(targetProperty.PropertyType))
+        {
+            return false;
+        }
+
+        element = typed;
+        return true;
     }
 
     private BindingExpressionBase CreateTypedExpression(
