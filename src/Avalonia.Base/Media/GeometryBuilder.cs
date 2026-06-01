@@ -20,7 +20,6 @@ namespace Avalonia.Media
     /// </summary>
     internal class GeometryBuilder
     {
-        private const double PiOver2 = 1.57079633; // 90 deg to rad
         private const double Epsilon = 0.00000153; // Same as LayoutHelper.LayoutEpsilon
 
         /// <summary>
