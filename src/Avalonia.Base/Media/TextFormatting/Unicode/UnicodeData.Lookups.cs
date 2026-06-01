@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode
@@ -138,25 +139,27 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 return primary == script;
             }
 
+            var offsets = s_scriptExtensionSetOffsets;
+
+            if ((uint)(setIndex + 1) >= (uint)offsets.Length)
+            {
+                return false;
+            }
+
+            var setStart = offsets[setIndex];
+            var setEnd = offsets[setIndex + 1];
             var sets = s_scriptExtensionSets;
 
-            if ((uint)setIndex >= (uint)sets.Length)
+            if (setEnd > sets.Length || setStart > setEnd)
             {
                 return false;
             }
 
             var target = (byte)script;
-            var set = sets[setIndex];
 
-            for (var i = 0; i < set.Length; i++)
-            {
-                if (set[i] == target)
-                {
-                    return true;
-                }
-            }
+            var set = sets.Slice(setStart, setEnd - setStart);
 
-            return false;
+            return set.Contains(target);
         }
     }
 }

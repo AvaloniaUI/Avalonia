@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
@@ -298,7 +299,7 @@ namespace Avalonia.Media.Fonts
         /// filters every candidate through the font's character-to-glyph map.
         /// </summary>
         private static bool TryGetCoveringMatch(
-            IDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
+            ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> glyphTypefaces,
             FontCollectionKey key,
             int codepoint,
             bool isLastResort,
@@ -316,40 +317,7 @@ namespace Avalonia.Media.Fonts
             GlyphTypeface? coveringNearest = null;
             int coveringDistance = int.MaxValue;
 
-            // Deterministic scan ordered by key.
-            // Snapshot to a sorted array for stable iteration regardless of dictionary type.
-            FontCollectionKey[] keys;
-
-            if (glyphTypefaces is ConcurrentDictionary<FontCollectionKey, GlyphTypeface?> concurrent)
-            {
-                keys = new FontCollectionKey[concurrent.Count];
-                var i = 0;
-
-                foreach (var k in concurrent.Keys)
-                {
-                    if (i >= keys.Length)
-                    {
-                        break;
-                    }
-
-                    keys[i++] = k;
-                }
-
-                if (i < keys.Length)
-                {
-                    Array.Resize(ref keys, i);
-                }
-            }
-            else
-            {
-                keys = new FontCollectionKey[glyphTypefaces.Count];
-                var i = 0;
-
-                foreach (var k in glyphTypefaces.Keys)
-                {
-                    keys[i++] = k;
-                }
-            }
+            var keys = glyphTypefaces.Keys.ToArray();
 
             Array.Sort(keys);
 
@@ -377,6 +345,7 @@ namespace Avalonia.Media.Fonts
             }
 
             glyphTypeface = coveringNearest;
+
             return glyphTypeface != null;
         }
 

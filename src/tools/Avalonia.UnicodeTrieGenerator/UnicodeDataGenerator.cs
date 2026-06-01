@@ -259,6 +259,25 @@ internal static class UnicodeDataGenerator
         IReadOnlyList<byte[]> sets,
         IReadOnlyList<DataEntry> scriptEntries)
     {
+        var offsets = new ushort[sets.Count + 1];
+        var flattened = new List<byte>();
+
+        for (var i = 0; i < sets.Count; i++)
+        {
+            var set = sets[i];
+
+            if (flattened.Count > ushort.MaxValue - set.Length)
+            {
+                throw new InvalidOperationException(
+                    $"ScriptExtensions data size exceeds {ushort.MaxValue} bytes; widen s_scriptExtensionSetOffsets to uint.");
+            }
+
+            offsets[i] = (ushort)flattened.Count;
+            flattened.AddRange(set);
+        }
+
+        offsets[sets.Count] = (ushort)flattened.Count;
+
         using var fileStream = File.Create(Path.Combine(outputDir, "ScriptExtensions.data.cs"));
         using var writer = new StreamWriter(fileStream);
 
@@ -277,59 +296,108 @@ internal static class UnicodeDataGenerator
 
              internal static partial class UnicodeData
              {
-                 // Indexed by the SCRIPTEXTENSIONS field of UnicodeDataTrie. Each row contains the sorted
-                 // set of Script values that participate in Script_Extensions for the codepoint (UAX #24).
+                 // Indexed by the SCRIPTEXTENSIONS field of UnicodeDataTrie. Each logical set i lives in
+                 // s_scriptExtensionSets[s_scriptExtensionSetOffsets[i]..s_scriptExtensionSetOffsets[i + 1]].
                  // Index 0 is the implicit empty set: the codepoint has no overriding Script_Extensions
                  // value and falls back to its primary Script property.
-                 private static readonly byte[][] s_scriptExtensionSets =
-                 {
+
+             #if DEBUG
+                 // In Debug builds we materialize arrays as fields to avoid RuntimeFieldInfoStub allocations.
+                 private static readonly ushort[] s_scriptExtensionSetOffsetsData =
+             #else
+                 private static ReadOnlySpan<ushort> s_scriptExtensionSetOffsets =>
+             #endif
+                 [
              """).ReplaceLineEndings());
 
         writer.WriteLine();
 
-        for (var i = 0; i < sets.Count; i++)
+        for (var i = 0; i < offsets.Length; i++)
         {
-            var set = sets[i];
+            writer.Write("        ");
+            writer.Write(offsets[i]);
 
-            if (set.Length == 0)
+            if (i < offsets.Length - 1)
             {
-                writer.WriteLine("        Array.Empty<byte>(), // 0");
-                continue;
+                writer.Write(',');
             }
 
-            writer.Write("        new byte[] { ");
-
-            for (var j = 0; j < set.Length; j++)
+            if (i < sets.Count)
             {
-                if (j > 0)
+                var set = sets[i];
+                writer.Write(" // ");
+                writer.Write(i);
+                writer.Write(": {");
+
+                for (var j = 0; j < set.Length; j++)
                 {
-                    writer.Write(", ");
+                    if (j > 0)
+                    {
+                        writer.Write(", ");
+                    }
+
+                    var scriptId = set[j];
+                    writer.Write(scriptId < scriptEntries.Count ? scriptEntries[scriptId].Tag : scriptId.ToString());
                 }
 
-                writer.Write(set[j]);
+                writer.Write('}');
             }
-
-            writer.Write(" }, // ");
-            writer.Write(i);
-            writer.Write(": {");
-
-            for (var j = 0; j < set.Length; j++)
+            else
             {
-                if (j > 0)
-                {
-                    writer.Write(", ");
-                }
-
-                var scriptId = set[j];
-                writer.Write(scriptId < scriptEntries.Count ? scriptEntries[scriptId].Tag : scriptId.ToString());
+                writer.Write(" // end");
             }
 
-            writer.WriteLine("}");
+            writer.WriteLine();
         }
 
         writer.Write(
             ("""
-                 };
+                 ];
+
+             #if DEBUG
+                 private static ReadOnlySpan<ushort> s_scriptExtensionSetOffsets => s_scriptExtensionSetOffsetsData;
+
+                 private static readonly byte[] s_scriptExtensionSetsData =
+             #else
+                 private static ReadOnlySpan<byte> s_scriptExtensionSets =>
+             #endif
+                 [
+             """).ReplaceLineEndings());
+
+        writer.WriteLine();
+
+        for (var i = 0; i < flattened.Count; i++)
+        {
+            if (i % 16 == 0)
+            {
+                writer.Write("        ");
+            }
+
+            writer.Write(flattened[i]);
+
+            if (i < flattened.Count - 1)
+            {
+                writer.Write(", ");
+
+                if ((i + 1) % 16 == 0)
+                {
+                    writer.WriteLine();
+                }
+            }
+        }
+
+        if (flattened.Count > 0 && flattened.Count % 16 != 0)
+        {
+            writer.WriteLine();
+        }
+
+        writer.Write(
+            ("""
+                 ];
+
+             #if DEBUG
+                 private static ReadOnlySpan<byte> s_scriptExtensionSets => s_scriptExtensionSetsData;
+             #endif
              }
              """).ReplaceLineEndings());
     }

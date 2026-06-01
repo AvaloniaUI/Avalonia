@@ -149,7 +149,7 @@ namespace Avalonia.Media.Fonts
         {
             foreach (var c in span)
             {
-                if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')))
+                if (!char.IsAsciiLetter(c))
                 {
                     return false;
                 }

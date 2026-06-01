@@ -11,130 +11,185 @@ namespace Avalonia.Media.TextFormatting.Unicode;
 
 internal static partial class UnicodeData
 {
-    // Indexed by the SCRIPTEXTENSIONS field of UnicodeDataTrie. Each row contains the sorted
-    // set of Script values that participate in Script_Extensions for the codepoint (UAX #24).
+    // Indexed by the SCRIPTEXTENSIONS field of UnicodeDataTrie. Each logical set i lives in
+    // s_scriptExtensionSets[s_scriptExtensionSetOffsets[i]..s_scriptExtensionSetOffsets[i + 1]].
     // Index 0 is the implicit empty set: the codepoint has no overriding Script_Extensions
     // value and falls back to its primary Script property.
-    private static readonly byte[][] s_scriptExtensionSets =
-    {
-        Array.Empty<byte>(), // 0
-        new byte[] { 9, 24, 28, 36, 38, 42, 43, 44, 46, 48, 53, 77, 84, 85, 118, 132 }, // 1: {Avst, Cari, Copt, Dupl, Elba, Geor, Glag, Gong, Goth, Grek, Hani, Latn, Lydi, Mahj, Perm, Shaw}
-        new byte[] { 14, 31, 32, 77, 82, 158, 164 }, // 2: {Beng, Cyrl, Deva, Latn, Lisu, Thai, Toto}
-        new byte[] { 17, 77 }, // 3: {Bopo, Latn}
-        new byte[] { 77, 82 }, // 4: {Latn, Lisu}
-        new byte[] { 77, 158 }, // 5: {Latn, Thai}
-        new byte[] { 26, 28, 31, 48, 77, 118, 143, 148 }, // 6: {Cher, Copt, Cyrl, Grek, Latn, Perm, Sunu, Tale}
-        new byte[] { 26, 31, 48, 77, 113, 143, 148, 162 }, // 7: {Cher, Cyrl, Grek, Latn, Osge, Sunu, Tale, Todr}
-        new byte[] { 26, 31, 77, 155 }, // 8: {Cher, Cyrl, Latn, Tfng}
-        new byte[] { 43, 77, 143, 145, 158 }, // 9: {Glag, Latn, Sunu, Syrc, Thai}
-        new byte[] { 4, 26, 28, 31, 46, 48, 77, 113, 145, 155, 162 }, // 10: {Aghb, Cher, Copt, Cyrl, Goth, Grek, Latn, Osge, Syrc, Tfng, Todr}
-        new byte[] { 28, 38, 43, 46, 66, 77 }, // 11: {Copt, Elba, Glag, Goth, Kana, Latn}
-        new byte[] { 31, 48, 77, 118, 155 }, // 12: {Cyrl, Grek, Latn, Perm, Tfng}
-        new byte[] { 28, 36, 56, 77, 118, 145, 148, 155, 162 }, // 13: {Copt, Dupl, Hebr, Latn, Perm, Syrc, Tale, Tfng, Todr}
-        new byte[] { 8, 31, 36, 46, 48, 56, 77, 118, 145, 148, 155 }, // 14: {Armn, Cyrl, Dupl, Goth, Grek, Hebr, Latn, Perm, Syrc, Tale, Tfng}
-        new byte[] { 77, 155 }, // 15: {Latn, Tfng}
-        new byte[] { 36, 77, 145 }, // 16: {Dupl, Latn, Syrc}
-        new byte[] { 26, 31, 77, 113 }, // 17: {Cher, Cyrl, Latn, Osge}
-        new byte[] { 26, 77, 148 }, // 18: {Cher, Latn, Tale}
-        new byte[] { 77, 143 }, // 19: {Latn, Sunu}
-        new byte[] { 40, 77 }, // 20: {Ethi, Latn}
-        new byte[] { 31, 77, 162 }, // 21: {Cyrl, Latn, Todr}
-        new byte[] { 48, 77, 118, 162 }, // 22: {Grek, Latn, Perm, Todr}
-        new byte[] { 26, 36, 66, 77, 145, 155 }, // 23: {Cher, Dupl, Kana, Latn, Syrc, Tfng}
-        new byte[] { 26, 36, 77, 145 }, // 24: {Cher, Dupl, Latn, Syrc}
-        new byte[] { 77, 145 }, // 25: {Latn, Syrc}
-        new byte[] { 77, 143, 145 }, // 26: {Latn, Sunu, Syrc}
-        new byte[] { 26, 77, 145 }, // 27: {Cher, Latn, Syrc}
-        new byte[] { 4, 26, 46, 77, 143, 145, 158 }, // 28: {Aghb, Cher, Goth, Latn, Sunu, Syrc, Thai}
-        new byte[] { 48 }, // 29: {Grek}
-        new byte[] { 77, 113 }, // 30: {Latn, Osge}
-        new byte[] { 4, 77, 162 }, // 31: {Aghb, Latn, Todr}
-        new byte[] { 77 }, // 32: {Latn}
-        new byte[] { 28, 48 }, // 33: {Copt, Grek}
-        new byte[] { 31, 118 }, // 34: {Cyrl, Perm}
-        new byte[] { 31, 43 }, // 35: {Cyrl, Glag}
-        new byte[] { 31, 77 }, // 36: {Cyrl, Latn}
-        new byte[] { 8, 42, 43 }, // 37: {Armn, Geor, Glag}
-        new byte[] { 6, 41, 106, 126, 145, 157, 173 }, // 38: {Arab, Gara, Nkoo, Rohg, Syrc, Thaa, Yezi}
-        new byte[] { 6, 145, 157 }, // 39: {Arab, Syrc, Thaa}
-        new byte[] { 3, 6, 41, 106, 126, 145, 157, 173 }, // 40: {Adlm, Arab, Gara, Nkoo, Rohg, Syrc, Thaa, Yezi}
-        new byte[] { 3, 6, 87, 88, 115, 121, 126, 138, 145 }, // 41: {Adlm, Arab, Mand, Mani, Ougr, Phlp, Rohg, Sogd, Syrc}
-        new byte[] { 6, 145 }, // 42: {Arab, Syrc}
-        new byte[] { 6, 157, 173 }, // 43: {Arab, Thaa, Yezi}
-        new byte[] { 6, 126 }, // 44: {Arab, Rohg}
-        new byte[] { 14, 32, 47, 49, 51, 72, 77, 94, 102, 105, 112, 133, 150, 154, 160 }, // 45: {Beng, Deva, Gran, Gujr, Guru, Knda, Latn, Mlym, Nand, Newa, Orya, Shrd, Taml, Telu, Tirh}
-        new byte[] { 14, 32, 47, 49, 51, 72, 77, 94, 105, 112, 150, 154, 160 }, // 46: {Beng, Deva, Gran, Gujr, Guru, Knda, Latn, Mlym, Newa, Orya, Taml, Telu, Tirh}
-        new byte[] { 14, 32, 34, 44, 45, 47, 49, 51, 72, 85, 94, 102, 110, 112, 136, 137, 144, 147, 150, 154, 160 }, // 47: {Beng, Deva, Dogr, Gong, Gonm, Gran, Gujr, Guru, Knda, Mahj, Mlym, Nand, Onao, Orya, Sind, Sinh, Sylo, Takr, Taml, Telu, Tirh}
-        new byte[] { 14, 32, 34, 44, 45, 47, 49, 50, 51, 72, 79, 85, 94, 102, 110, 112, 136, 137, 144, 147, 150, 154, 160 }, // 48: {Beng, Deva, Dogr, Gong, Gonm, Gran, Gujr, Gukh, Guru, Knda, Limb, Mahj, Mlym, Nand, Onao, Orya, Sind, Sinh, Sylo, Takr, Taml, Telu, Tirh}
-        new byte[] { 32, 34, 74, 85 }, // 49: {Deva, Dogr, Kthi, Mahj}
-        new byte[] { 14, 22, 144 }, // 50: {Beng, Cakm, Sylo}
-        new byte[] { 51, 99 }, // 51: {Guru, Mult}
-        new byte[] { 49, 70 }, // 52: {Gujr, Khoj}
-        new byte[] { 47, 150 }, // 53: {Gran, Taml}
-        new byte[] { 72, 102, 165 }, // 54: {Knda, Nand, Tutg}
-        new byte[] { 22, 100, 148 }, // 55: {Cakm, Mymr, Tale}
-        new byte[] { 42, 43, 77 }, // 56: {Geor, Glag, Latn}
-        new byte[] { 127 }, // 57: {Runr}
-        new byte[] { 21, 54, 146, 156 }, // 58: {Buhd, Hano, Tagb, Tglg}
-        new byte[] { 96, 119 }, // 59: {Mong, Phag}
-        new byte[] { 14, 32, 47, 72 }, // 60: {Beng, Deva, Gran, Knda}
-        new byte[] { 32 }, // 61: {Deva}
-        new byte[] { 32, 47, 72 }, // 62: {Deva, Gran, Knda}
-        new byte[] { 14, 32, 105, 154, 160 }, // 63: {Beng, Deva, Newa, Telu, Tirh}
-        new byte[] { 14, 32, 154 }, // 64: {Beng, Deva, Telu}
-        new byte[] { 32, 105, 133 }, // 65: {Deva, Newa, Shrd}
-        new byte[] { 14, 32, 105, 154 }, // 66: {Beng, Deva, Newa, Telu}
-        new byte[] { 32, 133 }, // 67: {Deva, Shrd}
-        new byte[] { 32, 72, 94, 112, 150, 154 }, // 68: {Deva, Knda, Mlym, Orya, Taml, Telu}
-        new byte[] { 14, 32 }, // 69: {Beng, Deva}
-        new byte[] { 32, 105, 160 }, // 70: {Deva, Newa, Tirh}
-        new byte[] { 32, 102, 105 }, // 71: {Deva, Nand, Newa}
-        new byte[] { 14, 32, 133 }, // 72: {Beng, Deva, Shrd}
-        new byte[] { 32, 105 }, // 73: {Deva, Newa}
-        new byte[] { 14, 32, 105, 133 }, // 74: {Beng, Deva, Newa, Shrd}
-        new byte[] { 14, 32, 47, 72, 94, 102, 112, 137, 154, 160, 165 }, // 75: {Beng, Deva, Gran, Knda, Mlym, Nand, Orya, Sinh, Telu, Tirh, Tutg}
-        new byte[] { 32, 47 }, // 76: {Deva, Gran}
-        new byte[] { 32, 47, 72, 165 }, // 77: {Deva, Gran, Knda, Tutg}
-        new byte[] { 14 }, // 78: {Beng}
-        new byte[] { 102 }, // 79: {Nand}
-        new byte[] { 31, 77, 145 }, // 80: {Cyrl, Latn, Syrc}
-        new byte[] { 145 }, // 81: {Syrc}
-        new byte[] { 77, 96, 119 }, // 82: {Latn, Mong, Phag}
-        new byte[] { 3, 6 }, // 83: {Adlm, Arab}
-        new byte[] { 24, 42, 43, 62, 83, 111 }, // 84: {Cari, Geor, Glag, Hung, Lyci, Orkh}
-        new byte[] { 24, 48, 62, 93 }, // 85: {Cari, Grek, Hung, Mero}
-        new byte[] { 32, 47, 77 }, // 86: {Deva, Gran, Latn}
-        new byte[] { 28, 77 }, // 87: {Copt, Latn}
-        new byte[] { 9, 111 }, // 88: {Avst, Orkh}
-        new byte[] { 9, 24, 42, 62, 74, 84, 128 }, // 89: {Avst, Cari, Geor, Hung, Kthi, Lydi, Samr}
-        new byte[] { 36 }, // 90: {Dupl}
-        new byte[] { 3, 6, 62 }, // 91: {Adlm, Arab, Hung}
-        new byte[] { 53, 151 }, // 92: {Hani, Tang}
-        new byte[] { 17, 52, 53, 57, 66, 96, 174 }, // 93: {Bopo, Hang, Hani, Hira, Kana, Mong, Yiii}
-        new byte[] { 17, 52, 53, 57, 66, 96, 119, 174 }, // 94: {Bopo, Hang, Hani, Hira, Kana, Mong, Phag, Yiii}
-        new byte[] { 17, 52, 53, 57, 66 }, // 95: {Bopo, Hang, Hani, Hira, Kana}
-        new byte[] { 53 }, // 96: {Hani}
-        new byte[] { 17, 52, 53, 57, 66, 96, 159, 174 }, // 97: {Bopo, Hang, Hani, Hira, Kana, Mong, Tibt, Yiii}
-        new byte[] { 17, 52, 53, 57, 66, 82, 96, 159, 174 }, // 98: {Bopo, Hang, Hani, Hira, Kana, Lisu, Mong, Tibt, Yiii}
-        new byte[] { 17, 52, 53, 57, 66, 174 }, // 99: {Bopo, Hang, Hani, Hira, Kana, Yiii}
-        new byte[] { 17, 53 }, // 100: {Bopo, Hani}
-        new byte[] { 57, 66 }, // 101: {Hira, Kana}
-        new byte[] { 53, 57, 66 }, // 102: {Hani, Hira, Kana}
-        new byte[] { 53, 77 }, // 103: {Hani, Latn}
-        new byte[] { 32, 34, 49, 51, 70, 72, 74, 85, 94, 95, 102, 133, 136, 147, 160, 165 }, // 104: {Deva, Dogr, Gujr, Guru, Khoj, Knda, Kthi, Mahj, Mlym, Modi, Nand, Shrd, Sind, Takr, Tirh, Tutg}
-        new byte[] { 32, 34, 49, 51, 70, 72, 74, 85, 95, 102, 133, 136, 147, 160, 165 }, // 105: {Deva, Dogr, Gujr, Guru, Khoj, Knda, Kthi, Mahj, Modi, Nand, Shrd, Sind, Takr, Tirh, Tutg}
-        new byte[] { 32, 34, 49, 51, 70, 74, 85, 95, 136, 147, 160 }, // 106: {Deva, Dogr, Gujr, Guru, Khoj, Kthi, Mahj, Modi, Sind, Takr, Tirh}
-        new byte[] { 32, 34, 49, 51, 70, 74, 85, 95, 133, 136, 147, 160 }, // 107: {Deva, Dogr, Gujr, Guru, Khoj, Kthi, Mahj, Modi, Shrd, Sind, Takr, Tirh}
-        new byte[] { 14, 32, 165 }, // 108: {Beng, Deva, Tutg}
-        new byte[] { 32, 150 }, // 109: {Deva, Taml}
-        new byte[] { 65, 77, 100 }, // 110: {Kali, Latn, Mymr}
-        new byte[] { 20, 64 }, // 111: {Bugi, Java}
-        new byte[] { 6, 106 }, // 112: {Arab, Nkoo}
-        new byte[] { 6, 157 }, // 113: {Arab, Thaa}
-        new byte[] { 29, 30, 81 }, // 114: {Cpmn, Cprt, Linb}
-        new byte[] { 30, 81 }, // 115: {Cprt, Linb}
-        new byte[] { 30, 80, 81 }, // 116: {Cprt, Lina, Linb}
-        new byte[] { 6, 28 }, // 117: {Arab, Copt}
-        new byte[] { 88, 115 }, // 118: {Mani, Ougr}
-    };
+
+#if DEBUG
+    // In Debug builds we materialize arrays as fields to avoid RuntimeFieldInfoStub allocations.
+    private static readonly ushort[] s_scriptExtensionSetOffsetsData =
+#else
+    private static ReadOnlySpan<ushort> s_scriptExtensionSetOffsets =>
+#endif
+    [
+        0, // 0: {}
+        0, // 1: {Avst, Cari, Copt, Dupl, Elba, Geor, Glag, Gong, Goth, Grek, Hani, Latn, Lydi, Mahj, Perm, Shaw}
+        16, // 2: {Beng, Cyrl, Deva, Latn, Lisu, Thai, Toto}
+        23, // 3: {Bopo, Latn}
+        25, // 4: {Latn, Lisu}
+        27, // 5: {Latn, Thai}
+        29, // 6: {Cher, Copt, Cyrl, Grek, Latn, Perm, Sunu, Tale}
+        37, // 7: {Cher, Cyrl, Grek, Latn, Osge, Sunu, Tale, Todr}
+        45, // 8: {Cher, Cyrl, Latn, Tfng}
+        49, // 9: {Glag, Latn, Sunu, Syrc, Thai}
+        54, // 10: {Aghb, Cher, Copt, Cyrl, Goth, Grek, Latn, Osge, Syrc, Tfng, Todr}
+        65, // 11: {Copt, Elba, Glag, Goth, Kana, Latn}
+        71, // 12: {Cyrl, Grek, Latn, Perm, Tfng}
+        76, // 13: {Copt, Dupl, Hebr, Latn, Perm, Syrc, Tale, Tfng, Todr}
+        85, // 14: {Armn, Cyrl, Dupl, Goth, Grek, Hebr, Latn, Perm, Syrc, Tale, Tfng}
+        96, // 15: {Latn, Tfng}
+        98, // 16: {Dupl, Latn, Syrc}
+        101, // 17: {Cher, Cyrl, Latn, Osge}
+        105, // 18: {Cher, Latn, Tale}
+        108, // 19: {Latn, Sunu}
+        110, // 20: {Ethi, Latn}
+        112, // 21: {Cyrl, Latn, Todr}
+        115, // 22: {Grek, Latn, Perm, Todr}
+        119, // 23: {Cher, Dupl, Kana, Latn, Syrc, Tfng}
+        125, // 24: {Cher, Dupl, Latn, Syrc}
+        129, // 25: {Latn, Syrc}
+        131, // 26: {Latn, Sunu, Syrc}
+        134, // 27: {Cher, Latn, Syrc}
+        137, // 28: {Aghb, Cher, Goth, Latn, Sunu, Syrc, Thai}
+        144, // 29: {Grek}
+        145, // 30: {Latn, Osge}
+        147, // 31: {Aghb, Latn, Todr}
+        150, // 32: {Latn}
+        151, // 33: {Copt, Grek}
+        153, // 34: {Cyrl, Perm}
+        155, // 35: {Cyrl, Glag}
+        157, // 36: {Cyrl, Latn}
+        159, // 37: {Armn, Geor, Glag}
+        162, // 38: {Arab, Gara, Nkoo, Rohg, Syrc, Thaa, Yezi}
+        169, // 39: {Arab, Syrc, Thaa}
+        172, // 40: {Adlm, Arab, Gara, Nkoo, Rohg, Syrc, Thaa, Yezi}
+        180, // 41: {Adlm, Arab, Mand, Mani, Ougr, Phlp, Rohg, Sogd, Syrc}
+        189, // 42: {Arab, Syrc}
+        191, // 43: {Arab, Thaa, Yezi}
+        194, // 44: {Arab, Rohg}
+        196, // 45: {Beng, Deva, Gran, Gujr, Guru, Knda, Latn, Mlym, Nand, Newa, Orya, Shrd, Taml, Telu, Tirh}
+        211, // 46: {Beng, Deva, Gran, Gujr, Guru, Knda, Latn, Mlym, Newa, Orya, Taml, Telu, Tirh}
+        224, // 47: {Beng, Deva, Dogr, Gong, Gonm, Gran, Gujr, Guru, Knda, Mahj, Mlym, Nand, Onao, Orya, Sind, Sinh, Sylo, Takr, Taml, Telu, Tirh}
+        245, // 48: {Beng, Deva, Dogr, Gong, Gonm, Gran, Gujr, Gukh, Guru, Knda, Limb, Mahj, Mlym, Nand, Onao, Orya, Sind, Sinh, Sylo, Takr, Taml, Telu, Tirh}
+        268, // 49: {Deva, Dogr, Kthi, Mahj}
+        272, // 50: {Beng, Cakm, Sylo}
+        275, // 51: {Guru, Mult}
+        277, // 52: {Gujr, Khoj}
+        279, // 53: {Gran, Taml}
+        281, // 54: {Knda, Nand, Tutg}
+        284, // 55: {Cakm, Mymr, Tale}
+        287, // 56: {Geor, Glag, Latn}
+        290, // 57: {Runr}
+        291, // 58: {Buhd, Hano, Tagb, Tglg}
+        295, // 59: {Mong, Phag}
+        297, // 60: {Beng, Deva, Gran, Knda}
+        301, // 61: {Deva}
+        302, // 62: {Deva, Gran, Knda}
+        305, // 63: {Beng, Deva, Newa, Telu, Tirh}
+        310, // 64: {Beng, Deva, Telu}
+        313, // 65: {Deva, Newa, Shrd}
+        316, // 66: {Beng, Deva, Newa, Telu}
+        320, // 67: {Deva, Shrd}
+        322, // 68: {Deva, Knda, Mlym, Orya, Taml, Telu}
+        328, // 69: {Beng, Deva}
+        330, // 70: {Deva, Newa, Tirh}
+        333, // 71: {Deva, Nand, Newa}
+        336, // 72: {Beng, Deva, Shrd}
+        339, // 73: {Deva, Newa}
+        341, // 74: {Beng, Deva, Newa, Shrd}
+        345, // 75: {Beng, Deva, Gran, Knda, Mlym, Nand, Orya, Sinh, Telu, Tirh, Tutg}
+        356, // 76: {Deva, Gran}
+        358, // 77: {Deva, Gran, Knda, Tutg}
+        362, // 78: {Beng}
+        363, // 79: {Nand}
+        364, // 80: {Cyrl, Latn, Syrc}
+        367, // 81: {Syrc}
+        368, // 82: {Latn, Mong, Phag}
+        371, // 83: {Adlm, Arab}
+        373, // 84: {Cari, Geor, Glag, Hung, Lyci, Orkh}
+        379, // 85: {Cari, Grek, Hung, Mero}
+        383, // 86: {Deva, Gran, Latn}
+        386, // 87: {Copt, Latn}
+        388, // 88: {Avst, Orkh}
+        390, // 89: {Avst, Cari, Geor, Hung, Kthi, Lydi, Samr}
+        397, // 90: {Dupl}
+        398, // 91: {Adlm, Arab, Hung}
+        401, // 92: {Hani, Tang}
+        403, // 93: {Bopo, Hang, Hani, Hira, Kana, Mong, Yiii}
+        410, // 94: {Bopo, Hang, Hani, Hira, Kana, Mong, Phag, Yiii}
+        418, // 95: {Bopo, Hang, Hani, Hira, Kana}
+        423, // 96: {Hani}
+        424, // 97: {Bopo, Hang, Hani, Hira, Kana, Mong, Tibt, Yiii}
+        432, // 98: {Bopo, Hang, Hani, Hira, Kana, Lisu, Mong, Tibt, Yiii}
+        441, // 99: {Bopo, Hang, Hani, Hira, Kana, Yiii}
+        447, // 100: {Bopo, Hani}
+        449, // 101: {Hira, Kana}
+        451, // 102: {Hani, Hira, Kana}
+        454, // 103: {Hani, Latn}
+        456, // 104: {Deva, Dogr, Gujr, Guru, Khoj, Knda, Kthi, Mahj, Mlym, Modi, Nand, Shrd, Sind, Takr, Tirh, Tutg}
+        472, // 105: {Deva, Dogr, Gujr, Guru, Khoj, Knda, Kthi, Mahj, Modi, Nand, Shrd, Sind, Takr, Tirh, Tutg}
+        487, // 106: {Deva, Dogr, Gujr, Guru, Khoj, Kthi, Mahj, Modi, Sind, Takr, Tirh}
+        498, // 107: {Deva, Dogr, Gujr, Guru, Khoj, Kthi, Mahj, Modi, Shrd, Sind, Takr, Tirh}
+        510, // 108: {Beng, Deva, Tutg}
+        513, // 109: {Deva, Taml}
+        515, // 110: {Kali, Latn, Mymr}
+        518, // 111: {Bugi, Java}
+        520, // 112: {Arab, Nkoo}
+        522, // 113: {Arab, Thaa}
+        524, // 114: {Cpmn, Cprt, Linb}
+        527, // 115: {Cprt, Linb}
+        529, // 116: {Cprt, Lina, Linb}
+        532, // 117: {Arab, Copt}
+        534, // 118: {Mani, Ougr}
+        536 // end
+    ];
+
+#if DEBUG
+    private static ReadOnlySpan<ushort> s_scriptExtensionSetOffsets => s_scriptExtensionSetOffsetsData;
+
+    private static readonly byte[] s_scriptExtensionSetsData =
+#else
+    private static ReadOnlySpan<byte> s_scriptExtensionSets =>
+#endif
+    [
+        9, 24, 28, 36, 38, 42, 43, 44, 46, 48, 53, 77, 84, 85, 118, 132, 
+        14, 31, 32, 77, 82, 158, 164, 17, 77, 77, 82, 77, 158, 26, 28, 31, 
+        48, 77, 118, 143, 148, 26, 31, 48, 77, 113, 143, 148, 162, 26, 31, 77, 
+        155, 43, 77, 143, 145, 158, 4, 26, 28, 31, 46, 48, 77, 113, 145, 155, 
+        162, 28, 38, 43, 46, 66, 77, 31, 48, 77, 118, 155, 28, 36, 56, 77, 
+        118, 145, 148, 155, 162, 8, 31, 36, 46, 48, 56, 77, 118, 145, 148, 155, 
+        77, 155, 36, 77, 145, 26, 31, 77, 113, 26, 77, 148, 77, 143, 40, 77, 
+        31, 77, 162, 48, 77, 118, 162, 26, 36, 66, 77, 145, 155, 26, 36, 77, 
+        145, 77, 145, 77, 143, 145, 26, 77, 145, 4, 26, 46, 77, 143, 145, 158, 
+        48, 77, 113, 4, 77, 162, 77, 28, 48, 31, 118, 31, 43, 31, 77, 8, 
+        42, 43, 6, 41, 106, 126, 145, 157, 173, 6, 145, 157, 3, 6, 41, 106, 
+        126, 145, 157, 173, 3, 6, 87, 88, 115, 121, 126, 138, 145, 6, 145, 6, 
+        157, 173, 6, 126, 14, 32, 47, 49, 51, 72, 77, 94, 102, 105, 112, 133, 
+        150, 154, 160, 14, 32, 47, 49, 51, 72, 77, 94, 105, 112, 150, 154, 160, 
+        14, 32, 34, 44, 45, 47, 49, 51, 72, 85, 94, 102, 110, 112, 136, 137, 
+        144, 147, 150, 154, 160, 14, 32, 34, 44, 45, 47, 49, 50, 51, 72, 79, 
+        85, 94, 102, 110, 112, 136, 137, 144, 147, 150, 154, 160, 32, 34, 74, 85, 
+        14, 22, 144, 51, 99, 49, 70, 47, 150, 72, 102, 165, 22, 100, 148, 42, 
+        43, 77, 127, 21, 54, 146, 156, 96, 119, 14, 32, 47, 72, 32, 32, 47, 
+        72, 14, 32, 105, 154, 160, 14, 32, 154, 32, 105, 133, 14, 32, 105, 154, 
+        32, 133, 32, 72, 94, 112, 150, 154, 14, 32, 32, 105, 160, 32, 102, 105, 
+        14, 32, 133, 32, 105, 14, 32, 105, 133, 14, 32, 47, 72, 94, 102, 112, 
+        137, 154, 160, 165, 32, 47, 32, 47, 72, 165, 14, 102, 31, 77, 145, 145, 
+        77, 96, 119, 3, 6, 24, 42, 43, 62, 83, 111, 24, 48, 62, 93, 32, 
+        47, 77, 28, 77, 9, 111, 9, 24, 42, 62, 74, 84, 128, 36, 3, 6, 
+        62, 53, 151, 17, 52, 53, 57, 66, 96, 174, 17, 52, 53, 57, 66, 96, 
+        119, 174, 17, 52, 53, 57, 66, 53, 17, 52, 53, 57, 66, 96, 159, 174, 
+        17, 52, 53, 57, 66, 82, 96, 159, 174, 17, 52, 53, 57, 66, 174, 17, 
+        53, 57, 66, 53, 57, 66, 53, 77, 32, 34, 49, 51, 70, 72, 74, 85, 
+        94, 95, 102, 133, 136, 147, 160, 165, 32, 34, 49, 51, 70, 72, 74, 85, 
+        95, 102, 133, 136, 147, 160, 165, 32, 34, 49, 51, 70, 74, 85, 95, 136, 
+        147, 160, 32, 34, 49, 51, 70, 74, 85, 95, 133, 136, 147, 160, 14, 32, 
+        165, 32, 150, 65, 77, 100, 20, 64, 6, 106, 6, 157, 29, 30, 81, 30, 
+        81, 30, 80, 81, 6, 28, 88, 115
+    ];
+
+#if DEBUG
+    private static ReadOnlySpan<byte> s_scriptExtensionSets => s_scriptExtensionSetsData;
+#endif
 }

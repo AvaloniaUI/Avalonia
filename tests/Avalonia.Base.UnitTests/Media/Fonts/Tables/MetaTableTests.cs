@@ -75,17 +75,50 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             Assert.Empty(table.SupportedLanguages);
         }
 
-        private static byte[] BuildMetaTable(string dlngValue, string slngValue)
+        [Fact]
+        public void TryParse_Truncated_DataMap_Array_Returns_False()
         {
-            var dlngBytes = Encoding.UTF8.GetBytes(dlngValue);
-            var slngBytes = Encoding.UTF8.GetBytes(slngValue);
+            var bytes = new byte[16];
 
+            // Header claims one data map but no data map records follow.
+            BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(0, 4), 1); // version
+            BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(4, 4), 0); // flags
+            BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(8, 4), 0); // reserved
+            BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(12, 4), 1); // dataMapsCount
+
+            Assert.False(MetaTable.TryParse(bytes, out _));
+        }
+
+        [Fact]
+        public void TryParse_Duplicate_Dlng_Uses_First_Record()
+        {
+            var bytes = BuildMetaTable(
+                ("dlng", "ja"),
+                ("dlng", "en"),
+                ("slng", "en"));
+
+            Assert.True(MetaTable.TryParse(bytes, out var table));
+            Assert.Equal(new[] { "ja" }, table.DesignLanguages);
+            Assert.Equal(new[] { "en" }, table.SupportedLanguages);
+        }
+
+        private static byte[] BuildMetaTable(string dlngValue, string slngValue)
+            => BuildMetaTable(("dlng", dlngValue), ("slng", slngValue));
+
+        private static byte[] BuildMetaTable(params (string Tag, string Value)[] maps)
+        {
             const int header = 16;
             const int mapSize = 12;
-            const int mapCount = 2;
-            var dlngOffset = header + (mapSize * mapCount);
-            var slngOffset = dlngOffset + dlngBytes.Length;
-            var totalLength = slngOffset + slngBytes.Length;
+            var mapCount = maps.Length;
+            var payloadOffset = header + (mapSize * mapCount);
+            var payloads = new byte[mapCount][];
+            var totalLength = payloadOffset;
+
+            for (var i = 0; i < mapCount; i++)
+            {
+                payloads[i] = Encoding.UTF8.GetBytes(maps[i].Value);
+                totalLength += payloads[i].Length;
+            }
 
             var bytes = new byte[totalLength];
 
@@ -93,21 +126,18 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
             BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(0, 4), 1); // version
             BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(4, 4), 0); // flags
             BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(8, 4), 0); // reserved
-            BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(12, 4), mapCount); // dataMapsCount
+            BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(12, 4), (uint)mapCount); // dataMapsCount
 
-            // dlng data map
-            WriteTag(bytes.AsSpan(16, 4), "dlng");
-            BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(20, 4), (uint)dlngOffset);
-            BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(24, 4), (uint)dlngBytes.Length);
+            for (var i = 0; i < mapCount; i++)
+            {
+                var mapOffset = header + (i * mapSize);
+                WriteTag(bytes.AsSpan(mapOffset, 4), maps[i].Tag);
+                BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(mapOffset + 4, 4), (uint)payloadOffset);
+                BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(mapOffset + 8, 4), (uint)payloads[i].Length);
 
-            // slng data map
-            WriteTag(bytes.AsSpan(28, 4), "slng");
-            BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(32, 4), (uint)slngOffset);
-            BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(36, 4), (uint)slngBytes.Length);
-
-            // Payloads
-            dlngBytes.CopyTo(bytes.AsSpan(dlngOffset));
-            slngBytes.CopyTo(bytes.AsSpan(slngOffset));
+                payloads[i].CopyTo(bytes.AsSpan(payloadOffset));
+                payloadOffset += payloads[i].Length;
+            }
 
             return bytes;
         }
