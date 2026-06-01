@@ -157,7 +157,7 @@ namespace Avalonia.Media
             context.ArcTo(
                 new Point(rect.Right, rect.Top + radiusY),
                 arcSize,
-                rotationAngle: PiOver2,
+                rotationAngle: 0.0,
                 isLargeArc: false,
                 SweepDirection.Clockwise);
 
@@ -166,7 +166,7 @@ namespace Avalonia.Media
             context.ArcTo(
                 new Point(rect.Right - radiusX, rect.Bottom),
                 arcSize,
-                rotationAngle: PiOver2,
+                rotationAngle: 0.0,
                 isLargeArc: false,
                 SweepDirection.Clockwise);
 
@@ -175,7 +175,7 @@ namespace Avalonia.Media
             context.ArcTo(
                 new Point(rect.Left, rect.Bottom - radiusY),
                 arcSize,
-                rotationAngle: PiOver2,
+                rotationAngle: 0.0,
                 isLargeArc: false,
                 SweepDirection.Clockwise);
 
@@ -184,7 +184,7 @@ namespace Avalonia.Media
             context.ArcTo(
                 new Point(rect.Left + radiusX, rect.Top),
                 arcSize,
-                rotationAngle: PiOver2,
+                rotationAngle: 0.0,
                 isLargeArc: false,
                 SweepDirection.Clockwise);
 
