@@ -1063,6 +1063,10 @@ namespace Avalonia.Controls.Presenters
                 case nameof(PasswordChar):
                 case nameof(RevealPassword):
                 case nameof(FlowDirection):
+                case nameof(SelectionStart):
+                case nameof(SelectionEnd):
+                case nameof(SelectionForegroundBrush):
+                case nameof(ShowSelectionHighlight):
                     {
                         InvalidateTextLayout();
                         break;
@@ -1071,10 +1075,6 @@ namespace Avalonia.Controls.Presenters
                 case nameof(TextAlignment):
                 case nameof(TextWrapping):
                 case nameof(LineHeight):
-                case nameof(SelectionStart):
-                case nameof(SelectionEnd):
-                case nameof(SelectionForegroundBrush):
-                case nameof(ShowSelectionHighlight):
                     {
                         InvalidateTextLayoutKeepCache();
                         break;
