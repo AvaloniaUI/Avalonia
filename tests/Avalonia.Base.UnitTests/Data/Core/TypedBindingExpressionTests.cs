@@ -296,6 +296,19 @@ public class TypedBindingExpressionTests : ScopedTestBase
         Assert.IsType<BindingExpression>(expression);
     }
 
+    [Fact]
+    public void Should_Not_Produce_TypedBindingExpression_When_Binding_DataContext()
+    {
+        var log = string.Empty;
+        using var logger = TestLogSink.Start((_, _, _, m, _) => log += m);
+        var source = new ViewModel { StringValue = "Hello" };
+        var binding = CreateBinding();
+        var target = new TextBlock();
+        var expression = target.Bind(TextBlock.DataContextProperty, binding);
+
+        Assert.IsType<BindingExpression>(expression);
+    }
+
     private static TypedBindingExpression<ViewModel, string?> BindAndAssert(StyledElement target, BindingBase binding)
     {
         var expression = target.Bind(TextBlock.TextProperty, binding);

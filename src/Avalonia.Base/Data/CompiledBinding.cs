@@ -240,6 +240,12 @@ public class CompiledBinding : BindingBase
             return false;
         }
 
+        // DataContext bindings need to read their source value from the parent of the target
+        // instead of the DataContext; TypedBindingExpression does not support this (and it would
+        // probably not be worth doing so as DataContexts are usually reference types).
+        if (targetProperty == StyledElement.DataContextProperty)
+            return false;
+
         element = typed;
         return true;
     }
