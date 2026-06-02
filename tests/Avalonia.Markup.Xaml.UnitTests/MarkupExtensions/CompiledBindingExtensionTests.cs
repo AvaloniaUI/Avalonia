@@ -640,7 +640,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 // Assert DataGridLikeColumn.Binding data type.
                 var compiledPath = ((CompiledBinding)column.Binding!).Path;
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
+                var node = Assert.IsAssignableFrom<PropertyElement>(Assert.Single(compiledPath!.Elements));
 
                 Assert.Equal(typeof(string), node.Property.PropertyType);
                 Assert.Equal(nameof(TestData.StringProperty), node.Property.Name);
@@ -683,7 +683,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 // Assert DataGridLikeColumn.Binding data type.
                 var compiledPath = ((CompiledBinding)column.Binding!).Path;
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
+                var node = Assert.IsAssignableFrom<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(int), node.Property.PropertyType);
                 
                 // Assert DataGridLikeColumn.Template data type by evaluating the template.
@@ -728,7 +728,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 // Assert DataGridLikeColumn.Binding data type.
                 var compiledPath = ((CompiledBinding)column.Binding!).Path;
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
+                var node = Assert.IsAssignableFrom<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(int), node.Property.PropertyType);
                 
                 // Assert DataGridLikeColumn.Template data type by evaluating the template.
@@ -2062,7 +2062,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var compiledPath = ((CompiledBinding)control.X!).Path;
 
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
+                var node = Assert.IsAssignableFrom<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
             }
         }
@@ -2080,7 +2080,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
                 var compiledPath = ((CompiledBinding)control.X!).Path;
 
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
+                var node = Assert.IsAssignableFrom<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
             }
         }
@@ -2099,7 +2099,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                     new RuntimeXamlLoaderConfiguration { UseCompiledBindingsByDefault = true });
                 var compiledPath = ((CompiledBinding)control.X!).Path;
 
-                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath!.Elements));
+                var node = Assert.IsAssignableFrom<PropertyElement>(Assert.Single(compiledPath!.Elements));
                 Assert.Equal(typeof(string), node.Property.PropertyType);
             }
         }
@@ -2397,6 +2397,172 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 window.DataContext = dataContext.NestedGenericString;
 
                 Assert.Equal(dataContext.NestedGenericString.Value, textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void Emits_TypedBindingExpression_For_Simple_DataContext_Binding()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding StringProperty}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { StringProperty = "hello" };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty);
+                Assert.IsType<TypedBindingExpression<TestDataContext, string>>(expression);
+                Assert.Equal("hello", textBlock.Text);
+            }
+        }
+
+        [Theory]
+        [InlineData("OneWay")]
+        [InlineData("TwoWay")]
+        [InlineData("OneWayToSource")]
+        [InlineData("OneTime")]
+        public void Emits_TypedBindingExpression_For_All_Standard_Modes(string mode)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load($@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{{CompiledBinding StringProperty, Mode={mode}}}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { StringProperty = "x" };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty);
+                Assert.IsType<TypedBindingExpression<TestDataContext, string>>(expression);
+            }
+        }
+
+        [Fact]
+        public void Emits_TypedBindingExpression_For_Binding_With_CompileBindings_True()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'
+        x:CompileBindings='True'>
+    <TextBlock Text='{Binding StringProperty}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { StringProperty = "hi" };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty);
+                Assert.IsType<TypedBindingExpression<TestDataContext, string>>(expression);
+            }
+        }
+
+        [Fact]
+        public void Falls_Back_To_BindingExpression_For_Nested_Path()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding NestedGenericString.Value}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { NestedGenericString = new TestDataContext.NestedGeneric<string> { Value = "v" } };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty);
+                Assert.IsType<BindingExpression>(expression);
+            }
+        }
+
+        [Fact]
+        public void Falls_Back_To_BindingExpression_When_Converter_Set()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding StringProperty, Converter={x:Static local:AppendConverter.Instance}, ConverterParameter=suffix}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { StringProperty = "x" };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty);
+                Assert.IsType<BindingExpression>(expression);
+            }
+        }
+
+        [Fact]
+        public void Falls_Back_To_BindingExpression_When_StringFormat_Set()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding DecimalValue, StringFormat=c2}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext();
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TextProperty);
+                Assert.IsType<BindingExpression>(expression);
+            }
+        }
+
+        [Fact]
+        public void Falls_Back_To_BindingExpression_For_Negated_Binding()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Tag='{CompiledBinding !BoolProperty}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { BoolProperty = true };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, TextBlock.TagProperty);
+                Assert.IsType<BindingExpression>(expression);
+            }
+        }
+
+        [Fact]
+        public void Falls_Back_To_BindingExpression_For_DataContext_Target()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock DataContext='{CompiledBinding StringProperty}' Name='textBlock' />
+</Window>");
+                var textBlock = window.GetControl<TextBlock>("textBlock");
+                window.DataContext = new TestDataContext { StringProperty = "x" };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBlock, StyledElement.DataContextProperty);
+                Assert.IsType<BindingExpression>(expression);
             }
         }
 

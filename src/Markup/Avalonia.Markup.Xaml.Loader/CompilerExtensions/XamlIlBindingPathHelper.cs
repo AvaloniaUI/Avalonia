@@ -717,8 +717,34 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 _acceptsNull = acceptsNull;
             }
 
+            public IXamlProperty Property => _property;
+
+            public bool EmitTyped { get; set; }
+
+            [UnconditionalSuppressMessage("Trimming", "IL2122", Justification = TrimmingMessages.TypesInCoreOrAvaloniaAssembly)]
             public void Emit(XamlIlEmitContext context, IXamlILEmitter codeGen)
             {
+                if (EmitTyped)
+                {
+                    var types = context.GetAvaloniaTypes();
+                    var sourceType = _property.Getter?.DeclaringType ?? _property.Setter!.DeclaringType;
+                    var valueType = _property.PropertyType;
+
+                    context.Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
+                        .EmitTyped(context, codeGen, _property);
+
+                    context.Configuration.GetExtra<XamlIlPropertyInfoAccessorFactoryEmitter>()
+                        .EmitLoadInpcPropertyAccessorFactory(context, codeGen);
+
+                    codeGen.Ldc_I4(_acceptsNull ? 1 : 0);
+
+                    var typedPropertyMethod = types.CompiledBindingPathBuilder.GetMethod(m =>
+                        m is { Name: "Property", IsGenericMethod: true } &&
+                        m.Parameters.Count == 3);
+                    codeGen.EmitCall(typedPropertyMethod.MakeGenericMethod(new[] { sourceType, valueType }));
+                    return;
+                }
+
                 context.Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
                     .Emit(context, codeGen, _property);
 
@@ -1013,6 +1039,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var types = context.GetAvaloniaTypes();
 
+                TryEnableTypedEmission(_transformElements, Elements);
+
                 codeGen.Newobj(types.CompiledBindingPathBuilder.GetConstructor());
 
                 foreach (var transform in _transformElements)
@@ -1027,6 +1055,31 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 codeGen.EmitCall(types.CompiledBindingPathBuilder.GetMethod(m => m.Name == "Build"));
                 return XamlILNodeEmitResult.Type(0, types.CompiledBindingPath);
+            }
+
+            private static void TryEnableTypedEmission(
+                List<IXamlIlBindingPathElementNode> transformElements,
+                List<IXamlIlBindingPathElementNode> elements)
+            {
+                if (transformElements.Count != 0)
+                    return;
+                if (elements.Count != 1)
+                    return;
+                if (elements[0] is not XamlIlClrPropertyPathElementNode clr)
+                    return;
+
+                var property = clr.Property;
+                var declaringType = property.Getter?.DeclaringType ?? property.Setter?.DeclaringType;
+
+                // TypedBindingExpression<TSource, TValue> requires TSource : class.
+                if (declaringType is null || declaringType.IsValueType)
+                    return;
+
+                // We need an instance getter so the source value can be read.
+                if (property.Getter is null || property.Getter.IsStatic)
+                    return;
+
+                clr.EmitTyped = true;
             }
 
             public override void VisitChildren(IXamlAstVisitor visitor)
