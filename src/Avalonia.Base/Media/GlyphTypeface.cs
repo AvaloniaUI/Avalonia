@@ -69,6 +69,12 @@ namespace Avalonia.Media
         // ascent/descent).
         private readonly MvarTable? _mvarTable;
 
+        // VVAR table — VVAR is HVAR's vertical-text counterpart, carrying per-glyph
+        // advance-height and top-side-bearing deltas for vertical layout (CJK in
+        // tategaki, Mongolian, classical scripts). Null on horizontal-only fonts and
+        // on static fonts. Horizontal text never reads it.
+        private readonly VvarTable? _vvarTable;
+
         // Source typeface for variation clones. Null for default-instance typefaces
         // (the source) — every WithVariation clone points back to its source so all
         // variations of the same font share a single cache and resource owner.
@@ -340,6 +346,10 @@ namespace Avalonia.Media
                 // underline, strikeout). Loaded here so clones can apply the deltas to
                 // their FontMetrics struct in their own constructor — see the clone ctor.
                 MvarTable.TryLoad(this, _fvarTable.Axes.Length, out _mvarTable);
+
+                // VVAR is HVAR for vertical text. Loaded the same way; per-call
+                // TryGetVerticalGlyphAdvance pays the same minimal check.
+                VvarTable.TryLoad(this, _fvarTable.Axes.Length, out _vvarTable);
             }
 
             static CultureInfo GetCulture(int lcid)
@@ -407,6 +417,7 @@ namespace Avalonia.Media
             _gvarTable = source._gvarTable;
             _hvarTable = source._hvarTable;
             _mvarTable = source._mvarTable;
+            _vvarTable = source._vvarTable;
 
             _hasOs2Table = source._hasOs2Table;
             _hasHorizontalMetrics = source._hasHorizontalMetrics;
@@ -1098,6 +1109,8 @@ namespace Avalonia.Media
 
             var advanceWidth = hMetric.AdvanceWidth;
             var leftSideBearing = hMetric.LeftSideBearing;
+            var advanceHeight = vMetric.AdvanceHeight;
+            var topSideBearing = vMetric.TopSideBearing;
 
             // HVAR adjusts advance width (and optionally LSB) at the active variation
             // point. Without it, varied text laid out via these metrics overlaps.
@@ -1116,6 +1129,24 @@ namespace Avalonia.Media
                 }
             }
 
+            // VVAR mirrors HVAR for vertical metrics. Only fires for fonts that actually
+            // ship a VVAR table (most horizontal-text fonts don't); _vvarTable stays null
+            // otherwise and we keep the unvaried vmtx values.
+            if (hasVertical && _vvarTable is not null && _activeCoords is not null)
+            {
+                if (_vvarTable.TryGetAdvanceHeightDelta(glyph, _activeCoords, out var advDelta) && advDelta != 0f)
+                {
+                    var adjusted = advanceHeight + (int)MathF.Round(advDelta);
+                    advanceHeight = adjusted < 0 ? (ushort)0 : (ushort)Math.Min(adjusted, ushort.MaxValue);
+                }
+
+                if (_vvarTable.TryGetTopSideBearingDelta(glyph, _activeCoords, out var tsbDelta) && tsbDelta != 0f)
+                {
+                    var adjusted = topSideBearing + (int)MathF.Round(tsbDelta);
+                    topSideBearing = (short)Math.Clamp(adjusted, short.MinValue, short.MaxValue);
+                }
+            }
+
             // Funnel the raw header values through GlyphBounds so the ink extent is computed
             // (and clamped to non-negative) the same way as the batch path below — a malformed
             // header with xMax < xMin must not wrap when narrowed to the ushort Width/Height.
@@ -1124,14 +1155,14 @@ namespace Avalonia.Media
             metrics = new GlyphMetrics
             {
                 // Bounding box (ink extent) from the glyf header; side bearings fall back
-                // to hmtx/vmtx (HVAR-adjusted) when the glyph has no outline data.
+                // to hmtx/vmtx (HVAR/VVAR-adjusted) when the glyph has no outline data.
                 XBearing = hasBounds ? box.XMin : (hasHorizontal ? leftSideBearing : (short)0),
-                YBearing = hasBounds ? box.YMax : (hasVertical ? vMetric.TopSideBearing : (short)0),
+                YBearing = hasBounds ? box.YMax : (hasVertical ? topSideBearing : (short)0),
                 Width = hasBounds ? (ushort)box.Width : (ushort)0,
                 Height = hasBounds ? (ushort)box.Height : (ushort)0,
-                // Advances come from the metrics tables, with HVAR applied to the width.
+                // Advances come from the metrics tables, with HVAR/VVAR applied.
                 AdvanceWidth = hasHorizontal ? advanceWidth : (ushort)0,
-                AdvanceHeight = hasVertical ? vMetric.AdvanceHeight : (ushort)0,
+                AdvanceHeight = hasVertical ? advanceHeight : (ushort)0,
             };
 
             return true;
@@ -1191,11 +1222,19 @@ namespace Avalonia.Media
                 }
             }
 
-            // Batch retrieve vertical metrics. VVAR variation is a future slice (pr4g),
-            // so the unvaried path is fine here for now.
+            // vmtx + VVAR fuse in the same fashion HVAR fuses with hmtx — the v-side
+            // batch reader applies VVAR deltas inline when both the table and active
+            // coords are present.
             if (_hasVerticalMetrics && _vmTable != null)
             {
-                hasVertical = _vmTable.TryGetMetrics(glyphIds, vMetrics);
+                if (_vvarTable is not null && _activeCoords is not null)
+                {
+                    hasVertical = _vmTable.TryGetMetrics(glyphIds, vMetrics, _vvarTable, _activeCoords);
+                }
+                else
+                {
+                    hasVertical = _vmTable.TryGetMetrics(glyphIds, vMetrics);
+                }
             }
 
             if (!hasHorizontal && !hasVertical)
