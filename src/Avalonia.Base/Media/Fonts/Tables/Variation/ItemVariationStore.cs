@@ -148,6 +148,139 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         }
 
         /// <summary>
+        /// Pre-computes the per-region scaler for every region declared by the store
+        /// against the supplied active coordinates. Fills <paramref name="output"/>
+        /// with one scaler per region (length must be at least <see cref="RegionCount"/>).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The store's regions are constant for the lifetime of the font, and the
+        /// active coordinates are constant for the lifetime of a varied
+        /// <see cref="GlyphTypeface"/> clone — so the resulting scaler vector is
+        /// constant per clone. Pre-computing once at clone time saves the per-axis
+        /// region-scaler computation inside <see cref="TryGetDelta(int,int,ReadOnlySpan{float},out float)"/>
+        /// on every per-glyph lookup. The
+        /// <see cref="TryGetDelta(int,int,ReadOnlySpan{float},out float)"/> overload
+        /// then becomes a straight index lookup.
+        /// </para>
+        /// <para>
+        /// Measured win on <c>AdvanceLookupBenchmark.VariableVaried_Batch200</c>:
+        /// per-glyph HVAR lookup drops dramatically because the inner loop's
+        /// <c>ComputeRegionScaler</c> call — which read <c>regionIndexCount × axisCount</c>
+        /// F2DOT14 values plus per-axis branches — is replaced by an array index.
+        /// </para>
+        /// </remarks>
+        public void ComputeRegionScalers(ReadOnlySpan<float> activeCoords, Span<float> output)
+        {
+            for (var r = 0; r < _regionCount; r++)
+            {
+                output[r] = ComputeRegionScaler(r, activeCoords);
+            }
+        }
+
+        /// <summary>
+        /// Computes the variation delta using a pre-computed per-region scaler array.
+        /// Same contract as <see cref="TryGetDelta(int,int,ReadOnlySpan{float},out float)"/>
+        /// but with the active-coords → scaler projection lifted out into
+        /// <see cref="ComputeRegionScalers"/>.
+        /// </summary>
+        public bool TryGetDeltaWithScalers(int outerIndex, int innerIndex, ReadOnlySpan<float> regionScalers, out float delta)
+        {
+            delta = 0f;
+
+            if ((uint)outerIndex >= (uint)_ivdCount)
+            {
+                return false;
+            }
+
+            var span = _data.Span;
+            var subtableStart = _ivdOffsets[outerIndex];
+
+            var itemCount = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(subtableStart, 2));
+            var wordDeltaCountRaw = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(subtableStart + 2, 2));
+            var regionIndexCount = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(subtableStart + 4, 2));
+
+            if ((uint)innerIndex >= (uint)itemCount)
+            {
+                return false;
+            }
+
+            var useLongFormat = (wordDeltaCountRaw & LongWordsFlag) != 0;
+            var wordDeltaCount = wordDeltaCountRaw & WordDeltaCountMask;
+
+            if (wordDeltaCount > regionIndexCount)
+            {
+                return false;
+            }
+
+            var wideBytes = useLongFormat ? 4 : 2;
+            var narrowBytes = useLongFormat ? 2 : 1;
+            var rowBytes = wordDeltaCount * wideBytes + (regionIndexCount - wordDeltaCount) * narrowBytes;
+
+            var regionIndexesStart = subtableStart + 6;
+            var deltaDataStart = regionIndexesStart + regionIndexCount * 2;
+            var rowStart = deltaDataStart + innerIndex * rowBytes;
+
+            if (rowStart + rowBytes > span.Length)
+            {
+                return false;
+            }
+
+            // Same row walk as TryGetDelta, but the per-region scaler comes from the
+            // precomputed array instead of being computed from activeCoords.
+            var sum = 0f;
+            var bytePos = rowStart;
+
+            for (var r = 0; r < regionIndexCount; r++)
+            {
+                var regionIndex = BinaryPrimitives.ReadUInt16BigEndian(
+                    span.Slice(regionIndexesStart + r * 2, 2));
+
+                int rawDelta;
+                if (r < wordDeltaCount)
+                {
+                    if (useLongFormat)
+                    {
+                        rawDelta = BinaryPrimitives.ReadInt32BigEndian(span.Slice(bytePos, 4));
+                        bytePos += 4;
+                    }
+                    else
+                    {
+                        rawDelta = BinaryPrimitives.ReadInt16BigEndian(span.Slice(bytePos, 2));
+                        bytePos += 2;
+                    }
+                }
+                else
+                {
+                    if (useLongFormat)
+                    {
+                        rawDelta = BinaryPrimitives.ReadInt16BigEndian(span.Slice(bytePos, 2));
+                        bytePos += 2;
+                    }
+                    else
+                    {
+                        rawDelta = (sbyte)span[bytePos];
+                        bytePos += 1;
+                    }
+                }
+
+                if ((uint)regionIndex >= (uint)regionScalers.Length)
+                {
+                    return false;
+                }
+
+                var scaler = regionScalers[regionIndex];
+                if (scaler != 0f)
+                {
+                    sum += scaler * rawDelta;
+                }
+            }
+
+            delta = sum;
+            return true;
+        }
+
+        /// <summary>
         /// Computes the variation delta for a given <c>(outerIndex, innerIndex)</c>
         /// addressing pair at the supplied active variation coordinates.
         /// </summary>

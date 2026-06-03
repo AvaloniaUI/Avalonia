@@ -120,7 +120,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
         /// <summary>
         /// Attempts to retrieve advance widths for multiple glyphs in a single operation.
-        /// When <paramref name="hvar"/> and <paramref name="activeCoords"/> are both
+        /// When <paramref name="hvar"/> and <paramref name="hvarRegionScalers"/> are both
         /// supplied, HVAR's per-glyph delta is applied to each advance in the same
         /// pass — fused so <paramref name="advances"/> is written exactly once per
         /// glyph instead of once by hmtx and again by an HVAR post-pass.
@@ -128,22 +128,20 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         /// <param name="glyphIndices">Read-only span of glyph indices to query.</param>
         /// <param name="advances">Output span; must be at least as long as <paramref name="glyphIndices"/>.</param>
         /// <param name="hvar">Optional HVAR table. <c>null</c> means no variation adjustment.</param>
-        /// <param name="activeCoords">
-        /// Normalized variation coordinates in fvar axis order. Ignored when
-        /// <paramref name="hvar"/> is <c>null</c>; otherwise must match the font's axis count.
+        /// <param name="hvarRegionScalers">
+        /// Pre-computed per-region scalers for HVAR's <see cref="ItemVariationStore"/>,
+        /// produced once at clone time by
+        /// <see cref="ItemVariationStore.ComputeRegionScalers"/>. Ignored when
+        /// <paramref name="hvar"/> is <c>null</c>; otherwise length must equal
+        /// HVAR's region count. Replaces the activeCoords parameter so the per-glyph
+        /// loop never recomputes a scaler — see the planning doc's O-1 hypothesis.
         /// </param>
         /// <returns><c>true</c> if all glyph indices are valid and advances were retrieved; otherwise, <c>false</c>.</returns>
-        /// <remarks>
-        /// Reuses the <c>lastAdvanceWidth</c> cache for monospace-tail glyphs, so a
-        /// font where most glyphs share the same advance pays one hmtx read regardless
-        /// of batch size. If any glyph index is invalid, the method returns <c>false</c>
-        /// and the contents of <paramref name="advances"/> are undefined.
-        /// </remarks>
         public bool TryGetAdvances(
             ReadOnlySpan<ushort> glyphIndices,
             Span<ushort> advances,
             HvarTable? hvar = null,
-            ReadOnlySpan<float> activeCoords = default)
+            ReadOnlySpan<float> hvarRegionScalers = default)
         {
             if (advances.Length < glyphIndices.Length)
             {
@@ -159,7 +157,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
             // Cache the last advance width for glyphs beyond numOfHMetrics
             ushort? lastAdvanceWidth = null;
-            var hasHvar = hvar is not null && !activeCoords.IsEmpty;
+            var hasHvar = hvar is not null && !hvarRegionScalers.IsEmpty;
 
             for (int i = 0; i < glyphIndices.Length; i++)
             {
@@ -185,7 +183,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
                     raw = lastAdvanceWidth.Value;
                 }
 
-                if (hasHvar && hvar!.TryGetAdvanceDelta(glyphIndex, activeCoords, out var delta) && delta != 0f)
+                if (hasHvar && hvar!.TryGetAdvanceDeltaWithScalers(glyphIndex, hvarRegionScalers, out var delta) && delta != 0f)
                 {
                     var adjusted = raw + (int)MathF.Round(delta);
                     advances[i] = adjusted < 0
@@ -208,13 +206,13 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         /// <param name="glyphIndices">Read-only span of glyph indices to query.</param>
         /// <param name="metrics">Output span; must be at least as long as <paramref name="glyphIndices"/>.</param>
         /// <param name="hvar">Optional HVAR table for variation-adjusted advances + LSBs.</param>
-        /// <param name="activeCoords">Normalized variation coordinates in fvar axis order.</param>
+        /// <param name="hvarRegionScalers">Pre-computed per-region scalers for HVAR's ItemVariationStore.</param>
         /// <returns><c>true</c> if all glyph indices are valid and metrics were retrieved; otherwise, <c>false</c>.</returns>
         public bool TryGetMetrics(
             ReadOnlySpan<ushort> glyphIndices,
             Span<HorizontalGlyphMetric> metrics,
             HvarTable? hvar = null,
-            ReadOnlySpan<float> activeCoords = default)
+            ReadOnlySpan<float> hvarRegionScalers = default)
         {
             if (metrics.Length < glyphIndices.Length)
             {
@@ -230,7 +228,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
             // Cache the last advance width for glyphs beyond numOfHMetrics
             ushort? lastAdvanceWidth = null;
-            var hasHvar = hvar is not null && !activeCoords.IsEmpty;
+            var hasHvar = hvar is not null && !hvarRegionScalers.IsEmpty;
 
             for (int i = 0; i < glyphIndices.Length; i++)
             {
@@ -271,7 +269,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
                 if (hasHvar)
                 {
-                    if (hvar!.TryGetAdvanceDelta(glyphIndex, activeCoords, out var advDelta) && advDelta != 0f)
+                    if (hvar!.TryGetAdvanceDeltaWithScalers(glyphIndex, hvarRegionScalers, out var advDelta) && advDelta != 0f)
                     {
                         var adjusted = advanceWidth + (int)MathF.Round(advDelta);
                         advanceWidth = adjusted < 0
@@ -279,7 +277,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
                             : (ushort)Math.Min(adjusted, ushort.MaxValue);
                     }
 
-                    if (hvar.TryGetLeftSideBearingDelta(glyphIndex, activeCoords, out var lsbDelta) && lsbDelta != 0f)
+                    if (hvar.TryGetLeftSideBearingDeltaWithScalers(glyphIndex, hvarRegionScalers, out var lsbDelta) && lsbDelta != 0f)
                     {
                         var adjusted = leftSideBearing + (int)MathF.Round(lsbDelta);
                         leftSideBearing = (short)Math.Clamp(adjusted, short.MinValue, short.MaxValue);

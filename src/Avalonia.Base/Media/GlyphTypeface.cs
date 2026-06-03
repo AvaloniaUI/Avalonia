@@ -100,6 +100,14 @@ namespace Avalonia.Media
         // touching this field.
         private readonly float[]? _activeCoords;
 
+        // Pre-computed per-region scaler arrays for each variation table's
+        // ItemVariationStore. Built once at clone construction so per-glyph delta
+        // lookups become array indices instead of per-axis F2DOT14 ramps.
+        // See planning/PR4-performance-benchmark-plan.md O-1 — a measured ~9x win
+        // on AdvanceLookupBenchmark.VariableVaried_Batch200.
+        private readonly float[]? _hvarRegionScalers;
+        private readonly float[]? _vvarRegionScalers;
+
         // Per-source variation cache. Only populated on the source typeface (clones
         // delegate WithVariation through _sourceTypeface so a single cache is shared).
         // Lazy-allocated on first variation request.
@@ -468,6 +476,20 @@ namespace Avalonia.Media
             {
                 variation.TryGetCoordinate(axes[i], out var v);
                 _activeCoords[i] = v;
+            }
+
+            // Pre-compute per-region scalers for every ItemVariationStore that's likely
+            // to be queried per-glyph. Done once here so HVAR / VVAR per-glyph delta
+            // lookups become array indices.
+            if (source._hvarTable is not null)
+            {
+                _hvarRegionScalers = new float[source._hvarTable.Store.RegionCount];
+                source._hvarTable.Store.ComputeRegionScalers(_activeCoords, _hvarRegionScalers);
+            }
+            if (source._vvarTable is not null)
+            {
+                _vvarRegionScalers = new float[source._vvarTable.Store.RegionCount];
+                source._vvarTable.Store.ComputeRegionScalers(_activeCoords, _vvarRegionScalers);
             }
         }
 
@@ -978,11 +1000,11 @@ namespace Avalonia.Media
 
             // HVAR: variation-aware advance widths. Without this, a bolder glyph keeps
             // its default-instance advance and overlaps the next slot. The
-            // _activeCoords null check is the fast path that lets static-font and
+            // _hvarRegionScalers null check is the fast path that lets static-font and
             // default-instance callers pay nothing beyond a field access.
-            if (_hvarTable is not null && _activeCoords is not null)
+            if (_hvarTable is not null && _hvarRegionScalers is not null)
             {
-                if (_hvarTable.TryGetAdvanceDelta(glyphId, _activeCoords, out var delta))
+                if (_hvarTable.TryGetAdvanceDeltaWithScalers(glyphId, _hvarRegionScalers, out var delta))
                 {
                     var adjusted = advance + (int)MathF.Round(delta);
                     advance = adjusted < 0 ? (ushort)0 : (ushort)Math.Min(adjusted, ushort.MaxValue);
@@ -1011,14 +1033,14 @@ namespace Avalonia.Media
 
             // Fast path: no variation. Dispatch to the plain hmtx batch reader, which
             // never touches HVAR.
-            if (_hvarTable is null || _activeCoords is null)
+            if (_hvarTable is null || _hvarRegionScalers is null)
             {
                 return _hmTable.TryGetAdvances(glyphIds, advances);
             }
 
-            // Variation path: hand the cached active coords + HVAR table to the fused
+            // Variation path: hand the cached region scalers + HVAR table to the fused
             // single-pass loop inside HorizontalMetricsTable.TryGetAdvances.
-            return _hmTable.TryGetAdvances(glyphIds, advances, _hvarTable, _activeCoords);
+            return _hmTable.TryGetAdvances(glyphIds, advances, _hvarTable, _hvarRegionScalers);
         }
 
         /// <summary>
@@ -1138,15 +1160,15 @@ namespace Avalonia.Media
 
             // HVAR adjusts advance width (and optionally LSB) at the active variation
             // point. Without it, varied text laid out via these metrics overlaps.
-            if (hasHorizontal && _hvarTable is not null && _activeCoords is not null)
+            if (hasHorizontal && _hvarTable is not null && _hvarRegionScalers is not null)
             {
-                if (_hvarTable.TryGetAdvanceDelta(glyph, _activeCoords, out var advDelta) && advDelta != 0f)
+                if (_hvarTable.TryGetAdvanceDeltaWithScalers(glyph, _hvarRegionScalers, out var advDelta) && advDelta != 0f)
                 {
                     var adjusted = advanceWidth + (int)MathF.Round(advDelta);
                     advanceWidth = adjusted < 0 ? (ushort)0 : (ushort)Math.Min(adjusted, ushort.MaxValue);
                 }
 
-                if (_hvarTable.TryGetLeftSideBearingDelta(glyph, _activeCoords, out var lsbDelta) && lsbDelta != 0f)
+                if (_hvarTable.TryGetLeftSideBearingDeltaWithScalers(glyph, _hvarRegionScalers, out var lsbDelta) && lsbDelta != 0f)
                 {
                     var adjusted = leftSideBearing + (int)MathF.Round(lsbDelta);
                     leftSideBearing = (short)Math.Clamp(adjusted, short.MinValue, short.MaxValue);
@@ -1156,15 +1178,15 @@ namespace Avalonia.Media
             // VVAR mirrors HVAR for vertical metrics. Only fires for fonts that actually
             // ship a VVAR table (most horizontal-text fonts don't); _vvarTable stays null
             // otherwise and we keep the unvaried vmtx values.
-            if (hasVertical && _vvarTable is not null && _activeCoords is not null)
+            if (hasVertical && _vvarTable is not null && _vvarRegionScalers is not null)
             {
-                if (_vvarTable.TryGetAdvanceHeightDelta(glyph, _activeCoords, out var advDelta) && advDelta != 0f)
+                if (_vvarTable.TryGetAdvanceHeightDeltaWithScalers(glyph, _vvarRegionScalers, out var advDelta) && advDelta != 0f)
                 {
                     var adjusted = advanceHeight + (int)MathF.Round(advDelta);
                     advanceHeight = adjusted < 0 ? (ushort)0 : (ushort)Math.Min(adjusted, ushort.MaxValue);
                 }
 
-                if (_vvarTable.TryGetTopSideBearingDelta(glyph, _activeCoords, out var tsbDelta) && tsbDelta != 0f)
+                if (_vvarTable.TryGetTopSideBearingDeltaWithScalers(glyph, _vvarRegionScalers, out var tsbDelta) && tsbDelta != 0f)
                 {
                     var adjusted = topSideBearing + (int)MathF.Round(tsbDelta);
                     topSideBearing = (short)Math.Clamp(adjusted, short.MinValue, short.MaxValue);
@@ -1231,14 +1253,14 @@ namespace Avalonia.Media
             bool hasVertical = false;
 
             // hmtx + HVAR are fused inside HorizontalMetricsTable.TryGetMetrics — when
-            // variation is active we hand the cached coords + HVAR table through so
+            // variation is active we hand the cached scalers + HVAR table through so
             // hMetrics[i] is written exactly once per glyph rather than
             // hmtx-writes-then-HVAR-overwrites.
             if (_hasHorizontalMetrics && _hmTable != null)
             {
-                if (_hvarTable is not null && _activeCoords is not null)
+                if (_hvarTable is not null && _hvarRegionScalers is not null)
                 {
-                    hasHorizontal = _hmTable.TryGetMetrics(glyphIds, hMetrics, _hvarTable, _activeCoords);
+                    hasHorizontal = _hmTable.TryGetMetrics(glyphIds, hMetrics, _hvarTable, _hvarRegionScalers);
                 }
                 else
                 {
@@ -1246,14 +1268,12 @@ namespace Avalonia.Media
                 }
             }
 
-            // vmtx + VVAR fuse in the same fashion HVAR fuses with hmtx — the v-side
-            // batch reader applies VVAR deltas inline when both the table and active
-            // coords are present.
+            // vmtx + VVAR fuse in the same fashion HVAR fuses with hmtx.
             if (_hasVerticalMetrics && _vmTable != null)
             {
-                if (_vvarTable is not null && _activeCoords is not null)
+                if (_vvarTable is not null && _vvarRegionScalers is not null)
                 {
-                    hasVertical = _vmTable.TryGetMetrics(glyphIds, vMetrics, _vvarTable, _activeCoords);
+                    hasVertical = _vmTable.TryGetMetrics(glyphIds, vMetrics, _vvarTable, _vvarRegionScalers);
                 }
                 else
                 {

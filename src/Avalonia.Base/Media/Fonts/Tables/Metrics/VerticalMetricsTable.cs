@@ -120,22 +120,22 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
         /// <summary>
         /// Attempts to retrieve advance heights for multiple glyphs in a single operation.
-        /// When <paramref name="vvar"/> and <paramref name="activeCoords"/> are both
+        /// When <paramref name="vvar"/> and <paramref name="vvarRegionScalers"/> are both
         /// supplied, VVAR's per-glyph delta is applied to each advance in the same pass.
         /// </summary>
         /// <param name="glyphIndices">Read-only span of glyph indices to query.</param>
         /// <param name="advances">Output span; must be at least as long as <paramref name="glyphIndices"/>.</param>
         /// <param name="vvar">Optional VVAR table. <c>null</c> means no variation adjustment.</param>
-        /// <param name="activeCoords">
-        /// Normalized variation coordinates in fvar axis order. Ignored when
-        /// <paramref name="vvar"/> is <c>null</c>; otherwise must match the font's axis count.
+        /// <param name="vvarRegionScalers">
+        /// Pre-computed per-region scalers for VVAR's ItemVariationStore. Ignored when
+        /// <paramref name="vvar"/> is <c>null</c>.
         /// </param>
         /// <returns><c>true</c> if all glyph indices are valid and advances were retrieved; otherwise, <c>false</c>.</returns>
         public bool TryGetAdvances(
             ReadOnlySpan<ushort> glyphIndices,
             Span<ushort> advances,
             VvarTable? vvar = null,
-            ReadOnlySpan<float> activeCoords = default)
+            ReadOnlySpan<float> vvarRegionScalers = default)
         {
             if (advances.Length < glyphIndices.Length)
             {
@@ -151,7 +151,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
             // Cache the last advance height for glyphs beyond numOfVMetrics
             ushort? lastAdvanceHeight = null;
-            var hasVvar = vvar is not null && !activeCoords.IsEmpty;
+            var hasVvar = vvar is not null && !vvarRegionScalers.IsEmpty;
 
             for (int i = 0; i < glyphIndices.Length; i++)
             {
@@ -177,7 +177,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
                     raw = lastAdvanceHeight.Value;
                 }
 
-                if (hasVvar && vvar!.TryGetAdvanceHeightDelta(glyphIndex, activeCoords, out var delta) && delta != 0f)
+                if (hasVvar && vvar!.TryGetAdvanceHeightDeltaWithScalers(glyphIndex, vvarRegionScalers, out var delta) && delta != 0f)
                 {
                     var adjusted = raw + (int)MathF.Round(delta);
                     advances[i] = adjusted < 0
@@ -200,13 +200,13 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         /// <param name="glyphIndices">Read-only span of glyph indices to query.</param>
         /// <param name="metrics">Output span; must be at least as long as <paramref name="glyphIndices"/>.</param>
         /// <param name="vvar">Optional VVAR table for variation-adjusted advances + TSBs.</param>
-        /// <param name="activeCoords">Normalized variation coordinates in fvar axis order.</param>
+        /// <param name="vvarRegionScalers">Pre-computed per-region scalers for VVAR's ItemVariationStore.</param>
         /// <returns><c>true</c> if all glyph indices are valid and metrics were retrieved; otherwise, <c>false</c>.</returns>
         public bool TryGetMetrics(
             ReadOnlySpan<ushort> glyphIndices,
             Span<VerticalGlyphMetric> metrics,
             VvarTable? vvar = null,
-            ReadOnlySpan<float> activeCoords = default)
+            ReadOnlySpan<float> vvarRegionScalers = default)
         {
             if (metrics.Length < glyphIndices.Length)
             {
@@ -222,7 +222,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
             // Cache the last advance height for glyphs beyond numOfVMetrics
             ushort? lastAdvanceHeight = null;
-            var hasVvar = vvar is not null && !activeCoords.IsEmpty;
+            var hasVvar = vvar is not null && !vvarRegionScalers.IsEmpty;
 
             for (int i = 0; i < glyphIndices.Length; i++)
             {
@@ -263,7 +263,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
                 if (hasVvar)
                 {
-                    if (vvar!.TryGetAdvanceHeightDelta(glyphIndex, activeCoords, out var advDelta) && advDelta != 0f)
+                    if (vvar!.TryGetAdvanceHeightDeltaWithScalers(glyphIndex, vvarRegionScalers, out var advDelta) && advDelta != 0f)
                     {
                         var adjusted = advanceHeight + (int)MathF.Round(advDelta);
                         advanceHeight = adjusted < 0
@@ -271,7 +271,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
                             : (ushort)Math.Min(adjusted, ushort.MaxValue);
                     }
 
-                    if (vvar.TryGetTopSideBearingDelta(glyphIndex, activeCoords, out var tsbDelta) && tsbDelta != 0f)
+                    if (vvar.TryGetTopSideBearingDeltaWithScalers(glyphIndex, vvarRegionScalers, out var tsbDelta) && tsbDelta != 0f)
                     {
                         var adjusted = topSideBearing + (int)MathF.Round(tsbDelta);
                         topSideBearing = (short)Math.Clamp(adjusted, short.MinValue, short.MaxValue);
