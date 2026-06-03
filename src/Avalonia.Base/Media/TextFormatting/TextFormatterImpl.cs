@@ -843,10 +843,10 @@ namespace Avalonia.Media.TextFormatting
             var properties = paragraphProperties.DefaultTextRunProperties;
             var glyphTypeface = properties.CachedGlyphTypeface;
             var glyph = glyphTypeface.CharacterToGlyphMap[s_empty[0]];
-            var glyphInfos = new[] { new GlyphInfo(glyph, firstTextSourceIndex, 0.0) };
 
-            var shapedBuffer = new ShapedBuffer(s_empty.AsMemory(), glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
-                (sbyte)flowDirection);
+            var shapedBuffer = new ShapedBuffer(s_empty.AsMemory(), 1, glyphTypeface,
+                properties.FontRenderingEmSize, (sbyte)flowDirection);
+            shapedBuffer[0] = new GlyphInfo(glyph, firstTextSourceIndex, 0.0);
 
             var textRuns = new TextRun[] { new ShapedTextRun(shapedBuffer, properties) };
 
