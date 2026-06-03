@@ -7,7 +7,7 @@
     <PackageVersion Include="Appium.WebDriver" Version="5.2.0" />
     <PackageVersion Include="Avalonia.Angle.Windows.Natives" Version="2.1.27548.20260419" />
     <PackageVersion Include="Avalonia.BuildServices" Version="11.3.2" />
-    <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.0-beta3" />
+    <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.6" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageVersion Include="Dotnet.Bundle" Version="0.9.13" />
@@ -61,8 +61,8 @@
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
     <PackageVersion Include="System.Text.Json" Version="10.0.0" />
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
-    <PackageVersion Include="Tmds.DBus.Protocol" Version="0.92.0" />
-    <PackageVersion Include="Tmds.DBus.SourceGenerator" Version="0.0.22" />
+    <PackageVersion Include="Tmds.DBus.Protocol" Version="0.94.1" />
+    <PackageVersion Include="Tmds.DBus.Generator" Version="0.94.1" />
     <PackageVersion Include="Xamarin.AndroidX.AppCompat" Version="1.7.1.3" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.2" />
     <PackageVersion Include="Xamarin.AndroidX.Window" Version="1.5.1.2" />
