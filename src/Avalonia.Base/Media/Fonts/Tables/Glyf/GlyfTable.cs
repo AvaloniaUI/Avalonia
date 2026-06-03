@@ -114,6 +114,12 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// </summary>
         public bool TryBuildGlyphGeometry(int glyphIndex, Matrix transform, IGeometryContext context)
         {
+            // TrueType outlines use the non-zero winding rule. The default geometry fill
+            // rule in Avalonia is EvenOdd, which would XOR overlapping contours (e.g. the
+            // crossbar and diagonal strokes of 'A', or composites where an accent overlaps
+            // its base glyph) and leave gaps where they intersect.
+            context.SetFillRule(FillRule.NonZero);
+
             var decycler = GlyphDecycler.Rent();
 
             try
