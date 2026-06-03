@@ -60,6 +60,15 @@ namespace Avalonia.Media
         // neighbors). Inter Variable carries HVAR; most production variable fonts do.
         private readonly HvarTable? _hvarTable;
 
+        // MVAR table — font-wide metric deltas (ascender, descender, line gap, underline,
+        // strikeout, etc.) at the active variation point. Loaded once per source typeface
+        // and applied to the FontMetrics struct in the clone constructor — clones therefore
+        // see Metrics that reflect their variation without paying any per-call cost.
+        // Null on static fonts and on variable fonts that don't carry MVAR (which is fine —
+        // it just means metrics don't vary across axis space, like Inter Variable's
+        // ascent/descent).
+        private readonly MvarTable? _mvarTable;
+
         // Source typeface for variation clones. Null for default-instance typefaces
         // (the source) — every WithVariation clone points back to its source so all
         // variations of the same font share a single cache and resource owner.
@@ -326,6 +335,11 @@ namespace Avalonia.Media
                 // RSB deltas). Loaded once per typeface; per-call TryGetHorizontalGlyphAdvance
                 // pays a field-access + IsDefault check when no variation is active.
                 HvarTable.TryLoad(this, _fvarTable.Axes.Length, out _hvarTable);
+
+                // MVAR provides font-wide metric deltas (ascent, descent, line gap,
+                // underline, strikeout). Loaded here so clones can apply the deltas to
+                // their FontMetrics struct in their own constructor — see the clone ctor.
+                MvarTable.TryLoad(this, _fvarTable.Axes.Length, out _mvarTable);
             }
 
             static CultureInfo GetCulture(int lcid)
@@ -392,6 +406,7 @@ namespace Avalonia.Media
             _avarTable = source._avarTable;
             _gvarTable = source._gvarTable;
             _hvarTable = source._hvarTable;
+            _mvarTable = source._mvarTable;
 
             _hasOs2Table = source._hasOs2Table;
             _hasHorizontalMetrics = source._hasHorizontalMetrics;
@@ -419,8 +434,14 @@ namespace Avalonia.Media
             Style = source.Style;
             Stretch = source.Stretch;
 
-            // pr4b shares Metrics with the source. pr4f (MVAR) will recompute here.
-            Metrics = source.Metrics;
+            // Metrics: apply MVAR deltas to the source's default-instance metrics. The
+            // sign conventions follow GlyphTypeface's source constructor — Avalonia's
+            // Ascent / Descent / UnderlinePosition / StrikethroughPosition are stored
+            // negated relative to their OpenType raw values, so the corresponding MVAR
+            // deltas get subtracted; thicknesses and line gap are added as-is.
+            Metrics = source._mvarTable is not null
+                ? ApplyMvarDeltas(source.Metrics, source._mvarTable, variation, source._fvarTable!)
+                : source.Metrics;
 
             // _supportedFeatures is lazy — let each clone materialize independently.
             // _textShaperTypeface is intentionally null so the getter derives a variation-aware
@@ -437,6 +458,71 @@ namespace Avalonia.Media
                 variation.TryGetCoordinate(axes[i], out var v);
                 _activeCoords[i] = v;
             }
+        }
+
+        /// <summary>
+        /// Builds a varied <see cref="FontMetrics"/> by applying MVAR deltas to the
+        /// source's default-instance metrics at the clone's variation point.
+        /// </summary>
+        /// <remarks>
+        /// Sign conventions match GlyphTypeface's source constructor: <c>hasc</c>,
+        /// <c>hdsc</c>, <c>undo</c>, <c>stro</c> deltas are <b>subtracted</b> because
+        /// Avalonia stores Ascent / Descent / UnderlinePosition / StrikethroughPosition
+        /// negated relative to their OpenType raw values; <c>hlgp</c>, <c>unds</c>,
+        /// <c>strs</c> are added as-is. Missing MVAR records on a tag leave that field
+        /// at the source's value (i.e. constant across axis space — common for fonts
+        /// like Inter that hold ascent/descent fixed across the weight axis).
+        /// </remarks>
+        private static FontMetrics ApplyMvarDeltas(
+            FontMetrics baseMetrics,
+            MvarTable mvar,
+            FontVariationSettings variation,
+            FvarTable fvar)
+        {
+            // Project the variation onto fvar's axis order. We don't reuse the
+            // GlyphTypeface._activeCoords cache here because Metrics is computed inside
+            // the clone constructor itself, before _activeCoords has been assigned.
+            var axes = fvar.AxisTags;
+            Span<float> coords = stackalloc float[axes.Length];
+            for (var i = 0; i < axes.Length; i++)
+            {
+                variation.TryGetCoordinate(axes[i], out var v);
+                coords[i] = v;
+            }
+
+            var ascent = baseMetrics.Ascent;
+            var descent = baseMetrics.Descent;
+            var lineGap = baseMetrics.LineGap;
+            var underlinePosition = baseMetrics.UnderlinePosition;
+            var underlineThickness = baseMetrics.UnderlineThickness;
+            var strikethroughPosition = baseMetrics.StrikethroughPosition;
+            var strikethroughThickness = baseMetrics.StrikethroughThickness;
+
+            if (mvar.TryGetMetricDelta(MvarTags.HorizontalAscender, coords, out var d))
+                ascent -= (int)MathF.Round(d);
+            if (mvar.TryGetMetricDelta(MvarTags.HorizontalDescender, coords, out d))
+                descent -= (int)MathF.Round(d);
+            if (mvar.TryGetMetricDelta(MvarTags.HorizontalLineGap, coords, out d))
+                lineGap += (int)MathF.Round(d);
+            if (mvar.TryGetMetricDelta(MvarTags.UnderlineOffset, coords, out d))
+                underlinePosition -= (int)MathF.Round(d);
+            if (mvar.TryGetMetricDelta(MvarTags.UnderlineSize, coords, out d))
+                underlineThickness += (int)MathF.Round(d);
+            if (mvar.TryGetMetricDelta(MvarTags.StrikeoutOffset, coords, out d))
+                strikethroughPosition -= (int)MathF.Round(d);
+            if (mvar.TryGetMetricDelta(MvarTags.StrikeoutSize, coords, out d))
+                strikethroughThickness += (int)MathF.Round(d);
+
+            return baseMetrics with
+            {
+                Ascent = ascent,
+                Descent = descent,
+                LineGap = lineGap,
+                UnderlinePosition = underlinePosition,
+                UnderlineThickness = underlineThickness,
+                StrikethroughPosition = strikethroughPosition,
+                StrikethroughThickness = strikethroughThickness,
+            };
         }
 
         private static ushort GetFontDesignEmHeight(HeadTable? headTable)
