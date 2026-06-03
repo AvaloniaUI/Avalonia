@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
@@ -47,6 +49,28 @@ namespace Avalonia.Media
         private readonly FvarTable? _fvarTable;
         private readonly AvarTable? _avarTable;
 
+        // Source typeface for variation clones. Null for default-instance typefaces
+        // (the source) — every WithVariation clone points back to its source so all
+        // variations of the same font share a single cache and resource owner.
+        private readonly GlyphTypeface? _sourceTypeface;
+
+        // Whether this typeface owns its PlatformTypeface (and therefore disposes it).
+        // True for default-instance typefaces. For variation clones, depends on whether
+        // IPlatformTypeface.WithVariation returned a distinct instance — in the pr4b
+        // default-is-no-op world, clones share the source's platform typeface and don't
+        // own it; once Skia overrides WithVariation in PR4e1, clones get their own
+        // SKTypeface and the ownership flag flips on automatically.
+        private readonly bool _ownsPlatformTypeface;
+
+        // Variation point this typeface is bound to. default(FontVariationSettings)
+        // for the source and for static fonts; non-default for variation clones.
+        private readonly FontVariationSettings _variationSettings;
+
+        // Per-source variation cache. Only populated on the source typeface (clones
+        // delegate WithVariation through _sourceTypeface so a single cache is shared).
+        // Lazy-allocated on first variation request.
+        private ConcurrentDictionary<FontVariationSettings, GlyphTypeface>? _variationCache;
+
         private readonly bool _hasOs2Table;
         private readonly bool _hasHorizontalMetrics;
         private readonly bool _hasVerticalMetrics;
@@ -72,6 +96,11 @@ namespace Avalonia.Media
         public GlyphTypeface(IPlatformTypeface typeface, FontSimulations fontSimulations = FontSimulations.None)
         {
             PlatformTypeface = typeface;
+
+            // This is the default-instance constructor — the resulting typeface owns its
+            // platform typeface and represents the unvaried design point.
+            _ownsPlatformTypeface = true;
+            _variationSettings = default;
 
             _hasOs2Table = OS2Table.TryLoad(this, out _os2Table);
             _cmapTable = CmapTable.Load(this);
@@ -279,6 +308,85 @@ namespace Avalonia.Media
                     return CultureInfo.InvariantCulture;
                 }
             }
+        }
+
+        /// <summary>
+        /// Clone constructor for <see cref="WithVariation"/>. Builds a new
+        /// <see cref="GlyphTypeface"/> that reference-shares every parsed table with
+        /// <paramref name="source"/> but is bound to a different variation point.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Reference-shared (no per-clone allocation): every Tables/* parser instance,
+        /// the name records, the family / face name dictionaries, the character map,
+        /// the glyph count, the metrics struct, and the static-design weight / style /
+        /// stretch. These don't depend on variation in pr4b — pr4d (HVAR) will start
+        /// per-clone metrics recomputation, and pr4f (MVAR) will rebuild the
+        /// <see cref="FontMetrics"/> struct from delta tables.
+        /// </para>
+        /// <para>
+        /// Per-clone: the platform typeface (clone via
+        /// <see cref="IPlatformTypeface.WithVariation"/> — a no-op in pr4b, real Skia
+        /// clone in pr4e1), the variation settings, and the lazy shaper typeface
+        /// (cleared so the clone materializes its own variation-aware shaper).
+        /// </para>
+        /// </remarks>
+        private GlyphTypeface(GlyphTypeface source, IPlatformTypeface platformTypeface, FontVariationSettings variation)
+        {
+            _sourceTypeface = source;
+
+            // The clone owns its platform typeface iff WithVariation produced a distinct
+            // instance. In pr4b the default IPlatformTypeface.WithVariation returns the
+            // source unchanged, so clones share — and skip platform-typeface disposal.
+            _ownsPlatformTypeface = !ReferenceEquals(platformTypeface, source.PlatformTypeface);
+
+            PlatformTypeface = platformTypeface;
+            _variationSettings = variation;
+
+            // Reference-share all parsed tables.
+            _nameTable = source._nameTable;
+            _os2Table = source._os2Table;
+            _cmapTable = source._cmapTable;
+            _hhTable = source._hhTable;
+            _vhTable = source._vhTable;
+            _hmTable = source._hmTable;
+            _vmTable = source._vmTable;
+            _glyfTable = source._glyfTable;
+            _fvarTable = source._fvarTable;
+            _avarTable = source._avarTable;
+
+            _hasOs2Table = source._hasOs2Table;
+            _hasHorizontalMetrics = source._hasHorizontalMetrics;
+            _hasVerticalMetrics = source._hasVerticalMetrics;
+
+            // Face-level coverage metadata — variation-invariant, shared from the source.
+            _designLanguages = source._designLanguages;
+            _supportedLanguages = source._supportedLanguages;
+            CodePageCoverage = source.CodePageCoverage;
+
+            // Shareable face-level metadata.
+            FamilyName = source.FamilyName;
+            TypographicFamilyName = source.TypographicFamilyName;
+            FamilyNames = source.FamilyNames;
+            FaceNames = source.FaceNames;
+            GlyphCount = source.GlyphCount;
+            IsLastResort = source.IsLastResort;
+            FontSimulations = source.FontSimulations;
+
+            // pr4b keeps Weight / Style / Stretch at the source's design values. A later
+            // slice can project the variation onto these (e.g. wght=900 → Weight.Black)
+            // so reflected typeface identity tracks the active variation. For now,
+            // clones identify by their FontVariationSettings, not by these properties.
+            Weight = source.Weight;
+            Style = source.Style;
+            Stretch = source.Stretch;
+
+            // pr4b shares Metrics with the source. pr4f (MVAR) will recompute here.
+            Metrics = source.Metrics;
+
+            // _supportedFeatures is lazy — let each clone materialize independently.
+            // _textShaperTypeface is intentionally null so the getter derives a variation-aware
+            // shaper from the source's shaper via ITextShaperTypeface.WithVariation.
         }
 
         private static ushort GetFontDesignEmHeight(HeadTable? headTable)
@@ -593,6 +701,23 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Gets the variation point this typeface is bound to.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Equals <c>default(FontVariationSettings)</c> for static fonts and for variable
+        /// fonts at their default instance. Non-default for typefaces produced by
+        /// <see cref="WithVariation"/> on a variable font.
+        /// </para>
+        /// <para>
+        /// The settings here are the normalized coordinates used by gvar / HVAR /
+        /// MVAR / VVAR consumers. To convert from human-readable user-space values
+        /// (e.g. <c>wght = 700</c>), use <see cref="CreateVariationSettings"/>.
+        /// </para>
+        /// </remarks>
+        public FontVariationSettings VariationSettings => _variationSettings;
+
+        /// <summary>
         /// Gets the variation axes declared by the font's <c>fvar</c> table, in declaration
         /// order. Empty for static fonts.
         /// </summary>
@@ -630,9 +755,20 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the typeface information used by the text shaper for this font.
         /// </summary>
-        /// <remarks>The returned typeface is created on demand and cached for subsequent accesses. This
-        /// property is typically used by text rendering components that require low-level font shaping
-        /// details.</remarks>
+        /// <remarks>
+        /// <para>
+        /// The returned typeface is created on demand and cached for subsequent accesses.
+        /// This property is typically used by text rendering components that require
+        /// low-level font shaping details.
+        /// </para>
+        /// <para>
+        /// For variation clones, the shaper is derived from the source's shaper via
+        /// <see cref="ITextShaperTypeface.WithVariation"/> so face-level state (HarfBuzz
+        /// <c>hb_face_t</c>, parsed shaping tables) stays shared. The default
+        /// <c>WithVariation</c> implementation is a no-op until pr4e2 plumbs HarfBuzz
+        /// variation coords through it.
+        /// </para>
+        /// </remarks>
         public ITextShaperTypeface TextShaperTypeface
         {
             get
@@ -642,9 +778,15 @@ namespace Avalonia.Media
                     return _textShaperTypeface;
                 }
 
-                var textShaper = AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>();
-
-                _textShaperTypeface = textShaper.CreateTypeface(this);
+                if (_sourceTypeface is not null)
+                {
+                    _textShaperTypeface = _sourceTypeface.TextShaperTypeface.WithVariation(_variationSettings);
+                }
+                else
+                {
+                    var textShaper = AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>();
+                    _textShaperTypeface = textShaper.CreateTypeface(this);
+                }
 
                 return _textShaperTypeface;
             }
@@ -1130,6 +1272,96 @@ namespace Avalonia.Media
             return FontVariationSettings.FromCoordinates(normalized);
         }
 
+        /// <summary>
+        /// Returns a <see cref="GlyphTypeface"/> bound to the same underlying font face
+        /// but at the specified variation point.
+        /// </summary>
+        /// <param name="variation">
+        /// Normalized variation coordinates, typically produced by
+        /// <see cref="CreateVariationSettings"/>. Pass
+        /// <c>default(FontVariationSettings)</c> to request the default-instance
+        /// typeface.
+        /// </param>
+        /// <returns>
+        /// <para>
+        /// <c>this</c> if <paramref name="variation"/> matches the receiver's
+        /// <see cref="VariationSettings"/>, or if the font has no <c>fvar</c> table
+        /// (a static font, where variation requests are silently ignored — matches CSS
+        /// behavior, see PR4 planning doc open question #2).
+        /// </para>
+        /// <para>
+        /// Otherwise a cached or freshly-cloned <see cref="GlyphTypeface"/> bound to
+        /// the requested variation point. Repeated calls with equal settings return
+        /// the same instance.
+        /// </para>
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// Variation tracking lives on the <see cref="GlyphTypeface"/> layer. In pr4b,
+        /// the platform layer (<see cref="IPlatformTypeface"/>) and shaping layer
+        /// (<see cref="ITextShaperTypeface"/>) get the no-op default
+        /// <see cref="IPlatformTypeface.WithVariation"/> — so Skia native rasterization
+        /// and HarfBuzz shaping still render at the default instance. The varied
+        /// <see cref="GlyphTypeface"/> tracks the requested settings, and downstream
+        /// consumers that read <see cref="VariationSettings"/> (the gvar deformation
+        /// in pr4c, the HVAR advance lookup in pr4d, the COLR v1 paint resolver) become
+        /// variation-correct as those slices land.
+        /// </para>
+        /// <para>
+        /// Per-variation typefaces are cached on the source. The cache key is the
+        /// normalized <see cref="FontVariationSettings"/>, which already carries its own
+        /// structural equality + cached hash. The cache is unbounded in pr4b — LRU
+        /// eviction is a follow-up (planning doc, section "Cache sizing").
+        /// </para>
+        /// </remarks>
+        public GlyphTypeface WithVariation(FontVariationSettings variation)
+        {
+            // Static font — no axes to vary on; silently ignore non-default requests.
+            if (_fvarTable is null)
+            {
+                return this;
+            }
+
+            // Delegate to the source's cache so all variations of the same underlying
+            // font share resources and a single ownership chain.
+            var source = _sourceTypeface ?? this;
+
+            // Default settings always resolve to the source. This makes
+            // clone.WithVariation(default) return the original default-instance
+            // typeface and clone.WithVariation(clone.VariationSettings) return the
+            // clone itself (via the cache hit below).
+            if (variation.IsDefault)
+            {
+                return source;
+            }
+
+            // Allocate the cache lazily. We tolerate the rare race where two threads
+            // both initialize and one allocation loses — the loser's empty dict is
+            // discarded and the winner's dict serves both threads.
+            if (source._variationCache is null)
+            {
+                Interlocked.CompareExchange(
+                    ref source._variationCache,
+                    new ConcurrentDictionary<FontVariationSettings, GlyphTypeface>(),
+                    null);
+            }
+
+            return source._variationCache!.GetOrAdd(
+                variation,
+                static (v, src) => src.CreateVariation(v),
+                source);
+        }
+
+        /// <summary>
+        /// Builds a variation clone for the cache miss path. Always called on the
+        /// source typeface (<see cref="WithVariation"/> redirects via <see cref="_sourceTypeface"/>).
+        /// </summary>
+        private GlyphTypeface CreateVariation(FontVariationSettings variation)
+        {
+            var platformVariation = PlatformTypeface.WithVariation(variation);
+            return new GlyphTypeface(this, platformVariation, variation);
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -1286,7 +1518,33 @@ namespace Avalonia.Media
                 return;
             }
 
-            PlatformTypeface.Dispose();
+            // Dispose all cached variation clones before tearing down the platform
+            // typeface — clones may hold shaper handles bound to it. The cache lives
+            // only on the source; for a variation clone _variationCache is null so this
+            // loop is a no-op.
+            var cache = _variationCache;
+            if (cache is not null)
+            {
+                foreach (var entry in cache)
+                {
+                    entry.Value.Dispose();
+                }
+                cache.Clear();
+            }
+
+            // Lazy text shaper — owned regardless of whether it was derived from a
+            // source's shaper (each shaper instance is its own object).
+            _textShaperTypeface?.Dispose();
+
+            // Only the source-of-truth owns and disposes the platform typeface. For a
+            // pr4b clone (which shares the source's IPlatformTypeface), this skips the
+            // call so the source can dispose it exactly once. For a future pr4e1 clone
+            // (with its own SKTypeface), the flag flips on automatically and the cloned
+            // platform typeface is released here.
+            if (_ownsPlatformTypeface)
+            {
+                PlatformTypeface.Dispose();
+            }
         }
     }
 }
