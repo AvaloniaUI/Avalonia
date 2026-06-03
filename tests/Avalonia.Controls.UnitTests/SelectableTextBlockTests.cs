@@ -56,6 +56,31 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void SelectedText_Should_Reflect_Current_Selection()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new SelectableTextBlock
+                {
+                    Text = "Hello World!"
+                };
+
+                Assert.Equal(string.Empty, target.SelectedText);
+
+                target.SelectionStart = 0;
+                target.SelectionEnd = 5;
+                Assert.Equal("Hello", target.SelectedText);
+
+                target.SelectionStart = 6;
+                target.SelectionEnd = 11;
+                Assert.Equal("World", target.SelectedText);
+
+                target.ClearSelection();
+                Assert.Equal(string.Empty, target.SelectedText);
+            }
+        }
+
+        [Fact]
         public void Setting_Selection_Raises_SelectedText_PropertyChanged_With_Correct_Values()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
