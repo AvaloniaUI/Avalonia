@@ -70,7 +70,7 @@ namespace Avalonia.Base.UnitTests.Media
         public void CreateVariationSettings_Returns_Default_For_Axis_At_Default()
         {
             // Asking for the default-instance point yields the canonical default settings.
-            // Identity here matters for the FontCollection cache contract in pr4b — two
+            // Identity here matters for the FontCollection cache contract — two
             // requests for the default instance must produce equal settings values.
             var typeface = LoadTypeface(InterVariableAsset);
 
@@ -218,7 +218,7 @@ namespace Avalonia.Base.UnitTests.Media
         public void CreateVariationSettings_Ignores_InstanceIndex_For_Static_Font()
         {
             // Static fonts short-circuit to default before validating the instance index,
-            // matching the "static fonts are inert to variation" pattern. Surfaces in pr4b
+            // matching the "static fonts are inert to variation" pattern — important
             // when a global wght=600 is applied to a UI mixing static + variable fonts.
             var typeface = LoadTypeface(InterRegularAsset);
 

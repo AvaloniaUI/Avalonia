@@ -9,7 +9,7 @@ using Xunit;
 namespace Avalonia.Base.UnitTests.Media
 {
     /// <summary>
-    /// End-to-end tests for pr4g: VVAR threads through
+    /// End-to-end tests for VVAR-aware vertical metrics: VVAR threads through
     /// <see cref="GlyphTypeface.TryGetGlyphMetrics(ushort, out GlyphMetrics)"/> and the
     /// batch variant so vertical metrics on a varied typeface reflect the active
     /// variation point.
@@ -117,7 +117,7 @@ namespace Avalonia.Base.UnitTests.Media
         public void TryGetGlyphMetrics_Default_AdobeBlank_Equals_Source()
         {
             // WithVariation(default) on a variable font returns the source itself, so
-            // metrics are identical. Pins the cache-identity contract from pr4b.
+            // metrics are identical. Pins the source/clone cache-identity contract.
             var gt = LoadTypeface(AdobeBlankAsset);
             var defaultClone = gt.WithVariation(default);
 

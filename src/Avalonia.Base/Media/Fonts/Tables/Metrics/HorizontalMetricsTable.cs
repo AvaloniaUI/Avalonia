@@ -133,8 +133,9 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         /// produced once at clone time by
         /// <see cref="ItemVariationStore.ComputeRegionScalers"/>. Ignored when
         /// <paramref name="hvar"/> is <c>null</c>; otherwise length must equal
-        /// HVAR's region count. Replaces the activeCoords parameter so the per-glyph
-        /// loop never recomputes a scaler — see the planning doc's O-1 hypothesis.
+        /// HVAR's region count. The per-glyph loop never re-projects from active
+        /// coordinates — the scaler vector is constant for the typeface's lifetime
+        /// so the inner lookup is a single array index instead of a per-axis ramp.
         /// </param>
         /// <returns><c>true</c> if all glyph indices are valid and advances were retrieved; otherwise, <c>false</c>.</returns>
         public bool TryGetAdvances(

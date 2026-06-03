@@ -665,10 +665,10 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                     var wrappedContext = new TransformingGeometryContext(context, combinedTransform);
 
                     // Variation context propagates: each child glyph applies its own gvar
-                    // entry independently. pr4c does not yet apply composite-level gvar
-                    // (which deforms component offsets) — that's a follow-up; for now
-                    // accented characters get correctly-thickened components but at the
-                    // designer's default placement.
+                    // entry independently. Composite-level gvar (which would deform the
+                    // component offsets) is not yet applied — accented characters get
+                    // correctly-thickened components but at the designer's default
+                    // placement, which is a follow-up.
                     if (TryBuildGlyphGeometryInternal(component.GlyphIndex, wrappedContext, Matrix.Identity, decycler, gvarTable, activeCoords))
                     {
                         hasGeometry = true;

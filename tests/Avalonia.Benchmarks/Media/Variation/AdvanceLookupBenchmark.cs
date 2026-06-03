@@ -21,7 +21,7 @@ namespace Avalonia.Benchmarks.Media.Variation
     /// the batch advance path. Regressions multiply across paragraph-size inputs.
     /// </para>
     /// <para>
-    /// Hypotheses (from <c>planning/PR4-performance-benchmark-plan.md</c>):
+    /// Hypotheses the variants are designed to test:
     /// </para>
     /// <list type="number">
     /// <item><b>H1</b> Variable-default within 5% of static — the null-table

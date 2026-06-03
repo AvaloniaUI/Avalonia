@@ -9,8 +9,8 @@ using Xunit;
 namespace Avalonia.Base.UnitTests.Media
 {
     /// <summary>
-    /// End-to-end tests for pr4d: advance widths returned by the public
-    /// <see cref="GlyphTypeface.TryGetHorizontalGlyphAdvance"/> and
+    /// End-to-end tests for HVAR-aware horizontal advance lookups: the values
+    /// returned by <see cref="GlyphTypeface.TryGetHorizontalGlyphAdvance"/> and
     /// <see cref="GlyphTypeface.TryGetGlyphMetrics(ushort, out GlyphMetrics)"/>
     /// surfaces reflect the variation point.
     /// </summary>

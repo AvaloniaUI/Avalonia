@@ -82,10 +82,10 @@ namespace Avalonia.Media
 
         // Whether this typeface owns its PlatformTypeface (and therefore disposes it).
         // True for default-instance typefaces. For variation clones, depends on whether
-        // IPlatformTypeface.WithVariation returned a distinct instance — in the pr4b
-        // default-is-no-op world, clones share the source's platform typeface and don't
-        // own it; once Skia overrides WithVariation in PR4e1, clones get their own
-        // SKTypeface and the ownership flag flips on automatically.
+        // IPlatformTypeface.WithVariation returned a distinct instance — when the
+        // default no-op override is in play, clones share the source's platform
+        // typeface and don't own it; when a platform's override actually clones the
+        // underlying face the ownership flag flips on automatically.
         private readonly bool _ownsPlatformTypeface;
 
         // Variation point this typeface is bound to. default(FontVariationSettings)
@@ -102,9 +102,10 @@ namespace Avalonia.Media
 
         // Pre-computed per-region scaler arrays for each variation table's
         // ItemVariationStore. Built once at clone construction so per-glyph delta
-        // lookups become array indices instead of per-axis F2DOT14 ramps.
-        // See planning/PR4-performance-benchmark-plan.md O-1 — a measured ~9x win
-        // on AdvanceLookupBenchmark.VariableVaried_Batch200.
+        // lookups become array indices instead of per-axis F2DOT14 ramps. The active
+        // coordinates are fixed for a clone's lifetime, and the regions are fixed
+        // for the font's, so the scaler vector is invariant — no point computing it
+        // per call. Measured ~4x speedup on a paragraph-size batch advance lookup.
         private readonly float[]? _hvarRegionScalers;
         private readonly float[]? _vvarRegionScalers;
 
@@ -387,16 +388,18 @@ namespace Avalonia.Media
         /// <para>
         /// Reference-shared (no per-clone allocation): every Tables/* parser instance,
         /// the name records, the family / face name dictionaries, the character map,
-        /// the glyph count, the metrics struct, and the static-design weight / style /
-        /// stretch. These don't depend on variation in pr4b — pr4d (HVAR) will start
-        /// per-clone metrics recomputation, and pr4f (MVAR) will rebuild the
-        /// <see cref="FontMetrics"/> struct from delta tables.
+        /// the glyph count, and the static-design weight / style / stretch. None of
+        /// these depend on variation — the per-glyph delta tables (HVAR / VVAR /
+        /// gvar) are read on demand against the clone's variation point, and MVAR's
+        /// font-wide deltas are applied to a fresh <see cref="FontMetrics"/> struct
+        /// here at clone time.
         /// </para>
         /// <para>
-        /// Per-clone: the platform typeface (clone via
-        /// <see cref="IPlatformTypeface.WithVariation"/> — a no-op in pr4b, real Skia
-        /// clone in pr4e1), the variation settings, and the lazy shaper typeface
-        /// (cleared so the clone materializes its own variation-aware shaper).
+        /// Per-clone: the platform typeface (cloned via
+        /// <see cref="IPlatformTypeface.WithVariation"/> — a no-op when the platform
+        /// hasn't overridden it, an actual variation-bound face when it has), the
+        /// variation settings, and the lazy shaper typeface (cleared so the clone
+        /// materializes its own variation-aware shaper).
         /// </para>
         /// </remarks>
         private GlyphTypeface(GlyphTypeface source, IPlatformTypeface platformTypeface, FontVariationSettings variation)
@@ -404,8 +407,9 @@ namespace Avalonia.Media
             _sourceTypeface = source;
 
             // The clone owns its platform typeface iff WithVariation produced a distinct
-            // instance. In pr4b the default IPlatformTypeface.WithVariation returns the
-            // source unchanged, so clones share — and skip platform-typeface disposal.
+            // instance. With the default no-op IPlatformTypeface.WithVariation override
+            // the source's platform typeface is returned unchanged, so clones share —
+            // and skip platform-typeface disposal.
             _ownsPlatformTypeface = !ReferenceEquals(platformTypeface, source.PlatformTypeface);
 
             PlatformTypeface = platformTypeface;
@@ -445,10 +449,11 @@ namespace Avalonia.Media
             IsLastResort = source.IsLastResort;
             FontSimulations = source.FontSimulations;
 
-            // pr4b keeps Weight / Style / Stretch at the source's design values. A later
-            // slice can project the variation onto these (e.g. wght=900 → Weight.Black)
-            // so reflected typeface identity tracks the active variation. For now,
-            // clones identify by their FontVariationSettings, not by these properties.
+            // Weight / Style / Stretch stay at the source's design values. A future
+            // change could project the variation onto these (e.g. wght=900 →
+            // Weight.Black) so reflected typeface identity tracks the active
+            // variation. For now, clones identify by their FontVariationSettings,
+            // not by these properties.
             Weight = source.Weight;
             Style = source.Style;
             Stretch = source.Stretch;
@@ -934,8 +939,9 @@ namespace Avalonia.Media
         /// For variation clones, the shaper is derived from the source's shaper via
         /// <see cref="ITextShaperTypeface.WithVariation"/> so face-level state (HarfBuzz
         /// <c>hb_face_t</c>, parsed shaping tables) stays shared. The default
-        /// <c>WithVariation</c> implementation is a no-op until pr4e2 plumbs HarfBuzz
-        /// variation coords through it.
+        /// <c>WithVariation</c> implementation is a no-op; a shaper integration (e.g.
+        /// HarfBuzz with <c>Font.SetVariationCoordsNormalized</c>) overrides it to
+        /// configure variation coordinates on the produced shaping font.
         /// </para>
         /// </remarks>
         public ITextShaperTypeface TextShaperTypeface
@@ -1494,8 +1500,8 @@ namespace Avalonia.Media
 
             // Per-axis normalization. Skip axes that resolve to the default so the result
             // equals default(FontVariationSettings) when the caller asked for the
-            // default-instance point — important for cache identity at the GlyphTypeface
-            // layer in pr4b.
+            // default-instance point — important for cache identity at the
+            // GlyphTypeface layer (WithVariation(default) returns the source).
             Dictionary<OpenTypeTag, float>? normalized = null;
 
             for (var i = 0; i < axes.Length; i++)
@@ -1581,8 +1587,8 @@ namespace Avalonia.Media
         /// <para>
         /// <c>this</c> if <paramref name="variation"/> matches the receiver's
         /// <see cref="VariationSettings"/>, or if the font has no <c>fvar</c> table
-        /// (a static font, where variation requests are silently ignored — matches CSS
-        /// behavior, see PR4 planning doc open question #2).
+        /// (a static font — variation requests are silently ignored, matching CSS
+        /// behavior).
         /// </para>
         /// <para>
         /// Otherwise a cached or freshly-cloned <see cref="GlyphTypeface"/> bound to
@@ -1592,21 +1598,22 @@ namespace Avalonia.Media
         /// </returns>
         /// <remarks>
         /// <para>
-        /// Variation tracking lives on the <see cref="GlyphTypeface"/> layer. In pr4b,
-        /// the platform layer (<see cref="IPlatformTypeface"/>) and shaping layer
-        /// (<see cref="ITextShaperTypeface"/>) get the no-op default
-        /// <see cref="IPlatformTypeface.WithVariation"/> — so Skia native rasterization
-        /// and HarfBuzz shaping still render at the default instance. The varied
-        /// <see cref="GlyphTypeface"/> tracks the requested settings, and downstream
-        /// consumers that read <see cref="VariationSettings"/> (the gvar deformation
-        /// in pr4c, the HVAR advance lookup in pr4d, the COLR v1 paint resolver) become
-        /// variation-correct as those slices land.
+        /// Variation tracking lives on the <see cref="GlyphTypeface"/> layer. The
+        /// platform layer (<see cref="IPlatformTypeface"/>) and shaping layer
+        /// (<see cref="ITextShaperTypeface"/>) participate via their own
+        /// <c>WithVariation</c> overrides; when a platform hasn't implemented the
+        /// override the default returns <c>this</c>, so the varied
+        /// <see cref="GlyphTypeface"/> still tracks the requested settings and the
+        /// outline-API consumers that read <see cref="VariationSettings"/> become
+        /// variation-correct independently of native rendering.
         /// </para>
         /// <para>
         /// Per-variation typefaces are cached on the source. The cache key is the
         /// normalized <see cref="FontVariationSettings"/>, which already carries its own
-        /// structural equality + cached hash. The cache is unbounded in pr4b — LRU
-        /// eviction is a follow-up (planning doc, section "Cache sizing").
+        /// structural equality + cached hash. The cache is unbounded — LRU eviction
+        /// is a possible follow-up if profiling shows the cache growing without bound
+        /// (e.g. animating a weight axis across many distinct values without ever
+        /// settling).
         /// </para>
         /// </remarks>
         public GlyphTypeface WithVariation(FontVariationSettings variation)
@@ -1831,11 +1838,12 @@ namespace Avalonia.Media
             // source's shaper (each shaper instance is its own object).
             _textShaperTypeface?.Dispose();
 
-            // Only the source-of-truth owns and disposes the platform typeface. For a
-            // pr4b clone (which shares the source's IPlatformTypeface), this skips the
-            // call so the source can dispose it exactly once. For a future pr4e1 clone
-            // (with its own SKTypeface), the flag flips on automatically and the cloned
-            // platform typeface is released here.
+            // Only the source-of-truth owns and disposes the platform typeface. When
+            // the platform's WithVariation override returned 'this', the clone shares
+            // the source's IPlatformTypeface and skips the disposal call so the source
+            // can release it exactly once. When the override actually cloned (e.g. a
+            // real SKTypeface clone), the ownership flag flips on automatically and
+            // the cloned platform typeface is released here.
             if (_ownsPlatformTypeface)
             {
                 PlatformTypeface.Dispose();

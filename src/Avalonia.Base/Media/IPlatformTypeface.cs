@@ -62,10 +62,9 @@ namespace Avalonia.Media
         /// The default implementation returns <c>this</c> unchanged. This is the
         /// <b>no-op contract</b> that keeps the platform-neutral
         /// <see cref="GlyphTypeface.WithVariation"/> API working even on platforms that
-        /// haven't yet implemented variation cloning — see the PR4 planning doc, section
-        /// "Default implementation policy". Platforms (e.g. SkiaTypeface in PR4e1)
-        /// override this method to actually clone the underlying face at the new
-        /// variation point.
+        /// haven't yet implemented variation cloning. Platforms (e.g. a Skia
+        /// implementation calling <c>SKTypeface.Clone</c>) override this method to
+        /// actually clone the underlying face at the new variation point.
         /// </para>
         /// <para>
         /// Overrides <b>must</b> share the underlying face resources (table memory,

@@ -176,13 +176,13 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
-        public void Clone_Shares_PlatformTypeface_With_Source_In_Pr4b()
+        public void Clone_Shares_PlatformTypeface_With_Source_When_Override_Is_No_Op()
         {
-            // In pr4b the default IPlatformTypeface.WithVariation returns 'this', so the
-            // clone reuses the source's platform handle. This pins the contract that
-            // tests will break once PR4e1 lands a real SkiaTypeface.WithVariation
-            // override — at which point the platform typefaces will diverge and this
-            // assertion should be updated to !Same.
+            // With the default no-op IPlatformTypeface.WithVariation override, the clone
+            // reuses the source's platform handle. This pins the current behavior; when
+            // a platform implementation overrides WithVariation to actually clone the
+            // underlying face (e.g. via SKTypeface.Clone), this assertion should be
+            // updated to !Same against that platform.
             var gt = LoadTypeface(InterVariableAsset);
             var varied = gt.WithVariation(WghtSettings(gt, 700f));
 

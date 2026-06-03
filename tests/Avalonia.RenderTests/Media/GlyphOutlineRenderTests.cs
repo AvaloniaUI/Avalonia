@@ -88,9 +88,9 @@ namespace Avalonia.Skia.RenderTests
         [Fact]
         public async Task Should_Render_InterVariable_Glyph_At_wght_900()
         {
-            // pr4c: gvar deformation applied to the 'R' at wght=900 (Black). The
-            // baseline (Should_Render_InterVariable_Glyph_At_wght_900.expected.png)
-            // captures the deformed outline produced by GvarTable + IUP.
+            // gvar deformation applied to the 'R' at wght=900 (Black). The baseline
+            // (Should_Render_InterVariable_Glyph_At_wght_900.expected.png) captures
+            // the deformed outline produced by GvarTable + IUP.
             var gt = LoadGlyphTypeface(InterVariableAsset);
             var black = gt.WithVariation(WghtSettings(gt, 900f));
 
@@ -101,7 +101,7 @@ namespace Avalonia.Skia.RenderTests
         [Fact]
         public async Task Should_Render_InterVariable_Composite_At_wght_900()
         {
-            // pr4c applies gvar to each component of a composite glyph independently.
+            // gvar applies to each component of a composite glyph independently.
             // 'Á' = base 'A' + acute accent; at wght=900 both components are visibly
             // thicker. Composite-level offset deformation is deferred (the accent's
             // position relative to the base stays at the designer's default).

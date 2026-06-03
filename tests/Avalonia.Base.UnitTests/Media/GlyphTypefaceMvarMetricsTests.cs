@@ -9,7 +9,7 @@ using Xunit;
 namespace Avalonia.Base.UnitTests.Media
 {
     /// <summary>
-    /// End-to-end tests for pr4f: <see cref="GlyphTypeface.Metrics"/> on a typeface
+    /// End-to-end tests for MVAR: <see cref="GlyphTypeface.Metrics"/> on a typeface
     /// produced by <see cref="GlyphTypeface.WithVariation"/> reflects the variation
     /// point via MVAR.
     /// </summary>

@@ -140,7 +140,7 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             }
 
             // English (US) — matches GlyphTypeface's existing FamilyName / TypographicFamilyName
-            // resolution. Localization is deferred to a follow-up; see PR4 planning doc.
+            // resolution. Localization across all platform name records is a follow-up.
             var culture = (ushort)CultureInfo.InvariantCulture.LCID;
 
             var axisTagsBuilder = ImmutableArray.CreateBuilder<OpenTypeTag>(axisCount);
