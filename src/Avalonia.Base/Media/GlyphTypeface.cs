@@ -49,6 +49,11 @@ namespace Avalonia.Media
         private readonly FvarTable? _fvarTable;
         private readonly AvarTable? _avarTable;
 
+        // gvar table — per-glyph point delta deformation. Null when the font has no
+        // gvar (static fonts, or variable fonts that only carry metric deltas via
+        // HVAR / VVAR / MVAR with no outline variation).
+        private readonly GvarTable? _gvarTable;
+
         // Source typeface for variation clones. Null for default-instance typefaces
         // (the source) — every WithVariation clone points back to its source so all
         // variations of the same font share a single cache and resource owner.
@@ -296,6 +301,12 @@ namespace Avalonia.Media
             if (_fvarTable is not null)
             {
                 AvarTable.TryLoad(this, out _avarTable);
+
+                // gvar provides per-glyph point deltas. Loaded here (after fvar) so the
+                // axis count cross-check works; loaded once per typeface so per-call
+                // GetGlyphOutline only pays a field-access cost when no variation is
+                // active.
+                GvarTable.TryLoad(this, _fvarTable.Axes.Length, GlyphCount, out _gvarTable);
             }
 
             static CultureInfo GetCulture(int lcid)
@@ -360,6 +371,7 @@ namespace Avalonia.Media
             _glyfTable = source._glyfTable;
             _fvarTable = source._fvarTable;
             _avarTable = source._avarTable;
+            _gvarTable = source._gvarTable;
 
             _hasOs2Table = source._hasOs2Table;
             _hasHorizontalMetrics = source._hasHorizontalMetrics;
@@ -1132,11 +1144,38 @@ namespace Avalonia.Media
 
             var geometry = _renderInterface.CreateStreamGeometry();
 
+            // Project the variation settings onto an axis-ordered span the gvar deformer
+            // consumes. Static fonts and default-instance lookups skip the projection
+            // and pass an empty span — they pay no per-call cost beyond the original PR2
+            // path.
+            //
+            // The stackalloc is sized to the actual axis count to keep the per-call
+            // footprint minimal; both branches keep the lifetime method-local so the
+            // ref-safety verifier is happy.
+            var hasVariation = _gvarTable is not null && !_variationSettings.IsDefault && _fvarTable is not null;
+            var axisCount = hasVariation ? _fvarTable!.AxisTags.Length : 0;
+            Span<float> activeCoords = stackalloc float[axisCount];
+
+            if (hasVariation)
+            {
+                var axes = _fvarTable!.AxisTags;
+                for (var i = 0; i < axes.Length; i++)
+                {
+                    _variationSettings.TryGetCoordinate(axes[i], out var v);
+                    activeCoords[i] = v;
+                }
+            }
+
             using (var ctx = geometry.Open())
             {
                 // Build the outline in font design-unit space (identity transform); callers apply
                 // the scale / position. Wrapped so the shared, cacheable result is immutable.
-                if (_glyfTable.TryBuildGlyphGeometry((int)glyphId, Matrix.Identity, ctx))
+                if (_glyfTable.TryBuildGlyphGeometry(
+                        (int)glyphId,
+                        Matrix.Identity,
+                        ctx,
+                        _gvarTable,
+                        activeCoords))
                 {
                     return new ImmutableGeometryImpl(geometry);
                 }

@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using Avalonia.Skia;
 using SkiaSharp;
@@ -82,6 +84,77 @@ namespace Avalonia.Skia.RenderTests
             await RenderToFile(BuildTarget(LoadGlyphTypeface(InterVariableAsset), 'R'));
             CompareImages();
         }
+
+        [Fact]
+        public async Task Should_Render_InterVariable_Glyph_At_wght_900()
+        {
+            // pr4c: gvar deformation applied to the 'R' at wght=900 (Black). The
+            // baseline (Should_Render_InterVariable_Glyph_At_wght_900.expected.png)
+            // captures the deformed outline produced by GvarTable + IUP.
+            var gt = LoadGlyphTypeface(InterVariableAsset);
+            var black = gt.WithVariation(WghtSettings(gt, 900f));
+
+            await RenderToFile(BuildTarget(black, 'R'));
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Should_Render_InterVariable_Composite_At_wght_900()
+        {
+            // pr4c applies gvar to each component of a composite glyph independently.
+            // 'Á' = base 'A' + acute accent; at wght=900 both components are visibly
+            // thicker. Composite-level offset deformation is deferred (the accent's
+            // position relative to the base stays at the designer's default).
+            var gt = LoadGlyphTypeface(InterVariableAsset);
+            var black = gt.WithVariation(WghtSettings(gt, 900f));
+
+            await RenderToFile(BuildTarget(black, 'Á'));
+            CompareImages();
+        }
+
+        [Fact]
+        public void Varied_Outline_Differs_From_Default_Instance_Outline()
+        {
+            // Behavioral: a wght=900 typeface produces a different geometry than the
+            // default instance. Asserting on the geometry's bounds is enough to prove
+            // the deformation pipeline ran without depending on platform-specific
+            // pixel output.
+            var gt = LoadGlyphTypeface(InterVariableAsset);
+            var black = gt.WithVariation(WghtSettings(gt, 900f));
+            var glyph = gt.CharacterToGlyphMap['A'];
+
+            var regularBounds = gt.GetGlyphOutline(glyph)!.Bounds;
+            var blackBounds = black.GetGlyphOutline(glyph)!.Bounds;
+
+            Assert.NotEqual(regularBounds, blackBounds);
+        }
+
+        [Fact]
+        public void Intermediate_Weight_Lands_Between_Regular_And_Black()
+        {
+            // wght=700 is between regular (400) and black (900). The tuple scalers in
+            // gvar are linear ramps so the intermediate weight produces an intermediate
+            // outline — width grows monotonically across weights.
+            var gt = LoadGlyphTypeface(InterVariableAsset);
+            var semiBold = gt.WithVariation(WghtSettings(gt, 700f));
+            var black = gt.WithVariation(WghtSettings(gt, 900f));
+            var glyph = gt.CharacterToGlyphMap['A'];
+
+            var regularBounds = gt.GetGlyphOutline(glyph)!.Bounds;
+            var semiBoldBounds = semiBold.GetGlyphOutline(glyph)!.Bounds;
+            var blackBounds = black.GetGlyphOutline(glyph)!.Bounds;
+
+            Assert.True(semiBoldBounds.Width >= regularBounds.Width,
+                $"semiBold {semiBoldBounds.Width} should be >= regular {regularBounds.Width}");
+            Assert.True(blackBounds.Width >= semiBoldBounds.Width,
+                $"black {blackBounds.Width} should be >= semiBold {semiBoldBounds.Width}");
+        }
+
+        private static FontVariationSettings WghtSettings(GlyphTypeface gt, float weight)
+            => gt.CreateVariationSettings(new Dictionary<OpenTypeTag, float>
+            {
+                [OpenTypeTag.Parse("wght")] = weight
+            });
 
         [Fact]
         public void Blank_Variable_Font_Returns_Null_Outline()

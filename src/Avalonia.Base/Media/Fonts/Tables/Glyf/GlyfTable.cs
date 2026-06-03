@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using Avalonia.Platform;
 using Avalonia.Logging;
+using Avalonia.Media.Fonts.Tables.Variation;
 
 namespace Avalonia.Media.Fonts.Tables.Glyf
 {
@@ -223,7 +224,25 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// Builds the glyph outline into the provided geometry context. Returns false for empty glyphs.
         /// Coordinates are in font design units. Composite glyphs are supported.
         /// </summary>
-        public bool TryBuildGlyphGeometry(int glyphIndex, Matrix transform, IGeometryContext context)
+        /// <param name="glyphIndex">The index of the glyph to render.</param>
+        /// <param name="transform">Transform applied to every emitted point.</param>
+        /// <param name="context">Geometry context that receives the contour commands.</param>
+        /// <param name="gvarTable">
+        /// Optional gvar table for variation deformation. When non-null and
+        /// <paramref name="activeCoords"/> is non-empty, each glyph's contour points are
+        /// deformed via gvar before being emitted.
+        /// </param>
+        /// <param name="activeCoords">
+        /// Normalized variation coordinates in fvar axis order. Empty (default) means
+        /// "no variation requested" — the table is consulted only when both this span
+        /// and <paramref name="gvarTable"/> are present.
+        /// </param>
+        public bool TryBuildGlyphGeometry(
+            int glyphIndex,
+            Matrix transform,
+            IGeometryContext context,
+            GvarTable? gvarTable = null,
+            ReadOnlySpan<float> activeCoords = default)
         {
             // TrueType outlines use the non-zero winding rule. The default geometry fill
             // rule in Avalonia is EvenOdd, which would XOR overlapping contours (e.g. the
@@ -235,7 +254,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
             try
             {
-                return TryBuildGlyphGeometryInternal(glyphIndex, context, transform, decycler);
+                return TryBuildGlyphGeometryInternal(glyphIndex, context, transform, decycler, gvarTable, activeCoords);
             }
             catch (DecyclerException ex)
             {
@@ -256,14 +275,29 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         }
 
         /// <summary>
-        /// Builds the geometry for a simple glyph by processing its contours and converting them into geometry commands.
+        /// Builds the geometry for a simple glyph. Applies gvar deformation first (when
+        /// <paramref name="gvarTable"/> and <paramref name="activeCoords"/> are both
+        /// provided), then emits contour commands from the deformed control points.
         /// </summary>
         /// <param name="simpleGlyph">The simple glyph containing contour data, flags, and coordinates.</param>
         /// <param name="context">The geometry context that receives the constructed glyph geometry.</param>
         /// <param name="transform">The transformation matrix to apply to all coordinates.</param>
+        /// <param name="glyphIndex">The glyph's index in the font. Used to look up its gvar entry.</param>
+        /// <param name="gvarTable">Optional gvar table. <c>null</c> skips deformation.</param>
+        /// <param name="activeCoords">Normalized variation coordinates (fvar order).</param>
         /// <returns>true if the glyph geometry was successfully built; otherwise, false.</returns>
-        private static bool BuildSimpleGlyphGeometry(SimpleGlyph simpleGlyph, IGeometryContext context, Matrix transform)
+        private static bool BuildSimpleGlyphGeometry(
+            SimpleGlyph simpleGlyph,
+            IGeometryContext context,
+            Matrix transform,
+            int glyphIndex,
+            GvarTable? gvarTable,
+            ReadOnlySpan<float> activeCoords)
         {
+            Point[]? pointsRented = null;
+            float[]? deltaXRented = null;
+            float[]? deltaYRented = null;
+
             try
             {
                 var endPtsOfContours = simpleGlyph.EndPtsOfContours;
@@ -276,15 +310,53 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                 var flags = simpleGlyph.Flags;
                 var xCoords = simpleGlyph.XCoordinates;
                 var yCoords = simpleGlyph.YCoordinates;
+                var pointCount = xCoords.Length;
+
+                // Build the deformed Point[] once. The contour walker (below) only sees
+                // points[i] — the variation-vs-no-variation branch happens here and the
+                // walker is shared. For unvaried glyphs we still pay the Point-array
+                // construction cost (a memcpy-like loop), but the prior implementation
+                // constructed a fresh Point per indexed access anyway, so this isn't a
+                // regression at the call-rate of GetGlyphOutline (one call per glyph,
+                // not per pixel).
+                pointsRented = ArrayPool<Point>.Shared.Rent(pointCount);
+                var points = pointsRented.AsSpan(0, pointCount);
+
+                if (gvarTable is not null && !activeCoords.IsEmpty)
+                {
+                    deltaXRented = ArrayPool<float>.Shared.Rent(pointCount);
+                    deltaYRented = ArrayPool<float>.Shared.Rent(pointCount);
+                    var deltaX = deltaXRented.AsSpan(0, pointCount);
+                    var deltaY = deltaYRented.AsSpan(0, pointCount);
+                    deltaX.Clear();
+                    deltaY.Clear();
+
+                    GlyphVariationReader.TryApplyDeltas(
+                        gvarTable, glyphIndex, activeCoords,
+                        endPtsOfContours, xCoords, yCoords,
+                        deltaX, deltaY);
+
+                    for (var i = 0; i < pointCount; i++)
+                    {
+                        points[i] = new Point(xCoords[i] + deltaX[i], yCoords[i] + deltaY[i]);
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i < pointCount; i++)
+                    {
+                        points[i] = new Point(xCoords[i], yCoords[i]);
+                    }
+                }
 
                 var startPointIndex = 0;
 
                 for (var contourIndex = 0; contourIndex < endPtsOfContours.Length; contourIndex++)
                 {
                     var endPointIndex = endPtsOfContours[contourIndex];
-                    var pointCount = endPointIndex - startPointIndex + 1;
+                    var contourPointCount = endPointIndex - startPointIndex + 1;
 
-                    if (pointCount == 0)
+                    if (contourPointCount == 0)
                     {
                         startPointIndex = endPointIndex + 1;
                         continue;
@@ -297,24 +369,23 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                     if (firstIsOnCurve)
                     {
                         // Normal case: start from first on-curve point
-                        var firstPoint = new Point(xCoords[startPointIndex], yCoords[startPointIndex]);
-                        context.BeginFigure(transform.Transform(firstPoint), true);
+                        context.BeginFigure(transform.Transform(points[startPointIndex]), true);
 
                         // Start processing from the next point (or wrap to first if only one point)
-                        int i = pointCount == 1 ? startPointIndex : startPointIndex + 1;
+                        int i = contourPointCount == 1 ? startPointIndex : startPointIndex + 1;
                         int processingStartIndex = i;
 
-                        var maxSegments = Math.Max(1, pointCount * 3);
+                        var maxSegments = Math.Max(1, contourPointCount * 3);
                         var segmentsProcessed = 0;
 
                         while (segmentsProcessed++ < maxSegments)
                         {
                             // Wrap index to contour range
-                            int currentIdx = startPointIndex + ((i - startPointIndex) % pointCount);
+                            int currentIdx = startPointIndex + ((i - startPointIndex) % contourPointCount);
 
                             var curFlag = flags[currentIdx];
                             var curIsOnCurve = (curFlag & GlyphFlag.OnCurvePoint) != 0;
-                            var curPoint = new Point(xCoords[currentIdx], yCoords[currentIdx]);
+                            var curPoint = points[currentIdx];
 
                             if (curIsOnCurve)
                             {
@@ -325,10 +396,10 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                             else
                             {
                                 // Current is off-curve, look ahead
-                                int nextIdx = startPointIndex + ((i + 1 - startPointIndex) % pointCount);
+                                int nextIdx = startPointIndex + ((i + 1 - startPointIndex) % contourPointCount);
                                 var nextFlag = flags[nextIdx];
                                 var nextIsOnCurve = (nextFlag & GlyphFlag.OnCurvePoint) != 0;
-                                var nextPoint = new Point(xCoords[nextIdx], yCoords[nextIdx]);
+                                var nextPoint = points[nextIdx];
 
                                 if (nextIsOnCurve)
                                 {
@@ -357,7 +428,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                             }
 
                             // Check if we've wrapped back to start
-                            int checkIdx = startPointIndex + ((i - startPointIndex) % pointCount);
+                            int checkIdx = startPointIndex + ((i - startPointIndex) % contourPointCount);
                             if (checkIdx == processingStartIndex && segmentsProcessed > 0)
                             {
                                 break;
@@ -370,30 +441,28 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                     {
                         // First point is off-curve -> create implied start between last and first
                         var lastIdx = endPointIndex;
-                        var firstX = xCoords[startPointIndex];
-                        var firstY = yCoords[startPointIndex];
-                        var lastX = xCoords[lastIdx];
-                        var lastY = yCoords[lastIdx];
+                        var first = points[startPointIndex];
+                        var last = points[lastIdx];
 
-                        var impliedStartX = (lastX + firstX) / 2.0;
-                        var impliedStartY = (lastY + firstY) / 2.0;
+                        var impliedStartX = (last.X + first.X) / 2.0;
+                        var impliedStartY = (last.Y + first.Y) / 2.0;
                         var impliedStart = new Point(impliedStartX, impliedStartY);
 
                         context.BeginFigure(transform.Transform(impliedStart), true);
 
                         int idxWalker = 0; // offset from startPointIndex
-                        var maxSegments = pointCount * 3;
+                        var maxSegments = contourPointCount * 3;
                         var segmentsProcessed = 0;
 
                         while (segmentsProcessed++ < maxSegments)
                         {
                             int curIdx = startPointIndex + idxWalker;
-                            int nextIdxOffset = idxWalker == pointCount - 1 ? 0 : idxWalker + 1;
+                            int nextIdxOffset = idxWalker == contourPointCount - 1 ? 0 : idxWalker + 1;
                             int nextIdx = startPointIndex + nextIdxOffset;
 
                             var curFlag = flags[curIdx];
                             var curIsOnCurve = (curFlag & GlyphFlag.OnCurvePoint) != 0;
-                            var curPoint = new Point(xCoords[curIdx], yCoords[curIdx]);
+                            var curPoint = points[curIdx];
 
                             if (curIsOnCurve)
                             {
@@ -404,7 +473,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                             {
                                 var nextFlag = flags[nextIdx];
                                 var nextIsOnCurve = (nextFlag & GlyphFlag.OnCurvePoint) != 0;
-                                var nextPoint = new Point(xCoords[nextIdx], yCoords[nextIdx]);
+                                var nextPoint = points[nextIdx];
 
                                 if (nextIsOnCurve)
                                 {
@@ -412,7 +481,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                                         transform.Transform(curPoint),
                                         transform.Transform(nextPoint)
                                     );
-                                    idxWalker = nextIdxOffset == pointCount - 1 ? 0 : nextIdxOffset + 1;
+                                    idxWalker = nextIdxOffset == contourPointCount - 1 ? 0 : nextIdxOffset + 1;
                                 }
                                 else
                                 {
@@ -425,7 +494,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                                         transform.Transform(curPoint),
                                         transform.Transform(impliedPoint)
                                     );
-                                    idxWalker = nextIdxOffset == pointCount - 1 ? 0 : nextIdxOffset + 1;
+                                    idxWalker = nextIdxOffset == contourPointCount - 1 ? 0 : nextIdxOffset + 1;
                                 }
                             }
 
@@ -446,7 +515,19 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             }
             finally
             {
-                // Return rented buffers to pool
+                if (deltaXRented != null)
+                {
+                    ArrayPool<float>.Shared.Return(deltaXRented);
+                }
+                if (deltaYRented != null)
+                {
+                    ArrayPool<float>.Shared.Return(deltaYRented);
+                }
+                if (pointsRented != null)
+                {
+                    ArrayPool<Point>.Shared.Return(pointsRented);
+                }
+                // Return SimpleGlyph's rented short buffers to pool
                 simpleGlyph.Dispose();
             }
         }
@@ -507,8 +588,16 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// <param name="context">The geometry context that receives the constructed glyph geometry.</param>
         /// <param name="transform">The transformation matrix to apply to the glyph geometry.</param>
         /// <param name="decycler">A <see cref="GlyphDecycler"/> instance used to prevent infinite recursion when building composite glyphs.</param>
+        /// <param name="gvarTable">Optional gvar table for variation deformation. <c>null</c> skips deformation.</param>
+        /// <param name="activeCoords">Normalized variation coordinates in fvar axis order. Empty span means no variation.</param>
         /// <returns>true if the glyph geometry was successfully built and added to the context; otherwise, false.</returns>
-        private bool TryBuildGlyphGeometryInternal(int glyphIndex, IGeometryContext context, Matrix transform, GlyphDecycler decycler)
+        private bool TryBuildGlyphGeometryInternal(
+            int glyphIndex,
+            IGeometryContext context,
+            Matrix transform,
+            GlyphDecycler decycler,
+            GvarTable? gvarTable,
+            ReadOnlySpan<float> activeCoords)
         {
             using var guard = decycler.Enter(glyphIndex);
 
@@ -521,11 +610,11 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
             if (descriptor.IsSimpleGlyph)
             {
-                return BuildSimpleGlyphGeometry(descriptor.SimpleGlyph, context, transform);
+                return BuildSimpleGlyphGeometry(descriptor.SimpleGlyph, context, transform, glyphIndex, gvarTable, activeCoords);
             }
             else
             {
-                return BuildCompositeGlyphGeometry(descriptor.CompositeGlyph, context, transform, decycler);
+                return BuildCompositeGlyphGeometry(descriptor.CompositeGlyph, context, transform, decycler, gvarTable, activeCoords);
             }
         }
 
@@ -536,8 +625,16 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// <param name="context">The geometry context that receives the constructed glyph geometry.</param>
         /// <param name="transform">The transformation matrix to apply to all component glyphs.</param>
         /// <param name="decycler">A <see cref="GlyphDecycler"/> instance used to prevent infinite recursion when building composite glyphs.</param>
+        /// <param name="gvarTable">Optional gvar table. Passed through to each child glyph for independent deformation.</param>
+        /// <param name="activeCoords">Normalized variation coordinates in fvar axis order.</param>
         /// <returns>true if at least one component was successfully processed; otherwise, false.</returns>
-        private bool BuildCompositeGlyphGeometry(CompositeGlyph compositeGlyph, IGeometryContext context, Matrix transform, GlyphDecycler decycler)
+        private bool BuildCompositeGlyphGeometry(
+            CompositeGlyph compositeGlyph,
+            IGeometryContext context,
+            Matrix transform,
+            GlyphDecycler decycler,
+            GvarTable? gvarTable,
+            ReadOnlySpan<float> activeCoords)
         {
             try
             {
@@ -567,7 +664,12 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
 
                     var wrappedContext = new TransformingGeometryContext(context, combinedTransform);
 
-                    if (TryBuildGlyphGeometryInternal(component.GlyphIndex, wrappedContext, Matrix.Identity, decycler))
+                    // Variation context propagates: each child glyph applies its own gvar
+                    // entry independently. pr4c does not yet apply composite-level gvar
+                    // (which deforms component offsets) — that's a follow-up; for now
+                    // accented characters get correctly-thickened components but at the
+                    // designer's default placement.
+                    if (TryBuildGlyphGeometryInternal(component.GlyphIndex, wrappedContext, Matrix.Identity, decycler, gvarTable, activeCoords))
                     {
                         hasGeometry = true;
                     }
