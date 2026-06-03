@@ -33,8 +33,13 @@ namespace Avalonia.Benchmarks.Media.Variation
     /// </list>
     /// </remarks>
     [MemoryDiagnoser]
-    [MinIterationTime(150)]
-    [MaxWarmupCount(15)]
+    // The defaults of 150ms / 15 warmups produced ~0.1ns std dev on the sub-2ns rows
+    // (Static_Single, VariableDefault_Single) only with --warmupCount 10
+    // --iterationCount 20 overrides. Bumping the in-class defaults so the standard
+    // BenchmarkSwitcher invocation already lands in a stable region without command-line
+    // overrides; the cost is ~90s instead of ~30s per run.
+    [MinIterationTime(250)]
+    [MaxWarmupCount(20)]
     public class AdvanceLookupBenchmark : IDisposable
     {
         private readonly IDisposable _app;
