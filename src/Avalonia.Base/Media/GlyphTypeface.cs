@@ -8,6 +8,7 @@ using Avalonia.Media.Fonts.Tables.Cmap;
 using Avalonia.Media.Fonts.Tables.Glyf;
 using Avalonia.Media.Fonts.Tables.Metrics;
 using Avalonia.Media.Fonts.Tables.Name;
+using Avalonia.Media.Fonts.Tables.Variation;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 
@@ -39,6 +40,12 @@ namespace Avalonia.Media
         private readonly VerticalMetricsTable? _vmTable;
 
         private readonly GlyfTable? _glyfTable;
+
+        // Variation tables (null on static fonts). The fvar table is loaded after the
+        // name table so axis / instance names can be resolved during parsing; avar is
+        // optional and may be absent even on a variable font.
+        private readonly FvarTable? _fvarTable;
+        private readonly AvarTable? _avarTable;
 
         private readonly bool _hasOs2Table;
         private readonly bool _hasHorizontalMetrics;
@@ -243,6 +250,17 @@ namespace Avalonia.Media
             {
                 FamilyNames = new Dictionary<CultureInfo, string> { { CultureInfo.InvariantCulture, FamilyName } };
                 FaceNames = new Dictionary<CultureInfo, string> { { CultureInfo.InvariantCulture, Weight.ToString() } };
+            }
+
+            // Variable-font tables. fvar declares the axes and any named instances; avar
+            // (optional) carries per-axis segment maps that correct the linear fvar
+            // normalization. Both are absent on static fonts — they're read once here so
+            // the per-call cost on VariationAxes / CreateVariationSettings is just a field
+            // access.
+            FvarTable.TryLoad(this, _nameTable, out _fvarTable);
+            if (_fvarTable is not null)
+            {
+                AvarTable.TryLoad(this, out _avarTable);
             }
 
             static CultureInfo GetCulture(int lcid)
@@ -573,6 +591,36 @@ namespace Avalonia.Media
 
             return new UnicodeRange(segments);
         }
+
+        /// <summary>
+        /// Gets the variation axes declared by the font's <c>fvar</c> table, in declaration
+        /// order. Empty for static fonts.
+        /// </summary>
+        /// <remarks>
+        /// Axes describe the design dimensions the font exposes — common ones are
+        /// <c>wght</c> (weight), <c>wdth</c> (width), <c>opsz</c> (optical size),
+        /// <c>ital</c> (italic), and <c>slnt</c> (slant). Each <see cref="FontVariationAxis"/>
+        /// carries its minimum / default / maximum user-space values and a human-readable
+        /// name. To produce a configured <see cref="FontVariationSettings"/> for the
+        /// renderer, pass the desired user-space values through
+        /// <see cref="CreateVariationSettings"/>.
+        /// </remarks>
+        public IReadOnlyList<FontVariationAxis> VariationAxes
+            => _fvarTable?.Axes ?? (IReadOnlyList<FontVariationAxis>)Array.Empty<FontVariationAxis>();
+
+        /// <summary>
+        /// Gets the named variation instances declared by the font's <c>fvar</c> table, in
+        /// declaration order. Empty for static fonts.
+        /// </summary>
+        /// <remarks>
+        /// Named instances are pre-defined points in variation space the font designer has
+        /// labeled (e.g. "SemiBold" at <c>wght=600</c>). Pass an instance's
+        /// <see cref="FontVariationInstance.Index"/> to
+        /// <see cref="CreateVariationSettings"/> as a shorthand for "give me a settings
+        /// value for this preset".
+        /// </remarks>
+        public IReadOnlyList<FontVariationInstance> NamedInstances
+            => _fvarTable?.Instances ?? (IReadOnlyList<FontVariationInstance>)Array.Empty<FontVariationInstance>();
 
         /// <summary>
         /// Gets the platform-specific typeface associated with this font.
@@ -938,6 +986,148 @@ namespace Avalonia.Media
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Builds a <see cref="FontVariationSettings"/> from human-readable user-space axis
+        /// values (e.g. <c>wght = 700</c>), normalizing through the font's <c>fvar</c> and
+        /// <c>avar</c> tables.
+        /// </summary>
+        /// <param name="userSpaceCoordinates">
+        /// Axis values in the same space the font designer exposed
+        /// (<see cref="FontVariationAxis.MinimumValue"/> .. <see cref="FontVariationAxis.MaximumValue"/>).
+        /// Axes the font does not declare are silently ignored; axes present in the font
+        /// but absent from this dictionary use their default value (overridable by
+        /// <paramref name="instanceIndex"/>). Pass <c>null</c> when relying entirely on a
+        /// named instance.
+        /// </param>
+        /// <param name="instanceIndex">
+        /// Optional zero-based index into <see cref="NamedInstances"/>. When provided, the
+        /// instance's coordinates are used as the baseline; values in
+        /// <paramref name="userSpaceCoordinates"/> override them per axis. Useful as a
+        /// shorthand for "start from this preset and tweak one axis".
+        /// </param>
+        /// <returns>
+        /// A normalized <see cref="FontVariationSettings"/>. Returns
+        /// <c>default(FontVariationSettings)</c> when the font has no <c>fvar</c> table
+        /// (static fonts) or when every axis resolves to its default value.
+        /// </returns>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="instanceIndex"/> is non-null and outside the bounds of
+        /// <see cref="NamedInstances"/>.
+        /// </exception>
+        public FontVariationSettings CreateVariationSettings(
+            IReadOnlyDictionary<OpenTypeTag, float>? userSpaceCoordinates,
+            int? instanceIndex = null)
+        {
+            if (_fvarTable is null)
+            {
+                // Static font — no axes to normalize.
+                return default;
+            }
+
+            var axes = _fvarTable.Axes;
+
+            // Start from the named instance's coords when one was requested, then overlay
+            // any explicit user coords. Both inputs are user-space.
+            Dictionary<OpenTypeTag, float>? effective = null;
+
+            if (instanceIndex is int idx)
+            {
+                if ((uint)idx >= (uint)_fvarTable.Instances.Length)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(instanceIndex),
+                        idx,
+                        $"Instance index must be in the range [0, {_fvarTable.Instances.Length}).");
+                }
+
+                var instance = _fvarTable.Instances[idx];
+                effective = new Dictionary<OpenTypeTag, float>(instance.Coordinates);
+            }
+
+            if (userSpaceCoordinates is not null && userSpaceCoordinates.Count > 0)
+            {
+                effective ??= new Dictionary<OpenTypeTag, float>(userSpaceCoordinates.Count);
+                foreach (var kvp in userSpaceCoordinates)
+                {
+                    effective[kvp.Key] = kvp.Value;
+                }
+            }
+
+            // Per-axis normalization. Skip axes that resolve to the default so the result
+            // equals default(FontVariationSettings) when the caller asked for the
+            // default-instance point — important for cache identity at the GlyphTypeface
+            // layer in pr4b.
+            Dictionary<OpenTypeTag, float>? normalized = null;
+
+            for (var i = 0; i < axes.Length; i++)
+            {
+                var axis = axes[i];
+
+                var userValue = axis.DefaultValue;
+                if (effective is not null && effective.TryGetValue(axis.Tag, out var supplied))
+                {
+                    userValue = supplied;
+                }
+
+                // Clamp to the axis range. fvar treats values outside [min, max] as a
+                // best-effort clamp rather than an error — matches CSS and DirectWrite.
+                if (userValue < axis.MinimumValue)
+                {
+                    userValue = axis.MinimumValue;
+                }
+                else if (userValue > axis.MaximumValue)
+                {
+                    userValue = axis.MaximumValue;
+                }
+
+                // Linear fvar normalization into [-1, 1] anchored at the default value.
+                // The two halves of the axis (below and above default) are normalized
+                // independently — this is what makes the design "default" land at 0
+                // regardless of where min and max sit.
+                float normalizedValue;
+                if (userValue == axis.DefaultValue)
+                {
+                    normalizedValue = 0f;
+                }
+                else if (userValue < axis.DefaultValue)
+                {
+                    var range = axis.DefaultValue - axis.MinimumValue;
+                    normalizedValue = range > 0f
+                        ? (userValue - axis.DefaultValue) / range
+                        : 0f;
+                }
+                else
+                {
+                    var range = axis.MaximumValue - axis.DefaultValue;
+                    normalizedValue = range > 0f
+                        ? (userValue - axis.DefaultValue) / range
+                        : 0f;
+                }
+
+                // avar segment-map correction. Identity on axes the table doesn't cover
+                // (or when the table is absent), so safe to call unconditionally inside
+                // the loop once we've checked _avarTable is non-null.
+                if (_avarTable is not null)
+                {
+                    normalizedValue = _avarTable.Remap(i, normalizedValue);
+                }
+
+                if (normalizedValue != 0f)
+                {
+                    normalized ??= new Dictionary<OpenTypeTag, float>(axes.Length);
+                    normalized[axis.Tag] = normalizedValue;
+                }
+            }
+
+            if (normalized is null)
+            {
+                // Every axis came out at default — return the canonical "no variation" value.
+                return default;
+            }
+
+            return FontVariationSettings.FromCoordinates(normalized);
         }
 
         public void Dispose()
