@@ -20,10 +20,10 @@ namespace Avalonia.Controls
     public class SelectableTextBlock : TextBlock, IInlineHost
     {
         public static readonly StyledProperty<int> SelectionStartProperty =
-            TextBox.SelectionStartProperty.AddOwner<SelectableTextBlock>();
+            TextBox.SelectionStartProperty.AddOwner<SelectableTextBlock>(new(coerce: TextBox.CoerceCaretIndex));
 
         public static readonly StyledProperty<int> SelectionEndProperty =
-            TextBox.SelectionEndProperty.AddOwner<SelectableTextBlock>();
+            TextBox.SelectionEndProperty.AddOwner<SelectableTextBlock>(new(coerce: TextBox.CoerceCaretIndex));
 
         public static readonly DirectProperty<SelectableTextBlock, string> SelectedTextProperty =
             AvaloniaProperty.RegisterDirect<SelectableTextBlock, string>(
@@ -45,6 +45,7 @@ namespace Avalonia.Controls
 
         private bool _canCopy;
         private int _wordSelectionStart = -1;
+        private string _lastSelectedText = string.Empty;
 
         static SelectableTextBlock()
         {
@@ -331,17 +332,35 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == SelectionStartProperty || 
-                change.Property == SelectionEndProperty)
+            if (change.Property == TextProperty || change.Property == InlinesProperty)
             {
-                RaisePropertyChanged(SelectedTextProperty, "", "");
+                CoerceValue(SelectionStartProperty);
+                CoerceValue(SelectionEndProperty);
+                RaiseSelectedTextPropertyChanged();
+                UpdateCommandStates();
+            }
+
+            if (change.Property == SelectionStartProperty || change.Property == SelectionEndProperty)
+            {
+                RaiseSelectedTextPropertyChanged();
                 UpdateCommandStates();
                 InvalidateTextLayout();
             }
 
-            if(change.Property == SelectionForegroundBrushProperty)
+            if (change.Property == SelectionForegroundBrushProperty)
             {
                 InvalidateTextLayout();
+            }
+        }
+
+        private void RaiseSelectedTextPropertyChanged()
+        {
+            var oldText = _lastSelectedText;
+            var newText = GetSelection();
+            if (oldText != newText)
+            {
+                _lastSelectedText = newText;
+                RaisePropertyChanged(SelectedTextProperty, oldText, newText);
             }
         }
 
