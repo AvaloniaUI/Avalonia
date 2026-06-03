@@ -160,15 +160,31 @@ namespace Avalonia.Benchmarks.Media.Variation
         // ----- Skia native baseline -----
 
         /// <summary>
-        /// Skia's native batch advance read at 200 glyphs. The "native perf ceiling"
-        /// for what GlyphTypeface.TryGetHorizontalGlyphAdvances can plausibly reach
-        /// — Skia operates on a pre-cloned SKFont so its per-call cost is lower.
+        /// Skia's native batch read at 200 glyphs, asking for both widths and bounds.
+        /// This matches what GlyphRunImpl actually calls during rendering — Avalonia's
+        /// hot text path uses GetGlyphWidths for the per-glyph bounding boxes that
+        /// feed run-bounds computation. Per glyph this is meaningfully more work than
+        /// our hmtx-only TryGetHorizontalGlyphAdvances.
         /// </summary>
         [Benchmark]
-        public void Skia_Batch200()
+        public void Skia_Batch200_WidthsAndBounds()
         {
             _skFont.GetGlyphWidths(_glyphs200.AsSpan(), _advances2000.AsSpan(0, 200).Slice(0).AsFloatSpan(),
                 _skBounds2000.AsSpan(0, 200));
+        }
+
+        /// <summary>
+        /// Skia's native batch read at 200 glyphs, asking for widths only — the
+        /// like-for-like comparison against our TryGetHorizontalGlyphAdvances. Skia's
+        /// GetGlyphWidths still goes through SKFont (which respects edging / hinting
+        /// / subpixel settings), so this isn't a pure hmtx read on its side either —
+        /// but it's the closest apples-to-apples comparison the public API offers.
+        /// </summary>
+        [Benchmark]
+        public void Skia_Batch200_WidthsOnly()
+        {
+            _skFont.GetGlyphWidths(_glyphs200.AsSpan(), _advances2000.AsSpan(0, 200).Slice(0).AsFloatSpan(),
+                bounds: default);
         }
 
         public void Dispose()
