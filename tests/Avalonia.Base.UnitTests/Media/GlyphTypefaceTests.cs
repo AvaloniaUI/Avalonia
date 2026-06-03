@@ -16,6 +16,7 @@ namespace Avalonia.Base.UnitTests.Media
         private const string InterFontUri = "resm:Avalonia.Base.UnitTests.Assets.Inter-Regular.ttf?assembly=Avalonia.Base.UnitTests";
         private const string BlankFontUri = "resm:Avalonia.Base.UnitTests.Assets.AdobeBlank2VF.ttf?assembly=Avalonia.Base.UnitTests";
         private const string GB18030FontUri = "resm:Avalonia.Base.UnitTests.Assets.NISC18030.ttf?assembly=Avalonia.Base.UnitTests";
+        private const string MiSansFontUri = "resm:Avalonia.Base.UnitTests.Assets.MiSans-Normal.ttf?assembly=Avalonia.Base.UnitTests";
 
         [Fact]
         public void Should_Load_Inter_Font()
@@ -338,6 +339,69 @@ namespace Avalonia.Base.UnitTests.Media
                 Assert.True(typeface.TryGetGlyphMetrics(glyphIds[i], out var single));
 
                 // GlyphMetrics is a record struct, so this is structural equality.
+                Assert.Equal(single, batch[i]);
+            }
+        }
+
+        [Fact]
+        public void TryGetVerticalGlyphAdvance_Returns_False_For_Latin_Font()
+        {
+            var assetLoader = new StandardAssetLoader();
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var glyphId = typeface.CharacterToGlyphMap['A'];
+
+            // Latin fonts typically carry no vmtx table — the call returns false and
+            // leaves the advance at zero.
+            Assert.False(typeface.TryGetVerticalGlyphAdvance(glyphId, out var advance));
+            Assert.Equal((ushort)0, advance);
+        }
+
+        [Fact]
+        public void TryGetVerticalGlyphAdvances_Batch_Returns_False_For_Latin_Font()
+        {
+            var assetLoader = new StandardAssetLoader();
+            using var stream = assetLoader.Open(new Uri(InterFontUri));
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+            var glyphIds = new ushort[] { map['A'], map['B'], map['g'] };
+            var advances = new ushort[glyphIds.Length];
+
+            Assert.False(typeface.TryGetVerticalGlyphAdvances(glyphIds, advances));
+        }
+
+        [Fact]
+        public void TryGetVerticalGlyphAdvance_Returns_True_For_CJK_Font()
+        {
+            var assetLoader = new StandardAssetLoader();
+            using var stream = assetLoader.Open(new Uri(MiSansFontUri));
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            // CJK glyph: U+4E2D ("中"). MiSans is a CJK font with a vmtx table.
+            var glyphId = typeface.CharacterToGlyphMap['中'];
+
+            Assert.True(typeface.TryGetVerticalGlyphAdvance(glyphId, out var advance));
+            Assert.True(advance > 0, "Expected a positive vertical advance for a CJK glyph.");
+        }
+
+        [Fact]
+        public void TryGetVerticalGlyphAdvances_Batch_Matches_Single_For_CJK_Font()
+        {
+            var assetLoader = new StandardAssetLoader();
+            using var stream = assetLoader.Open(new Uri(MiSansFontUri));
+            var typeface = new GlyphTypeface(new CustomPlatformTypeface(stream));
+
+            var map = typeface.CharacterToGlyphMap;
+            var glyphIds = new ushort[] { map['中'], map['文'], map['字'], map[' '] };
+
+            var batch = new ushort[glyphIds.Length];
+            Assert.True(typeface.TryGetVerticalGlyphAdvances(glyphIds, batch));
+
+            for (var i = 0; i < glyphIds.Length; i++)
+            {
+                Assert.True(typeface.TryGetVerticalGlyphAdvance(glyphIds[i], out var single));
                 Assert.Equal(single, batch[i]);
             }
         }
