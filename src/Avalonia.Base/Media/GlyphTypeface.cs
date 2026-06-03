@@ -654,8 +654,56 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Attempts to retrieve the vertical advance height for the specified glyph.
+        /// </summary>
+        /// <remarks>Returns false if vertical metrics are not available (the font has no
+        /// <c>vmtx</c> table — the common case for Latin fonts) or if the specified glyph
+        /// is not present in the metrics table.</remarks>
+        /// <param name="glyphId">The identifier of the glyph for which to obtain the vertical advance height.</param>
+        /// <param name="advance">When this method returns, contains the vertical advance height of the glyph if found; otherwise, zero. This
+        /// parameter is passed uninitialized.</param>
+        /// <returns>true if the vertical advance height was successfully retrieved; otherwise, false.</returns>
+        public bool TryGetVerticalGlyphAdvance(ushort glyphId, out ushort advance)
+        {
+            advance = default;
+
+            if (!_hasVerticalMetrics || _vmTable is null)
+            {
+                return false;
+            }
+
+            if (!_vmTable.TryGetAdvance(glyphId, out advance))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to retrieve vertical advance heights for multiple glyphs in a single operation.
+        /// </summary>
+        /// <remarks>This method is significantly more efficient than calling <see cref="TryGetVerticalGlyphAdvance"/>
+        /// multiple times as it minimizes memory access overhead and exploits data locality. This is the preferred method
+        /// for batch vertical-layout scenarios (CJK, Mongolian). Returns false if vertical metrics
+        /// are not available.</remarks>
+        /// <param name="glyphIds">Read-only span of glyph identifiers for which to retrieve advance heights.</param>
+        /// <param name="advances">Output span to write the advance heights. Must be at least as long as <paramref name="glyphIds"/>.</param>
+        /// <returns>true if vertical metrics are available and all advances were successfully retrieved; otherwise, false.</returns>
+        public bool TryGetVerticalGlyphAdvances(ReadOnlySpan<ushort> glyphIds, Span<ushort> advances)
+        {
+            if (!_hasVerticalMetrics || _vmTable is null)
+            {
+                return false;
+            }
+
+            return _vmTable.TryGetAdvances(glyphIds, advances);
+        }
+
+        /// <summary>
         /// Attempts to retrieve the metrics for the specified glyph.
         /// </summary>
+        /// <remarks>This method returns metrics only if horizontal or vertical metrics are available for
         /// <remarks>This method returns metrics only if horizontal or vertical metrics are available for
         /// the specified glyph. If neither is available, the method returns false and the output parameter is set to
         /// its default value.</remarks>
