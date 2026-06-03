@@ -45,7 +45,7 @@ namespace Avalonia.Controls
 
         private bool _canCopy;
         private int _wordSelectionStart = -1;
-        private string _lastSelectedText = string.Empty;
+        private string _selectedText = string.Empty;
 
         static SelectableTextBlock()
         {
@@ -100,7 +100,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string SelectedText
         {
-            get => GetSelection();
+            get => _selectedText;
+            private set => SetAndRaise(SelectedTextProperty, ref _selectedText, value);
         }
 
         /// <summary>
@@ -336,13 +337,13 @@ namespace Avalonia.Controls
             {
                 CoerceValue(SelectionStartProperty);
                 CoerceValue(SelectionEndProperty);
-                RaiseSelectedTextPropertyChanged();
+                SelectedText = GetSelection();
                 UpdateCommandStates();
             }
 
             if (change.Property == SelectionStartProperty || change.Property == SelectionEndProperty)
             {
-                RaiseSelectedTextPropertyChanged();
+                SelectedText = GetSelection();
                 UpdateCommandStates();
                 InvalidateTextLayout();
             }
@@ -350,17 +351,6 @@ namespace Avalonia.Controls
             if (change.Property == SelectionForegroundBrushProperty)
             {
                 InvalidateTextLayout();
-            }
-        }
-
-        private void RaiseSelectedTextPropertyChanged()
-        {
-            var oldText = _lastSelectedText;
-            var newText = GetSelection();
-            if (oldText != newText)
-            {
-                _lastSelectedText = newText;
-                RaisePropertyChanged(SelectedTextProperty, oldText, newText);
             }
         }
 
