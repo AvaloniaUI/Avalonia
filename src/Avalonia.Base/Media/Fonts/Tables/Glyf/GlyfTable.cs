@@ -65,6 +65,92 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         }
 
         /// <summary>
+        /// Reads the design-space bounding box of a single glyph from its glyf entry
+        /// header. Returns <c>false</c> for empty glyphs (no contours / no entry).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Each glyf entry begins with a 10-byte header: <c>int16 numberOfContours</c>
+        /// followed by <c>int16 xMin / yMin / xMax / yMax</c>. The bounds are in font
+        /// design units and reflect the default-instance outline only — variation deltas
+        /// from gvar would also shift the bbox, but that's not applied here.
+        /// </para>
+        /// <para>
+        /// For composite glyphs the header's bbox is set by the font designer to cover
+        /// the union of all components, so this single read is correct without
+        /// recursing into the composite tree.
+        /// </para>
+        /// </remarks>
+        public bool TryGetGlyphBounds(int glyphIndex, out short xMin, out short yMin, out short xMax, out short yMax)
+        {
+            if (!TryGetGlyphData(glyphIndex, out var data) || data.Length < 10)
+            {
+                xMin = yMin = xMax = yMax = 0;
+                return false;
+            }
+
+            var span = data.Span;
+            // Skip int16 numberOfContours at offset 0, then four int16 bbox fields.
+            xMin = BinaryPrimitives.ReadInt16BigEndian(span.Slice(2, 2));
+            yMin = BinaryPrimitives.ReadInt16BigEndian(span.Slice(4, 2));
+            xMax = BinaryPrimitives.ReadInt16BigEndian(span.Slice(6, 2));
+            yMax = BinaryPrimitives.ReadInt16BigEndian(span.Slice(8, 2));
+            return true;
+        }
+
+        /// <summary>
+        /// Reads bounding boxes for multiple glyphs in one pass. Span-caches the
+        /// underlying glyf data so each glyph is just a loca lookup + 4 short reads
+        /// from the cached span — no per-glyph <c>_glyfData.Span</c> rematerialization.
+        /// </summary>
+        /// <remarks>
+        /// For glyphs the loca says are empty (no entry, or zero-length), the output
+        /// bounds are zeroed. Returns <c>false</c> only when a glyph index is
+        /// out-of-range — partial empty glyphs in the middle of the batch are not
+        /// a failure.
+        /// </remarks>
+        public bool TryGetGlyphBounds(
+            ReadOnlySpan<ushort> glyphIndices,
+            Span<short> xMins,
+            Span<short> yMins,
+            Span<short> xMaxs,
+            Span<short> yMaxs)
+        {
+            if (xMins.Length < glyphIndices.Length ||
+                yMins.Length < glyphIndices.Length ||
+                xMaxs.Length < glyphIndices.Length ||
+                yMaxs.Length < glyphIndices.Length)
+            {
+                return false;
+            }
+
+            var glyfSpan = _glyfData.Span;
+            var glyfLength = _glyfData.Length;
+
+            for (var i = 0; i < glyphIndices.Length; i++)
+            {
+                if (!_locaTable.TryGetOffsets(glyphIndices[i], out var start, out var end))
+                {
+                    return false;
+                }
+
+                if (start == end || end > glyfLength || start < 0 || start > end || end - start < 10)
+                {
+                    xMins[i] = yMins[i] = xMaxs[i] = yMaxs[i] = 0;
+                    continue;
+                }
+
+                // Skip numberOfContours at +0, read xMin / yMin / xMax / yMax at +2/+4/+6/+8.
+                xMins[i] = BinaryPrimitives.ReadInt16BigEndian(glyfSpan.Slice(start + 2, 2));
+                yMins[i] = BinaryPrimitives.ReadInt16BigEndian(glyfSpan.Slice(start + 4, 2));
+                xMaxs[i] = BinaryPrimitives.ReadInt16BigEndian(glyfSpan.Slice(start + 6, 2));
+                yMaxs[i] = BinaryPrimitives.ReadInt16BigEndian(glyfSpan.Slice(start + 8, 2));
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Attempts to retrieve the raw glyph data for the specified glyph index.
         /// </summary>
         /// <remarks>If the glyph exists but has no data (for example, a missing or empty glyph), the
