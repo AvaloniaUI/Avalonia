@@ -603,12 +603,18 @@ namespace Avalonia.Win32
 
             if (_isClientAreaExtended)
             {
-                // We told Windows we have a caption, but since we're actually extending into it,
+                // We told Windows we have a border, but since we're actually extending into it,
                 // it should be excluded from the final window bounds.
-                if (_windowProperties.Decorations != WindowDecorations.None)
+                var style = GetStyle();
+                if ((style & WindowStyles.WS_BORDER) != 0)
                 {
                     var borderOnlyRect = ClientRectToWindowRect(requestedClientRect, WindowStyles.WS_BORDER);
+
                     requestedWindowRect.top = borderOnlyRect.top;
+
+                    // If we're supposed to have a caption, the top border is actually collapsed into it.
+                    if ((style & WindowStyles.WS_CAPTION) == WindowStyles.WS_CAPTION)
+                        requestedWindowRect.top += 1;
                 }
             }
 
@@ -1211,19 +1217,12 @@ namespace Avalonia.Win32
                 var margins = UpdateExtendMargins();
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
 
+                // Make sure that Windows still paints the non-client area so we get native borders and shadows.
+                SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_ENABLED);
+
                 // On Windows 11 21H2 and later, corners are configurable.
-                // When doing so, we need to make sure that DWM draws the non-client frame for that to work correctly.
                 if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
-                {
                     SetWindowCornerPreference(DwmWindowCornerPreference.DWMWCP_ROUND);
-                    SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_ENABLED);
-                }
-                else
-                {
-                    // On older versions, we need to disable painting the non-client area to avoid issues
-                    // (alternatively, we could return 0 in WM_NCPAINT in this case).
-                    SetNCRenderingPolicy(DwmNCRenderingPolicy.DWMNCRP_DISABLED);
-                }
             }
             else
             {
@@ -1481,7 +1480,7 @@ namespace Avalonia.Win32
                 switch (newProperties.Decorations)
                 {
                     case WindowDecorations.Full:
-                        style |= WindowStyles.WS_BORDER | WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU;
+                        style |= WindowStyles.WS_BORDER | WindowStyles.WS_SYSMENU | WindowStyles.WS_CAPTION;
                         break;
 
                     case WindowDecorations.BorderOnly:

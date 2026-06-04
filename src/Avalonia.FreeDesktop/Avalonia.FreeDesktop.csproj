@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="Tmds.DBus.Protocol" />
-    <PackageReference Include="Tmds.DBus.SourceGenerator" PrivateAssets="all" />
+    <PackageReference Include="Tmds.DBus.Generator" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,22 +27,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="DBusXml/com.canonical.AppMenu.Registrar.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/com.canonical.dbusmenu.xml" DBusGeneratorMode="Handler" />
+    <AdditionalFiles Include="DBusXml/com.canonical.AppMenu.Registrar.xml" Namespace="Avalonia.FreeDesktop.DBus" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/com.canonical.dbusmenu.xml" Namespace="Avalonia.FreeDesktop.DBus" DBusGeneratorMode="Handler" />
 
-    <AdditionalFiles Include="DBusXml/org.fcitx.Fcitx.InputContext.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.fcitx.Fcitx.InputMethod.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.fcitx.Fcitx.InputContext1.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.fcitx.Fcitx.InputMethod1.xml" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/org.fcitx.Fcitx.InputContext.xml" Namespace="Avalonia.FreeDesktop.DBusIme.Fcitx.DBus" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/org.fcitx.Fcitx.InputMethod.xml" Namespace="Avalonia.FreeDesktop.DBusIme.Fcitx.DBus" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/org.fcitx.Fcitx.InputContext1.xml" Namespace="Avalonia.FreeDesktop.DBusIme.Fcitx.DBus" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/org.fcitx.Fcitx.InputMethod1.xml" Namespace="Avalonia.FreeDesktop.DBusIme.Fcitx.DBus" DBusGeneratorMode="Proxy" />
 
-    <AdditionalFiles Include="DBusXml/org.freedesktop.DBus.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.freedesktop.IBus.Portal.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.freedesktop.portal.FileChooser.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.freedesktop.portal.Request.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.freedesktop.portal.Settings.xml" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/org.freedesktop.DBus.xml" Namespace="Avalonia.FreeDesktop.DBus" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/org.freedesktop.IBus.Portal.xml" Namespace="Avalonia.FreeDesktop.DBusIme.IBus.DBus" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/org.freedesktop.portal.FileChooser.xml" Namespace="Avalonia.FreeDesktop.DBus" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/org.freedesktop.portal.Request.xml" Namespace="Avalonia.FreeDesktop.DBus" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/org.freedesktop.portal.Settings.xml" Namespace="Avalonia.FreeDesktop.DBus" DBusGeneratorMode="Proxy" />
 
-    <AdditionalFiles Include="DBusXml/org.kde.StatusNotifierWatcher.xml" DBusGeneratorMode="Proxy" />
-    <AdditionalFiles Include="DBusXml/org.kde.StatusNotifierItem.xml" DBusGeneratorMode="Handler" />
+    <AdditionalFiles Include="DBusXml/org.kde.StatusNotifierWatcher.xml" Namespace="Avalonia.FreeDesktop.DBus" DBusGeneratorMode="Proxy" />
+    <AdditionalFiles Include="DBusXml/org.kde.StatusNotifierItem.xml" Namespace="Avalonia.FreeDesktop.DBus" DBusGeneratorMode="Handler" />
   </ItemGroup>
 
 </Project>
