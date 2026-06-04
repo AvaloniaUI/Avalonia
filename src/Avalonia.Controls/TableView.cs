@@ -65,7 +65,7 @@ public class TableView : ListBox
         if (container is TableViewRow row)
         {
             row.Columns = Columns;
-            row.InvalidateCells(rebuild: true);
+            row.RebuildCells();
         }
     }
 
@@ -81,14 +81,11 @@ public class TableView : ListBox
         if (element is TableViewRow row)
         {
             row.Columns = null;
-            row.InvalidateCells(rebuild: true);
+            row.ClearCells();
         }
     }
 
     private void OnColumnsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        => InvalidateCells(rebuild: true);
-
-    internal void InvalidateCells(bool rebuild)
     {
         if (!IsInitialized)
             return;
@@ -96,7 +93,18 @@ public class TableView : ListBox
         foreach (var row in GetRealizedContainers())
         {
             if (row is TableViewRow tableViewRow)
-                tableViewRow.InvalidateCells(rebuild);
+                tableViewRow.RebuildCells();
+            else
+                row.InvalidateMeasure();
+        }
+    }
+
+    internal void InvalidateCellsMeasure()
+    {
+        foreach (var row in GetRealizedContainers())
+        {
+            if (row is TableViewRow tableViewRow)
+                tableViewRow.InvalidateCellsMeasure();
             else
                 row.InvalidateMeasure();
         }

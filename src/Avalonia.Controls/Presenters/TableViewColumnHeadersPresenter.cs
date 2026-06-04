@@ -87,7 +87,7 @@ public class TableViewColumnHeadersPresenter : Panel
             return default;
 
         if (UpdateActualWidths(TableView.Columns, availableSize.Width))
-            TableView.InvalidateCells(rebuild: false);
+            TableView.InvalidateCellsMeasure();
 
         return MeasureRow(TableView.Columns, Children, availableSize);
     }
@@ -101,7 +101,7 @@ public class TableViewColumnHeadersPresenter : Panel
         var columns = TableView.Columns;
 
         if (UpdateActualWidths(columns, finalSize.Width))
-            TableView.InvalidateCells(rebuild: false);
+            TableView.InvalidateCellsMeasure();
 
         var offset = TableView.Scroll?.Offset.X ?? 0;
         return ArrangeRow(columns, Children, finalSize, -offset);

@@ -22,28 +22,27 @@ public class TableViewRow : ListBoxItem
     {
         base.OnApplyTemplate(e);
 
-        SetPresenterColumns(null);
+        if (_rowPresenter is not null)
+        {
+            _rowPresenter.Columns = null;
+            _rowPresenter.RemoveCells();
+        }
+
         _rowPresenter = e.NameScope.Find<TableViewRowPresenter>(PartRowPresenter);
-        SetPresenterColumns(Columns);
-    }
 
-    private void SetPresenterColumns(AvaloniaList<TableViewColumn>? columns)
-    {
-        if (_rowPresenter is null)
-            return;
-
-        _rowPresenter.Columns = columns;
-        _rowPresenter.RebuildCells();
-    }
-
-    internal void InvalidateCells(bool rebuild)
-    {
-        if (_rowPresenter is null)
-            return;
-
-        if (rebuild)
+        if (_rowPresenter is not null)
+        {
+            _rowPresenter.Columns = Columns;
             _rowPresenter.RebuildCells();
-        else
-            _rowPresenter.InvalidateMeasure();
+        }
     }
+
+    internal void ClearCells()
+        => _rowPresenter?.ClearCells();
+
+    internal void InvalidateCellsMeasure()
+        => _rowPresenter?.InvalidateMeasure();
+
+    internal void RebuildCells()
+        => _rowPresenter?.RebuildCells();
 }

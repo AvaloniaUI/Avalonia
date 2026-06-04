@@ -1,5 +1,4 @@
 using Avalonia.Collections;
-using Avalonia.Data;
 using static Avalonia.Controls.Presenters.TableViewLayoutHelper;
 
 namespace Avalonia.Controls.Presenters;
@@ -10,45 +9,50 @@ namespace Avalonia.Controls.Presenters;
 /// </summary>
 public class TableViewRowPresenter : Panel
 {
-    private static CompiledBinding RowBinding
-        => field ??= new();
-
     internal AvaloniaList<TableViewColumn>? Columns { get; set; }
+
+    internal void ClearCells()
+    {
+        foreach (var child in Children)
+        {
+            if (child is TableViewCell cell)
+                cell.Column = null;
+        }
+    }
+
+    internal void RemoveCells()
+    {
+        ClearCells();
+        Children.Clear();
+    }
 
     internal void RebuildCells()
     {
-        Children.Clear();
-
-        if (Columns is not { } columns)
-            return;
-
-        foreach (var column in columns)
+        if (Columns is null)
         {
-            var cell = CreateCell(column);
-            Children.Add(cell);
+            RemoveCells();
+            return;
+        }
+
+        if (Columns.Count != Children.Count)
+        {
+            RemoveCells();
+
+            foreach (var column in Columns)
+            {
+                var cell = new TableViewCell { Column = column };
+                Children.Add(cell);
+            }
+        }
+        else
+        {
+            for (var i = 0; i < Columns.Count; i++)
+            {
+                ((TableViewCell)Children[i]).Column = Columns[i];
+            }
         }
 
         InvalidateMeasure();
-    }
-
-    private static TableViewCell CreateCell(TableViewColumn column)
-    {
-        var cell = new TableViewCell();
-
-        if (column.CellTheme is { } cellTheme)
-            cell.Theme = cellTheme;
-
-        if (column.CellTemplate is { } cellTemplate)
-        {
-            cell.ContentTemplate = cellTemplate;
-            cell.Bind(ContentControl.ContentProperty, RowBinding);
-        }
-        else if (column.Binding is { } binding)
-            cell.Bind(ContentControl.ContentProperty, binding);
-        else
-            cell.Bind(ContentControl.ContentProperty, RowBinding);
-
-        return cell;
     }
 
     /// <inheritdoc/>
