@@ -448,6 +448,7 @@ public partial class DispatcherTests
             }, DispatcherPriority.Background);
             disp.MainLoop(CancellationToken.None);
 
+            disp.Send(_ => DumpCurrentPriority(), DispatcherPriority.Send);
             disp.Invoke(DumpCurrentPriority, DispatcherPriority.Send, TestContext.Current.CancellationToken);
             disp.Invoke(() =>
             {
@@ -458,7 +459,7 @@ public partial class DispatcherTests
             Assert.Equal(
                 new[]
                 {
-                    DispatcherPriority.Normal, DispatcherPriority.Loaded, DispatcherPriority.Input, DispatcherPriority.Background,
+                    DispatcherPriority.Normal, DispatcherPriority.Loaded, DispatcherPriority.Input, DispatcherPriority.Background, DispatcherPriority.Send,
                     DispatcherPriority.Send, DispatcherPriority.Send,
                 },
                 priorities);
