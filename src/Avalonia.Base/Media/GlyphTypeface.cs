@@ -704,7 +704,6 @@ namespace Avalonia.Media
         /// Attempts to retrieve the metrics for the specified glyph.
         /// </summary>
         /// <remarks>This method returns metrics only if horizontal or vertical metrics are available for
-        /// <remarks>This method returns metrics only if horizontal or vertical metrics are available for
         /// the specified glyph. If neither is available, the method returns false and the output parameter is set to
         /// its default value.</remarks>
         /// <param name="glyph">The identifier of the glyph for which to obtain metrics.</param>
