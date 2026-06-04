@@ -78,6 +78,7 @@ namespace Avalonia.UnitTests
         public IPlatformSettings? PlatformSettings => AvaloniaLocator.Current.GetService<IPlatformSettings>();
 
         public IInputElement? PointerOverElement { get; set; }
+        public IInputElement? CursorElement { get; set; }
         public ITextInputMethodImpl? InputMethod { get; }
         public InputElement RootElement => this;
         public InputElement FocusRoot => this;
@@ -141,6 +142,10 @@ namespace Avalonia.UnitTests
         protected override Size MeasureOverride(Size availableSize)
         {
             return base.MeasureOverride(ClientSize);
+        }
+
+        public void PointerOverInvalidated()
+        {
         }
     }
 }

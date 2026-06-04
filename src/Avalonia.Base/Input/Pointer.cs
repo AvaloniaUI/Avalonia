@@ -102,9 +102,21 @@ namespace Avalonia.Input
             if (Captured != null)
                 CaptureGestureRecognizer(null);
 
-            if(Captured == null && CapturedGestureRecognizer == null)
+            if (Captured == null && CapturedGestureRecognizer == null)
             {
                 IsGestureRecognitionSkipped = false;
+            }
+
+            // Update the pointer-over + cursor immediately following the capture change
+            if (Type != PointerType.Touch)
+            {
+                var oldInputRoot = oldVisual?.PresentationSource?.InputRoot;
+                var newInputRoot = newVisual?.PresentationSource?.InputRoot;
+
+                oldInputRoot?.PointerOverInvalidated();
+
+                if (oldInputRoot != newInputRoot)
+                    newInputRoot?.PointerOverInvalidated();
             }
         }
 
@@ -136,10 +148,7 @@ namespace Avalonia.Input
 
         public void Dispose()
         {
-            if (Captured != null)
-            {
-                Capture(null);
-            }
+            // callers are responsible for calling Capture(null, source) with an appropriate source
         }
 
         /// <summary>
