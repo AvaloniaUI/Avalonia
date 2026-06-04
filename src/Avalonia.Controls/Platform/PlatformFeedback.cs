@@ -1,6 +1,6 @@
 ﻿using Avalonia.Input;
 
-namespace Avalonia.Controls.Platform
+namespace Avalonia.Controls
 {
     public class PlatformFeedback
     {
@@ -38,14 +38,17 @@ namespace Avalonia.Controls.Platform
         /// </summary>
         /// <param name="inputElement">The element to trigger the feedback effect on</param>
         /// <param name="feedbackAction">The feedback action relating to the action that triggered it</param>
-        public static void PerformFeedback(this InputElement inputElement, FeedbackAction feedbackAction)
+        /// <returns>true if the platform performed the requested feedback; false otherwise.</returns>
+        public static bool PerformFeedback(this InputElement inputElement, FeedbackAction feedbackAction)
         {
             var feedback = PlatformFeedback.GetFeedbackType(inputElement);
             if (feedback != FeedbackType.None &&
                 TopLevel.GetTopLevel(inputElement)?.PlatformImpl?.TryGetFeature<IPlatformFeedback>() is { } platformFeedBack)
             {
-                platformFeedBack.Perform(feedbackAction, feedback);
+                return platformFeedBack.Perform(feedbackAction, feedback);
             }
+
+            return false;
         }
     }
 }

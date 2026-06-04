@@ -100,11 +100,6 @@ namespace Avalonia.Controls
         private Control? _focusAdorner;
         private AutomationPeer? _automationPeer;
 
-        static Control()
-        {
-            InputElement.HoldingEvent.AddClassHandler<Control>(OnFeedbackHoldEventHandler, handledEventsToo: true);
-        }
-
         /// <summary>
         /// Gets or sets the control's focus adorner.
         /// </summary>
@@ -210,12 +205,6 @@ namespace Avalonia.Controls
 
             throw new InvalidOperationException(
                 "Cannot use a control as a Setter value. Wrap the control in a <Template>.");
-        }
-
-        private static void OnFeedbackHoldEventHandler(Control control, HoldingRoutedEventArgs args)
-        {
-            if (args.Handled && args.HoldingState == HoldingState.Started)
-                control.PerformFeedback(FeedbackAction.Hold);
         }
 
         /// <inheritdoc/>

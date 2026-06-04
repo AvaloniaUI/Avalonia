@@ -1730,6 +1730,7 @@ namespace Avalonia.Controls
                 _hasTouchSelection = true;
 
                 e.Handled = true;
+                this.PerformFeedback(FeedbackAction.Hold);
             }
         }
 

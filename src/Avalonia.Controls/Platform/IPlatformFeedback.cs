@@ -1,8 +1,9 @@
 ﻿using Avalonia.Metadata;
 
-namespace Avalonia.Controls.Platform
+namespace Avalonia.Controls
 {
-    internal interface IPlatformFeedback
+    [PrivateApi]
+    public interface IPlatformFeedback
     {
         /// <summary>
         /// Performs the specified <see cref="FeedbackType"/> on the platform.

@@ -8,6 +8,7 @@ namespace Avalonia.Input
     public class ContextRequestedEventArgs : RoutedEventArgs
     {
         private readonly PointerEventArgs? _pointerEventArgs;
+        private HoldingRoutedEventArgs? _holdRoutedEventArgs;
 
         /// <summary>
         /// Initializes a new instance of the ContextRequestedEventArgs class.
@@ -30,6 +31,12 @@ namespace Avalonia.Input
             : this()
         {
             _pointerEventArgs = contextRequestedEventArgs._pointerEventArgs;
+        }
+
+        internal ContextRequestedEventArgs(HoldingRoutedEventArgs holdRoutedEventArgs)
+            : this(holdRoutedEventArgs.PointerEventArgs)
+        {
+            _holdRoutedEventArgs = holdRoutedEventArgs;
         }
 
         /// <summary>
@@ -58,5 +65,7 @@ namespace Avalonia.Input
             point = _pointerEventArgs.GetPosition(relativeTo);
             return true;
         }
+
+        internal bool IsHolding => _holdRoutedEventArgs != null;
     }
 }
