@@ -26,6 +26,11 @@ namespace Avalonia.Skia.RenderTests
         private const string AdobeBlankAsset =
             "resm:Avalonia.Skia.RenderTests.Assets.AdobeBlank2VF.ttf?assembly=Avalonia.Skia.RenderTests";
 
+        // Purpose-built fixture (no production font encodes point matching): its 'P' glyph is a
+        // composite assembled with ARGS_ARE_XY_VALUES clear, i.e. by point matching.
+        private const string PointMatchAsset =
+            "resm:Avalonia.Skia.RenderTests.Assets.PointMatch.ttf?assembly=Avalonia.Skia.RenderTests";
+
         public GlyphOutlineRenderTests()
             : base(@"Media\GlyphOutline")
         {
@@ -44,6 +49,19 @@ namespace Avalonia.Skia.RenderTests
             // Á = base 'A' + combining acute accent. Inter stores it as a composite glyph,
             // which exercises GlyfTable's recursive component path.
             await RenderToFile(BuildTarget(LoadGlyphTypeface(InterRegularAsset), 'Á'));
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Should_Render_PointMatched_Composite_Glyph()
+        {
+            // 'P' is a composite whose second component (a small square) is placed by point
+            // matching — aligning its bottom-left point onto the top-right point of the base
+            // rectangle — rather than by an x/y offset. This is the only way to exercise
+            // GlyfTable's point-matching build path through the full Skia pipeline, since no
+            // production font uses point matching. A broken implementation would drop the square
+            // at the origin instead of the rectangle's corner, which the image diff would catch.
+            await RenderToFile(BuildTarget(LoadGlyphTypeface(PointMatchAsset), 'P'));
             CompareImages();
         }
 
