@@ -692,14 +692,19 @@ namespace Avalonia.Media
                 return false;
             }
 
+            // Funnel the raw header values through GlyphBounds so the ink extent is computed
+            // (and clamped to non-negative) the same way as the batch path below — a malformed
+            // header with xMax < xMin must not wrap when narrowed to the ushort Width/Height.
+            var box = new GlyphBounds(xMin, yMin, xMax, yMax);
+
             metrics = new GlyphMetrics
             {
                 // Bounding box (ink extent) from the glyf header; side bearings fall back
                 // to hmtx/vmtx when the glyph has no outline data.
-                XBearing = hasBounds ? xMin : (hasHorizontal ? hMetric.LeftSideBearing : (short)0),
-                YBearing = hasBounds ? yMax : (hasVertical ? vMetric.TopSideBearing : (short)0),
-                Width = hasBounds ? (ushort)(xMax - xMin) : (ushort)0,
-                Height = hasBounds ? (ushort)(yMax - yMin) : (ushort)0,
+                XBearing = hasBounds ? box.XMin : (hasHorizontal ? hMetric.LeftSideBearing : (short)0),
+                YBearing = hasBounds ? box.YMax : (hasVertical ? vMetric.TopSideBearing : (short)0),
+                Width = hasBounds ? (ushort)box.Width : (ushort)0,
+                Height = hasBounds ? (ushort)box.Height : (ushort)0,
                 // Advances come from the metrics tables.
                 AdvanceWidth = hasHorizontal ? hMetric.AdvanceWidth : (ushort)0,
                 AdvanceHeight = hasVertical ? vMetric.AdvanceHeight : (ushort)0,
