@@ -74,6 +74,12 @@ internal static class TableViewLayoutHelper
     public static bool NeedsActualWidths(AvaloniaList<TableViewColumn> columns)
         => columns.Count > 1 && double.IsNaN(columns[0].ActualWidth);
 
+    public static void ResetActualWidths(AvaloniaList<TableViewColumn> columns)
+    {
+        foreach (var column in columns)
+            column.ActualWidth = double.NaN;
+    }
+
     public static Size MeasureRow(AvaloniaList<TableViewColumn> columns, Controls cells, Size availableSize)
     {
         if (cells.Count != columns.Count)

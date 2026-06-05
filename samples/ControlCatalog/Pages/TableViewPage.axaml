@@ -12,6 +12,7 @@
   <ContentPage.Resources>
 
     <converter:GdpToBrushConverter x:Key="GdpToBrushConverter" />
+    <converter:TableViewColumnWidthConverter x:Key="TableViewColumnWidthConverter" />
 
     <ControlTheme x:Key="GdpCellTheme"
                   TargetType="TableViewCell"
@@ -22,26 +23,36 @@
 
   </ContentPage.Resources>
 
-  <TableView ItemsSource="{Binding Countries}">
-    <TableView.Columns>
-      <TableViewColumn Header="Name"
-                       Binding="{Binding Name}"
-                       Width="2*" />
-      <TableViewColumn Header="Region"
-                       Binding="{Binding Region}"
-                       Width="2*" />
-      <TableViewColumn Header="Population"
-                       Binding="{Binding Population, StringFormat=N0}"
-                       Width="*" />
-      <TableViewColumn Header="Area"
-                       Binding="{Binding Area, StringFormat=N0}"
-                       Width="*" />
-      <TableViewColumn Header="GDP"
-                       Binding="{Binding GDP, StringFormat=N0}"
-                       Width="*"
-                       CellTheme="{StaticResource GdpCellTheme}">
-      </TableViewColumn>
-    </TableView.Columns>
-  </TableView>
+  <DockPanel>
+
+    <CheckBox Name="UseStarSizes"
+              Content="Use star-sized columns"
+              IsChecked="True"
+              Margin="8"
+              DockPanel.Dock="Top" />
+
+    <TableView ItemsSource="{Binding Countries}">
+      <TableView.Columns>
+        <TableViewColumn Header="Name"
+                         Binding="{Binding Name}"
+                         Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=3}" />
+        <TableViewColumn Header="Region"
+                         Binding="{Binding Region}"
+                         Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=2}" />
+        <TableViewColumn Header="Population"
+                         Binding="{Binding Population, StringFormat=N0}"
+                         Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1}" />
+        <TableViewColumn Header="Area"
+                         Binding="{Binding Area, StringFormat=N0}"
+                         Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1}" />
+        <TableViewColumn Header="GDP"
+                         Binding="{Binding GDP, StringFormat=N0}"
+                         Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1}"
+                         CellTheme="{StaticResource GdpCellTheme}">
+        </TableViewColumn>
+      </TableView.Columns>
+    </TableView>
+
+  </DockPanel>
 
 </ContentPage>

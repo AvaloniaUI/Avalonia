@@ -48,7 +48,7 @@ public class TableViewColumnHeadersPresenter : Panel
 
         if (TableView is not null)
         {
-            TableView.Columns.CollectionChanged += OnColumnsChanged;
+            TableView.ColumnsChanged += OnColumnsChanged;
 
             if (TableView.Scroll is INotifyPropertyChanged notifyPropertyChanged)
                 notifyPropertyChanged.PropertyChanged += OnScrollPropertyChanged;
@@ -59,7 +59,7 @@ public class TableViewColumnHeadersPresenter : Panel
     {
         if (TableView is not null)
         {
-            TableView.Columns.CollectionChanged -= OnColumnsChanged;
+            TableView.ColumnsChanged -= OnColumnsChanged;
 
             if (TableView.Scroll is INotifyPropertyChanged notifyPropertyChanged)
                 notifyPropertyChanged.PropertyChanged -= OnScrollPropertyChanged;
@@ -71,8 +71,13 @@ public class TableViewColumnHeadersPresenter : Panel
         base.OnDetachedFromLogicalTree(e);
     }
 
-    private void OnColumnsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        => RebuildHeaders();
+    private void OnColumnsChanged(object? sender, TableView.ColumnsChangedEventArgs e)
+    {
+        if (e.IsSizeChange)
+            InvalidateMeasure();
+        else
+            RebuildHeaders();
+    }
 
     private void OnScrollPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
