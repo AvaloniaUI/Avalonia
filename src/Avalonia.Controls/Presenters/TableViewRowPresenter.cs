@@ -55,6 +55,9 @@ public class TableViewRowPresenter : Panel
         InvalidateMeasure();
     }
 
+    internal void RefreshCell(int columnIndex)
+        => ((TableViewCell)Children[columnIndex]).Refresh();
+
     /// <inheritdoc/>
     protected override Size MeasureOverride(Size availableSize)
     {

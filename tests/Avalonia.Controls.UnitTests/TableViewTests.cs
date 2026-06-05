@@ -360,6 +360,54 @@ public sealed class TableViewTests : ScopedTestBase
     }
 
     [Fact]
+    public void Changing_Column_Properties_Updates_Existing_Cells()
+    {
+        using var app = Start();
+
+        var themeA = new ControlTheme(typeof(TableViewCell));
+        var themeB = new ControlTheme(typeof(TableViewCell));
+
+        var item = new Person("Alice", "Ally");
+        var column = new TableViewColumn
+        {
+            Width = new GridLength(1, GridUnitType.Star),
+            CellTheme = themeA,
+            HorizontalContentAlignment = HorizontalAlignment.Left,
+            Binding = new ReflectionBinding(nameof(Person.Name))
+        };
+        var target = CreateTarget(new[] { item });
+        target.Columns.Add(column);
+
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var cell = (TableViewCell)GetRowPresenter(row).Children[0];
+
+        Assert.Same(themeA, cell.Theme);
+        Assert.Equal(HorizontalAlignment.Left, cell.HorizontalContentAlignment);
+        Assert.Null(cell.ContentTemplate);
+        Assert.Equal("Alice", cell.Content);
+
+        // Mutating the column after the cell was built should update the existing cell.
+        // Switch the Binding first to confirm it's reflected in the cell content.
+        column.CellTheme = themeB;
+        column.HorizontalContentAlignment = HorizontalAlignment.Right;
+        column.Binding = new ReflectionBinding(nameof(Person.Nickname));
+
+        Assert.Same(themeB, cell.Theme);
+        Assert.Equal(HorizontalAlignment.Right, cell.HorizontalContentAlignment);
+        Assert.Null(cell.ContentTemplate);
+        Assert.Equal("Ally", cell.Content);
+
+        // CellTemplate takes priority over Binding: the row item flows through the template.
+        var templateB = new FuncDataTemplate<object>((_, _) => new TextBlock());
+        column.CellTemplate = templateB;
+
+        Assert.Same(templateB, cell.ContentTemplate);
+        Assert.Same(item, cell.Content);
+    }
+
+    [Fact]
     public void CanResizeColumns_Defaults_To_True()
     {
         Assert.True(new TableView().CanResizeColumns);
@@ -541,7 +589,13 @@ public sealed class TableViewTests : ScopedTestBase
 
     private class Person
     {
-        public Person(string name) => Name = name;
+        public Person(string name, string? nickname = null)
+        {
+            Name = name;
+            Nickname = nickname;
+        }
+
         public string Name { get; }
+        public string? Nickname { get; }
     }
 }

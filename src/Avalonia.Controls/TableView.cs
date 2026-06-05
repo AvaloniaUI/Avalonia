@@ -197,6 +197,19 @@ public class TableView : ListBox
         }
     }
 
+    internal void RefreshColumnCells(TableViewColumn column)
+    {
+        var columnIndex = Columns.IndexOf(column);
+        if (columnIndex < 0)
+            return;
+
+        foreach (var row in GetRealizedContainers())
+        {
+            if (row is TableViewRow tableViewRow)
+                tableViewRow.RefreshCell(columnIndex);
+        }
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

@@ -203,6 +203,13 @@ public class TableViewColumn : StyledElement, IHeadered
             TableView?.OnColumnsSizeChanged();
         else if (change.Property == CanResizeProperty)
             UpdateCanEffectivelyResize();
+        else if (change.Property == CellThemeProperty ||
+                 change.Property == CellTemplateProperty ||
+                 change.Property == BindingProperty ||
+                 change.Property == HorizontalContentAlignmentProperty)
+        {
+            TableView?.RefreshColumnCells(this);
+        }
     }
 
     internal void UpdateCanEffectivelyResize()

@@ -40,6 +40,11 @@ public class TableViewCell : ContentControl
 
     private void SetProperties(TableViewColumn column)
     {
+        // We don't bind the various properties here.
+        // First, it's pretty rare for a column's properties to change after the initial setup.
+        // Second, we have additional logic depending on whether a cell template is specified.
+        // Instead, values are updated manually via Refresh().
+
         SetValue(ThemeProperty, column.CellTheme);
         SetValue(HorizontalContentAlignmentProperty, column.HorizontalContentAlignment);
 
@@ -48,15 +53,18 @@ public class TableViewCell : ContentControl
             SetValue(ContentTemplateProperty, cellTemplate);
             Bind(ContentProperty, RowBinding);
         }
-        else if (column.Binding is { } binding)
-        {
-            SetValue(ContentTemplateProperty, null);
-            Bind(ContentProperty, binding);
-        }
         else
         {
             SetValue(ContentTemplateProperty, null);
-            Bind(ContentProperty, RowBinding);
+            Bind(ContentProperty, column.Binding ?? RowBinding);
         }
+    }
+
+    internal void Refresh()
+    {
+        if (Column is null)
+            ClearProperties();
+        else
+            SetProperties(Column);
     }
 }

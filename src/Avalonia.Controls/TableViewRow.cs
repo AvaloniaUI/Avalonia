@@ -53,4 +53,7 @@ public class TableViewRow : ListBoxItem
 
     internal void RebuildCells()
         => _rowPresenter?.RebuildCells();
+
+    internal void RefreshCell(int columnIndex)
+        => _rowPresenter?.RefreshCell(columnIndex);
 }
