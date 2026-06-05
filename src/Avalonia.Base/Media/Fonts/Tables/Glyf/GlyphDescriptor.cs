@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Buffers.Binary;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Avalonia.Media.Fonts.Tables.Glyf
 {
