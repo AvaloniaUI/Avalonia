@@ -721,14 +721,18 @@ namespace Avalonia.Media
                 return false;
             }
 
-            // Use stackalloc for temporary buffers to avoid heap allocations
-            Span<HorizontalGlyphMetric> hMetrics = glyphIds.Length <= 256
-                ? stackalloc HorizontalGlyphMetric[glyphIds.Length]
-                : new HorizontalGlyphMetric[glyphIds.Length];
+            // Size each temporary buffer to zero (a free, empty stackalloc) when its source
+            // table is absent, so a font without hmtx / vmtx never pays for a buffer that is
+            // never read. Only a present-but-large (> 256) source falls back to the heap.
+            var hCount = _hasHorizontalMetrics && _hmTable != null ? glyphIds.Length : 0;
+            Span<HorizontalGlyphMetric> hMetrics = hCount <= 256
+                ? stackalloc HorizontalGlyphMetric[hCount]
+                : new HorizontalGlyphMetric[hCount];
 
-            Span<VerticalGlyphMetric> vMetrics = glyphIds.Length <= 256
-                ? stackalloc VerticalGlyphMetric[glyphIds.Length]
-                : new VerticalGlyphMetric[glyphIds.Length];
+            var vCount = _hasVerticalMetrics && _vmTable != null ? glyphIds.Length : 0;
+            Span<VerticalGlyphMetric> vMetrics = vCount <= 256
+                ? stackalloc VerticalGlyphMetric[vCount]
+                : new VerticalGlyphMetric[vCount];
 
             bool hasHorizontal = false;
             bool hasVertical = false;
