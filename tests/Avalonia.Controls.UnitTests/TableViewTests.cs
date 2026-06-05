@@ -186,7 +186,25 @@ public sealed class TableViewTests : ScopedTestBase
     }
 
     [Fact]
-    public void Cell_Content_Uses_Column_Binding()
+    public void Cell_Content_Defaults_To_Row_Item_When_No_Template_Or_Binding()
+    {
+        using var app = Start();
+
+        var item = new Person("Alice");
+        var target = CreateTarget(new[] { item });
+        target.Columns.Add(new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) });
+        target.Columns.Add(new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) });
+
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var firstCell = (TableViewCell)GetRowPresenter(row).Children[0];
+
+        Assert.Same(item, firstCell.Content);
+    }
+
+    [Fact]
+    public void Cell_Uses_Column_Binding()
     {
         using var app = Start();
 
@@ -209,6 +227,75 @@ public sealed class TableViewTests : ScopedTestBase
 
         Assert.Equal("Alice", firstCell.Content);
         Assert.Equal("Bob", secondCell.Content);
+    }
+
+    [Fact]
+    public void Cell_Uses_Column_CellTemplate()
+    {
+        using var app = Start();
+
+        var template = new FuncDataTemplate<object>((_, _) => new TextBlock());
+        var item = new Person("Alice");
+        var target = CreateTarget(new[] { item });
+        target.Columns.Add(new TableViewColumn
+        {
+            Width = new GridLength(1, GridUnitType.Star),
+            CellTemplate = template,
+        });
+        target.Columns.Add(new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) });
+
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var firstCell = (TableViewCell)GetRowPresenter(row).Children[0];
+
+        Assert.Same(template, firstCell.ContentTemplate);
+        Assert.Same(item, firstCell.Content);
+    }
+
+    [Fact]
+    public void Cell_Uses_Column_CellTheme()
+    {
+        using var app = Start();
+
+        var cellTheme = new ControlTheme(typeof(TableViewCell));
+        var target = CreateTarget(new[] { "Foo" });
+        target.Columns.Add(new TableViewColumn
+        {
+            Width = new GridLength(1, GridUnitType.Star),
+            CellTheme = cellTheme,
+        });
+        target.Columns.Add(new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) });
+
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var firstCell = (TableViewCell)GetRowPresenter(row).Children[0];
+        var secondCell = (TableViewCell)GetRowPresenter(row).Children[1];
+
+        Assert.Same(cellTheme, firstCell.Theme);
+        Assert.Null(secondCell.Theme);
+    }
+
+    [Fact]
+    public void Cell_Column_Property_Is_Set_To_Owning_Column()
+    {
+        using var app = Start();
+
+        var column0 = new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) };
+        var column1 = new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) };
+        var target = CreateTarget(new[] { "Foo" });
+        target.Columns.Add(column0);
+        target.Columns.Add(column1);
+
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var firstCell = (TableViewCell)GetRowPresenter(row).Children[0];
+        var secondCell = (TableViewCell)GetRowPresenter(row).Children[1];
+
+        Assert.Same(column0, firstCell.Column);
+        Assert.Same(column1, secondCell.Column);
     }
 
     private static IDisposable Start()
