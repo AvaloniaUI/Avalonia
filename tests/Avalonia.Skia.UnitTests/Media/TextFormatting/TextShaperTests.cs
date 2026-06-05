@@ -144,7 +144,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 // Measure: ask for the width of the first 3 glyphs.
                 var threeGlyphsWidth = buffer[0].GlyphAdvance + buffer[1].GlyphAdvance + buffer[2].GlyphAdvance;
-                var fit = buffer.MeasureCharactersThatFit(threeGlyphsWidth, out var widthConsumed);
+                var fit = buffer.FindLeadingCharCountWithinWidth(threeGlyphsWidth);
+                var widthConsumed = buffer.GetCharRangeWidth(0, fit);
 
                 Assert.Equal(3, fit);
                 Assert.Equal(threeGlyphsWidth, widthConsumed, 5);

@@ -787,7 +787,7 @@ namespace Avalonia.Media.TextFormatting
                             }
 
                             // Some part of the buffer overflows: find the cluster boundary.
-                            var runLength = buffer.MeasureCharactersThatFit(remaining, out _);
+                            var runLength = buffer.FindLeadingCharCountWithinWidth(remaining);
 
                             // "Include at least one cluster" rule preserves the existing
                             // contract that the caller always advances by at least one

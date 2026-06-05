@@ -308,57 +308,6 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Finds how many text characters from the start of this buffer fit within
-        /// <paramref name="availableWidth"/>, walking in logical cluster order.
-        /// Returns the character count and the width consumed (always &lt;= availableWidth
-        /// unless the very first cluster overflows, in which case the caller is expected
-        /// to honour the overflow contract documented in <c>TextFormatterImpl.MeasureLength</c>).
-        /// </summary>
-        internal int MeasureCharactersThatFit(double availableWidth, out double widthConsumed)
-        {
-            var prefix = EnsureClusterCache();
-            var startIdx = _clusterStartIdx;
-            var count = _clusterCount;
-
-            if (count == 0)
-            {
-                widthConsumed = 0d;
-                return 0;
-            }
-
-            // Find the largest k such that prefix[startIdx + k] - prefix[startIdx] <=
-            // availableWidth. Standard binary search on the prefix-sum array, with the
-            // sub-buffer's base width subtracted out.
-            var basePrefix = prefix[startIdx];
-
-            var lo = 0;
-            var hi = count;
-            while (lo < hi)
-            {
-                var mid = (lo + hi + 1) >> 1;
-                if (MathUtilities.LessThanOrClose(prefix[startIdx + mid] - basePrefix, availableWidth))
-                {
-                    lo = mid;
-                }
-                else
-                {
-                    hi = mid - 1;
-                }
-            }
-
-            widthConsumed = prefix[startIdx + lo] - basePrefix;
-
-            // Simple-mode fast path: 1 char per cluster, so the consumed char count
-            // equals the cluster offset we just resolved (no start-chars table needed).
-            var starts = _clusterStartChars;
-            if (starts is null)
-            {
-                return lo;
-            }
-            return starts[startIdx + lo] - starts[startIdx];
-        }
-
-        /// <summary>
         /// Returns the character length of the first logical cluster in this buffer.
         /// Used by <c>MeasureLength</c> to satisfy the "include at least one cluster"
         /// rule when even the first cluster does not fit the paragraph width.
@@ -832,8 +781,8 @@ namespace Avalonia.Media.TextFormatting
                 // Simple mode: one char per cluster, so the local char offset equals
                 // the local cluster index. Clamp to [0, count] to mirror the
                 // out-of-range handling of FindLargestClusterAtOrBefore.
-                startBoundary = Math.Max(0, Math.Min(startChar, count));
-                endBoundary = Math.Max(0, Math.Min(endChar, count));
+                startBoundary = Math.Clamp(startChar, 0, count);
+                endBoundary = Math.Clamp(endChar, 0, count);
             }
             else
             {
