@@ -61,6 +61,36 @@ public class DrawingContextTests : TestBase
         CompareImages();
     }
 
+    [Fact]
+    public async Task Should_Render_Geometry_With_Effect()
+    {
+        var group = new DrawingGroup();
+        using (var context = group.Open())
+        {
+            using (context.PushEffect(new DropShadowEffect { BlurRadius = 3, Color = Colors.Black, Opacity = 1, OffsetX = 3, OffsetY = 3}, new Rect(0, 0, 300, 300)))
+            {
+                context.DrawLine(new Pen(Brushes.Red, 30), new Point(50,50), new Point(250, 250));
+            }
+        }
+
+        var target = new Border
+        {
+            Width = 300,
+            Height = 300,
+            Background = Brushes.White,
+            Child = new Image { 
+                Source = new DrawingImage { Drawing = group }, 
+                Stretch = Stretch.None, 
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                ClipToBounds = false
+            }
+        };
+
+        await RenderToFile(target);
+        CompareImages();
+    }
+    
     internal class RenderControl : Control
     {
         private static readonly Typeface s_typeface = new Typeface(TestFontFamily);
