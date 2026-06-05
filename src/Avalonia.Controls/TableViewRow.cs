@@ -15,7 +15,15 @@ public class TableViewRow : ListBoxItem
 
     private TableViewRowPresenter? _rowPresenter;
 
-    internal AvaloniaList<TableViewColumn>? Columns { get; set; }
+    internal AvaloniaList<TableViewColumn>? Columns
+    {
+        get;
+        set
+        {
+            field = value;
+            _rowPresenter?.Columns = value;
+        }
+    }
 
     /// <inheritdoc />
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

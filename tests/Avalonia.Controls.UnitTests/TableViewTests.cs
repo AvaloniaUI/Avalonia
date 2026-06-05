@@ -47,7 +47,7 @@ public sealed class TableViewTests : ScopedTestBase
     }
 
     [Fact]
-    public void Adding_Column_Adds_Cell_To_Realized_Rows()
+    public void Adding_Column_Adds_Cell_To_Realized_Rows_And_Headers()
     {
         using var app = Start();
 
@@ -57,16 +57,20 @@ public sealed class TableViewTests : ScopedTestBase
 
         Prepare(target);
 
-        var presenter = GetRowPresenter((TableViewRow)target.GetRealizedContainers().Single());
-        Assert.Equal(2, presenter.Children.Count);
+        var rowPresenter = GetRowPresenter((TableViewRow)target.GetRealizedContainers().Single());
+        Assert.Equal(2, rowPresenter.Children.Count);
+
+        var headersPresenter = GetColumnHeadersPresenter(target);
+        Assert.Equal(2, headersPresenter.Children.Count);
 
         target.Columns.Add(new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) });
 
-        Assert.Equal(3, presenter.Children.Count);
+        Assert.Equal(3, rowPresenter.Children.Count);
+        Assert.Equal(3, headersPresenter.Children.Count);
     }
 
     [Fact]
-    public void Removing_Column_Removes_Cell_From_Realized_Rows()
+    public void Removing_Column_Removes_Cell_From_Realized_Rows_And_Headers()
     {
         using var app = Start();
 
@@ -77,12 +81,16 @@ public sealed class TableViewTests : ScopedTestBase
 
         Prepare(target);
 
-        var presenter = GetRowPresenter((TableViewRow)target.GetRealizedContainers().Single());
-        Assert.Equal(3, presenter.Children.Count);
+        var rowPresenter = GetRowPresenter((TableViewRow)target.GetRealizedContainers().Single());
+        Assert.Equal(3, rowPresenter.Children.Count);
+
+        var headersPresenter = GetColumnHeadersPresenter(target);
+        Assert.Equal(3, headersPresenter.Children.Count);
 
         target.Columns.RemoveAt(2);
 
-        Assert.Equal(2, presenter.Children.Count);
+        Assert.Equal(2, rowPresenter.Children.Count);
+        Assert.Equal(2, headersPresenter.Children.Count);
     }
 
     [Fact]
@@ -150,6 +158,34 @@ public sealed class TableViewTests : ScopedTestBase
     }
 
     [Fact]
+    public void Replacing_Columns_Collection_Updates_Realized_Rows_And_Headers()
+    {
+        using var app = Start();
+
+        var target = CreateTarget(new[] { "Foo" });
+        target.Columns.Add(new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) });
+        target.Columns.Add(new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) });
+
+        Prepare(target);
+
+        var rowPresenter = GetRowPresenter((TableViewRow)target.GetRealizedContainers().Single());
+        Assert.Equal(2, rowPresenter.Children.Count);
+
+        var headersPresenter = GetColumnHeadersPresenter(target);
+        Assert.Equal(2, headersPresenter.Children.Count);
+
+        target.Columns =
+        [
+            new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) },
+            new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) },
+            new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) }
+        ];
+
+        Assert.Equal(3, rowPresenter.Children.Count);
+        Assert.Equal(3, headersPresenter.Children.Count);
+    }
+
+    [Fact]
     public void Cell_Content_Uses_Column_Binding()
     {
         using var app = Start();
@@ -158,11 +194,11 @@ public sealed class TableViewTests : ScopedTestBase
         target.Columns.Add(new TableViewColumn
         {
             Width = new GridLength(1, GridUnitType.Star),
-            Binding = new ReflectionBinding(nameof(Person.Name)),
+            Binding = new ReflectionBinding(nameof(Person.Name))
         });
         target.Columns.Add(new TableViewColumn
         {
-            Width = new GridLength(1, GridUnitType.Star),
+            Width = new GridLength(1, GridUnitType.Star)
         });
 
         Prepare(target);
@@ -183,13 +219,22 @@ public sealed class TableViewTests : ScopedTestBase
         {
             Template = TableViewTemplate(),
             ItemContainerTheme = TableViewRowTheme(),
-            ItemsSource = items,
+            ItemsSource = items
         };
 
     private static TableViewRowPresenter GetRowPresenter(TableViewRow row)
     {
         var presenter = row.GetVisualDescendants()
             .OfType<TableViewRowPresenter>()
+            .FirstOrDefault();
+        Assert.NotNull(presenter);
+        return presenter;
+    }
+
+    private static TableViewColumnHeadersPresenter GetColumnHeadersPresenter(TableView target)
+    {
+        var presenter = target.GetVisualDescendants()
+            .OfType<TableViewColumnHeadersPresenter>()
             .FirstOrDefault();
         Assert.NotNull(presenter);
         return presenter;
@@ -210,17 +255,27 @@ public sealed class TableViewTests : ScopedTestBase
 
     private static FuncControlTemplate TableViewTemplate()
         => new FuncControlTemplate<TableView>((parent, scope) =>
-            new ScrollViewer
+            new DockPanel
             {
-                Name = "PART_ScrollViewer",
-                Template = ScrollViewerTemplate(),
-                Content = new ItemsPresenter
+                Children =
                 {
-                    Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsPanelProperty] =
-                        parent.GetObservable(ItemsControl.ItemsPanelProperty).ToBinding(),
-                }.RegisterInNameScope(scope),
-            }.RegisterInNameScope(scope));
+                    new TableViewColumnHeadersPresenter
+                    {
+                        [DockPanel.DockProperty] = Dock.Top
+                    },
+                    new ScrollViewer
+                    {
+                        Name = "PART_ScrollViewer",
+                        Template = ScrollViewerTemplate(),
+                        Content = new ItemsPresenter
+                        {
+                            Name = "PART_ItemsPresenter",
+                            [~ItemsPresenter.ItemsPanelProperty] =
+                                parent.GetObservable(ItemsControl.ItemsPanelProperty).ToBinding()
+                        }.RegisterInNameScope(scope)
+                    }.RegisterInNameScope(scope)
+                }
+            });
 
     private static FuncControlTemplate ScrollViewerTemplate()
         => new FuncControlTemplate<ScrollViewer>((_, scope) =>
@@ -230,8 +285,8 @@ public sealed class TableViewTests : ScopedTestBase
                 {
                     new ScrollContentPresenter
                     {
-                        Name = "PART_ContentPresenter",
-                    }.RegisterInNameScope(scope),
+                        Name = "PART_ContentPresenter"
+                    }.RegisterInNameScope(scope)
                 }
             });
 
@@ -243,8 +298,8 @@ public sealed class TableViewTests : ScopedTestBase
                 new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<TableViewRow>((_, scope) =>
                     new TableViewRowPresenter
                     {
-                        Name = "PART_RowPresenter",
-                    }.RegisterInNameScope(scope))),
+                        Name = "PART_RowPresenter"
+                    }.RegisterInNameScope(scope)))
             }
         };
 

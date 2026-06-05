@@ -55,6 +55,8 @@ public class TableView : ListBox
                 if (value is not null)
                     SubscribeToColumns(value);
 
+                ColumnsChanged?.Invoke(this, new ColumnsChangedEventArgs(false));
+
                 RebuildCells();
             }
         }
@@ -136,10 +138,15 @@ public class TableView : ListBox
 
     private void RebuildCells()
     {
+        var columns = Columns;
+
         foreach (var row in GetRealizedContainers())
         {
             if (row is TableViewRow tableViewRow)
+            {
+                tableViewRow.Columns = columns;
                 tableViewRow.RebuildCells();
+            }
             else
                 row.InvalidateMeasure();
         }
