@@ -772,9 +772,12 @@ namespace Avalonia.Media
             // the font has no glyf table, bearings fall back to hmtx/vmtx and the box is zero.
             var hasGlyf = _glyfTable != null;
 
-            Span<GlyphBounds> bounds = glyphIds.Length <= 256
-                ? stackalloc GlyphBounds[glyphIds.Length]
-                : new GlyphBounds[glyphIds.Length];
+            // No glyf table (CFF / CFF2) → no ink bounds to read; keep the buffer empty so
+            // those fonts don't allocate a per-glyph bounds array that is never used.
+            var boundsCount = hasGlyf ? glyphIds.Length : 0;
+            Span<GlyphBounds> bounds = boundsCount <= 256
+                ? stackalloc GlyphBounds[boundsCount]
+                : new GlyphBounds[boundsCount];
 
             if (hasGlyf)
             {
