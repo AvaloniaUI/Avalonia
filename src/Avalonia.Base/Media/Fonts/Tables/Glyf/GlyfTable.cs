@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using Avalonia.Platform;
 using Avalonia.Logging;
 
@@ -427,18 +428,14 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                     return false;
                 }
 
-                // When ARGS_ARE_XY_VALUES is clear, arg1/arg2 are point numbers: the
-                // component is positioned by making one of its points coincide with a point
-                // in the already-assembled parent glyph (point matching), not by an x/y
-                // offset. That is not implemented — treating such a component as a plain
-                // zero-translation placement renders a visibly wrong outline. Bail out so the
-                // caller falls back to "no outline" rather than emitting an incorrect one.
-                foreach (var component in components)
+                // When ARGS_ARE_XY_VALUES is clear, arg1/arg2 are point numbers: the component
+                // is placed by making one of its points coincide with a point in the
+                // already-assembled glyph (point matching), not by an x/y offset. The streaming
+                // loop below doesn't retain points, so route those composites through the
+                // materialising path instead. The flag is computed once while parsing.
+                if (compositeGlyph.UsesPointMatching)
                 {
-                    if ((component.Flags & CompositeFlags.ArgsAreXYValues) == 0)
-                    {
-                        return false;
-                    }
+                    return BuildPointMatchedComposite(components, context, transform, decycler);
                 }
 
                 var hasGeometry = false;
@@ -462,6 +459,396 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             {
                 // Return rented buffer to pool
                 compositeGlyph.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Builds a composite glyph in which at least one component is placed by point matching.
+        /// </summary>
+        /// <remarks>
+        /// Unlike the streaming fast path, this materialises every component's transformed points
+        /// into a single pooled buffer so a point-matched component can be aligned to a point of
+        /// the already-assembled glyph, then emits the assembled contours. Only reached for the
+        /// rare composites that actually use point matching; all buffers are pooled and released
+        /// before returning. Returns <see langword="false"/> (no outline) rather than an incorrect
+        /// one for cases not yet supported: a component that is itself composite, or a point index
+        /// that is out of range or refers to a phantom point (which this reader does not
+        /// materialise).
+        /// </remarks>
+        private bool BuildPointMatchedComposite(
+            ReadOnlySpan<GlyphComponent> components,
+            IGeometryContext context,
+            Matrix transform,
+            GlyphDecycler decycler)
+        {
+            var outline = new ResolvedOutline(64);
+
+            try
+            {
+                foreach (var component in components)
+                {
+                    var componentStart = outline.PointCount;
+
+                    // Resolve the component's points into composite space with its 2x2 scale
+                    // applied (but not the placement offset, which is computed next).
+                    if (!TryResolveSimpleGlyphPoints(component.GlyphIndex, CreateComponentScale(component), decycler, outline))
+                    {
+                        return false;
+                    }
+
+                    Vector offset;
+
+                    if ((component.Flags & CompositeFlags.ArgsAreXYValues) != 0)
+                    {
+                        // Signed x/y offset (the unscaled-offset default).
+                        offset = new Vector(component.Arg1, component.Arg2);
+                    }
+                    else
+                    {
+                        // Point matching: arg1 is a point already placed by an earlier component,
+                        // arg2 is a point of this component. They are unsigned point numbers, but
+                        // CompositeGlyph parses the raw bytes/words as signed, so reinterpret to
+                        // unsigned here (two's-complement round-trip).
+                        var argsAreWords = (component.Flags & CompositeFlags.ArgsAreWords) != 0;
+                        int parentPoint = argsAreWords ? (ushort)component.Arg1 : (byte)component.Arg1;
+                        int componentPoint = argsAreWords ? (ushort)component.Arg2 : (byte)component.Arg2;
+
+                        var componentPointCount = outline.PointCount - componentStart;
+
+                        if (parentPoint >= componentStart || componentPoint >= componentPointCount)
+                        {
+                            // Out of range, or references a phantom point this reader does not
+                            // materialise — bail rather than place the component incorrectly.
+                            return false;
+                        }
+
+                        offset = outline.GetPoint(parentPoint) - outline.GetPoint(componentStart + componentPoint);
+                    }
+
+                    outline.TranslateRange(componentStart, outline.PointCount, offset);
+                }
+
+                if (outline.PointCount == 0)
+                {
+                    return false;
+                }
+
+                EmitResolvedOutline(outline, transform, context);
+
+                return true;
+            }
+            finally
+            {
+                outline.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Appends a simple glyph's points (transformed by <paramref name="transform"/>) and contour
+        /// boundaries to <paramref name="outline"/>. Returns <see langword="false"/> for a component
+        /// that is itself composite (nested point matching is not supported yet); an empty glyph
+        /// contributes no points and returns <see langword="true"/>.
+        /// </summary>
+        private bool TryResolveSimpleGlyphPoints(int glyphIndex, Matrix transform, GlyphDecycler decycler, ResolvedOutline outline)
+        {
+            using var guard = decycler.Enter(glyphIndex);
+
+            if (!TryGetGlyphData(glyphIndex, out var glyphData) || glyphData.IsEmpty)
+            {
+                return true;
+            }
+
+            var descriptor = new GlyphDescriptor(glyphData);
+
+            if (!descriptor.IsSimpleGlyph)
+            {
+                return false;
+            }
+
+            var simpleGlyph = descriptor.SimpleGlyph;
+
+            try
+            {
+                var ends = simpleGlyph.EndPtsOfContours;
+                var flags = simpleGlyph.Flags;
+                var xCoords = simpleGlyph.XCoordinates;
+                var yCoords = simpleGlyph.YCoordinates;
+
+                var start = 0;
+
+                for (var contourIndex = 0; contourIndex < ends.Length; contourIndex++)
+                {
+                    int end = ends[contourIndex];
+
+                    for (var i = start; i <= end; i++)
+                    {
+                        var point = transform.Transform(new Point(xCoords[i], yCoords[i]));
+                        outline.AddPoint(point, (flags[i] & GlyphFlag.OnCurvePoint) != 0);
+                    }
+
+                    outline.EndContour();
+                    start = end + 1;
+                }
+
+                return true;
+            }
+            finally
+            {
+                simpleGlyph.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Builds the 2x2 scale/transform of a composite component (without any translation; the
+        /// placement offset is applied separately).
+        /// </summary>
+        private static Matrix CreateComponentScale(GlyphComponent component)
+        {
+            var flags = component.Flags;
+
+            double m11, m12, m21, m22;
+
+            if ((flags & CompositeFlags.WeHaveAScale) != 0)
+            {
+                m11 = m22 = component.Scale;
+                m12 = m21 = 0;
+            }
+            else if ((flags & CompositeFlags.WeHaveAnXAndYScale) != 0)
+            {
+                m11 = component.ScaleX;
+                m22 = component.ScaleY;
+                m12 = m21 = 0;
+            }
+            else if ((flags & CompositeFlags.WeHaveATwoByTwo) != 0)
+            {
+                m11 = component.ScaleX;
+                m12 = component.Scale01;
+                m21 = component.Scale10;
+                m22 = component.ScaleY;
+            }
+            else
+            {
+                m11 = m22 = 1.0;
+                m12 = m21 = 0;
+            }
+
+            return new Matrix(m11, m12, m21, m22, 0, 0);
+        }
+
+        /// <summary>
+        /// Emits the contours of a materialised outline to the geometry context, applying
+        /// <paramref name="transform"/>. Mirrors the on/off-curve walking of
+        /// <see cref="BuildSimpleGlyphGeometry"/> but over an already-resolved point buffer.
+        /// </summary>
+        private static void EmitResolvedOutline(ResolvedOutline outline, Matrix transform, IGeometryContext context)
+        {
+            var points = outline.Points;
+            var onCurve = outline.OnCurve;
+            var contourEnds = outline.ContourEnds;
+
+            var startPointIndex = 0;
+
+            for (var contourIndex = 0; contourIndex < contourEnds.Length; contourIndex++)
+            {
+                var endPointIndex = contourEnds[contourIndex];
+                var pointCount = endPointIndex - startPointIndex + 1;
+
+                if (pointCount <= 0)
+                {
+                    startPointIndex = endPointIndex + 1;
+                    continue;
+                }
+
+                if (onCurve[startPointIndex])
+                {
+                    context.BeginFigure(transform.Transform(points[startPointIndex]), true);
+
+                    int i = pointCount == 1 ? startPointIndex : startPointIndex + 1;
+                    int processingStartIndex = i;
+
+                    var maxSegments = Math.Max(1, pointCount * 3);
+                    var segmentsProcessed = 0;
+
+                    while (segmentsProcessed++ < maxSegments)
+                    {
+                        int currentIdx = startPointIndex + ((i - startPointIndex) % pointCount);
+                        var curPoint = points[currentIdx];
+
+                        if (onCurve[currentIdx])
+                        {
+                            context.LineTo(transform.Transform(curPoint));
+                            i++;
+                        }
+                        else
+                        {
+                            int nextIdx = startPointIndex + ((i + 1 - startPointIndex) % pointCount);
+                            var nextPoint = points[nextIdx];
+
+                            if (onCurve[nextIdx])
+                            {
+                                context.QuadraticBezierTo(transform.Transform(curPoint), transform.Transform(nextPoint));
+                                i += 2;
+                            }
+                            else
+                            {
+                                var implied = new Point((curPoint.X + nextPoint.X) / 2.0, (curPoint.Y + nextPoint.Y) / 2.0);
+                                context.QuadraticBezierTo(transform.Transform(curPoint), transform.Transform(implied));
+                                i++;
+                            }
+                        }
+
+                        int checkIdx = startPointIndex + ((i - startPointIndex) % pointCount);
+                        if (checkIdx == processingStartIndex && segmentsProcessed > 0)
+                        {
+                            break;
+                        }
+                    }
+
+                    context.EndFigure(true);
+                }
+                else
+                {
+                    var firstPoint = points[startPointIndex];
+                    var lastPoint = points[endPointIndex];
+                    var impliedStart = new Point((lastPoint.X + firstPoint.X) / 2.0, (lastPoint.Y + firstPoint.Y) / 2.0);
+
+                    context.BeginFigure(transform.Transform(impliedStart), true);
+
+                    int idxWalker = 0;
+                    var maxSegments = pointCount * 3;
+                    var segmentsProcessed = 0;
+
+                    while (segmentsProcessed++ < maxSegments)
+                    {
+                        int curIdx = startPointIndex + idxWalker;
+                        int nextIdxOffset = idxWalker == pointCount - 1 ? 0 : idxWalker + 1;
+                        int nextIdx = startPointIndex + nextIdxOffset;
+
+                        var curPoint = points[curIdx];
+
+                        if (onCurve[curIdx])
+                        {
+                            context.LineTo(transform.Transform(curPoint));
+                            idxWalker = nextIdxOffset;
+                        }
+                        else
+                        {
+                            var nextPoint = points[nextIdx];
+
+                            if (onCurve[nextIdx])
+                            {
+                                context.QuadraticBezierTo(transform.Transform(curPoint), transform.Transform(nextPoint));
+                                idxWalker = nextIdxOffset == pointCount - 1 ? 0 : nextIdxOffset + 1;
+                            }
+                            else
+                            {
+                                var implied = new Point((curPoint.X + nextPoint.X) / 2.0, (curPoint.Y + nextPoint.Y) / 2.0);
+                                context.QuadraticBezierTo(transform.Transform(curPoint), transform.Transform(implied));
+                                idxWalker = nextIdxOffset == pointCount - 1 ? 0 : nextIdxOffset + 1;
+                            }
+                        }
+
+                        if (idxWalker == 0 && segmentsProcessed > 1)
+                        {
+                            break;
+                        }
+                    }
+
+                    context.EndFigure(true);
+                }
+
+                startPointIndex = endPointIndex + 1;
+            }
+        }
+
+        /// <summary>
+        /// A growable, pooled buffer of resolved (transformed) outline points used only by the
+        /// point-matching composite path. Backing arrays are rented from <see cref="ArrayPool{T}"/>
+        /// and returned on <see cref="Dispose"/>.
+        /// </summary>
+        private sealed class ResolvedOutline : IDisposable
+        {
+            private Point[] _points;
+            private bool[] _onCurve;
+            private int[] _contourEnds;
+
+            public ResolvedOutline(int capacity)
+            {
+                _points = ArrayPool<Point>.Shared.Rent(capacity);
+                _onCurve = ArrayPool<bool>.Shared.Rent(capacity);
+                _contourEnds = ArrayPool<int>.Shared.Rent(16);
+            }
+
+            public int PointCount { get; private set; }
+
+            public int ContourCount { get; private set; }
+
+            public ReadOnlySpan<Point> Points => _points.AsSpan(0, PointCount);
+
+            public ReadOnlySpan<bool> OnCurve => _onCurve.AsSpan(0, PointCount);
+
+            public ReadOnlySpan<int> ContourEnds => _contourEnds.AsSpan(0, ContourCount);
+
+            public Point GetPoint(int index) => _points[index];
+
+            public void AddPoint(Point point, bool onCurve)
+            {
+                if (PointCount >= _points.Length)
+                {
+                    Grow(ref _points, PointCount);
+                    Grow(ref _onCurve, PointCount);
+                }
+
+                _points[PointCount] = point;
+                _onCurve[PointCount] = onCurve;
+                PointCount++;
+            }
+
+            public void EndContour()
+            {
+                if (ContourCount >= _contourEnds.Length)
+                {
+                    Grow(ref _contourEnds, ContourCount);
+                }
+
+                _contourEnds[ContourCount++] = PointCount - 1;
+            }
+
+            public void TranslateRange(int fromInclusive, int toExclusive, Vector offset)
+            {
+                for (var i = fromInclusive; i < toExclusive; i++)
+                {
+                    _points[i] += offset;
+                }
+            }
+
+            private static void Grow<T>(ref T[] array, int count)
+            {
+                var bigger = ArrayPool<T>.Shared.Rent(array.Length * 2);
+                array.AsSpan(0, count).CopyTo(bigger);
+                ArrayPool<T>.Shared.Return(array);
+                array = bigger;
+            }
+
+            public void Dispose()
+            {
+                if (_points != null)
+                {
+                    ArrayPool<Point>.Shared.Return(_points);
+                    _points = null!;
+                }
+
+                if (_onCurve != null)
+                {
+                    ArrayPool<bool>.Shared.Return(_onCurve);
+                    _onCurve = null!;
+                }
+
+                if (_contourEnds != null)
+                {
+                    ArrayPool<int>.Shared.Return(_contourEnds);
+                    _contourEnds = null!;
+                }
             }
         }
 

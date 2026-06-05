@@ -28,6 +28,14 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         public ReadOnlySpan<byte> Instructions { get; }
 
         /// <summary>
+        /// Gets a value indicating whether any component is positioned by point matching
+        /// (ARGS_ARE_XY_VALUES is clear) rather than by an x/y offset.
+        /// </summary>
+        /// <remarks>Computed while parsing the components so the caller does not have to make a
+        /// second pass to decide which build path to use.</remarks>
+        public bool UsesPointMatching { get; }
+
+        /// <summary>
         /// Initializes a new instance of the CompositeGlyph class using the specified glyph components and an optional
         /// rented buffer.
         /// </summary>
@@ -36,12 +44,14 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// buffer's lifetime.</remarks>
         /// <param name="components">A read-only span containing the glyph components that make up the composite glyph. The span must remain
         /// valid for the lifetime of the CompositeGlyph instance.</param>
+        /// <param name="usesPointMatching">Indicates whether any component is positioned by point matching rather than by an x/y offset.</param>
         /// <param name="rentedBuffer">An optional array used as a rented buffer for internal storage. If provided, the buffer may be used to
         /// optimize memory usage.</param>
-        private CompositeGlyph(ReadOnlySpan<GlyphComponent> components, GlyphComponent[]? rentedBuffer)
+        private CompositeGlyph(ReadOnlySpan<GlyphComponent> components, bool usesPointMatching, GlyphComponent[]? rentedBuffer)
         {
             Components = components;
             Instructions = default;
+            UsesPointMatching = usesPointMatching;
             _rentedBuffer = rentedBuffer;
         }
 
@@ -57,6 +67,8 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             var componentsBuffer = ArrayPool<GlyphComponent>.Shared.Rent(EstimatedComponentCount);
             int componentCount = 0;
 
+            var usesPointMatching = false;
+
             try
             {
                 int offset = 0;
@@ -67,6 +79,12 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                     // Read flags and glyph index
                     CompositeFlags flags = (CompositeFlags)BinaryPrimitives.ReadUInt16BigEndian(data.Slice(offset, 2));
                     offset += 2;
+
+                    // When ARGS_ARE_XY_VALUES is clear the component is placed by point matching.
+                    if ((flags & CompositeFlags.ArgsAreXYValues) == 0)
+                    {
+                        usesPointMatching = true;
+                    }
 
                     ushort glyphIndex = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(offset, 2));
                     offset += 2;
@@ -162,6 +180,7 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                 // The caller is responsible for calling Dispose() to return the buffer
                 return new CompositeGlyph(
                     componentsBuffer.AsSpan(0, componentCount),
+                    usesPointMatching,
                     componentsBuffer
                 );
             }
