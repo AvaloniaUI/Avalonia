@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Buffers.Binary;
+using Avalonia.Media.Fonts.Tables.Variation;
 
 namespace Avalonia.Media.Fonts.Tables.Metrics
 {
@@ -108,16 +110,30 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
         /// <summary>
         /// Attempts to retrieve advance widths for multiple glyphs in a single operation.
+        /// When <paramref name="hvar"/> and <paramref name="activeCoords"/> are both
+        /// supplied, HVAR's per-glyph delta is applied to each advance in the same
+        /// pass — fused so <paramref name="advances"/> is written exactly once per
+        /// glyph instead of once by hmtx and again by an HVAR post-pass.
         /// </summary>
         /// <param name="glyphIndices">Read-only span of glyph indices to query.</param>
-        /// <param name="advances">Output span to write the advance widths. Must be at least as long as <paramref name="glyphIndices"/>.</param>
+        /// <param name="advances">Output span; must be at least as long as <paramref name="glyphIndices"/>.</param>
+        /// <param name="hvar">Optional HVAR table. <c>null</c> means no variation adjustment.</param>
+        /// <param name="activeCoords">
+        /// Normalized variation coordinates in fvar axis order. Ignored when
+        /// <paramref name="hvar"/> is <c>null</c>; otherwise must match the font's axis count.
+        /// </param>
         /// <returns><c>true</c> if all glyph indices are valid and advances were retrieved; otherwise, <c>false</c>.</returns>
         /// <remarks>
-        /// This method is more efficient than calling <see cref="TryGetAdvance"/> multiple times as it reuses
-        /// the same reader and span reference. If any glyph index is invalid, the method returns <c>false</c>
+        /// Reuses the <c>lastAdvanceWidth</c> cache for monospace-tail glyphs, so a
+        /// font where most glyphs share the same advance pays one hmtx read regardless
+        /// of batch size. If any glyph index is invalid, the method returns <c>false</c>
         /// and the contents of <paramref name="advances"/> are undefined.
         /// </remarks>
-        public bool TryGetAdvances(ReadOnlySpan<ushort> glyphIndices, Span<ushort> advances)
+        public bool TryGetAdvances(
+            ReadOnlySpan<ushort> glyphIndices,
+            Span<ushort> advances,
+            HvarTable? hvar = null,
+            ReadOnlySpan<float> activeCoords = default)
         {
             if (advances.Length < glyphIndices.Length)
             {
@@ -125,10 +141,10 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
             }
 
             var data = _data.Span;
-            var reader = new BigEndianBinaryReader(data);
 
             // Cache the last advance width for glyphs beyond numOfHMetrics
             ushort? lastAdvanceWidth = null;
+            var hasHvar = hvar is not null && !activeCoords.IsEmpty;
 
             for (int i = 0; i < glyphIndices.Length; i++)
             {
@@ -139,21 +155,31 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
                     return false;
                 }
 
+                ushort raw;
                 if (glyphIndex < _numOfHMetrics)
                 {
-                    reader.Seek(glyphIndex * 4);
-                    advances[i] = reader.ReadUInt16();
+                    raw = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(glyphIndex * 4, 2));
                 }
                 else
                 {
-                    // All glyphs beyond numOfHMetrics share the same advance width
                     if (!lastAdvanceWidth.HasValue)
                     {
-                        reader.Seek((_numOfHMetrics - 1) * 4);
-                        lastAdvanceWidth = reader.ReadUInt16();
+                        lastAdvanceWidth = BinaryPrimitives.ReadUInt16BigEndian(
+                            data.Slice((_numOfHMetrics - 1) * 4, 2));
                     }
+                    raw = lastAdvanceWidth.Value;
+                }
 
-                    advances[i] = lastAdvanceWidth.Value;
+                if (hasHvar && hvar!.TryGetAdvanceDelta(glyphIndex, activeCoords, out var delta) && delta != 0f)
+                {
+                    var adjusted = raw + (int)MathF.Round(delta);
+                    advances[i] = adjusted < 0
+                        ? (ushort)0
+                        : (ushort)Math.Min(adjusted, ushort.MaxValue);
+                }
+                else
+                {
+                    advances[i] = raw;
                 }
             }
 
@@ -161,17 +187,19 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         }
 
         /// <summary>
-        /// Attempts to retrieve horizontal glyph metrics for multiple glyphs in a single operation.
+        /// Attempts to retrieve horizontal glyph metrics for multiple glyphs in a single
+        /// operation, optionally applying HVAR variation deltas in the same pass.
         /// </summary>
         /// <param name="glyphIndices">Read-only span of glyph indices to query.</param>
-        /// <param name="metrics">Output span to write the metrics. Must be at least as long as <paramref name="glyphIndices"/>.</param>
+        /// <param name="metrics">Output span; must be at least as long as <paramref name="glyphIndices"/>.</param>
+        /// <param name="hvar">Optional HVAR table for variation-adjusted advances + LSBs.</param>
+        /// <param name="activeCoords">Normalized variation coordinates in fvar axis order.</param>
         /// <returns><c>true</c> if all glyph indices are valid and metrics were retrieved; otherwise, <c>false</c>.</returns>
-        /// <remarks>
-        /// This method is more efficient than calling <see cref="TryGetMetrics(ushort, out HorizontalGlyphMetric)"/> multiple times as it reuses
-        /// the same reader and span reference. If any glyph index is invalid, the method returns <c>false</c>
-        /// and the contents of <paramref name="metrics"/> are undefined.
-        /// </remarks>
-        public bool TryGetMetrics(ReadOnlySpan<ushort> glyphIndices, Span<HorizontalGlyphMetric> metrics)
+        public bool TryGetMetrics(
+            ReadOnlySpan<ushort> glyphIndices,
+            Span<HorizontalGlyphMetric> metrics,
+            HvarTable? hvar = null,
+            ReadOnlySpan<float> activeCoords = default)
         {
             if (metrics.Length < glyphIndices.Length)
             {
@@ -179,10 +207,10 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
             }
 
             var data = _data.Span;
-            var reader = new BigEndianBinaryReader(data);
 
             // Cache the last advance width for glyphs beyond numOfHMetrics
             ushort? lastAdvanceWidth = null;
+            var hasHvar = hvar is not null && !activeCoords.IsEmpty;
 
             for (int i = 0; i < glyphIndices.Length; i++)
             {
@@ -193,32 +221,47 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
                     return false;
                 }
 
+                ushort advanceWidth;
+                short leftSideBearing;
+
                 if (glyphIndex < _numOfHMetrics)
                 {
-                    reader.Seek(glyphIndex * 4);
-
-                    ushort advanceWidth = reader.ReadUInt16();
-                    short leftSideBearing = reader.ReadInt16();
-
-                    metrics[i] = new HorizontalGlyphMetric(advanceWidth, leftSideBearing);
+                    var entryOffset = glyphIndex * 4;
+                    advanceWidth = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(entryOffset, 2));
+                    leftSideBearing = BinaryPrimitives.ReadInt16BigEndian(data.Slice(entryOffset + 2, 2));
                 }
                 else
                 {
-                    // All glyphs beyond numOfHMetrics share the same advance width
                     if (!lastAdvanceWidth.HasValue)
                     {
-                        reader.Seek((_numOfHMetrics - 1) * 4);
-                        lastAdvanceWidth = reader.ReadUInt16();
+                        lastAdvanceWidth = BinaryPrimitives.ReadUInt16BigEndian(
+                            data.Slice((_numOfHMetrics - 1) * 4, 2));
+                    }
+                    advanceWidth = lastAdvanceWidth.Value;
+
+                    var lsbIndex = glyphIndex - _numOfHMetrics;
+                    var lsbOffset = _numOfHMetrics * 4 + lsbIndex * 2;
+                    leftSideBearing = BinaryPrimitives.ReadInt16BigEndian(data.Slice(lsbOffset, 2));
+                }
+
+                if (hasHvar)
+                {
+                    if (hvar!.TryGetAdvanceDelta(glyphIndex, activeCoords, out var advDelta) && advDelta != 0f)
+                    {
+                        var adjusted = advanceWidth + (int)MathF.Round(advDelta);
+                        advanceWidth = adjusted < 0
+                            ? (ushort)0
+                            : (ushort)Math.Min(adjusted, ushort.MaxValue);
                     }
 
-                    int lsbIndex = glyphIndex - _numOfHMetrics;
-                    int lsbOffset = _numOfHMetrics * 4 + lsbIndex * 2;
-
-                    reader.Seek(lsbOffset);
-                    short leftSideBearing = reader.ReadInt16();
-
-                    metrics[i] = new HorizontalGlyphMetric(lastAdvanceWidth.Value, leftSideBearing);
+                    if (hvar.TryGetLeftSideBearingDelta(glyphIndex, activeCoords, out var lsbDelta) && lsbDelta != 0f)
+                    {
+                        var adjusted = leftSideBearing + (int)MathF.Round(lsbDelta);
+                        leftSideBearing = (short)Math.Clamp(adjusted, short.MinValue, short.MaxValue);
+                    }
                 }
+
+                metrics[i] = new HorizontalGlyphMetric(advanceWidth, leftSideBearing);
             }
 
             return true;
