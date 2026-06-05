@@ -6,8 +6,6 @@
 
   <ControlTheme x:Key="{x:Type TableViewRow}" TargetType="TableViewRow">
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="Transparent" />
-    <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Padding" Value="{DynamicResource TableViewRowPadding}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -24,24 +22,49 @@
       </ControlTemplate>
     </Setter>
 
+    <!-- Disabled -->
+    <Style Selector="^:disabled /template/ Border#Border">
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
+    </Style>
+
+    <!-- PointerOver -->
     <Style Selector="^:pointerover /template/ Border#Border">
       <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
     </Style>
 
-    <Style Selector="^:selected /template/ Border#Border">
-      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}" />
+    <!-- Pressed -->
+    <Style Selector="^:pressed /template/ Border#Border">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightHighBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
     </Style>
 
-    <Style Selector="^:selected:focus /template/ Border#Border">
-      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}" />
-    </Style>
+    <!-- Selected -->
+    <Style Selector="^:selected">
 
-    <Style Selector="^:selected:pointerover /template/ Border#Border">
-      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}" />
-    </Style>
+      <Style Selector="^ /template/ Border#Border">
+        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+      </Style>
 
-    <Style Selector="^:selected:focus:pointerover /template/ Border#Border">
-      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}" />
+      <!-- Selected Unfocused  -->
+      <Style Selector="^:not(:focus) /template/ Border#Border">
+        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+      </Style>
+
+      <!-- Selected PointerOver  -->
+      <Style Selector="^:pointerover /template/ Border#Border">
+        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+      </Style>
+
+      <!-- Selected Pressed  -->
+      <Style Selector="^:pressed /template/ Border#Border">
+        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+      </Style>
+
     </Style>
 
   </ControlTheme>
