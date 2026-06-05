@@ -3,7 +3,9 @@
                     x:ClassModifier="internal">
 
   <Design.PreviewWith>
-    <TableViewColumnHeader Content="Header" />
+    <Border Margin="20" BorderThickness="1" BorderBrush="LightGray">
+      <TableViewColumnHeader Content="Header" />
+    </Border>
   </Design.PreviewWith>
 
   <ControlTemplate x:Key="TableViewColumnHeaderResizerTemplate" TargetType="Thumb">
@@ -20,6 +22,7 @@
     <Setter Property="Padding" Value="6,9,6,12" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Template">
       <ControlTemplate>
         <Panel>
@@ -36,6 +39,7 @@
           <Thumb Name="PART_Resizer"
                  Template="{StaticResource TableViewColumnHeaderResizerTemplate}"
                  Width="12"
+                 Margin="0,0,-6,0"
                  HorizontalAlignment="Right"
                  Cursor="SizeWestEast"
                  IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Column?.CanEffectivelyResize, FallbackValue=False}" />

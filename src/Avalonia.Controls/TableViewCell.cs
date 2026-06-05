@@ -65,9 +65,7 @@ public class TableViewCell : ContentControl
 
     internal void Refresh()
     {
-        if (Column is null)
-            ClearProperties();
-        else
+        if (Column is not null)
             SetProperties(Column);
     }
 }
