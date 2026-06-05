@@ -240,7 +240,7 @@ public sealed class TableViewTests : ScopedTestBase
         target.Columns.Add(new TableViewColumn
         {
             Width = new GridLength(1, GridUnitType.Star),
-            CellTemplate = template,
+            CellTemplate = template
         });
         target.Columns.Add(new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) });
 
@@ -263,7 +263,7 @@ public sealed class TableViewTests : ScopedTestBase
         target.Columns.Add(new TableViewColumn
         {
             Width = new GridLength(1, GridUnitType.Star),
-            CellTheme = cellTheme,
+            CellTheme = cellTheme
         });
         target.Columns.Add(new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) });
 
@@ -296,6 +296,12 @@ public sealed class TableViewTests : ScopedTestBase
 
         Assert.Same(column0, firstCell.Column);
         Assert.Same(column1, secondCell.Column);
+    }
+
+    [Fact]
+    public void CanResizeColumns_Defaults_To_True()
+    {
+        Assert.True(new TableView().CanResizeColumns);
     }
 
     private static IDisposable Start()
@@ -335,10 +341,8 @@ public sealed class TableViewTests : ScopedTestBase
         root.LayoutManager.ExecuteInitialLayoutPass();
     }
 
-    private static void Layout(Control c)
-    {
-        c.GetLayoutManager()?.ExecuteLayoutPass();
-    }
+    private static void Layout(Control control)
+        => control.GetLayoutManager()?.ExecuteLayoutPass();
 
     private static FuncControlTemplate TableViewTemplate()
         => new FuncControlTemplate<TableView>((parent, scope) =>

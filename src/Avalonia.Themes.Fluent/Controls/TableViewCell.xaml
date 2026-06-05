@@ -2,10 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     x:ClassModifier="internal">
 
-  <Thickness x:Key="TableViewCellPadding">6,0</Thickness>
-
   <ControlTheme x:Key="{x:Type TableViewCell}" TargetType="TableViewCell">
-    <Setter Property="Padding" Value="{DynamicResource TableViewCellPadding}" />
+    <Setter Property="Padding" Value="6,0" />
   </ControlTheme>
 
 </ResourceDictionary>

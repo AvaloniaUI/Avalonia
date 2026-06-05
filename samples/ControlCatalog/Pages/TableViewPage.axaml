@@ -25,13 +25,23 @@
 
   <DockPanel>
 
-    <CheckBox Name="UseStarSizes"
-              Content="Use star-sized columns"
-              IsChecked="True"
-              Margin="8"
-              DockPanel.Dock="Top" />
+    <StackPanel Orientation="Horizontal"
+                DockPanel.Dock="Top">
 
-    <TableView ItemsSource="{Binding Countries}">
+      <CheckBox Name="UseStarSizes"
+                Content="Use star-sized columns"
+                IsChecked="True"
+                Margin="8" />
+
+      <CheckBox Name="CanResizeColumns"
+                Content="Allow column resizing"
+                IsChecked="True"
+                Margin="8" />
+
+    </StackPanel>
+
+    <TableView ItemsSource="{Binding Countries}"
+               CanResizeColumns="{Binding #CanResizeColumns.IsChecked}">
       <TableView.Columns>
         <TableViewColumn Header="Name"
                          Binding="{Binding Name}"

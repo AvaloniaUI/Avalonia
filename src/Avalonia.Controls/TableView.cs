@@ -20,6 +20,12 @@ public class TableView : ListBox
             o => o.Columns,
             (o, v) => o.Columns = v);
 
+    /// <summary>
+    /// Defines the <see cref="CanResizeColumns"/> property.
+    /// </summary>
+    public static readonly StyledProperty<bool> CanResizeColumnsProperty =
+        AvaloniaProperty.Register<TableView, bool>(nameof(CanResizeColumns), true);
+
     private IDisposable? _columnsSizeTracker;
 
     /// <summary>
@@ -60,6 +66,16 @@ public class TableView : ListBox
                 RebuildCells();
             }
         }
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the user can resize columns by dragging the
+    /// separator between column headers.
+    /// </summary>
+    public bool CanResizeColumns
+    {
+        get => GetValue(CanResizeColumnsProperty);
+        set => SetValue(CanResizeColumnsProperty, value);
     }
 
     internal event EventHandler<ColumnsChangedEventArgs>? ColumnsChanged;

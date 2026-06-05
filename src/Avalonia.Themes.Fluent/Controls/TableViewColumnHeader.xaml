@@ -3,28 +3,43 @@
                     x:ClassModifier="internal">
 
   <Design.PreviewWith>
-    <Border Padding="20">
-      <TableViewColumnHeader Content="Header" />
-    </Border>
+    <TableViewColumnHeader Content="Header" />
   </Design.PreviewWith>
+
+  <ControlTemplate x:Key="TableViewColumnHeaderResizerTemplate" TargetType="Thumb">
+    <Border Background="Transparent">
+      <Rectangle Width="1"
+                 Fill="{DynamicResource SystemControlForegroundBaseHighBrush}"
+                 Opacity="0.2"
+                 HorizontalAlignment="Center" />
+    </Border>
+  </ControlTemplate>
 
   <ControlTheme x:Key="{x:Type TableViewColumnHeader}" TargetType="TableViewColumnHeader">
     <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="Padding" Value="{DynamicResource TableViewCellPadding}" />
+    <Setter Property="Padding" Value="6,9,6,12" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate>
-        <ContentPresenter Name="PART_ContentPresenter"
-                          Background="{TemplateBinding Background}"
-                          BorderBrush="{TemplateBinding BorderBrush}"
-                          BorderThickness="{TemplateBinding BorderThickness}"
-                          CornerRadius="{TemplateBinding CornerRadius}"
-                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                          Content="{TemplateBinding Content}"
-                          Padding="{TemplateBinding Padding}"
-                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+        <Panel>
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            Padding="{TemplateBinding Padding}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+          <Thumb Name="PART_Resizer"
+                 Template="{StaticResource TableViewColumnHeaderResizerTemplate}"
+                 Width="12"
+                 HorizontalAlignment="Right"
+                 Cursor="SizeWestEast"
+                 IsEnabled="{Binding $parent[TableView].CanResizeColumns, FallbackValue=False}" />
+        </Panel>
       </ControlTemplate>
     </Setter>
   </ControlTheme>
