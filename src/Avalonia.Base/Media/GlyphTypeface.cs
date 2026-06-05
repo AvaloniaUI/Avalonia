@@ -54,6 +54,12 @@ namespace Avalonia.Media
         // HVAR / VVAR / MVAR with no outline variation).
         private readonly GvarTable? _gvarTable;
 
+        // HVAR table — per-glyph advance-width and side-bearing deltas. Null on static
+        // fonts and on variable fonts that don't carry HVAR (rare; without it, a
+        // wght=900 layout uses default-instance advances and glyphs overlap their
+        // neighbors). Inter Variable carries HVAR; most production variable fonts do.
+        private readonly HvarTable? _hvarTable;
+
         // Source typeface for variation clones. Null for default-instance typefaces
         // (the source) — every WithVariation clone points back to its source so all
         // variations of the same font share a single cache and resource owner.
@@ -70,6 +76,14 @@ namespace Avalonia.Media
         // Variation point this typeface is bound to. default(FontVariationSettings)
         // for the source and for static fonts; non-default for variation clones.
         private readonly FontVariationSettings _variationSettings;
+
+        // Precomputed projection of _variationSettings onto fvar's axis order. Allocated
+        // once during clone construction and reused by every variation-aware lookup
+        // (GetGlyphOutline, the gvar deformer, HVAR advance / LSB queries) instead of
+        // re-projecting per call. Null on the source typeface and on static fonts —
+        // both have IsDefault == true, and every consumer short-circuits before
+        // touching this field.
+        private readonly float[]? _activeCoords;
 
         // Per-source variation cache. Only populated on the source typeface (clones
         // delegate WithVariation through _sourceTypeface so a single cache is shared).
@@ -307,6 +321,11 @@ namespace Avalonia.Media
                 // GetGlyphOutline only pays a field-access cost when no variation is
                 // active.
                 GvarTable.TryLoad(this, _fvarTable.Axes.Length, GlyphCount, out _gvarTable);
+
+                // HVAR provides per-glyph horizontal-advance deltas (and optionally LSB /
+                // RSB deltas). Loaded once per typeface; per-call TryGetHorizontalGlyphAdvance
+                // pays a field-access + IsDefault check when no variation is active.
+                HvarTable.TryLoad(this, _fvarTable.Axes.Length, out _hvarTable);
             }
 
             static CultureInfo GetCulture(int lcid)
@@ -372,6 +391,7 @@ namespace Avalonia.Media
             _fvarTable = source._fvarTable;
             _avarTable = source._avarTable;
             _gvarTable = source._gvarTable;
+            _hvarTable = source._hvarTable;
 
             _hasOs2Table = source._hasOs2Table;
             _hasHorizontalMetrics = source._hasHorizontalMetrics;
@@ -405,6 +425,18 @@ namespace Avalonia.Media
             // _supportedFeatures is lazy — let each clone materialize independently.
             // _textShaperTypeface is intentionally null so the getter derives a variation-aware
             // shaper from the source's shaper via ITextShaperTypeface.WithVariation.
+
+            // Project the variation settings onto fvar's axis order once. WithVariation
+            // guarantees clones only exist for variable fonts, so _fvarTable is always
+            // non-null when we get here, and IsDefault is always false (default settings
+            // short-circuit to 'return source' before any clone is built).
+            var axes = source._fvarTable!.AxisTags;
+            _activeCoords = new float[axes.Length];
+            for (var i = 0; i < axes.Length; i++)
+            {
+                variation.TryGetCoordinate(axes[i], out var v);
+                _activeCoords[i] = v;
+            }
         }
 
         private static ushort GetFontDesignEmHeight(HeadTable? headTable)
@@ -847,6 +879,19 @@ namespace Avalonia.Media
                 return false;
             }
 
+            // HVAR: variation-aware advance widths. Without this, a bolder glyph keeps
+            // its default-instance advance and overlaps the next slot. The
+            // _activeCoords null check is the fast path that lets static-font and
+            // default-instance callers pay nothing beyond a field access.
+            if (_hvarTable is not null && _activeCoords is not null)
+            {
+                if (_hvarTable.TryGetAdvanceDelta(glyphId, _activeCoords, out var delta))
+                {
+                    var adjusted = advance + (int)MathF.Round(delta);
+                    advance = adjusted < 0 ? (ushort)0 : (ushort)Math.Min(adjusted, ushort.MaxValue);
+                }
+            }
+
             return true;
         }
 
@@ -867,7 +912,16 @@ namespace Avalonia.Media
                 return false;
             }
 
-            return _hmTable.TryGetAdvances(glyphIds, advances);
+            // Fast path: no variation. Dispatch to the plain hmtx batch reader, which
+            // never touches HVAR.
+            if (_hvarTable is null || _activeCoords is null)
+            {
+                return _hmTable.TryGetAdvances(glyphIds, advances);
+            }
+
+            // Variation path: hand the cached active coords + HVAR table to the fused
+            // single-pass loop inside HorizontalMetricsTable.TryGetAdvances.
+            return _hmTable.TryGetAdvances(glyphIds, advances, _hvarTable, _activeCoords);
         }
 
         /// <summary>
@@ -956,6 +1010,26 @@ namespace Avalonia.Media
                 return false;
             }
 
+            var advanceWidth = hMetric.AdvanceWidth;
+            var leftSideBearing = hMetric.LeftSideBearing;
+
+            // HVAR adjusts advance width (and optionally LSB) at the active variation
+            // point. Without it, varied text laid out via these metrics overlaps.
+            if (hasHorizontal && _hvarTable is not null && _activeCoords is not null)
+            {
+                if (_hvarTable.TryGetAdvanceDelta(glyph, _activeCoords, out var advDelta) && advDelta != 0f)
+                {
+                    var adjusted = advanceWidth + (int)MathF.Round(advDelta);
+                    advanceWidth = adjusted < 0 ? (ushort)0 : (ushort)Math.Min(adjusted, ushort.MaxValue);
+                }
+
+                if (_hvarTable.TryGetLeftSideBearingDelta(glyph, _activeCoords, out var lsbDelta) && lsbDelta != 0f)
+                {
+                    var adjusted = leftSideBearing + (int)MathF.Round(lsbDelta);
+                    leftSideBearing = (short)Math.Clamp(adjusted, short.MinValue, short.MaxValue);
+                }
+            }
+
             // Funnel the raw header values through GlyphBounds so the ink extent is computed
             // (and clamped to non-negative) the same way as the batch path below — a malformed
             // header with xMax < xMin must not wrap when narrowed to the ushort Width/Height.
@@ -964,13 +1038,13 @@ namespace Avalonia.Media
             metrics = new GlyphMetrics
             {
                 // Bounding box (ink extent) from the glyf header; side bearings fall back
-                // to hmtx/vmtx when the glyph has no outline data.
-                XBearing = hasBounds ? box.XMin : (hasHorizontal ? hMetric.LeftSideBearing : (short)0),
+                // to hmtx/vmtx (HVAR-adjusted) when the glyph has no outline data.
+                XBearing = hasBounds ? box.XMin : (hasHorizontal ? leftSideBearing : (short)0),
                 YBearing = hasBounds ? box.YMax : (hasVertical ? vMetric.TopSideBearing : (short)0),
                 Width = hasBounds ? (ushort)box.Width : (ushort)0,
                 Height = hasBounds ? (ushort)box.Height : (ushort)0,
-                // Advances come from the metrics tables.
-                AdvanceWidth = hasHorizontal ? hMetric.AdvanceWidth : (ushort)0,
+                // Advances come from the metrics tables, with HVAR applied to the width.
+                AdvanceWidth = hasHorizontal ? advanceWidth : (ushort)0,
                 AdvanceHeight = hasVertical ? vMetric.AdvanceHeight : (ushort)0,
             };
 
@@ -1015,13 +1089,24 @@ namespace Avalonia.Media
             bool hasHorizontal = false;
             bool hasVertical = false;
 
-            // Batch retrieve horizontal metrics
+            // hmtx + HVAR are fused inside HorizontalMetricsTable.TryGetMetrics — when
+            // variation is active we hand the cached coords + HVAR table through so
+            // hMetrics[i] is written exactly once per glyph rather than
+            // hmtx-writes-then-HVAR-overwrites.
             if (_hasHorizontalMetrics && _hmTable != null)
             {
-                hasHorizontal = _hmTable.TryGetMetrics(glyphIds, hMetrics);
+                if (_hvarTable is not null && _activeCoords is not null)
+                {
+                    hasHorizontal = _hmTable.TryGetMetrics(glyphIds, hMetrics, _hvarTable, _activeCoords);
+                }
+                else
+                {
+                    hasHorizontal = _hmTable.TryGetMetrics(glyphIds, hMetrics);
+                }
             }
 
-            // Batch retrieve vertical metrics
+            // Batch retrieve vertical metrics. VVAR variation is a future slice (pr4g),
+            // so the unvaried path is fine here for now.
             if (_hasVerticalMetrics && _vmTable != null)
             {
                 hasVertical = _vmTable.TryGetMetrics(glyphIds, vMetrics);
@@ -1080,6 +1165,7 @@ namespace Avalonia.Media
 
             return true;
         }
+
 
         /// <summary>
         /// Reads ink bounding boxes for a batch of glyphs from the font's <c>glyf</c> table.
@@ -1144,27 +1230,13 @@ namespace Avalonia.Media
 
             var geometry = _renderInterface.CreateStreamGeometry();
 
-            // Project the variation settings onto an axis-ordered span the gvar deformer
-            // consumes. Static fonts and default-instance lookups skip the projection
-            // and pass an empty span — they pay no per-call cost beyond the original PR2
-            // path.
-            //
-            // The stackalloc is sized to the actual axis count to keep the per-call
-            // footprint minimal; both branches keep the lifetime method-local so the
-            // ref-safety verifier is happy.
-            var hasVariation = _gvarTable is not null && !_variationSettings.IsDefault && _fvarTable is not null;
-            var axisCount = hasVariation ? _fvarTable!.AxisTags.Length : 0;
-            Span<float> activeCoords = stackalloc float[axisCount];
-
-            if (hasVariation)
-            {
-                var axes = _fvarTable!.AxisTags;
-                for (var i = 0; i < axes.Length; i++)
-                {
-                    _variationSettings.TryGetCoordinate(axes[i], out var v);
-                    activeCoords[i] = v;
-                }
-            }
+            // The active variation coords are precomputed once at clone time and stored
+            // on the typeface — see _activeCoords. Static fonts and default-instance
+            // lookups (where _activeCoords is null) pass an empty span and skip the
+            // gvar deformation path entirely.
+            ReadOnlySpan<float> activeCoords = _gvarTable is not null && _activeCoords is not null
+                ? _activeCoords
+                : default;
 
             using (var ctx = geometry.Open())
             {
