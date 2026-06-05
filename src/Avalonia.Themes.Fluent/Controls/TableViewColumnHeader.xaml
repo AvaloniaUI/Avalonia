@@ -8,6 +8,9 @@
     </Border>
   </Design.PreviewWith>
 
+  <x:Double x:Key="TableViewColumnResizerWidth">12</x:Double>
+  <Thickness x:Key="TableViewColumnResizerMargin">0,-9,-6,-12</Thickness>
+
   <ControlTemplate x:Key="TableViewColumnHeaderResizerTemplate" TargetType="Thumb">
     <Border Background="Transparent">
       <Rectangle Width="1"
@@ -19,7 +22,7 @@
 
   <ControlTheme x:Key="{x:Type TableViewColumnHeader}" TargetType="TableViewColumnHeader">
     <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="Padding" Value="6,9,6,12" />
+    <Setter Property="Padding" Value="{DynamicResource TableViewCellPadding}" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="ClipToBounds" Value="False" />
@@ -38,11 +41,12 @@
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
           <Thumb Name="PART_Resizer"
                  Template="{StaticResource TableViewColumnHeaderResizerTemplate}"
-                 Width="12"
-                 Margin="0,0,-6,0"
+                 Width="{DynamicResource TableViewColumnResizerWidth}"
                  HorizontalAlignment="Right"
                  Cursor="SizeWestEast"
-                 IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Column?.CanEffectivelyResize, FallbackValue=False}" />
+                 Margin="{DynamicResource TableViewColumnResizerMargin}"
+                 IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Column?.CanEffectivelyResize, FallbackValue=False}">
+          </Thumb>
         </Panel>
       </ControlTemplate>
     </Setter>

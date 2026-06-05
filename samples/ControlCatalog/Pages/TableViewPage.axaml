@@ -51,7 +51,7 @@
                          Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=2}" />
         <TableViewColumn Header="Population"
                          Binding="{Binding Population, StringFormat=N0}"
-                         Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1}"
+                         Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1.5}"
                          HorizontalContentAlignment="Right" />
         <TableViewColumn Header="Area"
                          Binding="{Binding Area, StringFormat=N0}"

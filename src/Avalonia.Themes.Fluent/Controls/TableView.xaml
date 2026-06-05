@@ -22,7 +22,7 @@
               RowDefinitions="*,Auto">
             <DockPanel Name="ContentPanel">
               <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                      Padding="6,0"
+                      Padding="{DynamicResource TableViewRowPadding}"
                       DockPanel.Dock="Top">
                 <TableViewColumnHeadersPresenter />
               </Border>
