@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using Avalonia.Platform;
 using Avalonia.Logging;
 
