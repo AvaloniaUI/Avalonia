@@ -427,6 +427,20 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                     return false;
                 }
 
+                // When ARGS_ARE_XY_VALUES is clear, arg1/arg2 are point numbers: the
+                // component is positioned by making one of its points coincide with a point
+                // in the already-assembled parent glyph (point matching), not by an x/y
+                // offset. That is not implemented — treating such a component as a plain
+                // zero-translation placement renders a visibly wrong outline. Bail out so the
+                // caller falls back to "no outline" rather than emitting an incorrect one.
+                foreach (var component in components)
+                {
+                    if ((component.Flags & CompositeFlags.ArgsAreXYValues) == 0)
+                    {
+                        return false;
+                    }
+                }
+
                 var hasGeometry = false;
 
                 foreach (var component in components)
