@@ -786,7 +786,7 @@ namespace Avalonia.Media
         /// </returns>
         public Geometry? GetGlyphOutline(ushort glyphId, Matrix transform)
         {
-            if (glyphId > GlyphCount)
+            if (glyphId >= GlyphCount)
             {
                 return null;
             }
