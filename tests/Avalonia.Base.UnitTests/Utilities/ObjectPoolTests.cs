@@ -220,6 +220,7 @@ namespace Avalonia.Base.UnitTests.Utilities
 
             Assert.True(pooled <= maxSize,
                 $"Expected to observe at most {maxSize} pooled items, observed {pooled}.");
+        }
 
         [Fact]
         public void Rent_And_Return_Survive_Parallel_Use_Without_Losing_Or_Duplicating_Items()
