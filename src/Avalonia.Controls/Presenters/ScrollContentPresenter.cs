@@ -335,7 +335,7 @@ namespace Avalonia.Controls.Presenters
         /// </remarks>
         internal void AttachToScrollViewer()
         {
-            var owner = TemplatedParent as ScrollViewer;
+            var owner = this.FindAncestorOfType<ScrollViewer>();
 
             if (owner == null)
             {

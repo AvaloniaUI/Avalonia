@@ -28,7 +28,18 @@ public class TableViewColumnHeader : ContentControl
     public TableViewColumn? Column
     {
         get;
-        internal set => SetAndRaise(ColumnProperty, ref field, value);
+        internal set
+        {
+            var oldValue = field;
+            if (!SetAndRaise(ColumnProperty, ref field, value))
+                return;
+
+            if (oldValue is not null)
+                ClearProperties();
+
+            if (value is not null)
+                SetProperties(value);
+        }
     }
 
     /// <inheritdoc />
@@ -63,5 +74,29 @@ public class TableViewColumnHeader : ContentControl
         {
             DebugDisplayHelper.AppendOptionalValue(builder, nameof(Column), Column?.Header, includeContent);
         }
+    }
+
+    private void ClearProperties()
+    {
+        ClearValue(ThemeProperty);
+        ClearValue(HorizontalContentAlignmentProperty);
+        ClearValue(ContentTemplateProperty);
+        ClearValue(ContentProperty);
+    }
+
+    private void SetProperties(TableViewColumn column)
+    {
+        SetValue(ThemeProperty, column.HeaderTheme);
+        SetValue(HorizontalContentAlignmentProperty, column.HorizontalContentAlignment);
+        SetValue(ContentTemplateProperty, column.HeaderTemplate);
+        SetValue(ContentProperty, column.Header);
+    }
+
+    internal void Refresh()
+    {
+        if (Column is null)
+            ClearProperties();
+        else
+            SetProperties(Column);
     }
 }

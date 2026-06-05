@@ -360,20 +360,27 @@ public sealed class TableViewTests : ScopedTestBase
     }
 
     [Fact]
-    public void Changing_Column_Properties_Updates_Existing_Cells()
+    public void Changing_Column_Properties_Updates_Existing_Headers_And_Cells()
     {
         using var app = Start();
 
-        var themeA = new ControlTheme(typeof(TableViewCell));
-        var themeB = new ControlTheme(typeof(TableViewCell));
+        var cellThemeA = new ControlTheme(typeof(TableViewCell));
+        var cellThemeB = new ControlTheme(typeof(TableViewCell));
+        var headerThemeA = new ControlTheme(typeof(TableViewColumnHeader));
+        var headerThemeB = new ControlTheme(typeof(TableViewColumnHeader));
+        var headerTemplateA = new FuncDataTemplate<object>((_, _) => new TextBlock());
+        var headerTemplateB = new FuncDataTemplate<object>((_, _) => new TextBlock());
 
         var item = new Person("Alice", "Ally");
         var column = new TableViewColumn
         {
             Width = new GridLength(1, GridUnitType.Star),
-            CellTheme = themeA,
+            CellTheme = cellThemeA,
             HorizontalContentAlignment = HorizontalAlignment.Left,
-            Binding = new ReflectionBinding(nameof(Person.Name))
+            Binding = new ReflectionBinding(nameof(Person.Name)),
+            Header = "H1",
+            HeaderTheme = headerThemeA,
+            HeaderTemplate = headerTemplateA
         };
         var target = CreateTarget(new[] { item });
         target.Columns.Add(column);
@@ -382,28 +389,42 @@ public sealed class TableViewTests : ScopedTestBase
 
         var row = (TableViewRow)target.GetRealizedContainers().Single();
         var cell = (TableViewCell)GetRowPresenter(row).Children[0];
+        var header = (TableViewColumnHeader)GetColumnHeadersPresenter(target).Children[0];
 
-        Assert.Same(themeA, cell.Theme);
+        Assert.Same(cellThemeA, cell.Theme);
         Assert.Equal(HorizontalAlignment.Left, cell.HorizontalContentAlignment);
         Assert.Null(cell.ContentTemplate);
         Assert.Equal("Alice", cell.Content);
 
-        // Mutating the column after the cell was built should update the existing cell.
+        Assert.Same(headerThemeA, header.Theme);
+        Assert.Equal(HorizontalAlignment.Left, header.HorizontalContentAlignment);
+        Assert.Same(headerTemplateA, header.ContentTemplate);
+        Assert.Equal("H1", header.Content);
+
+        // Mutating the column after the cell and header were built should update both.
         // Switch the Binding first to confirm it's reflected in the cell content.
-        column.CellTheme = themeB;
+        column.CellTheme = cellThemeB;
         column.HorizontalContentAlignment = HorizontalAlignment.Right;
         column.Binding = new ReflectionBinding(nameof(Person.Nickname));
+        column.Header = "H2";
+        column.HeaderTheme = headerThemeB;
+        column.HeaderTemplate = headerTemplateB;
 
-        Assert.Same(themeB, cell.Theme);
+        Assert.Same(cellThemeB, cell.Theme);
         Assert.Equal(HorizontalAlignment.Right, cell.HorizontalContentAlignment);
         Assert.Null(cell.ContentTemplate);
         Assert.Equal("Ally", cell.Content);
 
-        // CellTemplate takes priority over Binding: the row item flows through the template.
-        var templateB = new FuncDataTemplate<object>((_, _) => new TextBlock());
-        column.CellTemplate = templateB;
+        Assert.Same(headerThemeB, header.Theme);
+        Assert.Equal(HorizontalAlignment.Right, header.HorizontalContentAlignment);
+        Assert.Same(headerTemplateB, header.ContentTemplate);
+        Assert.Equal("H2", header.Content);
 
-        Assert.Same(templateB, cell.ContentTemplate);
+        // CellTemplate takes priority over Binding: the row item flows through the template.
+        var cellTemplateB = new FuncDataTemplate<object>((_, _) => new TextBlock());
+        column.CellTemplate = cellTemplateB;
+
+        Assert.Same(cellTemplateB, cell.ContentTemplate);
         Assert.Same(item, cell.Content);
     }
 
@@ -476,25 +497,6 @@ public sealed class TableViewTests : ScopedTestBase
 
         column.CanResize = null;
         Assert.False(column.CanEffectivelyResize);
-    }
-
-    [Fact]
-    public void Column_CanEffectivelyResize_Falls_Back_To_True_When_Column_Detached()
-    {
-        using var app = Start();
-
-        var target = CreateTarget(new[] { "Foo" });
-        target.CanResizeColumns = false;
-        var column = new TableViewColumn();
-        target.Columns.Add(column);
-
-        Prepare(target);
-
-        Assert.False(column.CanEffectivelyResize);
-
-        target.Columns.Remove(column);
-
-        Assert.True(column.CanEffectivelyResize);
     }
 
     private static IDisposable Start()

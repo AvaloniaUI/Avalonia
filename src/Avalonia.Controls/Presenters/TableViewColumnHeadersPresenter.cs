@@ -15,7 +15,7 @@ public class TableViewColumnHeadersPresenter : Panel
 {
     internal TableView? TableView { get; set; }
 
-    private void RebuildHeaders()
+    internal void RebuildHeaders()
     {
         Children.Clear();
 
@@ -24,14 +24,7 @@ public class TableViewColumnHeadersPresenter : Panel
 
         foreach (var column in TableView.Columns)
         {
-            var header = new TableViewColumnHeader
-            {
-                Column = column,
-                [~ContentControl.ContentProperty] = column[~TableViewColumn.HeaderProperty],
-                [~ContentControl.ContentTemplateProperty] = column[~TableViewColumn.HeaderTemplateProperty],
-                [~ContentControl.HorizontalContentAlignmentProperty] = column[~TableViewColumn.HorizontalContentAlignmentProperty]
-            };
-
+            var header = new TableViewColumnHeader { Column = column };
             Children.Add(header);
         }
 
@@ -44,11 +37,12 @@ public class TableViewColumnHeadersPresenter : Panel
         base.OnAttachedToLogicalTree(e);
 
         TableView = this.FindLogicalAncestorOfType<TableView>();
+
         RebuildHeaders();
 
         if (TableView is not null)
         {
-            TableView.ColumnsChanged += OnColumnsChanged;
+            TableView.HeadersPresenter = this;
 
             if (TableView.Scroll is INotifyPropertyChanged notifyPropertyChanged)
                 notifyPropertyChanged.PropertyChanged += OnScrollPropertyChanged;
@@ -59,7 +53,7 @@ public class TableViewColumnHeadersPresenter : Panel
     {
         if (TableView is not null)
         {
-            TableView.ColumnsChanged -= OnColumnsChanged;
+            TableView.HeadersPresenter = null;
 
             if (TableView.Scroll is INotifyPropertyChanged notifyPropertyChanged)
                 notifyPropertyChanged.PropertyChanged -= OnScrollPropertyChanged;
@@ -71,19 +65,14 @@ public class TableViewColumnHeadersPresenter : Panel
         base.OnDetachedFromLogicalTree(e);
     }
 
-    private void OnColumnsChanged(object? sender, TableView.ColumnsChangedEventArgs e)
-    {
-        if (e.IsSizeChange)
-            InvalidateMeasure();
-        else
-            RebuildHeaders();
-    }
-
     private void OnScrollPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(IScrollable.Offset))
             InvalidateArrange();
     }
+
+    internal void RefreshHeader(int columnIndex)
+        => ((TableViewColumnHeader)Children[columnIndex]).Refresh();
 
     /// <inheritdoc/>
     protected override Size MeasureOverride(Size availableSize)

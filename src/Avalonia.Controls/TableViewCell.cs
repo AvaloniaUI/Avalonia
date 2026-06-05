@@ -13,6 +13,9 @@ public class TableViewCell : ContentControl
     public static readonly DirectProperty<TableViewCell, TableViewColumn?> ColumnProperty =
         AvaloniaProperty.RegisterDirect<TableViewCell, TableViewColumn?>(nameof(Column), o => o.Column);
 
+    /// <summary>
+    /// Gets the column associated with this cell.
+    /// </summary>
     public TableViewColumn? Column
     {
         get;

@@ -1,4 +1,6 @@
+using System;
 using System.Text;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
@@ -13,16 +15,22 @@ namespace Avalonia.Controls;
 public class TableViewColumn : StyledElement, IHeadered
 {
     /// <summary>
-    /// Defines the <see cref="Header"/> property.
+    /// Defines the <see cref="HeaderTheme"/> property.
     /// </summary>
-    public static readonly StyledProperty<object?> HeaderProperty =
-        AvaloniaProperty.Register<TableViewColumn, object?>(nameof(Header));
+    public static readonly StyledProperty<ControlTheme?> HeaderThemeProperty =
+        AvaloniaProperty.Register<TableViewColumn, ControlTheme?>(nameof(HeaderTheme));
 
     /// <summary>
     /// Defines the <see cref="HeaderTemplate"/> property.
     /// </summary>
     public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
-        AvaloniaProperty.Register<TableViewColumn, IDataTemplate?>(nameof(HeaderTemplate));
+        HeaderedContentControl.HeaderTemplateProperty.AddOwner<TableViewColumn>();
+
+    /// <summary>
+    /// Defines the <see cref="Header"/> property.
+    /// </summary>
+    public static readonly StyledProperty<object?> HeaderProperty =
+        HeaderedContentControl.HeaderProperty.AddOwner<TableViewColumn>();
 
     /// <summary>
     /// Defines the <see cref="Width"/> property.
@@ -80,12 +88,13 @@ public class TableViewColumn : StyledElement, IHeadered
         AvaloniaProperty.RegisterDirect<TableViewColumn, bool>(nameof(CanEffectivelyResize), o => o.CanEffectivelyResize);
 
     /// <summary>
-    /// Gets or sets the column header content.
+    /// Gets or sets the theme to apply to the header.
+    /// It must target <see cref="TableViewColumnHeader"/>.
     /// </summary>
-    public object? Header
+    public ControlTheme? HeaderTheme
     {
-        get => GetValue(HeaderProperty);
-        set => SetValue(HeaderProperty, value);
+        get => GetValue(HeaderThemeProperty);
+        set => SetValue(HeaderThemeProperty, value);
     }
 
     /// <summary>
@@ -95,6 +104,15 @@ public class TableViewColumn : StyledElement, IHeadered
     {
         get => GetValue(HeaderTemplateProperty);
         set => SetValue(HeaderTemplateProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the column header content.
+    /// </summary>
+    public object? Header
+    {
+        get => GetValue(HeaderProperty);
+        set => SetValue(HeaderProperty, value);
     }
 
 
@@ -109,6 +127,7 @@ public class TableViewColumn : StyledElement, IHeadered
 
     /// <summary>
     /// Gets or sets the theme to apply to the cells.
+    /// It must target <see cref="TableViewCell"/>.
     /// </summary>
     public ControlTheme? CellTheme
     {
@@ -194,6 +213,18 @@ public class TableViewColumn : StyledElement, IHeadered
         internal set => SetAndRaise(CanEffectivelyResizeProperty, ref field, value);
     }
 
+    private static bool IsCellProperty(AvaloniaProperty property)
+        => property == CellThemeProperty ||
+           property == CellTemplateProperty ||
+           property == BindingProperty ||
+           property == HorizontalContentAlignmentProperty;
+
+    private static bool IsHeaderProperty(AvaloniaProperty property)
+        => property == HeaderThemeProperty ||
+           property == HeaderTemplateProperty ||
+           property == HeaderProperty ||
+           property == HorizontalContentAlignmentProperty;
+
     /// <inheritdoc />
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -203,12 +234,12 @@ public class TableViewColumn : StyledElement, IHeadered
             TableView?.OnColumnsSizeChanged();
         else if (change.Property == CanResizeProperty)
             UpdateCanEffectivelyResize();
-        else if (change.Property == CellThemeProperty ||
-                 change.Property == CellTemplateProperty ||
-                 change.Property == BindingProperty ||
-                 change.Property == HorizontalContentAlignmentProperty)
+        else
         {
-            TableView?.RefreshColumnCells(this);
+            if (IsHeaderProperty(change.Property))
+                TableView?.RefreshColumnHeaders(this);
+            if (IsCellProperty(change.Property))
+                TableView?.RefreshColumnCells(this);
         }
     }
 

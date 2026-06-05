@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Collections;
+using Avalonia.Controls.Presenters;
 using static Avalonia.Controls.Presenters.TableViewLayoutHelper;
 
 namespace Avalonia.Controls;
@@ -61,8 +62,7 @@ public class TableView : ListBox
                 if (value is not null)
                     SubscribeToColumns(value);
 
-                ColumnsChanged?.Invoke(this, new ColumnsChangedEventArgs(false));
-
+                RebuildHeaders();
                 RebuildCells();
             }
         }
@@ -78,7 +78,7 @@ public class TableView : ListBox
         set => SetValue(CanResizeColumnsProperty, value);
     }
 
-    internal event EventHandler<ColumnsChangedEventArgs>? ColumnsChanged;
+    internal TableViewColumnHeadersPresenter? HeadersPresenter { get; set; }
 
     private void SubscribeToColumns(AvaloniaList<TableViewColumn> columns)
     {
@@ -150,14 +150,14 @@ public class TableView : ListBox
     private void OnColumnsChanged()
     {
         ResetActualWidths(Columns);
-        ColumnsChanged?.Invoke(this, new ColumnsChangedEventArgs(false));
+        RebuildHeaders();
         RebuildCells();
     }
 
     internal void OnColumnsSizeChanged()
     {
         ResetActualWidths(Columns);
-        ColumnsChanged?.Invoke(this, new ColumnsChangedEventArgs(true));
+        InvalidateHeadersMeasure();
         InvalidateCellsMeasure();
     }
 
@@ -169,6 +169,9 @@ public class TableView : ListBox
         if (_columns is not null)
             SubscribeToColumns(_columns);
     }
+
+    private void RebuildHeaders()
+        => HeadersPresenter?.RebuildHeaders();
 
     private void RebuildCells()
     {
@@ -186,6 +189,9 @@ public class TableView : ListBox
         }
     }
 
+    internal void InvalidateHeadersMeasure()
+        => HeadersPresenter?.InvalidateMeasure();
+
     internal void InvalidateCellsMeasure()
     {
         foreach (var row in GetRealizedContainers())
@@ -195,6 +201,15 @@ public class TableView : ListBox
             else
                 row.InvalidateMeasure();
         }
+    }
+
+    internal void RefreshColumnHeaders(TableViewColumn column)
+    {
+        var columnIndex = Columns.IndexOf(column);
+        if (columnIndex < 0)
+            return;
+
+        HeadersPresenter?.RefreshHeader(columnIndex);
     }
 
     internal void RefreshColumnCells(TableViewColumn column)
@@ -219,10 +234,5 @@ public class TableView : ListBox
             foreach (var column in _columns)
                 column.UpdateCanEffectivelyResize();
         }
-    }
-
-    internal readonly struct ColumnsChangedEventArgs(bool isSizeChange)
-    {
-        public bool IsSizeChange { get; } = isSizeChange;
     }
 }
