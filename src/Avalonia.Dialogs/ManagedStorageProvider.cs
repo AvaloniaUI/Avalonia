@@ -15,6 +15,8 @@ namespace Avalonia.Dialogs;
 
 internal class ManagedStorageProvider : BclStorageProvider
 {
+    private const string ManagedFileChooserRootName = "ManagedFileChooserRoot";
+
     private readonly TopLevel? _parent;
     private readonly ManagedFileDialogOptions _managedOptions;
 
@@ -75,11 +77,17 @@ internal class ManagedStorageProvider : BclStorageProvider
         {
             if (_parent is not null and not Window)
             {
-                root = new ContentControl();
+                root = new ContentControl
+                {
+                    Name = ManagedFileChooserRootName
+                };
             }
             else
             {
-                root = new Window();
+                root = new Window
+                {
+                    Name = ManagedFileChooserRootName
+                };
             }
         }
 
