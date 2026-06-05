@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -35,13 +36,9 @@ public class TableViewColumnHeader : ContentControl
     {
         base.OnApplyTemplate(e);
 
-        if (_resizer is not null)
-            _resizer.DragDelta -= OnResizerDragDelta;
-
+        _resizer?.DragDelta -= OnResizerDragDelta;
         _resizer = e.NameScope.Find<Thumb>(PartResizer);
-
-        if (_resizer is not null)
-            _resizer.DragDelta += OnResizerDragDelta;
+        _resizer?.DragDelta += OnResizerDragDelta;
     }
 
     private void OnResizerDragDelta(object? sender, VectorEventArgs e)
@@ -56,5 +53,15 @@ public class TableViewColumnHeader : ContentControl
         var minWidth = _resizer?.Bounds.Width ?? 0;
         var newWidth = Math.Max(minWidth, actualWidth + e.Vector.X);
         column.Width = new GridLength(newWidth, GridUnitType.Pixel);
+    }
+
+    internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+    {
+        base.BuildDebugDisplay(builder, includeContent);
+
+        if (includeContent)
+        {
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Column), Column?.Header, includeContent);
+        }
     }
 }

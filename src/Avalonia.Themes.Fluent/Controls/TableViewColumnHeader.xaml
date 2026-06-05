@@ -38,7 +38,7 @@
                  Width="12"
                  HorizontalAlignment="Right"
                  Cursor="SizeWestEast"
-                 IsEnabled="{Binding $parent[TableView].CanResizeColumns, FallbackValue=False}" />
+                 IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Column?.CanEffectivelyResize, FallbackValue=False}" />
         </Panel>
       </ControlTemplate>
     </Setter>

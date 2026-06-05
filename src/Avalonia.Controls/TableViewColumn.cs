@@ -1,3 +1,4 @@
+using System.Text;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Metadata;
@@ -45,6 +46,33 @@ public class TableViewColumn : StyledElement, IHeadered
     /// </summary>
     public static readonly StyledProperty<BindingBase?> BindingProperty =
         AvaloniaProperty.Register<TableViewColumn, BindingBase?>(nameof(Binding));
+
+    /// <summary>
+    /// Defines the <see cref="CanResize"/> property.
+    /// </summary>
+    public static readonly StyledProperty<bool?> CanResizeProperty =
+        AvaloniaProperty.Register<TableViewColumn, bool?>(nameof(CanResize));
+
+    /// <summary>
+    /// Defines the <see cref="TableView"/> property.
+    /// </summary>
+    public static readonly DirectProperty<TableViewColumn, TableView?> TableViewProperty =
+        AvaloniaProperty.RegisterDirect<TableViewColumn, TableView?>(nameof(TableView), o => o.TableView);
+
+    /// <summary>
+    /// Defines the <see cref="ActualWidth"/> property.
+    /// </summary>
+    public static readonly DirectProperty<TableViewColumn, double> ActualWidthProperty =
+        AvaloniaProperty.RegisterDirect<TableViewColumn, double>(nameof(ActualWidth), o => o.ActualWidth);
+
+    public static readonly DirectProperty<TableViewColumn, bool> CanEffectivelyResizeProperty =
+        AvaloniaProperty.RegisterDirect<TableViewColumn, bool>(nameof(CanEffectivelyResize), o => o.CanEffectivelyResize);
+
+    public bool CanEffectivelyResize
+    {
+        get;
+        internal set => SetAndRaise(CanEffectivelyResizeProperty, ref field, value);
+    }
 
     /// <summary>
     /// Gets or sets the column header content.
@@ -108,7 +136,60 @@ public class TableViewColumn : StyledElement, IHeadered
     }
 
     /// <summary>
-    /// Gets the column's actual rendered width, as computed by the presenter.
+    /// Gets or sets whether the column can be resized.
+    /// Set to null to use the value from <see cref="TableView.CanResizeColumns"/>.
+    /// The default is null.
     /// </summary>
-    internal double ActualWidth { get; set; } = double.NaN;
+    public bool? CanResize
+    {
+        get => GetValue(CanResizeProperty);
+        set => SetValue(CanResizeProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the <see cref="TableView"/> associated with this column.
+    /// </summary>
+    public TableView? TableView
+    {
+        get;
+        internal set
+        {
+            if (SetAndRaise(TableViewProperty, ref field, value))
+                UpdateCanEffectivelyResize();
+        }
+    }
+
+    /// <summary>
+    /// Gets the actual width of the column, in device independent pixels.
+    /// If the column hasn't yet been measured, returns <see cref="double.NaN"/>.
+    /// </summary>
+    public double ActualWidth
+    {
+        get;
+        internal set => SetAndRaise(ActualWidthProperty, ref field, value);
+    } = double.NaN;
+
+    /// <inheritdoc />
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == WidthProperty)
+            TableView?.OnColumnsSizeChanged();
+        else if (change.Property == CanResizeProperty)
+            UpdateCanEffectivelyResize();
+    }
+
+    internal void UpdateCanEffectivelyResize()
+        => CanEffectivelyResize = CanResize ?? TableView?.CanResizeColumns ?? true;
+
+    internal override void BuildDebugDisplay(StringBuilder builder, bool includeContent)
+    {
+        base.BuildDebugDisplay(builder, includeContent);
+
+        if (includeContent)
+        {
+            DebugDisplayHelper.AppendOptionalValue(builder, nameof(Header), Header, includeContent);
+        }
+    }
 }

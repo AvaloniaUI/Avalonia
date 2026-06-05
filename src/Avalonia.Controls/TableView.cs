@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Collections;
 using static Avalonia.Controls.Presenters.TableViewLayoutHelper;
@@ -26,7 +26,8 @@ public class TableView : ListBox
     public static readonly StyledProperty<bool> CanResizeColumnsProperty =
         AvaloniaProperty.Register<TableView, bool>(nameof(CanResizeColumns), true);
 
-    private IDisposable? _columnsSizeTracker;
+    private IDisposable? _columnsSubscription;
+    private AvaloniaList<TableViewColumn>? _columns;
 
     /// <summary>
     /// Gets or sets the collection of columns displayed by this <see cref="TableView"/>.
@@ -36,25 +37,24 @@ public class TableView : ListBox
     {
         get
         {
-            if (field is null)
+            if (_columns is null)
             {
-                field = [];
+                _columns = new AvaloniaList<TableViewColumn> { ResetBehavior = ResetBehavior.Remove };
                 if (IsInitialized)
-                    SubscribeToColumns(field);
+                    SubscribeToColumns(_columns);
             }
 
-            return field;
+            return _columns;
         }
         set
         {
-            var oldValue = field;
+            var oldValue = _columns;
             if (oldValue == value)
                 return;
 
-            if (oldValue is not null)
-                UnsubscribeFromColumns(oldValue);
-
-            SetAndRaise(ColumnsProperty, ref field, value);
+            UnsubscribeFromColumns();
+            value?.ResetBehavior = ResetBehavior.Remove;
+            SetAndRaise(ColumnsProperty, ref _columns, value);
 
             if (IsInitialized)
             {
@@ -82,21 +82,37 @@ public class TableView : ListBox
 
     private void SubscribeToColumns(AvaloniaList<TableViewColumn> columns)
     {
-        columns.CollectionChanged += OnColumnsChanged;
+        Debug.Assert(_columnsSubscription is null);
 
-        _columnsSizeTracker = columns.TrackItemPropertyChanged(tuple =>
-        {
-            if (tuple.Item2.PropertyName is nameof(TableViewColumn.Width) or null)
-                OnColumnsSizeChanged();
-        });
+        _columnsSubscription = columns.ForEachItem(
+            column =>
+            {
+                if (column.TableView is not null && column.TableView != this)
+                {
+                    throw new InvalidOperationException(
+                        $"The column {column.DebugDisplay} is already attached to a {nameof(TableView)}.");
+                }
+
+                column.TableView = this;
+
+                OnColumnsChanged();
+            },
+            column =>
+            {
+                Debug.Assert(column.TableView == this);
+
+                column.TableView = null;
+                column.ActualWidth = double.NaN;
+
+                OnColumnsChanged();
+            },
+            () => { });
     }
 
-    private void UnsubscribeFromColumns(AvaloniaList<TableViewColumn> columns)
+    private void UnsubscribeFromColumns()
     {
-        columns.CollectionChanged -= OnColumnsChanged;
-
-        _columnsSizeTracker?.Dispose();
-        _columnsSizeTracker = null;
+        _columnsSubscription?.Dispose();
+        _columnsSubscription = null;
     }
 
     /// <inheritdoc/>
@@ -131,25 +147,27 @@ public class TableView : ListBox
         }
     }
 
-    private void OnColumnsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void OnColumnsChanged()
     {
         ResetActualWidths(Columns);
         ColumnsChanged?.Invoke(this, new ColumnsChangedEventArgs(false));
         RebuildCells();
     }
 
-    private void OnColumnsSizeChanged()
+    internal void OnColumnsSizeChanged()
     {
         ResetActualWidths(Columns);
         ColumnsChanged?.Invoke(this, new ColumnsChangedEventArgs(true));
         InvalidateCellsMeasure();
     }
 
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
-        SubscribeToColumns(Columns);
+        if (_columns is not null)
+            SubscribeToColumns(_columns);
     }
 
     private void RebuildCells()
@@ -176,6 +194,17 @@ public class TableView : ListBox
                 tableViewRow.InvalidateCellsMeasure();
             else
                 row.InvalidateMeasure();
+        }
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (change.Property == CanResizeColumnsProperty && _columns is not null)
+        {
+            foreach (var column in _columns)
+                column.UpdateCanEffectivelyResize();
         }
     }
 

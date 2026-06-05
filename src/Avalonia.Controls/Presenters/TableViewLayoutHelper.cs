@@ -109,7 +109,6 @@ internal static class TableViewLayoutHelper
         for (var i = 0; i < cells.Count; i++)
         {
             var width = columns[i].ActualWidth;
-            columns[i].ActualWidth = width;
             cells[i].Arrange(new Rect(x, 0, width, finalSize.Height));
             x += width;
         }
