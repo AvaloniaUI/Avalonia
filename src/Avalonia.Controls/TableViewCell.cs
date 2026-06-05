@@ -7,6 +7,9 @@ namespace Avalonia.Controls;
 /// </summary>
 public class TableViewCell : ContentControl
 {
+    private static CompiledBinding RowBinding
+        => field ??= new();
+
     public static readonly DirectProperty<TableViewCell, TableViewColumn?> ColumnProperty =
         AvaloniaProperty.RegisterDirect<TableViewCell, TableViewColumn?>(nameof(Column), o => o.Column);
 
@@ -27,29 +30,33 @@ public class TableViewCell : ContentControl
         }
     }
 
-    private static CompiledBinding RowBinding
-        => field ??= new();
-
     private void ClearProperties()
     {
         ClearValue(ThemeProperty);
+        ClearValue(HorizontalContentAlignmentProperty);
         ClearValue(ContentTemplateProperty);
         ClearValue(ContentProperty);
     }
 
     private void SetProperties(TableViewColumn column)
     {
-        if (column.CellTheme is { } cellTheme)
-            SetCurrentValue(ThemeProperty, cellTheme);
+        SetValue(ThemeProperty, column.CellTheme);
+        SetValue(HorizontalContentAlignmentProperty, column.HorizontalContentAlignment);
 
         if (column.CellTemplate is { } cellTemplate)
         {
-            SetCurrentValue(ContentTemplateProperty, cellTemplate);
+            SetValue(ContentTemplateProperty, cellTemplate);
             Bind(ContentProperty, RowBinding);
         }
         else if (column.Binding is { } binding)
+        {
+            SetValue(ContentTemplateProperty, null);
             Bind(ContentProperty, binding);
+        }
         else
+        {
+            SetValue(ContentTemplateProperty, null);
             Bind(ContentProperty, RowBinding);
+        }
     }
 }

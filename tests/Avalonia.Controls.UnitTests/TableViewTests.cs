@@ -5,6 +5,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -12,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
 
-public sealed partial class TableViewTests : ScopedTestBase
+public sealed class TableViewTests : ScopedTestBase
 {
     [Fact]
     public void Container_For_Each_Item_Is_TableViewRow()
@@ -333,6 +334,29 @@ public sealed partial class TableViewTests : ScopedTestBase
 
         Assert.Same(column0, firstCell.Column);
         Assert.Same(column1, secondCell.Column);
+    }
+
+    [Fact]
+    public void Cell_Uses_Column_HorizontalContentAlignment()
+    {
+        using var app = Start();
+
+        var target = CreateTarget(new[] { "Foo" });
+        target.Columns.Add(new TableViewColumn
+        {
+            Width = new GridLength(1, GridUnitType.Star),
+            HorizontalContentAlignment = HorizontalAlignment.Right
+        });
+        target.Columns.Add(new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) });
+
+        Prepare(target);
+
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var firstCell = (TableViewCell)GetRowPresenter(row).Children[0];
+        var secondCell = (TableViewCell)GetRowPresenter(row).Children[1];
+
+        Assert.Equal(HorizontalAlignment.Right, firstCell.HorizontalContentAlignment);
+        Assert.Equal(HorizontalAlignment.Left, secondCell.HorizontalContentAlignment);
     }
 
     [Fact]

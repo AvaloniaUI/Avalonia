@@ -1,6 +1,7 @@
 using System.Text;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.Metadata;
 using Avalonia.Styling;
 
@@ -52,6 +53,13 @@ public class TableViewColumn : StyledElement, IHeadered
     /// </summary>
     public static readonly StyledProperty<bool?> CanResizeProperty =
         AvaloniaProperty.Register<TableViewColumn, bool?>(nameof(CanResize));
+
+    /// <summary>
+    /// Defines the <see cref="HorizontalContentAlignment"/> property.
+    /// </summary>
+    public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
+        ContentControl.HorizontalContentAlignmentProperty.AddOwner<TableViewColumn>(
+            new StyledPropertyMetadata<HorizontalAlignment>(defaultValue: HorizontalAlignment.Left));
 
     /// <summary>
     /// Defines the <see cref="TableView"/> property.
@@ -141,6 +149,15 @@ public class TableViewColumn : StyledElement, IHeadered
     {
         get => GetValue(CanResizeProperty);
         set => SetValue(CanResizeProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the horizontal alignment of the content within a cell.
+    /// </summary>
+    public HorizontalAlignment HorizontalContentAlignment
+    {
+        get => GetValue(HorizontalContentAlignmentProperty);
+        set => SetValue(HorizontalContentAlignmentProperty, value);
     }
 
     /// <summary>

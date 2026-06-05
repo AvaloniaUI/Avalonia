@@ -51,14 +51,17 @@
                          Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=2}" />
         <TableViewColumn Header="Population"
                          Binding="{Binding Population, StringFormat=N0}"
-                         Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1}" />
+                         Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1}"
+                         HorizontalContentAlignment="Right" />
         <TableViewColumn Header="Area"
                          Binding="{Binding Area, StringFormat=N0}"
-                         Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1}" />
+                         Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1}"
+                         HorizontalContentAlignment="Right" />
         <TableViewColumn Header="GDP"
                          Binding="{Binding GDP, StringFormat=N0}"
                          Width="{Binding #UseStarSizes.IsChecked, Converter={StaticResource TableViewColumnWidthConverter}, ConverterParameter=1}"
-                         CellTheme="{StaticResource GdpCellTheme}">
+                         CellTheme="{StaticResource GdpCellTheme}"
+                         HorizontalContentAlignment="Right">
         </TableViewColumn>
       </TableView.Columns>
     </TableView>

@@ -27,8 +27,9 @@ public class TableViewColumnHeadersPresenter : Panel
             var header = new TableViewColumnHeader
             {
                 Column = column,
-                [!ContentControl.ContentProperty] = column[!TableViewColumn.HeaderProperty],
-                [!ContentControl.ContentTemplateProperty] = column[!TableViewColumn.HeaderTemplateProperty],
+                [~ContentControl.ContentProperty] = column[~TableViewColumn.HeaderProperty],
+                [~ContentControl.ContentTemplateProperty] = column[~TableViewColumn.HeaderTemplateProperty],
+                [~ContentControl.HorizontalContentAlignmentProperty] = column[~TableViewColumn.HorizontalContentAlignmentProperty]
             };
 
             Children.Add(header);
