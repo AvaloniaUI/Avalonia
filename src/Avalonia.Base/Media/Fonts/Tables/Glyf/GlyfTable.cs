@@ -1,16 +1,6 @@
 using System;
-using System.Buffers.Binary;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
 using Avalonia.Platform;
 using Avalonia.Logging;
-using Avalonia.Utilities;
-
-using Avalonia.Media;
-using Avalonia.Media.Fonts;
-using Avalonia.Media.Fonts.Tables;
 
 namespace Avalonia.Media.Fonts.Tables.Glyf
 {
