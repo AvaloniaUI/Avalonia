@@ -65,14 +65,11 @@ public class TableViewColumn : StyledElement, IHeadered
     public static readonly DirectProperty<TableViewColumn, double> ActualWidthProperty =
         AvaloniaProperty.RegisterDirect<TableViewColumn, double>(nameof(ActualWidth), o => o.ActualWidth);
 
+    /// <summary>
+    /// Defines the <see cref="CanEffectivelyResize"/> property.
+    /// </summary>
     public static readonly DirectProperty<TableViewColumn, bool> CanEffectivelyResizeProperty =
         AvaloniaProperty.RegisterDirect<TableViewColumn, bool>(nameof(CanEffectivelyResize), o => o.CanEffectivelyResize);
-
-    public bool CanEffectivelyResize
-    {
-        get;
-        internal set => SetAndRaise(CanEffectivelyResizeProperty, ref field, value);
-    }
 
     /// <summary>
     /// Gets or sets the column header content.
@@ -168,6 +165,17 @@ public class TableViewColumn : StyledElement, IHeadered
         get;
         internal set => SetAndRaise(ActualWidthProperty, ref field, value);
     } = double.NaN;
+
+    /// <summary>
+    /// Gets whether the column can be effectively resized.
+    /// The value of this property depends on both <see cref="CanResize"/> and
+    /// <see cref="Avalonia.Controls.TableView.CanResizeColumns"/>.
+    /// </summary>
+    public bool CanEffectivelyResize
+    {
+        get;
+        internal set => SetAndRaise(CanEffectivelyResizeProperty, ref field, value);
+    }
 
     /// <inheritdoc />
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

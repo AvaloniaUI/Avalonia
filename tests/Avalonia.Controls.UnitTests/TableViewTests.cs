@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests;
 
-public sealed class TableViewTests : ScopedTestBase
+public sealed partial class TableViewTests : ScopedTestBase
 {
     [Fact]
     public void Container_For_Each_Item_Is_TableViewRow()
@@ -44,6 +44,43 @@ public sealed class TableViewTests : ScopedTestBase
         var presenter = GetRowPresenter(row);
         Assert.Equal(3, presenter.Children.Count);
         Assert.All(presenter.Children, c => Assert.IsType<TableViewCell>(c));
+    }
+
+    [Fact]
+    public void Column_TableView_Is_Set_When_Added_And_Unset_When_Removed()
+    {
+        using var app = Start();
+
+        var target = CreateTarget(new[] { "Foo" });
+        var column = new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) };
+        target.Columns.Add(column);
+
+        Prepare(target);
+
+        Assert.Same(target, column.TableView);
+
+        target.Columns.Remove(column);
+
+        Assert.Null(column.TableView);
+    }
+
+    [Fact]
+    public void Column_Cannot_Belong_To_Two_TableViews()
+    {
+        using var app = Start();
+
+        var column = new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) };
+
+        var first = CreateTarget(new[] { "Foo" });
+        first.Columns.Add(column);
+        Prepare(first);
+
+        Assert.Same(first, column.TableView);
+
+        var second = CreateTarget(new[] { "Bar" });
+        second.Columns.Add(column);
+
+        Assert.Throws<InvalidOperationException>(() => Prepare(second));
     }
 
     [Fact]
@@ -302,6 +339,90 @@ public sealed class TableViewTests : ScopedTestBase
     public void CanResizeColumns_Defaults_To_True()
     {
         Assert.True(new TableView().CanResizeColumns);
+    }
+
+    [Theory]
+    [InlineData(true, null, true)] // inherits the table's value
+    [InlineData(true, true, true)] // column opts in
+    [InlineData(true, false, false)] // column opts out
+    [InlineData(false, null, false)] // inherits the table's value
+    [InlineData(false, true, true)] // column opts in
+    [InlineData(false, false, false)] // column opts out
+    public void Column_CanEffectivelyResize_Combines_TableView_And_Column_Settings(
+        bool canResizeColumns,
+        bool? canResize,
+        bool expected)
+    {
+        using var app = Start();
+
+        var target = CreateTarget(new[] { "Foo" });
+        target.CanResizeColumns = canResizeColumns;
+        var column = new TableViewColumn { CanResize = canResize };
+        target.Columns.Add(column);
+
+        Prepare(target);
+
+        Assert.Equal(expected, column.CanEffectivelyResize);
+    }
+
+    [Fact]
+    public void Column_CanEffectivelyResize_Updates_When_TableView_CanResizeColumns_Changes()
+    {
+        using var app = Start();
+
+        var target = CreateTarget(new[] { "Foo" });
+        var column = new TableViewColumn();
+        target.Columns.Add(column);
+
+        Prepare(target);
+
+        Assert.True(column.CanEffectivelyResize);
+
+        target.CanResizeColumns = false;
+        Assert.False(column.CanEffectivelyResize);
+
+        target.CanResizeColumns = true;
+        Assert.True(column.CanEffectivelyResize);
+    }
+
+    [Fact]
+    public void Column_CanEffectivelyResize_Updates_When_Column_CanResize_Changes()
+    {
+        using var app = Start();
+
+        var target = CreateTarget(new[] { "Foo" });
+        target.CanResizeColumns = false;
+        var column = new TableViewColumn();
+        target.Columns.Add(column);
+
+        Prepare(target);
+
+        Assert.False(column.CanEffectivelyResize);
+
+        column.CanResize = true;
+        Assert.True(column.CanEffectivelyResize);
+
+        column.CanResize = null;
+        Assert.False(column.CanEffectivelyResize);
+    }
+
+    [Fact]
+    public void Column_CanEffectivelyResize_Falls_Back_To_True_When_Column_Detached()
+    {
+        using var app = Start();
+
+        var target = CreateTarget(new[] { "Foo" });
+        target.CanResizeColumns = false;
+        var column = new TableViewColumn();
+        target.Columns.Add(column);
+
+        Prepare(target);
+
+        Assert.False(column.CanEffectivelyResize);
+
+        target.Columns.Remove(column);
+
+        Assert.True(column.CanEffectivelyResize);
     }
 
     private static IDisposable Start()
