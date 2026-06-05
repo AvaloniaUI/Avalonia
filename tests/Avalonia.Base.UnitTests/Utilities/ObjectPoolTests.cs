@@ -195,13 +195,13 @@ namespace Avalonia.Base.UnitTests.Utilities
             {
                 for (var i = 0; i < returnsPerThread; i++)
                 {
-                    pool.Return(new Item());
+                    pool.Return(new Item { State = 1 });
                 }
             });
 
-            // Drain the pool. We must never observe more than maxSize cached
-            // items; the race in Return must not be able to overflow the cap.
-            var drained = 0;
+            // Drain the pool. Items that came from the pool will still have State==1;
+            // factory-created items will have the default State==0.
+            var pooled = 0;
             var seen = new HashSet<Item>();
 
             for (var i = 0; i < maxSize * 2; i++)
@@ -209,16 +209,17 @@ namespace Avalonia.Base.UnitTests.Utilities
                 var item = pool.Rent();
                 if (!seen.Add(item))
                 {
-                    // Rent should never return the same instance twice in a row
-                    // without a Return in between.
                     Assert.Fail("ObjectPool returned the same instance twice without an intervening Return.");
                 }
 
-                drained++;
+                if (item.State == 1)
+                {
+                    pooled++;
+                }
             }
 
-            Assert.True(drained >= maxSize, $"Expected to drain at least {maxSize} cached items, drained {drained}.");
-        }
+            Assert.True(pooled <= maxSize,
+                $"Expected to observe at most {maxSize} pooled items, observed {pooled}.");
 
         [Fact]
         public void Rent_And_Return_Survive_Parallel_Use_Without_Losing_Or_Duplicating_Items()

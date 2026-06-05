@@ -22,11 +22,12 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         {
             get
             {
-                if (!_map.ContainsGlyph(key))
+                if (!_map.TryGetGlyph(key, out var glyphId))
                 {
                     throw new KeyNotFoundException($"The code point {key} was not found in the character map.");
                 }
-                return _map.GetGlyph(key);
+
+                return glyphId;
             }
         }
 
