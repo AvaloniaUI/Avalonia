@@ -47,7 +47,10 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public override Geometry Clone()
         {
-            return new StreamGeometry(((IStreamGeometryImpl)PlatformImpl!).Clone());
+            return new StreamGeometry(GetSourceGeometryImpl().Clone())
+            {
+                Transform = Transform
+            };
         }
 
         /// <summary>
@@ -58,7 +61,12 @@ namespace Avalonia.Media
         /// </returns>
         public StreamGeometryContext Open()
         {
-            return new StreamGeometryContext(((IStreamGeometryImpl)PlatformImpl!).Open());
+            return new StreamGeometryContext(GetSourceGeometryImpl().Open());
+        }
+
+        private IStreamGeometryImpl GetSourceGeometryImpl()
+        {
+            return _impl ?? (IStreamGeometryImpl)CreateDefiningGeometry()!;
         }
 
         /// <inheritdoc/>
