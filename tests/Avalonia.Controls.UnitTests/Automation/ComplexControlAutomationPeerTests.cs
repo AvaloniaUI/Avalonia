@@ -140,6 +140,24 @@ public class ComboBoxAutomationPeerTests : ScopedTestBase
         Assert.Equal("Displayed value", peer.Value);
     }
 
+    [Fact]
+    public void Value_Uses_Selected_Control_Text_When_SelectionBoxItem_Is_Proxy()
+    {
+        using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+
+        var item = new TextBlock { Text = "Control text" };
+        var target = new ComboBox
+        {
+            Items = { item },
+            SelectedIndex = 0,
+        };
+        var root = new TestRoot(target);
+        var peer = (IValueProvider)ControlAutomationPeer.CreatePeerForElement(target);
+
+        Assert.NotSame(item, target.SelectionBoxItem);
+        Assert.Equal("Control text", peer.Value);
+    }
+
     private sealed class ComboBoxDisplayItem(string display)
     {
         public string Display { get; } = display;
