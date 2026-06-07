@@ -143,7 +143,7 @@ public class ComboBoxAutomationPeerTests : ScopedTestBase
     [Fact]
     public void Value_Uses_Selected_Control_Text_When_SelectionBoxItem_Is_Proxy()
     {
-        using var app = UnitTestApplication.Start(TestServices.StyledWindow);
+        using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
 
         var item = new TextBlock { Text = "Control text" };
         var target = new ComboBox
