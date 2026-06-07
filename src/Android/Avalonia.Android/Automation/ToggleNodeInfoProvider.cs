@@ -1,4 +1,6 @@
-﻿using Android.OS;
+﻿using System;
+using Android.OS;
+using Android.Views.Accessibility;
 using AndroidX.Core.View.Accessibility;
 using AndroidX.CustomView.Widget;
 using Avalonia.Automation.Peers;
@@ -32,12 +34,36 @@ namespace Avalonia.Android.Automation
             nodeInfo.Clickable = true;
 
             IToggleProvider provider = GetProvider();
-            nodeInfo.Checked = provider.ToggleState switch
+            ToggleState toggleState = provider.ToggleState;
+
+            // Avoid the AndroidX.Core int Checked property here. Its generated
+            // setter maps setChecked(int), which can throw while accessibility
+            // services query ToggleButton/CheckBox nodes.
+            if (OperatingSystem.IsAndroidVersionAtLeast(36))
             {
-                ToggleState.On => 1,
-                ToggleState.Indeterminate => 2,
-                _ => 0
-            };
+                AccessibilityNodeInfo? nativeNodeInfo = nodeInfo.Unwrap();
+                if (nativeNodeInfo is not null)
+                {
+                    nativeNodeInfo.CheckedState = toggleState switch
+                    {
+                        ToggleState.On => CheckedState.True,
+                        ToggleState.Indeterminate => CheckedState.Partial,
+                        _ => CheckedState.False
+                    };
+                }
+            }
+            else
+            {
+#pragma warning disable CS0618 // Use the older bool overload to avoid the int setter crash.
+                nodeInfo.SetChecked(toggleState == ToggleState.On);
+#pragma warning restore CS0618
+
+                if (toggleState == ToggleState.Indeterminate)
+                {
+                    nodeInfo.StateDescription = "partially checked";
+                }
+            }
+
             nodeInfo.Checkable = true;
         }
     }
