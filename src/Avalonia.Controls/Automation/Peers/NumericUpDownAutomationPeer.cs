@@ -44,22 +44,22 @@ namespace Avalonia.Automation.Peers
             {
                 RaisePropertyChangedEvent(
                     RangeValuePatternIdentifiers.MinimumProperty,
-                    e.OldValue,
-                    e.NewValue);
+                    ToRangeValue(e.OldValue),
+                    ToRangeValue(e.NewValue));
             }
             else if (e.Property == NumericUpDown.MaximumProperty)
             {
                 RaisePropertyChangedEvent(
                     RangeValuePatternIdentifiers.MaximumProperty,
-                    e.OldValue,
-                    e.NewValue);
+                    ToRangeValue(e.OldValue),
+                    ToRangeValue(e.NewValue));
             }
             else if (e.Property == NumericUpDown.ValueProperty)
             {
                 RaisePropertyChangedEvent(
                     RangeValuePatternIdentifiers.ValueProperty,
-                    e.OldValue,
-                    e.NewValue);
+                    ToRangeValue(e.OldValue),
+                    ToRangeValue(e.NewValue));
             }
             else if (e.Property == NumericUpDown.IsReadOnlyProperty)
             {
@@ -68,6 +68,11 @@ namespace Avalonia.Automation.Peers
                     e.OldValue,
                     e.NewValue);
             }
+        }
+
+        private static object? ToRangeValue(object? value)
+        {
+            return value is decimal decimalValue ? (double)decimalValue : value;
         }
     }
 }

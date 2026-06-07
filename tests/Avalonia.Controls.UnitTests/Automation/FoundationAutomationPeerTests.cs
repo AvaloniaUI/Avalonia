@@ -243,9 +243,9 @@ public class FoundationAutomationPeerTests
         }
 
         [Fact]
-        public void PropertyChanged_Raises_Range_When_Value_Changes()
+        public void PropertyChanged_Raises_Range_Value_As_Double_When_Value_Changes()
         {
-            var control = new NumericUpDown();
+            var control = new NumericUpDown { Value = 1.25m };
             var peer = (NumericUpDownAutomationPeer)ControlAutomationPeer.CreatePeerForElement(control);
             AutomationPropertyChangedEventArgs? changed = null;
 
@@ -259,8 +259,42 @@ public class FoundationAutomationPeerTests
 
             Assert.NotNull(changed);
             Assert.Equal(RangeValuePatternIdentifiers.ValueProperty, changed!.Property);
-            Assert.Null(changed.OldValue);
-            Assert.Equal(7.5m, changed.NewValue);
+            Assert.Equal(1.25d, changed.OldValue);
+            Assert.Equal(7.5d, changed.NewValue);
+        }
+
+        [Fact]
+        public void PropertyChanged_Raises_Range_Minimum_And_Maximum_As_Double()
+        {
+            var control = new NumericUpDown
+            {
+                Minimum = 0m,
+                Maximum = 10m,
+            };
+            var peer = (NumericUpDownAutomationPeer)ControlAutomationPeer.CreatePeerForElement(control);
+            AutomationPropertyChangedEventArgs? minimumChanged = null;
+            AutomationPropertyChangedEventArgs? maximumChanged = null;
+
+            peer.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == RangeValuePatternIdentifiers.MinimumProperty)
+                    minimumChanged = e;
+                else if (e.Property == RangeValuePatternIdentifiers.MaximumProperty)
+                    maximumChanged = e;
+            };
+
+            control.Minimum = 1.5m;
+            control.Maximum = 9.5m;
+
+            Assert.NotNull(minimumChanged);
+            Assert.Equal(RangeValuePatternIdentifiers.MinimumProperty, minimumChanged!.Property);
+            Assert.Equal(0d, minimumChanged.OldValue);
+            Assert.Equal(1.5d, minimumChanged.NewValue);
+
+            Assert.NotNull(maximumChanged);
+            Assert.Equal(RangeValuePatternIdentifiers.MaximumProperty, maximumChanged!.Property);
+            Assert.Equal(10d, maximumChanged.OldValue);
+            Assert.Equal(9.5d, maximumChanged.NewValue);
         }
     }
 }

@@ -39,6 +39,9 @@ internal struct ComVariant : IDisposable
     // Most of the data types in the Variant are carried in _typeUnion
     [FieldOffset(0)] private TypeUnion _typeUnion;
 
+    // DECIMAL overlaps the VARIANT type discriminator and reserved fields.
+    [FieldOffset(0)] private decimal _decimal;
+
     [StructLayout(LayoutKind.Sequential)]
     private struct TypeUnion
     {
@@ -161,6 +164,11 @@ internal struct ComVariant : IDisposable
             variant.VarType = VarEnum.VT_R8;
             variant._typeUnion._unionTypes._r8 = (double)value;
         }
+        else if (value is decimal)
+        {
+            variant._decimal = (decimal)value;
+            variant.VarType = VarEnum.VT_DECIMAL;
+        }
         else if (value is DateTime)
         {
             variant.VarType = VarEnum.VT_DATE;
@@ -260,6 +268,7 @@ internal struct ComVariant : IDisposable
             // floating
             VarEnum.VT_R4 => _typeUnion._unionTypes._r4,
             VarEnum.VT_R8 => _typeUnion._unionTypes._r8,
+            VarEnum.VT_DECIMAL => DecimalValue,
             // date
             VarEnum.VT_DATE => DateTime.FromOADate(_typeUnion._unionTypes._date),
             // string
@@ -294,6 +303,16 @@ internal struct ComVariant : IDisposable
             },
             _ => throw new ArgumentException($"Unknown variant type: {VarType}")
         };
+    }
+
+    private readonly decimal DecimalValue
+    {
+        get
+        {
+            var variant = this;
+            variant.VarType = VarEnum.VT_EMPTY;
+            return variant._decimal;
+        }
     }
 
     /// <summary>
