@@ -7,6 +7,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -119,6 +120,31 @@ public class AutoCompleteBoxAutomationPeerTests : ScopedTestBase
         Assert.Equal(ValuePatternIdentifiers.ValueProperty, valueChanged!.Property);
         Assert.Equal(string.Empty, valueChanged.OldValue);
         Assert.Equal("query", valueChanged.NewValue);
+    }
+}
+
+public class ComboBoxAutomationPeerTests : ScopedTestBase
+{
+    [Fact]
+    public void Value_Uses_DisplayMemberBinding_For_Closed_Object_Selection()
+    {
+        var item = new ComboBoxDisplayItem("Displayed value");
+        var target = new ComboBox
+        {
+            DisplayMemberBinding = new Binding(nameof(ComboBoxDisplayItem.Display)),
+            ItemsSource = new[] { item },
+            SelectedItem = item,
+        };
+        var peer = (IValueProvider)ControlAutomationPeer.CreatePeerForElement(target);
+
+        Assert.Equal("Displayed value", peer.Value);
+    }
+
+    private sealed class ComboBoxDisplayItem(string display)
+    {
+        public string Display { get; } = display;
+
+        public override string ToString() => "Model type name";
     }
 }
 

@@ -51,7 +51,7 @@ namespace Avalonia.Automation.Peers
             if (Owner.SelectedItem is object selection)
             {
                 _selection ??= new[] { new UnrealizedSelectionPeer(this) };
-                _selection[0].Item = selection;
+                _selection[0].Item = GetUnrealizedSelectionItem(selection);
                 return _selection;
             }
 
@@ -74,6 +74,11 @@ namespace Avalonia.Automation.Peers
         private static ExpandCollapseState ToState(bool value)
         {
             return value ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed;
+        }
+
+        private object? GetUnrealizedSelectionItem(object selection)
+        {
+            return Owner.SelectionBoxItem is TextBlock ? Owner.SelectionBoxItem : selection;
         }
 
         private class UnrealizedSelectionPeer : UnrealizedElementAutomationPeer
@@ -116,6 +121,11 @@ namespace Avalonia.Automation.Peers
                 if (_item is Control c)
                 {
                     var result = AutomationProperties.GetName(c);
+
+                    if (result is null && c is TextBlock textBlock)
+                    {
+                        result = textBlock.Inlines?.Text ?? textBlock.Text;
+                    }
 
                     if (result is null && c is ContentControl cc && cc.Presenter?.Child is TextBlock text)
                     {
