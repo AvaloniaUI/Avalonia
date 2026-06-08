@@ -5,6 +5,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using System.Collections.Generic;
+using Avalonia.Threading;
 
 namespace Avalonia.Headless
 {
@@ -58,20 +59,28 @@ namespace Avalonia.Headless
         /// Forces renderer to process a rendering timer tick.
         /// Use this method before calling <see cref="HeadlessWindowExtensions.GetLastRenderedFrame"/>. 
         /// </summary>
-        /// <remarks>
-        /// This method is only usable when headless platform is initialized with <see cref="AvaloniaHeadlessPlatformOptions.ShouldRenderOnUIThread"/> set to true.
-        /// </remarks>
         /// <param name="count">Count of frames to be ticked on the timer.</param>
         internal static void ForceRenderTimerTick(int count = 1)
         {
-            if (s_renderTimer is not HeadlessRenderTimer timer)
+            if (s_renderTimer is HeadlessRenderTimer timer)
             {
-                return;
+                for (var c = 0; c < count; c++)
+                {
+                    timer.ForceTick();
+                }
             }
-
-            for (var c = 0; c < count; c++)
+            else
             {
-                timer.ForceTick();
+                if (Compositor is not { } compositor)
+                {
+                    throw new InvalidOperationException("Compositor is not initialized.");
+                }
+
+                var frame = new DispatcherFrame();
+                var task = compositor.RequestCommitAsync();
+                task.ContinueWith(static (_, s) => ((DispatcherFrame)s!).Continue = false, frame);
+                Dispatcher.CurrentDispatcher.PushFrame(frame);
+                task.GetAwaiter().GetResult();
             }
         }
     }
@@ -89,13 +98,9 @@ namespace Avalonia.Headless
 
         /// <summary>
         /// Render directly on the UI thread instead of using a dedicated render thread.
-        /// This can be usable if your device don't have multiple cores to begin with.
+        /// This can be usable if your device doesn't have multiple cores to begin with.
         /// This setting is false by default.
         /// </summary>
-        /// <remarks>
-        /// Disabling this option will make <see cref="AvaloniaHeadlessPlatform.ForceRenderTimerTick"/> unusable,
-        /// and the renderer will tick based on the internal timer, so it can be less deterministic in tests.
-        /// </remarks>
         public bool ShouldRenderOnUIThread { get; set; } = true;
 
         /// <summary>
