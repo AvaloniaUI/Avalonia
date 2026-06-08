@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Avalonia.Collections;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
@@ -15,15 +16,7 @@ public class TableViewRow : ListBoxItem
 
     private TableViewCellsPresenter? _cellsPresenter;
 
-    internal AvaloniaList<TableViewColumn>? Columns
-    {
-        get;
-        set
-        {
-            field = value;
-            _cellsPresenter?.Columns = value;
-        }
-    }
+    internal AvaloniaList<TableViewColumn>? Columns { get; set; }
 
     /// <inheritdoc />
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -32,7 +25,8 @@ public class TableViewRow : ListBoxItem
 
         if (_cellsPresenter is not null)
         {
-            _cellsPresenter.Columns = null;
+            Debug.Assert(_cellsPresenter.Row == this);
+            _cellsPresenter.Row = null;
             _cellsPresenter.RemoveCells();
         }
 
@@ -40,7 +34,8 @@ public class TableViewRow : ListBoxItem
 
         if (_cellsPresenter is not null)
         {
-            _cellsPresenter.Columns = Columns;
+            Debug.Assert(_cellsPresenter.Row is null);
+            _cellsPresenter.Row = this;
             _cellsPresenter.RebuildCells();
         }
     }

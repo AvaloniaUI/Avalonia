@@ -1,4 +1,3 @@
-using Avalonia.Collections;
 using static Avalonia.Controls.Presenters.TableViewLayoutHelper;
 
 namespace Avalonia.Controls.Presenters;
@@ -13,7 +12,7 @@ namespace Avalonia.Controls.Presenters;
 /// </remarks>
 public class TableViewCellsPresenter : Panel
 {
-    internal AvaloniaList<TableViewColumn>? Columns { get; set; }
+    internal TableViewRow? Row { get; set; }
 
     internal void ClearCells()
     {
@@ -28,31 +27,34 @@ public class TableViewCellsPresenter : Panel
     {
         ClearCells();
         Children.Clear();
+        Row?.LogicalChildren.Clear();
     }
 
     internal void RebuildCells()
     {
-        if (Columns is null)
+        if (Row?.Columns is not { } columns)
         {
             RemoveCells();
             return;
         }
 
-        if (Columns.Count != Children.Count)
+        if (columns.Count != Children.Count)
         {
             RemoveCells();
 
-            foreach (var column in Columns)
+            foreach (var column in columns)
             {
                 var cell = new TableViewCell { Column = column };
                 Children.Add(cell);
             }
+
+            Row.LogicalChildren.AddRange(Children);
         }
         else
         {
-            for (var i = 0; i < Columns.Count; i++)
+            for (var i = 0; i < columns.Count; i++)
             {
-                ((TableViewCell)Children[i]).Column = Columns[i];
+                ((TableViewCell)Children[i]).Column = columns[i];
             }
         }
 
@@ -65,7 +67,7 @@ public class TableViewCellsPresenter : Panel
     /// <inheritdoc/>
     protected override Size MeasureOverride(Size availableSize)
     {
-        if (Columns is not { } columns)
+        if (Row?.Columns is not { } columns)
             return default;
 
         // In a standard template, the column widths should have been computed by the headers' presenter.
@@ -73,18 +75,18 @@ public class TableViewCellsPresenter : Panel
         if (NeedsActualWidths(columns))
             UpdateActualWidths(columns, availableSize.Width);
 
-        return MeasureRow(Columns, Children, availableSize);
+        return MeasureRow(columns, Children, availableSize);
     }
 
     /// <inheritdoc/>
     protected override Size ArrangeOverride(Size finalSize)
     {
-        if (Columns is not { } columns)
+        if (Row?.Columns is not { } columns)
             return finalSize;
 
         if (NeedsActualWidths(columns))
             UpdateActualWidths(columns, finalSize.Width);
 
-        return ArrangeRow(Columns, Children, finalSize, 0);
+        return ArrangeRow(columns, Children, finalSize, 0);
     }
 }

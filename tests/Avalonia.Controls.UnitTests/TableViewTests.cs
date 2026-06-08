@@ -6,6 +6,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -42,9 +43,13 @@ public sealed class TableViewTests : ScopedTestBase
         Prepare(target);
 
         var row = (TableViewRow)target.GetRealizedContainers().Single();
-        var presenter = GetCellsPresenter(row);
-        Assert.Equal(3, presenter.Children.Count);
-        Assert.All(presenter.Children, c => Assert.IsType<TableViewCell>(c));
+        var cells = GetCellsPresenter(row).Children;
+        Assert.Equal(3, cells.Count);
+        Assert.All(cells, c => Assert.IsType<TableViewCell>(c));
+
+        // Cells must also be part of the row's logical tree.
+        var logicalChildren = row.GetLogicalChildren().ToArray();
+        Assert.Equal(cells, logicalChildren);
     }
 
     [Fact]
@@ -95,7 +100,8 @@ public sealed class TableViewTests : ScopedTestBase
 
         Prepare(target);
 
-        var cellsPresenter = GetCellsPresenter((TableViewRow)target.GetRealizedContainers().Single());
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var cellsPresenter = GetCellsPresenter(row);
         Assert.Equal(2, cellsPresenter.Children.Count);
 
         var headersPresenter = GetColumnHeadersPresenter(target);
@@ -105,6 +111,10 @@ public sealed class TableViewTests : ScopedTestBase
 
         Assert.Equal(3, cellsPresenter.Children.Count);
         Assert.Equal(3, headersPresenter.Children.Count);
+
+        // The newly added cell must also be part of the row's logical tree.
+        var logicalChildren = row.GetLogicalChildren().ToArray();
+        Assert.Equal(cellsPresenter.Children, logicalChildren);
     }
 
     [Fact]
@@ -119,16 +129,24 @@ public sealed class TableViewTests : ScopedTestBase
 
         Prepare(target);
 
-        var cellsPresenter = GetCellsPresenter((TableViewRow)target.GetRealizedContainers().Single());
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var cellsPresenter = GetCellsPresenter(row);
         Assert.Equal(3, cellsPresenter.Children.Count);
 
         var headersPresenter = GetColumnHeadersPresenter(target);
         Assert.Equal(3, headersPresenter.Children.Count);
 
+        var removedCell = (TableViewCell)cellsPresenter.Children[2];
+
         target.Columns.RemoveAt(2);
 
         Assert.Equal(2, cellsPresenter.Children.Count);
         Assert.Equal(2, headersPresenter.Children.Count);
+
+        // The removed cell must also be detached from the row's logical tree, while the remaining cells stay in it.
+        var logicalChildren = row.GetLogicalChildren().ToArray();
+        Assert.DoesNotContain(removedCell, logicalChildren);
+        Assert.Equal(cellsPresenter.Children, logicalChildren);
     }
 
     [Fact]
@@ -206,11 +224,14 @@ public sealed class TableViewTests : ScopedTestBase
 
         Prepare(target);
 
-        var cellsPresenter = GetCellsPresenter((TableViewRow)target.GetRealizedContainers().Single());
+        var row = (TableViewRow)target.GetRealizedContainers().Single();
+        var cellsPresenter = GetCellsPresenter(row);
         Assert.Equal(2, cellsPresenter.Children.Count);
 
         var headersPresenter = GetColumnHeadersPresenter(target);
         Assert.Equal(2, headersPresenter.Children.Count);
+
+        var oldCells = cellsPresenter.Children.ToArray();
 
         target.Columns =
         [
@@ -221,6 +242,11 @@ public sealed class TableViewTests : ScopedTestBase
 
         Assert.Equal(3, cellsPresenter.Children.Count);
         Assert.Equal(3, headersPresenter.Children.Count);
+
+        // The new cells must be in the row's logical tree, and the old ones gone.
+        var logicalChildren = row.GetLogicalChildren().ToArray();
+        Assert.Equal(cellsPresenter.Children, logicalChildren);
+        Assert.All(oldCells, cell => Assert.DoesNotContain(cell, logicalChildren));
     }
 
     [Fact]
