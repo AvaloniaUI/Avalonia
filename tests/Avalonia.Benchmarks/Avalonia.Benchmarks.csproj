@@ -34,5 +34,12 @@
     <EmbeddedResource Include="..\Avalonia.RenderTests\Assets\InterVariable.ttf">
       <Link>Assets\InterVariable.ttf</Link>
     </EmbeddedResource>
+    <!-- CFF (Source Code Pro) and CFF2 (Adobe Variable Font Prototype) for the outline / bounds benchmarks. -->
+    <EmbeddedResource Include="..\Avalonia.RenderTests\Assets\SourceCodePro-Subset.otf">
+      <Link>Assets\SourceCodePro-Subset.otf</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Avalonia.RenderTests\Assets\AdobeVFPrototype-Subset.otf">
+      <Link>Assets\AdobeVFPrototype-Subset.otf</Link>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
