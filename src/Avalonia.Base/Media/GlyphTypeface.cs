@@ -54,6 +54,11 @@ namespace Avalonia.Media
         // clone's active variation coords, like gvar.
         private readonly Cff2Table? _cff2Table;
 
+        // Lazy per-glyph memo of CFF / CFF2 control-point boxes (null until the first bounds query, and
+        // on glyf fonts which never need it). Per instance, so a CFF2 variation clone caches the box at
+        // its own variation point. See TryGetCachedCffBounds.
+        private InkBoundsCache? _inkBoundsCache;
+
         // Variation tables (null on static fonts). The fvar table is loaded after the
         // name table so axis / instance names can be resolved during parsing; avar is
         // optional and may be absent even on a variable font.
@@ -1401,17 +1406,11 @@ namespace Avalonia.Media
                 return false;
             }
 
-            if (_cffTable is not null)
+            if (_cffTable is not null || _cff2Table is not null)
             {
-                return _cffTable.TryGetGlyphBounds(glyph, out box);
-            }
-
-            if (_cff2Table is not null)
-            {
-                Span<float> zeroCoords = stackalloc float[_fvarTable?.Axes.Length ?? 0];
-                ReadOnlySpan<float> activeCoords = _activeCoords is not null ? _activeCoords : zeroCoords;
-
-                return _cff2Table.TryGetGlyphBounds(glyph, activeCoords, out box);
+                // CFF / CFF2 have no stored bbox; the cache turns the per-call charstring
+                // interpretation into an O(1) read after the first hit (see GetCachedCffBounds).
+                return TryGetCachedCffBounds(glyph, out box);
             }
 
             box = default;
@@ -1431,32 +1430,98 @@ namespace Avalonia.Media
                 return true;
             }
 
-            if (_cffTable is not null)
+            if (_cffTable is not null || _cff2Table is not null)
             {
                 for (int i = 0; i < glyphIds.Length; i++)
                 {
-                    bounds[i] = _cffTable.TryGetGlyphBounds(glyphIds[i], out var box) ? box : default;
-                }
-
-                return true;
-            }
-
-            if (_cff2Table is not null)
-            {
-                // CFF2 ink bounds vary with the variation point; the default instance evaluates the
-                // blends at the origin (all-zero coords).
-                Span<float> zeroCoords = stackalloc float[_fvarTable?.Axes.Length ?? 0];
-                ReadOnlySpan<float> activeCoords = _activeCoords is not null ? _activeCoords : zeroCoords;
-
-                for (int i = 0; i < glyphIds.Length; i++)
-                {
-                    bounds[i] = _cff2Table.TryGetGlyphBounds(glyphIds[i], activeCoords, out var box) ? box : default;
+                    bounds[i] = TryGetCachedCffBounds(glyphIds[i], out var box) ? box : default;
                 }
 
                 return true;
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Returns the control-point ink box for a CFF / CFF2 glyph, memoised per glyph. The first read
+        /// of a glyph interprets its charstring (the expensive step CFF / CFF2 can't avoid — they store
+        /// no bbox); every later read of that glyph is an array lookup, putting repeated access on par
+        /// with the <c>glyf</c> header read. Returns <c>false</c> for an out-of-range glyph.
+        /// </summary>
+        /// <remarks>
+        /// The cache is per-<see cref="GlyphTypeface"/> instance, so a CFF2 variation clone caches the
+        /// box at <em>its</em> variation point — the bounds are immutable for a given instance, so the
+        /// memo never goes stale. Population is a benign race: two threads may compute the same glyph,
+        /// but they write identical values, and the <c>State</c> flag is published with release/acquire
+        /// ordering so a reader that sees "computed" also sees the fully-written box.
+        /// </remarks>
+        private bool TryGetCachedCffBounds(ushort glyph, out GlyphBounds box)
+        {
+            if (glyph >= GlyphCount)
+            {
+                box = default;
+                return false;
+            }
+
+            var cache = _inkBoundsCache ?? GetOrCreateInkBoundsCache();
+
+            if (Volatile.Read(ref cache.State[glyph]) == 0)
+            {
+                box = ComputeCffGlyphBounds(glyph);
+                cache.Bounds[glyph] = box;
+                Volatile.Write(ref cache.State[glyph], 1);
+            }
+            else
+            {
+                box = cache.Bounds[glyph];
+            }
+
+            return true;
+        }
+
+        /// <summary>Interprets one CFF / CFF2 charstring into its control-point box (the cold path).</summary>
+        private GlyphBounds ComputeCffGlyphBounds(ushort glyph)
+        {
+            if (_cffTable is not null)
+            {
+                return _cffTable.TryGetGlyphBounds(glyph, out var box) ? box : default;
+            }
+
+            // CFF2 ink bounds vary with the variation point; the default instance evaluates the blends
+            // at the origin (all-zero coords).
+            Span<float> zeroCoords = stackalloc float[_fvarTable?.Axes.Length ?? 0];
+            ReadOnlySpan<float> activeCoords = _activeCoords is not null ? _activeCoords : zeroCoords;
+
+            return _cff2Table!.TryGetGlyphBounds(glyph, activeCoords, out var cff2Box) ? cff2Box : default;
+        }
+
+        private InkBoundsCache GetOrCreateInkBoundsCache()
+        {
+            var created = new InkBoundsCache(GlyphCount);
+
+            // First publisher wins; later racers reuse it. The arrays start zeroed (every glyph
+            // "uncomputed"), so there is nothing else to initialise before publication.
+            return Interlocked.CompareExchange(ref _inkBoundsCache, created, null) ?? created;
+        }
+
+        /// <summary>
+        /// Per-glyph memo for CFF / CFF2 control-point boxes. <see cref="State"/> is a parallel
+        /// computed-flag array (0 = not yet computed) read / written with <see cref="Volatile"/> so the
+        /// box store is visible before the flag flips. A <see cref="GlyphBounds"/> is eight bytes, so an
+        /// element store is itself atomic on 64-bit — and concurrent writers of the same glyph store
+        /// identical bytes regardless.
+        /// </summary>
+        private sealed class InkBoundsCache
+        {
+            public readonly GlyphBounds[] Bounds;
+            public readonly byte[] State;
+
+            public InkBoundsCache(int glyphCount)
+            {
+                Bounds = new GlyphBounds[glyphCount];
+                State = new byte[glyphCount];
+            }
         }
 
         /// <summary>
