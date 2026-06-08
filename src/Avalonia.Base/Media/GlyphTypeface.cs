@@ -6,6 +6,7 @@ using System.Threading;
 using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
+using Avalonia.Media.Fonts.Tables.Cff;
 using Avalonia.Media.Fonts.Tables.Cmap;
 using Avalonia.Media.Fonts.Tables.Glyf;
 using Avalonia.Media.Fonts.Tables.Metrics;
@@ -42,6 +43,11 @@ namespace Avalonia.Media
         private readonly VerticalMetricsTable? _vmTable;
 
         private readonly GlyfTable? _glyfTable;
+
+        // CFF table — PostScript / Type 2 outlines (the .otf flavour). Null for TrueType (glyf)
+        // fonts. A font carries exactly one outline format, so _glyfTable and _cffTable are mutually
+        // exclusive; _cffTable is loaded only when _glyfTable is absent.
+        private readonly CffTable? _cffTable;
 
         // Variation tables (null on static fonts). The fvar table is loaded after the
         // name table so axis / instance names can be resolved during parsing; avar is
@@ -236,6 +242,13 @@ namespace Avalonia.Media
                 GlyfTable.TryLoad(this, headTable, maxpTable, out _glyfTable);
             }
 
+            // PostScript (CFF) outlines: OTF/CFF fonts have no glyf table. Loaded once and cached
+            // for reuse by GetGlyphOutline, the same way as glyf.
+            if (_glyfTable is null)
+            {
+                CffTable.TryLoad(this, out _cffTable);
+            }
+
             IsLastResort = (headTable is not null && (headTable.Flags & HeadFlags.LastResortFont) != 0) ||
                            _cmapTable.Format == CmapFormat.Format13;
 
@@ -424,6 +437,7 @@ namespace Avalonia.Media
             _hmTable = source._hmTable;
             _vmTable = source._vmTable;
             _glyfTable = source._glyfTable;
+            _cffTable = source._cffTable;
             _fvarTable = source._fvarTable;
             _avarTable = source._avarTable;
             _gvarTable = source._gvarTable;
@@ -1398,31 +1412,42 @@ namespace Avalonia.Media
                 return null;
             }
 
-            if (_glyfTable is null)
+            if (_glyfTable is null && _cffTable is null)
             {
                 return null;
             }
 
             var geometry = _renderInterface.CreateStreamGeometry();
 
-            // The active variation coords are precomputed once at clone time and stored
-            // on the typeface — see _activeCoords. Static fonts and default-instance
-            // lookups (where _activeCoords is null) pass an empty span and skip the
-            // gvar deformation path entirely.
-            ReadOnlySpan<float> activeCoords = _gvarTable is not null && _activeCoords is not null
-                ? _activeCoords
-                : default;
-
             using (var ctx = geometry.Open())
             {
                 // Build the outline in font design-unit space (identity transform); callers apply
                 // the scale / position. Wrapped so the shared, cacheable result is immutable.
-                if (_glyfTable.TryBuildGlyphGeometry(
+                // glyf (TrueType) and CFF (PostScript) are mutually exclusive outline formats.
+                bool built;
+                if (_glyfTable is not null)
+                {
+                    // The active variation coords are precomputed once at clone time and stored
+                    // on the typeface — see _activeCoords. Static fonts and default-instance
+                    // lookups (where _activeCoords is null) pass an empty span and skip the
+                    // gvar deformation path entirely.
+                    ReadOnlySpan<float> activeCoords = _gvarTable is not null && _activeCoords is not null
+                        ? _activeCoords
+                        : default;
+
+                    built = _glyfTable.TryBuildGlyphGeometry(
                         (int)glyphId,
                         Matrix.Identity,
                         ctx,
                         _gvarTable,
-                        activeCoords))
+                        activeCoords);
+                }
+                else
+                {
+                    built = _cffTable!.TryBuildGlyphGeometry((int)glyphId, Matrix.Identity, ctx);
+                }
+
+                if (built)
                 {
                     return new ImmutableGeometryImpl(geometry);
                 }

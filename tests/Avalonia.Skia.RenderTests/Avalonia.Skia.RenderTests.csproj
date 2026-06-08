@@ -18,6 +18,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Avalonia.RenderTests\*\*.ttf" />
+    <EmbeddedResource Include="..\Avalonia.RenderTests\*\*.otf" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="../Avalonia.RenderTests/**/*.png" CopyToOutputDirectory="Always" />

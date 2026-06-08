@@ -33,6 +33,11 @@ namespace Avalonia.Skia.RenderTests
         private const string PointMatchAsset =
             "resm:Avalonia.Skia.RenderTests.Assets.PointMatch.ttf?assembly=Avalonia.Skia.RenderTests";
 
+        // Synthetic non-CID CFF (PostScript / Type 2) font: 'I' / 'L' are line-only glyphs, 'O' is a
+        // donut (outer + inner contour from cubic curves) exercising the charstring interpreter.
+        private const string CffAsset =
+            "resm:Avalonia.Skia.RenderTests.Assets.CffTest.otf?assembly=Avalonia.Skia.RenderTests";
+
         public GlyphOutlineRenderTests()
             : base(@"Media\GlyphOutline")
         {
@@ -65,6 +70,42 @@ namespace Avalonia.Skia.RenderTests
             // at the origin instead of the rectangle's corner, which the image diff would catch.
             await RenderToFile(BuildTarget(LoadGlyphTypeface(PointMatchAsset), 'P'));
             CompareImages();
+        }
+
+        [Fact]
+        public async Task Should_Render_Cff_Glyph()
+        {
+            // 'O' from a CFF (PostScript / Type 2) font: a donut whose hole exercises non-zero
+            // winding, built from cubic curves decoded by the Type 2 charstring interpreter. This is
+            // the PostScript counterpart to the glyf render tests, proving GetGlyphOutline returns
+            // real geometry for OTF/CFF fonts (previously null) through the full Skia pipeline.
+            await RenderToFile(BuildTarget(LoadGlyphTypeface(CffAsset), 'O'));
+            CompareImages();
+        }
+
+        [Fact]
+        public void Cff_Glyph_Outlines_Have_Expected_Design_Bounds()
+        {
+            // Ground-truth design-unit bounds (computed from the font's own charstrings) verify the
+            // CFF interpreter produces correctly positioned and scaled geometry end-to-end. 'I' / 'L'
+            // cover the line operators; 'O' covers the curve operators (vhcurveto), the leading-width
+            // drop, and a second contour started by hmoveto.
+            var gt = LoadGlyphTypeface(CffAsset);
+            AssertGlyphBounds(gt, 'I', left: 400, top: 0, right: 600, bottom: 700);
+            AssertGlyphBounds(gt, 'L', left: 200, top: 0, right: 600, bottom: 700);
+            AssertGlyphBounds(gt, 'O', left: 100, top: 50, right: 700, bottom: 650);
+        }
+
+        private static void AssertGlyphBounds(GlyphTypeface gt, char ch,
+            double left, double top, double right, double bottom)
+        {
+            var glyph = gt.CharacterToGlyphMap[ch];
+            var bounds = gt.GetGlyphOutline(glyph)!.Bounds;
+
+            Assert.True(Math.Abs(bounds.Left - left) < 1.5, $"'{ch}' Left: expected {left}, got {bounds.Left}");
+            Assert.True(Math.Abs(bounds.Top - top) < 1.5, $"'{ch}' Top: expected {top}, got {bounds.Top}");
+            Assert.True(Math.Abs(bounds.Right - right) < 1.5, $"'{ch}' Right: expected {right}, got {bounds.Right}");
+            Assert.True(Math.Abs(bounds.Bottom - bottom) < 1.5, $"'{ch}' Bottom: expected {bottom}, got {bounds.Bottom}");
         }
 
         [Fact]
