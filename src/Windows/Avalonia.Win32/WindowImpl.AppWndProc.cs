@@ -93,11 +93,9 @@ namespace Avalonia.Win32
                                 }
                                 else
                                 {
+                                    // There's no extra border on top with WS_CAPTION: it's part of the caption.
                                     adjuster.Adjust(ref borderThickness, style, 0);
-
-                                    var thinBorderThickness = new RECT();
-                                    adjuster.Adjust(ref thinBorderThickness, style & ~(WindowStyles.WS_CAPTION | WindowStyles.WS_THICKFRAME) | WindowStyles.WS_BORDER, 0);
-                                    borderThickness.top = thinBorderThickness.top;
+                                    borderThickness.top = 0;
                                 }
                             }
                             else if (style.HasAllFlags(WindowStyles.WS_BORDER))
