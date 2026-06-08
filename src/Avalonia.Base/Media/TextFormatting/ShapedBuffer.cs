@@ -308,57 +308,6 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Finds how many text characters from the start of this buffer fit within
-        /// <paramref name="availableWidth"/>, walking in logical cluster order.
-        /// Returns the character count and the width consumed (always &lt;= availableWidth
-        /// unless the very first cluster overflows, in which case the caller is expected
-        /// to honour the overflow contract documented in <c>TextFormatterImpl.MeasureLength</c>).
-        /// </summary>
-        internal int MeasureCharactersThatFit(double availableWidth, out double widthConsumed)
-        {
-            var prefix = EnsureClusterCache();
-            var startIdx = _clusterStartIdx;
-            var count = _clusterCount;
-
-            if (count == 0)
-            {
-                widthConsumed = 0d;
-                return 0;
-            }
-
-            // Find the largest k such that prefix[startIdx + k] - prefix[startIdx] <=
-            // availableWidth. Standard binary search on the prefix-sum array, with the
-            // sub-buffer's base width subtracted out.
-            var basePrefix = prefix[startIdx];
-
-            var lo = 0;
-            var hi = count;
-            while (lo < hi)
-            {
-                var mid = (lo + hi + 1) >> 1;
-                if (MathUtilities.LessThanOrClose(prefix[startIdx + mid] - basePrefix, availableWidth))
-                {
-                    lo = mid;
-                }
-                else
-                {
-                    hi = mid - 1;
-                }
-            }
-
-            widthConsumed = prefix[startIdx + lo] - basePrefix;
-
-            // Simple-mode fast path: 1 char per cluster, so the consumed char count
-            // equals the cluster offset we just resolved (no start-chars table needed).
-            var starts = _clusterStartChars;
-            if (starts is null)
-            {
-                return lo;
-            }
-            return starts[startIdx + lo] - starts[startIdx];
-        }
-
-        /// <summary>
         /// Returns the character length of the first logical cluster in this buffer.
         /// Used by <c>MeasureLength</c> to satisfy the "include at least one cluster"
         /// rule when even the first cluster does not fit the paragraph width.
@@ -798,6 +747,188 @@ namespace Avalonia.Media.TextFormatting
                 _clusterStartIdx + firstClusterCount, _clusterCount - firstClusterCount, _cacheGeneration);
 
             return new SplitResult<ShapedBuffer>(first, second);
+        }
+
+        /// <summary>
+        /// Returns the cumulative glyph advance for the logical character range
+        /// <c>[<paramref name="startChar"/>, <paramref name="endChar"/>)</c>
+        /// within this sub-buffer. Uses the cluster cache via binary search, so
+        /// each call is O(log clusters) regardless of how big the buffer is or
+        /// where the range sits inside it.
+        /// </summary>
+        /// <remarks>
+        /// The cluster cache is built in <i>logical</i> order for both LTR and
+        /// RTL buffers (see <see cref="EnsureClusterCache"/>), so callers pass
+        /// logical char offsets and the same code path serves both directions.
+        /// Out-of-range arguments are clamped to <c>[0, Text.Length]</c>.
+        /// </remarks>
+        internal double GetCharRangeWidth(int startChar, int endChar)
+        {
+            if (endChar <= startChar)
+            {
+                return 0d;
+            }
+
+            var prefix = EnsureClusterCache();
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            var starts = _clusterStartChars;
+            int startBoundary;
+            int endBoundary;
+            if (starts is null)
+            {
+                // Simple mode: one char per cluster, so the local char offset equals
+                // the local cluster index. Clamp to [0, count] to mirror the
+                // out-of-range handling of FindLargestClusterAtOrBefore.
+                startBoundary = Math.Clamp(startChar, 0, count);
+                endBoundary = Math.Clamp(endChar, 0, count);
+            }
+            else
+            {
+                var baseChar = starts[startIdx];
+                startBoundary = FindLargestClusterAtOrBefore(starts, startIdx, count, baseChar, startChar);
+                endBoundary = FindLargestClusterAtOrBefore(starts, startIdx, count, baseChar, endChar);
+            }
+
+            return prefix[startIdx + endBoundary] - prefix[startIdx + startBoundary];
+        }
+
+        /// <summary>
+        /// Binary-search the largest cluster boundary index <c>i ∈ [0, count]</c>
+        /// such that <c>starts[startIdx + i] - baseChar ≤ charPos</c>. Cluster
+        /// starts are non-decreasing within the sub-buffer range, so a standard
+        /// upper-bound search works in both LTR and RTL buffers (the cache is
+        /// always built in logical order).
+        /// </summary>
+        private static int FindLargestClusterAtOrBefore(int[] starts, int startIdx, int count, int baseChar, int charPos)
+        {
+            if (charPos < 0)
+            {
+                return 0;
+            }
+
+            // Standard "rightmost <= charPos" upper-bound shape.
+            var lo = 0;
+            var hi = count;
+            while (lo < hi)
+            {
+                var mid = (lo + hi + 1) >> 1;
+                if (starts[startIdx + mid] - baseChar <= charPos)
+                {
+                    lo = mid;
+                }
+                else
+                {
+                    hi = mid - 1;
+                }
+            }
+            return lo;
+        }
+
+        /// <summary>
+        /// Finds the largest <c>N</c> such that the first <c>N</c> logical
+        /// characters of this sub-buffer fit within <paramref name="availableWidth"/>.
+        /// Cluster-atomic: a multi-glyph cluster either fits completely or not at
+        /// all. Returns 0 if <paramref name="availableWidth"/> is non-positive
+        /// or the first cluster's width already exceeds it.
+        /// </summary>
+        /// <remarks>
+        /// Walks the cluster cache (built in logical order for both LTR and RTL
+        /// buffers) via binary search, so each call is O(log clusters) and the
+        /// returned count is the correct logical-leading char count regardless
+        /// of the buffer's visual direction.
+        /// </remarks>
+        internal int FindLeadingCharCountWithinWidth(double availableWidth)
+        {
+            if (availableWidth <= 0)
+            {
+                return 0;
+            }
+
+            var prefix = EnsureClusterCache();
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            var basePrefix = prefix[startIdx];
+
+            // Largest k in [0, count] with prefix[startIdx + k] - basePrefix <= availableWidth.
+            var lo = 0;
+            var hi = count;
+            while (lo < hi)
+            {
+                var mid = (lo + hi + 1) >> 1;
+                if (MathUtilities.LessThanOrClose(prefix[startIdx + mid] - basePrefix, availableWidth))
+                {
+                    lo = mid;
+                }
+                else
+                {
+                    hi = mid - 1;
+                }
+            }
+
+            var starts = _clusterStartChars;
+            if (starts is null)
+            {
+                // Simple mode: char count == cluster count that fits.
+                return lo;
+            }
+            return starts[startIdx + lo] - starts[startIdx];
+        }
+
+        /// <summary>
+        /// Finds the largest <c>N</c> such that the last <c>N</c> logical
+        /// characters of this sub-buffer fit within <paramref name="availableWidth"/>.
+        /// Cluster-atomic; <paramref name="consumedWidth"/> reports the actual
+        /// cumulative advance of those <c>N</c> chars.
+        /// </summary>
+        /// <remarks>
+        /// O(log clusters) via the cluster cache; direction-agnostic (cache is
+        /// always in logical order). The returned count is the logical-trailing
+        /// char count regardless of whether the buffer is LTR or RTL.
+        /// </remarks>
+        internal int FindTrailingCharCountWithinWidth(double availableWidth, out double consumedWidth)
+        {
+            consumedWidth = 0;
+
+            if (availableWidth <= 0)
+            {
+                return 0;
+            }
+
+            var prefix = EnsureClusterCache();
+            var startIdx = _clusterStartIdx;
+            var count = _clusterCount;
+
+            var endPrefix = prefix[startIdx + count];
+
+            // Smallest k in [0, count] with endPrefix - prefix[startIdx + k] <= availableWidth.
+            // (That cluster index marks where the trailing-fitting suffix starts.)
+            var lo = 0;
+            var hi = count;
+            while (lo < hi)
+            {
+                var mid = (lo + hi) >> 1;
+                if (MathUtilities.LessThanOrClose(endPrefix - prefix[startIdx + mid], availableWidth))
+                {
+                    hi = mid;
+                }
+                else
+                {
+                    lo = mid + 1;
+                }
+            }
+
+            consumedWidth = endPrefix - prefix[startIdx + lo];
+
+            var starts = _clusterStartChars;
+            if (starts is null)
+            {
+                // Simple mode: char count == cluster count in the trailing suffix.
+                return count - lo;
+            }
+            return starts[startIdx + count] - starts[startIdx + lo];
         }
     }
 }

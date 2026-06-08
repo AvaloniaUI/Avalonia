@@ -307,7 +307,7 @@ namespace Avalonia.Input
 
                 if (!e.Handled && e.HoldingState == HoldingState.Started)
                 {
-                    var contextEvent = new ContextRequestedEventArgs(e.PointerEventArgs);
+                    var contextEvent = new ContextRequestedEventArgs(e);
                     inputElement.RaiseEvent(contextEvent);
                     e.Handled = contextEvent.Handled;
 

@@ -111,6 +111,9 @@ namespace Avalonia.Controls.Primitives
         {
             ShowFlyout();
             e.Handled = true;
+
+            if (e.IsHolding)
+                this.PerformFeedback(FeedbackAction.Hold);
         }
 
         private void Handle_DragStarted(object? sender, VectorEventArgs e)
@@ -534,7 +537,7 @@ namespace Avalonia.Controls.Primitives
                         }
                         else
                         {
-                            var visibleHandle = _handle1.IsEffectivelyVisible ? _handle1: _handle2.IsEffectivelyVisible ? _handle2 : null;
+                            var visibleHandle = _handle1.IsEffectivelyVisible ? _handle1 : _handle2.IsEffectivelyVisible ? _handle2 : null;
 
                             topleft = visibleHandle?.IndicatorPosition;
                         }

@@ -10,7 +10,7 @@ namespace Avalonia.Benchmarks.Text;
 
 /// <summary>
 /// Micro-benchmark for the <see cref="ShapedBuffer"/> cluster-cache hot paths
-/// (<see cref="ShapedBuffer.TotalGlyphAdvance"/>, <see cref="ShapedBuffer.MeasureCharactersThatFit"/>,
+/// (<see cref="ShapedBuffer.TotalGlyphAdvance"/>, <see cref="ShapedBuffer.FindLeadingCharCountWithinWidth"/>,
 /// and the cached <see cref="ShapedBuffer.Split"/> chain). Compares the
 /// simple-mode fast path (1 char per cluster) against complex clusters by
 /// shaping random ASCII vs. random-from-extended-Latin so the buffers exercise
@@ -77,7 +77,7 @@ public class ShapedBufferOps : IDisposable
     }
 
     /// <summary>
-    /// Repeated <see cref="ShapedBuffer.MeasureCharactersThatFit"/> targeting
+    /// Repeated <see cref="ShapedBuffer.FindLeadingCharCountWithinWidth"/> targeting
     /// half the buffer's total width. Exercises the binary search across the
     /// prefix table.
     /// </summary>
@@ -88,7 +88,7 @@ public class ShapedBufferOps : IDisposable
         var sum = 0;
         for (var i = 0; i < 64; i++)
         {
-            sum += _primed.MeasureCharactersThatFit(halfWidth, out _);
+            sum += _primed.FindLeadingCharCountWithinWidth(halfWidth);
         }
         return sum;
     }
