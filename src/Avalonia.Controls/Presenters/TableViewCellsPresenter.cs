@@ -7,6 +7,10 @@ namespace Avalonia.Controls.Presenters;
 /// Lays out the cells of a <see cref="TableViewRow"/> according to the column definitions
 /// of the parent <see cref="TableView"/>.
 /// </summary>
+/// <remarks>
+/// The cells are recycled alongside their owning row in a <see cref="VirtualizingStackPanel"/>,
+/// but are not virtualized in a single row (i.e. there is no column virtualization).
+/// </remarks>
 public class TableViewCellsPresenter : Panel
 {
     internal AvaloniaList<TableViewColumn>? Columns { get; set; }
