@@ -102,6 +102,14 @@ public class CffGlyphBoundsBenchmark : IDisposable
     private ushort[] _cff2Ids = Array.Empty<ushort>();
     private GlyphBounds[] _bounds = Array.Empty<GlyphBounds>();
 
+    // Skia native baseline: one SKFont per format, reading bounds through GetGlyphWidths — the call
+    // GlyphRunImpl makes today. Skia's bounds are tight pixel boxes (size-scaled); ours are design-unit
+    // control boxes — so this compares the cost of "fetch bounds for N glyphs", not the box values.
+    private readonly SKFont _skGlyf;
+    private readonly SKFont _skCff;
+    private readonly SKFont _skCff2;
+    private SKRect[] _skBounds = Array.Empty<SKRect>();
+
     [Params(1, 16, 256)]
     public int GlyphCount { get; set; }
 
@@ -119,6 +127,10 @@ public class CffGlyphBoundsBenchmark : IDisposable
         _glyfPool = CffFonts.BuildPool(_glyf);
         _cffPool = CffFonts.BuildPool(_cff);
         _cff2Pool = CffFonts.BuildPool(_cff2);
+
+        _skGlyf = ((SkiaTypeface)_glyf.PlatformTypeface).CreateSKFont(16f);
+        _skCff = ((SkiaTypeface)_cff.PlatformTypeface).CreateSKFont(16f);
+        _skCff2 = ((SkiaTypeface)_cff2.PlatformTypeface).CreateSKFont(16f);
     }
 
     [GlobalSetup]
@@ -128,6 +140,7 @@ public class CffGlyphBoundsBenchmark : IDisposable
         _cffIds = CffFonts.Cycle(_cffPool, GlyphCount);
         _cff2Ids = CffFonts.Cycle(_cff2Pool, GlyphCount);
         _bounds = new GlyphBounds[GlyphCount];
+        _skBounds = new SKRect[GlyphCount];
     }
 
     [Benchmark(Baseline = true)]
@@ -142,7 +155,22 @@ public class CffGlyphBoundsBenchmark : IDisposable
     [Benchmark]
     public bool Cff2Varied() => _cff2Varied.TryGetGlyphBounds(_cff2Ids, _bounds.AsSpan(0, GlyphCount));
 
-    public void Dispose() => _app?.Dispose();
+    [Benchmark]
+    public void Skia_Glyf() => _skGlyf.GetGlyphWidths(_glyfIds, null, _skBounds.AsSpan(0, GlyphCount));
+
+    [Benchmark]
+    public void Skia_Cff() => _skCff.GetGlyphWidths(_cffIds, null, _skBounds.AsSpan(0, GlyphCount));
+
+    [Benchmark]
+    public void Skia_Cff2() => _skCff2.GetGlyphWidths(_cff2Ids, null, _skBounds.AsSpan(0, GlyphCount));
+
+    public void Dispose()
+    {
+        _skGlyf.Dispose();
+        _skCff.Dispose();
+        _skCff2.Dispose();
+        _app?.Dispose();
+    }
 }
 
 /// <summary>
@@ -164,6 +192,11 @@ public class CffGlyphOutlineBenchmark : IDisposable
     private readonly ushort _cffGlyph;
     private readonly ushort _cff2Glyph;
 
+    // Skia native baseline: building the glyph path through SKFont.GetGlyphPath.
+    private readonly SKFont _skGlyf;
+    private readonly SKFont _skCff;
+    private readonly SKFont _skCff2;
+
     public CffGlyphOutlineBenchmark()
     {
         _app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface.With(
@@ -179,6 +212,10 @@ public class CffGlyphOutlineBenchmark : IDisposable
         _glyfGlyph = _glyf.CharacterToGlyphMap['O'];
         _cffGlyph = _cff.CharacterToGlyphMap['O'];
         _cff2Glyph = _cff2.CharacterToGlyphMap['o'];
+
+        _skGlyf = ((SkiaTypeface)_glyf.PlatformTypeface).CreateSKFont(16f);
+        _skCff = ((SkiaTypeface)_cff.PlatformTypeface).CreateSKFont(16f);
+        _skCff2 = ((SkiaTypeface)_cff2.PlatformTypeface).CreateSKFont(16f);
     }
 
     [Benchmark(Baseline = true)]
@@ -193,5 +230,20 @@ public class CffGlyphOutlineBenchmark : IDisposable
     [Benchmark]
     public IGeometryImpl Cff2Varied() => _cff2Varied.GetGlyphOutline(_cff2Glyph);
 
-    public void Dispose() => _app?.Dispose();
+    [Benchmark]
+    public SKPath Skia_Glyf() => _skGlyf.GetGlyphPath(_glyfGlyph);
+
+    [Benchmark]
+    public SKPath Skia_Cff() => _skCff.GetGlyphPath(_cffGlyph);
+
+    [Benchmark]
+    public SKPath Skia_Cff2() => _skCff2.GetGlyphPath(_cff2Glyph);
+
+    public void Dispose()
+    {
+        _skGlyf.Dispose();
+        _skCff.Dispose();
+        _skCff2.Dispose();
+        _app?.Dispose();
+    }
 }
