@@ -596,12 +596,18 @@ namespace Avalonia.Win32
 
             if (_isClientAreaExtended)
             {
-                // We told Windows we have a caption, but since we're actually extending into it,
+                // We told Windows we have a border, but since we're actually extending into it,
                 // it should be excluded from the final window bounds.
-                if (_windowProperties.Decorations != WindowDecorations.None)
+                var style = GetStyle();
+                if ((style & WindowStyles.WS_BORDER) != 0)
                 {
                     var borderOnlyRect = ClientRectToWindowRect(requestedClientRect, WindowStyles.WS_BORDER);
+
                     requestedWindowRect.top = borderOnlyRect.top;
+
+                    // If we're supposed to have a caption, the top border is actually collapsed into it.
+                    if ((style & WindowStyles.WS_CAPTION) == WindowStyles.WS_CAPTION)
+                        requestedWindowRect.top += 1;
                 }
             }
 
@@ -1400,10 +1406,6 @@ namespace Avalonia.Win32
 
         private void UpdateWindowProperties(WindowProperties newProperties, bool forceChanges = false)
         {
-            // Implementation note: this method tries to keep the same styles for extended and non-extended modes.
-            // However, we had to make an exception for WS_CAPTION since it causes issues in Windows 10.
-            // See https://github.com/AvaloniaUI/Avalonia/issues/21328
-
             var oldProperties = _windowProperties;
 
             // Calling SetWindowPos will cause events to be sent and we need to respond
@@ -1471,15 +1473,7 @@ namespace Avalonia.Win32
                 switch (newProperties.Decorations)
                 {
                     case WindowDecorations.Full:
-                        style |= WindowStyles.WS_BORDER | WindowStyles.WS_SYSMENU;
-
-                        // When WS_CAPTION is specified, Windows 10 always draws the caption even if we extend into it.
-                        // We can workaround that by setting DWMWA_NCRENDERING_POLICY to DISABLE, but that also removes
-                        // shadows and borders. Remove the style completely.
-                        // Windows 11 correctly handles this scenario.
-                        if (!_isClientAreaExtended)
-                            style |= WindowStyles.WS_CAPTION;
-
+                        style |= WindowStyles.WS_BORDER | WindowStyles.WS_SYSMENU | WindowStyles.WS_CAPTION;
                         break;
 
                     case WindowDecorations.BorderOnly:
@@ -1602,9 +1596,6 @@ namespace Avalonia.Win32
         public void SetExtendClientAreaToDecorationsHint(bool hint)
         {
             _isClientAreaExtended = hint;
-
-            // We may need to toggle WS_CAPTION when extending, ensure the styles are up-to-date.
-            UpdateWindowProperties(_windowProperties);
 
             ExtendClientArea();
         }

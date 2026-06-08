@@ -650,6 +650,7 @@ enum AvnAutomationControlType
     AutomationTitleBar,
     AutomationSeparator,
     AutomationExpander,
+    AutomationScrollViewer,
 }
 
 enum AvnLandmarkType
@@ -1281,6 +1282,7 @@ interface IAvnAutomationPeer : IUnknown
      bool IsKeyboardFocusable();
      void SetFocus();
      bool ShowContextMenu();
+     void BringIntoView();
 
      IAvnAutomationPeer* GetRootPeer();
      

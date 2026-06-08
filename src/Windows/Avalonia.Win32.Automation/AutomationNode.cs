@@ -373,6 +373,7 @@ namespace Avalonia.Win32.Automation
                 AutomationControlType.TitleBar => UiaControlTypeId.TitleBar,
                 AutomationControlType.Separator => UiaControlTypeId.Separator,
                 AutomationControlType.Expander => UiaControlTypeId.Group,
+                AutomationControlType.ScrollViewer => UiaControlTypeId.Pane,
                 _ => UiaControlTypeId.Custom,
             };
         }
