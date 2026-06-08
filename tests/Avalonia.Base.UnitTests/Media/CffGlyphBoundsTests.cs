@@ -147,6 +147,21 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
+        public void Repeated_Reads_Return_The_Same_Bounds()
+        {
+            var gt = LoadTypeface(SourceCodeProAsset);
+
+            // The first read interprets the charstring and memoises it; every later read of the same
+            // glyph hits the cache and must return the identical box.
+            var first = BoundsOf(gt, 'H');
+
+            for (var i = 0; i < 5; i++)
+            {
+                Assert.Equal(first, BoundsOf(gt, 'H'));
+            }
+        }
+
+        [Fact]
         public void Out_Of_Range_Glyph_Yields_Zero_Bounds()
         {
             var gt = LoadTypeface(SourceCodeProAsset);
