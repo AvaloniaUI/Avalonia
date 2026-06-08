@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
-using Avalonia.Skia;
-using SkiaSharp;
 using Xunit;
 
 namespace Avalonia.Skia.RenderTests
@@ -325,13 +325,12 @@ namespace Avalonia.Skia.RenderTests
             using var stream = loader.Open(new Uri(assetUri));
             using var memory = new MemoryStream();
             stream.CopyTo(memory);
-            // Copy the bytes into Skia-owned memory so the typeface's table reads keep
-            // working after the source stream is disposed. SKTypeface.FromStream's
-            // lifetime story varies by font; SKData.CreateCopy is bulletproof.
-            var skData = SKData.CreateCopy(memory.ToArray());
-            var skTypeface = SKTypeface.FromData(skData)
-                ?? throw new InvalidOperationException("SkiaSharp failed to load the font.");
-            return new GlyphTypeface(new SkiaTypeface(skTypeface, FontSimulations.None));
+
+            // Load through a custom IPlatformTypeface that reads the sfnt tables directly, not via a
+            // SkiaSharp typeface, so GetGlyphOutline exercises this repo's own table parsers and the
+            // charstring interpreter end to end against the raw font bytes. (Skia is still the
+            // geometry backend the resulting outline's bounds and rasterization depend on.)
+            return new GlyphTypeface(new CustomPlatformTypeface(memory.ToArray()));
         }
 
         private static Border BuildTarget(GlyphTypeface glyphTypeface, char ch)
@@ -380,6 +379,62 @@ namespace Avalonia.Skia.RenderTests
                 {
                     context.DrawGeometry(Brushes.Black, null, _outline);
                 }
+            }
+        }
+
+        /// <summary>
+        /// An <see cref="IPlatformTypeface"/> that serves the font's sfnt tables straight from the file
+        /// bytes — no SkiaSharp typeface. Enough for <see cref="GlyphTypeface"/> to parse the font and
+        /// for <see cref="GlyphTypeface.GetGlyphOutline(ushort)"/> to build outlines.
+        /// </summary>
+        private sealed class CustomPlatformTypeface : IPlatformTypeface
+        {
+            private readonly byte[] _data;
+            private readonly Dictionary<OpenTypeTag, (int Offset, int Length)> _tables = new();
+
+            public CustomPlatformTypeface(byte[] data)
+            {
+                _data = data;
+
+                // sfnt offset table: sfntVersion(4), numTables(2), ... then 16-byte table records of
+                // { tag(4), checksum(4), offset(4), length(4) }.
+                int numTables = (data[4] << 8) | data[5];
+                int record = 12;
+                for (int i = 0; i < numTables; i++, record += 16)
+                {
+                    var tag = OpenTypeTag.Parse(Encoding.ASCII.GetString(data, record, 4));
+                    int offset = (data[record + 8] << 24) | (data[record + 9] << 16) | (data[record + 10] << 8) | data[record + 11];
+                    int length = (data[record + 12] << 24) | (data[record + 13] << 16) | (data[record + 14] << 8) | data[record + 15];
+                    _tables[tag] = (offset, length);
+                }
+            }
+
+            public FontWeight Weight => FontWeight.Normal;
+            public FontStyle Style => FontStyle.Normal;
+            public FontStretch Stretch => FontStretch.Normal;
+            public string FamilyName => "Custom";
+            public FontSimulations FontSimulations => FontSimulations.None;
+
+            public bool TryGetTable(OpenTypeTag tag, out ReadOnlyMemory<byte> table)
+            {
+                if (_tables.TryGetValue(tag, out var loc) && (long)loc.Offset + loc.Length <= _data.Length)
+                {
+                    table = new ReadOnlyMemory<byte>(_data, loc.Offset, loc.Length);
+                    return true;
+                }
+
+                table = default;
+                return false;
+            }
+
+            public bool TryGetStream([NotNullWhen(true)] out Stream? stream)
+            {
+                stream = new MemoryStream(_data, writable: false);
+                return true;
+            }
+
+            public void Dispose()
+            {
             }
         }
     }
