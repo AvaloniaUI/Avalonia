@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Media.Fonts.Tables.Variation;
 using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts.Tables.Cff
@@ -31,6 +32,15 @@ namespace Avalonia.Media.Fonts.Tables.Cff
         private bool _done;
         private int _depth;
 
+        // CFF2 variation state. _vstore + _activeCoords drive blend's region scalers (cached per
+        // vsindex into _blendScalers); null / empty for CFF1, where blend / vsindex never appear.
+        private ItemVariationStore? _vstore;
+        private ReadOnlySpan<float> _activeCoords;
+        private Span<float> _blendScalers;
+        private int _vsindex;
+        private int _blendRegionCount;
+        private bool _blendScalersValid;
+
         public Type2CharStringInterpreter(
             IGeometryContext context,
             Matrix transform,
@@ -53,6 +63,30 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             _stemCount = 0;
             _done = false;
             _depth = 0;
+            _vstore = null;
+            _activeCoords = default;
+            _blendScalers = default;
+            _vsindex = 0;
+            _blendRegionCount = -1;
+            _blendScalersValid = false;
+        }
+
+        /// <summary>Creates an interpreter for a CFF2 charstring, enabling the blend / vsindex operators.</summary>
+        public Type2CharStringInterpreter(
+            IGeometryContext context,
+            Matrix transform,
+            CffIndex globalSubrs,
+            CffIndex localSubrs,
+            Span<double> stack,
+            ItemVariationStore? vstore,
+            ReadOnlySpan<float> activeCoords,
+            Span<float> blendScalers)
+            : this(context, transform, globalSubrs, localSubrs, stack)
+        {
+            _vstore = vstore;
+            _activeCoords = activeCoords;
+            _blendScalers = blendScalers;
+            _widthParsed = true; // CFF2 charstrings carry no leading width
         }
 
         /// <summary>Runs the top-level charstring and closes the final contour.</summary>
@@ -186,6 +220,15 @@ namespace Avalonia.Media.Fonts.Tables.Cff
                         EndChar();
                         _depth--;
                         return;
+
+                    case 15: // vsindex (CFF2) — select the active ItemVariationData for blends
+                        _vsindex = (int)_stack[--_sp];
+                        _blendScalersValid = false;
+                        break;
+
+                    case 16: // blend (CFF2)
+                        Blend();
+                        break;
 
                     case 12: // escape — two-byte operator
                     {
@@ -575,6 +618,56 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             }
 
             _done = true;
+        }
+
+        // CFF2 blend: the stack holds n default values, then n*k deltas (k = the region count for the
+        // current vsindex; value-major — all k deltas for value 0, then value 1, ...), then the count n
+        // on top. Each default is replaced in place by default + sum_j(delta_j * scaler_j); the deltas
+        // and the count are dropped, leaving the n blended values for the following operator.
+        private void Blend()
+        {
+            if (_sp <= 0)
+            {
+                return;
+            }
+
+            int n = (int)_stack[--_sp];
+
+            if (!_blendScalersValid)
+            {
+                _blendRegionCount = _vstore?.ComputeBlendScalers(_vsindex, _activeCoords, _blendScalers) ?? 0;
+                _blendScalersValid = true;
+            }
+
+            int k = _blendRegionCount;
+            if (n < 0 || k < 0)
+            {
+                _sp = 0;
+                return;
+            }
+
+            int baseIndex = _sp - n - (n * k);
+            if (baseIndex < 0)
+            {
+                _sp = 0;
+                return;
+            }
+
+            for (int valueIndex = 0; valueIndex < n; valueIndex++)
+            {
+                double value = _stack[baseIndex + valueIndex];
+                int deltaBase = baseIndex + n + (valueIndex * k);
+
+                for (int region = 0; region < k; region++)
+                {
+                    value += _stack[deltaBase + region] * _blendScalers[region];
+                }
+
+                _stack[baseIndex + valueIndex] = value;
+            }
+
+            // Keep the n blended values; drop the deltas and the count.
+            _sp = baseIndex + n;
         }
     }
 }

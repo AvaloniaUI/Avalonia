@@ -22,7 +22,12 @@ namespace Avalonia.Media.Fonts.Tables.Cff
         public static CffDict Parse(ReadOnlySpan<byte> data)
         {
             var entries = new Dictionary<int, double[]>();
-            Span<double> operands = stackalloc double[48];
+
+            // CFF2 DICTs can hold long operand lists for blended values (e.g. BlueValues blended across
+            // many regions), well beyond CFF's 48. A DICT is bounded in size, so 513 (the CFF2 stack
+            // limit) covers any real DICT; an over-long pathological list is caught by the caller's
+            // try/catch. The keys we actually read (CharStrings / FDArray / Private / vstore) are short.
+            Span<double> operands = stackalloc double[513];
             int sp = 0;
             int i = 0;
 
@@ -30,7 +35,10 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             {
                 byte b0 = data[i];
 
-                if (b0 <= 21)
+                // Operands begin at 28, so bytes 0..27 are operator codes. CFF uses 0..21 (with 12 as
+                // the two-byte escape); CFF2 additionally uses 24 (vstore) in the Top DICT and 22 / 23
+                // (vsindex / blend) in Private DICTs. 22..27 never occur in a CFF1 DICT.
+                if (b0 <= 27)
                 {
                     // Operator.
                     int op = b0;

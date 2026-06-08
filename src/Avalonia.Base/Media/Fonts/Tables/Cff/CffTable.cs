@@ -141,9 +141,11 @@ namespace Avalonia.Media.Fonts.Tables.Cff
 
         /// <summary>
         /// Reads the Local Subr INDEX referenced by a DICT's Private entry. Shared by the non-CID Top
-        /// DICT and each CID Font DICT. Returns an empty INDEX when there is no Private / Local Subrs.
+        /// DICT, each CID Font DICT, and (via <see cref="Cff2Table"/>) each CFF2 Font DICT. Returns an
+        /// empty INDEX when there is no Private / Local Subrs. <paramref name="wideCount"/> selects the
+        /// 32-bit (CFF2) vs 16-bit (CFF) INDEX count.
         /// </summary>
-        private static CffIndex ParseLocalSubrs(ReadOnlyMemory<byte> data, CffDict dict)
+        internal static CffIndex ParseLocalSubrs(ReadOnlyMemory<byte> data, CffDict dict, bool wideCount = false)
         {
             if (!dict.TryGetOperands(OpPrivate, out var priv) || priv.Length != 2)
             {
@@ -162,7 +164,7 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             int localSubrsOffset = privateDict.GetInt(OpLocalSubrs, 0);
 
             // The Local Subr offset is relative to the start of the Private DICT.
-            return localSubrsOffset > 0 ? CffIndex.Read(data, privateOffset + localSubrsOffset) : default;
+            return localSubrsOffset > 0 ? CffIndex.Read(data, privateOffset + localSubrsOffset, wideCount) : default;
         }
 
         /// <summary>
