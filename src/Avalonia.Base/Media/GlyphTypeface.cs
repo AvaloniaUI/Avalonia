@@ -1387,11 +1387,27 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Gets the vector-outline technology this typeface's glyphs use.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="GetGlyphOutline(ushort)"/> produces geometry for <see cref="GlyphOutlineType.TrueType"/>
+        /// and <see cref="GlyphOutlineType.Cff"/> fonts; for <see cref="GlyphOutlineType.None"/>
+        /// (bitmap-strike or SVG-only fonts) it returns <c>null</c>. Lets callers — e.g. a backend that
+        /// drives a glyph run from outlines — decide up front whether outlines are available without
+        /// probing individual glyphs.
+        /// </remarks>
+        public GlyphOutlineType OutlineType =>
+            _glyfTable is not null ? GlyphOutlineType.TrueType
+            : _cffTable is not null ? GlyphOutlineType.Cff
+            : GlyphOutlineType.None;
+
+        /// <summary>
         /// Retrieves the vector outline geometry for the specified glyph, in font design-unit space.
         /// </summary>
         /// <remarks>
-        /// Returns <c>null</c> when the glyph ID is out of range, the font has no <c>glyf</c> table
-        /// (e.g. CFF / CFF2), or the glyph data cannot be parsed (malformed font, cyclic composite,
+        /// Returns <c>null</c> when the glyph ID is out of range, the font has no buildable vector
+        /// outline (<see cref="OutlineType"/> is <see cref="GlyphOutlineType.None"/> — a bitmap-strike,
+        /// SVG, or CFF2 font), or the glyph data cannot be parsed (malformed font, cyclic composite,
         /// depth limit exceeded). The outline is in font design units (Y-up): apply the
         /// <c>emSize / DesignEmHeight</c> scale, the Y-flip, and the glyph position yourself — via
         /// <c>IGeometryImpl.WithTransform</c> or a drawing-context transform. Variable-font axis

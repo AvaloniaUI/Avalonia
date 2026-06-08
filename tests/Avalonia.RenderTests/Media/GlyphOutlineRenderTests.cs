@@ -44,6 +44,10 @@ namespace Avalonia.Skia.RenderTests
         private const string SourceCodeProAsset =
             "resm:Avalonia.Skia.RenderTests.Assets.SourceCodePro-Subset.otf?assembly=Avalonia.Skia.RenderTests";
 
+        // NISC18030 carries embedded bitmaps (bdat/bloc) and no vector outline table — OutlineType None.
+        private const string BitmapFontAsset =
+            "resm:Avalonia.Skia.RenderTests.Assets.NISC18030.ttf?assembly=Avalonia.Skia.RenderTests";
+
         public GlyphOutlineRenderTests()
             : base(@"Media\GlyphOutline")
         {
@@ -127,6 +131,17 @@ namespace Avalonia.Skia.RenderTests
             AssertGlyphBounds(gt, 'e', 68, -12, 538, 498, tolerance: 5);
             AssertGlyphBounds(gt, 'g', 72, -224, 566, 498, tolerance: 5);
             AssertGlyphBounds(gt, 'B', 99, 0, 547, 656, tolerance: 5);
+        }
+
+        [Fact]
+        public void OutlineType_Reports_The_Font_Outline_Technology()
+        {
+            // The outline technology is reported up front, so a caller (e.g. an outline-driven glyph
+            // run fallback) can tell whether outlines exist without probing individual glyphs.
+            Assert.Equal(GlyphOutlineType.TrueType, LoadGlyphTypeface(InterRegularAsset).OutlineType);
+            Assert.Equal(GlyphOutlineType.Cff, LoadGlyphTypeface(CffAsset).OutlineType);
+            Assert.Equal(GlyphOutlineType.Cff, LoadGlyphTypeface(SourceCodeProAsset).OutlineType);
+            Assert.Equal(GlyphOutlineType.None, LoadGlyphTypeface(BitmapFontAsset).OutlineType);
         }
 
         private static void AssertGlyphBounds(GlyphTypeface gt, char ch,
