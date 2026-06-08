@@ -76,19 +76,18 @@ namespace Avalonia.Controls
                 finalSizeTransformed = TransformRoot.DesiredSize;
             }
 
-            // Transform the working size to find its width/height
-            Rect transformedRect = new Rect(0, 0, finalSizeTransformed.Width, finalSizeTransformed.Height).TransformToAABB(_transformation);
-            // Create the Arrange rect to center the transformed content
-            Rect finalRect = new Rect(
-                -transformedRect.X + ((finalSize.Width - transformedRect.Width) / 2),
-                -transformedRect.Y + ((finalSize.Height - transformedRect.Height) / 2),
-                finalSizeTransformed.Width,
-                finalSizeTransformed.Height);
+            var finalRect = CreateTransformRootArrangeRect(finalSize, finalSizeTransformed);
 
             // Perform an Arrange on TransformRoot (containing Child)
-            Size arrangedsize;
             TransformRoot.Arrange(finalRect);
-            arrangedsize = TransformRoot.Bounds.Size;
+            var arrangedsize = TransformRoot.Bounds.Size;
+
+            if (IsSizeSmaller(arrangedsize, finalSizeTransformed))
+            {
+                var actualFinalRect = CreateTransformRootArrangeRect(finalSize, arrangedsize);
+                TransformRoot.Arrange(actualFinalRect);
+                arrangedsize = TransformRoot.Bounds.Size;
+            }
 
             // This is the first opportunity under Silverlight to find out the Child's true DesiredSize
             if (IsSizeSmaller(finalSizeTransformed, arrangedsize) && _childActualSize == default)
@@ -247,6 +246,23 @@ namespace Avalonia.Controls
         private static bool IsSizeSmaller(Size a, Size b)
         {
             return (a.Width + AcceptableDelta < b.Width) || (a.Height + AcceptableDelta < b.Height);
+        }
+
+        private Rect CreateTransformRootArrangeRect(Size finalSize, Size transformRootSize)
+        {
+            // Transform the working size to find its width/height
+            Rect transformedRect = new Rect(
+                0,
+                0,
+                transformRootSize.Width,
+                transformRootSize.Height).TransformToAABB(_transformation);
+
+            // Create the Arrange rect to center the transformed content
+            return new Rect(
+                -transformedRect.X + ((finalSize.Width - transformedRect.Width) / 2),
+                -transformedRect.Y + ((finalSize.Height - transformedRect.Height) / 2),
+                transformRootSize.Width,
+                transformRootSize.Height);
         }
 
         /// <summary>

@@ -134,6 +134,29 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Stretch_Scale_Down_Centers_Actual_Transformed_Child_When_Final_Size_Exceeds_Desired_Size()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
+            var child = new Rectangle { Width = 300, Height = 300 };
+            var target = new LayoutTransformControl
+            {
+                Child = child,
+                LayoutTransform = new ScaleTransform { ScaleX = 0.4, ScaleY = 0.4 }
+            };
+
+            target.Measure(new Size(200, 200));
+            target.Arrange(new Rect(0, 0, 200, 200));
+
+            Assert.Equal(new Size(120, 120), target.DesiredSize);
+            Assert.Equal(new Rect(40, 40, 300, 300), child.Bounds);
+            Assert.Equal(
+                new Rect(40, 40, 120, 120),
+                new Rect(child.Bounds.Size).TransformToAABB(child.RenderTransform!.Value)
+                    .Translate((Vector)child.Bounds.Position));
+        }
+
+        [Fact]
         public void Bounds_On_Rotate_180_degrees_Are_correct()
         {
             TransformRootBoundsTest(
