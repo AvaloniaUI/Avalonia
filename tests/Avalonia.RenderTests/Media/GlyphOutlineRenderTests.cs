@@ -48,6 +48,11 @@ namespace Avalonia.Skia.RenderTests
         private const string BitmapFontAsset =
             "resm:Avalonia.Skia.RenderTests.Assets.NISC18030.ttf?assembly=Avalonia.Skia.RenderTests";
 
+        // A CID-keyed CFF font (ROS + FDArray + FDSelect): the glyph's Font DICT / Local Subrs are
+        // selected through FDSelect. Same 'I'/'O' shapes as the non-CID synthetic font.
+        private const string CidCffAsset =
+            "resm:Avalonia.Skia.RenderTests.Assets.CidTest.otf?assembly=Avalonia.Skia.RenderTests";
+
         public GlyphOutlineRenderTests()
             : base(@"Media\GlyphOutline")
         {
@@ -131,6 +136,18 @@ namespace Avalonia.Skia.RenderTests
             AssertGlyphBounds(gt, 'e', 68, -12, 538, 498, tolerance: 5);
             AssertGlyphBounds(gt, 'g', 72, -224, 566, 498, tolerance: 5);
             AssertGlyphBounds(gt, 'B', 99, 0, 547, 656, tolerance: 5);
+        }
+
+        [Fact]
+        public void Cid_Cff_Glyph_Outlines_Have_Expected_Design_Bounds()
+        {
+            // CID-keyed CFF: the glyph's Local Subrs are resolved through FDSelect → FDArray rather
+            // than a single shared INDEX. Matching the design bounds validates the full CID load and
+            // per-glyph Font-DICT dispatch path end-to-end.
+            var gt = LoadGlyphTypeface(CidCffAsset);
+            Assert.Equal(GlyphOutlineType.Cff, gt.OutlineType);
+            AssertGlyphBounds(gt, 'I', 400, 0, 600, 700);
+            AssertGlyphBounds(gt, 'O', 100, 50, 700, 650);
         }
 
         [Fact]
