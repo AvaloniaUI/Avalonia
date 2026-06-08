@@ -49,6 +49,11 @@ namespace Avalonia.Media
         // exclusive; _cffTable is loaded only when _glyfTable is absent.
         private readonly CffTable? _cffTable;
 
+        // CFF2 table — the variation-aware CFF (variable .otf). Mutually exclusive with _glyfTable and
+        // _cffTable; loaded only when glyf is absent and the font has a CFF2 table. Its blends read the
+        // clone's active variation coords, like gvar.
+        private readonly Cff2Table? _cff2Table;
+
         // Variation tables (null on static fonts). The fvar table is loaded after the
         // name table so axis / instance names can be resolved during parsing; avar is
         // optional and may be absent even on a variable font.
@@ -242,13 +247,6 @@ namespace Avalonia.Media
                 GlyfTable.TryLoad(this, headTable, maxpTable, out _glyfTable);
             }
 
-            // PostScript (CFF) outlines: OTF/CFF fonts have no glyf table. Loaded once and cached
-            // for reuse by GetGlyphOutline, the same way as glyf.
-            if (_glyfTable is null)
-            {
-                CffTable.TryLoad(this, out _cffTable);
-            }
-
             IsLastResort = (headTable is not null && (headTable.Flags & HeadFlags.LastResortFont) != 0) ||
                            _cmapTable.Format == CmapFormat.Format13;
 
@@ -374,6 +372,17 @@ namespace Avalonia.Media
                 VvarTable.TryLoad(this, _fvarTable.Axes.Length, out _vvarTable);
             }
 
+            // PostScript outlines: OTF fonts have no glyf table. CFF2 (variable — its vstore needs the
+            // fvar axis count, so this runs after fvar) is tried first, then plain CFF. Cached for reuse
+            // by GetGlyphOutline like glyf.
+            if (_glyfTable is null)
+            {
+                if (!Cff2Table.TryLoad(this, _fvarTable?.Axes.Length ?? 0, out _cff2Table))
+                {
+                    CffTable.TryLoad(this, out _cffTable);
+                }
+            }
+
             static CultureInfo GetCulture(int lcid)
             {
                 if (lcid == ushort.MaxValue)
@@ -438,6 +447,7 @@ namespace Avalonia.Media
             _vmTable = source._vmTable;
             _glyfTable = source._glyfTable;
             _cffTable = source._cffTable;
+            _cff2Table = source._cff2Table;
             _fvarTable = source._fvarTable;
             _avarTable = source._avarTable;
             _gvarTable = source._gvarTable;
@@ -1390,14 +1400,15 @@ namespace Avalonia.Media
         /// Gets the vector-outline technology this typeface's glyphs use.
         /// </summary>
         /// <remarks>
-        /// <see cref="GetGlyphOutline(ushort)"/> produces geometry for <see cref="GlyphOutlineType.TrueType"/>
-        /// and <see cref="GlyphOutlineType.Cff"/> fonts; for <see cref="GlyphOutlineType.None"/>
-        /// (bitmap-strike or SVG-only fonts) it returns <c>null</c>. Lets callers — e.g. a backend that
-        /// drives a glyph run from outlines — decide up front whether outlines are available without
-        /// probing individual glyphs.
+        /// <see cref="GetGlyphOutline(ushort)"/> produces geometry for <see cref="GlyphOutlineType.TrueType"/>,
+        /// <see cref="GlyphOutlineType.Cff"/> and <see cref="GlyphOutlineType.Cff2"/> fonts; for
+        /// <see cref="GlyphOutlineType.None"/> (bitmap-strike or SVG-only fonts) it returns <c>null</c>.
+        /// Lets callers — e.g. a backend that drives a glyph run from outlines — decide up front whether
+        /// outlines are available without probing individual glyphs.
         /// </remarks>
         public GlyphOutlineType OutlineType =>
             _glyfTable is not null ? GlyphOutlineType.TrueType
+            : _cff2Table is not null ? GlyphOutlineType.Cff2
             : _cffTable is not null ? GlyphOutlineType.Cff
             : GlyphOutlineType.None;
 
@@ -1406,8 +1417,8 @@ namespace Avalonia.Media
         /// </summary>
         /// <remarks>
         /// Returns <c>null</c> when the glyph ID is out of range, the font has no buildable vector
-        /// outline (<see cref="OutlineType"/> is <see cref="GlyphOutlineType.None"/> — a bitmap-strike,
-        /// SVG, or CFF2 font), or the glyph data cannot be parsed (malformed font, cyclic composite,
+        /// outline (<see cref="OutlineType"/> is <see cref="GlyphOutlineType.None"/> — a bitmap-strike
+        /// or SVG font), or the glyph data cannot be parsed (malformed font, cyclic composite,
         /// depth limit exceeded). The outline is in font design units (Y-up): apply the
         /// <c>emSize / DesignEmHeight</c> scale, the Y-flip, and the glyph position yourself — via
         /// <c>IGeometryImpl.WithTransform</c> or a drawing-context transform. Variable-font axis
@@ -1428,7 +1439,7 @@ namespace Avalonia.Media
                 return null;
             }
 
-            if (_glyfTable is null && _cffTable is null)
+            if (_glyfTable is null && _cffTable is null && _cff2Table is null)
             {
                 return null;
             }
@@ -1439,7 +1450,7 @@ namespace Avalonia.Media
             {
                 // Build the outline in font design-unit space (identity transform); callers apply
                 // the scale / position. Wrapped so the shared, cacheable result is immutable.
-                // glyf (TrueType) and CFF (PostScript) are mutually exclusive outline formats.
+                // glyf (TrueType), CFF and CFF2 (PostScript) are mutually exclusive outline formats.
                 bool built;
                 if (_glyfTable is not null)
                 {
@@ -1457,6 +1468,16 @@ namespace Avalonia.Media
                         ctx,
                         _gvarTable,
                         activeCoords);
+                }
+                else if (_cff2Table is not null)
+                {
+                    // CFF2 blends are intrinsic to the charstring and must be evaluated even for the
+                    // default instance. A null _activeCoords (source / default-instance clone) means the
+                    // origin — all-zero normalized coords — at which the blends yield the default master.
+                    Span<float> zeroCoords = stackalloc float[_fvarTable?.Axes.Length ?? 0];
+                    ReadOnlySpan<float> activeCoords = _activeCoords is not null ? _activeCoords : zeroCoords;
+
+                    built = _cff2Table.TryBuildGlyphGeometry((int)glyphId, Matrix.Identity, ctx, activeCoords);
                 }
                 else
                 {

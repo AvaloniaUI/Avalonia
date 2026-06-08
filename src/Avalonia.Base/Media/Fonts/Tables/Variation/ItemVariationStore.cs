@@ -179,6 +179,45 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         }
 
         /// <summary>
+        /// Computes the per-region scalers for the regions referenced by ItemVariationData
+        /// <paramref name="ivdIndex"/> — a CFF2 <c>vsindex</c> — in subtable order, against the active
+        /// coordinates. The result aligns with the delta columns a CFF2 <c>blend</c> at this vsindex
+        /// consumes per value. Fills <paramref name="output"/> and returns the region (delta) count,
+        /// or <c>-1</c> if the index is invalid, the axes don't match, or <paramref name="output"/>
+        /// is too small.
+        /// </summary>
+        public int ComputeBlendScalers(int ivdIndex, ReadOnlySpan<float> activeCoords, Span<float> output)
+        {
+            if ((uint)ivdIndex >= (uint)_ivdCount || activeCoords.Length < _axisCount)
+            {
+                return -1;
+            }
+
+            var span = _data.Span;
+            var subtableStart = _ivdOffsets[ivdIndex];
+            var regionIndexCount = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(subtableStart + 4, 2));
+
+            if (output.Length < regionIndexCount)
+            {
+                return -1;
+            }
+
+            var regionIndexesStart = subtableStart + 6;
+            for (var r = 0; r < regionIndexCount; r++)
+            {
+                var regionIndex = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(regionIndexesStart + r * 2, 2));
+                if ((uint)regionIndex >= (uint)_regionCount)
+                {
+                    return -1;
+                }
+
+                output[r] = ComputeRegionScaler(regionIndex, activeCoords);
+            }
+
+            return regionIndexCount;
+        }
+
+        /// <summary>
         /// Computes the variation delta using a pre-computed per-region scaler array.
         /// Same contract as <see cref="TryGetDelta(int,int,ReadOnlySpan{float},out float)"/>
         /// but with the active-coords → scaler projection lifted out into

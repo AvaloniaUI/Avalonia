@@ -53,6 +53,11 @@ namespace Avalonia.Skia.RenderTests
         private const string CidCffAsset =
             "resm:Avalonia.Skia.RenderTests.Assets.CidTest.otf?assembly=Avalonia.Skia.RenderTests";
 
+        // A subset of Adobe's AdobeVFPrototype (OFL) — a real CFF2 (variable PostScript) font with a
+        // wght axis. Exercises the charstring blend / vsindex operators and the shared ItemVariationStore.
+        private const string Cff2Asset =
+            "resm:Avalonia.Skia.RenderTests.Assets.AdobeVFPrototype-Subset.otf?assembly=Avalonia.Skia.RenderTests";
+
         public GlyphOutlineRenderTests()
             : base(@"Media\GlyphOutline")
         {
@@ -148,6 +153,44 @@ namespace Avalonia.Skia.RenderTests
             Assert.Equal(GlyphOutlineType.Cff, gt.OutlineType);
             AssertGlyphBounds(gt, 'I', 400, 0, 600, 700);
             AssertGlyphBounds(gt, 'O', 100, 50, 700, 650);
+        }
+
+        [Fact]
+        public async Task Should_Render_Cff2_Glyph()
+        {
+            // 'A' from a real CFF2 (variable PostScript) font at its default instance — the charstring
+            // blends evaluate to the default master through the full Skia pipeline.
+            await RenderToFile(BuildTarget(LoadGlyphTypeface(Cff2Asset), 'A'));
+            CompareImages();
+        }
+
+        [Fact]
+        public void Cff2_Default_Instance_Outlines_Have_Expected_Design_Bounds()
+        {
+            // CFF2 charstrings reach the default master by evaluating their blends at the origin.
+            // Ground-truth bounds come from the font's own (independent) CFF2 interpreter.
+            var gt = LoadGlyphTypeface(Cff2Asset);
+            Assert.Equal(GlyphOutlineType.Cff2, gt.OutlineType);
+            AssertGlyphBounds(gt, 'H', 45, 0, 745, 670, tolerance: 5);
+            AssertGlyphBounds(gt, 'A', 5, 0, 653, 675, tolerance: 5);
+            AssertGlyphBounds(gt, 'o', 46, -13, 502, 487, tolerance: 5);
+        }
+
+        [Fact]
+        public void Cff2_Varied_Outlines_Reflect_The_Blend_At_wght_900()
+        {
+            // WithVariation(wght=900) feeds active coordinates to the CFF2 blend operator, deforming
+            // the outline. The varied bounds match the font's own wght=900 instance — and differ from
+            // the default, proving the blend actually ran.
+            var gt = LoadGlyphTypeface(Cff2Asset);
+            var black = gt.WithVariation(WghtSettings(gt, 900f));
+
+            AssertGlyphBounds(black, 'H', 28, 0, 728, 652, tolerance: 5);
+            AssertGlyphBounds(black, 'A', 10, 0, 665, 652, tolerance: 5);
+            AssertGlyphBounds(black, 'o', 22, -16, 550, 503, tolerance: 5);
+
+            var glyph = gt.CharacterToGlyphMap['H'];
+            Assert.NotEqual(gt.GetGlyphOutline(glyph)!.Bounds, black.GetGlyphOutline(glyph)!.Bounds);
         }
 
         [Fact]
