@@ -5,7 +5,7 @@
   <Thickness x:Key="TableViewRowPadding">6,9,6,12</Thickness>
 
   <ControlTheme x:Key="{x:Type TableViewRow}" TargetType="TableViewRow">
-    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Background" Value="{DynamicResource TableViewRowBackground}" />
     <Setter Property="Padding" Value="{DynamicResource TableViewRowPadding}" />
     <Setter Property="Template">
       <ControlTemplate>
@@ -24,45 +24,40 @@
 
     <!-- Disabled -->
     <Style Selector="^:disabled /template/ Border#Border">
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemControlDisabledBaseMediumLowBrush}" />
+      <Setter Property="Background" Value="{DynamicResource TableViewRowBackgroundDisabled}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TableViewRowForegroundDisabled}" />
     </Style>
 
     <!-- PointerOver -->
     <Style Selector="^:pointerover /template/ Border#Border">
-      <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+      <Setter Property="Background" Value="{DynamicResource TableViewRowBackgroundPointerOver}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TableViewRowForegroundPointerOver}" />
     </Style>
 
     <!-- Pressed -->
     <Style Selector="^:pressed /template/ Border#Border">
-      <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListMediumBrush}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+      <Setter Property="Background" Value="{DynamicResource TableViewRowBackgroundPressed}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TableViewRowForegroundPressed}" />
     </Style>
 
     <!-- Selected -->
     <Style Selector="^:selected">
 
       <Style Selector="^ /template/ Border#Border">
-        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
-      </Style>
-
-      <!-- Selected Unfocused  -->
-      <Style Selector="^:not(:focus) /template/ Border#Border">
-        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+        <Setter Property="Background" Value="{DynamicResource TableViewRowBackgroundSelected}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TableViewRowForegroundSelected}" />
       </Style>
 
       <!-- Selected PointerOver  -->
       <Style Selector="^:pointerover /template/ Border#Border">
-        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentMediumBrush}" />
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+        <Setter Property="Background" Value="{DynamicResource TableViewRowBackgroundSelectedPointerOver}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TableViewRowForegroundSelectedPointerOver}" />
       </Style>
 
       <!-- Selected Pressed  -->
       <Style Selector="^:pressed /template/ Border#Border">
-        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentHighBrush}" />
-        <Setter Property="TextElement.Foreground" Value="{DynamicResource SystemControlHighlightAltBaseHighBrush}" />
+        <Setter Property="Background" Value="{DynamicResource TableViewRowBackgroundSelectedPressed}" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource TableViewRowForegroundSelectedPressed}" />
       </Style>
 
     </Style>
