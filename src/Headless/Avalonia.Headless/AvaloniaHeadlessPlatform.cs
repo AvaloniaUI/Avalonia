@@ -60,7 +60,7 @@ namespace Avalonia.Headless
         /// Use this method before calling <see cref="HeadlessWindowExtensions.GetLastRenderedFrame"/>. 
         /// </summary>
         /// <param name="count">Count of frames to be ticked on the timer.</param>
-        internal static void ForceRenderTimerTick(int count = 1)
+        public static void ForceRenderTimerTick(int count = 1)
         {
             if (s_renderTimer is HeadlessRenderTimer timer)
             {
