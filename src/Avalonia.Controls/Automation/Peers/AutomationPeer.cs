@@ -49,6 +49,7 @@ namespace Avalonia.Automation.Peers
         TitleBar,
         Separator,
         Expander,
+        ScrollViewer,
     }
 
     public enum AutomationLandmarkType
@@ -609,6 +610,7 @@ namespace Avalonia.Automation.Peers
                 AutomationControlType.HeaderItem => "header item",
                 AutomationControlType.TitleBar => "title bar",
                 AutomationControlType.Expander => "group",
+                AutomationControlType.ScrollViewer => "scroll viewer",
                 AutomationControlType.None => (GetLandmarkType()?.ToString() ?? controlType.ToString()).ToLowerInvariant(),
                 _ => controlType.ToString().ToLowerInvariant(),
             };

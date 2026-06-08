@@ -716,15 +716,22 @@ namespace Avalonia.Controls
         /// </returns>
         private DateTime? ParseText(string text)
         {
-            DateTime newSelectedDate;
+            DateTime? newSelectedDate;
 
             // TryParse is not used in order to be able to pass the exception to
             // the TextParseError event
             try
             {
-                newSelectedDate = SelectedDateFormat == CalendarDatePickerFormat.Custom && !string.IsNullOrEmpty(CustomDateFormatString) ?
-                    DateTime.ParseExact(text, CustomDateFormatString, DateTimeHelper.GetCurrentDateFormat()) :
-                    DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
+                if (TextConverter != null)
+                {
+                    newSelectedDate = TextConverter.ConvertBack(text, typeof(DateTime?), null, CultureInfo.CurrentCulture) as DateTime?;
+                }
+                else
+                {
+                    newSelectedDate = SelectedDateFormat == CalendarDatePickerFormat.Custom && !string.IsNullOrEmpty(CustomDateFormatString) ?
+                        DateTime.ParseExact(text, CustomDateFormatString, DateTimeHelper.GetCurrentDateFormat()) :
+                        DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
+                }
 
                 if (Calendar.IsValidDateSelection(this._calendar!, newSelectedDate))
                 {
@@ -757,6 +764,10 @@ namespace Avalonia.Controls
 
         private string? DateTimeToString(DateTime d)
         {
+            if (TextConverter != null)
+            {
+                return TextConverter.Convert(d, typeof(string), null, CultureInfo.CurrentCulture) as string;
+            }
             DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
 
             switch (SelectedDateFormat)
@@ -856,7 +867,9 @@ namespace Avalonia.Controls
                 DateTime? d = ParseText(s);
                 if (d != null)
                 {
-                    SetValue(TextProperty, s);
+                    // make sure displayed text is reformatted to correct date format
+                    string? newtext = DateTimeToString((DateTime)d);
+                    SetValue(TextProperty, newtext);
                     return d;
                 }
                 else
