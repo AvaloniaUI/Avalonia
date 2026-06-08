@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 
 namespace Avalonia.Controls.Selection
 {
@@ -159,18 +160,9 @@ namespace Avalonia.Controls.Selection
                             goto case NotifyCollectionChangedAction.Reset;
                         }
 
-                        var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
-                        var insertIndex = e.NewStartingIndex;
-
-                        if (e.NewStartingIndex > e.OldStartingIndex)
-                        {
-                            insertIndex -= e.OldItems!.Count - 1;
-                        }
-
-                        var addChange = OnItemsAdded(insertIndex, e.NewItems!);
-                        shiftIndex = removeChange.ShiftIndex;
-                        shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
-                        removed = removeChange.RemovedItems;
+                        var change = OnItemsMoved(e.OldStartingIndex, e.NewStartingIndex, e.OldItems!);
+                        shiftIndex = change.ShiftIndex;
+                        shiftDelta = change.ShiftDelta;
                     }
                     break;
                 case NotifyCollectionChangedAction.Reset:
@@ -375,6 +367,66 @@ namespace Avalonia.Controls.Selection
                 ShiftDelta = shifted ? -count : 0,
                 RemovedItems = removed,
             };
+        }
+
+        /// <summary>
+        /// Called by <see cref="OnSourceCollectionChanged(NotifyCollectionChangedEventArgs)"/>
+        /// when items are moved within the source collection.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="CollectionChangeState"/> struct containing the details of the adjusted
+        /// selection.
+        /// </returns>
+        /// <remarks>
+        /// The implementation in <see cref="SelectionNodeBase{T}"/> adjusts the selected ranges,
+        /// preserving selection for moved items.
+        /// </remarks>
+        private protected virtual CollectionChangeState OnItemsMoved(int oldIndex, int newIndex, IList items)
+        {
+            var count = items.Count;
+
+            if (_ranges is not null && oldIndex != newIndex)
+            {
+                var selected = IndexRange.EnumerateIndices(_ranges)
+                    .ToList();
+                var moved = selected
+                    .Select(i => MoveIndex(i, oldIndex, newIndex, count))
+                    .OrderBy(i => i)
+                    .ToList();
+
+                if (!selected.SequenceEqual(moved))
+                {
+                    _ranges.Clear();
+
+                    foreach (var index in moved)
+                    {
+                        IndexRange.Add(_ranges, new IndexRange(index));
+                    }
+                }
+            }
+
+            return new CollectionChangeState
+            {
+                ShiftIndex = Math.Min(oldIndex, newIndex),
+                ShiftDelta = 0,
+            };
+        }
+
+        private protected static int MoveIndex(int index, int oldIndex, int newIndex, int count)
+        {
+            var oldEnd = oldIndex + count - 1;
+
+            if (index >= oldIndex && index <= oldEnd)
+            {
+                return newIndex + index - oldIndex;
+            }
+
+            if (newIndex > oldIndex)
+            {
+                return index > oldEnd && index <= newIndex ? index - count : index;
+            }
+
+            return index >= newIndex && index < oldIndex ? index + count : index;
         }
 
         private protected virtual bool IsValidCollectionChange(NotifyCollectionChangedEventArgs e)

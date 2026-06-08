@@ -20,6 +20,7 @@ namespace Avalonia.Controls.Selection
         private EventHandler<SelectionModelSelectionChangedEventArgs>? _untypedSelectionChanged;
         private IList? _initSelectedItems;
         private bool _isSourceCollectionChanging;
+        private bool _selectionMoved;
 
         public SelectionModel()
         {
@@ -438,6 +439,45 @@ namespace Avalonia.Controls.Selection
             };
         }
 
+        private protected override CollectionChangeState OnItemsMoved(int oldIndex, int newIndex, IList items)
+        {
+            var count = items.Count;
+            var oldSelectedIndexes = RangesEnabled && Ranges.Count > 0 ?
+                IndexRange.EnumerateIndices(Ranges).ToList() :
+                null;
+            var shifted = false;
+
+            base.OnItemsMoved(oldIndex, newIndex, items);
+
+            var newSelectedIndex = MoveIndex(SelectedIndex, oldIndex, newIndex, count);
+            if (SelectedIndex != newSelectedIndex)
+            {
+                _selectedIndex = newSelectedIndex;
+                shifted = true;
+            }
+
+            var newAnchorIndex = MoveIndex(AnchorIndex, oldIndex, newIndex, count);
+            if (AnchorIndex != newAnchorIndex)
+            {
+                _anchorIndex = newAnchorIndex;
+                shifted = true;
+            }
+
+            if (oldSelectedIndexes is not null &&
+                !oldSelectedIndexes.SequenceEqual(IndexRange.EnumerateIndices(Ranges)))
+            {
+                shifted = true;
+            }
+
+            _selectionMoved = shifted;
+
+            return new CollectionChangeState
+            {
+                ShiftIndex = Math.Min(oldIndex, newIndex),
+                ShiftDelta = 0,
+            };
+        }
+
         protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             if (_operation?.UpdateCount > 0)
@@ -457,7 +497,6 @@ namespace Avalonia.Controls.Selection
 
             if ((e.Action == NotifyCollectionChangedAction.Remove && e.OldStartingIndex <= oldSelectedIndex) ||
                 (e.Action == NotifyCollectionChangedAction.Replace && e.OldStartingIndex == oldSelectedIndex) ||
-                (e.Action == NotifyCollectionChangedAction.Move && e.OldStartingIndex == oldSelectedIndex) ||
                 e.Action == NotifyCollectionChangedAction.Reset)
             {
                 RaisePropertyChanged(nameof(SelectedItem));
@@ -467,6 +506,17 @@ namespace Avalonia.Controls.Selection
             {
                 RaisePropertyChanged(nameof(AnchorIndex));
             }
+
+            if (_selectionMoved)
+            {
+                RaisePropertyChanged(nameof(SelectedIndexes));
+                _selectedIndexes?.RaiseCollectionReset();
+
+                RaisePropertyChanged(nameof(SelectedItems));
+                _selectedItems?.RaiseCollectionReset();
+            }
+
+            _selectionMoved = false;
         }
 
         private protected void SetInitSelectedItems(IList items)

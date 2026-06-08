@@ -1290,23 +1290,61 @@ namespace Avalonia.Controls.UnitTests.Selection
 
                 target.SelectionChanged += (s, e) =>
                 {
-                    Assert.Empty(e.DeselectedIndexes);
-                    Assert.Equal(new[] { "bar" }, e.DeselectedItems);
-                    Assert.Empty(e.SelectedIndexes);
-                    Assert.Empty(e.SelectedItems);
                     ++selectionChangedRaised;
                 };
 
                 data.Move(1, 0);
 
-                Assert.Equal(2, target.SelectedIndex);
-                Assert.Equal(new[] { 2, 3, 4 }, target.SelectedIndexes);
-                Assert.Equal("baz", target.SelectedItem);
-                Assert.Equal(new[] { "baz", "qux", "quux" }, target.SelectedItems);
-                Assert.Equal(2, target.AnchorIndex);
-                Assert.Equal(1, selectionChangedRaised);
+                Assert.Equal(0, target.SelectedIndex);
+                Assert.Equal(new[] { 0, 2, 3, 4 }, target.SelectedIndexes);
+                Assert.Equal("bar", target.SelectedItem);
+                Assert.Equal(new[] { "bar", "baz", "qux", "quux" }, target.SelectedItems);
+                Assert.Equal(0, target.AnchorIndex);
+                Assert.Equal(0, selectionChangedRaised);
                 Assert.Equal(1, selectedIndexRaised);
-                Assert.Equal(1, selectedItemRaised);
+                Assert.Equal(0, selectedItemRaised);
+                Assert.Equal(0, indexesChangedRaised);
+            }
+
+            [Fact]
+            public void Moving_Selected_Item_Later_Updates_State()
+            {
+                var target = CreateTarget();
+                var data = (AvaloniaList<string>)target.Source!;
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
+                var indexesChangedRaised = 0;
+
+                target.Source = data;
+                target.SelectRange(1, 4);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                };
+
+                target.IndexesChanged += (s, e) => ++indexesChangedRaised;
+                target.SelectionChanged += (s, e) => ++selectionChangedRaised;
+
+                data.Move(1, 5);
+
+                Assert.Equal(5, target.SelectedIndex);
+                Assert.Equal(new[] { 1, 2, 3, 5 }, target.SelectedIndexes);
+                Assert.Equal("bar", target.SelectedItem);
+                Assert.Equal(new[] { "baz", "qux", "quux", "bar" }, target.SelectedItems);
+                Assert.Equal(5, target.AnchorIndex);
+                Assert.Equal(0, selectionChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(0, selectedItemRaised);
                 Assert.Equal(0, indexesChangedRaised);
             }
 
