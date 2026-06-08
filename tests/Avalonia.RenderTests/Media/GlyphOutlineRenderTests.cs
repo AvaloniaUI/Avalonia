@@ -94,7 +94,7 @@ namespace Avalonia.Skia.RenderTests
                 ? gt.CharacterToGlyphMap['A']
                 : (ushort)0;
 
-            Assert.Null(gt.GetGlyphOutline(glyphId, Matrix.Identity));
+            Assert.Null(gt.GetGlyphOutline(glyphId));
         }
 
         private static GlyphTypeface LoadGlyphTypeface(string assetUri)
@@ -123,13 +123,13 @@ namespace Avalonia.Skia.RenderTests
 
         /// <summary>
         /// Renders a single glyph outline produced by
-        /// <see cref="GlyphTypeface.GetGlyphOutline(ushort, Matrix)"/>, filled in black.
+        /// <see cref="GlyphTypeface.GetGlyphOutline(ushort)"/>, filled in black.
         /// The hosting <see cref="Border"/> supplies the white background and the layout
         /// size; the control itself fills the area assigned by layout.
         /// </summary>
         public class GlyphOutlineControl : Control
         {
-            private readonly Geometry? _outline;
+            private readonly IGeometryImpl? _outline;
 
             public GlyphOutlineControl(GlyphTypeface glyphTypeface, char ch)
             {
@@ -149,7 +149,7 @@ namespace Avalonia.Skia.RenderTests
                 var transform = Matrix.CreateScale(scale, -scale)
                               * Matrix.CreateTranslation(margin, emSize + margin);
 
-                _outline = glyphTypeface.GetGlyphOutline(glyphId, transform);
+                _outline = glyphTypeface.GetGlyphOutline(glyphId)?.WithTransform(transform);
             }
 
             public override void Render(DrawingContext context)
