@@ -59,6 +59,11 @@ namespace Avalonia.Media
         // its own variation point. See TryGetCachedCffBounds.
         private InkBoundsCache? _inkBoundsCache;
 
+        // Lazy per-glyph memo of built outline geometries (null until the first GetGlyphOutline, and on
+        // fonts with no outline table). Per instance, so a variation clone caches outlines at its own
+        // variation point; the cached ImmutableGeometryImpl is immutable and shareable by design.
+        private OutlineCache? _outlineCache;
+
         // Variation tables (null on static fonts). The fvar table is loaded after the
         // name table so axis / instance names can be resolved during parsing; avar is
         // optional and may be absent even on a variable font.
@@ -1572,6 +1577,33 @@ namespace Avalonia.Media
                 return null;
             }
 
+            // The built outline is immutable, so memo it per glyph. The build is dominated by platform
+            // geometry construction (interpreting the glyph is the cheap part), making a cache hit ~100x
+            // a rebuild; the memo is per instance, so a variation clone caches at its own variation point.
+            var cache = _outlineCache ?? GetOrCreateOutlineCache();
+
+            if (Volatile.Read(ref cache.State[glyphId]) != 0)
+            {
+                return cache.Outlines[glyphId];
+            }
+
+            var outline = BuildGlyphOutline(glyphId);
+
+            // Benign race: two threads may build the same glyph and store distinct-but-equivalent
+            // outlines; the last write wins and the loser is collected. The State flip is a release so a
+            // reader that sees "computed" also sees the published reference.
+            cache.Outlines[glyphId] = outline;
+            Volatile.Write(ref cache.State[glyphId], 1);
+
+            return outline;
+        }
+
+        /// <summary>
+        /// Builds the immutable outline geometry for an in-range glyph — the cold path behind
+        /// <see cref="GetGlyphOutline"/>'s per-glyph cache. Returns <c>null</c> for a malformed glyph.
+        /// </summary>
+        private IGeometryImpl? BuildGlyphOutline(ushort glyphId)
+        {
             var geometry = _renderInterface.CreateStreamGeometry();
 
             using (var ctx = geometry.Open())
@@ -1619,6 +1651,33 @@ namespace Avalonia.Media
             }
 
             return null;
+        }
+
+        private OutlineCache GetOrCreateOutlineCache()
+        {
+            var created = new OutlineCache(GlyphCount);
+
+            // First publisher wins; later racers reuse it. The arrays start zeroed (every glyph
+            // "uncomputed"), so there is nothing else to initialise before publication.
+            return Interlocked.CompareExchange(ref _outlineCache, created, null) ?? created;
+        }
+
+        /// <summary>
+        /// Per-glyph memo of built outline geometries. <see cref="State"/> is a parallel computed-flag
+        /// array (0 = not yet computed) read / written with <see cref="Volatile"/> so the geometry
+        /// reference is visible before the flag flips. <c>null</c> in <see cref="Outlines"/> is a valid
+        /// memoised result (a malformed glyph), which is why the flag — not the reference — marks "done".
+        /// </summary>
+        private sealed class OutlineCache
+        {
+            public readonly IGeometryImpl?[] Outlines;
+            public readonly byte[] State;
+
+            public OutlineCache(int glyphCount)
+            {
+                Outlines = new IGeometryImpl?[glyphCount];
+                State = new byte[glyphCount];
+            }
         }
 
         /// <summary>

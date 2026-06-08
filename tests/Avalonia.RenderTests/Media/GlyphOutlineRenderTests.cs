@@ -204,6 +204,33 @@ namespace Avalonia.Skia.RenderTests
             Assert.Equal(GlyphOutlineType.None, LoadGlyphTypeface(BitmapFontAsset).OutlineType);
         }
 
+        [Fact]
+        public void GetGlyphOutline_Memoises_Per_Glyph_And_Per_Instance()
+        {
+            // Repeated reads of the same glyph return the one memoised, immutable instance — the build
+            // (dominated by platform geometry construction) is paid once.
+            var gt = LoadGlyphTypeface(SourceCodeProAsset);
+            var glyph = gt.CharacterToGlyphMap['H'];
+
+            var first = gt.GetGlyphOutline(glyph);
+            Assert.NotNull(first);
+            Assert.Same(first, gt.GetGlyphOutline(glyph));
+
+            // The memo is per typeface instance: a CFF2 variation clone caches the outline at its own
+            // variation point, so it must not return the source instance's geometry.
+            var cff2 = LoadGlyphTypeface(Cff2Asset);
+            var black = cff2.WithVariation(WghtSettings(cff2, 900f));
+            var hGlyph = cff2.CharacterToGlyphMap['H'];
+
+            var defaultOutline = cff2.GetGlyphOutline(hGlyph);
+            var blackOutline = black.GetGlyphOutline(hGlyph);
+
+            Assert.NotNull(defaultOutline);
+            Assert.NotNull(blackOutline);
+            Assert.NotSame(defaultOutline, blackOutline);
+            Assert.Same(blackOutline, black.GetGlyphOutline(hGlyph));
+        }
+
         private static void AssertGlyphBounds(GlyphTypeface gt, char ch,
             double left, double top, double right, double bottom, double tolerance = 1.5)
         {
