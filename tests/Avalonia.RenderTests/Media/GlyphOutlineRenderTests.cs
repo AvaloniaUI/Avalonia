@@ -38,6 +38,12 @@ namespace Avalonia.Skia.RenderTests
         private const string CffAsset =
             "resm:Avalonia.Skia.RenderTests.Assets.CffTest.otf?assembly=Avalonia.Skia.RenderTests";
 
+        // A subset of Adobe Source Code Pro (OFL) — a real, widely-shipped vendor CFF font. Its
+        // charstrings use real hinting and 20 local / 26 global subroutines, so matching its bounds
+        // exercises the interpreter's subr + bias and hint-skip paths against production data.
+        private const string SourceCodeProAsset =
+            "resm:Avalonia.Skia.RenderTests.Assets.SourceCodePro-Subset.otf?assembly=Avalonia.Skia.RenderTests";
+
         public GlyphOutlineRenderTests()
             : base(@"Media\GlyphOutline")
         {
@@ -96,16 +102,43 @@ namespace Avalonia.Skia.RenderTests
             AssertGlyphBounds(gt, 'O', left: 100, top: 50, right: 700, bottom: 650);
         }
 
+        [Fact]
+        public async Task Should_Render_SourceCodePro_Glyph()
+        {
+            // 'a' from Adobe Source Code Pro (a real, major-vendor CFF font): a double-story glyph
+            // with a bowl counter, decoded from production charstrings — real subroutines and hints —
+            // through the full Skia pipeline.
+            await RenderToFile(BuildTarget(LoadGlyphTypeface(SourceCodeProAsset), 'a'));
+            CompareImages();
+        }
+
+        [Fact]
+        public void SourceCodePro_Outlines_Have_Expected_Design_Bounds()
+        {
+            // Ground-truth design-unit bounds from the font's own charstrings (computed by an
+            // independent CFF implementation). Matching them validates the interpreter on real Adobe
+            // charstrings — subroutine calls (20 local / 26 global), hint masks, and a descender
+            // ('g', yMin -224). Tolerance absorbs any control-point vs tight-bounds difference.
+            var gt = LoadGlyphTypeface(SourceCodeProAsset);
+            AssertGlyphBounds(gt, 'H', 79, 0, 521, 656, tolerance: 5);
+            AssertGlyphBounds(gt, 'O', 48, -12, 552, 668, tolerance: 5);
+            AssertGlyphBounds(gt, 'o', 60, -12, 540, 498, tolerance: 5);
+            AssertGlyphBounds(gt, 'a', 81, -12, 515, 498, tolerance: 5);
+            AssertGlyphBounds(gt, 'e', 68, -12, 538, 498, tolerance: 5);
+            AssertGlyphBounds(gt, 'g', 72, -224, 566, 498, tolerance: 5);
+            AssertGlyphBounds(gt, 'B', 99, 0, 547, 656, tolerance: 5);
+        }
+
         private static void AssertGlyphBounds(GlyphTypeface gt, char ch,
-            double left, double top, double right, double bottom)
+            double left, double top, double right, double bottom, double tolerance = 1.5)
         {
             var glyph = gt.CharacterToGlyphMap[ch];
             var bounds = gt.GetGlyphOutline(glyph)!.Bounds;
 
-            Assert.True(Math.Abs(bounds.Left - left) < 1.5, $"'{ch}' Left: expected {left}, got {bounds.Left}");
-            Assert.True(Math.Abs(bounds.Top - top) < 1.5, $"'{ch}' Top: expected {top}, got {bounds.Top}");
-            Assert.True(Math.Abs(bounds.Right - right) < 1.5, $"'{ch}' Right: expected {right}, got {bounds.Right}");
-            Assert.True(Math.Abs(bounds.Bottom - bottom) < 1.5, $"'{ch}' Bottom: expected {bottom}, got {bounds.Bottom}");
+            Assert.True(Math.Abs(bounds.Left - left) < tolerance, $"'{ch}' Left: expected {left}, got {bounds.Left}");
+            Assert.True(Math.Abs(bounds.Top - top) < tolerance, $"'{ch}' Top: expected {top}, got {bounds.Top}");
+            Assert.True(Math.Abs(bounds.Right - right) < tolerance, $"'{ch}' Right: expected {right}, got {bounds.Right}");
+            Assert.True(Math.Abs(bounds.Bottom - bottom) < tolerance, $"'{ch}' Bottom: expected {bottom}, got {bounds.Bottom}");
         }
 
         [Fact]
