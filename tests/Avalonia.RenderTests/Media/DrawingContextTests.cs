@@ -48,9 +48,10 @@ public class DrawingContextTests : TestBase
             Width = 100,
             Height = 100,
             Background = Brushes.White,
-            Child = new Image { 
-                Source = new DrawingImage { Drawing = group }, 
-                Stretch = Stretch.None, 
+            Child = new Image
+            {
+                Source = new DrawingImage { Drawing = group },
+                Stretch = Stretch.None,
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 ClipToBounds = false
@@ -69,7 +70,8 @@ public class DrawingContextTests : TestBase
         {
             using (context.PushEffect(new DropShadowEffect { BlurRadius = 3, Color = Colors.Black, Opacity = 1, OffsetX = 3, OffsetY = 3}, new Rect(0, 0, 300, 300)))
             {
-                context.DrawLine(new Pen(Brushes.Red, 30), new Point(50,50), new Point(250, 250));
+                context.DrawLine(new Pen(Brushes.Red, 30, lineCap: PenLineCap.Round), new Point(50, 50),
+                    new Point(250, 250));
             }
         }
 
@@ -78,9 +80,10 @@ public class DrawingContextTests : TestBase
             Width = 300,
             Height = 300,
             Background = Brushes.White,
-            Child = new Image { 
-                Source = new DrawingImage { Drawing = group }, 
-                Stretch = Stretch.None, 
+            Child = new Image
+            {
+                Source = new DrawingImage { Drawing = group },
+                Stretch = Stretch.None,
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 ClipToBounds = false
