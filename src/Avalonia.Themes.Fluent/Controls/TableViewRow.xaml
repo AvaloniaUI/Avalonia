@@ -17,7 +17,7 @@
                 Padding="{TemplateBinding Padding}"
                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
-          <TableViewRowPresenter Name="PART_RowPresenter" />
+          <TableViewCellsPresenter Name="PART_CellsPresenter" />
         </Border>
       </ControlTemplate>
     </Setter>

@@ -42,7 +42,7 @@ public sealed class TableViewTests : ScopedTestBase
         Prepare(target);
 
         var row = (TableViewRow)target.GetRealizedContainers().Single();
-        var presenter = GetRowPresenter(row);
+        var presenter = GetCellsPresenter(row);
         Assert.Equal(3, presenter.Children.Count);
         Assert.All(presenter.Children, c => Assert.IsType<TableViewCell>(c));
     }
@@ -95,15 +95,15 @@ public sealed class TableViewTests : ScopedTestBase
 
         Prepare(target);
 
-        var rowPresenter = GetRowPresenter((TableViewRow)target.GetRealizedContainers().Single());
-        Assert.Equal(2, rowPresenter.Children.Count);
+        var cellsPresenter = GetCellsPresenter((TableViewRow)target.GetRealizedContainers().Single());
+        Assert.Equal(2, cellsPresenter.Children.Count);
 
         var headersPresenter = GetColumnHeadersPresenter(target);
         Assert.Equal(2, headersPresenter.Children.Count);
 
         target.Columns.Add(new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) });
 
-        Assert.Equal(3, rowPresenter.Children.Count);
+        Assert.Equal(3, cellsPresenter.Children.Count);
         Assert.Equal(3, headersPresenter.Children.Count);
     }
 
@@ -119,15 +119,15 @@ public sealed class TableViewTests : ScopedTestBase
 
         Prepare(target);
 
-        var rowPresenter = GetRowPresenter((TableViewRow)target.GetRealizedContainers().Single());
-        Assert.Equal(3, rowPresenter.Children.Count);
+        var cellsPresenter = GetCellsPresenter((TableViewRow)target.GetRealizedContainers().Single());
+        Assert.Equal(3, cellsPresenter.Children.Count);
 
         var headersPresenter = GetColumnHeadersPresenter(target);
         Assert.Equal(3, headersPresenter.Children.Count);
 
         target.Columns.RemoveAt(2);
 
-        Assert.Equal(2, rowPresenter.Children.Count);
+        Assert.Equal(2, cellsPresenter.Children.Count);
         Assert.Equal(2, headersPresenter.Children.Count);
     }
 
@@ -143,7 +143,7 @@ public sealed class TableViewTests : ScopedTestBase
 
         Prepare(target, width: 200);
 
-        var presenter = GetRowPresenter((TableViewRow)target.GetRealizedContainers().Single());
+        var presenter = GetCellsPresenter((TableViewRow)target.GetRealizedContainers().Single());
         var cellsBefore = presenter.Children.ToArray();
 
         column.Width = new GridLength(2, GridUnitType.Star);
@@ -165,7 +165,7 @@ public sealed class TableViewTests : ScopedTestBase
 
         Prepare(target, width: 200);
 
-        var presenter = GetRowPresenter((TableViewRow)target.GetRealizedContainers().Single());
+        var presenter = GetCellsPresenter((TableViewRow)target.GetRealizedContainers().Single());
         Assert.True(presenter.IsMeasureValid);
 
         column.Width = new GridLength(2, GridUnitType.Star);
@@ -206,8 +206,8 @@ public sealed class TableViewTests : ScopedTestBase
 
         Prepare(target);
 
-        var rowPresenter = GetRowPresenter((TableViewRow)target.GetRealizedContainers().Single());
-        Assert.Equal(2, rowPresenter.Children.Count);
+        var cellsPresenter = GetCellsPresenter((TableViewRow)target.GetRealizedContainers().Single());
+        Assert.Equal(2, cellsPresenter.Children.Count);
 
         var headersPresenter = GetColumnHeadersPresenter(target);
         Assert.Equal(2, headersPresenter.Children.Count);
@@ -219,7 +219,7 @@ public sealed class TableViewTests : ScopedTestBase
             new TableViewColumn { Width = new GridLength(1, GridUnitType.Star) }
         ];
 
-        Assert.Equal(3, rowPresenter.Children.Count);
+        Assert.Equal(3, cellsPresenter.Children.Count);
         Assert.Equal(3, headersPresenter.Children.Count);
     }
 
@@ -236,7 +236,7 @@ public sealed class TableViewTests : ScopedTestBase
         Prepare(target);
 
         var row = (TableViewRow)target.GetRealizedContainers().Single();
-        var firstCell = (TableViewCell)GetRowPresenter(row).Children[0];
+        var firstCell = (TableViewCell)GetCellsPresenter(row).Children[0];
 
         Assert.Same(item, firstCell.Content);
     }
@@ -260,8 +260,8 @@ public sealed class TableViewTests : ScopedTestBase
         Prepare(target);
 
         var rows = target.GetRealizedContainers().Cast<TableViewRow>().ToArray();
-        var firstCell = (TableViewCell)GetRowPresenter(rows[0]).Children[0];
-        var secondCell = (TableViewCell)GetRowPresenter(rows[1]).Children[0];
+        var firstCell = (TableViewCell)GetCellsPresenter(rows[0]).Children[0];
+        var secondCell = (TableViewCell)GetCellsPresenter(rows[1]).Children[0];
 
         Assert.Equal("Alice", firstCell.Content);
         Assert.Equal("Bob", secondCell.Content);
@@ -285,7 +285,7 @@ public sealed class TableViewTests : ScopedTestBase
         Prepare(target);
 
         var row = (TableViewRow)target.GetRealizedContainers().Single();
-        var firstCell = (TableViewCell)GetRowPresenter(row).Children[0];
+        var firstCell = (TableViewCell)GetCellsPresenter(row).Children[0];
 
         Assert.Same(template, firstCell.ContentTemplate);
         Assert.Same(item, firstCell.Content);
@@ -308,8 +308,8 @@ public sealed class TableViewTests : ScopedTestBase
         Prepare(target);
 
         var row = (TableViewRow)target.GetRealizedContainers().Single();
-        var firstCell = (TableViewCell)GetRowPresenter(row).Children[0];
-        var secondCell = (TableViewCell)GetRowPresenter(row).Children[1];
+        var firstCell = (TableViewCell)GetCellsPresenter(row).Children[0];
+        var secondCell = (TableViewCell)GetCellsPresenter(row).Children[1];
 
         Assert.Same(cellTheme, firstCell.Theme);
         Assert.Null(secondCell.Theme);
@@ -329,8 +329,8 @@ public sealed class TableViewTests : ScopedTestBase
         Prepare(target);
 
         var row = (TableViewRow)target.GetRealizedContainers().Single();
-        var firstCell = (TableViewCell)GetRowPresenter(row).Children[0];
-        var secondCell = (TableViewCell)GetRowPresenter(row).Children[1];
+        var firstCell = (TableViewCell)GetCellsPresenter(row).Children[0];
+        var secondCell = (TableViewCell)GetCellsPresenter(row).Children[1];
 
         Assert.Same(column0, firstCell.Column);
         Assert.Same(column1, secondCell.Column);
@@ -352,8 +352,8 @@ public sealed class TableViewTests : ScopedTestBase
         Prepare(target);
 
         var row = (TableViewRow)target.GetRealizedContainers().Single();
-        var firstCell = (TableViewCell)GetRowPresenter(row).Children[0];
-        var secondCell = (TableViewCell)GetRowPresenter(row).Children[1];
+        var firstCell = (TableViewCell)GetCellsPresenter(row).Children[0];
+        var secondCell = (TableViewCell)GetCellsPresenter(row).Children[1];
 
         Assert.Equal(HorizontalAlignment.Right, firstCell.HorizontalContentAlignment);
         Assert.Equal(HorizontalAlignment.Left, secondCell.HorizontalContentAlignment);
@@ -388,7 +388,7 @@ public sealed class TableViewTests : ScopedTestBase
         Prepare(target);
 
         var row = (TableViewRow)target.GetRealizedContainers().Single();
-        var cell = (TableViewCell)GetRowPresenter(row).Children[0];
+        var cell = (TableViewCell)GetCellsPresenter(row).Children[0];
         var header = (TableViewColumnHeader)GetColumnHeadersPresenter(target).Children[0];
 
         Assert.Same(cellThemeA, cell.Theme);
@@ -510,10 +510,10 @@ public sealed class TableViewTests : ScopedTestBase
             ItemsSource = items
         };
 
-    private static TableViewRowPresenter GetRowPresenter(TableViewRow row)
+    private static TableViewCellsPresenter GetCellsPresenter(TableViewRow row)
     {
         var presenter = row.GetVisualDescendants()
-            .OfType<TableViewRowPresenter>()
+            .OfType<TableViewCellsPresenter>()
             .FirstOrDefault();
         Assert.NotNull(presenter);
         return presenter;
@@ -582,9 +582,9 @@ public sealed class TableViewTests : ScopedTestBase
             Setters =
             {
                 new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<TableViewRow>((_, scope) =>
-                    new TableViewRowPresenter
+                    new TableViewCellsPresenter
                     {
-                        Name = "PART_RowPresenter"
+                        Name = "PART_CellsPresenter"
                     }.RegisterInNameScope(scope)))
             }
         };

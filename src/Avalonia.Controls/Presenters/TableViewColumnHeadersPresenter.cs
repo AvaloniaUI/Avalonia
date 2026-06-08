@@ -8,7 +8,7 @@ namespace Avalonia.Controls.Presenters;
 /// <summary>
 /// Displays the column headers for a <see cref="TableView"/>.
 /// Computes column widths (pixel and star) and exposes them via
-/// <see cref="TableViewColumn.ActualWidth"/> so that <see cref="TableViewRowPresenter"/>
+/// <see cref="TableViewColumn.ActualWidth"/> so that <see cref="TableViewCellsPresenter"/>
 /// can align cells with the headers.
 /// </summary>
 public class TableViewColumnHeadersPresenter : Panel

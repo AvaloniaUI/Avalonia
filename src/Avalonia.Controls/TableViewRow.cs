@@ -8,12 +8,12 @@ namespace Avalonia.Controls;
 /// <summary>
 /// A row container in a <see cref="TableView"/>.
 /// </summary>
-[TemplatePart(PartRowPresenter, typeof(TableViewRowPresenter))]
+[TemplatePart(PartCellsPresenter, typeof(TableViewCellsPresenter))]
 public class TableViewRow : ListBoxItem
 {
-    private const string PartRowPresenter = "PART_RowPresenter";
+    private const string PartCellsPresenter = "PART_CellsPresenter";
 
-    private TableViewRowPresenter? _rowPresenter;
+    private TableViewCellsPresenter? _cellsPresenter;
 
     internal AvaloniaList<TableViewColumn>? Columns
     {
@@ -21,7 +21,7 @@ public class TableViewRow : ListBoxItem
         set
         {
             field = value;
-            _rowPresenter?.Columns = value;
+            _cellsPresenter?.Columns = value;
         }
     }
 
@@ -30,30 +30,30 @@ public class TableViewRow : ListBoxItem
     {
         base.OnApplyTemplate(e);
 
-        if (_rowPresenter is not null)
+        if (_cellsPresenter is not null)
         {
-            _rowPresenter.Columns = null;
-            _rowPresenter.RemoveCells();
+            _cellsPresenter.Columns = null;
+            _cellsPresenter.RemoveCells();
         }
 
-        _rowPresenter = e.NameScope.Find<TableViewRowPresenter>(PartRowPresenter);
+        _cellsPresenter = e.NameScope.Find<TableViewCellsPresenter>(PartCellsPresenter);
 
-        if (_rowPresenter is not null)
+        if (_cellsPresenter is not null)
         {
-            _rowPresenter.Columns = Columns;
-            _rowPresenter.RebuildCells();
+            _cellsPresenter.Columns = Columns;
+            _cellsPresenter.RebuildCells();
         }
     }
 
     internal void ClearCells()
-        => _rowPresenter?.ClearCells();
+        => _cellsPresenter?.ClearCells();
 
     internal void InvalidateCellsMeasure()
-        => _rowPresenter?.InvalidateMeasure();
+        => _cellsPresenter?.InvalidateMeasure();
 
     internal void RebuildCells()
-        => _rowPresenter?.RebuildCells();
+        => _cellsPresenter?.RebuildCells();
 
     internal void RefreshCell(int columnIndex)
-        => _rowPresenter?.RefreshCell(columnIndex);
+        => _cellsPresenter?.RefreshCell(columnIndex);
 }
