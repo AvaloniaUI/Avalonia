@@ -50,7 +50,6 @@ namespace ControlCatalog.ViewModels
             new PageItem("ContextMenu",() => new ContextMenuPage(), Icons.Menu),
             new PageItem("Cursor",() => new CursorPage(), Icons.Cursor),
             new PageItem("Custom Drawing",() => new CustomDrawing(), Icons.Brush),
-            new PageItem("DataGrid",() => new DataGridPage(), Icons.Grid),
             new PageItem("Data Validation",() => new DataValidationPage(), Icons.Shield),
             new PageItem("Date/Time Picker",() => new DateTimePickerPage(), Icons.Clock),
             new PageItem("CalendarDatePicker",() => new CalendarDatePickerPage(), Icons.Calendar),
