@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Utils;
@@ -9,7 +9,6 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Platform;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -49,7 +48,7 @@ namespace Avalonia.Controls
 
         static SelectableTextBlock()
         {
-            FocusableProperty.OverrideDefaultValue(typeof(SelectableTextBlock), true);
+            FocusableProperty.OverrideDefaultValue<SelectableTextBlock>(true);
             AffectsRender<SelectableTextBlock>(SelectionStartProperty, SelectionEndProperty, SelectionBrushProperty);
         }
 
@@ -123,7 +122,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var text = GetSelection();
+            var text = SelectedText;
 
             if (string.IsNullOrEmpty(text))
             {
@@ -333,12 +332,23 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == TextProperty || change.Property == InlinesProperty)
+            if (change.Property == TextProperty)
             {
-                CoerceValue(SelectionStartProperty);
-                CoerceValue(SelectionEndProperty);
-                SelectedText = GetSelection();
-                UpdateCommandStates();
+                UpdateSelectionState();
+            }
+
+            if (change.Property == InlinesProperty)
+            {
+                UpdateSelectionState();
+                if (change.OldValue is INotifyCollectionChanged oldCollection)
+                {
+                    oldCollection.CollectionChanged -= OnInlinesCollectionChanged;
+                }
+
+                if (change.NewValue is INotifyCollectionChanged newCollection)
+                {
+                    newCollection.CollectionChanged += OnInlinesCollectionChanged;
+                }
             }
 
             if (change.Property == SelectionStartProperty || change.Property == SelectionEndProperty)
@@ -358,10 +368,9 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            var text = HasComplexContent ? Inlines?.Text : Text;
             var clickInfo = e.GetCurrentPoint(this);
 
-            if (text != null && clickInfo.Properties.IsLeftButtonPressed)
+            if (clickInfo.Properties.IsLeftButtonPressed && (HasComplexContent ? Inlines?.Text : Text) is { Length: > 0 } text)
             {
                 var padding = Padding;
 
@@ -440,7 +449,6 @@ namespace Avalonia.Controls
             // selection should not change during pointer move if the user right clicks
             if (e.Pointer.Captured == this && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                var text = HasComplexContent ? Inlines?.Text : Text;
                 var padding = Padding;
 
                 var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
@@ -452,7 +460,7 @@ namespace Avalonia.Controls
                 var hit = TextLayout.HitTestPoint(point);
                 var textPosition = hit.TextPosition;
 
-                if (text != null && _wordSelectionStart >= 0)
+                if (_wordSelectionStart >= 0 && (HasComplexContent ? Inlines?.Text : Text) is { Length: > 0 } text)
                 {
                     var distance = textPosition - _wordSelectionStart;
 
@@ -514,22 +522,34 @@ namespace Avalonia.Controls
             e.Pointer.Capture(null);
         }
 
+        private void OnInlinesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            UpdateSelectionState();
+        }
+
+        private void UpdateSelectionState()
+        {
+            CoerceValue(SelectionStartProperty);
+            CoerceValue(SelectionEndProperty);
+            SelectedText = GetSelection();
+            UpdateCommandStates();
+        }
+
         private void UpdateCommandStates()
         {
-            var text = GetSelection();
+            var hasText = HasComplexContent || !string.IsNullOrEmpty(Text);
 
-            CanCopy = !string.IsNullOrEmpty(text);
+            CanCopy = hasText && SelectionStart != SelectionEnd;
         }
 
         private string GetSelection()
         {
             var text = HasComplexContent ? Inlines?.Text : Text;
-
             var textLength = text?.Length ?? 0;
 
             if (textLength == 0)
             {
-                return "";
+                return string.Empty;
             }
 
             var selectionStart = SelectionStart;
@@ -539,7 +559,7 @@ namespace Avalonia.Controls
 
             if (start == end || textLength < end)
             {
-                return "";
+                return string.Empty;
             }
 
             var length = Math.Max(0, end - start);
