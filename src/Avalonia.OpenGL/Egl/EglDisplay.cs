@@ -174,7 +174,7 @@ namespace Avalonia.OpenGL.Egl
         {
             lock (_lock)
             {
-                foreach(var ctx in _contexts)
+                foreach(var ctx in _contexts.ToList())
                     ctx.Dispose();
                 _contexts.Clear();
                 if (_display != IntPtr.Zero)

@@ -170,9 +170,40 @@ namespace Avalonia.OpenGL.Egl
 //        public const int  EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Y = 0x30B6;
 //        public const int  EGL_GL_TEXTURE_CUBE_MAP_POSITIVE_Z = 0x30B7;
 //        public const int  EGL_GL_TEXTURE_CUBE_MAP_NEGATIVE_Z = 0x30B8;
-//        public const int  EGL_IMAGE_PRESERVED = 0x30D2;
-//        public const int  EGL_NO_IMAGE = 0;
+        public const int  EGL_IMAGE_PRESERVED = 0x30D2;
+        public const int  EGL_NO_IMAGE = 0;
 
+        // EGL_KHR_image_base
+        public const int  EGL_IMAGE_PRESERVED_KHR = 0x30D2;
+
+        // EGL_EXT_image_dma_buf_import
+        public const int  EGL_LINUX_DMA_BUF_EXT = 0x3270;
+        public const int  EGL_LINUX_DRM_FOURCC_EXT = 0x3271;
+        public const int  EGL_DMA_BUF_PLANE0_FD_EXT = 0x3272;
+        public const int  EGL_DMA_BUF_PLANE0_OFFSET_EXT = 0x3273;
+        public const int  EGL_DMA_BUF_PLANE0_PITCH_EXT = 0x3274;
+        public const int  EGL_DMA_BUF_PLANE1_FD_EXT = 0x3275;
+        public const int  EGL_DMA_BUF_PLANE1_OFFSET_EXT = 0x3276;
+        public const int  EGL_DMA_BUF_PLANE1_PITCH_EXT = 0x3277;
+        public const int  EGL_DMA_BUF_PLANE2_FD_EXT = 0x3278;
+        public const int  EGL_DMA_BUF_PLANE2_OFFSET_EXT = 0x3279;
+        public const int  EGL_DMA_BUF_PLANE2_PITCH_EXT = 0x327A;
+
+        // EGL_EXT_image_dma_buf_import_modifiers
+        public const int  EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT = 0x3443;
+        public const int  EGL_DMA_BUF_PLANE0_MODIFIER_HI_EXT = 0x3444;
+        public const int  EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT = 0x3445;
+        public const int  EGL_DMA_BUF_PLANE1_MODIFIER_HI_EXT = 0x3446;
+        public const int  EGL_DMA_BUF_PLANE2_MODIFIER_LO_EXT = 0x3447;
+        public const int  EGL_DMA_BUF_PLANE2_MODIFIER_HI_EXT = 0x3448;
+        public const int  EGL_DMA_BUF_PLANE3_FD_EXT = 0x3440;
+        public const int  EGL_DMA_BUF_PLANE3_OFFSET_EXT = 0x3441;
+        public const int  EGL_DMA_BUF_PLANE3_PITCH_EXT = 0x3442;
+        public const int  EGL_DMA_BUF_PLANE3_MODIFIER_LO_EXT = 0x3449;
+        public const int  EGL_DMA_BUF_PLANE3_MODIFIER_HI_EXT = 0x344A;
+
+        // EGL_KHR_platform_gbm / EGL_MESA_platform_gbm
+        public const int  EGL_PLATFORM_GBM_KHR = 0x31D7;
 
         public const int  EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE = 0x3207;
         public const int  EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE = 0x3208;

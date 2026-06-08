@@ -22,6 +22,7 @@
     <Project Path="src/Avalonia.FreeDesktop/Avalonia.FreeDesktop.csproj" />
     <Project Path="src/Avalonia.X11/Avalonia.X11.csproj" />
     <Project Path="src/Linux/Avalonia.LinuxFramebuffer/Avalonia.LinuxFramebuffer.csproj" />
+    <Project Path="src/Avalonia.Wayland/Avalonia.Wayland.csproj" />
   </Folder>
   <Folder Name="/Markup/">
     <Project Path="src/Markup/Avalonia.Markup.Xaml.Loader/Avalonia.Markup.Xaml.Loader.csproj" />

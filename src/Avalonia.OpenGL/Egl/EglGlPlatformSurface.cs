@@ -51,7 +51,7 @@ namespace Avalonia.OpenGL.Egl
                 SkipWaits = info is IEglWindowGlPlatformSurfaceInfoWithWaitPolicy { SkipWaits: true };
             }
 
-            private protected override bool SkipWaits { get; }
+            protected override bool SkipWaits { get; }
 
             public override void Dispose() => _glSurface?.Dispose();
 

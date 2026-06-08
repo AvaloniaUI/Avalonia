@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>$(AvsCurrentTargetFramework);$(AvsLegacyTargetFrameworks)</TargetFrameworks>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <EnableRuntimeMarshalling>true</EnableRuntimeMarshalling>
+    </PropertyGroup>
+
+    <ItemGroup Label="InternalsVisibleTo">
+        <InternalsVisibleTo Include="Avalonia.Wayland.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NWayland" VersionOverride="0.11.0" />
+        <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
+        <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
+        <ProjectReference Include="..\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj" />
+        <Compile Include="..\Shared\RawEventGrouping.cs" />
+        <Compile Include="..\Avalonia.X11\X11IconLoader.cs" />
+    </ItemGroup>
+    <Import Project="..\..\build\SourceGenerators.props" />
+    <Import Project="..\..\build\TrimmingEnable.props" />
+    <Import Project="..\..\build\NullableEnable.props" />
+
+    <ItemGroup>
+        <Compile Remove="..\Shared\SourceGeneratorAttributes.cs"/>
+        <None Include="..\Shared\SourceGeneratorAttributes.cs" Visible="false"/>
+    </ItemGroup>
+</Project>

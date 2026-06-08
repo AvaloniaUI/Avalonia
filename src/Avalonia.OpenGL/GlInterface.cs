@@ -395,6 +395,11 @@ namespace Avalonia.OpenGL
             return rv;
         }
 
+        // GL_OES_EGL_image
+        [GetProcAddress(true)]
+        [GlExtensionEntryPoint("glEGLImageTargetTexture2DOES", "GL_OES_EGL_image")]
+        public partial void EGLImageTargetTexture2DOES(int target, IntPtr image);
+
         public static GlInterface FromNativeUtf8GetProcAddress(GlVersion version, Func<IntPtr, IntPtr> getProcAddress)
         {
             return new GlInterface(version, s =>
