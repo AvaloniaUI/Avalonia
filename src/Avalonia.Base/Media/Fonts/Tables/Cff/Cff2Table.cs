@@ -183,5 +183,25 @@ namespace Avalonia.Media.Fonts.Tables.Cff
                 return false;
             }
         }
+
+        /// <summary>
+        /// Computes the control-point bounding box for <paramref name="glyphIndex"/> at
+        /// <paramref name="activeCoords"/> (the bounds vary with the variation point). CFF2 stores no
+        /// per-glyph bbox, so this interprets the charstring into a bounds-accumulating sink. Returns
+        /// <c>false</c> for an out-of-range glyph or a malformed charstring.
+        /// </summary>
+        public bool TryGetGlyphBounds(int glyphIndex, ReadOnlySpan<float> activeCoords, out GlyphBounds bounds)
+        {
+            bounds = default;
+
+            var context = new BoundsGeometryContext();
+            if (!TryBuildGlyphGeometry(glyphIndex, Matrix.Identity, context, activeCoords))
+            {
+                return false;
+            }
+
+            bounds = context.ToGlyphBounds();
+            return true;
+        }
     }
 }

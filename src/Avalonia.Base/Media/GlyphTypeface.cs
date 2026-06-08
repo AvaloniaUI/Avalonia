@@ -1174,9 +1174,10 @@ namespace Avalonia.Media
                 hasVertical = _vmTable.TryGetMetrics(glyph, out vMetric);
             }
 
-            short xMin = 0, yMin = 0, xMax = 0, yMax = 0;
-            var hasBounds = _glyfTable != null
-                && _glyfTable.TryGetGlyphBounds(glyph, out xMin, out yMin, out xMax, out yMax);
+            // Ink box from whichever outline table the font has (glyf header box / CFF / CFF2).
+            // Unlike the batch fill, this reports per-glyph validity so an out-of-range glyph with
+            // no metrics at all still returns false below.
+            var hasBounds = TryGetGlyphInkBounds(glyph, out var box);
 
             if (!hasHorizontal && !hasVertical && !hasBounds)
             {
@@ -1222,11 +1223,6 @@ namespace Avalonia.Media
                     topSideBearing = (short)Math.Clamp(adjusted, short.MinValue, short.MaxValue);
                 }
             }
-
-            // Funnel the raw header values through GlyphBounds so the ink extent is computed
-            // (and clamped to non-negative) the same way as the batch path below — a malformed
-            // header with xMax < xMin must not wrap when narrowed to the ushort Width/Height.
-            var box = new GlyphBounds(xMin, yMin, xMax, yMax);
 
             metrics = new GlyphMetrics
             {
@@ -1316,25 +1312,20 @@ namespace Avalonia.Media
                 return false;
             }
 
-            // Read all bounding boxes in one batch (spans fetched once), then combine. When
-            // the font has no glyf table, bearings fall back to hmtx/vmtx and the box is zero.
-            var hasGlyf = _glyfTable != null;
-
-            // No glyf table (CFF / CFF2) → no ink bounds to read; keep the buffer empty so
-            // those fonts don't allocate a per-glyph bounds array that is never used.
-            var boundsCount = hasGlyf ? glyphIds.Length : 0;
+            // Read every glyph's ink box from whichever outline table the font has (glyf header box /
+            // CFF / CFF2) in one pass. A font with no outline table keeps the buffer empty and falls
+            // back to hmtx/vmtx bearings with a zero box.
+            var hasInkTable = _glyfTable != null || _cffTable != null || _cff2Table != null;
+            var boundsCount = hasInkTable ? glyphIds.Length : 0;
             Span<GlyphBounds> bounds = boundsCount <= 256
                 ? stackalloc GlyphBounds[boundsCount]
                 : new GlyphBounds[boundsCount];
 
-            if (hasGlyf)
-            {
-                _glyfTable!.GetGlyphBounds(glyphIds, bounds);
-            }
+            var hasInk = hasInkTable && TryFillInkBounds(glyphIds, bounds);
 
             for (int i = 0; i < glyphIds.Length; i++)
             {
-                if (hasGlyf)
+                if (hasInk)
                 {
                     var b = bounds[i];
 
@@ -1378,7 +1369,8 @@ namespace Avalonia.Media
         /// <param name="glyphIds">Glyph identifiers to read.</param>
         /// <param name="bounds">Output; must be at least as long as <paramref name="glyphIds"/>.
         /// Out-of-range, empty, or malformed glyphs are written as the default (zero) box.</param>
-        /// <returns><c>true</c> if the font has a <c>glyf</c> table; otherwise <c>false</c>.</returns>
+        /// <returns><c>true</c> if the font carries an outline table (<c>glyf</c>, CFF or CFF2);
+        /// otherwise <c>false</c>.</returns>
         internal bool TryGetGlyphBounds(ReadOnlySpan<ushort> glyphIds, Span<GlyphBounds> bounds)
         {
             if (bounds.Length < glyphIds.Length)
@@ -1386,14 +1378,85 @@ namespace Avalonia.Media
                 throw new ArgumentException("Output span must be at least as long as input span", nameof(bounds));
             }
 
-            if (_glyfTable is null)
+            return TryFillInkBounds(glyphIds, bounds);
+        }
+
+        /// <summary>
+        /// Reads a single glyph's control-point ink box from whichever outline table the font carries.
+        /// Unlike <see cref="TryFillInkBounds"/> (which reports table presence and zero-fills invalid
+        /// glyphs), this returns <c>false</c> for an out-of-range or malformed glyph — the per-glyph
+        /// contract the single <see cref="TryGetGlyphMetrics(ushort, out GlyphMetrics)"/> path needs.
+        /// </summary>
+        private bool TryGetGlyphInkBounds(ushort glyph, out GlyphBounds box)
+        {
+            if (_glyfTable is not null)
             {
+                if (_glyfTable.TryGetGlyphBounds(glyph, out var xMin, out var yMin, out var xMax, out var yMax))
+                {
+                    box = new GlyphBounds(xMin, yMin, xMax, yMax);
+                    return true;
+                }
+
+                box = default;
                 return false;
             }
 
-            _glyfTable.GetGlyphBounds(glyphIds, bounds);
+            if (_cffTable is not null)
+            {
+                return _cffTable.TryGetGlyphBounds(glyph, out box);
+            }
 
-            return true;
+            if (_cff2Table is not null)
+            {
+                Span<float> zeroCoords = stackalloc float[_fvarTable?.Axes.Length ?? 0];
+                ReadOnlySpan<float> activeCoords = _activeCoords is not null ? _activeCoords : zeroCoords;
+
+                return _cff2Table.TryGetGlyphBounds(glyph, activeCoords, out box);
+            }
+
+            box = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Fills <paramref name="bounds"/> with each glyph's control-point ink box from whichever
+        /// outline table the font carries — <c>glyf</c> (header box), CFF or CFF2 (computed from the
+        /// charstring). Returns <c>false</c> when the font has no outline table.
+        /// </summary>
+        private bool TryFillInkBounds(ReadOnlySpan<ushort> glyphIds, Span<GlyphBounds> bounds)
+        {
+            if (_glyfTable is not null)
+            {
+                _glyfTable.GetGlyphBounds(glyphIds, bounds);
+                return true;
+            }
+
+            if (_cffTable is not null)
+            {
+                for (int i = 0; i < glyphIds.Length; i++)
+                {
+                    bounds[i] = _cffTable.TryGetGlyphBounds(glyphIds[i], out var box) ? box : default;
+                }
+
+                return true;
+            }
+
+            if (_cff2Table is not null)
+            {
+                // CFF2 ink bounds vary with the variation point; the default instance evaluates the
+                // blends at the origin (all-zero coords).
+                Span<float> zeroCoords = stackalloc float[_fvarTable?.Axes.Length ?? 0];
+                ReadOnlySpan<float> activeCoords = _activeCoords is not null ? _activeCoords : zeroCoords;
+
+                for (int i = 0; i < glyphIds.Length; i++)
+                {
+                    bounds[i] = _cff2Table.TryGetGlyphBounds(glyphIds[i], activeCoords, out var box) ? box : default;
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
