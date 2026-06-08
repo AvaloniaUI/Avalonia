@@ -43,6 +43,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     new FontAssetInfo($"{AssetsNamespace}.NotoSansHebrew-Regular.ttf", "Noto Sans Hebrew", FontWeight.Normal),
                     new FontAssetInfo($"{AssetsNamespace}.NotoSansMiao-Regular.ttf", "Noto Sans Miao", FontWeight.Normal),
                     new FontAssetInfo($"{AssetsNamespace}.NotoSansTamil-Regular.ttf", "Noto Sans Tamil", FontWeight.Normal),
+                    new FontAssetInfo($"{AssetsNamespace}.PointMatch.ttf", "PointMatch", FontWeight.Normal),
                     new FontAssetInfo($"{AssetsNamespace}.SourceSerif4_36pt-Italic.ttf", "Source Serif 4 36pt", FontWeight.Normal),
                     new FontAssetInfo($"{AssetsNamespace}.TwitterColorEmoji-SVGinOT.ttf", "Twitter Color Emoji", FontWeight.Normal)
                 };
