@@ -770,25 +770,25 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Retrieves the vector outline geometry for the specified glyph with the given
-        /// transformation applied.
+        /// Retrieves the vector outline geometry for the specified glyph, in font design-unit space.
         /// </summary>
         /// <remarks>
-        /// Returns <c>null</c> when the glyph ID is out of range, the font has no <c>glyf</c>
-        /// table (e.g. CFF / CFF2), or the glyph data cannot be parsed (malformed font,
-        /// cyclic composite, depth limit exceeded). Callers typically pass
-        /// <c>Matrix.CreateScale(1, -1)</c> as <paramref name="transform"/> to flip from
-        /// font-space (Y-up) into drawing-space (Y-down).
+        /// Returns <c>null</c> when the glyph ID is out of range, the font has no <c>glyf</c> table
+        /// (e.g. CFF / CFF2), or the glyph data cannot be parsed (malformed font, cyclic composite,
+        /// depth limit exceeded). The outline is in font design units (Y-up): apply the
+        /// <c>emSize / DesignEmHeight</c> scale, the Y-flip, and the glyph position yourself — via
+        /// <c>IGeometryImpl.WithTransform</c> or a drawing-context transform. Variable-font axis
+        /// configuration is taken from the typeface instance itself.
         /// </remarks>
         /// <param name="glyphId">The identifier of the glyph to retrieve.</param>
-        /// <param name="transform">A transformation matrix to apply to the outline.</param>
         /// <returns>
-        /// A <see cref="Geometry"/> for the glyph outline, or <c>null</c> when no outline
-        /// is available. Variable-font axis configuration is taken from the typeface
-        /// instance itself; to render at a different variation point, obtain a separately
-        /// configured <see cref="GlyphTypeface"/> from the font collection.
+        /// An immutable <see cref="IGeometryImpl"/> outline — safe to cache and share, and drawable
+        /// via the <c>DrawGeometry</c> overload that takes an <see cref="IGeometryImpl"/> — or
+        /// <c>null</c> when no outline is available. Returned as the lightweight platform geometry
+        /// rather than a <see cref="Geometry"/> (<see cref="AvaloniaObject"/>) so it can be cached
+        /// and used on the hot path; do not mutate it.
         /// </returns>
-        public Geometry? GetGlyphOutline(ushort glyphId, Matrix transform)
+        public IGeometryImpl? GetGlyphOutline(ushort glyphId)
         {
             if (glyphId >= GlyphCount)
             {
@@ -804,12 +804,11 @@ namespace Avalonia.Media
 
             using (var ctx = geometry.Open())
             {
-                // Try to build the glyph geometry using the glyf table
-                if (_glyfTable.TryBuildGlyphGeometry((int)glyphId, transform, ctx))
+                // Build the outline in font design-unit space (identity transform); callers apply
+                // the scale / position. Wrapped so the shared, cacheable result is immutable.
+                if (_glyfTable.TryBuildGlyphGeometry((int)glyphId, Matrix.Identity, ctx))
                 {
-                    var platformGeometry = new PlatformGeometry(geometry);
-
-                    return platformGeometry;
+                    return new ImmutableGeometryImpl(geometry);
                 }
             }
 
