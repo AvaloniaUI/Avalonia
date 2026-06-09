@@ -8,6 +8,7 @@
     <AvsCurrentIOSTargetFramework>$(AvsCurrentTargetFramework)-ios26.0</AvsCurrentIOSTargetFramework>
     <AvsCurrentTvOSTargetFramework>$(AvsCurrentTargetFramework)-tvos26.0</AvsCurrentTvOSTargetFramework>
     <AvsCurrentBrowserTargetFramework>$(AvsCurrentTargetFramework)-browser</AvsCurrentBrowserTargetFramework>
+    <AvsCurrentWinUITargetFramework>$(AvsCurrentTargetFramework)-windows10.0.19041.0</AvsCurrentWinUITargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(AvsSkipBuildingLegacyTargetFrameworks)' != 'True'">
     <AvsLegacyTargetFrameworks>net8.0</AvsLegacyTargetFrameworks>
