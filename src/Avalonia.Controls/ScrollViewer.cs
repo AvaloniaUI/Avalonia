@@ -1,11 +1,16 @@
 using System;
-using Avalonia.Reactive;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Reactive;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -16,6 +21,7 @@ namespace Avalonia.Controls
     [TemplatePart("PART_VerticalScrollBar",   typeof(ScrollBar))]
     public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
+        private const double InputPaneFocusedControlMargin = 10;
         /// <summary>
         /// Defines the <see cref="BringIntoViewOnFocusChange "/> property.
         /// </summary>
@@ -57,6 +63,15 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<ScrollViewer, Size>(
                 nameof(SmallChange),
                 o => o.SmallChange);
+
+        /// <summary>
+        /// Defines the <see cref="ResizeWithInputPane"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollViewer, bool> ResizeWithInputPaneProperty =
+            AvaloniaProperty.RegisterDirect<ScrollViewer, bool>(
+                nameof(ResizeWithInputPane),
+                o => o.ResizeWithInputPane,
+                (o, x) => o.ResizeWithInputPane = x);
 
         /// <summary>
         /// Defines the <see cref="ScrollBarMaximum"/> property.
@@ -168,7 +183,10 @@ namespace Avalonia.Controls
         private Size _largeChange;
         private Size _smallChange = new Size(DefaultSmallChange, DefaultSmallChange);
         private bool _isExpanded;
+        private bool _resizeWithInputPane;
         private IDisposable? _scrollBarExpandSubscription;
+        private Decorator? _keyboardAwareDecorator;
+        private IInputPane? _inputPane;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScrollViewer"/> class.
@@ -314,6 +332,15 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets whether the scrollviewer resizes its viewport when the platform's input state changes.
+        /// </summary>
+        public bool ResizeWithInputPane
+        {
+            get => _resizeWithInputPane;
+            set => SetAndRaise(ResizeWithInputPaneProperty, ref _resizeWithInputPane, value);
+        }
+
+        /// <summary>
         /// Gets or sets how scroll gesture reacts to the snap points along the horizontal axis.
         /// </summary>
         public SnapPointsType HorizontalSnapPointsType
@@ -336,7 +363,7 @@ namespace Avalonia.Controls
         /// </summary>
         public SnapPointsAlignment HorizontalSnapPointsAlignment
         {
-            get => GetValue(HorizontalSnapPointsAlignmentProperty); 
+            get => GetValue(HorizontalSnapPointsAlignmentProperty);
             set => SetValue(HorizontalSnapPointsAlignmentProperty, value);
         }
 
@@ -345,7 +372,7 @@ namespace Avalonia.Controls
         /// </summary>
         public SnapPointsAlignment VerticalSnapPointsAlignment
         {
-            get => GetValue(VerticalSnapPointsAlignmentProperty); 
+            get => GetValue(VerticalSnapPointsAlignmentProperty);
             set => SetValue(VerticalSnapPointsAlignmentProperty, value);
         }
 
@@ -764,6 +791,10 @@ namespace Avalonia.Controls
             {
                 CoerceValue(OffsetProperty);
             }
+            else if (change.Property == ResizeWithInputPaneProperty)
+            {
+                EnsureResizedWithInputPane();
+            }
         }
 
         protected override void OnGotFocus(FocusChangedEventArgs e)
@@ -809,6 +840,126 @@ namespace Avalonia.Controls
             _scrollBarExpandSubscription?.Dispose();
 
             _scrollBarExpandSubscription = SubscribeToScrollBars(e);
+
+            _keyboardAwareDecorator = e.NameScope.Find<Decorator>("PART_KeyboardAwareDecorator");
+
+            if (_keyboardAwareDecorator != null)
+            {
+                _inputPane?.StateChanged -= InputPane_StateChanged;
+
+                _inputPane = TopLevel.GetTopLevel(this)?.InputPane;
+
+                _inputPane?.StateChanged += InputPane_StateChanged;
+            }
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            if (_keyboardAwareDecorator != null)
+            {
+                _inputPane?.StateChanged -= InputPane_StateChanged;
+
+                _inputPane = TopLevel.GetTopLevel(this)?.InputPane;
+
+                _inputPane?.StateChanged += InputPane_StateChanged;
+            }
+        }
+
+        private void EnsureResizedWithInputPane()
+        {
+            Thickness margin = default;
+            if (_keyboardAwareDecorator != null)
+            {
+                if (ResizeWithInputPane && _inputPane != null)
+                {
+                    var occludedRect = _inputPane.OccludedRect;
+
+                    var panelHeight = GetOccludedHeight(occludedRect);
+
+                    margin = new Thickness(0, 0, 0, panelHeight);
+                }
+
+                _keyboardAwareDecorator.Transitions = null;
+                _keyboardAwareDecorator.Margin = margin;
+            }
+        }
+
+        private double GetOccludedHeight(Rect rect)
+        {
+            if (this.VisualRoot is { } root)
+            {
+                var transformMatrix = this.TransformToVisual(root) ?? Matrix.Identity;
+
+                var translatedRect = Bounds.TransformToAABB(transformMatrix);
+
+                var intersect = rect.Intersect(translatedRect);
+
+                return intersect.Height;
+            }
+
+            return 0;
+        }
+
+        private void InputPane_StateChanged(object? sender, InputPaneStateEventArgs e)
+        {
+            if (ResizeWithInputPane && _keyboardAwareDecorator != null && this.VisualRoot is { } root)
+            {
+                var panelHeight = GetOccludedHeight(e.EndRect);
+
+                var focused = FocusManager.GetFocusManager(this)?.GetFocusedElement();
+
+                var transition = new ThicknessTransition()
+                {
+                    Property = MarginProperty,
+                    Duration = e.AnimationDuration,
+                    Easing = e.Easing as Easing ?? new LinearEasing()
+                };
+
+                _keyboardAwareDecorator.Transitions = new Transitions()
+                {
+                    transition
+                };
+
+                var margin = new Thickness(0, 0, 0, panelHeight);
+                _keyboardAwareDecorator.Margin = margin;
+
+                if (_inputPane?.State == InputPaneState.Open &&
+                    focused is Control control && this.IsVisualAncestorOf(control))
+                {
+                    bool animationEnded = false;
+                    var requestRect = new Rect(control.Bounds.Size.Inflate(new Thickness(InputPaneFocusedControlMargin)));
+                    control.BringIntoView(requestRect);
+
+                    DispatcherTimer.RunOnce(() =>
+                    {
+                        animationEnded = true;
+                    }, e.AnimationDuration, DispatcherPriority.Background);
+
+                    DispatcherTimer.Run(() =>
+                    {
+                        control.BringIntoView(requestRect);
+
+                        return !animationEnded;
+                    }, TimeSpan.FromMilliseconds(16), DispatcherPriority.Background);
+                }
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            _inputPane?.StateChanged -= InputPane_StateChanged;
+            _inputPane = null;
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            EnsureResizedWithInputPane();
+
+            return base.MeasureOverride(availableSize);
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
