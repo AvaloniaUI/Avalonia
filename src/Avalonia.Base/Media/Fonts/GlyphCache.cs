@@ -4,21 +4,46 @@ using System.Threading;
 
 namespace Avalonia.Media.Fonts
 {
+    /// <summary>The result of building a glyph's outline geometry, handed back to <see cref="GlyphCache"/>.</summary>
+    internal readonly struct BuiltGeometry
+    {
+        public BuiltGeometry(object? geometry, int cost, GlyphPayloadKind kind, ushort[] dependencies,
+            GlyphBounds bounds, bool hasBounds)
+        {
+            Geometry = geometry;
+            Cost = cost;
+            Kind = kind;
+            Dependencies = dependencies;
+            Bounds = bounds;
+            HasBounds = hasBounds;
+        }
+
+        public object? Geometry { get; }
+        public int Cost { get; }
+        public GlyphPayloadKind Kind { get; }
+        public ushort[] Dependencies { get; }
+        public GlyphBounds Bounds { get; }
+        public bool HasBounds { get; }
+    }
+
     /// <summary>
-    /// A bounded, per-typeface cache of built glyph payloads (outlines today; color drawings and
-    /// bitmaps later). The total retained <see cref="GlyphCacheEntry.Cost"/> is capped by a byte
-    /// budget; an <see cref="IGlyphEvictionPolicy"/> chooses what to drop when the budget is exceeded.
+    /// A bounded, per-typeface cache keyed by glyph. Each <see cref="GlyphCacheEntry"/> carries the
+    /// cheap ink box (set lazily, kept for the metrics fast path) and a heavy outline geometry built
+    /// lazily on demand. Only the geometry counts against the byte budget; eviction (CLOCK) drops the
+    /// geometry but keeps the entry's bounds when they are worth retaining (CFF / CFF2).
     /// </summary>
     /// <remarks>
-    /// Reads are lock-free (a concurrent lookup plus a <see cref="Volatile"/> recency write); inserts
-    /// and the eviction sweep take a single lock. Composite components are kept at least as recent as
-    /// the composites that use them via recency propagation; <em>referencing</em> payloads additionally
-    /// pin their dependencies so a live dependent can never lose a component it still points at.
+    /// Bounds reads and built-geometry hits are lock-free; the geometry build / eviction take a lock.
+    /// Composite components are kept at least as recent as their composites via recency propagation;
+    /// referencing payloads (color drawings) additionally pin their dependencies.
     /// </remarks>
     internal sealed class GlyphCache
     {
-        /// <summary>Default per-typeface budget: a few MB of glyph payloads. Calibrated against the churn benchmark.</summary>
+        /// <summary>Default per-typeface geometry budget. Calibrated against the churn benchmark.</summary>
         public const int DefaultBudgetBytes = 4 * 1024 * 1024;
+
+        private static readonly Func<ushort, bool, GlyphCacheEntry> s_createEntry =
+            static (glyph, retainBounds) => new GlyphCacheEntry(glyph, retainBounds);
 
         private readonly ConcurrentDictionary<ushort, GlyphCacheEntry> _entries = new();
         private readonly IGlyphEvictionPolicy _policy;
@@ -32,82 +57,79 @@ namespace Avalonia.Media.Fonts
             _policy = policy ?? new ClockEvictionPolicy();
         }
 
-        /// <summary>Number of cached entries.</summary>
+        /// <summary>Number of cached entries (with or without built geometry).</summary>
         public int Count => _entries.Count;
 
-        /// <summary>Total retained cost (bytes) of the cached entries.</summary>
+        /// <summary>Total retained geometry cost (bytes).</summary>
         public int TotalCost => Volatile.Read(ref _totalCost);
 
         /// <summary>
-        /// Looks up <paramref name="glyph"/>. On a hit, marks the entry (and its cached dependencies)
-        /// recently used. Lock-free.
+        /// Gets (creating if absent) the entry for <paramref name="glyph"/>. <paramref name="retainBounds"/>
+        /// decides whether the entry survives geometry eviction for its cached bounds (CFF / CFF2). Lock-free.
         /// </summary>
-        public bool TryGet(ushort glyph, out GlyphCacheEntry entry)
+        public GlyphCacheEntry GetEntry(ushort glyph, bool retainBounds)
+            => _entries.GetOrAdd(glyph, s_createEntry, retainBounds);
+
+        /// <summary>
+        /// Returns the built outline geometry for <paramref name="entry"/>, building it with
+        /// <paramref name="build"/> on a miss (charging its cost and evicting to budget). A built hit is
+        /// lock-free; a malformed glyph caches as a built <c>null</c>.
+        /// </summary>
+        public object? GetOrBuildGeometry(GlyphCacheEntry entry, Func<GlyphCacheEntry, BuiltGeometry> build)
         {
-            if (_entries.TryGetValue(glyph, out entry!))
+            var geometry = Volatile.Read(ref entry.Geometry);
+            if (geometry != null)
             {
                 _policy.OnAccessed(entry);
                 PropagateRecency(entry);
-                return true;
+                return geometry;
             }
 
-            return false;
-        }
-
-        /// <summary>
-        /// Returns the cached entry for <paramref name="glyph"/>, building it with
-        /// <paramref name="factory"/> on a miss. The factory runs outside the lock; if two threads race
-        /// the first published entry wins and the loser's payload is disposed if disposable.
-        /// </summary>
-        public GlyphCacheEntry GetOrAdd(ushort glyph, Func<ushort, GlyphCacheEntry> factory)
-        {
-            if (TryGet(glyph, out var existing))
+            if (entry.HasGeometry)
             {
-                return existing;
+                return null;   // built, but the glyph has no outline (malformed)
             }
-
-            var built = factory(glyph);
 
             lock (_lock)
             {
-                if (_entries.TryGetValue(glyph, out var winner))
+                if (entry.HasGeometry)
                 {
-                    // Lost the race — discard ours, keep the published one.
-                    DisposePayload(built);
-                    _policy.OnAccessed(winner);
-                    return winner;
+                    return entry.Geometry;   // another thread built it while we waited
                 }
 
-                _entries[glyph] = built;
-                _policy.OnAdded(built);
+                var built = build(entry);
+
+                if (built.HasBounds)
+                {
+                    entry.SetBoundsOnce(built.Bounds);
+                }
+
+                entry.SetGeometry(built.Geometry, built.Cost, built.Kind, built.Dependencies);
+                _policy.OnAdded(entry);
                 _totalCost += built.Cost;
 
-                PinDependencies(built);
+                PinDependencies(entry);
                 EvictToBudget();
 
-                return built;
+                return built.Geometry;
             }
         }
 
-        // Keep a composite's cached components at least as recently-used as the composite itself, so a
-        // component is never evicted before a composite that depends on it. A no-op for the common
-        // dependency-free glyph.
+        // Keep a composite's cached components at least as recently used as the composite, so a
+        // component's geometry is never evicted before a composite that depends on it.
         private void PropagateRecency(GlyphCacheEntry entry)
         {
             var deps = entry.Dependencies;
 
             for (var i = 0; i < deps.Length; i++)
             {
-                if (_entries.TryGetValue(deps[i], out var dep))
+                if (_entries.TryGetValue(deps[i], out var dep) && dep.HasGeometry)
                 {
                     _policy.OnAccessed(dep);
                 }
             }
         }
 
-        // Pin the dependencies of a referencing payload so they cannot be evicted while this entry is
-        // live. Gated on Kind: a flattened outline composite already contains its components, so pinning
-        // them would double-retain memory — those rely on recency only.
         private void PinDependencies(GlyphCacheEntry entry)
         {
             if (!IsReferencing(entry.Kind))
@@ -144,8 +166,8 @@ namespace Avalonia.Media.Fonts
             }
         }
 
-        // Only payloads that hold live references to their components pin them. Flattened outlines
-        // (Outline / CompositeOutline) are self-contained.
+        // Only payloads that hold live references to their components pin them; flattened outlines are
+        // self-contained and rely on recency.
         private static bool IsReferencing(GlyphPayloadKind kind) => kind == GlyphPayloadKind.ColorDrawing;
 
         private void EvictToBudget()
@@ -156,23 +178,25 @@ namespace Avalonia.Media.Fonts
 
                 if (victim is null)
                 {
-                    // Everything is pinned by a live dependent — stay over budget until one is freed.
-                    break;
+                    break;   // everything pinned — stay over budget until a dependent frees
                 }
 
-                _entries.TryRemove(victim.Glyph, out _);
-                _policy.OnRemoved(victim);
+                var payload = victim.Geometry;
                 _totalCost -= victim.Cost;
+                _policy.OnRemoved(victim);
                 UnpinDependencies(victim);
-                DisposePayload(victim);
-            }
-        }
+                victim.ClearGeometry();
 
-        private static void DisposePayload(GlyphCacheEntry entry)
-        {
-            if (entry.Payload is IDisposable disposable)
-            {
-                disposable.Dispose();
+                // Keep the entry alive for its retained bounds (CFF / CFF2); otherwise drop it.
+                if (!victim.RetainBounds)
+                {
+                    _entries.TryRemove(victim.Glyph, out _);
+                }
+
+                if (payload is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
             }
         }
     }
