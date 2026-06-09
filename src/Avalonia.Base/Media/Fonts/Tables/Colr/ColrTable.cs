@@ -431,6 +431,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
                 return true;
             }
+            catch (DecyclerException)
+            {
+                // Cyclic or over-deep paint graph in an adversarial COLR font — treat as "no resolved
+                // paint" instead of letting the exception escape to the caller.
+                return false;
+            }
             finally
             {
                 PaintDecycler.Return(decycler);
