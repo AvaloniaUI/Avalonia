@@ -30,27 +30,37 @@
         <Border BorderBrush="LimeGreen"
                 Margin="{Binding SafeAreaPadding}"
                 BorderThickness="1">
-            <DockPanel>
-                <Label Margin="5"
-                       Foreground="LimeGreen"
-                       DockPanel.Dock="Bottom"
-                       HorizontalAlignment="Stretch"
-                       HorizontalContentAlignment="Left" >Safe Area</Label>
-                <Grid DockPanel.Dock="Bottom"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch">
-                    <StackPanel Orientation="Vertical"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-                        <Label HorizontalAlignment="Left">Options:</Label>
-                        <CheckBox IsChecked="{Binding DisplayEdgeToEdge}">Display Edge To Edge</CheckBox>
-                        <CheckBox IsChecked="{Binding UseSafeArea}" IsEnabled="{Binding !AutoSafeAreaPadding}">Use Safe Area</CheckBox>
-                        <CheckBox IsChecked="{Binding AutoSafeAreaPadding}">Automatic Paddings</CheckBox>
-                        <CheckBox IsChecked="{Binding HideSystemBars}">Hide System Bars</CheckBox>
-                         <TextBox Width="200" PlaceholderText="Tap to Show Keyboard"/>
-                    </StackPanel>
-                </Grid>
-            </DockPanel>
+            <ScrollViewer>
+                <StackPanel Spacing="10" Orientation="Vertical">
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox Name="TestTextBox" >Focus This</TextBox>
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                  <TextBox />
+                </StackPanel>
+              </ScrollViewer>
         </Border>
         <Button Margin="{Binding InputPaneMarkerMargin}"
                 VerticalAlignment="Bottom"
