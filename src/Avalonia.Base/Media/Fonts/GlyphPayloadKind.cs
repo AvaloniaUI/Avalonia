@@ -1,7 +1,7 @@
 namespace Avalonia.Media.Fonts
 {
     /// <summary>
-    /// Discriminates the shape of a <see cref="GlyphCacheEntry.Payload"/> so the cache can treat the
+    /// Discriminates the shape of a <see cref="GlyphCacheEntry.Geometry"/> so the cache can treat the
     /// different glyph representations uniformly while consumers down-cast to the concrete type.
     /// </summary>
     internal enum GlyphPayloadKind : byte

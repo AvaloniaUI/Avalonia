@@ -54,15 +54,12 @@ namespace Avalonia.Media
         // clone's active variation coords, like gvar.
         private readonly Cff2Table? _cff2Table;
 
-        // Lazy per-glyph memo of CFF / CFF2 control-point boxes (null until the first bounds query, and
-        // on glyf fonts which never need it). Per instance, so a CFF2 variation clone caches the box at
-        // its own variation point. See TryGetCachedCffBounds.
-        private InkBoundsCache? _inkBoundsCache;
-
-        // Bounded per-glyph cache of built outline payloads (null until the first GetGlyphOutline, and
-        // on fonts with no outline table). Per instance, so a variation clone caches outlines at its own
-        // variation point; retained memory is capped by the GlyphCache budget with CLOCK eviction.
-        private GlyphCache? _outlineCache;
+        // Unified per-glyph cache: cheap ink boxes (CFF / CFF2; glyf reads its header instead) plus the
+        // lazily-built outline geometry whose retained memory is capped by the GlyphCache budget with
+        // CLOCK eviction. Null until first use; per instance, so a variation clone caches its own boxes
+        // and outlines at its own variation point. The delegate is cached to keep the hot path alloc-free.
+        private GlyphCache? _glyphCache;
+        private Func<GlyphCacheEntry, BuiltGeometry>? _buildGlyphGeometry;
 
         // Variation tables (null on static fonts). The fvar table is loaded after the
         // name table so axis / instance names can be resolved during parsing; avar is
@@ -1413,9 +1410,8 @@ namespace Avalonia.Media
 
             if (_cffTable is not null || _cff2Table is not null)
             {
-                // CFF / CFF2 have no stored bbox; the cache turns the per-call charstring
-                // interpretation into an O(1) read after the first hit (see GetCachedCffBounds).
-                return TryGetCachedCffBounds(glyph, out box);
+                // CFF / CFF2 have no stored bbox; the unified cache memoises the interpreted box.
+                return TryGetCffBounds(glyph, out box);
             }
 
             box = default;
@@ -1439,7 +1435,7 @@ namespace Avalonia.Media
             {
                 for (int i = 0; i < glyphIds.Length; i++)
                 {
-                    bounds[i] = TryGetCachedCffBounds(glyphIds[i], out var box) ? box : default;
+                    bounds[i] = TryGetCffBounds(glyphIds[i], out var box) ? box : default;
                 }
 
                 return true;
@@ -1449,19 +1445,18 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Returns the control-point ink box for a CFF / CFF2 glyph, memoised per glyph. The first read
-        /// of a glyph interprets its charstring (the expensive step CFF / CFF2 can't avoid — they store
-        /// no bbox); every later read of that glyph is an array lookup, putting repeated access on par
-        /// with the <c>glyf</c> header read. Returns <c>false</c> for an out-of-range glyph.
+        /// Returns the control-point ink box for a CFF / CFF2 glyph from the unified glyph cache. The
+        /// box is set lazily — by this metrics path (interpreting the charstring) or by the geometry
+        /// build (taken from the outline's bounds), whichever happens first — then kept, so repeated
+        /// reads are an O(1) cache hit. Returns <c>false</c> for an out-of-range glyph.
         /// </summary>
         /// <remarks>
         /// The cache is per-<see cref="GlyphTypeface"/> instance, so a CFF2 variation clone caches the
-        /// box at <em>its</em> variation point — the bounds are immutable for a given instance, so the
-        /// memo never goes stale. Population is a benign race: two threads may compute the same glyph,
-        /// but they write identical values, and the <c>State</c> flag is published with release/acquire
-        /// ordering so a reader that sees "computed" also sees the fully-written box.
+        /// box at <em>its</em> variation point; the bounds are immutable for a given instance. Eviction
+        /// of a glyph's geometry keeps its bounds (the entry is retained), so the metrics path stays
+        /// cheap even under outline-cache pressure.
         /// </remarks>
-        private bool TryGetCachedCffBounds(ushort glyph, out GlyphBounds box)
+        private bool TryGetCffBounds(ushort glyph, out GlyphBounds box)
         {
             if (glyph >= GlyphCount)
             {
@@ -1469,19 +1464,15 @@ namespace Avalonia.Media
                 return false;
             }
 
-            var cache = _inkBoundsCache ?? GetOrCreateInkBoundsCache();
+            var cache = _glyphCache ?? GetOrCreateGlyphCache();
+            var entry = cache.GetEntry(glyph, retainBounds: true);
 
-            if (Volatile.Read(ref cache.State[glyph]) == 0)
+            if (!entry.HasBounds)
             {
-                box = ComputeCffGlyphBounds(glyph);
-                cache.Bounds[glyph] = box;
-                Volatile.Write(ref cache.State[glyph], 1);
-            }
-            else
-            {
-                box = cache.Bounds[glyph];
+                entry.SetBoundsOnce(ComputeCffGlyphBounds(glyph));
             }
 
+            box = entry.Bounds;
             return true;
         }
 
@@ -1501,32 +1492,12 @@ namespace Avalonia.Media
             return _cff2Table!.TryGetGlyphBounds(glyph, activeCoords, out var cff2Box) ? cff2Box : default;
         }
 
-        private InkBoundsCache GetOrCreateInkBoundsCache()
+        private GlyphCache GetOrCreateGlyphCache()
         {
-            var created = new InkBoundsCache(GlyphCount);
+            var created = new GlyphCache();
 
-            // First publisher wins; later racers reuse it. The arrays start zeroed (every glyph
-            // "uncomputed"), so there is nothing else to initialise before publication.
-            return Interlocked.CompareExchange(ref _inkBoundsCache, created, null) ?? created;
-        }
-
-        /// <summary>
-        /// Per-glyph memo for CFF / CFF2 control-point boxes. <see cref="State"/> is a parallel
-        /// computed-flag array (0 = not yet computed) read / written with <see cref="Volatile"/> so the
-        /// box store is visible before the flag flips. A <see cref="GlyphBounds"/> is eight bytes, so an
-        /// element store is itself atomic on 64-bit — and concurrent writers of the same glyph store
-        /// identical bytes regardless.
-        /// </summary>
-        private sealed class InkBoundsCache
-        {
-            public readonly GlyphBounds[] Bounds;
-            public readonly byte[] State;
-
-            public InkBoundsCache(int glyphCount)
-            {
-                Bounds = new GlyphBounds[glyphCount];
-                State = new byte[glyphCount];
-            }
+            // First publisher wins; later racers reuse it.
+            return Interlocked.CompareExchange(ref _glyphCache, created, null) ?? created;
         }
 
         /// <summary>
@@ -1577,13 +1548,14 @@ namespace Avalonia.Media
                 return null;
             }
 
-            // The built outline is immutable, so memo it per glyph in a bounded cache (CLOCK eviction):
-            // the build is dominated by platform geometry construction, so a cache hit is far cheaper
-            // than a rebuild, while the budget caps retained memory. Per instance, so a variation clone
-            // caches at its own variation point.
-            var cache = _outlineCache ?? GetOrCreateOutlineCache();
+            // The built outline is immutable, so memo it per glyph in the unified cache. The geometry is
+            // the heavy, evictable part (the budget caps it via CLOCK eviction); building it lazily also
+            // fills the entry's cheap ink box for the metrics path. Per instance, so a variation clone
+            // caches at its own variation point. The build delegate is cached to keep hits alloc-free.
+            var cache = _glyphCache ?? GetOrCreateGlyphCache();
+            var entry = cache.GetEntry(glyphId, retainBounds: _cffTable is not null || _cff2Table is not null);
 
-            return (IGeometryImpl?)cache.GetOrAdd(glyphId, BuildOutlineEntry).Payload;
+            return (IGeometryImpl?)cache.GetOrBuildGeometry(entry, _buildGlyphGeometry ??= BuildGlyphGeometryEntry);
         }
 
         // Rough estimate of the bytes an outline payload retains — the native path verbs / points plus
@@ -1593,12 +1565,14 @@ namespace Avalonia.Media
         private const int OutlineSegmentCost = 32;
 
         /// <summary>
-        /// Builds the cache entry for an in-range glyph — the cold path behind <see cref="GetGlyphOutline"/>'s
-        /// bounded cache. The payload is <c>null</c> for a malformed or outline-less glyph (still memoised
-        /// so it is not rebuilt); <see cref="GlyphCacheEntry.Cost"/> is estimated from the segment count.
+        /// Builds the outline geometry for an in-range glyph — the cold path behind
+        /// <see cref="GetGlyphOutline"/>'s cache. The geometry is <c>null</c> for a malformed or
+        /// outline-less glyph (still memoised so it is not rebuilt); <see cref="BuiltGeometry.Cost"/> is
+        /// estimated from the segment count, and for CFF / CFF2 the ink box is taken from the geometry.
         /// </summary>
-        private GlyphCacheEntry BuildOutlineEntry(ushort glyphId)
+        private BuiltGeometry BuildGlyphGeometryEntry(GlyphCacheEntry entry)
         {
+            var glyphId = entry.Glyph;
             var outline = BuildGlyphOutline(glyphId, out var segmentCount);
             var cost = OutlineBaseCost + (segmentCount * OutlineSegmentCost);
 
@@ -1616,8 +1590,27 @@ namespace Avalonia.Media
                 dependencies = components;
             }
 
-            return new GlyphCacheEntry(glyphId, kind, outline, cost, dependencies, outline?.Bounds ?? default);
+            // For CFF / CFF2 the built outline's bounds ARE the control-point ink box, so reuse them as
+            // the entry's bounds — a later metrics read then needs no separate charstring interpret.
+            // glyf bounds come from the header (cheaper than this), so leave them unset here.
+            var bounds = default(GlyphBounds);
+            var hasBounds = false;
+            if (outline is not null && (_cffTable is not null || _cff2Table is not null))
+            {
+                bounds = ToGlyphBounds(outline.Bounds);
+                hasBounds = true;
+            }
+
+            return new BuiltGeometry(outline, cost, kind, dependencies, bounds, hasBounds);
         }
+
+        // Converts a geometry's control-point bounds (font design units) to the GlyphBounds box the
+        // metrics path uses — floor the minima, ceil the maxima, matching BoundsGeometryContext.
+        private static GlyphBounds ToGlyphBounds(Rect bounds)
+            => new(ClampToShort(Math.Floor(bounds.Left)), ClampToShort(Math.Floor(bounds.Top)),
+                ClampToShort(Math.Ceiling(bounds.Right)), ClampToShort(Math.Ceiling(bounds.Bottom)));
+
+        private static short ClampToShort(double value) => (short)Math.Clamp(value, short.MinValue, short.MaxValue);
 
         /// <summary>
         /// Builds the immutable outline geometry for an in-range glyph and reports the number of path
@@ -1678,14 +1671,6 @@ namespace Avalonia.Media
             }
 
             return null;
-        }
-
-        private GlyphCache GetOrCreateOutlineCache()
-        {
-            var created = new GlyphCache();
-
-            // First publisher wins; later racers reuse it.
-            return Interlocked.CompareExchange(ref _outlineCache, created, null) ?? created;
         }
 
         /// <summary>
