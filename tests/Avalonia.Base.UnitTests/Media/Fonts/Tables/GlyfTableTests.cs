@@ -70,6 +70,40 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
         }
 
         [Fact]
+        public void TryGetCompositeComponents_Returns_False_For_Simple_Glyph()
+        {
+            var typeface = LoadInter();
+            var glyf = LoadGlyf(typeface);
+
+            // 'A' is a simple (single-outline) glyph — it has no components.
+            Assert.False(glyf.TryGetCompositeComponents(GlyphFor(typeface, 'A'), out var components));
+            Assert.Empty(components);
+        }
+
+        [Fact]
+        public void TryGetCompositeComponents_Returns_False_For_Empty_Glyph()
+        {
+            var typeface = LoadInter();
+            var glyf = LoadGlyf(typeface);
+
+            Assert.False(glyf.TryGetCompositeComponents(GlyphFor(typeface, ' '), out var components));
+            Assert.Empty(components);
+        }
+
+        [Fact]
+        public void TryGetCompositeComponents_Lists_The_Base_Component_Of_A_Composite()
+        {
+            var typeface = LoadInter();
+            var glyf = LoadGlyf(typeface);
+
+            // Inter stores 'Á' as a composite of the base 'A' plus a combining acute accent, so the
+            // component list must include the 'A' glyph.
+            Assert.True(glyf.TryGetCompositeComponents(GlyphFor(typeface, 'Á'), out var components));
+            Assert.NotEmpty(components);
+            Assert.Contains(GlyphFor(typeface, 'A'), components);
+        }
+
+        [Fact]
         public void TryGetGlyphData_Returns_Data_For_Letter()
         {
             var typeface = LoadInter();

@@ -1602,13 +1602,21 @@ namespace Avalonia.Media
             var outline = BuildGlyphOutline(glyphId, out var segmentCount);
             var cost = OutlineBaseCost + (segmentCount * OutlineSegmentCost);
 
-            return new GlyphCacheEntry(
-                glyphId,
-                GlyphPayloadKind.Outline,
-                outline,
-                cost,
-                Array.Empty<ushort>(),
-                outline?.Bounds ?? default);
+            var kind = GlyphPayloadKind.Outline;
+            var dependencies = Array.Empty<ushort>();
+
+            // A glyf composite is flattened into one geometry, but its components are independently
+            // cacheable glyphs (e.g. 'A' inside 'Á'). Recording them lets the cache keep a component at
+            // least as recently used as the composites that reference it. CFF / CFF2 have no separate
+            // components, so this only fires for glyf.
+            if (outline is not null && _glyfTable is not null &&
+                _glyfTable.TryGetCompositeComponents(glyphId, out var components))
+            {
+                kind = GlyphPayloadKind.CompositeOutline;
+                dependencies = components;
+            }
+
+            return new GlyphCacheEntry(glyphId, kind, outline, cost, dependencies, outline?.Bounds ?? default);
         }
 
         /// <summary>

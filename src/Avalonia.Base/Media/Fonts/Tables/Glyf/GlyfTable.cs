@@ -102,6 +102,47 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         }
 
         /// <summary>
+        /// Lists the direct component glyph IDs of a composite glyph, or returns <see langword="false"/>
+        /// for a simple, empty, or malformed glyph. Lets a cached composite outline record its
+        /// dependencies so the cache keeps its components at least as recently used as the composite.
+        /// </summary>
+        public bool TryGetCompositeComponents(int glyphIndex, out ushort[] components)
+        {
+            components = Array.Empty<ushort>();
+
+            // A non-empty glyph always carries the 10-byte header (numberOfContours + bbox); anything
+            // shorter is malformed.
+            if (!TryGetGlyphData(glyphIndex, out var glyphData) || glyphData.Length < 10)
+            {
+                return false;
+            }
+
+            var descriptor = new GlyphDescriptor(glyphData);
+
+            if (descriptor.IsSimpleGlyph)
+            {
+                return false;
+            }
+
+            using var composite = descriptor.CompositeGlyph;
+            var parts = composite.Components;
+
+            if (parts.Length == 0)
+            {
+                return false;
+            }
+
+            var ids = new ushort[parts.Length];
+            for (var i = 0; i < parts.Length; i++)
+            {
+                ids[i] = parts[i].GlyphIndex;
+            }
+
+            components = ids;
+            return true;
+        }
+
+        /// <summary>
         /// Reads a glyph's bounding box from its 'glyf' header without parsing contours.
         /// </summary>
         /// <remarks>
