@@ -39,6 +39,12 @@ namespace Avalonia.OpenGL.Egl
             {
                 GlInterface = GlInterface.FromNativeUtf8GetProcAddress(version, _egl.GetProcAddress);
                 _features = features.ToDictionary(x => x.Key, x => x.Value(this));
+
+                // Add Linux dma-buf import support unless the platform already provided an
+                // external objects feature.
+                if (!_features.ContainsKey(typeof(IGlContextExternalObjectsFeature))
+                    && EglExternalObjectsFeature.TryCreate(this) is { } dmaBufFeature)
+                    _features[typeof(IGlContextExternalObjectsFeature)] = dmaBufFeature;
             }
         }
 

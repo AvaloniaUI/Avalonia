@@ -8,6 +8,43 @@ public record struct PlatformGraphicsExternalImageProperties
     public ulong MemorySize { get; set; }
     public ulong MemoryOffset { get; set; }
     public bool TopLeftOrigin { get; set; }
+
+    /// <summary>
+    /// DRM fourcc format code of the dma-buf.
+    /// </summary>
+    public uint DrmFormat { get; set; }
+
+    /// <summary>
+    /// DRM format modifier describing the memory layout. Pass
+    /// <see cref="DrmModifierInvalid"/> when the modifier is unknown/implicit.
+    /// </summary>
+    public ulong DrmModifier { get; set; }
+
+    /// <summary>
+    /// Number of dma-buf planes. When zero the importer assumes a single plane and
+    /// uses the handle's file descriptor for plane 0.
+    /// </summary>
+    public int PlaneCount { get; set; }
+
+    /// <summary>
+    /// Per-plane file descriptors. When null, plane 0 uses the handle's file descriptor.
+    /// </summary>
+    public int[]? PlaneFds { get; set; }
+
+    /// <summary>
+    /// Per-plane row strides in bytes.
+    /// </summary>
+    public uint[]? PlaneStrides { get; set; }
+
+    /// <summary>
+    /// Per-plane byte offsets.
+    /// </summary>
+    public uint[]? PlaneOffsets { get; set; }
+
+    /// <summary>
+    /// Sentinel modifier value (DRM_FORMAT_MOD_INVALID) meaning "no explicit modifier".
+    /// </summary>
+    public const ulong DrmModifierInvalid = 0x00ffffffffffffffUL;
 }
 
 public enum PlatformGraphicsExternalImageFormat
@@ -48,6 +85,15 @@ public static class KnownPlatformGraphicsExternalImageHandleTypes
     /// A reference to IOSurface
     /// </summary>
     public const string IOSurfaceRef = nameof(IOSurfaceRef);
+
+    /// <summary>
+    /// A Linux dma-buf file descriptor, imported via EGL_LINUX_DMA_BUF_EXT (EGL) or
+    /// VK_EXTERNAL_MEMORY_HANDLE_TYPE_DMA_BUF_BIT_EXT (Vulkan). Unlike
+    /// <see cref="VulkanOpaquePosixFileDescriptor"/>, a dma-buf fd carries DRM format and
+    /// modifier metadata (see the Drm* fields on <see cref="PlatformGraphicsExternalImageProperties"/>)
+    /// and uses a dedicated import path.
+    /// </summary>
+    public const string DmaBufFileDescriptor = nameof(DmaBufFileDescriptor);
 }
 
 /// <summary>
