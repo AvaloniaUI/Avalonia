@@ -370,7 +370,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var subPaintOffset = paintOffset + PaintParsingHelpers.ReadOffset24(span.Slice(1));
             var glyphId = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(4));
 
-            decycler.Enter(glyphId);
+            // The guard pops the glyph on every return path (its Dispose calls Exit), so an early
+            // failure below can't leave the pooled decycler poisoned for a later sibling.
+            using var guard = decycler.Enter(glyphId);
 
             if (subPaintOffset >= context.ColrData.Length)
             {
@@ -381,8 +383,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             {
                 return false;
             }
-
-            decycler.Exit(glyphId);
 
             paint = new Glyph(glyphId, innerPaint);
 
@@ -404,7 +404,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
             var glyphId = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(1));
 
-            decycler.Enter(glyphId);
+            // The guard pops the glyph on every return path (its Dispose calls Exit), so an early
+            // failure below can't leave the pooled decycler poisoned for a later sibling.
+            using var guard = decycler.Enter(glyphId);
 
             if (!context.ColrTable.TryGetBaseGlyphV1Record((ushort)glyphId, out var v1Record))
             {
@@ -422,8 +424,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             {
                 return false;
             }
-
-            decycler.Exit(glyphId);
 
             paint = new ColrGlyph(glyphId, innerPaint);
 

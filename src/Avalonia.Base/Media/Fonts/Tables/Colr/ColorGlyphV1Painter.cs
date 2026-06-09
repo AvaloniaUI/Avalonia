@@ -124,11 +124,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         {
             if (_pendingGlyph != null)
             {
-                // Avalonia's RadialGradientBrush doesn't support two-point gradients with different radii
-                // We approximate by using the larger circle as the gradient
-                var center = r1 > r0 ? c1 : c0;
-                var radius = Math.Max(r0, r1);
-
+                // A COLR PaintRadialGradient interpolates between circle 0 (c0, r0) at color-line
+                // position 0 and circle 1 (c1, r1) at position 1. Avalonia's RadialGradientBrush models
+                // the position-1 circle as Center + radius and position 0 as a focal *point*
+                // (GradientOrigin), so map circle 1 → Center/radius and circle 0's centre → the focal
+                // point. The focal radius r0 has no equivalent and is approximated as 0 — exact for the
+                // common focal-radial case (r0 == 0), an approximation otherwise.
                 var gradientStops = new ImmutableGradientStop[stops.Length];
 
                 for (var i = 0; i < stops.Length; i++)
@@ -142,10 +143,10 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                     transform: CreateBrushTransform(),
                     transformOrigin: new RelativePoint(0, 0, RelativeUnit.Absolute),
                     spreadMethod: extend,
-                    center: new RelativePoint(center, RelativeUnit.Absolute),
-                    gradientOrigin: new RelativePoint(center, RelativeUnit.Absolute),
-                    radiusX: new RelativeScalar(radius, RelativeUnit.Absolute),
-                    radiusY: new RelativeScalar(radius, RelativeUnit.Absolute));
+                    center: new RelativePoint(c1, RelativeUnit.Absolute),
+                    gradientOrigin: new RelativePoint(c0, RelativeUnit.Absolute),
+                    radiusX: new RelativeScalar(r1, RelativeUnit.Absolute),
+                    radiusY: new RelativeScalar(r1, RelativeUnit.Absolute));
 
                 _drawingContext.DrawGeometry(brush, null, _pendingGlyph);
                 _pendingGlyph = null;

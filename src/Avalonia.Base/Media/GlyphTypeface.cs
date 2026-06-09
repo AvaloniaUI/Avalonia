@@ -1402,7 +1402,7 @@ namespace Avalonia.Media
         /// glyphs), this returns <c>false</c> for an out-of-range or malformed glyph — the per-glyph
         /// contract the single <see cref="TryGetGlyphMetrics(ushort, out GlyphMetrics)"/> path needs.
         /// </summary>
-        private bool TryGetGlyphInkBounds(ushort glyph, out GlyphBounds box)
+        internal bool TryGetGlyphInkBounds(ushort glyph, out GlyphBounds box)
         {
             if (_glyfTable is not null)
             {
@@ -2170,6 +2170,12 @@ namespace Avalonia.Media
 
                 return true;
             }
+            catch (DecyclerException)
+            {
+                // A cyclic or over-deep paint graph degrades to "no color drawing" rather than
+                // escaping the public GetGlyphDrawing API.
+                return false;
+            }
             finally
             {
                 PaintDecycler.Return(decycler);
@@ -2282,10 +2288,26 @@ namespace Avalonia.Media
             {
                 if (glyphTypeface.TryGetBaseGlyphV1Paint(_context, record, out _paint))
                 {
+                    // COLR v1 paint graphs operate in font-space coordinates (Y-up), so the extent is
+                    // flipped to drawing space (Y-down) to match Draw's transform.
                     if (_context.ColrTable.TryGetClipBox(_glyphId, out var clipRect))
                     {
-                        // COLR v1 paint graphs operate in font-space coordinates (Y-up).
                         _bounds = clipRect.TransformToAABB(Matrix.CreateScale(1, -1));
+                    }
+                    else
+                    {
+                        // No ClipList (the common case): fall back to the union of the painted outlines'
+                        // control-point extents, read without building geometry (no render backend
+                        // required). Stays empty when the font carries no buildable outline for the
+                        // painted glyphs, rather than guessing.
+                        var boundsPainter = new ColorGlyphV1BoundsPainter(_context);
+
+                        PaintTraverser.Traverse(_paint, boundsPainter, Matrix.Identity);
+
+                        if (boundsPainter.HasBounds)
+                        {
+                            _bounds = boundsPainter.Bounds.TransformToAABB(Matrix.CreateScale(1, -1));
+                        }
                     }
                 }
             }
