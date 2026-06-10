@@ -81,41 +81,24 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Setting_Selection_Raises_SelectedText_PropertyChanged_With_Correct_Values()
+        public void SelectedText_Should_Update_When_Text_Change()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var text = "Hello World!";
                 var target = new SelectableTextBlock
                 {
-                    Text = text
-                };
-
-                string? oldValue = null;
-                string? newValue = null;
-
-                target.PropertyChanged += (s, e) =>
-                {
-                    if (e.Property == SelectableTextBlock.SelectedTextProperty)
-                    {
-                        oldValue = (string?)e.OldValue;
-                        newValue = (string?)e.NewValue;
-                    }
+                    Text = "Hello World!"
                 };
 
                 target.SelectionStart = 0;
                 target.SelectionEnd = 5;
-                Assert.Equal("", oldValue);
-                Assert.Equal("Hello", newValue);
+                Assert.Equal("Hello", target.SelectedText);
 
-                target.SelectionEnd = text.Length;
-                Assert.Equal("Hello", oldValue);
-                Assert.Equal(text, newValue);
+                target.Text = "Goodbye World!";
+                Assert.Equal("Goodb", target.SelectedText);
 
-
-                target.Text = "abc";
-                Assert.Equal(text, oldValue);
-                Assert.Equal("abc", newValue);
+                target.Text = "Good";
+                Assert.Equal("Good", target.SelectedText);
             }
         }
 

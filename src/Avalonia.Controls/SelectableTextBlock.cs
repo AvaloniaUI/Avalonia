@@ -44,7 +44,6 @@ namespace Avalonia.Controls
 
         private bool _canCopy;
         private int _wordSelectionStart = -1;
-        private string _selectedText = string.Empty;
 
         static SelectableTextBlock()
         {
@@ -99,8 +98,7 @@ namespace Avalonia.Controls
         /// </summary>
         public string SelectedText
         {
-            get => _selectedText;
-            private set => SetAndRaise(SelectedTextProperty, ref _selectedText, value);
+            get => GetSelection();
         }
 
         /// <summary>
@@ -353,7 +351,7 @@ namespace Avalonia.Controls
 
             if (change.Property == SelectionStartProperty || change.Property == SelectionEndProperty)
             {
-                SelectedText = GetSelection();
+                RaisePropertyChanged(SelectedTextProperty, string.Empty, string.Empty); // Compute SelectedText only when needed
                 UpdateCommandStates();
                 InvalidateTextLayout();
             }
@@ -531,7 +529,7 @@ namespace Avalonia.Controls
         {
             CoerceValue(SelectionStartProperty);
             CoerceValue(SelectionEndProperty);
-            SelectedText = GetSelection();
+            RaisePropertyChanged(SelectedTextProperty, string.Empty, string.Empty); // Compute SelectedText only when needed
             UpdateCommandStates();
         }
 
@@ -545,6 +543,7 @@ namespace Avalonia.Controls
         private string GetSelection()
         {
             var text = HasComplexContent ? Inlines?.Text : Text;
+
             var textLength = text?.Length ?? 0;
 
             if (textLength == 0)
