@@ -122,6 +122,13 @@ namespace Avalonia.Media
         // touching this field.
         private readonly float[]? _activeCoords;
 
+        /// <summary>
+        /// The normalized variation coordinates for this instance (fvar axis order), or <c>null</c> at
+        /// the default instance / on a static font. The COLR v1 variation resolver uses these to scale
+        /// ItemVariationStore deltas; a <c>null</c>/empty value yields no deltas (the base design).
+        /// </summary>
+        internal float[]? ActiveVariationCoords => _activeCoords;
+
         // Pre-computed per-region scaler arrays for each variation table's
         // ItemVariationStore. Built once at clone construction so per-glyph delta
         // lookups become array indices instead of per-axis F2DOT14 ramps. The active
