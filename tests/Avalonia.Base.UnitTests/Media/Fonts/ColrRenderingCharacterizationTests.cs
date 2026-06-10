@@ -60,6 +60,38 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.Equal(expected, clipless.Bounds);
         }
 
+        [Fact]
+        public void Palette_Selection_Memoises_Per_Palette_And_Normalizes_Undefined_Indices()
+        {
+            var plain = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular).TryCreateGlyphTypeface();
+            Assert.NotNull(plain);
+            var outlineGlyph = plain!.CharacterToGlyphMap['A'];
+
+            // Two palettes, one entry each: palette 0 red, palette 1 blue.
+            var typeface = ColrTestFont
+                .Graft(InterRegular(),
+                    BuildColrV1GlyphSolid(baseGlyph: 3, outlineGlyph, clip: (0, 0, 1000, 1000)),
+                    ColrTestFont.Cpal(new[] { Colors.Red }, new[] { Colors.Blue }))
+                .TryCreateGlyphTypeface();
+            Assert.NotNull(typeface);
+
+            var defaultPalette = typeface!.GetGlyphDrawing(3);
+            var palette0 = typeface.GetGlyphDrawing(3, new GlyphDrawingOptions { PaletteIndex = 0 });
+            var palette1 = typeface.GetGlyphDrawing(3, new GlyphDrawingOptions { PaletteIndex = 1 });
+            var undefined = typeface.GetGlyphDrawing(3, new GlyphDrawingOptions { PaletteIndex = 99 });
+
+            Assert.NotNull(defaultPalette);
+            Assert.NotNull(palette1);
+
+            // Explicit palette 0 and null options share the default palette's cached drawing; a
+            // different palette gets its own memoised drawing; an index the font does not define
+            // falls back to the default palette's entry instead of minting a junk one.
+            Assert.Same(defaultPalette, palette0);
+            Assert.NotSame(defaultPalette, palette1);
+            Assert.Same(palette1, typeface.GetGlyphDrawing(3, new GlyphDrawingOptions { PaletteIndex = 1 }));
+            Assert.Same(defaultPalette, undefined);
+        }
+
         private static SyntheticFont InterRegular() => SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular);
 
         /// <summary>
