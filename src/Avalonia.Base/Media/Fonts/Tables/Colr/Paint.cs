@@ -7,7 +7,6 @@ using Avalonia.Media.Immutable;
 namespace Avalonia.Media.Fonts.Tables.Colr
 {
     internal record GradientStop(double Offset, Color Color);
-    internal record GradientStopVar(double Offset, Color Color, uint VarIndexBase) : GradientStop(Offset, Color);
 
     internal abstract record Paint { }
 
@@ -169,27 +168,21 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
+            // Per-stop offset / alpha variation is already applied during colour-line parsing.
+            var stops = new GradientStop[immutableStops.Length];
+
+            for (int i = 0; i < immutableStops.Length; i++)
+            {
+                stops[i] = new GradientStop(immutableStops[i].Offset, immutableStops[i].Color);
+            }
+
             if (isVariable)
             {
                 var varIndexBase = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(16));
-                var stops = new GradientStopVar[immutableStops.Length];
-
-                for (int i = 0; i < immutableStops.Length; i++)
-                {
-                    stops[i] = new GradientStopVar(immutableStops[i].Offset, immutableStops[i].Color, 0);
-                }
-
                 paint = new LinearGradientVar(new Point(x0, y0), new Point(x1, y1), new Point(x2, y2), stops, extend, varIndexBase);
             }
             else
             {
-                var stops = new GradientStop[immutableStops.Length];
-
-                for (int i = 0; i < immutableStops.Length; i++)
-                {
-                    stops[i] = new GradientStop(immutableStops[i].Offset, immutableStops[i].Color);
-                }
-
                 paint = new LinearGradient(new Point(x0, y0), new Point(x1, y1), new Point(x2, y2), stops, extend);
             }
 
@@ -197,7 +190,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
     }
 
-    internal record LinearGradientVar(Point P0, Point P1, Point P2, GradientStopVar[] Stops, GradientSpreadMethod Extend, uint VarIndexBase) : Paint
+    internal record LinearGradientVar(Point P0, Point P1, Point P2, GradientStop[] Stops, GradientSpreadMethod Extend, uint VarIndexBase) : Paint
     {
         public static bool TryParse(ReadOnlySpan<byte> span, uint paintOffset, in ColrContext context, out Paint? paint)
         {
@@ -241,27 +234,21 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
+            // Per-stop offset / alpha variation is already applied during colour-line parsing.
+            var stops = new GradientStop[immutableStops.Length];
+
+            for (int i = 0; i < immutableStops.Length; i++)
+            {
+                stops[i] = new GradientStop(immutableStops[i].Offset, immutableStops[i].Color);
+            }
+
             if (isVariable)
             {
                 var varIndexBase = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(16));
-                var stops = new GradientStopVar[immutableStops.Length];
-
-                for (int i = 0; i < immutableStops.Length; i++)
-                {
-                    stops[i] = new GradientStopVar(immutableStops[i].Offset, immutableStops[i].Color, 0);
-                }
-
                 paint = new RadialGradientVar(new Point(x0, y0), r0, new Point(x1, y1), r1, stops, extend, varIndexBase);
             }
             else
             {
-                var stops = new GradientStop[immutableStops.Length];
-
-                for (int i = 0; i < immutableStops.Length; i++)
-                {
-                    stops[i] = new GradientStop(immutableStops[i].Offset, immutableStops[i].Color);
-                }
-
                 paint = new RadialGradient(new Point(x0, y0), r0, new Point(x1, y1), r1, stops, extend);
             }
 
@@ -269,7 +256,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
     }
 
-    internal record RadialGradientVar(Point C0, double R0, Point C1, double R1, GradientStopVar[] Stops, GradientSpreadMethod Extend, uint VarIndexBase) : Paint
+    internal record RadialGradientVar(Point C0, double R0, Point C1, double R1, GradientStop[] Stops, GradientSpreadMethod Extend, uint VarIndexBase) : Paint
     {
         public static bool TryParse(ReadOnlySpan<byte> span, uint paintOffset, in ColrContext context, out Paint? paint)
         {
@@ -319,27 +306,21 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
+            // Per-stop offset / alpha variation is already applied during colour-line parsing.
+            var stops = new GradientStop[immutableStops.Length];
+
+            for (int i = 0; i < immutableStops.Length; i++)
+            {
+                stops[i] = new GradientStop(immutableStops[i].Offset, immutableStops[i].Color);
+            }
+
             if (isVariable)
             {
                 var varIndexBase = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(12));
-                var stops = new GradientStopVar[immutableStops.Length];
-
-                for (int i = 0; i < immutableStops.Length; i++)
-                {
-                    stops[i] = new GradientStopVar(immutableStops[i].Offset, immutableStops[i].Color, 0);
-                }
-
                 paint = new SweepGradientVar(new Point(centerX, centerY), startAngle, endAngle, stops, extend, varIndexBase);
             }
             else
             {
-                var stops = new GradientStop[immutableStops.Length];
-
-                for (int i = 0; i < immutableStops.Length; i++)
-                {
-                    stops[i] = new GradientStop(immutableStops[i].Offset, immutableStops[i].Color);
-                }
-
                 paint = new SweepGradient(new Point(centerX, centerY), startAngle, endAngle, stops, extend);
             }
 
@@ -347,7 +328,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
     }
 
-    internal record SweepGradientVar(Point Center, double StartAngle, double EndAngle, GradientStopVar[] Stops, GradientSpreadMethod Extend, uint VarIndexBase) : Paint
+    internal record SweepGradientVar(Point Center, double StartAngle, double EndAngle, GradientStop[] Stops, GradientSpreadMethod Extend, uint VarIndexBase) : Paint
     {
         public static bool TryParse(ReadOnlySpan<byte> span, uint paintOffset, in ColrContext context, out Paint? paint)
         {
