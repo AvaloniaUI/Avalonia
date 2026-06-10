@@ -63,6 +63,13 @@ namespace Avalonia.Media.Fonts
             static (glyph, retainBounds) => new GlyphCacheEntry(glyph, retainBounds);
 
         private readonly ConcurrentDictionary<ushort, GlyphCacheEntry> _entries = new();
+
+        // Colour drawings are keyed by the same glyph id as outlines but are a distinct representation
+        // (a COLR drawing whose layer outlines live in _entries), so they get their own map: a colour
+        // base glyph and its own fallback outline can coexist without clobbering one slot. Both maps
+        // share the eviction ring and the byte budget.
+        private readonly ConcurrentDictionary<ushort, GlyphCacheEntry> _colorEntries = new();
+
         private readonly IGlyphEvictionPolicy _policy;
         private readonly int _budget;
         private readonly bool _retainBounds;
@@ -84,8 +91,8 @@ namespace Avalonia.Media.Fonts
             _policy = policy ?? new ClockEvictionPolicy();
         }
 
-        /// <summary>Number of cached entries (with or without built geometry).</summary>
-        public int Count => _entries.Count;
+        /// <summary>Number of cached entries (outline and colour-drawing, with or without built geometry).</summary>
+        public int Count => _entries.Count + _colorEntries.Count;
 
         /// <summary>Total retained geometry cost (bytes).</summary>
         public int TotalCost => Volatile.Read(ref _totalCost);
@@ -96,6 +103,14 @@ namespace Avalonia.Media.Fonts
         /// </summary>
         public GlyphCacheEntry GetEntry(ushort glyph)
             => _entries.GetOrAdd(glyph, s_createEntry, _retainBounds);
+
+        /// <summary>
+        /// Gets (creating if absent) the colour-drawing entry for <paramref name="glyph"/>, in the
+        /// dedicated colour map. Colour drawings carry no retained bounds (the drawing exposes its own),
+        /// so the entry is dropped whole on eviction. Lock-free.
+        /// </summary>
+        public GlyphCacheEntry GetColorEntry(ushort glyph)
+            => _colorEntries.GetOrAdd(glyph, s_createEntry, false);
 
         /// <summary>
         /// Returns the built outline geometry for <paramref name="entry"/>, building it with
@@ -149,6 +164,50 @@ namespace Avalonia.Media.Fonts
                 if (built.HasBounds)
                 {
                     entry.SetBoundsOnce(built.Bounds);
+                }
+
+                entry.SetGeometry(built.Geometry, built.Cost, built.Kind, built.Dependencies);
+                _policy.OnAdded(entry);
+                _totalCost += built.Cost;
+
+                PinDependencies(entry);
+                EvictToBudget();
+
+                return built.Geometry;
+            }
+        }
+
+        /// <summary>
+        /// Returns the cached colour-drawing payload for <paramref name="entry"/>, building it with
+        /// <paramref name="build"/> on a miss. The payload (a COLR drawing) is parsed <em>outside</em>
+        /// the lock: parsing builds no geometry — so it needs no render backend, unlike the layer
+        /// outlines it references — and holding the lock across the per-layer ink-box reads would
+        /// serialise the whole cache. A built hit is lock-free; two racing parses is acceptable (one
+        /// wins at insertion, the other is discarded). On insertion the drawing pins whichever of its
+        /// layer outlines are already cached; the rest are kept warm by recency until they are.
+        /// </summary>
+        public object? GetOrBuildDrawing(GlyphCacheEntry entry, Func<GlyphCacheEntry, BuiltGeometry> build)
+        {
+            var existing = Volatile.Read(ref entry.Geometry);
+            if (existing != null)
+            {
+                _policy.OnAccessed(entry);
+                PropagateRecency(entry);
+                return existing;
+            }
+
+            if (entry.HasGeometry)
+            {
+                return null;   // built, but the glyph has no colour drawing
+            }
+
+            var built = build(entry);
+
+            lock (_lock)
+            {
+                if (entry.HasGeometry)
+                {
+                    return entry.Geometry;   // another thread built it while we parsed
                 }
 
                 entry.SetGeometry(built.Geometry, built.Cost, built.Kind, built.Dependencies);
@@ -235,12 +294,14 @@ namespace Avalonia.Media.Fonts
                 UnpinDependencies(victim);
                 victim.ClearGeometry();
 
-                // Keep the entry alive for its retained bounds (CFF / CFF2); otherwise drop it. Remove
-                // only this entry: an orphan (already dropped from the map, then rebuilt by a caller
-                // that still held it) must not take a fresh entry for the same glyph with it.
+                // Keep the entry alive for its retained bounds (CFF / CFF2); otherwise drop it from its
+                // owning map (colour drawings never retain bounds, so they are always dropped whole).
+                // Remove only this entry: an orphan (already dropped from the map, then rebuilt by a
+                // caller that still held it) must not take a fresh entry for the same key with it.
                 if (!victim.RetainBounds)
                 {
-                    _entries.TryRemove(new KeyValuePair<ushort, GlyphCacheEntry>(victim.Glyph, victim));
+                    var map = victim.Kind == GlyphPayloadKind.ColorDrawing ? _colorEntries : _entries;
+                    map.TryRemove(new KeyValuePair<ushort, GlyphCacheEntry>(victim.Glyph, victim));
                 }
 
                 // No Dispose here: the payload may still be referenced by anyone the lock-free hit

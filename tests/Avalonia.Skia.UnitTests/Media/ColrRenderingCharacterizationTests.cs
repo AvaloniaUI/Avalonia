@@ -75,6 +75,30 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void Glyph_Drawing_Is_Memoised_Per_Glyph()
+        {
+            using (UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface())))
+            {
+                var outlineGlyph = SyntheticFont.FromAsset(InterAsset).TryCreateGlyphTypeface()!
+                    .CharacterToGlyphMap['A'];
+                var colr = BuildColrV1GlyphRadialGradient(
+                    baseGlyph: 3, outlineGlyph, c0X: 0, c0Y: 0, r0: 0, c1X: 0, c1Y: 0, r1: 100);
+
+                var typeface = ColrTestFont.Graft(SyntheticFont.FromAsset(InterAsset), colr).TryCreateGlyphTypeface();
+                Assert.NotNull(typeface);
+
+                var first = typeface!.GetGlyphDrawing(3);
+                var second = typeface.GetGlyphDrawing(3);
+
+                // The drawing parses the whole paint graph up front, so it is cached per glyph (per
+                // typeface instance) rather than rebuilt on every call.
+                Assert.NotNull(first);
+                Assert.Same(first, second);
+            }
+        }
+
         private static RecordingDrawingContext DrawColrGlyph(byte[] colr)
         {
             var typeface = ColrTestFont.Graft(SyntheticFont.FromAsset(InterAsset), colr).TryCreateGlyphTypeface();
