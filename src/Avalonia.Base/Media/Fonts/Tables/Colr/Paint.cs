@@ -289,9 +289,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var startAngleFixed = BinaryPrimitives.ReadInt16BigEndian(span.Slice(8));
             var endAngleFixed = BinaryPrimitives.ReadInt16BigEndian(span.Slice(10));
 
-            // F2DOT14 angles: 180° per 1.0 of value, so multiply by π (not 2π)
-            var startAngle = PaintParsingHelpers.F2Dot14ToDouble(startAngleFixed) * Math.PI;
-            var endAngle = PaintParsingHelpers.F2Dot14ToDouble(endAngleFixed) * Math.PI;
+            // F2DOT14 sweep angles are in units of 180° per 1.0 of value. Keep them in those raw units
+            // here; NormalizeConicGradient multiplies by 180 to produce the degrees that
+            // IConicGradientBrush.Angle expects. (Converting to radians here would then be wrongly
+            // scaled by 180 instead of 180/π.)
+            var startAngle = PaintParsingHelpers.F2Dot14ToDouble(startAngleFixed);
+            var endAngle = PaintParsingHelpers.F2Dot14ToDouble(endAngleFixed);
 
             var colorLineAbsOffset = paintOffset + colorLineOffset;
 
