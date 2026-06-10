@@ -30,11 +30,11 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         private readonly uint _varIndexMapOffset;
         private readonly uint _itemVariationStoreOffset;
 
-        // Cached DeltaSetIndexMap (loaded during construction)
-        private readonly DeltaSetIndexMap? _deltaSetIndexMap;
-
-        // Cached ItemVariationStore (loaded during construction)
-        private readonly ItemVariationStore? _itemVariationStore;
+        // Cached variation tables (loaded during construction). These are the shared parsers under
+        // Tables.Variation — the same ItemVariationStore HVAR / VVAR / MVAR use — which apply
+        // region scaling against the instance's coords (the COLR-local copies did not).
+        private readonly Variation.DeltaSetIndexMap? _deltaSetIndexMap;
+        private readonly Variation.ItemVariationStore? _itemVariationStore;
 
         private ColrTable(
             ReadOnlyMemory<byte> colrData,
@@ -48,8 +48,8 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             uint clipListOffset = 0,
             uint varIndexMapOffset = 0,
             uint itemVariationStoreOffset = 0,
-            DeltaSetIndexMap? deltaSetIndexMap = null,
-            ItemVariationStore? itemVariationStore = null)
+            Variation.DeltaSetIndexMap? deltaSetIndexMap = null,
+            Variation.ItemVariationStore? itemVariationStore = null)
         {
             _colrData = colrData;
             _version = version;
@@ -174,18 +174,22 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Note: 0 offset means the optional table is not present
             }
 
-            // Load DeltaSetIndexMap if present
-            DeltaSetIndexMap? deltaSetIndexMap = null;
-            if (version >= 1 && varIndexMapOffset > 0)
+            // Load DeltaSetIndexMap if present (shared parser, data sliced to the subtable).
+            Variation.DeltaSetIndexMap? deltaSetIndexMap = null;
+            if (version >= 1 && varIndexMapOffset > 0 && varIndexMapOffset < colrData.Length)
             {
-                deltaSetIndexMap = DeltaSetIndexMap.Load(colrData, varIndexMapOffset);
+                Variation.DeltaSetIndexMap.TryLoad(colrData.Slice((int)varIndexMapOffset), out deltaSetIndexMap);
             }
 
-            // Load ItemVariationStore if present
-            ItemVariationStore? itemVariationStore = null;
-            if (version >= 1 && itemVariationStoreOffset > 0)
+            // Load ItemVariationStore if present. The shared store applies region scaling against the
+            // instance coords, so it needs the fvar axis count to validate its region records.
+            Variation.ItemVariationStore? itemVariationStore = null;
+            if (version >= 1 && itemVariationStoreOffset > 0 && itemVariationStoreOffset < colrData.Length)
             {
-                itemVariationStore = ItemVariationStore.Load(colrData, itemVariationStoreOffset);
+                Variation.ItemVariationStore.TryLoad(
+                    colrData.Slice((int)itemVariationStoreOffset),
+                    glyphTypeface.VariationAxes.Count,
+                    out itemVariationStore);
             }
 
             colrTable = new ColrTable(
@@ -464,51 +468,51 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
 
         /// <summary>
-        /// Tries to get a complete delta set for the specified variation index.
+        /// Resolves the region-scaled variation delta for a single varying field of a variable paint
+        /// record, at the instance's active coordinates.
         /// </summary>
-        /// <param name="variationIndex">The index to look up in the DeltaSetIndexMap.</param>
-        /// <param name="deltaSet">A DeltaSet ref struct providing format-aware access to deltas.</param>
-        /// <returns>True if variation deltas were found; otherwise false.</returns>
+        /// <param name="varIndexBase">The paint record's <c>VarIndexBase</c> (<c>0xFFFFFFFF</c> = no variation).</param>
+        /// <param name="fieldOffset">The field's index offset from <paramref name="varIndexBase"/>.</param>
+        /// <param name="coords">Normalized active coords in fvar axis order (empty at the default instance).</param>
+        /// <param name="delta">The scaled delta in the field's raw units (caller applies the FWORD / F2DOT14 / Fixed scale).</param>
+        /// <returns><c>true</c> if a delta was resolved; otherwise <c>false</c> (no variation, no store, or out of range).</returns>
         /// <remarks>
-        /// This method uses the DeltaSetIndexMap to map the variation index to an (outer, inner) index pair,
-        /// then retrieves the corresponding delta set from the ItemVariationStore.
-        /// If no DeltaSetIndexMap is present, an implicit 1:1 mapping is used.
-        /// The DeltaSet ref struct provides allocation-free access to both word deltas (16-bit) and byte deltas (8-bit).
+        /// The <c>(varIndexBase + fieldOffset)</c> variation index is mapped to an <c>(outer, inner)</c>
+        /// pair via the DeltaSetIndexMap (or the implicit high/low-16-bit split when absent), then the
+        /// shared <see cref="Variation.ItemVariationStore"/> sums <c>regionScaler(coords) × delta</c>
+        /// across regions.
         /// </remarks>
-        public bool TryGetVariationDeltaSet(uint variationIndex, out DeltaSet deltaSet)
+        internal bool TryGetScaledDelta(uint varIndexBase, uint fieldOffset, ReadOnlySpan<float> coords, out float delta)
         {
-            deltaSet = DeltaSet.Empty;
+            delta = 0f;
 
-            // Magic value 0xFFFFFFFF indicates no variation deltas should be applied
-            const uint NO_VARIATION_DELTAS = 0xFFFFFFFF;
+            const uint NoVariationIndex = 0xFFFFFFFF;
 
-            if (variationIndex == NO_VARIATION_DELTAS)
+            if (varIndexBase == NoVariationIndex || _itemVariationStore == null)
             {
                 return false;
             }
 
-            // ItemVariationStore is required
-            if (!HasV1Data || _itemVariationStore == null)
-            {
-                return false;
-            }
+            var varIndex = varIndexBase + fieldOffset;
 
-            // If DeltaSetIndexMap is present, use it for mapping
+            int outerIndex;
+            int innerIndex;
+
             if (_deltaSetIndexMap != null)
             {
-                return _deltaSetIndexMap.TryGetVariationDeltaSet(_itemVariationStore, variationIndex, out deltaSet);
+                if (!_deltaSetIndexMap.TryGetIndices((int)varIndex, out outerIndex, out innerIndex))
+                {
+                    return false;
+                }
             }
-
-            // Otherwise, use implicit 1:1 mapping as per OpenType spec
-            if (variationIndex > ushort.MaxValue)
+            else
             {
-                return false; // Index too large for implicit mapping
+                // Implicit mapping per the OpenType spec: outer = high 16 bits, inner = low 16 bits.
+                outerIndex = (int)(varIndex >> 16);
+                innerIndex = (int)(varIndex & 0xFFFF);
             }
 
-            var implicitOuterIndex = (ushort)variationIndex;
-            var implicitInnerIndex = (ushort)variationIndex;
-
-            return _itemVariationStore.TryGetDeltaSet(implicitOuterIndex, implicitInnerIndex, out deltaSet);
+            return _itemVariationStore.TryGetDelta(outerIndex, innerIndex, coords, out delta);
         }
 
         /// <summary>

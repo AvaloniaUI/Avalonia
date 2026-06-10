@@ -116,17 +116,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Format 15: VarTranslate
                 case TranslateVar varTranslate:
                     {
-                        var dx = varTranslate.Dx;
-                        var dy = varTranslate.Dy;
-
-                        if (context.ColrTable.TryGetVariationDeltaSet(varTranslate.VarIndexBase, out var deltaSet))
-                        {
-                            // Translate deltas are FWORD (design units)
-                            if (deltaSet.Count > 0)
-                                dx += deltaSet.GetFWordDelta(0);
-                            if (deltaSet.Count > 1)
-                                dy += deltaSet.GetFWordDelta(1);
-                        }
+                        // Translate deltas are FWORD (design units): dx = base+0, dy = base+1.
+                        var dx = varTranslate.Dx + context.GetFWordDelta(varTranslate.VarIndexBase, 0);
+                        var dy = varTranslate.Dy + context.GetFWordDelta(varTranslate.VarIndexBase, 1);
 
                         return new ResolvedTransform(
                             Matrix.CreateTranslation(dx, dy),
@@ -144,17 +136,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Format 17: VarScale
                 case ScaleVar varScale:
                     {
-                        var sx = varScale.Sx;
-                        var sy = varScale.Sy;
-
-                        if (context.ColrTable.TryGetVariationDeltaSet(varScale.VarIndexBase, out var deltaSet))
-                        {
-                            // Scale deltas are F2DOT14
-                            if (deltaSet.Count > 0)
-                                sx += deltaSet.GetF2Dot14Delta(0);
-                            if (deltaSet.Count > 1)
-                                sy += deltaSet.GetF2Dot14Delta(1);
-                        }
+                        // Scale deltas are F2DOT14: sx = base+0, sy = base+1.
+                        var sx = varScale.Sx + context.GetF2Dot14Delta(varScale.VarIndexBase, 0);
+                        var sy = varScale.Sy + context.GetF2Dot14Delta(varScale.VarIndexBase, 1);
 
                         return new ResolvedTransform(
                             Matrix.CreateScale(sx, sy),
@@ -172,24 +156,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Format 19: VarScaleAroundCenter
                 case ScaleAroundCenterVar varScaleCenter:
                     {
-                        var sx = varScaleCenter.Sx;
-                        var sy = varScaleCenter.Sy;
-                        var centerX = varScaleCenter.Center.X;
-                        var centerY = varScaleCenter.Center.Y;
-
-                        if (context.ColrTable.TryGetVariationDeltaSet(varScaleCenter.VarIndexBase, out var deltaSet))
-                        {
-                            // Scale deltas are F2DOT14
-                            if (deltaSet.Count > 0)
-                                sx += deltaSet.GetF2Dot14Delta(0);
-                            if (deltaSet.Count > 1)
-                                sy += deltaSet.GetF2Dot14Delta(1);
-                            // Center coordinate deltas are FWORD
-                            if (deltaSet.Count > 2)
-                                centerX += deltaSet.GetFWordDelta(2);
-                            if (deltaSet.Count > 3)
-                                centerY += deltaSet.GetFWordDelta(3);
-                        }
+                        var b = varScaleCenter.VarIndexBase;
+                        // Scale deltas F2DOT14 (base+0,+1); centre deltas FWORD (base+2,+3).
+                        var sx = varScaleCenter.Sx + context.GetF2Dot14Delta(b, 0);
+                        var sy = varScaleCenter.Sy + context.GetF2Dot14Delta(b, 1);
+                        var centerX = varScaleCenter.Center.X + context.GetFWordDelta(b, 2);
+                        var centerY = varScaleCenter.Center.Y + context.GetFWordDelta(b, 3);
 
                         return new ResolvedTransform(
                             CreateScaleAroundCenter(sx, sy, new Point(centerX, centerY)),
@@ -207,14 +179,8 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Format 21: VarScaleUniform
                 case ScaleUniformVar varScaleUniform:
                     {
-                        var scale = varScaleUniform.Scale;
-
-                        if (context.ColrTable.TryGetVariationDeltaSet(varScaleUniform.VarIndexBase, out var deltaSet))
-                        {
-                            // Scale delta is F2DOT14
-                            if (deltaSet.Count > 0)
-                                scale += deltaSet.GetF2Dot14Delta(0);
-                        }
+                        // Scale delta is F2DOT14: scale = base+0.
+                        var scale = varScaleUniform.Scale + context.GetF2Dot14Delta(varScaleUniform.VarIndexBase, 0);
 
                         return new ResolvedTransform(
                             Matrix.CreateScale(scale, scale),
@@ -236,21 +202,11 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Format 23: VarScaleUniformAroundCenter
                 case ScaleUniformAroundCenterVar varScaleUniformCenter:
                     {
-                        var scale = varScaleUniformCenter.Scale;
-                        var centerX = varScaleUniformCenter.Center.X;
-                        var centerY = varScaleUniformCenter.Center.Y;
-
-                        if (context.ColrTable.TryGetVariationDeltaSet(varScaleUniformCenter.VarIndexBase, out var deltaSet))
-                        {
-                            // Scale delta is F2DOT14
-                            if (deltaSet.Count > 0)
-                                scale += deltaSet.GetF2Dot14Delta(0);
-                            // Center coordinate deltas are FWORD
-                            if (deltaSet.Count > 1)
-                                centerX += deltaSet.GetFWordDelta(1);
-                            if (deltaSet.Count > 2)
-                                centerY += deltaSet.GetFWordDelta(2);
-                        }
+                        var b = varScaleUniformCenter.VarIndexBase;
+                        // Scale delta F2DOT14 (base+0); centre deltas FWORD (base+1,+2).
+                        var scale = varScaleUniformCenter.Scale + context.GetF2Dot14Delta(b, 0);
+                        var centerX = varScaleUniformCenter.Center.X + context.GetFWordDelta(b, 1);
+                        var centerY = varScaleUniformCenter.Center.Y + context.GetFWordDelta(b, 2);
 
                         return new ResolvedTransform(
                             CreateScaleAroundCenter(scale, scale, new Point(centerX, centerY)),
@@ -268,14 +224,8 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Format 25: VarRotate
                 case RotateVar varRotate:
                     {
-                        var angle = varRotate.Angle;
-
-                        if (context.ColrTable.TryGetVariationDeltaSet(varRotate.VarIndexBase, out var deltaSet))
-                        {
-                            // Angle delta is F2DOT14: 180° per 1.0, so multiply by π to convert to radians
-                            if (deltaSet.Count > 0)
-                                angle += deltaSet.GetF2Dot14Delta(0) * Math.PI;
-                        }
+                        // Angle delta is F2DOT14: 180° per 1.0, so multiply by π to convert to radians.
+                        var angle = varRotate.Angle + context.GetF2Dot14Delta(varRotate.VarIndexBase, 0) * Math.PI;
 
                         return new ResolvedTransform(
                             CreateRotation(angle),
@@ -293,21 +243,11 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Format 27: VarRotateAroundCenter
                 case RotateAroundCenterVar varRotateCenter:
                     {
-                        var angle = varRotateCenter.Angle;
-                        var centerX = varRotateCenter.Center.X;
-                        var centerY = varRotateCenter.Center.Y;
-
-                        if (context.ColrTable.TryGetVariationDeltaSet(varRotateCenter.VarIndexBase, out var deltaSet))
-                        {
-                            // Angle delta is F2DOT14: 180° per 1.0, so multiply by π to convert to radians
-                            if (deltaSet.Count > 0)
-                                angle += deltaSet.GetF2Dot14Delta(0) * Math.PI;
-                            // Center coordinate deltas are FWORD
-                            if (deltaSet.Count > 1)
-                                centerX += deltaSet.GetFWordDelta(1);
-                            if (deltaSet.Count > 2)
-                                centerY += deltaSet.GetFWordDelta(2);
-                        }
+                        var b = varRotateCenter.VarIndexBase;
+                        // Angle delta F2DOT14 → radians (base+0); centre deltas FWORD (base+1,+2).
+                        var angle = varRotateCenter.Angle + context.GetF2Dot14Delta(b, 0) * Math.PI;
+                        var centerX = varRotateCenter.Center.X + context.GetFWordDelta(b, 1);
+                        var centerY = varRotateCenter.Center.Y + context.GetFWordDelta(b, 2);
 
                         return new ResolvedTransform(
                             CreateRotation(angle, new Point(centerX, centerY)),
@@ -325,17 +265,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Format 29: VarSkew
                 case SkewVar varSkew:
                     {
-                        var xAngle = varSkew.XAngle;
-                        var yAngle = varSkew.YAngle;
-
-                        if (context.ColrTable.TryGetVariationDeltaSet(varSkew.VarIndexBase, out var deltaSet))
-                        {
-                            // Angle deltas are F2DOT14: 180° per 1.0, so multiply by π to convert to radians
-                            if (deltaSet.Count > 0)
-                                xAngle += deltaSet.GetF2Dot14Delta(0) * Math.PI;
-                            if (deltaSet.Count > 1)
-                                yAngle += deltaSet.GetF2Dot14Delta(1) * Math.PI;
-                        }
+                        // Angle deltas are F2DOT14: 180° per 1.0, so multiply by π to convert to radians.
+                        var xAngle = varSkew.XAngle + context.GetF2Dot14Delta(varSkew.VarIndexBase, 0) * Math.PI;
+                        var yAngle = varSkew.YAngle + context.GetF2Dot14Delta(varSkew.VarIndexBase, 1) * Math.PI;
 
                         return new ResolvedTransform(
                             CreateSkew(xAngle, yAngle, new Point()),
@@ -353,24 +285,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 // Format 31: VarSkewAroundCenter
                 case SkewAroundCenterVar varSkewCenter:
                     {
-                        var xAngle = varSkewCenter.XAngle;
-                        var yAngle = varSkewCenter.YAngle;
-                        var centerX = varSkewCenter.Center.X;
-                        var centerY = varSkewCenter.Center.Y;
-
-                        if (context.ColrTable.TryGetVariationDeltaSet(varSkewCenter.VarIndexBase, out var deltaSet))
-                        {
-                            // Angle deltas are F2DOT14: 180° per 1.0, so multiply by π to convert to radians
-                            if (deltaSet.Count > 0)
-                                xAngle += deltaSet.GetF2Dot14Delta(0) * Math.PI;
-                            if (deltaSet.Count > 1)
-                                yAngle += deltaSet.GetF2Dot14Delta(1) * Math.PI;
-                            // Center coordinate deltas are FWORD
-                            if (deltaSet.Count > 2)
-                                centerX += deltaSet.GetFWordDelta(2);
-                            if (deltaSet.Count > 3)
-                                centerY += deltaSet.GetFWordDelta(3);
-                        }
+                        var b = varSkewCenter.VarIndexBase;
+                        // Angle deltas F2DOT14 → radians (base+0,+1); centre deltas FWORD (base+2,+3).
+                        var xAngle = varSkewCenter.XAngle + context.GetF2Dot14Delta(b, 0) * Math.PI;
+                        var yAngle = varSkewCenter.YAngle + context.GetF2Dot14Delta(b, 1) * Math.PI;
+                        var centerX = varSkewCenter.Center.X + context.GetFWordDelta(b, 2);
+                        var centerY = varSkewCenter.Center.Y + context.GetFWordDelta(b, 3);
 
                         return new ResolvedTransform(
                             CreateSkew(xAngle, yAngle, new Point(centerX, centerY)),
@@ -415,28 +335,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
         private static ResolvedPaint ResolveLinearGradient(LinearGradientVar grad, ColrContext context, uint varIndexBase)
         {
-            var p0 = grad.P0;
-            var p1 = grad.P1;
-            var p2 = grad.P2;
+            // Gradient coordinate deltas are FWORD (design units): p0.x/.y, p1.x/.y, p2.x/.y = base+0..5.
+            var p0 = new Point(grad.P0.X + context.GetFWordDelta(varIndexBase, 0), grad.P0.Y + context.GetFWordDelta(varIndexBase, 1));
+            var p1 = new Point(grad.P1.X + context.GetFWordDelta(varIndexBase, 2), grad.P1.Y + context.GetFWordDelta(varIndexBase, 3));
+            var p2 = new Point(grad.P2.X + context.GetFWordDelta(varIndexBase, 4), grad.P2.Y + context.GetFWordDelta(varIndexBase, 5));
 
-            if (context.ColrTable.TryGetVariationDeltaSet(varIndexBase, out var deltaSet))
-            {
-                // Gradient coordinate deltas are FWORD (design units)
-                if (deltaSet.Count > 0)
-                    p0 = new Point(p0.X + deltaSet.GetFWordDelta(0), p0.Y);
-                if (deltaSet.Count > 1)
-                    p0 = new Point(p0.X, p0.Y + deltaSet.GetFWordDelta(1));
-                if (deltaSet.Count > 2)
-                    p1 = new Point(p1.X + deltaSet.GetFWordDelta(2), p1.Y);
-                if (deltaSet.Count > 3)
-                    p1 = new Point(p1.X, p1.Y + deltaSet.GetFWordDelta(3));
-                if (deltaSet.Count > 4)
-                    p2 = new Point(p2.X + deltaSet.GetFWordDelta(4), p2.Y);
-                if (deltaSet.Count > 5)
-                    p2 = new Point(p2.X, p2.Y + deltaSet.GetFWordDelta(5));
-            }
-
-            var stops = context.ResolveColorStops(grad.Stops, varIndexBase);
+            var stops = context.ResolveColorStops(grad.Stops);
             return NormalizeLinearGradient(p0, p1, p2, stops, grad.Extend);
         }
 
@@ -448,29 +352,13 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
         private static ResolvedPaint ResolveRadialGradient(RadialGradientVar grad, ColrContext context, uint varIndexBase)
         {
-            var c0 = grad.C0;
-            var r0 = grad.R0;
-            var c1 = grad.C1;
-            var r1 = grad.R1;
+            // Centre coordinate and radii deltas are FWORD (design units): c0.x/.y, r0, c1.x/.y, r1 = base+0..5.
+            var c0 = new Point(grad.C0.X + context.GetFWordDelta(varIndexBase, 0), grad.C0.Y + context.GetFWordDelta(varIndexBase, 1));
+            var r0 = grad.R0 + context.GetFWordDelta(varIndexBase, 2);
+            var c1 = new Point(grad.C1.X + context.GetFWordDelta(varIndexBase, 3), grad.C1.Y + context.GetFWordDelta(varIndexBase, 4));
+            var r1 = grad.R1 + context.GetFWordDelta(varIndexBase, 5);
 
-            if (context.ColrTable.TryGetVariationDeltaSet(varIndexBase, out var deltaSet))
-            {
-                // Center coordinate deltas and radii deltas are FWORD (design units)
-                if (deltaSet.Count > 0)
-                    c0 = new Point(c0.X + deltaSet.GetFWordDelta(0), c0.Y);
-                if (deltaSet.Count > 1)
-                    c0 = new Point(c0.X, c0.Y + deltaSet.GetFWordDelta(1));
-                if (deltaSet.Count > 2)
-                    r0 += deltaSet.GetFWordDelta(2);
-                if (deltaSet.Count > 3)
-                    c1 = new Point(c1.X + deltaSet.GetFWordDelta(3), c1.Y);
-                if (deltaSet.Count > 4)
-                    c1 = new Point(c1.X, c1.Y + deltaSet.GetFWordDelta(4));
-                if (deltaSet.Count > 5)
-                    r1 += deltaSet.GetFWordDelta(5);
-            }
-
-            var stops = context.ResolveColorStops(grad.Stops, varIndexBase);
+            var stops = context.ResolveColorStops(grad.Stops);
             return new ResolvedRadialGradient(c0, r0, c1, r1, stops, grad.Extend);
         }
 
@@ -482,26 +370,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
         private static ResolvedPaint ResolveSweepGradient(SweepGradientVar grad, ColrContext context, uint varIndexBase)
         {
-            var center = grad.Center;
-            var startAngle = grad.StartAngle;
-            var endAngle = grad.EndAngle;
+            // Centre deltas FWORD (base+0,+1); angle deltas F2DOT14 → radians (base+2,+3).
+            var center = new Point(grad.Center.X + context.GetFWordDelta(varIndexBase, 0), grad.Center.Y + context.GetFWordDelta(varIndexBase, 1));
+            var startAngle = grad.StartAngle + context.GetF2Dot14Delta(varIndexBase, 2) * Math.PI;
+            var endAngle = grad.EndAngle + context.GetF2Dot14Delta(varIndexBase, 3) * Math.PI;
 
-            if (context.ColrTable.TryGetVariationDeltaSet(varIndexBase, out var deltaSet))
-            {
-
-                // Center coordinate deltas are FWORD (design units)
-                if (deltaSet.Count > 0)
-                    center = new Point(center.X + deltaSet.GetFWordDelta(0), center.Y);
-                if (deltaSet.Count > 1)
-                    center = new Point(center.X, center.Y + deltaSet.GetFWordDelta(1));
-                // Angle deltas are F2DOT14: 180° per 1.0, so multiply by π to convert to radians
-                if (deltaSet.Count > 2)
-                    startAngle += deltaSet.GetF2Dot14Delta(2) * Math.PI;
-                if (deltaSet.Count > 3)
-                    endAngle += deltaSet.GetF2Dot14Delta(3) * Math.PI;
-            }
-
-            var stops = context.ResolveColorStops(grad.Stops, varIndexBase);
+            var stops = context.ResolveColorStops(grad.Stops);
             return NormalizeConicGradient(center, startAngle, endAngle, stops, grad.Extend);
         }
 

@@ -30,22 +30,39 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         public int PaletteIndex { get; }
 
         /// <summary>
-        /// Applies alpha delta to a color.
+        /// Resolves the region-scaled variation delta for a single varying field (in the field's raw
+        /// units); 0 when the field does not vary at this instance.
         /// </summary>
-        public Color ApplyAlphaDelta(Color color, uint varIndexBase, int deltaIndex)
+        private float GetScaledDelta(uint varIndexBase, uint fieldOffset)
         {
-            if (!ColrTable.TryGetVariationDeltaSet(varIndexBase, out var deltaSet))
+            ReadOnlySpan<float> coords = GlyphTypeface.ActiveVariationCoords;
+            return ColrTable.TryGetScaledDelta(varIndexBase, fieldOffset, coords, out var delta) ? delta : 0f;
+        }
+
+        /// <summary>The delta for an FWORD field (design units) at <paramref name="fieldOffset"/>.</summary>
+        public double GetFWordDelta(uint varIndexBase, uint fieldOffset)
+            => GetScaledDelta(varIndexBase, fieldOffset);
+
+        /// <summary>The delta for an F2DOT14 field (scale / angle / alpha) at <paramref name="fieldOffset"/>.</summary>
+        public double GetF2Dot14Delta(uint varIndexBase, uint fieldOffset)
+            => GetScaledDelta(varIndexBase, fieldOffset) / 16384.0;
+
+        /// <summary>The delta for a Fixed (16.16) field (affine components) at <paramref name="fieldOffset"/>.</summary>
+        public double GetFixedDelta(uint varIndexBase, uint fieldOffset)
+            => GetScaledDelta(varIndexBase, fieldOffset) / 65536.0;
+
+        /// <summary>
+        /// Applies the alpha delta for a variable solid / colour field to a colour. Alpha is an
+        /// F2DOT14 field at <paramref name="fieldOffset"/> from <paramref name="varIndexBase"/>.
+        /// </summary>
+        public Color ApplyAlphaDelta(Color color, uint varIndexBase, uint fieldOffset)
+        {
+            var alphaDelta = GetF2Dot14Delta(varIndexBase, fieldOffset);
+
+            if (alphaDelta == 0.0)
             {
                 return color;
             }
-
-            if (deltaIndex >= deltaSet.Count)
-            {
-                return color;
-            }
-
-            // Alpha deltas are F2DOT14 format
-            var alphaDelta = deltaSet.GetF2Dot14Delta(deltaIndex);
 
             var newAlpha = Math.Clamp(color.A / 255.0 + alphaDelta, 0.0, 1.0);
 
@@ -53,81 +70,46 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
 
         /// <summary>
-        /// Applies affine transformation deltas to a matrix.
+        /// Applies the Affine2x3 component deltas (Fixed / 16.16) to a matrix. Each component is its
+        /// own delta-set index: xx, yx, xy, yy, dx, dy → <c>VarIndexBase + 0..5</c> →
+        /// M11, M12, M21, M22, M31, M32.
         /// </summary>
         public Matrix ApplyAffineDeltas(Matrix matrix, uint varIndexBase)
         {
-            if (!ColrTable.TryGetVariationDeltaSet(varIndexBase, out var deltaSet))
-            {
-                return matrix;
-            }
-
-            // Affine2x3 matrix component deltas are Fixed format (16.16)
-            // Note: Depending on the spec, these might need to be treated differently
-            // For now, using the raw deltas as they might already be in the correct format
-            var m11 = matrix.M11 + (deltaSet.Count > 0 ? deltaSet.GetFixedDelta(0) : 0.0);
-            var m12 = matrix.M12 + (deltaSet.Count > 1 ? deltaSet.GetFixedDelta(1) : 0.0);
-            var m21 = matrix.M21 + (deltaSet.Count > 2 ? deltaSet.GetFixedDelta(2) : 0.0);
-            var m22 = matrix.M22 + (deltaSet.Count > 3 ? deltaSet.GetFixedDelta(3) : 0.0);
-            var m31 = matrix.M31 + (deltaSet.Count > 4 ? deltaSet.GetFixedDelta(4) : 0.0);
-            var m32 = matrix.M32 + (deltaSet.Count > 5 ? deltaSet.GetFixedDelta(5) : 0.0);
+            var m11 = matrix.M11 + GetFixedDelta(varIndexBase, 0);
+            var m12 = matrix.M12 + GetFixedDelta(varIndexBase, 1);
+            var m21 = matrix.M21 + GetFixedDelta(varIndexBase, 2);
+            var m22 = matrix.M22 + GetFixedDelta(varIndexBase, 3);
+            var m31 = matrix.M31 + GetFixedDelta(varIndexBase, 4);
+            var m32 = matrix.M32 + GetFixedDelta(varIndexBase, 5);
 
             return new Matrix(m11, m12, m21, m22, m31, m32);
         }
 
         /// <summary>
-        /// Resolves color stops with variation deltas applied and normalized to 0-1 range.
-        /// Based on fontations ColorStops::resolve and gradient normalization logic.
+        /// Copies a variable colour line's stops and normalizes them to the 0-1 range.
         /// </summary>
-        public GradientStop[] ResolveColorStops(
-            GradientStopVar[] stops,
-            uint? varIndexBase)
+        /// <remarks>
+        /// Per-stop colour-line variation is not applied here: the colour-line parser does not capture
+        /// each VarColorStop's <c>varIndexBase</c> and folds alpha into the stop colour at parse time,
+        /// so stop offset / alpha deltas can't be resolved correctly. Geometric and solid-alpha
+        /// variation is handled via the paint records' own <c>VarIndexBase</c>.
+        /// </remarks>
+        public GradientStop[] ResolveColorStops(GradientStopVar[] stops)
         {
             if (stops.Length == 0)
+            {
                 return Array.Empty<GradientStop>();
-
-            // No variation deltas to apply, just normalize
-            if (!varIndexBase.HasValue)
-            {
-                return NormalizeColorStops(stops);
             }
 
-            // Check if we should apply variations
-            DeltaSet deltaSet = default;
-            var shouldApplyVariations = ColrTable.TryGetVariationDeltaSet(varIndexBase.Value, out deltaSet);
+            var copy = new GradientStop[stops.Length];
 
-            GradientStop[]? resolvedStops = null;
-
-            if (shouldApplyVariations)
+            for (int i = 0; i < stops.Length; i++)
             {
-                resolvedStops = new GradientStop[stops.Length];
-
-                for (int i = 0; i < stops.Length; i++)
-                {
-                    var stop = stops[i];
-                    var offset = stop.Offset;
-                    var color = stop.Color;
-
-                    if (deltaSet.Count >= 2)
-                    {
-                        // Stop offset and alpha deltas are F2DOT14 format
-                        offset += deltaSet.GetF2Dot14Delta(0);
-
-                        // Apply alpha delta
-                        var alphaDelta = deltaSet.GetF2Dot14Delta(1);
-                        var newAlpha = Math.Clamp(color.A / 255.0 + alphaDelta, 0.0, 1.0);
-                        color = Color.FromArgb((byte)(newAlpha * 255), color.R, color.G, color.B);
-                    }
-
-                    resolvedStops[i] = new GradientStop(offset, color);
-                }
-            }
-            else
-            {
-                resolvedStops = stops;
+                copy[i] = new GradientStop(stops[i].Offset, stops[i].Color);
             }
 
-            return NormalizeColorStops(resolvedStops);
+            return NormalizeColorStops(copy);
         }
 
         /// <summary>
