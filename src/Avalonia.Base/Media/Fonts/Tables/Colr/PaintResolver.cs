@@ -370,10 +370,11 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
         private static ResolvedPaint ResolveSweepGradient(SweepGradientVar grad, ColrContext context, uint varIndexBase)
         {
-            // Centre deltas FWORD (base+0,+1); angle deltas F2DOT14 → radians (base+2,+3).
+            // Centre deltas FWORD (base+0,+1); angle deltas F2DOT14 in the same raw 180°-per-1.0 units
+            // as the base angles (base+2,+3) — NormalizeConicGradient converts the sum to degrees.
             var center = new Point(grad.Center.X + context.GetFWordDelta(varIndexBase, 0), grad.Center.Y + context.GetFWordDelta(varIndexBase, 1));
-            var startAngle = grad.StartAngle + context.GetF2Dot14Delta(varIndexBase, 2) * Math.PI;
-            var endAngle = grad.EndAngle + context.GetF2Dot14Delta(varIndexBase, 3) * Math.PI;
+            var startAngle = grad.StartAngle + context.GetF2Dot14Delta(varIndexBase, 2);
+            var endAngle = grad.EndAngle + context.GetF2Dot14Delta(varIndexBase, 3);
 
             var stops = context.NormalizeColorStops(grad.Stops);
             return NormalizeConicGradient(center, startAngle, endAngle, stops, grad.Extend);

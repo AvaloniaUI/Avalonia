@@ -50,6 +50,31 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void Sweep_Gradient_Angle_Is_Decoded_To_Degrees()
+        {
+            using (UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface())))
+            {
+                var outlineGlyph = SyntheticFont.FromAsset(InterAsset).TryCreateGlyphTypeface()!
+                    .CharacterToGlyphMap['A'];
+
+                // F2DOT14 sweep angles are 180° per 1.0 of value: 0.25 → 45°, 0.75 → 135°.
+                var colr = BuildColrV1GlyphSweepGradient(
+                    baseGlyph: 3, outlineGlyph, centerX: 0, centerY: 0,
+                    startAngleF2Dot14: 4096 /* 0.25 */, endAngleF2Dot14: 12288 /* 0.75 */);
+
+                var recorder = DrawColrGlyph(colr);
+
+                var brush = Assert.IsType<ImmutableConicGradientBrush>(Assert.Single(recorder.Brushes));
+
+                // IConicGradientBrush.Angle is in degrees. After the OpenType +180° shift, the
+                // counter-clockwise→clockwise flip, and the start<end swap, 0.25/0.75 resolve to a
+                // 45° start angle — NOT the ~-244° a radians-scaled-by-180 decode would produce.
+                Assert.Equal(45.0, brush.Angle, 3);
+            }
+        }
+
         private static RecordingDrawingContext DrawColrGlyph(byte[] colr)
         {
             var typeface = ColrTestFont.Graft(SyntheticFont.FromAsset(InterAsset), colr).TryCreateGlyphTypeface();
@@ -103,6 +128,56 @@ namespace Avalonia.Skia.UnitTests.Media
             colr.UInt24(16);          // colorLineOffset, relative to this paint
             colr.Int16(c0X).Int16(c0Y).UInt16(r0);
             colr.Int16(c1X).Int16(c1Y).UInt16(r1);
+
+            // ColorLine: extend + numStops + 2 ColorStops (offset, paletteIndex, alpha).
+            colr.UInt8(0);            // extend = Pad
+            colr.UInt16(2);           // numStops
+            colr.F2Dot14(0.0).UInt16(0).F2Dot14(1.0);
+            colr.F2Dot14(1.0).UInt16(0).F2Dot14(1.0);
+
+            return colr.ToArray();
+        }
+
+        /// <summary>
+        /// COLR v1: base glyph → PaintGlyph(outlineGlyph) → PaintSweepGradient with a 2-stop colour
+        /// line. The colour line follows the 12-byte sweep paint, so its offset is constant.
+        /// </summary>
+        private static byte[] BuildColrV1GlyphSweepGradient(
+            ushort baseGlyph, ushort outlineGlyph,
+            short centerX, short centerY, short startAngleF2Dot14, short endAngleF2Dot14)
+        {
+            var colr = new BigEndianBuffer();
+
+            // COLR header (v1).
+            colr.UInt16(1);
+            colr.UInt16(0);
+            colr.UInt32(0);
+            colr.UInt32(0);
+            colr.UInt16(0);
+            var baseListOffsetPos = colr.ReserveOffset32(); // baseGlyphV1ListOffset
+            colr.UInt32(0);   // layerV1ListOffset
+            colr.UInt32(0);   // clipListOffset
+            colr.UInt32(0);   // varIndexMapOffset
+            colr.UInt32(0);   // itemVariationStoreOffset
+
+            // BaseGlyphV1List → PaintGlyph.
+            var baseListStart = colr.Position;
+            colr.PatchUInt32(baseListOffsetPos, (uint)baseListStart);
+            colr.UInt32(1);
+            colr.UInt16(baseGlyph);
+            var recordPaintOffsetPos = colr.ReserveOffset32();
+
+            // PaintGlyph (format 10), 6 bytes; PaintSweepGradient follows, so sub-offset = 6.
+            colr.PatchUInt32(recordPaintOffsetPos, (uint)(colr.Position - baseListStart));
+            colr.UInt8(10);
+            colr.UInt24(6);
+            colr.UInt16(outlineGlyph);
+
+            // PaintSweepGradient (format 8), 12 bytes; the ColorLine follows, so its offset = 12.
+            colr.UInt8(8);
+            colr.UInt24(12);          // colorLineOffset, relative to this paint
+            colr.Int16(centerX).Int16(centerY);
+            colr.Int16(startAngleF2Dot14).Int16(endAngleF2Dot14);
 
             // ColorLine: extend + numStops + 2 ColorStops (offset, paletteIndex, alpha).
             colr.UInt8(0);            // extend = Pad
