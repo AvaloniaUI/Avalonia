@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -56,7 +57,7 @@ namespace Avalonia.Automation.Peers
             }
         }
 
-        private bool TryGetSelectableDate(out Calendar calendar, out DateTime date)
+        private bool TryGetSelectableDate([NotNullWhen(true)] out Calendar? calendar, out DateTime date)
         {
             if (Owner.Owner is { SelectionMode: not CalendarSelectionMode.None } owner &&
                 Owner.DataContext is DateTime value &&
@@ -67,7 +68,7 @@ namespace Avalonia.Automation.Peers
                 return true;
             }
 
-            calendar = null!;
+            calendar = null;
             date = default;
             return false;
         }
