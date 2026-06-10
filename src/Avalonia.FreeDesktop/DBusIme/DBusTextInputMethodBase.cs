@@ -83,7 +83,7 @@ namespace Avalonia.FreeDesktop.DBusIme
                             {
                                 await Task.Delay(Timeout.Infinite, linked.Token);
                             }
-                            catch (OperationCanceledException)
+                            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
                             { }
                         }
                         else
@@ -92,7 +92,7 @@ namespace Avalonia.FreeDesktop.DBusIme
                             {
                                 await watcher.WaitForOwnerAsync(cancellationToken);
                             }
-                            catch (OperationCanceledException)
+                            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
                             { }
                         }
                         owner = watcher.GetCurrentOwner();
