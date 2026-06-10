@@ -16,6 +16,15 @@ namespace Avalonia.Input.TextInput
         {
             _transformTracker.MatrixChanged += UpdateCursorRect;
             InputMethod.IsInputMethodEnabledProperty.Changed.Subscribe(OnIsInputMethodEnabledChanged);
+            TextInputOptions.ContentTypeProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.ReturnKeyTypeProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.MultilineProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.AutoCapitalizationProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.IsSensitiveProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.LowercaseProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.UppercaseProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.ShowSuggestionsProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.IsSpellCheckEnabledProperty.Changed.Subscribe(OnTextInputOptionsChanged);
         }
 
         private TextInputMethodClient? Client
@@ -57,7 +66,7 @@ namespace Avalonia.Input.TextInput
             }
         }
 
-        void PopulateImWithInitialValues()
+        void ApplyTextInputOptions()
         {
             if (_focusedElement is StyledElement target)
             {
@@ -67,6 +76,11 @@ namespace Avalonia.Input.TextInput
             {
                 _im?.SetOptions(TextInputOptions.Default);
             }
+        }
+
+        void PopulateImWithInitialValues()
+        {
+            ApplyTextInputOptions();
 
             _transformTracker.SetVisual(_client?.TextViewVisual);
                     
@@ -89,6 +103,14 @@ namespace Avalonia.Input.TextInput
             if (ReferenceEquals(obj.Sender, _focusedElement))
             {
                 TryFindAndApplyClient();
+            }
+        }
+
+        private void OnTextInputOptionsChanged<T>(AvaloniaPropertyChangedEventArgs<T> obj)
+        {
+            if (ReferenceEquals(obj.Sender, _focusedElement))
+            {
+                ApplyTextInputOptions();
             }
         }
 

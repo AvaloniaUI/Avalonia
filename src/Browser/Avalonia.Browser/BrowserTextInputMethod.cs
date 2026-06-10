@@ -92,6 +92,31 @@ internal class BrowserTextInputMethod(
 
     public void SetOptions(TextInputOptions options)
     {
+        // This is only a browser spellcheck hint for the hidden DOM input used by text input.
+        // Browsers don't expose native spellcheck ranges or suggestions for canvas-rendered text.
+        var spellCheck = CanUseSpellCheck(options);
+        InputHelper.SetSpellCheck(_inputElement, spellCheck);
+    }
+
+    private static bool CanUseSpellCheck(TextInputOptions options)
+    {
+        if (options.IsSpellCheckEnabled == false ||
+            options.IsSensitive ||
+            options.ContentType is TextInputContentType.Password or TextInputContentType.Pin)
+        {
+            return false;
+        }
+
+        if (options.IsSpellCheckEnabled == true)
+        {
+            return true;
+        }
+
+        return options.ContentType is TextInputContentType.Normal
+            or TextInputContentType.Alpha
+            or TextInputContentType.Name
+            or TextInputContentType.Search
+            or TextInputContentType.Social;
     }
 
     public void Reset()

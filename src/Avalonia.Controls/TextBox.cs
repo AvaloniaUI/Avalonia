@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
@@ -10,6 +12,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -278,6 +281,22 @@ namespace Avalonia.Controls
                 o => o.CanPaste);
 
         /// <summary>
+        /// Defines the <see cref="SpellCheckSuggestions"/> property
+        /// </summary>
+        public static readonly DirectProperty<TextBox, IReadOnlyList<string>> SpellCheckSuggestionsProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, IReadOnlyList<string>>(
+                nameof(SpellCheckSuggestions),
+                o => o.SpellCheckSuggestions);
+
+        /// <summary>
+        /// Defines the <see cref="HasSpellCheckSuggestions"/> property
+        /// </summary>
+        public static readonly DirectProperty<TextBox, bool> HasSpellCheckSuggestionsProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, bool>(
+                nameof(HasSpellCheckSuggestions),
+                o => o.HasSpellCheckSuggestions);
+
+        /// <summary>
         /// Defines the <see cref="IsUndoEnabled"/> property
         /// </summary>
         public static readonly StyledProperty<bool> IsUndoEnabledProperty =
@@ -363,11 +382,17 @@ namespace Avalonia.Controls
         private TextPresenter? _presenter;
         private ScrollViewer? _scrollViewer;
         private readonly TextBoxTextInputMethodClient _imClient = new();
+        private TextBoxSpellCheckController? _spellCheckController;
         private readonly UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
         private bool _canCut;
         private bool _canCopy;
         private bool _canPaste;
+        private IReadOnlyList<string> _spellCheckSuggestions = Array.Empty<string>();
+        private bool _hasSpellCheckSuggestions;
+        private CancellationTokenSource? _spellCheckSuggestionCancellation;
+        private int _spellCheckSuggestionStart = -1;
+        private int _spellCheckSuggestionLength;
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
         private bool _canUndo;
         private bool _canRedo;
@@ -394,6 +419,13 @@ namespace Avalonia.Controls
                     e.Client = tb._imClient;
                 }
             });
+            ContextRequestedEvent.AddClassHandler<TextBox>((tb, e) =>
+            {
+                if (!e.Handled)
+                {
+                    tb.UpdateSpellCheckSuggestions(e);
+                }
+            }, RoutingStrategies.Bubble);
         }
 
         public TextBox()
@@ -851,6 +883,26 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets replacement suggestions for the misspelled word at the current context position.
+        /// </summary>
+        public IReadOnlyList<string> SpellCheckSuggestions
+        {
+            get => _spellCheckSuggestions;
+            private set => SetAndRaise(SpellCheckSuggestionsProperty, ref _spellCheckSuggestions, value);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether spell check suggestions are available for the current context position.
+        /// </summary>
+        public bool HasSpellCheckSuggestions
+        {
+            get => _hasSpellCheckSuggestions;
+            private set => SetAndRaise(HasSpellCheckSuggestionsProperty, ref _hasSpellCheckSuggestions, value);
+        }
+
+        internal bool HasSpellCheckController => _spellCheckController is not null;
+
+        /// <summary>
         /// Property for determining whether undo/redo is enabled
         /// </summary>
         public bool IsUndoEnabled
@@ -963,8 +1015,8 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
-
             _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+            _spellCheckController?.SetPresenter(_presenter, _scrollViewer);
 
             _imClient.SetPresenter(_presenter, this);
 
@@ -994,6 +1046,8 @@ namespace Avalonia.Controls
 
                 _presenter.PropertyChanged += PresenterPropertyChanged;
             }
+
+            ScheduleSpellCheck();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -1008,6 +1062,9 @@ namespace Avalonia.Controls
             }
 
             _imClient.SetPresenter(null, null);
+            CancelSpellCheckSuggestionQuery();
+            ClearSpellCheckSuggestions();
+            ReleaseSpellCheckController();
         }
 
         private void PresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -1029,6 +1086,8 @@ namespace Avalonia.Controls
 
             if (change.Property == TextProperty)
             {
+                CancelSpellCheckSuggestionQuery();
+                ClearSpellCheckSuggestions();
                 CoerceValue(CaretIndexProperty);
                 CoerceValue(SelectionStartProperty);
                 CoerceValue(SelectionEndProperty);
@@ -1037,17 +1096,21 @@ namespace Avalonia.Controls
 
                 UpdatePseudoclasses();
                 UpdateCommandStates();
+                ScheduleSpellCheck();
             }
             else if (change.Property == CaretIndexProperty)
             {
+                ClearSpellCheckSuggestions();
                 OnCaretIndexChanged(change);
             }
             else if (change.Property == SelectionStartProperty)
             {
+                ClearSpellCheckSuggestions();
                 OnSelectionStartChanged(change);
             }
             else if (change.Property == SelectionEndProperty)
             {
+                ClearSpellCheckSuggestions();
                 OnSelectionEndChanged(change);
             }
             else if (change.Property == MaxLinesProperty)
@@ -1073,6 +1136,26 @@ namespace Avalonia.Controls
                 _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
                 _hasDoneSnapshotOnce = false;
             }
+
+            if (change.Property == TextInputOptions.IsSpellCheckEnabledProperty ||
+                change.Property == TextInputOptions.ContentTypeProperty ||
+                change.Property == TextInputOptions.IsSensitiveProperty ||
+                change.Property == PasswordCharProperty)
+            {
+                CancelSpellCheckSuggestionQuery();
+                ClearSpellCheckSuggestions();
+                ScheduleSpellCheck();
+            }
+            else if (change.Property == FontFamilyProperty ||
+                     change.Property == FontFeaturesProperty ||
+                     change.Property == FontSizeProperty ||
+                     change.Property == FontStyleProperty ||
+                     change.Property == FontWeightProperty ||
+                     change.Property == FontStretchProperty ||
+                     change.Property == ForegroundProperty)
+            {
+                _spellCheckController?.RefreshStyles();
+            }
         }
 
         private void UpdateCommandStates()
@@ -1082,6 +1165,213 @@ namespace Avalonia.Controls
             CanCopy = !IsPasswordBox && !isSelectionNullOrEmpty;
             CanCut = !IsPasswordBox && !isSelectionNullOrEmpty && !IsReadOnly;
             CanPaste = !IsReadOnly;
+        }
+
+        private TextBoxSpellCheckController? GetOrCreateSpellCheckController()
+        {
+            if (_spellCheckController is { } controller)
+            {
+                return controller;
+            }
+
+            if (!TextBoxSpellCheckController.CanCreate(this))
+            {
+                return null;
+            }
+
+            return CreateSpellCheckController();
+        }
+
+        private TextBoxSpellCheckController CreateSpellCheckController()
+        {
+            var controller = new TextBoxSpellCheckController(this);
+            controller.SetPresenter(_presenter, _scrollViewer);
+            _spellCheckController = controller;
+
+            return controller;
+        }
+
+        private void ScheduleSpellCheck()
+        {
+            if (!TextBoxSpellCheckController.CanCreate(this))
+            {
+                ReleaseSpellCheckController();
+                return;
+            }
+
+            (_spellCheckController ?? CreateSpellCheckController()).ScheduleCheck();
+        }
+
+        private void ReleaseSpellCheckController()
+        {
+            if (_spellCheckController is not { } controller)
+            {
+                return;
+            }
+
+            _spellCheckController = null;
+            controller.Clear();
+            controller.SetPresenter(null, null);
+        }
+
+        private void UpdateSpellCheckSuggestions(ContextRequestedEventArgs? contextRequested = null)
+        {
+            CancelSpellCheckSuggestionQuery();
+            ClearSpellCheckSuggestions();
+
+            var controller = GetOrCreateSpellCheckController();
+
+            if (controller is null)
+            {
+                return;
+            }
+
+            var cancellation = new CancellationTokenSource();
+            _spellCheckSuggestionCancellation = cancellation;
+            var caretIndex = CaretIndex;
+            var selectionStart = SelectionStart;
+            var selectionEnd = SelectionEnd;
+
+            if (TryGetSpellCheckSuggestionIndex(contextRequested, out var suggestionIndex))
+            {
+                var selectedStart = Math.Min(selectionStart, selectionEnd);
+                var selectedEnd = Math.Max(selectionStart, selectionEnd);
+
+                if (selectedStart == selectedEnd ||
+                    suggestionIndex < selectedStart ||
+                    suggestionIndex >= selectedEnd)
+                {
+                    caretIndex = suggestionIndex;
+                    selectionStart = suggestionIndex;
+                    selectionEnd = suggestionIndex;
+                }
+            }
+
+            var suggestions = controller.SuggestAsync(
+                caretIndex,
+                selectionStart,
+                selectionEnd,
+                cancellation.Token);
+
+            if (suggestions.IsCompletedSuccessfully)
+            {
+                try
+                {
+                    ApplySpellCheckSuggestions(suggestions.Result, cancellation);
+                }
+                finally
+                {
+                    FinishSpellCheckSuggestionQuery(cancellation);
+                }
+            }
+            else
+            {
+                UpdateSpellCheckSuggestionsAsync(suggestions, cancellation);
+            }
+        }
+
+        private bool TryGetSpellCheckSuggestionIndex(
+            ContextRequestedEventArgs? contextRequested,
+            out int suggestionIndex)
+        {
+            suggestionIndex = 0;
+
+            if (contextRequested is null ||
+                _presenter is null ||
+                !contextRequested.TryGetPosition(_presenter, out var point) ||
+                Text is not { } text)
+            {
+                return false;
+            }
+
+            var hit = _presenter.TextLayout.HitTestPoint(point).CharacterHit;
+            suggestionIndex = MathUtilities.Clamp(
+                hit.FirstCharacterIndex + hit.TrailingLength,
+                0,
+                text.Length);
+
+            return true;
+        }
+
+        private async void UpdateSpellCheckSuggestionsAsync(
+            ValueTask<(SpellCheckResult Result, IReadOnlyList<string> Suggestions)?> suggestions,
+            CancellationTokenSource cancellation)
+        {
+            try
+            {
+                ApplySpellCheckSuggestions(await suggestions, cancellation);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception)
+            {
+                if (ReferenceEquals(_spellCheckSuggestionCancellation, cancellation))
+                {
+                    ClearSpellCheckSuggestions();
+                }
+            }
+            finally
+            {
+                FinishSpellCheckSuggestionQuery(cancellation);
+            }
+        }
+
+        private void ApplySpellCheckSuggestions(
+            (SpellCheckResult Result, IReadOnlyList<string> Suggestions)? suggestions,
+            CancellationTokenSource cancellation)
+        {
+            if (cancellation.IsCancellationRequested ||
+                !ReferenceEquals(_spellCheckSuggestionCancellation, cancellation))
+            {
+                return;
+            }
+
+            if (suggestions is not { } value)
+            {
+                ClearSpellCheckSuggestions();
+                return;
+            }
+
+            _spellCheckSuggestionStart = value.Result.Start;
+            _spellCheckSuggestionLength = value.Result.Length;
+            SpellCheckSuggestions = value.Suggestions;
+            HasSpellCheckSuggestions = value.Suggestions.Count > 0;
+        }
+
+        private void CancelSpellCheckSuggestionQuery()
+        {
+            if (_spellCheckSuggestionCancellation is { } cancellation)
+            {
+                _spellCheckSuggestionCancellation = null;
+                cancellation.Cancel();
+            }
+        }
+
+        private void FinishSpellCheckSuggestionQuery(CancellationTokenSource cancellation)
+        {
+            if (ReferenceEquals(_spellCheckSuggestionCancellation, cancellation))
+            {
+                _spellCheckSuggestionCancellation = null;
+            }
+
+            cancellation.Dispose();
+        }
+
+        private void ClearSpellCheckSuggestions()
+        {
+            _spellCheckSuggestionStart = -1;
+            _spellCheckSuggestionLength = 0;
+
+            if (_spellCheckSuggestions.Count > 0)
+            {
+                SpellCheckSuggestions = Array.Empty<string>();
+            }
+
+            if (_hasSpellCheckSuggestions)
+            {
+                HasSpellCheckSuggestions = false;
+            }
         }
 
         protected override void OnGotFocus(FocusChangedEventArgs e)
@@ -1336,6 +1626,37 @@ namespace Avalonia.Controls
 
             SnapshotUndoRedo();
             HandleTextInput(text);
+        }
+
+        /// <summary>
+        /// Replaces the current misspelled word with a spell check suggestion.
+        /// </summary>
+        /// <param name="suggestion">The replacement text.</param>
+        public void ApplySpellCheckSuggestion(string? suggestion)
+        {
+            var start = _spellCheckSuggestionStart;
+            var length = _spellCheckSuggestionLength;
+
+            if (string.IsNullOrEmpty(suggestion) ||
+                IsReadOnly ||
+                start < 0 ||
+                length <= 0 ||
+                Text is not { } text ||
+                start + length > text.Length)
+            {
+                ClearSpellCheckSuggestions();
+                return;
+            }
+
+            using var _ = _imClient.BeginChange();
+
+            SetCurrentValue(CaretIndexProperty, start);
+            SetCurrentValue(SelectionStartProperty, start);
+            SetCurrentValue(SelectionEndProperty, start + length);
+
+            SnapshotUndoRedo();
+            HandleTextInput(suggestion);
+            ClearSpellCheckSuggestions();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

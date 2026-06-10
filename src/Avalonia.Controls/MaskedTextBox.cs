@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
@@ -44,6 +45,7 @@ namespace Avalonia.Controls
         static MaskedTextBox()
         {
             PasswordCharProperty.OverrideMetadata<MaskedTextBox>(new('\0', coerce: CoercePasswordChar));
+            TextInputOptions.IsSpellCheckEnabledProperty.OverrideDefaultValue<MaskedTextBox>(false);
         }
 
         private static char CoercePasswordChar(AvaloniaObject sender, char baseValue)

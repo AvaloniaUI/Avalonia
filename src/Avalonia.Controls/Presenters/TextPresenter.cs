@@ -106,6 +106,7 @@ namespace Avalonia.Controls.Presenters
         private Point _navigationPosition;
         private Point? _previousOffset;
         private TextSelectorLayer? _layer;
+        private IReadOnlyList<ValueSpan<TextRunProperties>>? _textStyleOverrides;
 
         static TextPresenter()
         {
@@ -561,12 +562,16 @@ namespace Avalonia.Controls.Presenters
             var start = Math.Min(selectionStart, selectionEnd);
             var length = Math.Max(selectionStart, selectionEnd) - start;
 
-            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
+            IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = _textStyleOverrides;
 
             var foreground = Foreground;
 
             if (!string.IsNullOrEmpty(preeditText))
             {
+                // Text style override ranges are based on Text, which does not include preeditText.
+                // Keep the composition underline accurate instead of shifting existing overrides.
+                textStyleOverrides = null;
+
                 var preeditHighlight = new ValueSpan<TextRunProperties>(caretIndex, preeditText.Length,
                         new GenericTextRunProperties(
                             typeface,
@@ -575,24 +580,20 @@ namespace Avalonia.Controls.Presenters
                             foreground,
                             fontFeatures: FontFeatures));
 
-                textStyleOverrides = new[]
-                {
-                    preeditHighlight
-                };
+                textStyleOverrides = AddTextStyleOverride(textStyleOverrides, preeditHighlight);
             }
             else
             {
                 if (ShowSelectionHighlight && length > 0 && SelectionForegroundBrush != null)
                 {
-                    textStyleOverrides = new[]
-                    {
+                    textStyleOverrides = AddTextStyleOverride(
+                        textStyleOverrides,
                         new ValueSpan<TextRunProperties>(start, length,
                         new GenericTextRunProperties(
                             typeface,
                             FontSize,
                             foregroundBrush: SelectionForegroundBrush,
-                            fontFeatures: FontFeatures))
-                    };
+                            fontFeatures: FontFeatures)));
                 }
             }
 
@@ -605,6 +606,38 @@ namespace Avalonia.Controls.Presenters
             {
                 result = CreateTextLayoutInternal(_constraint, text, typeface, textStyleOverrides);
             }
+
+            return result;
+        }
+
+        internal void SetTextStyleOverrides(IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides)
+        {
+            if (ReferenceEquals(_textStyleOverrides, textStyleOverrides))
+            {
+                return;
+            }
+
+            _textStyleOverrides = textStyleOverrides;
+            InvalidateTextLayout();
+        }
+
+        private static IReadOnlyList<ValueSpan<TextRunProperties>> AddTextStyleOverride(
+            IReadOnlyList<ValueSpan<TextRunProperties>>? existing,
+            ValueSpan<TextRunProperties> value)
+        {
+            if (existing is null || existing.Count == 0)
+            {
+                return new[] { value };
+            }
+
+            var result = new ValueSpan<TextRunProperties>[existing.Count + 1];
+
+            for (var i = 0; i < existing.Count; i++)
+            {
+                result[i] = existing[i];
+            }
+
+            result[^1] = value;
 
             return result;
         }

@@ -7,6 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
+using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Reactive;
@@ -439,6 +440,7 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue<NumericUpDown>(true);
             IsTabStopProperty.OverrideDefaultValue<NumericUpDown>(false);
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<NumericUpDown>(KeyboardNavigationMode.Local);
+            TextInputOptions.IsSpellCheckEnabledProperty.OverrideDefaultValue<NumericUpDown>(false);
         }
 
         /// <inheritdoc />

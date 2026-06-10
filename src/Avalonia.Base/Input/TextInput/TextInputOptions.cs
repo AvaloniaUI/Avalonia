@@ -14,6 +14,7 @@ public class TextInputOptions
             Lowercase = GetLowercase(avaloniaObject),
             Uppercase = GetUppercase(avaloniaObject),
             ShowSuggestions = GetShowSuggestions(avaloniaObject),
+            IsSpellCheckEnabled = GetIsSpellCheckEnabled(avaloniaObject),
         };
 
         return result;
@@ -287,4 +288,37 @@ public class TextInputOptions
     /// Show virtual keyboard suggestions
     /// </summary>
     public bool? ShowSuggestions { get; set; }
+
+    /// <summary>
+    /// Defines the <see cref="IsSpellCheckEnabled"/> property.
+    /// </summary>
+    public static readonly AttachedProperty<bool?> IsSpellCheckEnabledProperty =
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, bool?>(
+            "IsSpellCheckEnabled",
+            inherits: true);
+
+    /// <summary>
+    /// Sets the value of the attached <see cref="IsSpellCheckEnabledProperty"/> on a control.
+    /// </summary>
+    /// <param name="avaloniaObject">The control.</param>
+    /// <param name="value">The property value to set.</param>
+    public static void SetIsSpellCheckEnabled(StyledElement avaloniaObject, bool? value)
+    {
+        avaloniaObject.SetValue(IsSpellCheckEnabledProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the value of the attached <see cref="IsSpellCheckEnabledProperty"/>.
+    /// </summary>
+    /// <param name="avaloniaObject">The target.</param>
+    /// <returns>true if spell checking is enabled; false if disabled; null to use the platform default.</returns>
+    public static bool? GetIsSpellCheckEnabled(StyledElement avaloniaObject)
+    {
+        return avaloniaObject.GetValue(IsSpellCheckEnabledProperty);
+    }
+
+    /// <summary>
+    /// Gets or sets whether spell checking is enabled. A null value uses the platform/control default.
+    /// </summary>
+    public bool? IsSpellCheckEnabled { get; set; }
 }

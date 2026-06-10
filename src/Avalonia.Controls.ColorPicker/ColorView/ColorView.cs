@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Controls.Converters;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input.TextInput;
 using Avalonia.Media;
 using Avalonia.Threading;
 
@@ -25,6 +26,11 @@ namespace Avalonia.Controls
         private TabControl? _tabControl;
 
         protected bool _ignorePropertyChanged = false;
+
+        static ColorView()
+        {
+            TextInputOptions.IsSpellCheckEnabledProperty.OverrideDefaultValue<ColorView>(false);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorView"/> class.

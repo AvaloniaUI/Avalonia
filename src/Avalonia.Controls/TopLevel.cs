@@ -533,6 +533,12 @@ namespace Avalonia.Controls
         public IClipboard? Clipboard => PlatformImpl?.TryGetFeature<IClipboard>();
 
         /// <summary>
+        /// Gets the spell-checking service for this top-level, when one is available.
+        /// </summary>
+        public ISpellCheckProvider? SpellCheckProvider => AvaloniaLocator.Current.GetService<ISpellCheckProvider>()
+            ?? PlatformImpl?.TryGetFeature<ISpellCheckProvider>();
+
+        /// <summary>
         /// Gets focus manager of the root.
         /// </summary>
         /// <remarks>

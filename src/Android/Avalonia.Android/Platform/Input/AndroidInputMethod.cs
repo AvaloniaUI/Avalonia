@@ -189,8 +189,22 @@ namespace Avalonia.Android.Platform.Input
                 if (options.Multiline)
                     outAttrs.InputType |= InputTypes.TextFlagMultiLine;
 
-                if (outAttrs.InputType is InputTypes.ClassText && options.ShowSuggestions == false)
-                    outAttrs.InputType |= InputTypes.TextVariationPassword | InputTypes.TextFlagNoSuggestions;
+                var isTextInput = (outAttrs.InputType & InputTypes.MaskClass) == InputTypes.ClassText;
+                var isSensitive = options.IsSensitive ||
+                                  options.ContentType is TextInputContentType.Password or TextInputContentType.Pin;
+
+                if (isTextInput)
+                {
+                    if (options.ShowSuggestions == false || options.IsSpellCheckEnabled == false || isSensitive)
+                    {
+                        outAttrs.InputType |= InputTypes.TextFlagNoSuggestions;
+                    }
+
+                    if (options.ShowSuggestions == true || options.IsSpellCheckEnabled == true)
+                    {
+                        outAttrs.InputType |= InputTypes.TextFlagAutoCorrect;
+                    }
+                }
                     
                 outAttrs.ImeOptions = options.ReturnKeyType switch
                 {

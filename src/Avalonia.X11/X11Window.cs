@@ -50,6 +50,7 @@ namespace Avalonia.X11
         private readonly IKeyboardDevice _keyboard;
         private readonly ITopLevelNativeMenuExporter? _nativeMenuExporter;
         private readonly IStorageProvider _storageProvider;
+        private readonly EnchantSpellCheckProvider _spellCheckProvider;
         private readonly X11NativeControlHost _nativeControlHost;
         private PixelPoint? _position;
         private PixelSize _realSize;
@@ -278,6 +279,7 @@ namespace Avalonia.X11
                     ? (IStorageProvider?)new ManagedStorageProvider(tl)
                     : null)
             });
+            _spellCheckProvider = new EnchantSpellCheckProvider();
 
             platform.X11Screens.Changed += OnScreensChanged;
         }
@@ -1058,6 +1060,11 @@ namespace Avalonia.X11
                 return _ime;
             }
 
+            if (featureType == typeof(ISpellCheckProvider))
+            {
+                return _spellCheckProvider;
+            }
+
             if (featureType == typeof(INativeControlHostImpl))
             {
                 return _nativeControlHost;
@@ -1128,6 +1135,8 @@ namespace Avalonia.X11
                 _transparencyHelper.Dispose();
                 _transparencyHelper = null;
             }
+
+            _spellCheckProvider.Dispose();
             
             if (_imeControl != null)
             {
