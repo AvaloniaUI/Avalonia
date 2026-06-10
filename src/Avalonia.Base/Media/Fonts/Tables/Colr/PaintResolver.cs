@@ -340,7 +340,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var p1 = new Point(grad.P1.X + context.GetFWordDelta(varIndexBase, 2), grad.P1.Y + context.GetFWordDelta(varIndexBase, 3));
             var p2 = new Point(grad.P2.X + context.GetFWordDelta(varIndexBase, 4), grad.P2.Y + context.GetFWordDelta(varIndexBase, 5));
 
-            var stops = context.ResolveColorStops(grad.Stops);
+            var stops = context.NormalizeColorStops(grad.Stops);
             return NormalizeLinearGradient(p0, p1, p2, stops, grad.Extend);
         }
 
@@ -358,7 +358,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var c1 = new Point(grad.C1.X + context.GetFWordDelta(varIndexBase, 3), grad.C1.Y + context.GetFWordDelta(varIndexBase, 4));
             var r1 = grad.R1 + context.GetFWordDelta(varIndexBase, 5);
 
-            var stops = context.ResolveColorStops(grad.Stops);
+            var stops = context.NormalizeColorStops(grad.Stops);
             return new ResolvedRadialGradient(c0, r0, c1, r1, stops, grad.Extend);
         }
 
@@ -375,7 +375,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var startAngle = grad.StartAngle + context.GetF2Dot14Delta(varIndexBase, 2) * Math.PI;
             var endAngle = grad.EndAngle + context.GetF2Dot14Delta(varIndexBase, 3) * Math.PI;
 
-            var stops = context.ResolveColorStops(grad.Stops);
+            var stops = context.NormalizeColorStops(grad.Stops);
             return NormalizeConicGradient(center, startAngle, endAngle, stops, grad.Extend);
         }
 

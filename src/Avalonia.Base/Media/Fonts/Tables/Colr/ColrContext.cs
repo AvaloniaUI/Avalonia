@@ -87,29 +87,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
 
         /// <summary>
-        /// Copies a variable colour line's stops and normalizes them to the 0-1 range. The per-stop
-        /// offset / alpha variation is already applied during colour-line parsing (where each
-        /// VarColorStop's <c>varIndexBase</c> and the instance coords are available), so this just
-        /// normalizes.
-        /// </summary>
-        public GradientStop[] ResolveColorStops(GradientStopVar[] stops)
-        {
-            if (stops.Length == 0)
-            {
-                return Array.Empty<GradientStop>();
-            }
-
-            var copy = new GradientStop[stops.Length];
-
-            for (int i = 0; i < stops.Length; i++)
-            {
-                copy[i] = new GradientStop(stops[i].Offset, stops[i].Color);
-            }
-
-            return NormalizeColorStops(copy);
-        }
-
-        /// <summary>
         /// Normalizes color stops to 0-1 range and handles edge cases.
         /// Modifies the array in-place to avoid allocations when possible.
         /// </summary>
