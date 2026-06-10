@@ -99,6 +99,35 @@ namespace Avalonia.Skia.UnitTests.Media
             }
         }
 
+        [Fact]
+        public void Palette_Selection_Resolves_Solid_Fills_From_The_Selected_Palette()
+        {
+            using (UnitTestApplication.Start(
+                TestServices.MockPlatformRenderInterface.With(renderInterface: new PlatformRenderInterface())))
+            {
+                var outlineGlyph = SyntheticFont.FromAsset(InterAsset).TryCreateGlyphTypeface()!
+                    .CharacterToGlyphMap['A'];
+
+                // Two palettes, one entry each: palette 0 red, palette 1 blue. The paint references
+                // palette entry 0, so the selected palette decides the fill colour.
+                var typeface = ColrTestFont
+                    .Graft(SyntheticFont.FromAsset(InterAsset),
+                        BuildColrV1GlyphSolid(baseGlyph: 3, outlineGlyph),
+                        ColrTestFont.Cpal(new[] { Colors.Red }, new[] { Colors.Blue }))
+                    .TryCreateGlyphTypeface();
+                Assert.NotNull(typeface);
+
+                var drawing = typeface!.GetGlyphDrawing(3, new GlyphDrawingOptions { PaletteIndex = 1 });
+                Assert.NotNull(drawing);
+
+                var recorder = new RecordingDrawingContext();
+                drawing!.Draw(recorder, new Point(0, 0));
+
+                var brush = Assert.IsType<ImmutableSolidColorBrush>(Assert.Single(recorder.Brushes));
+                Assert.Equal(Colors.Blue, brush.Color);
+            }
+        }
+
         private static RecordingDrawingContext DrawColrGlyph(byte[] colr)
         {
             var typeface = ColrTestFont.Graft(SyntheticFont.FromAsset(InterAsset), colr).TryCreateGlyphTypeface();
@@ -110,6 +139,47 @@ namespace Avalonia.Skia.UnitTests.Media
             var recorder = new RecordingDrawingContext();
             drawing!.Draw(recorder, new Point(0, 0));
             return recorder;
+        }
+
+        /// <summary>
+        /// COLR v1: base glyph → PaintGlyph(outlineGlyph) → PaintSolid referencing palette entry 0
+        /// at full alpha. Sub-paint offsets are constant because the layout is sequential.
+        /// </summary>
+        private static byte[] BuildColrV1GlyphSolid(ushort baseGlyph, ushort outlineGlyph)
+        {
+            var colr = new BigEndianBuffer();
+
+            // COLR header (v1).
+            colr.UInt16(1);
+            colr.UInt16(0);
+            colr.UInt32(0);
+            colr.UInt32(0);
+            colr.UInt16(0);
+            var baseListOffsetPos = colr.ReserveOffset32(); // baseGlyphV1ListOffset
+            colr.UInt32(0);   // layerV1ListOffset
+            colr.UInt32(0);   // clipListOffset
+            colr.UInt32(0);   // varIndexMapOffset
+            colr.UInt32(0);   // itemVariationStoreOffset
+
+            // BaseGlyphV1List → PaintGlyph.
+            var baseListStart = colr.Position;
+            colr.PatchUInt32(baseListOffsetPos, (uint)baseListStart);
+            colr.UInt32(1);
+            colr.UInt16(baseGlyph);
+            var recordPaintOffsetPos = colr.ReserveOffset32();
+
+            // PaintGlyph (format 10), 6 bytes; PaintSolid follows, so sub-offset = 6.
+            colr.PatchUInt32(recordPaintOffsetPos, (uint)(colr.Position - baseListStart));
+            colr.UInt8(10);
+            colr.UInt24(6);
+            colr.UInt16(outlineGlyph);
+
+            // PaintSolid (format 2): paletteIndex 0, alpha 1.0.
+            colr.UInt8(2);
+            colr.UInt16(0);
+            colr.F2Dot14(1.0);
+
+            return colr.ToArray();
         }
 
         /// <summary>

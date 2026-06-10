@@ -13,8 +13,6 @@ namespace Avalonia.Media
     /// </summary>
     public sealed class GlyphRun : IDisposable
     {
-        private readonly static IPlatformRenderInterface s_renderInterface;
-
         private IRef<IGlyphRunImpl>? _platformImpl;
         private double _fontRenderingEmSize;
         private int _biDiLevel;
@@ -23,11 +21,6 @@ namespace Avalonia.Media
         private IReadOnlyList<GlyphInfo> _glyphInfos;
         private Point? _baselineOrigin;
         private bool _hasOneCharPerCluster; // if true, character index and cluster are similar
-
-        static GlyphRun()
-        {
-            s_renderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GlyphRun"/> class by specifying properties of the class.
@@ -230,7 +223,8 @@ namespace Avalonia.Media
         /// <returns>The geometry returned contains the combined geometry of all glyphs in the glyph run.</returns>
         public Geometry BuildGeometry()
         {
-            var geometryImpl = s_renderInterface.BuildGlyphRunGeometry(this);
+            var geometryImpl = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>()
+                .BuildGlyphRunGeometry(this);
 
             return new PlatformGeometry(geometryImpl);
         }
@@ -874,7 +868,7 @@ namespace Avalonia.Media
 
         private IRef<IGlyphRunImpl> CreateGlyphRunImpl()
         {
-            var platformImpl = s_renderInterface.CreateGlyphRun(
+            var platformImpl = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>().CreateGlyphRun(
                 GlyphTypeface,
                 FontRenderingEmSize,
                 GlyphInfos,

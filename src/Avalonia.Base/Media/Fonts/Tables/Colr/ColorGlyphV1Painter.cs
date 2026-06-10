@@ -8,19 +8,23 @@ namespace Avalonia.Media.Fonts.Tables.Colr
     /// <summary>
     /// Implements painting for COLR v1 glyphs using Avalonia's DrawingContext.
     /// </summary>
+    /// <remarks>
+    /// Paint-graph transforms are pushed onto the drawing context rather than baked into the
+    /// geometry: each cached design-space outline is drawn as-is (no per-draw transformed clone),
+    /// the context maps gradient coordinates — which COLR defines in the same glyph space — without
+    /// a manual brush transform, and a pushed clip box clips exactly under rotation / skew instead
+    /// of as an axis-aligned approximation.
+    /// </remarks>
     internal sealed class ColorGlyphV1Painter : IColorPainter
     {
         private readonly DrawingContext _drawingContext;
         private readonly ColrContext _context;
         private readonly Stack<IDisposable> _stateStack = new Stack<IDisposable>();
+        private readonly Stack<IDisposable> _transformStack = new Stack<IDisposable>();
 
         // Track the pending glyph that needs to be painted with the next fill
         // In COLR v1, there's a 1:1 mapping between glyph and fill operations
         private IGeometryImpl? _pendingGlyph;
-        
-        // Track the accumulated transform that should be applied to geometry and brushes
-        private Matrix _accumulatedTransform = Matrix.Identity;
-        private readonly Stack<Matrix> _transformStack = new Stack<Matrix>();
 
         public ColorGlyphV1Painter(DrawingContext drawingContext, ColrContext context)
         {
@@ -30,15 +34,14 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
         public void PushTransform(Matrix transform)
         {
-            _transformStack.Push(_accumulatedTransform);
-            _accumulatedTransform = transform * _accumulatedTransform;
+            _transformStack.Push(_drawingContext.PushTransform(transform));
         }
 
         public void PopTransform()
         {
             if (_transformStack.Count > 0)
             {
-                _accumulatedTransform = _transformStack.Pop();
+                _transformStack.Pop().Dispose();
             }
         }
 
@@ -60,10 +63,8 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
         public void PushClip(Rect clipBox)
         {
-            // Transform the clip box with accumulated transforms
-            var transformedClip = clipBox.TransformToAABB(_accumulatedTransform);
-
-            _stateStack.Push(_drawingContext.PushClip(transformedClip));
+            // The context transform applies to the clip, so the box clips exactly — even rotated.
+            _stateStack.Push(_drawingContext.PushClip(clipBox));
         }
 
         public void PopClip()
@@ -87,14 +88,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             }
         }
 
-        /// <summary>
-        /// Creates a brush transform that applies any accumulated transforms.
-        /// </summary>
-        private ImmutableTransform? CreateBrushTransform()
-        {
-            return _accumulatedTransform != Matrix.Identity ? new ImmutableTransform(_accumulatedTransform) : null;
-        }
-
         public void FillLinearGradient(Point p0, Point p1, GradientStop[] stops, GradientSpreadMethod extend)
         {
             if (_pendingGlyph != null)
@@ -109,8 +102,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 var brush = new ImmutableLinearGradientBrush(
                     gradientStops: gradientStops,
                     opacity: 1.0,
-                    transform: CreateBrushTransform(),
-                    transformOrigin: new RelativePoint(0, 0, RelativeUnit.Absolute),
                     spreadMethod: extend,
                     startPoint: new RelativePoint(p0, RelativeUnit.Absolute),
                     endPoint: new RelativePoint(p1, RelativeUnit.Absolute));
@@ -140,8 +131,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 var brush = new ImmutableRadialGradientBrush(
                     gradientStops: gradientStops,
                     opacity: 1.0,
-                    transform: CreateBrushTransform(),
-                    transformOrigin: new RelativePoint(0, 0, RelativeUnit.Absolute),
                     spreadMethod: extend,
                     center: new RelativePoint(c1, RelativeUnit.Absolute),
                     gradientOrigin: new RelativePoint(c0, RelativeUnit.Absolute),
@@ -167,8 +156,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 var brush = new ImmutableConicGradientBrush(
                     gradientStops: gradientStops,
                     opacity: 1.0,
-                    transform: CreateBrushTransform(),
-                    transformOrigin: new RelativePoint(0, 0, RelativeUnit.Absolute),
                     spreadMethod: extend,
                     center: new RelativePoint(center, RelativeUnit.Absolute),
                     angle: startAngle);
@@ -181,11 +168,11 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
         public void Glyph(ushort glyphId)
         {
-            // Store the glyph geometry to be rendered when we encounter the fill
-            var geometry = _context.GlyphTypeface.GetGlyphOutline(glyphId)?.WithTransform(_accumulatedTransform);
+            // The cached design-space outline, drawn under the context transform — no per-draw clone.
+            var geometry = _context.GlyphTypeface.GetGlyphOutline(glyphId);
 
             if (geometry != null)
-            {              
+            {
                 _pendingGlyph = geometry;
             }
         }

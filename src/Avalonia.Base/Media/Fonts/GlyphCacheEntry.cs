@@ -11,15 +11,24 @@ namespace Avalonia.Media.Fonts
     /// </summary>
     internal sealed class GlyphCacheEntry
     {
-        public GlyphCacheEntry(ushort glyph, bool retainBounds)
+        public GlyphCacheEntry(GlyphCacheKey key, bool retainBounds)
         {
-            Glyph = glyph;
+            Key = key;
             RetainBounds = retainBounds;
             Dependencies = Array.Empty<ushort>();
         }
 
-        /// <summary>The glyph this entry is for (its key in the cache).</summary>
-        public ushort Glyph { get; }
+        /// <summary>The entry's identity in the cache.</summary>
+        public GlyphCacheKey Key { get; }
+
+        /// <summary>The glyph this entry is for.</summary>
+        public ushort Glyph => Key.GlyphId;
+
+        /// <summary>
+        /// The CPAL palette this entry's colour drawing resolves its colours with. Always 0 for
+        /// outline entries — outlines are palette-independent.
+        /// </summary>
+        public ushort Palette => Key.PaletteIndex;
 
         /// <summary>
         /// Whether the entry should survive eviction of its geometry, for the sake of its cached bounds.
@@ -29,8 +38,9 @@ namespace Avalonia.Media.Fonts
         public bool RetainBounds { get; }
 
         // --- Ink box: set lazily by whichever path needs it first (the metrics interpret, or the
-        //     geometry build), then immutable. A benign race may set it twice with identical values;
-        //     an 8-byte GlyphBounds store is atomic on 64-bit. ---
+        //     geometry build), then immutable. Both producers accumulate the same control points with
+        //     the same BoundsGeometryContext semantics, so a racing double-set writes bit-identical
+        //     values — which also keeps a torn 8-byte GlyphBounds store harmless on 32-bit targets. ---
 
         private GlyphBounds _bounds;
         private int _hasBounds;
@@ -59,6 +69,12 @@ namespace Avalonia.Media.Fonts
 
         public bool HasGeometry => Volatile.Read(ref _hasGeometry) != 0;
 
+        /// <summary>
+        /// The payload's shape as discovered by the build — unlike <see cref="GlyphCacheKey.Kind"/>,
+        /// which is the representation that was requested: an entry keyed as
+        /// <see cref="GlyphPayloadKind.Outline"/> may hold a
+        /// <see cref="GlyphPayloadKind.CompositeOutline"/> payload.
+        /// </summary>
         public GlyphPayloadKind Kind { get; private set; }
 
         public ushort[] Dependencies { get; private set; }

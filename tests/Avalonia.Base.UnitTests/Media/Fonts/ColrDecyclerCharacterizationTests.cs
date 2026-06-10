@@ -9,7 +9,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
     /// <summary>
     /// Regression tests for the COLR v1 decycler. A cyclic / over-deep paint graph must be contained:
     /// the parse boundary catches the <c>DecyclerException</c> so it never escapes the public
-    /// <see cref="GlyphTypeface.GetGlyphDrawing"/>, and the <c>using var guard = decycler.Enter(...)</c>
+    /// <see cref="GlyphTypeface.GetGlyphDrawing(ushort)"/>, and the <c>using var guard = decycler.Enter(...)</c>
     /// pattern keeps Enter/Exit balanced so a failed sub-paint can't poison a sibling.
     /// </summary>
     /// <remarks>
