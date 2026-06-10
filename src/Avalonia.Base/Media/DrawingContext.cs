@@ -102,6 +102,13 @@ namespace Avalonia.Media
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(IBrush? brush, IPen? pen, IGeometryImpl geometry)
         {
+            // Render backends cast the impl down to their own geometry type, so the immutable
+            // wrapper around cached glyph outlines must be unwrapped before dispatch — here, at the
+            // single chokepoint, so the wrapper keeps shielding the shared cached instance from
+            // being re-opened by public consumers while never reaching a backend.
+            if (geometry is ImmutableGeometryImpl immutable)
+                geometry = immutable.Inner;
+
             if ((brush != null || PenIsVisible(pen)))
                 DrawGeometryCore(brush, pen, geometry);
         }

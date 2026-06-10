@@ -20,6 +20,13 @@ namespace Avalonia.Media
 
         public ImmutableGeometryImpl(IGeometryImpl inner) => _inner = inner;
 
+        /// <summary>
+        /// The wrapped platform geometry. Render backends cast <see cref="IGeometryImpl"/> down to
+        /// their own implementation type, so <see cref="DrawingContext.DrawGeometry(IBrush?, IPen?, IGeometryImpl)"/>
+        /// unwraps to this before dispatching; the wrapper itself never reaches a backend.
+        /// </summary>
+        internal IGeometryImpl Inner => _inner;
+
         public Rect Bounds => _inner.Bounds;
 
         public double ContourLength => _inner.ContourLength;
