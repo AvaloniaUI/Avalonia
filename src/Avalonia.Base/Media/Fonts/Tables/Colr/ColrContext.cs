@@ -29,15 +29,15 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         public CpalTable CpalTable { get; }
         public int PaletteIndex { get; }
 
+        /// <summary>The instance's normalized variation coordinates (empty at the default instance).</summary>
+        public ReadOnlySpan<float> ActiveCoords => GlyphTypeface.ActiveVariationCoords;
+
         /// <summary>
         /// Resolves the region-scaled variation delta for a single varying field (in the field's raw
         /// units); 0 when the field does not vary at this instance.
         /// </summary>
         private float GetScaledDelta(uint varIndexBase, uint fieldOffset)
-        {
-            ReadOnlySpan<float> coords = GlyphTypeface.ActiveVariationCoords;
-            return ColrTable.TryGetScaledDelta(varIndexBase, fieldOffset, coords, out var delta) ? delta : 0f;
-        }
+            => ColrTable.TryGetScaledDelta(varIndexBase, fieldOffset, ActiveCoords, out var delta) ? delta : 0f;
 
         /// <summary>The delta for an FWORD field (design units) at <paramref name="fieldOffset"/>.</summary>
         public double GetFWordDelta(uint varIndexBase, uint fieldOffset)
@@ -87,14 +87,11 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
 
         /// <summary>
-        /// Copies a variable colour line's stops and normalizes them to the 0-1 range.
+        /// Copies a variable colour line's stops and normalizes them to the 0-1 range. The per-stop
+        /// offset / alpha variation is already applied during colour-line parsing (where each
+        /// VarColorStop's <c>varIndexBase</c> and the instance coords are available), so this just
+        /// normalizes.
         /// </summary>
-        /// <remarks>
-        /// Per-stop colour-line variation is not applied here: the colour-line parser does not capture
-        /// each VarColorStop's <c>varIndexBase</c> and folds alpha into the stop colour at parse time,
-        /// so stop offset / alpha deltas can't be resolved correctly. Geometric and solid-alpha
-        /// variation is handled via the paint records' own <c>VarIndexBase</c>.
-        /// </remarks>
         public GradientStop[] ResolveColorStops(GradientStopVar[] stops)
         {
             if (stops.Length == 0)

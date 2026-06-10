@@ -2981,7 +2981,7 @@ namespace Avalonia.Media
                 {
                     // COLR v1 paint graphs operate in font-space coordinates (Y-up), so the extent is
                     // flipped to drawing space (Y-down) to match Draw's transform.
-                    if (_context.ColrTable.TryGetClipBox(_glyphIndex, out var clipRect))
+                    if (_context.ColrTable.TryGetClipBox(_glyphIndex, _context.ActiveCoords, out var clipRect))
                     {
                         _bounds = clipRect.TransformToAABB(Matrix.CreateScale(1, -1));
                     }

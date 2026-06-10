@@ -135,20 +135,22 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             int stopOffset = 3;
             for (int i = 0; i < numStops; i++)
             {
-                // Both ColorStop and VarColorStop have the same first 6 bytes:
-                // F2DOT14 stopOffset (2), uint16 paletteIndex (2), F2DOT14 alpha (2)
-                // VarColorStop adds: uint32 varIndexBase (4) - which we ignore for now
-
+                // ColorStop / VarColorStop share the first 6 bytes: F2DOT14 stopOffset (2),
+                // uint16 paletteIndex (2), F2DOT14 alpha (2). VarColorStop appends uint32 varIndexBase.
                 var stopPos = F2Dot14ToDouble(BinaryPrimitives.ReadInt16BigEndian(span.Slice(stopOffset)));
-
-                // Clamp stopPos to valid [0, 1] range
-                // According to OpenType spec, stops should be in [0,1] but font data may have issues
-                stopPos = Math.Clamp(stopPos, 0.0, 1.0);
-
                 var paletteIndex = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(stopOffset + 2));
                 var alpha = F2Dot14ToDouble(BinaryPrimitives.ReadInt16BigEndian(span.Slice(stopOffset + 4)));
 
-                // Clamp alpha to valid [0, 1] range
+                if (isVarColorLine)
+                {
+                    // Apply this stop's variation deltas (both F2DOT14): offset = base+0, alpha = base+1.
+                    var varIndexBase = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(stopOffset + 6));
+                    stopPos += context.GetF2Dot14Delta(varIndexBase, 0);
+                    alpha += context.GetF2Dot14Delta(varIndexBase, 1);
+                }
+
+                // Clamp to the valid [0, 1] range (the spec requires it; font data may not honour it).
+                stopPos = Math.Clamp(stopPos, 0.0, 1.0);
                 alpha = Math.Clamp(alpha, 0.0, 1.0);
 
                 if (!context.CpalTable.TryGetColor(context.PaletteIndex, paletteIndex, out var color))
