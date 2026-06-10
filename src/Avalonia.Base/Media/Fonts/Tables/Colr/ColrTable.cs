@@ -519,9 +519,10 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         /// Tries to get the clip box for a specified glyph ID from the ClipList (COLR v1).
         /// </summary>
         /// <param name="glyphId">The glyph ID to get the clip box for.</param>
+        /// <param name="coords">Normalized active coords (empty at the default instance) for a variable (format 2) clip box.</param>
         /// <param name="clipBox">The clip box rectangle, or null if no clip box is defined.</param>
         /// <returns>True if a clip box was found; otherwise false.</returns>
-        public bool TryGetClipBox(ushort glyphId, out Rect clipBox)
+        public bool TryGetClipBox(ushort glyphId, ReadOnlySpan<float> coords, out Rect clipBox)
         {
             clipBox = default;
 
@@ -594,7 +595,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                     var clipBoxOffset = ReadOffset24(recordSpan.Slice(4));
                     var absoluteClipBoxOffset = _clipListOffset + clipBoxOffset;
 
-                    return TryParseClipBox(span, absoluteClipBoxOffset, out clipBox);
+                    return TryParseClipBox(span, absoluteClipBoxOffset, coords, out clipBox);
                 }
                 else if (glyphId < startGlyphId)
                 {
@@ -610,9 +611,12 @@ namespace Avalonia.Media.Fonts.Tables.Colr
         }
 
         /// <summary>
-        /// Tries to parse a ClipBox from the specified offset.
+        /// Tries to parse a ClipBox from the specified offset. Format 1 is a fixed box (four FWORDs);
+        /// format 2 adds a single <c>varIndexBase</c>, with each corner varying at
+        /// <c>varIndexBase + 0..3</c> (FWORD deltas) at the supplied coordinates. Coordinates stay in
+        /// font space (Y-up); the Y-flip is applied by the Draw / Bounds path.
         /// </summary>
-        private static bool TryParseClipBox(ReadOnlySpan<byte> data, uint offset, out Rect clipBox)
+        private bool TryParseClipBox(ReadOnlySpan<byte> data, uint offset, ReadOnlySpan<float> coords, out Rect clipBox)
         {
             clipBox = default;
 
@@ -623,68 +627,43 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
             var span = data.Slice((int)offset);
 
-            // ClipBox format (format 1 or 2):
-            // uint8 format
-            // For format 1 (FWORD values):
-            //   FWORD xMin
-            //   FWORD yMin
-            //   FWORD xMax
-            //   FWORD yMax
-            // For format 2 (FWORD + VarIndexBase for each):
-            //   FWORD xMin, uint32 varIndexBase
-            //   FWORD yMin, uint32 varIndexBase
-            //   FWORD xMax, uint32 varIndexBase
-            //   FWORD yMax, uint32 varIndexBase
-
-            if (span.Length < 1)
+            // Both formats start with uint8 format + FWORD xMin/yMin/xMax/yMax.
+            if (span.Length < 9)
             {
                 return false;
             }
 
             var format = span[0];
 
-            if (format == 1)
+            if (format != 1 && format != 2)
             {
-                // Format 1: Fixed ClipBox
-                if (span.Length < 9) // format (1) + 4 FWORDs (8)
+                return false;
+            }
+
+            double xMin = BinaryPrimitives.ReadInt16BigEndian(span.Slice(1));
+            double yMin = BinaryPrimitives.ReadInt16BigEndian(span.Slice(3));
+            double xMax = BinaryPrimitives.ReadInt16BigEndian(span.Slice(5));
+            double yMax = BinaryPrimitives.ReadInt16BigEndian(span.Slice(7));
+
+            if (format == 2)
+            {
+                // Format 2: a single uint32 varIndexBase follows the four FWORDs; the corners are FWORD
+                // deltas at base + 0..3.
+                if (span.Length < 13)
                 {
                     return false;
                 }
 
-                var xMin = BinaryPrimitives.ReadInt16BigEndian(span.Slice(1));
-                var yMin = BinaryPrimitives.ReadInt16BigEndian(span.Slice(3));
-                var xMax = BinaryPrimitives.ReadInt16BigEndian(span.Slice(5));
-                var yMax = BinaryPrimitives.ReadInt16BigEndian(span.Slice(7));
+                var varIndexBase = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(9));
 
-                // Keep in font-space coordinates (Y-up)
-                // The Y-flip transformation is applied at the root level in PaintResolver
-                clipBox = new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
-                return true;
-            }
-            else if (format == 2)
-            {
-                // Format 2: Variable ClipBox (ignore VarIndexBase for now)
-                if (span.Length < 25) // format (1) + 4 * (FWORD (2) + VarIndexBase (4))
-                {
-                    return false;
-                }
-
-                var xMin = BinaryPrimitives.ReadInt16BigEndian(span.Slice(1));
-                // Skip VarIndexBase at span[3..7]
-                var yMin = BinaryPrimitives.ReadInt16BigEndian(span.Slice(7));
-                // Skip VarIndexBase at span[9..13]
-                var xMax = BinaryPrimitives.ReadInt16BigEndian(span.Slice(13));
-                // Skip VarIndexBase at span[15..19]
-                var yMax = BinaryPrimitives.ReadInt16BigEndian(span.Slice(19));
-                // Skip VarIndexBase at span[21..25]
-
-                // Keep in font-space coordinates (Y-up)
-                // The Y-flip transformation is applied at the root level in PaintResolver
-                clipBox = new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
-                return true;
+                if (TryGetScaledDelta(varIndexBase, 0, coords, out var dxMin)) xMin += dxMin;
+                if (TryGetScaledDelta(varIndexBase, 1, coords, out var dyMin)) yMin += dyMin;
+                if (TryGetScaledDelta(varIndexBase, 2, coords, out var dxMax)) xMax += dxMax;
+                if (TryGetScaledDelta(varIndexBase, 3, coords, out var dyMax)) yMax += dyMax;
             }
 
-            return false;
+            clipBox = new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
+            return true;
         }
 
         /// <summary>

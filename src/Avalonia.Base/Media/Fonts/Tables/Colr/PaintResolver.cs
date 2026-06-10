@@ -318,7 +318,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var resolvedInner = ResolvePaint(colrGlyph.Inner, context);
 
             // Wrap in a clip box if present
-            if (context.ColrTable.TryGetClipBox(glyphId, out var clipBox))
+            if (context.ColrTable.TryGetClipBox(glyphId, context.ActiveCoords, out var clipBox))
             {
                 return new ResolvedClipBox(clipBox, resolvedInner);
             }
