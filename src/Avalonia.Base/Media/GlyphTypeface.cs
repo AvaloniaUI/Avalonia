@@ -64,6 +64,7 @@ namespace Avalonia.Media
         // and outlines at its own variation point. The delegate is cached to keep the hot path alloc-free.
         private GlyphCache? _glyphCache;
         private Func<GlyphCacheEntry, BuiltGeometry>? _buildGlyphGeometry;
+        private Func<GlyphCacheEntry, BuiltGeometry>? _buildColorDrawing;
 
         // Variation tables (null on static fonts). The fvar table is loaded after the
         // name table so axis / instance names can be resolved during parsing; avar is
@@ -1549,28 +1550,85 @@ namespace Avalonia.Media
         /// </returns>
         public IGlyphDrawing? GetGlyphDrawing(ushort glyphId)
         {
-            if (glyphId >= GlyphCount)
+            if (glyphId >= GlyphCount || _colrTable is null || _cpalTable is null)
             {
                 return null;
             }
 
-            // Try COLR v1 first
-            if (_colrTable != null && _cpalTable != null && _colrTable.HasV1Data)
+            // Probe the colour-glyph kind up front so plain outline glyphs (the bulk of a text run)
+            // never create a colour-cache entry. A v1 record wins over v0 layers for the same glyph.
+            var isColorGlyph =
+                (_colrTable.HasV1Data && _colrTable.TryGetBaseGlyphV1Record(glyphId, out _)) ||
+                _colrTable.HasColorLayers(glyphId);
+
+            if (!isColorGlyph)
             {
-                if (_colrTable.TryGetBaseGlyphV1Record(glyphId, out var record))
+                return null;   // outline-only glyph — caller should use GetGlyphOutline()
+            }
+
+            // Cache the drawing per instance: building it parses the whole paint graph (v1), which is
+            // wasteful to repeat per call. The drawing re-fetches its layer outlines on every Draw, so
+            // it is recorded as a GlyphPayloadKind.ColorDrawing that pins those outlines (once they are
+            // cached) and keeps them warm by recency. The build delegate is cached to keep hits
+            // alloc-free.
+            var cache = _glyphCache ?? GetOrCreateGlyphCache();
+            var entry = cache.GetColorEntry(glyphId);
+
+            return (IGlyphDrawing?)cache.GetOrBuildDrawing(entry, _buildColorDrawing ??= BuildColorDrawingEntry);
+        }
+
+        /// <summary>
+        /// Builds the colour-drawing payload for an in-range colour glyph — the cold path behind
+        /// <see cref="GetGlyphDrawing"/>'s cache. The payload is a COLR v1 paint-graph drawing or a v0
+        /// layer drawing; <see cref="BuiltGeometry.Dependencies"/> are the layer glyphs it re-fetches on
+        /// every draw, and <see cref="BuiltGeometry.Cost"/> reflects the drawing's own (small) footprint
+        /// — the layer outlines are charged on their own entries.
+        /// </summary>
+        private BuiltGeometry BuildColorDrawingEntry(GlyphCacheEntry entry)
+        {
+            var glyphId = entry.Glyph;
+            IGlyphDrawing? drawing = null;
+            var dependencies = Array.Empty<ushort>();
+
+            if (_colrTable!.HasV1Data && _colrTable.TryGetBaseGlyphV1Record(glyphId, out var record))
+            {
+                var v1 = new ColorGlyphV1Drawing(this, _colrTable, _cpalTable!, glyphId, record);
+                drawing = v1;
+                dependencies = v1.Dependencies;
+            }
+            else if (_colrTable.HasColorLayers(glyphId))
+            {
+                drawing = new ColorGlyphDrawing(this, _colrTable, _cpalTable!, glyphId);
+                dependencies = CollectColorLayerDependencies(glyphId);
+            }
+
+            var cost = ColorDrawingBaseCost + (dependencies.Length * ColorDrawingDependencyCost);
+
+            return new BuiltGeometry(drawing, cost, GlyphPayloadKind.ColorDrawing, dependencies,
+                default, hasBounds: false);
+        }
+
+        // The distinct layer glyph ids of a COLR v0 colour glyph.
+        private ushort[] CollectColorLayerDependencies(ushort glyphId)
+        {
+            var layers = _colrTable!.GetLayers(glyphId);
+
+            if (layers.Length == 0)
+            {
+                return Array.Empty<ushort>();
+            }
+
+            var dependencies = new List<ushort>(layers.Length);
+
+            foreach (var layer in layers)
+            {
+                if (!dependencies.Contains(layer.GlyphId))
                 {
-                    return new ColorGlyphV1Drawing(this, _colrTable, _cpalTable, glyphId, record);
+                    dependencies.Add(layer.GlyphId);
                 }
             }
 
-            // Fallback to COLR v0
-            if (_colrTable != null && _cpalTable != null && _colrTable.HasColorLayers(glyphId))
-            {
-                return new ColorGlyphDrawing(this, _colrTable, _cpalTable, glyphId);
-            }
-
-            // For outline-only glyphs, return null - caller should use GetGlyphOutline() instead
-            return null;
+            return dependencies.ToArray();
         }
 
         /// <summary>
@@ -1620,6 +1678,11 @@ namespace Avalonia.Media
         // weight. Calibrated against the churn benchmark, not an exact accounting.
         private const int OutlineBaseCost = 96;
         private const int OutlineSegmentCost = 32;
+
+        // A colour drawing retains only its (small) parsed paint graph / layer list; the heavy layer
+        // outlines are charged on their own cache entries, so this stays modest.
+        private const int ColorDrawingBaseCost = 256;
+        private const int ColorDrawingDependencyCost = 16;
 
         /// <summary>
         /// Builds the outline geometry for an in-range glyph — the cold path behind
@@ -2281,6 +2344,7 @@ namespace Avalonia.Media
 
         private readonly Rect _bounds;
         private readonly Paint? _paint;
+        private readonly ushort[] _dependencies;
 
         public ColorGlyphV1Drawing(GlyphTypeface glyphTypeface, ColrTable colrTable, CpalTable cpalTable,
             ushort glyphId, BaseGlyphV1Record record, int paletteIndex = 0)
@@ -2289,45 +2353,51 @@ namespace Avalonia.Media
             _glyphId = glyphId;
             _paletteIndex = paletteIndex;
 
+            var dependencies = Array.Empty<ushort>();
             var decycler = PaintDecycler.Rent();
 
             try
             {
                 if (glyphTypeface.TryGetBaseGlyphV1Paint(_context, record, out _paint))
                 {
-                    // COLR v1 paint graphs operate in font-space coordinates (Y-up), so the extent is
+                    // Traverse the paint graph once (no render backend) to collect the referenced layer
+                    // glyphs — the drawing's cache dependencies — and, as a by-product, the conservative
+                    // painted extent. COLR v1 paint graphs are in font space (Y-up), so any extent is
                     // flipped to drawing space (Y-down) to match Draw's transform.
+                    var analysis = new ColorGlyphV1BoundsPainter(_context);
+
+                    PaintTraverser.Traverse(_paint, analysis, Matrix.Identity);
+
+                    dependencies = analysis.Dependencies;
+
                     if (_context.ColrTable.TryGetClipBox(_glyphId, _context.ActiveCoords, out var clipRect))
                     {
                         _bounds = clipRect.TransformToAABB(Matrix.CreateScale(1, -1));
                     }
-                    else
+                    else if (analysis.HasBounds)
                     {
                         // No ClipList (the common case): fall back to the union of the painted outlines'
-                        // control-point extents, read without building geometry (no render backend
-                        // required). Stays empty when the font carries no buildable outline for the
-                        // painted glyphs, rather than guessing.
-                        var boundsPainter = new ColorGlyphV1BoundsPainter(_context);
-
-                        PaintTraverser.Traverse(_paint, boundsPainter, Matrix.Identity);
-
-                        if (boundsPainter.HasBounds)
-                        {
-                            _bounds = boundsPainter.Bounds.TransformToAABB(Matrix.CreateScale(1, -1));
-                        }
+                        // control-point extents. Stays empty when the font carries no buildable outline
+                        // for the painted glyphs, rather than guessing.
+                        _bounds = analysis.Bounds.TransformToAABB(Matrix.CreateScale(1, -1));
                     }
                 }
             }
             finally
             {
                 PaintDecycler.Return(decycler);
-
             }
+
+            _dependencies = dependencies;
         }
 
         public GlyphDrawingType Type => GlyphDrawingType.ColorLayers;
 
         public Rect Bounds => _bounds;
+
+        /// <summary>The layer glyph ids this drawing re-fetches on every <see cref="Draw"/>; the cache
+        /// pins their outlines while this drawing is cached.</summary>
+        public ushort[] Dependencies => _dependencies;
 
         public void Draw(DrawingContext context, Point origin)
         {

@@ -202,6 +202,57 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.Equal(1, payload.DisposeCount);
         }
 
+        [Fact]
+        public void GetOrBuildDrawing_Builds_Once_And_Pins_Its_Already_Cached_Dependencies()
+        {
+            var cache = new GlyphCache(budgetBytes: 2);
+
+            // The layer outline is cached first (as it would be after the colour glyph's first draw).
+            BuildGeometry(cache, 60, cost: 1);
+
+            var drawing = cache.GetColorEntry(50);
+            var builds = 0;
+
+            object? Fetch() => cache.GetOrBuildDrawing(drawing, _ =>
+            {
+                builds++;
+                return Built(1, kind: GlyphPayloadKind.ColorDrawing, dependencies: new ushort[] { 60 });
+            });
+
+            var first = Fetch();
+            var second = Fetch();
+
+            Assert.Same(first, second);   // cached: served from the same entry
+            Assert.Equal(1, builds);      // parsed once
+
+            // Pressure: the pinned layer outline outlives the drawing that pins it.
+            BuildGeometry(cache, 70, cost: 1);
+
+            Assert.True(cache.GetEntry(60, retainBounds: false).HasGeometry); // pinned layer survived
+            Assert.False(drawing.HasGeometry);                               // the drawing was evicted instead
+        }
+
+        [Fact]
+        public void A_Colour_Drawing_And_An_Outline_Can_Share_A_Glyph_Id()
+        {
+            var cache = new GlyphCache();
+
+            var outline = cache.GetEntry(5, retainBounds: false);
+            var drawing = cache.GetColorEntry(5);
+            Assert.NotSame(outline, drawing); // distinct entries in distinct maps
+
+            var outlinePayload = new object();
+            cache.GetOrBuildGeometry(outline, _ => Built(1, outlinePayload));
+
+            var drawingPayload = new object();
+            cache.GetOrBuildDrawing(drawing, _ => Built(1, drawingPayload, GlyphPayloadKind.ColorDrawing));
+
+            // Neither clobbered the other's slot.
+            Assert.Same(outlinePayload, cache.GetOrBuildGeometry(outline, _ => Built(1)));
+            Assert.Same(drawingPayload,
+                cache.GetOrBuildDrawing(drawing, _ => Built(1, kind: GlyphPayloadKind.ColorDrawing)));
+        }
+
         private sealed class DisposablePayload : IDisposable
         {
             public int DisposeCount { get; private set; }
