@@ -25,7 +25,7 @@ namespace Avalonia.Automation.Peers
         {
             EnsureEnabled();
 
-            if (Owner.Owner is { } calendar && Owner.DataContext is DateTime date)
+            if (TryGetSelectableDate(out var calendar, out var date))
                 calendar.SelectedDate = date;
         }
 
@@ -33,19 +33,43 @@ namespace Avalonia.Automation.Peers
         {
             EnsureEnabled();
 
-            if (Owner.Owner is { } calendar && Owner.DataContext is DateTime date &&
-                !calendar.SelectedDates.Contains(date))
+            if (!TryGetSelectableDate(out var calendar, out var date) ||
+                calendar.SelectedDates.Contains(date))
             {
-                calendar.SelectedDates.Add(date);
+                return;
             }
+
+            if (calendar.SelectionMode == CalendarSelectionMode.SingleDate)
+                calendar.SelectedDate = date;
+            else
+                calendar.SelectedDates.Add(date);
         }
 
         void ISelectionItemProvider.RemoveFromSelection()
         {
             EnsureEnabled();
 
-            if (Owner.Owner is { } calendar && Owner.DataContext is DateTime date)
+            if (Owner.Owner is { SelectionMode: not CalendarSelectionMode.None } calendar &&
+                Owner.DataContext is DateTime date)
+            {
                 calendar.SelectedDates.Remove(date);
+            }
+        }
+
+        private bool TryGetSelectableDate(out Calendar calendar, out DateTime date)
+        {
+            if (Owner.Owner is { SelectionMode: not CalendarSelectionMode.None } owner &&
+                Owner.DataContext is DateTime value &&
+                !Owner.IsBlackout)
+            {
+                calendar = owner;
+                date = value;
+                return true;
+            }
+
+            calendar = null!;
+            date = default;
+            return false;
         }
 
         protected override string GetClassNameCore() => nameof(CalendarDayButton);
