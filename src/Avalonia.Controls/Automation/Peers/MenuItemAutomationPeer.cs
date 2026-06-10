@@ -22,6 +22,9 @@ namespace Avalonia.Automation.Peers
         {
             EnsureEnabled();
 
+            if (Owner.HasSubMenu)
+                return;
+
             switch (Owner.ToggleType)
             {
                 case MenuItemToggleType.CheckBox:
