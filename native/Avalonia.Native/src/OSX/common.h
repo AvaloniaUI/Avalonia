@@ -32,7 +32,7 @@ extern IAvnApplicationCommands* CreateApplicationCommands();
 extern IAvnPlatformBehaviorInhibition* CreatePlatformBehaviorInhibition();
 extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
 extern IAvnPlatformSettings* CreatePlatformSettings();
-extern IAvnPlatformRenderTimer* CreatePlatformRenderTimer();
+extern IAvnPlatformRenderTimer* CreatePlatformRenderTimer(IAvnActionCallback* tick, IAvnActionCallback* stateChanged);
 extern IAvnNativeObjectsMemoryManagement* CreateMemoryManagementHelper();
 extern void SetAppMenu(IAvnMenu *menu);
 extern void SetServicesMenu (IAvnMenu* menu);

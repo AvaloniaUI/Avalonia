@@ -719,7 +719,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateApplicationCommands(IAvnApplicationCommands** ppv);
      HRESULT CreatePlatformSettings(IAvnPlatformSettings** ppv);
      HRESULT CreatePlatformBehaviorInhibition(IAvnPlatformBehaviorInhibition** ppv);
-     HRESULT CreatePlatformRenderTimer(IAvnPlatformRenderTimer** ppv);
+     HRESULT CreatePlatformRenderTimer(IAvnActionCallback* tick, IAvnActionCallback* stateChanged, IAvnPlatformRenderTimer** ppv);
      HRESULT ImportMTLSharedEvent([intptr]void* idMtlSharedEvent, IAvnMTLSharedEvent** ppv);
      HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement** ppv);
      HRESULT SetDockMenu(IAvnMenu* menu);
@@ -1368,8 +1368,8 @@ interface IAvnPlatformBehaviorInhibition : IUnknown
 [uuid(22edf20d-5803-2d3f-9247-b4842e5e9322)]
 interface IAvnPlatformRenderTimer : IUnknown
 {
-    int RegisterTick(IAvnActionCallback* callback);
     void Start();
     void Stop();
     bool RunsInBackground();
+    int GetNeedsFallbackTimer();
 }
