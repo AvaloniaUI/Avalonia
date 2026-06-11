@@ -21,6 +21,7 @@ namespace Avalonia.Data.Core;
 ///   UpdateSourceTrigger != PropertyChanged.
 /// - The value must be directly assignable to the target property, i.e. no type conversion is
 ///   performed.
+/// - The target property must not enable data validation.
 /// </remarks>
 internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
     IDescription,
@@ -120,7 +121,9 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
 
     private protected override bool GetDataValidationState(out BindingValueType state, out Exception? error)
     {
-        // TODO: Data validation support.
+        // Data validation is not supported by the typed expression: bindings whose target
+        // property enables it are excluded in CompiledBinding.CanUseTypedBindingExpression and
+        // use the untyped BindingExpression instead. Could be implemented here as a follow-up.
         state = BindingValueType.Value;
         error = null;
         return false;
