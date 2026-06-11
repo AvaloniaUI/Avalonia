@@ -96,7 +96,7 @@
         case AutomationEdit: return NSAccessibilityTextFieldRole;
         case AutomationHyperlink: return NSAccessibilityLinkRole;
         case AutomationImage: return NSAccessibilityImageRole;
-        case AutomationListItem: return NSAccessibilityGroupRole;
+        case AutomationListItem: return NSAccessibilityRowRole;
         case AutomationList: return NSAccessibilityListRole;
         case AutomationMenu: return NSAccessibilityMenuBarRole;
         case AutomationMenuBar: return NSAccessibilityMenuBarRole;
@@ -141,6 +141,7 @@
     auto controlType = _peer->GetAutomationControlType();
     switch (controlType) {
         case AutomationList: return @"AXContentList";
+        case AutomationListItem: return NSAccessibilityTableRowSubrole;
     }
 
     auto landmarkType = _peer->GetLandmarkType();
