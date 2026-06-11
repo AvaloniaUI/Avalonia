@@ -33,6 +33,7 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
     private readonly BindingMode _mode;
     private bool _isRunning;
     private bool _produceValue;
+    private bool _writingValueToTarget;
     private IBindingExpressionSink? _sink;
     private ImmediateValueFrame? _frame;
     private WeakReference<TSource?>? _source;
@@ -223,7 +224,19 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         if (_produceValue && _mode is not BindingMode.OneWayToSource)
         {
             if (!_targetValue.HasValue || _targetValue != _sourceValue)
-                _sink?.OnChanged(this, true, false);
+            {
+                // Flag that we're pushing the source value to the target so that the resulting
+                // target PropertyChanged isn't echoed straight back to the source in TwoWay mode.
+                _writingValueToTarget = true;
+                try
+                {
+                    _sink?.OnChanged(this, true, false);
+                }
+                finally
+                {
+                    _writingValueToTarget = false;
+                }
+            }
             if (_mode is BindingMode.OneTime)
                 _shouldUpdateOneTimeBindingTarget = false;
         }
@@ -246,7 +259,9 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
             _targetValue = e is AvaloniaPropertyChangedEventArgs<TValue> typedArgs ?
                 typedArgs.NewValue.Value : (TValue)e.NewValue!;
 
-            if (_mode is BindingMode.TwoWay or BindingMode.OneWayToSource)
+            // Don't write back to the source if this change is the binding pushing the source
+            // value to the target; that would be a redundant round-trip.
+            if (!_writingValueToTarget && _mode is BindingMode.TwoWay or BindingMode.OneWayToSource)
                 WriteValueToSource(_targetValue.Value);
         }
     }
