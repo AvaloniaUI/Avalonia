@@ -204,16 +204,6 @@ namespace Avalonia
         }
 
         private TValue GetValue(IValueEntry entry, AvaloniaObject o)
-        {
-            if (entry.HasValue())
-            {
-                if (entry is IValueEntry<TValue> typed)
-                    return typed.GetValue();
-                else
-                    return (TValue)entry.GetValue()!;
-            }
-
-            return GetMetadata(o).UnsetValue;
-        }
+            => IValueEntry.TryGetValue<TValue>(entry, out var value) ? value : GetMetadata(o).UnsetValue;
     }
 }

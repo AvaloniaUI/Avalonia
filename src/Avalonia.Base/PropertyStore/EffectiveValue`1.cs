@@ -203,17 +203,7 @@ namespace Avalonia.PropertyStore
         protected override object? GetBoxedValue() => Value;
 
         private T GetValue(IValueEntry entry)
-        {
-            if (entry.HasValue())
-            {
-                if (entry is IValueEntry<T> typed)
-                    return typed.GetValue();
-                else
-                    return (T)entry.GetValue()!;
-            }
-
-            return _metadata.DefaultValue;
-        }
+            => IValueEntry.TryGetValue<T>(entry, out var value) ? value : _metadata.DefaultValue;
 
         private void SetAndRaiseCore(
             ValueStore owner,

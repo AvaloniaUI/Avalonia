@@ -256,10 +256,9 @@ public class CompiledBinding : BindingBase
         AvaloniaProperty? targetProperty,
         object? anchor)
     {
-        var (mode, trigger) = ResolveDefaultsFromMetadata(target, targetProperty);
-
-        if (trigger is not UpdateSourceTrigger.PropertyChanged)
-            throw new NotSupportedException("TypedBindingExpression only supports PropertyChanged UpdateSourceTrigger.");
+        // The UpdateSourceTrigger has already been constrained to PropertyChanged by
+        // CanUseTypedBindingExpression, so only the mode needs to be resolved here.
+        var (mode, _) = ResolveDefaultsFromMetadata(target, targetProperty);
 
         return element.CreateExpression(
             target,

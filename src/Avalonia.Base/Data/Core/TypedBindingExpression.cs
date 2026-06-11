@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.PropertyStore;
 using Avalonia.Utilities;
-using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.Data.Core;
 
@@ -149,7 +148,13 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         return _sourceValue.HasValue;
     }
 
-    private protected override void Unsubscribe() => StopCore();
+    private protected override void Unsubscribe()
+    {
+        // Reset _isRunning so the expression can be restarted (and re-subscribe to its source) if
+        // the value store reactivates this entry later.
+        StopCore();
+        _isRunning = false;
+    }
 
     void IWeakEventSubscriber<PropertyChangedEventArgs>.OnEvent(object? sender, WeakEvent ev, PropertyChangedEventArgs e)
     {
