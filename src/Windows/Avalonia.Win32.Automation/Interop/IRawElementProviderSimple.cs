@@ -191,7 +191,8 @@ internal enum UiaPropertyId
     Selection2CurrentSelectedItem,
     Selection2ItemCount,
     HeadingLevel,
-    IsDialog
+    IsDialog,
+    PlaceholderText = 30364
 }
 
 internal enum UiaPatternId
