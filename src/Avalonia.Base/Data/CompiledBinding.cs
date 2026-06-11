@@ -241,6 +241,13 @@ public class CompiledBinding : BindingBase
             return false;
         }
 
+        // TypedBindingExpression only supports StyledElement targets (it listens for
+        // StyledElement.DataContextProperty changes). Other AvaloniaObjects that expose a
+        // DataContext (e.g. Application, which is an IDataContextProvider but not a StyledElement)
+        // must use the untyped path.
+        if (target is not StyledElement)
+            return false;
+
         // DataContext bindings need to read their source value from the parent of the target
         // instead of the DataContext; TypedBindingExpression does not support this (and it would
         // probably not be worth doing so as DataContexts are usually reference types).
@@ -251,6 +258,20 @@ public class CompiledBinding : BindingBase
         // path when the target property enables it.
         if (targetProperty.GetMetadata(target).EnableDataValidation == true)
             return false;
+
+        // For modes that write back to the source, the source property must be settable and the
+        // target value must be assignable back to the source property type. The untyped path
+        // handles read-only or wider-typed sources gracefully (failing silently), so fall back to
+        // it rather than throwing during write-back.
+        var (mode, _) = ResolveDefaultsFromMetadata(target, targetProperty);
+        if (mode is BindingMode.TwoWay or BindingMode.OneWayToSource)
+        {
+            if (!typed.Property.CanSet ||
+                !targetProperty.PropertyType.IsAssignableTo(typed.Property.PropertyType))
+            {
+                return false;
+            }
+        }
 
         element = typed;
         return true;

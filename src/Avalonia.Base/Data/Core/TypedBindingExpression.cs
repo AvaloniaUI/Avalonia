@@ -73,7 +73,7 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         {
             throw new InvalidOperationException(
                 $"TypedBindingExpression of type '{typeof(TValue)}' cannot be bound " +
-                $"to a property of type '{targetProperty.PropertyType}' .");
+                $"to a property of type '{targetProperty.PropertyType}'.");
         }
 
         _sink = sink;
@@ -227,7 +227,24 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         if (_mode is BindingMode.OneTime && !_shouldUpdateOneTimeBindingTarget)
             return;
 
-        _sourceValue = source is null ? default : new(_propertyInfo.Get(source));
+        if (source is null)
+        {
+            _sourceValue = default;
+        }
+        else
+        {
+            try
+            {
+                _sourceValue = new(_propertyInfo.Get(source));
+            }
+            catch
+            {
+                // Getter exceptions are swallowed to match the untyped binding path and avoid
+                // crashing the UI thread (the getter runs in response to a source PropertyChanged
+                // event). Leave the previously-published value in place.
+                return;
+            }
+        }
 
         if (_produceValue && _mode is not BindingMode.OneWayToSource)
         {
@@ -252,7 +269,9 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
 
     private void OnSourcePropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == _propertyInfo.Name)
+        // A null or empty PropertyName means "all properties changed" per the
+        // INotifyPropertyChanged contract, so we must re-read the source value in that case too.
+        if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == _propertyInfo.Name)
             WriteSourceValueToTarget();
     }
 

@@ -337,6 +337,88 @@ public class TypedBindingExpressionTests : ScopedTestBase
         Assert.IsType<BindingExpression>(expression);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void OneWay_Binding_Updates_Target_When_Source_Raises_PropertyChanged_For_All_Properties(
+        string? allPropertiesName)
+    {
+        // A null or empty PropertyName means "all properties changed" per the INotifyPropertyChanged
+        // contract, so the binding must re-read its source value.
+        var data = new ViewModel { StringValue = "foo" };
+        var target = CreateTarget(data, mode: BindingMode.OneWay);
+
+        Assert.Equal("foo", target.Text);
+
+        data.SetStringValueWithoutNotification("bar");
+        data.RaisePropertyChanged(allPropertiesName);
+
+        Assert.Equal("bar", target.Text);
+    }
+
+    [Fact]
+    public void Getter_Exception_Does_Not_Propagate_When_Source_Raises_PropertyChanged()
+    {
+        // The untyped binding path swallows getter exceptions to avoid crashing the UI thread; the
+        // typed path must do the same rather than letting them escape into the event handler.
+        var data = new ViewModel { StringValue = "foo" };
+        var target = CreateTarget(data, mode: BindingMode.OneWay);
+
+        Assert.Equal("foo", target.Text);
+
+        data.ThrowOnGet = true;
+
+        var ex = Record.Exception(() => data.RaisePropertyChanged(nameof(ViewModel.StringValue)));
+
+        Assert.Null(ex);
+    }
+
+    [Fact]
+    public void Should_Not_Produce_TypedBindingExpression_For_ReadOnly_Source_In_TwoWay()
+    {
+        // A read-only source property cannot be written back to in TwoWay/OneWayToSource modes, so
+        // the untyped path (which fails silently) must be used instead.
+        var propertyInfo = new ClrPropertyInfo<ViewModel, string?>(
+            nameof(ViewModel.StringValue),
+            v => v.StringValue,
+            setter: null);
+        var binding = CreateBinding(propertyInfo, mode: BindingMode.TwoWay);
+        var target = new TextBlock { DataContext = new ViewModel() };
+
+        var expression = target.Bind(TextBlock.TextProperty, binding);
+
+        Assert.IsType<BindingExpression>(expression);
+    }
+
+    [Fact]
+    public void Should_Not_Produce_TypedBindingExpression_When_Target_Type_Is_Wider_In_TwoWay()
+    {
+        // The source is a string but the target property is object. The forward assignment is valid
+        // but writing an arbitrary object back to the string source could throw, so the untyped path
+        // must be used.
+        var source = new ViewModel { StringValue = "Hello" };
+        var binding = CreateBinding(mode: BindingMode.TwoWay);
+        var target = new TextBlock { DataContext = source };
+
+        var expression = target.Bind(TextBlock.TagProperty, binding);
+
+        Assert.IsType<BindingExpression>(expression);
+    }
+
+    [Fact]
+    public void Should_Not_Produce_TypedBindingExpression_For_Non_StyledElement_Target()
+    {
+        // TypedBindingExpression only supports StyledElement targets; other AvaloniaObjects (e.g.
+        // Application, which is an IDataContextProvider but not a StyledElement) must use the untyped
+        // path rather than throwing at runtime.
+        var binding = CreateBinding();
+        var target = new NonStyledTarget { DataContext = new ViewModel { StringValue = "Hello" } };
+
+        var expression = target.Bind(NonStyledTarget.ValueProperty, binding);
+
+        Assert.IsType<BindingExpression>(expression);
+    }
+
     private static TypedBindingExpression<ViewModel, string?> BindAndAssert(StyledElement target, BindingBase binding)
     {
         var expression = target.Bind(TextBlock.TextProperty, binding);
@@ -349,6 +431,13 @@ public class TypedBindingExpressionTests : ScopedTestBase
             nameof(ViewModel.StringValue),
             v => v.StringValue,
             (o, v) => o.StringValue = v);
+        return CreateBinding(propertyInfo, mode);
+    }
+
+    private static CompiledBinding CreateBinding(
+        IPropertyInfo<ViewModel, string?> propertyInfo,
+        BindingMode mode = BindingMode.OneWay)
+    {
         var path = new CompiledBindingPathBuilder().Property<ViewModel, string?>(
             propertyInfo,
             PropertyInfoAccessorFactory.CreateInpcPropertyAccessor,
@@ -372,14 +461,48 @@ public class TypedBindingExpressionTests : ScopedTestBase
         // values back to the source. PropertyChanged is only raised on a real change.
         public int StringValueSetCount { get; private set; }
 
+        // When set, the getter throws so tests can verify getter exceptions don't escape the
+        // binding's PropertyChanged handler.
+        public bool ThrowOnGet { get; set; }
+
         public string? StringValue
         {
-            get => _stringValue;
+            get
+            {
+                if (ThrowOnGet)
+                    throw new InvalidOperationException("Getter failed.");
+                return _stringValue;
+            }
             set
             {
                 ++StringValueSetCount;
                 SetField(ref _stringValue, value);
             }
+        }
+
+        // Mutates the backing field without raising PropertyChanged, so tests can then raise an
+        // "all properties changed" notification (null/empty name) and observe the binding react.
+        public void SetStringValueWithoutNotification(string? value) => _stringValue = value;
+    }
+
+    private class NonStyledTarget : AvaloniaObject, IDataContextProvider
+    {
+        public static readonly StyledProperty<object?> DataContextProperty =
+            StyledElement.DataContextProperty.AddOwner<NonStyledTarget>();
+
+        public static readonly StyledProperty<string?> ValueProperty =
+            AvaloniaProperty.Register<NonStyledTarget, string?>(nameof(Value));
+
+        public object? DataContext
+        {
+            get => GetValue(DataContextProperty);
+            set => SetValue(DataContextProperty, value);
+        }
+
+        public string? Value
+        {
+            get => GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
         }
     }
 }
