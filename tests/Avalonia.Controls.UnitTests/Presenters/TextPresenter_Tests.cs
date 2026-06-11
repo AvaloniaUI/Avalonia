@@ -1,7 +1,9 @@
 ﻿using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
@@ -98,6 +100,49 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 presenter.Arrange(new Rect(default, presenter.DesiredSize));
 
                 Assert.Equal(new Rect(default, expectedSize), presenter.Bounds);
+            }
+        }
+
+        [Fact]
+        public void Selection_Foreground_Preserves_Existing_Text_Decorations()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var decorations = new TextDecorationCollection
+                {
+                    new TextDecoration { Location = TextDecorationLocation.Underline }
+                };
+                var presenter = new TextPresenter
+                {
+                    Text = "abc",
+                    SelectionStart = 1,
+                    SelectionEnd = 2,
+                    SelectionForegroundBrush = Brushes.White,
+                    ShowSelectionHighlight = true
+                };
+                var typeface = new Typeface(
+                    presenter.FontFamily,
+                    presenter.FontStyle,
+                    presenter.FontWeight,
+                    presenter.FontStretch);
+
+                presenter.SetTextStyleOverrides(new[]
+                {
+                    new ValueSpan<TextRunProperties>(
+                        0,
+                        3,
+                        new GenericTextRunProperties(
+                            typeface,
+                            textDecorations: decorations,
+                            foregroundBrush: Brushes.Black))
+                });
+
+                var selectedRun = presenter.TextLayout.TextLines
+                    .SelectMany(x => x.TextRuns)
+                    .Single(x => x.Text.ToString() == "b");
+
+                Assert.Equal(Brushes.White, selectedRun.Properties!.ForegroundBrush);
+                Assert.Same(decorations, selectedRun.Properties.TextDecorations);
             }
         }
     }

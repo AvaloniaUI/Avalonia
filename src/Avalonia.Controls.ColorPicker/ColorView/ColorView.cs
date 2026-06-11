@@ -194,6 +194,8 @@ namespace Avalonia.Controls
 
             if (_hexTextBox != null)
             {
+                _hexTextBox[!TextInputOptions.IsSpellCheckEnabledProperty] =
+                    this[!TextInputOptions.IsSpellCheckEnabledProperty];
                 _hexTextBox.KeyDown += HexTextBox_KeyDown;
                 _hexTextBox.LostFocus += HexTextBox_LostFocus;
             }

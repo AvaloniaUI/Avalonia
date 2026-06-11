@@ -72,17 +72,16 @@ partial class AvaloniaView
         {
             get
             {
-                if (IsSecureEntry)
+                var options = _view._options ?? TextInputOptions.Default;
+
+                if (!options.CanUseSpellCheck())
                 {
                     return UITextSpellCheckingType.No;
                 }
 
-                return _view._options?.IsSpellCheckEnabled switch
-                {
-                    false => UITextSpellCheckingType.No,
-                    true => UITextSpellCheckingType.Yes,
-                    _ => UITextSpellCheckingType.Default
-                };
+                return options.IsSpellCheckEnabled == true
+                    ? UITextSpellCheckingType.Yes
+                    : UITextSpellCheckingType.Default;
             }
         }
 

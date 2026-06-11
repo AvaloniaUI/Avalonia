@@ -44,6 +44,29 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Inherited_Spell_Check_Provider_Replaces_Native_Platform_Provider()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var hunspellProvider = new HunspellStyleSpellCheckProvider();
+                var nativeProvider = new TestSpellCheckProvider("NativeSuggestion");
+
+                var target = CreateTextBoxInTopLevel(
+                    "teh sample",
+                    nativeProvider,
+                    topLevel => TextInputOptions.SetSpellCheckProvider(topLevel, hunspellProvider));
+                target.CaretIndex = 1;
+
+                target.RaiseEvent(new ContextRequestedEventArgs());
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(new[] { "the" }, target.SpellCheckSuggestions);
+                Assert.Equal(1, hunspellProvider.CheckCount);
+                Assert.Equal(0, nativeProvider.CheckCount);
+            }
+        }
+
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             renderInterface: new HeadlessPlatformRenderInterface(),
@@ -51,7 +74,10 @@ namespace Avalonia.Controls.UnitTests
             fontManagerImpl: new TestFontManager(),
             assetLoader: new StandardAssetLoader());
 
-        private static TextBox CreateTextBoxInTopLevel(string text, ISpellCheckProvider platformProvider)
+        private static TextBox CreateTextBoxInTopLevel(
+            string text,
+            ISpellCheckProvider platformProvider,
+            Action<TestTopLevel>? configureTopLevel = null)
         {
             var target = new TextBox
             {
@@ -64,6 +90,8 @@ namespace Avalonia.Controls.UnitTests
                 Template = CreateTopLevelTemplate(),
                 Content = target
             };
+
+            configureTopLevel?.Invoke(topLevel);
 
             topLevel.ApplyTemplate();
             topLevel.LayoutManager.ExecuteInitialLayoutPass();

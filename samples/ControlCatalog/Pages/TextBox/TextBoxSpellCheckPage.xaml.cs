@@ -1,5 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input.TextInput;
 
 namespace ControlCatalog.Pages;
 
@@ -8,6 +14,7 @@ public partial class TextBoxSpellCheckPage : UserControl
     public TextBoxSpellCheckPage()
     {
         InitializeComponent();
+        TextInputOptions.SetSpellCheckProvider(CustomProviderTextBox, new SampleSpellCheckProvider());
         LongSpellCheckTextBox.Text = CreateLongSpellCheckText();
     }
 
@@ -24,5 +31,32 @@ public partial class TextBoxSpellCheckPage : UserControl
         }
 
         return builder.ToString();
+    }
+
+    private sealed class SampleSpellCheckProvider : ISpellCheckProvider
+    {
+        public bool IsLanguageSupported(CultureInfo? culture) => true;
+
+        public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
+            string text,
+            CultureInfo? culture,
+            CancellationToken cancellationToken = default)
+        {
+            const string misspelling = "avlnia";
+            var index = text.IndexOf(misspelling, StringComparison.OrdinalIgnoreCase);
+
+            return new ValueTask<IReadOnlyList<SpellCheckResult>>(
+                index < 0
+                    ? Array.Empty<SpellCheckResult>()
+                    : new[] { new SpellCheckResult(index, misspelling.Length, text.Substring(index, misspelling.Length)) });
+        }
+
+        public ValueTask<IReadOnlyList<string>> SuggestAsync(
+            string word,
+            CultureInfo? culture,
+            CancellationToken cancellationToken = default)
+        {
+            return new ValueTask<IReadOnlyList<string>>(new[] { "Avalonia" });
+        }
     }
 }

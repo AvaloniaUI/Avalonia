@@ -25,6 +25,7 @@ namespace Avalonia.Input.TextInput
             TextInputOptions.UppercaseProperty.Changed.Subscribe(OnTextInputOptionsChanged);
             TextInputOptions.ShowSuggestionsProperty.Changed.Subscribe(OnTextInputOptionsChanged);
             TextInputOptions.IsSpellCheckEnabledProperty.Changed.Subscribe(OnTextInputOptionsChanged);
+            TextInputOptions.SpellCheckProviderProperty.Changed.Subscribe(OnTextInputOptionsChanged);
         }
 
         private TextInputMethodClient? Client

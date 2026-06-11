@@ -22,7 +22,7 @@ namespace ControlCatalog.Pages
                 "Numeric, password, search, suggestions, return key, and sensitivity input options.",
                 () => new TextBoxContentTypesPage()),
             ("Input Behavior", "Spell Check",
-                "Compare default spell-check, explicit opt-out, search text, and multiline misspellings.",
+                "Compare default spell-check, explicit opt-out, search text, custom providers, and multiline misspellings.",
                 () => new TextBoxSpellCheckPage()),
             ("Input Behavior", "IME",
                 "Input method font sizing and explicit IME disablement.",

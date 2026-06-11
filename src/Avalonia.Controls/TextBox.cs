@@ -1096,7 +1096,7 @@ namespace Avalonia.Controls
 
                 UpdatePseudoclasses();
                 UpdateCommandStates();
-                ScheduleSpellCheck();
+                ScheduleSpellCheck(invalidateResults: true);
             }
             else if (change.Property == CaretIndexProperty)
             {
@@ -1138,13 +1138,14 @@ namespace Avalonia.Controls
             }
 
             if (change.Property == TextInputOptions.IsSpellCheckEnabledProperty ||
+                change.Property == TextInputOptions.SpellCheckProviderProperty ||
                 change.Property == TextInputOptions.ContentTypeProperty ||
                 change.Property == TextInputOptions.IsSensitiveProperty ||
                 change.Property == PasswordCharProperty)
             {
                 CancelSpellCheckSuggestionQuery();
                 ClearSpellCheckSuggestions();
-                ScheduleSpellCheck();
+                ScheduleSpellCheck(invalidateResults: true);
             }
             else if (change.Property == FontFamilyProperty ||
                      change.Property == FontFeaturesProperty ||
@@ -1191,7 +1192,7 @@ namespace Avalonia.Controls
             return controller;
         }
 
-        private void ScheduleSpellCheck()
+        private void ScheduleSpellCheck(bool invalidateResults = false)
         {
             if (!TextBoxSpellCheckController.CanCreate(this))
             {
@@ -1199,7 +1200,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            (_spellCheckController ?? CreateSpellCheckController()).ScheduleCheck();
+            (_spellCheckController ?? CreateSpellCheckController()).ScheduleCheck(invalidateResults);
         }
 
         private void ReleaseSpellCheckController()
@@ -1259,6 +1260,17 @@ namespace Avalonia.Controls
                 {
                     ApplySpellCheckSuggestions(suggestions.Result, cancellation);
                 }
+                catch (OperationCanceledException)
+                {
+                    // Expected when a newer spell-check suggestion request supersedes this one.
+                }
+                catch (Exception)
+                {
+                    if (ReferenceEquals(_spellCheckSuggestionCancellation, cancellation))
+                    {
+                        ClearSpellCheckSuggestions();
+                    }
+                }
                 finally
                 {
                     FinishSpellCheckSuggestionQuery(cancellation);
@@ -1303,6 +1315,7 @@ namespace Avalonia.Controls
             }
             catch (OperationCanceledException)
             {
+                // Expected when a newer spell-check suggestion request supersedes this one.
             }
             catch (Exception)
             {

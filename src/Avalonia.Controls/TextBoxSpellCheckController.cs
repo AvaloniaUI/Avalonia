@@ -28,6 +28,7 @@ internal sealed class TextBoxSpellCheckController
     private CancellationTokenSource? _checkCancellation;
     private IReadOnlyList<SpellCheckResult> _results = Array.Empty<SpellCheckResult>();
     private IReadOnlyList<TextRange> _checkedRanges = Array.Empty<TextRange>();
+    private TextRunProperties? _misspellingTextRunProperties;
     private string? _checkedText;
     private int _version;
 
@@ -72,7 +73,7 @@ internal sealed class TextBoxSpellCheckController
         ApplyResults();
     }
 
-    public void ScheduleCheck()
+    public void ScheduleCheck(bool invalidateResults = false)
     {
         var text = _owner.Text;
 
@@ -84,7 +85,14 @@ internal sealed class TextBoxSpellCheckController
             return;
         }
 
-        InvalidateResults();
+        if (invalidateResults)
+        {
+            InvalidateResults();
+        }
+        else
+        {
+            CancelPendingCheck();
+        }
 
         var timer = GetCheckTimer();
         timer.Stop();
@@ -93,6 +101,7 @@ internal sealed class TextBoxSpellCheckController
 
     public void RefreshStyles()
     {
+        _misspellingTextRunProperties = null;
         ApplyResults();
     }
 
@@ -104,13 +113,19 @@ internal sealed class TextBoxSpellCheckController
 
     private void InvalidateResults()
     {
+        CancelPendingCheck();
+        _results = Array.Empty<SpellCheckResult>();
+        _checkedRanges = Array.Empty<TextRange>();
+        _misspellingTextRunProperties = null;
+        _checkedText = null;
+        _presenter?.SetTextStyleOverrides(null);
+    }
+
+    private void CancelPendingCheck()
+    {
         _version++;
         _checkCancellation?.Cancel();
         _checkCancellation = null;
-        _results = Array.Empty<SpellCheckResult>();
-        _checkedRanges = Array.Empty<TextRange>();
-        _checkedText = null;
-        _presenter?.SetTextStyleOverrides(null);
     }
 
     public async ValueTask<(SpellCheckResult Result, IReadOnlyList<string> Suggestions)?> SuggestAsync(
@@ -146,7 +161,7 @@ internal sealed class TextBoxSpellCheckController
             var results = await CheckRangesAsync(text, ranges, provider, culture, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
-            SetResults(text, ranges, results);
+            SetResults(text, ranges, results, merge: true);
         }
 
         SpellCheckResult result;
@@ -197,14 +212,6 @@ internal sealed class TextBoxSpellCheckController
             return;
         }
 
-        var culture = CultureInfo.CurrentCulture;
-
-        if (!provider.IsLanguageSupported(culture))
-        {
-            Clear();
-            return;
-        }
-
         var version = ++_version;
         _checkCancellation?.Cancel();
 
@@ -213,6 +220,14 @@ internal sealed class TextBoxSpellCheckController
 
         try
         {
+            var culture = CultureInfo.CurrentCulture;
+
+            if (!provider.IsLanguageSupported(culture))
+            {
+                Clear();
+                return;
+            }
+
             var results = await CheckRangesAsync(text, ranges, provider, culture, cancellation.Token);
 
             if (cancellation.IsCancellationRequested || version != _version)
@@ -224,6 +239,7 @@ internal sealed class TextBoxSpellCheckController
         }
         catch (OperationCanceledException)
         {
+            // Expected when a newer spell-check request supersedes this one.
         }
         catch (Exception)
         {
@@ -260,30 +276,12 @@ internal sealed class TextBoxSpellCheckController
     private static bool CanCheck(TextBox owner)
     {
         var options = TextInputOptions.FromStyledElement(owner);
-
-        if (options.IsSpellCheckEnabled == false ||
-            options.IsSensitive ||
-            owner.PasswordChar != default ||
-            options.ContentType is TextInputContentType.Password or TextInputContentType.Pin)
-        {
-            return false;
-        }
-
-        if (options.IsSpellCheckEnabled == true)
-        {
-            return true;
-        }
-
-        return options.ContentType is TextInputContentType.Normal
-            or TextInputContentType.Alpha
-            or TextInputContentType.Name
-            or TextInputContentType.Search
-            or TextInputContentType.Social;
+        return options.CanUseSpellCheck(owner.PasswordChar != default);
     }
 
     private static ISpellCheckProvider? GetProvider(TextBox owner)
     {
-        return TopLevel.GetTopLevel(owner)?.SpellCheckProvider;
+        return TextInputOptions.GetSpellCheckProvider(owner) ?? TopLevel.GetTopLevel(owner)?.SpellCheckProvider;
     }
 
     internal static bool CanCheckText([NotNullWhen(true)] string? text)
@@ -350,12 +348,136 @@ internal sealed class TextBoxSpellCheckController
         }
     }
 
-    private void SetResults(string text, List<TextRange> ranges, IReadOnlyList<SpellCheckResult> results)
+    private void SetResults(
+        string text,
+        List<TextRange> ranges,
+        IReadOnlyList<SpellCheckResult> results,
+        bool merge = false)
     {
-        _results = results;
-        _checkedRanges = ranges.Count == 0 ? Array.Empty<TextRange>() : ranges.ToArray();
+        if (merge && string.Equals(_checkedText, text, StringComparison.Ordinal))
+        {
+            _results = MergeResults(_results, ranges, results);
+            _checkedRanges = MergeCheckedRanges(_checkedRanges, ranges);
+        }
+        else
+        {
+            _results = results;
+            _checkedRanges = ranges.Count == 0 ? Array.Empty<TextRange>() : ranges.ToArray();
+        }
+
         _checkedText = text;
         ApplyResults();
+    }
+
+    private static IReadOnlyList<SpellCheckResult> MergeResults(
+        IReadOnlyList<SpellCheckResult> existing,
+        List<TextRange> ranges,
+        IReadOnlyList<SpellCheckResult> results)
+    {
+        if (existing.Count == 0)
+        {
+            if (results.Count == 0)
+            {
+                return Array.Empty<SpellCheckResult>();
+            }
+
+            var sorted = new List<SpellCheckResult>(results);
+            SortResults(sorted);
+            return sorted;
+        }
+
+        var merged = new List<SpellCheckResult>(existing.Count + results.Count);
+
+        for (var i = 0; i < existing.Count; i++)
+        {
+            if (!IntersectsAnyRange(existing[i], ranges))
+            {
+                merged.Add(existing[i]);
+            }
+        }
+
+        for (var i = 0; i < results.Count; i++)
+        {
+            merged.Add(results[i]);
+        }
+
+        if (merged.Count == 0)
+        {
+            return Array.Empty<SpellCheckResult>();
+        }
+
+        SortResults(merged);
+        return merged;
+    }
+
+    private static void SortResults(List<SpellCheckResult> results)
+    {
+        results.Sort(static (x, y) =>
+        {
+            var start = x.Start.CompareTo(y.Start);
+            return start != 0 ? start : x.Length.CompareTo(y.Length);
+        });
+    }
+
+    private static IReadOnlyList<TextRange> MergeCheckedRanges(
+        IReadOnlyList<TextRange> existing,
+        List<TextRange> ranges)
+    {
+        if (existing.Count == 0)
+        {
+            return ranges.Count == 0 ? Array.Empty<TextRange>() : ranges.ToArray();
+        }
+
+        if (ranges.Count == 0)
+        {
+            return existing;
+        }
+
+        var merged = new List<TextRange>(existing.Count + ranges.Count);
+
+        for (var i = 0; i < existing.Count; i++)
+        {
+            merged.Add(existing[i]);
+        }
+
+        for (var i = 0; i < ranges.Count; i++)
+        {
+            merged.Add(ranges[i]);
+        }
+
+        merged.Sort(static (x, y) =>
+        {
+            var start = x.Start.CompareTo(y.Start);
+            return start != 0 ? start : x.End.CompareTo(y.End);
+        });
+
+        var writeIndex = 0;
+
+        for (var readIndex = 1; readIndex < merged.Count; readIndex++)
+        {
+            var current = merged[readIndex];
+            var last = merged[writeIndex];
+
+            if (current.Start <= last.End)
+            {
+                if (current.End > last.End)
+                {
+                    merged[writeIndex] = new TextRange(last.Start, current.End);
+                }
+            }
+            else
+            {
+                writeIndex++;
+                merged[writeIndex] = current;
+            }
+        }
+
+        if (writeIndex + 1 < merged.Count)
+        {
+            merged.RemoveRange(writeIndex + 1, merged.Count - writeIndex - 1);
+        }
+
+        return merged;
     }
 
     private bool AreRangesChecked(string? text, List<TextRange> ranges)
@@ -393,6 +515,23 @@ internal sealed class TextBoxSpellCheckController
         return false;
     }
 
+    private static bool IntersectsAnyRange(SpellCheckResult result, List<TextRange> ranges)
+    {
+        var resultEnd = result.Start + result.Length;
+
+        for (var i = 0; i < ranges.Count; i++)
+        {
+            var range = ranges[i];
+
+            if (resultEnd > range.Start && result.Start < range.End)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void ApplyResults()
     {
         if (_presenter is null || _results.Count == 0 || !CanCheck(_owner))
@@ -410,7 +549,6 @@ internal sealed class TextBoxSpellCheckController
         }
 
         List<ValueSpan<TextRunProperties>>? spans = null;
-        TextRunProperties? textRunProperties = null;
 
         for (var i = 0; i < _results.Count; i++)
         {
@@ -421,9 +559,9 @@ internal sealed class TextBoxSpellCheckController
                 continue;
             }
 
-            textRunProperties ??= CreateMisspellingTextRunProperties(_presenter);
+            _misspellingTextRunProperties ??= CreateMisspellingTextRunProperties(_presenter);
             spans ??= new List<ValueSpan<TextRunProperties>>();
-            spans.Add(new ValueSpan<TextRunProperties>(result.Start, result.Length, textRunProperties));
+            spans.Add(new ValueSpan<TextRunProperties>(result.Start, result.Length, _misspellingTextRunProperties));
         }
 
         _presenter.SetTextStyleOverrides(spans);
@@ -666,9 +804,13 @@ internal sealed class TextBoxSpellCheckController
             AddNormalizedResults(results, range, length, normalized ??= new List<SpellCheckResult>(results.Count));
         }
 
-        return normalized is null || normalized.Count == 0
-            ? Array.Empty<SpellCheckResult>()
-            : normalized;
+        if (normalized is null || normalized.Count == 0)
+        {
+            return Array.Empty<SpellCheckResult>();
+        }
+
+        SortResults(normalized);
+        return normalized;
     }
 
     private static bool IsWhiteSpace(string text, int start, int length)

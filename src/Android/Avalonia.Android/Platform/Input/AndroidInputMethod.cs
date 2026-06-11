@@ -190,17 +190,27 @@ namespace Avalonia.Android.Platform.Input
                     outAttrs.InputType |= InputTypes.TextFlagMultiLine;
 
                 var isTextInput = (outAttrs.InputType & InputTypes.MaskClass) == InputTypes.ClassText;
+                var canUseSpellCheck = options.CanUseSpellCheck();
                 var isSensitive = options.IsSensitive ||
-                                  options.ContentType is TextInputContentType.Password or TextInputContentType.Pin;
+                    options.ContentType is TextInputContentType.Password or TextInputContentType.Pin;
 
                 if (isTextInput)
                 {
-                    if (options.ShowSuggestions == false || options.IsSpellCheckEnabled == false || isSensitive)
+                    if (options.ShowSuggestions == false)
+                    {
+                        outAttrs.InputType |= InputTypes.TextFlagNoSuggestions;
+                    }
+                    else if (isSensitive ||
+                             (options.ShowSuggestions != true && !canUseSpellCheck))
                     {
                         outAttrs.InputType |= InputTypes.TextFlagNoSuggestions;
                     }
 
-                    if (options.ShowSuggestions == true || options.IsSpellCheckEnabled == true)
+                    if (!isSensitive &&
+                        (options.ShowSuggestions == true ||
+                         (options.ShowSuggestions != false &&
+                          options.IsSpellCheckEnabled == true &&
+                          canUseSpellCheck)))
                     {
                         outAttrs.InputType |= InputTypes.TextFlagAutoCorrect;
                     }

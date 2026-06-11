@@ -39,6 +39,15 @@
       </StackPanel>
 
       <StackPanel Orientation="Vertical" Spacing="8" Margin="0,4,0,0">
+        <TextBlock Text="Custom provider" FontWeight="SemiBold" />
+        <TextBox x:Name="CustomProviderTextBox"
+                 TextWrapping="Wrap"
+                 Width="480"
+                 HorizontalAlignment="Left"
+                 Text="The sample provider treats avlnia as a custom misspelling." />
+      </StackPanel>
+
+      <StackPanel Orientation="Vertical" Spacing="8" Margin="0,4,0,0">
         <TextBlock Text="Long scroll" FontWeight="SemiBold" />
         <TextBox x:Name="LongSpellCheckTextBox"
                  AcceptsReturn="True"

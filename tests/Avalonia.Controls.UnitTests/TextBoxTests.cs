@@ -212,6 +212,31 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Spell_Check_Controller_Is_Not_Created_For_Number_Content()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "123") },
+                    new[] { "one two three" });
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel(
+                    "123",
+                    textBox =>
+                    {
+                        TextInputOptions.SetContentType(textBox, TextInputContentType.Number);
+                        TextInputOptions.SetIsSpellCheckEnabled(textBox, true);
+                    });
+
+                Assert.False(target.HasSpellCheckController);
+                Assert.Equal(0, provider.CheckCount);
+                Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
+            }
+        }
+
+        [Fact]
         public void Spell_Check_Controller_Is_Released_When_Spell_Check_Is_Disabled()
         {
             using (UnitTestApplication.Start(Services))
@@ -256,6 +281,54 @@ namespace Avalonia.Controls.UnitTests
 
                 provider.Complete();
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+            }
+        }
+
+        [Fact]
+        public void Spell_Check_Results_Are_Cleared_When_Text_Changes()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample");
+
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Equal("Ths", GetDecoratedText(target));
+
+                target.Text = "This sample";
+
+                Assert.Empty(GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
+        public void Spell_Check_Results_Are_Cleared_When_Provider_Changes()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample");
+
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Equal("Ths", GetDecoratedText(target));
+
+                TextInputOptions.SetSpellCheckProvider(
+                    target,
+                    new TestSpellCheckProvider(Array.Empty<SpellCheckResult>(), Array.Empty<string>()));
+
+                Assert.Empty(GetDecoratedText(target));
             }
         }
 
@@ -419,6 +492,61 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal("Ths", provider.LastCheckedText);
                 Assert.True(target.HasSpellCheckController);
                 Assert.True(target.HasSpellCheckSuggestions);
+            }
+        }
+
+        [Fact]
+        public void Context_Requested_Merges_New_Result_With_Existing_Results()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[]
+                    {
+                        new SpellCheckResult(0, 3, "Ths"),
+                        new SpellCheckResult(4, 4, "wrng")
+                    },
+                    new[] { "fixed" });
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths wrng");
+
+                target.CaretIndex = 1;
+                target.RaiseEvent(new ContextRequestedEventArgs());
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal("Ths", GetDecoratedText(target));
+
+                target.CaretIndex = 5;
+                target.RaiseEvent(new ContextRequestedEventArgs());
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal("Thswrng", GetDecoratedText(target));
+            }
+        }
+
+        [Fact]
+        public void Spell_Check_Renders_Unsorted_Provider_Results_In_Text_Order()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[]
+                    {
+                        new SpellCheckResult(4, 4, "wrng"),
+                        new SpellCheckResult(0, 3, "Ths")
+                    },
+                    Array.Empty<string>());
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths wrng");
+
+                Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal("Thswrng", GetDecoratedText(target));
             }
         }
 

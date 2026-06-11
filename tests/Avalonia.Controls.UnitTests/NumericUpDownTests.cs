@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Input.TextInput;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
@@ -98,6 +99,48 @@ namespace Avalonia.Controls.UnitTests
                 control.NumberFormat = newNumberFormat;
                 Assert.Equal(value.ToString(newNumberFormat), control.Text);
             });
+        }
+
+        [Fact]
+        public void Spell_Check_Option_Is_Inherited_By_Inner_TextBox()
+        {
+            RunTest((control, textbox) =>
+            {
+                Assert.False(TextInputOptions.GetIsSpellCheckEnabled(textbox));
+            });
+        }
+
+        [Fact]
+        public void Spell_Check_Can_Be_Explicitly_Enabled_For_Inner_TextBox()
+        {
+            RunTest((control, textbox) =>
+            {
+                TextInputOptions.SetIsSpellCheckEnabled(control, true);
+
+                Assert.True(TextInputOptions.GetIsSpellCheckEnabled(textbox));
+            });
+        }
+
+        [Fact]
+        public void Spell_Check_Option_Can_Be_Enabled_From_Parent_Scope()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var root = new Panel();
+                TextInputOptions.SetIsSpellCheckEnabled(root, true);
+
+                var control = CreateControl();
+                root.Children.Add(control);
+
+                var textBox = GetTextBox(control);
+                var window = new Window { Content = root };
+                window.ApplyStyling();
+                window.ApplyTemplate();
+                window.Presenter!.ApplyTemplate();
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.True(TextInputOptions.GetIsSpellCheckEnabled(textBox));
+            }
         }
 
         public static IEnumerable<object?[]> Increment_Decrement_TestData()
