@@ -39,6 +39,12 @@
                       Condition="'$(ApplicationIcon)' != ''" />
   </ItemGroup>
 
+  <Target Name="_InjectAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
+    <ItemGroup>
+      <AdditionalFiles Include="@(AvaloniaXaml)" SourceItemGroup="AvaloniaXaml" />
+    </ItemGroup>
+  </Target>
+
   <UsingTask TaskName="GenerateAvaloniaResourcesTask"
              AssemblyFile="$(AvaloniaBuildTasksLocation)"
              />

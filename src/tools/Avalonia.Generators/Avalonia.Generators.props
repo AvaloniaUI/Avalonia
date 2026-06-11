@@ -18,9 +18,4 @@
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorViewFileNamingStrategy" />
     <CompilerVisibleProperty Include="AvaloniaNameGeneratorAttachDevTools"/>
   </ItemGroup>
-  <Target Name="_InjectAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
-    <ItemGroup>
-      <AdditionalFiles Include="@(AvaloniaXaml)" SourceItemGroup="AvaloniaXaml" />
-    </ItemGroup>
-  </Target>
 </Project>
