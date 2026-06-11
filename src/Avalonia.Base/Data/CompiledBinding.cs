@@ -197,7 +197,7 @@ public class CompiledBinding : BindingBase
         AvaloniaProperty? targetProperty,
         object? anchor)
     {
-        if (CanUseTypedBindingExpression(targetProperty, out var typed))
+        if (CanUseTypedBindingExpression(target, targetProperty, out var typed))
         {
             return CreateTypedExpression(typed, target, targetProperty, anchor);
         }
@@ -208,6 +208,7 @@ public class CompiledBinding : BindingBase
     }
 
     private bool CanUseTypedBindingExpression(
+        AvaloniaObject target,
         AvaloniaProperty? targetProperty,
         [NotNullWhen(true)] out TypedPropertyElement? element)
     {
@@ -244,6 +245,11 @@ public class CompiledBinding : BindingBase
         // instead of the DataContext; TypedBindingExpression does not support this (and it would
         // probably not be worth doing so as DataContexts are usually reference types).
         if (targetProperty == StyledElement.DataContextProperty)
+            return false;
+
+        // TypedBindingExpression does not support data validation, so fall back to the untyped
+        // path when the target property enables it.
+        if (targetProperty.GetMetadata(target).EnableDataValidation == true)
             return false;
 
         element = typed;

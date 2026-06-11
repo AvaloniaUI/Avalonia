@@ -66,7 +66,7 @@ public class TypedBindingExpressionTests : ScopedTestBase
 
         Assert.Equal("foo", target.Text);
 
-        target.SetCurrentValue(TextBox.TextProperty, "bar");
+        target.SetCurrentValue(TextBlock.TextProperty, "bar");
         
         Assert.Equal("bar", target.Text);
 
@@ -269,9 +269,9 @@ public class TypedBindingExpressionTests : ScopedTestBase
     public void Disposing_Binding_Unsubscribes_From_Source()
     {
         var data = new ViewModel { StringValue = "foo" };
-        var target = new TextBox { DataContext = data };
+        var target = new TextBlock { DataContext = data };
         var binding = CreateBinding();
-        var expression = target.Bind(TextBox.TextProperty, binding);
+        var expression = target.Bind(TextBlock.TextProperty, binding);
 
         Assert.Equal("foo", target.Text);
         Assert.Equal(1, data.PropertyChangedSubscriptionCount);
@@ -289,10 +289,10 @@ public class TypedBindingExpressionTests : ScopedTestBase
     public void Rebinding_Same_Property_Unsubscribes_Previous_Binding()
     {
         var data = new ViewModel { StringValue = "foo" };
-        var target = new TextBox { DataContext = data };
+        var target = new TextBlock { DataContext = data };
 
-        target.Bind(TextBox.TextProperty, CreateBinding());
-        target.Bind(TextBox.TextProperty, CreateBinding());
+        target.Bind(TextBlock.TextProperty, CreateBinding());
+        target.Bind(TextBlock.TextProperty, CreateBinding());
 
         // The first binding should have been disposed when the second was applied, leaving a
         // single subscription rather than two.
@@ -356,9 +356,9 @@ public class TypedBindingExpressionTests : ScopedTestBase
         return new CompiledBinding(path) { Mode = mode, };
     }
 
-    private static TextBox CreateTarget(ViewModel? data, BindingMode mode = BindingMode.OneWay)
+    private static TextBlock CreateTarget(ViewModel? data, BindingMode mode = BindingMode.OneWay)
     {
-        var result = new TextBox { DataContext = data };
+        var result = new TextBlock { DataContext = data };
         var binding = CreateBinding(mode);
         BindAndAssert(result, binding);
         return result;

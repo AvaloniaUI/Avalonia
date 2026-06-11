@@ -2507,6 +2507,30 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
 
         [Fact]
+        public void Falls_Back_To_BindingExpression_For_DataValidation_Enabled_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                // TextBox.Text enables data validation, which TypedBindingExpression does not
+                // support, so the binding must fall back to the untyped BindingExpression even
+                // though it is otherwise eligible for the typed path.
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(@"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBox Text='{CompiledBinding StringProperty}' Name='textBox' />
+</Window>");
+                var textBox = window.GetControl<TextBox>("textBox");
+                window.DataContext = new TestDataContext { StringProperty = "hello" };
+
+                var expression = BindingOperations.GetBindingExpressionBase(textBox, TextBox.TextProperty);
+                Assert.IsType<BindingExpression>(expression);
+                Assert.Equal("hello", textBox.Text);
+            }
+        }
+
+        [Fact]
         public void Falls_Back_To_BindingExpression_When_StringFormat_Set()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
