@@ -62,25 +62,40 @@ internal class TypedBindingExpression<TSource, TValue> : BindingExpressionBase,
         AvaloniaProperty targetProperty,
         BindingPriority priority)
     {
-        if (_sink is not null)
-            throw new InvalidOperationException("TypedBindingExpression was already attached.");
-        if (target is not StyledElement element)
-            throw new InvalidOperationException("TypedBindingExpression may only target StyledElements");
-        if (TargetProperty is not null && TargetProperty != targetProperty)
-            throw new InvalidOperationException("TypedBindingExpression was already attached to a different property.");
-
-        if (!typeof(TValue).IsAssignableTo(targetProperty.PropertyType))
-        {
-            throw new InvalidOperationException(
-                $"TypedBindingExpression of type '{typeof(TValue)}' cannot be bound " +
-                $"to a property of type '{targetProperty.PropertyType}'.");
-        }
+        // The validation is factored out into a non-generic static method so that its code (most
+        // notably the exception string formatting) is shared across all generic instantiations
+        // instead of being duplicated for each one, which is a meaningful NativeAOT size saving.
+        var element = ValidateAttach(_sink is not null, TargetProperty, typeof(TValue), target, targetProperty);
 
         _sink = sink;
         _frame = frame;
         _target = new(element);
         TargetProperty = targetProperty;
         Priority = priority;
+    }
+
+    private static StyledElement ValidateAttach(
+        bool alreadyAttached,
+        AvaloniaProperty? currentTargetProperty,
+        Type valueType,
+        AvaloniaObject target,
+        AvaloniaProperty targetProperty)
+    {
+        if (alreadyAttached)
+            throw new InvalidOperationException("TypedBindingExpression was already attached.");
+        if (target is not StyledElement element)
+            throw new InvalidOperationException("TypedBindingExpression may only target StyledElements");
+        if (currentTargetProperty is not null && currentTargetProperty != targetProperty)
+            throw new InvalidOperationException("TypedBindingExpression was already attached to a different property.");
+
+        if (!valueType.IsAssignableTo(targetProperty.PropertyType))
+        {
+            throw new InvalidOperationException(
+                $"TypedBindingExpression of type '{valueType}' cannot be bound " +
+                $"to a property of type '{targetProperty.PropertyType}'.");
+        }
+
+        return element;
     }
 
     public override void Dispose()
