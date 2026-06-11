@@ -44,7 +44,9 @@
   <Target Name="_InjectAvaloniaAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
     <ItemGroup>
       <AdditionalFiles Include="@(AvaloniaXaml)" SourceItemGroup="AvaloniaXaml" />
-      <AdditionalFiles Include="@(AvaloniaResource)" SourceItemGroup="AvaloniaResource" />
+      <_AvaloniaResourceOnly Include="@(AvaloniaResource)"
+                             Exclude="@(AvaloniaXaml)" />
+      <AdditionalFiles Include="@(_AvaloniaResourceOnly)" SourceItemGroup="AvaloniaResource" />
     </ItemGroup>
   </Target>
 
