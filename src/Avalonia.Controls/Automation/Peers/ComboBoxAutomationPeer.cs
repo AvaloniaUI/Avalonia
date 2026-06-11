@@ -91,6 +91,9 @@ namespace Avalonia.Automation.Peers
                     ValuePatternIdentifiers.IsReadOnlyProperty,
                     !(bool)e.OldValue!,
                     !(bool)e.NewValue!);
+
+                // The Value pattern switches between SelectedItem name and Text when IsEditable changes.
+                RaisePropertyChangedEvent(ValuePatternIdentifiers.ValueProperty, null, null);
             }
         }
 
