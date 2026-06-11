@@ -41,7 +41,7 @@
 
   <!-- Include AvaloniaXaml and AvaloniaResource as a Roslyn-visible additional files -->
   <!-- This is necessary to use these files in source generators and other Roslyn-based extension -->
-  <Target Name="_InjectAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
+  <Target Name="_InjectAvaloniaAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
     <ItemGroup>
       <AdditionalFiles Include="@(AvaloniaXaml)" SourceItemGroup="AvaloniaXaml" />
       <AdditionalFiles Include="@(AvaloniaResource)" SourceItemGroup="AvaloniaResource" />
