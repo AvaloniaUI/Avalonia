@@ -22,19 +22,28 @@ namespace Avalonia.Automation.Peers
         public bool ShowsMenu => true;
         public void Collapse() => Owner.IsDropDownOpen = false;
         public void Expand() => Owner.IsDropDownOpen = true;
-        bool IValueProvider.IsReadOnly => true;
+        bool IValueProvider.IsReadOnly => !Owner.IsEditable;
 
         string? IValueProvider.Value
         {
             get
             {
+                if (Owner.IsEditable)
+                    return Owner.Text;
+
                 var selection = GetSelection();
                 return selection.Count == 1 ? selection[0].GetName() : null;
             }
         }
-        
-        void IValueProvider.SetValue(string? value) => throw new NotSupportedException();
-        
+
+        void IValueProvider.SetValue(string? value)
+        {
+            if (!Owner.IsEditable)
+                throw new InvalidOperationException("Cannot set the value of a non-editable ComboBox.");
+
+            Owner.SetCurrentValue(ComboBox.TextProperty, value);
+        }
+
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
             return AutomationControlType.ComboBox;
@@ -68,6 +77,20 @@ namespace Avalonia.Automation.Peers
                     ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty,
                     ToState((bool)e.OldValue!),
                     ToState((bool)e.NewValue!));
+            }
+            else if (e.Property == ComboBox.TextProperty && Owner.IsEditable)
+            {
+                RaisePropertyChangedEvent(
+                    ValuePatternIdentifiers.ValueProperty,
+                    e.OldValue as string,
+                    e.NewValue as string);
+            }
+            else if (e.Property == ComboBox.IsEditableProperty)
+            {
+                RaisePropertyChangedEvent(
+                    ValuePatternIdentifiers.IsReadOnlyProperty,
+                    !(bool)e.OldValue!,
+                    !(bool)e.NewValue!);
             }
         }
 
