@@ -93,6 +93,34 @@ public class TypedBindingExpressionTests : ScopedTestBase
     }
 
     [Fact]
+    public void TwoWay_Binding_Does_Not_Write_Back_To_Source_On_Attach()
+    {
+        var source = new ViewModel { StringValue = "Hello" };
+        var setsAfterConstruction = source.StringValueSetCount;
+
+        var target = CreateTarget(source, mode: BindingMode.TwoWay);
+
+        Assert.Equal("Hello", target.Text);
+
+        // Pushing the source value to the target must not echo it straight back to the source.
+        Assert.Equal(setsAfterConstruction, source.StringValueSetCount);
+    }
+
+    [Fact]
+    public void TwoWay_Binding_Does_Not_Echo_Source_Change_Back_To_Source()
+    {
+        var source = new ViewModel { StringValue = "Hello" };
+        var target = CreateTarget(source, mode: BindingMode.TwoWay);
+
+        var before = source.StringValueSetCount;
+
+        source.StringValue = "World";   // One setter call: this assignment.
+
+        Assert.Equal("World", target.Text);
+        Assert.Equal(before + 1, source.StringValueSetCount);
+    }
+
+    [Fact]
     public void OneTime_Binding_Sets_Target_Only_Once_If_Data_Context_Does_Not_Change()
     {
         var data = new ViewModel { StringValue = "foo" };
@@ -338,6 +366,20 @@ public class TypedBindingExpressionTests : ScopedTestBase
 
     private class ViewModel : NotifyingBase
     {
-        public string? StringValue { get; set => SetField(ref field, value); }
+        private string? _stringValue;
+
+        // Counts every setter invocation so tests can assert the binding doesn't write spurious
+        // values back to the source. PropertyChanged is only raised on a real change.
+        public int StringValueSetCount { get; private set; }
+
+        public string? StringValue
+        {
+            get => _stringValue;
+            set
+            {
+                ++StringValueSetCount;
+                SetField(ref _stringValue, value);
+            }
+        }
     }
 }
