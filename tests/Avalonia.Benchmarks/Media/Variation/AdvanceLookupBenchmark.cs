@@ -70,6 +70,11 @@ namespace Avalonia.Benchmarks.Media.Variation
         private SKFont _skFont = null!;
         private SKRect[] _skBounds2000 = null!;
 
+        // Float output buffer for Skia's GetGlyphWidths, sized one-per-glyph to the largest
+        // batch. Skia writes one width per glyph, so the buffer must match the glyph count —
+        // not be a halved ushort-to-float reinterpretation of the advance buffer.
+        private float[] _skWidths2000 = null!;
+
         public AdvanceLookupBenchmark()
         {
             _app = UnitTestApplication.Start(TestServices.StyledWindow);
@@ -99,6 +104,7 @@ namespace Avalonia.Benchmarks.Media.Variation
             var skTypeface = ((SkiaTypeface)_variableDefault.PlatformTypeface).SKTypeface;
             _skFont = new SKFont(skTypeface, size: 16);
             _skBounds2000 = new SKRect[2000];
+            _skWidths2000 = new float[2000];
         }
 
         // ----- Single-glyph variants -----
@@ -169,7 +175,7 @@ namespace Avalonia.Benchmarks.Media.Variation
         [Benchmark]
         public void Skia_Batch200_WidthsAndBounds()
         {
-            _skFont.GetGlyphWidths(_glyphs200.AsSpan(), _advances2000.AsSpan(0, 200).Slice(0).AsFloatSpan(),
+            _skFont.GetGlyphWidths(_glyphs200.AsSpan(), _skWidths2000.AsSpan(0, 200),
                 _skBounds2000.AsSpan(0, 200));
         }
 
@@ -183,8 +189,10 @@ namespace Avalonia.Benchmarks.Media.Variation
         [Benchmark]
         public void Skia_Batch200_WidthsOnly()
         {
-            _skFont.GetGlyphWidths(_glyphs200.AsSpan(), _advances2000.AsSpan(0, 200).Slice(0).AsFloatSpan(),
-                bounds: default);
+            // One float per glyph: a 200-glyph call needs a 200-element width buffer, so the
+            // "within 2× of Skia" comparison measures a well-formed call rather than one whose
+            // output span was silently halved.
+            _skFont.GetGlyphWidths(_glyphs200.AsSpan(), _skWidths2000.AsSpan(0, 200), bounds: default);
         }
 
         public void Dispose()
@@ -192,16 +200,5 @@ namespace Avalonia.Benchmarks.Media.Variation
             _skFont?.Dispose();
             _app?.Dispose();
         }
-    }
-
-    /// <summary>
-    /// Bridge from <see cref="Span{T}"/> of <see cref="ushort"/> to the float span
-    /// SkiaSharp's <c>GetGlyphWidths</c> needs. We don't actually use the float values
-    /// — the benchmark just measures Skia's traversal cost.
-    /// </summary>
-    file static class FloatSpanBridge
-    {
-        public static Span<float> AsFloatSpan(this Span<ushort> span)
-            => System.Runtime.InteropServices.MemoryMarshal.Cast<ushort, float>(span);
     }
 }

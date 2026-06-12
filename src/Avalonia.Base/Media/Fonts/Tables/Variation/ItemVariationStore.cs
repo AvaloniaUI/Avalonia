@@ -219,7 +219,11 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
             var regionIndexesStart = subtableStart + 6;
             var deltaDataStart = regionIndexesStart + regionIndexCount * 2;
-            var rowStart = deltaDataStart + innerIndex * rowBytes;
+
+            // Widen to long before the bounds check: innerIndex × rowBytes overflows int (see
+            // TryGetDelta) — the scaler-cached path is reachable from the same public metrics
+            // APIs on a varied clone, so it needs the identical guard.
+            var rowStart = deltaDataStart + innerIndex * (long)rowBytes;
 
             if (rowStart + rowBytes > span.Length)
             {
@@ -229,7 +233,7 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             // Same row walk as TryGetDelta, but the per-region scaler comes from the
             // precomputed array instead of being computed from activeCoords.
             var sum = 0f;
-            var bytePos = rowStart;
+            var bytePos = (int)rowStart;
 
             for (var r = 0; r < regionIndexCount; r++)
             {
