@@ -233,31 +233,18 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public bool Equals(FontVariationSettings other)
         {
+            // Cheap reject via the cached hash first; then an allocation-free element-wise
+            // compare. Coordinates normalizes default → Empty, so the spans are always valid,
+            // and the span overload (not LINQ SequenceEqual) avoids boxing the ImmutableArray
+            // to IEnumerable — this type is used as a dictionary key. FontVariationCoordinate is
+            // a record struct, so the per-element compare uses its (Axis, NormalizedValue) value
+            // equality.
             if (_hashCode != other._hashCode)
             {
                 return false;
             }
 
-            var a = _coordinates;
-            var b = other._coordinates;
-
-            var aLen = a.IsDefault ? 0 : a.Length;
-            var bLen = b.IsDefault ? 0 : b.Length;
-
-            if (aLen != bLen)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < aLen; i++)
-            {
-                if (a[i].Axis != b[i].Axis || a[i].NormalizedValue != b[i].NormalizedValue)
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return Coordinates.AsSpan().SequenceEqual(other.Coordinates.AsSpan());
         }
 
         /// <inheritdoc/>
