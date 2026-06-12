@@ -15,12 +15,17 @@ namespace Avalonia.Media.Fonts.Tables.Colr
     /// a manual brush transform, and a pushed clip box clips exactly under rotation / skew instead
     /// of as an axis-aligned approximation.
     /// </remarks>
-    internal sealed class ColorGlyphV1Painter : IColorPainter
+    internal sealed class ColorGlyphV1Painter : IColorPainter, IDisposable
     {
         private readonly DrawingContext _drawingContext;
         private readonly ColrContext _context;
-        private readonly Stack<IDisposable> _stateStack = new Stack<IDisposable>();
-        private readonly Stack<IDisposable> _transformStack = new Stack<IDisposable>();
+
+        // Every push (transform / clip / layer) onto the caller's DrawingContext lands on this one
+        // LIFO stack. The traverser pairs each push with a pop in correct nesting order, so the top
+        // is always the matching state; on a mid-paint throw the traverser's pop is skipped, so
+        // Dispose unwinds whatever remains — otherwise the pushed states would leak into the
+        // caller's context and corrupt all subsequent drawing.
+        private readonly Stack<IDisposable> _pushedStates = new Stack<IDisposable>();
 
         // Track the pending glyph that needs to be painted with the next fill
         // In COLR v1, there's a 1:1 mapping between glyph and fill operations
@@ -34,44 +39,48 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
         public void PushTransform(Matrix transform)
         {
-            _transformStack.Push(_drawingContext.PushTransform(transform));
+            _pushedStates.Push(_drawingContext.PushTransform(transform));
         }
 
-        public void PopTransform()
-        {
-            if (_transformStack.Count > 0)
-            {
-                _transformStack.Pop().Dispose();
-            }
-        }
+        public void PopTransform() => PopState();
 
         public void PushLayer(CompositeMode mode)
         {
             // COLR v1 composite modes are not fully supported in the base drawing context
             // For now, we use opacity layers to provide basic composition support
             // TODO: Implement proper blend mode support when available
-            _stateStack.Push(_drawingContext.PushOpacity(1.0));
+            _pushedStates.Push(_drawingContext.PushOpacity(1.0));
         }
 
-        public void PopLayer()
-        {
-            if (_stateStack.Count > 0)
-            {
-                _stateStack.Pop().Dispose();
-            }
-        }
+        public void PopLayer() => PopState();
 
         public void PushClip(Rect clipBox)
         {
             // The context transform applies to the clip, so the box clips exactly — even rotated.
-            _stateStack.Push(_drawingContext.PushClip(clipBox));
+            _pushedStates.Push(_drawingContext.PushClip(clipBox));
         }
 
-        public void PopClip()
+        public void PopClip() => PopState();
+
+        private void PopState()
         {
-            if (_stateStack.Count > 0)
+            if (_pushedStates.Count > 0)
             {
-                _stateStack.Pop().Dispose();
+                _pushedStates.Pop().Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Unwinds any states still pushed onto the caller's <see cref="DrawingContext"/> — the
+        /// normal case leaves none (every push was popped during traversal), but a throw mid-paint
+        /// leaves the in-flight states here, and disposing in reverse-push (LIFO) order restores
+        /// the context exactly.
+        /// </summary>
+        public void Dispose()
+        {
+            while (_pushedStates.Count > 0)
+            {
+                _pushedStates.Pop().Dispose();
             }
         }
 

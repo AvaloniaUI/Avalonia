@@ -21,7 +21,7 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
 
             var numLayers = span[1];
-            var firstLayerIndex = (int)BinaryPrimitives.ReadUInt32BigEndian(span.Slice(2));
+            var firstLayerIndex = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(2));
 
             // LayerList structure:
             // - uint32: numLayers (count of all paint offsets in the list)
@@ -33,14 +33,15 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var layerListOffset = context.ColrTable.LayerV1ListOffset;
 
             // Skip the 4-byte count field at the start of LayerList
-            var paintOffsetsStart = layerListOffset + 4;
+            var paintOffsetsStart = layerListOffset + 4L;
 
             // Calculate the byte offset for the first paint offset of this glyph's layers
-            // Each offset is 4 bytes (Offset32)
-            var firstPaintOffsetPos = paintOffsetsStart + (firstLayerIndex * 4);
+            // Each offset is 4 bytes (Offset32). Compute in long so a hostile firstLayerIndex
+            // (up to ~4 billion) can't wrap the position negative and slip the bounds check.
+            var firstPaintOffsetPos = paintOffsetsStart + (long)firstLayerIndex * 4;
 
             // Ensure we have enough data for all the paint offsets we need to read
-            var requiredBytes = firstPaintOffsetPos + (numLayers * 4);
+            var requiredBytes = firstPaintOffsetPos + (long)numLayers * 4;
             if (requiredBytes > context.ColrData.Length)
             {
                 return false;
@@ -55,15 +56,17 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 var layerPaintOffset = BinaryPrimitives.ReadUInt32BigEndian(
                     context.ColrData.Span.Slice((int)paintOffsetPos, 4));
 
-                // The paint offset is relative to the start of the LayerList table
-                var absolutePaintOffset = layerListOffset + layerPaintOffset;
+                // The paint offset is relative to the start of the LayerList table. Compute in
+                // long: layerListOffset + an attacker-controlled uint can wrap uint to a small
+                // value that would slip the bounds check and parse the wrong location.
+                var absolutePaintOffset = (long)layerListOffset + layerPaintOffset;
 
                 if (absolutePaintOffset >= context.ColrData.Length)
                 {
                     continue;
                 }
 
-                if (PaintParser.TryParse(context.ColrData.Span, absolutePaintOffset, in context, in decycler, out var childPaint) && childPaint != null)
+                if (PaintParser.TryParse(context.ColrData.Span, (uint)absolutePaintOffset, in context, in decycler, out var childPaint) && childPaint != null)
                 {
                     paints.Add(childPaint);
                 }
@@ -354,10 +357,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
             var subPaintOffset = paintOffset + PaintParsingHelpers.ReadOffset24(span.Slice(1));
             var glyphId = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(4));
 
-            // The guard pops the glyph on every return path (its Dispose calls Exit), so an early
-            // failure below can't leave the pooled decycler poisoned for a later sibling.
-            using var guard = decycler.Enter(glyphId);
-
+            // No cycle guard keyed on the glyph id here: PaintParser.TryParse already entered the
+            // decycler on this paint's offset, and the recursion below is bounded by the same guard
+            // on subPaintOffset.
             if (subPaintOffset >= context.ColrData.Length)
             {
                 return false;
@@ -388,10 +390,6 @@ namespace Avalonia.Media.Fonts.Tables.Colr
 
             var glyphId = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(1));
 
-            // The guard pops the glyph on every return path (its Dispose calls Exit), so an early
-            // failure below can't leave the pooled decycler poisoned for a later sibling.
-            using var guard = decycler.Enter(glyphId);
-
             if (!context.ColrTable.TryGetBaseGlyphV1Record((ushort)glyphId, out var v1Record))
             {
                 return false;
@@ -404,6 +402,9 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
+            // The referenced glyph's base paint is guarded by the offset the recursive
+            // PaintParser.TryParse below enters: a glyph cycle (G1 → G2 → G1) re-enters G1's base
+            // paint offset and trips cycle detection, so no separate glyph-id guard is needed.
             if (!PaintParser.TryParse(context.ColrData.Span, absolutePaintOffset, in context, in decycler, out var innerPaint))
             {
                 return false;

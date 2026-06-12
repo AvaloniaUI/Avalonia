@@ -2394,38 +2394,31 @@ namespace Avalonia.Media
             _paletteIndex = paletteIndex;
 
             var dependencies = Array.Empty<ushort>();
-            var decycler = PaintDecycler.Rent();
 
-            try
+            if (glyphTypeface.TryGetBaseGlyphV1Paint(_context, record, out _paint))
             {
-                if (glyphTypeface.TryGetBaseGlyphV1Paint(_context, record, out _paint))
+                // Traverse the paint graph once (no render backend) to collect the referenced layer
+                // glyphs — the drawing's cache dependencies — and, as a by-product, the conservative
+                // painted extent. COLR v1 paint graphs are in font space (Y-up), so any extent is
+                // flipped to drawing space (Y-down) to match Draw's transform. The traverser walks
+                // the already-resolved (acyclic) paint tree, so no decycler is needed here.
+                var analysis = new ColorGlyphV1BoundsPainter(_context);
+
+                PaintTraverser.Traverse(_paint, analysis, Matrix.Identity);
+
+                dependencies = analysis.Dependencies;
+
+                if (_context.ColrTable.TryGetClipBox(_glyphId, _context.ActiveCoords, out var clipRect))
                 {
-                    // Traverse the paint graph once (no render backend) to collect the referenced layer
-                    // glyphs — the drawing's cache dependencies — and, as a by-product, the conservative
-                    // painted extent. COLR v1 paint graphs are in font space (Y-up), so any extent is
-                    // flipped to drawing space (Y-down) to match Draw's transform.
-                    var analysis = new ColorGlyphV1BoundsPainter(_context);
-
-                    PaintTraverser.Traverse(_paint, analysis, Matrix.Identity);
-
-                    dependencies = analysis.Dependencies;
-
-                    if (_context.ColrTable.TryGetClipBox(_glyphId, _context.ActiveCoords, out var clipRect))
-                    {
-                        _bounds = clipRect.TransformToAABB(Matrix.CreateScale(1, -1));
-                    }
-                    else if (analysis.HasBounds)
-                    {
-                        // No ClipList (the common case): fall back to the union of the painted outlines'
-                        // control-point extents. Stays empty when the font carries no buildable outline
-                        // for the painted glyphs, rather than guessing.
-                        _bounds = analysis.Bounds.TransformToAABB(Matrix.CreateScale(1, -1));
-                    }
+                    _bounds = clipRect.TransformToAABB(Matrix.CreateScale(1, -1));
                 }
-            }
-            finally
-            {
-                PaintDecycler.Return(decycler);
+                else if (analysis.HasBounds)
+                {
+                    // No ClipList (the common case): fall back to the union of the painted outlines'
+                    // control-point extents. Stays empty when the font carries no buildable outline
+                    // for the painted glyphs, rather than guessing.
+                    _bounds = analysis.Bounds.TransformToAABB(Matrix.CreateScale(1, -1));
+                }
             }
 
             _dependencies = dependencies;
@@ -2446,18 +2439,14 @@ namespace Avalonia.Media
                 return;
             }
 
-            var decycler = PaintDecycler.Rent();
-
-            try
+            // No decycler here: the paint tree was already resolved (and made acyclic) at parse
+            // time, so the traverser just walks it. The painter is disposed via `using` so that a
+            // throw mid-paint unwinds any transform/clip/layer it pushed onto the caller's context
+            // instead of leaking it into subsequent drawing.
+            using (context.PushTransform(Matrix.CreateScale(1, -1) * Matrix.CreateTranslation(origin)))
+            using (var painter = new ColorGlyphV1Painter(context, _context))
             {
-                using (context.PushTransform(Matrix.CreateScale(1, -1) * Matrix.CreateTranslation(origin)))
-                {
-                    PaintTraverser.Traverse(_paint, new ColorGlyphV1Painter(context, _context), Matrix.Identity);
-                }
-            }
-            finally
-            {
-                PaintDecycler.Return(decycler);
+                PaintTraverser.Traverse(_paint, painter, Matrix.Identity);
             }
         }
     }
