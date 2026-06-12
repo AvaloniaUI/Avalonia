@@ -88,16 +88,21 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                 return false;
             }
 
-            var regionListOffset = (int)BinaryPrimitives.ReadUInt32BigEndian(span.Slice(2));
+            // Keep offsets unsigned and compare against a non-overflowing bound: an additive check
+            // like `offset + n > length` lets a high-bit (negative-when-cast) or near-int.MaxValue
+            // offset slip through and then slice out of range.
+            var regionListOffset = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(2));
             var ivdCount = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(6));
 
-            if (regionListOffset + 4 > span.Length)
+            // axisCount + regionCount (4 bytes) live at regionListOffset.
+            if (regionListOffset > (uint)(span.Length - 4))
             {
                 return false;
             }
 
-            var axisCount = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(regionListOffset));
-            var regionCount = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(regionListOffset + 2));
+            var regionListOffsetInt = (int)regionListOffset;
+            var axisCount = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(regionListOffsetInt));
+            var regionCount = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(regionListOffsetInt + 2));
 
             if (axisCount != expectedAxisCount)
             {
@@ -106,9 +111,10 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                 return false;
             }
 
-            var regionListStart = regionListOffset + 4;
-            var regionListEnd = regionListStart + regionCount * axisCount * 6; // each axis has start/peak/end as int16
+            var regionListStart = regionListOffsetInt + 4;
 
+            // Widen to long: regionCount (up to 65535) × axisCount × 6 can exceed int range.
+            var regionListEnd = (long)regionListStart + (long)regionCount * axisCount * 6; // start/peak/end int16 per axis
             if (regionListEnd > span.Length)
             {
                 return false;
@@ -116,7 +122,7 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
             // ItemVariationData offsets array follows the store header.
             var ivdOffsetsStart = 8;
-            if (ivdOffsetsStart + ivdCount * 4 > span.Length)
+            if (ivdOffsetsStart + (long)ivdCount * 4 > span.Length)
             {
                 return false;
             }
@@ -124,13 +130,16 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             var ivdOffsets = new int[ivdCount];
             for (var i = 0; i < ivdCount; i++)
             {
-                ivdOffsets[i] = (int)BinaryPrimitives.ReadUInt32BigEndian(
-                    span.Slice(ivdOffsetsStart + i * 4, 4));
+                var ivdOffset = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(ivdOffsetsStart + i * 4, 4));
 
-                if (ivdOffsets[i] + 6 > span.Length)
+                // Each ItemVariationData subtable header is at least 6 bytes; reject out-of-range
+                // offsets (including high-bit values) before storing them as int.
+                if (ivdOffset > (uint)(span.Length - 6))
                 {
                     return false;
                 }
+
+                ivdOffsets[i] = (int)ivdOffset;
             }
 
             store = new ItemVariationStore(
