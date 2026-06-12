@@ -528,6 +528,38 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         }
 
         /// <summary>
+        /// Computes a glyph's control-point bounding box by interpreting its outline into a
+        /// bounds-accumulating sink (<see cref="BoundsGeometryContext"/>) — the equivalent of the
+        /// CFF / CFF2 bounds pass. Unlike
+        /// <see cref="TryGetGlyphBounds(int, out short, out short, out short, out short)"/>, which reads
+        /// the static header box, this reflects gvar deformation at the requested variation instance;
+        /// both avoid building geometry, so no render backend is needed. Returns <see langword="false"/>
+        /// for an out-of-range, empty, or malformed glyph.
+        /// </summary>
+        /// <param name="glyphIndex">The zero-based glyph index.</param>
+        /// <param name="gvarTable">Optional gvar table for variation deformation. <c>null</c> skips deformation.</param>
+        /// <param name="activeCoords">Normalized variation coordinates in fvar axis order. Empty means no variation.</param>
+        /// <param name="bounds">The computed control-point box; the zero box when this returns <see langword="false"/>.</param>
+        public bool TryGetGlyphOutlineBounds(
+            int glyphIndex,
+            GvarTable? gvarTable,
+            ReadOnlySpan<float> activeCoords,
+            out GlyphBounds bounds)
+        {
+            bounds = default;
+
+            var context = new BoundsGeometryContext();
+
+            if (!TryBuildGlyphGeometry(glyphIndex, Matrix.Identity, context, gvarTable, activeCoords))
+            {
+                return false;
+            }
+
+            bounds = context.ToGlyphBounds();
+            return true;
+        }
+
+        /// <summary>
         /// Builds the glyph outline into the provided geometry context. Returns false for empty glyphs.
         /// Coordinates are in font design units. Composite glyphs are supported.
         /// </summary>
