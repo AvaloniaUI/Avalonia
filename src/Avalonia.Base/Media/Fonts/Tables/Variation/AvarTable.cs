@@ -164,25 +164,35 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
             var mapsBuilder = ImmutableArray.CreateBuilder<ImmutableArray<SegmentMapEntry>>(axisCount);
 
-            for (var i = 0; i < axisCount; i++)
+            try
             {
-                var positionMapCount = reader.ReadUInt16();
-
-                if (positionMapCount == 0)
+                for (var i = 0; i < axisCount; i++)
                 {
-                    mapsBuilder.Add(ImmutableArray<SegmentMapEntry>.Empty);
-                    continue;
-                }
+                    var positionMapCount = reader.ReadUInt16();
 
-                var entries = ImmutableArray.CreateBuilder<SegmentMapEntry>(positionMapCount);
-                for (var j = 0; j < positionMapCount; j++)
-                {
-                    var from = reader.ReadF2dot14();
-                    var to = reader.ReadF2dot14();
-                    entries.Add(new SegmentMapEntry(from, to));
-                }
+                    if (positionMapCount == 0)
+                    {
+                        mapsBuilder.Add(ImmutableArray<SegmentMapEntry>.Empty);
+                        continue;
+                    }
 
-                mapsBuilder.Add(entries.MoveToImmutable());
+                    var entries = ImmutableArray.CreateBuilder<SegmentMapEntry>(positionMapCount);
+                    for (var j = 0; j < positionMapCount; j++)
+                    {
+                        var from = reader.ReadF2dot14();
+                        var to = reader.ReadF2dot14();
+                        entries.Add(new SegmentMapEntry(from, to));
+                    }
+
+                    mapsBuilder.Add(entries.MoveToImmutable());
+                }
+            }
+            catch
+            {
+                // A truncated segment map makes the reader run past the table end and throw. avar is
+                // optional, so degrade to "no avar" (identity normalization) instead of letting the
+                // exception escape TryLoad and fail the whole typeface load.
+                return false;
             }
 
             avarTable = new AvarTable(mapsBuilder.MoveToImmutable());

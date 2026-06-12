@@ -37,6 +37,13 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         // seek past any extra trailing bytes when reading each axis record.
         private const ushort MinimumAxisSize = 20;
 
+        // The spec allows axisCount up to 65535, but real variable fonts have at most ~15 axes.
+        // An unclamped count flows into per-axis `stackalloc float[axisCount]` buffers in the gvar
+        // reader, so an adversarial font declaring tens of thousands of axes is a StackOverflow DoS
+        // vector. Reject implausibly large counts — well above any real font, far
+        // below the danger zone — and treat such a font as static rather than processing it.
+        private const ushort MaxAxisCount = 64;
+
         private FvarTable(
             ImmutableArray<FontVariationAxis> axes,
             ImmutableArray<FontVariationInstance> instances,
@@ -111,7 +118,7 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             var instanceCount = reader.ReadUInt16();
             var instanceSize = reader.ReadUInt16();
 
-            if (axisCount == 0 || axisSize < MinimumAxisSize)
+            if (axisCount == 0 || axisCount > MaxAxisCount || axisSize < MinimumAxisSize)
             {
                 return false;
             }
