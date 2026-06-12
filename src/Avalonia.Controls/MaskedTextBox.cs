@@ -224,6 +224,10 @@ namespace Avalonia.Controls
                 {
                     // Silently ignore.
                 }
+                catch(UnauthorizedAccessException)
+                {
+                    // Silently ignore.
+                }
 
                 if (text == null)
                     return;
