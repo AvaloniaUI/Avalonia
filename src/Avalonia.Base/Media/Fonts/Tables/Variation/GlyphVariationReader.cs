@@ -102,6 +102,13 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                 return false;
             }
 
+            // The serialized-data offset is attacker-controlled; past the entry end there is no
+            // tuple data to read, so the glyph renders undeformed.
+            if (dataOffsetFromEntryStart > entry.Length)
+            {
+                return false;
+            }
+
             var axisCount = gvar.AxisCount;
             Span<float> peak = stackalloc float[axisCount];
             Span<float> intermediateStart = stackalloc float[axisCount];
@@ -123,12 +130,19 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
             if (hasSharedPointNumbers)
             {
-                sharedPointsRented = ReadPackedPointNumbers(
-                    entry,
-                    ref dataPos,
-                    totalPointCount,
-                    out sharedPointsCount,
-                    out sharedPointsIsAll);
+                if (!TryReadPackedPointNumbers(
+                        entry,
+                        ref dataPos,
+                        entry.Length,
+                        out sharedPointsRented,
+                        out sharedPointsCount,
+                        out sharedPointsIsAll,
+                        totalPointCount))
+                {
+                    // The shared point list precedes every tuple's serialized data, so when it
+                    // over-runs there is no way to locate any tuple data. Render undeformed.
+                    return false;
+                }
             }
 
             // Per-tuple scratch buffers for the actual point indices the tuple operates
@@ -148,6 +162,14 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
                 for (var t = 0; t < tupleVariationCount; t++)
                 {
+                    // The tuple headers are structural — later headers and all data offsets
+                    // derive from them — so when one is truncated there is nothing safe left
+                    // to read; keep whatever earlier tuples contributed.
+                    if (headerPos + 4 > entry.Length)
+                    {
+                        break;
+                    }
+
                     var tupleDataSize = BinaryPrimitives.ReadUInt16BigEndian(entry.Slice(headerPos));
                     var tupleIndex = BinaryPrimitives.ReadUInt16BigEndian(entry.Slice(headerPos + 2));
                     headerPos += 4;
@@ -156,6 +178,14 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     var hasIntermediateRegion = (tupleIndex & IntermediateRegionFlag) != 0;
                     var hasPrivatePoints = (tupleIndex & PrivatePointNumbersFlag) != 0;
                     var sharedTupleIndex = tupleIndex & TupleIndexMask;
+
+                    var embeddedCoordinateCount = (hasEmbeddedPeak ? axisCount : 0)
+                        + (hasIntermediateRegion ? axisCount * 2 : 0);
+
+                    if (headerPos + embeddedCoordinateCount * 2 > entry.Length)
+                    {
+                        break;
+                    }
 
                     if (hasEmbeddedPeak)
                     {
@@ -185,8 +215,11 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     // The serialized data for this tuple is at [dataPos, dataPos + tupleDataSize).
                     // Note: we must always advance dataPos by tupleDataSize regardless of
                     // whether we apply the scaler — the next tuple's serialized data
-                    // starts where this one ends.
-                    var tupleDataEnd = dataPos + tupleDataSize;
+                    // starts where this one ends. The end is clamped to the entry: a hostile
+                    // tupleDataSize must not let reads (or later tuples) escape the entry, and
+                    // every read below is bounded by this end so a lying size corrupts at most
+                    // this tuple, never its neighbors.
+                    var tupleDataEnd = Math.Min(dataPos + tupleDataSize, entry.Length);
 
                     if (scaler == 0f)
                     {
@@ -205,13 +238,24 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                         if (tuplePointsRented != null)
                         {
                             ArrayPool<int>.Shared.Return(tuplePointsRented);
+                            tuplePointsRented = null;
                         }
-                        tuplePointsRented = ReadPackedPointNumbers(
-                            entry,
-                            ref dataPos,
-                            totalPointCount,
-                            out tuplePointCount,
-                            out tuplePointsIsAll);
+
+                        if (!TryReadPackedPointNumbers(
+                                entry,
+                                ref dataPos,
+                                tupleDataEnd,
+                                out tuplePointsRented,
+                                out tuplePointCount,
+                                out tuplePointsIsAll,
+                                totalPointCount))
+                        {
+                            // Over-reading point list — this tuple's data is unusable; skip it
+                            // and keep processing the remaining (independent) tuples.
+                            dataPos = tupleDataEnd;
+                            continue;
+                        }
+
                         tuplePoints = tuplePointsRented;
                     }
                     else if (hasSharedPointNumbers)
@@ -245,8 +289,14 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     var tupleDeltasX = tupleDeltasXRented.AsSpan(0, tuplePointCount);
                     var tupleDeltasY = tupleDeltasYRented!.AsSpan(0, tuplePointCount);
 
-                    ReadPackedDeltas(entry, ref dataPos, tupleDeltasX);
-                    ReadPackedDeltas(entry, ref dataPos, tupleDeltasY);
+                    if (!TryReadPackedDeltas(entry, ref dataPos, tupleDataEnd, tupleDeltasX) ||
+                        !TryReadPackedDeltas(entry, ref dataPos, tupleDataEnd, tupleDeltasY))
+                    {
+                        // Delta streams over-run the tuple's data region: skip this tuple
+                        // without applying the partial values; later tuples are unaffected.
+                        dataPos = tupleDataEnd;
+                        continue;
+                    }
 
                     // Apply deltas to the accumulators.
                     if (tuplePointsIsAll)
@@ -469,31 +519,49 @@ namespace Avalonia.Media.Fonts.Tables.Variation
         }
 
         /// <summary>
-        /// Reads a packed point-numbers list. Returns an array rented from
-        /// <see cref="ArrayPool{T}.Shared"/> (caller is responsible for return) or
-        /// <c>null</c> when the list means "all points". The point count is written to
-        /// <paramref name="count"/>; for the all-points case the caller derives indices
-        /// 0..totalPointCount-1.
+        /// Reads a packed point-numbers list, bounded by <paramref name="end"/>. On success,
+        /// <paramref name="rented"/> is an array rented from <see cref="ArrayPool{T}.Shared"/>
+        /// (caller is responsible for return) or <c>null</c> when the list means "all points";
+        /// the point count is written to <paramref name="count"/>. Returns <c>false</c> (with
+        /// <paramref name="rented"/> <c>null</c>, nothing left to return) when the list would
+        /// read past <paramref name="end"/> — the data is attacker-controlled and an over-run
+        /// must corrupt at most the current tuple.
         /// </summary>
-        private static int[]? ReadPackedPointNumbers(
+        private static bool TryReadPackedPointNumbers(
             ReadOnlySpan<byte> data,
             ref int pos,
-            int totalPointCount,
+            int end,
+            out int[]? rented,
             out int count,
-            out bool isAllPoints)
+            out bool isAllPoints,
+            int totalPointCount)
         {
+            rented = null;
+            count = 0;
+            isAllPoints = false;
+
             // First the count: 1 byte if < 0x80, else 2 bytes with high bit set.
+            if (pos >= end)
+            {
+                return false;
+            }
+
             var first = data[pos++];
             if (first == 0)
             {
                 count = totalPointCount;
                 isAllPoints = true;
-                return null;
+                return true;
             }
 
             int countValue;
             if ((first & 0x80) != 0)
             {
+                if (pos >= end)
+                {
+                    return false;
+                }
+
                 countValue = ((first & 0x7F) << 8) | data[pos++];
             }
             else
@@ -501,15 +569,18 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                 countValue = first;
             }
 
-            count = countValue;
-            isAllPoints = false;
-
             var result = ArrayPool<int>.Shared.Rent(countValue);
             var pointNumber = 0;
             var written = 0;
 
             while (written < countValue)
             {
+                if (pos >= end)
+                {
+                    ArrayPool<int>.Shared.Return(result);
+                    return false;
+                }
+
                 var control = data[pos++];
                 var runIsWords = (control & 0x80) != 0;
                 var runCount = (control & 0x7F) + 1;
@@ -519,11 +590,23 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     int delta;
                     if (runIsWords)
                     {
+                        if (pos + 2 > end)
+                        {
+                            ArrayPool<int>.Shared.Return(result);
+                            return false;
+                        }
+
                         delta = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(pos, 2));
                         pos += 2;
                     }
                     else
                     {
+                        if (pos >= end)
+                        {
+                            ArrayPool<int>.Shared.Return(result);
+                            return false;
+                        }
+
                         delta = data[pos++];
                     }
 
@@ -532,21 +615,32 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                 }
             }
 
-            return result;
+            rented = result;
+            count = countValue;
+            return true;
         }
 
         /// <summary>
-        /// Reads <paramref name="output"/>.Length packed deltas (one axis at a time).
+        /// Reads <paramref name="output"/>.Length packed deltas (one axis at a time), bounded
+        /// by <paramref name="end"/>. Returns <c>false</c> when the delta stream would read
+        /// past <paramref name="end"/>; the output contents are then undefined and the caller
+        /// must skip the tuple.
         /// </summary>
-        private static void ReadPackedDeltas(
+        private static bool TryReadPackedDeltas(
             ReadOnlySpan<byte> data,
             ref int pos,
+            int end,
             Span<float> output)
         {
             var written = 0;
 
             while (written < output.Length)
             {
+                if (pos >= end)
+                {
+                    return false;
+                }
+
                 var control = data[pos++];
                 var allZero = (control & DeltasAreZeroFlag) != 0;
                 var areWords = (control & DeltasAreWordsFlag) != 0;
@@ -554,33 +648,47 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
                 if (allZero)
                 {
-                    var end = Math.Min(written + runCount, output.Length);
-                    for (var i = written; i < end; i++)
+                    var runEnd = Math.Min(written + runCount, output.Length);
+                    for (var i = written; i < runEnd; i++)
                     {
                         output[i] = 0f;
                     }
-                    written = end;
+                    written = runEnd;
                 }
                 else if (areWords)
                 {
-                    var end = Math.Min(written + runCount, output.Length);
-                    for (var i = written; i < end; i++)
+                    var runEnd = Math.Min(written + runCount, output.Length);
+
+                    if (pos + (runEnd - written) * 2 > end)
+                    {
+                        return false;
+                    }
+
+                    for (var i = written; i < runEnd; i++)
                     {
                         output[i] = BinaryPrimitives.ReadInt16BigEndian(data.Slice(pos, 2));
                         pos += 2;
                     }
-                    written = end;
+                    written = runEnd;
                 }
                 else
                 {
-                    var end = Math.Min(written + runCount, output.Length);
-                    for (var i = written; i < end; i++)
+                    var runEnd = Math.Min(written + runCount, output.Length);
+
+                    if (pos + (runEnd - written) > end)
+                    {
+                        return false;
+                    }
+
+                    for (var i = written; i < runEnd; i++)
                     {
                         output[i] = (sbyte)data[pos++];
                     }
-                    written = end;
+                    written = runEnd;
                 }
             }
+
+            return true;
         }
 
         // ----- IUP -----
