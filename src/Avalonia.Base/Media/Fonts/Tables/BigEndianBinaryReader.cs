@@ -167,6 +167,8 @@ namespace Avalonia.Media.Fonts.Tables
 
         public ushort[] ReadUInt16Array(int length)
         {
+            EnsureAvailable(length, sizeof(ushort));
+
             ushort[] data = new ushort[length];
 
             for (int i = 0; i < length; i++)
@@ -187,6 +189,8 @@ namespace Avalonia.Media.Fonts.Tables
 
         public uint[] ReadUInt32Array(int length)
         {
+            EnsureAvailable(length, sizeof(uint));
+
             uint[] data = new uint[length];
 
             for (int i = 0; i < length; i++)
@@ -199,6 +203,8 @@ namespace Avalonia.Media.Fonts.Tables
 
         public byte[] ReadUInt8Array(int length)
         {
+            EnsureAvailable(length, sizeof(byte));
+
             byte[] data = new byte[length];
 
             ReadBytesInternal(data, length);
@@ -208,6 +214,8 @@ namespace Avalonia.Media.Fonts.Tables
 
         public short[] ReadInt16Array(int length)
         {
+            EnsureAvailable(length, sizeof(short));
+
             short[] data = new short[length];
 
             for (int i = 0; i < length; i++)
@@ -253,9 +261,13 @@ namespace Avalonia.Media.Fonts.Tables
 
         public uint ReadOffset32() => ReadUInt32();
 
+        /// <summary>
+        /// Reads up to <paramref name="count"/> bytes, truncating at the end of the span; the
+        /// returned array is shorter than <paramref name="count"/> when fewer bytes remain.
+        /// </summary>
         public byte[] ReadBytes(int count)
         {
-            int available = Math.Min(count, _span.Length - _position);
+            int available = Math.Clamp(count, 0, _span.Length - _position);
 
             byte[] ret = new byte[available];
 
@@ -307,10 +319,30 @@ namespace Avalonia.Media.Fonts.Tables
 
         private readonly void EnsureAvailable(int size)
         {
-            if (_position + size > _span.Length)
+            // Unsigned comparison also rejects negative sizes and avoids the `_position + size`
+            // int overflow a hostile size would otherwise wrap past the length check.
+            if ((uint)size > (uint)(_span.Length - _position))
             {
-                throw new InvalidOperationException($"End of span reached with {size - (_span.Length - _position)} byte{(size - (_span.Length - _position) == 1 ? "s" : string.Empty)} left to read.");
+                ThrowEndOfSpan(size);
             }
+        }
+
+        // Validates that `count` elements of `elementSize` bytes are available, without
+        // overflowing and before any allocation, so that a hostile count cannot trigger a huge
+        // array allocation.
+        private readonly void EnsureAvailable(int count, int elementSize)
+        {
+            if (count < 0 || (long)count * elementSize > _span.Length - _position)
+            {
+                ThrowEndOfSpan((long)count * elementSize);
+            }
+        }
+
+        private readonly void ThrowEndOfSpan(long size)
+        {
+            long missing = size - (_span.Length - _position);
+
+            throw new InvalidOperationException($"End of span reached with {missing} byte{(missing == 1 ? string.Empty : "s")} left to read.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -34,8 +34,6 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
             ushort length = reader.ReadUInt16(); // length in bytes of this subtable
 
-            _table = table.Slice(0, length);
-
             Language = reader.ReadUInt16(); // language code, 0 for non-language-specific
 
             ushort segCountX2 = reader.ReadUInt16(); // 2 * segCount
@@ -68,14 +66,24 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
             // Compute offsets
             int endCodeOffset = reader.Position;
+
+            // Clamp the declared length to the buffer (and to at least the header just read):
+            // a corrupt/short length must not produce an out-of-range slice. Mirrors the
+            // format-12 clamp.
+            int tableLength = Math.Clamp(length, endCodeOffset, table.Length);
+
+            _table = table.Slice(0, tableLength);
+
+            // Clamp the segment count to what the (length-bounded) table actually holds — the
+            // four parallel arrays below take segCount * 8 bytes (+ 2 for reservedPad), and a
+            // hostile segCount must not produce an out-of-range slice.
+            int maxSegCount = Math.Max(0, (tableLength - endCodeOffset - 2) / 8);
+            _segCount = Math.Min(_segCount, maxSegCount);
+
             int startCodeOffset = endCodeOffset + _segCount * 2 + 2; // + reservedPad
             int idDeltaOffset = startCodeOffset + _segCount * 2; // after startCodes
             int idRangeOffsetOffset = idDeltaOffset + _segCount * 2; // after idDeltas
             int glyphIdArrayOffset = idRangeOffsetOffset + _segCount * 2; // after idRangeOffsets
-
-            // Ensure declared length is consistent
-            Debug.Assert(length >= glyphIdArrayOffset,
-                "Subtable length must be at least large enough to contain glyphIdArray.");
 
             // Slice directly
             _endCodes = _table.Slice(endCodeOffset, _segCount * 2);
@@ -86,9 +94,9 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
             _idRangeOffsets = _table.Slice(idRangeOffsetOffset, _segCount * 2);
 
-            int glyphCount = (length - glyphIdArrayOffset) / 2;
-
-            Debug.Assert(glyphCount >= 0, "GlyphIdArray length must not be negative.");
+            // Whatever remains belongs to glyphIdArray; a truncated table yields a shorter
+            // (possibly empty) array and lookups bounds-check against it.
+            int glyphCount = Math.Max(0, (tableLength - glyphIdArrayOffset) / 2);
 
             _glyphIdArray = _table.Slice(glyphIdArrayOffset, glyphCount * 2);
         }

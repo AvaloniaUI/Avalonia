@@ -150,10 +150,24 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
 
             var groups = _groups.Span;
 
-            int start = (int)ReadUInt32BE(groups, index, 0);
-            int end = (int)ReadUInt32BE(groups, index, 4);
+            uint start = ReadUInt32BE(groups, index, 0);
+            uint end = ReadUInt32BE(groups, index, 4);
 
-            range = new CodepointRange(start, end);
+            // Group contents are attacker-controlled: consumers iterate the returned range one
+            // codepoint at a time, so an end beyond the Unicode range (or end == int.MaxValue,
+            // which makes a `<= end` loop condition a tautology) must not get through. Clamp to
+            // the Unicode range and map inverted/out-of-range groups to an empty range so that
+            // enumeration continues with the remaining groups.
+            const uint maxCodepoint = 0x10FFFF;
+
+            if (start > end || start > maxCodepoint)
+            {
+                range = new CodepointRange(0, -1);
+
+                return true;
+            }
+
+            range = new CodepointRange((int)start, (int)Math.Min(end, maxCodepoint));
 
             return true;
         }
