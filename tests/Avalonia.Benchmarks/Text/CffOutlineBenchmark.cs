@@ -19,6 +19,7 @@ namespace Avalonia.Benchmarks.Text;
 internal static class CffFonts
 {
     public const string GlyfAsset = "resm:Avalonia.Benchmarks.Assets.Inter-Regular.ttf?assembly=Avalonia.Benchmarks";
+    public const string GlyfVariableAsset = "resm:Avalonia.Benchmarks.Assets.InterVariable.ttf?assembly=Avalonia.Benchmarks";
     public const string CffAsset = "resm:Avalonia.Benchmarks.Assets.SourceCodePro-Subset.otf?assembly=Avalonia.Benchmarks";
     public const string Cff2Asset = "resm:Avalonia.Benchmarks.Assets.AdobeVFPrototype-Subset.otf?assembly=Avalonia.Benchmarks";
 
@@ -90,15 +91,19 @@ public class CffGlyphBoundsBenchmark : IDisposable
     private readonly IDisposable _app;
 
     private readonly GlyphTypeface _glyf;
+    private readonly GlyphTypeface _glyfVariable;
+    private readonly GlyphTypeface _glyfVaried;
     private readonly GlyphTypeface _cff;
     private readonly GlyphTypeface _cff2;
     private readonly GlyphTypeface _cff2Varied;
 
     private readonly ushort[] _glyfPool;
+    private readonly ushort[] _glyfVariablePool;
     private readonly ushort[] _cffPool;
     private readonly ushort[] _cff2Pool;
 
     private ushort[] _glyfIds = Array.Empty<ushort>();
+    private ushort[] _glyfVariableIds = Array.Empty<ushort>();
     private ushort[] _cffIds = Array.Empty<ushort>();
     private ushort[] _cff2Ids = Array.Empty<ushort>();
     private GlyphBounds[] _bounds = Array.Empty<GlyphBounds>();
@@ -121,11 +126,14 @@ public class CffGlyphBoundsBenchmark : IDisposable
             fontManagerImpl: new FontManagerImpl()));
 
         _glyf = CffFonts.Load(CffFonts.GlyfAsset);
+        _glyfVariable = CffFonts.Load(CffFonts.GlyfVariableAsset);
+        _glyfVaried = CffFonts.Vary(_glyfVariable, 900f);
         _cff = CffFonts.Load(CffFonts.CffAsset);
         _cff2 = CffFonts.Load(CffFonts.Cff2Asset);
         _cff2Varied = CffFonts.Vary(_cff2, 900f);
 
         _glyfPool = CffFonts.BuildPool(_glyf);
+        _glyfVariablePool = CffFonts.BuildPool(_glyfVariable);
         _cffPool = CffFonts.BuildPool(_cff);
         _cff2Pool = CffFonts.BuildPool(_cff2);
 
@@ -138,6 +146,7 @@ public class CffGlyphBoundsBenchmark : IDisposable
     public void Setup()
     {
         _glyfIds = CffFonts.Cycle(_glyfPool, GlyphCount);
+        _glyfVariableIds = CffFonts.Cycle(_glyfVariablePool, GlyphCount);
         _cffIds = CffFonts.Cycle(_cffPool, GlyphCount);
         _cff2Ids = CffFonts.Cycle(_cff2Pool, GlyphCount);
         _bounds = new GlyphBounds[GlyphCount];
@@ -146,6 +155,16 @@ public class CffGlyphBoundsBenchmark : IDisposable
 
     [Benchmark(Baseline = true)]
     public bool Glyf() => _glyf.TryGetGlyphBounds(_glyfIds, _bounds.AsSpan(0, GlyphCount));
+
+    // Variable glyf at its default instance: the null-activeCoords check routes to the same cheap
+    // header read as the static font, so this should track the Glyf baseline.
+    [Benchmark]
+    public bool GlyfVariableDefault() => _glyfVariable.TryGetGlyphBounds(_glyfVariableIds, _bounds.AsSpan(0, GlyphCount));
+
+    // Variable glyf at a non-default instance: the header box is stale, so bounds come from the
+    // gvar-deformed outline interpreted once and memoised — steady state here is a per-glyph cache hit.
+    [Benchmark]
+    public bool GlyfVaried() => _glyfVaried.TryGetGlyphBounds(_glyfVariableIds, _bounds.AsSpan(0, GlyphCount));
 
     [Benchmark]
     public bool Cff() => _cff.TryGetGlyphBounds(_cffIds, _bounds.AsSpan(0, GlyphCount));
