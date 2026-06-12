@@ -382,7 +382,7 @@ namespace Avalonia.Controls
         private TextPresenter? _presenter;
         private ScrollViewer? _scrollViewer;
         private readonly TextBoxTextInputMethodClient _imClient = new();
-        private TextBoxSpellCheckController? _spellCheckController;
+        private TextBoxSpellCheckManager? _spellCheckManager;
         private readonly UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
         private bool _canCut;
@@ -900,7 +900,7 @@ namespace Avalonia.Controls
             private set => SetAndRaise(HasSpellCheckSuggestionsProperty, ref _hasSpellCheckSuggestions, value);
         }
 
-        internal bool HasSpellCheckController => _spellCheckController is not null;
+        internal bool HasSpellCheckManager => _spellCheckManager is not null;
 
         /// <summary>
         /// Property for determining whether undo/redo is enabled
@@ -1016,7 +1016,7 @@ namespace Avalonia.Controls
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
             _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
-            _spellCheckController?.SetPresenter(_presenter, _scrollViewer);
+            _spellCheckManager?.SetPresenter(_presenter, _scrollViewer);
 
             _imClient.SetPresenter(_presenter, this);
 
@@ -1064,7 +1064,7 @@ namespace Avalonia.Controls
             _imClient.SetPresenter(null, null);
             CancelSpellCheckSuggestionQuery();
             ClearSpellCheckSuggestions();
-            ReleaseSpellCheckController();
+            ReleaseSpellCheckManager();
         }
 
         private void PresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -1155,7 +1155,7 @@ namespace Avalonia.Controls
                      change.Property == FontStretchProperty ||
                      change.Property == ForegroundProperty)
             {
-                _spellCheckController?.RefreshStyles();
+                _spellCheckManager?.RefreshStyles();
             }
         }
 
@@ -1168,51 +1168,51 @@ namespace Avalonia.Controls
             CanPaste = !IsReadOnly;
         }
 
-        private TextBoxSpellCheckController? GetOrCreateSpellCheckController()
+        private TextBoxSpellCheckManager? GetOrCreateSpellCheckManager()
         {
-            if (_spellCheckController is { } controller)
+            if (_spellCheckManager is { } manager)
             {
-                return controller;
+                return manager;
             }
 
-            if (!TextBoxSpellCheckController.CanCreate(this))
+            if (!TextBoxSpellCheckManager.CanCreate(this))
             {
                 return null;
             }
 
-            return CreateSpellCheckController();
+            return CreateSpellCheckManager();
         }
 
-        private TextBoxSpellCheckController CreateSpellCheckController()
+        private TextBoxSpellCheckManager CreateSpellCheckManager()
         {
-            var controller = new TextBoxSpellCheckController(this);
-            controller.SetPresenter(_presenter, _scrollViewer);
-            _spellCheckController = controller;
+            var manager = new TextBoxSpellCheckManager(this);
+            manager.SetPresenter(_presenter, _scrollViewer);
+            _spellCheckManager = manager;
 
-            return controller;
+            return manager;
         }
 
         private void ScheduleSpellCheck(bool invalidateResults = false)
         {
-            if (!TextBoxSpellCheckController.CanCreate(this))
+            if (!TextBoxSpellCheckManager.CanCreate(this))
             {
-                ReleaseSpellCheckController();
+                ReleaseSpellCheckManager();
                 return;
             }
 
-            (_spellCheckController ?? CreateSpellCheckController()).ScheduleCheck(invalidateResults);
+            (_spellCheckManager ?? CreateSpellCheckManager()).ScheduleCheck(invalidateResults);
         }
 
-        private void ReleaseSpellCheckController()
+        private void ReleaseSpellCheckManager()
         {
-            if (_spellCheckController is not { } controller)
+            if (_spellCheckManager is not { } manager)
             {
                 return;
             }
 
-            _spellCheckController = null;
-            controller.Clear();
-            controller.SetPresenter(null, null);
+            _spellCheckManager = null;
+            manager.Clear();
+            manager.SetPresenter(null, null);
         }
 
         private void UpdateSpellCheckSuggestions(ContextRequestedEventArgs? contextRequested = null)
@@ -1220,9 +1220,9 @@ namespace Avalonia.Controls
             CancelSpellCheckSuggestionQuery();
             ClearSpellCheckSuggestions();
 
-            var controller = GetOrCreateSpellCheckController();
+            var manager = GetOrCreateSpellCheckManager();
 
-            if (controller is null)
+            if (manager is null)
             {
                 return;
             }
@@ -1248,7 +1248,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            var suggestions = controller.SuggestAsync(
+            var suggestions = manager.SuggestAsync(
                 caretIndex,
                 selectionStart,
                 selectionEnd,

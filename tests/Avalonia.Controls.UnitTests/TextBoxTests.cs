@@ -79,6 +79,50 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Context_Requested_Limits_Spell_Check_Suggestions()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(
+                    new TestSpellCheckProvider(
+                        new[] { new SpellCheckResult(0, 3, "Ths") },
+                        new[]
+                        {
+                            "Suggestion 1",
+                            "Suggestion 2",
+                            "Suggestion 3",
+                            "Suggestion 4",
+                            "Suggestion 5",
+                            "Suggestion 6",
+                            "Suggestion 7",
+                            "Suggestion 8",
+                            "Suggestion 9",
+                            "Suggestion 10"
+                        }));
+
+                var target = CreateTextBoxInTopLevel("Ths sample");
+                target.CaretIndex = 1;
+
+                target.RaiseEvent(new ContextRequestedEventArgs());
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal(
+                    new[]
+                    {
+                        "Suggestion 1",
+                        "Suggestion 2",
+                        "Suggestion 3",
+                        "Suggestion 4",
+                        "Suggestion 5",
+                        "Suggestion 6",
+                        "Suggestion 7",
+                        "Suggestion 8"
+                    },
+                    target.SpellCheckSuggestions);
+            }
+        }
+
+        [Fact]
         public void Pointer_Context_Requested_Populates_Spell_Check_Suggestions_For_Clicked_Word()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -179,19 +223,19 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Spell_Check_Controller_Is_Not_Created_Without_Platform_Provider()
+        public void Spell_Check_Manager_Is_Not_Created_Without_Platform_Provider()
         {
             using (UnitTestApplication.Start(Services))
             {
                 var target = CreateTextBoxInTopLevel("Ths sample");
 
-                Assert.False(target.HasSpellCheckController);
+                Assert.False(target.HasSpellCheckManager);
                 Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
             }
         }
 
         [Fact]
-        public void Spell_Check_Controller_Is_Not_Created_When_Language_Is_Unsupported()
+        public void Spell_Check_Manager_Is_Not_Created_When_Language_Is_Unsupported()
         {
             using (UnitTestApplication.Start(Services))
             {
@@ -204,14 +248,14 @@ namespace Avalonia.Controls.UnitTests
 
                 var target = CreateTextBoxInTopLevel("Ths sample");
 
-                Assert.False(target.HasSpellCheckController);
+                Assert.False(target.HasSpellCheckManager);
                 Assert.Equal(0, provider.CheckCount);
                 Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
             }
         }
 
         [Fact]
-        public void Spell_Check_Controller_Is_Not_Created_When_Spell_Check_Is_Disabled()
+        public void Spell_Check_Manager_Is_Not_Created_When_Spell_Check_Is_Disabled()
         {
             using (UnitTestApplication.Start(Services))
             {
@@ -225,14 +269,14 @@ namespace Avalonia.Controls.UnitTests
                     "Ths sample",
                     textBox => TextInputOptions.SetIsSpellCheckEnabled(textBox, false));
 
-                Assert.False(target.HasSpellCheckController);
+                Assert.False(target.HasSpellCheckManager);
                 Assert.Equal(0, provider.CheckCount);
                 Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
             }
         }
 
         [Fact]
-        public void Spell_Check_Controller_Is_Not_Created_For_Number_Content()
+        public void Spell_Check_Manager_Is_Not_Created_For_Number_Content()
         {
             using (UnitTestApplication.Start(Services))
             {
@@ -250,14 +294,14 @@ namespace Avalonia.Controls.UnitTests
                         TextInputOptions.SetIsSpellCheckEnabled(textBox, true);
                     });
 
-                Assert.False(target.HasSpellCheckController);
+                Assert.False(target.HasSpellCheckManager);
                 Assert.Equal(0, provider.CheckCount);
                 Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
             }
         }
 
         [Fact]
-        public void Spell_Check_Controller_Is_Released_When_Spell_Check_Is_Disabled()
+        public void Spell_Check_Manager_Is_Released_When_Spell_Check_Is_Disabled()
         {
             using (UnitTestApplication.Start(Services))
             {
@@ -269,12 +313,12 @@ namespace Avalonia.Controls.UnitTests
 
                 var target = CreateTextBoxInTopLevel("Ths sample");
 
-                Assert.True(target.HasSpellCheckController);
+                Assert.True(target.HasSpellCheckManager);
                 Assert.Single(Dispatcher.SnapshotTimersForUnitTests());
 
                 TextInputOptions.SetIsSpellCheckEnabled(target, false);
 
-                Assert.False(target.HasSpellCheckController);
+                Assert.False(target.HasSpellCheckManager);
                 Assert.Equal(0, provider.CheckCount);
                 Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
             }
@@ -448,7 +492,7 @@ namespace Avalonia.Controls.UnitTests
                         textBox.Height = 40;
                     });
 
-                Assert.True(target.HasSpellCheckController);
+                Assert.True(target.HasSpellCheckManager);
 
                 Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
@@ -479,7 +523,7 @@ namespace Avalonia.Controls.UnitTests
                         textBox.Height = 40;
                     });
 
-                Assert.True(target.HasSpellCheckController);
+                Assert.True(target.HasSpellCheckManager);
 
                 Assert.Single(Dispatcher.SnapshotTimersForUnitTests()).ForceFire();
                 Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
@@ -510,7 +554,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(1, provider.CheckCount);
                 Assert.Equal("Ths", provider.LastCheckedText);
-                Assert.True(target.HasSpellCheckController);
+                Assert.True(target.HasSpellCheckManager);
                 Assert.True(target.HasSpellCheckSuggestions);
             }
         }
