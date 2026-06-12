@@ -81,7 +81,112 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.Null(Record.Exception(() => typeface.GetGlyphDrawing(3)));
         }
 
+        [Fact]
+        public void SelfReferential_Transform_Paint_Does_Not_Throw_From_GetGlyphDrawing()
+        {
+            // Glyph 3's paint is a PaintScaleUniform (format 20) whose 24-bit sub-paint offset is 0,
+            // so it points at itself. This is a paint→paint cycle that never crosses a glyph
+            // boundary: the old guard (entered only at PaintGlyph / PaintColrGlyph) missed it and
+            // the parser recursed into an uncatchable StackOverflow. The offset-keyed decycler now
+            // trips on the repeated paint offset and the boundary catch contains it.
+            var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular)
+                .Replace("COLR", BuildColrV1WithSelfReferentialPaint(glyph: 3))
+                .Replace("CPAL", BuildMinimalCpal());
+
+            var typeface = font.TryCreateGlyphTypeface();
+            Assert.NotNull(typeface);
+
+            Assert.Null(Record.Exception(() => typeface!.GetGlyphDrawing(3)));
+        }
+
+        [Fact]
+        public void Long_Acyclic_Transform_Chain_Is_Bounded_Without_Throwing()
+        {
+            // A chain of PaintScaleUniform paints, each pointing to the next, deeper than the
+            // decycler's depth limit. No cycle is involved — purely acyclic nesting — yet the old
+            // code (which never entered the decycler on transform edges) would recurse the whole
+            // chain. The per-paint depth guard now bounds it and the boundary catch contains it.
+            var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular)
+                .Replace("COLR", BuildColrV1WithTransformChain(glyph: 3, chainLength: PaintDecycler.MaxTraversalDepth + 5))
+                .Replace("CPAL", BuildMinimalCpal());
+
+            var typeface = font.TryCreateGlyphTypeface();
+            Assert.NotNull(typeface);
+
+            Assert.Null(Record.Exception(() => typeface!.GetGlyphDrawing(3)));
+        }
+
         // ── helpers ──
+
+        /// <summary>
+        /// Builds a COLR v1 table whose <paramref name="glyph"/> paints a single PaintScaleUniform
+        /// (format 20) with a sub-paint offset of 0 — a self-referential paint→paint edge.
+        /// </summary>
+        private static byte[] BuildColrV1WithSelfReferentialPaint(ushort glyph)
+        {
+            var colr = new BigEndianBuffer();
+            WriteColrV1Header(colr, out var baseListOffsetPos);
+
+            var listStart = colr.Position;
+            colr.PatchUInt32(baseListOffsetPos, (uint)listStart);
+            colr.UInt32(1);          // numBaseGlyphV1Records
+            colr.UInt16(glyph);
+            var paintOffsetPos = colr.ReserveOffset32();
+
+            // PaintScaleUniform (format 20): format(1) + subPaintOffset24(3) + scale F2Dot14(2).
+            colr.PatchUInt32(paintOffsetPos, (uint)(colr.Position - listStart));
+            colr.UInt8(20);
+            colr.UInt24(0);          // sub-paint offset 0 → this paint references itself
+            colr.F2Dot14(1.0);       // scale
+
+            return colr.ToArray();
+        }
+
+        /// <summary>
+        /// Builds a COLR v1 table whose <paramref name="glyph"/> paints a chain of
+        /// <paramref name="chainLength"/> PaintScaleUniform (format 20) paints, each referencing the
+        /// next; the final one references a 1-byte stub (format 0, an unknown/leaf paint).
+        /// </summary>
+        private static byte[] BuildColrV1WithTransformChain(ushort glyph, int chainLength)
+        {
+            var colr = new BigEndianBuffer();
+            WriteColrV1Header(colr, out var baseListOffsetPos);
+
+            var listStart = colr.Position;
+            colr.PatchUInt32(baseListOffsetPos, (uint)listStart);
+            colr.UInt32(1);
+            colr.UInt16(glyph);
+            var paintOffsetPos = colr.ReserveOffset32();
+
+            // Each ScaleUniform is 6 bytes; lay them contiguously so paint i's sub-paint offset is 6.
+            colr.PatchUInt32(paintOffsetPos, (uint)(colr.Position - listStart));
+            for (var i = 0; i < chainLength; i++)
+            {
+                colr.UInt8(20);
+                colr.UInt24(6);      // next paint is the immediately following 6-byte ScaleUniform
+                colr.F2Dot14(1.0);
+            }
+
+            // Leaf: format 0 is not a recursive paint, so the chain terminates here.
+            colr.UInt8(0);
+
+            return colr.ToArray();
+        }
+
+        /// <summary>Writes the 34-byte COLR v1 header, reserving only baseGlyphV1ListOffset (@14).</summary>
+        private static void WriteColrV1Header(BigEndianBuffer colr, out int baseListOffsetPos)
+        {
+            colr.UInt16(1);   // version
+            colr.UInt16(0);   // numBaseGlyphRecords (v0)
+            colr.UInt32(0);   // baseGlyphRecordsOffset (v0)
+            colr.UInt32(0);   // layerRecordsOffset (v0)
+            colr.UInt16(0);   // numLayerRecords (v0)
+            baseListOffsetPos = colr.ReserveOffset32(); // baseGlyphV1ListOffset @14
+            colr.UInt32(0);   // layerV1ListOffset @18
+            colr.UInt32(0);   // clipListOffset @22
+            colr.UInt32(0);   // varIndexMapOffset @26
+            colr.UInt32(0);   // itemVariationStoreOffset @30
+        }
 
         private static GlyphTypeface BuildColrTypeface(params (ushort Glyph, ushort RefGlyph)[] records)
         {

@@ -26,6 +26,15 @@ namespace Avalonia.Media.Fonts.Tables.Colr
                 return false;
             }
 
+            // Enter the decycler on this paint's offset before recursing into any child paint.
+            // Every recursive edge (layers, transforms, composite, glyph/colr-glyph) flows back
+            // through this method, so guarding here bounds the whole paint graph: a self- or
+            // mutually-referential offset trips cycle detection, and an over-deep acyclic chain
+            // trips the depth limit. Enter throws a DecyclerException on either, which the
+            // top-level paint walk (ColrTable / GlyphTypeface) catches and turns into a dropped
+            // paint — so a hostile font can't drive unbounded recursion into a StackOverflow.
+            using var guard = decycler.Enter(offset);
+
             return format switch
             {
                 1 => ColrLayers.TryParse(span, offset, in context, in decycler, out paint),

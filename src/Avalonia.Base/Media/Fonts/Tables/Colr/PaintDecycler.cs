@@ -3,9 +3,15 @@
 namespace Avalonia.Media.Fonts.Tables.Colr
 {
     /// <summary>
-    /// Type alias for the paint decycler that tracks visited glyphs.
+    /// Decycler for the COLR v1 paint graph, keyed on the absolute paint offset within the COLR
+    /// table. Every recursive parse edge goes through <see cref="PaintParser.TryParse"/>, which
+    /// enters this guard on the paint's offset — so both paint→paint cycles (an offset that
+    /// reappears on the current path) and unbounded acyclic nesting (depth past
+    /// <see cref="MaxTraversalDepth"/>) are caught, mirroring HarfBuzz's per-paint nesting cap.
+    /// Offsets uniquely identify a paint (and each glyph resolves to one base-paint offset), so an
+    /// offset key also subsumes the older glyph-boundary cycle check.
     /// </summary>
-    internal class PaintDecycler : Decycler<ushort>
+    internal class PaintDecycler : Decycler<uint>
     {
         /// <summary>
         /// Maximum depth for paint graph traversal.
