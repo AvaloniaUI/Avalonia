@@ -472,8 +472,6 @@ namespace Avalonia.Controls
             {
                 TextBox.Text = Text;
                 TextBox[!TabIndexProperty] = this[!TabIndexProperty];
-                TextBox[!TextInputOptions.IsSpellCheckEnabledProperty] =
-                    this[!TextInputOptions.IsSpellCheckEnabledProperty];
                 TextBox.PointerPressed += TextBoxOnPointerPressed;
                 _textBoxTextChangedSubscription = TextBox.GetObservable(TextBox.TextProperty).Subscribe(txt => TextBoxOnTextChanged());
             }

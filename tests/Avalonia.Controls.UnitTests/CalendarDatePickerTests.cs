@@ -263,6 +263,9 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Name = "PART_TextBox"
                     }.RegisterInNameScope(scope);
+                textBox.Bind(
+                    TextInputOptions.IsSpellCheckEnabledProperty,
+                    control.GetBindingObservable(TextInputOptions.IsSpellCheckEnabledProperty));
                 var button =
                     new Button
                     {

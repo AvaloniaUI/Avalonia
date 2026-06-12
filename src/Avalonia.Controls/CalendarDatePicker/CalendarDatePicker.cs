@@ -180,8 +180,6 @@ namespace Avalonia.Controls
 
             if(_textBox != null)
             {
-                _textBox[!TextInputOptions.IsSpellCheckEnabledProperty] =
-                    this[!TextInputOptions.IsSpellCheckEnabledProperty];
                 _textBox.KeyDown += TextBox_KeyDown;
                 _textBox.GotFocus += TextBox_GotFocus;
                 _textBoxTextChangedSubscription = _textBox.GetObservable(TextBox.TextProperty).Subscribe(_ => TextBox_TextChanged());
