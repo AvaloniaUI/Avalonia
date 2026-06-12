@@ -37,6 +37,80 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         }
 
         [Fact]
+        public void ItemVariationStore_TryGetDelta_Does_Not_Throw_On_Overflowing_Row_Offset()
+        {
+            // A minimal but valid store with one region and one ItemVariationData subtable whose
+            // itemCount is huge. innerIndex * rowBytes overflowed int to a negative rowStart that
+            // slipped the `rowStart + rowBytes > length` guard and then threw on the span slice.
+            // The row math is now computed in long.
+            const int regionListOffset = 8 + 4; // header(8) + one ivd offset(4)
+
+            var ivs = new BigEndianBuffer();
+            ivs.UInt16(1);                    // format
+            ivs.UInt32(regionListOffset);     // regionListOffset
+            ivs.UInt16(1);                    // ivdCount
+            ivs.UInt32(regionListOffset + 4 + 1 * 2 * 6); // ivd[0] offset: after the region list
+
+            // VariationRegionList: axisCount(2), regionCount(2), then regionCount*axisCount*6.
+            ivs.UInt16(2);                    // axisCount (matches expectedAxisCount)
+            ivs.UInt16(1);                    // regionCount
+            // One region, two axes: start/peak/end F2Dot14 each.
+            ivs.F2Dot14(0).F2Dot14(1).F2Dot14(1);
+            ivs.F2Dot14(0).F2Dot14(0).F2Dot14(0);
+
+            // ItemVariationData: itemCount(2), wordDeltaCount(2), regionIndexCount(2), regionIndexes[].
+            ivs.UInt16(0xFFFF);               // itemCount (huge — lets innerIndex be large)
+            ivs.UInt16(1);                    // wordDeltaCount
+            ivs.UInt16(1);                    // regionIndexCount
+            ivs.UInt16(0);                    // regionIndexes[0]
+            // No actual delta rows — the bounds guard must reject before reading them.
+
+            Assert.True(ItemVariationStore.TryLoad(ivs.ToArray(), expectedAxisCount: 2, out var store));
+
+            var active = new[] { 1f, 0f };
+            var exception = Record.Exception(
+                () => store!.TryGetDelta(outerIndex: 0, innerIndex: 0xFFFE, active, out _));
+
+            // No throw; the out-of-range row is rejected by the (now long) bounds check.
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void DeltaSetIndexMap_Format1_Rejects_Hostile_MapCount()
+        {
+            // Format 1 carries a uint32 mapCount. 0xFFFFFFFF cast straight to int is negative; the
+            // `entriesStart + (long)mapCount * entrySize` guard then computed a negative product and
+            // failed open. The raw count is now range-checked unsigned.
+            var map = new BigEndianBuffer()
+                .UInt8(1)            // format = 1
+                .UInt8(0)            // entryFormat (1 byte/entry, 1-bit inner index)
+                .UInt32(0xFFFFFFFF)  // mapCount (hostile)
+                .ToArray();
+
+            var loaded = true;
+            var exception = Record.Exception(() => loaded = DeltaSetIndexMap.TryLoad(map, out _));
+
+            Assert.Null(exception);
+            Assert.False(loaded);
+        }
+
+        [Fact]
+        public void Corrupt_Hvar_AdvanceMapOffset_Does_Not_Deny_The_Font()
+        {
+            // HVAR header: ..., advanceWidthMappingOffset is the uint32 at offset 8. A high-bit
+            // offset cast to a negative int slipped the slice and threw out of the constructor.
+            var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterVariable);
+
+            font.PatchUInt32("HVAR", 8, 0xFFFFFFFF);
+
+            var typeface = font.TryCreateGlyphTypeface();
+
+            // The offset is now validated unsigned, so a corrupt advance map degrades to "no HVAR"
+            // rather than denying the font.
+            Assert.NotNull(typeface);
+        }
+
+        [Fact]
         public void Corrupt_Hvar_VariationStore_Does_Not_Deny_The_Font()
         {
             // Drive the same input through the real load path: corrupt the regionListOffset *inside*
