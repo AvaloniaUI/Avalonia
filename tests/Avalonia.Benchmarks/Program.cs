@@ -10,7 +10,9 @@ using Avalonia.Skia;
 using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Toolchains.InProcess.Emit;
 
 namespace Avalonia.Benchmarks
 {
@@ -46,6 +48,19 @@ namespace Avalonia.Benchmarks
                 config = new DebugInProcessConfig();
                 var a = new List<string>(args);
                 a.Remove("--debug");
+                args = a.ToArray();
+            }
+
+            // Runs the benchmarks in the host process (no auto-generated boilerplate project). This
+            // repo's Directory.Build.props + Central Package Management leak into the per-benchmark
+            // project the default CsProj toolchain generates and break its build, so the in-process
+            // emit toolchain is the reliable way to run these benchmarks from the repo tree.
+            if (args.Contains("--inprocess"))
+            {
+                config = ManualConfig.Create(DefaultConfig.Instance)
+                    .AddJob(Job.ShortRun.WithToolchain(InProcessEmitToolchain.Instance));
+                var a = new List<string>(args);
+                a.Remove("--inprocess");
                 args = a.ToArray();
             }
 
