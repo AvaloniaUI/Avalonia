@@ -86,7 +86,7 @@
 - (NSAccessibilityRole)accessibilityRole
 {
     auto controlType = _peer->GetAutomationControlType();
-    
+
     switch (controlType) {
         case AutomationButton: return NSAccessibilityButtonRole;
         case AutomationCalendar: return NSAccessibilityGridRole;
@@ -96,7 +96,7 @@
         case AutomationEdit: return NSAccessibilityTextFieldRole;
         case AutomationHyperlink: return NSAccessibilityLinkRole;
         case AutomationImage: return NSAccessibilityImageRole;
-        case AutomationListItem: return NSAccessibilityGroupRole;
+        case AutomationListItem: return NSAccessibilityRowRole;
         case AutomationList: return NSAccessibilityListRole;
         case AutomationMenu: return NSAccessibilityMenuBarRole;
         case AutomationMenuBar: return NSAccessibilityMenuBarRole;
@@ -123,6 +123,7 @@
         case AutomationSplitButton: return NSAccessibilityPopUpButtonRole;
         case AutomationWindow: return NSAccessibilityWindowRole;
         case AutomationPane: return NSAccessibilityGroupRole;
+        case AutomationScrollViewer: return NSAccessibilityScrollAreaRole;
         case AutomationHeader: return @"AXHeading";
         case AutomationHeaderItem:  return NSAccessibilityButtonRole;
         case AutomationTable: return NSAccessibilityTableRole;
@@ -140,6 +141,7 @@
     auto controlType = _peer->GetAutomationControlType();
     switch (controlType) {
         case AutomationList: return @"AXContentList";
+        case AutomationListItem: return NSAccessibilityTableRowSubrole;
     }
 
     auto landmarkType = _peer->GetLandmarkType();
@@ -418,6 +420,25 @@
     return YES;
 }
 
+- (NSArray<NSAccessibilityActionName> *)accessibilityActionNames
+{
+    NSAccessibilityActionName scrollToVisible = @"AXScrollToVisible";
+    NSArray<NSAccessibilityActionName> *base = [super accessibilityActionNames];
+    if (base == nil)
+        base = @[];
+    if ([base containsObject:scrollToVisible])
+        return base;
+    return [base arrayByAddingObject:scrollToVisible];
+}
+
+- (void)accessibilityPerformAction:(NSAccessibilityActionName)action
+{
+    if ([action isEqualToString:@"AXScrollToVisible"])
+        _peer->BringIntoView();
+    else
+        [super accessibilityPerformAction:action];
+}
+
 - (BOOL)isAccessibilitySelected
 {
     if (_peer->IsSelectionItemProvider())
@@ -491,6 +512,9 @@
 {
     switch (property)
     {
+        case AutomationPeer_AutomationId:
+            // accessibilityIdentifier is read on-demand; no VoiceOver announcement required.
+            break;
         case AutomationPeer_Name:
             NSAccessibilityPostNotification(self, NSAccessibilityTitleChangedNotification);
             if (_peer->GetLiveSetting() != LiveSettingOff)
@@ -509,8 +533,14 @@
             NSAccessibilityPostNotification(self, NSAccessibilitySelectedChildrenChangedNotification);
             break;
         case ToggleProvider_ToggleState:
+            NSAccessibilityPostNotification(self, NSAccessibilityValueChangedNotification);
+            break;
         case ExpandCollapseProvider_ExpandCollapseState:
             NSAccessibilityPostNotification(self, NSAccessibilityValueChangedNotification);
+            if (_peer->ExpandCollapseProvider_GetIsExpanded())
+                NSAccessibilityPostNotification(self, (__bridge NSString *)kAXRowExpandedNotification);
+            else
+                NSAccessibilityPostNotification(self, (__bridge NSString *)kAXRowCollapsedNotification);
             break;
         default:
             break;

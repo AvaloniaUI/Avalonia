@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
@@ -411,7 +412,8 @@ namespace Avalonia.Controls
 
         static TextBox()
         {
-            FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
+            FocusableProperty.OverrideDefaultValue<TextBox>(true);
+            PlatformFeedback.FeedbackTypeProperty.OverrideDefaultValue<TextBox>(FeedbackType.Auto);
             TextInputMethodClientRequestedEvent.AddClassHandler<TextBox>((tb, e) =>
             {
                 if (!tb.IsReadOnly)
@@ -2062,6 +2064,7 @@ namespace Avalonia.Controls
                 _hasTouchSelection = true;
 
                 e.Handled = true;
+                this.PerformFeedback(FeedbackAction.Hold);
             }
         }
 

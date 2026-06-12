@@ -89,7 +89,7 @@ namespace Avalonia.Build.Tasks
 
                 var refWriterParameters = new WriterParameters { WriteSymbols = false };
                 if (!string.IsNullOrWhiteSpace(strongNameKey))
-	                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
+	                refWriterParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
                 refAsm?.Write(refOutput, refWriterParameters);
 
                 return new CompileResult(true, true);
@@ -458,8 +458,8 @@ namespace Avalonia.Build.Tasks
                                 .Methods.First(m => m.Name == document.TypeBuilderProvider.PopulateMethod.Name);
 
                             var designLoaderFieldType = typeSystem
-                                .GetType("System.Action`1")
-                                .MakeGenericType(typeSystem.GetType("System.Object"));
+                                .WellKnownTypes.GetActionOfT(1)
+                                .MakeGenericType(typeSystem.WellKnownTypes.Object);
 
                             var designLoaderFieldTypeReference = (GenericInstanceType)typeSystem.GetTypeReference(designLoaderFieldType);
                             designLoaderFieldTypeReference.GenericArguments[0] =

@@ -58,7 +58,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public static readonly StyledProperty<string?> PreeditTextProperty =
             AvaloniaProperty.Register<TextPresenter, string?>(nameof(PreeditText));
-        
+
         /// <summary>
         /// Defines the <see cref="PreeditText"/> property.
         /// </summary>
@@ -150,7 +150,7 @@ namespace Avalonia.Controls.Presenters
             get => GetValue(PreeditTextProperty);
             set => SetValue(PreeditTextProperty, value);
         }
-        
+
         public int? PreeditTextCursorPosition
         {
             get => GetValue(PreeditTextCursorPositionProperty);
@@ -428,11 +428,11 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
-            if(VisualRoot is Visual root)
+            if (VisualRoot is Visual root)
             {
                 var offset = this.TranslatePoint(Bounds.Position, root);
 
-                if(_previousOffset != offset)
+                if (_previousOffset != offset)
                 {
                     _previousOffset = offset;
                 }
@@ -941,7 +941,7 @@ namespace Avalonia.Controls.Presenters
 
             CaretChanged();
         }
-        
+
         private void EnsureCaretTimer()
         {
             if (_caretTimer == null)
@@ -967,7 +967,7 @@ namespace Avalonia.Controls.Presenters
                 _caretTimer = null;
             }
 
-            if (CaretBlinkInterval.TotalMilliseconds > 0) 
+            if (CaretBlinkInterval.TotalMilliseconds > 0)
             {
                 _caretTimer = new DispatcherTimer { Interval = CaretBlinkInterval };
                 _caretTimer.Tick += CaretTimerTick;
@@ -1140,7 +1140,7 @@ namespace Avalonia.Controls.Presenters
 
         internal void RemoveTextSelectionCanvas()
         {
-            if(_layer != null && TextSelectionHandleCanvas is { } canvas)
+            if (_layer != null && TextSelectionHandleCanvas is { } canvas)
             {
                 canvas.SetPresenter(null);
                 _layer.Remove(canvas);
@@ -1161,7 +1161,7 @@ namespace Avalonia.Controls.Presenters
                 _caretTimer.Tick -= CaretTimerTick;
             }
         }
-        
+
         private void OnPreeditChanged(string? preeditText, int? cursorPosition)
         {
             if (string.IsNullOrEmpty(preeditText))
@@ -1188,17 +1188,17 @@ namespace Avalonia.Controls.Presenters
                 MoveCaretToTextPosition(change.GetNewValue<int>());
             }
 
-            if(change.Property == PreeditTextProperty)
+            if (change.Property == PreeditTextProperty)
             {
                 OnPreeditChanged(change.NewValue as string, PreeditTextCursorPosition);
             }
-            
-            if(change.Property == PreeditTextCursorPositionProperty)
+
+            if (change.Property == PreeditTextCursorPositionProperty)
             {
                 OnPreeditChanged(PreeditText, PreeditTextCursorPosition);
             }
 
-            if(change.Property == TextProperty || change.Property == CaretIndexProperty)
+            if (change.Property == TextProperty || change.Property == CaretIndexProperty)
             {
                 if (!string.IsNullOrEmpty(PreeditText))
                 {
@@ -1226,6 +1226,8 @@ namespace Avalonia.Controls.Presenters
                 case nameof(PasswordChar):
                 case nameof(RevealPassword):
                 case nameof(FlowDirection):
+                case nameof(SelectionForegroundBrush):
+                case nameof(ShowSelectionHighlight):
                     {
                         InvalidateTextLayout();
                         break;
@@ -1234,12 +1236,21 @@ namespace Avalonia.Controls.Presenters
                 case nameof(TextAlignment):
                 case nameof(TextWrapping):
                 case nameof(LineHeight):
-                case nameof(SelectionStart):
-                case nameof(SelectionEnd):
-                case nameof(SelectionForegroundBrush):
-                case nameof(ShowSelectionHighlight):
                     {
                         InvalidateTextLayoutKeepCache();
+                        break;
+                    }
+                case nameof(SelectionStart):
+                case nameof(SelectionEnd):
+                    {
+                        if (SelectionForegroundBrush != null)
+                        {
+                            InvalidateTextLayout();
+                        }
+                        else
+                        {
+                            InvalidateTextLayoutKeepCache();
+                        }
                         break;
                     }
             }
