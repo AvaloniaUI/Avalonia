@@ -830,7 +830,50 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     {
         text = (NSString*) string;
     }
-    
+
+    // If replacement range is provided for committed text input,
+    // select the corresponding surrounding text
+    // Skip this when marked text is active.
+    if (replacementRange.location != NSNotFound &&
+        ![self hasMarkedText] &&
+        parent->InputMethod->IsActive())
+    {
+        int start;
+        int end;
+
+        if (replacementRange.length > 0)
+        {
+            if (_selectedRange.length > 0)
+            {
+                start = (int)replacementRange.location;
+                end = (int)(replacementRange.location + replacementRange.length);
+            }
+
+            // ReplacementRange is reported one position behind,
+            // so adjust it.
+            else
+            {
+                start = (int)replacementRange.location + 1;
+                end = (int)(replacementRange.location + replacementRange.length) + 1;
+            }
+        }
+        
+        // Special case for the first character. ReplacementRange for the first character
+        // arrives as {0,0} instead of a replacement range, so explicitly
+        // select it.
+        else if (replacementRange.location == 0)
+        {
+            start = 0;
+            end = 1;
+        }
+        else
+        {
+            return;
+        }
+
+        parent->InputMethod->Client->SelectInSurroundingText(start, end);
+    }
+
     [self unmarkText];
         
     uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
