@@ -125,56 +125,69 @@ export class InputHelper {
     public static async readClipboard(window: Window): Promise<readonly ReadableDataItem[]> {
         const clipboard = window.navigator.clipboard;
 
-        if (clipboard.read) {
-            const clipboardItems = await clipboard.read();
-            return clipboardItems.map((item) => ({ type: "clipboardItem", value: item }));
-        } else if (clipboard.readText) {
-            const item: ReadableDataItem = {
-                type: "string",
-                value: await clipboard.readText()
-            };
-            return [item];
-        } else {
-            try {
-                return await new Promise<readonly ReadableDataItem[]>((resolve, reject) => {
-                    this.clipboardState = ClipboardState.Pending;
-                    this.resolveClipboard = resolve;
-                    this.rejectClipboard = reject;
-                });
-            } finally {
-                this.clipboardState = ClipboardState.Ready;
-                this.resolveClipboard = undefined;
-                this.rejectClipboard = undefined;
+        const { state } = await navigator.permissions.query({ name: 'clipboard-read' as PermissionName })
+        if (state === "granted") {
+
+            if (clipboard.read) {
+                const clipboardItems = await clipboard.read();
+                return clipboardItems.map((item) => ({ type: "clipboardItem", value: item }));
+            } else if (clipboard.readText) {
+                const item: ReadableDataItem = {
+                    type: "string",
+                    value: await clipboard.readText()
+                };
+                return [item];
+            } else {
+                try {
+                    return await new Promise<readonly ReadableDataItem[]>((resolve, reject) => {
+                        this.clipboardState = ClipboardState.Pending;
+                        this.resolveClipboard = resolve;
+                        this.rejectClipboard = reject;
+                    });
+                } finally {
+                    this.clipboardState = ClipboardState.Ready;
+                    this.resolveClipboard = undefined;
+                    this.rejectClipboard = undefined;
+                }
             }
+        }
+        else {
+            return [];
         }
     }
 
     public static async writeClipboard(window: Window, source?: WriteableClipboardSource | null): Promise<void> {
-        const items = source?.items ?? [];
-        if (items.length === 0) {
-            await window.navigator.clipboard.writeText("");
-            return;
-        }
+        const { state } = await navigator.permissions.query({ name: 'clipboard-write' as PermissionName })
+        if (state === "granted") {
+            const items = source?.items ?? [];
+            if (items.length === 0) {
+                await window.navigator.clipboard.writeText("");
+                return;
+            }
 
-        return window.navigator.clipboard.write
-            ? await window.navigator.clipboard.write(items.map(item => new ClipboardItem(item.data)))
-            : await this.writeFirstText(window, items);
+            return window.navigator.clipboard.write
+                ? await window.navigator.clipboard.write(items.map(item => new ClipboardItem(item.data)))
+                : await this.writeFirstText(window, items);
+        }
     }
 
     private static async writeFirstText(window: Window, items: WriteableClipboardItem[]): Promise<void> {
-        for (const item of items) {
-            for (const format in item.data) {
-                if (!format.startsWith("text/")) {
-                    continue;
-                }
+        const { state } = await navigator.permissions.query({ name: 'clipboard-write' as PermissionName })
+        if (state === "granted") {
+            for (const item of items) {
+                for (const format in item.data) {
+                    if (!format.startsWith("text/")) {
+                        continue;
+                    }
 
-                let value = item.data[format];
-                if (typeof value !== "string") {
-                    value = "";
-                }
+                    let value = item.data[format];
+                    if (typeof value !== "string") {
+                        value = "";
+                    }
 
-                await window.navigator.clipboard.writeText(value);
-                return;
+                    await window.navigator.clipboard.writeText(value);
+                    return;
+                }
             }
         }
     }
