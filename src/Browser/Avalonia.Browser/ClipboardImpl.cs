@@ -14,8 +14,15 @@ internal sealed class ClipboardImpl : IClipboardImpl
 {
     public async Task<IAsyncDataTransfer?> TryGetDataAsync()
     {
-        var jsItems = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis).ConfigureAwait(false);
-        return jsItems.GetPropertyAsInt32("length") == 0 ? null : new BrowserClipboardDataTransfer(jsItems);
+        try
+        {
+            var jsItems = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis).ConfigureAwait(false);
+            return jsItems.GetPropertyAsInt32("length") == 0 ? null : new BrowserClipboardDataTransfer(jsItems);
+        }
+        catch (JSException ex) when (ex.Message.StartsWith("NotAllowedError:"))
+        {
+            throw new UnauthorizedAccessException("NotAllowedError", ex);
+        }
     }
 
     public async Task SetDataAsync(IAsyncDataTransfer dataTransfer)

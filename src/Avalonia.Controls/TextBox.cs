@@ -1325,6 +1325,10 @@ namespace Avalonia.Controls
                 {
                     text = await clipboard.TryGetTextAsync();
                 }
+                catch(UnauthorizedAccessException)
+                {
+                    // Silently ignore.
+                }
                 catch (TimeoutException)
                 {
                     // Silently ignore.
