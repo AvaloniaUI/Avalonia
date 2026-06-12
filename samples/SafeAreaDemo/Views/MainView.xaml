@@ -36,7 +36,7 @@
                VerticalAlignment="Bottom"
                HorizontalAlignment="Stretch"
                HorizontalContentAlignment="Left" >Safe Area</Label>
-        <InputPaneAwareView ResizeMode="Pan">
+        <InputPaneAwareView Behavior="Pan">
           <Border  BorderBrush="Blue"
                    BorderThickness="1">
             <Grid>
