@@ -143,8 +143,12 @@ namespace Avalonia.Media.Fonts.Tables
         /// <param name="id">The node identifier to exit.</param>
         internal void Exit(T id)
         {
-            _visited.Remove(id);
-            _currentDepth--;
+            // CycleGuard is a copyable ref struct, so a copied guard can double-exit; only
+            // give depth budget back for an id that was actually in the visited set.
+            if (_visited.Remove(id))
+            {
+                _currentDepth--;
+            }
         }
 
         /// <summary>

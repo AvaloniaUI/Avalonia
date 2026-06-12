@@ -87,6 +87,47 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.NotNull(typeface);
         }
 
+        // ── cmap format 12 hostile group *contents* must not hang range enumeration ──
+
+        [Fact]
+        public void Cmap_Format12_Huge_Group_End_Is_Clamped_To_The_Unicode_Range()
+        {
+            // endCharCode = 0x7FFFFFFF used to reach the per-codepoint dictionary loops unclamped:
+            // `cp <= end` with end == int.MaxValue is a tautology, so Count / Keys / the enumerator
+            // never terminated. The group is now clamped to the Unicode range at the choke point.
+            var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular)
+                .Replace("cmap", BuildFormat12Cmap(
+                    (Start: 0x41u, End: 0x7FFFFFFFu, StartGlyph: 1u)));
+
+            var typeface = font.TryCreateGlyphTypeface();
+            Assert.NotNull(typeface);
+
+            var dictionary = typeface!.CharacterToGlyphMap.AsReadOnlyDictionary();
+
+            // Terminates (clamped to ≤ 0x10FFFF) and still exposes the in-range part of the group.
+            Assert.True(dictionary.Count > 0);
+            Assert.True(dictionary.ContainsKey(0x41));
+        }
+
+        [Fact]
+        public void Cmap_Format12_Inverted_Group_Is_Skipped_Not_Terminal()
+        {
+            // The second group is inverted (start > end). It must enumerate as an empty range —
+            // not throw, not end enumeration early, and not hide the first (valid) group.
+            var font = SyntheticFont.FromAsset(SyntheticFont.Assets.InterRegular)
+                .Replace("cmap", BuildFormat12Cmap(
+                    (Start: 0x41u, End: 0x41u, StartGlyph: 5u),
+                    (Start: 0x1000u, End: 0x100u, StartGlyph: 6u)));
+
+            var typeface = font.TryCreateGlyphTypeface();
+            Assert.NotNull(typeface);
+
+            var dictionary = typeface!.CharacterToGlyphMap.AsReadOnlyDictionary();
+
+            Assert.Equal(1, dictionary.Count);
+            Assert.True(dictionary.ContainsKey(0x41));
+        }
+
         // ── cmap Format-4 subtable selection prefers Unicode over Symbol ──
 
         [Theory]
@@ -130,6 +171,35 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             var offsetPos = cmap.ReserveOffset32();
             cmap.PatchUInt32(offsetPos, (uint)cmap.Position);
             cmap.Bytes(subtable);
+
+            return cmap.ToArray();
+        }
+
+        /// <summary>
+        /// Builds a cmap with a single format-12 subtable carrying the given sequential map groups
+        /// (which must be ordered by start code for the lookup binary search).
+        /// </summary>
+        private static byte[] BuildFormat12Cmap(params (uint Start, uint End, uint StartGlyph)[] groups)
+        {
+            var subtable = new BigEndianBuffer()
+                .UInt16(12)        // format
+                .UInt16(0)         // reserved
+                .UInt32((uint)(16 + groups.Length * 12)) // length
+                .UInt32(0)         // language
+                .UInt32((uint)groups.Length);            // numGroups
+
+            foreach (var (start, end, startGlyph) in groups)
+            {
+                subtable.UInt32(start).UInt32(end).UInt32(startGlyph);
+            }
+
+            var cmap = new BigEndianBuffer();
+            cmap.UInt16(0);   // version
+            cmap.UInt16(1);   // numTables
+            cmap.UInt16(3);   // platformID = Windows
+            cmap.UInt16(10);  // encodingID = UCS-4
+            cmap.UInt32(12);  // offset: header(4) + one EncodingRecord(8)
+            cmap.Bytes(subtable.ToArray());
 
             return cmap.ToArray();
         }

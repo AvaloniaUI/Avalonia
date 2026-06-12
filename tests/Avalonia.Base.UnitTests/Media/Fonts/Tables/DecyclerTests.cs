@@ -193,6 +193,23 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables
         }
 
         [Fact]
+        public void Copied_Guard_Cannot_Double_Exit()
+        {
+            // CycleGuard is a copyable ref struct, so each copy carries its own _exited flag —
+            // the idempotence of Dispose on one copy doesn't protect against the other copy
+            // exiting again. Exit only returns depth budget for ids actually in the visited set.
+            var decycler = new Decycler<int>(maxDepth: 4);
+
+            var guard = decycler.Enter(1);
+            var copy = guard;
+
+            guard.Dispose();
+            copy.Dispose(); // second exit for id 1, via an un-exited copy.
+
+            Assert.Equal(0, decycler.CurrentDepth);
+        }
+
+        [Fact]
         public void MaxDepth_Property_Reflects_Constructor_Argument()
         {
             var decycler = new Decycler<int>(maxDepth: 17);

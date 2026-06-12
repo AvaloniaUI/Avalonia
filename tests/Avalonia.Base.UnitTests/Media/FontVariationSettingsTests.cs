@@ -66,7 +66,6 @@ namespace Avalonia.Base.UnitTests.Media
 
         [Theory]
         [InlineData(-1f)]
-        [InlineData(0f)]
         [InlineData(1f)]
         public void FromCoordinates_Dictionary_Accepts_Boundary_Values(float value)
         {
@@ -77,6 +76,45 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.Single(settings.Coordinates);
             Assert.Equal(Wght, settings.Coordinates[0].Axis);
             Assert.Equal(value, settings.Coordinates[0].NormalizedValue);
+        }
+
+        [Fact]
+        public void FromCoordinates_Drops_Zero_Coordinates()
+        {
+            // 0 is the axis default: an explicit wght=0 must produce the same value (and the
+            // same variation-cache key downstream) as settings that omit the axis entirely.
+            var fromDictionary = FontVariationSettings.FromCoordinates(
+                new Dictionary<OpenTypeTag, float> { [Wght] = 0f });
+
+            Assert.True(fromDictionary.IsDefault);
+            Assert.Equal(default(FontVariationSettings), fromDictionary);
+
+            Span<FontVariationCoordinate> coords =
+            [
+                new FontVariationCoordinate(Wght, 0f),
+                new FontVariationCoordinate(Wdth, -0.25f),
+            ];
+
+            var fromSpan = FontVariationSettings.FromCoordinates(coords);
+
+            Assert.Single(fromSpan.Coordinates);
+            Assert.Equal(Wdth, fromSpan.Coordinates[0].Axis);
+        }
+
+        [Fact]
+        public void FromCoordinates_Span_Rejects_Duplicate_Axes_Even_When_Zero_Valued()
+        {
+            // Canonicalization must not weaken validation: the duplicate check runs before
+            // zero-valued coordinates are dropped.
+            Assert.Throws<ArgumentException>(static () =>
+            {
+                Span<FontVariationCoordinate> coords =
+                [
+                    new FontVariationCoordinate(OpenTypeTag.Parse("wght"), 0f),
+                    new FontVariationCoordinate(OpenTypeTag.Parse("wght"), 0.5f),
+                ];
+                FontVariationSettings.FromCoordinates(coords);
+            });
         }
 
         [Fact]
@@ -276,10 +314,12 @@ namespace Avalonia.Base.UnitTests.Media
         [Fact]
         public void Equality_Differs_When_Coordinate_Counts_Differ()
         {
+            // The second coordinate must be non-zero: zero coordinates canonicalize away in
+            // FromCoordinates, which would make these two values deliberately equal.
             var a = FontVariationSettings.FromCoordinates(
                 new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f });
             var b = FontVariationSettings.FromCoordinates(
-                new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f, [Wdth] = 0f });
+                new Dictionary<OpenTypeTag, float> { [Wght] = 0.5f, [Wdth] = -0.25f });
 
             Assert.False(a.Equals(b));
         }

@@ -90,12 +90,16 @@ namespace Avalonia.Media
         /// </para>
         /// </param>
         /// <returns>
-        /// <c>default(FontVariationSettings)</c> when the input is empty; otherwise a
-        /// settings value carrying the sorted coordinates.
+        /// <c>default(FontVariationSettings)</c> when the input is empty or every
+        /// coordinate is <c>0</c> (the axis default); otherwise a settings value carrying
+        /// the sorted non-zero coordinates.
         /// </returns>
         /// <exception cref="ArgumentNullException"><paramref name="normalizedCoordinates"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
         /// A coordinate value is <c>NaN</c> or outside <c>[-1, 1]</c>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// The dictionary enumerates two entries for the same axis.
         /// </exception>
         public static FontVariationSettings FromCoordinates(
             IReadOnlyDictionary<OpenTypeTag, float> normalizedCoordinates)
@@ -118,9 +122,7 @@ namespace Avalonia.Media
                 builder.Add(new FontVariationCoordinate(kvp.Key, kvp.Value));
             }
 
-            builder.Sort(static (a, b) => ((uint)a.Axis).CompareTo((uint)b.Axis));
-
-            return new FontVariationSettings(builder.MoveToImmutable());
+            return CreateFromValidated(builder, nameof(normalizedCoordinates));
         }
 
         /// <summary>
@@ -132,8 +134,9 @@ namespace Avalonia.Media
         /// store.
         /// </param>
         /// <returns>
-        /// <c>default(FontVariationSettings)</c> when the span is empty; otherwise a
-        /// settings value carrying the sorted coordinates.
+        /// <c>default(FontVariationSettings)</c> when the span is empty or every
+        /// coordinate is <c>0</c> (the axis default); otherwise a settings value carrying
+        /// the sorted non-zero coordinates.
         /// </returns>
         /// <exception cref="ArgumentOutOfRangeException">
         /// A coordinate value is <c>NaN</c> or outside <c>[-1, 1]</c>.
@@ -157,6 +160,12 @@ namespace Avalonia.Media
                 builder.Add(coord);
             }
 
+            return CreateFromValidated(builder, nameof(normalizedCoordinates));
+        }
+
+        private static FontVariationSettings CreateFromValidated(
+            ImmutableArray<FontVariationCoordinate>.Builder builder, string paramName)
+        {
             builder.Sort(static (a, b) => ((uint)a.Axis).CompareTo((uint)b.Axis));
 
             for (var i = 1; i < builder.Count; i++)
@@ -165,11 +174,28 @@ namespace Avalonia.Media
                 {
                     throw new ArgumentException(
                         $"Duplicate axis '{builder[i].Axis}' in coordinates.",
-                        nameof(normalizedCoordinates));
+                        paramName);
                 }
             }
 
-            return new FontVariationSettings(builder.MoveToImmutable());
+            // A normalized value of 0 is the axis default: dropping it keeps explicitly-default
+            // settings structurally equal to settings that omit the axis, so both produce one
+            // cache key (and one variation clone) instead of two. Done after the duplicate check
+            // so that duplicates still throw regardless of their values.
+            for (var i = builder.Count - 1; i >= 0; i--)
+            {
+                if (builder[i].NormalizedValue == 0f)
+                {
+                    builder.RemoveAt(i);
+                }
+            }
+
+            if (builder.Count == 0)
+            {
+                return default;
+            }
+
+            return new FontVariationSettings(builder.ToImmutable());
         }
 
         /// <summary>

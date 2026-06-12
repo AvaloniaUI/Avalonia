@@ -12,6 +12,7 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
     {
         private readonly CharacterToGlyphMap _map;
         private List<CodepointRange>? _cachedRanges;
+        private int _cachedCount = -1;
 
         public CharacterToGlyphMapDictionary(CharacterToGlyphMap map)
         {
@@ -39,7 +40,10 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
                 {
                     for (int codePoint = range.Start; codePoint <= range.End; codePoint++)
                     {
-                        if (_map.ContainsGlyph(codePoint))
+                        // Membership must match TryGetValue (TryGetGlyph), not ContainsGlyph:
+                        // the two predicates disagree for mappings that resolve to glyph 0, and
+                        // Keys yielding a key the indexer rejects breaks the dictionary contract.
+                        if (_map.TryGetGlyph(codePoint, out _))
                         {
                             yield return codePoint;
                         }
@@ -69,24 +73,32 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
         {
             get
             {
+                int cachedCount = _cachedCount;
+                if (cachedCount >= 0)
+                {
+                    return cachedCount;
+                }
+
                 int count = 0;
                 foreach (var range in GetRanges())
                 {
                     for (int codePoint = range.Start; codePoint <= range.End; codePoint++)
                     {
-                        if (_map.ContainsGlyph(codePoint))
+                        if (_map.TryGetGlyph(codePoint, out _))
                         {
                             count++;
                         }
                     }
                 }
+
+                _cachedCount = count;
                 return count;
             }
         }
 
         public bool ContainsKey(int key)
         {
-            return _map.ContainsGlyph(key);
+            return _map.TryGetGlyph(key, out _);
         }
 
         public bool TryGetValue(int key, [MaybeNullWhen(false)] out ushort value)
