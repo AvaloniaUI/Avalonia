@@ -14,6 +14,15 @@ namespace Avalonia.Media.Fonts.Tables.Cff
     {
         private const int MaxDepth = 10;
 
+        // Total-operation budget across the whole charstring (shared through the recursive
+        // Execute calls). MaxDepth bounds call *nesting*, but each level can fan out to
+        // thousands of callsubr/callgsubr ops, so depth alone allows ~fanout^MaxDepth executions
+        // — an effectively unbounded CPU loop on a hostile font that throws no exception. This is
+        // a DoS backstop, not a spec limit: it sits far above any legitimate glyph (the most
+        // detailed real glyphs interpret well under a million ops) and a charstring that exceeds
+        // it throws, caught by the per-glyph try/catch → blank glyph.
+        private const int MaxOperations = 10_000_000;
+
         private readonly IGeometryContext _context;
         private readonly Matrix _transform;
         private readonly CffIndex _globalSubrs;
@@ -31,6 +40,7 @@ namespace Avalonia.Media.Fonts.Tables.Cff
         private int _stemCount;
         private bool _done;
         private int _depth;
+        private int _ops;
 
         // CFF2 variation state. _vstore + _activeCoords drive blend's region scalers (cached per
         // vsindex into _blendScalers); null / empty for CFF1, where blend / vsindex never appear.
@@ -63,6 +73,7 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             _stemCount = 0;
             _done = false;
             _depth = 0;
+            _ops = 0;
             _vstore = null;
             _activeCoords = default;
             _blendScalers = default;
@@ -118,6 +129,14 @@ namespace Avalonia.Media.Fonts.Tables.Cff
 
             while (i < code.Length && !_done)
             {
+                // Charge every token (operand or operator) against the shared budget. The cost
+                // of a callsubr/callgsubr is the work inside it, which is charged the same way,
+                // so a subr that re-calls itself burns budget and is stopped here.
+                if (++_ops > MaxOperations)
+                {
+                    throw new InvalidOperationException("CFF charstring operation budget exceeded.");
+                }
+
                 byte b0 = code[i];
 
                 // Operands (numbers).
@@ -640,18 +659,17 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             }
 
             int k = _blendRegionCount;
-            if (n < 0 || k < 0)
+
+            // Validate the operand count in long: n and k are both attacker-influenced, so
+            // `n * k` (and `n * (k + 1)`) can overflow int to a negative value that slips a
+            // `baseIndex < 0` check and then throws on the stack index. baseIndex = _sp - n*(k+1).
+            if (n < 0 || k < 0 || (long)n * (k + 1) > _sp)
             {
                 _sp = 0;
                 return;
             }
 
             int baseIndex = _sp - n - (n * k);
-            if (baseIndex < 0)
-            {
-                _sp = 0;
-                return;
-            }
 
             for (int valueIndex = 0; valueIndex < n; valueIndex++)
             {

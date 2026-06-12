@@ -43,11 +43,11 @@ namespace Avalonia.Media.Fonts.Tables.Cff
         {
             var span = table.Span;
 
-            int count;
+            long count;
             int headerEnd;
             if (wideCount)
             {
-                count = (int)BinaryPrimitives.ReadUInt32BigEndian(span.Slice(position));
+                count = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(position));
                 headerEnd = position + 4;
             }
             else
@@ -69,13 +69,30 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             }
 
             int offsetsStart = headerEnd + 1;
-            int offsetArrayEnd = offsetsStart + ((count + 1) * offSize);
+
+            // Compute the offset-array bounds in long and reject an INDEX whose offset array
+            // alone can't fit in the table: a CFF2 32-bit count (e.g. 0x3FFFFFFF) otherwise
+            // wraps `(count + 1) * offSize` in int, yields a near-1e9 Count, and drives a
+            // `new CffIndex[Count]` OOM from a few-hundred-byte font. Past this check Count
+            // is bounded by the table length, so the int cast is safe.
+            long offsetArrayEndLong = (long)offsetsStart + (count + 1) * offSize;
+            if (offsetArrayEndLong > span.Length)
+            {
+                throw new ArgumentException("Corrupt CFF INDEX: offset array exceeds table.");
+            }
+
+            int offsetArrayEnd = (int)offsetArrayEndLong;
             // Offsets are 1-based, relative to the byte preceding the object data.
             int dataBase = offsetArrayEnd - 1;
-            int lastOffset = ReadOffset(span, offsetsStart + (count * offSize), offSize);
+            int lastOffset = ReadOffset(span, offsetsStart + ((int)count * offSize), offSize);
             int endOffset = dataBase + lastOffset;
 
-            return new CffIndex(table, count, offSize, offsetsStart, dataBase, endOffset);
+            if ((uint)endOffset > (uint)table.Length)
+            {
+                throw new ArgumentException("Corrupt CFF INDEX: data extends past table.");
+            }
+
+            return new CffIndex(table, (int)count, offSize, offsetsStart, dataBase, endOffset);
         }
 
         /// <summary>Gets the raw bytes of entry <paramref name="i"/>.</summary>
