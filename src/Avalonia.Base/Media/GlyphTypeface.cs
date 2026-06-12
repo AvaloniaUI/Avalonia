@@ -2077,21 +2077,32 @@ namespace Avalonia.Media
         {
             if (_gvarTable is not null && _activeCoords is not null)
             {
+                box = default;
+
                 if (glyph >= GlyphCount)
                 {
-                    box = default;
                     return false;
                 }
 
                 var cache = _glyphCache ?? GetOrCreateGlyphCache();
                 var entry = cache.GetEntry(glyph);
 
-                if (!entry.HasBounds)
+                if (entry.HasBounds)
                 {
-                    entry.SetBoundsOnce(ComputeGlyfGlyphBounds(glyph));
+                    box = entry.Bounds;
+                    return true;
                 }
 
-                box = entry.Bounds;
+                // A malformed glyph has no buildable outline: report false — matching the
+                // default-instance header path below and the TryGetGlyphInkBounds contract —
+                // instead of caching a misleading true + zero box. A valid empty glyph yields the
+                // zero box and is memoised like any other.
+                if (!TryComputeGlyfGlyphBounds(glyph, out box))
+                {
+                    return false;
+                }
+
+                entry.SetBoundsOnce(box);
                 return true;
             }
 
@@ -2102,10 +2113,23 @@ namespace Avalonia.Media
         /// <summary>
         /// Interprets one gvar-deformed <c>glyf</c> outline into its control-point box via
         /// <see cref="BoundsGeometryContext"/> — the cold path behind <see cref="TryGetGlyfBounds"/> at a
-        /// non-default variable instance.
+        /// non-default variable instance. Returns <c>false</c> for a malformed glyph (no buildable
+        /// outline); a valid empty glyph (whitespace) yields the zero box, matching the
+        /// default-instance header path.
         /// </summary>
-        private GlyphBounds ComputeGlyfGlyphBounds(ushort glyph)
-            => _glyfTable!.TryGetGlyphOutlineBounds(glyph, _gvarTable, _activeCoords, out var box) ? box : default;
+        private bool TryComputeGlyfGlyphBounds(ushort glyph, out GlyphBounds box)
+        {
+            if (_glyfTable!.TryGetGlyphOutlineBounds(glyph, _gvarTable, _activeCoords, out box))
+            {
+                return true;
+            }
+
+            // TryGetGlyphOutlineBounds also returns false for an empty glyph; distinguish it from a
+            // malformed one via the header path, which yields the zero box for an empty glyph and
+            // false for a malformed one (out-of-range is already excluded by the caller).
+            box = default;
+            return _glyfTable.TryGetGlyphBounds(glyph, out _, out _, out _, out _);
+        }
 
         private GlyphCache GetOrCreateGlyphCache()
         {

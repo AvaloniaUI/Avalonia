@@ -596,6 +596,32 @@ namespace Avalonia.Base.UnitTests.Media
             Assert.Equal(single, batch[0]);
         }
 
+        [Fact]
+        public void Variable_Glyf_Ink_Bounds_Contract_Matches_The_Default_Instance()
+        {
+            // R30: at a varied instance, TryGetGlyphInkBounds must keep the same true/false contract
+            // as the default instance — false for an out-of-range glyph, and true + zero box for a
+            // valid empty glyph (whitespace). The varied path caches the deformed box, and a naive
+            // failure-to-build would otherwise either return true + zero for an out-of-range glyph
+            // or flip an empty glyph to false.
+            var def = LoadTypeface(InterVariableAsset);
+            var black = def.WithVariation(WghtPosition(def, 900));
+
+            var outOfRange = (ushort)(def.GlyphCount + 50);
+            Assert.False(def.TryGetGlyphInkBounds(outOfRange, out _));
+            Assert.False(black.TryGetGlyphInkBounds(outOfRange, out _));
+
+            // The space glyph is a valid empty glyph: both instances report it as present with a
+            // zero ink box (gvar can't add ink to a contourless glyph).
+            Assert.True(def.CharacterToGlyphMap.TryGetGlyph(' ', out var space));
+
+            var defHasBounds = def.TryGetGlyphInkBounds(space, out var defBox);
+            var blackHasBounds = black.TryGetGlyphInkBounds(space, out var blackBox);
+
+            Assert.Equal(defHasBounds, blackHasBounds);
+            Assert.Equal(defBox, blackBox);
+        }
+
         private static GlyphBounds InkBounds(GlyphTypeface typeface, ushort glyph)
         {
             var bounds = new GlyphBounds[1];
