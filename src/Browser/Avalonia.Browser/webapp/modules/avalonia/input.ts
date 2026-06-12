@@ -152,7 +152,7 @@ export class InputHelper {
             }
         }
         else {
-            return [];
+            throw Error("Read permission not granted for clipboard");
         }
     }
 
@@ -168,6 +168,9 @@ export class InputHelper {
             return window.navigator.clipboard.write
                 ? await window.navigator.clipboard.write(items.map(item => new ClipboardItem(item.data)))
                 : await this.writeFirstText(window, items);
+        }
+        else {
+            throw Error("Write permission not granted for clipboard");
         }
     }
 
@@ -189,6 +192,9 @@ export class InputHelper {
                     return;
                 }
             }
+        }
+        else {
+            throw Error("Write permission not granted for clipboard");
         }
     }
 
