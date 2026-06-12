@@ -207,7 +207,11 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
             var regionIndexesStart = subtableStart + 6;
             var deltaDataStart = regionIndexesStart + regionIndexCount * 2;
-            var rowStart = deltaDataStart + innerIndex * rowBytes;
+
+            // Widen to long: innerIndex (≤ ~65534) × rowBytes (≤ ~262140) overflows int, and a
+            // negative rowStart would pass the bounds check below only to throw on the slice —
+            // reachable from the public metrics APIs with a ~30-byte crafted store.
+            var rowStart = deltaDataStart + innerIndex * (long)rowBytes;
 
             if (rowStart + rowBytes > span.Length)
             {
@@ -216,7 +220,7 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
             // Walk the row's deltas, accumulating scaler × delta per associated region.
             var sum = 0f;
-            var bytePos = rowStart;
+            var bytePos = (int)rowStart;
 
             for (var r = 0; r < regionIndexCount; r++)
             {

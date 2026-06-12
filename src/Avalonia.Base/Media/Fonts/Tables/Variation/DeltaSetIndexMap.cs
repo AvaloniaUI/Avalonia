@@ -86,7 +86,19 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                 {
                     return false;
                 }
-                mapCount = (int)BinaryPrimitives.ReadUInt32BigEndian(span.Slice(2));
+
+                // Keep the raw count unsigned: cast straight to int, a high-bit count turns the
+                // size check below into a negative product and fails open, and TryGetIndices
+                // would then index with a negative position. Entries are at least one byte, so
+                // any count beyond the remaining bytes is malformed (and the int cast is safe).
+                var rawMapCount = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(2));
+
+                if (rawMapCount > (uint)(span.Length - 6))
+                {
+                    return false;
+                }
+
+                mapCount = (int)rawMapCount;
                 entriesStart = 6;
             }
             else
