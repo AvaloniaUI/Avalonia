@@ -27,9 +27,19 @@ namespace Avalonia.Media.Fonts.Tables
                 return default;
             }
 
-            var binaryReader = new BigEndianBinaryReader(table.Span);
+            try
+            {
+                var binaryReader = new BigEndianBinaryReader(table.Span);
 
-            return Load(ref binaryReader);
+                return Load(ref binaryReader);
+            }
+            catch
+            {
+                // 'post' only carries cosmetic hints (underline metrics, italic angle, fixed-pitch
+                // flag), so a present-but-malformed table must degrade to defaults rather than deny the
+                // whole font — the same outcome as an absent 'post'.
+                return default;
+            }
         }
 
         private static PostTable Load(ref BigEndianBinaryReader reader)

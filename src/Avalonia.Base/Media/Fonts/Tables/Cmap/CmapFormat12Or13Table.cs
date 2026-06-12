@@ -30,20 +30,26 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             ushort reserved = reader.ReadUInt16();
             Debug.Assert(reserved == 0, "Reserved field must be 0.");
 
+            // Clamp the declared length to the buffer: a corrupt/huge length (or one with the high
+            // bit set, which would cast to a negative int) must not produce an out-of-range slice.
             uint length = reader.ReadUInt32();
+            var tableLength = (int)Math.Min(length, (uint)table.Length);
 
-            _table = table.Slice(0, (int)length);
+            _table = table.Slice(0, tableLength);
 
             Language = reader.ReadUInt32();
 
-            _groupCount = (int)reader.ReadUInt32();
+            var declaredGroupCount = reader.ReadUInt32();
 
             int groupsOffset = reader.Position;
-            int groupsLength = _groupCount * 12;
 
-            Debug.Assert(length >= groupsOffset + groupsLength, "Length must cover all groups.");
+            // Each SequentialMapGroup is 12 bytes. Clamp the group count to what the (length-bounded)
+            // table actually holds — computed in long to avoid the `count * 12` int overflow that a
+            // hostile count (e.g. 0x20000000) would otherwise wrap to a negative slice length.
+            long maxGroups = _table.Length > groupsOffset ? (_table.Length - groupsOffset) / 12 : 0;
+            _groupCount = (int)Math.Min(declaredGroupCount, (uint)maxGroups);
 
-            _groups = _table.Slice(groupsOffset, groupsLength);
+            _groups = _table.Slice(groupsOffset, _groupCount * 12);
         }
 
         /// <summary>
