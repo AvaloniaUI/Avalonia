@@ -124,22 +124,33 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
                 return false;
             }
 
-            using var composite = descriptor.CompositeGlyph;
-            var parts = composite.Components;
-
-            if (parts.Length == 0)
+            try
             {
+                using var composite = descriptor.CompositeGlyph;
+                var parts = composite.Components;
+
+                if (parts.Length == 0)
+                {
+                    return false;
+                }
+
+                var ids = new ushort[parts.Length];
+                for (var i = 0; i < parts.Length; i++)
+                {
+                    ids[i] = parts[i].GlyphIndex;
+                }
+
+                components = ids;
+                return true;
+            }
+            catch
+            {
+                // A malformed composite (e.g. truncated component records) makes CompositeGlyph.Create
+                // over-read and throw. Match the catch-all in TryBuildGlyphGeometry and report "no
+                // components" rather than letting the exception escape.
+                components = Array.Empty<ushort>();
                 return false;
             }
-
-            var ids = new ushort[parts.Length];
-            for (var i = 0; i < parts.Length; i++)
-            {
-                ids[i] = parts[i].GlyphIndex;
-            }
-
-            components = ids;
-            return true;
         }
 
         /// <summary>
