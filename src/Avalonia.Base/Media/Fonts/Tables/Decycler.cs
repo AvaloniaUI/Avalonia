@@ -123,14 +123,14 @@ namespace Avalonia.Media.Fonts.Tables
                     $"Graph depth limit of {_maxDepth} exceeded");
             }
 
-            if (_visited.Contains(id))
+            // HashSet.Add returns false if the item was already in the set, which indicates a cycle.
+            if (!_visited.Add(id))
             {
                 throw new DecyclerException(
                     DecyclerError.CycleDetected,
                     "Cycle detected in graph");
             }
 
-            _visited.Add(id);
             _currentDepth++;
 
             return new CycleGuard<T>(this, id);

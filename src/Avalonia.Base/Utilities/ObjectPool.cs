@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Avalonia.Utilities
 {
@@ -75,7 +76,7 @@ namespace Avalonia.Utilities
                 return;
 
             // Check if pool is full (fast check without lock)
-            if (_count >= _maxSize)
+            if (Volatile.Read(ref _count) >= _maxSize)
                 return;
 
             // Try to increment count, but check again in case of race condition
