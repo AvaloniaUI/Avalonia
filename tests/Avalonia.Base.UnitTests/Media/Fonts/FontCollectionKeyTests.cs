@@ -107,5 +107,33 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
             Assert.False(a.Equals(c));
             Assert.NotEqual(0, a.CompareTo(c));
         }
+
+        [Fact]
+        public void CompareTo_Includes_Variation()
+        {
+            // The synthesized record equality includes Variation; the hand-written CompareTo
+            // must agree, or keys differing only in variation would sort as duplicates.
+            var wght = OpenTypeTag.Parse("wght");
+            var baseKey = new FontCollectionKey(FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
+            var varied = baseKey with
+            {
+                Variation = FontVariationSettings.FromCoordinates([new FontVariationCoordinate(wght, 0.5f)]),
+            };
+            var variedSame = baseKey with
+            {
+                Variation = FontVariationSettings.FromCoordinates([new FontVariationCoordinate(wght, 0.5f)]),
+            };
+            var variedOther = baseKey with
+            {
+                Variation = FontVariationSettings.FromCoordinates([new FontVariationCoordinate(wght, -0.5f)]),
+            };
+
+            Assert.NotEqual(0, baseKey.CompareTo(varied));
+            Assert.Equal(0, varied.CompareTo(variedSame));
+            Assert.NotEqual(0, varied.CompareTo(variedOther));
+
+            // Antisymmetry of the variation leg.
+            Assert.Equal(-Math.Sign(varied.CompareTo(variedOther)), Math.Sign(variedOther.CompareTo(varied)));
+        }
     }
 }

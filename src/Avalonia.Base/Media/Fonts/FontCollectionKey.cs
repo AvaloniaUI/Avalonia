@@ -10,7 +10,8 @@ namespace Avalonia.Media.Fonts
     /// <para>
     /// Use this key to efficiently look up or group fonts in a collection by their style,
     /// weight, stretch, and variation characteristics. Keys are ordered lexicographically by
-    /// <see cref="Style"/>, then <see cref="Weight"/>, then <see cref="Stretch"/>.
+    /// <see cref="Style"/>, then <see cref="Weight"/>, then <see cref="Stretch"/>, then by
+    /// the <see cref="Variation"/> coordinates.
     /// </para>
     /// <para>
     /// For static fonts and variable fonts at the default instance, <see cref="Variation"/>
@@ -50,7 +51,44 @@ namespace Avalonia.Media.Fonts
                 return cmp;
             }
 
-            return ((int)Stretch).CompareTo((int)other.Stretch);
+            cmp = ((int)Stretch).CompareTo((int)other.Stretch);
+
+            if (cmp != 0)
+            {
+                return cmp;
+            }
+
+            // Keep the ordering consistent with the synthesized record equality, which includes
+            // Variation: keys that differ only in variation must not compare equal. Coordinates
+            // are sorted by axis and zero-canonicalized at construction, so an element-wise
+            // lexicographic comparison is a total order that agrees with Equals.
+            return CompareVariations(Variation, other.Variation);
+        }
+
+        private static int CompareVariations(FontVariationSettings left, FontVariationSettings right)
+        {
+            var a = left.Coordinates;
+            var b = right.Coordinates;
+            var sharedLength = Math.Min(a.Length, b.Length);
+
+            for (var i = 0; i < sharedLength; i++)
+            {
+                var cmp = ((uint)a[i].Axis).CompareTo((uint)b[i].Axis);
+
+                if (cmp != 0)
+                {
+                    return cmp;
+                }
+
+                cmp = a[i].NormalizedValue.CompareTo(b[i].NormalizedValue);
+
+                if (cmp != 0)
+                {
+                    return cmp;
+                }
+            }
+
+            return a.Length.CompareTo(b.Length);
         }
 
         /// <inheritdoc />
