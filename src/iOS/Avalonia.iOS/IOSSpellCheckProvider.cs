@@ -187,6 +187,7 @@ internal sealed class IOSSpellCheckProvider : ISpellCheckProvider
             }
             catch (CultureNotFoundException)
             {
+                // Ignore malformed culture tags and continue without a neutral fallback.
             }
         }
 

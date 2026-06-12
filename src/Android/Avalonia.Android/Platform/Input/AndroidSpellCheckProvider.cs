@@ -17,7 +17,7 @@ namespace Avalonia.Android.Platform.Input;
 internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
 {
     private static readonly TimeSpan QueryTimeout = TimeSpan.FromSeconds(2);
-    private const int MaxSuggestions = 5;
+    private const int MaxSuggestions = 8;
 
     private readonly TextServicesManager? _manager;
 
@@ -309,6 +309,7 @@ internal sealed class AndroidSpellCheckProvider : ISpellCheckProvider
             }
             catch (CultureNotFoundException)
             {
+                // Ignore malformed culture tags and continue without a neutral fallback.
             }
         }
 
