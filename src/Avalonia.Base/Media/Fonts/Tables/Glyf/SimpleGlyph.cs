@@ -96,8 +96,9 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
         /// </summary>
         /// <remarks>The returned <see cref="SimpleGlyph"/> uses buffers rented from array pools for
         /// performance. Callers are responsible for disposing or returning these buffers if required by the <see
-        /// cref="SimpleGlyph"/> implementation. The method does not validate the integrity of the glyph data beyond the
-        /// contour count; malformed data may result in exceptions or undefined behavior.</remarks>
+        /// cref="SimpleGlyph"/> implementation. The method validates the contour count and that the contour
+        /// endpoints are strictly increasing (returning the default value otherwise); other malformed data may
+        /// result in exceptions.</remarks>
         /// <param name="data">A read-only span of bytes containing the raw glyph data to parse. The data must be formatted according to
         /// the TrueType simple glyph specification.</param>
         /// <param name="numberOfContours">The number of contours in the glyph. Must be greater than zero; otherwise, a default value is returned.</param>
@@ -114,9 +115,23 @@ namespace Avalonia.Media.Fonts.Tables.Glyf
             var endPtsOfContours = new ushort[numberOfContours];
             var endPtsBytes = data.Slice(0, numberOfContours * 2);
 
+            ushort previousEndPt = 0;
+
             for (int i = 0; i < numberOfContours; i++)
             {
-                endPtsOfContours[i] = BinaryPrimitives.ReadUInt16BigEndian(endPtsBytes.Slice(i * 2, 2));
+                ushort endPt = BinaryPrimitives.ReadUInt16BigEndian(endPtsBytes.Slice(i * 2, 2));
+
+                // Contour endpoints must be strictly increasing: numPoints below is derived from
+                // the last endpoint alone, so an out-of-order endpoint would send every consumer
+                // walk indexing past the point buffers. Reject the glyph up front instead — the
+                // default value renders as an empty outline.
+                if (i > 0 && endPt <= previousEndPt)
+                {
+                    return default;
+                }
+
+                endPtsOfContours[i] = endPt;
+                previousEndPt = endPt;
             }
 
             // Instructions
