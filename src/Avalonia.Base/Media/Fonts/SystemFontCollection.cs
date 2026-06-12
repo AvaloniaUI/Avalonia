@@ -67,6 +67,10 @@ namespace Avalonia.Media.Fonts
 
             //Add to cache with platform typeface family name first
             TryAddGlyphTypeface(platformTypeface.FamilyName, key, glyphTypeface);
+            
+            // Then the requested family name
+            if (familyName != platformTypeface.FamilyName)
+                TryAddGlyphTypeface(familyName, key, glyphTypeface);
 
             //Add to cache
             if (!TryAddGlyphTypeface(glyphTypeface))
