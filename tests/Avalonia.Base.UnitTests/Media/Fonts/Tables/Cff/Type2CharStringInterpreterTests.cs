@@ -167,6 +167,46 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables.Cff
             AssertPoints(Assert.Single(ctx.Figures), (0, 0), (100, 0));
         }
 
+        [Fact]
+        public void Fanned_Out_Subr_Pyramid_Hits_The_Operation_Budget()
+        {
+            // A pyramid of global subrs: subr i (i >= 1) calls subr i-1 ten times, subr 0 returns.
+            // The call *nesting* equals the pyramid height (within MaxDepth), but the total
+            // operation count is ~10^(levels-1) — so this fans out enormous work without deep
+            // recursion, the exact shape MaxDepth alone does not stop. The op budget must throw
+            // (→ blank glyph via the per-glyph try/catch) instead of running to completion.
+            const int levels = 9;     // subrs 0..8 → nesting depth 9, below MaxDepth (10)
+            const int fanOut = 10;    // 10^8 operations if it ran unbounded
+            const int bias = 107;     // Bias(9)
+
+            var subrs = new byte[levels][];
+            subrs[0] = new CharStringBuilder().Op(11).ToArray(); // return immediately
+
+            for (int i = 1; i < levels; i++)
+            {
+                var body = new CharStringBuilder();
+                for (int c = 0; c < fanOut; c++)
+                {
+                    body.Int((i - 1) - bias).Op(29); // callgsubr subr (i-1)
+                }
+                subrs[i] = body.Op(11).ToArray();
+            }
+
+            var globalSubrs = CffIndex.Read(BuildIndex(subrs), 0);
+
+            // 0 0 rmoveto  <call top subr>  endchar
+            var cs = new CharStringBuilder()
+                .Int(0).Int(0).Op(21)
+                .Int((levels - 1) - bias).Op(29)
+                .Op(14)
+                .ToArray();
+
+            var ex = Record.Exception(() => Run(cs, globalSubrs: globalSubrs));
+
+            // Bounded: the work budget throws rather than executing ~10^8 operations.
+            Assert.IsType<InvalidOperationException>(ex);
+        }
+
         // --- helpers ---------------------------------------------------------------------------
 
         private static FigureRecordingContext Run(byte[] charString, CffIndex globalSubrs = default, CffIndex localSubrs = default)

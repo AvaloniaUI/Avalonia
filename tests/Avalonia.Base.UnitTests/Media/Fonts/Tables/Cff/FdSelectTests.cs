@@ -72,6 +72,38 @@ namespace Avalonia.Base.UnitTests.Media.Fonts.Tables.Cff
             Assert.Equal(7, fdSelect.GetFd(7));
         }
 
+        [Fact]
+        public void Format3_Rejects_Non_Ascending_Ranges()
+        {
+            // Range starts out of order (6 before 3). The binary search assumes ascending starts,
+            // so an unsorted table would return a wrong (but in-bounds) FD → wrong Local Subrs.
+            // Parse must reject it instead.
+            var blob = BuildFormat3(new (int First, byte Fd)[] { (0, 0), (6, 1), (3, 2) }, sentinel: 10);
+
+            Assert.Null(FdSelect.Parse(blob, 0, glyphCount: 10));
+        }
+
+        [Fact]
+        public void Format3_Rejects_Sentinel_Before_Last_Range_Start()
+        {
+            // The sentinel (last-range end) precedes the final range start → an inverted final range.
+            var blob = BuildFormat3(new (int First, byte Fd)[] { (0, 0), (8, 1) }, sentinel: 4);
+
+            Assert.Null(FdSelect.Parse(blob, 0, glyphCount: 10));
+        }
+
+        [Fact]
+        public void Format3_Rejects_A_Truncated_Range_Array()
+        {
+            // Declares 4 ranges but the buffer only holds one range plus the sentinel; the reads
+            // must be rejected rather than slicing past the blob.
+            var blob = BuildFormat3(new (int First, byte Fd)[] { (0, 0) }, sentinel: 10);
+            blob[1] = 0;
+            blob[2] = 4; // nRanges = 4, but only one range's worth of bytes follows
+
+            Assert.Null(FdSelect.Parse(blob, 0, glyphCount: 10));
+        }
+
         private static byte[] BuildFormat3((int First, byte Fd)[] ranges, int sentinel)
         {
             var blob = new List<byte> { 3 };

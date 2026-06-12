@@ -203,6 +203,15 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             }
 
             var regionIndexesStart = subtableStart + 6;
+
+            // TryLoad only validated the 6-byte subtable header fits; the region-index array that
+            // follows is read here, so bound it explicitly (TryGetDelta gets this for free via its
+            // delta-row check). A truncated array degrades to "no blend" rather than throwing.
+            if (regionIndexesStart + regionIndexCount * 2 > span.Length)
+            {
+                return -1;
+            }
+
             for (var r = 0; r < regionIndexCount; r++)
             {
                 var regionIndex = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(regionIndexesStart + r * 2, 2));

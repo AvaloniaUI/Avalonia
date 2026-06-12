@@ -44,8 +44,20 @@ namespace Avalonia.Media.Fonts.Tables.Cff
             if (format == 3)
             {
                 int p = offset + 1;
+
+                // format(1) + nRanges(2) + nRanges*(first uint16 + fd byte) + sentinel(2).
+                if (p + 2 > table.Length)
+                {
+                    return null;
+                }
+
                 int nRanges = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(p));
                 p += 2;
+
+                if (p + nRanges * 3 + 2 > table.Length)
+                {
+                    return null;
+                }
 
                 var first = new int[nRanges + 1];
                 var fd = new byte[nRanges];
@@ -56,9 +68,24 @@ namespace Avalonia.Media.Fonts.Tables.Cff
                     p += 2;
                     fd[i] = span[p];
                     p += 1;
+
+                    // GetFd binary-searches assuming ascending range starts; a non-monotonic
+                    // array would return a wrong (but in-bounds) FD → wrong Local Subrs →
+                    // silent CID misrendering. Reject the malformed table instead.
+                    if (i > 0 && first[i] < first[i - 1])
+                    {
+                        return null;
+                    }
                 }
 
                 first[nRanges] = BinaryPrimitives.ReadUInt16BigEndian(span.Slice(p)); // sentinel
+
+                // The sentinel is the glyph count; it must not precede the last range start, or
+                // the final range would be inverted.
+                if (nRanges > 0 && first[nRanges] < first[nRanges - 1])
+                {
+                    return null;
+                }
 
                 return new FdSelect(first, fd);
             }
