@@ -81,9 +81,9 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             }
 
             var ivsOffset = (int)BinaryPrimitives.ReadUInt32BigEndian(span.Slice(4));
-            var advanceMapOffset = (int)BinaryPrimitives.ReadUInt32BigEndian(span.Slice(8));
-            var tsbMapOffset = (int)BinaryPrimitives.ReadUInt32BigEndian(span.Slice(12));
-            var bsbMapOffset = (int)BinaryPrimitives.ReadUInt32BigEndian(span.Slice(16));
+            var advanceMapOffset = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(8));
+            var tsbMapOffset = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(12));
+            var bsbMapOffset = BinaryPrimitives.ReadUInt32BigEndian(span.Slice(16));
             // vorgMappingOffset = data.Slice(20) — parsed and validated for header
             // soundness but not stored; we have no consumer for vertical-origin deltas.
 
@@ -98,14 +98,18 @@ namespace Avalonia.Media.Fonts.Tables.Variation
             }
 
             // The three glyph-keyed index maps are optional — offset 0 means "use direct
-            // mapping (glyph ID == inner index, outer = 0)".
+            // mapping (glyph ID == inner index, outer = 0)". The offsets are attacker-controlled,
+            // so validate them unsigned against the table length before slicing (as the IVS
+            // offset is checked above): a hostile offset degrades to "no VVAR" rather than
+            // throwing out of the typeface constructor.
             DeltaSetIndexMap? advanceMap = null;
             DeltaSetIndexMap? tsbMap = null;
             DeltaSetIndexMap? bsbMap = null;
 
             if (advanceMapOffset != 0)
             {
-                if (!DeltaSetIndexMap.TryLoad(data.Slice(advanceMapOffset), out advanceMap))
+                if (advanceMapOffset >= (uint)data.Length ||
+                    !DeltaSetIndexMap.TryLoad(data.Slice((int)advanceMapOffset), out advanceMap))
                 {
                     return false;
                 }
@@ -113,7 +117,8 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
             if (tsbMapOffset != 0)
             {
-                if (!DeltaSetIndexMap.TryLoad(data.Slice(tsbMapOffset), out tsbMap))
+                if (tsbMapOffset >= (uint)data.Length ||
+                    !DeltaSetIndexMap.TryLoad(data.Slice((int)tsbMapOffset), out tsbMap))
                 {
                     return false;
                 }
@@ -121,7 +126,8 @@ namespace Avalonia.Media.Fonts.Tables.Variation
 
             if (bsbMapOffset != 0)
             {
-                if (!DeltaSetIndexMap.TryLoad(data.Slice(bsbMapOffset), out bsbMap))
+                if (bsbMapOffset >= (uint)data.Length ||
+                    !DeltaSetIndexMap.TryLoad(data.Slice((int)bsbMapOffset), out bsbMap))
                 {
                     return false;
                 }

@@ -1045,6 +1045,20 @@ namespace Avalonia.Media
                 return false;
             }
 
+            // VVAR: variation-aware advance heights, mirroring the HVAR adjustment in
+            // TryGetHorizontalGlyphAdvance. Without it a varied clone returns default-instance
+            // heights from this advance-only path while TryGetGlyphMetrics applies VVAR — an
+            // asymmetry that mis-positions vertical layout at varied instances. The null check
+            // keeps static-font and default-instance callers on the zero-cost path.
+            if (_vvarTable is not null && _activeCoords is not null)
+            {
+                if (_vvarTable.TryGetAdvanceHeightDelta(glyphId, _activeCoords, out var delta) && delta != 0f)
+                {
+                    var adjusted = advance + (int)MathF.Round(delta);
+                    advance = adjusted < 0 ? (ushort)0 : (ushort)Math.Min(adjusted, ushort.MaxValue);
+                }
+            }
+
             return true;
         }
 
@@ -1065,7 +1079,17 @@ namespace Avalonia.Media
                 return false;
             }
 
-            return _vmTable.TryGetAdvances(glyphIds, advances);
+            // Fast path: no variation. Dispatch to the plain vmtx batch reader, which never
+            // touches VVAR.
+            if (_vvarTable is null || _activeCoords is null)
+            {
+                return _vmTable.TryGetAdvances(glyphIds, advances);
+            }
+
+            // Variation path: hand the cached active coords + VVAR table to the fused
+            // single-pass loop inside VerticalMetricsTable.TryGetAdvances (mirrors the
+            // horizontal path above).
+            return _vmTable.TryGetAdvances(glyphIds, advances, _vvarTable, _activeCoords);
         }
 
         /// <summary>

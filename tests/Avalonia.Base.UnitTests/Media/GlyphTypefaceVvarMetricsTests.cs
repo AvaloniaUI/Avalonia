@@ -86,6 +86,34 @@ namespace Avalonia.Base.UnitTests.Media
         }
 
         [Fact]
+        public void TryGetVerticalGlyphAdvance_Applies_Vvar_Like_TryGetGlyphMetrics()
+        {
+            // R10: the advance-only vertical APIs used to skip VVAR entirely, so a varied clone
+            // returned default-instance heights from TryGetVerticalGlyphAdvance(s) while
+            // TryGetGlyphMetrics applied VVAR — a horizontal/vertical asymmetry. Both paths must
+            // now report the same VVAR-adjusted advance height.
+            var gt = LoadTypeface(AdobeBlankAsset);
+            var fvarAxes = gt.VariationAxes;
+            var settings = gt.CreateVariationSettings(
+                new Dictionary<OpenTypeTag, float> { [fvarAxes[0].Tag] = fvarAxes[0].MaximumValue });
+            var varied = gt.WithVariation(settings);
+
+            var glyphs = new ushort[] { 0, 1 };
+            var batch = new ushort[glyphs.Length];
+            Assert.True(varied.TryGetVerticalGlyphAdvances(glyphs, batch));
+
+            for (var i = 0; i < glyphs.Length; i++)
+            {
+                Assert.True(varied.TryGetVerticalGlyphAdvance(glyphs[i], out var single));
+                Assert.True(varied.TryGetGlyphMetrics(glyphs[i], out var metrics));
+
+                // Single advance, batch advance, and the metrics advance must agree.
+                Assert.Equal(metrics.AdvanceHeight, single);
+                Assert.Equal(single, batch[i]);
+            }
+        }
+
+        [Fact]
         public void TryGetGlyphMetrics_Default_AdobeBlank_Equals_Source()
         {
             // WithVariation(default) on a variable font returns the source itself, so
