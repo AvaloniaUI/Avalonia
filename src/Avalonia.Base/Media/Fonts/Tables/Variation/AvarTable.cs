@@ -177,14 +177,30 @@ namespace Avalonia.Media.Fonts.Tables.Variation
                     }
 
                     var entries = ImmutableArray.CreateBuilder<SegmentMapEntry>(positionMapCount);
+                    var monotonic = true;
+                    var previousFrom = float.NegativeInfinity;
+
                     for (var j = 0; j < positionMapCount; j++)
                     {
                         var from = reader.ReadF2dot14();
                         var to = reader.ReadF2dot14();
+
+                        // Remap's interpolation scan assumes ascending fromCoordinates; a
+                        // descending entry would make it return values from the wrong segment.
+                        // Equal fromCoordinates (degenerate segments) are tolerated — Remap
+                        // already handles those explicitly.
+                        if (from < previousFrom)
+                        {
+                            monotonic = false;
+                        }
+
+                        previousFrom = from;
                         entries.Add(new SegmentMapEntry(from, to));
                     }
 
-                    mapsBuilder.Add(entries.MoveToImmutable());
+                    // A non-monotonic axis degrades to identity (empty map). Keep the entries
+                    // consumed above either way so the reader stays aligned for the next axis.
+                    mapsBuilder.Add(monotonic ? entries.MoveToImmutable() : ImmutableArray<SegmentMapEntry>.Empty);
                 }
             }
             catch
