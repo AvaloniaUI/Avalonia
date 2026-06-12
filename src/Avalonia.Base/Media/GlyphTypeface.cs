@@ -78,7 +78,13 @@ namespace Avalonia.Media
         private readonly string[] _supportedLanguages;
 
         private IReadOnlyList<OpenTypeTag>? _supportedFeatures;
-        private ITextShaperTypeface? _textShaperTypeface;
+
+        // Guards lazy creation of _textShaperTypeface so concurrent first access creates exactly one
+        // shaper (otherwise the losing thread's shaper would leak). _textShaperTypeface is volatile so
+        // the lock-free fast-path read in the getter safely observes the fully-published instance.
+        private readonly object _textShaperLock = new();
+        private volatile ITextShaperTypeface? _textShaperTypeface;
+
         private UnicodeRange? _supportedUnicodeRange;
 
         /// <summary>
@@ -773,22 +779,31 @@ namespace Avalonia.Media
         {
             get
             {
-                if (_textShaperTypeface != null)
+                var shaper = _textShaperTypeface;
+                if (shaper != null)
                 {
+                    return shaper;
+                }
+
+                lock (_textShaperLock)
+                {
+                    if (_textShaperTypeface != null)
+                    {
+                        return _textShaperTypeface;
+                    }
+
+                    if (_sourceTypeface is not null)
+                    {
+                        _textShaperTypeface = _sourceTypeface.TextShaperTypeface.WithVariation(_variationSettings);
+                    }
+                    else
+                    {
+                        var textShaper = AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>();
+                        _textShaperTypeface = textShaper.CreateTypeface(this);
+                    }
+
                     return _textShaperTypeface;
                 }
-
-                if (_sourceTypeface is not null)
-                {
-                    _textShaperTypeface = _sourceTypeface.TextShaperTypeface.WithVariation(_variationSettings);
-                }
-                else
-                {
-                    var textShaper = AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>();
-                    _textShaperTypeface = textShaper.CreateTypeface(this);
-                }
-
-                return _textShaperTypeface;
             }
         }
 
