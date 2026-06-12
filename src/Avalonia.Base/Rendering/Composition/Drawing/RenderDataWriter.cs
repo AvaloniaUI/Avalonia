@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Avalonia.Rendering.Composition.Drawing;
@@ -36,10 +37,7 @@ internal struct RenderDataWriter : IDisposable
     public void Rewind(int length) => _length = length;
 
     public void Write<T>(T value) where T : unmanaged
-    {
-        var bytes = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref value, 1));
-        bytes.CopyTo(Advance(bytes.Length));
-    }
+        => MemoryMarshal.Write(Advance(Unsafe.SizeOf<T>()), in value);
 
     public void WriteOpcode(RenderDataOpcode opcode) => Write(opcode);
 

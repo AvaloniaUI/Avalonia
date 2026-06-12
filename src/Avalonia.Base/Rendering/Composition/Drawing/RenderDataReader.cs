@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Avalonia.Rendering.Composition.Drawing;
@@ -27,20 +28,10 @@ internal ref struct RenderDataReader
     }
 
     public T Read<T>() where T : unmanaged
-    {
-        T value = default;
-        var bytes = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref value, 1));
-        Take(bytes.Length).CopyTo(bytes);
-        return value;
-    }
+        => MemoryMarshal.Read<T>(Take(Unsafe.SizeOf<T>()));
 
     public T Peek<T>() where T : unmanaged
-    {
-        T value = default;
-        var bytes = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref value, 1));
-        _buffer.Slice(_position, bytes.Length).CopyTo(bytes);
-        return value;
-    }
+        => MemoryMarshal.Read<T>(_buffer.Slice(_position, Unsafe.SizeOf<T>()));
 
     public T ReadPayload<T>() where T : unmanaged, IRenderDataPayload<T>
     {
