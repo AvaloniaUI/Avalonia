@@ -1,13 +1,14 @@
 using System;
 using Avalonia.Platform;
 
-namespace Avalonia.Media.Fonts.Tables.Cff
+namespace Avalonia.Media.Fonts
 {
     /// <summary>
     /// An <see cref="IGeometryContext"/> that accumulates the min/max of every point it is handed
-    /// instead of building geometry — used for the CFF / CFF2 bounds-only interpreter pass. Off-curve
-    /// (cubic control) points are included, so the result is the control-point bounding box, matching
-    /// the semantics of the <c>glyf</c> header box that <see cref="Glyf.GlyfTable"/> reports.
+    /// instead of building geometry — the shared bounds-only interpreter sink for the outline tables
+    /// (CFF / CFF2 charstrings and <c>glyf</c> contours). Off-curve (control) points are included, so
+    /// the result is the control-point bounding box, matching the semantics of the <c>glyf</c> header
+    /// box. Lets a glyph's bounds be computed without a render backend.
     /// </summary>
     internal sealed class BoundsGeometryContext : IGeometryContext
     {
