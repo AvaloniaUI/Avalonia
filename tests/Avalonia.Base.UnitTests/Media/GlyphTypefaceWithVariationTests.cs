@@ -553,5 +553,54 @@ namespace Avalonia.Base.UnitTests.Media
 
             throw new InvalidOperationException($"No named instance '{name}'.");
         }
+
+        [Fact]
+        public void Variable_Glyf_Ink_Bounds_Reflect_Gvar_At_A_Non_Default_Instance()
+        {
+            var def = LoadTypeface(InterVariableAsset);
+            var black = def.WithVariation(WghtPosition(def, 900));
+            Assert.NotSame(def, black);
+
+            // Before the fix the varied instance returned the static (default-instance) glyf header
+            // box, so every glyph's ink bounds matched the default. With gvar applied at the heavier
+            // weight the outlines deform, so at least one glyph's control-point box must now differ.
+            var anyDifferent = false;
+            var max = Math.Min(def.GlyphCount, 300);
+
+            for (ushort glyph = 1; glyph < max; glyph++)
+            {
+                if (InkBounds(def, glyph) != InkBounds(black, glyph))
+                {
+                    anyDifferent = true;
+                    break;
+                }
+            }
+
+            Assert.True(anyDifferent, "Expected gvar to change at least one glyph's ink bounds at a heavy weight.");
+        }
+
+        [Fact]
+        public void Variable_Glyf_Ink_Bounds_Single_And_Batch_Agree_At_A_Non_Default_Instance()
+        {
+            var def = LoadTypeface(InterVariableAsset);
+            var black = def.WithVariation(WghtPosition(def, 900));
+            Assert.True(black.CharacterToGlyphMap.TryGetGlyph('B', out var glyph));
+
+            // The single-glyph metrics path and the batch path must resolve the gvar-deformed box
+            // identically (both go through the cached per-glyph interpret for a varied instance).
+            Assert.True(black.TryGetGlyphInkBounds(glyph, out var single));
+
+            var batch = new GlyphBounds[1];
+            Assert.True(black.TryGetGlyphBounds(new[] { glyph }, batch));
+
+            Assert.Equal(single, batch[0]);
+        }
+
+        private static GlyphBounds InkBounds(GlyphTypeface typeface, ushort glyph)
+        {
+            var bounds = new GlyphBounds[1];
+            Assert.True(typeface.TryGetGlyphBounds(new[] { glyph }, bounds));
+            return bounds[0];
+        }
     }
 }
