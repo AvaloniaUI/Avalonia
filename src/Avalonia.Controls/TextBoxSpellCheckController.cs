@@ -43,7 +43,7 @@ internal sealed class TextBoxSpellCheckController
 
         return CanCheck(owner) &&
             CanCheckText(text) &&
-            GetProvider(owner) is not null;
+            CanUseProvider(GetProvider(owner), CultureInfo.CurrentCulture);
     }
 
     public void SetPresenter(TextPresenter? presenter, ScrollViewer? scrollViewer)
@@ -79,7 +79,7 @@ internal sealed class TextBoxSpellCheckController
 
         if (!CanCheck(_owner) ||
             !CanCheckText(text) ||
-            GetProvider(_owner) is null)
+            !CanUseProvider(GetProvider(_owner), CultureInfo.CurrentCulture))
         {
             Clear();
             return;
@@ -143,7 +143,7 @@ internal sealed class TextBoxSpellCheckController
         if (provider is null ||
             !CanCheck(_owner) ||
             !CanCheckText(text) ||
-            !provider.IsLanguageSupported(culture))
+            !CanUseProvider(provider, culture))
         {
             return null;
         }
@@ -222,7 +222,7 @@ internal sealed class TextBoxSpellCheckController
         {
             var culture = CultureInfo.CurrentCulture;
 
-            if (!provider.IsLanguageSupported(culture))
+            if (!CanUseProvider(provider, culture))
             {
                 Clear();
                 return;
@@ -282,6 +282,23 @@ internal sealed class TextBoxSpellCheckController
     private static ISpellCheckProvider? GetProvider(TextBox owner)
     {
         return TextInputOptions.GetSpellCheckProvider(owner) ?? TopLevel.GetTopLevel(owner)?.SpellCheckProvider;
+    }
+
+    private static bool CanUseProvider(ISpellCheckProvider? provider, CultureInfo culture)
+    {
+        if (provider is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            return provider.IsLanguageSupported(culture);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     internal static bool CanCheckText([NotNullWhen(true)] string? text)

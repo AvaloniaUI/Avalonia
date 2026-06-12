@@ -191,6 +191,26 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Spell_Check_Controller_Is_Not_Created_When_Language_Is_Unsupported()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var provider = new TestSpellCheckProvider(
+                    new[] { new SpellCheckResult(0, 3, "Ths") },
+                    new[] { "This" },
+                    isLanguageSupported: false);
+
+                AvaloniaLocator.CurrentMutable.Bind<ISpellCheckProvider>().ToConstant(provider);
+
+                var target = CreateTextBoxInTopLevel("Ths sample");
+
+                Assert.False(target.HasSpellCheckController);
+                Assert.Equal(0, provider.CheckCount);
+                Assert.Empty(Dispatcher.SnapshotTimersForUnitTests());
+            }
+        }
+
+        [Fact]
         public void Spell_Check_Controller_Is_Not_Created_When_Spell_Check_Is_Disabled()
         {
             using (UnitTestApplication.Start(Services))
@@ -2983,13 +3003,16 @@ namespace Avalonia.Controls.UnitTests
         {
             private readonly IReadOnlyList<SpellCheckResult> _results;
             private readonly IReadOnlyList<string> _suggestions;
+            private readonly bool _isLanguageSupported;
 
             public TestSpellCheckProvider(
                 IReadOnlyList<SpellCheckResult> results,
-                IReadOnlyList<string> suggestions)
+                IReadOnlyList<string> suggestions,
+                bool isLanguageSupported = true)
             {
                 _results = results;
                 _suggestions = suggestions;
+                _isLanguageSupported = isLanguageSupported;
             }
 
             public int CheckCount { get; private set; }
@@ -2998,7 +3021,7 @@ namespace Avalonia.Controls.UnitTests
 
             public string? LastSuggestedWord { get; private set; }
 
-            public bool IsLanguageSupported(CultureInfo? culture) => true;
+            public bool IsLanguageSupported(CultureInfo? culture) => _isLanguageSupported;
 
             public ValueTask<IReadOnlyList<SpellCheckResult>> CheckAsync(
                 string text,
