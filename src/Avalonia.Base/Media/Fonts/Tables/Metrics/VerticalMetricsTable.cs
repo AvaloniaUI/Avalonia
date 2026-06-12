@@ -16,7 +16,12 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         private VerticalMetricsTable(ReadOnlyMemory<byte> data, ushort numOfVMetrics, int numGlyphs)
         {
             _data = data;
-            _numOfVMetrics = numOfVMetrics;
+
+            // Clamp to what the table can actually hold: a numberOfVMetrics larger than the vmtx
+            // bytes — or an out-of-spec 0 — would otherwise drive negative or out-of-range reads in
+            // the accessors. A well-formed table always holds numberOfVMetrics * 4 bytes, so it is
+            // unaffected.
+            _numOfVMetrics = (ushort)Math.Min((int)numOfVMetrics, data.Length / 4);
             _numGlyphs = numGlyphs;
         }
 
@@ -40,7 +45,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         {
             metric = default;
 
-            if (glyphIndex >= _numGlyphs)
+            if (glyphIndex >= _numGlyphs || _numOfVMetrics == 0)
             {
                 return false;
             }
@@ -65,9 +70,14 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
                 int tsbIndex = glyphIndex - _numOfVMetrics;
                 int tsbOffset = _numOfVMetrics * 4 + tsbIndex * 2;
 
-                reader.Seek(tsbOffset);
-
-                short tsb = reader.ReadInt16();
+                // A truncated table may omit some or all of the trailing topSideBearing array;
+                // treat a missing entry as zero rather than reading past the end.
+                short tsb = 0;
+                if (tsbOffset + 2 <= _data.Length)
+                {
+                    reader.Seek(tsbOffset);
+                    tsb = reader.ReadInt16();
+                }
 
                 metric = new VerticalGlyphMetric(lastAdvanceHeight, tsb);
             }
@@ -85,7 +95,7 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
         {
             advance = 0;
 
-            if (glyphIndex >= _numGlyphs)
+            if (glyphIndex >= _numGlyphs || _numOfVMetrics == 0)
             {
                 return false;
             }
@@ -128,6 +138,11 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
             ReadOnlySpan<float> activeCoords = default)
         {
             if (advances.Length < glyphIndices.Length)
+            {
+                return false;
+            }
+
+            if (_numOfVMetrics == 0)
             {
                 return false;
             }
@@ -198,6 +213,11 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
                 return false;
             }
 
+            if (_numOfVMetrics == 0)
+            {
+                return false;
+            }
+
             var data = _data.Span;
 
             // Cache the last advance height for glyphs beyond numOfVMetrics
@@ -233,7 +253,12 @@ namespace Avalonia.Media.Fonts.Tables.Metrics
 
                     var tsbIndex = glyphIndex - _numOfVMetrics;
                     var tsbOffset = _numOfVMetrics * 4 + tsbIndex * 2;
-                    topSideBearing = BinaryPrimitives.ReadInt16BigEndian(data.Slice(tsbOffset, 2));
+
+                    // A truncated table may omit some or all of the trailing topSideBearing array;
+                    // treat a missing entry as zero rather than reading past the end.
+                    topSideBearing = tsbOffset + 2 <= data.Length
+                        ? BinaryPrimitives.ReadInt16BigEndian(data.Slice(tsbOffset, 2))
+                        : (short)0;
                 }
 
                 if (hasVvar)
