@@ -838,8 +838,9 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
         ![self hasMarkedText] &&
         parent->InputMethod->IsActive())
     {
-        int start;
-        int end;
+        int start = 0;
+        int end = 0;
+        bool shouldSelect = true;
 
         if (replacementRange.length > 0)
         {
@@ -857,7 +858,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
                 end = (int)(replacementRange.location + replacementRange.length) + 1;
             }
         }
-        
+
         // Special case for the first character. ReplacementRange for the first character
         // arrives as {0,0} instead of a replacement range, so explicitly
         // select it.
@@ -868,10 +869,13 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
         }
         else
         {
-            return;
+            shouldSelect = false;
         }
 
-        parent->InputMethod->Client->SelectInSurroundingText(start, end);
+        if (shouldSelect)
+        {
+            parent->InputMethod->Client->SelectInSurroundingText(start, end);
+        }
     }
 
     [self unmarkText];
