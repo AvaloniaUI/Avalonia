@@ -163,7 +163,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 foreach (var i in GetAllInterfacesIncludingSelf(itemsCollectionType))
                 {
-                    if (i.GenericTypeDefinition?.Equals(context.Configuration.WellKnownTypes.IEnumerableT) == true)
+                    if (i.GenericTypeDefinition?.Equals(context.Configuration.WellKnownTypes.IEnumerableOfT) == true)
                     {
                         return new AvaloniaXamlIlDataContextTypeMetadataNode(on, i.GenericArguments[0]);
                     }

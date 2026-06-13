@@ -834,7 +834,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter!.ApplyTemplate();
 
-            var containerPanel = target.GetTemplateChildren().OfType<Panel>().FirstOrDefault(x => x.Name == "container");
+            var containerPanel = target.GetTemplateDescendants().OfType<Panel>().FirstOrDefault(x => x.Name == "container");
             var editableTextBox = containerPanel?.GetVisualDescendants().OfType<TextBox>().FirstOrDefault(x => x.Name == "PART_EditableTextBox");
             var popup = containerPanel?.GetVisualDescendants().OfType<Popup>().FirstOrDefault(x => x.Name == "PART_Popup");
             var popupScrollViewer = popup?.Child as ScrollViewer;

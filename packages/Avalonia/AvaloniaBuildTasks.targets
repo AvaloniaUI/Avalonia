@@ -39,6 +39,17 @@
                       Condition="'$(ApplicationIcon)' != ''" />
   </ItemGroup>
 
+  <!-- Include AvaloniaXaml and AvaloniaResource as a Roslyn-visible additional files -->
+  <!-- This is necessary to use these files in source generators and other Roslyn-based extension -->
+  <Target Name="_InjectAvaloniaAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
+    <ItemGroup>
+      <AdditionalFiles Include="@(AvaloniaXaml)" SourceItemGroup="AvaloniaXaml" />
+      <_AvaloniaResourceOnly Include="@(AvaloniaResource)"
+                             Exclude="@(AvaloniaXaml)" />
+      <AdditionalFiles Include="@(_AvaloniaResourceOnly)" SourceItemGroup="AvaloniaResource" />
+    </ItemGroup>
+  </Target>
+
   <UsingTask TaskName="GenerateAvaloniaResourcesTask"
              AssemblyFile="$(AvaloniaBuildTasksLocation)"
              />

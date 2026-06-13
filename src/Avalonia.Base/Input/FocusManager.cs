@@ -142,6 +142,9 @@ namespace Avalonia.Input
         [PrivateApi]
         public void SetFocusScope(IFocusScope scope)
         {
+            if (KeyboardDevice.Instance is not { } keyboardDevice)
+                return;
+
             if (GetFocusedElement(scope) is { } focused)
             {
                 Focus(focused);
@@ -152,6 +155,13 @@ namespace Avalonia.Input
                 // control, select a control that the user has specified to have default
                 // focus etc.
                 Focus(scopeElement);
+            }
+            else
+            {
+                // If the scope isn't focusable, make sure we still set it as the current focus root,
+                // otherwise it will be completely ignored
+                _focusRoot = scope as StyledElement;
+                keyboardDevice.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None, false);
             }
         }
 

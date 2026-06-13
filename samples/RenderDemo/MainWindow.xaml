@@ -64,6 +64,9 @@
     <TabItem Header="Drawing">
       <pages:DrawingPage />
     </TabItem>
+    <TabItem Header="Hit Testing">
+      <pages:HitTestingPage />
+    </TabItem>
     <TabItem Header="SkCanvas">
       <pages:CustomSkiaPage />
     </TabItem>

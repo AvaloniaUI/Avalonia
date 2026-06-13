@@ -1011,7 +1011,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 contentControl.DataContext = new TestDataContext(); // should be ignored
                 contentControl.Measure(new Size(10, 10));
                 
-                var result = contentControl.GetTemplateChildren().OfType<ContentPresenter>().First();
+                var result = contentControl.GetTemplateDescendants().OfType<ContentPresenter>().First();
                 Assert.Equal(false, result.Focusable);
             }
         }
@@ -1046,7 +1046,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 textBox.DataContext = new TestDataContext(); // should be ignored
                 textBox.Measure(new Size(10, 10));
                 
-                var result = textBox.GetTemplateChildren().OfType<ContentPresenter>().First();
+                var result = textBox.GetTemplateDescendants().OfType<ContentPresenter>().First();
                 Assert.Equal(textBox.InnerLeftContent, result.Content);
             }
         }
@@ -1080,7 +1080,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 window.ApplyTemplate();
                 button.ApplyTemplate();
 
-                Assert.Equal(button.Tag, button.GetTemplateChildren().OfType<Grid>().First().ColumnDefinitions[0].Width);
+                Assert.Equal(button.Tag, button.GetTemplateDescendants().OfType<Grid>().First().ColumnDefinitions[0].Width);
             }
         }
 
@@ -1109,7 +1109,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 var contentControl = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
                 contentControl.Measure(new Size(10, 10));
                 
-                var result = contentControl.GetTemplateChildren().OfType<ContentPresenter>().First();
+                var result = contentControl.GetTemplateDescendants().OfType<ContentPresenter>().First();
                 
                 Assert.Equal("Hello", result.Content);
             }

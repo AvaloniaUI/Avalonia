@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
@@ -98,6 +99,102 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        private class CalendarDatePickerTextConverter : IValueConverter
+        {
+            // date to text
+            public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+            {
+                if (value is DateTime d)
+                    return d.ToString("yyyy-MM-dd"); // always return a single format (for this test)
+                return AvaloniaProperty.UnsetValue;
+            }
+
+            // text to date
+            public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            {
+                var str = value?.ToString();
+                if (str == null)
+                    return AvaloniaProperty.UnsetValue;
+                // allow for a few different date formats
+                string[] formats = ["yyyy-MM-dd", "MM dd yyyy", "dd.MM.yyyy"];
+                if (DateTime.TryParseExact(str, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateValue))
+                {
+                    return dateValue;
+                }
+                return AvaloniaProperty.UnsetValue;
+            }
+        }
+
+        [Fact]
+        public void Setting_Date_Manually_Uses_Text_Converter()
+        {
+            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+            using (UnitTestApplication.Start(Services))
+            {
+                CalendarDatePicker datePicker = CreateControl();
+                datePicker.SelectedDateFormat = CalendarDatePickerFormat.Custom;
+                datePicker.CustomDateFormatString = "dd.MM.yyyy";
+                datePicker.TextConverter = new CalendarDatePickerTextConverter();
+                var tb = GetTextBox(datePicker);
+
+                datePicker.SelectedDate = new DateTime(2024, 2, 13);
+                // DateTimeToString called async so need to let that complete before testing value
+                Threading.Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                Assert.Equal("2024-02-13", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate!.Value, new DateTime(2024, 2, 13)));
+
+                // null input results in empty string for text
+                datePicker.SelectedDate = null;
+
+                Assert.Equal("", datePicker.Text);
+                Assert.Null(datePicker.SelectedDate);
+            }
+        }
+
+        [Fact]
+        public void Setting_Date_String_Manually_Can_Accept_Multiple_Formats()
+        {
+            CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+            using (UnitTestApplication.Start(Services))
+            {
+                CalendarDatePicker datePicker = CreateControl();
+                datePicker.SelectedDateFormat = CalendarDatePickerFormat.Custom;
+                datePicker.CustomDateFormatString = "dd.MM.yyyy";
+                datePicker.TextConverter = new CalendarDatePickerTextConverter();
+                var tb = GetTextBox(datePicker);
+
+                // parser can work with same format as CustomDateFormatString (but TextConverter must handle it)
+                tb.Clear();
+                RaiseTextEvent(tb, "17.10.2024");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+                Assert.Equal("2024-10-17", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate!.Value, new DateTime(2024, 10, 17)));
+
+                // can also handle parsing other formats that the user enters, too
+                tb.Clear();
+                RaiseTextEvent(tb, "2024-02-13");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+
+                Assert.Equal("2024-02-13", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2024, 2, 13)));
+
+                tb.Clear();
+                RaiseTextEvent(tb, "04 22 2026");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+
+                Assert.Equal("2026-04-22", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2026, 4, 22)));
+
+                // invalid input results in going back to last known (valid) date
+                tb.Clear();
+                RaiseTextEvent(tb, "Not A Valid Date");
+                RaiseKeyEvent(tb, Key.Enter, KeyModifiers.None);
+
+                Assert.Equal("2026-04-22", datePicker.Text);
+                Assert.True(CompareDates(datePicker.SelectedDate.Value, new DateTime(2026, 4, 22)));
+            }
+        }
+
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<ICursorFactory>());
 
@@ -155,7 +252,7 @@ namespace Avalonia.Controls.UnitTests
 
         private TextBox GetTextBox(CalendarDatePicker control)
         {
-            return control.GetTemplateChildren()
+            return control.GetTemplateDescendants()
                 .OfType<TextBox>()
                 .First();
         }

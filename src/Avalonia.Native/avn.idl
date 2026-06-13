@@ -399,6 +399,7 @@ enum SystemDecorations
 
 enum AvnAutomationProperty
 {
+    AutomationPeer_AutomationId,
     AutomationPeer_BoundingRectangle,
     AutomationPeer_ClassName,
     AutomationPeer_Name,
@@ -649,6 +650,7 @@ enum AvnAutomationControlType
     AutomationTitleBar,
     AutomationSeparator,
     AutomationExpander,
+    AutomationScrollViewer,
 }
 
 enum AvnLandmarkType
@@ -1280,6 +1282,7 @@ interface IAvnAutomationPeer : IUnknown
      bool IsKeyboardFocusable();
      void SetFocus();
      bool ShowContextMenu();
+     void BringIntoView();
 
      IAvnAutomationPeer* GetRootPeer();
      
