@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -86,6 +87,11 @@ namespace Avalonia.Media
                 -sourceRect.X + destRect.X - bounds.X,
                 -sourceRect.Y + destRect.Y - bounds.Y);
 
+            var clip = Viewbox != null ||
+                       !MathUtilities.AreClose(sourceRect.Width, Size.Width) ||
+                       !MathUtilities.AreClose(sourceRect.Height, Size.Height);
+
+            using (clip ? context.PushClip(destRect) : default)
             using (context.PushTransform(translate * scale))
             {
                 drawing.Draw(context);
