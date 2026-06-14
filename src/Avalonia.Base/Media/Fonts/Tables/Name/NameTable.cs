@@ -138,6 +138,27 @@ namespace Avalonia.Media.Fonts.Tables.Name
                 var count = reader.ReadUInt16();
                 var storageOffset = reader.ReadUInt16();
 
+                const int headerSize = 6;
+                const int recordSize = 12;
+
+                if (table.Length < headerSize)
+                {
+                    return null;
+                }
+
+                var recordsSize = count * recordSize;
+                if (recordsSize > table.Length - headerSize)
+                {
+                    return null;
+                }
+
+                if (storageOffset > table.Length)
+                {
+                    return null;
+                }
+
+                var nameStorage = table.Slice(storageOffset);
+
                 var names = new NameRecord[count];
 
                 for (var i = 0; i < count; i++)
@@ -150,7 +171,7 @@ namespace Avalonia.Media.Fonts.Tables.Name
                     var length = reader.ReadUInt16();
                     var offset = reader.ReadUInt16();
 
-                    names[i] = new NameRecord(table.Slice(storageOffset), platform, languageID, nameID, offset, length, encoding);
+                    names[i] = new NameRecord(nameStorage, platform, languageID, nameID, offset, length, encoding);
                 }
 
                 return new NameTable(names);
