@@ -13,17 +13,32 @@ partial class DrawingContextImpl
         using var filter = CreateEffect(effect);
         var paint = SKPaintCache.Shared.Get();
         paint.ImageFilter = filter;
+
         if (effectClipRect.HasValue)
-            Canvas.SaveLayer(effectClipRect.Value.ToSKRect(), paint);
-        else
+        {
+            Canvas.Save();
+            var skRect = effectClipRect.Value.Inflate(100).ToSKRect();
+            Canvas.ClipRect(skRect);
             Canvas.SaveLayer(paint);
+            _effectStackCount.Push(2);
+        }
+        else
+        {
+            Canvas.SaveLayer(paint);
+            _effectStackCount.Push(1);
+        }
+        
         SKPaintCache.Shared.ReturnReset(paint);
     }
 
     public void PopEffect()
     {
         CheckLease();
-        RestoreCanvas();
+        var count = _effectStackCount.Pop();
+        for (var i = 0; i < count; i++)
+        {
+            RestoreCanvas();
+        }
     }
 
     SKImageFilter? CreateEffect(IEffect effect)

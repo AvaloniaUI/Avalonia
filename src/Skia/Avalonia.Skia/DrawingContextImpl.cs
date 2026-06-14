@@ -26,6 +26,7 @@ namespace Avalonia.Skia
         private readonly Vector _intermediateSurfaceDpi;
         private readonly Stack<(SKMatrix matrix, PaintWrapper paint)> _maskStack = new();
         private readonly Stack<double> _opacityStack = new();
+        private readonly Stack<int> _effectStackCount = new();
         private readonly Stack<RenderOptions> _renderOptionsStack = new();
         private readonly Stack<TextOptions> _textOptionsStack = new();
         private readonly Matrix? _postTransform;
