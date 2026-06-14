@@ -332,9 +332,16 @@ namespace Avalonia.Media.Fonts.Tables
         // array allocation.
         private readonly void EnsureAvailable(int count, int elementSize)
         {
-            if (count < 0 || (long)count * elementSize > _span.Length - _position)
+            if (count < 0)
             {
-                ThrowEndOfSpan((long)count * elementSize);
+                throw new ArgumentOutOfRangeException(nameof(count), count, "count must be non-negative.");
+            }
+
+            long size = (long)count * elementSize;
+            
+            if (size > _span.Length - _position)
+            {
+                ThrowEndOfSpan(size);
             }
         }
 
