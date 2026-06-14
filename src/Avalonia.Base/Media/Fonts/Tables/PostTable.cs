@@ -1,3 +1,5 @@
+using System;
+
 namespace Avalonia.Media.Fonts.Tables
 {
     internal readonly struct PostTable
@@ -33,7 +35,7 @@ namespace Avalonia.Media.Fonts.Tables
 
                 return Load(ref binaryReader);
             }
-            catch
+            catch (InvalidOperationException)
             {
                 // 'post' only carries cosmetic hints (underline metrics, italic angle, fixed-pitch
                 // flag), so a present-but-malformed table must degrade to defaults rather than deny the
