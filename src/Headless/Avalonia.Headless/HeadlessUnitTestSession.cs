@@ -54,19 +54,19 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
         {
             action();
             return Task.FromResult(0);
-        }, false ,cancellationToken);
+        }, true ,cancellationToken);
     }
 
     /// <inheritdoc cref="DispatchCore{TResult}"/>
     public Task<TResult> Dispatch<TResult>(Func<TResult> action, CancellationToken cancellationToken)
     {
-        return DispatchCore(() => Task.FromResult(action()), false, cancellationToken);
+        return DispatchCore(() => Task.FromResult(action()), true, cancellationToken);
     }
 
     /// <inheritdoc cref="DispatchCore{TResult}"/>
     public Task<TResult> Dispatch<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken)
     {
-        return DispatchCore(action, false, cancellationToken);
+        return DispatchCore(action, true, cancellationToken);
     }
 
     /// <summary>

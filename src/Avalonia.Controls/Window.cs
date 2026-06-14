@@ -255,6 +255,7 @@ namespace Avalonia.Controls
             impl.Closing = HandleClosing;
             impl.GotInputWhenDisabled = OnGotInputWhenDisabled;
             impl.WindowStateChanged = HandleWindowStateChanged;
+            impl.DrawnDecorationsRequestChanged = UpdateDrawnDecorations;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
             impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
             impl.AllowedWindowActionsChanged = OnAllowedWindowActionsChanged;
@@ -805,6 +806,7 @@ namespace Avalonia.Controls
                 // Only use platform margins if drawn decorations are not active
                 WindowDecorationMargin = PlatformImpl?.ExtendedMargins ?? default;
                 TopLevelHost.DecorationInset = default;
+                PlatformImpl?.SetShadowExtents(default);
                 return;
             }
 
@@ -815,6 +817,9 @@ namespace Avalonia.Controls
                 ? decorations.FrameThickness : default;
             var shadow = parts.HasFlag(Chrome.DrawnWindowDecorationParts.Shadow)
                 ? decorations.ShadowThickness : default;
+            
+            PlatformImpl?.SetShadowExtents(shadow);
+            
             var margin = new Thickness(
                 frame.Left + shadow.Left,
                 titleBarHeight + frame.Top + shadow.Top,

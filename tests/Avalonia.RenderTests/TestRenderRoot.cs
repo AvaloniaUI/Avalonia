@@ -67,13 +67,18 @@ namespace Avalonia.Skia.RenderTests
         {
         }
 
-        public Point PointToClient(PixelPoint point) => point.ToPoint(RenderScaling);
+        public Point? PointToClient(PixelPoint point) => point.ToPoint(RenderScaling);
 
-        public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling);
-        
+        public PixelPoint? PointToScreen(Point point) => PixelPoint.FromPoint(point, RenderScaling);
+
+        public void PointerOverInvalidated()
+        {
+        }
+
         public IFocusManager? FocusManager { get; }
         public IPlatformSettings? PlatformSettings { get; }
         public IInputElement? PointerOverElement { get; set; }
+        public IInputElement? CursorElement { get; set; }
         public ITextInputMethodImpl? InputMethod { get; }
         public InputElement RootElement => this;
         public InputElement FocusRoot => this;

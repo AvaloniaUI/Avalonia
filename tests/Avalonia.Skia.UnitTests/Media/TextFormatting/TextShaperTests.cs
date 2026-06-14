@@ -113,6 +113,161 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void ClusterCache_SimpleMode_For_Latin_Text()
+        {
+            using (Start())
+            {
+                var buffer = TextShaper.Current.ShapeText("ABCDEFGH", new TextShaperOptions(Typeface.Default.GlyphTypeface));
+
+                Assert.True(buffer.IsClusterCacheSimple, "Single-codepoint LTR text should use the simple cluster-cache mode.");
+            }
+        }
+
+        [Fact]
+        public void ClusterCache_SimpleMode_Measures_Correctly()
+        {
+            using (Start())
+            {
+                var buffer = TextShaper.Current.ShapeText("ABCDEFGH", new TextShaperOptions(Typeface.Default.GlyphTypeface));
+
+                Assert.True(buffer.IsClusterCacheSimple);
+
+                // Sum advances linearly and compare to TotalGlyphAdvance.
+                var expectedTotal = 0d;
+                for (var i = 0; i < buffer.Length; i++)
+                {
+                    expectedTotal += buffer[i].GlyphAdvance;
+                }
+
+                Assert.Equal(expectedTotal, buffer.TotalGlyphAdvance, 5);
+
+                // Measure: ask for the width of the first 3 glyphs.
+                var threeGlyphsWidth = buffer[0].GlyphAdvance + buffer[1].GlyphAdvance + buffer[2].GlyphAdvance;
+                var fit = buffer.FindLeadingCharCountWithinWidth(threeGlyphsWidth);
+                var widthConsumed = buffer.GetCharRangeWidth(0, fit);
+
+                Assert.Equal(3, fit);
+                Assert.Equal(threeGlyphsWidth, widthConsumed, 5);
+
+                // FirstClusterCharLength must be 1 in simple mode.
+                Assert.Equal(1, buffer.FirstClusterCharLength);
+            }
+        }
+
+        [Fact]
+        public void ClusterCache_SimpleMode_Survives_Split()
+        {
+            using (Start())
+            {
+                var buffer = TextShaper.Current.ShapeText("ABCDEFGH", new TextShaperOptions(Typeface.Default.GlyphTypeface));
+
+                Assert.True(buffer.IsClusterCacheSimple);
+
+                var split = buffer.Split(3);
+
+                Assert.NotNull(split.First);
+                Assert.NotNull(split.Second);
+                Assert.Equal(3, split.First!.Length);
+                Assert.Equal(5, split.Second!.Length);
+
+                Assert.True(split.First.IsClusterCacheSimple, "Split halves of a simple-mode buffer should also be simple-mode.");
+                Assert.True(split.Second.IsClusterCacheSimple);
+
+                var firstWidth = buffer[0].GlyphAdvance + buffer[1].GlyphAdvance + buffer[2].GlyphAdvance;
+                Assert.Equal(firstWidth, split.First.TotalGlyphAdvance, 5);
+            }
+        }
+
+        [Fact]
+        public void ClusterCache_NotSimpleMode_For_ComplexClusters()
+        {
+            using (Start())
+            {
+                var typeface = new Typeface(FontFamily.Parse("resm:Avalonia.Skia.UnitTests.Fonts?assembly=Avalonia.Skia.UnitTests#Cascadia Code"));
+
+                // Same text the existing Should_Not_Split_Cluster test uses: contains a
+                // two-codepoint cluster that breaks the one-char-per-cluster invariant.
+                var buffer = TextShaper.Current.ShapeText("a\"๊a", new TextShaperOptions(typeface.GlyphTypeface));
+
+                Assert.False(buffer.IsClusterCacheSimple,
+                    "Multi-char clusters should fall back to the full cluster-start-chars table.");
+            }
+        }
+
+        [Fact]
+        public void ClusterCache_SimpleMode_TrimmingHelpers_Are_Correct()
+        {
+            using (Start())
+            {
+                var buffer = TextShaper.Current.ShapeText("ABCDEFGH", new TextShaperOptions(Typeface.Default.GlyphTypeface));
+
+                Assert.True(buffer.IsClusterCacheSimple);
+
+                var advances = new double[buffer.Length];
+                for (var i = 0; i < buffer.Length; i++)
+                {
+                    advances[i] = buffer[i].GlyphAdvance;
+                }
+
+                double Sum(int start, int end)
+                {
+                    var w = 0d;
+                    for (var i = start; i < end; i++)
+                    {
+                        w += advances[i];
+                    }
+                    return w;
+                }
+
+                // GetCharRangeWidth: exact sub-range sums, including out-of-range clamping.
+                // These must not throw in simple mode (the regression: _clusterStartChars is null).
+                Assert.Equal(Sum(0, 3), buffer.GetCharRangeWidth(0, 3), 5);
+                Assert.Equal(Sum(2, 5), buffer.GetCharRangeWidth(2, 5), 5);
+                Assert.Equal(Sum(0, 8), buffer.GetCharRangeWidth(-2, 100), 5); // clamped to [0, 8]
+                Assert.Equal(0d, buffer.GetCharRangeWidth(4, 4), 5);
+
+                // FindLeadingCharCountWithinWidth: budget mid-way into the 4th glyph -> first 3 fit.
+                var leadingBudget = Sum(0, 3) + advances[3] * 0.5;
+                Assert.Equal(3, buffer.FindLeadingCharCountWithinWidth(leadingBudget));
+
+                // FindTrailingCharCountWithinWidth: budget mid-way into glyph index 4 -> last 3 fit.
+                var trailingBudget = Sum(5, 8) + advances[4] * 0.5;
+                var trailingCount = buffer.FindTrailingCharCountWithinWidth(trailingBudget, out var consumed);
+                Assert.Equal(3, trailingCount);
+                Assert.Equal(Sum(5, 8), consumed, 5);
+            }
+        }
+
+        [Fact]
+        public void ClusterCache_SimpleMode_TrimmingHelpers_Survive_Split()
+        {
+            using (Start())
+            {
+                var buffer = TextShaper.Current.ShapeText("ABCDEFGH", new TextShaperOptions(Typeface.Default.GlyphTypeface));
+                Assert.True(buffer.IsClusterCacheSimple);
+
+                var split = buffer.Split(3);
+                var second = split.Second;
+                Assert.NotNull(second);
+                Assert.True(second!.IsClusterCacheSimple);
+                Assert.Equal(5, second.Length); // "DEFGH"
+
+                var advances = new double[second.Length];
+                for (var i = 0; i < second.Length; i++)
+                {
+                    advances[i] = second[i].GlyphAdvance;
+                }
+
+                // Exercises the _clusterStartIdx offset on a simple-mode sub-buffer.
+                var firstTwo = advances[0] + advances[1];
+                Assert.Equal(firstTwo, second.GetCharRangeWidth(0, 2), 5);
+
+                var leadingBudget = firstTwo + advances[2] * 0.5;
+                Assert.Equal(2, second.FindLeadingCharCountWithinWidth(leadingBudget));
+            }
+        }
+
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
