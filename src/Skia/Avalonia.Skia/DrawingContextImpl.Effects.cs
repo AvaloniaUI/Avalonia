@@ -17,7 +17,6 @@ partial class DrawingContextImpl
         if (effectClipRect.HasValue)
         {
             Canvas.Save();
-            Canvas.ClipRect(effectClipRect.Value.Inflate(100).ToSKRect());
             Canvas.SaveLayer(paint);
             _effectStackCount.Push(2);
         }
