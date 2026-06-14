@@ -16,14 +16,12 @@ partial class DrawingContextImpl
 
         if (effectClipRect.HasValue)
         {
-            Canvas.Save();
-            Canvas.SaveLayer(paint);
-            _effectStackCount.Push(2);
+            var skRect = effectClipRect.Value.ToSKRect();
+            Canvas.SaveLayer(skRect, paint);
         }
         else
         {
             Canvas.SaveLayer(paint);
-            _effectStackCount.Push(1);
         }
         
         SKPaintCache.Shared.ReturnReset(paint);
@@ -32,11 +30,7 @@ partial class DrawingContextImpl
     public void PopEffect()
     {
         CheckLease();
-        var count = _effectStackCount.Pop();
-        for (var i = 0; i < count; i++)
-        {
-            RestoreCanvas();
-        }
+        RestoreCanvas();
     }
 
     SKImageFilter? CreateEffect(IEffect effect)

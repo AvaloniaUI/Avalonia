@@ -88,6 +88,8 @@ namespace Avalonia.Media
                 -sourceRect.Y + destRect.Y - bounds.Y);
 
             var clip = Viewbox != null ||
+                       !MathUtilities.AreClose(sourceRect.X, 0) ||
+                       !MathUtilities.AreClose(sourceRect.Y, 0) ||
                        !MathUtilities.AreClose(sourceRect.Width, Size.Width) ||
                        !MathUtilities.AreClose(sourceRect.Height, Size.Height);
 
