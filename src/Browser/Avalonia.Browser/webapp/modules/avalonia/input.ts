@@ -71,7 +71,7 @@ type ReadableDataValue = {
 
 export class InputHelper {
     static clipboardState: ClipboardState = ClipboardState.None;
-    static resolveClipboard?: (value: readonly ReadableDataItem[]) => void;
+    static resolveClipboard?: (value: [readonly ReadableDataItem[], string]) => void;
     static rejectClipboard?: (reason?: any) => void;
 
     public static initializeBackgroundHandlers() {
@@ -85,7 +85,7 @@ export class InputHelper {
             }
 
             const items = this.getDataTransferItems(args.clipboardData);
-            this.resolveClipboard(items.map((item) => ({ type: "dataTransferItem", value: item })));
+            this.resolveClipboard([items.map((item) => ({ type: "dataTransferItem", value: item })), ""]);
         });
         this.clipboardState = ClipboardState.Ready;
     }
@@ -122,24 +122,22 @@ export class InputHelper {
         item.data[format] = new Blob([bytes], { type: format });
     }
 
-    public static async readClipboard(window: Window): Promise<readonly ReadableDataItem[]> {
+    public static async readClipboard(window: Window): Promise<[readonly ReadableDataItem[], string]> {
         const clipboard = window.navigator.clipboard;
 
-        const { state } = await navigator.permissions.query({ name: 'clipboard-read' as PermissionName })
-        if (state === "granted") {
-
+        try {
             if (clipboard.read) {
                 const clipboardItems = await clipboard.read();
-                return clipboardItems.map((item) => ({ type: "clipboardItem", value: item }));
+                return [clipboardItems.map((item) => ({ type: "clipboardItem", value: item })), ""];
             } else if (clipboard.readText) {
                 const item: ReadableDataItem = {
                     type: "string",
                     value: await clipboard.readText()
                 };
-                return [item];
+                return [[item], ""];
             } else {
                 try {
-                    return await new Promise<readonly ReadableDataItem[]>((resolve, reject) => {
+                    return await new Promise<[readonly ReadableDataItem[], string]>((resolve, reject) => {
                         this.clipboardState = ClipboardState.Pending;
                         this.resolveClipboard = resolve;
                         this.rejectClipboard = reject;
@@ -151,50 +149,54 @@ export class InputHelper {
                 }
             }
         }
-        else {
-            throw Error("Read permission not granted for clipboard");
+        catch (ex: unknown) {
+            if (ex instanceof Error && ex.name == "NotAllowedError") {
+                return [[], "denied"]
+            }
+            throw ex;
         }
     }
 
-    public static async writeClipboard(window: Window, source?: WriteableClipboardSource | null): Promise<void> {
-        const { state } = await navigator.permissions.query({ name: 'clipboard-write' as PermissionName })
-        if (state === "granted") {
+    public static async writeClipboard(window: Window, source?: WriteableClipboardSource | null): Promise<string> {
+        try {
             const items = source?.items ?? [];
             if (items.length === 0) {
                 await window.navigator.clipboard.writeText("");
-                return;
+                return "";
             }
 
-            return window.navigator.clipboard.write
-                ? await window.navigator.clipboard.write(items.map(item => new ClipboardItem(item.data)))
-                : await this.writeFirstText(window, items);
+            if (window.navigator.clipboard.write) {
+                await window.navigator.clipboard.write(items.map(item => new ClipboardItem(item.data)))
+            }
+            else {
+                await this.writeFirstText(window, items)
+            }
+
+            return "";
         }
-        else {
-            throw Error("Write permission not granted for clipboard");
+        catch (error: unknown) {
+            if (error instanceof Error && error.name == "NotAllowedError") {
+                return "denied";
+            }
+            throw error;
         }
     }
 
     private static async writeFirstText(window: Window, items: WriteableClipboardItem[]): Promise<void> {
-        const { state } = await navigator.permissions.query({ name: 'clipboard-write' as PermissionName })
-        if (state === "granted") {
-            for (const item of items) {
-                for (const format in item.data) {
-                    if (!format.startsWith("text/")) {
-                        continue;
-                    }
-
-                    let value = item.data[format];
-                    if (typeof value !== "string") {
-                        value = "";
-                    }
-
-                    await window.navigator.clipboard.writeText(value);
-                    return;
+        for (const item of items) {
+            for (const format in item.data) {
+                if (!format.startsWith("text/")) {
+                    continue;
                 }
+
+                let value = item.data[format];
+                if (typeof value !== "string") {
+                    value = "";
+                }
+
+                await window.navigator.clipboard.writeText(value);
+                return;
             }
-        }
-        else {
-            throw Error("Write permission not granted for clipboard");
         }
     }
 
@@ -524,7 +526,7 @@ export class InputHelper {
             };
         }
 
-        return () => {};
+        return () => { };
     }
 
     public static clearInput(inputElement: HTMLInputElement) {

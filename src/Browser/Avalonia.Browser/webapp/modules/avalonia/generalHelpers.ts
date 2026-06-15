@@ -17,6 +17,11 @@ export class GeneralHelpers {
         return item;
     }
 
+    public static itemAtAsString(instance: any, key: any): string {
+        const item = instance[key];
+        return item;
+    }
+
     public static callMethod(instance: any, name: string /*, args */): any {
         const args = Array.prototype.slice.call(arguments, 2);
         return instance[name].apply(instance, args);

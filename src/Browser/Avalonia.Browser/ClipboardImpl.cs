@@ -15,15 +15,13 @@ internal sealed class ClipboardImpl : IClipboardImpl
 {
     public async Task<IAsyncDataTransfer?> TryGetDataAsync()
     {
-        try
+        var arr = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis).ConfigureAwait(false);
+        if (arr.GetArrayItemAsString(1) == "denied")
         {
-            var jsItems = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis).ConfigureAwait(false);
-            return jsItems.GetPropertyAsInt32("length") == 0 ? null : new BrowserClipboardDataTransfer(jsItems);
+            throw new UnauthorizedAccessException("Read permission is not granted for clipboard");
         }
-        catch(JSException ex)
-        {
-            throw new UnauthorizedAccessException(ex.Message);
-        }
+        var items = arr.GetArrayItem(0);
+        return items.GetPropertyAsInt32("length") == 0 ? null : new BrowserClipboardDataTransfer(items);
     }
 
     public async Task SetDataAsync(IAsyncDataTransfer dataTransfer)
@@ -42,14 +40,12 @@ internal sealed class ClipboardImpl : IClipboardImpl
 
     private async Task WriteClipboardAsync(JSObject? source)
     {
-        try
+        // However, ConfigureAwait(false) is fine here: we're not doing anything after.
+        var error = await InputHelper.WriteClipboardAsync(BrowserWindowingPlatform.GlobalThis, source).ConfigureAwait(false);
+
+        if (error == "denied")
         {
-            // However, ConfigureAwait(false) is fine here: we're not doing anything after.
-            await InputHelper.WriteClipboardAsync(BrowserWindowingPlatform.GlobalThis, source).ConfigureAwait(false);
-        }
-        catch (JSException ex)
-        {
-            throw new UnauthorizedAccessException(ex.Message);
+            throw new UnauthorizedAccessException("Write permission is not granted for clipboard");
         }
     }
 

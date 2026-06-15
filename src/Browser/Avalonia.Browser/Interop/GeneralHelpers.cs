@@ -11,7 +11,11 @@ internal static partial class GeneralHelpers
     
     [JSImport("GeneralHelpers.itemAt", AvaloniaModule.MainModuleName)]
     public static partial JSObject ItemAtInt(JSObject jsObject, int key);
+    
+    [JSImport("GeneralHelpers.itemAtAsString", AvaloniaModule.MainModuleName)]
+    public static partial string ItemAtIntAsString(JSObject jsObject, int key);
     public static JSObject GetArrayItem(this JSObject jsObject, int key) => ItemAtInt(jsObject, key);
+    public static string GetArrayItemAsString(this JSObject jsObject, int key) => ItemAtIntAsString(jsObject, key);
     
     [JSImport("GeneralHelpers.itemsArrayAt", AvaloniaModule.MainModuleName)]
     public static partial string[] ItemsArrayAtAsStrings(JSObject jsObject, string key);
