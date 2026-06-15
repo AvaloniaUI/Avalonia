@@ -267,6 +267,7 @@
                                    AutomationProperties.Name="Hexadecimal Color"
                                    Height="32"
                                    MaxLength="9"
+                                   TextInputOptions.IsSpellCheckEnabled="False"
                                    Padding="10,6,6,5"
                                    VerticalContentAlignment="Center"
                                    HorizontalAlignment="Stretch"
