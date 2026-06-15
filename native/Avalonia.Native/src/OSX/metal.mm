@@ -264,7 +264,7 @@ public:
         {
             if(onMainThread)
                 _layer.presentsWithTransaction = NO;
-            ret = nil;
+            *ret = nullptr;
             return E_FAIL;
         }
         *ret = new AvnMetalRenderSession(_device, _layer, drawable, _size, _scaling, onMainThread);
