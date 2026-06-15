@@ -3,7 +3,7 @@ using Avalonia.Controls;
 
 namespace ControlCatalog.Pages
 {
-    public partial class CalendarPage : UserControl
+    public partial class CalendarPage : ContentPage
     {
         public CalendarPage()
         {

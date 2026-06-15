@@ -1,6 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.UnitTests;
@@ -12,11 +15,11 @@ namespace Avalonia.Controls.UnitTests.Platform
     public class DefaultMenuInteractionHandlerTests : ScopedTestBase
     {
         static PointerPressedEventArgs CreatePressed(object source) => new PointerPressedEventArgs(source,
-            new FakePointer(), (Visual)source, default,0, new PointerPointProperties (RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
+            new FakePointer(), (Visual)source, default, 0, new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
             default);
-        
+
         static PointerReleasedEventArgs CreateReleased(object source) => new PointerReleasedEventArgs(source,
-            new FakePointer(), (Visual)source, default,0,
+            new FakePointer(), (Visual)source, default, 0,
             new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased),
             default, MouseButton.Left);
 
@@ -223,6 +226,63 @@ namespace Avalonia.Controls.UnitTests.Platform
                 var e = new KeyEventArgs { Key = Key.Tab, Source = menu };
 
                 target.KeyDown(menu, e);
+            }
+
+            private class MenuItemVM : INotifyPropertyChanged
+            {
+                public bool IsChecked { get; set { field = value; OnPropertyChanged(); } }
+                public bool IsSubMenuOpen { get; set { field = value; OnPropertyChanged(); } }
+
+                public event PropertyChangedEventHandler? PropertyChanged;
+
+                protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "") => PropertyChanged?.Invoke(this, new(propertyName));
+            }
+
+            [Fact]
+            public void Doesnt_Replace_IsChecked_Binding()
+            {
+                var target = new DefaultMenuInteractionHandler(false);
+                var menu = new Menu();
+                var vm = new MenuItemVM();
+
+                var item = new MenuItem
+                {
+                    DataContext = vm,
+                    [!MenuItem.IsCheckedProperty] = new Binding(nameof(MenuItemVM.IsChecked)) { Priority = BindingPriority.Style, Mode = BindingMode.TwoWay },
+                    ToggleType = MenuItemToggleType.CheckBox,
+                };
+                menu.Items.Add(item);
+
+                target.KeyDown(item, new KeyEventArgs { Key = Key.Enter, Source = menu });
+
+                Assert.True(item.IsChecked);
+
+                vm.IsChecked = false;
+
+                Assert.False(item.IsChecked);
+            }
+
+            [Fact]
+            public void Doesnt_Replace_IsSubMenuOpen_Binding()
+            {
+                var target = new DefaultMenuInteractionHandler(false);
+                var menu = new Menu();
+                var vm = new MenuItemVM();
+
+                var item = new MenuItem
+                {
+                    DataContext = vm,
+                    [!MenuItem.IsSubMenuOpenProperty] = new Binding(nameof(MenuItemVM.IsSubMenuOpen)) { Priority = BindingPriority.Style, Mode = BindingMode.TwoWay },
+                    Items = { new MenuItem() }
+                };
+
+                target.KeyDown(item, new KeyEventArgs { Key = Key.Enter, Source = menu });
+
+                Assert.True(item.IsSubMenuOpen);
+
+                vm.IsSubMenuOpen = false;
+
+                Assert.False(item.IsSubMenuOpen);
             }
         }
 

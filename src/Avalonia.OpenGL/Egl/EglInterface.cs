@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Avalonia.Compatibility;
-using Avalonia.Platform;
-using Avalonia.Platform.Interop;
+using System.Text;
 using Avalonia.SourceGenerator;
 
 namespace Avalonia.OpenGL.Egl
@@ -25,9 +23,9 @@ namespace Avalonia.OpenGL.Egl
 
         static Func<string, IntPtr> Load()
         {
-            if(OperatingSystemEx.IsLinux())
+            if(OperatingSystem.IsLinux())
                 return Load("libEGL.so.1");
-            if (OperatingSystemEx.IsAndroid())
+            if (OperatingSystem.IsAndroid())
                 return Load("libEGL.so");
 
             throw new PlatformNotSupportedException();
@@ -35,8 +33,17 @@ namespace Avalonia.OpenGL.Egl
 
         static Func<string, IntPtr> Load(string library)
         {
-            var lib = NativeLibraryEx.Load(library);
-            return (s) => NativeLibraryEx.TryGetExport(lib, s, out var address) ? address : default;
+            var lib = NativeLibrary.Load(library);
+            NativeLibrary.TryGetExport(lib, "eglGetProcAddress", out var getProcAddress);
+            if (getProcAddress == IntPtr.Zero)
+                throw new OpenGlException($"{library} doesn't expose eglGetProcAddress");
+            return s =>
+            {
+                var bytes = new byte[Encoding.UTF8.GetByteCount(s) + 1];
+                Encoding.UTF8.GetBytes(s, bytes.AsSpan().Slice(0, bytes.Length - 1));
+                fixed (byte* ptr = bytes)
+                    return ((delegate* unmanaged[Stdcall]<byte*, IntPtr>)getProcAddress)(ptr);
+            };
         }
 
         // ReSharper disable UnassignedGetOnlyAutoProperty
@@ -61,6 +68,9 @@ namespace Avalonia.OpenGL.Egl
 
         [GetProcAddress("eglBindAPI")]
         public partial bool BindApi(int api);
+
+        [GetProcAddress("eglQueryAPI")]
+        public partial int QueryApi();
 
         [GetProcAddress("eglChooseConfig")]
         public partial bool ChooseConfig(IntPtr display, int[] attribs,

@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
@@ -29,23 +28,30 @@ namespace Avalonia.X11
         }
     }
 
-    internal unsafe class X11IconData : IWindowIconImpl, IFramebufferPlatformSurface
+    internal unsafe class X11IconData : IWindowIconImpl
     {
         private int _width;
         private int _height;
-        private uint[]? _bdata;
+
         public UIntPtr[]  Data { get; }
         
         public X11IconData(Bitmap bitmap)
         {
             _width = Math.Min(bitmap.PixelSize.Width, 128);
             _height = Math.Min(bitmap.PixelSize.Height, 128);
-            _bdata = new uint[_width * _height];
-            using(var cpuContext = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>().CreateBackendContext(null))
-            using(var rt = cpuContext.CreateRenderTarget(new[]{this}))
-            using (var ctx = rt.CreateDrawingContext(true))
-                ctx.DrawBitmap(bitmap.PlatformImpl.Item, 1, new Rect(bitmap.Size),
-                    new Rect(0, 0, _width, _height));
+            var pixels = new uint[_width * _height];
+            var size = new PixelSize(_width, _height);
+
+            using (var rtb = new RenderTargetBitmap(size))
+            {
+                using (var ctx = rtb.CreateDrawingContext(true)) 
+                    ctx.DrawImage(bitmap, new Rect(rtb.Size));
+                
+                fixed (void* pPixels = pixels)
+                    rtb.CopyPixels(new LockedFramebuffer((IntPtr)pPixels, size, _width * 4,
+                        new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul, null));
+            }
+            
             Data = new UIntPtr[_width * _height + 2];
             Data[0] = new UIntPtr((uint)_width);
             Data[1] = new UIntPtr((uint)_height);
@@ -53,10 +59,10 @@ namespace Avalonia.X11
             {
                 var r = y * _width;
                 for (var x = 0; x < _width; x++)
-                    Data[r + x + 2] = new UIntPtr(_bdata[r + x]);
+                    Data[r + x + 2] = new UIntPtr(pixels[r + x]);
             }
 
-            _bdata = null;
+            pixels = null;
         }
 
         public void Save(Stream outputStream)
@@ -78,15 +84,5 @@ namespace Avalonia.X11
                 wr.Save(outputStream);
             }
         }
-
-        public ILockedFramebuffer Lock()
-        {
-            var h = GCHandle.Alloc(_bdata, GCHandleType.Pinned);
-            return new LockedFramebuffer(h.AddrOfPinnedObject(), new PixelSize(_width, _height), _width * 4,
-                new Vector(96, 96), PixelFormat.Bgra8888,
-                () => h.Free());
-        }
-        
-        public IFramebufferRenderTarget CreateFramebufferRenderTarget() => new FuncFramebufferRenderTarget(Lock);
     }
 }

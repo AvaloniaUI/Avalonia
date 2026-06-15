@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.CompilerServices;
+using Avalonia.Logging;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.Fonts.Tables;
 using Avalonia.Media.Fonts.Tables.Cmap;
 using Avalonia.Media.Fonts.Tables.Metrics;
 using Avalonia.Media.Fonts.Tables.Name;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
@@ -36,9 +37,12 @@ namespace Avalonia.Media
         private readonly bool _hasOs2Table;
         private readonly bool _hasHorizontalMetrics;
         private readonly bool _hasVerticalMetrics;
+        private readonly string[] _designLanguages;
+        private readonly string[] _supportedLanguages;
 
         private IReadOnlyList<OpenTypeTag>? _supportedFeatures;
         private ITextShaperTypeface? _textShaperTypeface;
+        private UnicodeRange? _supportedUnicodeRange;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GlyphTypeface"/> class with the specified platform typeface and
@@ -58,6 +62,27 @@ namespace Avalonia.Media
 
             _hasOs2Table = OS2Table.TryLoad(this, out _os2Table);
             _cmapTable = CmapTable.Load(this);
+
+            if (MetaTable.TryLoad(this, out var metaTable))
+            {
+                _designLanguages = metaTable.DesignLanguages;
+                _supportedLanguages = metaTable.SupportedLanguages;
+            }
+            else
+            {
+                _designLanguages = Array.Empty<string>();
+                _supportedLanguages = Array.Empty<string>();
+            }
+
+            if (_hasOs2Table && _os2Table.Version >= 1)
+            {
+                CodePageCoverage = (FontCodePageCoverage)(
+                    _os2Table.CodePageRange1 | ((ulong)_os2Table.CodePageRange2 << 32));
+            }
+            else
+            {
+                CodePageCoverage = FontCodePageCoverage.None;
+            }
 
             var maxpTable = MaxpTable.Load(this);
 
@@ -114,15 +139,19 @@ namespace Avalonia.Media
 
             HeadTable.TryLoad(this, out var headTable);
 
+            IsLastResort = (headTable is not null && (headTable.Flags & HeadFlags.LastResortFont) != 0) ||
+                           _cmapTable.Format == CmapFormat.Format13;
+
             var postTable = PostTable.Load(this);
 
             var isFixedPitch = postTable.IsFixedPitch;
             var underlineOffset = postTable.UnderlinePosition;
             var underlineSize = postTable.UnderlineThickness;
+            var designEmHeight = GetFontDesignEmHeight(headTable);
 
             Metrics = new FontMetrics
             {
-                DesignEmHeight = headTable?.UnitsPerEm ?? 0,
+                DesignEmHeight = designEmHeight,
                 Ascent = ascent,
                 Descent = descent,
                 LineGap = lineGap,
@@ -222,6 +251,37 @@ namespace Avalonia.Media
             }
         }
 
+        private static ushort GetFontDesignEmHeight(HeadTable? headTable)
+        {
+            var unitsPerEm = headTable?.UnitsPerEm ?? 0;
+
+            // Bitmap fonts may specify 0 or miss the head table completely.
+            // Use 2048 as sensible default (used by most fonts).
+            if (unitsPerEm == 0)
+                unitsPerEm = 2048;
+
+            return unitsPerEm;
+        }
+
+        internal static GlyphTypeface? TryCreate(IPlatformTypeface typeface, FontSimulations fontSimulations = FontSimulations.None)
+        {
+            try
+            {
+                return new GlyphTypeface(typeface, fontSimulations);
+            }
+            catch (Exception ex)
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Fonts)?.Log(
+                    null,
+                    "Could not create glyph typeface from platform typeface named {FamilyName} with simulations {Simulations}: {Exception}",
+                    typeface.FamilyName,
+                    fontSimulations,
+                    ex);
+
+                return null;
+            }
+        }
+
         /// <summary>
         /// Gets the family name of the font.
         /// </summary>
@@ -308,6 +368,201 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Gets the union of Unicode codepoint ranges covered by the font's character map.
+        /// </summary>
+        /// <remarks>
+        /// The returned <see cref="UnicodeRange"/> is derived from the cmap table and represents every
+        /// codepoint for which the font defines a glyph. It is computed lazily on first access and cached
+        /// for the lifetime of the <see cref="GlyphTypeface"/>. Prefer this property over enumerating
+        /// <see cref="CharacterToGlyphMap"/> when only coverage information (not glyph IDs) is required.
+        /// </remarks>
+        public UnicodeRange SupportedUnicodeRange
+        {
+            get
+            {
+                if (_supportedUnicodeRange.HasValue)
+                {
+                    return _supportedUnicodeRange.Value;
+                }
+
+                _supportedUnicodeRange = BuildSupportedUnicodeRange();
+
+                return _supportedUnicodeRange.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the codepage coverage advertised by the font via the OpenType
+        /// <c>OS/2.ulCodePageRange1/2</c> bitfields.
+        /// </summary>
+        /// <remarks>
+        /// Returns <see cref="FontCodePageCoverage.None"/> when the font does not ship an OS/2 table
+        /// or only supplies an OS/2 version &lt; 1 (where the codepage range fields are not present).
+        /// </remarks>
+        public FontCodePageCoverage CodePageCoverage { get; }
+
+        /// <summary>
+        /// Gets the BCP-47 language tags the font's designer declared as the design target for the
+        /// font (the <c>dlng</c> data tag in the OpenType <c>meta</c> table).
+        /// </summary>
+        /// <remarks>
+        /// Returns an empty span when the font does not ship a <c>meta</c> table or omits the
+        /// <c>dlng</c> data tag.
+        /// </remarks>
+        public ReadOnlySpan<string> DesignLanguages => _designLanguages;
+
+        /// <summary>
+        /// Gets the BCP-47 language tags the font advertises as supported (the <c>slng</c> data tag
+        /// in the OpenType <c>meta</c> table).
+        /// </summary>
+        /// <remarks>
+        /// Returns an empty span when the font does not ship a <c>meta</c> table or omits the
+        /// <c>slng</c> data tag.
+        /// </remarks>
+        public ReadOnlySpan<string> SupportedLanguages => _supportedLanguages;
+
+        /// <summary>
+        /// Determines whether this font self-declares coverage for the supplied culture via its
+        /// OpenType <c>meta</c> table <c>dlng</c> or <c>slng</c> tag list.
+        /// </summary>
+        /// <param name="culture">
+        /// The culture to check. If <c>null</c> the method returns <c>false</c>.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> when one of the declared language tags is a BCP-47 prefix of the culture's
+        /// <see cref="CultureInfo.Name"/> (or vice versa, when the font specifies a narrower tag).
+        /// </returns>
+        /// <remarks>
+        /// The match is case-insensitive and BCP-47-aware: the comparison succeeds when one tag is
+        /// a prefix of the other up to a subtag boundary (e.g. <c>"ja"</c> matches <c>"ja-JP"</c>,
+        /// and <c>"zh-Hans"</c> matches <c>"zh-Hans-CN"</c>). Returns <c>false</c> when the font
+        /// declares no design or supported languages.
+        /// </remarks>
+        public bool DeclaresLanguageCoverage(CultureInfo? culture)
+        {
+            if (culture == null || culture == CultureInfo.InvariantCulture)
+            {
+                return false;
+            }
+
+            if (_designLanguages.Length == 0 && _supportedLanguages.Length == 0)
+            {
+                return false;
+            }
+
+            var name = culture.Name;
+
+            if (string.IsNullOrEmpty(name))
+            {
+                return false;
+            }
+
+            return MatchesAny(_designLanguages, name) || MatchesAny(_supportedLanguages, name);
+
+            static bool MatchesAny(string[] tags, string cultureName)
+            {
+                foreach (var tag in tags)
+                {
+                    if (IsBcp47PrefixMatch(tag, cultureName))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        private static bool IsBcp47PrefixMatch(string tag, string cultureName)
+        {
+            // Either side may be the narrower one — match if one is a subtag-prefix of the other.
+            return IsPrefix(tag, cultureName) || IsPrefix(cultureName, tag);
+
+            static bool IsPrefix(string prefix, string candidate)
+            {
+                if (prefix.Length == 0 || prefix.Length > candidate.Length)
+                {
+                    return false;
+                }
+
+                if (!candidate.AsSpan(0, prefix.Length).Equals(prefix.AsSpan(), StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // Either exact match, or the next character is a subtag separator.
+                return prefix.Length == candidate.Length
+                    || candidate[prefix.Length] == '-'
+                    || candidate[prefix.Length] == '_';
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the font advertises support for the supplied Unicode script.
+        /// </summary>
+        /// <remarks>
+        /// When the font ships an OS/2 table the answer is taken from the OS/2 ulUnicodeRange bitfield
+        /// (the font's own self-declaration of script coverage). When OS/2 is absent or the bit is unset,
+        /// this falls back to probing the cmap with a representative codepoint for the script. Returns
+        /// <c>true</c> for scripts that don't have a meaningful per-script signal (for example
+        /// <see cref="Script.Common"/> or <see cref="Script.Unknown"/>).
+        /// </remarks>
+        public bool SupportsScript(Script script)
+        {
+            // For scripts we don't track per-script, treat the font as supporting them — the cmap
+            // is still the final authority via TryGetGlyph at the call site.
+            if (!FontFallbackScriptHints.TryGetOS2Bit(script, out var bit) &&
+                FontFallbackScriptHints.GetProbeCodepoint(script) == 0)
+            {
+                return true;
+            }
+
+            if (_hasOs2Table && bit >= 0)
+            {
+                var range = bit switch
+                {
+                    < 32 => _os2Table.UnicodeRange1,
+                    < 64 => _os2Table.UnicodeRange2,
+                    < 96 => _os2Table.UnicodeRange3,
+                    _ => _os2Table.UnicodeRange4,
+                };
+
+                if ((range & (1u << (bit & 31))) != 0)
+                {
+                    return true;
+                }
+            }
+
+            var probe = FontFallbackScriptHints.GetProbeCodepoint(script);
+
+            if (probe != 0 && _cmapTable.TryGetGlyph(probe, out _))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private UnicodeRange BuildSupportedUnicodeRange()
+        {
+            var segments = new List<UnicodeRangeSegment>();
+            var enumerator = _cmapTable.GetMappedRanges();
+
+            while (enumerator.MoveNext())
+            {
+                var range = enumerator.Current;
+                segments.Add(new UnicodeRangeSegment(range.Start, range.End));
+            }
+
+            if (segments.Count == 0)
+            {
+                return new UnicodeRange(0, -1);
+            }
+
+            return new UnicodeRange(segments);
+        }
+
+        /// <summary>
         /// Gets the platform-specific typeface associated with this font.
         /// </summary>
         public IPlatformTypeface PlatformTypeface { get; }
@@ -334,6 +589,11 @@ namespace Avalonia.Media
                 return _textShaperTypeface;
             }
         }
+
+        /// <summary>
+        /// Gets whether the font should be used as a last resort, if no other fonts matched.
+        /// </summary>
+        internal bool IsLastResort { get; }
 
         /// <summary>
         /// Attempts to retrieve the horizontal advance width for the specified glyph.

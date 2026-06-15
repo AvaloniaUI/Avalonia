@@ -6,12 +6,14 @@
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\UnitTests.NetFX.props" />
-  <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\XUnit.props" />
-  <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
   <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\NullableEnable.props" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Reactive.Testing" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="System.Reactive" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Fonts.Inter\Avalonia.Fonts.Inter.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml.Loader\Avalonia.Markup.Xaml.Loader.csproj" />
@@ -38,6 +40,16 @@
       <Link>PlatformFactAttribute.cs</Link>
     </Compile>
     <Compile Include="../Shared/ScopedSanityCheck.cs"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="xunit.runner.console" Version="2.9.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Update="xunit.runner.visualstudio" Version="2.8.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

@@ -1,5 +1,6 @@
 using System;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 
 namespace Avalonia.OpenGL.Egl
 {
@@ -8,7 +9,7 @@ namespace Avalonia.OpenGL.Egl
         public abstract IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context);
     }
 
-    public abstract class EglPlatformSurfaceRenderTargetBase : IGlPlatformSurfaceRenderTargetWithCorruptionInfo
+    public abstract class EglPlatformSurfaceRenderTargetBase : IGlPlatformSurfaceRenderTarget
     {
         protected EglContext Context { get; }
 
@@ -22,17 +23,17 @@ namespace Avalonia.OpenGL.Egl
             
         }
 
-        public IGlPlatformSurfaceRenderingSession BeginDraw()
+        public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
             if (Context.IsLost)
                 throw new RenderTargetCorruptedException();
             
-            return BeginDrawCore();
+            return BeginDrawCore(sceneInfo);
         }
 
         private protected virtual bool SkipWaits => false;
 
-        public abstract IGlPlatformSurfaceRenderingSession BeginDrawCore();
+        public abstract IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo);
 
         protected IGlPlatformSurfaceRenderingSession BeginDraw(EglSurface surface,
             PixelSize size, double scaling, Action? onFinish = null, bool isYFlipped = false)
@@ -109,6 +110,9 @@ namespace Avalonia.OpenGL.Egl
             public bool IsYFlipped { get; }
         }
 
+        public virtual PlatformRenderTargetState State =>
+            IsCorrupted ? PlatformRenderTargetState.Corrupted : PlatformRenderTargetState.Ready;
+        
         public virtual bool IsCorrupted => Context.IsLost;
     }
 }

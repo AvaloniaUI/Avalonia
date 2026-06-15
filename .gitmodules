@@ -1,6 +1,6 @@
-[submodule "Numerge"]
-	path = external/Numerge
-	url = https://github.com/kekekeks/Numerge.git
 [submodule "XamlX"]
 	path = external/XamlX
 	url = https://github.com/kekekeks/XamlX.git
+[submodule "Avalonia.DBus"]
+	path = external/Avalonia.DBus
+	url = https://github.com/AvaloniaUI/Avalonia.DBus.git

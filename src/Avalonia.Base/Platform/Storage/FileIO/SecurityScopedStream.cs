@@ -40,12 +40,10 @@ internal sealed class SecurityScopedStream(FileStream _stream, IDisposable _secu
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
         _stream.ReadAsync(buffer, offset, count, cancellationToken);
 
-#if NET6_0_OR_GREATER
     public override int Read(Span<byte> buffer) => _stream.Read(buffer);
 
     public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
         _stream.ReadAsync(buffer, cancellationToken);
-#endif
 
     public override void Write(byte[] buffer, int offset, int count) =>
         _stream.Write(buffer, offset, count);
@@ -53,12 +51,10 @@ internal sealed class SecurityScopedStream(FileStream _stream, IDisposable _secu
     public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
         _stream.WriteAsync(buffer, offset, count, cancellationToken);
 
-#if NET6_0_OR_GREATER
     public override void Write(ReadOnlySpan<byte> buffer) => _stream.Write(buffer);
 
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) =>
         _stream.WriteAsync(buffer, cancellationToken);
-#endif
 
     public override void WriteByte(byte value) => _stream.WriteByte(value);
 
@@ -68,9 +64,7 @@ internal sealed class SecurityScopedStream(FileStream _stream, IDisposable _secu
     public override void SetLength(long value) =>
         _stream.SetLength(value);
 
-#if NET6_0_OR_GREATER
     public override void CopyTo(Stream destination, int bufferSize) => _stream.CopyTo(destination, bufferSize);
-#endif
 
     public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken) =>
         _stream.CopyToAsync(destination, bufferSize, cancellationToken);
@@ -100,7 +94,6 @@ internal sealed class SecurityScopedStream(FileStream _stream, IDisposable _secu
         }
     }
 
-#if NET6_0_OR_GREATER
     public override async ValueTask DisposeAsync()
     {
         try
@@ -112,5 +105,4 @@ internal sealed class SecurityScopedStream(FileStream _stream, IDisposable _secu
             _securityScope.Dispose();
         }
     }
-#endif
 }

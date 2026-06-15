@@ -49,7 +49,7 @@ internal struct CompositorResourceHolder<T> where T : SimpleServerObject
 
     public bool IsAttached => _dictionary.HasEntries;
     
-    public bool CreateOrAddRef(Compositor compositor, ICompositorSerializable owner, out T resource, Func<Compositor, T> factory)
+    public bool CreateOrAddRef(Compositor compositor, ICompositorSerializable? owner, out T resource, Func<Compositor, T> factory)
     {
         if (_dictionary.TryGetValue(compositor, out var handle))
         {
@@ -60,7 +60,8 @@ internal struct CompositorResourceHolder<T> where T : SimpleServerObject
 
         resource = factory(compositor);
         _dictionary.Add(compositor, new CompositorRefCountableResource<T>(resource));
-        compositor.RegisterForSerialization(owner);
+        if (owner != null)
+            compositor.RegisterForSerialization(owner);
         return true;
     }
 

@@ -49,7 +49,7 @@ namespace ControlCatalog.ViewModels
 
         public async Task Open()
         {
-            var window = View?.GetVisualRoot() as Window;
+            var window = TopLevel.GetTopLevel(View) as Window;
             if (window == null)
                 return;
 

@@ -1,6 +1,7 @@
 //This file will contain actual IID structures
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
+#include "menu.h"
 
 static NSString* s_appTitle = @"Avalonia";
 static int disableSetProcessName = 0;
@@ -475,14 +476,24 @@ public:
         return *ppv != nullptr ? S_OK : E_FAIL;
     }
     
-    HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement **ppv) override { 
+    HRESULT CreateMemoryManagementHelper(IAvnNativeObjectsMemoryManagement **ppv) override {
         START_COM_CALL;
         *ppv = ::CreateMemoryManagementHelper();
         return S_OK;
     }
-    
-    
-    
+
+    virtual HRESULT SetDockMenu(IAvnMenu* dockMenu) override
+    {
+        START_COM_CALL;
+
+        @autoreleasepool
+        {
+            auto nativeMenu = dynamic_cast<AvnAppMenu*>(dockMenu);
+            ::SetDockMenu(nativeMenu != nullptr ? nativeMenu->GetNative() : nil);
+            return S_OK;
+        }
+    }
+
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()

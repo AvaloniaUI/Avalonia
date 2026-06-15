@@ -173,8 +173,11 @@ namespace Avalonia.Native
             _context = context;
         }
 
-        public IGlPlatformSurfaceRenderingSession BeginDraw()
+        public PlatformRenderTargetState State => PlatformRenderTargetState.Ready;
+
+        public IGlPlatformSurfaceRenderingSession BeginDraw(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
+            // TODO: use expectedPixelSize
             ObjectDisposedException.ThrowIf(_target is null, this);
             return new GlPlatformSurfaceRenderingSession(_context, _target.BeginDrawing());
         }
@@ -261,7 +264,7 @@ namespace Avalonia.Native
             {
                 // We are reversing bytes to match MoltenVK (LUID is a Vulkan term after all)
                 var bytes = BitConverter.GetBytes(registryId);
-                bytes.Reverse();
+                bytes.AsSpan().Reverse();
                 DeviceLuid = bytes;
             }
         }

@@ -24,7 +24,7 @@
             <Label Margin="5"
                    Foreground="Red"
                    VerticalAlignment="Bottom"
-                   HorizontalContentAlignment="Right">View Bounds</Label>                
+                   HorizontalContentAlignment="Right">View Bounds</Label>
             </Grid>
         </Border>
         <Border BorderBrush="LimeGreen"
@@ -47,7 +47,7 @@
                         <CheckBox IsChecked="{Binding UseSafeArea}" IsEnabled="{Binding !AutoSafeAreaPadding}">Use Safe Area</CheckBox>
                         <CheckBox IsChecked="{Binding AutoSafeAreaPadding}">Automatic Paddings</CheckBox>
                         <CheckBox IsChecked="{Binding HideSystemBars}">Hide System Bars</CheckBox>
-                        <TextBox Width="200" Watermark="Tap to Show Keyboard"/>
+                         <TextBox Width="200" PlaceholderText="Tap to Show Keyboard"/>
                     </StackPanel>
                 </Grid>
             </DockPanel>

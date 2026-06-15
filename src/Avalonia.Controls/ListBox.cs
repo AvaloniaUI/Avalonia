@@ -128,7 +128,7 @@ namespace Avalonia.Controls
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
+            var hotkeys = this.GetPlatformSettings()?.HotkeyConfiguration;
             var ctrl = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
 
             if (!ctrl &&

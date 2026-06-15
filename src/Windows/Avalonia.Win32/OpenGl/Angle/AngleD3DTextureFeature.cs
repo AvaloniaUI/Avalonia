@@ -2,13 +2,15 @@ using System.Runtime.InteropServices;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Win32.DirectX;
 
 namespace Avalonia.Win32.OpenGl.Angle;
 
 internal class AngleD3DTextureFeature  : IGlPlatformSurfaceRenderTargetFactory
 {
-    public bool CanRenderToSurface(IGlContext context, object surface) =>
+    public bool CanRenderToSurface(IGlContext context, IPlatformRenderSurface surface) =>
         context is EglContext
         {
             Display: AngleWin32EglDisplay { PlatformApi: AngleOptions.PlatformApi.DirectX11 }
@@ -27,8 +29,9 @@ internal class AngleD3DTextureFeature  : IGlPlatformSurfaceRenderTargetFactory
             _target = target;
         }
 
-        public override IGlPlatformSurfaceRenderingSession BeginDrawCore()
+        public override IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo)
         {
+            // TODO: use expectedPixelSize
             var success = false;
             var contextLock = Context.EnsureCurrent();
             IDirect3D11TextureRenderTargetRenderSession? session = null;
@@ -80,10 +83,11 @@ internal class AngleD3DTextureFeature  : IGlPlatformSurfaceRenderTargetFactory
             base.Dispose();
         }
 
-        public override bool IsCorrupted => _target.IsCorrupted || base.IsCorrupted;
+        public override PlatformRenderTargetState State =>
+            base.IsCorrupted ? PlatformRenderTargetState.Corrupted : _target.State;
     }
     
-    public IGlPlatformSurfaceRenderTarget CreateRenderTarget(IGlContext context, object surface)
+    public IGlPlatformSurfaceRenderTarget CreateRenderTarget(IGlContext context, IPlatformRenderSurface surface)
     {
         var ctx = (EglContext)context;
         var angle = (AngleWin32EglDisplay)ctx.Display;

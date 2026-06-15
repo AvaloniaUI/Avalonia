@@ -136,7 +136,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
                         try
                         {
                             var targetType = method.Parameters.Last();
-                            if (targetType.FullName == "System.Type")
+                            if (targetType.Is("System", "Type"))
                             {
                                 if (option is IXamlType typeOption)
                                 {

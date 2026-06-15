@@ -10,7 +10,7 @@ namespace Avalonia.Rendering
     /// Defines the interface for a renderer.
     /// </summary>
     [PrivateApi]
-    public interface IRenderer : IDisposable
+    internal interface IRenderer : IDisposable
     {
         /// <summary>
         /// Gets a value indicating whether the renderer should draw specific diagnostics.
@@ -75,7 +75,7 @@ namespace Avalonia.Rendering
     }
 
     [PrivateApi]
-    public interface IHitTester
+    internal interface IHitTester
     {
         /// <summary>
         /// Hit tests a location to find the visuals at the specified point.
@@ -84,7 +84,7 @@ namespace Avalonia.Rendering
         /// <para>⚠️ This method is low-level and <b>DOES NOT respect <see cref="Input.InputElement.IsHitTestVisible"/></b>.</para>
         /// <para>Use  <see cref="Input.InputExtensions"/> to perform input hit testing, or provide your own <paramref name="filter"/> function.</para>
         /// </remarks>
-        /// <param name="p">The point, in client coordinates.</param>
+        /// <param name="p">The point, in coordinates relative to <paramref name="root"/>.</param>
         /// <param name="root">The root of the subtree to search.</param>
         /// <param name="filter">
         /// A filter predicate. If the predicate returns false then the visual and all its

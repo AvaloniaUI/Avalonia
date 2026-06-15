@@ -343,6 +343,8 @@ namespace Avalonia.OpenGL
         [GetProcAddress("glUniform1f")]
         public partial void Uniform1f(int location, float falue);
 
+        [GetProcAddress("glUniform1i")]
+        public partial void Uniform1i(int location, int value);
 
         [GetProcAddress("glUniformMatrix4fv")]
         public partial void UniformMatrix4fv(int location, int count, bool transpose, void* value);

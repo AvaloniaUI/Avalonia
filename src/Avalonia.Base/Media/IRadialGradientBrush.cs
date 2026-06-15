@@ -20,8 +20,6 @@ namespace Avalonia.Media
         /// </summary>
         RelativePoint GradientOrigin { get; }
 
-        [Obsolete("Use RadiusX/RadiusY")] public double Radius { get; }
-
         /// <summary>
         /// Gets the horizontal radius of the outermost circle of the radial gradient.
         /// </summary>

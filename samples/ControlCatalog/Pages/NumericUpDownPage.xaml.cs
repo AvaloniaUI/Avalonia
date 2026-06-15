@@ -9,7 +9,7 @@ using MiniMvvm;
 
 namespace ControlCatalog.Pages
 {
-    public partial class NumericUpDownPage : UserControl
+    public partial class NumericUpDownPage : ContentPage
     {
         public NumericUpDownPage()
         {

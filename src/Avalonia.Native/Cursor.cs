@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Avalonia.Input;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Native.Interop;
 
@@ -40,7 +41,7 @@ namespace Avalonia.Native
             return new AvaloniaNativeCursor( cursor );
         }
 
-        public unsafe ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        public unsafe ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot)
         {
             using(var ms = new MemoryStream())
             {

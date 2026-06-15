@@ -14,6 +14,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 
@@ -132,7 +133,7 @@ namespace Avalonia.Browser
         public Size? FrameSize => null;
         public double RenderScaling => _surface?.Scaling ?? 1;
 
-        public IEnumerable<object> Surfaces => _surface?.GetRenderSurfaces() ?? [];
+        public IPlatformRenderSurface[] Surfaces => _surface?.GetRenderSurfaces() ?? [];
 
         public Action<RawInputEventArgs>? Input { get; set; }
         public Action<Rect>? Paint { get; set; }

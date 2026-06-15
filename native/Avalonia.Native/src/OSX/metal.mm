@@ -87,11 +87,12 @@ public:
         return (__bridge void*) queue;
     }
     
-    HRESULT ImportIOSurface(void *handle, AvnPixelFormat pixelFormat, IAvnMetalTexture **ppv) override { 
+    HRESULT ImportIOSurface(void *handle, AvnPixelFormat pixelFormat, IAvnMetalTexture **ppv) override {
+        START_COM_ARP_CALL;
         auto surf = (IOSurfaceRef)handle;
         auto width = IOSurfaceGetWidth(surf);
         auto height = IOSurfaceGetHeight(surf);
-        
+
         auto desc = [MTLTextureDescriptor new];
         if(pixelFormat == kAvnRgba8888)
             desc.pixelFormat = MTLPixelFormatRGBA8Unorm;
@@ -106,13 +107,12 @@ public:
         desc.mipmapLevelCount = 1;
         desc.sampleCount = 1;
         desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
-        
+
         auto texture = [device newTextureWithDescriptor:desc iosurface:surf plane:0];
         if(texture == nullptr)
             return E_FAIL;
         *ppv = new AvnMetalTexture(texture);
         return S_OK;
-        
     }
     
     HRESULT ImportSharedEvent(void *mtlSharedEventInstance, IAvnMTLSharedEvent**ppv) override {
@@ -132,11 +132,12 @@ public:
     
     HRESULT SignalOrWait(IAvnMTLSharedEvent *ev, uint64_t value, bool wait)
     {
+        START_ARP_CALL;
         if (@available(macOS 12.0, *))
         {
             auto e = dynamic_cast<AvnMTLSharedEvent*>(ev);
             if(e == nullptr)
-                return E_FAIL;;
+                return E_FAIL;
             auto buf = [queue commandBuffer];
             if(wait)
                 [buf encodeWaitForEvent:e->GetEvent() value:value];
@@ -204,6 +205,7 @@ public:
 
     ~AvnMetalRenderSession()
     {
+        START_ARP_CALL;
         auto buffer = [_queue commandBuffer];
         [buffer presentDrawable: _drawable];
         [buffer commit];
@@ -227,6 +229,7 @@ public:
     }
 
     HRESULT BeginDrawing(IAvnMetalRenderingSession **ret) override {
+        START_COM_ARP_CALL;
         if([NSThread isMainThread])
         {
             // Flush all existing rendering
@@ -289,7 +292,7 @@ class AvnMetalDisplay : public ComSingleObject<IAvnMetalDisplay, &IID_IAvnMetalD
 public:
     FORWARD_IUNKNOWN()
     HRESULT CreateDevice(IAvnMetalDevice **ret) override {
-
+        START_COM_ARP_CALL;
         auto device = MTLCreateSystemDefaultDevice();
         if(device == nil) {
             ret = nil;
@@ -301,7 +304,7 @@ public:
     }
 };
 
-static AvnMetalDisplay* _display = new AvnMetalDisplay();
+static ComStaticPtr<AvnMetalDisplay> _display(comnew<AvnMetalDisplay>());
 
 extern IAvnMetalDisplay* GetMetalDisplay()
 {

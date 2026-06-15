@@ -1,14 +1,15 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Threading;
@@ -145,6 +146,8 @@ namespace Avalonia.Controls.Primitives
         private int _oldSelectedIndex;
         private WeakReference _oldSelectedItem = new(null);
         private WeakReference<IList?> _oldSelectedItems = new(null);
+        private readonly List<object?> _selectedItemsSnapshot = new();
+        private object?[]? _selectedItemsBeforeReset;
         private bool _ignoreContainerSelectionChanged;
         private UpdateState? _updateState;
         private bool _hasScrolledToSelectedItem;
@@ -153,7 +156,9 @@ namespace Avalonia.Controls.Primitives
 
         public SelectingItemsControl()
         {
-            ((ItemCollection)ItemsView).SourceChanged += OnItemsViewSourceChanged;
+            var items = (ItemCollection)ItemsView;
+            items.SourceChanged += OnItemsViewSourceChanged;
+            items.PreCollectionChanged += OnItemsViewPreCollectionChanged;
         }
 
         /// <summary>
@@ -462,6 +467,14 @@ namespace Avalonia.Controls.Primitives
             if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
             {
                 SelectedIndex = 0;
+            }
+        }
+
+        private void OnItemsViewPreCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset && _selectedItemsSnapshot.Count > 0)
+            {
+                _selectedItemsBeforeReset = _selectedItemsSnapshot.ToArray();
             }
         }
 
@@ -896,12 +909,17 @@ namespace Avalonia.Controls.Primitives
             {
                 case PointerEventArgs pointerEvent when ShouldTriggerSelection(container, pointerEvent):
                 case KeyEventArgs keyEvent when ShouldTriggerSelection(container, keyEvent):
-                case GotFocusEventArgs:
+                case FocusChangedEventArgs:
                     UpdateSelection(containerIndex, true,
                         ItemSelectionEventTriggers.HasRangeSelectionModifier(container, eventArgs),
                         ItemSelectionEventTriggers.HasToggleSelectionModifier(container, eventArgs),
                         eventArgs is PointerEventArgs { Properties.IsRightButtonPressed: true },
-                        eventArgs is GotFocusEventArgs);
+                        eventArgs is FocusChangedEventArgs);
+
+                    if(eventArgs is PointerEventArgs)
+                    {
+                        container.PerformFeedback(FeedbackAction.Click);
+                    }
 
                     eventArgs.Handled = true;
                     return true;
@@ -1013,16 +1031,11 @@ namespace Avalonia.Controls.Primitives
                 UpdateSelectedValueFromItem();
             }
 
-            var route = BuildEventRoute(SelectionChangedEvent);
+            _selectedItemsSnapshot.Clear();
+            _selectedItemsSnapshot.AddRange(Selection.SelectedItems);
+            _selectedItemsBeforeReset = null;
 
-            if (route.HasHandlers)
-            {
-                var ev = new SelectionChangedEventArgs(
-                    SelectionChangedEvent,
-                    e.DeselectedItems.ToArray(),
-                    e.SelectedItems.ToArray());
-                RaiseEvent(ev);
-            }
+            RaiseSelectionChanged(e.DeselectedItems, e.SelectedItems);
         }
 
         /// <summary>
@@ -1033,9 +1046,34 @@ namespace Avalonia.Controls.Primitives
         /// <param name="e">The event args.</param>
         private void OnSelectionModelLostSelection(object? sender, EventArgs e)
         {
+            if (_selectedItemsBeforeReset?.Length > 0)
+            {
+                RaiseSelectionChanged(_selectedItemsBeforeReset, Array.Empty<object?>());
+            }
+
+            _selectedItemsBeforeReset = null;
+
             if (AlwaysSelected && ItemsView.Count > 0)
             {
                 SelectedIndex = 0;
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="SelectionChangedEvent"/> if there are registered handlers.
+        /// </summary>
+        /// <param name="removedItems">The items removed from the selection.</param>
+        /// <param name="addedItems">The items added to the selection.</param>
+        private void RaiseSelectionChanged(IReadOnlyList<object?> removedItems, IReadOnlyList<object?> addedItems)
+        {
+            var route = BuildEventRoute(SelectionChangedEvent);
+
+            if (route.HasHandlers)
+            {
+                RaiseEvent(new SelectionChangedEventArgs(
+                    SelectionChangedEvent,
+                    removedItems as IList ?? removedItems.ToArray(),
+                    addedItems as IList ?? addedItems.ToArray()));
             }
         }
 
@@ -1248,6 +1286,8 @@ namespace Avalonia.Controls.Primitives
 
             _oldSelectedIndex = model.SelectedIndex;
             _oldSelectedItem.Target = model.SelectedItem;
+            _selectedItemsSnapshot.Clear();
+            _selectedItemsSnapshot.AddRange(model.SelectedItems);
 
             if (_updateState is null && AlwaysSelected && model.Count == 0)
             {

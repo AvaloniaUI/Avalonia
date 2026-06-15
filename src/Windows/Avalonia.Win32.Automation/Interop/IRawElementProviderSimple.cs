@@ -307,21 +307,14 @@ internal enum UiaLiveSetting
     Assertive,
 };
 
-#if NET8_0_OR_GREATER
 [GeneratedComInterface]
-#else
-[ComImport()]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-#endif
 [Guid("d6dd68d1-86fd-4332-8666-9abedea2d24c")]
 internal partial interface IRawElementProviderSimple
 {
     ProviderOptions GetProviderOptions();
     [return: MarshalAs(UnmanagedType.Interface)]
     object? GetPatternProvider(int patternId);
-#if NET8_0_OR_GREATER
     [return: MarshalUsing(typeof(ComVariantMarshaller))]
-#endif
     object? GetPropertyValue(int propertyId);
     IRawElementProviderSimple? GetHostRawElementProvider();
 }

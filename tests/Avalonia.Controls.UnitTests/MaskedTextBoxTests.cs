@@ -1002,17 +1002,8 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class TestTopLevel : TopLevel
+        private class TestTopLevel(ITopLevelImpl impl) : TopLevel(impl)
         {
-            private readonly ILayoutManager _layoutManager;
-
-            public TestTopLevel(ITopLevelImpl impl, ILayoutManager? layoutManager = null)
-                : base(impl)
-            {
-                _layoutManager = layoutManager ?? new LayoutManager(this);
-            }
-
-            private protected override ILayoutManager CreateLayoutManager() => _layoutManager;
         }
 
         private static Mock<ITopLevelImpl> CreateMockTopLevelImpl()

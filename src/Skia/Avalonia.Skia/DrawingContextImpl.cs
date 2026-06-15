@@ -170,8 +170,7 @@ namespace Avalonia.Skia
                 public ISkiaSharpPlatformGraphicsApiLease? TryLeasePlatformGraphicsApi()
                 {
                     CheckLease();
-                    if (_context._gpu is ISkiaGpuWithPlatformGraphicsContext gpu &&
-                        gpu.PlatformGraphicsContext is { } context)
+                    if (_context._gpu?.PlatformGraphicsContext is { } context)
                         return new PlatformApiLease(this, context);
                     return null;
                 }
@@ -642,7 +641,7 @@ namespace Avalonia.Skia
         public IDrawingContextLayerImpl CreateLayer(PixelSize size)
         {
             CheckLease();
-            return CreateRenderTarget(size, true);
+            return CreateRenderTarget(size, true, false);
         }
 
         /// <inheritdoc />
@@ -1093,11 +1092,11 @@ namespace Avalonia.Skia
         {
             var calc = new TileBrushCalculator(tileBrush, tileBrushImage.PixelSize.ToSizeWithDpi(_intermediateSurfaceDpi), targetBox.Size);
             var intermediate = CreateRenderTarget(
-                PixelSize.FromSizeWithDpi(calc.IntermediateSize, _intermediateSurfaceDpi), false);
+                PixelSize.FromSizeWithDpi(calc.IntermediateSize, _intermediateSurfaceDpi), false, true);
 
             paintWrapper.AddDisposable(intermediate);
 
-            using (var context = intermediate.CreateDrawingContext(true))
+            using (var context = intermediate.CreateDrawingContext())
             {
                 var sourceRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(96));
                 var targetRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(_intermediateSurfaceDpi));
@@ -1185,9 +1184,9 @@ namespace Avalonia.Skia
             if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
             {
                 using var intermediate = CreateRenderTarget(
-                    PixelSize.FromSizeWithDpi(intermediateSize, _intermediateSurfaceDpi), false);
+                    PixelSize.FromSizeWithDpi(intermediateSize, _intermediateSurfaceDpi), false, true);
 
-                using (var ctx = intermediate.CreateDrawingContext(true))
+                using (var ctx = intermediate.CreateDrawingContext())
                 {
                     ctx.PushRenderOptions(RenderOptions);
                     ctx.Clear(Colors.Transparent);
@@ -1488,9 +1487,10 @@ namespace Avalonia.Skia
         /// </summary>
         /// <param name="pixelSize">The size of the render target.</param>
         /// <param name="isLayer">Whether the render target is being created for a layer.</param>
+        /// <param name="useScaledDrawing">Auto-scales to DPI</param>
         /// <param name="format">Pixel format.</param>
         /// <returns></returns>
-        private SurfaceRenderTarget CreateRenderTarget(PixelSize pixelSize, bool isLayer, PixelFormat? format = null)
+        private SurfaceRenderTarget CreateRenderTarget(PixelSize pixelSize, bool isLayer, bool useScaledDrawing, PixelFormat? format = null)
         {
             var createInfo = new SurfaceRenderTarget.CreateInfo
             {
@@ -1503,6 +1503,7 @@ namespace Avalonia.Skia
                 Gpu = _gpu,
                 Session = _session,
                 DisableManualFbo = !isLayer,
+                UseScaledDrawing = useScaledDrawing
             };
 
             return new SurfaceRenderTarget(createInfo);

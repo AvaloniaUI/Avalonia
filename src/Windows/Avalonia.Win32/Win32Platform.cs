@@ -85,6 +85,8 @@ namespace Avalonia.Win32
 
             SetDpiAwareness();
 
+            Dispatcher.InitializeUIThreadDispatcher(s_instance._dispatcher);
+            
             var renderTimer = options.ShouldRenderOnUIThread ? new UiThreadRenderTimer(60) : new DefaultRenderTimer(60);
             var clipboardImpl = new ClipboardImpl();
             var clipboard = new Clipboard(clipboardImpl);
@@ -96,8 +98,7 @@ namespace Avalonia.Win32
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
                 .Bind<IPlatformSettings>().ToSingleton<Win32PlatformSettings>()
                 .Bind<IScreenImpl>().ToSingleton<ScreenImpl>()
-                .Bind<IDispatcherImpl>().ToConstant(s_instance._dispatcher)
-                .Bind<IRenderTimer>().ToConstant(renderTimer)
+                .Bind<IRenderLoop>().ToConstant(RenderLoop.FromTimer(renderTimer))
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control)
                 {
@@ -322,6 +323,34 @@ namespace Avalonia.Win32
 
             if (dpiAwareness != Win32DpiAwareness.Unaware)
                 SetProcessDPIAware();
+        }
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> zOrder)
+        {
+            var handlesToIndex = new Dictionary<IntPtr, int>(windows.Length);
+            var outputArray = new long[windows.Length];
+
+            for (int i = 0; i < windows.Length; i++)
+            {
+                if (windows[i] is WindowImpl platformImpl)
+                    handlesToIndex.Add(platformImpl.Handle.Handle, i);
+            }
+
+            long nextZOrder = 0;
+            bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam)
+            {
+                if (handlesToIndex.TryGetValue(hWnd, out var index))
+                {
+                    // We negate the z-order so that the topmost window has the highest number.
+                    outputArray[index] = -nextZOrder;
+                    nextZOrder++;
+                }
+                return nextZOrder < outputArray.Length;
+            }
+
+            EnumChildWindows(IntPtr.Zero, EnumWindowsProc, IntPtr.Zero);
+
+            outputArray.CopyTo(zOrder);
         }
     }
 }

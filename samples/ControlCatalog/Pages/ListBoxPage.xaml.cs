@@ -3,7 +3,7 @@ using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
-    public partial class ListBoxPage : UserControl
+    public partial class ListBoxPage : ContentPage
     {
         public ListBoxPage()
         {

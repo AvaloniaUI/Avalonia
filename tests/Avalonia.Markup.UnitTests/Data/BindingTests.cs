@@ -544,8 +544,8 @@ namespace Avalonia.Markup.UnitTests.Data
             var root = new Panel { Children = { target1, target2 } };
             var source = new Source { Foo = "foo" };
 
-            using (target1.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneTime)))
-            using (target2.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneWayToSource)))
+            using (target1.Bind(TextBlock.TextProperty, new Binding("Foo") { Mode = BindingMode.OneTime }))
+            using (target2.Bind(TextBlock.TextProperty, new Binding("Foo") { Mode = BindingMode.OneWayToSource }))
             {
                 root.DataContext = source;
             }
@@ -643,8 +643,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 Children = { target1, target2 }
             };
 
-            target1.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.TwoWay));
-            target2.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneWayToSource));
+            target1.Bind(TextBlock.TextProperty, new Binding("Foo") { Mode = BindingMode.TwoWay });
+            target2.Bind(TextBlock.TextProperty, new Binding("Foo") { Mode = BindingMode.OneWayToSource });
 
             Assert.Equal("OneWayToSource", source.Foo);
 

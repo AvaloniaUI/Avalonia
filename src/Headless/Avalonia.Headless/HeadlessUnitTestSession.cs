@@ -54,19 +54,19 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
         {
             action();
             return Task.FromResult(0);
-        }, false ,cancellationToken);
+        }, true ,cancellationToken);
     }
 
     /// <inheritdoc cref="DispatchCore{TResult}"/>
     public Task<TResult> Dispatch<TResult>(Func<TResult> action, CancellationToken cancellationToken)
     {
-        return DispatchCore(() => Task.FromResult(action()), false, cancellationToken);
+        return DispatchCore(() => Task.FromResult(action()), true, cancellationToken);
     }
 
     /// <inheritdoc cref="DispatchCore{TResult}"/>
     public Task<TResult> Dispatch<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken)
     {
-        return DispatchCore(action, false, cancellationToken);
+        return DispatchCore(action, true, cancellationToken);
     }
 
     /// <summary>
@@ -96,11 +96,16 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
             using var globalCts = token.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
             using var localCts = cancellationToken.Register(s => ((CancellationTokenSource)s!).Cancel(), cts, true);
 
+            var application = _isolated
+                ? EnsureIsolatedApplication()
+                : EnsureSharedApplication();
+
+            bool shouldCancel = false;
+            Exception? caught = null;
+            TResult result = default!;
+
             try
             {
-                using var application = _isolated
-                    ? EnsureIsolatedApplication()
-                    : EnsureSharedApplication();
                 var task = action();
                 if (task.Status != TaskStatus.RanToCompletion)
                 {
@@ -110,22 +115,36 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
 
                     if (cts.IsCancellationRequested)
                     {
-                        tcs.TrySetCanceled(cts.Token);
-                        return;
+                        shouldCancel = true;
                     }
-
-                    var frame = new DispatcherFrame();
-                    using var innerCts = cts.Token.Register(() => frame.Continue = false, true);
-                    Dispatcher.UIThread.PushFrame(frame);
+                    else
+                    {
+                        var frame = new DispatcherFrame();
+                        using var innerCts = cts.Token.Register(() => frame.Continue = false, true);
+                        Dispatcher.UIThread.PushFrame(frame);
+                        result = task.GetAwaiter().GetResult();
+                    }
                 }
-
-                var result = task.GetAwaiter().GetResult();
-                tcs.TrySetResult(result);
+                else
+                {
+                    result = task.GetAwaiter().GetResult();
+                }
             }
             catch (Exception ex)
             {
-                tcs.TrySetException(ex);
+                caught = ex;
             }
+            finally
+            {
+                application.Dispose();
+            }
+
+            if (caught != null)
+                tcs.TrySetException(caught);
+            else if (shouldCancel)
+                tcs.TrySetCanceled(cts.Token);
+            else
+                tcs.TrySetResult(result);
         }, executionContext));
         return tcs.Task;
     }
@@ -236,9 +255,12 @@ public sealed class HeadlessUnitTestSession : IDisposable, IAsyncDisposable
                 // If windowing subsystem wasn't initialized by user, force headless with default parameters.
                 if (appBuilder.WindowingSubsystemName != "Headless")
                 {
-                    appBuilder = appBuilder
-                        .UseHeadless(new AvaloniaHeadlessPlatformOptions())
-                        .UseHarfBuzz();
+                    appBuilder = appBuilder.UseHeadless(new AvaloniaHeadlessPlatformOptions());
+                }
+
+                if (appBuilder.TextShapingSubsystemInitializer is null)
+                {
+                    appBuilder = appBuilder.UseHarfBuzz();
                 }
 
                 // ReSharper disable once AccessToModifiedClosure

@@ -76,7 +76,7 @@ namespace Avalonia.Browser
 
     internal class CssCursorFactory : ICursorFactory
     {
-        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
+        public ICursorImpl CreateCursor(Avalonia.Media.Imaging.Bitmap cursor, PixelPoint hotSpot)
         {
             using var imageStream = new MemoryStream();
             cursor.Save(imageStream);

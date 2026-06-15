@@ -297,8 +297,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     emitter
                         .Stloc(bloc.Local)
                         .Ldsfld(AvaloniaProperty)
-                        .Ldloc(bloc.Local);
-                EmitAnchorAndBind(emitter);
+                        .Ldloc(bloc.Local)
+                        .EmitCall(Types.AvaloniaObjectBindMethod, true);
             }
 
             public override void EmitWithArguments(
@@ -308,14 +308,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 emitter.Ldsfld(AvaloniaProperty);
                 context.Emit(arguments[0], emitter, Parameters[0]);
-                EmitAnchorAndBind(emitter);
-            }
-
-            private void EmitAnchorAndBind(IXamlILEmitter emitter)
-            {
-                emitter
-                    .Ldnull() // TODO: provide anchor?
-                    .EmitCall(Types.AvaloniaObjectBindMethod, true);
+                emitter.EmitCall(Types.AvaloniaObjectBindMethod, true);
             }
         }
 
@@ -336,8 +329,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         .Stloc(bloc.Local)
                         .Pop() // ignore priority
                         .Ldsfld(AvaloniaProperty)
-                        .Ldloc(bloc.Local);
-                EmitAnchorAndBind(emitter);
+                        .Ldloc(bloc.Local)
+                        .EmitCall(Types.AvaloniaObjectBindMethod, true);
             }
 
             public override void EmitWithArguments(
@@ -347,14 +340,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 emitter.Ldsfld(AvaloniaProperty);
                 context.Emit(arguments[1], emitter, Parameters[1]);
-                EmitAnchorAndBind(emitter);
-            }
-
-            private void EmitAnchorAndBind(IXamlILEmitter emitter)
-            {
-                emitter
-                    .Ldnull() // TODO: provide anchor?
-                    .EmitCall(Types.AvaloniaObjectBindMethod, true);
+                emitter.EmitCall(Types.AvaloniaObjectBindMethod, true);
             }
         }
 

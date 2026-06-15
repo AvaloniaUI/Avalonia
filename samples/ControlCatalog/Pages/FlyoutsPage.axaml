@@ -1,11 +1,12 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<ContentPage Theme="{StaticResource ScrollPage}" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="700"
+             Header="Flyouts"
              x:Class="ControlCatalog.Pages.FlyoutsPage">
 
-    <UserControl.Resources>
+    <ContentPage.Resources>
         <MenuFlyout x:Key="SharedMenuFlyout">
             <MenuItem Header="Item 1">
                 <MenuItem Header="Subitem 1" />
@@ -25,7 +26,7 @@
                 <TextBlock Text="Flyout Content with a custom presenter theme!" TextWrapping="Wrap" />
             </Panel>
         </Flyout>
-    </UserControl.Resources>
+    </ContentPage.Resources>
 
     <ScrollViewer HorizontalScrollBarVisibility="Disabled">
         <StackPanel Spacing="10">
@@ -282,4 +283,4 @@
         </StackPanel>
     </ScrollViewer>
     
-</UserControl>
+</ContentPage>

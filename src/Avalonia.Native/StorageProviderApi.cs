@@ -158,7 +158,7 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
 
         var (items, _) = await OpenDialogAsync(events =>
         {
-            _native.OpenFileDialog((IAvnWindow?)topLevel?.Native,
+            _native.OpenFileDialog(topLevel?.Native,
                 events,
                 options.AllowMultiple.AsComBool(),
                 options.Title ?? string.Empty,
@@ -177,7 +177,7 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
 
         var (items, selectedFilterIndex) = await OpenDialogAsync(events =>
         {
-            _native.SaveFileDialog((IAvnWindow?)topLevel?.Native,
+            _native.SaveFileDialog(topLevel?.Native,
                 events,
                 options.Title ?? string.Empty,
                 suggestedDirectory,
@@ -201,7 +201,7 @@ internal class StorageProviderApi(IAvnStorageProvider native, bool sandboxEnable
 
         var (items, _) = await OpenDialogAsync(events =>
         {
-            _native.SelectFolderDialog((IAvnWindow?)topLevel?.Native,
+            _native.SelectFolderDialog(topLevel?.Native,
                 events,
                 options.AllowMultiple.AsComBool(),
                 options.Title ?? "",

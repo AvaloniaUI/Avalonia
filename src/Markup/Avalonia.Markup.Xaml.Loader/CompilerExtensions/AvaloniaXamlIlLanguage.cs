@@ -70,13 +70,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             };
             rv.CustomAttributeResolver = new AttributeResolver(typeSystem, rv);
 
+            var nameScopeType = typeSystem.GetType("Avalonia.Controls.INameScope");
+            var eagerParentStackProviderInterfaceType = typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlEagerParentStackProvider");
+
             var emit = new XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult>
             {
                 ProvideValueTargetPropertyEmitter = XamlIlAvaloniaPropertyHelper.EmitProvideValueTarget,
                 ContextTypeBuilderCallback = definition =>
                 {
-                    EmitNameScopeField(rv, typeSystem, definition);
-                    EmitEagerParentStackProvider(rv, typeSystem, definition, runtimeHelpers);
+                    EmitNameScopeField(rv, typeSystem, definition, nameScopeType);
+                    EmitEagerParentStackProvider(rv, typeSystem, definition, runtimeHelpers, eagerParentStackProviderInterfaceType);
                 }
             };
             return (rv, emit);
@@ -88,9 +91,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         private static void EmitNameScopeField(
             XamlLanguageTypeMappings mappings,
             IXamlTypeSystem typeSystem,
-            IXamlILContextDefinition<IXamlILEmitter> definition)
+            IXamlILContextDefinition<IXamlILEmitter> definition,
+            IXamlType nameScopeType)
         {
-            var nameScopeType = typeSystem.GetType("Avalonia.Controls.INameScope");
             var field = definition.TypeBuilder.DefineField(nameScopeType,
                 ContextNameScopeFieldName, XamlVisibility.Public, false);
             definition.ConstructorBuilder.Generator
@@ -98,7 +101,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 .Ldarg(1)
                 .Ldtype(nameScopeType)
                 .EmitCall(mappings.ServiceProvider.GetMethod(new FindMethodMethodSignature("GetService",
-                    typeSystem.GetType("System.Object"), typeSystem.GetType("System.Type"))))
+                    typeSystem.WellKnownTypes.Object, typeSystem.WellKnownTypes.Type)))
                 .Stfld(field);
         }
 
@@ -107,10 +110,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             XamlLanguageTypeMappings mappings,
             IXamlTypeSystem typeSystem,
             IXamlILContextDefinition<IXamlILEmitter> definition,
-            IXamlType runtimeHelpers)
+            IXamlType runtimeHelpers,
+            IXamlType interfaceType)
         {
-            var interfaceType = typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlEagerParentStackProvider");
-
             definition.TypeBuilder.AddInterfaceImplementation(interfaceType);
 
             // IReadOnlyList<object> DirectParentsStack => (IReadOnlyList<object>)ParentsStack;
@@ -122,8 +124,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             var serviceProviderGetServiceMethod = mappings.ServiceProvider.GetMethod(new FindMethodMethodSignature(
                 "GetService",
-                typeSystem.GetType("System.Object"),
-                typeSystem.GetType("System.Type")));
+                typeSystem.WellKnownTypes.Object,
+                typeSystem.WellKnownTypes.Type));
 
             var asEagerParentStackProviderMethod = runtimeHelpers.GetMethod(new FindMethodMethodSignature(
                 "AsEagerParentStackProvider",
@@ -184,12 +186,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 AddType(typeSystem.GetType("Avalonia.Media.IImage"), typeSystem.GetType("Avalonia.Markup.Xaml.Converters.BitmapTypeConverter"));
                 AddType(typeSystem.GetType("Avalonia.Media.Imaging.Bitmap"), typeSystem.GetType("Avalonia.Markup.Xaml.Converters.BitmapTypeConverter"));
                 AddType(typeSystem.GetType("Avalonia.Media.IImageBrushSource"), typeSystem.GetType("Avalonia.Markup.Xaml.Converters.BitmapTypeConverter"));
-                var ilist = typeSystem.GetType("System.Collections.Generic.IList`1");
-                AddType(ilist.MakeGenericType(typeSystem.GetType("Avalonia.Point")),
+                AddType(typeSystem.WellKnownTypes.IListOfT.MakeGenericType(typeSystem.GetType("Avalonia.Point")),
                     typeSystem.GetType("Avalonia.Markup.Xaml.Converters.PointsListTypeConverter"));
                 AddType(typeSystem.GetType("Avalonia.Controls.WindowIcon"), typeSystem.GetType("Avalonia.Markup.Xaml.Converters.IconTypeConverter"));
                 AddType(typeSystem.GetType("System.Globalization.CultureInfo"), typeSystem.GetType( "System.ComponentModel.CultureInfoConverter"));
-                AddType(typeSystem.GetType("System.Uri"), typeSystem.GetType( "Avalonia.Markup.Xaml.Converters.AvaloniaUriTypeConverter"));
+                AddType(typeSystem.WellKnownTypes.Uri, typeSystem.GetType( "Avalonia.Markup.Xaml.Converters.AvaloniaUriTypeConverter"));
                 AddType(typeSystem.GetType("System.TimeSpan"), typeSystem.GetType( "Avalonia.Markup.Xaml.Converters.TimeSpanTypeConverter"));
                 AddType(typeSystem.GetType("Avalonia.Media.FontFamily"), typeSystem.GetType("Avalonia.Markup.Xaml.Converters.FontFamilyTypeConverter"));
                 _avaloniaList = typeSystem.GetType("Avalonia.Collections.AvaloniaList`1");
@@ -270,7 +271,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return true;
             }
 
-            if (type.FullName == "Avalonia.AvaloniaProperty")
+            if (type.Is("Avalonia", "AvaloniaProperty"))
             {
                 var attrType = context.GetAvaloniaTypes().InheritDataTypeFromAttribute;
                 var scopeKind = customAttributes?

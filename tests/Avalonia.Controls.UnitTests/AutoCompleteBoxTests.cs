@@ -8,7 +8,9 @@ using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Reactive.Subjects;
+using System.Runtime.CompilerServices;
 using Avalonia.Headless;
 using Avalonia.Harfbuzz;
 using Avalonia.Input;
@@ -406,7 +408,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(control.Text, control.ItemSelector(input, selectedItem));
             });
         }
-        
+
         [Fact]
         public void Text_Validation()
         {
@@ -421,7 +423,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal([exception], DataValidationErrors.GetErrors(control));
             });
         }
-        
+
         [Fact]
         public void Text_Validation_TextBox_Errors_Binding()
         {
@@ -430,20 +432,20 @@ namespace Avalonia.Controls.UnitTests
                 // simulate the TemplateBinding that would be used within the AutoCompleteBox control theme for the inner PART_TextBox
                 //      DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
                 textbox.Bind(DataValidationErrors.ErrorsProperty, control.GetBindingObservable(DataValidationErrors.ErrorsProperty));
-                
+
                 var exception = new InvalidCastException("failed validation");
                 var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
                 control.Bind(AutoCompleteBox.TextProperty, textObservable);
                 Dispatcher.UIThread.RunJobs();
-                
+
                 Assert.True(DataValidationErrors.GetHasErrors(control));
                 Assert.Equal([exception], DataValidationErrors.GetErrors(control));
-                
+
                 Assert.True(DataValidationErrors.GetHasErrors(textbox));
                 Assert.Equal([exception], DataValidationErrors.GetErrors(textbox));
             });
         }
-        
+
         [Fact]
         public void SelectedItem_Validation()
         {
@@ -583,7 +585,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         /// <summary>
-        /// Retrieves a defined predicate filter through a new AutoCompleteBox 
+        /// Retrieves a defined predicate filter through a new AutoCompleteBox
         /// control instance.
         /// </summary>
         /// <param name="mode">The FilterMode of interest.</param>
@@ -1233,7 +1235,7 @@ namespace Avalonia.Controls.UnitTests
         }
         private TextBox GetTextBox(AutoCompleteBox control)
         {
-            return control.GetTemplateChildren()
+            return control.GetTemplateDescendants()
                           .OfType<TextBox>()
                           .First();
         }
@@ -1282,6 +1284,115 @@ namespace Avalonia.Controls.UnitTests
             {
                 IsOpen = true;
             }
+        }
+
+        [Fact]
+        public void PlaceholderForeground_Can_Be_Set()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var control = CreateControl();
+                control.PlaceholderText = "Search...";
+                control.PlaceholderForeground = Media.Brushes.Green;
+
+                Assert.Equal(Media.Brushes.Green, control.PlaceholderForeground);
+            }
+        }
+
+        [Fact]
+        public void Bound_Text_Will_Update_Always()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var viewModel = new AutoCompleteBoxViewModel();
+
+                var control = CreateControl();
+
+                // Setup the binding
+                control[!AutoCompleteBox.TextProperty] = CompiledBinding.Create<AutoCompleteBoxViewModel, string?>
+                    (vm => vm.TextValue, viewModel, mode: BindingMode.TwoWay);
+
+                // Ensure the bound text matches "foo"
+                Assert.Equal("foo", control.Text);
+
+                // Change the view model value several times and ensure the bound text is updated
+                for (var i = 0; i < 10; i++)
+                {
+                    viewModel.UpdateTextValueTwice();
+                    Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+                    Assert.Equal("bar", control.Text);
+                }
+            }
+        }
+
+        [Fact]
+        public void Bound_Text_Will_Update_From_Bar_To_Bar_Via_Foo()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var viewModel = new AutoCompleteBoxViewModel();
+                viewModel.TextValue = "bar";
+
+                var control = CreateControl();
+                control.ApplyTemplate(); 
+
+                // Setup the binding
+                control[!AutoCompleteBox.TextProperty] = CompiledBinding.Create<AutoCompleteBoxViewModel, string?>
+                    (vm => vm.TextValue, viewModel, mode: BindingMode.TwoWay);
+
+                Assert.Equal("bar", control.Text);
+
+                int textChangedCount = 0;
+                control.TextChanged += (s, e) => textChangedCount++;
+
+                // Change the view model value "bar" -> "foo" -> "bar"
+                viewModel.UpdateTextValueTwice();
+
+                // Programmatic TextProperty updates should synchronously raise TextChanged, and
+                // OnTextBoxTextChanged is suppressed for the corresponding TextBox.Text updates.
+                Assert.Equal("bar", control.Text);
+                Assert.Equal(2, textChangedCount);
+
+                Dispatcher.UIThread.RunJobs(null, TestContext.Current.CancellationToken);
+
+                Assert.Equal("bar", control.Text);
+                Assert.Equal(2, textChangedCount);
+            }
+        }
+    }
+
+    public class AutoCompleteBoxViewModel : INotifyPropertyChanged
+    {
+        public AutoCompleteBoxViewModel()
+        {
+            TextValue = "foo";
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public string? TextValue
+        {
+            get;
+            set => SetField(ref field, value);
+        }
+
+        public void UpdateTextValueTwice()
+        {
+            TextValue = "foo";
+            TextValue = "bar";
+        }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            OnPropertyChanged(propertyName);
+            return true;
         }
     }
 }

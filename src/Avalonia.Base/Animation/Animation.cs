@@ -43,6 +43,15 @@ namespace Avalonia.Animation
                 (o, v) => o._playbackDirection = v);
 
         /// <summary>
+        /// Defines the <see cref="PlaybackBehavior"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Animation, PlaybackBehavior> PlaybackBehaviorProperty =
+            AvaloniaProperty.RegisterDirect<Animation, PlaybackBehavior>(
+                nameof(PlaybackBehavior),
+                o => o._playbackBehavior,
+                (o, v) => o._playbackBehavior = v);
+
+        /// <summary>
         /// Defines the <see cref="FillMode"/> property.
         /// </summary>
         public static readonly DirectProperty<Animation, FillMode> FillModeProperty =
@@ -91,6 +100,7 @@ namespace Avalonia.Animation
         private TimeSpan _duration;
         private IterationCount _iterationCount = new IterationCount(1);
         private PlaybackDirection _playbackDirection;
+        private PlaybackBehavior _playbackBehavior;
         private FillMode _fillMode;
         private Easing _easing = new LinearEasing();
         private TimeSpan _delay = TimeSpan.Zero;
@@ -122,6 +132,19 @@ namespace Avalonia.Animation
         {
             get { return _playbackDirection; }
             set { SetAndRaise(PlaybackDirectionProperty, ref _playbackDirection, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the playback behavior for this animation.
+        /// When set to <see cref="PlaybackBehavior.Auto"/>, manually started animations and
+        /// animations targeting <see cref="Visual.IsVisibleProperty"/> always play,
+        /// while style-applied animations pause when the control is not effectively visible
+        /// (see <see cref="Visual.IsEffectivelyVisible"/>).
+        /// </summary>
+        public PlaybackBehavior PlaybackBehavior
+        {
+            get { return _playbackBehavior; }
+            set { SetAndRaise(PlaybackBehaviorProperty, ref _playbackBehavior, value); }
         }
 
         /// <summary>
@@ -192,11 +215,12 @@ namespace Avalonia.Animation
             return null;
         }
 
-        private (IList<IAnimator> Animators, IList<IDisposable> subscriptions) InterpretKeyframes(Animatable control)
+        private (IList<IAnimator> Animators, IList<IDisposable> subscriptions, bool animatesVisibility) InterpretKeyframes(Animatable control)
         {
             var handlerList = new Dictionary<(Type type, AvaloniaProperty Property), Func<IAnimator>>();
             var animatorKeyFrames = new List<AnimatorKeyFrame>();
             var subscriptions = new List<IDisposable>();
+            var animatesVisibility = false;
 
             foreach (var keyframe in Children)
             {
@@ -206,6 +230,9 @@ namespace Avalonia.Animation
                     {
                         throw new InvalidOperationException("No Setter property assigned.");
                     }
+
+                    if (setter.Property == Visual.IsVisibleProperty)
+                        animatesVisibility = true;
 
                     var handler = Animation.GetAnimator(setter) ?? GetAnimatorType(setter.Property);
 
@@ -265,19 +292,31 @@ namespace Avalonia.Animation
                 }
             }
 
-            return (newAnimatorInstances, subscriptions);
+            return (newAnimatorInstances, subscriptions, animatesVisibility);
         }
 
-        IDisposable IAnimation.Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
-            => Apply(control, clock, match, onComplete);
-        
+        IDisposable IAnimation.Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete,
+            bool isManuallyStarted)
+            => Apply(control, clock, match, onComplete, isManuallyStarted);
+
         /// <inheritdoc cref="IAnimation.Apply"/>
-        internal IDisposable Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete)
+        internal IDisposable Apply(Animatable control, IClock? clock, IObservable<bool> match, Action? onComplete,
+            bool isManuallyStarted = false)
         {
-            var (animators, subscriptions) = InterpretKeyframes(control);
+            var (animators, subscriptions, animatesVisibility) = InterpretKeyframes(control);
+
+            var shouldPauseOnInvisible = _playbackBehavior switch
+            {
+                PlaybackBehavior.Auto => !(animatesVisibility || isManuallyStarted),
+                PlaybackBehavior.Always => false,
+                PlaybackBehavior.OnlyIfVisible => true,
+                _ => throw new InvalidOperationException($"Unknown PlaybackBehavior value: {_playbackBehavior}"),
+            };
+
             if (animators.Count == 1)
             {
-                var subscription = animators[0].Apply(this, control, clock, match, onComplete);
+                var subscription = animators[0].Apply(this, control, clock, match,
+                    onComplete, shouldPauseOnInvisible);
 
                 if (subscription is not null)
                 {
@@ -297,7 +336,8 @@ namespace Avalonia.Animation
                         completionTasks!.Add(tcs.Task);
                     }
 
-                    var subscription = animator.Apply(this, control, clock, match, animatorOnComplete);
+                    var subscription = animator.Apply(this, control, clock, match,
+                        animatorOnComplete, shouldPauseOnInvisible);
 
                     if (subscription is not null)
                     {
@@ -348,7 +388,7 @@ namespace Avalonia.Animation
                 run.TrySetResult(null);
                 subscriptions?.Dispose();
                 cancellation?.Dispose();
-            });
+            }, isManuallyStarted: true);
 
             cancellation = cancellationToken.Register(() =>
             {

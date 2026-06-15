@@ -6,9 +6,7 @@ using Avalonia.Data;
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
-#if NET8_0_OR_GREATER
     [RequiresDynamicCode(TrimmingMessages.ReflectionBindingRequiresDynamicCodeMessage)]
-#endif
     public sealed class ReflectionBindingExtension : ReflectionBinding
     {
         /// <summary>
@@ -21,13 +19,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         /// </summary>
         /// <param name="path">The binding path.</param>
         public ReflectionBindingExtension(string path) : base(path) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ReflectionBinding"/> class.
-        /// </summary>
-        /// <param name="path">The binding path.</param>
-        /// <param name="mode">The binding mode.</param>
-        public ReflectionBindingExtension(string path, BindingMode mode) : base(path, mode) { }
 
         public ReflectionBinding ProvideValue(IServiceProvider serviceProvider)
         {

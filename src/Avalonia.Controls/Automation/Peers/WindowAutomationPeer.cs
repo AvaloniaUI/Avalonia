@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 
 namespace Avalonia.Automation.Peers
@@ -19,12 +21,23 @@ namespace Avalonia.Automation.Peers
 
         protected override string? GetNameCore() => Owner.Title;
 
+        protected override IReadOnlyList<AutomationPeer>? GetChildrenCore()
+        {
+            var baseChildren = base.GetChildrenCore();
+            var overlayPeer = Owner.TopLevelHost.GetOrCreateDecorationsOverlaysPeer();
+            
+            var rv = new List<AutomationPeer> { overlayPeer };
+            if (baseChildren?.Count > 0)
+                rv.AddRange(baseChildren);
+            return rv;
+        }
+
         private void OnOpened(object? sender, EventArgs e)
         {
             Owner.Opened -= OnOpened;
             StartTrackingFocus();
         }
-
+        
         private void OnClosed(object? sender, EventArgs e)
         {
             Owner.Closed -= OnClosed;

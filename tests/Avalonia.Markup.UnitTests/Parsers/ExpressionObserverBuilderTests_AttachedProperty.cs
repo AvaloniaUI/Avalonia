@@ -4,11 +4,10 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Diagnostics;
 using Avalonia.Data.Core;
-using Xunit;
-using Avalonia.Utilities;
-using Avalonia.Data.Core.ExpressionNodes;
-using Avalonia.UnitTests;
 using Avalonia.Data.Core.Parsers;
+using Avalonia.UnitTests;
+using Avalonia.Utilities;
+using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Parsers
 {

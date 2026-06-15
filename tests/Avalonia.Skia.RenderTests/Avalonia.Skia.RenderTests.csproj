@@ -31,10 +31,12 @@
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
   </ItemGroup>
-  <Import Project="..\..\build\Moq.props" />
-  <Import Project="..\..\build\Rx.props" />
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+    <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="System.Reactive" />
+  </ItemGroup>
   <Import Project="..\..\build\XUnit.props" />
-  <Import Project="..\..\build\ImageSharp.props" />
   <Import Project="..\..\build\SkiaSharp.props" />
   <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\NullableEnable.props" />

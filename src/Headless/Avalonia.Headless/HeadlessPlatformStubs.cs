@@ -13,6 +13,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
 namespace Avalonia.Headless
@@ -60,7 +61,7 @@ namespace Avalonia.Headless
     internal class HeadlessCursorFactoryStub : ICursorFactory
     {
         public ICursorImpl GetCursor(StandardCursorType cursorType) => new CursorStub();
-        public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot) => new CursorStub();
+        public ICursorImpl CreateCursor(Bitmap cursor, PixelPoint hotSpot) => new CursorStub();
 
         private class CursorStub : ICursorImpl
         {

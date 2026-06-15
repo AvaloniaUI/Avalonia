@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Types xmlns="http://avaloniaui.net/dbus/1.0">
+  <Struct Name="AtSpiObjectReference">
+    <Property Name="Service"/>
+    <Property Name="Path"/>
+  </Struct>
+
+  <Struct Name="AtSpiAction">
+    <Property Name="LocalizedName"/>
+    <Property Name="LocalizedDescription"/>
+    <Property Name="KeyBinding"/>
+  </Struct>
+
+  <Struct Name="AtSpiAccessibleCacheItem">
+    <Property Name="Path" Type="AtSpiObjectReference"/>
+    <Property Name="Application" Type="AtSpiObjectReference"/>
+    <Property Name="Parent" Type="AtSpiObjectReference"/>
+    <Property Name="IndexInParent"/>
+    <Property Name="ChildCount"/>
+    <Property Name="SupportedInterfaces">
+      <List/>
+    </Property>
+    <Property Name="Name"/>
+    <Property Name="Role"/>
+    <Property Name="Description"/>
+    <Property Name="State">
+      <List/>
+    </Property>
+  </Struct>
+
+  <Struct Name="AtSpiEventListener">
+    <Property Name="ListenerAddress"/>
+    <Property Name="EventName"/>
+  </Struct>
+
+  <Struct Name="AtSpiRelationEntry">
+    <Property Name="RelationType"/>
+    <Property Name="Targets">
+      <List>
+        <Struct Type="AtSpiObjectReference"/>
+      </List>
+    </Property>
+  </Struct>
+
+  <Struct Name="AtSpiTextRange">
+    <Property Name="StartOffset"/>
+    <Property Name="EndOffset"/>
+    <Property Name="Contents"/>
+    <Property Name="Value"/>
+  </Struct>
+
+  <Dictionary Name="AtSpiAttributeSet">
+    <Key Name="Key"/>
+    <Value Name="Value"/>
+  </Dictionary>
+
+  <Dictionary Name="AtSpiEventProperties">
+    <Key Name="Key"/>
+    <Value Name="Value"/>
+  </Dictionary>
+
+  <Struct Name="AtSpiDeviceEvent">
+    <Property Name="Type"/>
+    <Property Name="Id"/>
+    <Property Name="HardwareCode"/>
+    <Property Name="Modifiers">
+      <BitFlags Type="AtSpiModifierMask"/>
+    </Property>
+    <Property Name="Timestamp"/>
+    <Property Name="Text"/>
+    <Property Name="IsText"/>
+  </Struct>
+
+  <Struct Name="AtSpiMatchRule">
+    <Property Name="States">
+      <List/>
+    </Property>
+    <Property Name="StateMatchType"/>
+    <Property Name="Attributes" Type="AtSpiAttributeSet"/>
+    <Property Name="AttributeMatchType"/>
+    <Property Name="Roles">
+      <List/>
+    </Property>
+    <Property Name="RoleMatchType"/>
+    <Property Name="Interfaces">
+      <List/>
+    </Property>
+    <Property Name="InterfaceMatchType"/>
+    <Property Name="Invert"/>
+  </Struct>
+
+  <Struct Name="AtSpiKeyDefinition">
+    <Property Name="KeyCode"/>
+    <Property Name="KeySym"/>
+    <Property Name="KeyString"/>
+    <Property Name="Unused"/>
+  </Struct>
+
+  <Struct Name="AtSpiEventMode">
+    <Property Name="Synchronous"/>
+    <Property Name="Preemptive"/>
+    <Property Name="Global"/>
+  </Struct>
+
+  <BitFlags Name="AtSpiEventTypeMask">
+    <BitFlag Name="KeyPress" Value="1"/>
+    <BitFlag Name="KeyRelease" Value="2"/>
+  </BitFlags>
+
+  <BitFlags Name="AtSpiModifierMask">
+    <BitFlag Name="Shift" Value="1"/>
+    <BitFlag Name="Lock" Value="2"/>
+    <BitFlag Name="Control" Value="4"/>
+    <BitFlag Name="Mod1" Value="8"/>
+    <BitFlag Name="Mod2" Value="16"/>
+    <BitFlag Name="Mod3" Value="32"/>
+    <BitFlag Name="Mod4" Value="64"/>
+    <BitFlag Name="Mod5" Value="128"/>
+  </BitFlags>
+
+  <Struct Name="AtSpiKeystrokeListener">
+    <Property Name="BusName"/>
+    <Property Name="Path"/>
+    <Property Name="Type"/>
+    <Property Name="Types">
+      <BitFlags Type="AtSpiEventTypeMask"/>
+    </Property>
+    <Property Name="Keys">
+      <List>
+        <Struct Type="AtSpiKeyDefinition"/>
+      </List>
+    </Property>
+    <Property Name="Mask">
+      <BitFlags Type="AtSpiModifierMask"/>
+    </Property>
+    <Property Name="Mode" Type="AtSpiEventMode"/>
+  </Struct>
+
+  <Struct Name="AtSpiTextSelection">
+    <Property Name="StartObject" Type="AtSpiObjectReference"/>
+    <Property Name="StartOffset"/>
+    <Property Name="EndObject" Type="AtSpiObjectReference"/>
+    <Property Name="EndOffset"/>
+    <Property Name="IsStartActive"/>
+  </Struct>
+
+  <Struct Name="AtSpiRect">
+    <Property Name="X"/>
+    <Property Name="Y"/>
+    <Property Name="Width"/>
+    <Property Name="Height"/>
+  </Struct>
+
+  <Struct Name="AtSpiPoint">
+    <Property Name="X"/>
+    <Property Name="Y"/>
+  </Struct>
+</Types>

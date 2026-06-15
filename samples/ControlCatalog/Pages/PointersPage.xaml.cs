@@ -4,7 +4,7 @@ using Avalonia.Input;
 
 namespace ControlCatalog.Pages;
 
-public partial class PointersPage : UserControl
+public partial class PointersPage : TabbedPage
 {
     public PointersPage()
     {

@@ -5,6 +5,7 @@
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseMicroCom>true</UseMicroCom>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,7 +27,7 @@
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj" />
     <!-- For native controls test -->
-    <PackageReference Include="MonoMac.NetStandard" Version="0.0.4" />
+    <PackageReference Include="MonoMac.NetStandard" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -37,4 +38,5 @@
 
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
+  <Import Project="..\..\build\MicroCOM.props" />
 </Project>
