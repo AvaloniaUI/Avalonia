@@ -235,10 +235,21 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_SYSCOMMAND:
+                    if ((SysCommands)wParam == SysCommands.SC_KEYMENU &&
+                        ToInt32(lParam) == (int)VirtualKeyStates.VK_SPACE) // Open system menu.
+                    {
+                        break;
+                    }
+
                     // Disable system handling of Alt/F10 menu keys.
                     if ((SysCommands)wParam == SysCommands.SC_KEYMENU && HighWord(ToInt32(lParam)) <= 0)
                         return IntPtr.Zero;
                     break;
+
+                case WindowsMessage.WM_CONTEXTMENU
+                    when ToInt32(lParam) != -1 && IsCaptionHitForSystemMenu(hWnd, lParam):
+                    ShowSystemMenu(PointFromLParam(lParam));
+                    return IntPtr.Zero;
 
                 case WindowsMessage.WM_MENUCHAR:
                     {
@@ -474,6 +485,13 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCXBUTTONDOWN:
                     {
                         if (IsMouseInPointerEnabled)
+                        {
+                            break;
+                        }
+                        // Keep caption right-clicks out of Avalonia input; the menu is shown on button up.
+                        if (_isClientAreaExtended
+                            && message == WindowsMessage.WM_NCRBUTTONDOWN
+                            && (HitTestValues)ToInt32(wParam) == HitTestValues.HTCAPTION)
                         {
                             break;
                         }
@@ -1361,7 +1379,7 @@ namespace Avalonia.Win32
 
             Imm32InputMethod.Current.SetLanguageAndWindow(this, Hwnd, hkl);
         }
-        
+
         // GetPointerDeviceRects is part of the WM_POINTER API (Windows 8+) but is not implemented
         // by Wine/Proton. Probe once and fall back to the integer pixel location when missing,
         // otherwise the P/Invoke throws EntryPointNotFoundException for every pointer message.
