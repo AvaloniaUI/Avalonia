@@ -50,6 +50,14 @@ internal class ImmediateRenderer
             transform = Matrix.CreateTranslation(bounds.Position);
         }
 
+        var totalTransform = transform * parentTransform;
+        var effectBounds = rect;
+
+        if (visual.Effect != null && totalTransform.TryInvert(out var invertedTransform))
+        {
+            effectBounds = clipRect.TransformToAABB(invertedTransform);
+        }
+
         using (visual.TextOptions != default ? context.PushTextOptions(visual.TextOptions) : default(DrawingContext.PushedState?))
         using (visual.RenderOptions != default ? context.PushRenderOptions(visual.RenderOptions) : default(DrawingContext.PushedState?))
         using (context.PushTransform(transform))
@@ -63,9 +71,8 @@ internal class ImmediateRenderer
         })
         using (visual.Clip is { } clip ? context.PushGeometryClip(clip) : default(DrawingContext.PushedState?))
         using (visual.OpacityMask is { } opctMask ? context.PushOpacityMask(opctMask, rect) : default(DrawingContext.PushedState?))
-        using (visual.Effect is { } effect ? context.PushEffect(effect, rect) : default(DrawingContext.PushedState?))
+        using (visual.Effect is { } effect ? context.PushEffect(effect, effectBounds) : default(DrawingContext.PushedState?))
         {
-            var totalTransform = transform * parentTransform;
             var effectRect = visual.Effect is { } e ? rect.Inflate(e.GetEffectOutputPadding()) : rect;
             var visualBounds = effectRect.TransformToAABB(totalTransform);
 
