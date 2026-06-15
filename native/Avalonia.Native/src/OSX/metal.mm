@@ -181,12 +181,13 @@ class AvnMetalRenderSession : public ComSingleObject<IAvnMetalRenderingSession, 
     CAMetalLayer* _layer;
     AvnPixelSize _size;
     double _scaling;
+    bool _presentWithTransaction;
 public:
     FORWARD_IUNKNOWN()
 
-    AvnMetalRenderSession(AvnMetalDevice* device, CAMetalLayer* layer, id <CAMetalDrawable> drawable, const AvnPixelSize &size, double scaling)
+    AvnMetalRenderSession(AvnMetalDevice* device, CAMetalLayer* layer, id <CAMetalDrawable> drawable, const AvnPixelSize &size, double scaling, bool presentWithTransaction)
             : _drawable(drawable), _size(size), _scaling(scaling), _queue(device->queue),
-            _texture([drawable texture]) {
+            _texture([drawable texture]), _presentWithTransaction(presentWithTransaction) {
         _layer = layer;
     }
 
@@ -207,8 +208,19 @@ public:
     {
         START_ARP_CALL;
         auto buffer = [_queue commandBuffer];
-        [buffer presentDrawable: _drawable];
-        [buffer commit];
+        if(_presentWithTransaction)
+        {
+            [buffer commit];
+            [buffer waitUntilScheduled];
+            [_drawable present];
+            // Restore the default asynchronous presentation for the off-thread render loop.
+            _layer.presentsWithTransaction = NO;
+        }
+        else
+        {
+            [buffer presentDrawable: _drawable];
+            [buffer commit];
+        }
     }
 };
 
@@ -230,7 +242,8 @@ public:
 
     HRESULT BeginDrawing(IAvnMetalRenderingSession **ret) override {
         START_COM_ARP_CALL;
-        if([NSThread isMainThread])
+        bool onMainThread = [NSThread isMainThread];
+        if(onMainThread)
         {
             // Flush all existing rendering
             auto buffer = [_device->queue commandBuffer];
@@ -240,15 +253,21 @@ public:
             _scaling= PendingScaling;
             CGSize layerSize = {(CGFloat)_size.Width, (CGFloat)_size.Height};
 
+            [CATransaction begin];
+            [CATransaction setDisableActions:YES];
             [_layer setDrawableSize: layerSize];
+            _layer.presentsWithTransaction = YES;
+            [CATransaction commit];
         }
         auto drawable = [_layer nextDrawable];
         if(drawable == nil)
         {
+            if(onMainThread)
+                _layer.presentsWithTransaction = NO;
             ret = nil;
             return E_FAIL;
         }
-        *ret = new AvnMetalRenderSession(_device, _layer, drawable, _size, _scaling);
+        *ret = new AvnMetalRenderSession(_device, _layer, drawable, _size, _scaling, onMainThread);
         return 0;
     }
 };
