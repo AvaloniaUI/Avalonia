@@ -15,11 +15,12 @@ internal class SkiaMetalGpu : ISkiaGpu
 
     internal GRContext GrContext => _context ?? throw new ObjectDisposedException(nameof(SkiaMetalGpu));
 
-    public SkiaMetalGpu(IMetalDevice device, long? maxResourceBytes)
+    public SkiaMetalGpu(IMetalDevice device, long? maxResourceBytes, bool? useStencilBuffers = null)
     {
+        var avoidStencilBuffers = useStencilBuffers == false;
         _context = GRContext.CreateMetal(
                        new GRMtlBackendContext { DeviceHandle = device.Device, QueueHandle = device.CommandQueue, },
-                       new GRContextOptions { AvoidStencilBuffers = true })
+                       new GRContextOptions { AvoidStencilBuffers = avoidStencilBuffers })
                    ?? throw new InvalidOperationException("Unable to create GRContext from Metal device.");
         _device = device;
         if (device.TryGetFeature<IMetalExternalObjectsFeature>() is { } externalObjects)
