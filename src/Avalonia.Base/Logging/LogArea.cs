@@ -49,6 +49,11 @@ namespace Avalonia.Logging
         /// The log event comes from Win32 Platform.
         /// </summary>
         public const string Win32Platform = nameof(Win32Platform);
+
+        /// <summary>
+        /// The log event comes from the WinUI Platform.
+        /// </summary>
+        public const string WinUIPlatform = nameof(WinUIPlatform);
         
         /// <summary>
         /// The log event comes from X11 Platform.

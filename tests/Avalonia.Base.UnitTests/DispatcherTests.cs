@@ -448,6 +448,7 @@ public partial class DispatcherTests
             }, DispatcherPriority.Background);
             disp.MainLoop(CancellationToken.None);
 
+            disp.Send(_ => DumpCurrentPriority(), DispatcherPriority.Send);
             disp.Invoke(DumpCurrentPriority, DispatcherPriority.Send, TestContext.Current.CancellationToken);
             disp.Invoke(() =>
             {
@@ -458,7 +459,7 @@ public partial class DispatcherTests
             Assert.Equal(
                 new[]
                 {
-                    DispatcherPriority.Normal, DispatcherPriority.Loaded, DispatcherPriority.Input, DispatcherPriority.Background,
+                    DispatcherPriority.Normal, DispatcherPriority.Loaded, DispatcherPriority.Input, DispatcherPriority.Background, DispatcherPriority.Send,
                     DispatcherPriority.Send, DispatcherPriority.Send,
                 },
                 priorities);
@@ -848,4 +849,15 @@ public partial class DispatcherTests
         }
     }
 
+    [Fact]
+    public async Task Dispatcher_Can_Act_As_TaskScheduler()
+    {
+        var impl = new SimpleDispatcherImpl();
+        Dispatcher.InitializeUIThreadDispatcher(impl);
+        Thread? continuationThread = null;
+        _ = Task.CompletedTask.ContinueWith(t => continuationThread = Thread.CurrentThread, Dispatcher.UIThread.ToTaskScheduler());
+        Assert.True(impl.AskedForSignal);
+        impl.ExecuteSignal();
+        Assert.Equal(Dispatcher.UIThread.Thread, continuationThread);
+    }
 }

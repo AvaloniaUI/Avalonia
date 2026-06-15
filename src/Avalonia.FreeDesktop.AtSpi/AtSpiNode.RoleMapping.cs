@@ -53,6 +53,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 AutomationControlType.TitleBar => AtSpiRole.TitleBar,
                 AutomationControlType.Separator => AtSpiRole.Separator,
                 AutomationControlType.Expander => AtSpiRole.Panel,
+                AutomationControlType.ScrollViewer => AtSpiRole.ScrollPane,
                 _ => AtSpiRole.Unknown,
             };
         }
@@ -78,6 +79,7 @@ namespace Avalonia.FreeDesktop.AtSpi
                 AtSpiRole.ProgressBar => "progress bar",
                 AtSpiRole.RadioButton => "radio button",
                 AtSpiRole.ScrollBar => "scroll bar",
+                AtSpiRole.ScrollPane => "scroll pane",
                 AtSpiRole.Slider => "slider",
                 AtSpiRole.SpinButton => "spin button",
                 AtSpiRole.StatusBar => "status bar",

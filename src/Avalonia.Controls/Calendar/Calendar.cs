@@ -6,6 +6,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -2251,5 +2252,6 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer() => new CalendarAutomationPeer(this);
     }
 }
