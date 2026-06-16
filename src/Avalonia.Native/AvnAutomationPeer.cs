@@ -187,6 +187,7 @@ namespace Avalonia.Native
 
         public int IsSelectionItemProvider() => IsProvider<ISelectionItemProvider>();
         public int SelectionItemProvider_IsSelected() => SelectionItemProvider.IsSelected.AsComBool();
+        public void SelectionItemProvider_Select() => SelectionItemProvider.Select();
 
         public IAvnAutomationPeer? ScrollProvider_GetHorizontalScrollBar()
             => _inner is ScrollViewerAutomationPeer scrollViewer ? Wrap(scrollViewer.GetHorizontalScrollBarPeer()) : null;

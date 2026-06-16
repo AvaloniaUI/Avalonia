@@ -474,6 +474,12 @@
     return NO;
 }
 
+- (void)setAccessibilitySelected:(BOOL)accessibilitySelected
+{
+    if (accessibilitySelected && _peer->IsSelectionItemProvider())
+        _peer->SelectionItemProvider_Select();
+}
+
 - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector
 {
     if (selector == @selector(setAccessibilityValue:))
@@ -491,6 +497,10 @@
     else if (selector == @selector(accessibilityPerformPress))
     {
         return _peer->IsInvokeProvider() || _peer->IsExpandCollapseProvider() || _peer->IsToggleProvider();
+    }
+    else if (selector == @selector(setAccessibilitySelected:))
+    {
+        return _peer->IsSelectionItemProvider();
     }
     else if (selector == @selector(accessibilityPerformIncrement) ||
              selector == @selector(accessibilityPerformDecrement) ||
