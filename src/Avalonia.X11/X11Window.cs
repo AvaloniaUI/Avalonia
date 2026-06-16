@@ -125,8 +125,9 @@ namespace Avalonia.X11
 
             // OpenGL seems to be do weird things to it's current window which breaks resize sometimes
             _useRenderWindow = glfeature != null;
-            
+
             var glx = glfeature as GlxPlatformGraphics;
+            var egl = glfeature as EglPlatformGraphics;
             if (glx != null)
             {
                 visualInfo = *glx.Display.VisualInfo;
@@ -134,11 +135,13 @@ namespace Avalonia.X11
                 // the target sufrace currently is
                 _useCompositorDrivenRenderWindowResize = true;
             }
+            else if (egl != null)
+            {
+                visualInfo = X11EglHelper.GetVisualInfo(_x11, egl.Display);
+            }
             else if (glfeature == null)
                 visualInfo = _x11.TransparentVisualInfo;
 
-            var egl = glfeature as EglPlatformGraphics;
-            
             var visual = IntPtr.Zero;
             var depth = 24;
             if (visualInfo != null)
@@ -177,11 +180,17 @@ namespace Avalonia.X11
 
             if (_useRenderWindow)
             {
+                var renderValueMask = SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
+                                      SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore;
+                // A window with a non-default visual must be created with a matching colormap, otherwise X11
+                // raises BadMatch. This is required by nvidia when a custom visual is selected for the EGL config.
+                if (visualInfo != null)
+                    renderValueMask |= SetWindowValuemask.ColorMap;
+
                 _renderHandle = XCreateWindow(_x11.Display, _handle, 0, 0, defaultWidth, defaultHeight, 0, depth,
                     (int)CreateWindowArgs.InputOutput,
                     visual,
-                    new UIntPtr((uint)(SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
-                                       SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
+                    new UIntPtr((uint)renderValueMask), ref attr);
             }
             else
             {
@@ -281,6 +290,11 @@ namespace Avalonia.X11
             });
 
             platform.X11Screens.Changed += OnScreensChanged;
+
+            // The render surface (EGL/GLX) is created on the deferred display connection, which is a separate
+            // X11 connection from the one the windows were created on. Force a round-trip so the server has
+            // actually created the windows before anything on the other connection tries to use them.
+            XSync(_x11.Display, false);
         }
 
         private class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo

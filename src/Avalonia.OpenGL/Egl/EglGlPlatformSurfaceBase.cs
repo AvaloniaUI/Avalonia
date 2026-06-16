@@ -53,6 +53,21 @@ namespace Avalonia.OpenGL.Egl
 
                 Context.GlInterface.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, 0);
                 
+                // Workaround for driver quirk https://github.com/NVIDIA/egl-wayland2/issues/46
+                // This is NVIDIA-specific, but setting buffers to GL_BACK won't hurt for other drivers too
+                if (Context.Version.Type == GlProfileType.OpenGL)
+                {
+                    var gl = Context.GlInterface;
+                    gl.Viewport(0, 0, size.Width, size.Height);
+                    if (gl.IsReadBufferAvailable)
+                        gl.ReadBuffer(GlConsts.GL_BACK);
+                    if (gl.IsWriteBufferAvailable)
+                        gl.WriteBuffer(GlConsts.GL_BACK);
+                    if(gl.IsDrawBufferAvailable)
+                        gl.DrawBuffer(GlConsts.GL_BACK);
+                }
+
+                
                 success = true;
                 return new Session(Context.Display, Context, surface, size, scaling,  restoreContext, onFinish, isYFlipped, SkipWaits);
             }

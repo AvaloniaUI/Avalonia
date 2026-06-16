@@ -1,12 +1,11 @@
-﻿using Avalonia.Media;
+using Avalonia.Media;
 using Avalonia.Media.Immutable;
-using Avalonia.Rendering.Composition.Drawing.Nodes;
-using Avalonia.Rendering.SceneGraph;
+using Avalonia.Rendering.Composition.Drawing;
 using Xunit;
 
-namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
+namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 {
-    public class EllipseNodeTests
+    public class RenderDataStreamEllipseHitTestTests
     {
         [Theory]
         [InlineData(50, 50, true)]
@@ -19,15 +18,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [InlineData(0, 101, false)]
         public void FillOnly_HitTest(double x, double y, bool inside)
         {
-            var ellipseNode = new RenderDataEllipseNode()
-            {
-                Rect = new Rect(0, 0, 100, 100),
-                ServerBrush = Brushes.Black
-            };
-            
-            var point = new Point(x, y);
+            using var stream = new RenderDataStream();
+            stream.DrawEllipse(Brushes.Black, null, null, new Rect(0, 0, 100, 100));
 
-            Assert.True(ellipseNode.HitTest(point) == inside);
+            Assert.Equal(inside, stream.HitTest(new Point(x, y)));
         }
 
         [Theory]
@@ -43,16 +37,11 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void StrokeOnly_HitTest(double x, double y, bool inside)
         {
             var pen = new ImmutablePen(Brushes.Black, 2);
-            var ellipseNode = new RenderDataEllipseNode()
-            {
-                Rect = new Rect(0, 0, 100, 100),
-                ServerPen =  pen,
-                ClientPen = pen
-            };
 
-            var point = new Point(x, y);
+            using var stream = new RenderDataStream();
+            stream.DrawEllipse(null, pen, pen, new Rect(0, 0, 100, 100));
 
-            Assert.Equal(inside, ellipseNode.HitTest(point));
+            Assert.Equal(inside, stream.HitTest(new Point(x, y)));
         }
     }
 }
