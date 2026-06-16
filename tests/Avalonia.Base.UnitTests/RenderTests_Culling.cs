@@ -247,8 +247,7 @@ namespace Avalonia.Base.UnitTests
                 Render(root, new PlatformDrawingContext(effectImpl.Object, ownsImpl: false));
 
                 Assert.NotNull(effectBounds);
-                Assert.True(effectBounds.Value.Width >= root.Bounds.Width);
-                Assert.True(effectBounds.Value.Height >= root.Bounds.Height);
+                Assert.True(effectBounds.Value.Contains(root.Bounds));
             }
         }
 

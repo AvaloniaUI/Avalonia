@@ -64,7 +64,7 @@ public class DrawingContextTests : TestBase
     }
 
     /// <summary>
-    /// This test ensures that DrawingImage take effects into account when rendering.
+    /// This test ensures that DrawingImage takes effects into account when rendering.
     /// </summary>
     [Fact]
     public async Task Should_Render_DrawingImage_With_Effect()

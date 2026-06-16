@@ -90,8 +90,8 @@ namespace Avalonia.Media
             var clip = Viewbox != null ||
                        !MathUtilities.AreClose(sourceRect.X, 0) ||
                        !MathUtilities.AreClose(sourceRect.Y, 0) ||
-                       !MathUtilities.AreClose(sourceRect.Width, Size.Width) ||
-                       !MathUtilities.AreClose(sourceRect.Height, Size.Height);
+                       !MathUtilities.AreClose(sourceRect.Width, bounds.Width) ||
+                       !MathUtilities.AreClose(sourceRect.Height, bounds.Height);
 
             using (clip ? context.PushClip(destRect) : default)
             using (context.PushTransform(translate * scale))
