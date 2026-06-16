@@ -202,6 +202,7 @@ namespace Avalonia.Native
         public int IsValueProvider() => IsProvider<IValueProvider>();
         public IAvnString? ValueProvider_GetValue() => ValueProvider.Value.ToAvnString();
         public void ValueProvider_SetValue(string value) => ValueProvider.SetValue(value);
+        public int ValueProvider_IsReadOnly() => ValueProvider.IsReadOnly.AsComBool();
 
         [return: NotNullIfNotNull("peer")]
         public static AvnAutomationPeer? Wrap(AutomationPeer? peer)

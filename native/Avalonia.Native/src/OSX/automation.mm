@@ -274,6 +274,20 @@
     }
 }
 
+- (BOOL)accessibilityIsAttributeSettable:(NSAccessibilityAttributeName)attribute
+{
+    if ([attribute isEqualToString:NSAccessibilityValueAttribute])
+    {
+        if (_peer->IsValueProvider())
+            return !_peer->ValueProvider_IsReadOnly();
+        if (_peer->IsRangeValueProvider())
+            return YES;
+        return NO;
+    }
+
+    return [super accessibilityIsAttributeSettable:attribute];
+}
+
 - (id)accessibilityMinValue
 {
     if (_peer->IsRangeValueProvider())
