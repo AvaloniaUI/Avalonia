@@ -31,12 +31,13 @@ namespace Avalonia.OpenGL.Egl
             return BeginDrawCore(sceneInfo);
         }
 
-        private protected virtual bool SkipWaits => false;
+        protected virtual bool SkipWaits => false;
 
         public abstract IGlPlatformSurfaceRenderingSession BeginDrawCore(IRenderTarget.RenderTargetSceneInfo sceneInfo);
 
         protected IGlPlatformSurfaceRenderingSession BeginDraw(EglSurface surface,
-            PixelSize size, double scaling, Action? onFinish = null, bool isYFlipped = false)
+            PixelSize size, double scaling, Action? onFinish = null, bool isYFlipped = false,
+            Action? beforeSwap = null)
         {
 
             var restoreContext = Context.MakeCurrent(surface);
@@ -69,7 +70,7 @@ namespace Avalonia.OpenGL.Egl
 
                 
                 success = true;
-                return new Session(Context.Display, Context, surface, size, scaling,  restoreContext, onFinish, isYFlipped, SkipWaits);
+                return new Session(Context.Display, Context, surface, size, scaling,  restoreContext, onFinish, isYFlipped, SkipWaits, beforeSwap);
             }
             finally
             {
@@ -85,11 +86,13 @@ namespace Avalonia.OpenGL.Egl
             private readonly EglDisplay _display;
             private readonly IDisposable _restoreContext;
             private readonly Action? _onFinish;
+            private readonly Action? _beforeSwap;
             private readonly bool _skipWaits;
 
             public Session(EglDisplay display, EglContext context,
                 EglSurface glSurface, PixelSize size, double scaling,
-                IDisposable restoreContext, Action? onFinish, bool isYFlipped, bool skipWaits)
+                IDisposable restoreContext, Action? onFinish, bool isYFlipped, bool skipWaits,
+                Action? beforeSwap = null)
             {
                 Size = size;
                 Scaling = scaling;
@@ -99,6 +102,7 @@ namespace Avalonia.OpenGL.Egl
                 _glSurface = glSurface;
                 _restoreContext = restoreContext;
                 _onFinish = onFinish;
+                _beforeSwap = beforeSwap;
                 _skipWaits = skipWaits;
             }
 
@@ -107,6 +111,7 @@ namespace Avalonia.OpenGL.Egl
                 _context.GlInterface.Flush();
                 if (!_skipWaits)
                     _display.EglInterface.WaitGL();
+                _beforeSwap?.Invoke();
                 _glSurface.SwapBuffers();
                 if (!_skipWaits)
                 {
