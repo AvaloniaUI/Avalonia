@@ -1102,6 +1102,12 @@ namespace Avalonia.Win32
                 _savedWindowInfo.Style = current;
                 _savedWindowInfo.ExStyle = currentEx;
 
+                if (current.HasAllFlags(WindowStyles.WS_SYSMENU))
+                {
+                    // Create the system menu copy before fullscreen removes WS_SYSMENU.
+                    GetSystemMenu(_hwnd, false);
+                }
+
                 // Set new window style and size.
                 SetStyle(current & ~WindowStyles.WS_OVERLAPPEDWINDOW, false);
                 SetExtendedStyle(currentEx & ~(WindowStyles.WS_EX_DLGMODALFRAME | WindowStyles.WS_EX_WINDOWEDGE | WindowStyles.WS_EX_CLIENTEDGE | WindowStyles.WS_EX_STATICEDGE), false);

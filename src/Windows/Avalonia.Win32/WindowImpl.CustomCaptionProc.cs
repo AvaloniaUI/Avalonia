@@ -123,7 +123,7 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_NCRBUTTONUP
-                    when (HitTestValues)ToInt32(wParam) == HitTestValues.HTCAPTION:
+                    when (HitTestValues)ToInt32(wParam) == HitTestValues.HTCAPTION && IsCaptionHitForSystemMenu(hWnd, lParam):
                     ShowSystemMenu(PointFromLParam(lParam));
                     callDwp = false;
                     return IntPtr.Zero;
@@ -301,19 +301,17 @@ namespace Avalonia.Win32
 
         private bool IsCaptionHitForSystemMenu(IntPtr hWnd, IntPtr lParam)
         {
-            if (!_isClientAreaExtended || WindowState == WindowState.FullScreen)
+            if (!_isClientAreaExtended)
             {
                 return false;
             }
 
-            if (HitTestNCA(hWnd, IntPtr.Zero, lParam) != HitTestValues.HTCAPTION)
+            if (HitTestNCA(hWnd, IntPtr.Zero, lParam) is not HitTestValues.HTCAPTION and not HitTestValues.HTNOWHERE)
             {
                 return false;
             }
 
-            return HitTestVisual(lParam)
-                is HitTestValues.HTNOWHERE
-                or HitTestValues.HTCAPTION;
+            return HitTestVisual(lParam) is HitTestValues.HTCAPTION or HitTestValues.HTNOWHERE;
         }
 
         private void ShowSystemMenu(PixelPoint screenPoint)
@@ -324,7 +322,7 @@ namespace Avalonia.Win32
                 return;
             }
 
-            // SetForegroundWindow(_hwnd);
+            SetForegroundWindow(_hwnd);
             SendMessage(_hwnd, (int)WindowsMessage.WM_INITMENU, menu, IntPtr.Zero);
             UpdateSystemMenu(menu);
 
@@ -341,7 +339,14 @@ namespace Avalonia.Win32
 
             if (command != 0)
             {
-                SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)command, MakeLParam(screenPoint));
+                if ((SysCommands)command == SysCommands.SC_RESTORE && WindowState == WindowState.FullScreen)
+                {
+                    WindowState = WindowState.Normal;
+                }
+                else
+                {
+                    SendMessage(_hwnd, (int)WindowsMessage.WM_SYSCOMMAND, (IntPtr)command, MakeLParam(screenPoint));
+                }
             }
         }
 
@@ -353,8 +358,8 @@ namespace Avalonia.Win32
             var isFullScreen = state == WindowState.FullScreen;
             var isNormal = state == WindowState.Normal;
 
-            SetSystemMenuItemEnabled(menu, SysCommands.SC_RESTORE, isMinimized || isMaximized);
-            SetSystemMenuItemEnabled(menu, SysCommands.SC_MOVE, isNormal);
+            SetSystemMenuItemEnabled(menu, SysCommands.SC_RESTORE, isMinimized || isMaximized || isFullScreen);
+            SetSystemMenuItemEnabled(menu, SysCommands.SC_MOVE, isNormal || isFullScreen);
             SetSystemMenuItemEnabled(menu, SysCommands.SC_SIZE, isNormal && _windowProperties.IsResizable);
             SetSystemMenuItemEnabled(menu, SysCommands.SC_MINIMIZE, !isMinimized && !isFullScreen && _windowProperties.IsMinimizable);
             SetSystemMenuItemEnabled(menu, SysCommands.SC_MAXIMIZE, !isMaximized && !isFullScreen && _windowProperties.IsMaximizable);
