@@ -1319,6 +1319,9 @@ interface IAvnAutomationPeer : IUnknown
      bool SelectionItemProvider_IsSelected();
      void SelectionItemProvider_Select();
 
+     IAvnAutomationPeer* ScrollProvider_GetHorizontalScrollBar();
+     IAvnAutomationPeer* ScrollProvider_GetVerticalScrollBar();
+
      bool IsToggleProvider();
      int ToggleProvider_GetToggleState();
      void ToggleProvider_Toggle();
