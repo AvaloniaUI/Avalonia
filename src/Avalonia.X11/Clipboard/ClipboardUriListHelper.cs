@@ -47,6 +47,8 @@ internal static class ClipboardUriListHelper
         foreach (var item in items)
             writer.WriteLine(item.Path.AbsoluteUri);
 
+        writer.Flush();
+
         return stream.ToArray();
     }
 }
