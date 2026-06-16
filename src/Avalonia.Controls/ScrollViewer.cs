@@ -708,6 +708,14 @@ namespace Avalonia.Controls
 
         private static double Clamp(double value, double min, double max)
         {
+            // A NaN offset must never survive. Offset is two-way coerced between the ScrollViewer and its
+            // ScrollContentPresenter; because NaN != NaN, a NaN offset never compares equal, so the
+            // coerce/raise cycle never converges and recurses until it overflows the stack (see #21444).
+            if (double.IsNaN(value))
+            {
+                return min;
+            }
+
             return (value < min) ? min : (value > max) ? max : value;
         }
 
