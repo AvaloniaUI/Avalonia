@@ -7,32 +7,34 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="*,Auto"
-              RowDefinitions="*,Auto">
-          <ScrollContentPresenter Name="PART_ContentPresenter"
-                                  Padding="{TemplateBinding Padding}"
-                                  HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
-                                  VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
-                                  HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
-                                  VerticalSnapPointsAlignment="{TemplateBinding VerticalSnapPointsAlignment}"
-                                  Background="{TemplateBinding Background}"
-                                  ScrollViewer.IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}">
-            <ScrollContentPresenter.GestureRecognizers>
-              <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
-                                       CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}"
-                                       IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), ElementName=PART_ContentPresenter}"/>
-            </ScrollContentPresenter.GestureRecognizers>
-          </ScrollContentPresenter>
-          <ScrollBar Name="PART_HorizontalScrollBar"
-                     Grid.Row="1"
-                     Orientation="Horizontal"/>
-          <ScrollBar Name="PART_VerticalScrollBar"
-                     Grid.Column="1"
-                     Orientation="Vertical"/>
-          <Panel Grid.Row="1"
-                 Grid.Column="1"
-                 Background="{DynamicResource ThemeControlMidBrush}"/>
-        </Grid>
+        <Decorator Name="PART_KeyboardAwareDecorator">
+          <Grid ColumnDefinitions="*,Auto"
+                RowDefinitions="*,Auto">
+            <ScrollContentPresenter Name="PART_ContentPresenter"
+                                    Padding="{TemplateBinding Padding}"
+                                    HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
+                                    VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
+                                    HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
+                                    VerticalSnapPointsAlignment="{TemplateBinding VerticalSnapPointsAlignment}"
+                                    Background="{TemplateBinding Background}"
+                                    ScrollViewer.IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}">
+              <ScrollContentPresenter.GestureRecognizers>
+                <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
+                                         CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}"
+                                         IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), ElementName=PART_ContentPresenter}"/>
+              </ScrollContentPresenter.GestureRecognizers>
+            </ScrollContentPresenter>
+            <ScrollBar Name="PART_HorizontalScrollBar"
+                       Grid.Row="1"
+                       Orientation="Horizontal"/>
+            <ScrollBar Name="PART_VerticalScrollBar"
+                       Grid.Column="1"
+                       Orientation="Vertical"/>
+            <Panel Grid.Row="1"
+                   Grid.Column="1"
+                   Background="{DynamicResource ThemeControlMidBrush}"/>
+          </Grid>
+        </Decorator>
       </ControlTemplate>
     </Setter>
   </ControlTheme>

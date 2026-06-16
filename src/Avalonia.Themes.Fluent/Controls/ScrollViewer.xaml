@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary
-  xmlns="https://github.com/avaloniaui"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  x:ClassModifier="internal">
+xmlns="https://github.com/avaloniaui"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+x:ClassModifier="internal">
   <Design.PreviewWith>
     <ScrollViewer Width="200" Height="200"
                   HorizontalScrollBarVisibility="Auto">
@@ -23,41 +23,43 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
-          <ScrollContentPresenter Name="PART_ContentPresenter"
-                                  Grid.Row="0"
-                                  Grid.Column="0"
-                                  Background="{TemplateBinding Background}"
-                                  HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
-                                  VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
-                                  HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
-                                  VerticalSnapPointsAlignment="{TemplateBinding VerticalSnapPointsAlignment}"
-                                  Padding="{TemplateBinding Padding}"
-                                  ScrollViewer.IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}">
-            <ScrollContentPresenter.GestureRecognizers>
-              <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
-                                       CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}"
-                                       IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), ElementName=PART_ContentPresenter}"/>
-            </ScrollContentPresenter.GestureRecognizers>
-          </ScrollContentPresenter>
-          <ScrollBar Name="PART_HorizontalScrollBar"
-                     Orientation="Horizontal"
-                     Grid.Row="1"/>
-          <ScrollBar Name="PART_VerticalScrollBar"
-                     Orientation="Vertical"
-                     Grid.Column="1"/>
-          <Panel x:Name="PART_ScrollBarsSeparator"
-                 Grid.Row="1"
-                 Grid.Column="1"
-                 Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}"
-                 Opacity="0">
-            <Panel.Transitions>
-              <Transitions>
-                <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
-              </Transitions>
-            </Panel.Transitions>
-          </Panel>
-        </Grid>
+        <Decorator Name="PART_KeyboardAwareDecorator">
+          <Grid ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
+            <ScrollContentPresenter Name="PART_ContentPresenter"
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    Background="{TemplateBinding Background}"
+                                    HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
+                                    VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
+                                    HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
+                                    VerticalSnapPointsAlignment="{TemplateBinding VerticalSnapPointsAlignment}"
+                                    Padding="{TemplateBinding Padding}"
+                                    ScrollViewer.IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}">
+              <ScrollContentPresenter.GestureRecognizers>
+                <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
+                                         CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}"
+                                         IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), ElementName=PART_ContentPresenter}"/>
+              </ScrollContentPresenter.GestureRecognizers>
+            </ScrollContentPresenter>
+            <ScrollBar Name="PART_HorizontalScrollBar"
+                       Orientation="Horizontal"
+                       Grid.Row="1"/>
+            <ScrollBar Name="PART_VerticalScrollBar"
+                       Orientation="Vertical"
+                       Grid.Column="1"/>
+            <Panel x:Name="PART_ScrollBarsSeparator"
+                   Grid.Row="1"
+                   Grid.Column="1"
+                   Background="{DynamicResource ScrollViewerScrollBarsSeparatorBackground}"
+                   Opacity="0">
+              <Panel.Transitions>
+                <Transitions>
+                  <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                </Transitions>
+              </Panel.Transitions>
+            </Panel>
+          </Grid>
+        </Decorator>
       </ControlTemplate>
     </Setter>
     <Style Selector="^[IsExpanded=true] /template/ Panel#PART_ScrollBarsSeparator">

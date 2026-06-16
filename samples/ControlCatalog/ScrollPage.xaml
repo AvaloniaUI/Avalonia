@@ -1,7 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:ControlCatalog">
-
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:ControlCatalog">
   <ControlTheme x:Key="ScrollPage" TargetType="ContentPage">
     <Setter Property="Template">
       <ControlTemplate>
@@ -15,18 +14,24 @@
                             HorizontalContentAlignment="Stretch"
                             IsVisible="False" />
 
-          <ScrollViewer Margin="20,20,5,0"
-            HorizontalScrollBarVisibility="Disabled">
-            <ContentPresenter Name="PART_ContentPresenter"
+          <ContentPresenter Name="PART_ContentPresenter"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            CornerRadius="{TemplateBinding CornerRadius}" />
-          </ScrollViewer>
+                            CornerRadius="{TemplateBinding CornerRadius}" >
+            <ContentPresenter.ContentTemplate>
+              <DataTemplate>
+                <ScrollViewer Padding="20,20,5,0"
+                              ResizeWithInputPane="True"
+                              HorizontalScrollBarVisibility="Disabled">
+                  <ContentPresenter Content="{Binding}"/>
+                </ScrollViewer>
+              </DataTemplate>
+            </ContentPresenter.ContentTemplate>
+          </ContentPresenter>
         </DockPanel>
       </ControlTemplate>
     </Setter>
