@@ -1274,6 +1274,7 @@ interface IAvnAutomationPeer : IUnknown
      IAvnAutomationPeer* GetLabeledBy();
      IAvnString* GetName();
      IAvnAutomationPeer* GetParent();
+     IAvnAutomationPeer* GetTemplatedParent();
      IAvnAutomationPeer* GetVisualRoot();
      bool HasKeyboardFocus();
      bool IsContentElement();
