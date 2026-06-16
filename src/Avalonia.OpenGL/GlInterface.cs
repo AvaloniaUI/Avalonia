@@ -388,6 +388,15 @@ namespace Avalonia.OpenGL
         [GlExtensionEntryPoint("glGenVertexArraysOES", "GL_OES_vertex_array_object")]
         public partial void GenVertexArrays(int n, int* rv);
 
+        [GetProcAddress("glReadBuffer", true)]
+        public partial void ReadBuffer(int buffer);
+        
+        [GetProcAddress("glDrawBuffer", true)]
+        public partial void DrawBuffer(int buffer);
+        
+        [GetProcAddress("glWriteBuffer", true)]
+        public partial void WriteBuffer(int buffer);
+
         public int GenVertexArray()
         {
             int rv = 0;
