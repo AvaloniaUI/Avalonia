@@ -37,7 +37,7 @@ namespace Avalonia.Media
             {
                 if (value is { } v && v < 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), v, "PaletteIndex must be non-negative.");
+                    throw new ArgumentOutOfRangeException(nameof(PaletteIndex), v, "PaletteIndex must be non-negative.");
                 }
 
                 _paletteIndex = value;
@@ -60,7 +60,7 @@ namespace Avalonia.Media
             {
                 if (value is { } v && v < 1)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), v, "PixelSize must be at least 1.");
+                    throw new ArgumentOutOfRangeException(nameof(PixelSize), v, "PixelSize must be at least 1.");
                 }
 
                 _pixelSize = value;
