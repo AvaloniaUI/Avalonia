@@ -502,8 +502,14 @@
     if (_children)
         [changed addObjectsFromArray:_children];
 
+    id target = [AvnAccessibilityElement acquire:_peer->GetTemplatedParent()];
+    if (target == nil)
+        target = self;
+    while ([target isKindOfClass:[AvnAccessibilityElement class]] && ![(AvnAccessibilityElement*)target isAccessibilityElement])
+        target = [(AvnAccessibilityElement*)target accessibilityParent];
+
     NSAccessibilityPostNotificationWithUserInfo(
-        self,
+        target,
         NSAccessibilityLayoutChangedNotification,
         @{ NSAccessibilityUIElementsKey: [changed allObjects]});
 }

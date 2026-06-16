@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Native.Interop;
 
@@ -56,6 +57,10 @@ namespace Avalonia.Native
         public AvnLandmarkType LandmarkType => (AvnLandmarkType?)_inner.GetLandmarkType() ?? AvnLandmarkType.LandmarkNone;
         public int HeadingLevel => _inner.GetHeadingLevel();
         public IAvnAutomationPeer? Parent => Wrap(_inner.GetParent());
+        public IAvnAutomationPeer? TemplatedParent =>
+            _inner is ControlAutomationPeer { Owner.TemplatedParent: Control templatedParent } ? 
+                Wrap(ControlAutomationPeer.CreatePeerForElement(templatedParent))
+                : null;
         public IAvnAutomationPeer? VisualRoot => Wrap(_inner.GetAutomationRoot());
         public AvnLiveSetting LiveSetting => (AvnLiveSetting)_inner.GetLiveSetting();
 
