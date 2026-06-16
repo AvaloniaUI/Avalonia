@@ -75,7 +75,14 @@ namespace Avalonia.OpenGL.Egl
         [GetProcAddress("eglChooseConfig")]
         public partial bool ChooseConfig(IntPtr display, int[] attribs,
             out IntPtr surfaceConfig, int numConfigs, out int choosenConfig);
-        
+
+        // Returns all configs matching the attribute list. Pass a null `configs` array to query the
+        // available config count first. Some drivers (notably nvidia) expose multiple indistinguishable
+        // configs where only a subset is actually usable, so callers need to enumerate and probe them.
+        [GetProcAddress("eglChooseConfig")]
+        public partial bool ChooseConfigs(IntPtr display, int[] attribs,
+            IntPtr[]? configs, int configSize, out int numConfigs);
+
         [GetProcAddress("eglCreateContext")]
         public partial IntPtr CreateContext(IntPtr display, IntPtr config,
             IntPtr share, int[] attrs);

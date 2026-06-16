@@ -35,7 +35,7 @@ namespace Avalonia.OpenGL.Egl
 //        public const int  EGL_MAX_PBUFFER_PIXELS = 0x302B;
 //        public const int  EGL_MAX_PBUFFER_WIDTH = 0x302C;
 //        public const int  EGL_NATIVE_RENDERABLE = 0x302D;
-//        public const int  EGL_NATIVE_VISUAL_ID = 0x302E;
+        public const int  EGL_NATIVE_VISUAL_ID = 0x302E;
 //        public const int  EGL_NATIVE_VISUAL_TYPE = 0x302F;
         public const int  EGL_NONE = 0x3038;
 //        public const int  EGL_NON_CONFORMANT_CONFIG = 0x3051;
@@ -199,6 +199,9 @@ namespace Avalonia.OpenGL.Egl
 //
         // EXT_platform_device
         public const int EGL_PLATFORM_DEVICE_EXT = 0x313F;
+
+        // KHR_platform_x11 / EXT_platform_x11
+        public const int EGL_PLATFORM_X11_EXT = 0x31D5;
 
 
         //EXT_device_query
