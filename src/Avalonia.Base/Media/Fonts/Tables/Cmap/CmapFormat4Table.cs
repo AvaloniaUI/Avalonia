@@ -80,10 +80,14 @@ namespace Avalonia.Media.Fonts.Tables.Cmap
             int maxSegCount = Math.Max(0, (tableLength - endCodeOffset - 2) / 8);
             _segCount = Math.Min(_segCount, maxSegCount);
 
-            int startCodeOffset = endCodeOffset + _segCount * 2 + 2; // + reservedPad
-            int idDeltaOffset = startCodeOffset + _segCount * 2; // after startCodes
-            int idRangeOffsetOffset = idDeltaOffset + _segCount * 2; // after idDeltas
-            int glyphIdArrayOffset = idRangeOffsetOffset + _segCount * 2; // after idRangeOffsets
+            // Clamp each derived offset to tableLength so that zero-length slices (e.g. when
+            // _segCount was driven to 0 by a too-short declared length) always start at a valid
+            // position. The reservedPad (+2) between endCodes and startCodes is what makes
+            // startCodeOffset land past the end of a 14-byte clamped table without this guard.
+            int startCodeOffset = Math.Min(endCodeOffset + _segCount * 2 + 2, tableLength); // + reservedPad
+            int idDeltaOffset = Math.Min(startCodeOffset + _segCount * 2, tableLength); // after startCodes
+            int idRangeOffsetOffset = Math.Min(idDeltaOffset + _segCount * 2, tableLength); // after idDeltas
+            int glyphIdArrayOffset = Math.Min(idRangeOffsetOffset + _segCount * 2, tableLength); // after idRangeOffsets
 
             // Slice directly
             _endCodes = _table.Slice(endCodeOffset, _segCount * 2);
