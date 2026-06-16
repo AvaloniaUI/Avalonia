@@ -372,6 +372,20 @@
     return [AvnAccessibilityElement acquire:rootPeer];
 }
 
+- (id)accessibilityHorizontalScrollBar
+{
+    if (_peer == nullptr)
+        return nil;
+    return [AvnAccessibilityElement acquire:_peer->ScrollProvider_GetHorizontalScrollBar()];
+}
+
+- (id)accessibilityVerticalScrollBar
+{
+    if (_peer == nullptr)
+        return nil;
+    return [AvnAccessibilityElement acquire:_peer->ScrollProvider_GetVerticalScrollBar()];
+}
+
 - (BOOL)isAccessibilityExpanded
 {
     if (!_peer->IsExpandCollapseProvider())

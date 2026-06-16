@@ -182,6 +182,12 @@ namespace Avalonia.Native
 
         public int IsSelectionItemProvider() => IsProvider<ISelectionItemProvider>();
         public int SelectionItemProvider_IsSelected() => SelectionItemProvider.IsSelected.AsComBool();
+
+        public IAvnAutomationPeer? ScrollProvider_GetHorizontalScrollBar()
+            => _inner is ScrollViewerAutomationPeer scrollViewer ? Wrap(scrollViewer.GetHorizontalScrollBarPeer()) : null;
+
+        public IAvnAutomationPeer? ScrollProvider_GetVerticalScrollBar()
+            => _inner is ScrollViewerAutomationPeer scrollViewer ? Wrap(scrollViewer.GetVerticalScrollBarPeer()) : null;
         
         public int IsToggleProvider() => IsProvider<IToggleProvider>();
         public int ToggleProvider_GetToggleState() => (int)ToggleProvider.ToggleState;
