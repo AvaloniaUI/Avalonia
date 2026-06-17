@@ -818,9 +818,16 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     if(actualRange){
         range = *actualRange;
     }
+
+    // From the docs: an implementation of this method should be prepared for aRange to be out of bounds.
+    // In this case, you should return the intersection of the document's range and aRange.
+    // If the location of aRange is completely outside of the document's range, return nil.
+    auto finalRange = NSIntersectionRange(range, NSMakeRange(0, _text.length));
     
-    NSAttributedString* subString = [_text attributedSubstringFromRange:range];
+    if (finalRange.length == 0)
+        return nil;
     
+    NSAttributedString* subString = [_text attributedSubstringFromRange:finalRange];
     return subString;
 }
 
