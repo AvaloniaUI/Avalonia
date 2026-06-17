@@ -375,12 +375,7 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
             [self becomeFirstResponder];
         }
     }
-       
-    // If the IME is composing when a mouse button is pressed, deliver the event to the
-    // input context first. This lets the input method commit the in-progress composition
-    // into the currently focused control before the click potentially moves focus to a
-    // different control. Otherwise the marked text would be lost and could reappear in the
-    // next focused control.
+
     if([self hasMarkedText] &&
        (type == LeftButtonDown || type == RightButtonDown || type == MiddleButtonDown ||
         type == XButton1Down || type == XButton2Down) &&
