@@ -27,7 +27,13 @@ namespace Avalonia.Android
 
         protected override bool DispatchHoverEvent(MotionEvent? e)
         {
-            return _accessHelper.DispatchHoverEvent(e!) || base.DispatchHoverEvent(e);
+            var res = _view.PointerHelper.DispatchMotionEvent(e, out var callBase);
+            if (res == false)
+                callBase = !_accessHelper.DispatchHoverEvent(e!) && callBase;
+
+            var baseResult = callBase && base.DispatchHoverEvent(e);
+
+            return res ?? baseResult;
         }
 
         protected override bool DispatchGenericPointerEvent(MotionEvent? e)
