@@ -376,6 +376,19 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
         }
     }
        
+    // If the IME is composing when a mouse button is pressed, deliver the event to the
+    // input context first. This lets the input method commit the in-progress composition
+    // into the currently focused control before the click potentially moves focus to a
+    // different control. Otherwise the marked text would be lost and could reappear in the
+    // next focused control.
+    if([self hasMarkedText] &&
+       (type == LeftButtonDown || type == RightButtonDown || type == MiddleButtonDown ||
+        type == XButton1Down || type == XButton2Down) &&
+       [self inputContext] != nil)
+    {
+        [[self inputContext] handleEvent:event];
+    }
+
     auto parent = _parent.tryGet();
     if(parent != nullptr)
     {
@@ -1008,6 +1021,20 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
 
 - (void) setSelection:(int)start :(int)end{
     _selectedRange = NSMakeRange(start, end - start);
+}
+
+- (void) resetInputMethod{
+    auto parent = _parent.tryGet();
+
+    if(parent != nullptr && parent->InputMethod->IsActive()){
+        parent->InputMethod->Client->SetPreeditText(nullptr);
+    }
+
+    _markedRange = NSMakeRange(_selectedRange.location, 0);
+
+    if([self inputContext]) {
+        [[self inputContext] discardMarkedText];
+    }
 }
 
 - (void) setCursorRect:(AvnRect)rect{
