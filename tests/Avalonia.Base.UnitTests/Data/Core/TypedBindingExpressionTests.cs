@@ -1,0 +1,508 @@
+﻿using System;
+using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.Data.Core;
+using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
+using Avalonia.UnitTests;
+using Xunit;
+
+namespace Avalonia.Base.UnitTests.Data.Core;
+
+public class TypedBindingExpressionTests : ScopedTestBase
+{
+    [Fact]
+    public void Should_Produce_TypedBindingExpression()
+    {
+        var binding = CreateBinding();
+        var target = new TextBlock();
+        
+        BindAndAssert(target, binding);
+    }
+
+    [Fact]
+    public void Should_Bind_String_Value()
+    {
+        var data = new ViewModel { StringValue = "Hello" };
+        var target = CreateTarget(data);
+
+        Assert.Equal("Hello", target.Text);
+    }
+
+    [Fact]
+    public void OneWay_Binding_Should_Track_String_Value()
+    {
+        var data = new ViewModel { StringValue = "Hello" };
+        var target = CreateTarget(data, mode: BindingMode.OneWay);
+
+        Assert.Equal("Hello", target.Text);
+
+        data.StringValue = "World";
+
+        Assert.Equal("World", target.Text);
+    }
+
+    [Fact]
+    public void OneWay_Binding_Should_Track_DataContext()
+    {
+        var data1 = new ViewModel { StringValue = "Hello" };
+        var data2 = new ViewModel { StringValue = "World" };
+        var target = CreateTarget(data1, mode: BindingMode.OneWay);
+
+        Assert.Equal("Hello", target.Text);
+
+        target.DataContext = data2;
+
+        Assert.Equal("World", target.Text);
+    }
+
+    // The name of this test makes no sense in English but keeping it as it matches the name of
+    // the test in BindingExpressionTests.
+    [Fact]
+    public void OneWay_Binding_Updates_Target_When_Changes_And_Source_Raises_PropertyChanged()
+    {
+        var data = new ViewModel { StringValue = "foo" };
+        var target = CreateTarget(data, mode: BindingMode.OneWay);
+
+        Assert.Equal("foo", target.Text);
+
+        target.SetCurrentValue(TextBlock.TextProperty, "bar");
+        
+        Assert.Equal("bar", target.Text);
+
+        data.RaisePropertyChanged(nameof(data.StringValue));
+
+        Assert.Equal("foo", target.Text);
+    }
+
+    [Fact]
+    public void TwoWay_Binding_Writes_Value_To_Source()
+    {
+        var source = new ViewModel { StringValue = "Hello" };
+        var target = CreateTarget(source, mode: BindingMode.TwoWay);
+
+        Assert.Equal("Hello", target.Text);
+
+        source.StringValue = "World";
+
+        Assert.Equal("World", target.Text);
+
+        target.Text = "Goodbye";
+
+        Assert.Equal("Goodbye", source.StringValue);
+    }
+
+    [Fact]
+    public void TwoWay_Binding_Does_Not_Write_Back_To_Source_On_Attach()
+    {
+        var source = new ViewModel { StringValue = "Hello" };
+        var setsAfterConstruction = source.StringValueSetCount;
+
+        var target = CreateTarget(source, mode: BindingMode.TwoWay);
+
+        Assert.Equal("Hello", target.Text);
+
+        // Pushing the source value to the target must not echo it straight back to the source.
+        Assert.Equal(setsAfterConstruction, source.StringValueSetCount);
+    }
+
+    [Fact]
+    public void TwoWay_Binding_Does_Not_Echo_Source_Change_Back_To_Source()
+    {
+        var source = new ViewModel { StringValue = "Hello" };
+        var target = CreateTarget(source, mode: BindingMode.TwoWay);
+
+        var before = source.StringValueSetCount;
+
+        source.StringValue = "World";   // One setter call: this assignment.
+
+        Assert.Equal("World", target.Text);
+        Assert.Equal(before + 1, source.StringValueSetCount);
+    }
+
+    [Fact]
+    public void OneTime_Binding_Sets_Target_Only_Once_If_Data_Context_Does_Not_Change()
+    {
+        var data = new ViewModel { StringValue = "foo" };
+        var target = CreateTarget(data, mode: BindingMode.OneTime);
+
+        Assert.Equal("foo", target.Text);
+
+        data.StringValue = "bar";
+
+        Assert.Equal("foo", target.Text);
+    }
+
+    [Fact]
+    public void OneTime_Binding_Sets_Target_When_Data_Context_Changes()
+    {
+        var data = new ViewModel { StringValue = "foo" };
+        var target = CreateTarget(data, mode: BindingMode.OneTime);
+
+        Assert.Equal("foo", target.Text);
+
+        target.DataContext = new ViewModel { StringValue = "bar" };
+
+        Assert.Equal("bar", target.Text);
+    }
+
+    [Fact]
+    public void OneTime_Binding_Waits_For_DataContext()
+    {
+        var target = CreateTarget(null, mode: BindingMode.OneTime);
+
+        Assert.Null(target.Text);
+    }
+
+    [Fact]
+    public void OneTime_Binding_Waits_For_DataContext_With_Matching_Property_Name()
+    {
+        var data1 = new { Baz = "baz" };
+        var data2 = new ViewModel { StringValue = "foo" };
+        var target = CreateTarget(null, mode: BindingMode.OneTime);
+
+        target.DataContext = data1;
+        Assert.Null(target.Text);
+
+        target.DataContext = data2;
+        Assert.Equal("foo", target.Text);
+
+        data2.StringValue = "bar";
+        Assert.Equal("foo", target.Text);
+    }
+
+    [Fact]
+    public void OneTime_Binding_Waits_For_DataContext_With_Matching_Property_Type()
+    {
+        var data1 = new { StringValue = 1.5 };
+        var data2 = new ViewModel { StringValue = "foo" };
+        var target = CreateTarget(null, mode: BindingMode.OneTime);
+
+        target.DataContext = data1;
+        Assert.Null(target.Text);
+
+        target.DataContext = data2;
+        Assert.Equal("foo", target.Text);
+
+        data2.StringValue = "bar";
+        Assert.Equal("foo", target.Text);
+    }
+
+    [Fact]
+    public void OneWayToSource_Binding_Updates_Source_When_Target_Changes()
+    {
+        var data = new ViewModel();
+        var target = CreateTarget(data, mode: BindingMode.OneWayToSource);
+
+        Assert.Null(data.StringValue);
+
+        target.Text = "foo";
+        Assert.Equal("foo", data.StringValue);
+    }
+
+    [Fact]
+    public void OneWayToSource_Binding_Does_Not_Update_Target_When_Source_Changes()
+    {
+        var data = new ViewModel();
+        var target = CreateTarget(data, mode: BindingMode.OneWayToSource);
+
+        target.Text = "foo";
+        Assert.Equal("foo", data.StringValue);
+
+        data.StringValue = "bar";
+        Assert.Equal("foo", target.Text);
+    }
+
+    [Fact]
+    public void OneWayToSource_Binding_Updates_Source_When_DataContext_Changes()
+    {
+        var data1 = new ViewModel();
+        var data2 = new ViewModel();
+        var target = CreateTarget(data1, mode: BindingMode.OneWayToSource);
+
+        target.Text = "foo";
+        Assert.Equal("foo", data1.StringValue);
+
+        target.DataContext = data2;
+        Assert.Equal("foo", data2.StringValue);
+    }
+
+    [Fact]
+    public void Can_Bind_Readonly_Property_OneWayToSource()
+    {
+        var data = new ViewModel();
+        var target = new SelectableTextBlock
+        {
+            DataContext = data,
+            Text = "foobar",
+            SelectionStart = 0,
+            SelectionEnd = 3
+        };
+
+        Assert.Equal("foo", target.SelectedText);
+
+        var binding = CreateBinding(mode: BindingMode.OneWayToSource);
+        target.Bind(SelectableTextBlock.SelectedTextProperty, binding);
+
+        Assert.Equal("foo", data.StringValue);
+
+        target.SelectionEnd = 4;
+
+        // TODO: Uncomment when https://github.com/AvaloniaUI/Avalonia/issues/21461 fixed.
+        //Assert.Equal("foob", data.StringValue);
+    }
+
+    [Fact]
+    public void Can_Bind_String_To_Object()
+    {
+        var log = string.Empty;
+        using var logger = TestLogSink.Start((_, _, _, m, _) => log += m);
+        var source = new ViewModel { StringValue = "Hello" };
+        var binding = CreateBinding();
+        var target = new TextBlock { DataContext = source };
+        var expression = target.Bind(TextBlock.TagProperty, binding);
+
+        Assert.IsType<TypedBindingExpression<ViewModel, string?>>(expression);
+    }
+
+    [Fact]
+    public void Disposing_Binding_Unsubscribes_From_Source()
+    {
+        var data = new ViewModel { StringValue = "foo" };
+        var target = new TextBlock { DataContext = data };
+        var binding = CreateBinding();
+        var expression = target.Bind(TextBlock.TextProperty, binding);
+
+        Assert.Equal("foo", target.Text);
+        Assert.Equal(1, data.PropertyChangedSubscriptionCount);
+
+        expression.Dispose();
+
+        Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+
+        // Source changes no longer propagate to the (now unbound) target.
+        data.StringValue = "bar";
+        Assert.NotEqual("bar", target.Text);
+    }
+
+    [Fact]
+    public void Rebinding_Same_Property_Unsubscribes_Previous_Binding()
+    {
+        var data = new ViewModel { StringValue = "foo" };
+        var target = new TextBlock { DataContext = data };
+
+        target.Bind(TextBlock.TextProperty, CreateBinding());
+        target.Bind(TextBlock.TextProperty, CreateBinding());
+
+        // The first binding should have been disposed when the second was applied, leaving a
+        // single subscription rather than two.
+        Assert.Equal(1, data.PropertyChangedSubscriptionCount);
+    }
+
+    [Fact]
+    public void Should_Not_Produce_TypedBindingExpression_When_Binding_String_To_Double()
+    {
+        var log = string.Empty;
+        using var logger = TestLogSink.Start((_, _, _, m, _) => log += m);
+        var source = new ViewModel { StringValue = "Hello" };
+        var binding = CreateBinding();
+        var target = new TextBlock { DataContext = source };
+        var expression = target.Bind(TextBlock.OpacityProperty, binding);
+
+        Assert.IsType<BindingExpression>(expression);
+    }
+
+    [Fact]
+    public void Should_Not_Produce_TypedBindingExpression_When_Converter_Is_Present()
+    {
+        var binding = CreateBinding();
+        binding.Converter = new FuncValueConverter<string?, string?>(s => s);
+
+        var target = new TextBlock();
+        var expression = target.Bind(TextBlock.TextProperty, binding);
+
+        Assert.IsType<BindingExpression>(expression);
+    }
+
+    [Fact]
+    public void Should_Not_Produce_TypedBindingExpression_When_Binding_DataContext()
+    {
+        var log = string.Empty;
+        using var logger = TestLogSink.Start((_, _, _, m, _) => log += m);
+        var source = new ViewModel { StringValue = "Hello" };
+        var binding = CreateBinding();
+        var target = new TextBlock();
+        var expression = target.Bind(TextBlock.DataContextProperty, binding);
+
+        Assert.IsType<BindingExpression>(expression);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void OneWay_Binding_Updates_Target_When_Source_Raises_PropertyChanged_For_All_Properties(
+        string? allPropertiesName)
+    {
+        // A null or empty PropertyName means "all properties changed" per the INotifyPropertyChanged
+        // contract, so the binding must re-read its source value.
+        var data = new ViewModel { StringValue = "foo" };
+        var target = CreateTarget(data, mode: BindingMode.OneWay);
+
+        Assert.Equal("foo", target.Text);
+
+        data.SetStringValueWithoutNotification("bar");
+        data.RaisePropertyChanged(allPropertiesName);
+
+        Assert.Equal("bar", target.Text);
+    }
+
+    [Fact]
+    public void Getter_Exception_Does_Not_Propagate_When_Source_Raises_PropertyChanged()
+    {
+        // The untyped binding path swallows getter exceptions to avoid crashing the UI thread; the
+        // typed path must do the same rather than letting them escape into the event handler.
+        var data = new ViewModel { StringValue = "foo" };
+        var target = CreateTarget(data, mode: BindingMode.OneWay);
+
+        Assert.Equal("foo", target.Text);
+
+        data.ThrowOnGet = true;
+
+        var ex = Record.Exception(() => data.RaisePropertyChanged(nameof(ViewModel.StringValue)));
+
+        Assert.Null(ex);
+    }
+
+    [Fact]
+    public void Should_Not_Produce_TypedBindingExpression_For_ReadOnly_Source_In_TwoWay()
+    {
+        // A read-only source property cannot be written back to in TwoWay/OneWayToSource modes, so
+        // the untyped path (which fails silently) must be used instead.
+        var propertyInfo = new ClrPropertyInfo<ViewModel, string?>(
+            nameof(ViewModel.StringValue),
+            v => v.StringValue,
+            setter: null);
+        var binding = CreateBinding(propertyInfo, mode: BindingMode.TwoWay);
+        var target = new TextBlock { DataContext = new ViewModel() };
+
+        var expression = target.Bind(TextBlock.TextProperty, binding);
+
+        Assert.IsType<BindingExpression>(expression);
+    }
+
+    [Fact]
+    public void Should_Not_Produce_TypedBindingExpression_When_Target_Type_Is_Wider_In_TwoWay()
+    {
+        // The source is a string but the target property is object. The forward assignment is valid
+        // but writing an arbitrary object back to the string source could throw, so the untyped path
+        // must be used.
+        var source = new ViewModel { StringValue = "Hello" };
+        var binding = CreateBinding(mode: BindingMode.TwoWay);
+        var target = new TextBlock { DataContext = source };
+
+        var expression = target.Bind(TextBlock.TagProperty, binding);
+
+        Assert.IsType<BindingExpression>(expression);
+    }
+
+    [Fact]
+    public void Should_Not_Produce_TypedBindingExpression_For_Non_StyledElement_Target()
+    {
+        // TypedBindingExpression only supports StyledElement targets; other AvaloniaObjects (e.g.
+        // Application, which is an IDataContextProvider but not a StyledElement) must use the untyped
+        // path rather than throwing at runtime.
+        var binding = CreateBinding();
+        var target = new NonStyledTarget { DataContext = new ViewModel { StringValue = "Hello" } };
+
+        var expression = target.Bind(NonStyledTarget.ValueProperty, binding);
+
+        Assert.IsType<BindingExpression>(expression);
+    }
+
+    private static TypedBindingExpression<ViewModel, string?> BindAndAssert(StyledElement target, BindingBase binding)
+    {
+        var expression = target.Bind(TextBlock.TextProperty, binding);
+        return Assert.IsType<TypedBindingExpression<ViewModel, string?>>(expression);
+    }
+
+    private static CompiledBinding CreateBinding(BindingMode mode = BindingMode.OneWay)
+    {
+        var propertyInfo = new ClrPropertyInfo<ViewModel, string?>(
+            nameof(ViewModel.StringValue),
+            v => v.StringValue,
+            (o, v) => o.StringValue = v);
+        return CreateBinding(propertyInfo, mode);
+    }
+
+    private static CompiledBinding CreateBinding(
+        IPropertyInfo<ViewModel, string?> propertyInfo,
+        BindingMode mode = BindingMode.OneWay)
+    {
+        var path = new CompiledBindingPathBuilder().Property<ViewModel, string?>(
+            propertyInfo,
+            PropertyInfoAccessorFactory.CreateInpcPropertyAccessor,
+            false).Build();
+        return new CompiledBinding(path) { Mode = mode, };
+    }
+
+    private static TextBlock CreateTarget(ViewModel? data, BindingMode mode = BindingMode.OneWay)
+    {
+        var result = new TextBlock { DataContext = data };
+        var binding = CreateBinding(mode);
+        BindAndAssert(result, binding);
+        return result;
+    }
+
+    private class ViewModel : NotifyingBase
+    {
+        private string? _stringValue;
+
+        // Counts every setter invocation so tests can assert the binding doesn't write spurious
+        // values back to the source. PropertyChanged is only raised on a real change.
+        public int StringValueSetCount { get; private set; }
+
+        // When set, the getter throws so tests can verify getter exceptions don't escape the
+        // binding's PropertyChanged handler.
+        public bool ThrowOnGet { get; set; }
+
+        public string? StringValue
+        {
+            get
+            {
+                if (ThrowOnGet)
+                    throw new InvalidOperationException("Getter failed.");
+                return _stringValue;
+            }
+            set
+            {
+                ++StringValueSetCount;
+                SetField(ref _stringValue, value);
+            }
+        }
+
+        // Mutates the backing field without raising PropertyChanged, so tests can then raise an
+        // "all properties changed" notification (null/empty name) and observe the binding react.
+        public void SetStringValueWithoutNotification(string? value) => _stringValue = value;
+    }
+
+    private class NonStyledTarget : AvaloniaObject, IDataContextProvider
+    {
+        public static readonly StyledProperty<object?> DataContextProperty =
+            StyledElement.DataContextProperty.AddOwner<NonStyledTarget>();
+
+        public static readonly StyledProperty<string?> ValueProperty =
+            AvaloniaProperty.Register<NonStyledTarget, string?>(nameof(Value));
+
+        public object? DataContext
+        {
+            get => GetValue(DataContextProperty);
+            set => SetValue(DataContextProperty, value);
+        }
+
+        public string? Value
+        {
+            get => GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
+        }
+    }
+}

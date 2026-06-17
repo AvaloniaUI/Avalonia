@@ -610,8 +610,8 @@ namespace Avalonia
         /// Routes an untyped SetDirectValueUnchecked call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
-        /// <param name="value">The value.</param>
-        internal virtual void RouteSetDirectValueUnchecked(AvaloniaObject o, object? value) =>
+        /// <param name="entry">The value entry containing the value.</param>
+        internal virtual void RouteSetDirectValueUnchecked(AvaloniaObject o, IValueEntry entry) =>
             throw new NotSupportedException();
 
         /// <summary>
