@@ -184,10 +184,13 @@ namespace Avalonia.Native
         public double RangeValueProvider_GetSmallChange() => RangeValueProvider.SmallChange;
         public double RangeValueProvider_GetLargeChange() => RangeValueProvider.LargeChange;
         public void RangeValueProvider_SetValue(double value) => RangeValueProvider.SetValue(value);
+        public int RangeValueProvider_IsReadOnly() => RangeValueProvider.IsReadOnly.AsComBool();
 
         public int IsSelectionItemProvider() => IsProvider<ISelectionItemProvider>();
         public int SelectionItemProvider_IsSelected() => SelectionItemProvider.IsSelected.AsComBool();
         public void SelectionItemProvider_Select() => SelectionItemProvider.Select();
+        public void SelectionItemProvider_AddToSelection() => SelectionItemProvider.AddToSelection();
+        public void SelectionItemProvider_RemoveFromSelection() => SelectionItemProvider.RemoveFromSelection();
 
         public IAvnAutomationPeer? ScrollProvider_GetHorizontalScrollBar()
             => _inner is ScrollViewerAutomationPeer scrollViewer ? Wrap(scrollViewer.GetHorizontalScrollBarPeer()) : null;

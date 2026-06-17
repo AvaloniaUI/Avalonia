@@ -1315,10 +1315,13 @@ interface IAvnAutomationPeer : IUnknown
      double RangeValueProvider_GetSmallChange();
      double RangeValueProvider_GetLargeChange();
      void RangeValueProvider_SetValue(double value);
-     
+     bool RangeValueProvider_IsReadOnly();
+
      bool IsSelectionItemProvider();
      bool SelectionItemProvider_IsSelected();
      void SelectionItemProvider_Select();
+     void SelectionItemProvider_AddToSelection();
+     void SelectionItemProvider_RemoveFromSelection();
 
      IAvnAutomationPeer* ScrollProvider_GetHorizontalScrollBar();
      IAvnAutomationPeer* ScrollProvider_GetVerticalScrollBar();

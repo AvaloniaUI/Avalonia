@@ -260,14 +260,16 @@
 
 - (void)setAccessibilityValue:(id)newValue
 {
-    if (_peer->IsValueProvider())
+    if (!_peer->IsEnabled())
+        return;
+    if (_peer->IsValueProvider() && !_peer->ValueProvider_IsReadOnly())
     {
         if (newValue == nil)
             _peer->ValueProvider_SetValue(nil);
         else if ([newValue isKindOfClass:[NSString class]])
             _peer->ValueProvider_SetValue([(NSString*)newValue UTF8String]);
     }
-    else if (_peer->IsRangeValueProvider())
+    else if (_peer->IsRangeValueProvider() && !_peer->RangeValueProvider_IsReadOnly())
     {
         if ([newValue isKindOfClass:[NSNumber class]])
             _peer->RangeValueProvider_SetValue([(NSNumber*)newValue doubleValue]);
@@ -281,7 +283,7 @@
         if (_peer->IsValueProvider())
             return !_peer->ValueProvider_IsReadOnly();
         if (_peer->IsRangeValueProvider())
-            return YES;
+            return !_peer->RangeValueProvider_IsReadOnly();
         return NO;
     }
 
@@ -395,7 +397,7 @@
 
 - (void)setAccessibilityExpanded:(BOOL)accessibilityExpanded
 {
-    if (!_peer->IsExpandCollapseProvider())
+    if (!_peer->IsExpandCollapseProvider() || !_peer->IsEnabled())
         return;
     if (accessibilityExpanded)
         _peer->ExpandCollapseProvider_Expand();
@@ -405,13 +407,18 @@
 
 - (BOOL)accessibilityPerformPress
 {
+    if (!_peer->IsEnabled())
+        return NO;
     if (_peer->IsInvokeProvider())
     {
         _peer->InvokeProvider_Invoke();
     }
     else if (_peer->IsExpandCollapseProvider())
     {
-        _peer->ExpandCollapseProvider_Expand();
+        if (_peer->ExpandCollapseProvider_GetIsExpanded())
+            _peer->ExpandCollapseProvider_Collapse();
+        else
+            _peer->ExpandCollapseProvider_Expand();
     }
     else if (_peer->IsToggleProvider())
     {
@@ -422,7 +429,7 @@
 
 - (BOOL)accessibilityPerformIncrement
 {
-    if (!_peer->IsRangeValueProvider())
+    if (!_peer->IsRangeValueProvider() || _peer->RangeValueProvider_IsReadOnly() || !_peer->IsEnabled())
         return NO;
     auto value = _peer->RangeValueProvider_GetValue();
     value += _peer->RangeValueProvider_GetSmallChange();
@@ -432,7 +439,7 @@
 
 - (BOOL)accessibilityPerformDecrement
 {
-    if (!_peer->IsRangeValueProvider())
+    if (!_peer->IsRangeValueProvider() || _peer->RangeValueProvider_IsReadOnly() || !_peer->IsEnabled())
         return NO;
     auto value = _peer->RangeValueProvider_GetValue();
     value -= _peer->RangeValueProvider_GetSmallChange();
@@ -442,7 +449,7 @@
 
 - (BOOL)accessibilityPerformShowMenu
 {
-    if (!_peer->IsExpandCollapseProvider())
+    if (!_peer->IsExpandCollapseProvider() || !_peer->IsEnabled())
         return NO;
     _peer->ExpandCollapseProvider_Expand();
     return YES;
@@ -476,15 +483,20 @@
 
 - (void)setAccessibilitySelected:(BOOL)accessibilitySelected
 {
-    if (accessibilitySelected && _peer->IsSelectionItemProvider())
-        _peer->SelectionItemProvider_Select();
+    if (!_peer->IsSelectionItemProvider() || !_peer->IsEnabled())
+        return;
+    if (accessibilitySelected)
+        _peer->SelectionItemProvider_AddToSelection();
+    else
+        _peer->SelectionItemProvider_RemoveFromSelection();
 }
 
 - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector
 {
     if (selector == @selector(setAccessibilityValue:))
     {
-        return _peer->IsValueProvider() || _peer->IsRangeValueProvider();
+        return (_peer->IsValueProvider() && !_peer->ValueProvider_IsReadOnly()) ||
+               (_peer->IsRangeValueProvider() && !_peer->RangeValueProvider_IsReadOnly());
     }
     else if (selector == @selector(accessibilityPerformShowMenu))
     {
@@ -503,8 +515,11 @@
         return _peer->IsSelectionItemProvider();
     }
     else if (selector == @selector(accessibilityPerformIncrement) ||
-             selector == @selector(accessibilityPerformDecrement) ||
-             selector == @selector(accessibilityMinValue) ||
+             selector == @selector(accessibilityPerformDecrement))
+    {
+        return _peer->IsRangeValueProvider() && !_peer->RangeValueProvider_IsReadOnly();
+    }
+    else if (selector == @selector(accessibilityMinValue) ||
              selector == @selector(accessibilityMaxValue))
     {
         return _peer->IsRangeValueProvider();
