@@ -25,25 +25,6 @@ namespace Avalonia.Automation.Peers
         public bool IsSelectionRequired => GetSelectionModeCore().HasAllFlags(SelectionMode.AlwaysSelected);
         public IReadOnlyList<AutomationPeer> GetSelection() => GetSelectionCore() ?? Array.Empty<AutomationPeer>();
 
-        // Expose item containers as the accessible children so item indices line up with the child tree (AT-SPI selection, screen readers), skipping the intervening panel.
-        protected override IReadOnlyList<AutomationPeer>? GetChildrenCore()
-        {
-            if (Owner is not SelectingItemsControl owner || owner.ItemCount == 0)
-                return base.GetChildrenCore();
-
-            List<AutomationPeer>? result = null;
-            for (var i = 0; i < owner.ItemCount; i++)
-            {
-                if (owner.ContainerFromIndex(i) is Control container && container.IsVisible)
-                {
-                    result ??= new List<AutomationPeer>();
-                    result.Add(GetOrCreate(container));
-                }
-            }
-
-            return result ?? base.GetChildrenCore();
-        }
-
         protected virtual IReadOnlyList<AutomationPeer>? GetSelectionCore()
         {
             List<AutomationPeer>? result = null;

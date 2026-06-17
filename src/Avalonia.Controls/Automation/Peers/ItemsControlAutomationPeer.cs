@@ -1,4 +1,5 @@
-﻿using Avalonia.Automation.Provider;
+﻿using System.Collections.Generic;
+using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 
 namespace Avalonia.Automation.Peers
@@ -39,6 +40,25 @@ namespace Avalonia.Automation.Peers
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
             return AutomationControlType.List;
+        }
+
+        protected override IReadOnlyList<AutomationPeer>? GetChildrenCore()
+        {
+            var owner = Owner;
+            if (owner.ItemCount == 0)
+                return null;
+
+            List<AutomationPeer>? result = null;
+            for (var i = 0; i < owner.ItemCount; i++)
+            {
+                if (owner.ContainerFromIndex(i) is Control container && container.IsVisible)
+                {
+                    result ??= new List<AutomationPeer>();
+                    result.Add(GetOrCreate(container));
+                }
+            }
+
+            return result;
         }
 
         public void Scroll(ScrollAmount horizontalAmount, ScrollAmount verticalAmount)
