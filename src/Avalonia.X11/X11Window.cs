@@ -970,7 +970,7 @@ namespace Avalonia.X11
                 mouse.Position = mouse.Position / RenderScaling;
                 
                 // Chrome hit-test for drawn decorations
-                if (UseManagedDecorations
+                if (NeedsDrawnDecorations
                     && mouse.Type == RawPointerEventType.LeftButtonDown
                     && _inputRoot is { } inputRoot)
                 {
@@ -1556,6 +1556,7 @@ namespace Avalonia.X11
 
         private bool _extendingClientAreaToDecorations;
         private bool UseManagedDecorations => _extendingClientAreaToDecorations || _platform.Options.ForceDrawnDecorationsInternal;
+        private bool NeedsDrawnDecorations => UseManagedDecorations || _requestedWindowDecorations == WindowDecorations.BorderOnly;
 
         public void SetExtendClientAreaToDecorationsHint(bool extendIntoClientAreaHint)
         {
@@ -1652,10 +1653,10 @@ namespace Avalonia.X11
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
-        public bool NeedsManagedDecorations => UseManagedDecorations;
+        public bool NeedsManagedDecorations => NeedsDrawnDecorations;
 
         public PlatformRequestedDrawnDecoration RequestedDrawnDecorations =>
-            UseManagedDecorations
+            NeedsDrawnDecorations
                 ? PlatformRequestedDrawnDecoration.Border
                   | PlatformRequestedDrawnDecoration.ResizeGrips
                   | PlatformRequestedDrawnDecoration.TitleBar
