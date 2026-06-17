@@ -54,7 +54,7 @@ namespace Avalonia.FreeDesktop.AtSpi.Handlers
             if (childPeer.GetProvider<ISelectionItemProvider>() is not { } selectionItem)
                 return ValueTask.FromResult(false);
 
-            selectionItem.Select();
+            selectionItem.AddToSelection();
             return ValueTask.FromResult(true);
         }
 

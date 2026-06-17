@@ -1274,6 +1274,7 @@ interface IAvnAutomationPeer : IUnknown
      IAvnAutomationPeer* GetLabeledBy();
      IAvnString* GetName();
      IAvnAutomationPeer* GetParent();
+     IAvnAutomationPeer* GetTemplatedParent();
      IAvnAutomationPeer* GetVisualRoot();
      bool HasKeyboardFocus();
      bool IsContentElement();
@@ -1314,10 +1315,17 @@ interface IAvnAutomationPeer : IUnknown
      double RangeValueProvider_GetSmallChange();
      double RangeValueProvider_GetLargeChange();
      void RangeValueProvider_SetValue(double value);
-     
+     bool RangeValueProvider_IsReadOnly();
+
      bool IsSelectionItemProvider();
      bool SelectionItemProvider_IsSelected();
-     
+     void SelectionItemProvider_Select();
+     void SelectionItemProvider_AddToSelection();
+     void SelectionItemProvider_RemoveFromSelection();
+
+     IAvnAutomationPeer* ScrollProvider_GetHorizontalScrollBar();
+     IAvnAutomationPeer* ScrollProvider_GetVerticalScrollBar();
+
      bool IsToggleProvider();
      int ToggleProvider_GetToggleState();
      void ToggleProvider_Toggle();
@@ -1325,6 +1333,7 @@ interface IAvnAutomationPeer : IUnknown
      bool IsValueProvider();
      IAvnString* ValueProvider_GetValue();
      void ValueProvider_SetValue([const] char* value);
+     bool ValueProvider_IsReadOnly();
 
      IAvnString* GetHelpText();
      IAvnString* GetPlaceholderText();
