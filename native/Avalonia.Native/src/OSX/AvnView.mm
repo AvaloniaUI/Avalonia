@@ -775,10 +775,21 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
         markedText = (NSString*) string;
     }
     
-    _markedRange = NSMakeRange(_selectedRange.location, [markedText length]);
     auto parent = _parent.tryGet();
 
-    if(parent->InputMethod->IsActive()){
+    // Delete any replaced range
+    if (replacementRange.location != NSNotFound && parent != nullptr && parent->InputMethod->IsActive())
+    {
+        parent->InputMethod->Client->SelectInSurroundingText((int)replacementRange.location, (int)(replacementRange.location + replacementRange.length));
+        uint64_t timestamp = static_cast<uint64_t>([NSDate timeIntervalSinceReferenceDate] * 1000);
+        parent->TopLevelEvents->RawKeyEvent(KeyDown, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
+        parent->TopLevelEvents->RawKeyEvent(KeyUp, timestamp, AvnInputModifiersNone, AvnKeyBack, AvnPhysicalKeyNone, "\b");
+    }
+    
+    _markedRange = NSMakeRange(_selectedRange.location, [markedText length]);
+
+    if (parent != nullptr && parent->InputMethod->IsActive())
+    {
         parent->InputMethod->Client->SetPreeditText((char*)[markedText UTF8String]);
     }
 }
@@ -819,9 +830,9 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     if(parent == nullptr){
         return;
     }
-    
+
     NSString* text;
-        
+
     if([string isKindOfClass:[NSAttributedString class]])
     {
         text = [string string];
@@ -829,6 +840,13 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
     else
     {
         text = (NSString*) string;
+    }
+    
+    if (replacementRange.location != NSNotFound &&
+        ![self hasMarkedText] &&
+        parent->InputMethod->IsActive())
+    {
+        parent->InputMethod->Client->SelectInSurroundingText((int)replacementRange.location, (int)(replacementRange.location + replacementRange.length));
     }
     
     [self unmarkText];
