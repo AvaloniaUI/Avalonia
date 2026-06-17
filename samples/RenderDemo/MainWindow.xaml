@@ -94,5 +94,8 @@
     <TabItem Header="3D Transformation">
       <pages:Transform3DPage />
     </TabItem>
+    <TabItem Header="Resize Pattern">
+      <pages:ResizePatternPage />
+    </TabItem>
   </controls:HamburgerMenu>
 </Window>
