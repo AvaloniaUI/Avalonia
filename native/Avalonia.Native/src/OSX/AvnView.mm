@@ -877,6 +877,19 @@ static void ConvertTilt(NSPoint tilt, float* xTilt, float* yTilt)
             parent->InputMethod->Client->SelectInSurroundingText(start, end);
         }
     }
+    // If special character is selected with left/right arrow keys
+    // macOS reports NSNotFound instead of a replacement range.
+    // If there is a single marked character, select it so the committed
+    // character replaces the preview character.
+    // Only handle marked range of 1 character to avoid affecting IME.
+    if (replacementRange.location == NSNotFound &&
+    _markedRange.length == 1 &&
+    parent->InputMethod->IsActive())
+    {
+    int start = (int)_markedRange.location;
+    int end = start + 1;
+    parent->InputMethod->Client->SelectInSurroundingText(start, end);
+    }
 
     [self unmarkText];
         
