@@ -47,6 +47,11 @@ interface WriteableClipboardSource {
     items: WriteableClipboardItem[];
 }
 
+interface ClipboardResult {
+    error: string;
+    result: ReadableDataItem[]
+}
+
 type ReadableDataItem = {
     type: "clipboardItem";
     value: ClipboardItem;
@@ -71,7 +76,7 @@ type ReadableDataValue = {
 
 export class InputHelper {
     static clipboardState: ClipboardState = ClipboardState.None;
-    static resolveClipboard?: (value: [readonly ReadableDataItem[], string]) => void;
+    static resolveClipboard?: (value: ClipboardResult) => void;
     static rejectClipboard?: (reason?: any) => void;
 
     public static initializeBackgroundHandlers() {
@@ -85,7 +90,7 @@ export class InputHelper {
             }
 
             const items = this.getDataTransferItems(args.clipboardData);
-            this.resolveClipboard([items.map((item) => ({ type: "dataTransferItem", value: item })), ""]);
+            this.resolveClipboard({ result: items.map((item) => ({ type: "dataTransferItem", value: item }))} as ClipboardResult);
         });
         this.clipboardState = ClipboardState.Ready;
     }
@@ -107,6 +112,14 @@ export class InputHelper {
         return { items: [] };
     }
 
+    public static getClipboardResultError(result: ClipboardResult): string {
+        return result.error;
+    }
+
+    public static getClipboardResultItems(result: ClipboardResult): ReadableDataItem[] {
+        return result.result;
+    }
+
     public static createWriteableClipboardItem(source: WriteableClipboardSource): WriteableClipboardItem {
         const item = { data: {} };
         source.items.push(item);
@@ -122,22 +135,22 @@ export class InputHelper {
         item.data[format] = new Blob([bytes], { type: format });
     }
 
-    public static async readClipboard(window: Window): Promise<[readonly ReadableDataItem[], string]> {
+    public static async readClipboard(window: Window): Promise<ClipboardResult> {
         const clipboard = window.navigator.clipboard;
 
         try {
             if (clipboard.read) {
                 const clipboardItems = await clipboard.read();
-                return [clipboardItems.map((item) => ({ type: "clipboardItem", value: item })), ""];
+                return { result: clipboardItems.map((item) => ({ type: "clipboardItem", value: item })) } as ClipboardResult;
             } else if (clipboard.readText) {
                 const item: ReadableDataItem = {
                     type: "string",
                     value: await clipboard.readText()
                 };
-                return [[item], ""];
+                return { result: [item] } as ClipboardResult;
             } else {
                 try {
-                    return await new Promise<[readonly ReadableDataItem[], string]>((resolve, reject) => {
+                    return await new Promise<ClipboardResult>((resolve, reject) => {
                         this.clipboardState = ClipboardState.Pending;
                         this.resolveClipboard = resolve;
                         this.rejectClipboard = reject;
@@ -151,7 +164,7 @@ export class InputHelper {
         }
         catch (ex: unknown) {
             if (ex instanceof Error && ex.name == "NotAllowedError") {
-                return [[], "denied"]
+                return { error: "denied" } as ClipboardResult;
             }
             throw ex;
         }

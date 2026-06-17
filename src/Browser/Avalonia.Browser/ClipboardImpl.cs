@@ -15,12 +15,12 @@ internal sealed class ClipboardImpl : IClipboardImpl
 {
     public async Task<IAsyncDataTransfer?> TryGetDataAsync()
     {
-        var arr = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis).ConfigureAwait(false);
-        if (arr.GetArrayItemAsString(1) == "denied")
+        var result = await ReadClipboardAsync(BrowserWindowingPlatform.GlobalThis).ConfigureAwait(false);
+        if (GetClipboardResultError(result) == "denied")
         {
             throw new UnauthorizedAccessException("Read permission is not granted for clipboard");
         }
-        var items = arr.GetArrayItem(0);
+        var items = GetClipboardResultItems(result);
         return items.GetPropertyAsInt32("length") == 0 ? null : new BrowserClipboardDataTransfer(items);
     }
 
