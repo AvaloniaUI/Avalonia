@@ -484,7 +484,7 @@
 {
     if (selector == @selector(setAccessibilityValue:))
     {
-        return _peer->IsValueProvider() || _peer->IsRangeValueProvider();
+        return (_peer->IsValueProvider() && !_peer->ValueProvider_IsReadOnly()) || _peer->IsRangeValueProvider();
     }
     else if (selector == @selector(accessibilityPerformShowMenu))
     {
