@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Controls;
 using Avalonia.Controls.Automation.Peers;
 using Avalonia.Native.Interop;
 
@@ -56,6 +57,10 @@ namespace Avalonia.Native
         public AvnLandmarkType LandmarkType => (AvnLandmarkType?)_inner.GetLandmarkType() ?? AvnLandmarkType.LandmarkNone;
         public int HeadingLevel => _inner.GetHeadingLevel();
         public IAvnAutomationPeer? Parent => Wrap(_inner.GetParent());
+        public IAvnAutomationPeer? TemplatedParent =>
+            _inner is ControlAutomationPeer { Owner.TemplatedParent: Control templatedParent } ? 
+                Wrap(ControlAutomationPeer.CreatePeerForElement(templatedParent))
+                : null;
         public IAvnAutomationPeer? VisualRoot => Wrap(_inner.GetAutomationRoot());
         public AvnLiveSetting LiveSetting => (AvnLiveSetting)_inner.GetLiveSetting();
 
@@ -182,6 +187,13 @@ namespace Avalonia.Native
 
         public int IsSelectionItemProvider() => IsProvider<ISelectionItemProvider>();
         public int SelectionItemProvider_IsSelected() => SelectionItemProvider.IsSelected.AsComBool();
+        public void SelectionItemProvider_Select() => SelectionItemProvider.Select();
+
+        public IAvnAutomationPeer? ScrollProvider_GetHorizontalScrollBar()
+            => _inner is ScrollViewerAutomationPeer scrollViewer ? Wrap(scrollViewer.GetHorizontalScrollBarPeer()) : null;
+
+        public IAvnAutomationPeer? ScrollProvider_GetVerticalScrollBar()
+            => _inner is ScrollViewerAutomationPeer scrollViewer ? Wrap(scrollViewer.GetVerticalScrollBarPeer()) : null;
         
         public int IsToggleProvider() => IsProvider<IToggleProvider>();
         public int ToggleProvider_GetToggleState() => (int)ToggleProvider.ToggleState;
@@ -190,6 +202,7 @@ namespace Avalonia.Native
         public int IsValueProvider() => IsProvider<IValueProvider>();
         public IAvnString? ValueProvider_GetValue() => ValueProvider.Value.ToAvnString();
         public void ValueProvider_SetValue(string value) => ValueProvider.SetValue(value);
+        public int ValueProvider_IsReadOnly() => ValueProvider.IsReadOnly.AsComBool();
 
         [return: NotNullIfNotNull("peer")]
         public static AvnAutomationPeer? Wrap(AutomationPeer? peer)

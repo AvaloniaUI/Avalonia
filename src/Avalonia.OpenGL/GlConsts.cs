@@ -85,7 +85,7 @@ namespace Avalonia.OpenGL
 //        public const int GL_CW = 0x0900;
 //        public const int GL_CCW = 0x0901;
 //        public const int GL_FRONT = 0x0404;
-//        public const int GL_BACK = 0x0405;
+        public const int GL_BACK = 0x0405;
 //        public const int GL_POLYGON_MODE = 0x0B40;
 //        public const int GL_POLYGON_SMOOTH = 0x0B41;
 //        public const int GL_POLYGON_STIPPLE = 0x0B42;

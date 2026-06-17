@@ -274,6 +274,20 @@
     }
 }
 
+- (BOOL)accessibilityIsAttributeSettable:(NSAccessibilityAttributeName)attribute
+{
+    if ([attribute isEqualToString:NSAccessibilityValueAttribute])
+    {
+        if (_peer->IsValueProvider())
+            return !_peer->ValueProvider_IsReadOnly();
+        if (_peer->IsRangeValueProvider())
+            return YES;
+        return NO;
+    }
+
+    return [super accessibilityIsAttributeSettable:attribute];
+}
+
 - (id)accessibilityMinValue
 {
     if (_peer->IsRangeValueProvider())
@@ -356,6 +370,20 @@
 {
     auto rootPeer = _peer->GetVisualRoot();
     return [AvnAccessibilityElement acquire:rootPeer];
+}
+
+- (id)accessibilityHorizontalScrollBar
+{
+    if (_peer == nullptr)
+        return nil;
+    return [AvnAccessibilityElement acquire:_peer->ScrollProvider_GetHorizontalScrollBar()];
+}
+
+- (id)accessibilityVerticalScrollBar
+{
+    if (_peer == nullptr)
+        return nil;
+    return [AvnAccessibilityElement acquire:_peer->ScrollProvider_GetVerticalScrollBar()];
 }
 
 - (BOOL)isAccessibilityExpanded
@@ -446,6 +474,12 @@
     return NO;
 }
 
+- (void)setAccessibilitySelected:(BOOL)accessibilitySelected
+{
+    if (accessibilitySelected && _peer->IsSelectionItemProvider())
+        _peer->SelectionItemProvider_Select();
+}
+
 - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector
 {
     if (selector == @selector(setAccessibilityValue:))
@@ -463,6 +497,10 @@
     else if (selector == @selector(accessibilityPerformPress))
     {
         return _peer->IsInvokeProvider() || _peer->IsExpandCollapseProvider() || _peer->IsToggleProvider();
+    }
+    else if (selector == @selector(setAccessibilitySelected:))
+    {
+        return _peer->IsSelectionItemProvider();
     }
     else if (selector == @selector(accessibilityPerformIncrement) ||
              selector == @selector(accessibilityPerformDecrement) ||
@@ -502,8 +540,31 @@
     if (_children)
         [changed addObjectsFromArray:_children];
 
+	/*
+	For future reference, upon testing with a sample SwiftUI app:
+
+    1) Containers vanish. VStack/HStack don't appear in the accessibility tree at all, 
+      only real elements (Text, Button, List) do, parented to one root AXHostingView.
+
+    2) Changes post on the nearest real element, not the container. 
+       Toggling a child two VStack/HStack levels deep fired AXLayoutChanged on the AXHostingView 
+       (the nearest real element), never on the hidden containers.
+
+    3) Real controls get their own notification. The List (AXOutline) posted AXRowCountChanged on itself.
+
+	Apple never posts a structural notification on a non-accessibility container.
+    It targets the nearest element that's actually in the tree.
+    That's exactly what the code below does (templated parent, else walk to the nearest exposed ancestor).
+	*/
+
+    id target = [AvnAccessibilityElement acquire:_peer->GetTemplatedParent()];
+    if (target == nil)
+        target = self;
+    while ([target isKindOfClass:[AvnAccessibilityElement class]] && ![(AvnAccessibilityElement*)target isAccessibilityElement])
+        target = [(AvnAccessibilityElement*)target accessibilityParent];
+
     NSAccessibilityPostNotificationWithUserInfo(
-        self,
+        target,
         NSAccessibilityLayoutChangedNotification,
         @{ NSAccessibilityUIElementsKey: [changed allObjects]});
 }
