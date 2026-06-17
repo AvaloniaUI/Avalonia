@@ -411,7 +411,10 @@
     }
     else if (_peer->IsExpandCollapseProvider())
     {
-        _peer->ExpandCollapseProvider_Expand();
+        if (_peer->ExpandCollapseProvider_GetIsExpanded())
+            _peer->ExpandCollapseProvider_Collapse();
+        else
+            _peer->ExpandCollapseProvider_Expand();
     }
     else if (_peer->IsToggleProvider())
     {
@@ -476,8 +479,12 @@
 
 - (void)setAccessibilitySelected:(BOOL)accessibilitySelected
 {
-    if (accessibilitySelected && _peer->IsSelectionItemProvider())
+    if (!_peer->IsSelectionItemProvider())
+        return;
+    if (accessibilitySelected)
         _peer->SelectionItemProvider_Select();
+    else
+        _peer->SelectionItemProvider_RemoveFromSelection();
 }
 
 - (BOOL)isAccessibilitySelectorAllowed:(SEL)selector
