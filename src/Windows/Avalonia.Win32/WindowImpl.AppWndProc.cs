@@ -246,11 +246,6 @@ namespace Avalonia.Win32
                         return IntPtr.Zero;
                     break;
 
-                case WindowsMessage.WM_CONTEXTMENU
-                    when ToInt32(lParam) != -1 && IsCaptionHitForSystemMenu(hWnd, lParam):
-                    ShowSystemMenu(PointFromLParam(lParam));
-                    return IntPtr.Zero;
-
                 case WindowsMessage.WM_MENUCHAR:
                     {
                         // mute the system beep
@@ -485,13 +480,6 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCXBUTTONDOWN:
                     {
                         if (IsMouseInPointerEnabled)
-                        {
-                            break;
-                        }
-                        // Keep caption right-clicks out of Avalonia input; the menu is shown on button up.
-                        if (_isClientAreaExtended
-                            && message == WindowsMessage.WM_NCRBUTTONDOWN
-                            && (HitTestValues)ToInt32(wParam) == HitTestValues.HTCAPTION)
                         {
                             break;
                         }

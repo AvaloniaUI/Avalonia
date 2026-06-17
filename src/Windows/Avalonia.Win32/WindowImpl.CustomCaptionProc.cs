@@ -122,9 +122,23 @@ namespace Avalonia.Win32
                     }
                     break;
 
-                case WindowsMessage.WM_NCRBUTTONUP
-                    when (HitTestValues)ToInt32(wParam) == HitTestValues.HTCAPTION && IsCaptionHitForSystemMenu(hWnd, lParam):
+                // Prevent right-clicks from triggering controls underneath while the cursor is over the window edge or HTCAPTION.
+                case WindowsMessage.WM_NCRBUTTONDOWN
+                    when (HitTestValues)ToInt32(wParam) is HitTestValues.HTCAPTION
+                    or HitTestValues.HTTOP or HitTestValues.HTBOTTOM
+                    or HitTestValues.HTLEFT or HitTestValues.HTRIGHT
+                    or HitTestValues.HTTOPLEFT or HitTestValues.HTTOPRIGHT
+                    or HitTestValues.HTBOTTOMLEFT or HitTestValues.HTBOTTOMRIGHT:
+                    callDwp = false;
+                    return IntPtr.Zero;
+
+                case WindowsMessage.WM_NCRBUTTONUP when (HitTestValues)ToInt32(wParam) == HitTestValues.HTCAPTION:
                     ShowSystemMenu(PointFromLParam(lParam));
+                    callDwp = false;
+                    return IntPtr.Zero;
+
+                case WindowsMessage.WM_INITMENU:
+                    UpdateSystemMenu(GetSystemMenu(hWnd, false));
                     callDwp = false;
                     return IntPtr.Zero;
 
@@ -299,21 +313,6 @@ namespace Avalonia.Win32
                 or HitTestValues.HTSYSMENU;
         }
 
-        private bool IsCaptionHitForSystemMenu(IntPtr hWnd, IntPtr lParam)
-        {
-            if (!_isClientAreaExtended)
-            {
-                return false;
-            }
-
-            if (HitTestNCA(hWnd, IntPtr.Zero, lParam) is not HitTestValues.HTCAPTION and not HitTestValues.HTNOWHERE)
-            {
-                return false;
-            }
-
-            return HitTestVisual(lParam) is HitTestValues.HTCAPTION or HitTestValues.HTNOWHERE;
-        }
-
         private void ShowSystemMenu(PixelPoint screenPoint)
         {
             var menu = GetSystemMenu(_hwnd, false);
@@ -323,8 +322,6 @@ namespace Avalonia.Win32
             }
 
             SetForegroundWindow(_hwnd);
-            SendMessage(_hwnd, (int)WindowsMessage.WM_INITMENU, menu, IntPtr.Zero);
-            UpdateSystemMenu(menu);
 
             var command = TrackPopupMenu(
                 menu,
@@ -352,6 +349,11 @@ namespace Avalonia.Win32
 
         private void UpdateSystemMenu(IntPtr menu)
         {
+            if (menu == IntPtr.Zero)
+            {
+                return;
+            }
+
             var state = WindowState;
             var isMinimized = state == WindowState.Minimized;
             var isMaximized = state == WindowState.Maximized;
@@ -364,6 +366,19 @@ namespace Avalonia.Win32
             SetSystemMenuItemEnabled(menu, SysCommands.SC_MINIMIZE, !isMinimized && !isFullScreen && _windowProperties.IsMinimizable);
             SetSystemMenuItemEnabled(menu, SysCommands.SC_MAXIMIZE, !isMaximized && !isFullScreen && _windowProperties.IsMaximizable);
             SetSystemMenuItemEnabled(menu, SysCommands.SC_CLOSE, true);
+
+            if (isMinimized || isMaximized || isFullScreen)
+            {
+                SetMenuDefaultItem(menu, (uint)SysCommands.SC_RESTORE, false);
+            }
+            else if (isNormal && _windowProperties.IsMaximizable)
+            {
+                SetMenuDefaultItem(menu, (uint)SysCommands.SC_MAXIMIZE, false);
+            }
+            else
+            {
+                SetMenuDefaultItem(menu, (uint)SysCommands.SC_CLOSE, false);
+            }
         }
 
         private static void SetSystemMenuItemEnabled(IntPtr menu, SysCommands command, bool enabled)
