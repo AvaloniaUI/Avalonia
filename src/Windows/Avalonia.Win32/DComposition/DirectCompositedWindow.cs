@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Numerics;
 using System.Threading;
+using Avalonia.Controls;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Reactive;
 using MicroCom.Runtime;
@@ -51,4 +51,13 @@ internal class DirectCompositedWindow : IDisposable
             Monitor.Exit(_shared.SyncRoot);
         });
     }
+
+    public bool IsTransparency => _transparencyLevel != WindowTransparencyLevel.None;
+
+    public void SetTransparencyLevel(WindowTransparencyLevel transparencyLevel)
+    {
+        _transparencyLevel = transparencyLevel;
+    }
+
+    private WindowTransparencyLevel _transparencyLevel;
 }
