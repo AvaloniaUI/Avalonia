@@ -260,7 +260,9 @@
 
 - (void)setAccessibilityValue:(id)newValue
 {
-    if (_peer->IsValueProvider())
+    if (!_peer->IsEnabled())
+        return;
+    if (_peer->IsValueProvider() && !_peer->ValueProvider_IsReadOnly())
     {
         if (newValue == nil)
             _peer->ValueProvider_SetValue(nil);
@@ -395,7 +397,7 @@
 
 - (void)setAccessibilityExpanded:(BOOL)accessibilityExpanded
 {
-    if (!_peer->IsExpandCollapseProvider())
+    if (!_peer->IsExpandCollapseProvider() || !_peer->IsEnabled())
         return;
     if (accessibilityExpanded)
         _peer->ExpandCollapseProvider_Expand();
@@ -405,6 +407,8 @@
 
 - (BOOL)accessibilityPerformPress
 {
+    if (!_peer->IsEnabled())
+        return NO;
     if (_peer->IsInvokeProvider())
     {
         _peer->InvokeProvider_Invoke();
@@ -425,7 +429,7 @@
 
 - (BOOL)accessibilityPerformIncrement
 {
-    if (!_peer->IsRangeValueProvider() || _peer->RangeValueProvider_IsReadOnly())
+    if (!_peer->IsRangeValueProvider() || _peer->RangeValueProvider_IsReadOnly() || !_peer->IsEnabled())
         return NO;
     auto value = _peer->RangeValueProvider_GetValue();
     value += _peer->RangeValueProvider_GetSmallChange();
@@ -435,7 +439,7 @@
 
 - (BOOL)accessibilityPerformDecrement
 {
-    if (!_peer->IsRangeValueProvider() || _peer->RangeValueProvider_IsReadOnly())
+    if (!_peer->IsRangeValueProvider() || _peer->RangeValueProvider_IsReadOnly() || !_peer->IsEnabled())
         return NO;
     auto value = _peer->RangeValueProvider_GetValue();
     value -= _peer->RangeValueProvider_GetSmallChange();
@@ -445,7 +449,7 @@
 
 - (BOOL)accessibilityPerformShowMenu
 {
-    if (!_peer->IsExpandCollapseProvider())
+    if (!_peer->IsExpandCollapseProvider() || !_peer->IsEnabled())
         return NO;
     _peer->ExpandCollapseProvider_Expand();
     return YES;
@@ -479,10 +483,10 @@
 
 - (void)setAccessibilitySelected:(BOOL)accessibilitySelected
 {
-    if (!_peer->IsSelectionItemProvider())
+    if (!_peer->IsSelectionItemProvider() || !_peer->IsEnabled())
         return;
     if (accessibilitySelected)
-        _peer->SelectionItemProvider_Select();
+        _peer->SelectionItemProvider_AddToSelection();
     else
         _peer->SelectionItemProvider_RemoveFromSelection();
 }
