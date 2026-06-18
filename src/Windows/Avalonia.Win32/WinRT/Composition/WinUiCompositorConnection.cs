@@ -208,16 +208,18 @@ internal class WinUiCompositorConnection : IRenderTimer, Win32.IWindowsSurfaceFa
         var handler = new RunLoopHandler(this);
         handler.Start();
 
+        const int watchDogIntervalInMs = 1000;
+
         using var dw = new SimpleWindow((hwnd, msg, w, l) =>
         {
             if (msg == (uint)UnmanagedMethods.WindowsMessage.WM_TIMER)
             {
                 handler.WatchDog();
-                UnmanagedMethods.SetTimer(hwnd, IntPtr.Zero, 10, null);
+                UnmanagedMethods.SetTimer(hwnd, IntPtr.Zero, watchDogIntervalInMs, null);
             }
             return UnmanagedMethods.DefWindowProc(hwnd, msg, w, l);
         });
-        UnmanagedMethods.SetTimer(dw.Handle, IntPtr.Zero, 10, null);
+        UnmanagedMethods.SetTimer(dw.Handle, IntPtr.Zero, watchDogIntervalInMs, null);
 
         // Warning: the completion callback (RunLoopHandler.Invoke) from ICompositor5.RequestCommitAsync()
         // is called in DispatchMessage() on Windows 10, but in GetMessage() on Windows 11!
