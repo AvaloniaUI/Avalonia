@@ -5,9 +5,12 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using static Avalonia.Reactive.Disposable;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -98,8 +101,15 @@ namespace Avalonia.Controls.Primitives
 
         private void LayoutListener_Invalidated(object? sender, EventArgs e)
         {
+            InvalidateMeasure();
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
             if (ShowHandles)
                 MoveHandlesToSelection();
+
+            return base.MeasureOverride(availableSize);
         }
 
         private void Caret_ContextCanceled(object? sender, RoutedEventArgs e)
@@ -111,6 +121,9 @@ namespace Avalonia.Controls.Primitives
         {
             ShowFlyout();
             e.Handled = true;
+
+            if (e.IsHolding)
+                this.PerformFeedback(FeedbackAction.Hold);
         }
 
         private void Handle_DragStarted(object? sender, VectorEventArgs e)
@@ -534,7 +547,7 @@ namespace Avalonia.Controls.Primitives
                         }
                         else
                         {
-                            var visibleHandle = _handle1.IsEffectivelyVisible ? _handle1: _handle2.IsEffectivelyVisible ? _handle2 : null;
+                            var visibleHandle = _handle1.IsEffectivelyVisible ? _handle1 : _handle2.IsEffectivelyVisible ? _handle2 : null;
 
                             topleft = visibleHandle?.IndicatorPosition;
                         }
@@ -607,15 +620,48 @@ namespace Avalonia.Controls.Primitives
             private TextPresenter? _presenter;
 
             public event EventHandler? Invalidated;
+            
+            private CompositeDisposable? _disposables;
 
             public void Attach(TextPresenter presenter)
             {
                 if (_presenter != null)
                     throw new InvalidOperationException("Listener is already attached to a TextPresenter");
 
+                _disposables?.Dispose();
+                _disposables = new CompositeDisposable();
                 _presenter = presenter;
-                presenter.SizeChanged += Presenter_SizeChanged;
-                presenter.EffectiveViewportChanged += Visual_EffectiveViewportChanged;
+
+                Visual? current = presenter;
+                do
+                {
+                    AttachEvents(current);
+                    current = current?.VisualParent;
+                }
+                while (current != null);
+            }
+
+            private void AttachEvents(Visual? visual)
+            {
+                if (visual != null)
+                {
+                    if (visual is Layoutable layoutable)
+                    {
+                        layoutable.EffectiveViewportChanged += Visual_EffectiveViewportChanged;
+                        _disposables?.Add(new AnonymousDisposable(() =>
+                        {
+                            layoutable.EffectiveViewportChanged -= Visual_EffectiveViewportChanged;
+                        }));
+                    }
+                    if (visual is Control control)
+                    {
+                        control.SizeChanged += Visual_SizeChanged;
+                        _disposables?.Add(new AnonymousDisposable(() =>
+                        {
+                            control.SizeChanged -= Visual_SizeChanged;
+                        }));
+                    }
+                }
             }
 
             private void Visual_EffectiveViewportChanged(object? sender, Layout.EffectiveViewportChangedEventArgs e)
@@ -623,18 +669,15 @@ namespace Avalonia.Controls.Primitives
                 OnInvalidated();
             }
 
-            private void Presenter_SizeChanged(object? sender, SizeChangedEventArgs e)
+            private void Visual_SizeChanged(object? sender, SizeChangedEventArgs e)
             {
                 OnInvalidated();
             }
 
             public void Detach()
             {
-                if (_presenter is { } presenter)
-                {
-                    presenter.SizeChanged -= Presenter_SizeChanged;
-                    presenter.EffectiveViewportChanged -= Visual_EffectiveViewportChanged;
-                }
+                _disposables?.Dispose();
+                _disposables = null;
 
                 _presenter = null;
             }

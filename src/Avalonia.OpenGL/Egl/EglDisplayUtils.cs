@@ -29,7 +29,28 @@ internal static class EglDisplayUtils
         return display;
     }
 
-    public static EglConfigInfo InitializeAndGetConfig(EglInterface egl, IntPtr display, IEnumerable<GlVersion>? versions)
+    // Enumerates every config matching the attribute list and lets the probe callback pick one (or simply
+    // takes the first one if no probe is supplied).
+    private static IntPtr? ChooseConfigWithProbe(EglInterface egl, IntPtr display, int[] attribs,
+        EglConfigProbeCallback? probe)
+    {
+        if (!egl.ChooseConfigs(display, attribs, null, 0, out var numConfigs) || numConfigs == 0)
+            return null;
+
+        var configs = new IntPtr[numConfigs];
+        if (!egl.ChooseConfigs(display, attribs, configs, configs.Length, out numConfigs) || numConfigs == 0)
+            return null;
+        if (numConfigs != configs.Length)
+            Array.Resize(ref configs, numConfigs);
+
+        if (probe == null)
+            return configs[0];
+
+        return probe(egl, display, configs);
+    }
+
+    public static EglConfigInfo InitializeAndGetConfig(EglInterface egl, IntPtr display,
+        IEnumerable<GlVersion>? versions, EglConfigProbeCallback? probeConfig = null)
     {
         if (!egl.Initialize(display, out _, out _))
             throw OpenGlException.GetFormattedException("eglInitialize", egl);
@@ -122,11 +143,8 @@ internal static class EglDisplayUtils
                     EGL_DEPTH_SIZE, depthSize,
                     EGL_NONE
                 };
-                if (!egl.ChooseConfig(display, attribs, out var config, 1, out int numConfigs))
+                if (ChooseConfigWithProbe(egl, display, attribs, probeConfig) is not { } config)
                     continue;
-                if (numConfigs == 0)
-                    continue;
-
 
                 egl.GetConfigAttrib(display, config, EGL_SAMPLES, out var sampleCount);
                 egl.GetConfigAttrib(display, config, EGL_STENCIL_SIZE, out var returnedStencilSize);

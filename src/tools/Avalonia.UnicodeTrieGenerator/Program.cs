@@ -85,6 +85,7 @@ internal static class Program
             Expect(value.Script, GetValue(packed, UnicodeData.SCRIPT_SHIFT, UnicodeData.SCRIPT_MASK), "Script", value.Codepoint);
             Expect(value.LineBreakClass, GetValue(packed, UnicodeData.LINEBREAK_SHIFT, UnicodeData.LINEBREAK_MASK), "LineBreakClass", value.Codepoint);
             Expect(value.WordBreakClass, GetValue(packed, UnicodeData.WORDBREAK_SHIFT, UnicodeData.WORDBREAK_MASK), "WordBreakClass", value.Codepoint);
+            Expect(value.ScriptExtensionsIndex, GetValue(packed, UnicodeData.SCRIPTEXTENSIONS_SHIFT, UnicodeData.SCRIPTEXTENSIONS_MASK), "ScriptExtensionsIndex", value.Codepoint);
         }
     }
 
