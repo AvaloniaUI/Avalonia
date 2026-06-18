@@ -52,7 +52,7 @@ namespace Avalonia.Data.Core.Plugins
                             var subject = new LightweightSubject<object?>();
                             task.ContinueWith(
                                     x => HandleCompleted(task).Subscribe(subject),
-                                    DispatcherTaskScheduler.UIThread)
+                                    Dispatcher.CurrentDispatcher.ToTaskScheduler())
                                 .ConfigureAwait(false);
                             return subject;
                     }

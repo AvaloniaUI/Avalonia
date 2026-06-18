@@ -351,7 +351,7 @@ namespace Avalonia.Animation
                     Task.WhenAll(completionTasks!)
                         .ContinueWith((_, state) => ((Action)state!).Invoke()
                             , onComplete
-                            , DispatcherTaskScheduler.UIThread
+                            , control.Dispatcher.ToTaskScheduler()
                             );
                 }
             }

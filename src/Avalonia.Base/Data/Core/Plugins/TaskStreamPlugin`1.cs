@@ -28,7 +28,7 @@ internal class TaskStreamPlugin<T> : IStreamPlugin
                 var subject = new LightweightSubject<object?>();
                 task.ContinueWith(
                         _ => HandleCompleted(task).Subscribe(subject),
-                        DispatcherTaskScheduler.UIThread)
+                        Dispatcher.CurrentDispatcher.ToTaskScheduler())
                     .ConfigureAwait(false);
                 return subject;
         }

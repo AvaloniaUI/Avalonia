@@ -30,7 +30,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                     var subject = new LightweightSubject<object?>();
                     task.ContinueWith(
                             _ => HandleCompleted(task).Subscribe(subject),
-                            DispatcherTaskScheduler.UIThread)
+                            Dispatcher.CurrentDispatcher.ToTaskScheduler())
                         .ConfigureAwait(false);
                     return subject;
             }

@@ -104,7 +104,7 @@ public class TransitioningContentControl : ContentControl
                     {
                         HideOldPresenter();
                     }
-                }, DispatcherTaskScheduler.UIThread);
+                }, Dispatcher.ToTaskScheduler());
             }
 
             _shouldAnimate = false;
