@@ -87,13 +87,18 @@ namespace Avalonia.Media
                 -sourceRect.X + destRect.X - bounds.X,
                 -sourceRect.Y + destRect.Y - bounds.Y);
 
-            var clip = Viewbox != null ||
-                       !MathUtilities.AreClose(sourceRect.X, 0) ||
-                       !MathUtilities.AreClose(sourceRect.Y, 0) ||
-                       !MathUtilities.AreClose(sourceRect.Width, bounds.Width) ||
-                       !MathUtilities.AreClose(sourceRect.Height, bounds.Height);
-
-            using (clip ? context.PushClip(destRect) : default)
+            // Inflate destination clip by the drawing's effect padding (if any)
+            // so visual effects like blur/shadow are not clipped away.
+            // Padding is expressed in device-independent pixels and should be applied
+            // in destination space. We therefore push the transform first and then
+            // push a clip in destination coordinates.
+            var effectPadding = (drawing as DrawingGroup)?.Effect.GetEffectOutputPadding();
+            if (effectPadding.HasValue && effectPadding.Value != default)
+            {
+                destRect = destRect.Inflate(effectPadding.Value);
+            }
+            
+            using (context.PushClip(destRect))
             using (context.PushTransform(translate * scale))
             {
                 drawing.Draw(context);
